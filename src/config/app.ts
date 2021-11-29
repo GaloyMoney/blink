@@ -143,24 +143,30 @@ const getRateLimits = (config): RateLimitOptions => {
    * Returns a subset of the required parameters for the
    * 'rate-limiter-flexible.RateLimiterRedis' object.
    */
-  return {
+  const rateLimitOptions: RateLimitOptions = {
     points: config.points,
     duration: config.duration,
     blockDuration: config.blockDuration,
   }
+
+  if (config.msBeforeNext) {
+    rateLimitOptions.msBeforeNext = config.msBeforeNext
+  }
+
+  return rateLimitOptions
 }
 
-export const getRequestPhoneCodeLimits = () =>
-  getRateLimits(yamlConfig.limits.requestPhoneCode)
+export const getRequestPhoneCodePerPhoneLimits = () =>
+  getRateLimits(yamlConfig.limits.requestPhoneCodePerPhone)
 
-export const getRequestPhoneCodeIpLimits = () =>
-  getRateLimits(yamlConfig.limits.requestPhoneCodeIp)
+export const getRequestPhoneCodePerIpLimits = () =>
+  getRateLimits(yamlConfig.limits.requestPhoneCodePerIp)
 
 export const getFailedLoginAttemptPerPhoneLimits = () =>
-  getRateLimits(yamlConfig.limits.loginAttempt)
+  getRateLimits(yamlConfig.limits.failedLoginAttemptPerPhone)
 
 export const getFailedLoginAttemptPerIpLimits = () =>
-  getRateLimits(yamlConfig.limits.failedAttemptPerIp)
+  getRateLimits(yamlConfig.limits.failedLoginAttemptPerIp)
 
 export const getInvoiceCreateAttemptLimits = () =>
   getRateLimits(yamlConfig.limits.invoiceCreateAttempt)

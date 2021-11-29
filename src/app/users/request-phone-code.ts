@@ -1,7 +1,7 @@
 import {
   getGaloyInstanceName,
-  getRequestPhoneCodeIpLimits,
-  getRequestPhoneCodeLimits,
+  getRequestPhoneCodePerIpLimits,
+  getRequestPhoneCodePerPhoneLimits,
 } from "@config/app"
 import { randomIntFromInterval } from "@core/utils"
 import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
@@ -86,8 +86,8 @@ const checkPhoneCodeAttemptPerIpLimits = async (
   ip: IpAddress,
 ): Promise<true | RateLimiterExceededError> => {
   const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.failedAttemptPhoneCodeIp,
-    limitOptions: getRequestPhoneCodeIpLimits(),
+    keyPrefix: RateLimitPrefix.requestPhoneCodeAttemptPerIp,
+    limitOptions: getRequestPhoneCodePerIpLimits(),
   })
   return limiter.consume(ip)
 }
@@ -96,8 +96,8 @@ const checkPhoneCodeAttemptPerPhoneLimits = async (
   phone: PhoneNumber,
 ): Promise<true | RateLimiterExceededError> => {
   const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.failedPhoneCodeAttemptPhoneCode,
-    limitOptions: getRequestPhoneCodeLimits(),
+    keyPrefix: RateLimitPrefix.requestPhoneCodeAttemptPerPhone,
+    limitOptions: getRequestPhoneCodePerPhoneLimits(),
   })
   return limiter.consume(phone)
 }
