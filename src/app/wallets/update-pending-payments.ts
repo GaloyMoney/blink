@@ -5,6 +5,7 @@ import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
 import { reimburseFee } from "@app/wallets/reimburse-fee"
 import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
+import { toSats } from "@domain/bitcoin"
 
 export const updatePendingPayments = async ({
   walletId,
@@ -56,24 +57,45 @@ const updatePendingPayment = async ({
     throw new InconsistentDataError("paymentHash missing from payment transaction")
   if (!pubkey) throw new InconsistentDataError("pubkey missing from payment transaction")
 
-  const lnPaymentLookup = await lndService.lookupPayment({
+  const lnPaymentLookupFromLightningPromise = lndService.lookupPayment({
     pubkey,
     paymentHash,
   })
+  const lnPaymentLookupPromise = LnPaymentsRepository().findByPaymentHash(paymentHash)
+
+  const lightningLogger = logger.child({
+    topic: "payment",
+    protocol: "lightning",
+    transactionType: "payment",
+    onUs: false,
+  })
+
+  const [lnPaymentLookupFromLightning, lnPaymentLookup] = await Promise.all([
+    lnPaymentLookupFromLightningPromise,
+    lnPaymentLookupPromise,
+  ])
+  if (lnPaymentLookupFromLightning instanceof Error) {
+    lightningLogger.error(
+      { err: lnPaymentLookupFromLightning },
+      "issue fetching payment from lightning service",
+    )
+    return lnPaymentLookupFromLightning
+  }
   if (lnPaymentLookup instanceof Error) {
-    const lightningLogger = logger.child({
-      topic: "payment",
-      protocol: "lightning",
-      transactionType: "payment",
-      onUs: false,
-    })
-    lightningLogger.error({ err: lnPaymentLookup }, "issue fetching payment")
+    lightningLogger.error(
+      { err: lnPaymentLookup },
+      "issue fetching payment from database",
+    )
     return lnPaymentLookup
   }
-  const {
-    status,
-    paymentDetails: { roundedUpFee },
-  } = lnPaymentLookup
+
+  lnPaymentLookup.status = lnPaymentLookupFromLightning.status
+  if (lnPaymentLookupFromLightning.status !== PaymentStatus.Failed) {
+    lnPaymentLookup.paymentDetails = lnPaymentLookupFromLightning.paymentDetails
+  }
+
+  const { status, paymentDetails } = lnPaymentLookup
+  const roundedUpFee = paymentDetails?.roundedUpFee || toSats(0)
 
   if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {
     const ledgerService = LedgerService()

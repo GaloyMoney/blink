@@ -62,20 +62,22 @@ type GetPaymentResult = import("lightning").GetPaymentResult
 type RawPaths = NonNullable<GetPaymentResult["payment"]>["paths"]
 
 type LnPaymentLookup = {
-  readonly status: PaymentStatus
+  status: PaymentStatus
   paymentRequest: EncodedPaymentRequest | undefined
   paymentHash: PaymentHash
-  paymentDetails: {
-    readonly confirmedAt: Date | undefined
-    readonly createdAt: Date | undefined
-    readonly destination: Pubkey
-    readonly milliSatsFee: MilliSatoshis
-    readonly milliSatsAmount: MilliSatoshis
-    readonly paths: RawPaths
-    readonly roundedUpFee: Satoshis
-    readonly secret: PaymentSecret | undefined
-    readonly amount: Satoshis
-  }
+  paymentDetails:
+    | {
+        readonly confirmedAt: Date | undefined
+        readonly createdAt: Date | undefined
+        readonly destination: Pubkey
+        readonly milliSatsFee: MilliSatoshis
+        readonly milliSatsAmount: MilliSatoshis
+        readonly paths: RawPaths
+        readonly roundedUpFee: Satoshis
+        readonly secret: PaymentSecret | undefined
+        readonly amount: Satoshis
+      }
+    | undefined
 }
 
 type LnPayment = LnPaymentLookup & { id: PaymentLedgerId }
