@@ -79,7 +79,7 @@ const checkFailedLoginAttemptPerIpLimits = async (
   ip: IpAddress,
 ): Promise<true | RateLimiterExceededError> => {
   const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.failedAttemptLoginIp,
+    keyPrefix: RateLimitPrefix.failedLoginAttemptPerIp,
     limitOptions: getFailedLoginAttemptPerIpLimits(),
   })
   return limiter.consume(ip)
@@ -89,7 +89,7 @@ const rewardFailedLoginAttemptPerIpLimits = async (
   ip: IpAddress,
 ): Promise<true | RateLimiterExceededError> => {
   const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.failedAttemptLoginIp,
+    keyPrefix: RateLimitPrefix.failedLoginAttemptPerIp,
     limitOptions: getFailedLoginAttemptPerIpLimits(),
   })
   return limiter.reward(ip)
@@ -99,7 +99,7 @@ const checkFailedLoginAttemptPerPhoneLimits = async (
   phone: PhoneNumber,
 ): Promise<true | RateLimiterExceededError> => {
   const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.failedAttemptLoginPhone,
+    keyPrefix: RateLimitPrefix.failedLoginAttemptPerPhone,
     limitOptions: getFailedLoginAttemptPerPhoneLimits(),
   })
   return limiter.consume(phone)

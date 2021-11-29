@@ -2,7 +2,7 @@ import { createHttpTerminator } from "http-terminator"
 import { sleep } from "@core/utils"
 import {
   yamlConfig,
-  getRequestPhoneCodeLimits,
+  getRequestPhoneCodePerPhoneLimits,
   getFailedLoginAttemptPerPhoneLimits,
 } from "@config/app"
 import { createTestClient } from "apollo-server-testing"
@@ -63,7 +63,7 @@ describe("graphql", () => {
     }`
 
     // exhaust the limiter
-    const requestPhoneCodeLimits = getRequestPhoneCodeLimits()
+    const requestPhoneCodeLimits = getRequestPhoneCodePerPhoneLimits()
     for (let i = 0; i < requestPhoneCodeLimits.points; i++) {
       const result = await mutate({ mutation, variables: { phone } })
       expect(result.errors).toBeFalsy()
