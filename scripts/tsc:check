@@ -1,4 +1,0 @@
-#!/usr/bin/env sh
-
-tsc --noEmit -p tsconfig.d.json && \
-tsc --noEmit --skipLibCheck
