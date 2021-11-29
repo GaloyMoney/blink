@@ -27,6 +27,7 @@ type InitiationViaOnChain = {
   readonly address: OnChainAddress
 }
 
+// FIXME: create a migration to add OnChainAddress associated with old transaction to remove this legacy type
 type InitiationViaOnChainLegacy = {
   readonly type: PaymentInitiationMethod["OnChain"]
   readonly address?: OnChainAddress
