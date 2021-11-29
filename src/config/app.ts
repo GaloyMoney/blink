@@ -1,15 +1,30 @@
 import fs from "fs"
 import yaml from "js-yaml"
-import _ from "lodash"
-import { exit } from "process"
+import merge from "lodash.merge"
 
 import { baseLogger } from "@services/logger"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)
 
-export const JWT_SECRET = process.env.JWT_SECRET
-export const BTC_NETWORK = process.env.NETWORK as BtcNetwork
+export class ConfigError extends Error {
+  name = this.constructor.name
+}
+
+const jwtToken = process.env.JWT_SECRET
+if (!jwtToken) {
+  throw new ConfigError("missing JWT_SECRET")
+}
+
+export const JWT_SECRET = jwtToken
+
+const btcNetwork = process.env.NETWORK
+const networks = ["mainnet", "testnet", "regtest"]
+if (!!btcNetwork && !networks.includes(btcNetwork)) {
+  throw new ConfigError(`missing or invalid NETWORK: ${btcNetwork}`)
+}
+
+export const BTC_NETWORK = btcNetwork as BtcNetwork
 
 export const MS_PER_HOUR = 60 * 60 * 1000
 export const MS_PER_DAY = 24 * MS_PER_HOUR
@@ -17,7 +32,8 @@ export const MS_PER_30_DAYs = 30 * MS_PER_DAY
 
 export const SECS_PER_5_MINS = (60 * 5) as Seconds
 
-export const SUBSCRIPTION_POLLING_INTERVAL = 2.5 * 1000
+export const VALIDITY_TIME_CODE = (20 * 60) as Seconds
+
 export const MAX_BYTES_FOR_MEMO = 639 // BOLT
 
 export const SATS_PER_BTC = 10 ** 8
@@ -36,11 +52,11 @@ try {
   customConfig = yaml.load(customContent)
 } catch (err) {
   if (process.env.NETWORK !== "regtest") {
-    baseLogger.info({ err }, "no custom.yaml available. loading default values")
+    baseLogger.info({ err }, "no custom.yaml available. using default values")
   }
 }
 
-export const yamlConfig = _.merge(defaultConfig, customConfig)
+export const yamlConfig = merge(defaultConfig, customConfig)
 
 export const tracingConfig = {
   jaegerHost: process.env.JAEGER_HOST || "localhost",
@@ -61,28 +77,37 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD =
 
 export const getGaloyInstanceName = (): string => yamlConfig.name
 
-export const getGaloySMSProvider = (): string => yamlConfig.sms_provider
-
-export const getGeeTestConfig = () => {
+export const getGeetestConfig = () => {
   const config = {
     id: process.env.GEETEST_ID,
     key: process.env.GEETEST_KEY,
   }
+  // FIXME: Geetest should be optional.
   if (!config.id || !config.key) {
-    throw new Error("Geetest config not found")
+    throw new ConfigError("Geetest config not found")
   }
   return config
 }
 
 export const getLndParams = (): LndParams[] => {
   const config = yamlConfig.lnds
+
+  config.forEach((input) => {
+    const keys = ["_TLS", "_MACAROON", "_DNS", "_PUBKEY"]
+    keys.forEach((key) => {
+      if (!process.env[`${input.name}${key}`]) {
+        throw new ConfigError(`lnd params missing for: ${input.name}${key}`)
+      }
+    })
+  })
+
   return config.map((input) => ({
-    cert: process.env[`${input.name}_TLS`] || exit(98),
-    macaroon: process.env[`${input.name}_MACAROON`] || exit(98),
-    node: process.env[`${input.name}_DNS`] || exit(98),
+    cert: process.env[`${input.name}_TLS`],
+    macaroon: process.env[`${input.name}_MACAROON`],
+    node: process.env[`${input.name}_DNS`],
     port: process.env[`${input.name}_RPCPORT`] ?? 10009,
-    pubkey: process.env[`${input.name}_PUBKEY`] || exit(98),
-    priority: 1,
+    pubkey: process.env[`${input.name}_PUBKEY`],
+    priority: 1, // will be overriden if present in the yaml
     ...input,
   }))
 }
@@ -131,9 +156,10 @@ export const getRequestPhoneCodeLimits = () =>
 export const getRequestPhoneCodeIpLimits = () =>
   getRateLimits(yamlConfig.limits.requestPhoneCodeIp)
 
-export const getLoginAttemptLimits = () => getRateLimits(yamlConfig.limits.loginAttempt)
+export const getFailedLoginAttemptPerPhoneLimits = () =>
+  getRateLimits(yamlConfig.limits.loginAttempt)
 
-export const getFailedAttemptPerIpLimits = () =>
+export const getFailedLoginAttemptPerIpLimits = () =>
   getRateLimits(yamlConfig.limits.failedAttemptPerIp)
 
 export const getInvoiceCreateAttemptLimits = () =>
@@ -186,6 +212,31 @@ export const getSpecterWalletConfig = (): SpecterWalletConfig => {
   }
 }
 
+type TwilioConfig = {
+  accountSid: string
+  apiKey: string
+  apiSecret: string
+  twilioPhoneNumber: string
+}
+
+export const getTwilioConfig = (): TwilioConfig => {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID
+  const apiKey = process.env.TWILIO_API_KEY
+  const apiSecret = process.env.TWILIO_API_SECRET
+  const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
+
+  if (!accountSid || !apiKey || !apiSecret || !twilioPhoneNumber) {
+    throw new ConfigError("missing key for twilio")
+  }
+
+  return {
+    accountSid,
+    apiKey,
+    apiSecret,
+    twilioPhoneNumber,
+  }
+}
+
 export const getBuildVersions = (): {
   minBuildNumber: number
   lastBuildNumber: number
@@ -203,6 +254,9 @@ export const getIpConfig = (config = yamlConfig): IpConfig => ({
 
 export const getApolloConfig = (config = yamlConfig): ApolloConfig => config.apollo
 export const getTwoFAConfig = (config = yamlConfig): TwoFAConfig => config.twoFA
+
+export const getTestAccounts = (config = yamlConfig): TestAccounts[] =>
+  config.test_accounts
 
 export const levels: Levels = [1, 2]
 

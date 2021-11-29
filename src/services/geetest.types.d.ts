@@ -1,11 +1,18 @@
-type GeeTestRegister = {
+type CaptchaError = import("@domain/captcha/error").CaptchaError
+type UnknownCaptchaError = import("@domain/captcha/error").UnknownCaptchaError
+
+type GeetestRegister = {
   success: number
   gt: string
   challenge: string
-  new_captcha: boolean
+  newCaptcha: boolean
 }
 
-type GeeTestType = {
-  register: () => Promise<GeeTestRegister>
-  validate: (challenge: unknown, validate: unknown, seccode: unknown) => Promise<boolean>
+type GeetestType = {
+  register: () => Promise<UnknownCaptchaError | GeetestRegister>
+  validate: (
+    challenge: string,
+    validate: string,
+    seccode: string,
+  ) => Promise<boolean | CaptchaError>
 }

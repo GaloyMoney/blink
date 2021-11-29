@@ -1,11 +1,11 @@
 // import { baseLogger } from "../logger"
-// import { sendTwilioText } from "../text"
+// import { TwilioClient } from "@services/phone-provider"
 
 // const phone = "add phone number here with extension (ie: +1...)"
 
 const main = async () => {
   try {
-    // await sendTwilioText({body: "test text", to: phone, logger: baseLogger})
+    // await await new TwilioClient().sendText({body: "test text", to: phone, logger: baseLogger})
   } catch (err) {
     fail("there was an error sending the Twilio text")
   }

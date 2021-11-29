@@ -22,4 +22,7 @@ type AccountId = string & { [accountIdSymbol]: never }
 declare const secondsSymbol: unique symbol
 type Seconds = number & { [secondsSymbol]: never }
 
+declare const jwtTokenSymbol: unique symbol
+type JwtToken = string & { [jwtTokenSymbol]: never }
+
 type TxDenominationCurrency = "USD" | "BTC"

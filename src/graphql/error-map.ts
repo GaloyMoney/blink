@@ -61,6 +61,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `User does not exist for username ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
+    case "CouldNotFindUserFromPhoneError":
+      message = `User does not exist for phone ${error.message}`
+      return new NotFoundError({ message, logger: baseLogger })
+
     case "CouldNotFindUserFromWalletIdError":
       message = `User does not exist for wallet-id ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
@@ -93,13 +97,12 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "InvoiceCreateRateLimiterExceededError":
-      message =
-        "User tried to create too many invoices, please wait for a while and try again."
+      message = "Too many invoices creation, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
     case "OnChainAddressCreateRateLimiterExceededError":
       message =
-        "Tried to create too many onchain addresses for user, please wait for a while and try again."
+        "Too many onchain addresses creation, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
     case "UnknownLnInvoiceDecodeError":
@@ -185,6 +188,13 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LocalCacheServiceError":
     case "LocalCacheUndefinedError":
     case "UnknownLocalCacheServiceError":
+    case "UserLoginIpRateLimiterExceededError":
+    case "UserLoginPhoneRateLimiterExceededError":
+    case "UserPhoneCodeAttemptPhoneRateLimiterExceededError":
+    case "UserPhoneCodeAttemptIpRateLimiterExceededError":
+    case "CouldNotFindPhoneCodeError":
+    case "PhoneProviderServiceError":
+    case "UnknownPhoneProviderServiceError":
       return new UnknownClientError({ message, logger: baseLogger })
 
     default:

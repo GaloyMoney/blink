@@ -13,7 +13,7 @@ import { getTitle } from "@services/notifications/payment"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import {
   checkIsBalanced,
-  getUserWallet,
+  getAndCreateUserWallet,
   lndonchain,
   lndOutside1,
   createChainAddress,
@@ -34,7 +34,6 @@ import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
 import { NotificationType } from "@domain/notifications"
 import { toTargetConfs } from "@domain/bitcoin"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 jest.mock("@services/notifications/notification")
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
@@ -48,12 +47,12 @@ let userWallet0, userWallet3, userWallet11, userWallet12 // using userWallet11 a
 const { sendNotification } = require("@services/notifications/notification")
 
 beforeAll(async () => {
-  userWallet0 = await getUserWallet(0)
-  userWallet3 = await getUserWallet(3)
-  userWallet11 = await getUserWallet(11)
-  userWallet12 = await getUserWallet(12)
+  userWallet0 = await getAndCreateUserWallet(0)
+  userWallet3 = await getAndCreateUserWallet(3)
+  userWallet11 = await getAndCreateUserWallet(11)
+  userWallet12 = await getAndCreateUserWallet(12)
   // load funder wallet before use it
-  await getUserWallet(4)
+  await getAndCreateUserWallet(4)
   await bitcoindClient.loadWallet({ filename: "outside" })
 })
 

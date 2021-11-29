@@ -150,6 +150,7 @@ const UserSchema = new Schema<UserType>({
     unique: true,
   },
   twilio: {
+    // TODO: rename to PhoneMetadata
     carrier: {
       error_code: String, // check this is the right syntax
       mobile_country_code: String,
@@ -472,7 +473,6 @@ const PhoneCodeSchema = new Schema({
     type: Number,
     required: true,
   },
-  sms_provider: String,
 })
 
 export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)

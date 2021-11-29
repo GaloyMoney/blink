@@ -3,6 +3,7 @@
 // https://docs.geetest.com/captcha/apirefer/api/server
 // doing this: "If the storage space is not sufficient: Send request to check bypass status before starting the verfication process."
 
+import { CaptchaUserFailToPassError, UnknownCaptchaError } from "@domain/captcha/error"
 import axios from "axios"
 import GeetestLib from "gt3-server-node-express-sdk/sdk/geetest_lib" // galoy fork
 
@@ -24,42 +25,59 @@ async function sendRequest(params) {
   return bypassRes
 }
 
-const GeeTest = (config): GeeTestType => {
+const Geetest = (config): GeetestType => {
   const getBypassStatus = async () => {
     return sendRequest({ gt: config.id })
   }
 
-  const register = async () => {
-    const gtLib = new GeetestLib(config.id, config.key)
-    const digestmod = "md5"
-    const params = {
-      digestmod,
-      client_type: "native",
+  const register = async (): Promise<UnknownCaptchaError | GeetestRegister> => {
+    try {
+      const gtLib = new GeetestLib(config.id, config.key)
+      const digestmod = "md5"
+      const params = {
+        digestmod,
+        client_type: "native",
+      }
+      const bypasscache = await getBypassStatus() // not a cache
+      let result
+      if (bypasscache === "success") {
+        result = await gtLib.register(digestmod, params)
+      } else {
+        result = await gtLib.localRegister()
+      }
+
+      const { success, gt, challenge, new_captcha: newCaptcha } = JSON.parse(result.data)
+      return { success, gt, challenge, newCaptcha }
+    } catch (err) {
+      return new UnknownCaptchaError(err)
     }
-    const bypasscache = await getBypassStatus() // not a cache
-    let result
-    if (bypasscache === "success") {
-      result = await gtLib.register(digestmod, params)
-    } else {
-      result = await gtLib.localRegister()
-    }
-    return JSON.parse(result.data)
   }
 
-  const validate = async (challenge, validate, seccode) => {
-    const gtLib = new GeetestLib(config.id, config.key)
-    const bypasscache = await getBypassStatus() // not a cache
-    let result
-    const params = []
-    if (bypasscache === "success") {
-      result = await gtLib.successValidate(challenge, validate, seccode, params)
-    } else {
-      result = gtLib.failValidate(challenge, validate, seccode)
+  const validate = async (
+    challenge,
+    validate,
+    seccode,
+  ): Promise<boolean | CaptchaError> => {
+    try {
+      const gtLib = new GeetestLib(config.id, config.key)
+      const bypasscache = await getBypassStatus() // not a cache
+      let result
+      const params = []
+      if (bypasscache === "success") {
+        result = await gtLib.successValidate(challenge, validate, seccode, params)
+      } else {
+        result = gtLib.failValidate(challenge, validate, seccode)
+      }
+      if (result.status !== 1) {
+        return new CaptchaUserFailToPassError()
+      }
+      return true
+    } catch (err) {
+      return new UnknownCaptchaError(err)
     }
-    return result.status === 1
   }
 
   return { register, validate }
 }
 
-export default GeeTest
+export default Geetest

@@ -10,6 +10,7 @@ type RateLimitOptions = {
 }
 
 interface IRateLimitService {
-  consume(key: string | number): Promise<true | RateLimitServiceError>
-  reset(key: string | number): Promise<true | RateLimitServiceError>
+  consume(key: string): Promise<true | RateLimitServiceError>
+  reset(key: string): Promise<true | RateLimitServiceError>
+  reward(key: string): Promise<true | RateLimitServiceError>
 }

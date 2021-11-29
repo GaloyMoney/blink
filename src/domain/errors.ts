@@ -17,7 +17,9 @@ export class CouldNotFindWalletInvoiceError extends CouldNotFindError {}
 export class CouldNotFindUserError extends CouldNotFindError {}
 export class CouldNotFindUserFromIdError extends CouldNotFindError {}
 export class CouldNotFindUserFromUsernameError extends CouldNotFindError {}
+export class CouldNotFindUserFromPhoneError extends CouldNotFindError {}
 export class CouldNotFindUserFromWalletIdError extends CouldNotFindError {}
+export class CouldNotFindPhoneCodeError extends CouldNotFindError {}
 export class CouldNotFindWalletFromIdError extends CouldNotFindError {}
 export class CouldNotFindWalletFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressError extends CouldNotFindError {}

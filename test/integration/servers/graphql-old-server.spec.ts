@@ -1,15 +1,19 @@
 import { createHttpTerminator } from "http-terminator"
 import { sleep } from "@core/utils"
-import { yamlConfig, getRequestPhoneCodeLimits, getLoginAttemptLimits } from "@config/app"
+import {
+  yamlConfig,
+  getRequestPhoneCodeLimits,
+  getFailedLoginAttemptPerPhoneLimits,
+} from "@config/app"
 import { createTestClient } from "apollo-server-testing"
 import { startApolloServerForOldSchema } from "@servers/graphql-old-server"
 import { clearAccountLocks, clearLimiters } from "test/helpers"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
-
 let apolloServer, httpServer, httpTerminator
 const { phone, code: correctCode } = yamlConfig.test_accounts[9]
 const badCode = 123456
+
+jest.mock("@services/twilio", () => require("test/mocks/twilio"))
 
 beforeAll(async () => {
   ;({ apolloServer, httpServer } = await startApolloServerForOldSchema())
@@ -65,14 +69,12 @@ describe("graphql", () => {
       expect(result.errors).toBeFalsy()
     }
 
-    try {
-      const result = await mutate({ mutation, variables: { phone } })
-      expect(result.errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ code: "TOO_MANY_REQUEST" })]),
-      )
-    } catch (err) {
-      expect(true).toBeFalsy()
-    }
+    const {
+      data: {
+        requestPhoneCode: { success: value },
+      },
+    } = await mutate({ mutation, variables: { phone } })
+    expect(value).toBeFalsy()
   })
 
   it("rate limit login", async () => {
@@ -91,28 +93,34 @@ describe("graphql", () => {
     } = await mutate({ mutation, variables: { phone, code: badCode } })
     expect(tokenNull).toBeFalsy()
 
-    const {
-      data: {
-        login: { token },
-      },
-    } = await mutate({ mutation, variables: { phone, code: correctCode } })
-    expect(token).toBeTruthy()
-
-    // exhaust the limiter
-    const loginAttemptLimits = getLoginAttemptLimits()
-    for (let i = 0; i < loginAttemptLimits.points; i++) {
-      const result = await mutate({ mutation, variables: { phone, code: badCode } })
-      expect(result.errors).toBeFalsy()
+    {
+      const {
+        data: {
+          login: { token },
+        },
+      } = await mutate({ mutation, variables: { phone, code: correctCode } })
+      expect(token).toBeTruthy()
     }
 
-    try {
-      const result = await mutate({ mutation, variables: { phone, code: correctCode } })
-      expect(result.errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ code: "TOO_MANY_REQUEST" })]),
-      )
-      expect(result.data.login).toBeFalsy()
-    } catch (err) {
-      expect(true).toBeFalsy()
+    // exhaust the limiter
+    const loginAttemptPerPhoneLimits = getFailedLoginAttemptPerPhoneLimits()
+
+    for (let i = 0; i < loginAttemptPerPhoneLimits.points; i++) {
+      const {
+        data: {
+          login: { token },
+        },
+      } = await mutate({ mutation, variables: { phone, code: badCode } })
+      expect(token).toBeFalsy()
+    }
+
+    {
+      const {
+        data: {
+          login: { token },
+        },
+      } = await mutate({ mutation, variables: { phone, code: correctCode } })
+      expect(token).toBeFalsy()
     }
   })
 })

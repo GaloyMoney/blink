@@ -1,18 +1,22 @@
-import { login } from "@core/text"
-import { User } from "@services/mongoose/schema"
-import * as jwt from "jsonwebtoken"
-import { baseLogger } from "@services/logger"
-import { JWT_SECRET, yamlConfig } from "@config/app"
+import { yamlConfig } from "@config/app"
 import { WalletFactory } from "@core/wallet-factory"
+import { CouldNotFindUserFromPhoneError } from "@domain/errors"
+import { baseLogger } from "@services/logger"
+import { UsersRepository } from "@services/mongoose"
+import { User } from "@services/mongoose/schema"
 
-export const getTokenFromPhoneIndex = async (index) => {
+export const getAndCreateUserWallet = async (index: number) => {
   const entry = yamlConfig.test_accounts[index]
-  const rawToken = await login({ ...entry, logger: baseLogger, ip: "127.0.0.1" })
+  const phone = entry.phone as PhoneNumber
 
-  // @ts-expect-error: Fix for when rawToken is null
-  const token = jwt.verify(rawToken, JWT_SECRET)
+  const users = UsersRepository()
+  let userRepo = await users.findByPhone(phone)
+  if (userRepo instanceof CouldNotFindUserFromPhoneError) {
+    userRepo = await users.persistNew({ phone, phoneMetadata: null })
+  }
 
-  const { uid } = token
+  if (userRepo instanceof Error) throw userRepo
+  const uid = userRepo.id
 
   if (entry.username) {
     await User.findOneAndUpdate({ _id: uid }, { username: entry.username })
@@ -30,12 +34,7 @@ export const getTokenFromPhoneIndex = async (index) => {
     await User.findOneAndUpdate({ _id: uid }, { title: entry.title })
   }
 
-  return token
-}
-
-export const getUserWallet = async (userNumber) => {
-  const token = await getTokenFromPhoneIndex(userNumber)
-  const user = await User.findOne({ _id: token.uid })
+  const user = await User.findOne({ _id: uid })
   const userWallet = await WalletFactory({ user, logger: baseLogger })
   return userWallet
 }

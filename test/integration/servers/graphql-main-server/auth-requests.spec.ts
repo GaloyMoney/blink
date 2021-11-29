@@ -20,7 +20,7 @@ import {
   clearAccountLocks,
 } from "test/helpers"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
+jest.mock("@services/twilio", () => require("test/mocks/twilio"))
 
 let apolloServer, httpServer, httpTerminator, query, mutate, setOptions, walletId
 const { phone, code } = yamlConfig.test_accounts[3]

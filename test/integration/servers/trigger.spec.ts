@@ -1,7 +1,7 @@
 import { onchainBlockEventhandler, onInvoiceUpdate } from "@servers/trigger"
 import { baseLogger } from "@services/logger"
 import {
-  getUserWallet,
+  getAndCreateUserWallet,
   bitcoindClient,
   bitcoindOutside,
   lnd1,
@@ -28,7 +28,6 @@ import { NotificationType } from "@domain/notifications"
 import { getCurrentPrice } from "@app/prices"
 
 jest.mock("@services/notifications/notification")
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
@@ -65,8 +64,8 @@ describe("onchainBlockEventhandler", () => {
     const amount = 0.0001
     const amount2 = 0.0002
     const blocksToMine = 6
-    const wallet0 = await getUserWallet(0)
-    const wallet3 = await getUserWallet(3)
+    const wallet0 = await getAndCreateUserWallet(0)
+    const wallet3 = await getAndCreateUserWallet(3)
 
     await mineBlockAndSyncAll()
     const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })
@@ -138,7 +137,7 @@ describe("onchainBlockEventhandler", () => {
 
   it("should process pending invoices on invoice update event", async () => {
     const sats = 500
-    const wallet = await getUserWallet(12)
+    const wallet = await getAndCreateUserWallet(12)
     const lnInvoice = await addInvoice({
       walletId: wallet.user.id as WalletId,
       amount: toSats(sats),

@@ -8,7 +8,7 @@ import {
   getChainBalance,
   fundLnd,
   checkIsBalanced,
-  getUserWallet,
+  getAndCreateUserWallet,
   mineAndConfirm,
   sendToAddressAndConfirm,
   waitUntilBlockHeight,
@@ -16,16 +16,14 @@ import {
 import { getWalletFromRole } from "@core/wallet-factory"
 import * as Wallets from "@app/wallets"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
-
 let bitcoindOutside
 
 beforeAll(async () => {
   // load funder wallet before use it
-  await getUserWallet(4)
+  await getAndCreateUserWallet(4)
 
   // "bankowner" user
-  await getUserWallet(14)
+  await getAndCreateUserWallet(14)
 })
 
 afterAll(async () => {
@@ -74,10 +72,10 @@ describe("Bitcoind", () => {
     const sats = initialBalance + btc2sat(amount)
 
     // initiate the dealer wallet
-    await getUserWallet(6)
+    await getAndCreateUserWallet(6)
 
     // load funder wallet before use it
-    await getUserWallet(4)
+    await getAndCreateUserWallet(4)
 
     const funderWallet = await getWalletFromRole({ role: "funder", logger: baseLogger })
     const address = await Wallets.createOnChainAddress(funderWallet.user.id)

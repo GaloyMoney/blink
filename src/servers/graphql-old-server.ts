@@ -21,7 +21,6 @@ import { baseLogger } from "@services/logger"
 import { getActiveLnd, nodesStats, nodeStats } from "@services/lnd/utils"
 import { User } from "@services/mongoose/schema"
 import { sendNotification } from "@services/notifications/notification"
-import { login, requestPhoneCode } from "@core/text"
 import { usernameExists } from "@core/user"
 import { startApolloServer, isAuthenticated } from "./graphql-server"
 import { ApolloError } from "apollo-server-errors"
@@ -34,6 +33,8 @@ import {
   ENDUSER_ALIAS,
 } from "@services/tracing"
 import { PriceInterval, PriceRange } from "@domain/price"
+import { login } from "@app/users/login"
+import { requestPhoneCode } from "@app/users/request-phone-code"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -252,15 +253,22 @@ const resolvers = {
       if (!phone) {
         throw new ApolloError("Missing phone value", "GRAPHQL_VALIDATION_FAILED")
       }
-      return {
-        success: await requestPhoneCode({ phone, logger, ip }),
-      }
+      let success = true
+      const result = await requestPhoneCode({ phone, logger, ip })
+      if (result instanceof Error) success = false
+      return { success }
     },
     login: async (_, { phone, code }, { logger, ip }) => {
       if (!phone || !code) {
         throw new ApolloError("Missing phone/code value", "GRAPHQL_VALIDATION_FAILED")
       }
-      return { token: await login({ phone, code, logger, ip }) }
+      const authToken = await login({ phone, code, logger, ip })
+
+      if (authToken instanceof Error) {
+        return { token: null }
+      }
+
+      return { token: authToken }
     },
     generate2fa: async (_, __, { wallet }) => wallet.generate2fa(),
     save2fa: async (_, { secret, token }, { wallet }) =>

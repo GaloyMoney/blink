@@ -1,13 +1,11 @@
 import { User } from "@services/mongoose/schema"
-import { getUserWallet } from "test/helpers"
-
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
+import { getAndCreateUserWallet } from "test/helpers"
 
 describe("schema", () => {
   describe("User", () => {
     describe("getActiveUsers", () => {
       it("returns active users according to volume", async () => {
-        await getUserWallet(8)
+        await getAndCreateUserWallet(8)
 
         let spy = jest
           .spyOn(User, "getVolume")
@@ -17,7 +15,7 @@ describe("schema", () => {
         spy.mockClear()
 
         const accountIds = activeUsers.map((user) => user._id)
-        const userWallet0AccountId = (await getUserWallet(0)).user._id
+        const userWallet0AccountId = (await getAndCreateUserWallet(0)).user._id
         const funderWalletAccountId = (await User.findOne({ role: "funder" }))._id
 
         // userWallets used in the tests

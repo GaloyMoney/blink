@@ -7,10 +7,12 @@ type LndParams = {
   port: string | number
   type: nodeType[]
   pubkey: string
+  priority: number
 }
 
 type LndParamsAuthed = LndParams & {
   lnd: AuthenticatedLnd
   socket: string
   active: boolean
+  priority: number
 }

@@ -3,7 +3,7 @@ import { checkedToUsername } from "@domain/users"
 import { WalletsRepository } from "@services/mongoose"
 
 export const usernameAvailable = async (
-  username: string,
+  username: Username,
 ): Promise<boolean | ApplicationError> => {
   const checkedUsername = checkedToUsername(username)
   if (checkedUsername instanceof Error) return checkedUsername

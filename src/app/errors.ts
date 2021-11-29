@@ -10,6 +10,7 @@ import * as IpFetcherErrors from "@domain/ipfetcher/errors"
 import * as AccountErrors from "@domain/accounts/errors"
 import * as NotificationsErrors from "@domain/notifications/errors"
 import * as CacheErrors from "@domain/cache/errors"
+import * as PhoneProviderServiceErrors from "@domain/phone-provider/errors"
 
 export const ApplicationErrors = {
   ...DomainErrors,
@@ -24,4 +25,5 @@ export const ApplicationErrors = {
   ...AccountErrors,
   ...NotificationsErrors,
   ...CacheErrors,
+  ...PhoneProviderServiceErrors,
 } as const

@@ -3,7 +3,7 @@ import { baseLogger } from "@services/logger"
 import { getHash } from "@core/utils"
 import {
   checkIsBalanced,
-  getUserWallet,
+  getAndCreateUserWallet,
   lndOutside1,
   pay,
   getBTCBalance,
@@ -15,13 +15,11 @@ import { addInvoice, addInvoiceNoAmount } from "@app/wallets/add-invoice-for-wal
 import { toSats } from "@domain/bitcoin"
 import { PaymentStatusChecker } from "@app/lightning"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
-
 let userWallet1
 let initBalance1
 
 beforeAll(async () => {
-  userWallet1 = await getUserWallet(1)
+  userWallet1 = await getAndCreateUserWallet(1)
 })
 
 beforeEach(async () => {

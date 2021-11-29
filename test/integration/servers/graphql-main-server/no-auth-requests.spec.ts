@@ -9,7 +9,7 @@ import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
 import { clearAccountLocks, clearLimiters } from "test/helpers"
 
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
+jest.mock("@services/twilio", () => require("test/mocks/twilio"))
 
 let apolloServer, httpServer, httpTerminator, mutate, correctCode
 const { phone, code } = yamlConfig.test_accounts[9]
@@ -81,7 +81,7 @@ describe("graphql", () => {
 
     it("returns error for invalid phone", async () => {
       let phone = "+19999999999"
-      let message = "Invalid request"
+      let message = "CouldNotFindPhoneCodeError"
       let input = { phone, code: correctCode }
       let result = await mutate(mutation, { variables: { input } })
       expect(result.data.userLogin.errors).toEqual(
@@ -112,7 +112,7 @@ describe("graphql", () => {
     })
 
     it("returns error for invalid code", async () => {
-      let message = "Invalid request"
+      let message = "CouldNotFindPhoneCodeError"
       let input = { phone, code: "113566" }
       let result = await mutate(mutation, { variables: { input } })
       expect(result.data.userLogin.errors).toEqual(

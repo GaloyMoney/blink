@@ -1,13 +1,14 @@
+import { onboardingEarn } from "@config/app"
 import { toSats } from "@domain/bitcoin"
 import {
-  UnknownRepositoryError,
-  RepositoryError,
   CouldNotFindUserFromIdError,
+  CouldNotFindUserFromPhoneError,
   CouldNotFindUserFromUsernameError,
   CouldNotFindUserFromWalletIdError,
+  RepositoryError,
+  UnknownRepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
-import { onboardingEarn } from "@config/app"
 
 export const caseInsensitiveRegex = (input: string) => {
   return new RegExp(`^${input}$`, "i")
@@ -41,6 +42,34 @@ export const UsersRepository = (): IUsersRepository => {
       }
 
       return userFromRaw(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
+  const findByPhone = async (phone: PhoneNumber): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOne({ phone })
+      if (!result) {
+        return new CouldNotFindUserFromPhoneError(phone)
+      }
+
+      return userFromRaw(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
+  const persistNew = async ({
+    phone,
+    phoneMetadata,
+  }: NewUserInfo): Promise<User | RepositoryError> => {
+    try {
+      const user = new User()
+      user.phone = phone
+      user.twilio = phoneMetadata
+      await user.save()
+      return userFromRaw(user)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -97,6 +126,8 @@ export const UsersRepository = (): IUsersRepository => {
   return {
     findById,
     findByUsername,
+    findByPhone,
+    persistNew,
     findByWalletPublicId,
     update,
   }
@@ -136,4 +167,5 @@ const userFromRaw = (result: UserType): User => ({
   defaultAccountId: result.id as AccountId,
   deviceTokens: (result.deviceToken || []) as DeviceToken[],
   createdAt: new Date(result.created_at),
+  phoneMetadata: result.twilio as PhoneMetadata,
 })

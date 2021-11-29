@@ -1,10 +1,8 @@
 import { find, difference } from "lodash"
 import { MS_PER_DAY, onboardingEarn } from "@config/app"
-import { checkIsBalanced, getUserWallet } from "test/helpers"
+import { checkIsBalanced, getAndCreateUserWallet } from "test/helpers"
 import { getBTCBalance } from "test/helpers/wallet"
 import { resetSelfWalletIdLimits } from "test/helpers/rate-limit"
-
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet1
 
@@ -19,9 +17,9 @@ const date = Date.now() + 2 * MS_PER_DAY
 jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
 
 beforeAll(async () => {
-  userWallet1 = await getUserWallet(1)
+  userWallet1 = await getAndCreateUserWallet(1)
   // load funder wallet before use it
-  await getUserWallet(4)
+  await getAndCreateUserWallet(4)
 })
 
 afterAll(() => {

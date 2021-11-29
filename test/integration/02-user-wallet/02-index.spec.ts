@@ -1,28 +1,26 @@
 import { getGenericLimits, MS_PER_HOUR } from "@config/app"
-import { generateTokenHelper, getUserWallet } from "test/helpers"
+import { generateTokenHelper, getAndCreateUserWallet } from "test/helpers"
 import { updateUserAccountStatus, usernameExists } from "@core/user"
-
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet0, userWallet1, userWallet2
 const username = "user0"
 
 describe("UserWallet", () => {
   beforeAll(async () => {
-    userWallet0 = await getUserWallet(0)
-    userWallet1 = await getUserWallet(1)
-    userWallet2 = await getUserWallet(2)
+    userWallet0 = await getAndCreateUserWallet(0)
+    userWallet1 = await getAndCreateUserWallet(1)
+    userWallet2 = await getAndCreateUserWallet(2)
     // load funder wallet before use it
-    await getUserWallet(4)
+    await getAndCreateUserWallet(4)
   })
 
   it("has a role if it was configured", async () => {
-    const dealer = await getUserWallet(6)
+    const dealer = await getAndCreateUserWallet(6)
     expect(dealer.user.role).toBe("dealer")
   })
 
   it("has currencies if they were configured", async () => {
-    const user5 = await getUserWallet(5)
+    const user5 = await getAndCreateUserWallet(5)
     expect(user5.user.currencies[0]).toMatchObject({ id: "USD", ratio: 1 })
   })
 
@@ -87,7 +85,7 @@ describe("UserWallet", () => {
     })
 
     it("does not allow set username if already taken", async () => {
-      await getUserWallet(2)
+      await getAndCreateUserWallet(2)
       await expect(userWallet2.setUsername({ username })).rejects.toThrow()
     })
 
@@ -151,7 +149,7 @@ describe("UserWallet", () => {
       const { secret } = userWallet0.generate2fa()
       const token = generateTokenHelper({ secret })
       await userWallet0.save2fa({ secret, token })
-      userWallet0 = await getUserWallet(0)
+      userWallet0 = await getAndCreateUserWallet(0)
       expect(userWallet0.user.twoFAEnabled).toBe(true)
       expect(userWallet0.user.twoFA.secret).toBe(secret)
     })
@@ -162,7 +160,7 @@ describe("UserWallet", () => {
       const token = generateTokenHelper({ secret: userWallet0.user.twoFA.secret })
       const result = await userWallet0.delete2fa({ token })
       expect(result).toBeTruthy()
-      userWallet0 = await getUserWallet(0)
+      userWallet0 = await getAndCreateUserWallet(0)
       expect(userWallet0.user.twoFAEnabled).toBeFalsy()
     })
   })

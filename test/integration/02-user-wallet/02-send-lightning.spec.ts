@@ -13,7 +13,7 @@ import {
   enable2FA,
   generateTokenHelper,
   getInvoice,
-  getUserWallet,
+  getAndCreateUserWallet,
   lndOutside1,
   lndOutside2,
   settleHodlInvoice,
@@ -45,7 +45,6 @@ import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightn
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
 jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
-jest.mock("@services/phone-provider", () => require("test/mocks/phone-provider"))
 
 let userWallet0, userWallet1, userWallet2
 let initBalance0, initBalance1
@@ -55,9 +54,9 @@ const userLimits = getUserLimits({ level: 1 })
 const invoicesRepo = WalletInvoicesRepository()
 
 beforeAll(async () => {
-  userWallet0 = await getUserWallet(0)
-  userWallet1 = await getUserWallet(1)
-  userWallet2 = await getUserWallet(2)
+  userWallet0 = await getAndCreateUserWallet(0)
+  userWallet1 = await getAndCreateUserWallet(1)
+  userWallet2 = await getAndCreateUserWallet(2)
 })
 
 beforeEach(async () => {
@@ -219,8 +218,8 @@ describe("UserWallet - Lightning Pay", () => {
     const oldFields1 = userTransaction1[0].deprecated
     expect(oldFields1).toHaveProperty("description", `to ${userWallet0.user.username}`)
 
-    userWallet0 = await getUserWallet(0)
-    userWallet1 = await getUserWallet(1)
+    userWallet0 = await getAndCreateUserWallet(0)
+    userWallet1 = await getAndCreateUserWallet(1)
 
     expect(userWallet0.user.contacts).toEqual(
       expect.arrayContaining([
@@ -254,7 +253,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (res2 instanceof Error) throw res2
     expect(res2).toBe(PaymentSendStatus.Success)
 
-    userWallet0 = await getUserWallet(0)
+    userWallet0 = await getAndCreateUserWallet(0)
     expect(userWallet0.user.contacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -263,7 +262,7 @@ describe("UserWallet - Lightning Pay", () => {
         }),
       ]),
     )
-    userWallet1 = await getUserWallet(1)
+    userWallet1 = await getAndCreateUserWallet(1)
     expect(userWallet1.user.contacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -379,8 +378,8 @@ describe("UserWallet - Lightning Pay", () => {
     )
 
     // check contacts being added
-    userWallet0 = await getUserWallet(0)
-    userWallet1 = await getUserWallet(1)
+    userWallet0 = await getAndCreateUserWallet(0)
+    userWallet1 = await getAndCreateUserWallet(1)
 
     expect(userWallet0.user.contacts).toEqual(
       expect.arrayContaining([
@@ -676,7 +675,7 @@ describe("UserWallet - Lightning Pay", () => {
         //     .mockReturnValueOnce(addProps(inputs.shift()))
         // }))
         // await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
-        userWallet0 = await getUserWallet(0)
+        userWallet0 = await getAndCreateUserWallet(0)
         expect(userWallet0.user.contacts).toEqual(
           expect.not.arrayContaining([
             expect.objectContaining({ id: userWallet2.user.username }),

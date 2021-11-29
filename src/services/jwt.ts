@@ -4,11 +4,13 @@ import * as jwt from "jsonwebtoken"
 // TODO: replace network by uri of the server
 // the uri will embed the network, ie: graphql.mainnet.server.io
 // and provide more information than just the network
-export const createToken = ({ uid, network }) => {
-  if (!JWT_SECRET) {
-    throw new Error("JWT_SECRET env variable is missing")
-  }
-
+export const createToken = ({
+  uid,
+  network,
+}: {
+  uid: UserId
+  network: BtcNetwork
+}): JwtToken => {
   return jwt.sign({ uid, network }, JWT_SECRET, {
     // TODO use asymetric signature
     // and verify the signature from the client
@@ -21,5 +23,5 @@ export const createToken = ({ uid, network }) => {
     //
     // see: https://www.theregister.com/2018/04/24/myetherwallet_dns_hijack/
     algorithm: "HS256",
-  })
+  }) as JwtToken
 }
