@@ -12,7 +12,7 @@ const SettlementViaIntraLedger = new GT.Object({
   name: "SettlementViaIntraLedger",
   isTypeOf: (source) => source.type === SettlementMethod.IntraLedger,
   fields: () => ({
-    walletId: {
+    counterPartyWalletId: {
       type: GT.NonNull(WalletId),
     },
     counterPartyUsername: {
