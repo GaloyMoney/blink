@@ -12,7 +12,7 @@ type Deprecated = {
 
 type InitiationViaIntraledger = {
   readonly type: PaymentInitiationMethod["IntraLedger"]
-  readonly walletId: WalletId
+  readonly counterPartyWalletPublicId: WalletPublicId
   readonly counterPartyUsername: Username
 }
 
@@ -35,7 +35,7 @@ type InitiationViaOnChainLegacy = {
 
 type SettlementViaIntraledger = {
   readonly type: SettlementMethod["IntraLedger"]
-  readonly walletId: WalletId
+  readonly counterPartyWalletPublicId: WalletPublicId
   readonly counterPartyUsername: Username | null
 }
 

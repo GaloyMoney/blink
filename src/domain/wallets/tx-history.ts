@@ -62,6 +62,7 @@ export const fromLedger = (
       paymentHash,
       txHash,
       pubkey,
+      walletPublicId,
       username,
       address,
       pendingConfirmation,
@@ -114,12 +115,12 @@ export const fromLedger = (
             ...baseTransaction,
             initiationVia: {
               type: PaymentInitiationMethod.IntraLedger,
-              walletId: walletId as WalletId,
+              counterPartyWalletPublicId: walletPublicId as WalletPublicId,
               counterPartyUsername: username as Username,
             },
             settlementVia: {
               type: SettlementMethod.IntraLedger,
-              walletId: walletId as WalletId,
+              counterPartyWalletPublicId: walletPublicId as WalletPublicId,
               counterPartyUsername: username as Username,
             },
           }
@@ -134,7 +135,7 @@ export const fromLedger = (
             },
             settlementVia: {
               type: SettlementMethod.IntraLedger,
-              walletId: walletId as WalletId,
+              counterPartyWalletPublicId: walletPublicId as WalletPublicId,
               counterPartyUsername: username || null,
             },
           }
@@ -165,7 +166,7 @@ export const fromLedger = (
             },
             settlementVia: {
               type: SettlementMethod.IntraLedger,
-              walletId: walletId as WalletId,
+              counterPartyWalletPublicId: walletPublicId as WalletPublicId,
               counterPartyUsername: username || null,
             },
           }
@@ -192,12 +193,12 @@ export const fromLedger = (
         ...baseTransaction,
         initiationVia: {
           type: PaymentInitiationMethod.IntraLedger,
-          walletId: walletId as WalletId,
+          counterPartyWalletPublicId: walletPublicId as WalletPublicId,
           counterPartyUsername: username as Username,
         },
         settlementVia: {
           type: SettlementMethod.IntraLedger,
-          walletId: walletId as WalletId,
+          counterPartyWalletPublicId: walletPublicId as WalletPublicId,
           counterPartyUsername: username || null,
         },
       }
