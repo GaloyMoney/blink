@@ -70,7 +70,10 @@ const updatePendingPayment = async ({
     lightningLogger.error({ err: lnPaymentLookup }, "issue fetching payment")
     return lnPaymentLookup
   }
-  const { status, roundedUpFee } = lnPaymentLookup
+  const {
+    status,
+    paymentDetails: { roundedUpFee },
+  } = lnPaymentLookup
 
   if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {
     const ledgerService = LedgerService()
