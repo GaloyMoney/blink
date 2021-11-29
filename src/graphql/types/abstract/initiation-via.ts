@@ -11,7 +11,8 @@ const InitiationViaIntraLedger = new GT.Object({
   isTypeOf: (source) => source.type === PaymentInitiationMethod.IntraLedger,
   fields: () => ({
     counterPartyWalletId: {
-      type: GT.NonNull(WalletId),
+      // type: GT.NonNull(WalletId),
+      type: WalletId,
     },
     counterPartyUsername: {
       type: Username,
