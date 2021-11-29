@@ -1,7 +1,6 @@
 import { User } from "@services/mongoose/schema"
 
 import { CustomError } from "../error"
-import { LightningMixin } from "."
 import { redlock } from "../lock"
 import { OnChainMixin } from "../on-chain"
 import { onboardingEarn } from "@config/app"
@@ -12,7 +11,7 @@ import { addInvoice, lnInvoicePaymentSend } from "@app/wallets"
 /**
  * this represents a user wallet
  */
-export class LightningUserWallet extends OnChainMixin(LightningMixin(UserWallet)) {
+export class LightningUserWallet extends OnChainMixin(UserWallet) {
   constructor(args: UserWalletConstructorArgs) {
     super(args)
   }
