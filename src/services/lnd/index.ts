@@ -428,45 +428,51 @@ const lookupPaymentByPubkeyAndHash = async ({
 
     let paymentLookup: LnPaymentLookup = {
       status,
-      confirmedAt: undefined,
-      createdAt: undefined,
-      destination: "" as Pubkey,
-      milliSatsFee: toMilliSatsFromNumber(0),
-      paymentHash: "" as PaymentHash,
-      milliSatsAmount: toMilliSatsFromNumber(0),
-      paths: [],
       paymentRequest: undefined,
-      roundedUpFee: toSats(0),
-      secret: "" as PaymentSecret,
-      amount: toSats(0),
+      paymentHash: "" as PaymentHash,
+      paymentDetails: {
+        confirmedAt: undefined,
+        createdAt: undefined,
+        destination: "" as Pubkey,
+        milliSatsFee: toMilliSatsFromNumber(0),
+        milliSatsAmount: toMilliSatsFromNumber(0),
+        paths: [],
+        roundedUpFee: toSats(0),
+        secret: "" as PaymentSecret,
+        amount: toSats(0),
+      },
     }
 
     if (payment) {
       paymentLookup = Object.assign(paymentLookup, {
         status,
-        confirmedAt: payment.confirmed_at ? new Date(payment.confirmed_at) : undefined,
-        createdAt: new Date(payment.created_at),
-        destination: payment.destination,
-        milliSatsFee: toMilliSatsFromString(payment.fee_mtokens),
         paymentHash: payment.id,
-        milliSatsAmount: toMilliSatsFromString(payment.mtokens),
-        paths: payment.paths || [],
         paymentRequest: payment.request,
-        roundedUpFee: toSats(payment.safe_fee),
-        secret: payment.secret,
-        amount: toSats(payment.tokens),
+        paymentDetails: {
+          confirmedAt: payment.confirmed_at ? new Date(payment.confirmed_at) : undefined,
+          createdAt: new Date(payment.created_at),
+          destination: payment.destination,
+          milliSatsFee: toMilliSatsFromString(payment.fee_mtokens),
+          milliSatsAmount: toMilliSatsFromString(payment.mtokens),
+          paths: payment.paths || [],
+          roundedUpFee: toSats(payment.safe_fee),
+          secret: payment.secret,
+          amount: toSats(payment.tokens),
+        },
       })
     } else if (pending) {
       paymentLookup = Object.assign(paymentLookup, {
         status,
-        createdAt: new Date(pending.created_at),
-        destination: pending.destination,
-        paymentHash: pending.id,
-        milliSatsAmount: toMilliSatsFromString(pending.mtokens),
-        paths: pending.paths || [],
         paymentRequest: pending.request,
-        secret: pending.secret,
-        amount: toSats(pending.tokens),
+        paymentHash: pending.id,
+        paymentDetails: {
+          createdAt: new Date(pending.created_at),
+          destination: pending.destination,
+          milliSatsAmount: toMilliSatsFromString(pending.mtokens),
+          paths: pending.paths || [],
+          secret: pending.secret,
+          amount: toSats(pending.tokens),
+        },
       })
     }
 

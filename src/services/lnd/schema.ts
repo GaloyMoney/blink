@@ -45,12 +45,7 @@ const pathSchema = new Schema({
   total_mtokens: String,
 })
 
-const paymentSchema = new Schema<LnPaymentType>({
-  status: {
-    type: String,
-    enum: ["settled", "failed", "pending"],
-    required: true,
-  },
+const paymentDetailsSchema = new Schema<LnPaymentDetails>({
   confirmedAt: Date,
   createdAt: Date,
   destination: String,
@@ -58,18 +53,11 @@ const paymentSchema = new Schema<LnPaymentType>({
     type: Number,
     default: 0,
   },
-  paymentHash: {
-    type: String,
-    index: true,
-    unique: true,
-    required: true,
-  },
   milliSatsAmount: {
     type: Number,
     min: 0,
   },
   paths: [pathSchema],
-  paymentRequest: String,
   roundedUpFee: {
     type: Number,
     default: 0,
@@ -79,6 +67,22 @@ const paymentSchema = new Schema<LnPaymentType>({
     type: Number,
     min: 0,
   },
+})
+
+const paymentSchema = new Schema<LnPaymentType>({
+  status: {
+    type: String,
+    enum: ["settled", "failed", "pending"],
+    required: true,
+  },
+  paymentHash: {
+    type: String,
+    index: true,
+    unique: true,
+    required: true,
+  },
+  paymentRequest: String,
+  paymentDetails: paymentDetailsSchema,
 })
 
 export const LnPayment = mongoose.model("LnPayment", paymentSchema)

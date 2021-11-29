@@ -1,16 +1,19 @@
-interface LnPaymentType {
-  id: string
-  _id: string
-  status: string
+interface LnPaymentDetails {
   confirmedAt: Date
   createdAt: Date
   destination: string
   milliSatsFee: number
-  paymentHash: string
   milliSatsAmount: number
   paths: RawPaths
-  paymentRequest: string
   roundedUpFee: number
   secret: string
   amount: number
+}
+interface LnPaymentType {
+  id: string
+  _id: string
+  status: string
+  paymentHash: string
+  paymentRequest: string
+  paymentDetails: LnPaymentDetails
 }

@@ -63,17 +63,19 @@ type RawPaths = NonNullable<GetPaymentResult["payment"]>["paths"]
 
 type LnPaymentLookup = {
   readonly status: PaymentStatus
-  readonly confirmedAt: Date | undefined
-  readonly createdAt: Date | undefined
-  readonly destination: Pubkey
-  readonly milliSatsFee: MilliSatoshis
-  paymentHash: PaymentHash
-  readonly milliSatsAmount: MilliSatoshis
-  readonly paths: RawPaths
   paymentRequest: EncodedPaymentRequest | undefined
-  readonly roundedUpFee: Satoshis
-  readonly secret: PaymentSecret | undefined
-  readonly amount: Satoshis
+  paymentHash: PaymentHash
+  paymentDetails: {
+    readonly confirmedAt: Date | undefined
+    readonly createdAt: Date | undefined
+    readonly destination: Pubkey
+    readonly milliSatsFee: MilliSatoshis
+    readonly milliSatsAmount: MilliSatoshis
+    readonly paths: RawPaths
+    readonly roundedUpFee: Satoshis
+    readonly secret: PaymentSecret | undefined
+    readonly amount: Satoshis
+  }
 }
 
 type LnPayment = LnPaymentLookup & { id: PaymentLedgerId }
