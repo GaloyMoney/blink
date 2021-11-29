@@ -143,21 +143,18 @@ const getRateLimits = (config): RateLimitOptions => {
    * Returns a subset of the required parameters for the
    * 'rate-limiter-flexible.RateLimiterRedis' object.
    */
-  const rateLimitOptions: RateLimitOptions = {
+  return {
     points: config.points,
     duration: config.duration,
     blockDuration: config.blockDuration,
   }
-
-  if (config.msBeforeNext) {
-    rateLimitOptions.msBeforeNext = config.msBeforeNext
-  }
-
-  return rateLimitOptions
 }
 
 export const getRequestPhoneCodePerPhoneLimits = () =>
   getRateLimits(yamlConfig.limits.requestPhoneCodePerPhone)
+
+export const getRequestPhoneCodePerPhoneMinIntervalLimits = () =>
+  getRateLimits(yamlConfig.limits.requestPhoneCodePerPhoneMinInterval)
 
 export const getRequestPhoneCodePerIpLimits = () =>
   getRateLimits(yamlConfig.limits.requestPhoneCodePerIp)

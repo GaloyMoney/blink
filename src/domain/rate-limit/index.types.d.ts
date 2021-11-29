@@ -7,7 +7,6 @@ type RateLimitOptions = {
   points: number
   duration: Seconds
   blockDuration: Seconds
-  msBeforeNext?: MilliSeconds
 }
 
 interface IRateLimitService {
