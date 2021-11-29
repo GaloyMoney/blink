@@ -41,6 +41,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         type: LedgerTransactionType.IntraLedger,
         paymentHash: "paymentHash" as PaymentHash,
         pubkey: "pubkey" as Pubkey,
+        walletPublicId: "walletPublicId" as WalletPublicId,
         username: "username" as Username,
         debit: toSats(0),
         fee: toSats(0),
@@ -59,6 +60,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         type: LedgerTransactionType.OnchainIntraLedger,
         address: "address" as OnChainAddress,
         paymentHash: "paymentHash" as PaymentHash,
+        walletPublicId: "walletPublicId" as WalletPublicId,
         txHash: "txHash" as OnChainTxHash,
         debit: toSats(0),
         fee: toSats(0),
@@ -126,7 +128,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         },
         settlementVia: {
           type: SettlementMethod.IntraLedger,
-          walletId: "walletId" as WalletId,
+          counterPartyWalletPublicId: "walletPublicId" as WalletPublicId,
           counterPartyUsername: "username",
         },
         memo: null,
@@ -152,7 +154,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         },
         settlementVia: {
           type: SettlementMethod.IntraLedger,
-          walletId: "walletId" as WalletId,
+          counterPartyWalletPublicId: "walletPublicId" as WalletPublicId,
           counterPartyUsername: null,
         },
         memo: null,
