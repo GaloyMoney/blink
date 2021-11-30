@@ -1,6 +1,9 @@
 #!/usr/bin/env sh
 
-yarn tsc:check
-yarn eslint:check
-yarn prettier:check
-yarn build
+./scripts/tsc-check
+
+./scripts/eslint-check
+
+./scripts/prettier-check
+
+./scripts/build-tsc
