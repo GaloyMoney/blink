@@ -32,7 +32,7 @@ const LnNoAmountInvoiceFeeProbeMutation = GT.Field({
     const feeSatAmount = await lnNoAmountInvoiceProbeForFee({ amount, paymentRequest })
     if (feeSatAmount instanceof Error) {
       const appErr = mapError(feeSatAmount)
-      return { errors: [{ message: appErr.message || appErr.name }] } // TODO: refine error
+      return { errors: [{ message: appErr.message }] }
     }
 
     // TODO: validate feeSatAmount
