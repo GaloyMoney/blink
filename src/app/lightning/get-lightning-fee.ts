@@ -69,7 +69,6 @@ const feeProbe = async ({
   const maxFee = LnFeeCalculator().max(paymentAmount)
 
   const rawRoute = await lndService.invoiceProbeForRoute({ decodedInvoice, maxFee })
-  if (rawRoute instanceof RouteNotFoundError) return rawRoute
   if (rawRoute instanceof Error) return rawRoute
 
   const routeToCache = { pubkey: lndService.defaultPubkey(), route: rawRoute }
