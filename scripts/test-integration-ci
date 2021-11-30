@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+./scripts/deps-start
+
+. ./.envrc && \
+LOGLEVEL=error jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit

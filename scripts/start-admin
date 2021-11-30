@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+. ./.envrc && \
+yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts src/servers/graphql-admin-server.ts \
+| yarn pino-pretty -c -l

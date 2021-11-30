@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+nodemon -V -e ts,graphql -w ./src -x yarn trigger:start

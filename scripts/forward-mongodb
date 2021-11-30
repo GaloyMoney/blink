@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+kubectl port-forward $(kubectl get pods -l app.kubernetes.io/name=mongodb | awk '/mongo/ {print $1}') 27017

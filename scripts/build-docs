@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+spectaql spectaql-config.yml -1

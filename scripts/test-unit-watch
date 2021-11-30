@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+jest --clearCache
+
+NODE_ENV=test LOGLEVEL=warn jest --watch --config ./test/jest-unit.config.js

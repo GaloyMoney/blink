@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+
+./scripts/start-deps
+
+./scripts/start-old & \
+./scripts/start-new & \
+./scripts/start-admin & \
+./scripts/start-trigger & \
+./scripts/start-exporter

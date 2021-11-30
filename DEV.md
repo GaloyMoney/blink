@@ -35,23 +35,23 @@ $ yarn install
 ### Runtime dependencies
 
 ```bash
-$ make start-deps
-
+$ yarn deps:start
 # or
-$ make reset-deps
+$ yarn deps:reset
 ```
-Everytime the dependencies are re-started the environment must be reloaded via `direnv reload`. When using the [make command](../Makefile) this will happen automatically.
+
+Everytime the dependencies are re-started the environment must be reloaded via `direnv reload`.
 
 ## Development
 
 To start the GraphQL server and its dependencies:
 ```
-$ make start
+$ yarn start
 ```
 
-Alernatively, to start the GraphQL server in watch mode (with automatic restart on changes):
+Alernatively, to can start the GraphQL server in watch mode (with automatic restart on changes):
 ```
-$ make watch
+$ yarn start:watch
 ```
 
 ### Using GraphiQL
@@ -68,7 +68,7 @@ You can load GraphiQL, a web GUI for GraphQL. Start the server and open the foll
 To run the test suite you can run:
 
 ```bash
-$ make test
+$ yarn test
 ```
 To execute the test suite [runtime dependencies](#runtime-dependencies) must be running.
 
@@ -76,8 +76,6 @@ To execute the test suite [runtime dependencies](#runtime-dependencies) must be 
 
 ```bash
 $ yarn test:unit
-# or
-$ make unit
 ```
 
 Runtime dependencies are not required
@@ -88,13 +86,11 @@ To execute the integration tests [runtime dependencies](#runtime-dependencies) m
 
 ```bash
 $ yarn test:integration
-# or
-$ make integration
 ```
 
-The  integration tests are *not* fully idempotent (yet) so currently to re-run the tests, run:
+The integration tests are *not* fully idempotent (yet) so currently to re-run the tests, run:
 ```
-$ make reset-integration
+$ yarn test:integration:reset
 ```
 
 ### Run specific test file
@@ -107,8 +103,6 @@ Example to run `test/unit/config.spec.ts`
 
 ```bash
 $ TEST=utils yarn test:unit
-# or
-$ TEST=utils make unit
 ```
 where `utils` is the name of the file `utils.spec.ts`
 
@@ -118,16 +112,12 @@ Example to run `test/integration/01-setup/01-connection.spec.ts`
 
 ```bash
 $ TEST=01-connection yarn test:integration
-# or
-$ TEST=01-connection make integration
 ```
 
 if within a specific test suite you want to run/debug only a describe or it(test) block please use:
 * [describe.only](https://jestjs.io/docs/api#describeonlyname-fn): just for debug purposes
 * [it.only](https://jestjs.io/docs/api#testonlyname-fn-timeout): just for debug purposes
 * [it.skip](https://jestjs.io/docs/api#testskipname-fn): use it when a test is temporarily broken. Please don't commit commented test cases
-
-
 
 ### Known issues
 
@@ -160,7 +150,7 @@ $ echo $?
 If you need to run Prettier through the command line, you can use:
 
 ```
-$ yarn prettier -w .
+$ yarn prettier:fix
 ```
 
 ## Contributing

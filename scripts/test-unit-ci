@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+. ./.envrc && \
+LOGLEVEL=warn jest --config ./test/jest-unit.config.js --ci --bail

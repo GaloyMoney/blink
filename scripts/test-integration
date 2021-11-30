@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+. ./.envrc && \
+LOGLEVEL=warn jest --config ./test/jest-integration.config.js --bail --runInBand --verbose $TEST \
+| yarn pino-pretty -c -l

@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+yarn nodemon -V -e ts,graphql -w ./src -x yarn start

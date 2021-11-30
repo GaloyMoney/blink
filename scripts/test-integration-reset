@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+./scripts/deps-reset
+
+yarn test:integration
