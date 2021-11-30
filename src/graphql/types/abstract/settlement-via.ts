@@ -18,7 +18,7 @@ const SettlementViaIntraLedger = new GT.Object({
     },
     counterPartyUsername: {
       type: Username,
-      description: dedent`Settlement destination: Could be null the payee does not have a username`,
+      description: dedent`Settlement destination: Could be null if the payee does not have a username`,
     },
   }),
 })
