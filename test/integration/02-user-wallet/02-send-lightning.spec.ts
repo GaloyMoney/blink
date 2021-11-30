@@ -45,6 +45,7 @@ import {
   decodeInvoice,
   LightningServiceError,
   PaymentSendStatus,
+  PaymentStatus,
 } from "@domain/bitcoin/lightning"
 import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 import { LndService } from "@services/lnd"
@@ -825,6 +826,24 @@ describe("UserWallet - Lightning Pay", () => {
 
         const invoice = await getInvoiceAttempt({ lnd: lndOutside1, id })
         expect(invoice).toBeNull()
+
+        const persistedPayment = await LnPaymentsRepository().findByPaymentHash(
+          id as PaymentHash,
+        )
+        expect(persistedPayment).not.toBeInstanceOf(Error)
+        if (persistedPayment instanceof Error) throw persistedPayment
+
+        const { status, paymentDetails } = persistedPayment
+        expect(status).toBe(PaymentStatus.Failed)
+        expect(paymentDetails).toBeTruthy()
+        if (!paymentDetails) throw new Error()
+
+        const { createdAt, confirmedAt, destination, amount, secret } = paymentDetails
+        expect(confirmedAt).toBeFalsy()
+        expect(createdAt).toBeTruthy()
+        expect(destination).toBeTruthy()
+        expect(amount).toBeGreaterThan(0)
+        expect(secret).toBeFalsy()
 
         // wait for balance updates because invoice event
         // arrives before wallet balances updates in lnd
