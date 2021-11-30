@@ -169,11 +169,14 @@
           <a href="#definition-Globals"> Globals </a>
           <a href="#definition-Hex32Bytes"> Hex32Bytes </a>
           <a href="#definition-ID"> ID </a>
+          <a href="#definition-InitiationVia"> InitiationVia </a>
+          <a href="#definition-InitiationViaIntraLedger"> InitiationViaIntraLedger </a>
+          <a href="#definition-InitiationViaLn"> InitiationViaLn </a>
+          <a href="#definition-InitiationViaOnChain"> InitiationViaOnChain </a>
           <a href="#definition-InputError"> InputError </a>
           <a href="#definition-InputErrorCode"> InputErrorCode </a>
           <a href="#definition-Int"> Int </a>
           <a href="#definition-IntraLedgerPaymentSendInput"> IntraLedgerPaymentSendInput </a>
-          <a href="#definition-IntraLedgerTransaction"> IntraLedgerTransaction </a>
           <a href="#definition-IntraLedgerUpdate"> IntraLedgerUpdate </a>
           <a href="#definition-InvoicePaymentStatus"> InvoicePaymentStatus </a>
           <a href="#definition-Language"> Language </a>
@@ -193,7 +196,6 @@
           <a href="#definition-LnNoAmountInvoicePaymentInput"> LnNoAmountInvoicePaymentInput </a>
           <a href="#definition-LnPaymentRequest"> LnPaymentRequest </a>
           <a href="#definition-LnPaymentSecret"> LnPaymentSecret </a>
-          <a href="#definition-LnTransaction"> LnTransaction </a>
           <a href="#definition-LnUpdate"> LnUpdate </a>
           <a href="#definition-MapInfo"> MapInfo </a>
           <a href="#definition-MapMarker"> MapMarker </a>
@@ -206,7 +208,6 @@
           <a href="#definition-OnChainAddressPayload"> OnChainAddressPayload </a>
           <a href="#definition-OnChainPaymentSendAllInput"> OnChainPaymentSendAllInput </a>
           <a href="#definition-OnChainPaymentSendInput"> OnChainPaymentSendInput </a>
-          <a href="#definition-OnChainTransaction"> OnChainTransaction </a>
           <a href="#definition-OnChainTxFee"> OnChainTxFee </a>
           <a href="#definition-OnChainTxHash"> OnChainTxHash </a>
           <a href="#definition-OnChainUpdate"> OnChainUpdate </a>
@@ -215,7 +216,6 @@
           <a href="#definition-PaymentError"> PaymentError </a>
           <a href="#definition-PaymentErrorCode"> PaymentErrorCode </a>
           <a href="#definition-PaymentHash"> PaymentHash </a>
-          <a href="#definition-PaymentInitiationMethod"> PaymentInitiationMethod </a>
           <a href="#definition-PaymentSendPayload"> PaymentSendPayload </a>
           <a href="#definition-PaymentSendResult"> PaymentSendResult </a>
           <a href="#definition-Phone"> Phone </a>
@@ -228,7 +228,10 @@
           <a href="#definition-SafeInt"> SafeInt </a>
           <a href="#definition-SatAmount"> SatAmount </a>
           <a href="#definition-SatAmountPayload"> SatAmountPayload </a>
-          <a href="#definition-SettlementMethod"> SettlementMethod </a>
+          <a href="#definition-SettlementVia"> SettlementVia </a>
+          <a href="#definition-SettlementViaIntraLedger"> SettlementViaIntraLedger </a>
+          <a href="#definition-SettlementViaLn"> SettlementViaLn </a>
+          <a href="#definition-SettlementViaOnChain"> SettlementViaOnChain </a>
           <a href="#definition-SignedAmount"> SignedAmount </a>
           <a href="#definition-String"> String </a>
           <a href="#definition-Subscription"> Subscription </a>
@@ -693,7 +696,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
       <span class="hljs-attr">"quizQuestions"</span>: [<span class="hljs-string">UserQuizQuestion</span>],
       <span class="hljs-attr">"contacts"</span>: [<span class="hljs-string">UserContact</span>],
       <span class="hljs-attr">"contactByUsername"</span>: <span class="hljs-string">UserContact</span>,
-      <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">false</span>,
+      <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">true</span>,
       <span class="hljs-attr">"createdAt"</span>: <span class="hljs-string">Timestamp</span>,
       <span class="hljs-attr">"defaultAccount"</span>: <span class="hljs-string">Account</span>
     }
@@ -750,7 +753,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"mobileVersions"</span>: [
-      {<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>}
+      {<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">987</span>}
     ]
   }
 }
@@ -1041,7 +1044,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Response </h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"data"</span>: {<span class="hljs-attr">"usernameAvailable"</span>: <span class="hljs-literal">true</span>}}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"data"</span>: {<span class="hljs-attr">"usernameAvailable"</span>: <span class="hljs-literal">false</span>}}
 </code></pre> </body>
                   </html>
                 </section>
@@ -3745,9 +3748,9 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"abc123"</span>,
-  <span class="hljs-attr">"newCaptcha"</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"newCaptcha"</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">"failbackMode"</span>: <span class="hljs-literal">true</span>
 }
 </code></pre> </body>
@@ -3806,7 +3809,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"phone"</span>: <span class="hljs-string">Phone</span>,
-  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"validationCode"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"secCode"</span>: <span class="hljs-string">"abc123"</span>
 }
@@ -3987,7 +3990,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"deviceToken"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"deviceToken"</span>: <span class="hljs-string">"abc123"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -4189,6 +4192,167 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
               </div>
             </div>
           </div>
+          <div id="definition-InitiationVia" class="definition panel" data-traverse-target="definition-InitiationVia">
+            <div class="definition-tags">
+              <a class="label" href="#tag-types">Types</a>
+            </div>
+            <h2 class="panel-title">
+              <a name="/definitions/InitiationVia"></a>
+              <p><code>InitiationVia</code></p>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-properties-blank">
+                  <table>
+                    <tr>
+                      <th>Union Types</th>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>
+                          <a href="#definition-InitiationViaIntraLedger"><code>InitiationViaIntraLedger</code></a>
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>
+                          <a href="#definition-InitiationViaLn"><code>InitiationViaLn</code></a>
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>
+                          <a href="#definition-InitiationViaOnChain"><code>InitiationViaOnChain</code></a>
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-InitiationViaIntraLedger" class="definition panel" data-traverse-target="definition-InitiationViaIntraLedger">
+            <div class="definition-tags">
+              <a class="label" href="#tag-types">Types</a>
+            </div>
+            <h2 class="panel-title">
+              <a name="/definitions/InitiationViaIntraLedger"></a>
+              <p><code>InitiationViaIntraLedger</code></p>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-properties-blank">
+                  <table>
+                    <tr>
+                      <th>Field Name</th>
+                      <th>Description</th>
+                    </tr>
+                    <tr>
+                      <td data-property-name="counterPartyWalletId"> <code>counterPartyWalletId</code> -
+                        <a href="#definition-WalletId"><code>WalletId</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                    <tr>
+                      <td data-property-name="counterPartyUsername"> <code>counterPartyUsername</code> -
+                        <a href="#definition-Username"><code>Username</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{
+  <span class="hljs-attr">"counterPartyWalletId"</span>: <span class="hljs-string">WalletId</span>,
+  <span class="hljs-attr">"counterPartyUsername"</span>: <span class="hljs-string">Username</span>
+}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-InitiationViaLn" class="definition panel" data-traverse-target="definition-InitiationViaLn">
+            <div class="definition-tags">
+              <a class="label" href="#tag-types">Types</a>
+            </div>
+            <h2 class="panel-title">
+              <a name="/definitions/InitiationViaLn"></a>
+              <p><code>InitiationViaLn</code></p>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-properties-blank">
+                  <table>
+                    <tr>
+                      <th>Field Name</th>
+                      <th>Description</th>
+                    </tr>
+                    <tr>
+                      <td data-property-name="paymentHash"> <code>paymentHash</code> -
+                        <a href="#definition-PaymentHash"><code>PaymentHash!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"paymentHash"</span>: <span class="hljs-string">PaymentHash</span>}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-InitiationViaOnChain" class="definition panel" data-traverse-target="definition-InitiationViaOnChain">
+            <div class="definition-tags">
+              <a class="label" href="#tag-types">Types</a>
+            </div>
+            <h2 class="panel-title">
+              <a name="/definitions/InitiationViaOnChain"></a>
+              <p><code>InitiationViaOnChain</code></p>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-properties-blank">
+                  <table>
+                    <tr>
+                      <th>Field Name</th>
+                      <th>Description</th>
+                    </tr>
+                    <tr>
+                      <td data-property-name="address"> <code>address</code> -
+                        <a href="#definition-OnChainAddress"><code>OnChainAddress!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"address"</span>: <span class="hljs-string">OnChainAddress</span>}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+          </div>
           <div id="definition-InputError" class="definition panel" data-traverse-target="definition-InputError">
             <div class="definition-tags">
               <a class="label" href="#tag-types">Types</a>
@@ -4232,8 +4396,8 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>],
+  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>],
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">InputErrorCode</span>
 }
 </code></pre> </body>
@@ -4306,7 +4470,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">123</span>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">987</span>
 </code></pre> </body>
                   </html>
                 </section>
@@ -4373,115 +4537,6 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
               </div>
             </div>
           </div>
-          <div id="definition-IntraLedgerTransaction" class="definition panel" data-traverse-target="definition-IntraLedgerTransaction">
-            <div class="definition-tags">
-              <a class="label" href="#tag-types">Types</a>
-            </div>
-            <h2 class="panel-title">
-              <a name="/definitions/IntraLedgerTransaction"></a>
-              <p><code>IntraLedgerTransaction</code></p>
-            </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="json-schema-properties-blank">
-                  <table>
-                    <tr>
-                      <th>Field Name</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td data-property-name="id"> <code>id</code> -
-                        <a href="#definition-ID"><code>ID!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="initiationVia"> <code>initiationVia</code> -
-                        <a href="#definition-PaymentInitiationMethod"><code>PaymentInitiationMethod!</code></a>
-                      </td>
-                      <td> From which protocol the payment has been initiated. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="settlementVia"> <code>settlementVia</code> -
-                        <a href="#definition-SettlementMethod"><code>SettlementMethod!</code></a>
-                      </td>
-                      <td> To which protocol the payment has settled on. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="settlementAmount"> <code>settlementAmount</code> -
-                        <a href="#definition-SatAmount"><code>SatAmount!</code></a>
-                      </td>
-                      <td> Amount of sats paid by the user. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="settlementFee"> <code>settlementFee</code> -
-                        <a href="#definition-SatAmount"><code>SatAmount!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="settlementPrice"> <code>settlementPrice</code> -
-                        <a href="#definition-Price"><code>Price!</code></a>
-                      </td>
-                      <td> Price in USDCENT/SATS at time of settlement. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="direction"> <code>direction</code> -
-                        <a href="#definition-TxDirection"><code>TxDirection!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="status"> <code>status</code> -
-                        <a href="#definition-TxStatus"><code>TxStatus!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="memo"> <code>memo</code> -
-                        <a href="#definition-Memo"><code>Memo</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="createdAt"> <code>createdAt</code> -
-                        <a href="#definition-Timestamp"><code>Timestamp!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="otherPartyUsername"> <code>otherPartyUsername</code> -
-                        <a href="#definition-Username"><code>Username</code></a>
-                      </td>
-                      <td> Settlement destination: Could be null when originalDestination is OnChain/LN and the payee does not have a username </td>
-                    </tr>
-                  </table>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"id"</span>: <span class="hljs-string">ID</span>,
-  <span class="hljs-attr">"initiationVia"</span>: <span class="hljs-string">PaymentInitiationMethod</span>,
-  <span class="hljs-attr">"settlementVia"</span>: <span class="hljs-string">SettlementMethod</span>,
-  <span class="hljs-attr">"settlementAmount"</span>: <span class="hljs-string">SatAmount</span>,
-  <span class="hljs-attr">"settlementFee"</span>: <span class="hljs-string">SatAmount</span>,
-  <span class="hljs-attr">"settlementPrice"</span>: <span class="hljs-string">Price</span>,
-  <span class="hljs-attr">"direction"</span>: <span class="hljs-string">TxDirection</span>,
-  <span class="hljs-attr">"status"</span>: <span class="hljs-string">TxStatus</span>,
-  <span class="hljs-attr">"memo"</span>: <span class="hljs-string">Memo</span>,
-  <span class="hljs-attr">"createdAt"</span>: <span class="hljs-string">Timestamp</span>,
-  <span class="hljs-attr">"otherPartyUsername"</span>: <span class="hljs-string">Username</span>
-}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
           <div id="definition-IntraLedgerUpdate" class="definition panel" data-traverse-target="definition-IntraLedgerUpdate">
             <div class="definition-tags">
               <a class="label" href="#tag-types">Types</a>
@@ -4527,7 +4582,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"txNotificationType"</span>: <span class="hljs-string">TxNotificationType</span>,
   <span class="hljs-attr">"amount"</span>: <span class="hljs-string">SatAmount</span>,
-  <span class="hljs-attr">"usdPerSat"</span>: <span class="hljs-number">123.45</span>
+  <span class="hljs-attr">"usdPerSat"</span>: <span class="hljs-number">987.65</span>
 }
 </code></pre> </body>
                   </html>
@@ -5340,115 +5395,6 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
               </div>
             </div>
           </div>
-          <div id="definition-LnTransaction" class="definition panel" data-traverse-target="definition-LnTransaction">
-            <div class="definition-tags">
-              <a class="label" href="#tag-types">Types</a>
-            </div>
-            <h2 class="panel-title">
-              <a name="/definitions/LnTransaction"></a>
-              <p><code>LnTransaction</code></p>
-            </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="json-schema-properties-blank">
-                  <table>
-                    <tr>
-                      <th>Field Name</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td data-property-name="id"> <code>id</code> -
-                        <a href="#definition-ID"><code>ID!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="initiationVia"> <code>initiationVia</code> -
-                        <a href="#definition-PaymentInitiationMethod"><code>PaymentInitiationMethod!</code></a>
-                      </td>
-                      <td> From which protocol the payment has been initiated. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="settlementVia"> <code>settlementVia</code> -
-                        <a href="#definition-SettlementMethod"><code>SettlementMethod!</code></a>
-                      </td>
-                      <td> To which protocol the payment has settled on. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="settlementAmount"> <code>settlementAmount</code> -
-                        <a href="#definition-SatAmount"><code>SatAmount!</code></a>
-                      </td>
-                      <td> Amount of sats paid by the user. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="settlementFee"> <code>settlementFee</code> -
-                        <a href="#definition-SatAmount"><code>SatAmount!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="settlementPrice"> <code>settlementPrice</code> -
-                        <a href="#definition-Price"><code>Price!</code></a>
-                      </td>
-                      <td> Price in USDCENT/SATS at time of settlement. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="direction"> <code>direction</code> -
-                        <a href="#definition-TxDirection"><code>TxDirection!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="status"> <code>status</code> -
-                        <a href="#definition-TxStatus"><code>TxStatus!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="memo"> <code>memo</code> -
-                        <a href="#definition-Memo"><code>Memo</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="createdAt"> <code>createdAt</code> -
-                        <a href="#definition-Timestamp"><code>Timestamp!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="paymentHash"> <code>paymentHash</code> -
-                        <a href="#definition-PaymentHash"><code>PaymentHash!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                  </table>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"id"</span>: <span class="hljs-string">ID</span>,
-  <span class="hljs-attr">"initiationVia"</span>: <span class="hljs-string">PaymentInitiationMethod</span>,
-  <span class="hljs-attr">"settlementVia"</span>: <span class="hljs-string">SettlementMethod</span>,
-  <span class="hljs-attr">"settlementAmount"</span>: <span class="hljs-string">SatAmount</span>,
-  <span class="hljs-attr">"settlementFee"</span>: <span class="hljs-string">SatAmount</span>,
-  <span class="hljs-attr">"settlementPrice"</span>: <span class="hljs-string">Price</span>,
-  <span class="hljs-attr">"direction"</span>: <span class="hljs-string">TxDirection</span>,
-  <span class="hljs-attr">"status"</span>: <span class="hljs-string">TxStatus</span>,
-  <span class="hljs-attr">"memo"</span>: <span class="hljs-string">Memo</span>,
-  <span class="hljs-attr">"createdAt"</span>: <span class="hljs-string">Timestamp</span>,
-  <span class="hljs-attr">"paymentHash"</span>: <span class="hljs-string">PaymentHash</span>
-}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
           <div id="definition-LnUpdate" class="definition panel" data-traverse-target="definition-LnUpdate">
             <div class="definition-tags">
               <a class="label" href="#tag-types">Types</a>
@@ -5652,7 +5598,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"platform"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -5973,122 +5919,6 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
               </div>
             </div>
           </div>
-          <div id="definition-OnChainTransaction" class="definition panel" data-traverse-target="definition-OnChainTransaction">
-            <div class="definition-tags">
-              <a class="label" href="#tag-types">Types</a>
-            </div>
-            <h2 class="panel-title">
-              <a name="/definitions/OnChainTransaction"></a>
-              <p><code>OnChainTransaction</code></p>
-            </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="json-schema-properties-blank">
-                  <table>
-                    <tr>
-                      <th>Field Name</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td data-property-name="id"> <code>id</code> -
-                        <a href="#definition-ID"><code>ID!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="initiationVia"> <code>initiationVia</code> -
-                        <a href="#definition-PaymentInitiationMethod"><code>PaymentInitiationMethod!</code></a>
-                      </td>
-                      <td> From which protocol the payment has been initiated. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="settlementVia"> <code>settlementVia</code> -
-                        <a href="#definition-SettlementMethod"><code>SettlementMethod!</code></a>
-                      </td>
-                      <td> To which protocol the payment has settled on. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="settlementAmount"> <code>settlementAmount</code> -
-                        <a href="#definition-SatAmount"><code>SatAmount!</code></a>
-                      </td>
-                      <td> Amount of sats paid by the user. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="settlementFee"> <code>settlementFee</code> -
-                        <a href="#definition-SatAmount"><code>SatAmount!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="settlementPrice"> <code>settlementPrice</code> -
-                        <a href="#definition-Price"><code>Price!</code></a>
-                      </td>
-                      <td> Price in USDCENT/SATS at time of settlement. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="direction"> <code>direction</code> -
-                        <a href="#definition-TxDirection"><code>TxDirection!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="status"> <code>status</code> -
-                        <a href="#definition-TxStatus"><code>TxStatus!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="memo"> <code>memo</code> -
-                        <a href="#definition-Memo"><code>Memo</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="createdAt"> <code>createdAt</code> -
-                        <a href="#definition-Timestamp"><code>Timestamp!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="address"> <code>address</code> -
-                        <a href="#definition-OnChainAddress"><code>OnChainAddress!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="transactionHash"> <code>transactionHash</code> -
-                        <a href="#definition-OnChainTxHash"><code>OnChainTxHash!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                  </table>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"id"</span>: <span class="hljs-string">ID</span>,
-  <span class="hljs-attr">"initiationVia"</span>: <span class="hljs-string">PaymentInitiationMethod</span>,
-  <span class="hljs-attr">"settlementVia"</span>: <span class="hljs-string">SettlementMethod</span>,
-  <span class="hljs-attr">"settlementAmount"</span>: <span class="hljs-string">SatAmount</span>,
-  <span class="hljs-attr">"settlementFee"</span>: <span class="hljs-string">SatAmount</span>,
-  <span class="hljs-attr">"settlementPrice"</span>: <span class="hljs-string">Price</span>,
-  <span class="hljs-attr">"direction"</span>: <span class="hljs-string">TxDirection</span>,
-  <span class="hljs-attr">"status"</span>: <span class="hljs-string">TxStatus</span>,
-  <span class="hljs-attr">"memo"</span>: <span class="hljs-string">Memo</span>,
-  <span class="hljs-attr">"createdAt"</span>: <span class="hljs-string">Timestamp</span>,
-  <span class="hljs-attr">"address"</span>: <span class="hljs-string">OnChainAddress</span>,
-  <span class="hljs-attr">"transactionHash"</span>: <span class="hljs-string">OnChainTxHash</span>
-}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
           <div id="definition-OnChainTxFee" class="definition panel" data-traverse-target="definition-OnChainTxFee">
             <div class="definition-tags">
               <a class="label" href="#tag-types">Types</a>
@@ -6350,7 +6180,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>,
-  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>],
+  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>],
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">PaymentErrorCode</span>
 }
 </code></pre> </body>
@@ -6434,45 +6264,6 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <body><pre><code class="hljs language-gql"><span class="hljs-symbol">object</span>
 </code></pre> </body>
                   </html>
-                </section>
-              </div>
-            </div>
-          </div>
-          <div id="definition-PaymentInitiationMethod" class="definition panel" data-traverse-target="definition-PaymentInitiationMethod">
-            <div class="definition-tags">
-              <a class="label" href="#tag-types">Types</a>
-            </div>
-            <h2 class="panel-title">
-              <a name="/definitions/PaymentInitiationMethod"></a>
-              <p><code>PaymentInitiationMethod</code></p>
-            </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="json-schema-properties-blank">
-                  <table>
-                    <tr>
-                      <th>Enum Value</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td>
-                        <p><code>INTRA_LEDGER</code></p>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <p><code>ON_CHAIN</code></p>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <p><code>LIGHTNING</code></p>
-                      </td>
-                      <td> </td>
-                    </tr>
-                  </table>
                 </section>
               </div>
             </div>
@@ -6994,41 +6785,163 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
               </div>
             </div>
           </div>
-          <div id="definition-SettlementMethod" class="definition panel" data-traverse-target="definition-SettlementMethod">
+          <div id="definition-SettlementVia" class="definition panel" data-traverse-target="definition-SettlementVia">
             <div class="definition-tags">
               <a class="label" href="#tag-types">Types</a>
             </div>
             <h2 class="panel-title">
-              <a name="/definitions/SettlementMethod"></a>
-              <p><code>SettlementMethod</code></p>
+              <a name="/definitions/SettlementVia"></a>
+              <p><code>SettlementVia</code></p>
             </h2>
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="json-schema-properties-blank">
                   <table>
                     <tr>
-                      <th>Enum Value</th>
+                      <th>Union Types</th>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>
+                          <a href="#definition-SettlementViaIntraLedger"><code>SettlementViaIntraLedger</code></a>
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>
+                          <a href="#definition-SettlementViaLn"><code>SettlementViaLn</code></a>
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p>
+                          <a href="#definition-SettlementViaOnChain"><code>SettlementViaOnChain</code></a>
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-SettlementViaIntraLedger" class="definition panel" data-traverse-target="definition-SettlementViaIntraLedger">
+            <div class="definition-tags">
+              <a class="label" href="#tag-types">Types</a>
+            </div>
+            <h2 class="panel-title">
+              <a name="/definitions/SettlementViaIntraLedger"></a>
+              <p><code>SettlementViaIntraLedger</code></p>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-properties-blank">
+                  <table>
+                    <tr>
+                      <th>Field Name</th>
                       <th>Description</th>
                     </tr>
                     <tr>
-                      <td>
-                        <p><code>INTRA_LEDGER</code></p>
+                      <td data-property-name="counterPartyWalletId"> <code>counterPartyWalletId</code> -
+                        <a href="#definition-WalletId"><code>WalletId</code></a>
                       </td>
                       <td> </td>
                     </tr>
                     <tr>
-                      <td>
-                        <p><code>ON_CHAIN</code></p>
+                      <td data-property-name="counterPartyUsername"> <code>counterPartyUsername</code> -
+                        <a href="#definition-Username"><code>Username</code></a>
                       </td>
-                      <td> </td>
+                      <td> Settlement destination: Could be null the payee does not have a username </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{
+  <span class="hljs-attr">"counterPartyWalletId"</span>: <span class="hljs-string">WalletId</span>,
+  <span class="hljs-attr">"counterPartyUsername"</span>: <span class="hljs-string">Username</span>
+}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-SettlementViaLn" class="definition panel" data-traverse-target="definition-SettlementViaLn">
+            <div class="definition-tags">
+              <a class="label" href="#tag-types">Types</a>
+            </div>
+            <h2 class="panel-title">
+              <a name="/definitions/SettlementViaLn"></a>
+              <p><code>SettlementViaLn</code></p>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-properties-blank">
+                  <table>
+                    <tr>
+                      <th>Field Name</th>
+                      <th>Description</th>
                     </tr>
                     <tr>
-                      <td>
-                        <p><code>LIGHTNING</code></p>
+                      <td data-property-name="paymentSecret"> <code>paymentSecret</code> -
+                        <a href="#definition-LnPaymentSecret"><code>LnPaymentSecret</code></a>
                       </td>
                       <td> </td>
                     </tr>
                   </table>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"paymentSecret"</span>: <span class="hljs-string">LnPaymentSecret</span>}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-SettlementViaOnChain" class="definition panel" data-traverse-target="definition-SettlementViaOnChain">
+            <div class="definition-tags">
+              <a class="label" href="#tag-types">Types</a>
+            </div>
+            <h2 class="panel-title">
+              <a name="/definitions/SettlementViaOnChain"></a>
+              <p><code>SettlementViaOnChain</code></p>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-properties-blank">
+                  <table>
+                    <tr>
+                      <th>Field Name</th>
+                      <th>Description</th>
+                    </tr>
+                    <tr>
+                      <td data-property-name="transactionHash"> <code>transactionHash</code> -
+                        <a href="#definition-OnChainTxHash"><code>OnChainTxHash!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"transactionHash"</span>: <span class="hljs-string">OnChainTxHash</span>}
+</code></pre> </body>
+                  </html>
                 </section>
               </div>
             </div>
@@ -7188,7 +7101,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7273,18 +7186,6 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                       <td> </td>
                     </tr>
                     <tr>
-                      <td data-property-name="initiationVia"> <code>initiationVia</code> -
-                        <a href="#definition-PaymentInitiationMethod"><code>PaymentInitiationMethod!</code></a>
-                      </td>
-                      <td> From which protocol the payment has been initiated. </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="settlementVia"> <code>settlementVia</code> -
-                        <a href="#definition-SettlementMethod"><code>SettlementMethod!</code></a>
-                      </td>
-                      <td> To which protocol the payment has settled on. </td>
-                    </tr>
-                    <tr>
                       <td data-property-name="settlementAmount"> <code>settlementAmount</code> -
                         <a href="#definition-SatAmount"><code>SatAmount!</code></a>
                       </td>
@@ -7336,8 +7237,6 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">ID</span>,
-  <span class="hljs-attr">"initiationVia"</span>: <span class="hljs-string">PaymentInitiationMethod</span>,
-  <span class="hljs-attr">"settlementVia"</span>: <span class="hljs-string">SettlementMethod</span>,
   <span class="hljs-attr">"settlementAmount"</span>: <span class="hljs-string">SatAmount</span>,
   <span class="hljs-attr">"settlementFee"</span>: <span class="hljs-string">SatAmount</span>,
   <span class="hljs-attr">"settlementPrice"</span>: <span class="hljs-string">Price</span>,
@@ -7440,7 +7339,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"node"</span>: <span class="hljs-string">Transaction</span>, <span class="hljs-attr">"cursor"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"node"</span>: <span class="hljs-string">Transaction</span>, <span class="hljs-attr">"cursor"</span>: <span class="hljs-string">"abc123"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7477,7 +7376,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"token"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"token"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7609,7 +7508,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"uri"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"uri"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7956,7 +7855,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">Username</span>,
   <span class="hljs-attr">"username"</span>: <span class="hljs-string">Username</span>,
   <span class="hljs-attr">"alias"</span>: <span class="hljs-string">ContactAlias</span>,
-  <span class="hljs-attr">"transactionsCount"</span>: <span class="hljs-number">123</span>,
+  <span class="hljs-attr">"transactionsCount"</span>: <span class="hljs-number">987</span>,
   <span class="hljs-attr">"transactions"</span>: <span class="hljs-string">TransactionConnection</span>
 }
 </code></pre> </body>
@@ -8139,7 +8038,7 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"question"</span>: <span class="hljs-string">QuizQuestion</span>, <span class="hljs-attr">"completed"</span>: <span class="hljs-literal">true</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"question"</span>: <span class="hljs-string">QuizQuestion</span>, <span class="hljs-attr">"completed"</span>: <span class="hljs-literal">false</span>}
 </code></pre> </body>
                   </html>
                 </section>
