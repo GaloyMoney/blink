@@ -33,6 +33,7 @@ import { TwoFAError, TransactionRestrictedError } from "@core/error"
 import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
 import { NotificationType } from "@domain/notifications"
 import { toTargetConfs } from "@domain/bitcoin"
+import { LedgerTransactionType } from "@domain/ledger"
 
 jest.mock("@services/notifications/notification")
 
@@ -153,7 +154,8 @@ describe("UserWallet - onChainPay", () => {
     txs = txResult.result
     const txn = txs.find(
       (tx: WalletTransaction) =>
-        tx.initiationVia === PaymentInitiationMethod.OnChain && tx.id === pendingTxn.id,
+        tx.initiationVia.type === PaymentInitiationMethod.OnChain &&
+        tx.id === pendingTxn.id,
     )
     expect(txn).toBeTruthy()
     expect(txn?.settlementAmount).toBe(-amount - fee)
@@ -246,7 +248,8 @@ describe("UserWallet - onChainPay", () => {
     txs = txResult.result
     const txn = txs.find(
       (tx) =>
-        tx.initiationVia === PaymentInitiationMethod.OnChain && tx.id === pendingTxn.id,
+        tx.initiationVia.type === PaymentInitiationMethod.OnChain &&
+        tx.id === pendingTxn.id,
     )
     expect(txn).toBeTruthy()
     expect(txn?.settlementAmount).toBe(-initialBalanceUser11)
@@ -323,9 +326,9 @@ describe("UserWallet - onChainPay", () => {
     expect(paid).toBe(true)
 
     const matchTx = (tx: WalletTransaction) =>
-      tx.initiationVia === "onchain" &&
-      tx.deprecated.type === "onchain_on_us" &&
-      tx.address === address
+      tx.initiationVia.type === PaymentInitiationMethod.OnChain &&
+      tx.deprecated.type === LedgerTransactionType.OnchainIntraLedger &&
+      tx.initiationVia.address === address
 
     const { result: txs, error } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.id,

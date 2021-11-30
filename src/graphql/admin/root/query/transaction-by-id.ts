@@ -1,11 +1,11 @@
 import { GT } from "@graphql/index"
 
 import * as Wallets from "@app/wallets"
-import ITransaction from "@graphql/types/abstract/transaction"
+import Transaction from "@graphql/types/object/transaction"
 import { CouldNotFindTransactionError } from "@domain/ledger"
 
 const TransactionByIdQuery = GT.Field({
-  type: ITransaction,
+  type: Transaction,
   args: {
     id: { type: GT.NonNullID },
   },

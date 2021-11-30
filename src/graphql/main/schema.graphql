@@ -143,18 +143,18 @@ settling intraledger when both the payer and payee use the same wallet
 therefore it's possible the transactions is being initiated onchain
 or with lightning but settled intraledger.
 """
-interface Transaction {
+type Transaction {
   id: ID!
 
   """
   From which protocol the payment has been initiated.
   """
-  initiationVia: PaymentInitiationMethod!
+  initiationVia: InitiationVia!
 
   """
   To which protocol the payment has settled on.
   """
-  settlementVia: SettlementMethod!
+  settlementVia: SettlementVia!
 
   """
   Amount of sats paid by the user.
@@ -172,17 +172,60 @@ interface Transaction {
   createdAt: Timestamp!
 }
 
-enum PaymentInitiationMethod {
-  INTRA_LEDGER
-  ON_CHAIN
-  LIGHTNING
+union InitiationVia = InitiationViaIntraLedger | InitiationViaLn | InitiationViaOnChain
+
+type InitiationViaIntraLedger {
+  counterPartyWalletId: WalletId
+  counterPartyUsername: Username
 }
 
-enum SettlementMethod {
-  INTRA_LEDGER
-  ON_CHAIN
-  LIGHTNING
+"""
+Unique identifier of a user
+"""
+scalar WalletId
+
+"""
+Unique identifier of a user
+"""
+scalar Username
+
+type InitiationViaLn {
+  paymentHash: PaymentHash!
 }
+
+scalar PaymentHash
+
+type InitiationViaOnChain {
+  address: OnChainAddress!
+}
+
+"""
+An address for an on-chain bitcoin destination
+"""
+scalar OnChainAddress
+
+union SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain
+
+type SettlementViaIntraLedger {
+  counterPartyWalletId: WalletId
+
+  """
+  Settlement destination: Could be null the payee does not have a username
+  """
+  counterPartyUsername: Username
+}
+
+type SettlementViaLn {
+  paymentSecret: LnPaymentSecret
+}
+
+scalar LnPaymentSecret
+
+type SettlementViaOnChain {
+  transactionHash: OnChainTxHash!
+}
+
+scalar OnChainTxHash
 
 """
 (Positive) Satoshi amount (i.g. quiz earning)
@@ -230,11 +273,6 @@ Timestamp field, serialized as Unix time (the number of seconds since the Unix e
 """
 scalar Timestamp
 
-"""
-Unique identifier of a user
-"""
-scalar WalletId
-
 type BTCWallet implements Wallet {
   id: ID!
   walletCurrency: WalletCurrency!
@@ -261,116 +299,6 @@ type BTCWallet implements Wallet {
     last: Int
   ): TransactionConnection
 }
-
-type IntraLedgerTransaction implements Transaction {
-  id: ID!
-
-  """
-  From which protocol the payment has been initiated.
-  """
-  initiationVia: PaymentInitiationMethod!
-
-  """
-  To which protocol the payment has settled on.
-  """
-  settlementVia: SettlementMethod!
-
-  """
-  Amount of sats paid by the user.
-  """
-  settlementAmount: SatAmount!
-  settlementFee: SatAmount!
-
-  """
-  Price in USDCENT/SATS at time of settlement.
-  """
-  settlementPrice: Price!
-  direction: TxDirection!
-  status: TxStatus!
-  memo: Memo
-  createdAt: Timestamp!
-
-  """
-  Settlement destination: Could be null when originalDestination is OnChain/LN
-  and the payee does not have a username
-  """
-  otherPartyUsername: Username
-}
-
-"""
-Unique identifier of a user
-"""
-scalar Username
-
-type OnChainTransaction implements Transaction {
-  id: ID!
-
-  """
-  From which protocol the payment has been initiated.
-  """
-  initiationVia: PaymentInitiationMethod!
-
-  """
-  To which protocol the payment has settled on.
-  """
-  settlementVia: SettlementMethod!
-
-  """
-  Amount of sats paid by the user.
-  """
-  settlementAmount: SatAmount!
-  settlementFee: SatAmount!
-
-  """
-  Price in USDCENT/SATS at time of settlement.
-  """
-  settlementPrice: Price!
-  direction: TxDirection!
-  status: TxStatus!
-  memo: Memo
-  createdAt: Timestamp!
-  address: OnChainAddress!
-  transactionHash: OnChainTxHash!
-}
-
-"""
-An address for an on-chain bitcoin destination
-"""
-scalar OnChainAddress
-
-scalar OnChainTxHash
-
-type LnTransaction implements Transaction {
-  id: ID!
-
-  """
-  From which protocol the payment has been initiated.
-  """
-  initiationVia: PaymentInitiationMethod!
-
-  """
-  To which protocol the payment has settled on.
-  """
-  settlementVia: SettlementMethod!
-
-  """
-  Amount of sats paid by the user.
-  """
-  settlementAmount: SatAmount!
-  settlementFee: SatAmount!
-
-  """
-  Price in USDCENT/SATS at time of settlement.
-  """
-  settlementPrice: Price!
-  direction: TxDirection!
-  status: TxStatus!
-  memo: Memo
-  createdAt: Timestamp!
-  paymentHash: PaymentHash!
-}
-
-scalar PaymentHash
 
 type Query {
   globals: Globals
@@ -750,8 +678,6 @@ type LnInvoice {
   paymentSecret: LnPaymentSecret!
   satoshis: SatAmount
 }
-
-scalar LnPaymentSecret
 
 input LnInvoiceCreateInput {
   walletId: WalletId!

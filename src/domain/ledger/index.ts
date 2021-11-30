@@ -11,6 +11,7 @@ export const LedgerTransactionType = {
   Invoice: "invoice",
   Payment: "payment",
   IntraLedger: "on_us",
+  LnIntraLedger: "ln_on_us",
   LnFeeReimbursement: "fee_reimbursement", // lightning
   OnchainReceipt: "onchain_receipt",
   OnchainPayment: "onchain_payment",
@@ -23,6 +24,11 @@ export const LedgerTransactionType = {
   UserRebalance: "user_rebalance", // buy/sell btc in the user wallet
   ToColdStorage: "to_cold_storage",
   ToHotWallet: "to_hot_wallet",
+} as const
+
+export const ExtendedLedgerTransactionType = {
+  ...LedgerTransactionType,
+  LnIntraLedger: "ln_on_us",
 } as const
 
 export const toWalletId = (accountId: LiabilitiesAccountId): WalletId | null => {

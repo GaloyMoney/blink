@@ -1,7 +1,5 @@
-type PaymentInitiationMethod =
-  typeof import("./tx-methods").PaymentInitiationMethod[keyof typeof import("./tx-methods").PaymentInitiationMethod]
-type SettlementMethod =
-  typeof import("./tx-methods").SettlementMethod[keyof typeof import("./tx-methods").SettlementMethod]
+type PaymentInitiationMethod = typeof import("./tx-methods").PaymentInitiationMethod
+type SettlementMethod = typeof import("./tx-methods").SettlementMethod
 type TxStatus =
   typeof import("./tx-status").TxStatus[keyof typeof import("./tx-status").TxStatus]
 
@@ -12,11 +10,48 @@ type Deprecated = {
   readonly feeUsd: number
 }
 
+type InitiationViaIntraledger = {
+  readonly type: PaymentInitiationMethod["IntraLedger"]
+  readonly counterPartyWalletPublicId: WalletPublicId
+  readonly counterPartyUsername: Username
+}
+
+type InitiationViaLn = {
+  readonly type: PaymentInitiationMethod["Lightning"]
+  readonly paymentHash: PaymentHash
+  readonly pubkey: Pubkey
+}
+
+type InitiationViaOnChain = {
+  readonly type: PaymentInitiationMethod["OnChain"]
+  readonly address: OnChainAddress
+}
+
+// FIXME: create a migration to add OnChainAddress associated with old transaction to remove this legacy type
+type InitiationViaOnChainLegacy = {
+  readonly type: PaymentInitiationMethod["OnChain"]
+  readonly address?: OnChainAddress
+}
+
+type SettlementViaIntraledger = {
+  readonly type: SettlementMethod["IntraLedger"]
+  readonly counterPartyWalletPublicId: WalletPublicId
+  readonly counterPartyUsername: Username | null
+}
+
+type SettlementViaLn = {
+  readonly type: SettlementMethod["Lightning"]
+  paymentSecret: PaymentSecret | null
+}
+
+type SettlementViaOnChain = {
+  readonly type: SettlementMethod["OnChain"]
+  transactionHash: OnChainTxHash
+}
+
 type BaseWalletTransaction = {
   readonly id: LedgerTransactionId | OnChainTxHash
   readonly walletId: WalletId | null
-  readonly initiationVia: PaymentInitiationMethod
-  readonly settlementVia: SettlementMethod
   readonly settlementAmount: Satoshis
   readonly settlementFee: Satoshis
   readonly settlementUsdPerSat: number
@@ -28,40 +63,52 @@ type BaseWalletTransaction = {
 }
 
 type IntraLedgerTransaction = BaseWalletTransaction & {
-  readonly initiationVia: "intraledger"
-  readonly settlementVia: "intraledger"
-  readonly otherPartyUsername: Username | null
+  readonly initiationVia: InitiationViaIntraledger
+  readonly settlementVia: SettlementViaIntraledger
 }
 
-type WalletOnChainTransaction = BaseWalletTransaction & {
-  readonly initiationVia: "onchain"
-  readonly settlementVia: "onchain" | "intraledger"
-  readonly otherPartyUsername: Username | null
-  readonly address: OnChainAddress
-  readonly transactionHash: OnChainTxHash
+type WalletOnChainIntraledgerTransaction = BaseWalletTransaction & {
+  readonly initiationVia: InitiationViaOnChain
+  readonly settlementVia: SettlementViaIntraledger
 }
 
-type WalletLegacyOnChainTransaction = BaseWalletTransaction & {
-  readonly initiationVia: "onchain"
-  readonly settlementVia: "onchain" | "intraledger"
-  readonly otherPartyUsername: Username | null
-  readonly address: OnChainAddress | undefined
-  readonly transactionHash: OnChainTxHash
+type WalletOnChainSettledTransaction = BaseWalletTransaction & {
+  readonly initiationVia: InitiationViaOnChain
+  readonly settlementVia: SettlementViaOnChain
 }
 
-type WalletLnTransaction = BaseWalletTransaction & {
-  readonly initiationVia: "lightning"
-  readonly settlementVia: "lightning" | "intraledger"
-  readonly otherPartyUsername: Username | null
-  readonly paymentHash: PaymentHash
-  readonly pubkey: Pubkey
+type WalletLegacyOnChainIntraledgerTransaction = BaseWalletTransaction & {
+  readonly initiationVia: InitiationViaOnChainLegacy
+  readonly settlementVia: SettlementViaIntraledger
 }
+
+type WalletLegacyOnChainSettledTransaction = BaseWalletTransaction & {
+  readonly initiationVia: InitiationViaOnChainLegacy
+  readonly settlementVia: SettlementViaOnChain
+}
+
+type WalletLnIntraledgerTransaction = BaseWalletTransaction & {
+  readonly initiationVia: InitiationViaLn
+  readonly settlementVia: SettlementViaIntraledger
+}
+
+type WalletLnSettledTransaction = BaseWalletTransaction & {
+  readonly initiationVia: InitiationViaLn
+  readonly settlementVia: SettlementViaLn
+}
+
+type WalletOnChainTransaction =
+  | WalletOnChainIntraledgerTransaction
+  | WalletOnChainSettledTransaction
+  | WalletLegacyOnChainIntraledgerTransaction
+  | WalletLegacyOnChainSettledTransaction
+
+type WalletLnTransaction = WalletLnIntraledgerTransaction | WalletLnSettledTransaction
 
 type WalletTransaction =
   | IntraLedgerTransaction
   | WalletOnChainTransaction
   | WalletLnTransaction
-  | WalletLegacyOnChainTransaction
 
 type ConfirmedTransactionHistory = {
   readonly transactions: WalletTransaction[]

@@ -88,8 +88,8 @@ describe("UserWallet - Lightning", () => {
     }
     const noSpamTxn = txns.find(
       (txn) =>
-        txn.initiationVia === PaymentInitiationMethod.Lightning &&
-        txn.paymentHash === hash,
+        txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
+        txn.initiationVia.paymentHash === hash,
     ) as WalletTransaction
     expect(noSpamTxn.deprecated.description).toBe(memo)
 
@@ -172,8 +172,8 @@ describe("UserWallet - Lightning", () => {
     }
     const spamTxn = txns.find(
       (txn) =>
-        txn.initiationVia === PaymentInitiationMethod.Lightning &&
-        txn.paymentHash === hash,
+        txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
+        txn.initiationVia.paymentHash === hash,
     ) as WalletTransaction
     expect(dbTx.type).toBe("invoice")
     expect(spamTxn.deprecated.description).toBe(dbTx.type)
