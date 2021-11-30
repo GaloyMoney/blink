@@ -32,16 +32,6 @@ direnv: direnv: loading ~/projects/GaloyMoney/galoy/.envrc
 $ yarn install
 ```
 
-### Runtime dependencies
-
-```bash
-$ yarn deps:start
-# or
-$ yarn deps:reset
-```
-
-Everytime the dependencies are re-started the environment must be reloaded via `direnv reload`.
-
 ## Development
 
 To start the GraphQL server and its dependencies:

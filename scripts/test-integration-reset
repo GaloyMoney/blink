@@ -1,5 +1,9 @@
 #!/usr/bin/env sh
 
-./scripts/deps-reset
+docker-compose down
+
+docker-compose up -d
+
+direnv reload
 
 yarn test:integration

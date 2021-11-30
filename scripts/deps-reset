@@ -1,5 +1,0 @@
-#!/usr/bin/env sh
-
-./scripts/deps-clean
-
-./scripts/deps-start
