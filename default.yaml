@@ -75,10 +75,13 @@ test_accounts:
 
 limits:
   requestPhoneCodePerPhone:
-    msBeforeNext: 30000
     points: 4
     duration: 3600 # 60 * 60 s
     blockDuration: 10800 # 60 * 60 * 3 s
+  requestPhoneCodePerPhoneMinInterval:
+    points: 1
+    duration: 15
+    blockDuration: 15
   requestPhoneCodePerIp:
     points: 4
     duration: 3600 # 60 * 60 * 3 s
