@@ -124,7 +124,10 @@ export const LndService = (): ILightningService | LightningServiceError => {
       const probeForRouteArgs: ProbeForRouteArgs = {
         lnd: lndAuth,
         destination: decodedInvoice.destination,
-        mtokens: decodedInvoice.milliSatsAmount.toString(),
+        mtokens:
+          decodedInvoice.milliSatsAmount > 0
+            ? decodedInvoice.milliSatsAmount.toString()
+            : (amount * 1000).toString(),
         routes,
         cltv_delta: decodedInvoice.cltvDelta || undefined,
         features: decodedInvoice.features
@@ -137,7 +140,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
         max_fee: maxFee,
         payment: decodedInvoice.paymentSecret || undefined,
         total_mtokens: decodedInvoice.paymentSecret
-          ? decodedInvoice.milliSatsAmount.toString()
+          ? decodedInvoice.milliSatsAmount > 0
+            ? decodedInvoice.milliSatsAmount.toString()
+            : (amount * 1000).toString()
           : undefined,
         tokens: amount,
       }
