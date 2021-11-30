@@ -65,7 +65,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       return new LightningServiceError(
         "No amount invoice passed to method. Expected a valid amount to be present.",
       )
-    return _probeForRoute({
+    return probeForRoute({
       decodedInvoice,
       maxFee,
       amount: decodedInvoice.amount,
@@ -85,14 +85,14 @@ export const LndService = (): ILightningService | LightningServiceError => {
       return new LightningServiceError(
         "Invalid amount passed to method for invoice with no amount. Expected a valid amount to be passed.",
       )
-    return _probeForRoute({
+    return probeForRoute({
       decodedInvoice,
       maxFee,
       amount,
     })
   }
 
-  const _probeForRoute = async ({
+  const probeForRoute = async ({
     decodedInvoice,
     maxFee,
     amount,
