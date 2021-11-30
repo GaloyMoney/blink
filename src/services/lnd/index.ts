@@ -102,24 +102,17 @@ export const LndService = (): ILightningService | LightningServiceError => {
     amount: Satoshis
   }): Promise<RawRoute | LightningServiceError> => {
     try {
-      const routes: RawHopWithNumbers[][] = []
-      if (decodedInvoice.routeHints) {
-        decodedInvoice.routeHints.forEach((route) => {
-          const rawRoute: RawHopWithNumbers[] = []
-          route.forEach((hop) =>
-            rawRoute.push({
-              base_fee_mtokens: hop.baseFeeMTokens
-                ? parseFloat(hop.baseFeeMTokens)
-                : undefined,
-              channel: hop.channel,
-              cltv_delta: hop.cltvDelta,
-              fee_rate: hop.feeRate,
-              public_key: hop.nodePubkey,
-            }),
-          )
-          routes.push(rawRoute)
-        })
-      }
+      const routes: RawHopWithNumbers[][] = decodedInvoice.routeHints.map((route) =>
+        route.map((hop) => ({
+          base_fee_mtokens: hop.baseFeeMTokens
+            ? parseFloat(hop.baseFeeMTokens)
+            : undefined,
+          channel: hop.channel,
+          cltv_delta: hop.cltvDelta,
+          fee_rate: hop.feeRate,
+          public_key: hop.nodePubkey,
+        })),
+      )
 
       const probeForRouteArgs: ProbeForRouteArgs = {
         lnd: lndAuth,
