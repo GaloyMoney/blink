@@ -36,8 +36,8 @@ import { PriceInterval, PriceRange } from "@domain/price"
 import { login } from "@app/users/login"
 import { requestPhoneCode } from "@app/users/request-phone-code"
 import {
-  lnInvoiceFeeProbe,
-  lnNoAmountInvoiceFeeProbe,
+  lnInvoiceProbeForFee,
+  lnNoAmountInvoiceProbeForFee,
 } from "@app/lightning/get-lightning-fee"
 import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
 
@@ -385,7 +385,7 @@ const resolvers = {
       getFee: async ({ amount, invoice }) => {
         let feeSatAmount: Satoshis | ApplicationError
         if (amount && amount > 0) {
-          feeSatAmount = await lnNoAmountInvoiceFeeProbe({
+          feeSatAmount = await lnNoAmountInvoiceProbeForFee({
             amount,
             paymentRequest: invoice,
           })
@@ -394,7 +394,7 @@ const resolvers = {
             throw mapError(feeSatAmount)
         }
 
-        feeSatAmount = await lnInvoiceFeeProbe({
+        feeSatAmount = await lnInvoiceProbeForFee({
           paymentRequest: invoice,
         })
         if (feeSatAmount instanceof Error) throw mapError(feeSatAmount)

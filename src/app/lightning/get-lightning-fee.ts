@@ -9,7 +9,7 @@ import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { LndService } from "@services/lnd"
 import { RoutesCache } from "@services/redis/routes"
 
-export const lnInvoiceFeeProbe = async ({
+export const lnInvoiceProbeForFee = async ({
   paymentRequest,
 }: {
   paymentRequest: EncodedPaymentRequest
@@ -22,7 +22,7 @@ export const lnInvoiceFeeProbe = async ({
   return feeProbe({ decodedInvoice, paymentAmount })
 }
 
-export const lnNoAmountInvoiceFeeProbe = async ({
+export const lnNoAmountInvoiceProbeForFee = async ({
   paymentRequest,
   amount,
 }: {
@@ -40,7 +40,7 @@ export const lnNoAmountInvoiceFeeProbe = async ({
   const paymentAmount = checkedToSats(amount)
   if (paymentAmount instanceof Error) return paymentAmount
 
-  return noAmountFeeProbe({ decodedInvoice, paymentAmount })
+  return noAmountProbeForFee({ decodedInvoice, paymentAmount })
 }
 
 const feeProbe = async ({
@@ -79,7 +79,7 @@ const feeProbe = async ({
   return toSats(rawRoute.fee)
 }
 
-const noAmountFeeProbe = async ({
+const noAmountProbeForFee = async ({
   decodedInvoice,
   paymentAmount,
 }: {
