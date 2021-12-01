@@ -6,7 +6,6 @@
     "code:check": "./scripts/code-check",
     "eslint:check": "./scripts/eslint-check",
     "eslint:fix": "./scripts/eslint-fix",
-    "mongodb:forward": "./scripts/forward-mongodb",
     "prettier:check": "./scripts/prettier-check",
     "prettier:fix": "./scripts/prettier-fix",
     "start:watch": "./scripts/start-watch",
