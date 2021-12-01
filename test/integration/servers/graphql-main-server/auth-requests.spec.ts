@@ -145,7 +145,7 @@ describe("graphql", () => {
     })
 
     it("returns an error if it is unable to find a route for payment", async () => {
-      const message = "Unable to find a route for payment."
+      const message = "Insufficient balance for finding a route."
       const { request: paymentRequest } = await createInvoice({
         lnd: lndOutside2,
         tokens: 10010000000,
@@ -178,7 +178,7 @@ describe("graphql", () => {
     })
 
     it("returns an error if it is unable to find a route for payment", async () => {
-      const message = "Unable to find a route for payment."
+      const message = "Insufficient balance for finding a route."
       const { request: paymentRequest } = await createInvoice({
         lnd: lndOutside2,
       })

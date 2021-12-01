@@ -12,6 +12,7 @@ import {
   PaymentNotFoundError,
   RouteNotFoundError,
   UnknownRouteNotFoundError,
+  InsufficientBalanceForRoutingError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
 import { isInvoiceAlreadyPaidError, timeout } from "@core/utils"
@@ -143,7 +144,13 @@ export const LndService = (): ILightningService | LightningServiceError => {
       if (!route) return new RouteNotFoundError()
       return route
     } catch (err) {
-      return new UnknownRouteNotFoundError(err)
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.InsufficientBalance:
+          return new InsufficientBalanceForRoutingError()
+        default:
+          return new UnknownRouteNotFoundError(err)
+      }
     }
   }
 
@@ -414,3 +421,10 @@ const lookupPaymentByPubkeyAndHash = async ({
     return new UnknownLightningServiceError(err)
   }
 }
+
+const parseLndErrorDetails = (err) =>
+  err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details
+
+const KnownLndErrorDetails = {
+  InsufficientBalance: "insufficient local balance",
+} as const
