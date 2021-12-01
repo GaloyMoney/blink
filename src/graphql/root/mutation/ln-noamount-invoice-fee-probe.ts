@@ -20,7 +20,7 @@ const LnNoAmountInvoiceFeeProbeMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(LnNoAmountInvoiceFeeProbeInput) },
   },
-  resolve: async (_, args) => {
+  resolve: async (_, args, { logger }) => {
     const { walletId, paymentRequest, amount } = args.input
 
     for (const input of [walletId, paymentRequest, amount]) {
@@ -29,13 +29,17 @@ const LnNoAmountInvoiceFeeProbeMutation = GT.Field({
       }
     }
 
-    const feeSatAmount = await lnNoAmountInvoiceProbeForFee({ amount, paymentRequest })
+    const feeSatAmount = await lnNoAmountInvoiceProbeForFee({
+      walletPublicId: walletId,
+      amount,
+      paymentRequest,
+      logger,
+    })
     if (feeSatAmount instanceof Error) {
       const appErr = mapError(feeSatAmount)
       return { errors: [{ message: appErr.message }] }
     }
 
-    // TODO: validate feeSatAmount
     return {
       errors: [],
       amount: feeSatAmount,
