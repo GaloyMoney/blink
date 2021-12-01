@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
-import { lnInvoiceProbeForFee } from "@app/lightning/get-lightning-fee"
+import { lnInvoiceProbeForFee } from "@app/wallets/ln-probe-for-fee"
 import { mapError } from "@graphql/error-map"
 
 const LnInvoiceFeeProbeInput = new GT.Input({

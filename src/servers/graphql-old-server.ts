@@ -38,7 +38,7 @@ import { requestPhoneCode } from "@app/users/request-phone-code"
 import {
   lnInvoiceProbeForFee,
   lnNoAmountInvoiceProbeForFee,
-} from "@app/lightning/get-lightning-fee"
+} from "@app/wallets/ln-probe-for-fee"
 import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })

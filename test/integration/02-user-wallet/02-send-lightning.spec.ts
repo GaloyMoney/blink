@@ -42,7 +42,7 @@ import {
 } from "@app/wallets"
 import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { PaymentInitiationMethod } from "@domain/wallets"
-import { lnInvoiceProbeForFee } from "@app/lightning/get-lightning-fee"
+import { lnInvoiceProbeForFee } from "@app/wallets/ln-probe-for-fee"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
