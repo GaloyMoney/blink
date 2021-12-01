@@ -108,6 +108,8 @@ export const fromLedger = (
         txType = ExtendedLedgerTransactionType.LnIntraLedger
       }
 
+      const defaultOnChainAddress = "<no-address>" as OnChainAddress
+
       let walletTransaction: WalletTransaction
       switch (txType) {
         case ExtendedLedgerTransactionType.IntraLedger:
@@ -131,7 +133,7 @@ export const fromLedger = (
             ...baseTransaction,
             initiationVia: {
               type: PaymentInitiationMethod.OnChain,
-              address,
+              address: address || defaultOnChainAddress,
             },
             settlementVia: {
               type: SettlementMethod.IntraLedger,
@@ -147,7 +149,7 @@ export const fromLedger = (
             ...baseTransaction,
             initiationVia: {
               type: PaymentInitiationMethod.OnChain,
-              address,
+              address: address || defaultOnChainAddress,
             },
             settlementVia: {
               type: SettlementMethod.OnChain,
