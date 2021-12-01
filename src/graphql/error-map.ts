@@ -110,12 +110,16 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Unable to find a route for payment."
       return new RouteFindingError({ message, logger: baseLogger })
 
+    case "InsufficientBalanceForRoutingError":
+      message = "Insufficient balance for finding a route."
+      return new RouteFindingError({ message, logger: baseLogger })
+
     case "UnknownRouteNotFoundError":
       message = "Unknown error occurred when trying to find a route for payment."
       return new RouteFindingError({ message, logger: baseLogger })
 
     case "UnknownLnInvoiceDecodeError":
-      // Consider using `error.message` somehow since lib returns semi-sensible details
+      // TODO: Consider using `error.message` somehow since lib returns semi-sensible details
       message = "Invalid lightning request, couldn't decode."
       return new InvoiceDecodeError({ message, logger: baseLogger })
 
