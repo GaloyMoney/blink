@@ -11,6 +11,7 @@ import { checkedToWalletPublicId } from "@domain/wallets"
 import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 import { RedisRateLimitService } from "@services/rate-limit"
+import { walletIdFromPublicId } from "."
 
 export const addInvoiceByWalletPublicId = async ({
   walletPublicId,
@@ -151,16 +152,6 @@ export const registerAndPersistInvoice = async ({
   if (persistedWalletInvoice instanceof Error) return persistedWalletInvoice
 
   return invoice
-}
-
-const walletIdFromPublicId = async (
-  walletPublicId: WalletPublicId,
-): Promise<WalletId | RepositoryError> => {
-  const walletsRepo = WalletsRepository()
-  const wallet = await walletsRepo.findByPublicId(walletPublicId)
-  if (wallet instanceof Error) return wallet
-
-  return wallet.id
 }
 
 export const checkSelfWalletIdLimits = async (

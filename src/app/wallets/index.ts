@@ -28,3 +28,13 @@ export const getWalletByPublicId = async (
   const wallets = WalletsRepository()
   return wallets.findByPublicId(walletPublicId)
 }
+
+export const walletIdFromPublicId = async (
+  walletPublicId: WalletPublicId,
+): Promise<WalletId | RepositoryError> => {
+  const walletsRepo = WalletsRepository()
+  const wallet = await walletsRepo.findByPublicId(walletPublicId)
+  if (wallet instanceof Error) return wallet
+
+  return wallet.id
+}
