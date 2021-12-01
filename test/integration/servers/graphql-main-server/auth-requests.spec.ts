@@ -145,7 +145,7 @@ describe("graphql", () => {
     })
 
     it("returns an error if it is unable to find a route for payment", async () => {
-      const message = "Insufficient balance for finding a route."
+      const messageRegex = /^Payment amount '\d+' exceeds balance '\d+'$/
       const { request: paymentRequest } = await createInvoice({
         lnd: lndOutside2,
         tokens: 10010000000,
@@ -157,7 +157,9 @@ describe("graphql", () => {
       expect(errors).toHaveLength(1)
       expect(amount).toBe(null)
       expect(errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ message })]),
+        expect.arrayContaining([
+          expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
+        ]),
       )
     })
   })
@@ -178,7 +180,7 @@ describe("graphql", () => {
     })
 
     it("returns an error if it is unable to find a route for payment", async () => {
-      const message = "Insufficient balance for finding a route."
+      const messageRegex = /^Payment amount '\d+' exceeds balance '\d+'$/
       const { request: paymentRequest } = await createInvoice({
         lnd: lndOutside2,
       })
@@ -189,7 +191,9 @@ describe("graphql", () => {
       expect(errors).toHaveLength(1)
       expect(amount).toBe(null)
       expect(errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ message })]),
+        expect.arrayContaining([
+          expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
+        ]),
       )
     })
   })

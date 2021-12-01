@@ -521,7 +521,9 @@ describe("UserWallet - Lightning Pay", () => {
       fn: function fn(wallet) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           const feeFromProbe = await lnInvoiceProbeForFee({
+            walletPublicId: wallet.user.walletPublicId,
             paymentRequest: input.invoice,
+            logger: wallet.logger,
           })
           if (feeFromProbe instanceof Error) throw feeFromProbe
           const paymentResult = await lnInvoicePaymentSendWithTwoFA({

@@ -1,3 +1,4 @@
+import { getBalanceForWallet, walletIdFromPublicId } from "@app/wallets"
 import { checkedToSats, toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
@@ -5,6 +6,7 @@ import {
   RouteNotFoundError,
 } from "@domain/bitcoin/lightning"
 import {
+  InsufficientBalanceError,
   LnPaymentRequestZeroAmountRequiredError,
   SatoshiAmountRequiredError,
 } from "@domain/errors"
@@ -13,24 +15,32 @@ import { LndService } from "@services/lnd"
 import { RoutesCache } from "@services/redis/routes"
 
 export const lnInvoiceProbeForFee = async ({
+  walletPublicId,
   paymentRequest,
+  logger,
 }: {
+  walletPublicId: WalletPublicId
   paymentRequest: EncodedPaymentRequest
+  logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
   const decodedInvoice = await decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
   const paymentAmount = checkedToSats(decodedInvoice.amount || 0)
   if (paymentAmount instanceof Error) return paymentAmount
 
-  return feeProbe({ decodedInvoice, paymentAmount })
+  return feeProbe({ walletPublicId, decodedInvoice, paymentAmount, logger })
 }
 
 export const lnNoAmountInvoiceProbeForFee = async ({
+  walletPublicId,
   paymentRequest,
   amount,
+  logger,
 }: {
+  walletPublicId: WalletPublicId
   paymentRequest: EncodedPaymentRequest
   amount: Satoshis
+  logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
   const decodedInvoice = await decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
@@ -47,17 +57,32 @@ export const lnNoAmountInvoiceProbeForFee = async ({
   const paymentAmount = checkedToSats(amount)
   if (paymentAmount instanceof Error) return paymentAmount
 
-  return noAmountProbeForFee({ decodedInvoice, paymentAmount })
+  return noAmountProbeForFee({ walletPublicId, decodedInvoice, paymentAmount, logger })
 }
 
 const feeProbe = async ({
+  walletPublicId,
   decodedInvoice,
   paymentAmount,
+  logger,
 }: {
+  walletPublicId: WalletPublicId
   decodedInvoice: LnInvoice
   paymentAmount: Satoshis
+  logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
   const { destination, paymentHash, milliSatsAmount } = decodedInvoice
+
+  const walletId = await walletIdFromPublicId(walletPublicId)
+  if (walletId instanceof Error) return walletId
+
+  const balance = await getBalanceForWallet({ walletId, logger })
+  if (balance instanceof Error) return balance
+  if (balance < paymentAmount) {
+    return new InsufficientBalanceError(
+      `Payment amount '${paymentAmount}' exceeds balance '${balance}'`,
+    )
+  }
 
   const lndService = LndService()
   if (lndService instanceof Error) throw lndService
@@ -86,13 +111,28 @@ const feeProbe = async ({
 }
 
 const noAmountProbeForFee = async ({
+  walletPublicId,
   decodedInvoice,
   paymentAmount,
+  logger,
 }: {
+  walletPublicId: WalletPublicId
   decodedInvoice: LnInvoice
   paymentAmount: Satoshis
+  logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
   const { destination, paymentHash } = decodedInvoice
+
+  const walletId = await walletIdFromPublicId(walletPublicId)
+  if (walletId instanceof Error) return walletId
+
+  const balance = await getBalanceForWallet({ walletId, logger })
+  if (balance instanceof Error) return balance
+  if (balance < paymentAmount) {
+    return new InsufficientBalanceError(
+      `Payment amount '${paymentAmount}' exceeds balance '${balance}'`,
+    )
+  }
 
   const lndService = LndService()
   if (lndService instanceof Error) throw lndService
