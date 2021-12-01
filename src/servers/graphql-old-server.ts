@@ -386,8 +386,10 @@ const resolvers = {
         let feeSatAmount: Satoshis | ApplicationError
         if (amount && amount > 0) {
           feeSatAmount = await lnNoAmountInvoiceProbeForFee({
+            walletPublicId: wallet.user.walletPublicId,
             amount,
             paymentRequest: invoice,
+            logger,
           })
           if (!(feeSatAmount instanceof Error)) return feeSatAmount
           if (!(feeSatAmount instanceof LnPaymentRequestZeroAmountRequiredError))
@@ -395,7 +397,9 @@ const resolvers = {
         }
 
         feeSatAmount = await lnInvoiceProbeForFee({
+          walletPublicId: wallet.user.walletPublicId,
           paymentRequest: invoice,
+          logger,
         })
         if (feeSatAmount instanceof Error) throw mapError(feeSatAmount)
         return feeSatAmount
