@@ -38,6 +38,7 @@ reset-deps: clean-deps start-deps
 test: unit integration
 
 unit:
+	yarn install
 	yarn test:unit
 
 watch-unit:
@@ -48,6 +49,7 @@ watch-compile:
 	$(BIN_DIR)/tsc --watch  --noEmit --skipLibCheck
 
 integration:
+	yarn install
 	yarn test:integration
 
 reset-integration: reset-deps integration
