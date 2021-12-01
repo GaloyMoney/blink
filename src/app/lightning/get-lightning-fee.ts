@@ -4,7 +4,10 @@ import {
   LnFeeCalculator,
   RouteNotFoundError,
 } from "@domain/bitcoin/lightning"
-import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
+import {
+  LnPaymentRequestZeroAmountRequiredError,
+  SatoshiAmountRequiredError,
+} from "@domain/errors"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { LndService } from "@services/lnd"
 import { RoutesCache } from "@services/redis/routes"
@@ -35,6 +38,10 @@ export const lnNoAmountInvoiceProbeForFee = async ({
   const { amount: lnInvoiceAmount } = decodedInvoice
   if (lnInvoiceAmount && lnInvoiceAmount > 0) {
     return new LnPaymentRequestZeroAmountRequiredError()
+  }
+
+  if (!(amount && amount > 0)) {
+    return new SatoshiAmountRequiredError()
   }
 
   const paymentAmount = checkedToSats(amount)
