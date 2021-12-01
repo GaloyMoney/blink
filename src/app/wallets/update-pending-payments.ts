@@ -86,16 +86,16 @@ const updatePendingPayment = async ({
       { err: lnPaymentLookup },
       "issue fetching payment from database",
     )
-    return lnPaymentLookup
+  } else {
+    lnPaymentLookup.status = lnPaymentLookupFromLightning.status
+    if (lnPaymentLookupFromLightning.status !== PaymentStatus.Failed) {
+      lnPaymentLookup.paymentDetails = lnPaymentLookupFromLightning.paymentDetails
+    }
   }
 
-  lnPaymentLookup.status = lnPaymentLookupFromLightning.status
-  if (lnPaymentLookupFromLightning.status !== PaymentStatus.Failed) {
-    lnPaymentLookup.paymentDetails = lnPaymentLookupFromLightning.paymentDetails
-  }
-
-  const { status, paymentDetails } = lnPaymentLookup
-  const roundedUpFee = paymentDetails?.roundedUpFee || toSats(0)
+  const status = lnPaymentLookupFromLightning.status
+  const roundedUpFee =
+    lnPaymentLookupFromLightning.paymentDetails?.roundedUpFee || toSats(0)
 
   if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {
     const ledgerService = LedgerService()
@@ -119,12 +119,15 @@ const updatePendingPayment = async ({
         )
         return settled
       }
-      const persistedPayment = await LnPaymentsRepository().update(lnPaymentLookup)
-      if (persistedPayment instanceof Error) {
-        paymentLogger.error(
-          { error: lnPaymentLookup },
-          "we couldn't update payment data to our database",
-        )
+
+      if (!(lnPaymentLookup instanceof Error)) {
+        const persistedPayment = await LnPaymentsRepository().update(lnPaymentLookup)
+        if (persistedPayment instanceof Error) {
+          paymentLogger.error(
+            { error: persistedPayment },
+            "we couldn't update payment data to our database",
+          )
+        }
       }
 
       if (status === PaymentStatus.Settled) {
@@ -146,7 +149,10 @@ const updatePendingPayment = async ({
 
       return revertTransaction({
         paymentLiabilityTx,
-        lnPaymentLookup,
+        lnPaymentLookup:
+          lnPaymentLookup instanceof Error
+            ? lnPaymentLookupFromLightning
+            : lnPaymentLookup,
         logger: paymentLogger,
       })
     })
