@@ -1,6 +1,5 @@
 interface LnPaymentDetails {
   confirmedAt: Date
-  createdAt: Date
   destination: string
   milliSatsFee: number
   milliSatsAmount: number
@@ -12,6 +11,7 @@ interface LnPaymentDetails {
 interface LnPaymentType {
   id: string
   _id: string
+  createdAt: Date
   status: string
   paymentHash: string
   paymentRequest: string

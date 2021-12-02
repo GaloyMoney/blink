@@ -833,14 +833,14 @@ describe("UserWallet - Lightning Pay", () => {
         expect(persistedPayment).not.toBeInstanceOf(Error)
         if (persistedPayment instanceof Error) throw persistedPayment
 
-        const { status, paymentDetails } = persistedPayment
+        const { createdAt, status, paymentDetails } = persistedPayment
+        expect(createdAt).toBeTruthy()
         expect(status).toBe(PaymentStatus.Failed)
         expect(paymentDetails).toBeTruthy()
         if (!paymentDetails) throw new Error()
 
-        const { createdAt, confirmedAt, destination, amount, secret } = paymentDetails
+        const { confirmedAt, destination, amount, secret } = paymentDetails
         expect(confirmedAt).toBeFalsy()
-        expect(createdAt).toBeTruthy()
         expect(destination).toBeTruthy()
         expect(amount).toBeGreaterThan(0)
         expect(secret).toBeFalsy()

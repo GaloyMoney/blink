@@ -47,7 +47,6 @@ const pathSchema = new Schema({
 
 const paymentDetailsSchema = new Schema<LnPaymentDetails>({
   confirmedAt: Date,
-  createdAt: Date,
   destination: String,
   milliSatsFee: {
     type: Number,
@@ -70,6 +69,7 @@ const paymentDetailsSchema = new Schema<LnPaymentDetails>({
 })
 
 const paymentSchema = new Schema<LnPaymentType>({
+  createdAt: Date,
   status: {
     type: String,
     enum: ["settled", "failed", "pending"],

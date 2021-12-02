@@ -427,12 +427,12 @@ const lookupPaymentByPubkeyAndHash = async ({
       : PaymentStatus.Pending
 
     let paymentLookup: LnPaymentLookup = {
+      createdAt: undefined,
       status,
       paymentRequest: undefined,
-      paymentHash: "" as PaymentHash,
+      paymentHash,
       paymentDetails: {
         confirmedAt: undefined,
-        createdAt: undefined,
         destination: "" as Pubkey,
         milliSatsFee: toMilliSatsFromNumber(0),
         milliSatsAmount: toMilliSatsFromNumber(0),
@@ -444,36 +444,39 @@ const lookupPaymentByPubkeyAndHash = async ({
     }
 
     if (payment) {
-      paymentLookup = Object.assign(paymentLookup, {
+      paymentLookup = {
+        createdAt: new Date(payment.created_at),
         status,
-        paymentHash: payment.id,
-        paymentRequest: payment.request,
+        paymentHash: payment.id as PaymentHash,
+        paymentRequest: payment.request as EncodedPaymentRequest,
         paymentDetails: {
           confirmedAt: payment.confirmed_at ? new Date(payment.confirmed_at) : undefined,
-          createdAt: new Date(payment.created_at),
-          destination: payment.destination,
+          destination: payment.destination as Pubkey,
           milliSatsFee: toMilliSatsFromString(payment.fee_mtokens),
           milliSatsAmount: toMilliSatsFromString(payment.mtokens),
           paths: payment.paths || [],
           roundedUpFee: toSats(payment.safe_fee),
-          secret: payment.secret,
+          secret: payment.secret as PaymentSecret,
           amount: toSats(payment.tokens),
         },
-      })
+      }
     } else if (pending) {
-      paymentLookup = Object.assign(paymentLookup, {
+      paymentLookup = {
+        createdAt: new Date(pending.created_at),
         status,
-        paymentRequest: pending.request,
-        paymentHash: pending.id,
+        paymentRequest: pending.request as EncodedPaymentRequest,
+        paymentHash: pending.id as PaymentHash,
         paymentDetails: {
-          createdAt: new Date(pending.created_at),
-          destination: pending.destination,
+          confirmedAt: undefined,
+          destination: pending.destination as Pubkey,
+          milliSatsFee: undefined,
           milliSatsAmount: toMilliSatsFromString(pending.mtokens),
           paths: pending.paths || [],
-          secret: pending.secret,
+          roundedUpFee: undefined,
+          secret: pending.secret as PaymentSecret,
           amount: toSats(pending.tokens),
         },
-      })
+      }
     }
 
     return paymentLookup

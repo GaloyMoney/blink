@@ -24,6 +24,7 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
     payment: LnPaymentLookup,
   ): Promise<LnPayment | RepositoryError> => {
     try {
+      payment.createdAt = payment.createdAt || new Date(Date.now())
       const result = await LnPayment.findOneAndUpdate(
         { paymentHash: payment.paymentHash },
         payment,
@@ -43,12 +44,12 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
 
 const lnPaymentFromRaw = (result: LnPaymentType): LnPayment => ({
   id: result.id as PaymentLedgerId,
+  createdAt: result.createdAt as Date,
   status: result.status as PaymentStatus,
   paymentRequest: result.paymentRequest as EncodedPaymentRequest | undefined,
   paymentHash: result.paymentHash as PaymentHash,
   paymentDetails: {
     confirmedAt: (result.paymentDetails.confirmedAt as Date) || undefined,
-    createdAt: result.paymentDetails.createdAt as Date,
     destination: result.paymentDetails.destination as Pubkey,
     milliSatsFee: result.paymentDetails.milliSatsFee as MilliSatoshis,
     milliSatsAmount: result.paymentDetails.milliSatsAmount as MilliSatoshis,
