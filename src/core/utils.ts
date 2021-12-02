@@ -3,6 +3,7 @@ import { GraphQLError } from "graphql"
 import { parsePaymentRequest } from "invoices"
 
 export const isProd = process.env.NODE_ENV === "production"
+export const isDev = process.env.NODE_ENV === "development"
 
 // FIXME: super ugly hack.
 // for some reason LoggedError get casted as GraphQLError
