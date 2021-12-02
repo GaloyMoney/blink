@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:16-alpine
 
 RUN apk update \
   && apk add bash make git docker curl python3 jq rsync openssh wget \
