@@ -61,7 +61,8 @@ const updatePendingPayment = async ({
     pubkey,
     paymentHash,
   })
-  const lnPaymentLookupPromise = LnPaymentsRepository().findByPaymentHash(paymentHash)
+  const lnPaymentLookupFromDbPromise =
+    LnPaymentsRepository().findByPaymentHash(paymentHash)
 
   const lightningLogger = logger.child({
     topic: "payment",
@@ -70,9 +71,9 @@ const updatePendingPayment = async ({
     onUs: false,
   })
 
-  const [lnPaymentLookupFromLightning, lnPaymentLookup] = await Promise.all([
+  const [lnPaymentLookupFromLightning, lnPaymentLookupFromDb] = await Promise.all([
     lnPaymentLookupFromLightningPromise,
-    lnPaymentLookupPromise,
+    lnPaymentLookupFromDbPromise,
   ])
   if (lnPaymentLookupFromLightning instanceof Error) {
     lightningLogger.error(
@@ -81,15 +82,15 @@ const updatePendingPayment = async ({
     )
     return lnPaymentLookupFromLightning
   }
-  if (lnPaymentLookup instanceof Error) {
+  if (lnPaymentLookupFromDb instanceof Error) {
     lightningLogger.error(
-      { err: lnPaymentLookup },
+      { err: lnPaymentLookupFromDb },
       "issue fetching payment from database",
     )
   } else {
-    lnPaymentLookup.status = lnPaymentLookupFromLightning.status
+    lnPaymentLookupFromDb.status = lnPaymentLookupFromLightning.status
     if (lnPaymentLookupFromLightning.status !== PaymentStatus.Failed) {
-      lnPaymentLookup.paymentDetails = lnPaymentLookupFromLightning.paymentDetails
+      lnPaymentLookupFromDb.paymentDetails = lnPaymentLookupFromLightning.paymentDetails
     }
   }
 
@@ -120,9 +121,12 @@ const updatePendingPayment = async ({
         return settled
       }
 
-      if (!(lnPaymentLookup instanceof Error)) {
-        lnPaymentLookup.createdAt = lnPaymentLookup.createdAt || new Date(Date.now())
-        const persistedPayment = await LnPaymentsRepository().update(lnPaymentLookup)
+      if (!(lnPaymentLookupFromDb instanceof Error)) {
+        lnPaymentLookupFromDb.createdAt =
+          lnPaymentLookupFromDb.createdAt || new Date(Date.now())
+        const persistedPayment = await LnPaymentsRepository().update(
+          lnPaymentLookupFromDb,
+        )
         if (persistedPayment instanceof Error) {
           paymentLogger.error(
             { error: persistedPayment },
@@ -151,9 +155,9 @@ const updatePendingPayment = async ({
       return revertTransaction({
         paymentLiabilityTx,
         lnPaymentLookup:
-          lnPaymentLookup instanceof Error
+          lnPaymentLookupFromDb instanceof Error
             ? lnPaymentLookupFromLightning
-            : lnPaymentLookup,
+            : lnPaymentLookupFromDb,
         logger: paymentLogger,
       })
     })
