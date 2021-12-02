@@ -121,6 +121,7 @@ const updatePendingPayment = async ({
       }
 
       if (!(lnPaymentLookup instanceof Error)) {
+        lnPaymentLookup.createdAt = lnPaymentLookup.createdAt || new Date(Date.now())
         const persistedPayment = await LnPaymentsRepository().update(lnPaymentLookup)
         if (persistedPayment instanceof Error) {
           paymentLogger.error(

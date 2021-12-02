@@ -531,6 +531,7 @@ const executePaymentViaLn = async ({
     } else {
       payment.paymentRequest = payment.paymentRequest || paymentRequest
       payment.paymentHash = payment.paymentHash || paymentHash
+      payment.createdAt = payment.createdAt || new Date(Date.now())
       if (payment.status === "failed") {
         payment.paymentDetails = undefined
       }
