@@ -4,7 +4,7 @@ import { ALL_INTERFACE_TYPES } from "@graphql/types"
 
 import QueryType from "./queries"
 import MutationType from "./mutations"
-import { getApolloConfig } from "@config/app"
+import { isDev } from "@core/utils"
 
 export const gqlAdminSchema = new GraphQLSchema({
   query: QueryType,
@@ -12,9 +12,7 @@ export const gqlAdminSchema = new GraphQLSchema({
   types: ALL_INTERFACE_TYPES,
 })
 
-const apolloConfig = getApolloConfig()
-
-if (apolloConfig.playground) {
+if (isDev) {
   import("@services/fs").then(({ writeSDLFile }) => {
     writeSDLFile(__dirname + "/schema.graphql", printSchema(gqlAdminSchema))
   })
