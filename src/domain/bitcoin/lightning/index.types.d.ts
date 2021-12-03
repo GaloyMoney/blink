@@ -105,7 +105,7 @@ interface ILightningService {
 
   defaultPubkey(): Pubkey
 
-  invoiceProbeForRoute({
+  findRouteForInvoice({
     decodedInvoice,
     maxFee,
   }: {
@@ -113,7 +113,7 @@ interface ILightningService {
     maxFee: Satoshis
   }): Promise<RawRoute | LightningServiceError>
 
-  noAmountInvoiceProbeForRoute({
+  findRouteForNoAmountInvoice({
     decodedInvoice,
     maxFee,
     amount,

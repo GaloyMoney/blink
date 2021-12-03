@@ -55,7 +55,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       .find((item) => item == pubkey)
   }
 
-  const invoiceProbeForRoute = async ({
+  const findRouteForInvoice = async ({
     decodedInvoice,
     maxFee,
   }: {
@@ -73,7 +73,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     })
   }
 
-  const noAmountInvoiceProbeForRoute = async ({
+  const findRouteForNoAmountInvoice = async ({
     decodedInvoice,
     maxFee,
     amount,
@@ -352,8 +352,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
   return {
     isLocal,
     defaultPubkey: (): Pubkey => defaultPubkey,
-    invoiceProbeForRoute,
-    noAmountInvoiceProbeForRoute,
+    findRouteForInvoice,
+    findRouteForNoAmountInvoice,
     registerInvoice,
     lookupInvoice,
     lookupPayment,
