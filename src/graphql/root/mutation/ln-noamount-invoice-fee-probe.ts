@@ -3,7 +3,7 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import SatAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
-import { lnNoAmountInvoiceProbeForFee } from "@app/wallets/ln-probe-for-fee"
+import { getNoAmountLightningFee } from "@app/wallets/get-lightning-fee"
 import { mapError } from "@graphql/error-map"
 
 const LnNoAmountInvoiceFeeProbeInput = new GT.Input({
@@ -29,7 +29,7 @@ const LnNoAmountInvoiceFeeProbeMutation = GT.Field({
       }
     }
 
-    const feeSatAmount = await lnNoAmountInvoiceProbeForFee({
+    const feeSatAmount = await getNoAmountLightningFee({
       walletPublicId: walletId,
       amount,
       paymentRequest,

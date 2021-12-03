@@ -14,7 +14,7 @@ import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { LndService } from "@services/lnd"
 import { RoutesCache } from "@services/redis/routes"
 
-export const lnInvoiceProbeForFee = async ({
+export const getLightningFee = async ({
   walletPublicId,
   paymentRequest,
   logger,
@@ -31,7 +31,7 @@ export const lnInvoiceProbeForFee = async ({
   return feeProbe({ walletPublicId, decodedInvoice, paymentAmount, logger })
 }
 
-export const lnNoAmountInvoiceProbeForFee = async ({
+export const getNoAmountLightningFee = async ({
   walletPublicId,
   paymentRequest,
   amount,
