@@ -1,14 +1,9 @@
 import { getBalanceForWallet, walletIdFromPublicId } from "@app/wallets"
 import { checkedToSats, toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
-import {
-  decodeInvoice,
-  LnFeeCalculator,
-  RouteNotFoundError,
-} from "@domain/bitcoin/lightning"
+import { decodeInvoice, LnFeeCalculator } from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError,
   LnPaymentRequestZeroAmountRequiredError,
-  SatoshiAmountRequiredError,
 } from "@domain/errors"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { LndService } from "@services/lnd"
@@ -23,7 +18,7 @@ export const getLightningFee = async ({
   paymentRequest: EncodedPaymentRequest
   logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
-  const decodedInvoice = await decodeInvoice(paymentRequest)
+  const decodedInvoice = decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
   const paymentAmount = checkedToSats(decodedInvoice.amount || 0)
   if (paymentAmount instanceof Error) return paymentAmount
@@ -42,16 +37,12 @@ export const getNoAmountLightningFee = async ({
   amount: Satoshis
   logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
-  const decodedInvoice = await decodeInvoice(paymentRequest)
+  const decodedInvoice = decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
 
   const { amount: lnInvoiceAmount } = decodedInvoice
   if (lnInvoiceAmount && lnInvoiceAmount > 0) {
     return new LnPaymentRequestZeroAmountRequiredError()
-  }
-
-  if (!(amount && amount > 0)) {
-    return new SatoshiAmountRequiredError()
   }
 
   const paymentAmount = checkedToSats(amount)
@@ -85,7 +76,7 @@ const feeProbe = async ({
   }
 
   const lndService = LndService()
-  if (lndService instanceof Error) throw lndService
+  if (lndService instanceof Error) return lndService
   if (lndService.isLocal(destination)) {
     return toSats(0)
   }
@@ -135,7 +126,7 @@ const noAmountProbeForFee = async ({
   }
 
   const lndService = LndService()
-  if (lndService instanceof Error) throw lndService
+  if (lndService instanceof Error) return lndService
   if (lndService.isLocal(destination)) {
     return toSats(0)
   }
@@ -155,7 +146,6 @@ const noAmountProbeForFee = async ({
     maxFee,
     amount: paymentAmount,
   })
-  if (rawRoute instanceof RouteNotFoundError) return rawRoute
   if (rawRoute instanceof Error) return rawRoute
 
   const routeToCache = { pubkey: lndService.defaultPubkey(), route: rawRoute }
