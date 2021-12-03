@@ -14,4 +14,4 @@ jobs:
     - uses: actions/setup-node@v2
     - run: yarn install
     - name: Run integration tests
-      run: docker-compose up -d && make integration-in-ci
+      run: docker compose up -d && make integration-in-ci

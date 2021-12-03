@@ -14,8 +14,8 @@ $ jq --version
 jq-1.6
 $ docker --version
 Docker version 20.10.7, build f0df350
-$ docker-compose --version
-docker-compose version 1.29.2, build unknown
+$ docker compose version
+Docker Compose version 2.0.0
 ```
 
 We use [direnv](https://direnv.net) to load environment variables needed for running the integration tests.
