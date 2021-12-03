@@ -27,7 +27,7 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
       const result = await LnPayment.findOneAndUpdate(
         { paymentHash: payment.paymentHash },
         payment,
-        { upsert: true, new: true },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
       )
       return lnPaymentFromRaw(result)
     } catch (err) {
