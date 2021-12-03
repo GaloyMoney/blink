@@ -62,7 +62,7 @@ const feeProbe = async ({
   paymentAmount: Satoshis
   logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
-  const { destination, paymentHash, milliSatsAmount } = decodedInvoice
+  const { destination, paymentHash } = decodedInvoice
 
   const walletId = await walletIdFromPublicId(walletPublicId)
   if (walletId instanceof Error) return walletId
@@ -83,7 +83,7 @@ const feeProbe = async ({
 
   const key = CachedRouteLookupKeyFactory().create({
     paymentHash,
-    milliSats: milliSatsAmount,
+    milliSats: toMilliSatsFromNumber(paymentAmount * 1000),
   })
   const routeFromCache = await RoutesCache().findByKey(key)
   const validCachedRoute = !(routeFromCache instanceof Error)
@@ -133,7 +133,7 @@ const noAmountProbeForFee = async ({
 
   const key = CachedRouteLookupKeyFactory().create({
     paymentHash,
-    milliSats: toMilliSatsFromNumber(paymentAmount),
+    milliSats: toMilliSatsFromNumber(paymentAmount * 1000),
   })
   const routeFromCache = await RoutesCache().findByKey(key)
   const validCachedRoute = !(routeFromCache instanceof Error)

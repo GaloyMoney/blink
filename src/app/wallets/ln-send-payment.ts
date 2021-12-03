@@ -460,8 +460,8 @@ const executePaymentViaLn = async ({
   if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
 
   const key = CachedRouteLookupKeyFactory().create({
-    paymentHash: decodedInvoice.paymentHash,
-    milliSats: decodedInvoice.milliSatsAmount,
+    paymentHash,
+    milliSats: toMilliSatsFromNumber(amount * 1000),
   })
   const routesCache = RoutesCache()
   const cachedRoute = await routesCache.findByKey(key)
