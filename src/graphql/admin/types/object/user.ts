@@ -21,7 +21,7 @@ const User = new GT.Object({
     title: { type: GT.String },
     coordinates: {
       type: Coordinates,
-      resolve: (source) => source.coordinate,
+      resolve: (source) => source.coordinates,
     },
     createdAt: {
       type: GT.NonNull(Timestamp),

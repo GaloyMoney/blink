@@ -73,7 +73,7 @@ interface UserType {
 
   // business:
   title?: string
-  coordinate?: CoordinateObjectForUser
+  coordinates?: CoordinateObjectForUser
 
   // virtual:
   ratioUsd: number

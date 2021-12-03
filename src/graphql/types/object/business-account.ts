@@ -12,7 +12,7 @@ import * as Accounts from "@app/accounts"
 const BusinessAccount = new GT.Object({
   name: "BusinessAccount",
   interfaces: () => [IAccount],
-  isTypeOf: (source) => source.title || source.coordinate, // TODO: improve
+  isTypeOf: (source) => source.title || source.coordinates, // TODO: improve
   fields: () => ({
     id: {
       type: GT.NonNullID,

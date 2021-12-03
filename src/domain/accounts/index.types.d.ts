@@ -19,7 +19,7 @@ type Account = {
   status: AccountStatus
   readonly walletIds: WalletId[]
   title: BusinessMapTitle
-  coordinate: Coordinates
+  coordinates: Coordinates
 }
 
 type Currencies = {

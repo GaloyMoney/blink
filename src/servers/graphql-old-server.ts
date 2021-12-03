@@ -228,13 +228,14 @@ const resolvers = {
       const users = await User.find(
         {
           title: { $exists: true },
-          coordinate: { $exists: true },
+          coordinates: { $exists: true },
         },
-        { username: 1, title: 1, coordinate: 1 },
+        { username: 1, title: 1, coordinates: 1 },
       )
 
       return users.map((user) => ({
         ...user._doc,
+        coordinate: user.coordinates,
         id: user.username,
       }))
     },

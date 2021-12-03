@@ -12,7 +12,7 @@ import { caseInsensitiveRegex } from "."
 const projection = {
   level: 1,
   status: 1,
-  coordinate: 1,
+  coordinates: 1,
   walletPublicId: 1,
   username: 1,
   language: 1,
@@ -105,9 +105,9 @@ export const AccountsRepository = (): IAccountsRepository => {
       const accounts: UserType[] = await User.find(
         {
           title: { $exists: true },
-          coordinate: { $exists: true },
+          coordinates: { $exists: true },
         },
-        { username: 1, title: 1, coordinate: 1 },
+        { username: 1, title: 1, coordinates: 1 },
       )
 
       if (!accounts) {
@@ -118,7 +118,7 @@ export const AccountsRepository = (): IAccountsRepository => {
         username: account.username as Username,
         mapInfo: {
           title: account.title as BusinessMapTitle,
-          coordinates: account.coordinate as Coordinates,
+          coordinates: account.coordinates as Coordinates,
         },
       }))
     } catch (err) {
@@ -131,13 +131,13 @@ export const AccountsRepository = (): IAccountsRepository => {
     id,
     level,
     status,
-    coordinate,
+    coordinates,
     title,
   }: Account): Promise<Account | Error> => {
     try {
       const result = await User.findOneAndUpdate(
         { _id: id },
-        { level, status, coordinate, title },
+        { level, status, coordinates, title },
         {
           new: true,
           projection,
@@ -173,6 +173,6 @@ const translateToAccount = (result): Account => ({
   level: (result.level as AccountLevel) || AccountLevel.One,
   status: (result.status as AccountStatus) || AccountStatus.Active,
   title: result.title as BusinessMapTitle,
-  coordinate: result.coordinate as Coordinates,
+  coordinates: result.coordinates as Coordinates,
   walletIds: [result.id as WalletId],
 })

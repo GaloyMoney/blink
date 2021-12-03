@@ -40,12 +40,12 @@ const BusinessUpdateMapInfoMutation = GT.Field({
     if (title.length < 3) return new UserInputError("title is too short")
     if (title.length > 100) return new UserInputError("title is too long")
 
-    const coordinate = {
+    const coordinates = {
       latitude,
       longitude,
     }
 
-    const account = await updateBusinessMapInfo({ username, title, coordinate })
+    const account = await updateBusinessMapInfo({ username, title, coordinates })
 
     if (account instanceof Error) {
       return { errors: [{ message: account.message }] }
@@ -60,7 +60,7 @@ const BusinessUpdateMapInfoMutation = GT.Field({
         level: account.level,
         status: account.status,
         title: account.title,
-        coordinate: account.coordinate,
+        coordinates: account.coordinates,
         createdAt: account.createdAt,
       },
     }

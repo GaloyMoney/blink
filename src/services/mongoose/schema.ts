@@ -233,7 +233,7 @@ const UserSchema = new Schema<UserType>({
     minlength: 3,
     maxlength: 100,
   },
-  coordinate: {
+  coordinates: {
     type: {
       latitude: {
         type: Number,
@@ -438,7 +438,7 @@ UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User
 
 UserSchema.index({
   title: 1,
-  coordinate: 1,
+  coordinates: 1,
 })
 
 export const User = mongoose.model<UserType>("User", UserSchema)

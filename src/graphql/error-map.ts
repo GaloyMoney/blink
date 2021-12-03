@@ -11,7 +11,8 @@ import {
   ValidationInternalError,
   TooManyRequestError,
   RouteFindingError,
-  PhoneCodeError,
+  InvalidCoordinatesError,
+  InvalidTitleLengthError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -139,6 +140,12 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
 
     case "UnknownTwoFAError":
       return new TwoFAError({ message, logger: baseLogger })
+
+    case "InvalidCoordinatesError":
+      return new InvalidCoordinatesError({ message, logger: baseLogger })
+
+    case "InvalidTitleLengthError":
+      return new InvalidTitleLengthError({ message, logger: baseLogger })
 
     // ----------
     // Unhandled below here
