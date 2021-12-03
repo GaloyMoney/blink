@@ -7,7 +7,7 @@ type RawHopWithStrings = NonNullable<PayViaPaymentDetailsArgs["routes"]>[number]
 type PayViaRoutesArgs = import("lightning").PayViaRoutesArgs
 type RawRouteFromProbe = PayViaRoutesArgs["routes"][number]
 type RawRoute = { safe_fee: number } & RawRouteFromProbe
-type Route = { roundedUpFee: Satoshis; roundedDownFee: Satoshis }
+type Route = { roundedUpFee: Satoshis }
 
 type CachedRoute = { pubkey: Pubkey; route: RawRoute }
 

@@ -473,7 +473,6 @@ const executePaymentViaLn = async ({
     ;({ pubkey, route: rawRoute } = cachedRoute)
     route = {
       roundedUpFee: toSats(rawRoute.safe_fee),
-      roundedDownFee: toSats(rawRoute.fee),
     }
   }
 
