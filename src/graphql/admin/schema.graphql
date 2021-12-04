@@ -206,6 +206,19 @@ type SuccessPayload {
   success: Boolean
 }
 
+enum AccountStatus {
+  LOCKED
+  ACTIVE
+}
+
+type User {
+  id: ID!
+  phone: Phone!
+  language: Language!
+  defaultAccount: AccountDetail
+  createdAt: Timestamp!
+}
+
 """
 Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
 """

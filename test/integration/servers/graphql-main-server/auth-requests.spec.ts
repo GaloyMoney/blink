@@ -35,6 +35,7 @@ beforeAll(async () => {
   // mock jwt middleware
   setOptions({ request: { token } })
   const meResult = await query(ME)
+  baseLogger.info({ meResult })
   walletId = meResult.data.me.defaultAccount.defaultWalletId
 })
 
