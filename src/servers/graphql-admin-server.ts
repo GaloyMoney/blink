@@ -17,16 +17,16 @@ export async function startApolloServerForAdminSchema() {
     {
       Query: {
         allLevels: and(isAuthenticated, isEditor),
-        userDetailsByPhone: and(isAuthenticated, isEditor),
-        userDetailsByUsername: and(isAuthenticated, isEditor),
+        accountDetailsByPhone: and(isAuthenticated, isEditor),
+        accountDetailsByUsername: and(isAuthenticated, isEditor),
         transactionById: and(isAuthenticated, isEditor),
         transactionsByHash: and(isAuthenticated, isEditor),
         lightningInvoice: and(isAuthenticated, isEditor),
         lightningPayment: and(isAuthenticated, isEditor),
       },
       Mutation: {
-        userUpdateStatus: and(isAuthenticated, isEditor),
-        userUpdateLevel: and(isAuthenticated, isEditor),
+        accountUpdateStatus: and(isAuthenticated, isEditor),
+        accountUpdateLevel: and(isAuthenticated, isEditor),
         businessUpdateMapInfo: and(isAuthenticated, isEditor),
       },
     },

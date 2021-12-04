@@ -22,10 +22,10 @@ describe("GraphQLQueryRoot", () => {
     expect(data?.allLevels).toEqual(["ONE", "TWO"])
   })
 
-  it("exposes userDetails by phone", async () => {
+  it("exposes accountDetails by phone", async () => {
     const query = `
       query Q {
-        userDetails: userDetailsByPhone(phone: "+19876543210") {
+        accountDetails: accountDetailsByUserPhone(phone: "+19876543210") {
           createdAt
         }
       }
@@ -33,13 +33,13 @@ describe("GraphQLQueryRoot", () => {
     const result = await graphql(gqlAdminSchema, query, {})
     const { errors, data } = result
     expect(errors).toBeUndefined()
-    expect(data?.userDetails.createdAt).toBeDefined()
+    expect(data?.accountDetails.createdAt).toBeDefined()
   })
 
-  it("exposes userDetails by username", async () => {
+  it("exposes accountDetails by username", async () => {
     const query = `
       query Q {
-        userDetails: userDetailsByUsername(username: "tester") {
+        accountDetails: accountDetailsByUsername(username: "tester") {
           createdAt
         }
       }
@@ -47,6 +47,6 @@ describe("GraphQLQueryRoot", () => {
     const result = await graphql(gqlAdminSchema, query, {})
     const { errors, data } = result
     expect(errors).toBeUndefined()
-    expect(data?.userDetails.createdAt).toBeDefined()
+    expect(data?.accountDetails.createdAt).toBeDefined()
   })
 })

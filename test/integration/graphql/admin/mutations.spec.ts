@@ -13,31 +13,34 @@ beforeAll(async () => {
 })
 
 describe("GraphQLMutationRoot", () => {
-  it("exposes userUpdateLevel", async () => {
+  it("exposes accountUpdateLevel", async () => {
     const mutation = `
       mutation {
-        userUpdateLevel(input: { uid: "${user.id}", level: TWO}) {
+        accountUpdateLevel(input: { uid: "${user.id}", level: TWO}) {
           errors {
             message
           }
-          userDetails {
+          accountDetails {
             id
             level
             createdAt
+            username
           }
         }
       }
     `
 
+    let username
     {
       const { errors, data } = await graphql(gqlAdminSchema, mutation, {})
       expect(errors).toBeUndefined()
-      expect(data?.userUpdateLevel.userDetails.level).toEqual("TWO")
+      expect(data?.accountUpdateLevel.accountDetails.level).toEqual("TWO")
+      username = data?.accountUpdateLevel.accountDetails.username
     }
 
     const query = `
     query {
-      userDetailsByUsername(username: "tester") {
+      accountDetailsByUsername(username: "${username}") {
         level
       }
     }
@@ -46,19 +49,18 @@ describe("GraphQLMutationRoot", () => {
     {
       const { errors, data } = await graphql(gqlAdminSchema, query, {})
       expect(errors).toBeUndefined()
-      console.log({ data })
-      expect(data?.userDetailsByUsername.level).toEqual("TWO")
+      expect(data?.accountDetailsByUsername.level).toEqual("TWO")
     }
   })
 
-  it("exposes userUpdateStatus", async () => {
+  it("exposes accountUpdateStatus", async () => {
     const mutation = `
       mutation {
-        userUpdateStatus(input: { uid: "${user.id}", status: LOCKED}) {
+        accountUpdateStatus(input: { uid: "${user.id}", status: LOCKED}) {
           errors {
             message
           }
-          userDetails {
+          accountDetails {
             id
             level
             createdAt
@@ -72,7 +74,7 @@ describe("GraphQLMutationRoot", () => {
 
     const query = `
     query {
-      userDetailsByUsername(username: "tester") {
+      accountDetailsByUsername(username: "tester") {
         id
         status
       }
@@ -82,10 +84,10 @@ describe("GraphQLMutationRoot", () => {
     {
       const { errors, data } = await graphql(gqlAdminSchema, query, {})
       expect(errors).toBeUndefined()
-      expect(data?.userDetailsByUsername.id).toEqual(
-        dataMutation?.userUpdateStatus.userDetails.id,
+      expect(data?.accountDetailsByUsername.id).toEqual(
+        dataMutation?.accountUpdateStatus.accountDetails.id,
       )
-      expect(data?.userDetailsByUsername.status).toEqual("LOCKED")
+      expect(data?.accountDetailsByUsername.status).toEqual("LOCKED")
     }
   })
 
@@ -96,7 +98,7 @@ describe("GraphQLMutationRoot", () => {
           errors {
             message
           }
-          userDetails {
+          accountDetails {
             id
             level
             status
@@ -117,7 +119,7 @@ describe("GraphQLMutationRoot", () => {
 
     const query = `
     query {
-      userDetailsByUsername(username: "tester") {
+      accountDetailsByUsername(username: "tester") {
         id
         title
         coordinates {
@@ -131,11 +133,11 @@ describe("GraphQLMutationRoot", () => {
     const { errors, data } = await graphql(gqlAdminSchema, query, {})
     expect(errors).toBeUndefined()
 
-    expect(dataMutation?.businessUpdateMapInfo.userDetails.id).toEqual(
-      data?.userDetailsByUsername.id,
+    expect(dataMutation?.businessUpdateMapInfo.accountDetails.id).toEqual(
+      data?.accountDetailsByUsername.id,
     )
-    expect(data?.userDetailsByUsername.title).toEqual("MapTest")
-    expect(data?.userDetailsByUsername.coordinates).toEqual({
+    expect(data?.accountDetailsByUsername.title).toEqual("MapTest")
+    expect(data?.accountDetailsByUsername.coordinates).toEqual({
       longitude: 1,
       latitude: -1,
     })

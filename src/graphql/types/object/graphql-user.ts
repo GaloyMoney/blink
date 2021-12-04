@@ -84,8 +84,9 @@ const GraphQLUser = new GT.Object({
 
     defaultAccount: {
       type: GT.NonNull(Account),
-      resolve: async (source) => {
-        const account = await Accounts.getAccount(source.defaultAccountId)
+      resolve: async (source, args, { domainUser }) => {
+        // TODO: could also be return domainAccount
+        const account = await Accounts.getAccount(domainUser.defaultAccountId)
         if (account instanceof Error) {
           throw account
         }

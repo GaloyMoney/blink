@@ -1,8 +1,8 @@
 import { GT } from "@graphql/index"
 
-import UserDetailPayload from "@graphql/admin/types/payload/user-detail"
+import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
 import AccountStatus from "@graphql/admin/types/scalar/account-status"
-import { updateUserAccountStatus } from "@app/users/update-user-status"
+import { updateUserAccountStatus } from "@app/accounts/update-account-status"
 
 const UserUpdateStatusInput = new GT.Input({
   name: "UserUpdateStatusInput",
@@ -17,7 +17,7 @@ const UserUpdateStatusInput = new GT.Input({
 })
 
 const UserUpdateStatusMutation = GT.Field({
-  type: GT.NonNull(UserDetailPayload),
+  type: GT.NonNull(AccountDetailPayload),
   args: {
     input: { type: GT.NonNull(UserUpdateStatusInput) },
   },
@@ -29,11 +29,11 @@ const UserUpdateStatusMutation = GT.Field({
       }
     }
 
-    const user = await updateUserAccountStatus({ id: uid, status })
-    if (user instanceof Error) {
-      return { errors: [{ message: user.message }] }
+    const account = await updateUserAccountStatus({ id: uid, status })
+    if (account instanceof Error) {
+      return { errors: [{ message: account.message }] }
     }
-    return { errors: [], userDetails: user }
+    return { errors: [], accountDetails: account }
   },
 })
 

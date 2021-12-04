@@ -12,7 +12,6 @@ type AccountStatus =
 type Account = {
   readonly id: AccountId
   readonly createdAt: Date
-  language: UserLanguage
   username: Username
   readonly walletPublicId: WalletPublicId
   level: AccountLevel
@@ -77,5 +76,5 @@ interface IAccountsRepository {
   findByPhone(phone: PhoneNumber): Promise<Account | RepositoryError>
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
-  update(account: Account): Promise<Account | Error>
+  update(account: Account): Promise<Account | RepositoryError>
 }

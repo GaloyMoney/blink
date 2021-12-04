@@ -8,14 +8,12 @@ import {
   MS_PER_DAY,
   USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD,
 } from "@config/app"
-import { NotFoundError } from "@core/error"
 import { UsernameRegex } from "@domain/users"
 import { accountPath } from "@services/ledger/accounts"
 import { Transaction } from "@services/ledger/schema"
 import crypto from "crypto"
 import * as _ from "lodash"
 import * as mongoose from "mongoose"
-import { baseLogger } from "../logger"
 
 export { Transaction }
 
@@ -410,16 +408,6 @@ UserSchema.virtual("userIsActive").get(async function (this: typeof UserSchema) 
     volume.outgoingSats > activenessThreshold || volume.incomingSats > activenessThreshold
   )
 })
-
-UserSchema.statics.getUserByPhone = async function (phone: string) {
-  const user = await this.findOne({ phone }, { lastIPs: 0, lastConnection: 0 })
-
-  if (!user) {
-    throw new NotFoundError("User not found", { logger: baseLogger })
-  }
-
-  return user
-}
 
 UserSchema.statics.getUserByAddress = async function ({ address }) {
   return this.findOne({ "onchain.address": address }, { lastIPs: 0, lastConnection: 0 })

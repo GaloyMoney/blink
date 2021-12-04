@@ -1,54 +1,54 @@
-interface Account {
-  csvTransactions(walletIds: [WalletId!]!): String!
-  defaultWalletId: WalletId!
+type InputError implements Error {
+  message: String!
+  path: [String]
+  code: InputErrorCode!
+}
+
+interface Error {
+  message: String!
+  path: [String]
+}
+
+enum InputErrorCode {
+  INVALID_INPUT
+  VALUE_TOO_SHORT
+  VALUE_TOO_LONG
+  VALUE_NOT_ALLOWED
+}
+
+type PaymentError implements Error {
+  message: String!
+  path: [String]
+  code: PaymentErrorCode!
+}
+
+enum PaymentErrorCode {
+  ACCOUNT_LOCKED
+  LIMIT_EXCEEDED
+  INSUFFICENT_BALANCE
+  INVOICE_PAID
+  NO_LIQUIDITY
+  NO_ROUTE
+}
+
+type ConsumerAccount implements Account {
   id: ID!
   wallets: [Wallet!]!
+  defaultWalletId: WalletId!
+  csvTransactions(walletIds: [WalletId!]!): String!
 }
 
-type AccountApiKey {
-  expireAt: Timestamp!
-  key: String!
-  label: AccountApiKeyLabel!
-  secret: String!
-}
-
-input AccountApiKeyCreateInput {
-  expireAt: Timestamp!
-  label: AccountApiKeyLabel
-}
-
-input AccountApiKeyDisableInput {
-  label: AccountApiKeyLabel!
-}
-
-type AccountApiKeyHashed {
-  expireAt: Timestamp!
-  label: AccountApiKeyLabel!
-}
-
-"""
-Identifier of an account api key
-"""
-scalar AccountApiKeyLabel
-
-type AccountApiKeyPayload {
-  accountApiKey: AccountApiKey
-  errors: [Error!]!
-}
-
-"""
-An authentication code valid for a single use
-"""
-scalar AuthToken
-
-type AuthTokenPayload {
-  authToken: AuthToken
-  errors: [Error!]!
-}
-
-type BTCWallet implements Wallet {
-  balance: SignedAmount!
+interface Account {
   id: ID!
+  wallets: [Wallet!]!
+  defaultWalletId: WalletId!
+  csvTransactions(walletIds: [WalletId!]!): String!
+}
+
+interface Wallet {
+  id: ID!
+  walletCurrency: WalletCurrency!
+  balance: SignedAmount!
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -73,10 +73,14 @@ type BTCWallet implements Wallet {
   walletCurrency: WalletCurrency!
 }
 
-type CaptchaCreateChallengePayload {
-  errors: [Error!]!
-  result: CaptchaCreateChallengeResult
+enum WalletCurrency {
+  BTC
 }
+
+"""
+An amount (of a currency) that can be negative (i.g. in a transaction)
+"""
+scalar SignedAmount
 
 type CaptchaCreateChallengeResult {
   challengeCode: String!
@@ -146,6 +150,11 @@ type InitiationViaIntraLedger {
   counterPartyWalletId: WalletId
 }
 
+"""
+Unique identifier of a user
+"""
+scalar Username
+
 type InitiationViaLn {
   paymentHash: PaymentHash!
 }
@@ -180,9 +189,19 @@ type IntraLedgerUpdate {
   usdPerSat: Float!
 }
 
-enum InvoicePaymentStatus {
-  PAID
-  PENDING
+"""
+(Positive) Satoshi amount (i.g. quiz earning)
+"""
+scalar SatAmount
+
+"""
+Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
+"""
+type Price {
+  base: SafeInt!
+  offset: Int!
+  currencyUnit: ExchangeCurrencyUnit!
+  formattedAmount: String!
 }
 
 scalar Language
@@ -207,25 +226,178 @@ input LnInvoiceCreateOnBehalfOfRecipientInput {
   recipientWalletId: WalletId!
 }
 
-input LnInvoiceFeeProbeInput {
-  paymentRequest: LnPaymentRequest!
-  walletId: WalletId!
+"""
+Text field in a lightning payment transaction
+"""
+scalar Memo
+
+"""
+Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
+"""
+scalar Timestamp
+
+type BTCWallet implements Wallet {
+  id: ID!
+  walletCurrency: WalletCurrency!
+  balance: SignedAmount!
+  transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
 }
 
-type LnInvoicePayload {
-  errors: [Error!]!
-  invoice: LnInvoice
+type Query {
+  globals: Globals
+  me: User
+  usernameAvailable(username: Username!): Boolean
+  userDefaultWalletId(username: Username!): WalletId!
+  businessMapMarkers: [MapMarker]
+  mobileVersions: [MobileVersions]
+  quizQuestions: [QuizQuestion]
+  btcPriceList(range: PriceGraphRange!): [PricePoint]
+  onChainTxFee(
+    walletId: WalletId!
+    address: OnChainAddress!
+    amount: SatAmount!
+    targetConfirmations: TargetConfirmations = 1
+  ): OnChainTxFee!
+  accountApiKeys: [AccountApiKeyHashed]
 }
 
-input LnInvoicePaymentInput {
-  memo: Memo
-  paymentRequest: LnPaymentRequest!
-  walletId: WalletId!
+"""
+Provides global settings for the application which might have an impact for the user.
+"""
+type Globals {
+  """
+  A list of public keys for the running lightning nodes.
+  This can be used to know if an invoice belongs to one of our nodes.
+  """
+  nodesIds: [String!]!
 }
 
-input LnInvoicePaymentStatusInput {
-  paymentRequest: LnPaymentRequest!
+type User {
+  id: ID!
+
+  """
+  Phone number with international calling code.
+  """
+  phone: Phone!
+
+  """
+  Optional immutable user friendly identifier.
+  """
+  username: Username
+
+  """
+  Preferred language for user.
+  When value is 'default' the intent is to use preferred language from OS settings.
+  """
+  language: Language!
+
+  """
+  List the quiz questions the user may have completed.
+  """
+  quizQuestions: [UserQuizQuestion!]!
+
+  """
+  Get full list of contacts.
+  Can include the transactions associated with each contact.
+  """
+  contacts: [UserContact!]!
+
+  """
+  Get single contact details.
+  Can include the transactions associated with the contact.
+  """
+  contactByUsername(username: Username!): UserContact!
+  twoFAEnabled: Boolean
+  createdAt: Timestamp!
+  defaultAccount: Account!
 }
+
+"""
+Phone number which includes country code
+"""
+scalar Phone
+
+scalar Language
+
+type UserQuizQuestion {
+  question: QuizQuestion!
+  completed: Boolean!
+}
+
+type QuizQuestion {
+  id: ID!
+
+  """
+  The earn reward in Satoshis for the quiz question
+  """
+  earnAmount: SatAmount!
+}
+
+type UserContact {
+  id: Username!
+
+  """
+  Actual identifier of the contact.
+  """
+  username: Username!
+
+  """
+  Alias the user can set for this contact.
+  Only the user can see the alias attached to their contact.
+  """
+  alias: ContactAlias
+  transactionsCount: Int!
+
+  """
+  Paginated list of transactions sent to/from this contact.
+  """
+  transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
+}
+
+"""
+An alias name that a user can set for a wallet (with which they have transactions)
+"""
+scalar ContactAlias
 
 type LnInvoicePaymentStatusPayload {
   errors: [Error!]!
@@ -345,17 +517,8 @@ type MyUpdatesPayload {
   update: UserUpdate
 }
 
-"""
-An address for an on-chain bitcoin destination
-"""
-scalar OnChainAddress
-
-input OnChainAddressCreateInput {
-  walletId: WalletId!
-}
-
-input OnChainAddressCurrentInput {
-  walletId: WalletId!
+input UserRequestAuthCodeInput {
+  phone: Phone!
 }
 
 type OnChainAddressPayload {

@@ -5,6 +5,22 @@ interface Account {
   wallets: [Wallet!]!
 }
 
+type AccountDetail {
+  coordinates: Coordinates
+  createdAt: Timestamp!
+  id: ID!
+  level: AccountLevel
+  owner: User!
+  status: AccountStatus
+  title: String
+  username: Username
+}
+
+type AccountDetailPayload {
+  accountDetails: AccountDetail
+  errors: [Error!]!
+}
+
 enum AccountLevel {
   ONE
   TWO
@@ -13,6 +29,11 @@ enum AccountLevel {
 enum AccountStatus {
   ACTIVE
   LOCKED
+}
+
+input AccountUpdateLevelInput {
+  level: AccountLevel!
+  uid: ID!
 }
 
 """
@@ -154,11 +175,11 @@ Text field in a lightning payment transaction
 scalar Memo
 
 type Mutation {
-  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): UserDetailPayload!
+  accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
+  accountUpdateStatus(input: UserUpdateStatusInput!): AccountDetailPayload!
+  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
-  userUpdateLevel(input: UserUpdateLevelInput!): UserDetailPayload!
-  userUpdateStatus(input: UserUpdateStatusInput!): UserDetailPayload!
 }
 
 """
@@ -231,13 +252,13 @@ type Price {
 }
 
 type Query {
+  accountDetailsByUserPhone(phone: Phone!): AccountDetail!
+  accountDetailsByUsername(username: Username!): AccountDetail!
   allLevels: [AccountLevel!]!
   lightningInvoice(hash: PaymentHash!): LightningInvoice!
   lightningPayment(hash: PaymentHash!): LightningPayment!
   transactionById(id: ID!): Transaction
   transactionsByHash(hash: PaymentHash!): [Transaction]
-  userDetailsByPhone(phone: Phone!): User!
-  userDetailsByUsername(username: Username!): User!
 }
 
 """
@@ -361,20 +382,11 @@ enum TxStatus {
 }
 
 type User {
-  coordinates: Coordinates
   createdAt: Timestamp!
+  defaultAccount: AccountDetail
   id: ID!
   language: Language!
-  level: AccountLevel
   phone: Phone!
-  status: AccountStatus
-  title: String
-  username: Username
-}
-
-type UserDetailPayload {
-  errors: [Error!]!
-  userDetails: User
 }
 
 input UserLoginInput {
@@ -384,11 +396,6 @@ input UserLoginInput {
 
 input UserRequestAuthCodeInput {
   phone: Phone!
-}
-
-input UserUpdateLevelInput {
-  level: AccountLevel!
-  uid: ID!
 }
 
 input UserUpdateStatusInput {

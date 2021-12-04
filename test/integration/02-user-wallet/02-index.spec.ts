@@ -1,7 +1,7 @@
 import { getGenericLimits, MS_PER_HOUR } from "@config/app"
 import { generateTokenHelper, getAndCreateUserWallet } from "test/helpers"
-import { updateUserAccountStatus } from "@app/users/update-user-status"
 import { WalletsRepository } from "@services/mongoose"
+import { updateUserAccountStatus } from "@app/accounts/update-account-status"
 
 let userWallet0, userWallet1, userWallet2
 const username = "user0" as Username

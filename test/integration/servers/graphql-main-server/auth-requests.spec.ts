@@ -19,6 +19,7 @@ import {
   clearLimiters,
   clearAccountLocks,
 } from "test/helpers"
+import { baseLogger } from "@services/logger"
 
 jest.mock("@services/twilio", () => require("test/mocks/twilio"))
 
@@ -36,6 +37,7 @@ beforeAll(async () => {
   // mock jwt middleware
   setOptions({ request: { token } })
   const meResult = await query(ME)
+  baseLogger.info({ meResult })
   walletId = meResult.data.me.defaultAccount.defaultWalletId
 })
 

@@ -198,10 +198,14 @@ type PageInfo {
   startCursor: String
 }
 
-type PaymentError implements Error {
-  code: PaymentErrorCode!
-  message: String!
-  path: [String]
+type Query {
+  allLevels: [AccountLevel!]!
+  accountDetailsByUserPhone(phone: Phone!): AccountDetail!
+  accountDetailsByUsername(username: Username!): AccountDetail!
+  transactionById(id: ID!): Transaction
+  transactionsByHash(hash: PaymentHash!): [Transaction]
+  lightningInvoice(hash: PaymentHash!): LightningInvoice!
+  lightningPayment(hash: PaymentHash!): LightningPayment!
 }
 
 enum PaymentErrorCode {
@@ -213,31 +217,40 @@ enum PaymentErrorCode {
   NO_ROUTE
 }
 
-scalar PaymentHash
+type AccountDetail {
+  id: ID!
+  username: Username
+  level: AccountLevel
+  status: AccountStatus
+  title: String
+  owner: User!
+  coordinates: Coordinates
+  createdAt: Timestamp!
+}
+
+enum AccountStatus {
+  LOCKED
+  ACTIVE
+}
+
+type User {
+  id: ID!
+  phone: Phone!
+  language: Language!
+  defaultAccount: AccountDetail
+  createdAt: Timestamp!
+}
 
 """
 Phone number which includes country code
 """
 scalar Phone
 
-"""
-Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
-"""
-type Price {
-  base: SafeInt!
-  currencyUnit: ExchangeCurrencyUnit!
-  formattedAmount: String!
-  offset: Int!
-}
+scalar Language
 
-type Query {
-  allLevels: [AccountLevel!]!
-  lightningInvoice(hash: PaymentHash!): LightningInvoice!
-  lightningPayment(hash: PaymentHash!): LightningPayment!
-  transactionById(id: ID!): Transaction
-  transactionsByHash(hash: PaymentHash!): [Transaction]
-  userDetailsByPhone(phone: Phone!): User!
-  userDetailsByUsername(username: Username!): User!
+type Coordinates {
+  longitude: Float!
+  latitude: Float!
 }
 
 """
@@ -264,8 +277,12 @@ type SettlementViaLn {
   paymentSecret: LnPaymentSecret
 }
 
-type SettlementViaOnChain {
-  transactionHash: OnChainTxHash!
+type Mutation {
+  userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
+  userLogin(input: UserLoginInput!): AuthTokenPayload!
+  accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
+  accountUpdateStatus(input: UserUpdateStatusInput!): AccountDetailPayload!
+  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
 }
 
 """
@@ -372,21 +389,13 @@ type User {
   username: Username
 }
 
-type UserDetailPayload {
+type AccountDetailPayload {
   errors: [Error!]!
-  userDetails: User
+  accountDetails: AccountDetail
 }
 
-input UserLoginInput {
-  code: OneTimeAuthCode!
-  phone: Phone!
-}
-
-input UserRequestAuthCodeInput {
-  phone: Phone!
-}
-
-input UserUpdateLevelInput {
+input AccountUpdateLevelInput {
+  uid: ID!
   level: AccountLevel!
   uid: ID!
 }

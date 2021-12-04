@@ -1,9 +1,7 @@
-import { GT } from "@graphql/index"
-
-import UserDetailPayload from "@graphql/admin/types/payload/user-detail"
-import Username from "@graphql/types/scalar/username"
 import { updateBusinessMapInfo } from "@app/accounts/update-business-map-info"
-import { UserInputError } from "apollo-server-errors"
+import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
+import { GT } from "@graphql/index"
+import Username from "@graphql/types/scalar/username"
 
 const BusinessUpdateMapInfoInput = new GT.Input({
   name: "BusinessUpdateMapInfoInput",
@@ -24,7 +22,7 @@ const BusinessUpdateMapInfoInput = new GT.Input({
 })
 
 const BusinessUpdateMapInfoMutation = GT.Field({
-  type: GT.NonNull(UserDetailPayload),
+  type: GT.NonNull(AccountDetailPayload),
   args: {
     input: { type: GT.NonNull(BusinessUpdateMapInfoInput) },
   },
@@ -36,9 +34,6 @@ const BusinessUpdateMapInfoMutation = GT.Field({
         return { errors: [{ message: input.message }] }
       }
     }
-
-    if (title.length < 3) return new UserInputError("title is too short")
-    if (title.length > 100) return new UserInputError("title is too long")
 
     const coordinates = {
       latitude,
@@ -53,8 +48,7 @@ const BusinessUpdateMapInfoMutation = GT.Field({
 
     return {
       errors: [],
-      // FIXME: rename accountDetails
-      userDetails: {
+      accountDetails: {
         id: account.id,
         username: account.username,
         level: account.level,

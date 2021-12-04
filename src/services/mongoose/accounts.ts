@@ -15,7 +15,6 @@ const projection = {
   coordinates: 1,
   walletPublicId: 1,
   username: 1,
-  language: 1,
   title: 1,
   created_at: 1,
 }
@@ -127,13 +126,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   }
 
   // currently only used by Admin
-  const update = async ({
-    id,
-    level,
-    status,
-    coordinates,
-    title,
-  }: Account): Promise<Account | Error> => {
+  const update = async ({ id, level, status, coordinates, title }: Account) => {
     try {
       const result = await User.findOneAndUpdate(
         { _id: id },
@@ -169,7 +162,6 @@ const translateToAccount = (result): Account => ({
   createdAt: new Date(result.created_at),
   walletPublicId: result.walletPublicId as WalletPublicId,
   username: result.username as Username,
-  language: result.langugage as UserLanguage,
   level: (result.level as AccountLevel) || AccountLevel.One,
   status: (result.status as AccountStatus) || AccountStatus.Active,
   title: result.title as BusinessMapTitle,

@@ -4,7 +4,7 @@ import { ALL_INTERFACE_TYPES } from "@graphql/types"
 
 import QueryType from "./queries"
 import MutationType from "./mutations"
-import { isDev } from "@core/utils"
+import { isDev } from "@config/app"
 
 if (isDev) {
   import("@services/fs").then(({ writeSDLFile }) => {

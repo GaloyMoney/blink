@@ -11,12 +11,12 @@ export class ConfigError extends Error {
   name = this.constructor.name
 }
 
-const jwtToken = process.env.JWT_SECRET
-if (!jwtToken) {
+const jwtSecret = process.env.JWT_SECRET
+if (!jwtSecret) {
   throw new ConfigError("missing JWT_SECRET")
 }
 
-export const JWT_SECRET = jwtToken
+export const JWT_SECRET = jwtSecret
 
 const btcNetwork = process.env.NETWORK
 const networks = ["mainnet", "testnet", "regtest"]
@@ -248,6 +248,12 @@ export const getBuildVersions = (): {
 }
 
 export const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
+
+// FIXME: we have process.env.NODE_ENV === "production" | "development" | "test"
+// "test" might not be needed
+
+export const isProd = process.env.NODE_ENV === "production"
+export const isDev = process.env.NODE_ENV === "development"
 
 export const getIpConfig = (config = yamlConfig): IpConfig => ({
   ipRecordingEnabled:
