@@ -8,12 +8,12 @@ import AccountStatus from "../scalar/account-status"
 import User from "./user"
 
 const Account = new GT.Object({
-  name: "AccountDetail",
+  name: "Account",
   fields: () => ({
     id: { type: GT.NonNullID },
     username: { type: Username },
-    level: { type: AccountLevel },
-    status: { type: AccountStatus },
+    level: { type: GT.NonNull(AccountLevel) },
+    status: { type: GT.NonNull(AccountStatus) },
     title: { type: GT.String },
     owner: {
       // should be used for individual account only,

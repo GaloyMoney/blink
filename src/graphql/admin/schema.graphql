@@ -1,8 +1,11 @@
-interface Account {
-  csvTransactions(walletIds: [WalletId!]!): String!
-  defaultWalletId: WalletId!
-  id: ID!
-  wallets: [Wallet!]!
+type Query {
+  allLevels: [AccountLevel!]!
+  accountDetailsByUserPhone(phone: Phone!): Account!
+  accountDetailsByUsername(username: Username!): Account!
+  transactionById(id: ID!): Transaction
+  transactionsByHash(hash: PaymentHash!): [Transaction]
+  lightningInvoice(hash: PaymentHash!): LightningInvoice!
+  lightningPayment(hash: PaymentHash!): LightningPayment!
 }
 
 enum AccountLevel {
@@ -10,70 +13,50 @@ enum AccountLevel {
   TWO
 }
 
+type Account {
+  id: ID!
+  username: Username
+  level: AccountLevel!
+  status: AccountStatus!
+  title: String
+  owner: User!
+  coordinates: Coordinates
+  createdAt: Timestamp!
+}
+
+"""
+Unique identifier of a user
+"""
+scalar Username
+
 enum AccountStatus {
-  ACTIVE
   LOCKED
+  ACTIVE
+}
+
+type User {
+  id: ID!
+  phone: Phone!
+  language: Language!
+  defaultAccount: Account!
+  createdAt: Timestamp!
 }
 
 """
-An authentication code valid for a single use
+Phone number which includes country code
 """
-scalar AuthToken
+scalar Phone
 
-type AuthTokenPayload {
-  authToken: AuthToken
-  errors: [Error!]!
-}
+scalar Language
 
-type BTCWallet implements Wallet {
-  balance: SignedAmount!
-  id: ID!
-  transactions(
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
-    after: String
-
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
-    before: String
-
-    """
-    Returns the first n items from the list.
-    """
-    first: Int
-
-    """
-    Returns the last n items from the list.
-    """
-    last: Int
-  ): TransactionConnection
-  walletCurrency: WalletCurrency!
-}
-
-input BusinessUpdateMapInfoInput {
-  latitude: Float!
-  longitude: Float!
-  title: String!
-  username: Username!
-}
-
-type ConsumerAccount implements Account {
-  csvTransactions(walletIds: [WalletId!]!): String!
-  defaultWalletId: WalletId!
-  id: ID!
-  wallets: [Wallet!]!
-}
+"""
+Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
+"""
+scalar Timestamp
 
 type Coordinates {
-  latitude: Float!
   longitude: Float!
-}
-
-interface Error {
-  message: String!
-  path: [String]
+  latitude: Float!
 }
 
 enum ExchangeCurrencyUnit {
@@ -87,6 +70,11 @@ type InitiationViaIntraLedger {
   counterPartyUsername: Username
   counterPartyWalletId: WalletId
 }
+
+"""
+Unique identifier of a user
+"""
+scalar WalletId
 
 type InitiationViaLn {
   paymentHash: PaymentHash!
@@ -153,110 +141,16 @@ Text field in a lightning payment transaction
 """
 scalar Memo
 
-type Mutation {
-  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): UserDetailPayload!
-  userLogin(input: UserLoginInput!): AuthTokenPayload!
-  userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
-  userUpdateLevel(input: UserUpdateLevelInput!): UserDetailPayload!
-  userUpdateStatus(input: UserUpdateStatusInput!): UserDetailPayload!
-}
-
-"""
-An address for an on-chain bitcoin destination
-"""
-scalar OnChainAddress
-
-scalar OnChainTxHash
-
-"""
-An authentication code valid for a single use
-"""
-scalar OneTimeAuthCode
-
-"""
-Information about pagination in a connection.
-"""
-type PageInfo {
-  """
-  When paginating forwards, the cursor to continue.
-  """
-  endCursor: String
-
-  """
-  When paginating forwards, are there more items?
-  """
-  hasNextPage: Boolean!
-
-  """
-  When paginating backwards, are there more items?
-  """
-  hasPreviousPage: Boolean!
-
-  """
-  When paginating backwards, the cursor to continue.
-  """
-  startCursor: String
-}
-
-type Query {
-  allLevels: [AccountLevel!]!
-  accountDetailsByUserPhone(phone: Phone!): AccountDetail!
-  accountDetailsByUsername(username: Username!): AccountDetail!
-  transactionById(id: ID!): Transaction
-  transactionsByHash(hash: PaymentHash!): [Transaction]
-  lightningInvoice(hash: PaymentHash!): LightningInvoice!
-  lightningPayment(hash: PaymentHash!): LightningPayment!
-}
-
-enum PaymentErrorCode {
-  ACCOUNT_LOCKED
-  INSUFFICENT_BALANCE
-  INVOICE_PAID
-  LIMIT_EXCEEDED
-  NO_LIQUIDITY
-  NO_ROUTE
-}
-
-type AccountDetail {
-  id: ID!
-  username: Username
-  level: AccountLevel
-  status: AccountStatus
-  title: String
-  owner: User!
-  coordinates: Coordinates
+type LightningInvoice {
   createdAt: Timestamp!
+  confirmedAt: Timestamp
+  description: String!
+  expiresAt: Timestamp
+  isSettled: Boolean!
+  received: SatAmount!
+  request: LnPaymentRequest
+  secret: LnPaymentSecret!
 }
-
-enum AccountStatus {
-  LOCKED
-  ACTIVE
-}
-
-type User {
-  id: ID!
-  phone: Phone!
-  language: Language!
-  defaultAccount: AccountDetail
-  createdAt: Timestamp!
-}
-
-"""
-Phone number which includes country code
-"""
-scalar Phone
-
-scalar Language
-
-type Coordinates {
-  longitude: Float!
-  latitude: Float!
-}
-
-"""
-Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1
-"""
-scalar SafeInt
 
 """
 (Positive) Satoshi amount (i.g. quiz earning)
@@ -295,10 +189,14 @@ type SuccessPayload {
   success: Boolean
 }
 
-"""
-Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
-"""
-scalar Timestamp
+interface Error {
+  message: String!
+  path: [String]
+}
+
+input UserRequestAuthCodeInput {
+  phone: Phone!
+}
 
 """
 Give details about an individual transaction.
@@ -391,7 +289,7 @@ type User {
 
 type AccountDetailPayload {
   errors: [Error!]!
-  accountDetails: AccountDetail
+  accountDetails: Account
 }
 
 input AccountUpdateLevelInput {

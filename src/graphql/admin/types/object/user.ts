@@ -3,6 +3,7 @@ import { GT } from "@graphql/index"
 import Language from "@graphql/types/scalar/language"
 import Phone from "@graphql/types/scalar/phone"
 import Timestamp from "@graphql/types/scalar/timestamp"
+import { AccountsRepository } from "@services/mongoose"
 import Account from "./account"
 
 const User = new GT.Object({
@@ -12,9 +13,8 @@ const User = new GT.Object({
     phone: { type: GT.NonNull(Phone) },
     language: { type: GT.NonNull(Language) },
     defaultAccount: {
-      // FIXME
-      type: Account,
-      resolve: (source) => source.account,
+      type: GT.NonNull(Account),
+      resolve: (source) => AccountsRepository().findById(source.defaultAccountId),
     },
     createdAt: {
       type: GT.NonNull(Timestamp),
