@@ -57,16 +57,15 @@ export const sendNotification = async ({
   logger.info({ message, user }, "sending notification")
 
   try {
-    const response = await admin.messaging().sendToDevice(
-      user.deviceToken.filter((token) => token.length === 163),
-      message,
-      {
-        // Required for background/quit data-only messages on iOS
-        // contentAvailable: true,
-        // Required for background/quit data-only messages on Android
-        // priority: 'high',
-      },
-    )
+    const token = user.deviceToken.reverse().find((token) => token.length === 163)
+    if (!token) return
+
+    const response = await admin.messaging().sendToDevice(token, message, {
+      // Required for background/quit data-only messages on iOS
+      // contentAvailable: true,
+      // Required for background/quit data-only messages on Android
+      // priority: 'high',
+    })
 
     logger.info(
       { response, user, title, body, data },
