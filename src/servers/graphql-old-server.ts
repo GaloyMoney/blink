@@ -35,6 +35,8 @@ import {
 import { PriceInterval, PriceRange } from "@domain/price"
 import { login } from "@app/users/login"
 import { requestPhoneCode } from "@app/users/request-phone-code"
+import { getLightningFee, getNoAmountLightningFee } from "@app/wallets/get-lightning-fee"
+import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -377,7 +379,28 @@ const resolvers = {
 
         return status.value
       },
-      getFee: async ({ amount, invoice }) => wallet.getLightningFee({ amount, invoice }),
+      getFee: async ({ amount, invoice }) => {
+        let feeSatAmount: Satoshis | ApplicationError
+        if (amount && amount > 0) {
+          feeSatAmount = await getNoAmountLightningFee({
+            walletPublicId: wallet.user.walletPublicId,
+            amount,
+            paymentRequest: invoice,
+            logger,
+          })
+          if (!(feeSatAmount instanceof Error)) return feeSatAmount
+          if (!(feeSatAmount instanceof LnPaymentRequestZeroAmountRequiredError))
+            throw mapError(feeSatAmount)
+        }
+
+        feeSatAmount = await getLightningFee({
+          walletPublicId: wallet.user.walletPublicId,
+          paymentRequest: invoice,
+          logger,
+        })
+        if (feeSatAmount instanceof Error) throw mapError(feeSatAmount)
+        return feeSatAmount
+      },
     }),
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
     onchain: (_, __, { wallet }) => ({

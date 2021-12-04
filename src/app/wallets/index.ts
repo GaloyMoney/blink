@@ -11,6 +11,7 @@ export * from "./update-on-chain-receipt"
 export * from "./update-pending-invoices"
 export * from "./update-pending-payments"
 export * from "./add-invoice-for-wallet"
+export * from "./get-lightning-fee"
 export * from "./ln-send-payment"
 export * from "./intraledger-send-payment"
 export * from "../users/username-available"
@@ -27,4 +28,14 @@ export const getWalletByPublicId = async (
 ): Promise<Wallet | ApplicationError> => {
   const wallets = WalletsRepository()
   return wallets.findByPublicId(walletPublicId)
+}
+
+export const walletIdFromPublicId = async (
+  walletPublicId: WalletPublicId,
+): Promise<WalletId | RepositoryError> => {
+  const walletsRepo = WalletsRepository()
+  const wallet = await walletsRepo.findByPublicId(walletPublicId)
+  if (wallet instanceof Error) return wallet
+
+  return wallet.id
 }

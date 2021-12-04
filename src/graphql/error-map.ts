@@ -10,6 +10,7 @@ import {
   InvoiceDecodeError,
   ValidationInternalError,
   TooManyRequestError,
+  RouteFindingError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -105,7 +106,21 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "Too many onchain addresses creation, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
+    case "RouteNotFoundError":
+      message = "Unable to find a route for payment."
+      return new RouteFindingError({ message, logger: baseLogger })
+
+    case "InsufficientBalanceForRoutingError":
+      message = "Insufficient balance for finding a route."
+      return new RouteFindingError({ message, logger: baseLogger })
+
+    case "UnknownRouteNotFoundError":
+      message = "Unknown error occurred when trying to find a route for payment."
+      return new RouteFindingError({ message, logger: baseLogger })
+
     case "UnknownLnInvoiceDecodeError":
+      // TODO: Consider using `error.message` somehow since lib returns semi-sensible details
+      message = "Invalid lightning request, couldn't decode."
       return new InvoiceDecodeError({ message, logger: baseLogger })
 
     case "UnknownRepositoryError":

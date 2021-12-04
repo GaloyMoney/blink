@@ -3,6 +3,8 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import SatAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
+import { getNoAmountLightningFee } from "@app/wallets/get-lightning-fee"
+import { mapError } from "@graphql/error-map"
 
 const LnNoAmountInvoiceFeeProbeInput = new GT.Input({
   name: "LnNoAmountInvoiceFeeProbeInput",
@@ -18,7 +20,7 @@ const LnNoAmountInvoiceFeeProbeMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(LnNoAmountInvoiceFeeProbeInput) },
   },
-  resolve: async (_, args, { wallet }) => {
+  resolve: async (_, args, { logger }) => {
     const { walletId, paymentRequest, amount } = args.input
 
     for (const input of [walletId, paymentRequest, amount]) {
@@ -27,18 +29,20 @@ const LnNoAmountInvoiceFeeProbeMutation = GT.Field({
       }
     }
 
-    try {
-      const feeSatAmount = await wallet.getLightningFee({
-        amount,
-        invoice: paymentRequest,
-      })
-      // TODO: validate feeSatAmount
-      return {
-        errors: [],
-        amount: feeSatAmount,
-      }
-    } catch (err) {
-      return { errors: [{ message: err.message }] }
+    const feeSatAmount = await getNoAmountLightningFee({
+      walletPublicId: walletId,
+      amount,
+      paymentRequest,
+      logger,
+    })
+    if (feeSatAmount instanceof Error) {
+      const appErr = mapError(feeSatAmount)
+      return { errors: [{ message: appErr.message }] }
+    }
+
+    return {
+      errors: [],
+      amount: feeSatAmount,
     }
   },
 })

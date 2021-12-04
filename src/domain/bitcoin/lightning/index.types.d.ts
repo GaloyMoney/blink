@@ -1,6 +1,7 @@
 type LightningError = import("./errors").LightningError
 type LnInvoiceDecodeError = import("./errors").LnInvoiceDecodeError
 type LightningServiceError = import("./errors").LightningServiceError
+type RouteNotFoundError = import("./errors").RouteNotFoundError
 
 declare const invoiceExpirationSymbol: unique symbol
 type InvoiceExpiration = Date & { [invoiceExpirationSymbol]: never }
@@ -103,6 +104,24 @@ interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
 
   defaultPubkey(): Pubkey
+
+  findRouteForInvoice({
+    decodedInvoice,
+    maxFee,
+  }: {
+    decodedInvoice: LnInvoice
+    maxFee: Satoshis
+  }): Promise<RawRoute | LightningServiceError>
+
+  findRouteForNoAmountInvoice({
+    decodedInvoice,
+    maxFee,
+    amount,
+  }: {
+    decodedInvoice: LnInvoice
+    maxFee: Satoshis
+    amount: Satoshis
+  }): Promise<RawRoute | LightningServiceError>
 
   registerInvoice(
     registerInvoiceArgs: RegisterInvoiceArgs,
