@@ -15,7 +15,7 @@ import {
   InsufficientBalanceForRoutingError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
-import { isInvoiceAlreadyPaidError, timeout } from "@core/utils"
+import { timeout } from "@core/utils"
 import {
   createInvoice,
   getInvoice,
@@ -40,7 +40,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
     lndAuth = lnd
     defaultPubkey = pubkey as Pubkey
   } catch (err) {
-    return new UnknownLightningServiceError(err)
+    const errDetails = parseLndErrorDetails(err)
+    switch (errDetails) {
+      default:
+        return new UnknownLightningServiceError(err)
+    }
   }
 
   const isLocal = (pubkey: Pubkey): boolean | LightningServiceError => {
@@ -48,7 +52,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
     try {
       offchainLnds = getLnds({ type: "offchain" })
     } catch (err) {
-      return new UnknownLightningServiceError(err)
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        default:
+          return new UnknownLightningServiceError(err)
+      }
     }
     return !!offchainLnds
       .map((item) => item.pubkey as Pubkey)
@@ -177,7 +185,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
       }
       return { invoice: returnedInvoice, pubkey: defaultPubkey } as RegisteredInvoice
     } catch (err) {
-      return new UnknownLightningServiceError(err)
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        default:
+          return new UnknownLightningServiceError(err)
+      }
     }
   }
 
@@ -206,11 +218,13 @@ export const LndService = (): ILightningService | LightningServiceError => {
         secret: invoice.secret as PaymentSecret,
       }
     } catch (err) {
-      const invoiceNotFound = "unable to locate invoice"
-      if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {
-        return new InvoiceNotFoundError()
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.InvoiceNotFound:
+          return new InvoiceNotFoundError()
+        default:
+          return new UnknownLightningServiceError(err)
       }
-      return new UnknownLightningServiceError(err)
     }
   }
 
@@ -246,7 +260,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
       const { lnd } = getLndFromPubkey({ pubkey })
       await cancelHodlInvoice({ lnd, id: paymentHash })
     } catch (err) {
-      return new UnknownLightningServiceError(err)
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        default:
+          return new UnknownLightningServiceError(err)
+      }
     }
   }
 
@@ -284,8 +302,14 @@ export const LndService = (): ILightningService | LightningServiceError => {
       }
     } catch (err) {
       if (err.message === "Timeout") return new LnPaymentPendingError()
-      if (isInvoiceAlreadyPaidError(err)) return new LnAlreadyPaidError()
-      return new UnknownLightningServiceError(err)
+
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.InvoiceAlreadyPaid:
+          return new LnAlreadyPaidError()
+        default:
+          return new UnknownLightningServiceError(err)
+      }
     }
   }
 
@@ -344,8 +368,14 @@ export const LndService = (): ILightningService | LightningServiceError => {
       }
     } catch (err) {
       if (err.message === "Timeout") return new LnPaymentPendingError()
-      if (isInvoiceAlreadyPaidError(err)) return new LnAlreadyPaidError()
-      return new UnknownLightningServiceError(err)
+
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.InvoiceAlreadyPaid:
+          return new LnAlreadyPaidError()
+        default:
+          return new UnknownLightningServiceError(err)
+      }
     }
   }
 
@@ -374,7 +404,11 @@ const lookupPaymentByPubkeyAndHash = async ({
   try {
     ;({ lnd } = getLndFromPubkey({ pubkey }))
   } catch (err) {
-    return new UnknownLightningServiceError(err)
+    const errDetails = parseLndErrorDetails(err)
+    switch (errDetails) {
+      default:
+        return new UnknownLightningServiceError(err)
+    }
   }
 
   try {
@@ -418,7 +452,11 @@ const lookupPaymentByPubkeyAndHash = async ({
 
     return paymentLookup
   } catch (err) {
-    return new UnknownLightningServiceError(err)
+    const errDetails = parseLndErrorDetails(err)
+    switch (errDetails) {
+      default:
+        return new UnknownLightningServiceError(err)
+    }
   }
 }
 
@@ -427,4 +465,6 @@ const parseLndErrorDetails = (err) =>
 
 const KnownLndErrorDetails = {
   InsufficientBalance: "insufficient local balance",
+  InvoiceNotFound: "unable to locate invoice",
+  InvoiceAlreadyPaid: "invoice is already paid",
 } as const
