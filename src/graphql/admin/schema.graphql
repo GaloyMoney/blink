@@ -22,9 +22,15 @@ enum AccountLevel {
   TWO
 }
 
-enum AccountStatus {
-  ACTIVE
-  LOCKED
+type Account {
+  id: ID!
+  username: Username
+  level: AccountLevel!
+  status: AccountStatus!
+  title: String
+  owner: User!
+  coordinates: Coordinates
+  createdAt: Timestamp!
 }
 
 input AccountUpdateLevelInput {
@@ -38,13 +44,13 @@ input AccountUpdateStatusInput {
 }
 
 """
-An authentication code valid for a single use
+Unique identifier of a user
 """
-scalar AuthToken
+scalar Username
 
-type AuthTokenPayload {
-  authToken: AuthToken
-  errors: [Error!]!
+enum AccountStatus {
+  LOCKED
+  ACTIVE
 }
 
 input BusinessUpdateMapInfoInput {
@@ -55,13 +61,8 @@ input BusinessUpdateMapInfoInput {
 }
 
 type Coordinates {
-  latitude: Float!
   longitude: Float!
-}
-
-interface Error {
-  message: String!
-  path: [String]
+  latitude: Float!
 }
 
 enum ExchangeCurrencyUnit {
@@ -75,6 +76,11 @@ type InitiationViaIntraLedger {
   counterPartyUsername: Username
   counterPartyWalletId: WalletId
 }
+
+"""
+Unique identifier of a user
+"""
+scalar WalletId
 
 type InitiationViaLn {
   paymentHash: PaymentHash!
@@ -204,10 +210,14 @@ type SuccessPayload {
   success: Boolean
 }
 
-"""
-Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
-"""
-scalar Timestamp
+interface Error {
+  message: String!
+  path: [String]
+}
+
+input UserRequestAuthCodeInput {
+  phone: Phone!
+}
 
 """
 Give details about an individual transaction.
