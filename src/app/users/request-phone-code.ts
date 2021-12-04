@@ -3,16 +3,16 @@ import {
   getRequestPhoneCodePerIpLimits,
   getRequestPhoneCodePerPhoneLimits,
   getRequestPhoneCodePerPhoneMinIntervalLimits,
+  getTestAccounts,
 } from "@config/app"
 import { randomIntFromInterval } from "@core/utils"
 import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
 import { RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import { checkedToPhoneNumber } from "@domain/users"
+import { checkedToPhoneNumber, isTestAccountPhone } from "@domain/users"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { RedisRateLimitService } from "@services/rate-limit"
 import { TwilioClient } from "@services/twilio"
-import { isTestAccountPhone } from "."
 
 export const requestPhoneCodeWithCaptcha = async ({
   phone,
@@ -79,7 +79,8 @@ export const requestPhoneCode = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  if (isTestAccountPhone(phoneNumberValid)) {
+  const testAccounts = getTestAccounts()
+  if (isTestAccountPhone({ phone: phoneNumberValid, testAccounts })) {
     return true
   }
 

@@ -1,16 +1,15 @@
-import {
-  SemanticAttributes,
-  asyncRunInSpan,
-  addAttributesToCurrentSpan,
-  ENDUSER_ALIAS,
-} from "@services/tracing"
-import { UsersRepository } from "@services/mongoose"
-import { getIpConfig, getTestAccounts } from "@config/app"
-import { IpFetcher } from "@services/ipfetcher"
-import { UsersIpRepository } from "@services/mongoose/users-ips"
+import { getIpConfig } from "@config/app"
 import { RepositoryError } from "@domain/errors"
 import { IpFetcherServiceError } from "@domain/ipfetcher"
-import { checkedToPhoneNumber } from "@domain/users"
+import { IpFetcher } from "@services/ipfetcher"
+import { UsersRepository } from "@services/mongoose"
+import { UsersIpRepository } from "@services/mongoose/users-ips"
+import {
+  addAttributesToCurrentSpan,
+  asyncRunInSpan,
+  ENDUSER_ALIAS,
+  SemanticAttributes,
+} from "@services/tracing"
 
 const users = UsersRepository()
 const usersIp = UsersIpRepository()
@@ -124,29 +123,4 @@ export const getUsernameFromWalletPublicId = async (
   if (user instanceof Error) return user
 
   return user.username
-}
-
-export const isTestAccountPhone = (phone: PhoneNumber) => {
-  const phoneNumberValid = checkedToPhoneNumber(phone)
-  if (phoneNumberValid instanceof Error) return phoneNumberValid
-
-  return getTestAccounts().findIndex((item) => item.phone === phone) !== -1
-}
-
-export const isTestAccountPhoneAndCode = ({
-  code,
-  phone,
-}: {
-  code: PhoneCode
-  phone: PhoneNumber
-}) => {
-  const phoneNumberValid = checkedToPhoneNumber(phone)
-  if (phoneNumberValid instanceof Error) return phoneNumberValid
-
-  return (
-    getTestAccounts().findIndex((item) => item.phone === phone) !== -1 &&
-    getTestAccounts()
-      .filter((item) => item.phone === phone)[0]
-      .code.toString() === code.toString()
-  )
 }

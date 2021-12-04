@@ -3,17 +3,17 @@ import {
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
   VALIDITY_TIME_CODE,
+  getTestAccounts,
 } from "@config/app"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import { RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import { checkedToPhoneNumber } from "@domain/users"
+import { checkedToPhoneNumber, isTestAccountPhoneAndCode } from "@domain/users"
 import { createToken } from "@services/jwt"
 import { UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { RedisRateLimitService } from "@services/rate-limit"
 import { TwilioClient } from "@services/twilio"
-import { isTestAccountPhoneAndCode } from "."
 
 export const login = async ({
   phone,
@@ -118,7 +118,8 @@ const isCodeValid = async ({
   code: PhoneCode
   age: Seconds
 }) => {
-  const validTestCode = isTestAccountPhoneAndCode({ code, phone })
+  const testAccounts = getTestAccounts()
+  const validTestCode = isTestAccountPhoneAndCode({ code, phone, testAccounts })
 
   if (validTestCode) {
     return true

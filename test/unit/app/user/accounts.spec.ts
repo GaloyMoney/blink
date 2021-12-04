@@ -1,5 +1,5 @@
-import { isTestAccountPhoneAndCode } from "@app/users"
 import { getTestAccounts } from "@config/app"
+import { isTestAccountPhoneAndCode } from "@domain/users"
 
 describe("test-accounts", () => {
   const testAccounts = getTestAccounts()
@@ -9,6 +9,7 @@ describe("test-accounts", () => {
       isTestAccountPhoneAndCode({
         code: testAccounts[0].code,
         phone: testAccounts[0].phone,
+        testAccounts,
       }),
     ).toBeTruthy())
 
@@ -17,6 +18,7 @@ describe("test-accounts", () => {
       isTestAccountPhoneAndCode({
         code: testAccounts[1].code,
         phone: testAccounts[0].phone,
+        testAccounts,
       }),
     ).toBeFalsy())
 
@@ -25,6 +27,7 @@ describe("test-accounts", () => {
       isTestAccountPhoneAndCode({
         code: testAccounts[1].code,
         phone: "+19999999999" as PhoneNumber,
+        testAccounts,
       }),
     ).toBeFalsy())
 
@@ -33,6 +36,7 @@ describe("test-accounts", () => {
       isTestAccountPhoneAndCode({
         code: "" as PhoneCode,
         phone: "+19999999999" as PhoneNumber,
+        testAccounts,
       }),
     ).toBeFalsy())
 })

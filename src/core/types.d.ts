@@ -54,14 +54,6 @@ type TwoFAConfig = {
   threshold: number
 }
 
-type TestAccounts = {
-  phone: PhoneNumber
-  code: PhoneCode
-  username: Username | undefined
-  role: string | undefined // FIXME
-  currencies // FIXME
-}
-
 // Currently unused types
 
 interface IAddBTCInvoiceRequest {
