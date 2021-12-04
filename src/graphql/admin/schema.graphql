@@ -155,15 +155,7 @@ Phone number which includes country code
 """
 scalar Phone
 
-"""
-Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
-"""
-type Price {
-  base: SafeInt!
-  currencyUnit: ExchangeCurrencyUnit!
-  formattedAmount: String!
-  offset: Int!
-}
+scalar Language
 
 type Query {
   accountDetailsByUserPhone(phone: Phone!): Account!
@@ -199,8 +191,12 @@ type SettlementViaLn {
   paymentSecret: LnPaymentSecret
 }
 
-type SettlementViaOnChain {
-  transactionHash: OnChainTxHash!
+type Mutation {
+  userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
+  userLogin(input: UserLoginInput!): AuthTokenPayload!
+  accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
+  accountUpdateStatus(input: UserUpdateStatusInput!): AccountDetailPayload!
+  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
 }
 
 type SuccessPayload {
