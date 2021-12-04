@@ -1,6 +1,6 @@
 import { AccountsRepository } from "@services/mongoose"
 
-export const updateUserAccountStatus = async ({
+export const updateAccountStatus = async ({
   id,
   status,
 }: {

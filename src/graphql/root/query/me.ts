@@ -9,11 +9,11 @@ import GraphQLUser from "@graphql/types/object/graphql-user"
 
 const MeQuery = GT.Field({
   type: GraphQLUser,
-  resolve: async (_, __, { ip, domainUser }) =>
+  resolve: async (_, __, { ip, domainUser, domainAccount }) =>
     addAttributesToCurrentSpanAndPropagate(
       {
         [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
-        [ENDUSER_ALIAS]: domainUser?.username,
+        [ENDUSER_ALIAS]: domainAccount?.username,
         [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       },
       () => domainUser,

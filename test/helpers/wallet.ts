@@ -16,10 +16,10 @@ export const getBTCBalance = async (walletId: WalletId): Promise<Satoshis> => {
 
 export const getRemainingIntraledgerLimit = async ({
   walletId,
-  userLevel,
+  accountLevel,
 }: {
   walletId: WalletId
-  userLevel: AccountLevel
+  accountLevel: AccountLevel
 }): Promise<Satoshis | ApplicationError> => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await LedgerService().intraledgerTxVolumeSince({
@@ -28,17 +28,17 @@ export const getRemainingIntraledgerLimit = async ({
   })
   if (walletVolume instanceof Error) return walletVolume
 
-  const intraledgerLimit = getUserLimits({ level: userLevel }).onUsLimit
+  const intraledgerLimit = getUserLimits({ level: accountLevel }).onUsLimit
   const remainingLimit = toSats(intraledgerLimit - walletVolume.outgoingSats)
   return remainingLimit > 0 ? remainingLimit : toSats(0)
 }
 
 export const getRemainingWithdrawalLimit = async ({
   walletId,
-  userLevel,
+  accountLevel,
 }: {
   walletId: WalletId
-  userLevel: AccountLevel
+  accountLevel: AccountLevel
 }): Promise<Satoshis | ApplicationError> => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await LedgerService().withdrawalTxVolumeSince({
@@ -47,7 +47,7 @@ export const getRemainingWithdrawalLimit = async ({
   })
   if (walletVolume instanceof Error) return walletVolume
 
-  const withdrawalLimit = getUserLimits({ level: userLevel }).withdrawalLimit
+  const withdrawalLimit = getUserLimits({ level: accountLevel }).withdrawalLimit
   const remainingLimit = toSats(withdrawalLimit - walletVolume.outgoingSats)
   return remainingLimit > 0 ? remainingLimit : toSats(0)
 }

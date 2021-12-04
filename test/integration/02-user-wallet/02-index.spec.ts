@@ -1,7 +1,7 @@
 import { getGenericLimits, MS_PER_HOUR } from "@config/app"
 import { generateTokenHelper, getAndCreateUserWallet } from "test/helpers"
 import { WalletsRepository } from "@services/mongoose"
-import { updateUserAccountStatus } from "@app/accounts/update-account-status"
+import { updateAccountStatus } from "@app/accounts/update-account-status"
 
 let userWallet0, userWallet1, userWallet2
 const username = "user0" as Username
@@ -140,18 +140,17 @@ describe("UserWallet", () => {
     })
   })
 
-  describe("updateUserAccountStatus", () => {
+  describe("updateAccountStatus", () => {
     it("sets account status for given user id", async () => {
-      let user = await updateUserAccountStatus({
+      let user = await updateAccountStatus({
         id: userWallet2.user.id,
         status: "locked",
       })
-      console.log({ user }, "account3")
       if (user instanceof Error) {
         throw user
       }
       expect(user.status).toBe("locked")
-      user = await updateUserAccountStatus({ id: user.id, status: "active" })
+      user = await updateAccountStatus({ id: user.id, status: "active" })
       if (user instanceof Error) {
         throw user
       }

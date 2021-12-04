@@ -12,7 +12,7 @@ import {
   TooManyRequestError,
   RouteFindingError,
   InvalidCoordinatesError,
-  InvalidTitleLengthError,
+  InvalidBusinessTitleLengthError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -144,8 +144,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidCoordinatesError":
       return new InvalidCoordinatesError({ message, logger: baseLogger })
 
-    case "InvalidTitleLengthError":
-      return new InvalidTitleLengthError({ message, logger: baseLogger })
+    case "InvalidBusinessTitleLengthError":
+      return new InvalidBusinessTitleLengthError({ message, logger: baseLogger })
 
     // ----------
     // Unhandled below here

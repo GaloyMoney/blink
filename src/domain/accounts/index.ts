@@ -1,4 +1,4 @@
-import { InvalidCoordinatesError, InvalidTitleLengthError } from "@domain/errors"
+import { InvalidCoordinatesError, InvalidBusinessTitleLengthError } from "@domain/errors"
 
 export * from "./errors"
 export * from "./api-keys"
@@ -30,7 +30,7 @@ export const checkedCoordinates = ({
 
 export const checkedMapTitle = (title: string) => {
   if (title.length < 3 || title.length > 100) {
-    return new InvalidTitleLengthError()
+    return new InvalidBusinessTitleLengthError()
   }
   return title as BusinessMapTitle
 }

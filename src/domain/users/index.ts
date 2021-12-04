@@ -15,7 +15,7 @@ export const checkedToUsername = (username: string): Username | ValidationError 
   return username as Username
 }
 
-export const PhoneNumberRegex = /^\+\d{7,14}$/i // FIXME {7,14} to be refined
+const PhoneNumberRegex = /^\+\d{7,14}$/i // FIXME {7,14} to be refined
 
 export const checkedToPhoneNumber = (
   phoneNumber: string,
