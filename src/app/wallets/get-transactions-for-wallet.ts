@@ -36,7 +36,7 @@ export const getTransactionsForWallet = async (
     return PartialResult.partial(confirmedHistory.transactions, onChain)
   }
 
-  const onChainTxs = await onChain.getIncomingTransactions(ONCHAIN_LOOK_BACK)
+  const onChainTxs = await onChain.listIncomingTransactions(ONCHAIN_LOOK_BACK)
   if (onChainTxs instanceof OnChainError) {
     return PartialResult.partial(confirmedHistory.transactions, onChainTxs)
   }

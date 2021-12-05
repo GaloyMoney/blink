@@ -2,6 +2,7 @@ import {
   UnknownOnChainServiceError,
   OnChainServiceUnavailableError,
   IncomingOnChainTransaction,
+  CouldNotFindOnChainTransactionError,
 } from "@domain/bitcoin/onchain"
 import { toSats } from "@domain/bitcoin"
 import {
@@ -27,24 +28,40 @@ export const OnChainService = (
     return new OnChainServiceUnavailableError(err)
   }
 
-  const getIncomingTransactions = async (
+  const listTransactions = async (
     scanDepth: number,
-  ): Promise<IncomingOnChainTransaction[] | OnChainServiceError> => {
+  ): Promise<GetChainTransactionsResult | OnChainServiceError> => {
     try {
       const { current_block_height } = await getHeight({ lnd })
 
       // this is necessary for tests, otherwise after may be negative
       const after = Math.max(0, current_block_height - scanDepth)
 
-      const result = await getChainTransactions({
+      return getChainTransactions({
         lnd,
         after,
       })
-
-      return extractIncomingTransactions(decoder, result)
     } catch (err) {
       return new UnknownOnChainServiceError(err)
     }
+  }
+
+  const listIncomingTransactions = async (
+    scanDepth: number,
+  ): Promise<SubmittedTransaction[] | OnChainServiceError> => {
+    const txs = await listTransactions(scanDepth)
+    if (txs instanceof Error) return txs
+
+    return extractIncomingTransactions({ decoder, txs })
+  }
+
+  const listOutgoingTransactions = async (
+    scanDepth: number,
+  ): Promise<SubmittedTransaction[] | OnChainServiceError> => {
+    const txs = await listTransactions(scanDepth)
+    if (txs instanceof Error) return txs
+
+    return extractOutgoingTransactions({ decoder, txs })
   }
 
   const createOnChainAddress = async (): Promise<
@@ -60,6 +77,17 @@ export const OnChainService = (
     } catch (err) {
       return new UnknownOnChainServiceError(err)
     }
+  }
+
+  const findOnChainFee = async ({
+    txHash,
+    scanDepth,
+  }: FindOnChainFeeArgs): Promise<Satoshis | OnChainServiceError> => {
+    const onChainTxs = await listOutgoingTransactions(scanDepth)
+    if (onChainTxs instanceof Error) return onChainTxs
+
+    const tx = onChainTxs.find((tx) => tx.rawTx.txHash === txHash)
+    return (tx && tx.fee) || new CouldNotFindOnChainTransactionError()
   }
 
   const getOnChainFeeEstimate = async (
@@ -82,18 +110,42 @@ export const OnChainService = (
   }
 
   return {
-    getIncomingTransactions,
+    listIncomingTransactions,
+    findOnChainFee,
     createOnChainAddress,
     getOnChainFeeEstimate,
   }
 }
 
-export const extractIncomingTransactions = (
-  decoder: TxDecoder,
-  { transactions }: GetChainTransactionsResult,
-): IncomingOnChainTransaction[] => {
-  return transactions
+export const extractIncomingTransactions = ({
+  decoder,
+  txs,
+}: {
+  decoder: TxDecoder
+  txs: GetChainTransactionsResult
+}): IncomingOnChainTransaction[] => {
+  return txs.transactions
     .filter((tx) => !tx.is_outgoing && !!tx.transaction)
+    .map(
+      (tx): IncomingOnChainTransaction =>
+        IncomingOnChainTransaction({
+          confirmations: tx.confirmation_count || 0,
+          rawTx: decoder.decode(tx.transaction as string),
+          fee: toSats(tx.fee || 0),
+          createdAt: new Date(tx.created_at),
+        }),
+    )
+}
+
+export const extractOutgoingTransactions = ({
+  decoder,
+  txs,
+}: {
+  decoder: TxDecoder
+  txs: GetChainTransactionsResult
+}): IncomingOnChainTransaction[] => {
+  return txs.transactions
+    .filter((tx) => tx.is_outgoing && !!tx.transaction)
     .map(
       (tx): IncomingOnChainTransaction =>
         IncomingOnChainTransaction({

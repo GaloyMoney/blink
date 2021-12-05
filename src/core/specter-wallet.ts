@@ -6,9 +6,12 @@ import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
 import { getActiveOnchainLnd, lndsBalances } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
 
-import { getOnChainTransactions } from "./on-chain"
 import { UserWallet } from "./user-wallet"
 import { btc2sat, sat2btc } from "./utils"
+import { BTC_NETWORK, ONCHAIN_LOOK_BACK_OUTGOING } from "@config/app"
+import { toSats } from "@domain/bitcoin"
+import { OnChainService } from "@services/lnd/onchain-service"
+import { TxDecoder } from "@domain/bitcoin/onchain"
 
 // TODO no longer used in tests, removing the creation of the default wallet didn't break anything
 const staticClient = ""
@@ -201,8 +204,20 @@ export class SpecterWallet {
 
     const memo = `deposit of ${sats} sats to the cold storage wallet`
 
-    const outgoingOnchainTxns = await getOnChainTransactions({ lnd, incoming: false })
-    const [{ fee }] = outgoingOnchainTxns.filter((tx) => tx.id === id)
+    const getOnChainFee = async (txHash: OnChainTxHash): Promise<Satoshis> => {
+      const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
+      if (onChainService instanceof Error) return toSats(0)
+
+      const onChainTxFee = await onChainService.findOnChainFee({
+        txHash,
+        scanDepth: ONCHAIN_LOOK_BACK_OUTGOING,
+      })
+      if (onChainTxFee instanceof Error) return toSats(0)
+
+      return onChainTxFee
+    }
+
+    const fee = await getOnChainFee(id)
 
     const metadata = {
       hash: id,

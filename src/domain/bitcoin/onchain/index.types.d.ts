@@ -44,10 +44,20 @@ type TxFilter = {
   apply(txs: IncomingOnChainTransaction[]): IncomingOnChainTransaction[]
 }
 
+type FindOnChainFeeArgs = {
+  txHash: OnChainTxHash
+  scanDepth: number
+}
+
 interface IOnChainService {
-  getIncomingTransactions(
+  listIncomingTransactions(
     scanDepth: number,
   ): Promise<IncomingOnChainTransaction[] | OnChainServiceError>
+
+  findOnChainFee({
+    txHash,
+    scanDepth,
+  }: FindOnChainFeeArgs): Promise<Satoshis | OnChainServiceError>
 
   createOnChainAddress(): Promise<OnChainAddressIdentifier | OnChainServiceError>
 

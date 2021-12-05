@@ -21,7 +21,7 @@ export const updateOnChainReceipt = async ({
     return onChain
   }
 
-  const onChainTxs = await onChain.getIncomingTransactions(scanDepth)
+  const onChainTxs = await onChain.listIncomingTransactions(scanDepth)
   if (onChainTxs instanceof OnChainError) {
     return onChainTxs
   }

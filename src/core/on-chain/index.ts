@@ -1,16 +1,7 @@
 import assert from "assert"
-import {
-  getChainBalance,
-  getChainFeeEstimate,
-  getChainTransactions,
-  GetChainTransactionsResult,
-  getHeight,
-  sendToChainAddress,
-} from "lightning"
-import _ from "lodash"
+import { getChainBalance, getChainFeeEstimate, sendToChainAddress } from "lightning"
 
-import { getActiveOnchainLnd, getLndFromPubkey } from "@services/lnd/utils"
-import { baseLogger } from "@services/logger"
+import { getActiveOnchainLnd } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
 
@@ -27,7 +18,7 @@ import {
 import { redlock } from "../lock"
 import { UserWallet } from "../user-wallet"
 import { LoggedError } from "../utils"
-import { ONCHAIN_LOOK_BACK, ONCHAIN_LOOK_BACK_OUTGOING } from "@config/app"
+import { BTC_NETWORK, ONCHAIN_LOOK_BACK_OUTGOING } from "@config/app"
 import * as Wallets from "@app/wallets"
 import { toSats } from "@domain/bitcoin"
 import { UsersRepository, WalletsRepository } from "@services/mongoose"
@@ -43,27 +34,8 @@ import {
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
 import { getCurrentPrice } from "@app/prices"
 import { NotificationsService } from "@services/notifications"
-
-export const getOnChainTransactions = async ({
-  lnd,
-  incoming,
-  lookBack,
-}: {
-  lnd: AuthenticatedLnd
-  incoming: boolean
-  lookBack?: number
-}) => {
-  try {
-    const { current_block_height } = await getHeight({ lnd })
-    const after = Math.max(0, current_block_height - (lookBack || ONCHAIN_LOOK_BACK)) // this is necessary for tests, otherwise after may be negative
-    const { transactions } = await getChainTransactions({ lnd, after })
-    return transactions.filter((tx) => incoming === !tx.is_outgoing)
-  } catch (err) {
-    const error = `issue fetching transaction`
-    baseLogger.error({ err, incoming }, error)
-    throw new LoggedError(error)
-  }
-}
+import { OnChainService } from "@services/lnd/onchain-service"
+import { TxDecoder } from "@domain/bitcoin/onchain"
 
 export const OnChainMixin = (superclass) =>
   class extends superclass {
@@ -350,21 +322,28 @@ export const OnChainMixin = (superclass) =>
             return false
           }
 
-          let fee
-          try {
-            const outgoingOnchainTxns = await getOnChainTransactions({
-              lnd,
-              incoming: false,
-              lookBack: ONCHAIN_LOOK_BACK_OUTGOING,
+          const getOnChainFee = async (txHash: OnChainTxHash): Promise<Satoshis> => {
+            const errMsg = "impossible to get fee for onchain payment"
+
+            const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
+            if (onChainService instanceof Error) {
+              onchainLogger.fatal({ err: onChainService }, errMsg)
+              return toSats(0)
+            }
+
+            const onChainTxFee = await onChainService.findOnChainFee({
+              txHash,
+              scanDepth: ONCHAIN_LOOK_BACK_OUTGOING,
             })
-            const [{ fee: fee_ }] = outgoingOnchainTxns.filter((tx) => tx.id === id)
-            fee = fee_
-          } catch (err) {
-            onchainLogger.fatal({ err }, "impossible to get fee for onchain payment")
-            fee = 0
+            if (onChainTxFee instanceof Error) {
+              onchainLogger.fatal({ err: onChainTxFee }, errMsg)
+              return toSats(0)
+            }
+
+            return onChainTxFee
           }
 
-          fee += this.user.withdrawFee
+          const fee = (await getOnChainFee(id)) + this.user.withdrawFee
 
           {
             let sats = amount + fee
@@ -399,82 +378,5 @@ export const OnChainMixin = (superclass) =>
         if (result instanceof Error) throw result
         return result
       })
-    }
-
-    async getOnchainReceipt({ confirmed }: { confirmed: boolean }) {
-      const pubkeys: string[] = this.user.onchain_pubkey
-      let user_matched_txs: GetChainTransactionsResult["transactions"] = []
-
-      for (const pubkey of pubkeys) {
-        // TODO: optimize the data structure
-        const addresses = this.user.onchain
-          .filter((item) => (item.pubkey = pubkey))
-          .map((item) => item.address)
-
-        let lnd: AuthenticatedLnd
-
-        try {
-          ;({ lnd } = getLndFromPubkey({ pubkey }))
-        } catch (err) {
-          // FIXME pass logger
-          baseLogger.warn({ pubkey }, "node is offline")
-          continue
-        }
-
-        const lnd_incoming_txs = await getOnChainTransactions({ lnd, incoming: true })
-
-        // for unconfirmed tx:
-        // { block_id: undefined,
-        //   confirmation_count: undefined,
-        //   confirmation_height: undefined,
-        //   created_at: '2021-03-09T12:55:09.000Z',
-        //   description: undefined,
-        //   fee: undefined,
-        //   id: '60dfde7a0c5209c1a8438a5c47bb5e56249eae6d0894d140996ec0dcbbbb5f83',
-        //   is_confirmed: false,
-        //   is_outgoing: false,
-        //   output_addresses: [Array],
-        //   tokens: 100000000,
-        //   transaction: '02000000000...' }
-
-        // for confirmed tx
-        // { block_id: '0000000000000b1fa86d936adb8dea741a9ecd5f6a58fc075a1894795007bdbc',
-        //   confirmation_count: 712,
-        //   confirmation_height: 1744148,
-        //   created_at: '2020-05-14T01:47:22.000Z',
-        //   fee: undefined,
-        //   id: '5e3d3f679bbe703131b028056e37aee35a193f28c38d337a4aeb6600e5767feb',
-        //   is_confirmed: true,
-        //   is_outgoing: false,
-        //   output_addresses: [Array],
-        //   tokens: 10775,
-        //   transaction: '020000000001.....' }
-
-        let lnd_incoming_filtered: GetChainTransactionsResult["transactions"]
-
-        const minConfirmations = this.config.onchainMinConfirmations
-
-        if (confirmed) {
-          lnd_incoming_filtered = lnd_incoming_txs.filter(
-            (tx) => !!tx.confirmation_count && tx.confirmation_count >= minConfirmations,
-          )
-        } else {
-          lnd_incoming_filtered = lnd_incoming_txs.filter(
-            (tx) =>
-              (!!tx.confirmation_count && tx.confirmation_count < minConfirmations) ||
-              !tx.confirmation_count,
-          )
-        }
-
-        user_matched_txs = [
-          ...user_matched_txs,
-          ...lnd_incoming_filtered.filter(
-            // only return transactions for addresses that belond to the user
-            (tx) => _.intersection(tx.output_addresses, addresses).length > 0,
-          ),
-        ]
-      }
-
-      return user_matched_txs
     }
   }
