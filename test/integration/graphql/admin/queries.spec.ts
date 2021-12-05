@@ -23,9 +23,28 @@ describe("GraphQLQueryRoot", () => {
   })
 
   it("exposes accountDetails by phone", async () => {
+    const phone = "+19876543210"
     const query = `
       query Q {
-        accountDetails: accountDetailsByUserPhone(phone: "+19876543210") {
+        accountDetails: accountDetailsByUserPhone(phone: "${phone}") {
+          id
+          username
+          level
+          status
+          title
+          owner {
+            id
+            phone
+            language
+            defaultAccount {
+              id
+            }
+            createdAt
+          }
+          coordinates {
+            latitude
+            longitude
+          }
           createdAt
         }
       }
@@ -34,6 +53,8 @@ describe("GraphQLQueryRoot", () => {
     const { errors, data } = result
     expect(errors).toBeUndefined()
     expect(data?.accountDetails.createdAt).toBeDefined()
+    expect(data?.accountDetails.owner.phone).toBe(phone)
+    expect(data?.accountDetails.owner.defaultAccount.id).toBe(data?.accountDetails.id)
   })
 
   it("exposes accountDetails by username", async () => {

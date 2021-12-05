@@ -1,5 +1,4 @@
 import { GT } from "@graphql/index"
-
 import Language from "@graphql/types/scalar/language"
 import Phone from "@graphql/types/scalar/phone"
 import Timestamp from "@graphql/types/scalar/timestamp"
@@ -8,17 +7,24 @@ import Account from "./account"
 
 const User = new GT.Object({
   name: "User",
+
   fields: () => ({
     id: { type: GT.NonNullID },
     phone: { type: GT.NonNull(Phone) },
     language: { type: GT.NonNull(Language) },
     defaultAccount: {
       type: GT.NonNull(Account),
-      resolve: (source) => AccountsRepository().findById(source.defaultAccountId),
+      resolve: async (source: User) => {
+        const account = await AccountsRepository().findById(source.defaultAccountId)
+        if (account instanceof Error) {
+          throw account
+        }
+        return account
+      },
     },
     createdAt: {
       type: GT.NonNull(Timestamp),
-      resolve: (source) => source.createdAt ?? source.created_at, // TODO: Get rid of this resolver
+      resolve: (source: User) => source.createdAt,
     },
   }),
 })

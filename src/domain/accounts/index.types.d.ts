@@ -14,6 +14,7 @@ type Account = {
   readonly createdAt: Date
   username: Username
   readonly walletPublicId: WalletPublicId
+  readonly ownerId: UserId
   level: AccountLevel
   status: AccountStatus
   readonly walletIds: WalletId[]

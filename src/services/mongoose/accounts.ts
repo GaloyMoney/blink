@@ -167,4 +167,5 @@ const translateToAccount = (result): Account => ({
   title: result.title as BusinessMapTitle,
   coordinates: result.coordinates as Coordinates,
   walletIds: [result.id as WalletId],
+  ownerId: result.id as UserId,
 })

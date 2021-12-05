@@ -23,8 +23,8 @@ const Account = new GT.Object({
       // and users: [Users] in DetailCorporateAccount
 
       type: GT.NonNull(User),
-      resolve: async (source) => {
-        const user = await UsersRepository().findById(source.id) // FIXME/TODO should it be source.ownerId?
+      resolve: async (source: Account) => {
+        const user = await UsersRepository().findById(source.ownerId)
         if (user instanceof Error) {
           throw user
         }
@@ -38,7 +38,7 @@ const Account = new GT.Object({
     },
     createdAt: {
       type: GT.NonNull(Timestamp),
-      resolve: (source) => source.createdAt ?? source.created_at, // TODO: Get rid of this resolver
+      resolve: (source) => source.createdAt,
     },
   }),
 })
