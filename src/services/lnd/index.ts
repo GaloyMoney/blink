@@ -373,6 +373,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
       switch (errDetails) {
         case KnownLndErrorDetails.InvoiceAlreadyPaid:
           return new LnAlreadyPaidError()
+        case KnownLndErrorDetails.UnableToFindRoute:
+          return new RouteNotFoundError()
         default:
           return new UnknownLightningServiceError(err)
       }
@@ -461,10 +463,11 @@ const lookupPaymentByPubkeyAndHash = async ({
 }
 
 const parseLndErrorDetails = (err) =>
-  err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details
+  err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details || err[1]
 
 const KnownLndErrorDetails = {
   InsufficientBalance: "insufficient local balance",
   InvoiceNotFound: "unable to locate invoice",
   InvoiceAlreadyPaid: "invoice is already paid",
+  UnableToFindRoute: "PaymentPathfindingFailedToFindPossibleRoute",
 } as const
