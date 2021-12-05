@@ -87,23 +87,16 @@ type TestAccounts = {
   currencies // FIXME
 }
 
-type isTestAccountPhone = ({
-  phone,
-  testAccounts,
-}: {
-  phone: PhoneNumber
-  testAccounts: TestAccounts[]
-}) => boolean
-
-type isTestAccountPhoneAndCode = ({
-  code,
-  phone,
-  testAccounts,
-}: {
-  code: PhoneCode
-  phone: PhoneNumber
-  testAccounts: TestAccounts[]
-}) => boolean
+type TestAccount = (testAccounts: TestAccounts[]) => {
+  isPhoneValid: (phone: PhoneNumber) => boolean
+  isPhoneAndCodeValid: ({
+    code,
+    phone,
+  }: {
+    code: PhoneCode
+    phone: PhoneNumber
+  }) => boolean
+}
 
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
