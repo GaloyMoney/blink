@@ -210,6 +210,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CouldNotFindPhoneCodeError":
     case "PhoneProviderServiceError":
     case "UnknownPhoneProviderServiceError":
+      message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
     default:
