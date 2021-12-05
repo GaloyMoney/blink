@@ -8,7 +8,7 @@ import {
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import { RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import { checkedToPhoneNumber, isTestAccountPhoneAndCode } from "@domain/users"
+import { checkedToPhoneNumber, TestAccount } from "@domain/users"
 import { createToken } from "@services/jwt"
 import { UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
@@ -119,7 +119,7 @@ const isCodeValid = async ({
   age: Seconds
 }) => {
   const testAccounts = getTestAccounts()
-  const validTestCode = isTestAccountPhoneAndCode({ code, phone, testAccounts })
+  const validTestCode = TestAccount(testAccounts).isPhoneAndCodeValid({ code, phone })
 
   if (validTestCode) {
     return true
