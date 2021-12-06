@@ -1,11 +1,17 @@
-type Query {
-  allLevels: [AccountLevel!]!
-  accountDetailsByUserPhone(phone: Phone!): Account!
-  accountDetailsByUsername(username: Username!): Account!
-  transactionById(id: ID!): Transaction
-  transactionsByHash(hash: PaymentHash!): [Transaction]
-  lightningInvoice(hash: PaymentHash!): LightningInvoice!
-  lightningPayment(hash: PaymentHash!): LightningPayment!
+type Account {
+  coordinates: Coordinates
+  createdAt: Timestamp!
+  id: ID!
+  level: AccountLevel!
+  owner: User!
+  status: AccountStatus!
+  title: String
+  username: Username
+}
+
+type AccountDetailPayload {
+  accountDetails: Account
+  errors: [Error!]!
 }
 
 enum AccountLevel {
@@ -13,50 +19,41 @@ enum AccountLevel {
   TWO
 }
 
-type Account {
-  id: ID!
-  username: Username
-  level: AccountLevel!
-  status: AccountStatus!
-  title: String
-  owner: User!
-  coordinates: Coordinates
-  createdAt: Timestamp!
-}
-
-"""
-Unique identifier of a user
-"""
-scalar Username
-
 enum AccountStatus {
-  LOCKED
   ACTIVE
+  LOCKED
 }
 
-type User {
-  id: ID!
-  phone: Phone!
-  language: Language!
-  defaultAccount: Account!
-  createdAt: Timestamp!
+input AccountUpdateLevelInput {
+  level: AccountLevel!
+  uid: ID!
 }
 
 """
-Phone number which includes country code
+An authentication code valid for a single use
 """
-scalar Phone
+scalar AuthToken
 
-scalar Language
+type AuthTokenPayload {
+  authToken: AuthToken
+  errors: [Error!]!
+}
 
-"""
-Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
-"""
-scalar Timestamp
+input BusinessUpdateMapInfoInput {
+  latitude: Float!
+  longitude: Float!
+  title: String!
+  username: Username!
+}
 
 type Coordinates {
-  longitude: Float!
   latitude: Float!
+  longitude: Float!
+}
+
+interface Error {
+  message: String!
+  path: [String]
 }
 
 enum ExchangeCurrencyUnit {
@@ -71,30 +68,12 @@ type InitiationViaIntraLedger {
   counterPartyWalletId: WalletId
 }
 
-"""
-Unique identifier of a user
-"""
-scalar WalletId
-
 type InitiationViaLn {
   paymentHash: PaymentHash!
 }
 
 type InitiationViaOnChain {
   address: OnChainAddress!
-}
-
-type InputError implements Error {
-  code: InputErrorCode!
-  message: String!
-  path: [String]
-}
-
-enum InputErrorCode {
-  INVALID_INPUT
-  VALUE_NOT_ALLOWED
-  VALUE_TOO_LONG
-  VALUE_TOO_SHORT
 }
 
 scalar Language
@@ -141,16 +120,57 @@ Text field in a lightning payment transaction
 """
 scalar Memo
 
-type LightningInvoice {
-  createdAt: Timestamp!
-  confirmedAt: Timestamp
-  description: String!
-  expiresAt: Timestamp
-  isSettled: Boolean!
-  received: SatAmount!
-  request: LnPaymentRequest
-  secret: LnPaymentSecret!
+type Mutation {
+  accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
+  accountUpdateStatus(input: UserUpdateStatusInput!): AccountDetailPayload!
+  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
+  userLogin(input: UserLoginInput!): AuthTokenPayload!
+  userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
 }
+
+"""
+An address for an on-chain bitcoin destination
+"""
+scalar OnChainAddress
+
+scalar OnChainTxHash
+
+"""
+An authentication code valid for a single use
+"""
+scalar OneTimeAuthCode
+
+scalar PaymentHash
+
+"""
+Phone number which includes country code
+"""
+scalar Phone
+
+"""
+Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
+"""
+type Price {
+  base: SafeInt!
+  currencyUnit: ExchangeCurrencyUnit!
+  formattedAmount: String!
+  offset: Int!
+}
+
+type Query {
+  accountDetailsByUserPhone(phone: Phone!): Account!
+  accountDetailsByUsername(username: Username!): Account!
+  allLevels: [AccountLevel!]!
+  lightningInvoice(hash: PaymentHash!): LightningInvoice!
+  lightningPayment(hash: PaymentHash!): LightningPayment!
+  transactionById(id: ID!): Transaction
+  transactionsByHash(hash: PaymentHash!): [Transaction]
+}
+
+"""
+Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1
+"""
+scalar SafeInt
 
 """
 (Positive) Satoshi amount (i.g. quiz earning)
@@ -171,32 +191,19 @@ type SettlementViaLn {
   paymentSecret: LnPaymentSecret
 }
 
-type Mutation {
-  userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
-  userLogin(input: UserLoginInput!): AuthTokenPayload!
-  accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
-  accountUpdateStatus(input: UserUpdateStatusInput!): AccountDetailPayload!
-  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
+type SettlementViaOnChain {
+  transactionHash: OnChainTxHash!
 }
-
-"""
-An amount (of a currency) that can be negative (i.g. in a transaction)
-"""
-scalar SignedAmount
 
 type SuccessPayload {
   errors: [Error!]!
   success: Boolean
 }
 
-interface Error {
-  message: String!
-  path: [String]
-}
-
-input UserRequestAuthCodeInput {
-  phone: Phone!
-}
+"""
+Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)
+"""
+scalar Timestamp
 
 """
 Give details about an individual transaction.
@@ -234,36 +241,6 @@ type Transaction {
   status: TxStatus!
 }
 
-"""
-A connection to a list of items.
-"""
-type TransactionConnection {
-  """
-  A list of edges.
-  """
-  edges: [TransactionEdge]
-
-  """
-  Information to aid in pagination.
-  """
-  pageInfo: PageInfo!
-}
-
-"""
-An edge in a connection.
-"""
-type TransactionEdge {
-  """
-  A cursor for use in pagination
-  """
-  cursor: String!
-
-  """
-  The item at the end of the edge
-  """
-  node: Transaction
-}
-
 enum TxDirection {
   RECEIVE
   SEND
@@ -276,26 +253,20 @@ enum TxStatus {
 }
 
 type User {
-  coordinates: Coordinates
   createdAt: Timestamp!
+  defaultAccount: Account!
   id: ID!
   language: Language!
-  level: AccountLevel
   phone: Phone!
-  status: AccountStatus
-  title: String
-  username: Username
 }
 
-type AccountDetailPayload {
-  errors: [Error!]!
-  accountDetails: Account
+input UserLoginInput {
+  code: OneTimeAuthCode!
+  phone: Phone!
 }
 
-input AccountUpdateLevelInput {
-  uid: ID!
-  level: AccountLevel!
-  uid: ID!
+input UserRequestAuthCodeInput {
+  phone: Phone!
 }
 
 input UserUpdateStatusInput {
@@ -307,37 +278,6 @@ input UserUpdateStatusInput {
 Unique identifier of a user
 """
 scalar Username
-
-interface Wallet {
-  balance: SignedAmount!
-  id: ID!
-  transactions(
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
-    after: String
-
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
-    before: String
-
-    """
-    Returns the first n items from the list.
-    """
-    first: Int
-
-    """
-    Returns the last n items from the list.
-    """
-    last: Int
-  ): TransactionConnection
-  walletCurrency: WalletCurrency!
-}
-
-enum WalletCurrency {
-  BTC
-}
 
 """
 Unique identifier of a user

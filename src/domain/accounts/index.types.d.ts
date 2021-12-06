@@ -13,7 +13,7 @@ type Account = {
   readonly id: AccountId
   readonly createdAt: Date
   username: Username
-  readonly walletPublicId: WalletPublicId
+  readonly defaultWalletId: WalletId
   readonly ownerId: UserId
   level: AccountLevel
   status: AccountStatus

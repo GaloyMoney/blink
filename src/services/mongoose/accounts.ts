@@ -160,7 +160,7 @@ export const AccountsRepository = (): IAccountsRepository => {
 const translateToAccount = (result): Account => ({
   id: result.id as AccountId,
   createdAt: new Date(result.created_at),
-  walletPublicId: result.walletPublicId as WalletPublicId,
+  defaultWalletId: result.defaultWalletId as WalletId,
   username: result.username as Username,
   level: (result.level as AccountLevel) || AccountLevel.One,
   status: (result.status as AccountStatus) || AccountStatus.Active,
