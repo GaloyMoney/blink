@@ -34,7 +34,8 @@ const Account = new GT.Object({
     },
     coordinates: {
       type: Coordinates,
-      resolve: (source) => source.coordinates,
+      description:
+        "GPS coordinates for the account that can be used to place the related business on a map",
     },
     createdAt: {
       type: GT.NonNull(Timestamp),
