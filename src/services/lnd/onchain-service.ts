@@ -1,7 +1,7 @@
 import {
   UnknownOnChainServiceError,
   OnChainServiceUnavailableError,
-  SubmittedTransaction,
+  IncomingOnChainTransaction,
 } from "@domain/bitcoin/onchain"
 import { toSats } from "@domain/bitcoin"
 import {
@@ -29,7 +29,7 @@ export const OnChainService = (
 
   const getIncomingTransactions = async (
     scanDepth: number,
-  ): Promise<SubmittedTransaction[] | OnChainServiceError> => {
+  ): Promise<IncomingOnChainTransaction[] | OnChainServiceError> => {
     try {
       const { current_block_height } = await getHeight({ lnd })
 
@@ -91,12 +91,12 @@ export const OnChainService = (
 export const extractIncomingTransactions = (
   decoder: TxDecoder,
   { transactions }: GetChainTransactionsResult,
-): SubmittedTransaction[] => {
+): IncomingOnChainTransaction[] => {
   return transactions
     .filter((tx) => !tx.is_outgoing && !!tx.transaction)
     .map(
-      (tx): SubmittedTransaction =>
-        SubmittedTransaction({
+      (tx): IncomingOnChainTransaction =>
+        IncomingOnChainTransaction({
           confirmations: tx.confirmation_count || 0,
           rawTx: decoder.decode(tx.transaction as string),
           fee: toSats(tx.fee || 0),

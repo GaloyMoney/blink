@@ -3,7 +3,7 @@ export const TxFilter = ({
   confirmationsGreaterThanOrEqual,
   addresses,
 }: TxFilterArgs): TxFilter => {
-  const apply = (txs: SubmittedTransaction[]): SubmittedTransaction[] => {
+  const apply = (txs: IncomingOnChainTransaction[]): IncomingOnChainTransaction[] => {
     return txs.filter(({ confirmations, rawTx: { outs } }) => {
       if (
         !!confirmationsGreaterThanOrEqual &&

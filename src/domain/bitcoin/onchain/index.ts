@@ -2,7 +2,7 @@ export * from "./errors"
 export * from "./tx-filter"
 export * from "./tx-decoder"
 
-export const SubmittedTransaction = ({
+export const IncomingOnChainTransaction = ({
   confirmations,
   rawTx,
   fee,
@@ -12,7 +12,7 @@ export const SubmittedTransaction = ({
   rawTx: OnChainTransaction
   fee: Satoshis
   createdAt: Date
-}): SubmittedTransaction => ({
+}): IncomingOnChainTransaction => ({
   confirmations,
   rawTx,
   fee,

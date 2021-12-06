@@ -22,7 +22,7 @@ type OnChainTransaction = {
   outs: TxOut[]
 }
 
-type SubmittedTransaction = {
+type IncomingOnChainTransaction = {
   confirmations: number
   rawTx: OnChainTransaction
   fee: Satoshis
@@ -41,13 +41,13 @@ type TxFilterArgs = {
 }
 
 type TxFilter = {
-  apply(txsonChainTransactions: SubmittedTransaction[]): SubmittedTransaction[]
+  apply(txs: IncomingOnChainTransaction[]): IncomingOnChainTransaction[]
 }
 
 interface IOnChainService {
   getIncomingTransactions(
     scanDepth: number,
-  ): Promise<SubmittedTransaction[] | OnChainServiceError>
+  ): Promise<IncomingOnChainTransaction[] | OnChainServiceError>
 
   createOnChainAddress(): Promise<OnChainAddressIdentifier | OnChainServiceError>
 
