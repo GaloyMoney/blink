@@ -32,6 +32,7 @@ import {
 } from "@services/tracing"
 import { PriceInterval, PriceRange } from "@domain/price"
 import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
+import { addEarn } from "@app/accounts/add-earn"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 

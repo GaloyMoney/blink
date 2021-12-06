@@ -146,11 +146,6 @@ type InitiationViaIntraLedger {
   counterPartyWalletId: WalletId
 }
 
-"""
-Unique identifier of a user
-"""
-scalar Username
-
 type InitiationViaLn {
   paymentHash: PaymentHash!
 }

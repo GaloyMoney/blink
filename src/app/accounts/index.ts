@@ -13,19 +13,8 @@ export * from "./add-earn"
 
 const accounts = AccountsRepository()
 
-const accounts = AccountsRepository()
-
 export const getAccount = async (accountId: AccountId) => {
   return accounts.findById(accountId)
-}
-
-export const getWalletPublicIdFromUsername = async (
-  username: Username,
-): Promise<WalletPublicId | Error> => {
-  const account = await accounts.findByUsername(username)
-  if (account instanceof Error) return account
-
-  return account.walletPublicId
 }
 
 export const getAccountByApiKey = async (

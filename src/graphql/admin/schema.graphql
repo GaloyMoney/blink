@@ -22,15 +22,9 @@ enum AccountLevel {
   TWO
 }
 
-type Account {
-  coordinates: Coordinates
-  createdAt: Timestamp!
-  id: ID!
-  level: AccountLevel!
-  owner: User!
-  status: AccountStatus!
-  title: String
-  username: Username
+enum AccountStatus {
+  ACTIVE
+  LOCKED
 }
 
 input AccountUpdateLevelInput {
@@ -44,13 +38,13 @@ input AccountUpdateStatusInput {
 }
 
 """
-Unique identifier of a user
+An authentication code valid for a single use
 """
-scalar Username
+scalar AuthToken
 
-enum AccountStatus {
-  ACTIVE
-  LOCKED
+type AuthTokenPayload {
+  authToken: AuthToken
+  errors: [Error!]!
 }
 
 input BusinessUpdateMapInfoInput {
@@ -161,7 +155,15 @@ Phone number which includes country code
 """
 scalar Phone
 
-scalar Language
+"""
+Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
+"""
+type Price {
+  base: SafeInt!
+  currencyUnit: ExchangeCurrencyUnit!
+  formattedAmount: String!
+  offset: Int!
+}
 
 type Query {
   accountDetailsByUserPhone(phone: Phone!): Account!
@@ -204,19 +206,6 @@ type SettlementViaOnChain {
 type SuccessPayload {
   errors: [Error!]!
   success: Boolean
-}
-
-enum AccountStatus {
-  LOCKED
-  ACTIVE
-}
-
-type User {
-  id: ID!
-  phone: Phone!
-  language: Language!
-  defaultAccount: AccountDetail
-  createdAt: Timestamp!
 }
 
 """
