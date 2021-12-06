@@ -1,10 +1,7 @@
 import { AccountLevel, AccountStatus } from "@domain/accounts"
 import {
-  UnknownRepositoryError,
-  CouldNotFindError,
-  RepositoryError,
-  CouldNotFindAccountFromUsernameError,
-  CouldNotFindAccountFromPhoneError,
+  CouldNotFindAccountFromUsernameError, CouldNotFindError,
+  RepositoryError, UnknownRepositoryError
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
 import { caseInsensitiveRegex } from "."
@@ -53,19 +50,6 @@ export const AccountsRepository = (): IAccountsRepository => {
       if (!result) {
         return new CouldNotFindAccountFromUsernameError(username)
       }
-      return translateToAccount(result)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
-  const findByPhone = async (phone: PhoneNumber): Promise<Account | RepositoryError> => {
-    try {
-      const result = await User.findOne({ phone })
-      if (!result) {
-        return new CouldNotFindAccountFromPhoneError(phone)
-      }
-
       return translateToAccount(result)
     } catch (err) {
       return new UnknownRepositoryError(err)
@@ -150,7 +134,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     listByUserId,
     findByWalletId,
     findByUsername,
-    findByPhone,
     findByWalletPublicId,
     listBusinessesForMap,
     update,
