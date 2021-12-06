@@ -3,6 +3,7 @@ import {
   OnChainServiceUnavailableError,
   IncomingOnChainTransaction,
   CouldNotFindOnChainTransactionError,
+  OutgoingOnChainTransaction,
 } from "@domain/bitcoin/onchain"
 import { toSats } from "@domain/bitcoin"
 import {
@@ -29,7 +30,7 @@ export const OnChainService = (
   }
 
   const listTransactions = async (
-    scanDepth: number,
+    scanDepth: ScanDepth,
   ): Promise<GetChainTransactionsResult | OnChainServiceError> => {
     try {
       const { current_block_height } = await getHeight({ lnd })
@@ -47,8 +48,8 @@ export const OnChainService = (
   }
 
   const listIncomingTransactions = async (
-    scanDepth: number,
-  ): Promise<SubmittedTransaction[] | OnChainServiceError> => {
+    scanDepth: ScanDepth,
+  ): Promise<IncomingOnChainTransaction[] | OnChainServiceError> => {
     const txs = await listTransactions(scanDepth)
     if (txs instanceof Error) return txs
 
@@ -56,8 +57,8 @@ export const OnChainService = (
   }
 
   const listOutgoingTransactions = async (
-    scanDepth: number,
-  ): Promise<SubmittedTransaction[] | OnChainServiceError> => {
+    scanDepth: ScanDepth,
+  ): Promise<OutgoingOnChainTransaction[] | OnChainServiceError> => {
     const txs = await listTransactions(scanDepth)
     if (txs instanceof Error) return txs
 
@@ -79,10 +80,10 @@ export const OnChainService = (
     }
   }
 
-  const findOnChainFee = async ({
+  const lookupOnChainFee = async ({
     txHash,
     scanDepth,
-  }: FindOnChainFeeArgs): Promise<Satoshis | OnChainServiceError> => {
+  }: LookupOnChainFeeArgs): Promise<Satoshis | OnChainServiceError> => {
     const onChainTxs = await listOutgoingTransactions(scanDepth)
     if (onChainTxs instanceof Error) return onChainTxs
 
@@ -111,7 +112,7 @@ export const OnChainService = (
 
   return {
     listIncomingTransactions,
-    findOnChainFee,
+    lookupOnChainFee,
     createOnChainAddress,
     getOnChainFeeEstimate,
   }
@@ -143,12 +144,12 @@ export const extractOutgoingTransactions = ({
 }: {
   decoder: TxDecoder
   txs: GetChainTransactionsResult
-}): IncomingOnChainTransaction[] => {
+}): OutgoingOnChainTransaction[] => {
   return txs.transactions
     .filter((tx) => tx.is_outgoing && !!tx.transaction)
     .map(
-      (tx): IncomingOnChainTransaction =>
-        IncomingOnChainTransaction({
+      (tx): OutgoingOnChainTransaction =>
+        OutgoingOnChainTransaction({
           confirmations: tx.confirmation_count || 0,
           rawTx: decoder.decode(tx.transaction as string),
           fee: toSats(tx.fee || 0),

@@ -11,6 +11,9 @@ type BlockId = string & { [blockIdSymbol]: never }
 declare const onChainTxHashSymbol: unique symbol
 type OnChainTxHash = string & { [onChainTxHashSymbol]: never }
 
+declare const ScanDepthSymbol: unique symbol
+type ScanDepth = number & { [ScanDepthSymbol]: never }
+
 type TxOut = {
   sats: Satoshis
   // OP_RETURN utxos don't have valid addresses associated with them
@@ -22,13 +25,16 @@ type OnChainTransaction = {
   outs: TxOut[]
 }
 
-type IncomingOnChainTransaction = {
+type BaseOnChainTransaction = {
   confirmations: number
   rawTx: OnChainTransaction
   fee: Satoshis
   createdAt: Date
   uniqueAddresses: () => OnChainAddress[]
 }
+
+type IncomingOnChainTransaction = BaseOnChainTransaction
+type OutgoingOnChainTransaction = BaseOnChainTransaction
 
 type TxDecoder = {
   decode(txHex: string): OnChainTransaction
@@ -44,20 +50,20 @@ type TxFilter = {
   apply(txs: IncomingOnChainTransaction[]): IncomingOnChainTransaction[]
 }
 
-type FindOnChainFeeArgs = {
+type LookupOnChainFeeArgs = {
   txHash: OnChainTxHash
-  scanDepth: number
+  scanDepth: ScanDepth
 }
 
 interface IOnChainService {
   listIncomingTransactions(
-    scanDepth: number,
+    scanDepth: ScanDepth,
   ): Promise<IncomingOnChainTransaction[] | OnChainServiceError>
 
-  findOnChainFee({
+  lookupOnChainFee({
     txHash,
     scanDepth,
-  }: FindOnChainFeeArgs): Promise<Satoshis | OnChainServiceError>
+  }: LookupOnChainFeeArgs): Promise<Satoshis | OnChainServiceError>
 
   createOnChainAddress(): Promise<OnChainAddressIdentifier | OnChainServiceError>
 

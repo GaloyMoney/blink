@@ -6,14 +6,14 @@ import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { LockService } from "@services/lock"
-import { ONCHAIN_LOOK_BACK, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
+import { ONCHAIN_SCAN_DEPTH, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
 import { getCurrentPrice } from "@app/prices"
 
 export const updateOnChainReceipt = async ({
-  scanDepth = ONCHAIN_LOOK_BACK,
+  scanDepth = ONCHAIN_SCAN_DEPTH,
   logger,
 }: {
-  scanDepth?: number
+  scanDepth?: ScanDepth
   logger: Logger
 }): Promise<number | ApplicationError> => {
   const onChain = OnChainService(TxDecoder(BTC_NETWORK))

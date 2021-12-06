@@ -8,7 +8,7 @@ import { ledger } from "@services/mongodb"
 
 import { UserWallet } from "./user-wallet"
 import { btc2sat, sat2btc } from "./utils"
-import { BTC_NETWORK, ONCHAIN_LOOK_BACK_OUTGOING } from "@config/app"
+import { BTC_NETWORK, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config/app"
 import { toSats } from "@domain/bitcoin"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { TxDecoder } from "@domain/bitcoin/onchain"
@@ -208,9 +208,9 @@ export class SpecterWallet {
       const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
       if (onChainService instanceof Error) return toSats(0)
 
-      const onChainTxFee = await onChainService.findOnChainFee({
+      const onChainTxFee = await onChainService.lookupOnChainFee({
         txHash,
-        scanDepth: ONCHAIN_LOOK_BACK_OUTGOING,
+        scanDepth: ONCHAIN_SCAN_DEPTH_OUTGOING,
       })
       if (onChainTxFee instanceof Error) return toSats(0)
 

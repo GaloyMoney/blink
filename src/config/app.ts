@@ -3,6 +3,7 @@ import yaml from "js-yaml"
 import merge from "lodash.merge"
 
 import { baseLogger } from "@services/logger"
+import { checkedToScanDepth } from "@domain/bitcoin/onchain"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)
@@ -67,10 +68,18 @@ export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.limits.memoSharingSatsThre
 
 export const ONCHAIN_MIN_CONFIRMATIONS = yamlConfig.onChainWallet.minConfirmations
 // how many block are we looking back for getChainTransactions
-export const ONCHAIN_LOOK_BACK = yamlConfig.onChainWallet.lookBack
-export const ONCHAIN_LOOK_BACK_OUTGOING = yamlConfig.onChainWallet.lookBackOutgoing
-export const ONCHAIN_LOOK_BACK_CHANNEL_UPDATE =
-  yamlConfig.onChainWallet.lookBackChannelUpdate
+const getOnChainScanDepth = (val: number): ScanDepth => {
+  const scanDepth = checkedToScanDepth(val)
+  if (scanDepth instanceof Error) throw scanDepth
+  return scanDepth
+}
+export const ONCHAIN_SCAN_DEPTH = getOnChainScanDepth(yamlConfig.onChainWallet.scanDepth)
+export const ONCHAIN_SCAN_DEPTH_OUTGOING = getOnChainScanDepth(
+  yamlConfig.onChainWallet.scanDepthOutgoing,
+)
+export const ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE = getOnChainScanDepth(
+  yamlConfig.onChainWallet.scanDepthChannelUpdate,
+)
 
 export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD =
   yamlConfig.userActivenessMonthlyVolumeThreshold

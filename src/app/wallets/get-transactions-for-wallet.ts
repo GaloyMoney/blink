@@ -4,7 +4,7 @@ import { WalletsRepository } from "@services/mongoose"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"
-import { ONCHAIN_LOOK_BACK, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
+import { ONCHAIN_SCAN_DEPTH, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
 import { WalletTransactionHistory } from "@domain/wallets"
 import { PartialResult } from "@app/partial-result"
 import { getCurrentPrice } from "@app/prices"
@@ -36,7 +36,7 @@ export const getTransactionsForWallet = async (
     return PartialResult.partial(confirmedHistory.transactions, onChain)
   }
 
-  const onChainTxs = await onChain.listIncomingTransactions(ONCHAIN_LOOK_BACK)
+  const onChainTxs = await onChain.listIncomingTransactions(ONCHAIN_SCAN_DEPTH)
   if (onChainTxs instanceof OnChainError) {
     return PartialResult.partial(confirmedHistory.transactions, onChainTxs)
   }
