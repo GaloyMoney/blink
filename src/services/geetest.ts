@@ -30,7 +30,7 @@ const Geetest = (config): GeetestType => {
     return sendRequest({ gt: config.id })
   }
 
-  const register = async () => {
+  const register = async (): Promise<UnknownCaptchaError | GeetestRegister> => {
     try {
       const gtLib = new GeetestLib(config.id, config.key)
       const digestmod = "md5"
