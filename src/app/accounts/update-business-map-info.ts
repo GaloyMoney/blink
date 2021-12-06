@@ -1,4 +1,5 @@
 import { checkedCoordinates, checkedMapTitle } from "@domain/accounts"
+import { checkedToUsername } from "@domain/users"
 import { AccountsRepository } from "@services/mongoose/accounts"
 
 export const updateBusinessMapInfo = async ({
@@ -12,7 +13,10 @@ export const updateBusinessMapInfo = async ({
 }): Promise<Account | Error> => {
   const accountsRepo = AccountsRepository()
 
-  const account = await accountsRepo.findByUsername(username as Username)
+  const usernameChecked = checkedToUsername(username)
+  if (usernameChecked instanceof Error) return usernameChecked
+
+  const account = await accountsRepo.findByUsername(usernameChecked)
   if (account instanceof Error) return account
 
   const coordinates = checkedCoordinates({ latitude, longitude })
