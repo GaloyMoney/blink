@@ -13,9 +13,8 @@ export * from "./add-earn"
 
 const accounts = AccountsRepository()
 
-const accounts = AccountsRepository()
-
 export const getAccount = async (accountId: AccountId) => {
+  const accounts = AccountsRepository()
   return accounts.findById(accountId)
 }
 
