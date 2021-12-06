@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import MeQuery from "@graphql/root/query/me"
 import GlobalsQuery from "@graphql/root/query/globals"
 import UsernameAvailableQuery from "@graphql/root/query/username-available"
-import UserDefaultWalletIdQuery from "@graphql/root/query/user-default-wallet-id"
+import AccountDefaultWalletIdQuery from "@graphql/root/query/user-default-wallet-id"
 import BusinessMapMarkersQuery from "@graphql/root/query/business-map-markers"
 import MobileVersionsQuery from "@graphql/root/query/mobile-versions"
 import QuizQuestionsQuery from "@graphql/root/query/quiz-questions"
@@ -17,7 +17,7 @@ const QueryType = new GT.Object({
     globals: GlobalsQuery,
     me: MeQuery,
     usernameAvailable: UsernameAvailableQuery,
-    userDefaultWalletId: UserDefaultWalletIdQuery,
+    userDefaultWalletId: AccountDefaultWalletIdQuery, // FIXME: migrate to AccountDefaultWalletId
     businessMapMarkers: BusinessMapMarkersQuery,
     mobileVersions: MobileVersionsQuery,
     quizQuestions: QuizQuestionsQuery,

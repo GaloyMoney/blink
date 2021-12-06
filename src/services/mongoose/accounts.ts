@@ -21,7 +21,8 @@ const projection = {
 export const AccountsRepository = (): IAccountsRepository => {
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
     try {
-      const result: UserType = await User.findOne({ _id: accountId }, projection)
+      const result: UserType /* UserType actually not correct with {projections} */ =
+        await User.findOne({ _id: accountId }, projection)
       if (!result) return new CouldNotFindError()
       return translateToAccount(result)
     } catch (err) {

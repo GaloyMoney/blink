@@ -24,7 +24,6 @@ const AccountUpdateLevelMutation = GT.Field({
   resolve: async (_, args) => {
     const { uid, level } = args.input
 
-    // FIXME: nicolas: I don't understand the purpose of this below
     for (const input of [uid, level]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }

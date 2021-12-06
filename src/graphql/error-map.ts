@@ -13,6 +13,7 @@ import {
   RouteFindingError,
   InvalidCoordinatesError,
   InvalidBusinessTitleLengthError,
+  PhoneCodeError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -64,6 +65,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `User does not exist for username ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
+    case "CouldNotFindAccountFromUsernameError":
+      message = `Account does not exist for username ${error.message}`
+      return new NotFoundError({ message, logger: baseLogger })
+
     case "CouldNotFindUserFromPhoneError":
       message = `User does not exist for phone ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
@@ -110,6 +115,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
 
     case "CouldNotFindPhoneCodeError":
       message = "Invalid or incorrect phone code entered."
+      return new PhoneCodeError({ message, logger: baseLogger })
+
+    case "CouldNotFindAccountFromPhoneError":
+      message = "Invalid or incorrect phone entered."
       return new PhoneCodeError({ message, logger: baseLogger })
 
     case "RouteNotFoundError":

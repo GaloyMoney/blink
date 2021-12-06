@@ -6,17 +6,17 @@ const WalletId = new GT.Scalar({
   name: "WalletId",
   description: "Unique identifier of a user",
   parseValue(value) {
-    return validPublicWalletIdValue(value)
+    return validWalletIdValue(value)
   },
   parseLiteral(ast) {
     if (ast.kind === GT.Kind.STRING) {
-      return validPublicWalletIdValue(ast.value)
+      return validWalletIdValue(ast.value)
     }
     return new UserInputError("Invalid type for WalletId")
   },
 })
 
-function validPublicWalletIdValue(value: string) {
+function validWalletIdValue(value) {
   const checkedWalletId = checkedToWalletPublicId(value)
   if (checkedWalletId instanceof Error) {
     return new UserInputError("Invalid value for WalletId")

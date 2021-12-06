@@ -24,7 +24,6 @@ const User = new GT.Object({
     },
     createdAt: {
       type: GT.NonNull(Timestamp),
-      resolve: (source: User) => source.createdAt,
     },
   }),
 })

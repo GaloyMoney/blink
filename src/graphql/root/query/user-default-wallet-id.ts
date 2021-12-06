@@ -3,8 +3,7 @@ import Username from "@graphql/types/scalar/username"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import { AccountsRepository } from "@services/mongoose"
 
-// FIXME: rename to AccountDefaultWalletIdQuery
-const UserDefaultWalletIdQuery = GT.Field({
+const AccountDefaultWalletIdQuery = GT.Field({
   type: GT.NonNull(WalletId),
   args: {
     username: {
@@ -26,4 +25,4 @@ const UserDefaultWalletIdQuery = GT.Field({
   },
 })
 
-export default UserDefaultWalletIdQuery
+export default AccountDefaultWalletIdQuery
