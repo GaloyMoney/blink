@@ -9,7 +9,15 @@ import GraphQLUser from "@graphql/types/object/graphql-user"
 
 const MeQuery = GT.Field({
   type: GraphQLUser,
-  resolve: async (_, __, { ip, domainUser, domainAccount }) =>
+  resolve: async (
+    _,
+    __,
+    {
+      ip,
+      domainUser,
+      domainAccount,
+    }: { ip: IpAddress; domainUser: User; domainAccount: Account },
+  ) =>
     addAttributesToCurrentSpanAndPropagate(
       {
         [SemanticAttributes.ENDUSER_ID]: domainUser?.id,

@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import Username from "@graphql/types/scalar/username"
 import WalletId from "@graphql/types/scalar/wallet-id"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { AccountsRepository } from "@services/mongoose"
 
 // FIXME: rename to AccountDefaultWalletIdQuery
 const UserDefaultWalletIdQuery = GT.Field({
@@ -21,10 +21,7 @@ const UserDefaultWalletIdQuery = GT.Field({
     const account = await AccountsRepository().findByUsername(username)
     if (account instanceof Error) return account
 
-    const wallet = await WalletsRepository().findById(account.defaultWalletId)
-    if (wallet instanceof Error) return wallet
-
-    const walletPublicId = wallet.publicId
+    const walletPublicId = account.defaultWalletId
     return walletPublicId
   },
 })

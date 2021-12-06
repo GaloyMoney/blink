@@ -157,10 +157,10 @@ export const AccountsRepository = (): IAccountsRepository => {
   }
 }
 
-const translateToAccount = (result): Account => ({
+const translateToAccount = (result: UserType): Account => ({
   id: result.id as AccountId,
   createdAt: new Date(result.created_at),
-  defaultWalletId: result.defaultWalletId as WalletId,
+  defaultWalletId: result.walletPublicId as WalletPublicId, // TODO: add defaultWalletId at the persistence layer when Account have multiple wallet
   username: result.username as Username,
   level: (result.level as AccountLevel) || AccountLevel.One,
   status: (result.status as AccountStatus) || AccountStatus.Active,
