@@ -6,7 +6,7 @@ import { TxStatus } from "./tx-status"
 
 const filterPendingIncoming = (
   walletId: WalletId,
-  pendingTransactions: SubmittedTransaction[],
+  pendingTransactions: IncomingOnChainTransaction[],
   addresses: OnChainAddress[],
   usdPerSat: UsdPerSat,
 ): WalletOnChainTransaction[] => {
@@ -212,7 +212,7 @@ export const fromLedger = (
     transactions,
     addPendingIncoming: (
       walletId: WalletId,
-      pendingIncoming: SubmittedTransaction[],
+      pendingIncoming: IncomingOnChainTransaction[],
       addresses: OnChainAddress[],
       usdPerSat: UsdPerSat,
     ): WalletTransactionHistoryWithPending => ({

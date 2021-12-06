@@ -6,7 +6,7 @@ import {
   translateDescription,
 } from "@domain/wallets/tx-history"
 import { toSats } from "@domain/bitcoin"
-import { SubmittedTransaction } from "@domain/bitcoin/onchain"
+import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
 
 describe("WalletTransactionHistory.fromLedger", () => {
   it("translates ledger txs to wallet txs", () => {
@@ -251,8 +251,8 @@ describe("translateDescription", () => {
 describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
   it("translates submitted txs to wallet txs", () => {
     const timestamp = new Date(Date.now())
-    const submittedTransactions: SubmittedTransaction[] = [
-      SubmittedTransaction({
+    const incomingTxs: IncomingOnChainTransaction[] = [
+      IncomingOnChainTransaction({
         confirmations: 1,
         fee: toSats(1000),
         rawTx: {
@@ -279,7 +279,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const addresses = ["userAddress1", "userAddress2"] as OnChainAddress[]
     const result = history.addPendingIncoming(
       "walletId" as WalletId,
-      submittedTransactions,
+      incomingTxs,
       addresses,
       1 as UsdPerSat,
     )
@@ -338,8 +338,8 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
   })
   it("translates handles price NaN", () => {
     const timestamp = new Date(Date.now())
-    const submittedTransactions: SubmittedTransaction[] = [
-      SubmittedTransaction({
+    const incomingTxs: IncomingOnChainTransaction[] = [
+      IncomingOnChainTransaction({
         confirmations: 1,
         fee: toSats(1000),
         rawTx: {
@@ -358,7 +358,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const addresses = ["userAddress1"] as OnChainAddress[]
     const result = history.addPendingIncoming(
       "walletId" as WalletId,
-      submittedTransactions,
+      incomingTxs,
       addresses,
       NaN as UsdPerSat,
     )

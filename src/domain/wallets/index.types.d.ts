@@ -114,7 +114,7 @@ type ConfirmedTransactionHistory = {
   readonly transactions: WalletTransaction[]
   addPendingIncoming(
     walletId: WalletId,
-    pendingIncoming: SubmittedTransaction[],
+    pendingIncoming: IncomingOnChainTransaction[],
     addresses: OnChainAddress[],
     usdPerSat: UsdPerSat,
   ): WalletTransactionHistoryWithPending

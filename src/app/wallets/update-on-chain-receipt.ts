@@ -61,7 +61,7 @@ export const updateOnChainReceipt = async ({
 
 const processTxForWallet = async (
   wallet: Wallet,
-  tx: SubmittedTransaction,
+  tx: IncomingOnChainTransaction,
   logger: Logger,
 ): Promise<void | ApplicationError> => {
   const notifications = NotificationsService(
