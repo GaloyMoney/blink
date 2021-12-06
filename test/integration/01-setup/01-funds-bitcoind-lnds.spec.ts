@@ -1,20 +1,19 @@
-import { BitcoindWalletClient } from "@services/bitcoind"
+import * as Wallets from "@app/wallets"
 import { btc2sat } from "@core/utils"
-import { baseLogger } from "@services/logger"
+import { BitcoindWalletClient } from "@services/bitcoind"
+import { getFunderWalletId } from "@services/ledger/accounts"
 import {
+  bitcoindClient,
+  checkIsBalanced,
+  fundLnd,
+  getAndCreateUserWallet,
+  getChainBalance,
   lnd1,
   lndOutside1,
-  bitcoindClient,
-  getChainBalance,
-  fundLnd,
-  checkIsBalanced,
-  getAndCreateUserWallet,
   mineAndConfirm,
   sendToAddressAndConfirm,
   waitUntilBlockHeight,
 } from "test/helpers"
-import { getWalletFromRole } from "@core/wallet-factory"
-import * as Wallets from "@app/wallets"
 
 let bitcoindOutside
 
@@ -77,8 +76,8 @@ describe("Bitcoind", () => {
     // load funder wallet before use it
     await getAndCreateUserWallet(4)
 
-    const funderWallet = await getWalletFromRole({ role: "funder", logger: baseLogger })
-    const address = await Wallets.createOnChainAddress(funderWallet.user.walletId)
+    const funderWalletId = await getFunderWalletId()
+    const address = await Wallets.createOnChainAddress(funderWalletId)
     if (address instanceof Error) throw address
 
     await sendToAddressAndConfirm({ walletClient: bitcoindOutside, address, amount })

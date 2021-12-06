@@ -37,6 +37,7 @@ import { login } from "@app/users/login"
 import { requestPhoneCode } from "@app/users/request-phone-code"
 import { getLightningFee, getNoAmountLightningFee } from "@app/wallets/get-lightning-fee"
 import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
+import { addEarn } from "@app/accounts/add-earn"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -324,8 +325,8 @@ const resolvers = {
               const status = await Wallets.lnInvoicePaymentSend({
                 paymentRequest: invoice,
                 memo,
-                walletId: wallet.user.walletId as WalletId,
-                userId: wallet.user.id as UserId,
+                payerWalletId: wallet.user.walletId as WalletId,
+                payerUserId: wallet.user.id as UserId,
                 logger,
               })
               if (status instanceof Error) throw mapError(status)
@@ -335,8 +336,8 @@ const resolvers = {
               paymentRequest: invoice,
               memo,
               amount,
-              walletId: wallet.user.walletId as WalletId,
-              userId: wallet.user.id as UserId,
+              payerWalletId: wallet.user.walletId as WalletId,
+              payerUserId: wallet.user.id as UserId,
               logger,
             })
             if (status instanceof Error) throw mapError(status)
@@ -344,12 +345,12 @@ const resolvers = {
           },
         ),
       payKeysendUsername: async ({ username, amount, memo }) => {
-        const status = await Wallets.intraledgerPaymentSend({
+        const status = await Wallets.intraledgerPaymentSendUsername({
           recipientUsername: username,
           memo,
           amount,
-          walletId: wallet.user.walletId,
-          userId: wallet.user.id,
+          payerWalletId: wallet.user.walletId,
+          payerUserId: wallet.user.id,
           logger,
         })
 
@@ -380,7 +381,7 @@ const resolvers = {
         return feeSatAmount
       },
     }),
-    earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
+    earnCompleted: async (_, { ids }, { uid }) => addEarn({ id: ids[0], aid: uid }),
     onchain: (_, __, { wallet }) => ({
       getNewAddress: async () => {
         const address = await Wallets.createOnChainAddress(wallet.user.walletId)

@@ -33,7 +33,7 @@ type AddOnChainIntraledgerTxSendMetadata = IntraledgerTxMetadata & {
   sendAll: boolean
 }
 
-type AddUsernameIntraledgerTxSendMetadata = IntraledgerTxMetadata
+type addWalletIdIntraledgerTxSendMetadata = IntraledgerTxMetadata
 
 type SendIntraledgerTxArgs = IntraledgerTxArgs & {
   recipientUsername: Username | null
@@ -41,5 +41,5 @@ type SendIntraledgerTxArgs = IntraledgerTxArgs & {
   metadata:
     | AddLnIntraledgerTxSendMetadata
     | AddOnChainIntraledgerTxSendMetadata
-    | AddUsernameIntraledgerTxSendMetadata
+    | addWalletIdIntraledgerTxSendMetadata
 }

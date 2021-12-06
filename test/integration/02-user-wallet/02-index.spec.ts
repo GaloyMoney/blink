@@ -149,7 +149,6 @@ describe("UserWallet", () => {
         id: userWallet2.user.id,
         status: "locked",
       })
-      console.log({ user }, "account3")
       if (user instanceof Error) {
         throw user
       }

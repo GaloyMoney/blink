@@ -113,9 +113,7 @@ type AddOnChainIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
   sendAll: boolean
 }
 
-type AddUsernameIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
-  recipientUsername: Username
-}
+type addWalletIdIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs
 
 type AddLnFeeReeimbursementReceiveArgs = {
   liabilitiesWalletId: LiabilitiesWalletId
@@ -160,7 +158,7 @@ interface ILedgerService {
     liabilitiesWalletId: LiabilitiesWalletId,
   ): Promise<number | LedgerServiceError>
 
-  getAccountBalance(
+  getWalletBalance(
     liabilitiesWalletId: LiabilitiesWalletId,
   ): Promise<Satoshis | LedgerServiceError>
 
@@ -215,8 +213,8 @@ interface ILedgerService {
     args: AddOnChainIntraledgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  addUsernameIntraledgerTxSend(
-    args: AddUsernameIntraledgerTxSendArgs,
+  addWalletIdIntraledgerTxSend(
+    args: AddIntraLedgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
   settlePendingLnPayments(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>

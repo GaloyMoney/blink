@@ -58,7 +58,7 @@ export abstract class UserWallet {
 
     // TODO: run this code in parrallel
     for (const { id } of this.user.currencies) {
-      const balance = await ledger.getAccountBalance(this.user.walletPath, {
+      const balance = await ledger.getWalletBalance(this.user.walletPath, {
         currency: id,
       })
 

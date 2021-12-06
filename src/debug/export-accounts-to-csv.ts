@@ -5,6 +5,7 @@ import { CSVAccountExport } from "@core/csv-account-export"
 
 import { ledger, setupMongoConnectionSecondary } from "@services/mongodb"
 import { Transaction, User } from "@services/mongoose/schema"
+import { toLiabilitiesWalletId } from "@domain/ledger"
 
 // need to set MONGODB_ADDRESS to call the script
 // export MONGODB_PASSWORD=$(kubectl get secret -n mainnet galoy-mongodb -o=go-template='{{index .data "mongodb-password" | base64decode}}')
@@ -24,7 +25,7 @@ const getBooks = async () => {
   const books = {}
   for (const account of accounts) {
     for (const currency of ["USD", "BTC"]) {
-      const balance = await ledger.getAccountBalance(account, { currency })
+      const balance = await ledger.getWalletBalance(account, { currency })
       if (balance) {
         books[`${currency}:${account}`] = balance
       }
@@ -39,7 +40,7 @@ const exportAllUserLedger = async () => {
   const csv = new CSVAccountExport()
 
   for await (const user of User.find({})) {
-    await csv.addAccount({ account: ledger.walletPath(user.walletId) })
+    await csv.addAccount({ account: toLiabilitiesWalletId(user.walletId) })
   }
 
   await csv.saveToDisk()
@@ -101,7 +102,7 @@ const exportUsers = async () => {
     }
 
     for (const currency of ["USD", "BTC"]) {
-      record[`balance${currency}`] = await ledger.getAccountBalance(user.walletPath, {
+      record[`balance${currency}`] = await ledger.getWalletBalance(user.walletPath, {
         currency,
       })
     }

@@ -35,7 +35,7 @@ const LnNoAmountInvoicePaymentSendMutation = GT.Field({
       paymentRequest,
       memo,
       amount,
-      userId: user.id as UserId,
+      payerUserId: user.id as UserId,
       logger,
     })
 
