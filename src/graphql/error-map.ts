@@ -11,6 +11,7 @@ import {
   ValidationInternalError,
   TooManyRequestError,
   RouteFindingError,
+  PhoneCodeError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -105,6 +106,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message =
         "Too many onchain addresses creation, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
+
+    case "CouldNotFindPhoneCodeError":
+      message = "Invalid or incorrect phone code entered."
+      return new PhoneCodeError({ message, logger: baseLogger })
 
     case "RouteNotFoundError":
       message = "Unable to find a route for payment."
@@ -207,9 +212,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UserLoginPhoneRateLimiterExceededError":
     case "UserPhoneCodeAttemptPhoneRateLimiterExceededError":
     case "UserPhoneCodeAttemptIpRateLimiterExceededError":
-    case "CouldNotFindPhoneCodeError":
     case "PhoneProviderServiceError":
     case "UnknownPhoneProviderServiceError":
+      message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
     default:

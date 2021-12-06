@@ -81,7 +81,7 @@ describe("graphql", () => {
 
     it("returns error for invalid phone", async () => {
       let phone = "+19999999999"
-      let message = "CouldNotFindPhoneCodeError"
+      let message = "Invalid or incorrect phone code entered."
       let input = { phone, code: correctCode }
       let result = await mutate(mutation, { variables: { input } })
       expect(result.data.userLogin.errors).toEqual(
@@ -112,7 +112,7 @@ describe("graphql", () => {
     })
 
     it("returns error for invalid code", async () => {
-      let message = "CouldNotFindPhoneCodeError"
+      let message = "Invalid or incorrect phone code entered."
       let input = { phone, code: "113566" }
       let result = await mutate(mutation, { variables: { input } })
       expect(result.data.userLogin.errors).toEqual(
