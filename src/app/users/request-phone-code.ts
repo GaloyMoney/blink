@@ -30,7 +30,7 @@ export const requestPhoneCodeWithCaptcha = async ({
   geetestSeccode: string
   logger: Logger
   ip: IpAddress
-}) => {
+}): Promise<true | ApplicationError> => {
   logger.info({ phone, ip }, "RequestPhoneCodeGeetest called")
 
   const phoneNumberValid = checkedToPhoneNumber(phone)

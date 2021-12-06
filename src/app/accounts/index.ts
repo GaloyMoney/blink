@@ -10,9 +10,8 @@ export * from "./add-api-key-for-account"
 export * from "./get-api-keys-for-account"
 export * from "./disable-api-key-for-account"
 
-const accounts = AccountsRepository()
-
 export const getAccount = async (accountId: AccountId) => {
+  const accounts = AccountsRepository()
   return accounts.findById(accountId)
 }
 

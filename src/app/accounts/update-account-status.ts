@@ -6,7 +6,7 @@ export const updateAccountStatus = async ({
 }: {
   id: string
   status: string
-}): Promise<Account | Error> => {
+}): Promise<Account | ApplicationError> => {
   const accountsRepo = AccountsRepository()
 
   const account = await accountsRepo.findById(id as AccountId)

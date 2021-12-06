@@ -10,7 +10,7 @@ export const updateBusinessMapInfo = async ({
   username: string
   coordinates: { latitude: number; longitude: number }
   title: string
-}): Promise<Account | Error> => {
+}): Promise<Account | ApplicationError> => {
   const accountsRepo = AccountsRepository()
 
   const usernameChecked = checkedToUsername(username)

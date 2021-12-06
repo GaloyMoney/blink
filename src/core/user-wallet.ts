@@ -105,7 +105,7 @@ export abstract class UserWallet {
   }
 
   // deprecated
-  async setUsername({ username }): Promise<boolean | Error> {
+  async setUsername({ username }): Promise<true | ApplicationError> {
     const result = await User.findOneAndUpdate(
       { _id: this.user.id, username: null },
       { username },
