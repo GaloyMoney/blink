@@ -32,6 +32,21 @@ export const LockService = (): ILockService => {
     }
   }
 
+  const lockOnChainTxHash = async <Res>(
+    {
+      txHash,
+      logger,
+      lock,
+    }: { txHash: OnChainTxHash; logger: Logger; lock?: DistributedLock },
+    f: (lock?: DistributedLock) => Promise<Res>,
+  ): Promise<Res | LockServiceError> => {
+    try {
+      return redlock({ path: txHash, logger, lock }, f)
+    } catch (err) {
+      return new UnknownLockServiceError(err)
+    }
+  }
+
   const extendLock = async <Res>(
     { lock, logger }: { lock: DistributedLock; logger: Logger },
     f: () => Promise<Res>,
@@ -46,6 +61,7 @@ export const LockService = (): ILockService => {
   return {
     lockWalletId,
     lockPaymentHash,
+    lockOnChainTxHash,
     extendLock,
   }
 }

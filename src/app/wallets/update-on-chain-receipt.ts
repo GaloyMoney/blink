@@ -82,7 +82,7 @@ const processTxForWallet = async (
   const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
 
   const lockService = LockService()
-  return lockService.lockWalletId({ walletId: wallet.id, logger }, async () => {
+  return lockService.lockOnChainTxHash({ txHash: tx.rawTx.txHash, logger }, async () => {
     const recorded = await ledger.isOnChainTxRecorded(
       liabilitiesAccountId,
       tx.rawTx.txHash,
