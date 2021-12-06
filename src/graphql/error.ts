@@ -195,3 +195,14 @@ export class InvoiceDecodeError extends CustomApolloError {
     })
   }
 }
+
+export class PhoneCodeError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Incorrect phone code",
+      forwardToClient: true,
+      code: "PHONE_CODE_ERROR",
+      ...errData,
+    })
+  }
+}
