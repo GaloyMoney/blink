@@ -26,7 +26,7 @@ export const checkedToPhoneNumber = (
   return phoneNumber as PhoneNumber
 }
 
-export const TestAccount: TestAccount = (testAccounts: TestAccounts[]) => ({
+export const TestAccounts: TestAccounts = (testAccounts: TestAccount[]) => ({
   isPhoneValid: (phone: PhoneNumber) =>
     testAccounts.findIndex((item) => item.phone === phone) !== -1,
   isPhoneAndCodeValid: ({ code, phone }: { code: PhoneCode; phone: PhoneNumber }) =>

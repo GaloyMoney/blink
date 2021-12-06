@@ -264,7 +264,7 @@ export const getIpConfig = (config = yamlConfig): IpConfig => ({
 export const getApolloConfig = (config = yamlConfig): ApolloConfig => config.apollo
 export const getTwoFAConfig = (config = yamlConfig): TwoFAConfig => config.twoFA
 
-export const getTestAccounts = (config = yamlConfig): TestAccounts[] =>
+export const getTestAccounts = (config = yamlConfig): TestAccount[] =>
   config.test_accounts
 
 export const levels: Levels = [1, 2]

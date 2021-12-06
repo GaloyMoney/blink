@@ -1,7 +1,9 @@
 import { AccountLevel, AccountStatus } from "@domain/accounts"
 import {
-  CouldNotFindAccountFromUsernameError, CouldNotFindError,
-  RepositoryError, UnknownRepositoryError
+  CouldNotFindAccountFromUsernameError,
+  CouldNotFindError,
+  RepositoryError,
+  UnknownRepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
 import { caseInsensitiveRegex } from "."

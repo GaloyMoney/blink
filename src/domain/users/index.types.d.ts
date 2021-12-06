@@ -79,25 +79,6 @@ type NewUserInfo = {
   phoneMetadata: PhoneMetadata | null
 }
 
-type TestAccounts = {
-  phone: PhoneNumber
-  code: PhoneCode
-  username: Username | undefined
-  role: string | undefined // FIXME
-  currencies // FIXME
-}
-
-type TestAccount = (testAccounts: TestAccounts[]) => {
-  isPhoneValid: (phone: PhoneNumber) => boolean
-  isPhoneAndCodeValid: ({
-    code,
-    phone,
-  }: {
-    code: PhoneCode
-    phone: PhoneNumber
-  }) => boolean
-}
-
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
   findByUsername(username: Username): Promise<User | RepositoryError>

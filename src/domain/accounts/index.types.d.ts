@@ -78,3 +78,22 @@ interface IAccountsRepository {
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
   update(account: Account): Promise<Account | RepositoryError>
 }
+
+type TestAccount = {
+  phone: PhoneNumber
+  code: PhoneCode
+  username: Username | undefined
+  role: string | undefined // FIXME
+  currencies // FIXME
+}
+
+type TestAccounts = (testAccounts: TestAccount[]) => {
+  isPhoneValid: (phone: PhoneNumber) => boolean
+  isPhoneAndCodeValid: ({
+    code,
+    phone,
+  }: {
+    code: PhoneCode
+    phone: PhoneNumber
+  }) => boolean
+}

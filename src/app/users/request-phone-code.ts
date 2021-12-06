@@ -9,7 +9,7 @@ import { randomIntFromInterval } from "@core/utils"
 import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
 import { RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import { checkedToPhoneNumber, TestAccount } from "@domain/users"
+import { checkedToPhoneNumber, TestAccounts } from "@domain/users"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { RedisRateLimitService } from "@services/rate-limit"
 import { TwilioClient } from "@services/twilio"
@@ -80,7 +80,7 @@ export const requestPhoneCode = async ({
   }
 
   const testAccounts = getTestAccounts()
-  if (TestAccount(testAccounts).isPhoneValid(phoneNumberValid)) {
+  if (TestAccounts(testAccounts).isPhoneValid(phoneNumberValid)) {
     return true
   }
 

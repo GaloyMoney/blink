@@ -1,12 +1,12 @@
 import { getTestAccounts } from "@config/app"
-import { TestAccount } from "@domain/users"
+import { TestAccounts } from "@domain/users"
 
 describe("test-accounts", () => {
   const testAccounts = getTestAccounts()
 
   it("valid user account", () =>
     expect(
-      TestAccount(testAccounts).isPhoneAndCodeValid({
+      TestAccounts(testAccounts).isPhoneAndCodeValid({
         code: testAccounts[0].code,
         phone: testAccounts[0].phone,
       }),
@@ -14,7 +14,7 @@ describe("test-accounts", () => {
 
   it("mix (invalid) user account", () =>
     expect(
-      TestAccount(testAccounts).isPhoneAndCodeValid({
+      TestAccounts(testAccounts).isPhoneAndCodeValid({
         code: testAccounts[1].code,
         phone: testAccounts[0].phone,
       }),
@@ -22,7 +22,7 @@ describe("test-accounts", () => {
 
   it("wrong phone", () =>
     expect(
-      TestAccount(testAccounts).isPhoneAndCodeValid({
+      TestAccounts(testAccounts).isPhoneAndCodeValid({
         code: testAccounts[1].code,
         phone: "+19999999999" as PhoneNumber,
       }),
@@ -30,7 +30,7 @@ describe("test-accounts", () => {
 
   it("empty code", () =>
     expect(
-      TestAccount(testAccounts).isPhoneAndCodeValid({
+      TestAccounts(testAccounts).isPhoneAndCodeValid({
         code: "" as PhoneCode,
         phone: "+19999999999" as PhoneNumber,
       }),
