@@ -2,7 +2,6 @@ import { GT } from "@graphql/index"
 
 import { Wallets } from "@app"
 import Transaction from "@graphql/types/object/transaction"
-import { mapError } from "@graphql/error-map"
 
 const TransactionByIdQuery = GT.Field({
   type: Transaction,
@@ -10,14 +9,10 @@ const TransactionByIdQuery = GT.Field({
     id: { type: GT.NonNullID },
   },
   resolve: async (_, { id }) => {
-    if (id instanceof Error) {
-      return { errors: [{ message: id.message }] }
-    }
+    if (id instanceof Error) throw id
 
     const ledgerTx = await Wallets.getTransactionById(id)
-    if (ledgerTx instanceof Error) {
-      return { errors: [{ message: mapError(ledgerTx).message }] }
-    }
+    if (ledgerTx instanceof Error) throw ledgerTx
 
     return ledgerTx
   },
