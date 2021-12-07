@@ -32,6 +32,11 @@ input AccountUpdateLevelInput {
   uid: ID!
 }
 
+input AccountUpdateStatusInput {
+  status: AccountStatus!
+  uid: ID!
+}
+
 """
 An authentication code valid for a single use
 """
@@ -125,7 +130,7 @@ scalar Memo
 
 type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
-  accountUpdateStatus(input: UserUpdateStatusInput!): AccountDetailPayload!
+  accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
   businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
@@ -270,11 +275,6 @@ input UserLoginInput {
 
 input UserRequestAuthCodeInput {
   phone: Phone!
-}
-
-input UserUpdateStatusInput {
-  status: AccountStatus!
-  uid: ID!
 }
 
 """

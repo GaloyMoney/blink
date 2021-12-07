@@ -13,7 +13,4 @@ module.exports = {
 
     console.log({ result }, "migration completed")
   },
-
-  // async down(db) {
-  // },
 }

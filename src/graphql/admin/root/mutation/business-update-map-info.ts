@@ -49,15 +49,7 @@ const BusinessUpdateMapInfoMutation = GT.Field({
 
     return {
       errors: [],
-      accountDetails: {
-        id: account.id,
-        username: account.username,
-        level: account.level,
-        status: account.status,
-        title: account.title,
-        coordinates: account.coordinates,
-        createdAt: account.createdAt,
-      },
+      accountDetails: account,
     }
   },
 })
