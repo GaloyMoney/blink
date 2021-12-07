@@ -26,6 +26,7 @@ import { TxStatus } from "@domain/wallets"
 import { getBTCBalance } from "test/helpers/wallet"
 import { NotificationType } from "@domain/notifications"
 import { getCurrentPrice } from "@app/prices"
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 
 jest.mock("@services/notifications/notification")
 
@@ -63,15 +64,14 @@ describe("onchainBlockEventhandler", () => {
   it("should process block for incoming transactions", async () => {
     const amount = 0.0001
     const amount2 = 0.0002
-    const blocksToMine = 6
+    const blocksToMine = ONCHAIN_MIN_CONFIRMATIONS
+    const scanDepth = ONCHAIN_MIN_CONFIRMATIONS + 1
     const wallet0 = await getAndCreateUserWallet(0)
     const wallet3 = await getAndCreateUserWallet(3)
 
     await mineBlockAndSyncAll()
-    const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })
-    if (result instanceof Error) {
-      throw result
-    }
+    const result = await Wallets.updateOnChainReceipt({ scanDepth, logger: baseLogger })
+    if (result instanceof Error) throw result
 
     const initWallet0State = await getWalletState(wallet0)
     const initWallet3State = await getWalletState(wallet3)
@@ -79,9 +79,9 @@ describe("onchainBlockEventhandler", () => {
     const address = await Wallets.createOnChainAddress(wallet0.user.id)
     if (address instanceof Error) throw address
 
-    let isFinalBlock = false
-    let lastHeight = 0
     const initialBlock = await bitcoindClient.getBlockCount()
+    let isFinalBlock = false
+    let lastHeight = initialBlock
     const subBlocks = subscribeToBlocks({ lnd: lnd1 })
     subBlocks.on("block", async ({ height }) => {
       if (height > lastHeight) {
@@ -108,7 +108,10 @@ describe("onchainBlockEventhandler", () => {
       psbt: walletProcessPsbt.psbt,
     })
     await bitcoindOutside.sendRawTransaction({ hexstring: finalizedPsbt.hex })
-    await bitcoindOutside.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
+    await bitcoindOutside.generateToAddress({
+      nblocks: blocksToMine,
+      address: RANDOM_ADDRESS,
+    })
 
     await Promise.all([waitFor(() => isFinalBlock), waitUntilSyncAll()])
 
