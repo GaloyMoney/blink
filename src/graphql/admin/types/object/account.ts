@@ -24,7 +24,6 @@ const Account = new GT.Object({
 
       type: GT.NonNull(User),
       resolve: async (source: Account) => {
-        // FIXME: should not use a repository in graphql?
         const user = await UsersRepository().findById(source.ownerId)
         if (user instanceof Error) {
           throw user
@@ -40,6 +39,7 @@ const Account = new GT.Object({
     },
     createdAt: {
       type: GT.NonNull(Timestamp),
+      resolve: (source) => source.createdAt,
     },
   }),
 })
