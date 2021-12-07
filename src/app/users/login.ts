@@ -5,10 +5,11 @@ import {
   VALIDITY_TIME_CODE,
   getTestAccounts,
 } from "@config/app"
+import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import { RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import { checkedToPhoneNumber, TestAccounts } from "@domain/users"
+import { checkedToPhoneNumber } from "@domain/users"
 import { createToken } from "@services/jwt"
 import { UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
@@ -119,7 +120,10 @@ const isCodeValid = async ({
   age: Seconds
 }) => {
   const testAccounts = getTestAccounts()
-  const validTestCode = TestAccounts(testAccounts).isPhoneAndCodeValid({ code, phone })
+  const validTestCode = TestAccountsChecker(testAccounts).isPhoneAndCodeValid({
+    code,
+    phone,
+  })
 
   if (validTestCode) {
     return true

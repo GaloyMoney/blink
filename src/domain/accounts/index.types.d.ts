@@ -87,7 +87,7 @@ type TestAccount = {
   currencies // FIXME
 }
 
-type TestAccounts = (testAccounts: TestAccount[]) => {
+type TestAccountsChecker = (testAccounts: TestAccount[]) => {
   isPhoneValid: (phone: PhoneNumber) => boolean
   isPhoneAndCodeValid: ({
     code,
