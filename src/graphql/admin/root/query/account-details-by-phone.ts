@@ -4,6 +4,7 @@ import GraphQLAccount from "@graphql/admin/types/object/account"
 import Phone from "@graphql/types/scalar/phone"
 
 import { Admin } from "@app"
+import { mapError } from "@graphql/error-map"
 
 const AccountDetailsByUserPhoneQuery = GT.Field({
   type: GT.NonNull(GraphQLAccount),
@@ -12,12 +13,12 @@ const AccountDetailsByUserPhoneQuery = GT.Field({
   },
   resolve: async (parent, { phone }) => {
     if (phone instanceof Error) {
-      throw phone
+      return { errors: [{ message: phone.message }] }
     }
 
     const account = await Admin.getAccountByUserPhone(phone)
     if (account instanceof Error) {
-      throw account
+      return { errors: [{ message: mapError(account).message }] }
     }
 
     return account

@@ -9,7 +9,9 @@ const LightningPaymentQuery = GT.Field({
     hash: { type: GT.NonNull(PaymentHash) },
   },
   resolve: async (_, { hash }) => {
-    if (hash instanceof Error) throw hash
+    if (hash instanceof Error) {
+      return { errors: [{ message: hash.message }] }
+    }
 
     const lightningPayment = await Lightning.lookupPaymentByHash(hash)
     if (lightningPayment instanceof Error) throw lightningPayment
