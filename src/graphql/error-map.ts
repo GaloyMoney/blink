@@ -151,10 +151,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new TwoFAError({ message, logger: baseLogger })
 
     case "InvalidCoordinatesError":
-      return new InvalidCoordinatesError({ message, logger: baseLogger })
+      return new InvalidCoordinatesError({ logger: baseLogger })
 
     case "InvalidBusinessTitleLengthError":
-      return new InvalidBusinessTitleLengthError({ message, logger: baseLogger })
+      return new InvalidBusinessTitleLengthError({ logger: baseLogger })
 
     // ----------
     // Unhandled below here
