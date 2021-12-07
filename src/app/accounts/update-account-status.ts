@@ -1,3 +1,4 @@
+import { checkedAccountStatus } from "@domain/accounts"
 import { AccountsRepository } from "@services/mongoose"
 
 export const updateAccountStatus = async ({
@@ -12,6 +13,9 @@ export const updateAccountStatus = async ({
   const account = await accountsRepo.findById(id as AccountId)
   if (account instanceof Error) return account
 
-  account.status = status as AccountStatus
+  const statusChecked = checkedAccountStatus(status)
+  if (statusChecked instanceof Error) return statusChecked
+
+  account.status = statusChecked
   return accountsRepo.update(account)
 }

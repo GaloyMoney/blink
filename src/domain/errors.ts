@@ -36,6 +36,7 @@ export class SatoshiAmountRequiredError extends ValidationError {}
 export class InvalidUsername extends ValidationError {}
 export class InvalidCoordinatesError extends ValidationError {}
 export class InvalidBusinessTitleLengthError extends ValidationError {}
+export class InvalidAccountStatusError extends ValidationError {}
 export class InvalidPhoneNumber extends ValidationError {}
 export class InvalidPublicWalletId extends ValidationError {}
 export class InvalidLedgerTransactionId extends ValidationError {}

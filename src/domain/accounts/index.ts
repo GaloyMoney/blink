@@ -1,4 +1,8 @@
-import { InvalidCoordinatesError, InvalidBusinessTitleLengthError } from "@domain/errors"
+import {
+  InvalidCoordinatesError,
+  InvalidBusinessTitleLengthError,
+  InvalidAccountStatusError,
+} from "@domain/errors"
 
 export * from "./errors"
 export * from "./api-keys"
@@ -33,4 +37,11 @@ export const checkedMapTitle = (title: string) => {
     return new InvalidBusinessTitleLengthError()
   }
   return title as BusinessMapTitle
+}
+
+export const checkedAccountStatus = (status: string) => {
+  if (!Object.values(AccountStatus).includes(status as AccountStatus)) {
+    return new InvalidAccountStatusError()
+  }
+  return status as AccountStatus
 }
