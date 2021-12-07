@@ -43,7 +43,7 @@ const BusinessUpdateMapInfoMutation = GT.Field({
     const account = await updateBusinessMapInfo({ username, title, coordinates })
 
     if (account instanceof Error) {
-      return { errors: [{ message: account.message }] }
+      return { errors: [{ message: mapError(account).message }] }
     }
 
     return {
