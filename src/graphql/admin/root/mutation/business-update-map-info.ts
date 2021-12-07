@@ -1,5 +1,6 @@
 import { updateBusinessMapInfo } from "@app/accounts/update-business-map-info"
 import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 import Username from "@graphql/types/scalar/username"
 

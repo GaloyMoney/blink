@@ -1,3 +1,4 @@
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 import Username from "@graphql/types/scalar/username"
 import WalletId from "@graphql/types/scalar/wallet-id"
