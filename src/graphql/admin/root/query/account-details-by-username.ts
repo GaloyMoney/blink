@@ -3,6 +3,7 @@ import { GT } from "@graphql/index"
 import GraphQLAccount from "@graphql/admin/types/object/account"
 import Username from "@graphql/types/scalar/username"
 import { getAccountByUsername } from "@app/admin"
+import { mapError } from "@graphql/error-map"
 
 const AccountDetailsByUsernameQuery = GT.Field({
   type: GT.NonNull(GraphQLAccount),
@@ -11,12 +12,12 @@ const AccountDetailsByUsernameQuery = GT.Field({
   },
   resolve: async (parent, { username }) => {
     if (username instanceof Error) {
-      throw username
+      return { errors: [{ message: username.message }] }
     }
 
     const account = await getAccountByUsername(username)
     if (account instanceof Error) {
-      throw account
+      return { errors: [{ message: mapError(account).message }] }
     }
 
     return account
