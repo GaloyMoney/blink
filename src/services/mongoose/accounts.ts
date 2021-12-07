@@ -113,7 +113,13 @@ export const AccountsRepository = (): IAccountsRepository => {
   }
 
   // currently only used by Admin
-  const update = async ({ id, level, status, coordinates, title }: Account) => {
+  const update = async ({
+    id,
+    level,
+    status,
+    coordinates,
+    title,
+  }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
         { _id: id },
