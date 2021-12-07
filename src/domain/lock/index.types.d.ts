@@ -14,6 +14,10 @@ interface ILockService {
     args: { paymentHash: PaymentHash; logger: Logger; lock?: DistributedLock },
     f: (lock?: DistributedLock) => Promise<Res>,
   ): Promise<Res | LockServiceError>
+  lockOnChainTxHash<Res>(
+    args: { txHash: OnChainTxHash; logger: Logger; lock?: DistributedLock },
+    f: (lock?: DistributedLock) => Promise<Res>,
+  ): Promise<Res | LockServiceError>
   extendLock<Res>(
     args: { logger: Logger; lock?: DistributedLock },
     f: (lock?: DistributedLock) => Promise<Res>,
