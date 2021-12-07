@@ -6,7 +6,7 @@ export const updateAccountLevel = async ({
 }: {
   id: string
   level: AccountLevel
-}) => {
+}): Promise<Account | ApplicationError> => {
   const accountsRepo = AccountsRepository()
 
   const account = await accountsRepo.findById(id as AccountId)
