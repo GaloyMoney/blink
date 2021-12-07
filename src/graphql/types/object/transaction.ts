@@ -33,7 +33,7 @@ const Transaction = new GT.Object({
     },
     settlementAmount: {
       type: GT.NonNull(SatAmount),
-      description: "Amount of sats paid by the user.",
+      description: "Amount of sats sent or received.",
     },
     settlementFee: {
       type: GT.NonNull(SatAmount),

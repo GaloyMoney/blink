@@ -232,7 +232,7 @@ type Transaction {
   memo: Memo
 
   """
-  Amount of sats paid by the user.
+  Amount of sats sent or received.
   """
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
@@ -283,6 +283,6 @@ Unique identifier of a user
 scalar Username
 
 """
-Unique identifier of a user
+Unique identifier of a wallet
 """
 scalar WalletId

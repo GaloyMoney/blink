@@ -5,7 +5,7 @@ import Username from "@graphql/types/scalar/username"
 import { UsersRepository } from "@services/mongoose"
 import AccountLevel from "../scalar/account-level"
 import AccountStatus from "../scalar/account-status"
-import User from "./user"
+import GraphQLUser from "./user"
 
 const Account = new GT.Object({
   name: "Account",
@@ -22,7 +22,7 @@ const Account = new GT.Object({
       // with DetailCorporateAccount is a way to have owner only in DetailConsumerAccount
       // and users: [Users] in DetailCorporateAccount
 
-      type: GT.NonNull(User),
+      type: GT.NonNull(GraphQLUser),
       resolve: async (source: Account) => {
         const user = await UsersRepository().findById(source.ownerId)
         if (user instanceof Error) {

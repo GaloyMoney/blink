@@ -603,7 +603,7 @@ type Transaction {
   memo: Memo
 
   """
-  Amount of sats paid by the user.
+  Amount of sats sent or received.
   """
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
@@ -858,6 +858,6 @@ enum WalletCurrency {
 }
 
 """
-Unique identifier of a user
+Unique identifier of a wallet
 """
 scalar WalletId
