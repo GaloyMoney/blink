@@ -33,7 +33,7 @@ const UserRequestAuthCodeMutation = GT.Field({
     const status = await requestPhoneCode({ phone, logger, ip })
 
     if (status instanceof Error) {
-      return { errors: [{ message: mapError(status) }] }
+      return { errors: [mapError(status)] }
     }
 
     return { errors: [], success: status }
