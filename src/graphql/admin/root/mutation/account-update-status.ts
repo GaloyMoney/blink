@@ -31,7 +31,7 @@ const UserUpdateStatusMutation = GT.Field({
 
     const account = await updateAccountStatus({ id: uid, status })
     if (account instanceof Error) {
-      return { errors: [{ message: account.message }] }
+      return { errors: [{ message: mapError(account).message }] }
     }
     return { errors: [], accountDetails: account }
   },
