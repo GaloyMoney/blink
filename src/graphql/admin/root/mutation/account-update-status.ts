@@ -3,6 +3,7 @@ import { GT } from "@graphql/index"
 import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
 import AccountStatus from "@graphql/admin/types/scalar/account-status"
 import { updateAccountStatus } from "@app/accounts/update-account-status"
+import { mapError } from "@graphql/error-map"
 
 const UserUpdateStatusInput = new GT.Input({
   name: "UserUpdateStatusInput",
