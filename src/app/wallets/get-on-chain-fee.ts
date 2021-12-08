@@ -44,11 +44,11 @@ export const getOnChainFee = async ({
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
 
-  const onChainFee = await onChainService.getOnChainFeeEstimate(
+  const onChainFee = await onChainService.getOnChainFeeEstimate({
     amount,
     address,
     targetConfirmations,
-  )
+  })
   if (onChainFee instanceof Error) return onChainFee
 
   return withdrawalFeeCalculator.onChainWithdrawalFee({

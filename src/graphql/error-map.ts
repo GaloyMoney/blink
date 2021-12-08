@@ -240,6 +240,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "RewardNonValidTypeError":
     case "RewardAlreadyPresentError":
     case "InvalidAccountStatusError":
+    case "InvalidOnChainAddress":
     case "InvalidScanDepthAmount":
     case "InsufficientBalanceForRoutingError":
       message = `Unknown error occurred (code: ${error.name})`

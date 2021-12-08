@@ -227,8 +227,6 @@ export const OnChainMixin = (superclass) =>
         if (twoFACheck instanceof Error)
           throw new TwoFAError(undefined, { logger: onchainLogger })
 
-        const { lnd } = getActiveOnchainLnd()
-
         const getOnChainBalance = async (): Promise<Satoshis> => {
           const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
           if (onChainService instanceof Error) {
@@ -247,13 +245,20 @@ export const OnChainMixin = (superclass) =>
 
         const onChainBalance = await getOnChainBalance()
 
-        let id, amountToSend
+        let amountToSend
 
         const sendTo = [{ address, tokens: checksAmount }]
-        const targetConfs = targetConfirmations > 0 ? targetConfirmations : 1
 
         const checkedAddress = checkedToOnChainAddress(address)
         if (checkedAddress instanceof Error) throw checkedAddress
+
+        const getTargetConfirmations = (): TargetConfirmations => {
+          const confs = checkedToTargetConfs(targetConfirmations)
+          if (confs instanceof Error) return toTargetConfs(1)
+          return confs
+        }
+
+        const targetConfs = getTargetConfirmations()
 
         const estimatedFee = await Wallets.getOnChainFeeByWalletId({
           walletId: this.user.id,
@@ -286,13 +291,13 @@ export const OnChainMixin = (superclass) =>
           }
 
           // case where the user doesn't have enough money
-          if (balanceSats < amountToSend + estimatedFee + this.user.withdrawFee) {
+          if (balanceSats < amountToSend + estimatedFee) {
             throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
           }
         }
         // when sendAll the amount to sendToChainAddress is the whole balance minus the fees
         else {
-          amountToSend = balanceSats - estimatedFee - this.user.withdrawFee
+          amountToSend = balanceSats - estimatedFee
 
           // case where there is not enough money available within lnd on-chain wallet
           if (onChainBalance < amountToSend) {
@@ -316,17 +321,21 @@ export const OnChainMixin = (superclass) =>
 
         const lockArgs = { logger: onchainLogger, lock }
         const result = await LockService().extendLock(lockArgs, async () => {
-          try {
-            ;({ id } = await sendToChainAddress({
-              address,
-              lnd,
-              tokens: amountToSend,
-              utxo_confirmations: 0,
-              target_confirmations: targetConfs,
-            }))
-          } catch (err) {
+          const payToAddress = () => {
+            const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
+            if (onChainService instanceof Error) return onChainService
+
+            return onChainService.payToAddress({
+              address: checkedAddress,
+              amount: amountToSend,
+              targetConfirmations: targetConfs,
+            })
+          }
+
+          const txHash = await payToAddress()
+          if (txHash instanceof Error) {
             onchainLogger.error(
-              { err, address, tokens: amountToSend, success: false },
+              { err: txHash, address, tokens: amountToSend, success: false },
               "Impossible to sendToChainAddress",
             )
             return false
@@ -350,20 +359,23 @@ export const OnChainMixin = (superclass) =>
               return toSats(0)
             }
 
-            return onChainTxFee
+            return WithdrawalFeeCalculator().onChainWithdrawalFee({
+              onChainFee: onChainTxFee,
+              walletFee: toSats(this.user.withdrawFee),
+            })
           }
 
-          const fee = (await getOnChainFee(id)) + this.user.withdrawFee
+          const fee = await getOnChainFee(txHash)
 
           {
-            let sats = amount + fee
+            let sats = amountToSend + fee
             if (sendAll) {
               // when sendAll the amount debited from the account is the whole balance
               sats = balanceSats
             }
 
             const metadata = {
-              hash: id,
+              hash: txHash,
               payee_addresses: [address],
               ...UserWallet.getCurrencyEquivalent({ sats, fee }),
               sendAll,
