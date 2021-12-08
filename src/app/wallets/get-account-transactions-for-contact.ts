@@ -8,7 +8,7 @@ export const getAccountTransactionsForContact = async ({
 }: {
   account: Account
   contactUsername: Username
-}): Promise<WalletTransaction[] | Error> => {
+}): Promise<WalletTransaction[] | ApplicationError> => {
   const ledger = LedgerService()
   let transactions: WalletTransaction[] = []
 

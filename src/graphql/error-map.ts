@@ -11,6 +11,8 @@ import {
   ValidationInternalError,
   TooManyRequestError,
   RouteFindingError,
+  InvalidCoordinatesError,
+  InvalidBusinessTitleLengthError,
   PhoneCodeError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
@@ -63,6 +65,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `User does not exist for username ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
+    case "CouldNotFindAccountFromUsernameError":
+      message = `Account does not exist for username ${error.message}`
+      return new NotFoundError({ message, logger: baseLogger })
+
     case "CouldNotFindUserFromPhoneError":
       message = `User does not exist for phone ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
@@ -111,6 +117,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invalid or incorrect phone code entered."
       return new PhoneCodeError({ message, logger: baseLogger })
 
+    case "CouldNotFindAccountFromPhoneError":
+      message = "Invalid or incorrect phone entered."
+      return new PhoneCodeError({ message, logger: baseLogger })
+
     case "RouteNotFoundError":
       message = "Unable to find a route for payment."
       return new RouteFindingError({ message, logger: baseLogger })
@@ -140,6 +150,12 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownTwoFAError":
       return new TwoFAError({ message, logger: baseLogger })
 
+    case "InvalidCoordinatesError":
+      return new InvalidCoordinatesError({ logger: baseLogger })
+
+    case "InvalidBusinessTitleLengthError":
+      return new InvalidBusinessTitleLengthError({ logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -167,6 +183,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CouldNotFindError":
     case "ValidationError":
     case "InvalidUsername":
+    case "InvalidPhoneNumber":
     case "InvalidPublicWalletId":
     case "LessThanDustThresholdError":
     case "InvalidTargetConfirmations":
@@ -214,6 +231,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UserPhoneCodeAttemptIpRateLimiterExceededError":
     case "PhoneProviderServiceError":
     case "UnknownPhoneProviderServiceError":
+    case "InvalidAccountStatusError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 

@@ -132,7 +132,7 @@ type WithdrawFee = number & { [withdrawFeeSymbol]: never }
 
 type Wallet = {
   readonly id: WalletId
-  readonly publicId: WalletPublicId | null
+  readonly publicId: WalletPublicId
   readonly depositFeeRatio: DepositFeeRatio
   readonly withdrawFee: WithdrawFee
   readonly onChainAddressIdentifiers: OnChainAddressIdentifier[]

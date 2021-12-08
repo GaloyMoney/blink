@@ -4,7 +4,7 @@ import { UserInputError } from "apollo-server-errors"
 
 const WalletId = new GT.Scalar({
   name: "WalletId",
-  description: "Unique identifier of a user",
+  description: "Unique identifier of a wallet",
   parseValue(value) {
     return validWalletIdValue(value)
   },

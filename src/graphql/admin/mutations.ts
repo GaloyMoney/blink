@@ -3,8 +3,8 @@ import { GT } from "@graphql/index"
 import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-auth-code"
 import UserLoginMutation from "@graphql/root/mutation/user-login"
 
-import UserUpdateLevelMutation from "@graphql/admin/root/mutation/user-update-level"
-import UserUpdateStatusMutation from "@graphql/admin/root/mutation/user-update-status"
+import AccountUpdateLevelMutation from "@graphql/admin/root/mutation/account-update-level"
+import AccountUpdateStatusMutation from "@graphql/admin/root/mutation/account-update-status"
 import BusinessUpdateMapInfoMutation from "@graphql/admin/root/mutation/business-update-map-info"
 
 const MutationType = new GT.Object({
@@ -13,8 +13,8 @@ const MutationType = new GT.Object({
     userRequestAuthCode: UserRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
 
-    userUpdateLevel: UserUpdateLevelMutation,
-    userUpdateStatus: UserUpdateStatusMutation,
+    accountUpdateLevel: AccountUpdateLevelMutation,
+    accountUpdateStatus: AccountUpdateStatusMutation,
 
     businessUpdateMapInfo: BusinessUpdateMapInfoMutation,
   }),

@@ -8,7 +8,9 @@ import { SATS_PER_BTC } from "@config/app"
 const pair = "BTC/USD"
 const exchange = "bitfinex"
 
-export const updatePriceHistory = async (init = false): Promise<boolean | Error> => {
+export const updatePriceHistory = async (
+  init = false,
+): Promise<boolean | ApplicationError> => {
   const increment = 720 // how many candles
   const increment_ms = increment * 3600 * 1000
   const endDate = new Date().valueOf() - 3600 * 1000

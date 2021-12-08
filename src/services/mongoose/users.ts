@@ -31,6 +31,7 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
+  // FIXME: remove
   const findByUsername = async (username: Username): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOne(
@@ -113,7 +114,13 @@ export const UsersRepository = (): IUsersRepository => {
         deviceToken: deviceTokens,
         twoFA,
       }
-      const result = await User.findOneAndUpdate({ _id: id }, data)
+      const result = await User.findOneAndUpdate({ _id: id }, data, {
+        projection: {
+          lastIPs: 0,
+          lastConnection: 0,
+        },
+        new: 1,
+      })
       if (!result) {
         return new RepositoryError("Couldn't update user")
       }
@@ -136,7 +143,6 @@ export const UsersRepository = (): IUsersRepository => {
 const userFromRaw = (result: UserType): User => ({
   id: result.id as UserId,
   username: result.username as Username,
-  walletPublicId: result.walletPublicId as WalletPublicId,
   phone: result.phone as PhoneNumber,
   language: result.language as UserLanguage,
   twoFA: result.twoFA as TwoFAForUser,

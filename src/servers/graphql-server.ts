@@ -12,7 +12,7 @@ import PinoHttp from "pino-http"
 import { v4 as uuidv4 } from "uuid"
 import helmet from "helmet"
 
-import { getApolloConfig, getGeetestConfig, JWT_SECRET } from "@config/app"
+import { getApolloConfig, getGeetestConfig, isProd, JWT_SECRET } from "@config/app"
 import * as Users from "@app/users"
 import * as Accounts from "@app/accounts"
 
@@ -20,7 +20,6 @@ import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
 
-import { isProd } from "@core/utils"
 import { WalletFactory } from "@core/wallet-factory"
 import { ApolloServerPluginUsageReporting } from "apollo-server-core"
 import Geetest from "@services/geetest"
@@ -31,6 +30,7 @@ import {
   addAttributesToCurrentSpan,
   ENDUSER_ALIAS,
 } from "@services/tracing"
+import { AccountsRepository } from "@services/mongoose"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -71,6 +71,7 @@ const sessionContext = ({ token, ips, body, apiKey, apiSecret }) => {
   const logger = graphqlLogger.child({ token, id: uuidv4(), body })
 
   let domainUser: User | null = null
+  let domainAccount: Account | null = null
   return addAttributesToCurrentSpanAndPropagate(
     {
       [SemanticAttributes.ENDUSER_ID]: userId,
@@ -84,6 +85,13 @@ const sessionContext = ({ token, ips, body, apiKey, apiSecret }) => {
             reason: loggedInUser,
           })
         domainUser = loggedInUser
+
+        const loggedInDomainAccount = await AccountsRepository().findById(
+          domainUser.defaultAccountId,
+        )
+        if (loggedInDomainAccount instanceof Error) throw Error
+        domainAccount = loggedInDomainAccount
+
         user = await User.findOne({ _id: userId })
         wallet =
           !!user && user.status === "active"
@@ -101,13 +109,15 @@ const sessionContext = ({ token, ips, body, apiKey, apiSecret }) => {
         account = loggedInAccount
       }
 
-      addAttributesToCurrentSpan({ [ENDUSER_ALIAS]: domainUser?.username })
+      addAttributesToCurrentSpan({ [ENDUSER_ALIAS]: domainAccount?.username })
 
       return {
         logger,
         uid: userId,
         wallet,
+        // FIXME: we should not return this for the admin graphql endpoint
         domainUser,
+        domainAccount,
         user,
         geetest,
         account,

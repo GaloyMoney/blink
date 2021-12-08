@@ -22,10 +22,29 @@ describe("GraphQLQueryRoot", () => {
     expect(data?.allLevels).toEqual(["ONE", "TWO"])
   })
 
-  it("exposes userDetails by phone", async () => {
+  it("exposes accountDetails by phone", async () => {
+    const phone = "+19876543210"
     const query = `
       query Q {
-        userDetails: userDetailsByPhone(phone: "+19876543210") {
+        accountDetails: accountDetailsByUserPhone(phone: "${phone}") {
+          id
+          username
+          level
+          status
+          title
+          owner {
+            id
+            phone
+            language
+            defaultAccount {
+              id
+            }
+            createdAt
+          }
+          coordinates {
+            latitude
+            longitude
+          }
           createdAt
         }
       }
@@ -33,14 +52,15 @@ describe("GraphQLQueryRoot", () => {
     const result = await graphql(gqlAdminSchema, query, {})
     const { errors, data } = result
     expect(errors).toBeUndefined()
-    expect(data?.userDetails.createdAt).toBeDefined()
+    expect(data?.accountDetails.createdAt).toBeDefined()
+    expect(data?.accountDetails.owner.phone).toBe(phone)
+    expect(data?.accountDetails.owner.defaultAccount.id).toBe(data?.accountDetails.id)
   })
 
-  it("exposes userDetails by username", async () => {
+  it("exposes accountDetails by username", async () => {
     const query = `
       query Q {
-        userDetails: userDetailsByUsername(username: "tester") {
-          phone
+        accountDetails: accountDetailsByUsername(username: "tester") {
           createdAt
         }
       }
@@ -48,6 +68,6 @@ describe("GraphQLQueryRoot", () => {
     const result = await graphql(gqlAdminSchema, query, {})
     const { errors, data } = result
     expect(errors).toBeUndefined()
-    expect(data?.userDetails.phone).toEqual("+19876543210")
+    expect(data?.accountDetails.createdAt).toBeDefined()
   })
 })

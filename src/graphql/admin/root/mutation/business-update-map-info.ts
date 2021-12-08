@@ -1,8 +1,7 @@
+import { updateBusinessMapInfo } from "@app/accounts/update-business-map-info"
+import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
-
-import { updateBusinessMapInfo } from "@core/user"
-
-import UserDetailPayload from "@graphql/admin/types/payload/user-detail"
 import Username from "@graphql/types/scalar/username"
 
 const BusinessUpdateMapInfoInput = new GT.Input({
@@ -24,7 +23,7 @@ const BusinessUpdateMapInfoInput = new GT.Input({
 })
 
 const BusinessUpdateMapInfoMutation = GT.Field({
-  type: GT.NonNull(UserDetailPayload),
+  type: GT.NonNull(AccountDetailPayload),
   args: {
     input: { type: GT.NonNull(BusinessUpdateMapInfoInput) },
   },
@@ -37,24 +36,20 @@ const BusinessUpdateMapInfoMutation = GT.Field({
       }
     }
 
-    const user = await updateBusinessMapInfo({ username, title, latitude, longitude })
+    const coordinates = {
+      latitude,
+      longitude,
+    }
 
-    if (user instanceof Error) {
-      return { errors: [{ message: user.message }] }
+    const account = await updateBusinessMapInfo({ username, title, coordinates })
+
+    if (account instanceof Error) {
+      return { errors: [{ message: mapError(account).message }] }
     }
 
     return {
       errors: [],
-      userDetails: {
-        id: user.id,
-        username: user.username,
-        level: user.level,
-        status: user.status,
-        phone: user.phone,
-        title: user.title,
-        coordinate: user.coordinate,
-        created_at: user.created_at,
-      },
+      accountDetails: account,
     }
   },
 })

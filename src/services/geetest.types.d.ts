@@ -14,5 +14,5 @@ type GeetestType = {
     challenge: string,
     validate: string,
     seccode: string,
-  ) => Promise<boolean | CaptchaError>
+  ) => Promise<true | CaptchaError>
 }

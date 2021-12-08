@@ -11,9 +11,15 @@ type AccountStatus =
 
 type Account = {
   readonly id: AccountId
-  readonly level: AccountLevel
-  readonly status: AccountStatus
+  readonly createdAt: Date
+  readonly username: Username
+  readonly defaultWalletId: WalletPublicId
+  readonly ownerId: UserId
+  level: AccountLevel
+  status: AccountStatus
   readonly walletIds: WalletId[]
+  title: BusinessMapTitle
+  coordinates: Coordinates
 }
 
 type Currencies = {
@@ -62,10 +68,32 @@ type LimitsChecker = {
     walletVolume: TxVolume
   }): true | LimitsExceededError
 }
+
 interface IAccountsRepository {
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   listByUserId(userId: UserId): Promise<Account[] | RepositoryError>
   findByWalletId(walletId: WalletId): Promise<Account | RepositoryError>
   findByWalletPublicId(walletPublicId: WalletPublicId): Promise<Account | RepositoryError>
+  findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
+  update(account: Account): Promise<Account | RepositoryError>
+}
+
+type TestAccount = {
+  phone: PhoneNumber
+  code: PhoneCode
+  username: Username | undefined
+  role: string | undefined // FIXME
+  currencies // FIXME
+}
+
+type TestAccountsChecker = (testAccounts: TestAccount[]) => {
+  isPhoneValid: (phone: PhoneNumber) => boolean
+  isPhoneAndCodeValid: ({
+    code,
+    phone,
+  }: {
+    code: PhoneCode
+    phone: PhoneNumber
+  }) => boolean
 }

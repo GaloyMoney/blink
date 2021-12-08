@@ -1,22 +1,19 @@
-import * as _ from "lodash"
-import * as mongoose from "mongoose"
-import crypto from "crypto"
 import {
-  levels,
-  getUserLimits,
-  getGenericLimits,
   getFeeRates,
+  getGenericLimits,
   getTwoFAConfig,
-  USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD,
-  MS_PER_DAY,
+  getUserLimits,
+  levels,
   MS_PER_30_DAYs,
+  MS_PER_DAY,
+  USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD,
 } from "@config/app"
-import { NotFoundError } from "@core/error"
+import { UsernameRegex } from "@domain/users"
 import { accountPath } from "@services/ledger/accounts"
 import { Transaction } from "@services/ledger/schema"
-import { baseLogger } from "../logger"
-import { caseInsensitiveRegex } from "./users"
-import { UsernameRegex } from "@domain/users"
+import crypto from "crypto"
+import * as _ from "lodash"
+import * as mongoose from "mongoose"
 
 export { Transaction }
 
@@ -229,8 +226,12 @@ const UserSchema = new Schema<UserType>({
   // activated,
   // etc
 
-  title: String,
-  coordinate: {
+  title: {
+    type: String,
+    minlength: 3,
+    maxlength: 100,
+  },
+  coordinates: {
     type: {
       latitude: {
         type: Number,
@@ -408,33 +409,6 @@ UserSchema.virtual("userIsActive").get(async function (this: typeof UserSchema) 
   )
 })
 
-UserSchema.statics.getUserByPhone = async function (phone: string) {
-  const user = await this.findOne({ phone }, { lastIPs: 0, lastConnection: 0 })
-
-  if (!user) {
-    throw new NotFoundError("User not found", { logger: baseLogger })
-  }
-
-  return user
-}
-
-UserSchema.statics.getUserByUsername = async function (username: string) {
-  if (!username.match(UsernameRegex)) {
-    return null
-  }
-
-  const user = await this.findOne(
-    { username: caseInsensitiveRegex(username) },
-    { lastIPs: 0, lastConnection: 0 },
-  )
-
-  if (!user) {
-    throw new NotFoundError("User not found", { logger: baseLogger })
-  }
-
-  return user
-}
-
 UserSchema.statics.getUserByAddress = async function ({ address }) {
   return this.findOne({ "onchain.address": address }, { lastIPs: 0, lastConnection: 0 })
 }
@@ -452,7 +426,7 @@ UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User
 
 UserSchema.index({
   title: 1,
-  coordinate: 1,
+  coordinates: 1,
 })
 
 export const User = mongoose.model<UserType>("User", UserSchema)

@@ -63,7 +63,6 @@ type PhoneMetadata = {
 type User = {
   readonly id: UserId
   readonly username: Username
-  readonly walletPublicId: WalletPublicId
   readonly contacts: UserContact[]
   readonly quizQuestions: UserQuizQuestion[]
   readonly defaultAccountId: AccountId

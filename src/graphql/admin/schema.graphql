@@ -1,8 +1,20 @@
-interface Account {
-  csvTransactions(walletIds: [WalletId!]!): String!
-  defaultWalletId: WalletId!
+type Account {
+  """
+  GPS coordinates for the account that can be used to place the related business on a map
+  """
+  coordinates: Coordinates
+  createdAt: Timestamp!
   id: ID!
-  wallets: [Wallet!]!
+  level: AccountLevel!
+  owner: User!
+  status: AccountStatus!
+  title: String
+  username: Username
+}
+
+type AccountDetailPayload {
+  accountDetails: Account
+  errors: [Error!]!
 }
 
 enum AccountLevel {
@@ -15,6 +27,16 @@ enum AccountStatus {
   LOCKED
 }
 
+input AccountUpdateLevelInput {
+  level: AccountLevel!
+  uid: ID!
+}
+
+input AccountUpdateStatusInput {
+  status: AccountStatus!
+  uid: ID!
+}
+
 """
 An authentication code valid for a single use
 """
@@ -25,45 +47,11 @@ type AuthTokenPayload {
   errors: [Error!]!
 }
 
-type BTCWallet implements Wallet {
-  balance: SignedAmount!
-  id: ID!
-  transactions(
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
-    after: String
-
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
-    before: String
-
-    """
-    Returns the first n items from the list.
-    """
-    first: Int
-
-    """
-    Returns the last n items from the list.
-    """
-    last: Int
-  ): TransactionConnection
-  walletCurrency: WalletCurrency!
-}
-
 input BusinessUpdateMapInfoInput {
   latitude: Float!
   longitude: Float!
   title: String!
   username: Username!
-}
-
-type ConsumerAccount implements Account {
-  csvTransactions(walletIds: [WalletId!]!): String!
-  defaultWalletId: WalletId!
-  id: ID!
-  wallets: [Wallet!]!
 }
 
 type Coordinates {
@@ -94,19 +82,6 @@ type InitiationViaLn {
 
 type InitiationViaOnChain {
   address: OnChainAddress!
-}
-
-type InputError implements Error {
-  code: InputErrorCode!
-  message: String!
-  path: [String]
-}
-
-enum InputErrorCode {
-  INVALID_INPUT
-  VALUE_NOT_ALLOWED
-  VALUE_TOO_LONG
-  VALUE_TOO_SHORT
 }
 
 scalar Language
@@ -154,11 +129,11 @@ Text field in a lightning payment transaction
 scalar Memo
 
 type Mutation {
-  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): UserDetailPayload!
+  accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
+  accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
+  businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
-  userUpdateLevel(input: UserUpdateLevelInput!): UserDetailPayload!
-  userUpdateStatus(input: UserUpdateStatusInput!): UserDetailPayload!
 }
 
 """
@@ -172,46 +147,6 @@ scalar OnChainTxHash
 An authentication code valid for a single use
 """
 scalar OneTimeAuthCode
-
-"""
-Information about pagination in a connection.
-"""
-type PageInfo {
-  """
-  When paginating forwards, the cursor to continue.
-  """
-  endCursor: String
-
-  """
-  When paginating forwards, are there more items?
-  """
-  hasNextPage: Boolean!
-
-  """
-  When paginating backwards, are there more items?
-  """
-  hasPreviousPage: Boolean!
-
-  """
-  When paginating backwards, the cursor to continue.
-  """
-  startCursor: String
-}
-
-type PaymentError implements Error {
-  code: PaymentErrorCode!
-  message: String!
-  path: [String]
-}
-
-enum PaymentErrorCode {
-  ACCOUNT_LOCKED
-  INSUFFICENT_BALANCE
-  INVOICE_PAID
-  LIMIT_EXCEEDED
-  NO_LIQUIDITY
-  NO_ROUTE
-}
 
 scalar PaymentHash
 
@@ -231,13 +166,13 @@ type Price {
 }
 
 type Query {
+  accountDetailsByUserPhone(phone: Phone!): Account!
+  accountDetailsByUsername(username: Username!): Account!
   allLevels: [AccountLevel!]!
   lightningInvoice(hash: PaymentHash!): LightningInvoice!
   lightningPayment(hash: PaymentHash!): LightningPayment!
   transactionById(id: ID!): Transaction
   transactionsByHash(hash: PaymentHash!): [Transaction]
-  userDetailsByPhone(phone: Phone!): User!
-  userDetailsByUsername(username: Username!): User!
 }
 
 """
@@ -268,11 +203,6 @@ type SettlementViaOnChain {
   transactionHash: OnChainTxHash!
 }
 
-"""
-An amount (of a currency) that can be negative (i.g. in a transaction)
-"""
-scalar SignedAmount
-
 type SuccessPayload {
   errors: [Error!]!
   success: Boolean
@@ -302,7 +232,7 @@ type Transaction {
   memo: Memo
 
   """
-  Amount of sats paid by the user.
+  Amount of sats sent or received.
   """
   settlementAmount: SatAmount!
   settlementFee: SatAmount!
@@ -319,36 +249,6 @@ type Transaction {
   status: TxStatus!
 }
 
-"""
-A connection to a list of items.
-"""
-type TransactionConnection {
-  """
-  A list of edges.
-  """
-  edges: [TransactionEdge]
-
-  """
-  Information to aid in pagination.
-  """
-  pageInfo: PageInfo!
-}
-
-"""
-An edge in a connection.
-"""
-type TransactionEdge {
-  """
-  A cursor for use in pagination
-  """
-  cursor: String!
-
-  """
-  The item at the end of the edge
-  """
-  node: Transaction
-}
-
 enum TxDirection {
   RECEIVE
   SEND
@@ -361,20 +261,11 @@ enum TxStatus {
 }
 
 type User {
-  coordinates: Coordinates
   createdAt: Timestamp!
+  defaultAccount: Account!
   id: ID!
   language: Language!
-  level: AccountLevel
   phone: Phone!
-  status: AccountStatus
-  title: String
-  username: Username
-}
-
-type UserDetailPayload {
-  errors: [Error!]!
-  userDetails: User
 }
 
 input UserLoginInput {
@@ -386,53 +277,12 @@ input UserRequestAuthCodeInput {
   phone: Phone!
 }
 
-input UserUpdateLevelInput {
-  level: AccountLevel!
-  uid: ID!
-}
-
-input UserUpdateStatusInput {
-  status: AccountStatus!
-  uid: ID!
-}
-
 """
 Unique identifier of a user
 """
 scalar Username
 
-interface Wallet {
-  balance: SignedAmount!
-  id: ID!
-  transactions(
-    """
-    Returns the items in the list that come after the specified cursor.
-    """
-    after: String
-
-    """
-    Returns the items in the list that come before the specified cursor.
-    """
-    before: String
-
-    """
-    Returns the first n items from the list.
-    """
-    first: Int
-
-    """
-    Returns the last n items from the list.
-    """
-    last: Int
-  ): TransactionConnection
-  walletCurrency: WalletCurrency!
-}
-
-enum WalletCurrency {
-  BTC
-}
-
 """
-Unique identifier of a user
+Unique identifier of a wallet
 """
 scalar WalletId
