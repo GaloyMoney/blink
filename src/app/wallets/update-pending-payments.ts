@@ -1,6 +1,6 @@
 import { PaymentStatus } from "@domain/bitcoin/lightning"
 import { InconsistentDataError } from "@domain/errors"
-import { toLiabilitiesAccountId } from "@domain/ledger"
+import { toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
@@ -15,29 +15,29 @@ export const updatePendingPayments = async ({
   logger: Logger
   lock?: DistributedLock
 }): Promise<void | ApplicationError> => {
-  const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
+  const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
   const ledgerService = LedgerService()
-  const count = await ledgerService.getPendingPaymentsCount(liabilitiesAccountId)
+  const count = await ledgerService.getPendingPaymentsCount(liabilitiesWalletId)
   if (count instanceof Error) return count
   if (count === 0) return
 
   const pendingPaymentTransactions = await ledgerService.listPendingPayments(
-    liabilitiesAccountId,
+    liabilitiesWalletId,
   )
   if (pendingPaymentTransactions instanceof Error) return pendingPaymentTransactions
 
   for (const paymentLiabilityTx of pendingPaymentTransactions) {
-    await updatePendingPayment({ liabilitiesAccountId, paymentLiabilityTx, logger, lock })
+    await updatePendingPayment({ liabilitiesWalletId, paymentLiabilityTx, logger, lock })
   }
 }
 
 const updatePendingPayment = async ({
-  liabilitiesAccountId,
+  liabilitiesWalletId,
   paymentLiabilityTx,
   logger,
   lock,
 }: {
-  liabilitiesAccountId: LiabilitiesAccountId
+  liabilitiesWalletId: LiabilitiesWalletId
   paymentLiabilityTx: LedgerTransaction
   logger: Logger
   lock?: DistributedLock
@@ -106,7 +106,7 @@ const updatePendingPayment = async ({
         if (paymentLiabilityTx.feeKnownInAdvance) return
 
         return reimburseFee({
-          liabilitiesAccountId,
+          liabilitiesWalletId,
           journalId: paymentLiabilityTx.journalId,
           paymentHash,
           maxFee: paymentLiabilityTx.fee,

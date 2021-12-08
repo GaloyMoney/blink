@@ -22,8 +22,8 @@ const OnChainTxFeeQuery = GT.Field({
       if (input instanceof Error) throw input
     }
 
-    const fee = await Wallets.getOnChainFeeByWalletPublicId({
-      walletPublicId: walletId,
+    const fee = await Wallets.getOnChainFeeByWalletId({
+      walletId,
       amount,
       address,
       targetConfirmations,

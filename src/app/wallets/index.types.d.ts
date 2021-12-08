@@ -1,5 +1,5 @@
-type AddInvoiceByWalletPublicIdArgs = {
-  walletPublicId: WalletPublicId
+type addInvoiceByWalletIdArgs = {
+  walletId: WalletId
   amount: number
   memo?: string
 }
@@ -10,8 +10,8 @@ type AddInvoiceArgs = {
   memo?: string
 }
 
-type AddInvoiceNoAmountByWalletPublicIdArgs = {
-  walletPublicId: WalletPublicId
+type AddInvoiceNoAmountByWalletIdArgs = {
+  walletId: WalletId
   memo?: string
 }
 
@@ -21,14 +21,14 @@ type AddInvoiceNoAmountArgs = {
 }
 
 type AddInvoiceForRecipientArgs = {
-  recipientWalletPublicId: WalletPublicId
+  recipientWalletId: WalletId
   amount: number
   memo?: string
   descriptionHash?: string
 }
 
 type AddInvoiceNoAmountForRecipientArgs = {
-  recipientWalletPublicId: WalletPublicId
+  recipientWalletId: WalletId
   memo?: string
 }
 
@@ -46,13 +46,6 @@ type GetOnChainFeeByWalletIdArgs = {
   targetConfirmations: number
 }
 
-type GetOnChainFeeByWalletPublicIdArgs = {
-  walletPublicId: WalletPublicId
-  amount: number
-  address: OnChainAddress
-  targetConfirmations: number
-}
-
 type PaymentSendArgs = {
   memo: string | null
   walletId: WalletId
@@ -60,16 +53,16 @@ type PaymentSendArgs = {
   logger: Logger
 }
 
-type PayLnInvoiceByWalletPublicIdArgs = {
-  walletPublicId: WalletPublicId
+type PayLnInvoiceByWalletIdArgs = {
+  walletId: WalletId
   paymentRequest: EncodedPaymentRequest
   memo: string | null
   userId: UserId
   logger: Logger
 }
 
-type PayLnNoAmountInvoiceByWalletPublicIdArgs = {
-  walletPublicId: WalletPublicId
+type payLnNoAmountInvoiceByWalletIdArgs = {
+  walletId: WalletId
   paymentRequest: EncodedPaymentRequest
   amount: Satoshis
   memo: string | null

@@ -16,7 +16,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     try {
       await new InvoiceUser({
         _id: paymentHash,
-        uid: walletId,
+        walletId,
         selfGenerated,
         pubkey,
         paid,
@@ -41,7 +41,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     paid,
   }: WalletInvoice): Promise<WalletInvoice | RepositoryError> => {
     try {
-      const data = { uid: walletId, selfGenerated, pubkey, paid }
+      const data = { walletId, selfGenerated, pubkey, paid }
       const doc = await InvoiceUser.updateOne({ _id: paymentHash }, { $set: data })
       if (doc.nModified !== 1) {
         return new RepositoryError("Couldn't update invoice for payment hash")
@@ -68,7 +68,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }
       return {
         paymentHash,
-        walletId: invoiceUser.uid,
+        walletId: invoiceUser.walletId,
         selfGenerated: invoiceUser.selfGenerated,
         pubkey: invoiceUser.pubkey,
         paid: invoiceUser.paid,
@@ -83,7 +83,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   ): AsyncGenerator<WalletInvoice> | RepositoryError {
     let pending
     try {
-      pending = InvoiceUser.find({ uid: walletId, paid: false }).cursor({
+      pending = InvoiceUser.find({ walletId, paid: false }).cursor({
         batchSize: 100,
       })
     } catch (error) {
@@ -93,7 +93,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     for await (const invoice of pending) {
       yield {
         paymentHash: invoice.id as PaymentHash,
-        walletId: invoice.uid as WalletId,
+        walletId: invoice.walletId as WalletId,
         selfGenerated: invoice.selfGenerated,
         pubkey: invoice.pubkey as Pubkey,
         paid: invoice.paid,
@@ -109,7 +109,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       // select distinct user ids from pending invoices
       pending = InvoiceUser.aggregate([
         { $match: { paid: false } },
-        { $group: { _id: "$uid" } },
+        { $group: { _id: "$walletId" } },
       ])
         .cursor({ batchSize: 100 })
         .exec()

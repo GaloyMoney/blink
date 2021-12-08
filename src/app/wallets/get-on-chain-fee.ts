@@ -79,27 +79,3 @@ export const getOnChainFeeByWalletId = async ({
     targetConfirmations: targetConfs,
   })
 }
-
-export const getOnChainFeeByWalletPublicId = async ({
-  walletPublicId,
-  amount,
-  address,
-  targetConfirmations,
-}: GetOnChainFeeByWalletPublicIdArgs): Promise<Satoshis | ApplicationError> => {
-  const sats = checkedToSats(amount)
-  if (sats instanceof Error) return sats
-
-  const targetConfs = checkedToTargetConfs(targetConfirmations)
-  if (targetConfs instanceof Error) return targetConfs
-
-  const wallets = WalletsRepository()
-  const wallet = await wallets.findByPublicId(walletPublicId)
-  if (wallet instanceof Error) return wallet
-
-  return getOnChainFee({
-    wallet,
-    amount: sats,
-    address,
-    targetConfirmations: targetConfs,
-  })
-}

@@ -76,16 +76,12 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const findByWalletPublicId = async (
-    walletPublicId: WalletPublicId,
-  ): Promise<User | RepositoryError> => {
+  // TODO: remove. user should have no direct link with wallet.
+  const findByWalletId = async (walletId: WalletId): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOne(
-        { walletPublicId },
-        { lastIPs: 0, lastConnection: 0 },
-      )
+      const result = await User.findOne({ walletId }, { lastIPs: 0, lastConnection: 0 })
       if (!result) {
-        return new CouldNotFindUserFromWalletIdError(walletPublicId)
+        return new CouldNotFindUserFromWalletIdError(walletId)
       }
 
       return userFromRaw(result)
@@ -135,7 +131,7 @@ export const UsersRepository = (): IUsersRepository => {
     findByUsername,
     findByPhone,
     persistNew,
-    findByWalletPublicId,
+    findByWalletId,
     update,
   }
 }

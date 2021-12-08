@@ -69,7 +69,7 @@ interface UserType {
   currencies: CurrencyObjectForUser[]
   onchain?: OnChainObjectForUser[]
   twoFA: TwoFAForUser
-  walletPublicId: WalletPublicId
+  walletId: WalletId
 
   // business:
   title?: string

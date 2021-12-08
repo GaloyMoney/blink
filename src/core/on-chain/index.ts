@@ -24,7 +24,7 @@ import { toSats } from "@domain/bitcoin"
 import { UsersRepository, WalletsRepository } from "@services/mongoose"
 import { CouldNotFindError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
-import { toLiabilitiesAccountId } from "@domain/ledger"
+import { toLiabilitiesWalletId } from "@domain/ledger"
 import { LockService } from "@services/lock"
 import {
   checkAndVerifyTwoFA,
@@ -82,7 +82,7 @@ export const OnChainMixin = (superclass) =>
 
       return redlock({ path: this.user._id, logger: onchainLogger }, async (lock) => {
         const balanceSats = await Wallets.getBalanceForWallet({
-          walletId: this.user.id,
+          walletId: this.user.walletId,
           logger: onchainLogger,
           lock,
         })
@@ -114,7 +114,7 @@ export const OnChainMixin = (superclass) =>
                 amount: toSats(amountToSendPayeeUser),
                 twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
                 twoFASecret: twoFA.secret,
-                walletId: this.user.id,
+                walletId: this.user.walletId,
               })
             : true
           if (twoFACheck instanceof TwoFANewCodeNeededError)
@@ -128,7 +128,7 @@ export const OnChainMixin = (superclass) =>
 
           const intraledgerLimitCheck = await checkIntraledgerLimits({
             amount: toSats(amountToSendPayeeUser),
-            walletId: this.user.id,
+            walletId: this.user.walletId,
           })
           if (intraledgerLimitCheck instanceof Error)
             throw new TransactionRestrictedError(intraledgerLimitCheck.message, {
@@ -154,10 +154,10 @@ export const OnChainMixin = (superclass) =>
           const usd = sats * price
           const usdFee = onChainFee * price
 
-          const payerWallet = await WalletsRepository().findById(this.user.id)
+          const payerWallet = await WalletsRepository().findById(this.user.walletId)
           if (payerWallet instanceof CouldNotFindError) throw payerWallet
           if (payerWallet instanceof Error) throw payerWallet
-          const recipientWallet = await WalletsRepository().findById(payeeUser.id)
+          const recipientWallet = await WalletsRepository().findById(payeeUser.walletId)
           if (recipientWallet instanceof CouldNotFindError) throw recipientWallet
           if (recipientWallet instanceof Error) throw recipientWallet
 
@@ -165,7 +165,7 @@ export const OnChainMixin = (superclass) =>
             { logger: onchainLoggerOnUs, lock },
             async () =>
               LedgerService().addOnChainIntraledgerTxSend({
-                liabilitiesAccountId: toLiabilitiesAccountId(this.user.id),
+                liabilitiesWalletId: toLiabilitiesWalletId(this.user.walletId),
                 description: "",
                 sats: toSats(sats),
                 fee: onChainFee,
@@ -173,7 +173,7 @@ export const OnChainMixin = (superclass) =>
                 usdFee,
                 payeeAddresses: [address as OnChainAddress],
                 sendAll,
-                recipientLiabilitiesAccountId: toLiabilitiesAccountId(payeeUser.id),
+                recipientLiabilitiesAccountId: toLiabilitiesWalletId(payeeUser.walletId),
                 payerUsername: this.user.username,
                 recipientUsername: payeeUser.username,
                 memoPayer: memo || null,
@@ -215,7 +215,7 @@ export const OnChainMixin = (superclass) =>
 
         const withdrawalLimitCheck = await checkWithdrawalLimits({
           amount: toSats(checksAmount),
-          walletId: this.user.id,
+          walletId: this.user.walletId,
         })
         if (withdrawalLimitCheck instanceof Error)
           throw new TransactionRestrictedError(withdrawalLimitCheck.message, {
@@ -227,7 +227,7 @@ export const OnChainMixin = (superclass) =>
               amount: toSats(checksAmount),
               twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
               twoFASecret: twoFA.secret,
-              walletId: this.user.id,
+              walletId: this.user.walletId,
             })
           : true
         if (twoFACheck instanceof TwoFANewCodeNeededError)
