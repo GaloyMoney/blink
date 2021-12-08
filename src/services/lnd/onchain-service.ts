@@ -35,6 +35,15 @@ export const OnChainService = (
     return new OnChainServiceUnavailableError(err)
   }
 
+  const getBalance = async (): Promise<Satoshis | OnChainServiceError> => {
+    try {
+      const { chain_balance } = await getChainBalance({ lnd })
+      return toSats(chain_balance)
+    } catch (err) {
+      return new UnknownOnChainServiceError(err)
+    }
+  }
+
   const listTransactions = async (
     scanDepth: ScanDepth,
   ): Promise<GetChainTransactionsResult | OnChainServiceError> => {
@@ -125,6 +134,7 @@ export const OnChainService = (
   }
 
   return {
+    getBalance,
     listIncomingTransactions: wrapAsyncToRunInSpan({
       namespace: `service.lnd`,
       fn: listIncomingTransactions,

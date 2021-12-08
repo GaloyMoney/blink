@@ -48,6 +48,8 @@ type LookupOnChainFeeArgs = {
 }
 
 interface IOnChainService {
+  getBalance(): Promise<Satoshis | OnChainServiceError>
+
   listIncomingTransactions(
     scanDepth: ScanDepth,
   ): Promise<IncomingOnChainTransaction[] | OnChainServiceError>
