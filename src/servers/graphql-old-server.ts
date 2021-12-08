@@ -32,6 +32,7 @@ import {
 } from "@services/tracing"
 import { PriceInterval, PriceRange } from "@domain/price"
 import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
+import { addEarn } from "@app/accounts/add-earn"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -375,7 +376,7 @@ const resolvers = {
         return feeSatAmount
       },
     }),
-    earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
+    earnCompleted: async (_, { ids }, { uid }) => addEarn({ id: ids[0], aid: uid }),
     onchain: (_, __, { wallet }) => ({
       getNewAddress: async () => {
         const address = await Wallets.createOnChainAddress(wallet.user.walletId)

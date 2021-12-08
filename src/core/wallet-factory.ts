@@ -22,8 +22,3 @@ export const WalletFactory = async ({
 
   return new LightningUserWallet({ user, logger, config: userWalletConfig })
 }
-
-export const getWalletFromRole = async ({ logger, role }) => {
-  const user = await User.findOne({ role })
-  return WalletFactory({ user, logger })
-}

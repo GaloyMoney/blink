@@ -218,3 +218,14 @@ export class InvalidBusinessTitleLengthError extends CustomApolloError {
     })
   }
 }
+
+export class RewardInsufficientBalanceError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Balance of funder account for reward insufficient",
+      forwardToClient: true,
+      code: "REWARD_ERROR",
+      ...errData,
+    })
+  }
+}
