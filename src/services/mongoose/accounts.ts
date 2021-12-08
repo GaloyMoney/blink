@@ -12,7 +12,7 @@ const projection = {
   level: 1,
   status: 1,
   coordinates: 1,
-  walletPublicId: 1,
+  walletId: 1,
   username: 1,
   title: 1,
   created_at: 1,
@@ -34,8 +34,8 @@ export const AccountsRepository = (): IAccountsRepository => {
     walletId: WalletId,
   ): Promise<Account | RepositoryError> => {
     try {
-      const result: UserType = await User.findOne({ _id: walletId }, projection)
-      if (!result) return new CouldNotFindError()
+      const result: UserType = await User.findOne({ walletId }, projection)
+      if (!result) return new CouldNotFindError("Invalid wallet")
       return translateToAccount(result)
     } catch (err) {
       return new UnknownRepositoryError(err)
@@ -64,23 +64,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     const account = await findById(accountId)
     if (account instanceof Error) return account
     return [account]
-  }
-
-  const findByWalletPublicId = async (
-    walletPublicId: WalletPublicId,
-  ): Promise<Account | RepositoryError> => {
-    try {
-      const result: UserType = await User.findOne(
-        {
-          walletPublicId,
-        },
-        projection,
-      )
-      if (!result) return new CouldNotFindError("Invalid wallet")
-      return translateToAccount(result)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
   }
 
   // FIXME: could be in a different file? does not return an Account
@@ -143,7 +126,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     listByUserId,
     findByWalletId,
     findByUsername,
-    findByWalletPublicId,
     listBusinessesForMap,
     update,
   }
@@ -152,12 +134,12 @@ export const AccountsRepository = (): IAccountsRepository => {
 const translateToAccount = (result: UserType): Account => ({
   id: result.id as AccountId,
   createdAt: new Date(result.created_at),
-  defaultWalletId: result.walletPublicId as WalletPublicId, // TODO: add defaultWalletId at the persistence layer when Account have multiple wallet
+  defaultWalletId: result.walletId as WalletId, // TODO: add defaultWalletId at the persistence layer when Account have multiple wallet
   username: result.username as Username,
   level: (result.level as AccountLevel) || AccountLevel.One,
   status: (result.status as AccountStatus) || AccountStatus.Active,
   title: result.title as BusinessMapTitle,
   coordinates: result.coordinates as Coordinates,
-  walletIds: [result.id as WalletId],
+  walletIds: [result.walletId as WalletId],
   ownerId: result.id as UserId,
 })

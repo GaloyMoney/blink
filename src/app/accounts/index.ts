@@ -1,14 +1,9 @@
 import { hashApiKey } from "@domain/accounts"
-import { ValidationError } from "@domain/errors"
-import {
-  AccountApiKeysRepository,
-  AccountsRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+import { AccountApiKeysRepository, AccountsRepository } from "@services/mongoose"
 
 export * from "./add-api-key-for-account"
-export * from "./get-api-keys-for-account"
 export * from "./disable-api-key-for-account"
+export * from "./get-api-keys-for-account"
 
 export const getAccount = async (accountId: AccountId) => {
   const accounts = AccountsRepository()
@@ -32,14 +27,14 @@ export const getAccountByApiKey = async (
 
 export const hasPermissions = async (
   userId: UserId,
-  walletPublicId: WalletPublicId,
+  walletId: WalletId,
 ): Promise<boolean | ApplicationError> => {
   const accounts = AccountsRepository()
 
   const userAccounts = await accounts.listByUserId(userId)
   if (userAccounts instanceof Error) return userAccounts
 
-  const walletAccount = await accounts.findByWalletPublicId(walletPublicId)
+  const walletAccount = await accounts.findByWalletId(walletId)
   if (walletAccount instanceof Error) return walletAccount
 
   return userAccounts.some((a) => a.id === walletAccount.id)
@@ -48,30 +43,4 @@ export const hasPermissions = async (
 export const getBusinessMapMarkers = async () => {
   const accounts = AccountsRepository()
   return accounts.listBusinessesForMap()
-}
-
-export const toWalletIds = async ({
-  account,
-  walletPublicIds,
-}: {
-  account: Account
-  walletPublicIds: WalletPublicId[]
-}): Promise<WalletId[] | ApplicationError> => {
-  const wallets = WalletsRepository()
-
-  const walletIds: WalletId[] = []
-
-  for (const walletPublicId of walletPublicIds) {
-    const wallet = await wallets.findByPublicId(walletPublicId)
-    if (wallet instanceof Error) {
-      return wallet
-    }
-
-    if (!account.walletIds.includes(wallet.id)) {
-      return new ValidationError()
-    }
-    walletIds.push(wallet.id)
-  }
-
-  return walletIds
 }

@@ -86,7 +86,7 @@ export async function onchainTransactionEventHandler(tx) {
     )
 
     const accountPath = await ledger.getAccountByTransactionHash(tx.id)
-    const userId = ledger.resolveAccountId(accountPath)
+    const userId = ledger.resolveWalletId(accountPath)
 
     if (!userId) {
       return

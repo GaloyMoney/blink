@@ -35,13 +35,14 @@ export abstract class UserWallet {
   }
 
   async getBalances(lock?): Promise<Balances> {
-    Wallets.updatePendingInvoices({
-      walletId: this.user.id as WalletId,
+    // was the await omit on purpose?
+    await Wallets.updatePendingInvoices({
+      walletId: this.user.walletId as WalletId,
       lock,
       logger: this.logger,
     })
     const result = await Wallets.updatePendingPayments({
-      walletId: this.user.id as WalletId,
+      walletId: this.user.walletId as WalletId,
       lock,
       logger: this.logger,
     })

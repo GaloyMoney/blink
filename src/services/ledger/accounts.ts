@@ -10,17 +10,17 @@ export const escrowAccountingPath = `${assetsMainAccount}:Reserve:Escrow` // TOD
 // liabilities
 export const liabilitiesMainAccount = "Liabilities"
 export const accountPath = (uid) => `${liabilitiesMainAccount}:${uid}`
-export const resolveAccountId = (accountPath: string | string[]) => {
+export const resolveWalletId = (walletPath: string | string[]) => {
   let id: string | null = null
 
-  if (!accountPath) {
+  if (!walletPath) {
     return id
   }
 
-  let path = accountPath
+  let path = walletPath
 
-  if (typeof accountPath === "string") {
-    path = accountPath.split(":")
+  if (typeof walletPath === "string") {
+    path = walletPath.split(":")
   }
 
   if (
@@ -38,15 +38,15 @@ export const resolveAccountId = (accountPath: string | string[]) => {
 let cacheDealerPath: string
 let cachebankOwnerPath: string
 
-const throwError = (account) => Promise.reject(`Invalid ${account}AccountPath`)
+const throwError = (wallet) => Promise.reject(`Invalid ${wallet}WalletPath`)
 let bankOwnerResolver = (): Promise<string> => throwError("bankOwner")
 let dealerResolver = (): Promise<string> => throwError("dealer")
 
-export function setBankOwnerAccountResolver(resolver: () => Promise<string>) {
+export function setbankOwnerWalletResolver(resolver: () => Promise<string>) {
   bankOwnerResolver = resolver
 }
 
-export function setDealerAccountResolver(resolver: () => Promise<string>) {
+export function setdealerWalletResolver(resolver: () => Promise<string>) {
   dealerResolver = resolver
 }
 

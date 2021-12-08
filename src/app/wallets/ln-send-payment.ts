@@ -9,7 +9,7 @@ import { getBalanceForWallet } from "@app/wallets"
 
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
-import { toLiabilitiesAccountId } from "@domain/ledger"
+import { toLiabilitiesWalletId } from "@domain/ledger"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
 
 import {
@@ -94,19 +94,15 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
     },
   )
 
-export const payLnInvoiceByWalletPublicId = async ({
-  walletPublicId,
+export const payLnInvoiceByWalletId = async ({
+  walletId,
   paymentRequest,
   memo,
   userId,
   logger,
-}: PayLnInvoiceByWalletPublicIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
-  const wallets = WalletsRepository()
-  const wallet = await wallets.findByPublicId(walletPublicId)
-  if (wallet instanceof Error) return wallet
-
+}: PayLnInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
   return lnInvoicePaymentSend({
-    walletId: wallet.id,
+    walletId,
     paymentRequest,
     memo,
     userId,
@@ -210,22 +206,16 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
     },
   )
 
-export const payLnNoAmountInvoiceByWalletPublicId = async ({
-  walletPublicId,
+export const payLnNoAmountInvoiceByWalletId = async ({
+  walletId,
   paymentRequest,
   amount,
   memo,
   userId,
   logger,
-}: PayLnNoAmountInvoiceByWalletPublicIdArgs): Promise<
-  PaymentSendStatus | ApplicationError
-> => {
-  const wallets = WalletsRepository()
-  const wallet = await wallets.findByPublicId(walletPublicId)
-  if (wallet instanceof Error) return wallet
-
+}: payLnNoAmountInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
   return lnNoAmountInvoicePaymentSend({
-    walletId: wallet.id,
+    walletId,
     paymentRequest,
     amount,
     memo,
@@ -392,17 +382,17 @@ const executePaymentViaIntraledger = async ({
       )
     }
 
-    const liabilitiesAccountId = toLiabilitiesAccountId(payerWalletId)
+    const liabilitiesWalletId = toLiabilitiesWalletId(payerWalletId)
     const journal = await LockService().extendLock({ logger, lock }, async () =>
       LedgerService().addLnIntraledgerTxSend({
-        liabilitiesAccountId,
+        liabilitiesWalletId,
         paymentHash,
         description,
         sats,
         fee: lnFee,
         usd,
         usdFee,
-        recipientLiabilitiesAccountId: toLiabilitiesAccountId(recipientWalletId),
+        recipientLiabilitiesAccountId: toLiabilitiesWalletId(recipientWalletId),
         pubkey: lndService.defaultPubkey(),
         payerUsername,
         recipientUsername: null,
@@ -492,10 +482,10 @@ const executePaymentViaLn = async ({
     }
 
     const ledgerService = LedgerService()
-    const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     const journal = await LockService().extendLock({ logger, lock }, async () =>
       ledgerService.addLnTxSend({
-        liabilitiesAccountId,
+        liabilitiesWalletId,
         paymentHash,
         description: decodedInvoice.description,
         sats,
@@ -536,7 +526,7 @@ const executePaymentViaLn = async ({
 
     if (!rawRoute) {
       const reimbursed = await reimburseFee({
-        liabilitiesAccountId,
+        liabilitiesWalletId,
         journalId,
         paymentHash,
         maxFee,

@@ -31,7 +31,7 @@ export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
 
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
-  uid: String,
+  walletId: String,
 
   // usd equivalent. sats is attached in the invoice directly.
   // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
@@ -58,7 +58,7 @@ const invoiceUserSchema = new Schema({
   },
 })
 
-invoiceUserSchema.index({ uid: 1, paid: 1 })
+invoiceUserSchema.index({ walletId: 1, paid: 1 })
 
 export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 
@@ -263,7 +263,7 @@ const UserSchema = new Schema<UserType>({
     },
   },
 
-  walletPublicId: {
+  walletId: {
     type: String,
     index: true,
     unique: true,

@@ -216,7 +216,7 @@ const resolvers = {
       return response
     },
     getLastOnChainAddress: async (_, __, { wallet }) => {
-      const address = await Wallets.getLastOnChainAddress(wallet.user.id)
+      const address = await Wallets.getLastOnChainAddress(wallet.user.walletId)
       if (address instanceof Error) throw address
 
       return {
@@ -384,7 +384,7 @@ const resolvers = {
         let feeSatAmount: Satoshis | ApplicationError
         if (amount && amount > 0) {
           feeSatAmount = await getNoAmountLightningFee({
-            walletPublicId: wallet.user.walletPublicId,
+            walletId: wallet.user.walletId,
             amount,
             paymentRequest: invoice,
             logger,
@@ -395,7 +395,7 @@ const resolvers = {
         }
 
         feeSatAmount = await getLightningFee({
-          walletPublicId: wallet.user.walletPublicId,
+          walletId: wallet.user.walletId,
           paymentRequest: invoice,
           logger,
         })

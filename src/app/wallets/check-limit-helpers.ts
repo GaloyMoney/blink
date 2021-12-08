@@ -1,6 +1,6 @@
 import { getTwoFALimits, getUserLimits, MS_PER_DAY } from "@config/app"
 import { LimitsChecker } from "@domain/accounts"
-import { toLiabilitiesAccountId } from "@domain/ledger"
+import { toLiabilitiesWalletId } from "@domain/ledger"
 import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
 import { LedgerService } from "@services/ledger"
 import { AccountsRepository } from "@services/mongoose"
@@ -16,11 +16,11 @@ export const checkIntraledgerLimits = async ({
   if (limitsChecker instanceof Error) return limitsChecker
 
   const ledgerService = LedgerService()
-  const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
+  const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
 
   const walletVolume = await ledgerService.intraledgerTxVolumeSince({
-    liabilitiesAccountId,
+    liabilitiesWalletId,
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
@@ -42,11 +42,11 @@ export const checkWithdrawalLimits = async ({
   if (limitsChecker instanceof Error) return limitsChecker
 
   const ledgerService = LedgerService()
-  const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
+  const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
 
   const walletVolume = await ledgerService.withdrawalTxVolumeSince({
-    liabilitiesAccountId,
+    liabilitiesWalletId,
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
@@ -68,11 +68,11 @@ export const checkTwoFALimits = async ({
   if (limitsChecker instanceof Error) return limitsChecker
 
   const ledgerService = LedgerService()
-  const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
+  const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
 
   const walletVolume = await ledgerService.twoFATxVolumeSince({
-    liabilitiesAccountId,
+    liabilitiesWalletId,
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume

@@ -1,13 +1,9 @@
-import getUuidByString from "uuid-by-string"
-
+import * as Wallets from "@app/wallets"
 import { GT } from "@graphql/index"
-
+import getUuidByString from "uuid-by-string"
 import IAccount from "../abstract/account"
 import Wallet from "../abstract/wallet"
 import WalletId from "../scalar/wallet-id"
-
-import * as Wallets from "@app/wallets"
-import * as Accounts from "@app/accounts"
 
 const ConsumerAccount = new GT.Object({
   name: "ConsumerAccount",
@@ -47,17 +43,8 @@ const ConsumerAccount = new GT.Object({
           type: GT.NonNullList(WalletId),
         },
       },
-      resolve: async (source, args) => {
-        const walletIds = await Accounts.toWalletIds({
-          account: source,
-          walletPublicIds: args.walletIds,
-        })
-
-        if (walletIds instanceof Error) {
-          throw walletIds
-        }
-
-        return Wallets.getCSVForWallets(walletIds)
+      resolve: async (source) => {
+        return Wallets.getCSVForWallets(source.walletIds)
       },
     },
   }),

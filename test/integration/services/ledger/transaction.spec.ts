@@ -69,7 +69,7 @@ describe("receipt via Ledger Service", () => {
     const usdFee = fee * price
 
     const result = await LedgerService().addLnTxReceive({
-      liabilitiesAccountId: walletBTC.accountPath,
+      liabilitiesWalletId: walletBTC.accountPath,
       paymentHash: "paymentHash" as PaymentHash,
       description: "transaction test",
       sats,
@@ -161,7 +161,7 @@ describe("payment with lnd via Ledger Service", () => {
     const usdFee = fee * price
 
     const result = await LedgerService().addLnTxSend({
-      liabilitiesAccountId: walletBTC.accountPath,
+      liabilitiesWalletId: walletBTC.accountPath,
       paymentHash: "paymentHash" as PaymentHash,
       description: "transaction test",
       sats,
@@ -263,7 +263,7 @@ describe("on us payment via Ledger Service", () => {
     const usdFee = fee * price
 
     const result = await LedgerService().addUsernameIntraledgerTxSend({
-      liabilitiesAccountId: payer.accountPath,
+      liabilitiesWalletId: payer.accountPath,
       description: "desc",
       sats,
       fee: lnFee,

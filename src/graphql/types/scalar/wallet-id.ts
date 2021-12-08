@@ -1,4 +1,4 @@
-import { checkedToWalletPublicId } from "@domain/wallets"
+import { checkedToWalletId } from "@domain/wallets"
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
@@ -17,7 +17,7 @@ const WalletId = new GT.Scalar({
 })
 
 function validWalletIdValue(value) {
-  const checkedWalletId = checkedToWalletPublicId(value)
+  const checkedWalletId = checkedToWalletId(value)
   if (checkedWalletId instanceof Error) {
     return new UserInputError("Invalid value for WalletId")
   }
