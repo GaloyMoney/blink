@@ -13,6 +13,9 @@ describe("UserWallet", () => {
     userWallet2 = await getAndCreateUserWallet(2)
     // load funder wallet before use it
     await getAndCreateUserWallet(4)
+
+    // load edit for admin-panel manual testing
+    await getAndCreateUserWallet(13)
   })
 
   it("has a role if it was configured", async () => {
