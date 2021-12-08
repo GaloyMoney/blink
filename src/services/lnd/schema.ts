@@ -50,16 +50,13 @@ const paymentDetailsSchema = new Schema<LnPaymentDetails>({
   destination: String,
   milliSatsFee: {
     type: Number,
-    default: 0,
   },
   milliSatsAmount: {
     type: Number,
     min: 0,
   },
-  paths: [pathSchema],
   roundedUpFee: {
     type: Number,
-    default: 0,
   },
   secret: String,
   amount: {
@@ -68,7 +65,13 @@ const paymentDetailsSchema = new Schema<LnPaymentDetails>({
   },
 })
 
+const paymentAttemptSchema = Schema.Types.Mixed
+
 const paymentSchema = new Schema<LnPaymentType>({
+  isCompleteRecord: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: Date,
   status: {
     type: String,
@@ -83,6 +86,7 @@ const paymentSchema = new Schema<LnPaymentType>({
   },
   paymentRequest: String,
   paymentDetails: paymentDetailsSchema,
+  attempts: [paymentAttemptSchema],
 })
 
 export const LnPayment = mongoose.model("LnPayment", paymentSchema)

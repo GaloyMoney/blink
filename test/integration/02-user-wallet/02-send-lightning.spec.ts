@@ -988,11 +988,9 @@ const testPaymentDataPersisted = async (request: EncodedPaymentRequest) => {
   expect(paymentFromLnd).not.toBeInstanceOf(Error)
   if (paymentFromLnd instanceof Error) return paymentFromLnd
 
-  const propsToCompare = ["status", "secret", "milliSatsAmount", "milliSatsFee"]
+  const propsToCompare = ["status", "paymentHash", "createdAt"]
   for (const prop of propsToCompare) {
     expect(paymentFromDb[prop]).toStrictEqual(paymentFromLnd[prop])
   }
-  expect(paymentFromDb.paymentDetails?.paths.length).toEqual(
-    paymentFromLnd.paymentDetails?.paths.length,
-  )
+  expect(paymentFromDb.attempts.length).toEqual(paymentFromLnd.attempts.length)
 }

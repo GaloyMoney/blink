@@ -1,4 +1,3 @@
-import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindLnPaymentFromHashError,
   UnknownRepositoryError,
@@ -43,18 +42,11 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
 
 const lnPaymentFromRaw = (result: LnPaymentType): LnPayment => ({
   id: result.id as PaymentLedgerId,
+  isCompleteRecord: result.isCompleteRecord,
   createdAt: result.createdAt as Date,
   status: result.status as PaymentStatus,
   paymentRequest: result.paymentRequest as EncodedPaymentRequest | undefined,
   paymentHash: result.paymentHash as PaymentHash,
-  paymentDetails: {
-    confirmedAt: (result.paymentDetails.confirmedAt as Date) || undefined,
-    destination: result.paymentDetails.destination as Pubkey,
-    milliSatsFee: result.paymentDetails.milliSatsFee as MilliSatoshis,
-    milliSatsAmount: result.paymentDetails.milliSatsAmount as MilliSatoshis,
-    paths: result.paymentDetails.paths as RawPaths,
-    roundedUpFee: toSats(result.paymentDetails.roundedUpFee),
-    secret: (result.paymentDetails.secret as PaymentSecret) || undefined,
-    amount: toSats(result.paymentDetails.amount),
-  },
+  paymentDetails: result.paymentDetails,
+  attempts: result.attempts,
 })

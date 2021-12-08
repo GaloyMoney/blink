@@ -61,26 +61,32 @@ type LnInvoiceLookup = {
 type GetPaymentResult = import("lightning").GetPaymentResult
 type RawPaths = NonNullable<GetPaymentResult["payment"]>["paths"]
 
+type GetPaymentsResults = import("lightning").GetPaymentsResult
+type LnPaymentAttempt = GetPaymentsResults["payments"][number]["attempts"][number]
+
+type LnPaymentDetails = {
+  readonly confirmedAt: Date | undefined
+  readonly destination: Pubkey
+  readonly milliSatsFee: MilliSatoshis | undefined
+  readonly milliSatsAmount: MilliSatoshis
+  readonly roundedUpFee: Satoshis | undefined
+  readonly secret: PaymentSecret | undefined
+  readonly amount: Satoshis
+}
+
 type LnPaymentLookup = {
   createdAt: Date | undefined
   status: PaymentStatus
-  paymentRequest: EncodedPaymentRequest | undefined
   paymentHash: PaymentHash
-  paymentDetails:
-    | {
-        readonly confirmedAt: Date | undefined
-        readonly destination: Pubkey
-        readonly milliSatsFee: MilliSatoshis | undefined
-        readonly milliSatsAmount: MilliSatoshis
-        readonly paths: RawPaths
-        readonly roundedUpFee: Satoshis | undefined
-        readonly secret: PaymentSecret | undefined
-        readonly amount: Satoshis
-      }
-    | undefined
+  paymentRequest: EncodedPaymentRequest | undefined
+  paymentDetails: LnPaymentDetails | undefined
+  attempts: LnPaymentAttempt[]
 }
 
-type LnPayment = LnPaymentLookup & { id: PaymentLedgerId }
+type LnPayment = LnPaymentLookup & {
+  id: PaymentLedgerId
+  isCompleteRecord: boolean
+}
 
 type LnInvoice = {
   readonly destination: Pubkey

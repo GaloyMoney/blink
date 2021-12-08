@@ -436,11 +436,11 @@ const lookupPaymentByPubkeyAndHash = async ({
         destination: "" as Pubkey,
         milliSatsFee: toMilliSatsFromNumber(0),
         milliSatsAmount: toMilliSatsFromNumber(0),
-        paths: [],
         roundedUpFee: toSats(0),
         secret: "" as PaymentSecret,
         amount: toSats(0),
       },
+      attempts: [],
     }
 
     if (payment) {
@@ -454,11 +454,11 @@ const lookupPaymentByPubkeyAndHash = async ({
           destination: payment.destination as Pubkey,
           milliSatsFee: toMilliSatsFromString(payment.fee_mtokens),
           milliSatsAmount: toMilliSatsFromString(payment.mtokens),
-          paths: payment.paths || [],
           roundedUpFee: toSats(payment.safe_fee),
           secret: payment.secret as PaymentSecret,
           amount: toSats(payment.tokens),
         },
+        attempts: [],
       }
     } else if (pending) {
       paymentLookup = {
@@ -471,11 +471,11 @@ const lookupPaymentByPubkeyAndHash = async ({
           destination: pending.destination as Pubkey,
           milliSatsFee: undefined,
           milliSatsAmount: toMilliSatsFromString(pending.mtokens),
-          paths: pending.paths || [],
           roundedUpFee: undefined,
           secret: pending.secret as PaymentSecret,
           amount: toSats(pending.tokens),
         },
+        attempts: [],
       }
     }
 
