@@ -382,6 +382,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }
 
   return {
+    defaultLnd: (): AuthenticatedLnd => lndAuth,
     isLocal,
     defaultPubkey: (): Pubkey => defaultPubkey,
     findRouteForInvoice,

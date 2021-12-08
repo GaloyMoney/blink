@@ -123,6 +123,7 @@ type PayInvoiceResult = {
 }
 
 interface ILightningService {
+  defaultLnd(): AuthenticatedLnd
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
 
   defaultPubkey(): Pubkey

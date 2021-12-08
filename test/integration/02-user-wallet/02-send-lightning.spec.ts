@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "crypto"
 import { getUserLimits } from "@config/app"
-import { getActiveLnd, getInvoiceAttempt } from "@services/lnd/utils"
+import { getActiveLnd, getInvoiceAttempt, getLndFromPubkey } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { InvoiceUser } from "@services/mongoose/schema"
 import { getHash, sleep } from "@core/utils"
@@ -19,6 +19,9 @@ import {
   settleHodlInvoice,
   waitFor,
   waitUntilChannelBalanceSyncAll,
+  openChannelTesting,
+  lnd1,
+  lnd2,
 } from "test/helpers"
 import * as Wallets from "@app/wallets"
 import { addInvoice } from "@app/wallets/add-invoice-for-wallet"
@@ -49,6 +52,10 @@ import {
 } from "@domain/bitcoin/lightning"
 import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 import { LndService } from "@services/lnd"
+
+import { getChannels } from "ln-service"
+import { payViaPaymentRequest, getPayments, getFailedPayments } from "lightning"
+import fs from "fs"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -81,6 +88,68 @@ afterAll(() => {
 })
 
 describe("UserWallet - Lightning Pay", () => {
+  const lndService = LndService()
+  if (lndService instanceof Error) return lndService
+
+  it.skip("open channel", async () => {
+    let { channels } = await getChannels({ lnd: lndService.defaultLnd() })
+    console.log(channels.map((chan) => chan.partner_public_key))
+    const socket = `lnd2:9735`
+    await openChannelTesting({
+      lnd: lnd1,
+      lndPartner: lnd2,
+      socket,
+    })
+    ;({ channels } = await getChannels({ lnd: lndService.defaultLnd() }))
+    console.log(channels.map((chan) => chan.partner_public_key))
+  })
+
+  it.skip("Do MPP", async () => {
+    const lnd = lndService.defaultLnd()
+
+    const target = getLndFromPubkey({
+      pubkey: "0206dae1a325e80b3741a12ee61ed5ffc9333f535b06b20f831e7fc855f86cccdb",
+    })
+    console.log(!!target.lnd)
+    // const { request } = await createInvoice({ tokens: 1_200_000, lnd: target.lnd })
+    // console.log(request)
+    const request =
+      "lnbcrt12m1psupm77pp5wg6k0u78qd6xsgkhcasggtfdd7knlxxaws62s9kmxfp5w0mqyldsdqqcqzpuxqr23ssp54z0s6x69naeksge8qfqj2fql90y6ahd5s000f8j0hsgeg0f0f42s9qyyssqd82aed4u2escmwd6rsv5unf42pr2jvadsrpxnqn8dsdt9kggetasgx6f4s97pjglhp7p99fjajcsd460nqgvstwpfcn82cvxnny7ksqq2vgdtw"
+    const result = await payViaPaymentRequest({
+      lnd,
+      request,
+      max_paths: 2,
+    })
+    console.log(result)
+  })
+
+  it.skip("get payments", async () => {
+    const lnd = lndService.defaultLnd()
+
+    // const target = getLndFromPubkey({
+    //   pubkey: "02a84020ed99619f3a467dc04cd3fae7aff7216f5681dd55bb20a2381ae216bfab",
+    // })
+
+    const { payments: failedPayments } = await getFailedPayments({ lnd })
+    const { payments } = await getPayments({ lnd })
+    // console.log(payments)
+    fs.writeFile("dump.json", JSON.stringify(payments, null, 2), (err) => {
+      if (err) return
+    })
+    fs.writeFile("dump_failed.json", JSON.stringify(failedPayments, null, 2), (err) => {
+      if (err) return
+    })
+
+    // const id = "face7093e779523e4b7594cb02aa6a3a5e9ab2fd90d7d2ead89de796c388ea2c"
+    // const destination =
+    //   "025e2abda7cddceacb8c7820a1064930e3cc406c228448966c3c7045b45e154ff1"
+    // const paymentsFiltered = payments.filter((p) => p.destination == destination)
+    // for (const attempt of payments[0]?.attempts || []) {
+    // }
+  })
+
+  // ===================================
+
   it("sends to another Galoy user with memo", async () => {
     const memo = "invoiceMemo"
 

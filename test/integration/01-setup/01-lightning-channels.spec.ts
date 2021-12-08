@@ -36,6 +36,14 @@ afterEach(async () => {
 // lnd2 <- lnd1 -> lndOutside2
 // this setup avoids close channels for routing fees tests
 describe("Lightning channels", () => {
+  // it.only("", async () => {
+  //   const socket = `lnd2:9735`
+  //   const { lndNewChannel: channel } = await openChannelTesting({
+  //     lnd: lnd1,
+  //     lndPartner: lnd2,
+  //     socket,
+  //   })
+  // })
   it("opens channel from lnd1 to lnd2", async () => {
     const socket = `lnd2:9735`
     const { lndNewChannel: channel } = await openChannelTesting({
