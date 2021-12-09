@@ -31,15 +31,14 @@ export const createOnChainAddress = async (
   return savedOnChainAddress.address
 }
 
-const onChainAddressCreateAttempt = getOnChainAddressCreateAttemptLimits()
-const limiterOnChainAddressCreateAttempt = RedisRateLimitService({
-  keyPrefix: RateLimitPrefix.onChainAddressCreate,
-  limitOptions: onChainAddressCreateAttempt,
-})
-
 const checkOnChainAddressWalletIdLimits = async (
   walletId: WalletId,
 ): Promise<true | RateLimiterExceededError> => {
+  const onChainAddressCreateAttempt = getOnChainAddressCreateAttemptLimits()
+  const limiterOnChainAddressCreateAttempt = RedisRateLimitService({
+    keyPrefix: RateLimitPrefix.onChainAddressCreate,
+    limitOptions: onChainAddressCreateAttempt,
+  })
   const limitOk = await limiterOnChainAddressCreateAttempt.consume(walletId)
   if (limitOk instanceof RateLimiterExceededError)
     return new OnChainAddressCreateRateLimiterExceededError()

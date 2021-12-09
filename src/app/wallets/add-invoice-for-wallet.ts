@@ -145,26 +145,25 @@ export const registerAndPersistInvoice = async ({
   return invoice
 }
 
-const invoiceCreateAttemptLimits = getInvoiceCreateAttemptLimits()
-const limiterInvoiceCreateAttemptLimits = RedisRateLimitService({
-  keyPrefix: RateLimitPrefix.invoiceCreate,
-  limitOptions: invoiceCreateAttemptLimits,
-})
-
 export const checkSelfWalletIdRateLimits = async (
   walletId: WalletId,
 ): Promise<true | RateLimiterExceededError> => {
+  const invoiceCreateAttemptLimits = getInvoiceCreateAttemptLimits()
+  const limiterInvoiceCreateAttemptLimits = RedisRateLimitService({
+    keyPrefix: RateLimitPrefix.invoiceCreate,
+    limitOptions: invoiceCreateAttemptLimits,
+  })
   return limiterInvoiceCreateAttemptLimits.consume(walletId)
 }
-
-const invoiceCreateForRecipientAttemptLimits = getInvoiceCreateForRecipientAttemptLimits()
-const limiterInvoiceCreateForRecipient = RedisRateLimitService({
-  keyPrefix: RateLimitPrefix.invoiceCreateForRecipient,
-  limitOptions: invoiceCreateForRecipientAttemptLimits,
-})
 
 export const checkRecipientWalletIdRateLimits = async (
   walletId: WalletId,
 ): Promise<true | RateLimiterExceededError> => {
+  const invoiceCreateForRecipientAttemptLimits =
+    getInvoiceCreateForRecipientAttemptLimits()
+  const limiterInvoiceCreateForRecipient = RedisRateLimitService({
+    keyPrefix: RateLimitPrefix.invoiceCreateForRecipient,
+    limitOptions: invoiceCreateForRecipientAttemptLimits,
+  })
   return limiterInvoiceCreateForRecipient.consume(walletId)
 }
