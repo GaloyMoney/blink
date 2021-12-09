@@ -32,6 +32,7 @@ export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
 
 export class ValidationError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
+export class InvalidScanDepthAmount extends ValidationError {}
 export class SatoshiAmountRequiredError extends ValidationError {}
 export class InvalidUsername extends ValidationError {}
 export class InvalidCoordinatesError extends ValidationError {}

@@ -1,7 +1,7 @@
 import {
   getGaloyInstanceName,
   MS_PER_DAY,
-  ONCHAIN_LOOK_BACK_CHANNEL_UPDATE,
+  ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE,
 } from "@config/app"
 import { DbError, LndOfflineError, ValidationInternalError } from "@core/error"
 import { LoggedError } from "@core/utils"
@@ -291,7 +291,7 @@ export const onChannelUpdated = async ({
 
   // TODO: dedupe from onchain
   const { current_block_height } = await getHeight({ lnd })
-  const after = Math.max(0, current_block_height - ONCHAIN_LOOK_BACK_CHANNEL_UPDATE) // this is necessary for tests, otherwise after may be negative
+  const after = Math.max(0, current_block_height - ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE) // this is necessary for tests, otherwise after may be negative
   const { transactions } = await getChainTransactions({ lnd, after })
   // end dedupe
 
