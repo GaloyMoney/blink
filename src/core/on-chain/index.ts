@@ -7,12 +7,12 @@ import {
   checkWithdrawalLimits,
 } from "@app/wallets/check-limit-helpers"
 import { BTC_NETWORK, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config/app"
-import { toSats } from "@domain/bitcoin"
-import { TxDecoder } from "@domain/bitcoin/onchain"
+import { checkedToTargetConfs, toSats, toTargetConfs } from "@domain/bitcoin"
+import { checkedToOnChainAddress, TxDecoder } from "@domain/bitcoin/onchain"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
+import { WithdrawalFeeCalculator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { getActiveOnchainLnd } from "@services/lnd/utils"
 import { LockService } from "@services/lock"
 import { ledger } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
@@ -261,7 +261,7 @@ export const OnChainMixin = (superclass) =>
         const targetConfs = getTargetConfirmations()
 
         const estimatedFee = await Wallets.getOnChainFeeByWalletId({
-          walletId: this.user.id,
+          walletId: this.user.walletId,
           amount: checksAmount,
           address: checkedAddress,
           targetConfirmations: targetConfs,

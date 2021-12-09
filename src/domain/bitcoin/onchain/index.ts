@@ -26,7 +26,7 @@ export const checkedToScanDepth = (value: number): ScanDepth | ValidationError =
   return new InvalidScanDepthAmount()
 }
 
-export const BaseOnChainTransaction = ({
+export const IncomingOnChainTransaction = ({
   confirmations,
   rawTx,
   fee,
@@ -36,7 +36,7 @@ export const BaseOnChainTransaction = ({
   rawTx: OnChainTransaction
   fee: Satoshis
   createdAt: Date
-}): BaseOnChainTransaction => ({
+}): IncomingOnChainTransaction => ({
   confirmations,
   rawTx,
   fee,
@@ -48,24 +48,6 @@ export const BaseOnChainTransaction = ({
     }, []),
 })
 
-export const IncomingOnChainTransaction = ({
-  confirmations,
-  rawTx,
-  fee,
-  createdAt,
-}: {
-  confirmations: number
-  rawTx: OnChainTransaction
-  fee: Satoshis
-  createdAt: Date
-}): IncomingOnChainTransaction =>
-  BaseOnChainTransaction({
-    confirmations,
-    rawTx,
-    fee,
-    createdAt,
-  })
-
 export const OutgoingOnChainTransaction = ({
   confirmations,
   rawTx,
@@ -76,10 +58,14 @@ export const OutgoingOnChainTransaction = ({
   rawTx: OnChainTransaction
   fee: Satoshis
   createdAt: Date
-}): OutgoingOnChainTransaction =>
-  BaseOnChainTransaction({
-    confirmations,
-    rawTx,
-    fee,
-    createdAt,
-  })
+}): OutgoingOnChainTransaction => ({
+  confirmations,
+  rawTx,
+  fee,
+  createdAt,
+  uniqueAddresses: () =>
+    rawTx.outs.reduce<OnChainAddress[]>((a: OnChainAddress[], o: TxOut) => {
+      if (o.address && !a.includes(o.address)) a.push(o.address)
+      return a
+    }, []),
+})

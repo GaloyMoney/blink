@@ -17,7 +17,7 @@ type OnChainTransaction = {
   outs: TxOut[]
 }
 
-type BaseOnChainTransaction = {
+type IncomingOnChainTransaction = {
   confirmations: number
   rawTx: OnChainTransaction
   fee: Satoshis
@@ -25,8 +25,13 @@ type BaseOnChainTransaction = {
   uniqueAddresses: () => OnChainAddress[]
 }
 
-type IncomingOnChainTransaction = BaseOnChainTransaction
-type OutgoingOnChainTransaction = BaseOnChainTransaction
+type OutgoingOnChainTransaction = {
+  confirmations: number
+  rawTx: OnChainTransaction
+  fee: Satoshis
+  createdAt: Date
+  uniqueAddresses: () => OnChainAddress[]
+}
 
 type TxDecoder = {
   decode(txHex: string): OnChainTransaction
