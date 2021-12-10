@@ -33,23 +33,29 @@ module.exports = {
     // TODO: remove any pending invoices
     // maybe reduce invoice time to 1h and then 1 min ahead of migration?
 
-    const users = db
-      .collection("users")
-      .aggregate([{ $group: { _id: "$_id" } }], { cursor: { batchSize: 100 } })
+    const users = db.collection("users").find(
+      {},
+      {
+        _id: 1,
+        walletId: 1,
+      },
+    )
 
     let progress = 0
     for await (const user of users) {
       progress++
 
-      await db.collection("medici_transactions").updateMany(
-        { account_path: user.id },
-        {
-          $set: {
-            account_path: ["Liabilities", user.walletId],
-            accounts: `Liabilities:${user.walletId}`,
-          },
+      const walletId = user.walletId
+      const userId = user._id
+
+      const condition = { account_path: String(userId) }
+
+      await db.collection("medici_transactions").updateMany(condition, {
+        $set: {
+          account_path: ["Liabilities", walletId],
+          accounts: `Liabilities:${walletId}`,
         },
-      )
+      })
       if (progress % 1000 === 0) {
         console.log(`${progress} users updated`)
       }
