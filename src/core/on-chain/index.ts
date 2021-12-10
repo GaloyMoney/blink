@@ -169,7 +169,7 @@ export const OnChainMixin = (superclass) =>
                 usdFee,
                 payeeAddresses: [address as OnChainAddress],
                 sendAll,
-                recipientLiabilitiesAccountId: toLiabilitiesWalletId(payeeUser.walletId),
+                recipientLiabilitiesWalletId: toLiabilitiesWalletId(payeeUser.walletId),
                 payerUsername: this.user.username,
                 recipientUsername: payeeUser.username,
                 memoPayer: memo || null,

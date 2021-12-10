@@ -392,7 +392,7 @@ const executePaymentViaIntraledger = async ({
         fee: lnFee,
         usd,
         usdFee,
-        recipientLiabilitiesAccountId: toLiabilitiesWalletId(recipientWalletId),
+        recipientLiabilitiesWalletId: toLiabilitiesWalletId(recipientWalletId),
         pubkey: lndService.defaultPubkey(),
         payerUsername,
         recipientUsername: null,

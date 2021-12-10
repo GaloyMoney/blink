@@ -91,7 +91,7 @@ type IntraledgerTxArgs = {
   liabilitiesWalletId: LiabilitiesWalletId
   description: string
   sats: Satoshis
-  recipientLiabilitiesAccountId: LiabilitiesWalletId | null
+  recipientLiabilitiesWalletId: LiabilitiesWalletId | null
   payerUsername: Username | null
   recipientUsername: Username | null
   memoPayer: string | null

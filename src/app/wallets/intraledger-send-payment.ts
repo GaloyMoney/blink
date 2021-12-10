@@ -165,6 +165,7 @@ const executePaymentViaIntraledger = async ({
   if (recipientUser instanceof Error) return recipientUser
   if (recipientUser.id === userId) return new SelfPaymentError()
   // FIXME: selfPayment should be at the walletId level, no longer at the UserId
+  // but this is not a bloquer until we have multiple wallets per account
 
   const recipientAccount = await AccountsRepository().findById(
     recipientUser.defaultAccountId,
@@ -206,7 +207,7 @@ const executePaymentViaIntraledger = async ({
         fee: lnFee,
         usd,
         usdFee,
-        recipientLiabilitiesAccountId: toLiabilitiesWalletId(recipientWalletId),
+        recipientLiabilitiesWalletId: toLiabilitiesWalletId(recipientWalletId),
         payerUsername: username,
         recipientUsername,
         memoPayer,
