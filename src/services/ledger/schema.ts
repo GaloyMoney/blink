@@ -159,6 +159,8 @@ transactionSchema.index({
   "book": 1,
   "approved": 1,
 })
+// TODO: look at if this one is still needed. maybe we only have 2 levels now?
+// following this refactoring: https://github.com/GaloyMoney/galoy/pull/377
 transactionSchema.index({
   "account_path.0": 1,
   "account_path.1": 1,
