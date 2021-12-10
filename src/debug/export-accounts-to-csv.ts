@@ -39,7 +39,7 @@ const exportAllUserLedger = async () => {
   const csv = new CSVAccountExport()
 
   for await (const user of User.find({})) {
-    await csv.addAccount({ account: ledger.accountPath(user._id) })
+    await csv.addAccount({ account: ledger.walletPath(user.walletId) })
   }
 
   await csv.saveToDisk()
@@ -101,14 +101,14 @@ const exportUsers = async () => {
     }
 
     for (const currency of ["USD", "BTC"]) {
-      record[`balance${currency}`] = await ledger.getAccountBalance(user.accountPath, {
+      record[`balance${currency}`] = await ledger.getAccountBalance(user.walletPath, {
         currency,
       })
     }
 
     try {
       const { totalDebit, totalCredit, countTxs } = _.find(aggregateTxs, {
-        _id: user.accountPath,
+        _id: user.walletPath,
       })
       record["totalDebit"] = totalDebit
       record["totalCredit"] = totalCredit

@@ -11,7 +11,7 @@ let userWallet0: Wallet, userWallet1: Wallet
 
 const getWallet = async (testWallet: number): Promise<Wallet> => {
   const userWallet = await getAndCreateUserWallet(testWallet)
-  const wallet = await Wallets.getWallet(userWallet.user.id)
+  const wallet = await Wallets.getWallet(userWallet.user.walletId)
   if (wallet instanceof Error) throw wallet
   return wallet
 }

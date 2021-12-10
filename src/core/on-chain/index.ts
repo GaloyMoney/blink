@@ -1,10 +1,25 @@
+import { getCurrentPrice } from "@app/prices"
+import * as Wallets from "@app/wallets"
+import {
+  checkAndVerifyTwoFA,
+  checkIntraledgerLimits,
+  checkWithdrawalLimits,
+} from "@app/wallets/check-limit-helpers"
+import { BTC_NETWORK, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config/app"
+import { toSats } from "@domain/bitcoin"
+import { TxDecoder } from "@domain/bitcoin/onchain"
+import { toLiabilitiesWalletId } from "@domain/ledger"
+import { TwoFANewCodeNeededError } from "@domain/twoFA"
+import { LedgerService } from "@services/ledger"
+import { OnChainService } from "@services/lnd/onchain-service"
+import { getActiveOnchainLnd } from "@services/lnd/utils"
+import { LockService } from "@services/lock"
+import { ledger } from "@services/mongodb"
+import { UsersRepository, WalletsRepository } from "@services/mongoose"
+import { User } from "@services/mongoose/schema"
+import { NotificationsService } from "@services/notifications"
 import assert from "assert"
 import { getChainBalance, getChainFeeEstimate, sendToChainAddress } from "lightning"
-
-import { getActiveOnchainLnd } from "@services/lnd/utils"
-import { ledger } from "@services/mongodb"
-import { User } from "@services/mongoose/schema"
-
 import {
   DustAmountError,
   InsufficientBalanceError,
@@ -18,24 +33,6 @@ import {
 import { redlock } from "../lock"
 import { UserWallet } from "../user-wallet"
 import { LoggedError } from "../utils"
-import { BTC_NETWORK, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config/app"
-import * as Wallets from "@app/wallets"
-import { toSats } from "@domain/bitcoin"
-import { UsersRepository, WalletsRepository } from "@services/mongoose"
-import { CouldNotFindError } from "@domain/errors"
-import { LedgerService } from "@services/ledger"
-import { toLiabilitiesWalletId } from "@domain/ledger"
-import { LockService } from "@services/lock"
-import {
-  checkAndVerifyTwoFA,
-  checkIntraledgerLimits,
-  checkWithdrawalLimits,
-} from "@app/wallets/check-limit-helpers"
-import { TwoFANewCodeNeededError } from "@domain/twoFA"
-import { getCurrentPrice } from "@app/prices"
-import { NotificationsService } from "@services/notifications"
-import { OnChainService } from "@services/lnd/onchain-service"
-import { TxDecoder } from "@domain/bitcoin/onchain"
 
 export const OnChainMixin = (superclass) =>
   class extends superclass {
@@ -80,7 +77,8 @@ export const OnChainMixin = (superclass) =>
         /// TODO: unable to check balanceSats vs this.dustThreshold at this point...
       }
 
-      return redlock({ path: this.user._id, logger: onchainLogger }, async (lock) => {
+      const walletId_ = this.user.walletId // FIXME: just set this variable for easier code review. long variable would trigger adding a tab and much bigger diff
+      return redlock({ path: walletId_, logger: onchainLogger }, async (lock) => {
         const balanceSats = await Wallets.getBalanceForWallet({
           walletId: this.user.walletId,
           logger: onchainLogger,
@@ -155,10 +153,8 @@ export const OnChainMixin = (superclass) =>
           const usdFee = onChainFee * price
 
           const payerWallet = await WalletsRepository().findById(this.user.walletId)
-          if (payerWallet instanceof CouldNotFindError) throw payerWallet
           if (payerWallet instanceof Error) throw payerWallet
           const recipientWallet = await WalletsRepository().findById(payeeUser.walletId)
-          if (recipientWallet instanceof CouldNotFindError) throw recipientWallet
           if (recipientWallet instanceof Error) throw recipientWallet
 
           const journal = await LockService().extendLock(
@@ -363,7 +359,7 @@ export const OnChainMixin = (superclass) =>
               description: memo,
               sats,
               fee: this.user.withdrawFee,
-              account: this.user.accountPath,
+              walletPath: this.user.walletPath,
               metadata,
             })
 

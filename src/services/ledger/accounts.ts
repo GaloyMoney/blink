@@ -9,12 +9,12 @@ export const escrowAccountingPath = `${assetsMainAccount}:Reserve:Escrow` // TOD
 
 // liabilities
 export const liabilitiesMainAccount = "Liabilities"
-export const accountPath = (uid) => `${liabilitiesMainAccount}:${uid}`
-export const resolveWalletId = (walletPath: string | string[]) => {
+export const walletPath = (walletId) => `${liabilitiesMainAccount}:${walletId}`
+export const resolveWalletId = (walletPath: string | string[]): WalletId | null => {
   let id: string | null = null
 
   if (!walletPath) {
-    return id
+    return null
   }
 
   let path = walletPath
@@ -32,7 +32,8 @@ export const resolveWalletId = (walletPath: string | string[]) => {
     id = path[1]
   }
 
-  return id
+  // TODO: add check for WalletId syntax validity
+  return id as WalletId
 }
 
 let cacheDealerPath: string
@@ -56,7 +57,7 @@ export const dealerAccountPath = async () => {
   }
 
   const dealerId = await dealerResolver()
-  cacheDealerPath = accountPath(dealerId)
+  cacheDealerPath = walletPath(dealerId)
   return cacheDealerPath
 }
 
@@ -66,6 +67,6 @@ export const bankOwnerAccountPath = async () => {
   }
 
   const bankOwnerId = await bankOwnerResolver()
-  cachebankOwnerPath = accountPath(bankOwnerId)
+  cachebankOwnerPath = walletPath(bankOwnerId)
   return cachebankOwnerPath
 }

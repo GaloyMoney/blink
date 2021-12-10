@@ -78,7 +78,7 @@ interface UserType {
   // virtual:
   ratioUsd: number
   ratioBtc: number
-  accountPath: string
+  walletPath: string
   oldEnoughForWithdrawal: boolean
 
   // methods

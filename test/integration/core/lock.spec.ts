@@ -3,11 +3,11 @@ import { sleep } from "@core/utils"
 import { baseLogger } from "@services/logger"
 import { redlock, getResource, lockExtendOrThrow } from "@core/lock"
 
-const uid = "1234"
+const walletId = "1234"
 
 const checkLockExist = (client) =>
   new Promise((resolve) =>
-    client.get(getResource(uid), (err, res) => {
+    client.get(getResource(walletId), (err, res) => {
       resolve(!!res)
     }),
   )
@@ -15,7 +15,7 @@ const checkLockExist = (client) =>
 describe("Lock", () => {
   describe("redlock", () => {
     it("return value is passed with a promise", async () => {
-      const result = await redlock({ path: uid, logger: baseLogger }, () => {
+      const result = await redlock({ path: walletId, logger: baseLogger }, () => {
         return "r"
       })
 
@@ -23,8 +23,8 @@ describe("Lock", () => {
     })
 
     it("use lock if this exist", async () => {
-      const result = await redlock({ path: uid, logger: baseLogger }, (lock) => {
-        return redlock({ path: uid, logger: baseLogger, lock }, () => {
+      const result = await redlock({ path: walletId, logger: baseLogger }, (lock) => {
+        return redlock({ path: walletId, logger: baseLogger, lock }, () => {
           return "r"
         })
       })
@@ -34,8 +34,8 @@ describe("Lock", () => {
 
     it("relocking fail if lock is not passed down the tree", async () => {
       await expect(
-        redlock({ path: uid, logger: baseLogger }, async function () {
-          return redlock({ path: uid, logger: baseLogger }, () => {
+        redlock({ path: walletId, logger: baseLogger }, async function () {
+          return redlock({ path: walletId, logger: baseLogger }, () => {
             return "r"
           })
         }),
@@ -46,12 +46,12 @@ describe("Lock", () => {
       const order: number[] = []
 
       await Promise.all([
-        redlock({ path: uid, logger: baseLogger }, async function () {
+        redlock({ path: walletId, logger: baseLogger }, async function () {
           order.push(1)
           await sleep(1000)
           order.push(2)
         }),
-        redlock({ path: uid, logger: baseLogger }, async function () {
+        redlock({ path: walletId, logger: baseLogger }, async function () {
           order.push(3)
           await sleep(1000)
           order.push(4)
@@ -63,7 +63,7 @@ describe("Lock", () => {
 
     it("throwing error releases the lock", async () => {
       try {
-        await redlock({ path: uid, logger: baseLogger }, async function () {
+        await redlock({ path: walletId, logger: baseLogger }, async function () {
           expect(await checkLockExist(redis)).toBeTruthy()
           await sleep(500)
           throw Error("dummy error")
@@ -78,7 +78,7 @@ describe("Lock", () => {
 
   describe("lockExtendOrThrow", () => {
     it("fail to extend after the lock timed out", async () => {
-      await redlock({ path: uid, logger: baseLogger }, async function (lock) {
+      await redlock({ path: walletId, logger: baseLogger }, async function (lock) {
         await sleep(11000)
 
         try {
@@ -94,7 +94,7 @@ describe("Lock", () => {
     })
 
     it("can extend before the lock timed out", async () => {
-      await redlock({ path: uid, logger: baseLogger }, async function (lock) {
+      await redlock({ path: walletId, logger: baseLogger }, async function (lock) {
         await sleep(100)
 
         const promise = lockExtendOrThrow({ lock, logger: baseLogger }, () => {
@@ -110,7 +110,7 @@ describe("Lock", () => {
 
     it("if lock has expired and another thread has take it, it should not extend", async () => {
       await Promise.race([
-        redlock({ path: uid, logger: baseLogger }, async function (lock) {
+        redlock({ path: walletId, logger: baseLogger }, async function (lock) {
           await sleep(12000)
           // lock should have expired at that point
 
@@ -127,7 +127,7 @@ describe("Lock", () => {
         new Promise(async (accept) => {
           // first lock should have expired
           await sleep(10500)
-          await redlock({ path: uid, logger: baseLogger }, async function () {
+          await redlock({ path: walletId, logger: baseLogger }, async function () {
             expect(await checkLockExist(redis)).toBeTruthy()
             expect(true).toBeTruthy()
             await sleep(2000)

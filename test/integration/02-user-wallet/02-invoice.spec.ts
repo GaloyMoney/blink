@@ -95,17 +95,16 @@ describe("UserWallet - addInvoice", () => {
     return testPastSelfInvoiceLimits(userWallet1.user)
   })
 
-  // FIXME: remove the skip
-  it.skip("adds a public invoice", async () => {
-    // const lnInvoice = await addInvoiceNoAmountForRecipient({
-    //   recipientWalletId: "user1",
-    // })
-    // if (lnInvoice instanceof Error) return lnInvoice
-    // const { paymentRequest: request } = lnInvoice
-    // expect(request.startsWith("lnbcrt1")).toBeTruthy()
-    // const { uid, selfGenerated } = await InvoiceUser.findById(getHash(request))
-    // expect(String(uid)).toBe(String(userWallet1.user._id))
-    // expect(selfGenerated).toBe(false)
+  it("adds a public invoice", async () => {
+    const lnInvoice = await addInvoiceNoAmountForRecipient({
+      recipientWalletId: userWallet1.user.walletId,
+    })
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentRequest: request } = lnInvoice
+    expect(request.startsWith("lnbcrt1")).toBeTruthy()
+    const { walletId, selfGenerated } = await InvoiceUser.findById(getHash(request))
+    expect(String(walletId)).toBe(String(userWallet1.user.walletId))
+    expect(selfGenerated).toBe(false)
   })
 
   it("fails to add public invoice past rate limit", async () => {

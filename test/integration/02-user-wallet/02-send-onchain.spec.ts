@@ -59,7 +59,6 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   initialBalanceUser0 = await getBTCBalance(userWallet0.user.walletId)
-  baseLogger.warn({ initialBalanceUser0 })
 })
 
 afterEach(async () => {
@@ -75,7 +74,7 @@ const amount = 10040 // sats
 const targetConfirmations = toTargetConfs(1)
 
 describe("UserWallet - onChainPay", () => {
-  it.only("sends a successful payment", async () => {
+  it("sends a successful payment", async () => {
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
     const sub = subscribeToTransactions({ lnd: lndonchain })
@@ -97,13 +96,9 @@ describe("UserWallet - onChainPay", () => {
     // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
     const {
       results: [pendingTxn],
-    } = await ledger.getAccountTransactions(userWallet0.accountPath, { pending: true })
+    } = await ledger.getAccountTransactions(userWallet0.walletPath, { pending: true })
 
     const interimBalance = await getBTCBalance(userWallet0.user.walletId)
-    baseLogger.warn(
-      { interimBalance, initialBalanceUser0, amount, fee: pendingTxn.fee },
-      "interimBalance",
-    )
     expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
     await checkIsBalanced()
 
@@ -141,7 +136,7 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet0.accountPath, {
+    } = await ledger.getAccountTransactions(userWallet0.walletPath, {
       hash: pendingTxn.hash,
     })
     const feeRates = getFeeRates()
@@ -195,7 +190,7 @@ describe("UserWallet - onChainPay", () => {
     // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
     const {
       results: [pendingTxn],
-    } = await ledger.getAccountTransactions(userWallet11.accountPath, { pending: true })
+    } = await ledger.getAccountTransactions(userWallet11.walletPath, { pending: true })
 
     const interimBalance = await getBTCBalance(userWallet11.user.walletId)
     expect(interimBalance).toBe(0)
@@ -235,7 +230,7 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet11.accountPath, {
+    } = await ledger.getAccountTransactions(userWallet11.walletPath, {
       hash: pendingTxn.hash,
     })
     const feeRates = getFeeRates()
@@ -306,7 +301,7 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet0.accountPath, {
+    } = await ledger.getAccountTransactions(userWallet0.walletPath, {
       type: "onchain_on_us",
     })
 
@@ -381,7 +376,7 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet12.accountPath, {
+    } = await ledger.getAccountTransactions(userWallet12.walletPath, {
       type: "onchain_on_us",
     })
 
@@ -455,7 +450,7 @@ describe("UserWallet - onChainPay", () => {
     const [result] = await Transaction.aggregate([
       {
         $match: {
-          accounts: userWallet0.accountPath,
+          accounts: userWallet0.walletPath,
           type: { $ne: "on_us" },
           timestamp: { $gte: timestampYesterday },
         },
