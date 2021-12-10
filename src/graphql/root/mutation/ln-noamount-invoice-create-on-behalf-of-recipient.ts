@@ -29,7 +29,7 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     }
 
     const result = await addInvoiceNoAmountForRecipient({
-      recipientWalletId: recipientWalletId,
+      recipientWalletId,
       memo,
     })
 
