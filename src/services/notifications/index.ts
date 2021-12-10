@@ -105,7 +105,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   }: LnInvoicePaidArgs) => {
     try {
       // work around to move forward before re-wrighting the whole notifications module
-      const user = await User.findOne({ walletId: recipientWalletId })
+      const user: UserType = await User.findOne({ walletId: recipientWalletId })
 
       // Do not await this call for quicker processing
       transactionNotification({

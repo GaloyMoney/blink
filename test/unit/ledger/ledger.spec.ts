@@ -1,12 +1,12 @@
 import { ledger } from "@services/mongodb"
 
-const { accountPath, liabilitiesMainAccount, resolveWalletId } = ledger
+const { walletPath, liabilitiesMainAccount, resolveWalletId } = ledger
 
 describe("ledger.ts", () => {
   describe("resolveWalletId", () => {
     const accountId = "123542"
     it("returns account id from string path", () => {
-      expect(resolveWalletId(accountPath(accountId))).toEqual(accountId)
+      expect(resolveWalletId(walletPath(accountId))).toEqual(accountId)
     })
 
     it("returns account id from array path", () => {
