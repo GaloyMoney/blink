@@ -91,6 +91,11 @@ registerInstrumentations({
   instrumentations: [
     new HttpInstrumentation({
       ignoreIncomingPaths: ["/healthz"],
+      headersToSpanAttributes: {
+        server: {
+          requestHeaders: ["apollographql-client-name", "apollographql-client-version"],
+        },
+      },
     }),
     new GraphQLInstrumentation({
       mergeItems: true,
