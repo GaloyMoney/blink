@@ -1,6 +1,11 @@
 import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LedgerService } from "@services/ledger"
 import * as Wallets from "@app/wallets"
+import {
+  asyncRunInSpan,
+  ENDUSER_ACCOUNT_WALLETID,
+  SemanticAttributes,
+} from "@services/tracing"
 
 export const getBalanceForWallet = async ({
   walletId,
@@ -10,23 +15,31 @@ export const getBalanceForWallet = async ({
   walletId: WalletId
   lock?: DistributedLock
   logger: Logger
-}): Promise<Satoshis | ApplicationError> => {
-  const [, updatePaymentsResult] = await Promise.all([
-    Wallets.updatePendingInvoices({
-      walletId: walletId,
-      lock,
-      logger,
-    }),
-    Wallets.updatePendingPayments({
-      walletId: walletId,
-      lock,
-      logger,
-    }),
-  ])
-  if (updatePaymentsResult instanceof Error) throw updatePaymentsResult
+}): Promise<Satoshis | ApplicationError> =>
+  asyncRunInSpan(
+    "app.getBalanceForWallet",
+    {
+      [SemanticAttributes.CODE_FUNCTION]: "getBalanceForWallet",
+      [ENDUSER_ACCOUNT_WALLETID]: walletId,
+    },
+    async () => {
+      const [, updatePaymentsResult] = await Promise.all([
+        Wallets.updatePendingInvoices({
+          walletId: walletId,
+          lock,
+          logger,
+        }),
+        Wallets.updatePendingPayments({
+          walletId: walletId,
+          lock,
+          logger,
+        }),
+      ])
+      if (updatePaymentsResult instanceof Error) throw updatePaymentsResult
 
-  return getBalanceForWalletId(walletId)
-}
+      return getBalanceForWalletId(walletId)
+    },
+  )
 
 export const getBalanceForWalletId = async (
   walletId: WalletId,

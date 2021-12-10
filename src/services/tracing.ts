@@ -187,3 +187,4 @@ export const addAttributesToCurrentSpanAndPropagate = <F extends () => ReturnTyp
 export { SemanticAttributes, SemanticResourceAttributes }
 
 export const ENDUSER_ALIAS = "enduser.alias"
+export const ENDUSER_ACCOUNT_WALLETID = "enduser.account.walletId"
