@@ -1,21 +1,6 @@
 module.exports = {
   async up(db) {
     {
-      const result = await db
-        .collection("medici_transactions")
-        .updateMany({ account_path: "Liabilities" }, [
-          {
-            $set: {
-              account_path_org2: "$account_path",
-              accounts_org2: "$accounts",
-            },
-          },
-        ])
-
-      console.log({ result }, "backup the field in case a roll out is needed")
-    }
-
-    {
       const result = await db.collection("users").updateMany({}, [
         {
           $set: {
@@ -30,45 +15,44 @@ module.exports = {
       )
     }
 
-    // TODO: remove any pending invoices
-    // maybe reduce invoice time to 1h and then 1 min ahead of migration?
-
-    const users = await db.collection("users").find({})
-    users
-
-    {
-      const result = await db
-        .collection("medici_transactions")
-        .updateMany(
-          { account_path: "Liabilities" },
-          { $pull: { account_path: "Customer" } },
-        )
-
-      console.log({ result }, "set up the account_path array")
-    }
-
-    {
-      const result = await db
-        .collection("medici_transactions")
-        .updateMany({ account_path: "Liabilities" }, [
-          { $set: { tmp_accounts_uid: { $substrCP: ["$accounts_org", 21, 100] } } },
-        ])
-
-      console.log({ result }, "create tmp_accounts_uid field")
-    }
-
     {
       const result = await db
         .collection("medici_transactions")
         .updateMany({ account_path: "Liabilities" }, [
           {
             $set: {
-              accounts: { $concat: ["Liabilities", ":", "$tmp_accounts_uid"] },
+              account_path_old_userid: "$account_path",
+              accounts_old_userid: "$accounts",
             },
           },
         ])
 
-      console.log({ result }, "set the new accounts field")
+      console.log({ result }, "backup the field in case a roll out is needed")
+    }
+
+    // TODO: remove any pending invoices
+    // maybe reduce invoice time to 1h and then 1 min ahead of migration?
+
+    const users = db
+      .collection("users")
+      .aggregate([{ $group: { _id: "$_id" } }], { cursor: { batchSize: 100 } })
+
+    let progress = 0
+    for await (const user of users) {
+      progress++
+
+      await db.collection("medici_transactions").updateMany(
+        { account_path: user.id },
+        {
+          $set: {
+            account_path: ["Liabilities", user.walletId],
+            accounts: `Liabilities:${user.walletId}`,
+          },
+        },
+      )
+      if (progress % 1000 === 0) {
+        console.log(`${progress} users updated`)
+      }
     }
   },
 
@@ -78,8 +62,8 @@ module.exports = {
       .updateMany({ account_path: "Liabilities" }, [
         {
           $set: {
-            account_path: "$account_path_org",
-            accounts: "$accounts_org",
+            account_path: "$account_path_old_userid",
+            accounts: "$accounts_old_userid",
           },
         },
       ])
