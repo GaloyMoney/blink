@@ -77,15 +77,15 @@ export const addInvoiceForRecipient = async ({
   memo = "",
   descriptionHash,
 }: AddInvoiceForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  const walletIdChecked = checkedToWalletId(recipientWalletId)
-  if (walletIdChecked instanceof Error) return walletIdChecked
+  const recipientWalletIdChecked = checkedToWalletId(recipientWalletId)
+  if (recipientWalletIdChecked instanceof Error) return recipientWalletIdChecked
 
-  const limitOk = await checkRecipientWalletIdRateLimits(walletIdChecked)
+  const limitOk = await checkRecipientWalletIdRateLimits(recipientWalletIdChecked)
   if (limitOk instanceof Error) return limitOk
   const sats = checkedToSats(amount)
   if (sats instanceof Error) return sats
 
-  const walletInvoiceFactory = WalletInvoiceFactory(walletIdChecked)
+  const walletInvoiceFactory = WalletInvoiceFactory(recipientWalletIdChecked)
   return registerAndPersistInvoice({
     sats,
     memo,
