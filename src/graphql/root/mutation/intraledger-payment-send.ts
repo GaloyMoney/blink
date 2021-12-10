@@ -7,7 +7,7 @@ import Memo from "@graphql/types/scalar/memo"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import { mapError } from "@graphql/error-map"
-import { getUsernameFromWalletId } from "@app/users"
+import { getUsernameFromWalletId } from "@app/accounts"
 
 const IntraLedgerPaymentSendInput = new GT.Input({
   name: "IntraLedgerPaymentSendInput",

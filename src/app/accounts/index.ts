@@ -5,8 +5,9 @@ export * from "./add-api-key-for-account"
 export * from "./disable-api-key-for-account"
 export * from "./get-api-keys-for-account"
 
+const accounts = AccountsRepository()
+
 export const getAccount = async (accountId: AccountId) => {
-  const accounts = AccountsRepository()
   return accounts.findById(accountId)
 }
 
@@ -21,16 +22,13 @@ export const getAccountByApiKey = async (
   const accountApiKey = await accountApiKeysRepository.findByHashedKey(hashedKey)
   if (accountApiKey instanceof Error) return accountApiKey
 
-  const accountRepo = AccountsRepository()
-  return accountRepo.findById(accountApiKey.accountId)
+  return accounts.findById(accountApiKey.accountId)
 }
 
 export const hasPermissions = async (
   userId: UserId,
   walletId: WalletId,
 ): Promise<boolean | ApplicationError> => {
-  const accounts = AccountsRepository()
-
   const userAccounts = await accounts.listByUserId(userId)
   if (userAccounts instanceof Error) return userAccounts
 
@@ -41,6 +39,13 @@ export const hasPermissions = async (
 }
 
 export const getBusinessMapMarkers = async () => {
-  const accounts = AccountsRepository()
   return accounts.listBusinessesForMap()
+}
+
+export const getUsernameFromWalletId = async (
+  walletId: WalletId,
+): Promise<Username | ApplicationError> => {
+  const account = await accounts.findByWalletId(walletId)
+  if (account instanceof Error) return account
+  return account.username
 }
