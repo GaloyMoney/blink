@@ -408,7 +408,7 @@ export const LedgerService = (): ILedgerService => {
     usd,
     usdFee,
     pubkey,
-    recipientLiabilitiesAccountId,
+    recipientLiabilitiesWalletId,
     payerUsername,
     recipientUsername,
     memoPayer,
@@ -431,7 +431,7 @@ export const LedgerService = (): ILedgerService => {
       liabilitiesWalletId,
       description,
       sats,
-      recipientLiabilitiesAccountId,
+      recipientLiabilitiesWalletId,
       payerUsername,
       recipientUsername,
       memoPayer,
@@ -449,7 +449,7 @@ export const LedgerService = (): ILedgerService => {
     usdFee,
     payeeAddresses,
     sendAll,
-    recipientLiabilitiesAccountId,
+    recipientLiabilitiesWalletId,
     payerUsername,
     recipientUsername,
     memoPayer,
@@ -472,7 +472,7 @@ export const LedgerService = (): ILedgerService => {
       liabilitiesWalletId,
       description,
       sats,
-      recipientLiabilitiesAccountId,
+      recipientLiabilitiesWalletId,
       payerUsername,
       recipientUsername,
       memoPayer,
@@ -488,7 +488,7 @@ export const LedgerService = (): ILedgerService => {
     fee,
     usd,
     usdFee,
-    recipientLiabilitiesAccountId,
+    recipientLiabilitiesWalletId,
     payerUsername,
     recipientUsername,
     memoPayer,
@@ -509,7 +509,7 @@ export const LedgerService = (): ILedgerService => {
       liabilitiesWalletId,
       description,
       sats,
-      recipientLiabilitiesAccountId,
+      recipientLiabilitiesWalletId,
       payerUsername,
       recipientUsername,
       memoPayer,
@@ -522,7 +522,7 @@ export const LedgerService = (): ILedgerService => {
     liabilitiesWalletId,
     description,
     sats,
-    recipientLiabilitiesAccountId,
+    recipientLiabilitiesWalletId,
     payerUsername,
     recipientUsername,
     memoPayer,
@@ -540,7 +540,7 @@ export const LedgerService = (): ILedgerService => {
       const entry = MainBook.entry(description)
 
       entry
-        .credit(recipientLiabilitiesAccountId, sats, creditMetadata)
+        .credit(recipientLiabilitiesWalletId, sats, creditMetadata)
         .debit(liabilitiesWalletId, sats, debitMetadata)
 
       const savedEntry = await entry.commit()

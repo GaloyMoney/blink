@@ -269,7 +269,7 @@ describe("on us payment via Ledger Service", () => {
       fee: lnFee,
       usd,
       usdFee,
-      recipientLiabilitiesAccountId: payee.walletPath,
+      recipientLiabilitiesWalletId: payee.walletPath,
       payerUsername: "payerUsername" as Username,
       recipientUsername: "recipientUsername" as Username,
       memoPayer: null,
