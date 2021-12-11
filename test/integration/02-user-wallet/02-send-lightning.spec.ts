@@ -1,6 +1,6 @@
 import { Wallets } from "@app"
+import { sleep } from "@app/utils"
 import { getUserLimits } from "@config/app"
-import { sleep } from "@core/utils"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
 import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {

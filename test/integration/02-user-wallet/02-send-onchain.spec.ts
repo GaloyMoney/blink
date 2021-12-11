@@ -1,3 +1,4 @@
+import { sleep } from "@app/utils"
 import * as Wallets from "@app/wallets"
 import {
   getFeeRates,
@@ -6,7 +7,6 @@ import {
   MS_PER_DAY,
 } from "@config/app"
 import { TransactionRestrictedError, TwoFAError } from "@core/error"
-import { sleep } from "@core/utils"
 import { toTargetConfs } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"

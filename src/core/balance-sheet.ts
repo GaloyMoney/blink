@@ -4,7 +4,7 @@ import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
 import { WalletInvoicesRepository } from "@services/mongoose"
 
-import { runInParallel } from "./utils"
+import { runInParallel } from "../app/utils"
 
 import { Wallets } from "@app"
 

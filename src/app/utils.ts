@@ -1,8 +1,8 @@
-export async function sleep(ms) {
+export async function sleep(ms: MilliSeconds | number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-export function timeout(delay, msg) {
+export function timeout(delay: MilliSeconds | number, msg: string) {
   return new Promise(function (resolve, reject) {
     setTimeout(function () {
       reject(new Error(msg))

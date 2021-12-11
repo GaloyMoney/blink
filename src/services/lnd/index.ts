@@ -15,7 +15,7 @@ import {
   InsufficientBalanceForRoutingError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
-import { timeout } from "@core/utils"
+import { timeout } from "@app/utils"
 import {
   createInvoice,
   getInvoice,

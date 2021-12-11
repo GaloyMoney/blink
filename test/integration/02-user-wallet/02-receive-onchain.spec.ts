@@ -1,6 +1,6 @@
 import { once } from "events"
 import { getOnChainAddressCreateAttemptLimits, getUserLimits } from "@config/app"
-import { sleep } from "@core/utils"
+import { sleep } from "@app/utils"
 import { getTitle } from "@services/notifications/payment"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import {

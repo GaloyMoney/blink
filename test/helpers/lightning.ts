@@ -1,5 +1,5 @@
 import { once } from "events"
-import { sleep } from "@core/utils"
+import { sleep } from "@app/utils"
 import { baseLogger } from "@services/logger"
 import {
   offchainLnds,
