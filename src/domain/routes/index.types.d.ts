@@ -24,7 +24,7 @@ interface IRoutesCache {
     key,
     routeToCache,
   }: {
-    key
+    key: CachedRouteLookupKey
     routeToCache: CachedRoute
   }) => Promise<CachedRoute | RepositoryError>
 

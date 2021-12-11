@@ -183,7 +183,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
       if (returnedInvoice instanceof Error) {
         return new CouldNotDecodeReturnedPaymentRequest(returnedInvoice.message)
       }
-      return { invoice: returnedInvoice, pubkey: defaultPubkey } as RegisteredInvoice
+      const registerInvoice: RegisteredInvoice = {
+        invoice: returnedInvoice,
+        pubkey: defaultPubkey,
+      }
+      return registerInvoice
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
       switch (errDetails) {
