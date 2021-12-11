@@ -3,8 +3,8 @@ import getUuidByString from "uuid-by-string"
 import { GT } from "@graphql/index"
 
 import IAccount from "../abstract/account"
-import Transaction from "./transaction"
 import WalletId from "../scalar/wallet-id"
+import Wallet from "../abstract/wallet"
 
 import * as Wallets from "@app/wallets"
 import * as Accounts from "@app/accounts"
@@ -12,15 +12,31 @@ import * as Accounts from "@app/accounts"
 const BusinessAccount = new GT.Object({
   name: "BusinessAccount",
   interfaces: () => [IAccount],
-  isTypeOf: () => false, // source.title || source.coordinates, // TODO: improve
+  isTypeOf: (source) => source.title || source.coordinates, // TODO: improve
   fields: () => ({
     id: {
       type: GT.NonNullID,
       resolve: (source) => getUuidByString(source.id),
     },
 
-    allTransactions: {
-      type: GT.NonNullList(Transaction),
+    wallets: {
+      type: GT.NonNullList(Wallet),
+      resolve: (source) => {
+        const wallets = source.walletIds.map(async (id: WalletId) => {
+          const wallet = await Wallets.getWallet(id)
+          if (wallet instanceof Error) {
+            throw wallet
+          }
+          return wallet
+        })
+        return wallets
+      },
+    },
+
+    defaultWalletId: {
+      type: GT.NonNull(WalletId),
+      resolve: (source, args, { domainAccount }: { domainAccount: Account }) =>
+        domainAccount.defaultWalletId,
     },
 
     csvTransactions: {

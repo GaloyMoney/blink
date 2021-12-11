@@ -12,7 +12,7 @@ import * as Accounts from "@app/accounts"
 const ConsumerAccount = new GT.Object({
   name: "ConsumerAccount",
   interfaces: () => [IAccount],
-  isTypeOf: () => true, // TODO: improve
+  isTypeOf: (source) => !source.title && !source.coordinates, // TODO: improve
 
   fields: () => ({
     id: {
