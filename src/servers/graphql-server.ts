@@ -67,7 +67,8 @@ const sessionContext = ({
     ip = ips
   }
 
-  let wallet: LightningUserWallet | null, user: UserType | null
+  let wallet, user
+  // FIXME: type issue with let wallet: LightningUserWallet | null, user: UserType | null
 
   // TODO move from id: uuidv4() to a Jaeger standard
   const logger = graphqlLogger.child({ token, id: uuidv4(), body })

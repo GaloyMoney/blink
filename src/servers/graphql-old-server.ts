@@ -32,7 +32,6 @@ import {
 } from "@services/tracing"
 import { PriceInterval, PriceRange } from "@domain/price"
 import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
-import { addEarn } from "@app/accounts/add-earn"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -414,6 +413,7 @@ const resolvers = {
 
     // FIXME test
     testMessage: async (_, __, { user, logger }) => {
+      // throw new LoggedError("test error")
       await sendNotification({
         user,
         title: "Title",

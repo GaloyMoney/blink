@@ -31,7 +31,7 @@ import {
 } from "lightning"
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds, offchainLnds } from "./utils"
-import { LndOfflineError } from "@core/error"
+import { LndOfflineError } from "@graphql/error"
 
 export const LndService = (): ILightningService | LightningServiceError => {
   let lndAuth: AuthenticatedLnd, defaultPubkey: Pubkey
