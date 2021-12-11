@@ -4,8 +4,7 @@ import {
   ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE,
 } from "@config/app"
 import { DbError, LndOfflineError, ValidationInternalError } from "@core/error"
-import { LoggedError } from "@core/utils"
-import { LnFeeCalculator } from "@domain/bitcoin/lightning"
+import { LnFeeCalculator, UnknownLnInvoiceDecodeError } from "@domain/bitcoin/lightning"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
 import { WalletInvoicesRepository } from "@services/mongoose"
@@ -421,7 +420,7 @@ export const validate = async ({
     } catch (err) {
       const error = `Error decoding the invoice`
       logger.error({ params, success: false, error }, error)
-      throw new LoggedError(error)
+      return new UnknownLnInvoiceDecodeError(error)
     }
 
     // TODO: if expired_at expired, thrown an error

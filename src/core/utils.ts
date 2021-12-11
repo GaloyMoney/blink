@@ -1,22 +1,4 @@
 import { SATS_PER_BTC } from "@config/app"
-import { GraphQLError } from "graphql"
-import { parsePaymentRequest } from "invoices"
-
-// FIXME: super ugly hack.
-// for some reason LoggedError get casted as GraphQLError
-// in the formatError function that graphqlQL use to parse error before
-// sending it back to the client. this is a temporary workaround
-export const customLoggerPrefix = `custom: `
-
-export class LoggedError extends GraphQLError {
-  constructor(message) {
-    super(`${customLoggerPrefix}${message}`)
-  }
-}
-
-export const getHash = (request) => {
-  return parsePaymentRequest({ request }).id
-}
 
 export const getAmount = (request): number | undefined => {
   return parsePaymentRequest({ request }).tokens
@@ -29,13 +11,6 @@ export const btc2sat = (btc: number) => {
 export const sat2btc = (sat: number) => {
   return sat / SATS_PER_BTC
 }
-
-export const satsToUsdCached = (sats, price) => {
-  return price * sats
-}
-
-export const randomIntFromInterval = (min, max) =>
-  Math.floor(Math.random() * (max - min + 1) + min)
 
 export async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))

@@ -1,6 +1,6 @@
 import { Wallets } from "@app"
 import { getUserLimits } from "@config/app"
-import { getHash, sleep } from "@core/utils"
+import { sleep } from "@core/utils"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
 import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
@@ -32,6 +32,7 @@ import {
   settleHodlInvoice,
   waitFor,
   waitUntilChannelBalanceSyncAll,
+  getHash,
 } from "test/helpers"
 import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
 

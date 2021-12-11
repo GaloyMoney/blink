@@ -1,7 +1,6 @@
 import { Lightning } from "@app"
 import * as Wallets from "@app/wallets"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
-import { getHash } from "@core/utils"
 import { toSats } from "@domain/bitcoin"
 import { PaymentInitiationMethod } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
@@ -9,6 +8,7 @@ import {
   checkIsBalanced,
   getAndCreateUserWallet,
   getBTCBalance,
+  getHash,
   lndOutside1,
   pay,
 } from "test/helpers"
