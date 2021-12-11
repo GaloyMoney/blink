@@ -1,7 +1,7 @@
+import { btc2sat } from "@domain/bitcoin"
+
 import Client from "bitcoin-core"
 import sumBy from "lodash.sumby"
-
-import { btc2sat } from "@core/utils"
 
 const connection_obj = {
   network: process.env.NETWORK,

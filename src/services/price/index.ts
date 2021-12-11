@@ -9,7 +9,7 @@ import {
 import { baseLogger } from "../logger"
 import { PriceHistory } from "./schema"
 import { PriceProtoDescriptor } from "./grpc"
-import { SATS_PER_BTC } from "@config/app"
+import { SATS_PER_BTC } from "@domain/bitcoin"
 
 const priceUrl = process.env.PRICE_ADDRESS ?? "galoy-price"
 const pricePort = process.env.PRICE_PORT ?? "50051"

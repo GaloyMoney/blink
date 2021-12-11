@@ -1,17 +1,3 @@
-import { SATS_PER_BTC } from "@config/app"
-
-export const getAmount = (request): number | undefined => {
-  return parsePaymentRequest({ request }).tokens
-}
-
-export const btc2sat = (btc: number) => {
-  return Math.round(btc * SATS_PER_BTC)
-}
-
-export const sat2btc = (sat: number) => {
-  return sat / SATS_PER_BTC
-}
-
 export async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }

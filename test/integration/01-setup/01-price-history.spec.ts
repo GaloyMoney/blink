@@ -1,7 +1,7 @@
 import { Types as MongooseTypes } from "mongoose"
 import { PriceHistory } from "@services/price/schema"
 import { chunk, generateSatoshiPriceHistory } from "test/helpers"
-import { SATS_PER_BTC } from "@config/app"
+import { SATS_PER_BTC } from "@domain/bitcoin"
 
 describe("Price history", () => {
   it("generates 1 year of data", async () => {

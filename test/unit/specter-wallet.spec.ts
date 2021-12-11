@@ -1,4 +1,4 @@
-import { btc2sat } from "@core/utils"
+import { btc2sat } from "@domain/bitcoin"
 import { SpecterWallet } from "@core/specter-wallet"
 import { getSpecterWalletConfig } from "@config/app"
 import { baseLogger } from "@services/logger"
