@@ -18,27 +18,44 @@ import { SpecterWallet } from "@core/specter-wallet"
 const main = async () => {
   const mongoose = await setupMongoConnection()
 
-  await updateEscrows()
-  await updatePendingLightningTransactions()
+  const rebalance = () => {
+    const specterWalletConfig = getSpecterWalletConfig()
+    const specterWallet = new SpecterWallet({
+      logger: baseLogger,
+      config: specterWalletConfig,
+    })
+    return specterWallet.tentativelyRebalance()
+  }
 
-  await deleteExpiredInvoiceUser()
-  await deleteFailedPaymentsAttemptAllLnds()
+  const updatePendingOnChainPayments = () =>
+    updateUsersPendingPayment({ onchainOnly: true })
 
-  const specterWalletConfig = getSpecterWalletConfig()
-  const specterWallet = new SpecterWallet({
-    logger: baseLogger,
-    config: specterWalletConfig,
-  })
-  await specterWallet.tentativelyRebalance()
+  const tasks = [
+    updateEscrows,
+    updatePendingLightningTransactions,
+    deleteExpiredInvoiceUser,
+    deleteFailedPaymentsAttemptAllLnds,
+    rebalance,
+    updateRoutingFees,
+    updatePendingOnChainPayments,
+  ]
 
-  await updateRoutingFees()
-
-  await updateUsersPendingPayment({ onchainOnly: true })
+  const results: Array<boolean> = []
+  for (const task of tasks) {
+    try {
+      baseLogger.info(`starting ${task.name}`)
+      await task()
+      results.push(true)
+    } catch (error) {
+      baseLogger.error({ error }, `issue with task ${task.name}`)
+      results.push(false)
+    }
+  }
 
   await mongoose.connection.close()
 
   // FIXME: we need to exit because we may have some pending promise
-  process.exit(0)
+  process.exit(results.every((r) => r) ? 0 : 99)
 }
 
 try {
