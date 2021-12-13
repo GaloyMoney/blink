@@ -265,7 +265,7 @@ const healthCheck = () => {
     const isMongoAlive = mongoose.connection.readyState === 1
     const isRedisAlive = (await redis.ping()) === "PONG"
     const statuses = Object.values(lndStatus)
-    const areLndsAlive = statuses.length > 0 && statuses.every((s) => s)
+    const areLndsAlive = statuses.length > 0 && statuses.some((s) => s)
     res.status(isMongoAlive && isRedisAlive && areLndsAlive ? 200 : 503).send()
   })
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))
