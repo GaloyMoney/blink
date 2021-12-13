@@ -147,7 +147,17 @@ export const startApolloServer = async ({
   const apolloServer = new ApolloServer({
     schema,
     playground: apolloConfig.playground
-      ? { settings: { "schema.polling.enable": false } }
+      ? {
+          settings: { "schema.polling.enable": false },
+          tabs: [
+            {
+              endpoint: "https://api.staging.galoy.io/graphql",
+              query:
+                "query btcPriceList($range: PriceGraphRange!) {\n    btcPriceList(range: $range) {\n    	timestamp\n      price {\n        base\n        offset\n        currencyUnit\n        formattedAmount\n      }\n    }\n}",
+              variables: '{"range": "ONE_DAY"}',
+            },
+          ],
+        }
       : false,
     introspection: apolloConfig.playground,
     plugins: apolloPulgins,
