@@ -1,4 +1,3 @@
-import { toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerService } from "@services/ledger"
 import * as Wallets from "@app/wallets"
 
@@ -31,9 +30,7 @@ export const getBalanceForWallet = async ({
 export const getBalanceForWalletId = async (
   walletId: WalletId,
 ): Promise<Satoshis | ApplicationError> => {
-  const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-
-  const balance = await LedgerService().getAccountBalance(liabilitiesWalletId)
+  const balance = await LedgerService().getAccountBalance(walletId)
   if (balance instanceof Error) return balance
 
   return balance

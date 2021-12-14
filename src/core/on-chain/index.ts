@@ -8,7 +8,6 @@ import {
 import { BTC_NETWORK, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config/app"
 import { toSats } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
-import { toLiabilitiesWalletId } from "@domain/ledger"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
@@ -161,7 +160,7 @@ export const OnChainMixin = (superclass) =>
             { logger: onchainLoggerOnUs, lock },
             async () =>
               LedgerService().addOnChainIntraledgerTxSend({
-                liabilitiesWalletId: toLiabilitiesWalletId(this.user.walletId),
+                walletId: this.user.walletId,
                 description: "",
                 sats: toSats(sats),
                 fee: onChainFee,
@@ -169,7 +168,7 @@ export const OnChainMixin = (superclass) =>
                 usdFee,
                 payeeAddresses: [address as OnChainAddress],
                 sendAll,
-                recipientLiabilitiesWalletId: toLiabilitiesWalletId(payeeUser.walletId),
+                recipientWalletId: payeeUser.walletId,
                 payerUsername: this.user.username,
                 recipientUsername: payeeUser.username,
                 memoPayer: memo || null,

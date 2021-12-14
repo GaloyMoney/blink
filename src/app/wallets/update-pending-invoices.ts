@@ -1,7 +1,6 @@
 import { getCurrentPrice } from "@app/prices"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { CouldNotFindError } from "@domain/errors"
-import { toLiabilitiesWalletId } from "@domain/ledger"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
@@ -123,10 +122,9 @@ const updatePendingInvoice = async ({
       const usd = received * usdPerSat
       const usdFee = fee * usdPerSat
 
-      const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
       const ledgerService = LedgerService()
       const result = await ledgerService.addLnTxReceive({
-        liabilitiesWalletId,
+        walletId,
         paymentHash,
         description,
         sats: received,

@@ -59,7 +59,7 @@ type LedgerTransaction = {
 }
 
 type ReceiveOnChainTxArgs = {
-  liabilitiesWalletId: LiabilitiesWalletId
+  walletId: WalletId
   txHash: OnChainTxHash
   sats: Satoshis
   fee: Satoshis
@@ -69,7 +69,7 @@ type ReceiveOnChainTxArgs = {
 }
 
 type TxArgs = {
-  liabilitiesWalletId: LiabilitiesWalletId
+  walletId: WalletId
   description: string
   sats: Satoshis
   fee: Satoshis
@@ -89,10 +89,10 @@ type AddLnTxSendArgs = LnTxArgs & {
 }
 
 type IntraledgerTxArgs = {
-  liabilitiesWalletId: LiabilitiesWalletId
+  walletId: WalletId
   description: string
   sats: Satoshis
-  recipientLiabilitiesWalletId: LiabilitiesWalletId | null
+  recipientWalletId: WalletId
   payerUsername: Username | null
   recipientUsername: Username | null
   memoPayer: string | null
@@ -119,7 +119,7 @@ type AddUsernameIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
 }
 
 type AddLnFeeReeimbursementReceiveArgs = {
-  liabilitiesWalletId: LiabilitiesWalletId
+  walletId: WalletId
   paymentHash: PaymentHash
   sats: Satoshis
   usd: number
@@ -145,54 +145,53 @@ interface ILedgerService {
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
   getLiabilityTransactions(
-    liabilitiesWalletId: LiabilitiesWalletId,
+    WalletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
   getLiabilityTransactionsForContactUsername(
-    liabilitiesWalletId: LiabilitiesWalletId,
+    WalletId: WalletId,
     contactUsername: Username,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
   listPendingPayments(
-    liabilitiesWalletId: LiabilitiesWalletId,
+    WalletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
-  getPendingPaymentsCount(
-    liabilitiesWalletId: LiabilitiesWalletId,
-  ): Promise<number | LedgerServiceError>
+  getPendingPaymentsCount(WalletId: WalletId): Promise<number | LedgerServiceError>
 
-  getAccountBalance(
-    liabilitiesWalletId: LiabilitiesWalletId,
-  ): Promise<Satoshis | LedgerServiceError>
+  getAccountBalance(WalletId: WalletId): Promise<Satoshis | LedgerServiceError>
 
   twoFATxVolumeSince({
-    liabilitiesWalletId,
+    walletId,
     timestamp,
   }: {
-    liabilitiesWalletId: LiabilitiesWalletId
+    walletId: WalletId
     timestamp: Date
   }): Promise<TxVolume | LedgerServiceError>
 
   withdrawalTxVolumeSince({
-    liabilitiesWalletId,
+    walletId,
     timestamp,
   }: {
-    liabilitiesWalletId: LiabilitiesWalletId
+    walletId: WalletId
     timestamp: Date
   }): Promise<TxVolume | LedgerServiceError>
 
   intraledgerTxVolumeSince({
-    liabilitiesWalletId,
+    walletId,
     timestamp,
   }: {
-    liabilitiesWalletId: LiabilitiesWalletId
+    walletId: WalletId
     timestamp: Date
   }): Promise<TxVolume | LedgerServiceError>
 
-  isOnChainTxRecorded(
-    liabilitiesWalletId: LiabilitiesWalletId,
-    txHash: OnChainTxHash,
-  ): Promise<boolean | LedgerServiceError>
+  isOnChainTxRecorded({
+    walletId,
+    txHash,
+  }: {
+    walletId: WalletId
+    txHash: OnChainTxHash
+  }): Promise<boolean | LedgerServiceError>
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
 

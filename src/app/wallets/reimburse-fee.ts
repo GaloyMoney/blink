@@ -3,14 +3,14 @@ import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
 import { LedgerService } from "@services/ledger"
 
 export const reimburseFee = async ({
-  liabilitiesWalletId,
+  walletId,
   journalId,
   paymentHash,
   maxFee,
   actualFee,
   logger,
 }: {
-  liabilitiesWalletId: LiabilitiesWalletId
+  walletId: WalletId
   journalId: LedgerJournalId
   paymentHash: PaymentHash
   maxFee: Satoshis
@@ -48,7 +48,7 @@ export const reimburseFee = async ({
 
   const ledgerService = LedgerService()
   const result = await ledgerService.addLnFeeReimbursementReceive({
-    liabilitiesWalletId,
+    walletId,
     paymentHash,
     sats: feeDifference,
     usd,

@@ -1,6 +1,5 @@
 import { PaymentStatus } from "@domain/bitcoin/lightning"
 import { InconsistentDataError } from "@domain/errors"
-import { toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
@@ -15,29 +14,26 @@ export const updatePendingPayments = async ({
   logger: Logger
   lock?: DistributedLock
 }): Promise<void | ApplicationError> => {
-  const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
   const ledgerService = LedgerService()
-  const count = await ledgerService.getPendingPaymentsCount(liabilitiesWalletId)
+  const count = await ledgerService.getPendingPaymentsCount(walletId)
   if (count instanceof Error) return count
   if (count === 0) return
 
-  const pendingPaymentTransactions = await ledgerService.listPendingPayments(
-    liabilitiesWalletId,
-  )
+  const pendingPaymentTransactions = await ledgerService.listPendingPayments(walletId)
   if (pendingPaymentTransactions instanceof Error) return pendingPaymentTransactions
 
   for (const paymentLiabilityTx of pendingPaymentTransactions) {
-    await updatePendingPayment({ liabilitiesWalletId, paymentLiabilityTx, logger, lock })
+    await updatePendingPayment({ walletId, paymentLiabilityTx, logger, lock })
   }
 }
 
 const updatePendingPayment = async ({
-  liabilitiesWalletId,
+  walletId,
   paymentLiabilityTx,
   logger,
   lock,
 }: {
-  liabilitiesWalletId: LiabilitiesWalletId
+  walletId: WalletId
   paymentLiabilityTx: LedgerTransaction
   logger: Logger
   lock?: DistributedLock
@@ -106,7 +102,7 @@ const updatePendingPayment = async ({
         if (paymentLiabilityTx.feeKnownInAdvance) return
 
         return reimburseFee({
-          liabilitiesWalletId,
+          walletId,
           journalId: paymentLiabilityTx.journalId,
           paymentHash,
           maxFee: paymentLiabilityTx.fee,

@@ -3,7 +3,7 @@ import { getCurrentPrice } from "@app/prices"
 import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS, ONCHAIN_SCAN_DEPTH } from "@config/app"
 import { OnChainError, TxDecoder, TxFilter } from "@domain/bitcoin/onchain"
 import { RepositoryError } from "@domain/errors"
-import { LedgerError, toLiabilitiesWalletId } from "@domain/ledger"
+import { LedgerError } from "@domain/ledger"
 import { WalletTransactionHistory } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
@@ -24,8 +24,7 @@ export const getTransactionsForWallet = async (
   wallet: Wallet,
 ): Promise<PartialResult<WalletTransaction[]>> => {
   const ledger = LedgerService()
-  const liabilitiesWalletId = toLiabilitiesWalletId(wallet.id)
-  const ledgerTransactions = await ledger.getLiabilityTransactions(liabilitiesWalletId)
+  const ledgerTransactions = await ledger.getLiabilityTransactions(wallet.id)
   if (ledgerTransactions instanceof LedgerError)
     return PartialResult.err(ledgerTransactions)
 

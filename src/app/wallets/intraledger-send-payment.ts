@@ -13,7 +13,6 @@ import {
   SatoshiAmountRequiredError,
   SelfPaymentError,
 } from "@domain/errors"
-import { toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerService } from "@services/ledger"
 import { LockService } from "@services/lock"
 import {
@@ -198,16 +197,15 @@ const executePaymentViaIntraledger = async ({
       )
     }
 
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     const journal = await LockService().extendLock({ logger, lock }, async () =>
       LedgerService().addUsernameIntraledgerTxSend({
-        liabilitiesWalletId,
+        walletId,
         description: "",
         sats,
         fee: lnFee,
         usd,
         usdFee,
-        recipientLiabilitiesWalletId: toLiabilitiesWalletId(recipientWalletId),
+        recipientWalletId,
         payerUsername: username,
         recipientUsername,
         memoPayer,

@@ -23,7 +23,6 @@ import {
 import * as Wallets from "@app/wallets"
 import { addInvoice } from "@app/wallets/add-invoice-for-wallet"
 import { toSats, FEECAP } from "@domain/bitcoin"
-import { toLiabilitiesWalletId } from "@domain/ledger"
 import {
   SelfPaymentError as DomainSelfPaymentError,
   InsufficientBalanceError as DomainInsufficientBalanceError,
@@ -763,8 +762,9 @@ describe("UserWallet - Lightning Pay", () => {
           })
           if (updatedPayments instanceof Error) throw updatedPayments
 
-          const liabilitiesWalletId = toLiabilitiesWalletId(userWallet1.user.walletId)
-          const count = await LedgerService().getPendingPaymentsCount(liabilitiesWalletId)
+          const count = await LedgerService().getPendingPaymentsCount(
+            userWallet1.user.walletId,
+          )
           if (count instanceof Error) throw count
 
           const { is_confirmed } = await getInvoice({ lnd: lndOutside1, id })
@@ -803,8 +803,9 @@ describe("UserWallet - Lightning Pay", () => {
           })
           if (updatedPayments instanceof Error) throw updatedPayments
 
-          const liabilitiesWalletId = toLiabilitiesWalletId(userWallet1.user.walletId)
-          const count = await LedgerService().getPendingPaymentsCount(liabilitiesWalletId)
+          const count = await LedgerService().getPendingPaymentsCount(
+            userWallet1.user.walletId,
+          )
           if (count instanceof Error) throw count
 
           return count === 0
