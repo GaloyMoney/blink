@@ -31,6 +31,7 @@ import {
   ENDUSER_ALIAS,
 } from "@services/tracing"
 import { AccountsRepository } from "@services/mongoose"
+import { defaultQuery, defaultQueryName, defaultQueryVars } from "../graphql/playground"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -152,9 +153,9 @@ export const startApolloServer = async ({
           tabs: [
             {
               endpoint: "https://api.staging.galoy.io/graphql",
-              query:
-                "query btcPriceList($range: PriceGraphRange!) {\n    btcPriceList(range: $range) {\n    	timestamp\n      price {\n        base\n        offset\n        currencyUnit\n        formattedAmount\n      }\n    }\n}",
-              variables: '{"range": "ONE_DAY"}',
+              query: defaultQuery,
+              name: defaultQueryName,
+              variables: defaultQueryVars,
             },
           ],
         }
