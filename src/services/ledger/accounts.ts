@@ -11,7 +11,7 @@ export const escrowAccountingPath = `${assetsMainAccount}:Reserve:Escrow` // TOD
 export const liabilitiesMainAccount = "Liabilities"
 export const walletPath = (walletId) => `${liabilitiesMainAccount}:${walletId}`
 export const resolveWalletId = (walletPath: string | string[]): WalletId | null => {
-  let id: string | null = null
+  let id: WalletId | null = null
 
   if (!walletPath) {
     return null
@@ -29,11 +29,10 @@ export const resolveWalletId = (walletPath: string | string[]): WalletId | null 
     path[0] === liabilitiesMainAccount &&
     path[1]
   ) {
-    id = path[1]
+    id = path[1] as WalletId
   }
 
-  // TODO: add check for WalletId syntax validity
-  return id as WalletId
+  return id
 }
 
 let cacheDealerPath: string
