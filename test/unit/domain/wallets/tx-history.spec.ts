@@ -38,6 +38,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       {
         id: "id" as LedgerTransactionId,
         walletId: "walletId" as WalletId,
+        recipientWalletId: "walletIdRecipient" as WalletId,
         type: LedgerTransactionType.IntraLedger,
         paymentHash: "paymentHash" as PaymentHash,
         pubkey: "pubkey" as Pubkey,
@@ -56,6 +57,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       {
         id: "id" as LedgerTransactionId,
         walletId: "walletId" as WalletId,
+        recipientWalletId: "walletIdRecipient" as WalletId,
         type: LedgerTransactionType.OnchainIntraLedger,
         address: "address" as OnChainAddress,
         paymentHash: "paymentHash" as PaymentHash,
@@ -126,7 +128,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         },
         settlementVia: {
           type: SettlementMethod.IntraLedger,
-          counterPartyWalletId: "walletId" as WalletId,
+          counterPartyWalletId: "walletIdRecipient" as WalletId,
           counterPartyUsername: "username",
         },
         memo: null,
@@ -152,7 +154,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         },
         settlementVia: {
           type: SettlementMethod.IntraLedger,
-          counterPartyWalletId: "walletId" as WalletId,
+          counterPartyWalletId: "walletIdRecipient" as WalletId,
           counterPartyUsername: null,
         },
         memo: null,

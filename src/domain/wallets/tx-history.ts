@@ -51,6 +51,7 @@ export const fromLedger = (
     ({
       id,
       walletId,
+      recipientWalletId,
       memoFromPayer,
       lnMemo,
       type,
@@ -116,12 +117,12 @@ export const fromLedger = (
             ...baseTransaction,
             initiationVia: {
               type: PaymentInitiationMethod.IntraLedger,
-              counterPartyWalletId: walletId as WalletId,
+              counterPartyWalletId: recipientWalletId as WalletId,
               counterPartyUsername: username as Username,
             },
             settlementVia: {
               type: SettlementMethod.IntraLedger,
-              counterPartyWalletId: walletId as WalletId,
+              counterPartyWalletId: recipientWalletId as WalletId,
               counterPartyUsername: username as Username,
             },
           }
@@ -136,7 +137,7 @@ export const fromLedger = (
             },
             settlementVia: {
               type: SettlementMethod.IntraLedger,
-              counterPartyWalletId: walletId as WalletId,
+              counterPartyWalletId: recipientWalletId as WalletId,
               counterPartyUsername: username || null,
             },
           }
@@ -167,7 +168,7 @@ export const fromLedger = (
             },
             settlementVia: {
               type: SettlementMethod.IntraLedger,
-              counterPartyWalletId: walletId as WalletId,
+              counterPartyWalletId: recipientWalletId as WalletId,
               counterPartyUsername: username || null,
             },
           }
@@ -194,12 +195,12 @@ export const fromLedger = (
         ...baseTransaction,
         initiationVia: {
           type: PaymentInitiationMethod.IntraLedger,
-          counterPartyWalletId: walletId as WalletId,
+          counterPartyWalletId: recipientWalletId as WalletId,
           counterPartyUsername: username as Username,
         },
         settlementVia: {
           type: SettlementMethod.IntraLedger,
-          counterPartyWalletId: walletId as WalletId,
+          counterPartyWalletId: recipientWalletId as WalletId,
           counterPartyUsername: username || null,
         },
       }
