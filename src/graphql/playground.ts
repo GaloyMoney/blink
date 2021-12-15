@@ -17,4 +17,3 @@ export const playgroundTabs = {
     variables: JSON.stringify({ range: "ONE_DAY" }),
   },
 }
-
