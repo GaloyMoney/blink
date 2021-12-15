@@ -134,12 +134,12 @@ export const AccountsRepository = (): IAccountsRepository => {
 const translateToAccount = (result: UserType): Account => ({
   id: result.id as AccountId,
   createdAt: new Date(result.created_at),
-  defaultWalletId: result.id as WalletId, // TODO: add defaultWalletId at the persistence layer when Account have multiple wallet
+  defaultWalletId: result.walletId as WalletId, // TODO: add defaultWalletId at the persistence layer when Account have multiple wallet
   username: result.username as Username,
   level: (result.level as AccountLevel) || AccountLevel.One,
   status: (result.status as AccountStatus) || AccountStatus.Active,
   title: result.title as BusinessMapTitle,
   coordinates: result.coordinates as Coordinates,
-  walletIds: [result.id as WalletId],
+  walletIds: [result.walletId as WalletId],
   ownerId: result.id as UserId,
 })
