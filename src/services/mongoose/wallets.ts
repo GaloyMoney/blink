@@ -74,7 +74,7 @@ export const WalletsRepository = (): IWalletsRepository => {
 }
 
 const resultToWallet = (result: UserType): Wallet => {
-  const walletId = result.id as WalletId
+  const walletId = result.walletId as WalletId
   const depositFeeRatio = result.depositFeeRatio as DepositFeeRatio
   const withdrawFee = result.withdrawFee as WithdrawFee
 
