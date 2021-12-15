@@ -1,4 +1,3 @@
-import { Types as MongooseTypes } from "mongoose"
 import { User } from "@services/mongoose/schema"
 import {
   CouldNotFindError,
@@ -38,7 +37,7 @@ export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepos
   ): Promise<OnChainAddressIdentifier | RepositoryError> => {
     try {
       const [result] = await User.aggregate([
-        { $match: { _id: new MongooseTypes.ObjectId(walletId) } },
+        { $match: { walletId } },
         { $project: { lastAddress: { $last: "$onchain" } } },
       ])
 
