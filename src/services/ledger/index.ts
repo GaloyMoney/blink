@@ -18,20 +18,25 @@ import {
 } from "@domain/ledger/errors"
 import { MainBook } from "./books"
 import { toSats } from "@domain/bitcoin"
-import { LedgerTransactionType, liabilitiesMainAccount, toWalletId } from "@domain/ledger"
+import {
+  LedgerTransactionType,
+  liabilitiesMainAccount,
+  toLiabilitiesWalletId,
+  toWalletId,
+} from "@domain/ledger"
 import { lndAccountingPath, bankOwnerAccountPath } from "./accounts"
 
 type LoadLedgerParams = {
-  bankOwnerAccountResolver: () => Promise<string>
-  dealerAccountResolver: () => Promise<string>
+  bankOwnerWalletResolver: () => Promise<string>
+  dealerWalletResolver: () => Promise<string>
 }
 
 export const loadLedger = ({
-  bankOwnerAccountResolver,
-  dealerAccountResolver,
+  bankOwnerWalletResolver,
+  dealerWalletResolver,
 }: LoadLedgerParams) => {
-  accounts.setBankOwnerAccountResolver(bankOwnerAccountResolver)
-  accounts.setDealerAccountResolver(dealerAccountResolver)
+  accounts.setbankOwnerWalletResolver(bankOwnerWalletResolver)
+  accounts.setdealerWalletResolver(dealerWalletResolver)
   return {
     ...accounts,
     ...queries,
@@ -72,10 +77,11 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const getLiabilityTransactions = async (
-    liabilitiesAccountId: LiabilitiesAccountId,
+    walletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
-      const { results } = await MainBook.ledger({ account: liabilitiesAccountId })
+      const { results } = await MainBook.ledger({ account: liabilitiesWalletId })
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -83,12 +89,13 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const getLiabilityTransactionsForContactUsername = async (
-    liabilitiesAccountId: LiabilitiesAccountId,
+    walletId: WalletId,
     contactUsername,
   ): Promise<LedgerTransaction[] | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
       const { results } = await MainBook.ledger({
-        account: liabilitiesAccountId,
+        account: liabilitiesWalletId,
         username: contactUsername,
       })
       return results.map((tx) => translateToLedgerTx(tx))
@@ -98,11 +105,12 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const listPendingPayments = async (
-    liabilitiesAccountId: LiabilitiesAccountId,
+    walletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
       const { results } = await MainBook.ledger({
-        account: liabilitiesAccountId,
+        account: liabilitiesWalletId,
         type: LedgerTransactionType.Payment,
         pending: true,
       })
@@ -113,21 +121,23 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const getPendingPaymentsCount = async (
-    liabilitiesAccountId: LiabilitiesAccountId,
+    walletId: WalletId,
   ): Promise<number | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     return Transaction.countDocuments({
-      accounts: liabilitiesAccountId,
+      accounts: liabilitiesWalletId,
       type: "payment",
       pending: true,
     })
   }
 
   const getAccountBalance = async (
-    liabilitiesAccountId: LiabilitiesAccountId,
+    walletId: WalletId,
   ): Promise<Satoshis | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
       const { balance } = await MainBook.balance({
-        account: liabilitiesAccountId,
+        account: liabilitiesWalletId,
         currency: "BTC",
       })
       return toSats(balance)
@@ -137,14 +147,15 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const twoFATxVolumeSince = async ({
-    liabilitiesAccountId,
+    walletId,
     timestamp,
   }: {
-    liabilitiesAccountId: LiabilitiesAccountId
+    walletId: WalletId
     timestamp: Date
-  }) =>
-    txVolumeSince({
-      liabilitiesAccountId,
+  }) => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    return txVolumeSince({
+      liabilitiesWalletId,
       timestamp,
       txnTypes: [
         LedgerTransactionType.IntraLedger,
@@ -153,42 +164,47 @@ export const LedgerService = (): ILedgerService => {
         LedgerTransactionType.OnchainPayment,
       ],
     })
+  }
 
   const withdrawalTxVolumeSince = async ({
-    liabilitiesAccountId,
+    walletId,
     timestamp,
   }: {
-    liabilitiesAccountId: LiabilitiesAccountId
+    walletId: WalletId
     timestamp: Date
-  }) =>
-    txVolumeSince({
-      liabilitiesAccountId,
+  }) => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    return txVolumeSince({
+      liabilitiesWalletId,
       timestamp,
       txnTypes: [LedgerTransactionType.Payment, LedgerTransactionType.OnchainPayment],
     })
+  }
 
   const intraledgerTxVolumeSince = async ({
-    liabilitiesAccountId,
+    walletId,
     timestamp,
   }: {
-    liabilitiesAccountId: LiabilitiesAccountId
+    walletId: WalletId
     timestamp: Date
-  }) =>
-    txVolumeSince({
-      liabilitiesAccountId,
+  }) => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    return txVolumeSince({
+      liabilitiesWalletId,
       timestamp,
       txnTypes: [
         LedgerTransactionType.IntraLedger,
         LedgerTransactionType.OnchainIntraLedger,
       ],
     })
+  }
 
   const txVolumeSince = async ({
-    liabilitiesAccountId,
+    liabilitiesWalletId,
     timestamp,
     txnTypes,
   }: {
-    liabilitiesAccountId: LiabilitiesAccountId
+    liabilitiesWalletId: LiabilitiesWalletId
     timestamp: Date
     txnTypes: LedgerTransactionType[]
   }): Promise<TxVolume | LedgerServiceError> => {
@@ -200,7 +216,7 @@ export const LedgerService = (): ILedgerService => {
       const [result]: (TxVolume & { _id: null })[] = await Transaction.aggregate([
         {
           $match: {
-            accounts: liabilitiesAccountId,
+            accounts: liabilitiesWalletId,
             $or: txnTypesObj,
             $and: [{ timestamp: { $gte: timestamp } }],
           },
@@ -223,13 +239,18 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const isOnChainTxRecorded = async (
-    liabilitiesAccountId: LiabilitiesAccountId,
-    txHash: OnChainTxHash,
-  ): Promise<boolean | LedgerServiceError> => {
+  const isOnChainTxRecorded = async ({
+    walletId,
+    txHash,
+  }: {
+    walletId: WalletId
+    txHash: OnChainTxHash
+  }): Promise<boolean | LedgerServiceError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+
     try {
       const result = await Transaction.countDocuments({
-        accounts: liabilitiesAccountId,
+        accounts: liabilitiesWalletId,
         type: LedgerTransactionType.OnchainReceipt,
         hash: txHash,
       })
@@ -254,7 +275,7 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const addOnChainTxReceive = async ({
-    liabilitiesAccountId,
+    walletId,
     txHash,
     sats,
     fee,
@@ -262,6 +283,8 @@ export const LedgerService = (): ILedgerService => {
     usdFee,
     receivingAddress,
   }: ReceiveOnChainTxArgs): Promise<LedgerJournal | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+
     try {
       const metadata = {
         currency: "BTC",
@@ -276,7 +299,7 @@ export const LedgerService = (): ILedgerService => {
       }
 
       const entry = MainBook.entry("")
-        .credit(liabilitiesAccountId, sats - fee, metadata)
+        .credit(liabilitiesWalletId, sats - fee, metadata)
         .debit(lndAccountingPath, sats, metadata)
 
       if (fee > 0) {
@@ -292,7 +315,7 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const addLnTxReceive = async ({
-    liabilitiesAccountId,
+    walletId,
     paymentHash,
     description,
     sats,
@@ -300,6 +323,8 @@ export const LedgerService = (): ILedgerService => {
     usd,
     usdFee,
   }: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+
     let metadata: AddLnTxReceiveMetadata
     try {
       metadata = {
@@ -315,7 +340,7 @@ export const LedgerService = (): ILedgerService => {
 
       const entry = MainBook.entry(description)
       entry
-        .credit(liabilitiesAccountId, sats - fee, metadata)
+        .credit(liabilitiesWalletId, sats - fee, metadata)
         .debit(lndAccountingPath, sats, metadata)
 
       if (fee > 0) {
@@ -331,12 +356,14 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const addLnFeeReimbursementReceive = async ({
-    liabilitiesAccountId,
+    walletId,
     paymentHash,
     sats,
     usd,
     journalId,
   }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+
     try {
       const metadata = {
         type: LedgerTransactionType.LnFeeReimbursement,
@@ -350,7 +377,7 @@ export const LedgerService = (): ILedgerService => {
       const description = "fee reimbursement"
       const entry = MainBook.entry(description)
       entry
-        .credit(liabilitiesAccountId, sats, metadata)
+        .credit(liabilitiesWalletId, sats, metadata)
         .debit(lndAccountingPath, sats, metadata)
 
       const savedEntry = await entry.commit()
@@ -361,7 +388,7 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const addLnTxSend = async ({
-    liabilitiesAccountId,
+    walletId,
     paymentHash,
     description,
     sats,
@@ -371,6 +398,8 @@ export const LedgerService = (): ILedgerService => {
     pubkey,
     feeKnownInAdvance,
   }: AddLnTxSendArgs): Promise<LedgerJournal | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+
     let metadata: AddLnTxSendMetadata
     try {
       metadata = {
@@ -390,7 +419,7 @@ export const LedgerService = (): ILedgerService => {
 
       entry
         .credit(lndAccountingPath, sats, metadata)
-        .debit(liabilitiesAccountId, sats, metadata)
+        .debit(liabilitiesWalletId, sats, metadata)
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)
@@ -400,7 +429,7 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const addLnIntraledgerTxSend = async ({
-    liabilitiesAccountId,
+    walletId,
     paymentHash,
     description,
     sats,
@@ -408,7 +437,7 @@ export const LedgerService = (): ILedgerService => {
     usd,
     usdFee,
     pubkey,
-    recipientLiabilitiesAccountId,
+    recipientWalletId,
     payerUsername,
     recipientUsername,
     memoPayer,
@@ -428,10 +457,10 @@ export const LedgerService = (): ILedgerService => {
     }
 
     return addIntraledgerTxSend({
-      liabilitiesAccountId,
+      walletId,
       description,
       sats,
-      recipientLiabilitiesAccountId,
+      recipientWalletId,
       payerUsername,
       recipientUsername,
       memoPayer,
@@ -441,7 +470,7 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const addOnChainIntraledgerTxSend = async ({
-    liabilitiesAccountId,
+    walletId,
     description,
     sats,
     fee,
@@ -449,7 +478,7 @@ export const LedgerService = (): ILedgerService => {
     usdFee,
     payeeAddresses,
     sendAll,
-    recipientLiabilitiesAccountId,
+    recipientWalletId,
     payerUsername,
     recipientUsername,
     memoPayer,
@@ -469,10 +498,10 @@ export const LedgerService = (): ILedgerService => {
     }
 
     return addIntraledgerTxSend({
-      liabilitiesAccountId,
+      walletId,
       description,
       sats,
-      recipientLiabilitiesAccountId,
+      recipientWalletId,
       payerUsername,
       recipientUsername,
       memoPayer,
@@ -482,13 +511,13 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const addUsernameIntraledgerTxSend = async ({
-    liabilitiesAccountId,
+    walletId,
     description,
     sats,
     fee,
     usd,
     usdFee,
-    recipientLiabilitiesAccountId,
+    recipientWalletId,
     payerUsername,
     recipientUsername,
     memoPayer,
@@ -506,10 +535,10 @@ export const LedgerService = (): ILedgerService => {
     }
 
     return addIntraledgerTxSend({
-      liabilitiesAccountId,
+      walletId,
       description,
       sats,
-      recipientLiabilitiesAccountId,
+      recipientWalletId,
       payerUsername,
       recipientUsername,
       memoPayer,
@@ -519,16 +548,19 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const addIntraledgerTxSend = async ({
-    liabilitiesAccountId,
+    walletId,
     description,
     sats,
-    recipientLiabilitiesAccountId,
+    recipientWalletId,
     payerUsername,
     recipientUsername,
     memoPayer,
     shareMemoWithPayee,
     metadata,
   }: SendIntraledgerTxArgs): Promise<LedgerJournal | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    const recipientLiabilitiesWalletId = toLiabilitiesWalletId(recipientWalletId)
+
     try {
       const creditMetadata = {
         ...metadata,
@@ -540,8 +572,8 @@ export const LedgerService = (): ILedgerService => {
       const entry = MainBook.entry(description)
 
       entry
-        .credit(recipientLiabilitiesAccountId, sats, creditMetadata)
-        .debit(liabilitiesAccountId, sats, debitMetadata)
+        .credit(recipientLiabilitiesWalletId, sats, creditMetadata)
+        .debit(liabilitiesWalletId, sats, debitMetadata)
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)
@@ -615,7 +647,6 @@ const translateToLedgerTx = (tx): LedgerTransaction => ({
   journalId: tx._journal.toString(),
   lnMemo: tx.memo,
   username: tx.username,
-  walletPublicId: tx.walletPublicId || null,
   memoFromPayer: tx.memoPayer,
   paymentHash: tx.hash,
   pubkey: tx.pubkey,

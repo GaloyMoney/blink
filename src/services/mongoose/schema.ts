@@ -9,7 +9,7 @@ import {
   USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD,
 } from "@config/app"
 import { UsernameRegex } from "@domain/users"
-import { accountPath } from "@services/ledger/accounts"
+import { walletPath } from "@services/ledger/accounts"
 import { Transaction } from "@services/ledger/schema"
 import crypto from "crypto"
 import * as _ from "lodash"
@@ -263,7 +263,7 @@ const UserSchema = new Schema<UserType>({
     },
   },
 
-  walletPublicId: {
+  walletId: {
     type: String,
     index: true,
     unique: true,
@@ -284,8 +284,8 @@ UserSchema.virtual("ratioBtc").get(function (this: typeof UserSchema) {
 })
 
 // this is the accounting path in medici for this user
-UserSchema.virtual("accountPath").get(function (this: typeof UserSchema) {
-  return accountPath(this._id)
+UserSchema.virtual("walletPath").get(function (this: typeof UserSchema) {
+  return walletPath(this.id)
 })
 
 UserSchema.virtual("oldEnoughForWithdrawal").get(function (this: typeof UserSchema) {
@@ -313,7 +313,7 @@ UserSchema.methods.remainingTwoFALimit = async function () {
   const { outgoingSats } = await User.getVolume({
     after: getTimestampYesterday(),
     txnType,
-    accounts: this.accountPath,
+    accounts: this.walletPath,
   })
 
   return threshold - outgoingSats
@@ -328,7 +328,7 @@ UserSchema.methods.remainingWithdrawalLimit = async function () {
   const { outgoingSats } = await User.getVolume({
     after: getTimestampYesterday(),
     txnType: [{ type: "on_us" }, { type: "onchain_on_us" }],
-    accounts: this.accountPath,
+    accounts: this.walletPath,
   })
 
   return withdrawalLimit - outgoingSats
@@ -341,7 +341,7 @@ UserSchema.methods.remainingOnUsLimit = async function () {
   const { outgoingSats } = await User.getVolume({
     after: getTimestampYesterday(),
     txnType: [{ type: "on_us" }, { type: "onchain_on_us" }],
-    accounts: this.accountPath,
+    accounts: this.walletPath,
   })
 
   return onUsLimit - outgoingSats
@@ -401,7 +401,7 @@ UserSchema.virtual("userIsActive").get(async function (this: typeof UserSchema) 
   const volume = await User.getVolume({
     after: timestamp30DaysAgo,
     txnType: [{ type: { $exists: true } }],
-    accounts: this.accountPath,
+    accounts: this.walletPath,
   })
 
   return (

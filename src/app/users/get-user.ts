@@ -114,13 +114,3 @@ const updateUserIPsInfo = async ({
       }
     },
   )
-
-export const getUsernameFromWalletPublicId = async (
-  walletPublicId: WalletPublicId,
-): Promise<Username | ApplicationError> => {
-  const user = await users.findByWalletPublicId(walletPublicId)
-
-  if (user instanceof Error) return user
-
-  return user.username
-}

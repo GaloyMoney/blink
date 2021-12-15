@@ -7,14 +7,14 @@ import { User, Transaction, InvoiceUser } from "../mongoose/schema"
 import { loadLedger } from "@services/ledger"
 
 export const ledger = loadLedger({
-  bankOwnerAccountResolver: async () => {
+  bankOwnerWalletResolver: async () => {
     const { _id } = await User.findOne(
       { role: "bankowner" },
       { lastIPs: 0, lastConnection: 0 },
     )
     return _id
   },
-  dealerAccountResolver: async () => {
+  dealerWalletResolver: async () => {
     const { _id } = await User.findOne(
       { role: "dealer" },
       { lastIPs: 0, lastConnection: 0 },
