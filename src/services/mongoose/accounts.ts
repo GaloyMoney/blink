@@ -34,7 +34,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     walletId: WalletId,
   ): Promise<Account | RepositoryError> => {
     try {
-      const result: UserType = await User.findOne({ _id: walletId }, projection)
+      const result: UserType = await User.findOne({ walletId }, projection)
       if (!result) return new CouldNotFindError()
       return translateToAccount(result)
     } catch (err) {

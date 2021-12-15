@@ -15,7 +15,7 @@ export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepos
     try {
       const { address, pubkey } = onChainAddress
       const result = await User.updateOne(
-        { _id: walletId },
+        { walletId },
         { $push: { onchain: { address, pubkey } } },
       )
 

@@ -12,7 +12,7 @@ import { caseInsensitiveRegex } from "./users"
 export const WalletsRepository = (): IWalletsRepository => {
   const findById = async (walletId: WalletId): Promise<Wallet | RepositoryError> => {
     try {
-      const result = await User.findOne({ _id: walletId })
+      const result = await User.findOne({ walletId })
       if (!result) {
         return new CouldNotFindWalletFromIdError()
       }

@@ -28,7 +28,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   }): Promise<void | NotificationsServiceError> => {
     try {
       // work around to move forward before re-wrighting the whole notifications module
-      const user = await User.findOne({ _id: walletId })
+      const user = await User.findOne({ walletId })
 
       // Do not await this call for quicker processing
       transactionNotification({
