@@ -485,7 +485,7 @@ const lookupPaymentByPubkeyAndHash = async ({
 // where '<Error Code Details Object>' is an Error object with
 // the usual 'message', 'stack' etc. properties and additional
 // properties: 'code', 'details', 'metadata'.
-const parseLndErrorDetails = (err) =>
+export const parseLndErrorDetails = (err) =>
   err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details || err[1]
 
 const KnownLndErrorDetails = {
