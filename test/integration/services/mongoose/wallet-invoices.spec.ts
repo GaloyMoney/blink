@@ -63,7 +63,7 @@ describe("WalletInvoices", () => {
     const wallet = await getAndCreateUserWallet(1)
     for (let i = 0; i < 2; i++) {
       await addInvoice({
-        walletId: wallet.user.id as WalletId,
+        walletId: wallet.user.walletId as WalletId,
         amount: toSats(1000),
       })
     }

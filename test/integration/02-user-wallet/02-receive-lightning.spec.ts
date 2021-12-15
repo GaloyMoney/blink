@@ -37,7 +37,7 @@ describe("UserWallet - Lightning", () => {
     const memo = "myMemo"
 
     const lnInvoice = await addInvoice({
-      walletId: userWallet1.user.id as WalletId,
+      walletId: userWallet1.user.walletId as WalletId,
       amount: toSats(sats),
       memo,
     })
@@ -81,7 +81,7 @@ describe("UserWallet - Lightning", () => {
 
     // check that memo is not filtered by spam filter
     const { result: txns, error } = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet1.user.id,
+      walletId: userWallet1.user.walletId,
     })
     if (error instanceof Error || txns === null) {
       throw error
@@ -101,7 +101,7 @@ describe("UserWallet - Lightning", () => {
     const sats = 1000
 
     const lnInvoice = await addInvoiceNoAmount({
-      walletId: userWallet1.user.id as WalletId,
+      walletId: userWallet1.user.walletId as WalletId,
     })
     if (lnInvoice instanceof Error) return lnInvoice
     const { paymentRequest: invoice } = lnInvoice
@@ -143,7 +143,7 @@ describe("UserWallet - Lightning", () => {
 
     // process spam transaction
     const lnInvoice = await addInvoice({
-      walletId: userWallet1.user.id as WalletId,
+      walletId: userWallet1.user.walletId as WalletId,
       amount: toSats(sats),
       memo,
     })
@@ -165,7 +165,7 @@ describe("UserWallet - Lightning", () => {
 
     // check that spam memo is filtered from transaction description
     const { result: txns, error } = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet1.user.id,
+      walletId: userWallet1.user.walletId,
     })
     if (error instanceof Error || txns === null) {
       throw error

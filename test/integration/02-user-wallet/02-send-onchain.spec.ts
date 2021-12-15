@@ -105,7 +105,7 @@ describe("UserWallet - onChainPay", () => {
     await sleep(1000)
 
     let txResult = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet0.user.id,
+      walletId: userWallet0.user.walletId,
     })
     if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
@@ -146,7 +146,7 @@ describe("UserWallet - onChainPay", () => {
     expect(feeUsd).toBeGreaterThan(0)
 
     txResult = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet0.user.id,
+      walletId: userWallet0.user.walletId,
     })
     if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
@@ -199,7 +199,7 @@ describe("UserWallet - onChainPay", () => {
     await sleep(1000)
 
     let txResult = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet11.user.id,
+      walletId: userWallet11.user.walletId,
     })
     if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult
@@ -240,7 +240,7 @@ describe("UserWallet - onChainPay", () => {
     expect(feeUsd).toBeGreaterThan(0)
 
     txResult = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet11.user.id,
+      walletId: userWallet11.user.walletId,
     })
     if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
@@ -271,7 +271,7 @@ describe("UserWallet - onChainPay", () => {
     })
     expect(paymentResult).toBe(true)
     const { result: txs, error } = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet0.user.id,
+      walletId: userWallet0.user.walletId,
     })
     if (error instanceof Error || txs === null) {
       throw error
@@ -331,7 +331,7 @@ describe("UserWallet - onChainPay", () => {
       tx.initiationVia.address === address
 
     const { result: txs, error } = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet0.user.id,
+      walletId: userWallet0.user.walletId,
     })
     if (error instanceof Error || txs === null) {
       throw error
@@ -342,7 +342,7 @@ describe("UserWallet - onChainPay", () => {
 
     // receiver should not know memo from sender
     const { result: txsUser3, error: error2 } = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet3.user.id as WalletId,
+      walletId: userWallet3.user.walletId as WalletId,
     })
     if (error2 instanceof Error || txsUser3 === null) {
       throw error2
@@ -520,7 +520,7 @@ describe("UserWallet - onChainPay", () => {
       }
 
       const { result: txs, error } = await Wallets.getTransactionsForWalletId({
-        walletId: userWallet0.user.id,
+        walletId: userWallet0.user.walletId,
       })
 
       if (error instanceof Error || txs === null) {

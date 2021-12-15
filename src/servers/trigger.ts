@@ -133,7 +133,7 @@ export async function onchainTransactionEventHandler(tx) {
       const price = await getCurrentPrice()
       const usdPerSat = price instanceof Error ? undefined : price
       await NotificationsService(onchainLogger).onChainTransactionReceivedPending({
-        walletId: user.id,
+        walletId: user.walletId,
         amount: toSats(Number(tx.tokens)),
         txHash: tx.id,
         usdPerSat,

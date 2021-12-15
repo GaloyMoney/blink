@@ -49,7 +49,7 @@ afterAll(async () => {
 const getWalletState = async (wallet) => {
   const balance = await getBTCBalance(wallet.user.id)
   const { result: transactions, error } = await Wallets.getTransactionsForWalletId({
-    walletId: wallet.user.id as WalletId,
+    walletId: wallet.user.walletId as WalletId,
   })
   if (error instanceof Error || transactions === null) {
     throw error
@@ -144,7 +144,7 @@ describe("onchainBlockEventhandler", () => {
     const sats = 500
     const wallet = await getAndCreateUserWallet(12)
     const lnInvoice = await addInvoice({
-      walletId: wallet.user.id as WalletId,
+      walletId: wallet.user.walletId as WalletId,
       amount: toSats(sats),
     })
     expect(lnInvoice).not.toBeInstanceOf(Error)

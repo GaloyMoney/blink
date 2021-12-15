@@ -200,7 +200,7 @@ describe("UserWallet - On chain", () => {
     await sleep(1000)
 
     const { result: txs, error } = await Wallets.getTransactionsForWalletId({
-      walletId: walletUser0.user.id,
+      walletId: walletUser0.user.walletId,
     })
     if (error instanceof Error || txs === null) {
       throw error
@@ -269,7 +269,7 @@ async function sendToWallet({ walletDestination }) {
 
   const initialBalance = await getBTCBalance(walletDestination.user.id)
   const { result: initTransactions, error } = await Wallets.getTransactionsForWalletId({
-    walletId: walletDestination.user.id,
+    walletId: walletDestination.user.walletId,
   })
   if (error instanceof Error || initTransactions === null) {
     throw error
@@ -306,7 +306,7 @@ async function sendToWallet({ walletDestination }) {
     )
 
     const { result: transactions, error } = await Wallets.getTransactionsForWalletId({
-      walletId: walletDestination.user.id as WalletId,
+      walletId: walletDestination.user.walletId as WalletId,
     })
     if (error instanceof Error || transactions === null) {
       throw error

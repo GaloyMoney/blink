@@ -114,7 +114,7 @@ const resolvers = {
         currency: "BTC",
         balance: async () => {
           const balanceSats = await Wallets.getBalanceForWallet({
-            walletId: wallet.user.id as WalletId,
+            walletId: wallet.user.walletId as WalletId,
             logger,
           })
           if (balanceSats instanceof Error) throw balanceSats
@@ -123,7 +123,7 @@ const resolvers = {
         },
         transactions: async () => {
           const { result: txs, error } = await Wallets.getTransactionsForWalletId({
-            walletId: wallet.user.id,
+            walletId: wallet.user.walletId,
           })
           if (error instanceof Error || txs === null) {
             throw error
@@ -288,12 +288,12 @@ const resolvers = {
         const lnInvoice =
           value && value > 0
             ? await Wallets.addInvoice({
-                walletId: wallet.user.id,
+                walletId: wallet.user.walletId,
                 amount: value,
                 memo,
               })
             : await Wallets.addInvoiceNoAmount({
-                walletId: wallet.user.id,
+                walletId: wallet.user.walletId,
                 memo,
               })
         if (lnInvoice instanceof Error) throw mapError(lnInvoice)
@@ -324,7 +324,7 @@ const resolvers = {
               const status = await Wallets.lnInvoicePaymentSend({
                 paymentRequest: invoice,
                 memo,
-                walletId: wallet.user.id as WalletId,
+                walletId: wallet.user.walletId as WalletId,
                 userId: wallet.user.id as UserId,
                 logger,
               })
@@ -335,7 +335,7 @@ const resolvers = {
               paymentRequest: invoice,
               memo,
               amount,
-              walletId: wallet.user.id as WalletId,
+              walletId: wallet.user.walletId as WalletId,
               userId: wallet.user.id as UserId,
               logger,
             })
@@ -348,7 +348,7 @@ const resolvers = {
           recipientUsername: username,
           memo,
           amount,
-          walletId: wallet.user.id,
+          walletId: wallet.user.walletId,
           userId: wallet.user.id,
           logger,
         })
@@ -361,7 +361,7 @@ const resolvers = {
         let feeSatAmount: Satoshis | ApplicationError
         if (amount && amount > 0) {
           feeSatAmount = await getNoAmountLightningFee({
-            walletId: wallet.user.id,
+            walletId: wallet.user.walletId,
             amount,
             paymentRequest: invoice,
             logger,
@@ -372,7 +372,7 @@ const resolvers = {
         }
 
         feeSatAmount = await getLightningFee({
-          walletId: wallet.user.id,
+          walletId: wallet.user.walletId,
           paymentRequest: invoice,
           logger,
         })
@@ -401,7 +401,7 @@ const resolvers = {
       }),
       getFee: async ({ address, amount }) => {
         const fee = await Wallets.getOnChainFeeByWalletId({
-          walletId: wallet.user.id,
+          walletId: wallet.user.walletId,
           amount,
           address,
           targetConfirmations: 1,

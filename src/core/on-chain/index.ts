@@ -79,7 +79,7 @@ export const OnChainMixin = (superclass) =>
       const walletId_ = this.user.id // FIXME: just set this variable for easier code review. long variable would trigger adding a tab and much bigger diff
       return redlock({ path: walletId_, logger: onchainLogger }, async (lock) => {
         const balanceSats = await Wallets.getBalanceForWallet({
-          walletId: this.user.id,
+          walletId: this.user.walletId,
           logger: onchainLogger,
           lock,
         })
@@ -111,7 +111,7 @@ export const OnChainMixin = (superclass) =>
                 amount: toSats(amountToSendPayeeUser),
                 twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
                 twoFASecret: twoFA.secret,
-                walletId: this.user.id,
+                walletId: this.user.walletId,
               })
             : true
           if (twoFACheck instanceof TwoFANewCodeNeededError)
@@ -125,7 +125,7 @@ export const OnChainMixin = (superclass) =>
 
           const intraledgerLimitCheck = await checkIntraledgerLimits({
             amount: toSats(amountToSendPayeeUser),
-            walletId: this.user.id,
+            walletId: this.user.walletId,
           })
           if (intraledgerLimitCheck instanceof Error)
             throw new TransactionRestrictedError(intraledgerLimitCheck.message, {
@@ -160,7 +160,7 @@ export const OnChainMixin = (superclass) =>
             { logger: onchainLoggerOnUs, lock },
             async () =>
               LedgerService().addOnChainIntraledgerTxSend({
-                walletId: this.user.id,
+                walletId: this.user.walletId,
                 description: "",
                 sats: toSats(sats),
                 fee: onChainFee,
@@ -210,7 +210,7 @@ export const OnChainMixin = (superclass) =>
 
         const withdrawalLimitCheck = await checkWithdrawalLimits({
           amount: toSats(checksAmount),
-          walletId: this.user.id,
+          walletId: this.user.walletId,
         })
         if (withdrawalLimitCheck instanceof Error)
           throw new TransactionRestrictedError(withdrawalLimitCheck.message, {
@@ -222,7 +222,7 @@ export const OnChainMixin = (superclass) =>
               amount: toSats(checksAmount),
               twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
               twoFASecret: twoFA.secret,
-              walletId: this.user.id,
+              walletId: this.user.walletId,
             })
           : true
         if (twoFACheck instanceof TwoFANewCodeNeededError)
