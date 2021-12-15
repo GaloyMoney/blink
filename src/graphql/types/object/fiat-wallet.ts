@@ -14,7 +14,7 @@ const FiatWallet = new GT.Object({
   fields: () => ({
     id: {
       type: GT.NonNullID,
-      resolve: (source) => source.publicId,
+      resolve: (source) => source.id,
     },
     walletCurrency: {
       type: GT.NonNull(WalletCurrency),
