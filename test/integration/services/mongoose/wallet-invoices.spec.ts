@@ -3,9 +3,10 @@ import { toSats } from "@domain/bitcoin"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { InvoiceUser } from "@services/mongoose/schema"
 import { getAndCreateUserWallet } from "test/helpers"
+import crypto from "crypto"
 
 const createTestWalletInvoice = () => {
-  const randomPaymentHash = Math.random().toString(36) as PaymentHash
+  const randomPaymentHash = crypto.createHash("sha256") as unknown as PaymentHash
   return {
     paymentHash: randomPaymentHash,
     walletId: "walletId" as WalletId,
