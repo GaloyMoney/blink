@@ -1,5 +1,3 @@
-// import { InvalidWalletId } from "@domain/errors"
-
 export { WalletTransactionHistory } from "./tx-history"
 export * from "./tx-methods"
 export * from "./tx-status"
@@ -11,11 +9,4 @@ export const WalletIdRegex =
 
 export const checkedToWalletId = (walletId: string): WalletId | ValidationError => {
   return walletId as WalletId
-
-  // TODO: uncomment after walletId is using uuid v4
-
-  // if (!walletId.match(WalletIdRegex)) {
-  //   return new InvalidWalletId(walletId)
-  // }
-  // return walletId as WalletId
 }
