@@ -31,7 +31,7 @@ import {
   ENDUSER_ALIAS,
 } from "@services/tracing"
 import { AccountsRepository } from "@services/mongoose"
-import { defaultQuery, defaultQueryName, defaultQueryVars } from "../graphql/playground"
+import { playgroundTabs } from "../graphql/playground"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
