@@ -153,9 +153,7 @@ export const startApolloServer = async ({
           tabs: [
             {
               endpoint: "https://api.staging.galoy.io/graphql",
-              query: defaultQuery,
-              name: defaultQueryName,
-              variables: defaultQueryVars,
+              ...playgroundTabs.default,
             },
           ],
         }
