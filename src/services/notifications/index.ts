@@ -28,7 +28,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   }): Promise<void | NotificationsServiceError> => {
     try {
       // work around to move forward before re-wrighting the whole notifications module
-      const user = await User.findOne({ walletId })
+      const user: UserType = await User.findOne({ walletId })
 
       // Do not await this call for quicker processing
       transactionNotification({
@@ -41,7 +41,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       })
 
       // Notify the recipient (via GraphQL subscription if any)
-      const walletUpdatedEventName = walletUpdateEvent(user.id)
+      const walletUpdatedEventName = walletUpdateEvent(user.walletId)
 
       pubsub.publish(walletUpdatedEventName, {
         transaction: {
