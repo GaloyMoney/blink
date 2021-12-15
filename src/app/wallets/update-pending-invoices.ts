@@ -1,14 +1,11 @@
 import { getCurrentPrice } from "@app/prices"
-
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
-import { toLiabilitiesAccountId } from "@domain/ledger"
 import { CouldNotFindError } from "@domain/errors"
 import { DepositFeeCalculator } from "@domain/wallets"
-
-import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
-import { WalletInvoicesRepository } from "@services/mongoose"
+import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
+import { WalletInvoicesRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 
 export const updatePendingInvoices = async ({
@@ -63,7 +60,7 @@ const updatePendingInvoice = async ({
 
   const walletInvoicesRepo = WalletInvoicesRepository()
 
-  const { pubkey, paymentHash, walletId } = walletInvoice
+  const { pubkey, paymentHash, uid } = walletInvoice
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
     const isDeleted = walletInvoicesRepo.deleteByPaymentHash(paymentHash)
@@ -81,7 +78,7 @@ const updatePendingInvoice = async ({
   if (lnInvoiceLookup.isSettled) {
     const pendingInvoiceLogger = logger.child({
       hash: paymentHash,
-      wallet: walletId,
+      uid,
       topic: "payment",
       protocol: "lightning",
       transactionType: "receipt",
@@ -125,10 +122,9 @@ const updatePendingInvoice = async ({
       const usd = received * usdPerSat
       const usdFee = fee * usdPerSat
 
-      const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
       const ledgerService = LedgerService()
       const result = await ledgerService.addLnTxReceive({
-        liabilitiesAccountId,
+        walletId: uid,
         paymentHash,
         description,
         sats: received,
@@ -141,7 +137,7 @@ const updatePendingInvoice = async ({
       const notificationsService = NotificationsService(logger)
       notificationsService.lnInvoicePaid({
         paymentHash,
-        recipientWalletId: updatedWalletInvoice.walletId,
+        recipientWalletId: uid,
         amount: received,
         usdPerSat,
       })

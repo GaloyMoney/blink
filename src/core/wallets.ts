@@ -1,4 +1,4 @@
-import { checkRecipientWalletIdLimits, registerAndPersistInvoice } from "@app/wallets"
+import { checkRecipientWalletIdRateLimits, registerAndPersistInvoice } from "@app/wallets"
 
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { checkedToUsername } from "@domain/users"
@@ -28,7 +28,7 @@ export const addInvoiceForUsername = async ({
   const walletId = await walletIdFromUsername(checkedUsername)
   if (walletId instanceof Error) return walletId
 
-  const limitOk = await checkRecipientWalletIdLimits(walletId)
+  const limitOk = await checkRecipientWalletIdRateLimits(walletId)
   if (limitOk instanceof Error) return limitOk
   const sats = checkedToSats(amount)
   if (sats instanceof Error) return sats
@@ -51,7 +51,7 @@ export const addInvoiceNoAmountForUsername = async ({
   const walletId = await walletIdFromUsername(checkedUsername)
   if (walletId instanceof Error) return walletId
 
-  const limitOk = await checkRecipientWalletIdLimits(walletId)
+  const limitOk = await checkRecipientWalletIdRateLimits(walletId)
   if (limitOk instanceof Error) return limitOk
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)

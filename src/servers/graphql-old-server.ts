@@ -135,29 +135,6 @@ const resolvers = {
       },
     ],
 
-    // new way to return the balance
-    // balances are distinc between USD and BTC
-    // but transaction are common, because they could have rely both on USD/BTC
-    wallet2: async (_, __, { wallet }) => {
-      const balances = await wallet.getBalances()
-
-      return {
-        transactions: async () => {
-          const { result: txs, error } = await Wallets.getTransactionsForWalletId({
-            walletId: wallet.user.id,
-          })
-          if (error instanceof Error || txs === null) {
-            throw error
-          }
-
-          return translateWalletTx(txs)
-        },
-        balances: wallet.user.currencies.map((item) => ({
-          id: item.id,
-          balance: balances[item.id],
-        })),
-      }
-    },
     // deprecated
     nodeStats: async () => {
       const { lnd } = getActiveLnd()
@@ -384,7 +361,7 @@ const resolvers = {
         let feeSatAmount: Satoshis | ApplicationError
         if (amount && amount > 0) {
           feeSatAmount = await getNoAmountLightningFee({
-            walletPublicId: wallet.user.walletPublicId,
+            walletId: wallet.user.id,
             amount,
             paymentRequest: invoice,
             logger,
@@ -395,7 +372,7 @@ const resolvers = {
         }
 
         feeSatAmount = await getLightningFee({
-          walletPublicId: wallet.user.walletPublicId,
+          walletId: wallet.user.id,
           paymentRequest: invoice,
           logger,
         })

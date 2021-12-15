@@ -69,7 +69,7 @@ interface UserType {
   currencies: CurrencyObjectForUser[]
   onchain?: OnChainObjectForUser[]
   twoFA: TwoFAForUser
-  walletPublicId: WalletPublicId
+  walletId: WalletId
 
   // business:
   title?: string
@@ -78,7 +78,7 @@ interface UserType {
   // virtual:
   ratioUsd: number
   ratioBtc: number
-  accountPath: string
+  walletPath: string
   oldEnoughForWithdrawal: boolean
 
   // methods

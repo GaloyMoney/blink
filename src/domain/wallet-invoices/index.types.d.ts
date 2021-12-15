@@ -1,6 +1,6 @@
 type WalletInvoice = {
   readonly paymentHash: PaymentHash
-  readonly walletId: WalletId
+  readonly uid: WalletId
   readonly selfGenerated: boolean
   readonly pubkey: Pubkey
   paid: boolean

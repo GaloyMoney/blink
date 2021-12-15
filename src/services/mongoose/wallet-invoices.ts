@@ -8,7 +8,7 @@ import { InvoiceUser } from "./schema"
 export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   const persistNew = async ({
     paymentHash,
-    walletId,
+    uid,
     selfGenerated,
     pubkey,
     paid,
@@ -16,14 +16,14 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     try {
       await new InvoiceUser({
         _id: paymentHash,
-        uid: walletId,
+        uid,
         selfGenerated,
         pubkey,
         paid,
       }).save()
       return {
         paymentHash,
-        walletId,
+        uid,
         selfGenerated,
         pubkey,
         paid,
@@ -35,20 +35,20 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
 
   const update = async ({
     paymentHash,
-    walletId,
+    uid,
     selfGenerated,
     pubkey,
     paid,
   }: WalletInvoice): Promise<WalletInvoice | RepositoryError> => {
     try {
-      const data = { uid: walletId, selfGenerated, pubkey, paid }
+      const data = { uid, selfGenerated, pubkey, paid }
       const doc = await InvoiceUser.updateOne({ _id: paymentHash }, { $set: data })
       if (doc.nModified !== 1) {
         return new RepositoryError("Couldn't update invoice for payment hash")
       }
       return {
         paymentHash,
-        walletId,
+        uid,
         selfGenerated,
         pubkey,
         paid,
@@ -68,7 +68,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }
       return {
         paymentHash,
-        walletId: invoiceUser.uid,
+        uid: invoiceUser.uid,
         selfGenerated: invoiceUser.selfGenerated,
         pubkey: invoiceUser.pubkey,
         paid: invoiceUser.paid,
@@ -93,7 +93,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     for await (const invoice of pending) {
       yield {
         paymentHash: invoice.id as PaymentHash,
-        walletId: invoice.uid as WalletId,
+        uid: invoice.uid as WalletId,
         selfGenerated: invoice.selfGenerated,
         pubkey: invoice.pubkey as Pubkey,
         paid: invoice.paid,

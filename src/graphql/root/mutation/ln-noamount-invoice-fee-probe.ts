@@ -30,7 +30,7 @@ const LnNoAmountInvoiceFeeProbeMutation = GT.Field({
     }
 
     const feeSatAmount = await getNoAmountLightningFee({
-      walletPublicId: walletId,
+      walletId,
       amount,
       paymentRequest,
       logger,

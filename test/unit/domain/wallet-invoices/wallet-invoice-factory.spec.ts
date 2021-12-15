@@ -23,11 +23,12 @@ describe("wallet invoice factory methods", () => {
         features: [],
       },
       pubkey: "pubkey" as Pubkey,
+      descriptionHash: "descriptionHash" as string, // FIXME
     }
     const result = walletInvoiceFactory.create({ registeredInvoice })
     const expected = {
       paymentHash: "paymentHash",
-      walletId: "id",
+      uid: "id",
       selfGenerated: true,
       pubkey: "pubkey",
       paid: false,
@@ -47,7 +48,7 @@ describe("wallet invoice factory methods", () => {
     const result = walletInvoiceFactory.createForRecipient({ registeredInvoice })
     const expected = {
       paymentHash: "paymentHash",
-      walletId: "id",
+      uid: "id",
       selfGenerated: false,
       pubkey: "pubkey",
       paid: false,

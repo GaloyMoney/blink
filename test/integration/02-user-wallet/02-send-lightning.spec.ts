@@ -23,7 +23,6 @@ import {
 import * as Wallets from "@app/wallets"
 import { addInvoice } from "@app/wallets/add-invoice-for-wallet"
 import { toSats, FEECAP } from "@domain/bitcoin"
-import { toLiabilitiesAccountId } from "@domain/ledger"
 import {
   SelfPaymentError as DomainSelfPaymentError,
   InsufficientBalanceError as DomainInsufficientBalanceError,
@@ -521,7 +520,7 @@ describe("UserWallet - Lightning Pay", () => {
       fn: function fn(wallet) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           const feeFromProbe = await getLightningFee({
-            walletPublicId: wallet.user.walletPublicId,
+            walletId: wallet.user.id,
             paymentRequest: input.invoice,
             logger: wallet.logger,
           })
@@ -716,7 +715,7 @@ describe("UserWallet - Lightning Pay", () => {
         const finalBalance = await getBTCBalance(userWallet1.user.id)
 
         // const { id } = await decodePaymentRequest({ lnd: lndOutside2, request })
-        // const { results: [{ fee }] } = await getAccountTransactions(userWallet1.accountPath, { hash: id })
+        // const { results: [{ fee }] } = await getAccountTransactions(userWallet1.walletPath, { hash: id })
         // ^^^^ this fetch the wrong transaction
 
         // TODO: have a way to do this more programatically?
@@ -762,10 +761,7 @@ describe("UserWallet - Lightning Pay", () => {
           })
           if (updatedPayments instanceof Error) throw updatedPayments
 
-          const liabilitiesAccountId = toLiabilitiesAccountId(userWallet1.user.id)
-          const count = await LedgerService().getPendingPaymentsCount(
-            liabilitiesAccountId,
-          )
+          const count = await LedgerService().getPendingPaymentsCount(userWallet1.user.id)
           if (count instanceof Error) throw count
 
           const { is_confirmed } = await getInvoice({ lnd: lndOutside1, id })
@@ -804,10 +800,7 @@ describe("UserWallet - Lightning Pay", () => {
           })
           if (updatedPayments instanceof Error) throw updatedPayments
 
-          const liabilitiesAccountId = toLiabilitiesAccountId(userWallet1.user.id)
-          const count = await LedgerService().getPendingPaymentsCount(
-            liabilitiesAccountId,
-          )
+          const count = await LedgerService().getPendingPaymentsCount(userWallet1.user.id)
           if (count instanceof Error) throw count
 
           return count === 0
