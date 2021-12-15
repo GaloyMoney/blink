@@ -360,7 +360,7 @@ const executePaymentViaIntraledger = async ({
   })
   if (validatedResult instanceof AlreadyPaidError) return PaymentSendStatus.AlreadyPaid
   if (validatedResult instanceof Error) return validatedResult
-  const { pubkey: recipientPubkey, walletId: recipientWalletId } = walletInvoice
+  const { pubkey: recipientPubkey, uid: recipientWalletId } = walletInvoice
 
   const payerWallet = await WalletsRepository().findById(payerWalletId)
   if (payerWallet instanceof Error) return payerWallet

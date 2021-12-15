@@ -60,7 +60,7 @@ const updatePendingInvoice = async ({
 
   const walletInvoicesRepo = WalletInvoicesRepository()
 
-  const { pubkey, paymentHash, walletId } = walletInvoice
+  const { pubkey, paymentHash, uid } = walletInvoice
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
     const isDeleted = walletInvoicesRepo.deleteByPaymentHash(paymentHash)
@@ -78,7 +78,7 @@ const updatePendingInvoice = async ({
   if (lnInvoiceLookup.isSettled) {
     const pendingInvoiceLogger = logger.child({
       hash: paymentHash,
-      walletId,
+      uid,
       topic: "payment",
       protocol: "lightning",
       transactionType: "receipt",
@@ -124,7 +124,7 @@ const updatePendingInvoice = async ({
 
       const ledgerService = LedgerService()
       const result = await ledgerService.addLnTxReceive({
-        walletId,
+        walletId: uid,
         paymentHash,
         description,
         sats: received,
@@ -137,7 +137,7 @@ const updatePendingInvoice = async ({
       const notificationsService = NotificationsService(logger)
       notificationsService.lnInvoicePaid({
         paymentHash,
-        recipientWalletId: walletId,
+        recipientWalletId: uid,
         amount: received,
         usdPerSat,
       })

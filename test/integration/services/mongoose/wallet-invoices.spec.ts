@@ -8,7 +8,7 @@ const createTestWalletInvoice = () => {
   const randomPaymentHash = Math.random().toString(36) as PaymentHash
   return {
     paymentHash: randomPaymentHash,
-    walletId: "walletId" as WalletId,
+    uid: "walletId" as WalletId,
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
     paid: false,
