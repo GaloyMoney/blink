@@ -22,29 +22,24 @@ export const getUserForLogin = async ({
   userId: string
   ip?: string
   logger: Logger
-}): Promise<User | ApplicationError> =>
-  asyncRunInSpan(
-    "app.getUserForLogin",
-    { [SemanticAttributes.CODE_FUNCTION]: "getUserForLogin" },
-    async () => {
-      const user = await users.findById(userId as UserId)
+}): Promise<User | ApplicationError> => {
+  const user = await users.findById(userId as UserId)
 
-      if (user instanceof Error) {
-        return user
-      }
-      addAttributesToCurrentSpan({
-        [ENDUSER_ALIAS]: user.username,
-      })
-      // this routing run asynchrously, to update metadata on the background
-      updateUserIPsInfo({ userId, ip, logger } as {
-        userId: UserId
-        ip: IpAddress
-        logger: Logger
-      })
+  if (user instanceof Error) {
+    return user
+  }
+  addAttributesToCurrentSpan({
+    [ENDUSER_ALIAS]: user.username,
+  })
+  // this routing run asynchrously, to update metadata on the background
+  updateUserIPsInfo({ userId, ip, logger } as {
+    userId: UserId
+    ip: IpAddress
+    logger: Logger
+  })
 
-      return user
-    },
-  )
+  return user
+}
 
 const updateUserIPsInfo = async ({
   userId,

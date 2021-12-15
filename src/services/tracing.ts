@@ -171,6 +171,64 @@ export const asyncRunInSpan = <F extends () => ReturnType<F>>(
   return ret
 }
 
+// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+export const wrapToRunInSpan = <A extends Array<any>, R>({
+  fn,
+  fnName,
+  namespace = "app",
+  spanAttributes = {},
+}: {
+  fn: (...args: A) => R
+  fnName?: string
+  namespace?: string
+  spanAttributes?: SpanAttributes
+}) => {
+  return (...args: A): R => {
+    const name = fnName || fn.name
+    const spanName = `${namespace}.${name}`
+    const attributes = { [SemanticAttributes.CODE_FUNCTION]: name, ...spanAttributes }
+    const ret = tracer.startActiveSpan(spanName, { attributes }, (span) => {
+      const ret = fn(...args)
+      if (ret instanceof Error) {
+        span.recordException(ret)
+      }
+      span.end()
+      return ret
+    })
+    return ret
+  }
+}
+
+type PromiseReturnType<T> = T extends Promise<infer Return> ? Return : T
+
+// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+export const wrapAsyncToRunInSpan = <A extends Array<any>, R>({
+  fn,
+  fnName,
+  namespace = "app",
+  spanAttributes = {},
+}: {
+  fn: (...args: A) => Promise<PromiseReturnType<R>>
+  fnName?: string
+  namespace?: string
+  spanAttributes?: SpanAttributes
+}) => {
+  return (...args: A): Promise<PromiseReturnType<R>> => {
+    const name = fnName || fn.name
+    const spanName = `${namespace}.${name}`
+    const attributes = { [SemanticAttributes.CODE_FUNCTION]: name, ...spanAttributes }
+    const ret = tracer.startActiveSpan(spanName, { attributes }, async (span) => {
+      const ret = await fn(...args)
+      if (ret instanceof Error) {
+        span.recordException(ret)
+      }
+      span.end()
+      return ret
+    })
+    return ret
+  }
+}
+
 export const addAttributesToCurrentSpanAndPropagate = <F extends () => ReturnType<F>>(
   attributes: { [key: string]: string | undefined },
   fn: F,
