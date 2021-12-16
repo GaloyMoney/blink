@@ -113,7 +113,10 @@ const transactionSchema = new Schema({
   meta: Schema.Types.Mixed,
   datetime: Date,
   account_path: [String],
-  accounts: String,
+  accounts: {
+    type: String,
+    maxlength: 36, // TODO: remove after switching account to uuid-v4
+  },
   book: String,
   memo: String,
   _journal: {
