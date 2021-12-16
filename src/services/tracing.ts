@@ -187,6 +187,13 @@ export const wrapToRunInSpan = <A extends Array<any>, R>({
     const name = fnName || fn.name
     const spanName = `${namespace}.${name}`
     const attributes = { [SemanticAttributes.CODE_FUNCTION]: name, ...spanAttributes }
+    if (args && args.length > 0) {
+      let params = { "0": args[0] }
+      if (typeof args[0] === "object") params = args[0]
+      for (const key in params) {
+        attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = params[key]
+      }
+    }
     const ret = tracer.startActiveSpan(spanName, { attributes }, (span) => {
       const ret = fn(...args)
       if (ret instanceof Error) {
@@ -217,6 +224,13 @@ export const wrapAsyncToRunInSpan = <A extends Array<any>, R>({
     const name = fnName || fn.name
     const spanName = `${namespace}.${name}`
     const attributes = { [SemanticAttributes.CODE_FUNCTION]: name, ...spanAttributes }
+    if (args && args.length > 0) {
+      let params = { "0": args[0] }
+      if (typeof args[0] === "object") params = args[0]
+      for (const key in params) {
+        attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = params[key]
+      }
+    }
     const ret = tracer.startActiveSpan(spanName, { attributes }, async (span) => {
       const ret = await fn(...args)
       if (ret instanceof Error) {
