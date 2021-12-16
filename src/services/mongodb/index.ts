@@ -8,18 +8,18 @@ import { loadLedger } from "@services/ledger"
 
 export const ledger = loadLedger({
   bankOwnerWalletResolver: async () => {
-    const { _id } = await User.findOne(
+    const { walletId } = await User.findOne(
       { role: "bankowner" },
       { lastIPs: 0, lastConnection: 0 },
     )
-    return _id
+    return walletId
   },
   dealerWalletResolver: async () => {
-    const { _id } = await User.findOne(
+    const { walletId } = await User.findOne(
       { role: "dealer" },
       { lastIPs: 0, lastConnection: 0 },
     )
-    return _id
+    return walletId
   },
 })
 
