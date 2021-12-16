@@ -24,7 +24,6 @@ export class CouldNotFindPhoneCodeError extends CouldNotFindError {}
 export class CouldNotFindWalletFromIdError extends CouldNotFindError {}
 export class CouldNotFindWalletFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressError extends CouldNotFindError {}
-export class CouldNotFindWalletFromPublicIdError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressesError extends CouldNotFindError {}
 
 export class CouldNotFindAccountFromUsernameError extends CouldNotFindError {}
