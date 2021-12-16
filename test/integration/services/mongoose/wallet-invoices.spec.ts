@@ -6,7 +6,7 @@ import { getAndCreateUserWallet } from "test/helpers"
 import crypto from "crypto"
 
 const createTestWalletInvoice = () => {
-  const randomPaymentHash = crypto.createHash("sha256") as unknown as PaymentHash
+  const randomPaymentHash = crypto.randomBytes(32).toString("hex") as PaymentHash
   return {
     paymentHash: randomPaymentHash,
     walletId: "walletId" as WalletId,
