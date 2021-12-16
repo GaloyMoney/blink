@@ -52,12 +52,11 @@ integration:
 
 reset-integration: reset-deps integration
 
-cron-in-ci:
-	. ./.envrc && yarn build && LOGLEVEL=error node lib/servers/cron.js
-
 integration-in-ci:
 	. ./.envrc && \
-		NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+		NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
+		yarn build && \
+		LOGLEVEL=error node lib/servers/cron.js
 
 unit-in-ci:
 	. ./.envrc && \

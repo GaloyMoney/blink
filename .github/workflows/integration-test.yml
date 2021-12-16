@@ -15,5 +15,3 @@ jobs:
     - run: yarn install
     - name: Run integration tests
       run: docker compose up -d && make integration-in-ci
-    - name: Run cron
-      run: make cron-in-ci
