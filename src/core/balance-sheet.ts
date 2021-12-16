@@ -27,7 +27,7 @@ const updatePendingLightningInvoices = async () => {
   await runInParallel({
     iterator: walletIdsWithPendingInvoices,
     logger,
-    processor: async (walletId: WalletId, index) => {
+    processor: async (walletId, index) => {
       logger.trace(
         "updating pending invoices for wallet %s in worker %d",
         walletId,
@@ -58,7 +58,7 @@ const updatePendingLightningPayments = async () => {
         index,
       )
       const result = await Wallets.updatePendingPayments({
-        walletId: ledger.resolveWalletId(account) as WalletId,
+        walletId: ledger.resolveAccountId(account) as WalletId,
         logger,
       })
       if (result instanceof Error) throw result

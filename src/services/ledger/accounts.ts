@@ -9,18 +9,18 @@ export const escrowAccountingPath = `${assetsMainAccount}:Reserve:Escrow` // TOD
 
 // liabilities
 export const liabilitiesMainAccount = "Liabilities"
-export const walletPath = (walletId) => `${liabilitiesMainAccount}:${walletId}`
-export const resolveWalletId = (walletPath: string | string[]): WalletId | null => {
-  let id: WalletId | null = null
+export const accountPath = (uid) => `${liabilitiesMainAccount}:${uid}`
+export const resolveAccountId = (accountPath: string | string[]) => {
+  let id: string | null = null
 
-  if (!walletPath) {
-    return null
+  if (!accountPath) {
+    return id
   }
 
-  let path = walletPath
+  let path = accountPath
 
-  if (typeof walletPath === "string") {
-    path = walletPath.split(":")
+  if (typeof accountPath === "string") {
+    path = accountPath.split(":")
   }
 
   if (
@@ -29,7 +29,7 @@ export const resolveWalletId = (walletPath: string | string[]): WalletId | null 
     path[0] === liabilitiesMainAccount &&
     path[1]
   ) {
-    id = path[1] as WalletId
+    id = path[1]
   }
 
   return id
@@ -38,15 +38,15 @@ export const resolveWalletId = (walletPath: string | string[]): WalletId | null 
 let cacheDealerPath: string
 let cachebankOwnerPath: string
 
-const throwError = (wallet) => Promise.reject(`Invalid ${wallet}WalletPath`)
+const throwError = (account) => Promise.reject(`Invalid ${account}AccountPath`)
 let bankOwnerResolver = (): Promise<string> => throwError("bankOwner")
 let dealerResolver = (): Promise<string> => throwError("dealer")
 
-export function setbankOwnerWalletResolver(resolver: () => Promise<string>) {
+export function setBankOwnerAccountResolver(resolver: () => Promise<string>) {
   bankOwnerResolver = resolver
 }
 
-export function setdealerWalletResolver(resolver: () => Promise<string>) {
+export function setDealerAccountResolver(resolver: () => Promise<string>) {
   dealerResolver = resolver
 }
 
@@ -56,7 +56,7 @@ export const dealerAccountPath = async () => {
   }
 
   const dealerId = await dealerResolver()
-  cacheDealerPath = walletPath(dealerId)
+  cacheDealerPath = accountPath(dealerId)
   return cacheDealerPath
 }
 
@@ -66,6 +66,6 @@ export const bankOwnerAccountPath = async () => {
   }
 
   const bankOwnerId = await bankOwnerResolver()
-  cachebankOwnerPath = walletPath(bankOwnerId)
+  cachebankOwnerPath = accountPath(bankOwnerId)
   return cachebankOwnerPath
 }

@@ -184,7 +184,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "ValidationError":
     case "InvalidUsername":
     case "InvalidPhoneNumber":
-    case "InvalidWalletId":
+    case "InvalidPublicWalletId":
     case "LessThanDustThresholdError":
     case "InvalidTargetConfirmations":
     case "NoContactForUsernameError":

@@ -4,7 +4,7 @@ import { WalletInvoiceValidator } from "@domain/wallet-invoices"
 describe("WalletInvoiceValidator", () => {
   const walletInvoice: WalletInvoice = {
     paymentHash: "paymentHash" as PaymentHash,
-    uid: "toWalletId" as WalletId,
+    walletId: "toWalletId" as WalletId,
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
     paid: false,
@@ -24,7 +24,7 @@ describe("WalletInvoiceValidator", () => {
     const walletInvoiceValidator = WalletInvoiceValidator(walletInvoice)
 
     const validatorResult = walletInvoiceValidator.validateToSend({
-      fromWalletId: walletInvoice.uid,
+      fromWalletId: walletInvoice.walletId,
     })
     expect(validatorResult).toBeInstanceOf(SelfPaymentError)
   })

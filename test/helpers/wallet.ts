@@ -1,6 +1,7 @@
 import * as Wallets from "@app/wallets"
 import { getTwoFALimits, getUserLimits, MS_PER_DAY } from "@config/app"
 import { toSats } from "@domain/bitcoin"
+import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
 
@@ -22,7 +23,7 @@ export const getRemainingIntraledgerLimit = async ({
 }): Promise<Satoshis | ApplicationError> => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await LedgerService().intraledgerTxVolumeSince({
-    walletId,
+    liabilitiesAccountId: toLiabilitiesAccountId(walletId),
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
@@ -41,7 +42,7 @@ export const getRemainingWithdrawalLimit = async ({
 }): Promise<Satoshis | ApplicationError> => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await LedgerService().withdrawalTxVolumeSince({
-    walletId,
+    liabilitiesAccountId: toLiabilitiesAccountId(walletId),
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
@@ -56,7 +57,7 @@ export const getRemainingTwoFALimit = async (
 ): Promise<Satoshis | ApplicationError> => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await LedgerService().withdrawalTxVolumeSince({
-    walletId,
+    liabilitiesAccountId: toLiabilitiesAccountId(walletId),
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume

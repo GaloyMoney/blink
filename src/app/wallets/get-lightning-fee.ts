@@ -1,4 +1,4 @@
-import { getBalanceForWallet } from "@app/wallets"
+import { getBalanceForWallet, walletIdFromPublicId } from "@app/wallets"
 import { checkedToSats, toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { decodeInvoice, LnFeeCalculator } from "@domain/bitcoin/lightning"
 import {
@@ -6,16 +6,15 @@ import {
   LnPaymentRequestZeroAmountRequiredError,
 } from "@domain/errors"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
-import { checkedToWalletId } from "@domain/wallets"
 import { LndService } from "@services/lnd"
 import { RoutesCache } from "@services/redis/routes"
 
 export const getLightningFee = async ({
-  walletId,
+  walletPublicId,
   paymentRequest,
   logger,
 }: {
-  walletId: WalletId
+  walletPublicId: WalletPublicId
   paymentRequest: EncodedPaymentRequest
   logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
@@ -24,16 +23,16 @@ export const getLightningFee = async ({
   const paymentAmount = checkedToSats(decodedInvoice.amount || 0)
   if (paymentAmount instanceof Error) return paymentAmount
 
-  return feeProbe({ walletId, decodedInvoice, paymentAmount, logger })
+  return feeProbe({ walletPublicId, decodedInvoice, paymentAmount, logger })
 }
 
 export const getNoAmountLightningFee = async ({
-  walletId,
+  walletPublicId,
   paymentRequest,
   amount,
   logger,
 }: {
-  walletId: WalletId
+  walletPublicId: WalletPublicId
   paymentRequest: EncodedPaymentRequest
   amount: Satoshis
   logger: Logger
@@ -49,24 +48,24 @@ export const getNoAmountLightningFee = async ({
   const paymentAmount = checkedToSats(amount)
   if (paymentAmount instanceof Error) return paymentAmount
 
-  return noAmountProbeForFee({ walletId, decodedInvoice, paymentAmount, logger })
+  return noAmountProbeForFee({ walletPublicId, decodedInvoice, paymentAmount, logger })
 }
 
 const feeProbe = async ({
-  walletId,
+  walletPublicId,
   decodedInvoice,
   paymentAmount,
   logger,
 }: {
-  walletId: WalletId
+  walletPublicId: WalletPublicId
   decodedInvoice: LnInvoice
   paymentAmount: Satoshis
   logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
   const { destination, paymentHash } = decodedInvoice
 
-  const walletIdChecked = checkedToWalletId(walletId)
-  if (walletIdChecked instanceof Error) return walletIdChecked
+  const walletId = await walletIdFromPublicId(walletPublicId)
+  if (walletId instanceof Error) return walletId
 
   const balance = await getBalanceForWallet({ walletId, logger })
   if (balance instanceof Error) return balance
@@ -103,20 +102,20 @@ const feeProbe = async ({
 }
 
 const noAmountProbeForFee = async ({
-  walletId,
+  walletPublicId,
   decodedInvoice,
   paymentAmount,
   logger,
 }: {
-  walletId: WalletId
+  walletPublicId: WalletPublicId
   decodedInvoice: LnInvoice
   paymentAmount: Satoshis
   logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
   const { destination, paymentHash } = decodedInvoice
 
-  const walletIdChecked = checkedToWalletId(walletId)
-  if (walletIdChecked instanceof Error) return walletIdChecked
+  const walletId = await walletIdFromPublicId(walletPublicId)
+  if (walletId instanceof Error) return walletId
 
   const balance = await getBalanceForWallet({ walletId, logger })
   if (balance instanceof Error) return balance

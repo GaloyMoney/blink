@@ -7,7 +7,6 @@ import { GT } from "@graphql/index"
 const AccountUpdateLevelInput = new GT.Input({
   name: "AccountUpdateLevelInput",
   fields: () => ({
-    // FIXME: should be account id
     uid: {
       type: GT.NonNullID,
     },
@@ -23,7 +22,6 @@ const AccountUpdateLevelMutation = GT.Field({
     input: { type: GT.NonNull(AccountUpdateLevelInput) },
   },
   resolve: async (_, args) => {
-    // FIXME: should be account id
     const { uid, level } = args.input
 
     for (const input of [uid, level]) {

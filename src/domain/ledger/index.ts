@@ -4,8 +4,8 @@ export * from "./errors"
 
 export const liabilitiesMainAccount = "Liabilities"
 
-export const toLiabilitiesWalletId = (walletId: WalletId): LiabilitiesWalletId =>
-  `${liabilitiesMainAccount}:${walletId}` as LiabilitiesWalletId
+export const toLiabilitiesAccountId = (walletId: WalletId): LiabilitiesAccountId =>
+  `${liabilitiesMainAccount}:${walletId}` as LiabilitiesAccountId
 
 export const LedgerTransactionType = {
   Invoice: "invoice",
@@ -31,8 +31,8 @@ export const ExtendedLedgerTransactionType = {
   LnIntraLedger: "ln_on_us",
 } as const
 
-export const toWalletId = (walletIdPath: LiabilitiesWalletId): WalletId | null => {
-  const path = walletIdPath.split(":")
+export const toWalletId = (accountId: LiabilitiesAccountId): WalletId | null => {
+  const path = accountId.split(":")
 
   if (
     Array.isArray(path) &&

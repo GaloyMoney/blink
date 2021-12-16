@@ -13,6 +13,9 @@ type Pubkey = string & { [pubkeySymbol]: never }
 declare const walletIdSymbol: unique symbol
 type WalletId = string & { [walletIdSymbol]: never }
 
+declare const walletPublicIdSymbol: unique symbol
+type WalletPublicId = string & { [walletPublicIdSymbol]: never }
+
 declare const accountIdSymbol: unique symbol
 type AccountId = string & { [accountIdSymbol]: never }
 

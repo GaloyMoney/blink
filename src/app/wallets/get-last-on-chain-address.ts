@@ -1,5 +1,5 @@
 import { CouldNotFindError } from "@domain/errors"
-import { WalletOnChainAddressesRepository } from "@services/mongoose"
+import { WalletsRepository, WalletOnChainAddressesRepository } from "@services/mongoose"
 import { createOnChainAddress } from "./create-on-chain-address"
 
 export const getLastOnChainAddress = async (
@@ -14,4 +14,13 @@ export const getLastOnChainAddress = async (
   if (lastOnChainAddress instanceof Error) return lastOnChainAddress
 
   return lastOnChainAddress.address
+}
+
+export const getLastOnChainAddressByWalletPublicId = async (
+  walletPublicId: WalletPublicId,
+): Promise<OnChainAddress | ApplicationError> => {
+  const wallets = WalletsRepository()
+  const wallet = await wallets.findByPublicId(walletPublicId)
+  if (wallet instanceof Error) return wallet
+  return getLastOnChainAddress(wallet.id)
 }

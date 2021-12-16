@@ -7,6 +7,7 @@ import Transaction from "./transaction"
 import WalletId from "../scalar/wallet-id"
 
 import * as Wallets from "@app/wallets"
+import * as Accounts from "@app/accounts"
 
 const BusinessAccount = new GT.Object({
   name: "BusinessAccount",
@@ -29,8 +30,17 @@ const BusinessAccount = new GT.Object({
           type: GT.NonNullList(WalletId),
         },
       },
-      resolve: async (source: Account) => {
-        return Wallets.getCSVForWallets(source.walletIds)
+      resolve: async (source, args) => {
+        const walletIds = await Accounts.toWalletIds({
+          account: source,
+          walletPublicIds: args.walletIds,
+        })
+
+        if (walletIds instanceof Error) {
+          throw walletIds
+        }
+
+        return Wallets.getCSVForWallets(walletIds)
       },
     },
   }),
