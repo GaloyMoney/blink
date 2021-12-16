@@ -69,7 +69,7 @@ describe("WalletInvoices", () => {
     }
 
     const invoicesCount = await InvoiceUser.countDocuments({
-      uid: wallet.user.id,
+      uid: wallet.user.walletId,
       paid: false,
     })
 
