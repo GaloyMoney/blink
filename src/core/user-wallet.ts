@@ -264,7 +264,7 @@ export abstract class UserWallet {
 
   sendBalance = async (): Promise<void> => {
     const balanceSats = await Wallets.getBalanceForWallet({
-      walletId: this.user.id as WalletId,
+      walletId: this.user.walletId,
       logger: this.logger,
     })
     if (balanceSats instanceof Error) throw balanceSats
