@@ -1,0 +1,20 @@
+mutation lnInvoiceCreateOnBehalfOfRecipient(
+  $walletId: WalletId!
+  $amount: SatAmount!
+  $descriptionHash: Hex32Bytes!
+) {
+  mutationData: lnInvoiceCreateOnBehalfOfRecipient(
+    input: {
+      recipientWalletId: $walletId
+      amount: $amount
+      descriptionHash: $descriptionHash
+    }
+  ) {
+    errors {
+      message
+    }
+    invoice {
+      paymentRequest
+    }
+  }
+}
