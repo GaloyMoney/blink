@@ -113,7 +113,16 @@ const transactionSchema = new Schema({
   meta: Schema.Types.Mixed,
   datetime: Date,
   account_path: [String],
-  accounts: String,
+  accounts: {
+    type: String,
+    validate: {
+      validator: function (v) {
+        // liabilities account should be uuid-v4
+        if (v.startsWith("Liabilities")) return v.length === 12 + 36
+        else return true
+      },
+    },
+  },
   book: String,
   memo: String,
   _journal: {
