@@ -42,7 +42,6 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
 
       // Notify the recipient (via GraphQL subscription if any)
       const walletUpdatedEventName = walletUpdateEvent(user.walletId)
-
       pubsub.publish(walletUpdatedEventName, {
         transaction: {
           txNotificationType: type,
@@ -108,7 +107,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   }: LnInvoicePaidArgs) => {
     try {
       // work around to move forward before re-wrighting the whole notifications module
-      const user = await User.findOne({ _id: recipientWalletId })
+      const user = await User.findOne({ walletId: recipientWalletId })
 
       // Do not await this call for quicker processing
       transactionNotification({
@@ -168,7 +167,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       publish(recipientWalletId, NotificationType.IntraLedgerReceipt)
 
       // work around to move forward before re-wrighting the whole notifications module
-      const payerUser = await User.findOne({ _id: payerWalletId })
+      const payerUser = await User.findOne({ walletId: payerWalletId })
 
       // Do not await this call for quicker processing
       transactionNotification({
@@ -179,7 +178,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         usdPerSat,
       })
 
-      const recipientUser = await User.findOne({ _id: recipientWalletId })
+      const recipientUser = await User.findOne({ walletId: recipientWalletId })
 
       // Do not await this call for quicker processing
       transactionNotification({
