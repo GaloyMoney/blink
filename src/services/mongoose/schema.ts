@@ -285,7 +285,7 @@ UserSchema.virtual("ratioBtc").get(function (this: typeof UserSchema) {
 
 // this is the accounting path in medici for this user
 UserSchema.virtual("walletPath").get(function (this: typeof UserSchema) {
-  return walletPath(this.id)
+  return walletPath(this.walletId)
 })
 
 UserSchema.virtual("oldEnoughForWithdrawal").get(function (this: typeof UserSchema) {
