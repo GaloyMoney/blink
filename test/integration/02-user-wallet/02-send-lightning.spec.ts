@@ -61,8 +61,8 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  initBalance0 = await getBTCBalance(userWallet0.user.id)
-  initBalance1 = await getBTCBalance(userWallet1.user.id)
+  initBalance0 = await getBTCBalance(userWallet0.user.walletId)
+  initBalance1 = await getBTCBalance(userWallet1.user.walletId)
 })
 
 afterEach(async () => {
@@ -188,7 +188,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(res).not.toBeInstanceOf(Error)
     if (res instanceof Error) throw res
 
-    const finalBalance0 = await getBTCBalance(userWallet0.user.id)
+    const finalBalance0 = await getBTCBalance(userWallet0.user.walletId)
     const { result: userTransaction0, error } = await Wallets.getTransactionsForWalletId({
       walletId: userWallet0.user.walletId,
     })
@@ -196,7 +196,7 @@ describe("UserWallet - Lightning Pay", () => {
       throw error
     }
 
-    const finalBalance1 = await getBTCBalance(userWallet1.user.id)
+    const finalBalance1 = await getBTCBalance(userWallet1.user.walletId)
     const txResult = await Wallets.getTransactionsForWalletId({
       walletId: userWallet1.user.walletId,
     })
@@ -289,7 +289,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (paymentResult instanceof Error) throw paymentResult
     expect(paymentResult).toBe(PaymentSendStatus.Success)
 
-    const finalBalance = await getBTCBalance(userWallet1.user.id)
+    const finalBalance = await getBTCBalance(userWallet1.user.walletId)
     expect(finalBalance).toBe(initBalance1 - amountInvoice)
   })
 
@@ -567,7 +567,7 @@ describe("UserWallet - Lightning Pay", () => {
         if (result instanceof Error) throw result
         expect(result).toBe(PaymentSendStatus.Success)
 
-        const finalBalance = await getBTCBalance(userWallet1.user.id)
+        const finalBalance = await getBTCBalance(userWallet1.user.walletId)
         expect(finalBalance).toBe(initBalance1 - amountInvoice)
       })
 
@@ -578,13 +578,13 @@ describe("UserWallet - Lightning Pay", () => {
         })
         const intermediateResult = await fn(userWallet1)({ invoice: request })
         if (intermediateResult instanceof Error) throw intermediateResult
-        const intermediateBalanceSats = await getBTCBalance(userWallet1.user.id)
+        const intermediateBalanceSats = await getBTCBalance(userWallet1.user.walletId)
 
         const result = await fn(userWallet1)({ invoice: request })
         if (result instanceof Error) throw result
         expect(result).toBe(PaymentSendStatus.AlreadyPaid)
 
-        const finalBalanceSats = await getBTCBalance(userWallet1.user.id)
+        const finalBalanceSats = await getBTCBalance(userWallet1.user.walletId)
         expect(finalBalanceSats).toEqual(intermediateBalanceSats)
       })
 
@@ -597,7 +597,7 @@ describe("UserWallet - Lightning Pay", () => {
         const result = await fn(userWallet1)({ invoice: request })
         if (result instanceof Error) throw result
         expect(result).toBe(PaymentSendStatus.Success)
-        const finalBalance = await getBTCBalance(userWallet1.user.id)
+        const finalBalance = await getBTCBalance(userWallet1.user.walletId)
         expect(finalBalance).toBe(initBalance1 - amountInvoice)
       })
 
@@ -605,8 +605,8 @@ describe("UserWallet - Lightning Pay", () => {
         const memo = "my memo as a payer"
 
         const paymentOtherGaloyUser = async ({ walletPayer, walletPayee }) => {
-          const payerInitialBalance = await getBTCBalance(walletPayer.user.id)
-          const payeeInitialBalance = await getBTCBalance(walletPayee.user.id)
+          const payerInitialBalance = await getBTCBalance(walletPayer.user.walletId)
+          const payeeInitialBalance = await getBTCBalance(walletPayee.user.walletId)
 
           const lnInvoice = await addInvoice({
             walletId: walletPayee.user.walletId as WalletId,
@@ -617,8 +617,8 @@ describe("UserWallet - Lightning Pay", () => {
           const result = await fn(walletPayer)({ invoice: request, memo })
           if (result instanceof Error) throw result
 
-          const payerFinalBalance = await getBTCBalance(walletPayer.user.id)
-          const payeeFinalBalance = await getBTCBalance(walletPayee.user.id)
+          const payerFinalBalance = await getBTCBalance(walletPayer.user.walletId)
+          const payeeFinalBalance = await getBTCBalance(walletPayee.user.walletId)
 
           expect(payerFinalBalance).toBe(payerInitialBalance - amountInvoice)
           expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
@@ -699,7 +699,7 @@ describe("UserWallet - Lightning Pay", () => {
           is_including_private_channels: true,
         })
 
-        const initialBalance = await getBTCBalance(userWallet1.user.id)
+        const initialBalance = await getBTCBalance(userWallet1.user.walletId)
 
         const result = await fn(userWallet1)({
           invoice: request,
@@ -712,7 +712,7 @@ describe("UserWallet - Lightning Pay", () => {
         await waitUntilChannelBalanceSyncAll()
 
         expect(result).toBe(PaymentSendStatus.Success)
-        const finalBalance = await getBTCBalance(userWallet1.user.id)
+        const finalBalance = await getBTCBalance(userWallet1.user.walletId)
 
         // const { id } = await decodePaymentRequest({ lnd: lndOutside2, request })
         // const { results: [{ fee }] } = await getAccountTransactions(userWallet1.walletPath, { hash: id })
@@ -737,7 +737,7 @@ describe("UserWallet - Lightning Pay", () => {
         if (result instanceof Error) throw result
 
         expect(result).toBe(PaymentSendStatus.Pending)
-        const balanceBeforeSettlement = await getBTCBalance(userWallet1.user.id)
+        const balanceBeforeSettlement = await getBTCBalance(userWallet1.user.walletId)
         expect(balanceBeforeSettlement).toBe(
           initBalance1 - amountInvoice * (1 + initialFee),
         )
@@ -761,7 +761,9 @@ describe("UserWallet - Lightning Pay", () => {
           })
           if (updatedPayments instanceof Error) throw updatedPayments
 
-          const count = await LedgerService().getPendingPaymentsCount(userWallet1.user.id)
+          const count = await LedgerService().getPendingPaymentsCount(
+            userWallet1.user.walletId,
+          )
           if (count instanceof Error) throw count
 
           const { is_confirmed } = await getInvoice({ lnd: lndOutside1, id })
@@ -770,7 +772,7 @@ describe("UserWallet - Lightning Pay", () => {
 
         await waitUntilChannelBalanceSyncAll()
 
-        const finalBalance = await getBTCBalance(userWallet1.user.id)
+        const finalBalance = await getBTCBalance(userWallet1.user.walletId)
         expect(finalBalance).toBe(initBalance1 - amountInvoice)
       }, 60000)
 
@@ -788,7 +790,7 @@ describe("UserWallet - Lightning Pay", () => {
         expect(result).toBe(PaymentSendStatus.Pending)
         baseLogger.info("payment has timeout. status is pending.")
 
-        const intermediateBalance = await getBTCBalance(userWallet1.user.id)
+        const intermediateBalance = await getBTCBalance(userWallet1.user.walletId)
         expect(intermediateBalance).toBe(initBalance1 - amountInvoice * (1 + initialFee))
 
         await cancelHodlInvoice({ id, lnd: lndOutside1 })
@@ -800,7 +802,9 @@ describe("UserWallet - Lightning Pay", () => {
           })
           if (updatedPayments instanceof Error) throw updatedPayments
 
-          const count = await LedgerService().getPendingPaymentsCount(userWallet1.user.id)
+          const count = await LedgerService().getPendingPaymentsCount(
+            userWallet1.user.walletId,
+          )
           if (count instanceof Error) throw count
 
           return count === 0
@@ -813,7 +817,7 @@ describe("UserWallet - Lightning Pay", () => {
         // arrives before wallet balances updates in lnd
         await waitUntilChannelBalanceSyncAll()
 
-        const finalBalance = await getBTCBalance(userWallet1.user.id)
+        const finalBalance = await getBTCBalance(userWallet1.user.walletId)
         expect(finalBalance).toBe(initBalance1)
       }, 60000)
     })
@@ -821,7 +825,7 @@ describe("UserWallet - Lightning Pay", () => {
     describe("2FA", () => {
       it(`fails to pay above 2fa limit without 2fa token`, async () => {
         enable2FA({ wallet: userWallet0 })
-        const remainingLimit = await getRemainingTwoFALimit(userWallet0.user.id)
+        const remainingLimit = await getRemainingTwoFALimit(userWallet0.user.walletId)
         expect(remainingLimit).not.toBeInstanceOf(Error)
         if (remainingLimit instanceof Error) return remainingLimit
 
@@ -832,7 +836,7 @@ describe("UserWallet - Lightning Pay", () => {
         const result = await fn(userWallet0)({ invoice: request })
         expect(result).toBeInstanceOf(TwoFAError)
 
-        const finalBalance = await getBTCBalance(userWallet0.user.id)
+        const finalBalance = await getBTCBalance(userWallet0.user.walletId)
         expect(finalBalance).toBe(initBalance0)
       })
 
@@ -913,7 +917,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     // await sleep(1000)
 
-    // await getBTCBalance(userWallet1.user.id)
+    // await getBTCBalance(userWallet1.user.walletId)
 
     // FIXME: test is failing.
     // lnd doens't always delete invoice just after they have expired

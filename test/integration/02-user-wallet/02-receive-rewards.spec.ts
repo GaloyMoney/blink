@@ -28,15 +28,15 @@ afterAll(() => {
 
 describe("UserWallet - addEarn", () => {
   it("adds balance only once", async () => {
-    const resetOk = await resetSelfWalletIdLimits(userWallet1.user.id)
+    const resetOk = await resetSelfWalletIdLimits(userWallet1.user.walletId)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
-    const initialBalance = await getBTCBalance(userWallet1.user.id)
+    const initialBalance = await getBTCBalance(userWallet1.user.walletId)
 
     const getAndVerifyRewards = async () => {
       await userWallet1.addEarn(onBoardingEarnIds)
-      const finalBalance = await getBTCBalance(userWallet1.user.id)
+      const finalBalance = await getBTCBalance(userWallet1.user.walletId)
       let rewards = onBoardingEarnAmt
       if (difference(onBoardingEarnIds, userWallet1.user.earn).length === 0) {
         rewards = 0

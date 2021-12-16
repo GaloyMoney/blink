@@ -47,7 +47,7 @@ afterAll(async () => {
 })
 
 const getWalletState = async (wallet) => {
-  const balance = await getBTCBalance(wallet.user.id)
+  const balance = await getBTCBalance(wallet.user.walletId)
   const { result: transactions, error } = await Wallets.getTransactionsForWalletId({
     walletId: wallet.user.walletId as WalletId,
   })
@@ -76,7 +76,7 @@ describe("onchainBlockEventhandler", () => {
     const initWallet0State = await getWalletState(wallet0)
     const initWallet3State = await getWalletState(wallet3)
 
-    const address = await Wallets.createOnChainAddress(wallet0.user.id)
+    const address = await Wallets.createOnChainAddress(wallet0.user.walletId)
     if (address instanceof Error) throw address
 
     const initialBlock = await bitcoindClient.getBlockCount()
@@ -94,7 +94,7 @@ describe("onchainBlockEventhandler", () => {
     const output0 = {}
     output0[address] = amount
 
-    const address2 = await Wallets.createOnChainAddress(wallet3.user.id)
+    const address2 = await Wallets.createOnChainAddress(wallet3.user.walletId)
     if (address2 instanceof Error) throw address2
 
     const output1 = {}

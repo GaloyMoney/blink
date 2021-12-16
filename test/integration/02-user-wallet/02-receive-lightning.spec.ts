@@ -23,7 +23,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  initBalance1 = await getBTCBalance(userWallet1.user.id)
+  initBalance1 = await getBTCBalance(userWallet1.user.walletId)
 })
 
 afterEach(async () => {
@@ -93,7 +93,7 @@ describe("UserWallet - Lightning", () => {
     ) as WalletTransaction
     expect(noSpamTxn.deprecated.description).toBe(memo)
 
-    const finalBalance = await getBTCBalance(userWallet1.user.id)
+    const finalBalance = await getBTCBalance(userWallet1.user.walletId)
     expect(finalBalance).toBe(initBalance1 + sats)
   })
 
@@ -129,7 +129,7 @@ describe("UserWallet - Lightning", () => {
     expect(dbTx.memo).toBe("")
     expect(dbTx.pending).toBe(false)
 
-    const finalBalance = await getBTCBalance(userWallet1.user.id)
+    const finalBalance = await getBTCBalance(userWallet1.user.walletId)
     expect(finalBalance).toBe(initBalance1 + sats)
   })
 
@@ -179,7 +179,7 @@ describe("UserWallet - Lightning", () => {
     expect(spamTxn.deprecated.description).toBe(dbTx.type)
 
     // confirm expected final balance
-    const finalBalance = await getBTCBalance(userWallet1.user.id)
+    const finalBalance = await getBTCBalance(userWallet1.user.walletId)
     expect(finalBalance).toBe(initBalance1 + sats)
   })
 })
