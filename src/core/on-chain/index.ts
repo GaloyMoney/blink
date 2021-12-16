@@ -76,7 +76,7 @@ export const OnChainMixin = (superclass) =>
         /// TODO: unable to check balanceSats vs this.dustThreshold at this point...
       }
 
-      const walletId_ = this.user.id // FIXME: just set this variable for easier code review. long variable would trigger adding a tab and much bigger diff
+      const walletId_ = this.user.walletId // FIXME: just set this variable for easier code review. long variable would trigger adding a tab and much bigger diff
       return redlock({ path: walletId_, logger: onchainLogger }, async (lock) => {
         const balanceSats = await Wallets.getBalanceForWallet({
           walletId: this.user.walletId,
@@ -92,7 +92,7 @@ export const OnChainMixin = (superclass) =>
           throw new InsufficientBalanceError(undefined, { logger: onchainLogger })
         }
 
-        const payeeUser = await User.getUserByAddress({ address })
+        const payeeUser: UserType = await User.getUserByAddress({ address })
 
         const user = await UsersRepository().findById(this.user.id)
         if (user instanceof Error) throw user
@@ -151,9 +151,9 @@ export const OnChainMixin = (superclass) =>
           const usd = sats * price
           const usdFee = onChainFee * price
 
-          const payerWallet = await WalletsRepository().findById(this.user.id)
+          const payerWallet = await WalletsRepository().findById(this.user.walletId)
           if (payerWallet instanceof Error) throw payerWallet
-          const recipientWallet = await WalletsRepository().findById(payeeUser.id)
+          const recipientWallet = await WalletsRepository().findById(payeeUser.walletId)
           if (recipientWallet instanceof Error) throw recipientWallet
 
           const journal = await LockService().extendLock(
@@ -168,9 +168,9 @@ export const OnChainMixin = (superclass) =>
                 usdFee,
                 payeeAddresses: [address as OnChainAddress],
                 sendAll,
-                recipientWalletId: payeeUser.id,
+                recipientWalletId: payeeUser.walletId,
                 payerUsername: this.user.username,
-                recipientUsername: payeeUser.username,
+                recipientUsername: (payeeUser.username as Username) || null,
                 memoPayer: memo || null,
               }),
           )
