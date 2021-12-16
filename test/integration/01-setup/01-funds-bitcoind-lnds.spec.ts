@@ -78,7 +78,7 @@ describe("Bitcoind", () => {
     await getAndCreateUserWallet(4)
 
     const funderWallet = await getWalletFromRole({ role: "funder", logger: baseLogger })
-    const address = await Wallets.createOnChainAddress(funderWallet.user.id)
+    const address = await Wallets.createOnChainAddress(funderWallet.user.walletId)
     if (address instanceof Error) throw address
 
     await sendToAddressAndConfirm({ walletClient: bitcoindOutside, address, amount })

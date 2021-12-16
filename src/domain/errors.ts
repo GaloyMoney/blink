@@ -24,7 +24,6 @@ export class CouldNotFindPhoneCodeError extends CouldNotFindError {}
 export class CouldNotFindWalletFromIdError extends CouldNotFindError {}
 export class CouldNotFindWalletFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressError extends CouldNotFindError {}
-export class CouldNotFindWalletFromPublicIdError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressesError extends CouldNotFindError {}
 
 export class CouldNotFindAccountFromUsernameError extends CouldNotFindError {}
@@ -39,7 +38,7 @@ export class InvalidCoordinatesError extends ValidationError {}
 export class InvalidBusinessTitleLengthError extends ValidationError {}
 export class InvalidAccountStatusError extends ValidationError {}
 export class InvalidPhoneNumber extends ValidationError {}
-export class InvalidPublicWalletId extends ValidationError {}
+export class InvalidWalletId extends ValidationError {}
 export class InvalidLedgerTransactionId extends ValidationError {}
 export class AlreadyPaidError extends ValidationError {}
 export class SelfPaymentError extends ValidationError {}

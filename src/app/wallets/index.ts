@@ -22,20 +22,3 @@ export const getWallet = async (walletId: WalletId) => {
   const wallets = WalletsRepository()
   return wallets.findById(walletId)
 }
-
-export const getWalletByPublicId = async (
-  walletPublicId: WalletPublicId,
-): Promise<Wallet | ApplicationError> => {
-  const wallets = WalletsRepository()
-  return wallets.findByPublicId(walletPublicId)
-}
-
-export const walletIdFromPublicId = async (
-  walletPublicId: WalletPublicId,
-): Promise<WalletId | RepositoryError> => {
-  const walletsRepo = WalletsRepository()
-  const wallet = await walletsRepo.findByPublicId(walletPublicId)
-  if (wallet instanceof Error) return wallet
-
-  return wallet.id
-}

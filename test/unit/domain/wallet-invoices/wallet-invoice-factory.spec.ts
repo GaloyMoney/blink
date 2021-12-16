@@ -23,6 +23,7 @@ describe("wallet invoice factory methods", () => {
         features: [],
       },
       pubkey: "pubkey" as Pubkey,
+      descriptionHash: "descriptionHash" as string, // FIXME
     }
     const result = walletInvoiceFactory.create({ registeredInvoice })
     const expected = {

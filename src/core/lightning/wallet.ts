@@ -35,7 +35,7 @@ export class LightningUserWallet extends OnChainMixin(UserWallet) {
       logger: this.logger,
     })
 
-    return redlock({ path: this.user._id, logger: this.logger }, async () => {
+    return redlock({ path: this.user.walletId, logger: this.logger }, async () => {
       const result: Record<string, unknown>[] = []
 
       for (const id of ids) {
@@ -50,7 +50,7 @@ export class LightningUserWallet extends OnChainMixin(UserWallet) {
         if (userPastState.earn.findIndex((item) => item === id) === -1) {
           // FIXME: use pay by username instead
           const lnInvoice = await addInvoice({
-            walletId: this.user.id,
+            walletId: this.user.walletId,
             amount,
             memo: id,
           })
@@ -59,7 +59,7 @@ export class LightningUserWallet extends OnChainMixin(UserWallet) {
           const payResult = await lnInvoicePaymentSend({
             paymentRequest: lnInvoice.paymentRequest,
             memo: null,
-            walletId: lightningFundingWallet.user.id,
+            walletId: lightningFundingWallet.user.walletId,
             userId: lightningFundingWallet.user.id,
             logger: this.logger,
           })

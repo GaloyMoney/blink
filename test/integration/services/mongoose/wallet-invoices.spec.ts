@@ -64,18 +64,18 @@ describe("WalletInvoices", () => {
     const wallet = await getAndCreateUserWallet(1)
     for (let i = 0; i < 2; i++) {
       await addInvoice({
-        walletId: wallet.user.id as WalletId,
+        walletId: wallet.user.walletId as WalletId,
         amount: toSats(1000),
       })
     }
 
     const invoicesCount = await InvoiceUser.countDocuments({
-      uid: wallet.user.id,
+      walletId: wallet.user.walletId,
       paid: false,
     })
 
     const repo = WalletInvoicesRepository()
-    const invoices = repo.findPendingByWalletId(wallet.user.id)
+    const invoices = repo.findPendingByWalletId(wallet.user.walletId)
     expect(invoices).not.toBeInstanceOf(Error)
 
     const pendingInvoices = invoices as AsyncGenerator<WalletInvoice>

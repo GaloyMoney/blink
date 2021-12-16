@@ -1,8 +1,8 @@
 type LedgerError = import("./errors").LedgerError
 type LedgerServiceError = import("./errors").LedgerServiceError
 
-declare const liabilitiesAccountId: unique symbol
-type LiabilitiesAccountId = string & { [liabilitiesAccountId]: never }
+declare const liabilitiesWalletId: unique symbol
+type LiabilitiesWalletId = string & { [liabilitiesWalletId]: never }
 
 declare const ledgerTransactionIdSymbol: unique symbol
 type LedgerTransactionId = string & { [ledgerTransactionIdSymbol]: never }
@@ -28,7 +28,7 @@ type LedgerJournal = {
 // Differentiate fields depending on what 'type' we have (see domain/wallets/index.types.d.ts)
 type LedgerTransaction = {
   readonly id: LedgerTransactionId
-  readonly walletId: WalletId | null
+  readonly walletId: WalletId | null // FIXME create a subclass so that this field is always set for liabilities wallets
   readonly type: LedgerTransactionType
   readonly debit: Satoshis
   readonly credit: Satoshis
@@ -44,7 +44,7 @@ type LedgerTransaction = {
   readonly feeUsd: number
 
   // for IntraLedger
-  readonly walletPublicId?: WalletPublicId
+  readonly recipientWalletId?: WalletId
   readonly username?: Username
   readonly memoFromPayer?: string
 
@@ -59,7 +59,7 @@ type LedgerTransaction = {
 }
 
 type ReceiveOnChainTxArgs = {
-  liabilitiesAccountId: LiabilitiesAccountId
+  walletId: WalletId
   txHash: OnChainTxHash
   sats: Satoshis
   fee: Satoshis
@@ -69,7 +69,7 @@ type ReceiveOnChainTxArgs = {
 }
 
 type TxArgs = {
-  liabilitiesAccountId: LiabilitiesAccountId
+  walletId: WalletId
   description: string
   sats: Satoshis
   fee: Satoshis
@@ -89,10 +89,10 @@ type AddLnTxSendArgs = LnTxArgs & {
 }
 
 type IntraledgerTxArgs = {
-  liabilitiesAccountId: LiabilitiesAccountId
+  walletId: WalletId
   description: string
   sats: Satoshis
-  recipientLiabilitiesAccountId: LiabilitiesAccountId | null
+  recipientWalletId: WalletId
   payerUsername: Username | null
   recipientUsername: Username | null
   memoPayer: string | null
@@ -119,7 +119,7 @@ type AddUsernameIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
 }
 
 type AddLnFeeReeimbursementReceiveArgs = {
-  liabilitiesAccountId: LiabilitiesAccountId
+  walletId: WalletId
   paymentHash: PaymentHash
   sats: Satoshis
   usd: number
@@ -145,54 +145,53 @@ interface ILedgerService {
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
   getLiabilityTransactions(
-    liabilitiesAccountId: LiabilitiesAccountId,
+    WalletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
   getLiabilityTransactionsForContactUsername(
-    liabilitiesAccountId: LiabilitiesAccountId,
+    WalletId: WalletId,
     contactUsername: Username,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
   listPendingPayments(
-    liabilitiesAccountId: LiabilitiesAccountId,
+    WalletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
-  getPendingPaymentsCount(
-    liabilitiesAccountId: LiabilitiesAccountId,
-  ): Promise<number | LedgerServiceError>
+  getPendingPaymentsCount(WalletId: WalletId): Promise<number | LedgerServiceError>
 
-  getAccountBalance(
-    liabilitiesAccountId: LiabilitiesAccountId,
-  ): Promise<Satoshis | LedgerServiceError>
+  getAccountBalance(WalletId: WalletId): Promise<Satoshis | LedgerServiceError>
 
   twoFATxVolumeSince({
-    liabilitiesAccountId,
+    walletId,
     timestamp,
   }: {
-    liabilitiesAccountId: LiabilitiesAccountId
+    walletId: WalletId
     timestamp: Date
   }): Promise<TxVolume | LedgerServiceError>
 
   withdrawalTxVolumeSince({
-    liabilitiesAccountId,
+    walletId,
     timestamp,
   }: {
-    liabilitiesAccountId: LiabilitiesAccountId
+    walletId: WalletId
     timestamp: Date
   }): Promise<TxVolume | LedgerServiceError>
 
   intraledgerTxVolumeSince({
-    liabilitiesAccountId,
+    walletId,
     timestamp,
   }: {
-    liabilitiesAccountId: LiabilitiesAccountId
+    walletId: WalletId
     timestamp: Date
   }): Promise<TxVolume | LedgerServiceError>
 
-  isOnChainTxRecorded(
-    liabilitiesAccountId: LiabilitiesAccountId,
-    txHash: OnChainTxHash,
-  ): Promise<boolean | LedgerServiceError>
+  isOnChainTxRecorded({
+    walletId,
+    txHash,
+  }: {
+    walletId: WalletId
+    txHash: OnChainTxHash
+  }): Promise<boolean | LedgerServiceError>
 
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
 

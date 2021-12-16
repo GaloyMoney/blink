@@ -10,11 +10,11 @@ export const resetSelfWalletIdLimits = async (
   walletId: WalletId,
 ): Promise<true | RateLimitServiceError> => {
   const invoiceCreateAttemptLimits = getInvoiceCreateAttemptLimits()
-  const limiter = RedisRateLimitService({
+  const limiterInvoiceCreateAttemptLimits = RedisRateLimitService({
     keyPrefix: RateLimitPrefix.invoiceCreate,
     limitOptions: invoiceCreateAttemptLimits,
   })
-  return limiter.reset(walletId)
+  return limiterInvoiceCreateAttemptLimits.reset(walletId)
 }
 
 export const resetRecipientWalletIdLimits = async (
@@ -22,20 +22,20 @@ export const resetRecipientWalletIdLimits = async (
 ): Promise<true | RateLimitServiceError> => {
   const invoiceCreateForRecipientAttemptLimits =
     getInvoiceCreateForRecipientAttemptLimits()
-  const limiter = RedisRateLimitService({
+  const limiterInvoiceCreateForRecipientAttemptLimits = RedisRateLimitService({
     keyPrefix: RateLimitPrefix.invoiceCreateForRecipient,
     limitOptions: invoiceCreateForRecipientAttemptLimits,
   })
-  return limiter.reset(walletId)
+  return limiterInvoiceCreateForRecipientAttemptLimits.reset(walletId)
 }
 
 export const resetOnChainAddressWalletIdLimits = async (
   walletId: WalletId,
 ): Promise<true | RateLimitServiceError> => {
   const onChainAddressCreateAttempt = getOnChainAddressCreateAttemptLimits()
-  const limiter = RedisRateLimitService({
+  const limiterOnChainAddressCreateAttempt = RedisRateLimitService({
     keyPrefix: RateLimitPrefix.onChainAddressCreate,
     limitOptions: onChainAddressCreateAttempt,
   })
-  return limiter.reset(walletId)
+  return limiterOnChainAddressCreateAttempt.reset(walletId)
 }

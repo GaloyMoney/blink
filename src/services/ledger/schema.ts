@@ -113,7 +113,16 @@ const transactionSchema = new Schema({
   meta: Schema.Types.Mixed,
   datetime: Date,
   account_path: [String],
-  accounts: String,
+  accounts: {
+    type: String,
+    validate: {
+      validator: function (v) {
+        // liabilities account should be uuid-v4
+        if (v.startsWith("Liabilities")) return v.length === 12 + 36
+        else return true
+      },
+    },
+  },
   book: String,
   memo: String,
   _journal: {
@@ -159,6 +168,8 @@ transactionSchema.index({
   "book": 1,
   "approved": 1,
 })
+// TODO: look at if this one is still needed. maybe we only have 2 levels now?
+// following this refactoring: https://github.com/GaloyMoney/galoy/pull/377
 transactionSchema.index({
   "account_path.0": 1,
   "account_path.1": 1,

@@ -15,7 +15,6 @@ const BTCWallet = new GT.Object({
   fields: () => ({
     id: {
       type: GT.NonNullID,
-      resolve: (source) => source.publicId,
     },
     walletCurrency: {
       type: GT.NonNull(WalletCurrency),

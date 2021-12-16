@@ -35,13 +35,14 @@ export abstract class UserWallet {
   }
 
   async getBalances(lock?): Promise<Balances> {
-    Wallets.updatePendingInvoices({
-      walletId: this.user.id as WalletId,
+    // was the await omit on purpose?
+    await Wallets.updatePendingInvoices({
+      walletId: this.user.walletId as WalletId,
       lock,
       logger: this.logger,
     })
     const result = await Wallets.updatePendingPayments({
-      walletId: this.user.id as WalletId,
+      walletId: this.user.walletId as WalletId,
       lock,
       logger: this.logger,
     })
@@ -57,7 +58,7 @@ export abstract class UserWallet {
 
     // TODO: run this code in parrallel
     for (const { id } of this.user.currencies) {
-      const balance = await ledger.getAccountBalance(this.user.accountPath, {
+      const balance = await ledger.getAccountBalance(this.user.walletPath, {
         currency: id,
       })
 
@@ -100,7 +101,7 @@ export abstract class UserWallet {
 
   async getStringCsv() {
     const csv = new CSVAccountExport()
-    await csv.addAccount({ account: this.user.accountPath })
+    await csv.addAccount({ account: this.user.walletPath })
     return csv.getBase64()
   }
 
@@ -263,7 +264,7 @@ export abstract class UserWallet {
 
   sendBalance = async (): Promise<void> => {
     const balanceSats = await Wallets.getBalanceForWallet({
-      walletId: this.user.id as WalletId,
+      walletId: this.user.walletId,
       logger: this.logger,
     })
     if (balanceSats instanceof Error) throw balanceSats

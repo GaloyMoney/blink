@@ -1,6 +1,5 @@
-import { getWalletByPublicId, intraledgerPaymentSend } from "@app/wallets"
-import { getUsernameFromWalletPublicId } from "@app/users"
-import { checkedToWalletPublicId } from "@domain/wallets"
+import { getWallet, intraledgerPaymentSend } from "@app/wallets"
+import { checkedToWalletId } from "@domain/wallets"
 import { GT } from "@graphql/index"
 
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
@@ -8,6 +7,7 @@ import Memo from "@graphql/types/scalar/memo"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import { mapError } from "@graphql/error-map"
+import { getUsernameFromWalletId } from "@app/accounts"
 
 const IntraLedgerPaymentSendInput = new GT.Input({
   name: "IntraLedgerPaymentSendInput",
@@ -32,19 +32,19 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       }
     }
 
-    const wallet = await getWalletByPublicId(walletId)
+    const wallet = await getWallet(walletId)
     if (wallet instanceof Error) {
       const appErr = mapError(wallet)
       return { errors: [{ message: appErr.message }] }
     }
 
-    const recipientWalletPublicId = checkedToWalletPublicId(recipientWalletId)
-    if (recipientWalletPublicId instanceof Error) {
-      const appErr = mapError(recipientWalletPublicId)
+    const recipientWalletIdChecked = checkedToWalletId(recipientWalletId)
+    if (recipientWalletIdChecked instanceof Error) {
+      const appErr = mapError(recipientWalletIdChecked)
       return { errors: [{ message: appErr.message }] }
     }
 
-    const recipientUsername = await getUsernameFromWalletPublicId(recipientWalletPublicId)
+    const recipientUsername = await getUsernameFromWalletId(recipientWalletIdChecked)
     if (recipientUsername instanceof Error) {
       const appErr = mapError(recipientUsername)
       return { errors: [{ message: appErr.message }] }
@@ -54,7 +54,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       recipientUsername,
       memo,
       amount,
-      walletId: wallet.id,
+      walletId,
       userId: user.id,
       logger,
     })

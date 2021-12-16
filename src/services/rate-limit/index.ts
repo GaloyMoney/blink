@@ -1,10 +1,9 @@
-import { RateLimiterRedis } from "rate-limiter-flexible"
-import { redis } from "@services/redis"
-
 import {
   RateLimiterExceededError,
   UnknownRateLimitServiceError,
 } from "@domain/rate-limit/errors"
+import { redis } from "@services/redis"
+import { RateLimiterRedis } from "rate-limiter-flexible"
 
 export const RedisRateLimitService = ({
   keyPrefix,

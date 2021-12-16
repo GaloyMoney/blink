@@ -1,5 +1,5 @@
 import { LedgerService } from "@services/ledger"
-import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"
+import { LedgerError } from "@domain/ledger"
 import { WalletTransactionHistory } from "@domain/wallets"
 
 export const getAccountTransactionsForContact = async ({
@@ -13,9 +13,8 @@ export const getAccountTransactionsForContact = async ({
   let transactions: WalletTransaction[] = []
 
   for (const walletId of account.walletIds) {
-    const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
     const ledgerTransactions = await ledger.getLiabilityTransactionsForContactUsername(
-      liabilitiesAccountId,
+      walletId,
       contactUsername,
     )
     if (ledgerTransactions instanceof LedgerError) return ledgerTransactions
