@@ -193,7 +193,7 @@ const resolvers = {
       return response
     },
     getLastOnChainAddress: async (_, __, { wallet }) => {
-      const address = await Wallets.getLastOnChainAddress(wallet.user.id)
+      const address = await Wallets.getLastOnChainAddress(wallet.user.walletId)
       if (address instanceof Error) throw address
 
       return {
@@ -383,7 +383,7 @@ const resolvers = {
     earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
     onchain: (_, __, { wallet }) => ({
       getNewAddress: async () => {
-        const address = await Wallets.createOnChainAddress(wallet.user.id)
+        const address = await Wallets.createOnChainAddress(wallet.user.walletId)
         if (address instanceof Error) throw mapError(address)
         return address
       },
