@@ -50,7 +50,6 @@ export const uploadBackup = async ({ backup, pubkey }) => {
 }
 
 export async function onchainTransactionEventHandler(tx) {
-  // TODO: test+removed after upgrade to lnd v14 as this may has been fixed
   // workaround for https://github.com/lightningnetwork/lnd/issues/2267
   const hash = crypto.createHash("sha256").update(JSON.stringify(tx)).digest("base64")
   if (txsReceived.has(hash)) {
@@ -86,17 +85,18 @@ export async function onchainTransactionEventHandler(tx) {
       "payment completed",
     )
 
-    const walletPath = await ledger.getAccountByTransactionHash(tx.id)
-    const walletId = ledger.resolveWalletId(walletPath)
+    const accountPath = await ledger.getAccountByTransactionHash(tx.id)
+    const userId = ledger.resolveAccountId(accountPath)
 
-    if (!walletId) {
+    if (!userId) {
       return
     }
 
+    const user = await User.findOne({ _id: userId }, { lastIPs: 0, lastConnection: 0 })
     const price = await getCurrentPrice()
     const usdPerSat = price instanceof Error ? undefined : price
     await NotificationsService(onchainLogger).onChainTransactionPayment({
-      walletId,
+      walletId: user.id,
       amount: toSats(Number(tx.tokens) - tx.fee),
       txHash: tx.id,
       usdPerSat,

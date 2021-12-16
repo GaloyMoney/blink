@@ -90,7 +90,6 @@ type RegisterInvoiceArgs = {
 type RegisteredInvoice = {
   invoice: LnInvoice
   pubkey: Pubkey
-  descriptionHash: string // TODO: proper type
 }
 
 type LnFeeCalculator = {

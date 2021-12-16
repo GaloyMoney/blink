@@ -96,7 +96,7 @@ describe("UserWallet - addInvoice", () => {
 
   it("adds a public invoice", async () => {
     const lnInvoice = await addInvoiceNoAmountForRecipient({
-      recipientWalletId: userWallet1.user.id,
+      recipientWalletPublicId: "user1" as WalletPublicId,
     })
     if (lnInvoice instanceof Error) return lnInvoice
     const { paymentRequest: request } = lnInvoice
@@ -118,7 +118,7 @@ describe("UserWallet - addInvoice", () => {
     const promises: Promise<LnInvoice | ApplicationError>[] = []
     for (let i = 0; i < limitsNum; i++) {
       const lnInvoicePromise = addInvoiceForRecipient({
-        recipientWalletId: userWallet1.user.id,
+        recipientWalletPublicId: userWallet1.user.walletPublicId,
         amount: toSats(1000),
       })
       promises.push(lnInvoicePromise)
@@ -141,7 +141,7 @@ describe("UserWallet - addInvoice", () => {
     const promises: Promise<LnInvoice | ApplicationError>[] = []
     for (let i = 0; i < limitsNum; i++) {
       const lnInvoicePromise = addInvoiceNoAmountForRecipient({
-        recipientWalletId: userWallet1.user.id,
+        recipientWalletPublicId: userWallet1.user.walletPublicId,
       })
       promises.push(lnInvoicePromise)
     }
@@ -168,14 +168,14 @@ const testPastSelfInvoiceLimits = async (user) => {
 
   // Test that recipient invoices still work
   const lnRecipientInvoice = await addInvoiceForRecipient({
-    recipientWalletId: user.id,
+    recipientWalletPublicId: user.walletPublicId,
     amount: toSats(1000),
   })
   expect(lnRecipientInvoice).not.toBeInstanceOf(Error)
   expect(lnRecipientInvoice).toHaveProperty("paymentRequest")
 
   const lnNoAmountRecipientInvoice = await addInvoiceNoAmountForRecipient({
-    recipientWalletId: user.id,
+    recipientWalletPublicId: user.walletPublicId,
   })
   expect(lnNoAmountRecipientInvoice).not.toBeInstanceOf(Error)
   expect(lnNoAmountRecipientInvoice).toHaveProperty("paymentRequest")
@@ -190,13 +190,13 @@ const testPastSelfInvoiceLimits = async (user) => {
 const testPastRecipientInvoiceLimits = async (user) => {
   // Test that first invoice past the limit fails
   const lnRecipientInvoice = await addInvoiceForRecipient({
-    recipientWalletId: user.id,
+    recipientWalletPublicId: user.walletPublicId,
     amount: toSats(1000),
   })
   expect(lnRecipientInvoice).toBeInstanceOf(RateLimiterExceededError)
 
   const lnNoAmountRecipientInvoice = await addInvoiceNoAmountForRecipient({
-    recipientWalletId: user.id,
+    recipientWalletPublicId: user.walletPublicId,
   })
   expect(lnNoAmountRecipientInvoice).toBeInstanceOf(RateLimiterExceededError)
 

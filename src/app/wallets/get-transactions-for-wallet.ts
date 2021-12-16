@@ -1,13 +1,13 @@
-import { PartialResult } from "@app/partial-result"
-import { getCurrentPrice } from "@app/prices"
-import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS, ONCHAIN_SCAN_DEPTH } from "@config/app"
-import { OnChainError, TxDecoder, TxFilter } from "@domain/bitcoin/onchain"
 import { RepositoryError } from "@domain/errors"
-import { LedgerError } from "@domain/ledger"
-import { WalletTransactionHistory } from "@domain/wallets"
+import { OnChainError, TxFilter, TxDecoder } from "@domain/bitcoin/onchain"
+import { WalletsRepository } from "@services/mongoose"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { WalletsRepository } from "@services/mongoose"
+import { toLiabilitiesAccountId, LedgerError } from "@domain/ledger"
+import { ONCHAIN_SCAN_DEPTH, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
+import { WalletTransactionHistory } from "@domain/wallets"
+import { PartialResult } from "@app/partial-result"
+import { getCurrentPrice } from "@app/prices"
 
 export const getTransactionsForWalletId = async ({
   walletId,
@@ -24,7 +24,8 @@ export const getTransactionsForWallet = async (
   wallet: Wallet,
 ): Promise<PartialResult<WalletTransaction[]>> => {
   const ledger = LedgerService()
-  const ledgerTransactions = await ledger.getLiabilityTransactions(wallet.id)
+  const liabilitiesAccountId = toLiabilitiesAccountId(wallet.id)
+  const ledgerTransactions = await ledger.getLiabilityTransactions(liabilitiesAccountId)
   if (ledgerTransactions instanceof LedgerError)
     return PartialResult.err(ledgerTransactions)
 

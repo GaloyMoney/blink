@@ -1,13 +1,17 @@
 import { hashApiKey } from "@domain/accounts"
-import { AccountApiKeysRepository, AccountsRepository } from "@services/mongoose"
+import { ValidationError } from "@domain/errors"
+import {
+  AccountApiKeysRepository,
+  AccountsRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 
 export * from "./add-api-key-for-account"
-export * from "./disable-api-key-for-account"
 export * from "./get-api-keys-for-account"
-
-const accounts = AccountsRepository()
+export * from "./disable-api-key-for-account"
 
 export const getAccount = async (accountId: AccountId) => {
+  const accounts = AccountsRepository()
   return accounts.findById(accountId)
 }
 
@@ -22,30 +26,52 @@ export const getAccountByApiKey = async (
   const accountApiKey = await accountApiKeysRepository.findByHashedKey(hashedKey)
   if (accountApiKey instanceof Error) return accountApiKey
 
-  return accounts.findById(accountApiKey.accountId)
+  const accountRepo = AccountsRepository()
+  return accountRepo.findById(accountApiKey.accountId)
 }
 
 export const hasPermissions = async (
   userId: UserId,
-  walletId: WalletId,
+  walletPublicId: WalletPublicId,
 ): Promise<boolean | ApplicationError> => {
+  const accounts = AccountsRepository()
+
   const userAccounts = await accounts.listByUserId(userId)
   if (userAccounts instanceof Error) return userAccounts
 
-  const walletAccount = await accounts.findByWalletId(walletId)
+  const walletAccount = await accounts.findByWalletPublicId(walletPublicId)
   if (walletAccount instanceof Error) return walletAccount
 
   return userAccounts.some((a) => a.id === walletAccount.id)
 }
 
 export const getBusinessMapMarkers = async () => {
+  const accounts = AccountsRepository()
   return accounts.listBusinessesForMap()
 }
 
-export const getUsernameFromWalletId = async (
-  walletId: WalletId,
-): Promise<Username | ApplicationError> => {
-  const account = await accounts.findByWalletId(walletId)
-  if (account instanceof Error) return account
-  return account.username
+export const toWalletIds = async ({
+  account,
+  walletPublicIds,
+}: {
+  account: Account
+  walletPublicIds: WalletPublicId[]
+}): Promise<WalletId[] | ApplicationError> => {
+  const wallets = WalletsRepository()
+
+  const walletIds: WalletId[] = []
+
+  for (const walletPublicId of walletPublicIds) {
+    const wallet = await wallets.findByPublicId(walletPublicId)
+    if (wallet instanceof Error) {
+      return wallet
+    }
+
+    if (!account.walletIds.includes(wallet.id)) {
+      return new ValidationError()
+    }
+    walletIds.push(wallet.id)
+  }
+
+  return walletIds
 }

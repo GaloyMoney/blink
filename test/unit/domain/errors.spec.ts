@@ -4,7 +4,7 @@ import {
   UnknownRepositoryError,
   ValidationError,
   InvalidSatoshiAmount,
-  InvalidWalletId,
+  InvalidPublicWalletId,
 } from "@domain/errors"
 
 describe("errors.ts", () => {
@@ -29,7 +29,7 @@ describe("errors.ts", () => {
     expect(error instanceof ValidationError).toBe(true)
     expect(error instanceof Error).toBe(true)
 
-    error = new InvalidWalletId()
+    error = new InvalidPublicWalletId()
     expect(error instanceof ValidationError).toBe(true)
     expect(error instanceof Error).toBe(true)
   })

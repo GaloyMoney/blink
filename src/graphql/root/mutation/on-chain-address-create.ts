@@ -22,7 +22,7 @@ const OnChainAddressCreateMutation = GT.Field({
       return { errors: [{ message: walletId.message }] }
     }
 
-    const address = await Wallets.createOnChainAddress(walletId)
+    const address = await Wallets.createOnChainAddressByWalletPublicId(walletId)
     if (address instanceof Error) {
       const appErr = mapError(address)
       return { errors: [{ message: appErr.message }] }

@@ -1,10 +1,11 @@
 import {
-  CouldNotFindWalletFromIdError,
-  CouldNotFindWalletFromOnChainAddressError,
-  CouldNotFindWalletFromOnChainAddressesError,
-  CouldNotFindWalletFromUsernameError,
-  RepositoryError,
   UnknownRepositoryError,
+  RepositoryError,
+  CouldNotFindWalletFromIdError,
+  CouldNotFindWalletFromUsernameError,
+  CouldNotFindWalletFromOnChainAddressError,
+  CouldNotFindWalletFromPublicIdError,
+  CouldNotFindWalletFromOnChainAddressesError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
 import { caseInsensitiveRegex } from "./users"
@@ -51,6 +52,21 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
+  const findByPublicId = async (
+    walletPublicId: WalletPublicId,
+  ): Promise<Wallet | RepositoryError> => {
+    try {
+      const result = await User.findOne({ walletPublicId })
+      if (!result) {
+        return new CouldNotFindWalletFromPublicIdError()
+      }
+
+      return resultToWallet(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const listByAddresses = async (
     addresses: string[],
   ): Promise<Wallet[] | RepositoryError> => {
@@ -69,12 +85,14 @@ export const WalletsRepository = (): IWalletsRepository => {
     findById,
     findByAddress,
     findByUsername,
+    findByPublicId,
     listByAddresses,
   }
 }
 
 const resultToWallet = (result: UserType): Wallet => {
   const walletId = result.id as WalletId
+  const publicId = result.walletPublicId
   const depositFeeRatio = result.depositFeeRatio as DepositFeeRatio
   const withdrawFee = result.withdrawFee as WithdrawFee
 
@@ -92,6 +110,7 @@ const resultToWallet = (result: UserType): Wallet => {
     id: walletId,
     depositFeeRatio,
     withdrawFee,
+    publicId,
     onChainAddressIdentifiers,
     onChainAddresses,
   }

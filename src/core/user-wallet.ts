@@ -35,8 +35,7 @@ export abstract class UserWallet {
   }
 
   async getBalances(lock?): Promise<Balances> {
-    // was the await omit on purpose?
-    await Wallets.updatePendingInvoices({
+    Wallets.updatePendingInvoices({
       walletId: this.user.id as WalletId,
       lock,
       logger: this.logger,
@@ -58,7 +57,7 @@ export abstract class UserWallet {
 
     // TODO: run this code in parrallel
     for (const { id } of this.user.currencies) {
-      const balance = await ledger.getAccountBalance(this.user.walletPath, {
+      const balance = await ledger.getAccountBalance(this.user.accountPath, {
         currency: id,
       })
 
@@ -101,7 +100,7 @@ export abstract class UserWallet {
 
   async getStringCsv() {
     const csv = new CSVAccountExport()
-    await csv.addAccount({ account: this.user.walletPath })
+    await csv.addAccount({ account: this.user.accountPath })
     return csv.getBase64()
   }
 

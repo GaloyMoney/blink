@@ -4,6 +4,7 @@ import {
   CouldNotFindUserFromIdError,
   CouldNotFindUserFromPhoneError,
   CouldNotFindUserFromUsernameError,
+  CouldNotFindUserFromWalletIdError,
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
@@ -75,6 +76,24 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
+  const findByWalletPublicId = async (
+    walletPublicId: WalletPublicId,
+  ): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOne(
+        { walletPublicId },
+        { lastIPs: 0, lastConnection: 0 },
+      )
+      if (!result) {
+        return new CouldNotFindUserFromWalletIdError(walletPublicId)
+      }
+
+      return userFromRaw(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const update = async ({
     id,
     phone,
@@ -116,6 +135,7 @@ export const UsersRepository = (): IUsersRepository => {
     findByUsername,
     findByPhone,
     persistNew,
+    findByWalletPublicId,
     update,
   }
 }

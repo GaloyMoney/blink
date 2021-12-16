@@ -5,7 +5,7 @@ export const WalletInvoiceFactory = (walletId: WalletId): WalletInvoiceFactory =
     registeredInvoice: RegisteredInvoice
   }): WalletInvoice => ({
     paymentHash: registeredInvoice.invoice.paymentHash,
-    uid: walletId,
+    walletId,
     selfGenerated: true,
     pubkey: registeredInvoice.pubkey,
     paid: false,
@@ -17,7 +17,7 @@ export const WalletInvoiceFactory = (walletId: WalletId): WalletInvoiceFactory =
     registeredInvoice: RegisteredInvoice
   }): WalletInvoice => ({
     paymentHash: registeredInvoice.invoice.paymentHash,
-    uid: walletId,
+    walletId,
     selfGenerated: false,
     pubkey: registeredInvoice.pubkey,
     paid: false,

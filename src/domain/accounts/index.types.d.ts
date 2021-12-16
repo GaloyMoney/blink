@@ -13,7 +13,7 @@ type Account = {
   readonly id: AccountId
   readonly createdAt: Date
   readonly username: Username
-  readonly defaultWalletId: WalletId
+  readonly defaultWalletId: WalletPublicId
   readonly ownerId: UserId
   level: AccountLevel
   status: AccountStatus
@@ -73,6 +73,7 @@ interface IAccountsRepository {
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   listByUserId(userId: UserId): Promise<Account[] | RepositoryError>
   findByWalletId(walletId: WalletId): Promise<Account | RepositoryError>
+  findByWalletPublicId(walletPublicId: WalletPublicId): Promise<Account | RepositoryError>
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
   update(account: Account): Promise<Account | RepositoryError>

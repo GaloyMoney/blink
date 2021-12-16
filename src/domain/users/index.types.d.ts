@@ -84,5 +84,6 @@ interface IUsersRepository {
   findByUsername(username: Username): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
   persistNew({ phone, phoneMetadata }: NewUserInfo): Promise<User | RepositoryError>
+  findByWalletPublicId(walletPublicId: WalletPublicId): Promise<User | RepositoryError>
   update(user: User): Promise<User | RepositoryError>
 }

@@ -1,5 +1,5 @@
 const user = process.env.MONGODB_USER ?? "testGaloy"
-const password = process.env.MONGODB_PASSWORD ?? "password"
+const password = process.env.MONGODB_PASSWORD
 const address = process.env.MONGODB_ADDRESS ?? "localhost"
 const db = process.env.MONGODB_DATABASE ?? "galoy"
 

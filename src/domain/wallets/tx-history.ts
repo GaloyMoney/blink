@@ -51,7 +51,6 @@ export const fromLedger = (
     ({
       id,
       walletId,
-      recipientWalletId,
       memoFromPayer,
       lnMemo,
       type,
@@ -63,6 +62,7 @@ export const fromLedger = (
       paymentHash,
       txHash,
       pubkey,
+      walletPublicId,
       username,
       address,
       pendingConfirmation,
@@ -117,12 +117,12 @@ export const fromLedger = (
             ...baseTransaction,
             initiationVia: {
               type: PaymentInitiationMethod.IntraLedger,
-              counterPartyWalletId: recipientWalletId as WalletId,
+              counterPartyWalletPublicId: walletPublicId as WalletPublicId,
               counterPartyUsername: username as Username,
             },
             settlementVia: {
               type: SettlementMethod.IntraLedger,
-              counterPartyWalletId: recipientWalletId as WalletId,
+              counterPartyWalletPublicId: walletPublicId as WalletPublicId,
               counterPartyUsername: username as Username,
             },
           }
@@ -137,7 +137,7 @@ export const fromLedger = (
             },
             settlementVia: {
               type: SettlementMethod.IntraLedger,
-              counterPartyWalletId: recipientWalletId as WalletId,
+              counterPartyWalletPublicId: walletPublicId as WalletPublicId,
               counterPartyUsername: username || null,
             },
           }
@@ -168,7 +168,7 @@ export const fromLedger = (
             },
             settlementVia: {
               type: SettlementMethod.IntraLedger,
-              counterPartyWalletId: recipientWalletId as WalletId,
+              counterPartyWalletPublicId: walletPublicId as WalletPublicId,
               counterPartyUsername: username || null,
             },
           }
@@ -195,12 +195,12 @@ export const fromLedger = (
         ...baseTransaction,
         initiationVia: {
           type: PaymentInitiationMethod.IntraLedger,
-          counterPartyWalletId: recipientWalletId as WalletId,
+          counterPartyWalletPublicId: walletPublicId as WalletPublicId,
           counterPartyUsername: username as Username,
         },
         settlementVia: {
           type: SettlementMethod.IntraLedger,
-          counterPartyWalletId: recipientWalletId as WalletId,
+          counterPartyWalletPublicId: walletPublicId as WalletPublicId,
           counterPartyUsername: username || null,
         },
       }

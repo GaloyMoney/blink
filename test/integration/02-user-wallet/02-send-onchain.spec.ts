@@ -96,7 +96,7 @@ describe("UserWallet - onChainPay", () => {
     // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
     const {
       results: [pendingTxn],
-    } = await ledger.getAccountTransactions(userWallet0.walletPath, { pending: true })
+    } = await ledger.getAccountTransactions(userWallet0.accountPath, { pending: true })
 
     const interimBalance = await getBTCBalance(userWallet0.user.id)
     expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
@@ -136,7 +136,7 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet0.walletPath, {
+    } = await ledger.getAccountTransactions(userWallet0.accountPath, {
       hash: pendingTxn.hash,
     })
     const feeRates = getFeeRates()
@@ -230,7 +230,7 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet11.walletPath, {
+    } = await ledger.getAccountTransactions(userWallet11.accountPath, {
       hash: pendingTxn.hash,
     })
     const feeRates = getFeeRates()
@@ -301,7 +301,7 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet0.walletPath, {
+    } = await ledger.getAccountTransactions(userWallet0.accountPath, {
       type: "onchain_on_us",
     })
 
@@ -376,7 +376,7 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet12.walletPath, {
+    } = await ledger.getAccountTransactions(userWallet12.accountPath, {
       type: "onchain_on_us",
     })
 
@@ -450,7 +450,7 @@ describe("UserWallet - onChainPay", () => {
     const [result] = await Transaction.aggregate([
       {
         $match: {
-          accounts: userWallet0.walletPath,
+          accounts: userWallet0.accountPath,
           type: { $ne: "on_us" },
           timestamp: { $gte: timestampYesterday },
         },

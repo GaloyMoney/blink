@@ -13,6 +13,7 @@ import {
   SatoshiAmountRequiredError,
   SelfPaymentError,
 } from "@domain/errors"
+import { toLiabilitiesAccountId } from "@domain/ledger"
 import { LedgerService } from "@services/ledger"
 import { LockService } from "@services/lock"
 import {
@@ -114,7 +115,6 @@ const lnSendPayment = async ({
     username,
     logger,
   })
-  if (paymentSendStatus instanceof Error) return paymentSendStatus
 
   const addContactToPayerResult = await addNewContact({
     userId,
@@ -157,19 +157,15 @@ const executePaymentViaIntraledger = async ({
     amount,
     walletId,
   })
-
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
   const recipientUser = await UsersRepository().findByUsername(recipientUsername)
   if (recipientUser instanceof Error) return recipientUser
   if (recipientUser.id === userId) return new SelfPaymentError()
-  // FIXME: selfPayment should be at the walletId level, no longer at the UserId
-  // but this is not a blocker until we have multiple wallets per account
 
   const recipientAccount = await AccountsRepository().findById(
     recipientUser.defaultAccountId,
   )
-
   if (recipientAccount instanceof Error) return recipientAccount
   if (!(recipientAccount.walletIds && recipientAccount.walletIds.length > 0)) {
     return new NoWalletExistsForUserError(recipientUsername)
@@ -197,15 +193,16 @@ const executePaymentViaIntraledger = async ({
       )
     }
 
+    const liabilitiesAccountId = toLiabilitiesAccountId(walletId)
     const journal = await LockService().extendLock({ logger, lock }, async () =>
       LedgerService().addUsernameIntraledgerTxSend({
-        walletId,
+        liabilitiesAccountId,
         description: "",
         sats,
         fee: lnFee,
         usd,
         usdFee,
-        recipientWalletId,
+        recipientLiabilitiesAccountId: toLiabilitiesAccountId(recipientWalletId),
         payerUsername: username,
         recipientUsername,
         memoPayer,

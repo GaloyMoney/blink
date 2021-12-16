@@ -12,7 +12,7 @@ type Deprecated = {
 
 type InitiationViaIntraledger = {
   readonly type: PaymentInitiationMethod["IntraLedger"]
-  readonly counterPartyWalletId: WalletId
+  readonly counterPartyWalletPublicId: WalletPublicId
   readonly counterPartyUsername: Username
 }
 
@@ -35,7 +35,7 @@ type InitiationViaOnChainLegacy = {
 
 type SettlementViaIntraledger = {
   readonly type: SettlementMethod["IntraLedger"]
-  readonly counterPartyWalletId: WalletId
+  readonly counterPartyWalletPublicId: WalletPublicId
   readonly counterPartyUsername: Username | null
 }
 
@@ -132,6 +132,7 @@ type WithdrawFee = number & { [withdrawFeeSymbol]: never }
 
 type Wallet = {
   readonly id: WalletId
+  readonly publicId: WalletPublicId
   readonly depositFeeRatio: DepositFeeRatio
   readonly withdrawFee: WithdrawFee
   readonly onChainAddressIdentifiers: OnChainAddressIdentifier[]
@@ -142,6 +143,7 @@ interface IWalletsRepository {
   findById(walletId: WalletId): Promise<Wallet | RepositoryError>
   findByAddress(address: OnChainAddress): Promise<Wallet | RepositoryError>
   findByUsername(username: Username): Promise<Wallet | RepositoryError>
+  findByPublicId(publicId: WalletPublicId): Promise<Wallet | RepositoryError>
   listByAddresses(addresses: string[]): Promise<Wallet[] | RepositoryError>
 }
 
