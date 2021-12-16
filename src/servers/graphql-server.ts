@@ -31,6 +31,7 @@ import {
   ENDUSER_ALIAS,
 } from "@services/tracing"
 import { AccountsRepository } from "@services/mongoose"
+import { playgroundTabs } from "../graphql/playground"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -147,7 +148,15 @@ export const startApolloServer = async ({
   const apolloServer = new ApolloServer({
     schema,
     playground: apolloConfig.playground
-      ? { settings: { "schema.polling.enable": false } }
+      ? {
+          settings: { "schema.polling.enable": false },
+          tabs: [
+            {
+              endpoint: "https://api.staging.galoy.io/graphql",
+              ...playgroundTabs.default,
+            },
+          ],
+        }
       : false,
     introspection: apolloConfig.playground,
     plugins: apolloPulgins,
