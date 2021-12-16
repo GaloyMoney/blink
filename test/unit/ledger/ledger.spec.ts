@@ -4,13 +4,13 @@ const { walletPath, liabilitiesMainAccount, resolveWalletId } = ledger
 
 describe("ledger.ts", () => {
   describe("resolveWalletId", () => {
-    const accountId = "123542"
+    const walletId = "123542"
     it("returns account id from string path", () => {
-      expect(resolveWalletId(walletPath(accountId))).toEqual(accountId)
+      expect(resolveWalletId(walletPath(walletId))).toEqual(walletId)
     })
 
     it("returns account id from array path", () => {
-      expect(resolveWalletId([liabilitiesMainAccount, accountId])).toEqual(accountId)
+      expect(resolveWalletId([liabilitiesMainAccount, walletId])).toEqual(walletId)
     })
 
     it("returns null if invalid path", () => {
