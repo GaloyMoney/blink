@@ -108,7 +108,10 @@ const MeSubscription = {
       })
     }
 
-    return pubsub.asyncIterator([USER_PRICE_UPDATE_EVENT, walletUpdateEvent(ctx.uid)])
+    return pubsub.asyncIterator([
+      USER_PRICE_UPDATE_EVENT,
+      walletUpdateEvent(ctx.domainAccount.defaultWalletId),
+    ])
   },
 }
 
