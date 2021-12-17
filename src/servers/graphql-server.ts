@@ -291,8 +291,10 @@ export const startApolloServer = async ({
               const { request } = connectionContext
 
               let token: string | jwt.JwtPayload | null = null
-              if (connectionParams.authorization) {
-                const rawToken = connectionParams.authorization.slice(7)
+              const authz =
+                connectionParams.authorization || connectionParams.Authorization
+              if (authz) {
+                const rawToken = authz.slice(7)
                 token = jwt.decode(rawToken)
               }
 
