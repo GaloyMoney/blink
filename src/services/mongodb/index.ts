@@ -33,7 +33,7 @@ const db = process.env.MONGODB_DATABASE ?? "galoy"
 
 const path = `mongodb://${user}:${password}@${address}/${db}`
 
-export const setupMongoConnection = async () => {
+export const setupMongoConnection = async (syncIndexes = false) => {
   try {
     await mongoose.connect(path, {
       useNewUrlParser: true,
@@ -48,9 +48,11 @@ export const setupMongoConnection = async () => {
 
   try {
     mongoose.set("runValidators", true)
-    await User.syncIndexes()
-    await Transaction.syncIndexes()
-    await InvoiceUser.syncIndexes()
+    if (syncIndexes) {
+      await User.syncIndexes()
+      await Transaction.syncIndexes()
+      await InvoiceUser.syncIndexes()
+    }
   } catch (err) {
     baseLogger.fatal({ err, user, address, db }, `error setting the indexes`)
     throw err

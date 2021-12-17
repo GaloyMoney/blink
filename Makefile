@@ -54,7 +54,7 @@ reset-integration: reset-deps integration
 
 integration-in-ci:
 	. ./.envrc && \
-		LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+		NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 unit-in-ci:
 	. ./.envrc && \
