@@ -15,7 +15,7 @@ export const PaymentStatusChecker = ({ paymentRequest }) => {
     invoiceIsPaid: async (): Promise<boolean | RepositoryError> => {
       const ledger = LedgerService()
       const recorded = await ledger.isLnTxRecorded(paymentHash)
-      if (recorded instanceof LedgerServiceError) return recorded
+      if (recorded instanceof Error) return recorded
       return recorded
     },
   }
