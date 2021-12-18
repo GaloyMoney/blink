@@ -4,8 +4,7 @@ concurrency: ${{ github.workflow }}
 
 on:
   push:
-    branches: [ main, "*" ]
-
+    branches: [ main ]
 
 jobs:
   build:
