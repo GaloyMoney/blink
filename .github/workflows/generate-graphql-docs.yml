@@ -1,5 +1,7 @@
 name: "Generate GraphQL Docs"
 
+concurrency: ${{ github.workflow }}
+
 on:
   push:
     branches: [ main ]
