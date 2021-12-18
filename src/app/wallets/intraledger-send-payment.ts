@@ -37,10 +37,15 @@ export const intraledgerPaymentSend = async ({
   const user = await UsersRepository().findById(userId)
   if (user instanceof Error) return user
 
+  const account = await AccountsRepository().findById(user.defaultAccountId)
+  if (account instanceof Error) return account
+
+  const { username } = account
+
   return lnSendPayment({
     userId,
     walletId,
-    username: user.username,
+    username,
     recipientUsername,
     amount,
     memo: memo || "",
@@ -65,7 +70,12 @@ export const intraledgerSendPaymentWithTwoFA = async ({
 
   const user = await UsersRepository().findById(userId)
   if (user instanceof Error) return user
-  const { username, twoFA } = user
+  const { twoFA } = user
+
+  const account = await AccountsRepository().findById(user.defaultAccountId)
+  if (account instanceof Error) return account
+
+  const { username } = account
 
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({

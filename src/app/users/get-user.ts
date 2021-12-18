@@ -7,7 +7,6 @@ import { UsersIpRepository } from "@services/mongoose/users-ips"
 import {
   addAttributesToCurrentSpan,
   asyncRunInSpan,
-  ENDUSER_ALIAS,
   SemanticAttributes,
 } from "@services/tracing"
 
@@ -33,8 +32,9 @@ export const getUserForLogin = async ({
         return user
       }
       addAttributesToCurrentSpan({
-        [ENDUSER_ALIAS]: user.username,
+        [SemanticAttributes.ENDUSER_ID]: user.id,
       })
+
       // this routing run asynchrously, to update metadata on the background
       updateUserIPsInfo({ userId, ip, logger } as {
         userId: UserId

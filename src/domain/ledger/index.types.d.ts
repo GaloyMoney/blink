@@ -159,7 +159,7 @@ interface ILedgerService {
 
   getPendingPaymentsCount(WalletId: WalletId): Promise<number | LedgerServiceError>
 
-  getAccountBalance(WalletId: WalletId): Promise<Satoshis | LedgerServiceError>
+  getWalletBalance(WalletId: WalletId): Promise<Satoshis | LedgerServiceError>
 
   allPaymentVolumeSince({
     walletId,

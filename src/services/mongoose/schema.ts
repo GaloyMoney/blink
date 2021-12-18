@@ -8,8 +8,8 @@ import {
   MS_PER_DAY,
   USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD,
 } from "@config/app"
+import { toLiabilitiesWalletId } from "@domain/ledger"
 import { UsernameRegex } from "@domain/users"
-import { walletPath } from "@services/ledger/accounts"
 import { Transaction } from "@services/ledger/schema"
 import crypto from "crypto"
 import * as mongoose from "mongoose"
@@ -289,7 +289,7 @@ UserSchema.virtual("ratioBtc").get(function (this: typeof UserSchema) {
 
 // this is the accounting path in medici for this user
 UserSchema.virtual("walletPath").get(function (this: typeof UserSchema) {
-  return walletPath(this.walletId)
+  return toLiabilitiesWalletId(this.walletId)
 })
 
 UserSchema.virtual("oldEnoughForWithdrawal").get(function (this: typeof UserSchema) {

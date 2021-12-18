@@ -34,6 +34,7 @@ import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
 import {
+  AccountsRepository,
   UsersRepository,
   WalletInvoicesRepository,
   WalletsRepository,
@@ -70,7 +71,12 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
 
       const user = await UsersRepository().findById(userId)
       if (user instanceof Error) return user
-      const { username, twoFA } = user
+
+      const account = await AccountsRepository().findById(user.defaultAccountId)
+      if (account instanceof Error) return account
+
+      const { twoFA } = user
+      const { username } = account
 
       const twoFACheck = twoFA?.secret
         ? await checkAndVerifyTwoFA({
@@ -136,9 +142,14 @@ export const lnInvoicePaymentSend = async ({
       const user = await UsersRepository().findById(userId)
       if (user instanceof Error) return user
 
+      const account = await AccountsRepository().findById(user.defaultAccountId)
+      if (account instanceof Error) return account
+
+      const { username } = account
+
       return lnSendPayment({
         walletId,
-        username: user.username,
+        username,
         decodedInvoice,
         amount: lnInvoiceAmount,
         memo: memo || "",
@@ -182,7 +193,12 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
 
       const user = await UsersRepository().findById(userId)
       if (user instanceof Error) return user
-      const { username, twoFA } = user
+      const { twoFA } = user
+
+      const account = await AccountsRepository().findById(user.defaultAccountId)
+      if (account instanceof Error) return account
+
+      const { username } = account
 
       const twoFACheck = twoFA?.secret
         ? await checkAndVerifyTwoFA({
@@ -256,9 +272,14 @@ export const lnNoAmountInvoicePaymentSend = async ({
       const user = await UsersRepository().findById(userId)
       if (user instanceof Error) return user
 
+      const account = await AccountsRepository().findById(user.defaultAccountId)
+      if (account instanceof Error) return account
+
+      const { username } = account
+
       return lnSendPayment({
         walletId,
-        username: user.username,
+        username,
         decodedInvoice,
         amount,
         memo: memo || "",

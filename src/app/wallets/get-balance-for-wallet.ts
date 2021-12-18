@@ -30,7 +30,7 @@ export const getBalanceForWallet = async ({
 export const getBalanceForWalletId = async (
   walletId: WalletId,
 ): Promise<Satoshis | ApplicationError> => {
-  const balance = await LedgerService().getAccountBalance(walletId)
+  const balance = await LedgerService().getWalletBalance(walletId)
   if (balance instanceof Error) return balance
 
   return balance

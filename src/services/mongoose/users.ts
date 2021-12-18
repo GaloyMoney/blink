@@ -122,7 +122,6 @@ export const UsersRepository = (): IUsersRepository => {
 
 const userFromRaw = (result: UserType): User => ({
   id: result.id as UserId,
-  username: result.username as Username,
   phone: result.phone as PhoneNumber,
   language: result.language as UserLanguage,
   twoFA: result.twoFA as TwoFAForUser,
