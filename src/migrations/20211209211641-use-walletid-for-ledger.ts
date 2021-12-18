@@ -48,14 +48,22 @@ module.exports = {
       const walletId = user.walletId
       const userId = user._id
 
-      const condition = { account_path: String(userId) }
+      const condition_medici_transactions = { account_path: String(userId) }
+      const condition_invoiceusers = { uid: String(userId) }
 
-      await db.collection("medici_transactions").updateMany(condition, {
-        $set: {
-          account_path: ["Liabilities", walletId],
-          accounts: `Liabilities:${walletId}`,
-        },
+      await db
+        .collection("medici_transactions")
+        .updateMany(condition_medici_transactions, {
+          $set: {
+            account_path: ["Liabilities", walletId],
+            accounts: `Liabilities:${walletId}`,
+          },
+        })
+
+      await db.collection("invoiceusers").updateMany(condition_invoiceusers, {
+        $set: { walletId },
       })
+
       if (progress % 1000 === 0) {
         console.log(`${progress} users updated`)
       }
