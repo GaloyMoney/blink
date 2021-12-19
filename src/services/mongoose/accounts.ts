@@ -70,11 +70,11 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const listByUserId = async (userId: UserId): Promise<Account[] | RepositoryError> => {
+  const findByUserId = async (userId: UserId): Promise<Account | RepositoryError> => {
     const accountId = `${userId}` as AccountId
     const account = await findById(accountId)
     if (account instanceof Error) return account
-    return [account]
+    return account
   }
 
   // FIXME: could be in a different file? does not return an Account
@@ -135,7 +135,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   return {
     listUnlockedAccounts,
     findById,
-    listByUserId,
+    findByUserId,
     findByWalletId,
     findByUsername,
     listBusinessesForMap,

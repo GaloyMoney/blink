@@ -33,13 +33,13 @@ export const hasPermissions = async (
   userId: UserId,
   walletId: WalletId,
 ): Promise<boolean | ApplicationError> => {
-  const userAccounts = await accounts.listByUserId(userId)
-  if (userAccounts instanceof Error) return userAccounts
+  const userAccount = await accounts.findByUserId(userId)
+  if (userAccount instanceof Error) return userAccount
 
   const walletAccount = await accounts.findByWalletId(walletId)
   if (walletAccount instanceof Error) return walletAccount
 
-  return userAccounts.some((a) => a.id === walletAccount.id)
+  return userAccount.id === walletAccount.id
 }
 
 export const getBusinessMapMarkers = async () => {

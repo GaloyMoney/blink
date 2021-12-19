@@ -72,7 +72,7 @@ type LimitsChecker = {
 interface IAccountsRepository {
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
-  listByUserId(userId: UserId): Promise<Account[] | RepositoryError>
+  findByUserId(userId: UserId): Promise<Account | RepositoryError>
   findByWalletId(walletId: WalletId): Promise<Account | RepositoryError>
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
