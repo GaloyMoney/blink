@@ -42,7 +42,7 @@ export const checkWithdrawalLimits = async ({
   const ledgerService = LedgerService()
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
 
-  const walletVolume = await ledgerService.withdrawalTxVolumeSince({
+  const walletVolume = await ledgerService.externalPaymentVolumeSince({
     walletId,
     timestamp: timestamp1Day,
   })
@@ -67,7 +67,7 @@ export const checkTwoFALimits = async ({
   const ledgerService = LedgerService()
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
 
-  const walletVolume = await ledgerService.twoFATxVolumeSince({
+  const walletVolume = await ledgerService.allPaymentVolumeSince({
     walletId,
     timestamp: timestamp1Day,
   })

@@ -146,16 +146,15 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const twoFATxVolumeSince = async ({
+  const allPaymentVolumeSince = async ({
     walletId,
     timestamp,
   }: {
     walletId: WalletId
     timestamp: Date
   }) => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     return txVolumeSince({
-      liabilitiesWalletId,
+      walletId,
       timestamp,
       txnTypes: [
         LedgerTransactionType.IntraLedger,
@@ -166,16 +165,15 @@ export const LedgerService = (): ILedgerService => {
     })
   }
 
-  const withdrawalTxVolumeSince = async ({
+  const externalPaymentVolumeSince = async ({
     walletId,
     timestamp,
   }: {
     walletId: WalletId
     timestamp: Date
   }) => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     return txVolumeSince({
-      liabilitiesWalletId,
+      walletId,
       timestamp,
       txnTypes: [LedgerTransactionType.Payment, LedgerTransactionType.OnchainPayment],
     })
@@ -188,9 +186,8 @@ export const LedgerService = (): ILedgerService => {
     walletId: WalletId
     timestamp: Date
   }) => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     return txVolumeSince({
-      liabilitiesWalletId,
+      walletId,
       timestamp,
       txnTypes: [
         LedgerTransactionType.IntraLedger,
@@ -199,15 +196,31 @@ export const LedgerService = (): ILedgerService => {
     })
   }
 
+  const allTxVolumeSince = async ({
+    walletId,
+    timestamp,
+  }: {
+    walletId: WalletId
+    timestamp: Date
+  }) => {
+    return txVolumeSince({
+      walletId,
+      timestamp,
+      txnTypes: Object.values(LedgerTransactionType),
+    })
+  }
+
   const txVolumeSince = async ({
-    liabilitiesWalletId,
+    walletId,
     timestamp,
     txnTypes,
   }: {
-    liabilitiesWalletId: LiabilitiesWalletId
+    walletId: WalletId
     timestamp: Date
     txnTypes: LedgerTransactionType[]
   }): Promise<TxVolume | LedgerServiceError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+
     const txnTypesObj = txnTypes.map((txnType) => ({
       type: txnType,
     }))
@@ -615,9 +628,10 @@ export const LedgerService = (): ILedgerService => {
     listPendingPayments,
     getPendingPaymentsCount,
     getAccountBalance,
-    twoFATxVolumeSince,
-    withdrawalTxVolumeSince,
+    allPaymentVolumeSince,
+    externalPaymentVolumeSince,
     intraledgerTxVolumeSince,
+    allTxVolumeSince,
     isOnChainTxRecorded,
     isLnTxRecorded,
     addOnChainTxReceive,
