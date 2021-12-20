@@ -1,5 +1,4 @@
 import * as Accounts from "@app/accounts"
-import { getAccountTransactionsForContact } from "@app/accounts/get-account-transactions-for-contact"
 import { checkedToUsername } from "@domain/users"
 import { GT } from "@graphql/index"
 import dedent from "dedent"
@@ -41,7 +40,7 @@ const UserContact = new GT.Object({
           throw account
         }
 
-        const transactions = await getAccountTransactionsForContact({
+        const transactions = await Accounts.getAccountTransactionsForContact({
           account,
           contactUsername,
         })

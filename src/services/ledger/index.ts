@@ -26,19 +26,13 @@ import {
 } from "@domain/ledger"
 import { lndAccountingPath, getBankOwnerWalletId } from "./accounts"
 
-type LoadLedgerParams = {
-  bankOwnerWalletResolver: () => Promise<WalletId>
-  dealerWalletResolver: () => Promise<WalletId>
-  funderWalletResolver: () => Promise<WalletId>
-}
-
 export const loadLedger = ({
   bankOwnerWalletResolver,
   dealerWalletResolver,
   funderWalletResolver,
 }: LoadLedgerParams) => {
-  accounts.setbankOwnerWalletResolver(bankOwnerWalletResolver)
-  accounts.setdealerWalletResolver(dealerWalletResolver)
+  accounts.setBankOwnerWalletResolver(bankOwnerWalletResolver)
+  accounts.setDealerWalletResolver(dealerWalletResolver)
   accounts.setFunderWalletResolver(funderWalletResolver)
   return {
     ...accounts,

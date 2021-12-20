@@ -44,11 +44,11 @@ let bankOwnerResolver = (): Promise<WalletId> => throwError("bankOwner")
 let dealerResolver = (): Promise<WalletId> => throwError("dealer")
 let funderResolver = (): Promise<WalletId> => throwError("funder")
 
-export function setbankOwnerWalletResolver(resolver: () => Promise<WalletId>) {
+export function setBankOwnerWalletResolver(resolver: () => Promise<WalletId>) {
   bankOwnerResolver = resolver
 }
 
-export function setdealerWalletResolver(resolver: () => Promise<WalletId>) {
+export function setDealerWalletResolver(resolver: () => Promise<WalletId>) {
   dealerResolver = resolver
 }
 

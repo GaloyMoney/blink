@@ -2,7 +2,6 @@ import { createObjectCsvWriter } from "csv-writer"
 import { CSVAccountExport } from "@core/csv-account-export"
 import { ledger, setupMongoConnectionSecondary } from "@services/mongodb"
 import { Transaction, User } from "@services/mongoose/schema"
-import * as _ from "lodash"
 
 // need to set MONGODB_ADDRESS to call the script
 // export MONGODB_PASSWORD=$(kubectl get secret -n mainnet galoy-mongodb -o=go-template='{{index .data "mongodb-password" | base64decode}}')
