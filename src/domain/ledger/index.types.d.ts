@@ -161,7 +161,7 @@ interface ILedgerService {
 
   getAccountBalance(WalletId: WalletId): Promise<Satoshis | LedgerServiceError>
 
-  twoFATxVolumeSince({
+  allPaymentVolumeSince({
     walletId,
     timestamp,
   }: {
@@ -169,7 +169,15 @@ interface ILedgerService {
     timestamp: Date
   }): Promise<TxVolume | LedgerServiceError>
 
-  withdrawalTxVolumeSince({
+  externalPaymentVolumeSince({
+    walletId,
+    timestamp,
+  }: {
+    walletId: WalletId
+    timestamp: Date
+  }): Promise<TxVolume | LedgerServiceError>
+
+  allTxVolumeSince({
     walletId,
     timestamp,
   }: {
