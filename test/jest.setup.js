@@ -4,7 +4,7 @@ const { setupMongoConnection } = require("@services/mongodb")
 let mongoose
 
 beforeAll(async () => {
-  mongoose = await setupMongoConnection()
+  mongoose = await setupMongoConnection(true)
 })
 
 afterAll(async () => {
