@@ -1,6 +1,5 @@
 import assert from "assert"
 import { createChainAddress, sendToChainAddress } from "lightning"
-import _ from "lodash"
 
 import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
 import { getActiveOnchainLnd, lndsBalances } from "@services/lnd/utils"
@@ -40,7 +39,7 @@ export class SpecterWallet {
     const wallets = await this.listWallets()
 
     const pattern = this.config.onchainWallet
-    const specterWallets = _.filter(wallets, (item) => item.includes(pattern))
+    const specterWallets = wallets.filter((item) => item.includes(pattern))
 
     // there should be only one specter wallet
     // TODO/FIXME this is a weak security assumption

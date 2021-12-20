@@ -1,5 +1,5 @@
 import * as admin from "firebase-admin"
-import _ from "lodash"
+import mapValues from "lodash.mapvalues"
 
 // The key GOOGLE_APPLICATION_CREDENTIALS should be set in production
 // This key defined the path of the config file that include the key
@@ -22,7 +22,7 @@ export const sendNotification = async ({
   const message: Record<string, Record<string, unknown>> = {
     // only string can be sent to notifications
     data: {
-      ..._.mapValues(data, (v) => String(v)),
+      ...mapValues(data, (v) => String(v)),
       // title,
       // body,
     },

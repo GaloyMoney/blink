@@ -1,5 +1,5 @@
 import Client from "bitcoin-core"
-import _ from "lodash"
+import sumBy from "lodash.sumby"
 
 import { btc2sat } from "@core/utils"
 
@@ -191,5 +191,5 @@ export const getBalancesDetail = async (): Promise<
 
 export const getBalance = async (): Promise<number> => {
   const balanceObj = await getBalancesDetail()
-  return _.sumBy(balanceObj, "balance")
+  return sumBy(balanceObj, "balance")
 }

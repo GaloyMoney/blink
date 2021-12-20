@@ -12,8 +12,10 @@ import { UsernameRegex } from "@domain/users"
 import { walletPath } from "@services/ledger/accounts"
 import { Transaction } from "@services/ledger/schema"
 import crypto from "crypto"
-import * as _ from "lodash"
 import * as mongoose from "mongoose"
+import uniq from "lodash.uniq"
+import sumBy from "lodash.sumby"
+import find from "lodash.find"
 
 export { Transaction }
 
@@ -179,7 +181,7 @@ const UserSchema = new Schema<UserType>({
   currencies: {
     validate: {
       validator: function (v) {
-        return _.sumBy(v, "ratio") === 1
+        return sumBy(v, "ratio") === 1
       },
     },
     type: [
@@ -275,12 +277,14 @@ const UserSchema = new Schema<UserType>({
 // Define getter for ratioUsd
 // FIXME: this // An outer value of 'this' is shadowed by this container.
 // https://stackoverflow.com/questions/41944650/this-implicitly-has-type-any-because-it-does-not-have-a-type-annotation
+
+// TODO: remove lodash.find when this is removed
 UserSchema.virtual("ratioUsd").get(function (this: typeof UserSchema) {
-  return _.find(this.currencies, { id: "USD" })?.ratio ?? 0
+  return find(this.currencies, { id: "USD" })?.ratio ?? 0
 })
 
 UserSchema.virtual("ratioBtc").get(function (this: typeof UserSchema) {
-  return _.find(this.currencies, { id: "BTC" })?.ratio ?? 0
+  return find(this.currencies, { id: "BTC" })?.ratio ?? 0
 })
 
 // this is the accounting path in medici for this user
@@ -389,7 +393,7 @@ UserSchema.virtual("onchain_addresses").get(function (this: typeof UserSchema) {
 
 // return the list of nodes that this user has address associated to
 UserSchema.virtual("onchain_pubkey").get(function (this: typeof UserSchema) {
-  return _.uniq(this.onchain.map((item) => item.pubkey))
+  return uniq(this.onchain.map((item) => item.pubkey))
 })
 
 // user is considered active if there has been one transaction of more than 1000 sats in the last 30 days

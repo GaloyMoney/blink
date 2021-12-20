@@ -1,5 +1,4 @@
 import { createObjectCsvWriter } from "csv-writer"
-import * as _ from "lodash"
 
 import { CSVAccountExport } from "@core/csv-account-export"
 
@@ -107,9 +106,9 @@ const exportUsers = async () => {
     }
 
     try {
-      const { totalDebit, totalCredit, countTxs } = _.find(aggregateTxs, {
-        _id: user.walletPath,
-      })
+      const { totalDebit, totalCredit, countTxs } = aggregateTxs.find(
+        (item) => item.id === user.walletPath,
+      )
       record["totalDebit"] = totalDebit
       record["totalCredit"] = totalCredit
       record["countTxs"] = countTxs

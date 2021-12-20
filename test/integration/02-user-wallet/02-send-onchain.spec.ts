@@ -1,6 +1,6 @@
 import { once } from "events"
 import { sleep } from "@core/utils"
-import { filter, first } from "lodash"
+import first from "lodash.first"
 import { baseLogger } from "@services/logger"
 import {
   getFeeRates,
@@ -111,7 +111,7 @@ describe("UserWallet - onChainPay", () => {
       throw txResult.error
     }
     let txs = txResult.result
-    const pendingTxs = filter(txs, { status: TxStatus.Pending })
+    const pendingTxs = txs.filter(({ status }) => status === TxStatus.Pending)
     expect(pendingTxs.length).toBe(1)
     expect(pendingTxs[0].settlementAmount).toBe(-amount - pendingTxs[0].settlementFee)
 
@@ -205,7 +205,7 @@ describe("UserWallet - onChainPay", () => {
       throw txResult
     }
     let txs = txResult.result
-    const pendingTxs = filter(txs, { status: TxStatus.Pending })
+    const pendingTxs = txs.filter(({ status }) => status === TxStatus.Pending)
     expect(pendingTxs.length).toBe(1)
     expect(pendingTxs[0].settlementAmount).toBe(-initialBalanceUser11)
 
