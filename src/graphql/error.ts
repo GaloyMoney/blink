@@ -142,16 +142,6 @@ export class LndOfflineError extends CustomApolloError {
   }
 }
 
-export class IPBlacklistedError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
-    super({
-      forwardToClient: false,
-      code: "REJECTED_BLACKLISTED_IP",
-      ...errData,
-    })
-  }
-}
-
 export class CaptchaFailedError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
