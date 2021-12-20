@@ -1,3 +1,5 @@
+import { getCurrentPrice } from "@app/prices"
+import { getBalanceForWallet } from "@app/wallets"
 import {
   lnPaymentStatusEvent,
   SAT_USDCENT_PRICE,
@@ -7,6 +9,7 @@ import {
 import { NotificationsServiceError, NotificationType } from "@domain/notifications"
 import { User } from "@services/mongoose/schema"
 import pubsub from "@services/pubsub"
+import { sendNotification } from "./notification"
 import { transactionNotification } from "./payment"
 
 export const NotificationsService = (logger: Logger): INotificationsService => {
@@ -191,13 +194,59 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     }
   }
 
+  const sendBalance = async (account: Account): Promise<void> => {
+    const balanceSats = await getBalanceForWallet({
+      walletId: account.defaultWalletId,
+      logger,
+    })
+    if (balanceSats instanceof Error) throw balanceSats
+
+    // Add commas to balancesats
+    const balanceSatsPrettified = balanceSats.toLocaleString("en")
+    // Round balanceusd to 2 decimal places and add commas
+
+    let balanceUsd: string, title: string
+    const price = await getCurrentPrice()
+    if (price instanceof Error) {
+      logger.warn({ price }, "impossible to fetch price for notification")
+
+      // TODO: i18n
+      title = `Your balance is ${balanceSatsPrettified} sats)`
+    } else {
+      const usdValue = price * balanceSats
+      balanceUsd = usdValue.toLocaleString("en", {
+        maximumFractionDigits: 2,
+      })
+
+      // TODO: i18n
+      title = `Your balance is $${balanceUsd} (${balanceSatsPrettified} sats)`
+    }
+
+    logger.info(
+      { balanceSatsPrettified, title, ownerId: account.ownerId },
+      `sending balance notification to user`,
+    )
+
+    // FIXME:
+    const user = await User.find({ id: account.id })
+    if (user instanceof Error) {
+      logger.warn({ user }, "impossible to fetch user to send transaction")
+    }
+
+    await sendNotification({
+      user,
+      title,
+      logger,
+    })
+  }
+
   return {
     onChainTransactionReceived,
     onChainTransactionReceivedPending,
     onChainTransactionPayment,
-
     priceUpdate,
     lnInvoicePaid,
     intraLedgerPaid,
+    sendBalance,
   }
 }

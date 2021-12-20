@@ -70,6 +70,7 @@ type LimitsChecker = {
 }
 
 interface IAccountsRepository {
+  listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   listByUserId(userId: UserId): Promise<Account[] | RepositoryError>
   findByWalletId(walletId: WalletId): Promise<Account | RepositoryError>

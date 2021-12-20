@@ -1,15 +1,12 @@
-import assert from "assert"
-
-import { User } from "@services/mongoose/schema"
+import * as Wallets from "@app/wallets"
+import { getGaloyInstanceName } from "@config/app"
 import { ledger } from "@services/mongodb"
-
+import { User } from "@services/mongoose/schema"
+import assert from "assert"
+import { generateSecret, verifyToken } from "node-2fa"
+import { CSVAccountExport } from "./csv-account-export"
 import { DbError, TwoFAError } from "./error"
 import { Balances } from "./interface"
-import { CSVAccountExport } from "./csv-account-export"
-import { getGaloyInstanceName } from "@config/app"
-import { generateSecret, verifyToken } from "node-2fa"
-import { sendNotification } from "@services/notifications/notification"
-import { Wallets } from "@app"
 
 export abstract class UserWallet {
   static lastPrice: number
@@ -260,31 +257,6 @@ export abstract class UserWallet {
         err,
       })
     }
-  }
-
-  sendBalance = async (): Promise<void> => {
-    const balanceSats = await Wallets.getBalanceForWallet({
-      walletId: this.user.walletId,
-      logger: this.logger,
-    })
-    if (balanceSats instanceof Error) throw balanceSats
-
-    // Add commas to balancesats
-    const balanceSatsPrettified = balanceSats.toLocaleString("en")
-    // Round balanceusd to 2 decimal places and add commas
-    const balanceUsd = UserWallet.satsToUsd(balanceSats).toLocaleString("en", {
-      maximumFractionDigits: 2,
-    })
-
-    this.logger.info(
-      { balanceSatsPrettified, balanceUsd, user: this.user },
-      `sending balance notification to user`,
-    )
-    await sendNotification({
-      user: this.user,
-      title: `Your balance is $${balanceUsd} (${balanceSatsPrettified} sats)`,
-      logger: this.logger,
-    })
   }
 
   getUserLimits = async () => {

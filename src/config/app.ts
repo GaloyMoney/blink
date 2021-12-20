@@ -29,7 +29,7 @@ export const BTC_NETWORK = btcNetwork as BtcNetwork
 
 export const MS_PER_HOUR = 60 * 60 * 1000
 export const MS_PER_DAY = 24 * MS_PER_HOUR
-export const MS_PER_30_DAYs = 30 * MS_PER_DAY
+export const MS_PER_30_DAYS = 30 * MS_PER_DAY
 
 export const SECS_PER_5_MINS = (60 * 5) as Seconds
 
