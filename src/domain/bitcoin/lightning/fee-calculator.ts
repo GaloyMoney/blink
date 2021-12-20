@@ -1,14 +1,18 @@
-import { FEECAP, FEEMIN } from "@domain/bitcoin"
+import { FEECAP_PERCENT, FEEMIN } from "@domain/bitcoin"
 import { toSats } from ".."
 
 export const LnFeeCalculator = (
-  { feeCap = FEECAP, feeMin = FEEMIN } = {
-    feeCap: FEECAP,
+  {
+    feeCapPercent,
+    feeMin,
+  }: {
+    feeCapPercent
+    feeMin: Satoshis
+  } = {
+    feeCapPercent: FEECAP_PERCENT,
     feeMin: FEEMIN,
   },
-): LnFeeCalculator => {
-  return {
-    max: (amount: Satoshis): Satoshis =>
-      toSats(Math.floor(Math.max(feeCap * amount, feeMin))),
-  }
-}
+): LnFeeCalculator => ({
+  max: (amount: Satoshis): Satoshis =>
+    toSats(Math.floor(Math.max(feeCapPercent * amount, feeMin))),
+})

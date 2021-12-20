@@ -34,5 +34,5 @@ export const BtcNetwork = {
   regtest: "regtest",
 } as const
 
-export const FEECAP = toSats(0.02) // = 2%
+export const FEECAP_PERCENT = 0.02
 export const FEEMIN = toSats(10) // sats

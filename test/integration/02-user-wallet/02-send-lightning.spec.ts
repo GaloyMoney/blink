@@ -22,7 +22,7 @@ import {
 } from "test/helpers"
 import * as Wallets from "@app/wallets"
 import { addInvoice } from "@app/wallets/add-invoice-for-wallet"
-import { toSats, FEECAP } from "@domain/bitcoin"
+import { toSats, FEECAP_PERCENT } from "@domain/bitcoin"
 import {
   SelfPaymentError as DomainSelfPaymentError,
   InsufficientBalanceError as DomainInsufficientBalanceError,
@@ -540,7 +540,7 @@ describe("UserWallet - Lightning Pay", () => {
     },
     {
       name: "directPay",
-      initialFee: FEECAP,
+      initialFee: FEECAP_PERCENT,
       fn: function fn(wallet) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           const paymentResult = await lnInvoicePaymentSendWithTwoFA({
