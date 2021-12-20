@@ -28,9 +28,12 @@ import {
   SubscribeToChannelsChannelClosedEvent,
   SubscribeToChannelsChannelOpenedEvent,
 } from "lightning"
-import _ from "lodash"
 import { Logger } from "pino"
 import { params } from "./auth"
+import sumBy from "lodash.sumby"
+import groupBy from "lodash.groupby"
+import mapValues from "lodash.mapvalues"
+import map from "lodash.map"
 
 export const deleteExpiredInvoiceUser = async () => {
   const walletInvoicesRepo = WalletInvoicesRepository()
@@ -65,11 +68,11 @@ export const deleteFailedPaymentsAttemptAllLnds = async () => {
 export const lndsBalances = async () => {
   const data = await Promise.all(getLnds().map(({ lnd }) => lndBalances({ lnd })))
   return {
-    total: _.sumBy(data, "total"),
-    onChain: _.sumBy(data, "onChain"),
-    offChain: _.sumBy(data, "offChain"),
-    opening_channel_balance: _.sumBy(data, "opening_channel_balance"),
-    closing_channel_balance: _.sumBy(data, "closing_channel_balance"),
+    total: sumBy(data, "total"),
+    onChain: sumBy(data, "onChain"),
+    offChain: sumBy(data, "offChain"),
+    opening_channel_balance: sumBy(data, "opening_channel_balance"),
+    closing_channel_balance: sumBy(data, "closing_channel_balance"),
   }
 }
 
@@ -89,10 +92,8 @@ export const lndBalances = async ({ lnd }) => {
   // FIXME: there can be issue with channel not closed completely from lnd
   // https://github.com/alexbosworth/ln-service/issues/139
   baseLogger.debug({ closedChannels }, "getClosedChannels")
-  const closing_channel_balance = _.sumBy(closedChannels, (channel) =>
-    _.sumBy(channel.close_payments, (payment) =>
-      payment.is_pending ? payment.tokens : 0,
-    ),
+  const closing_channel_balance = sumBy(closedChannels, (channel) =>
+    sumBy(channel.close_payments, (payment) => (payment.is_pending ? payment.tokens : 0)),
   )
 
   const total =
@@ -136,8 +137,8 @@ export async function getBosScore() {
 
     // FIXME: manage multiple nodes
     const { lnd } = getActiveLnd()
-    const publicKey = (await getWalletInfo({ lnd })).public_key
-    const bosScore = _.find(data.data, { publicKey })
+    const pubKey = (await getWalletInfo({ lnd })).public_key
+    const bosScore = data.data.find(({ publicKey }) => publicKey === pubKey)
     if (!bosScore) {
       baseLogger.info("key is not in bos list")
     }
@@ -172,18 +173,18 @@ export const getRoutingFees = async ({
   }
 
   // groups each forward object by date
-  const dateGroupedForwards = _.groupBy(forwards, (e) =>
+  const dateGroupedForwards = groupBy(forwards, (e) =>
     new Date(e.created_at).toDateString(),
   )
 
   // returns revenue for each date by reducing all forwards for each date
-  const feePerDate = _.mapValues(
+  const feePerDate = mapValues(
     dateGroupedForwards,
     (e) => e.reduce((sum, { fee_mtokens }) => sum + +fee_mtokens, 0) / 1000,
   )
 
   // returns an array of objects where each object has key = date and value = fees
-  return _.map(feePerDate, (v, k) => ({ [k]: v }))
+  return map(feePerDate, (v, k) => ({ [k]: v }))
 }
 
 export const getInvoiceAttempt = async ({ lnd, id }) => {
@@ -259,8 +260,10 @@ export const updateEscrows = async () => {
   const { lnd } = getActiveLnd()
   const { channels } = await getChannels({ lnd })
 
-  const selfInitatedChannels = _.filter(channels, { is_partner_initiated: false })
-  const escrowInLnd = _.sumBy(selfInitatedChannels, "commit_transaction_fee")
+  const selfInitatedChannels = channels.filter(
+    ({ is_partner_initiated }) => is_partner_initiated === false,
+  )
+  const escrowInLnd = sumBy(selfInitatedChannels, "commit_transaction_fee")
 
   const result = await ledger.updateLndEscrow({ amount: escrowInLnd })
 
@@ -295,7 +298,7 @@ export const onChannelUpdated = async ({
   const { transactions } = await getChainTransactions({ lnd, after })
   // end dedupe
 
-  const tx = _.find(transactions, { id: txid })
+  const tx = transactions.find(({ id }) => id === txid)
 
   if (!tx?.fee) {
     baseLogger.error({ transactions }, "fee doesn't exist")
@@ -333,11 +336,11 @@ export const getLnds = ({
   let result = params
 
   if (type) {
-    result = _.filter(result, (item) => item.type.some((item) => item === type))
+    result = result.filter((node) => node.type.some((nodeType) => nodeType === type))
   }
 
   if (active) {
-    result = _.filter(result, { active })
+    result = result.filter(({ active }) => active)
   }
 
   return result
@@ -372,7 +375,7 @@ export const nodesPubKey = offchainLnds.map((item) => item.pubkey)
 
 export const getLndFromPubkey = ({ pubkey }: { pubkey: string }) => {
   const lnds = getLnds({ active: true })
-  const lnd = _.filter(lnds, { pubkey })
+  const lnd = lnds.filter(({ pubkey: nodePubKey }) => nodePubKey === pubkey)
   if (!lnd) {
     throw new LndOfflineError(`lnd with pubkey:${pubkey} is offline`)
   } else {

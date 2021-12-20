@@ -1,5 +1,4 @@
 import { once } from "events"
-import { filter } from "lodash"
 import { getOnChainAddressCreateAttemptLimits, getUserLimits } from "@config/app"
 import { btc2sat, sat2btc, sleep } from "@core/utils"
 import { getTitle } from "@services/notifications/payment"
@@ -207,7 +206,7 @@ describe("UserWallet - On chain", () => {
     if (error instanceof Error || txs === null) {
       throw error
     }
-    const pendingTxs = filter(txs, { status: TxStatus.Pending })
+    const pendingTxs = txs.filter(({ status }) => status === TxStatus.Pending)
     expect(pendingTxs.length).toBe(1)
 
     const pendingTx = pendingTxs[0] as WalletOnChainTransaction

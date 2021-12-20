@@ -1,5 +1,5 @@
 import { unauthenticatedLndGrpc } from "lightning"
-import _ from "lodash"
+import sortBy from "lodash.sortby"
 import { getLndParams } from "@config/app"
 
 const inputs: LndParams[] = getLndParams()
@@ -30,4 +30,4 @@ export const addProps = (array) =>
     }
   })
 
-export const params = addProps(_.sortBy(inputs, ["priority"]))
+export const params = addProps(sortBy(inputs, ["priority"]))

@@ -1,6 +1,6 @@
-import _ from "lodash"
 import ccxt from "ccxt"
 import moment from "moment"
+import last from "lodash.last"
 import { baseLogger } from "@services/logger"
 import { PriceHistory } from "./schema"
 import { SATS_PER_BTC } from "@config/app"
@@ -43,7 +43,7 @@ export const updatePriceHistory = async (
   try {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore-error: TODO
-    const diff = moment().diff(moment(_.last(doc.pair.exchange.price)._id))
+    const diff = moment().diff(moment(last(doc.pair.exchange.price)._id))
     if (diff < 1000 * 60 * 60) {
       return false
     }

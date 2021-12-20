@@ -1,6 +1,6 @@
 import { authenticatedLndGrpc } from "lightning"
-import _ from "lodash"
 import { getLndParams } from "@config/app"
+import sortBy from "lodash.sortby"
 
 const inputs: LndParams[] = getLndParams()
 
@@ -14,8 +14,8 @@ const isTest = require.main!.filename.indexOf(".spec.") !== -1
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const isTrigger = require.main!.filename.indexOf("trigger") !== -1
 
-export const addProps = (array) =>
-  array.map((input) => {
+export const addProps = (array: LndParams[]) => {
+  const result: LndParamsAuthed[] = array.map((input) => {
     const socket = `${input.node}:${input.port}`
     return {
       ...input,
@@ -29,7 +29,9 @@ export const addProps = (array) =>
       active: isTest || !isTrigger,
     }
   })
+  return result
+}
 
-export const params = addProps(_.sortBy(inputs, ["priority"]))
+export const params = addProps(sortBy(inputs, ["priority"]))
 
 export const TIMEOUT_PAYMENT = process.env.NETWORK !== "regtest" ? 45000 : 3000
