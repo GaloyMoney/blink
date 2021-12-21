@@ -20,6 +20,7 @@ for (const subModule in allFunctions) {
   for (const fn in allFunctions[subModule]) {
     const wrapper = syncFunctions.includes(fn) ? wrapToRunInSpan : wrapAsyncToRunInSpan
     allFunctions[subModule][fn] = wrapper({
+      namespace: "app",
       fn: allFunctions[subModule][fn],
     })
   }

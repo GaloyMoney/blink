@@ -175,11 +175,11 @@ export const asyncRunInSpan = <F extends () => ReturnType<F>>(
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 export const wrapToRunInSpan = <A extends Array<any>, R>({
   fn,
-  namespace = "app",
+  namespace,
   spanAttributes = {},
 }: {
   fn: (...args: A) => R
-  namespace?: string
+  namespace: string
   spanAttributes?: SpanAttributes
 }) => {
   return (...args: A): R => {
@@ -210,11 +210,11 @@ type PromiseReturnType<T> = T extends Promise<infer Return> ? Return : T
 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
 export const wrapAsyncToRunInSpan = <A extends Array<any>, R>({
   fn,
-  namespace = "app",
+  namespace,
   spanAttributes = {},
 }: {
   fn: (...args: A) => Promise<PromiseReturnType<R>>
-  namespace?: string
+  namespace: string
   spanAttributes?: SpanAttributes
 }) => {
   return (...args: A): Promise<PromiseReturnType<R>> => {
