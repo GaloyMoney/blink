@@ -11,11 +11,7 @@ import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
 
-import {
-  asyncRunInSpan,
-  SemanticAttributes,
-  addAttributesToCurrentSpan,
-} from "@services/tracing"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 import {
   decodeInvoice,
   LnPaymentPendingError,

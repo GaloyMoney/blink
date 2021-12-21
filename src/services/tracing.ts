@@ -21,6 +21,7 @@ import {
   Span,
   SpanAttributes,
   SpanStatusCode,
+  SpanOptions,
 } from "@opentelemetry/api"
 import { tracingConfig } from "@config/app"
 
@@ -172,8 +173,33 @@ export const asyncRunInSpan = <F extends () => ReturnType<F>>(
   return ret
 }
 
-// eslint-disable-next-line  @typescript-eslint/no-explicit-any
-export const wrapToRunInSpan = <A extends Array<any>, R>({
+const resolveFunctionSpanOptions = ({
+  namespace,
+  functionName,
+  functionArgs,
+  spanAttributes,
+}: {
+  namespace: string
+  functionName: string
+  functionArgs: Array<unknown>
+  spanAttributes: SpanAttributes
+}): SpanOptions => {
+  const attributes = {
+    [SemanticAttributes.CODE_FUNCTION]: functionName,
+    [SemanticAttributes.CODE_NAMESPACE]: namespace,
+    ...spanAttributes,
+  }
+  if (functionArgs && functionArgs.length > 0) {
+    const params =
+      typeof functionArgs[0] === "object" ? functionArgs[0] : { "0": functionArgs[0] }
+    for (const key in params) {
+      attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = params[key]
+    }
+  }
+  return { attributes }
+}
+
+export const wrapToRunInSpan = <A extends Array<unknown>, R>({
   fn,
   namespace,
   spanAttributes = {},
@@ -183,17 +209,15 @@ export const wrapToRunInSpan = <A extends Array<any>, R>({
   spanAttributes?: SpanAttributes
 }) => {
   return (...args: A): R => {
-    const name = fn.name
-    const spanName = `${namespace}.${name}`
-    const attributes = { [SemanticAttributes.CODE_FUNCTION]: name, ...spanAttributes }
-    if (args && args.length > 0) {
-      let params = { "0": args[0] }
-      if (typeof args[0] === "object") params = args[0]
-      for (const key in params) {
-        attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = params[key]
-      }
-    }
-    const ret = tracer.startActiveSpan(spanName, { attributes }, (span) => {
+    const functionName = fn.name
+    const spanName = `${namespace}.${functionName}`
+    const spanOptions = resolveFunctionSpanOptions({
+      namespace,
+      functionName,
+      functionArgs: args,
+      spanAttributes,
+    })
+    const ret = tracer.startActiveSpan(spanName, spanOptions, (span) => {
       const ret = fn(...args)
       if (ret instanceof Error) {
         span.recordException(ret)
@@ -207,8 +231,7 @@ export const wrapToRunInSpan = <A extends Array<any>, R>({
 
 type PromiseReturnType<T> = T extends Promise<infer Return> ? Return : T
 
-// eslint-disable-next-line  @typescript-eslint/no-explicit-any
-export const wrapAsyncToRunInSpan = <A extends Array<any>, R>({
+export const wrapAsyncToRunInSpan = <A extends Array<unknown>, R>({
   fn,
   namespace,
   spanAttributes = {},
@@ -218,17 +241,15 @@ export const wrapAsyncToRunInSpan = <A extends Array<any>, R>({
   spanAttributes?: SpanAttributes
 }) => {
   return (...args: A): Promise<PromiseReturnType<R>> => {
-    const name = fn.name
-    const spanName = `${namespace}.${name}`
-    const attributes = { [SemanticAttributes.CODE_FUNCTION]: name, ...spanAttributes }
-    if (args && args.length > 0) {
-      let params = { "0": args[0] }
-      if (typeof args[0] === "object") params = args[0]
-      for (const key in params) {
-        attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = params[key]
-      }
-    }
-    const ret = tracer.startActiveSpan(spanName, { attributes }, async (span) => {
+    const functionName = fn.name
+    const spanName = `${namespace}.${functionName}`
+    const spanOptions = resolveFunctionSpanOptions({
+      namespace,
+      functionName,
+      functionArgs: args,
+      spanAttributes,
+    })
+    const ret = tracer.startActiveSpan(spanName, spanOptions, async (span) => {
       const ret = await fn(...args)
       if (ret instanceof Error) {
         span.recordException(ret)
