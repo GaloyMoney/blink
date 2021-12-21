@@ -1,4 +1,4 @@
-import { toMilliSatsFromNumber, toMilliSatsFromString, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromString, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   CouldNotDecodeReturnedPaymentRequest,
@@ -13,6 +13,7 @@ import {
   RouteNotFoundError,
   UnknownRouteNotFoundError,
   InsufficientBalanceForRoutingError,
+  BadPaymentDataError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
 import {
@@ -241,7 +242,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }: {
     pubkey?: Pubkey
     paymentHash: PaymentHash
-  }): Promise<LnPaymentLookup | LightningServiceError> => {
+  }): Promise<LnPaymentLookup | LnFailedPartialPaymentLookup | LightningServiceError> => {
     if (pubkey) return lookupPaymentByPubkeyAndHash({ pubkey, paymentHash })
 
     for (const { pubkey } of offchainLnds) {
@@ -408,7 +409,7 @@ const lookupPaymentByPubkeyAndHash = async ({
 }: {
   pubkey: Pubkey
   paymentHash: PaymentHash
-}): Promise<LnPaymentLookup | LightningServiceError> => {
+}): Promise<LnPaymentLookup | LnFailedPartialPaymentLookup | LightningServiceError> => {
   let lnd: AuthenticatedLnd
   try {
     ;({ lnd } = getLndFromPubkey({ pubkey }))
@@ -425,7 +426,7 @@ const lookupPaymentByPubkeyAndHash = async ({
       lnd,
       id: paymentHash,
     })
-    const { is_confirmed, is_failed, payment } = result
+    const { is_confirmed, is_failed, payment, pending } = result
 
     const status = is_confirmed
       ? PaymentStatus.Settled
@@ -433,33 +434,40 @@ const lookupPaymentByPubkeyAndHash = async ({
       ? PaymentStatus.Failed
       : PaymentStatus.Pending
 
-    let paymentLookup: LnPaymentLookup = {
-      amount: toSats(0),
-      createdAt: new Date(0),
-      confirmedAt: undefined,
-      destination: "" as Pubkey,
-      roundedUpFee: toSats(0),
-      milliSatsAmount: toMilliSatsFromNumber(0),
-      revealedPreImage: "" as RevealedPreImage,
-      request: undefined,
-      status,
-    }
-
     if (payment) {
-      paymentLookup = Object.assign(paymentLookup, {
-        amount: toSats(payment.tokens),
+      return {
         createdAt: new Date(payment.created_at),
-        confirmedAt: payment.confirmed_at ? new Date(payment.confirmed_at) : undefined,
-        destination: payment.destination as Pubkey,
-        request: payment.request,
-        roundedUpFee: toSats(payment.safe_fee),
-        milliSatsAmount: toMilliSatsFromString(payment.mtokens),
-        revealedPreImage: payment.secret as RevealedPreImage,
         status,
-      })
+        paymentRequest: (payment.request as EncodedPaymentRequest) || undefined,
+        paymentHash: payment.id as PaymentHash,
+        milliSatsAmount: toMilliSatsFromString(payment.mtokens),
+        roundedUpAmount: toSats(payment.safe_tokens),
+        confirmedDetails: {
+          confirmedAt: new Date(payment.confirmed_at),
+          destination: payment.destination as Pubkey,
+          revealedPreImage: payment.secret as RevealedPreImage,
+          roundedUpFee: toSats(payment.safe_fee),
+          milliSatsFee: toMilliSatsFromString(payment.fee_mtokens),
+          hopPubkeys: undefined,
+        },
+        attempts: undefined,
+      }
+    } else if (pending) {
+      return {
+        createdAt: new Date(pending.created_at),
+        status,
+        paymentRequest: (pending.request as EncodedPaymentRequest) || undefined,
+        paymentHash: pending.id as PaymentHash,
+        milliSatsAmount: toMilliSatsFromString(pending.mtokens),
+        roundedUpAmount: toSats(pending.safe_tokens),
+        confirmedDetails: undefined,
+        attempts: undefined,
+      }
+    } else if (status === PaymentStatus.Failed) {
+      return { status: PaymentStatus.Failed }
     }
 
-    return paymentLookup
+    return new BadPaymentDataError(JSON.stringify(result))
   } catch (err) {
     const errDetails = parseLndErrorDetails(err)
     switch (errDetails) {
