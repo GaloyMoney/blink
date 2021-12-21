@@ -1,4 +1,4 @@
-import { getRecentlyActiveAccount } from "@app/accounts/active-accounts"
+import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { NotificationsService } from "@services/notifications"
@@ -15,7 +15,7 @@ const main = async () => {
 }
 
 export const sendBalanceToUsers = async () => {
-  const accounts = await getRecentlyActiveAccount()
+  const accounts = await getRecentlyActiveAccounts()
   if (accounts instanceof Error) throw accounts
 
   for (const account of accounts) {

@@ -1,5 +1,5 @@
 import { Prices } from "@app"
-import { getRecentlyActiveAccount } from "@app/accounts/active-accounts"
+import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { toSats } from "@domain/bitcoin"
 import { sendBalanceToUsers } from "@servers/daily-balance-notification"
 import * as serviceLedger from "@services/ledger"
@@ -35,7 +35,7 @@ describe("notification", () => {
   describe("sendNotification", () => {
     it("sends daily balance to active users", async () => {
       await sendBalanceToUsers()
-      const users = await getRecentlyActiveAccount()
+      const users = await getRecentlyActiveAccounts()
       if (users instanceof Error) throw users
       const numActiveUsers = users.length
       expect(sendNotification.mock.calls.length).toBe(numActiveUsers)

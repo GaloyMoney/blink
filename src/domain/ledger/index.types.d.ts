@@ -135,6 +135,13 @@ type TxVolume = {
   incomingSats: Satoshis
 }
 
+interface IGetVolumeArgs {
+  walletId: WalletId
+  timestamp: Date
+}
+
+type VolumeResult = Promise<TxVolume | LedgerServiceError>
+
 interface ILedgerService {
   getTransactionById(
     id: LedgerTransactionId,
@@ -161,37 +168,13 @@ interface ILedgerService {
 
   getWalletBalance(WalletId: WalletId): Promise<Satoshis | LedgerServiceError>
 
-  allPaymentVolumeSince({
-    walletId,
-    timestamp,
-  }: {
-    walletId: WalletId
-    timestamp: Date
-  }): Promise<TxVolume | LedgerServiceError>
+  allPaymentVolumeSince({ walletId, timestamp }: IGetVolumeArgs): VolumeResult
 
-  externalPaymentVolumeSince({
-    walletId,
-    timestamp,
-  }: {
-    walletId: WalletId
-    timestamp: Date
-  }): Promise<TxVolume | LedgerServiceError>
+  externalPaymentVolumeSince({ walletId, timestamp }: IGetVolumeArgs): VolumeResult
 
-  allTxVolumeSince({
-    walletId,
-    timestamp,
-  }: {
-    walletId: WalletId
-    timestamp: Date
-  }): Promise<TxVolume | LedgerServiceError>
+  allTxVolumeSince({ walletId, timestamp }: IGetVolumeArgs): VolumeResult
 
-  intraledgerTxVolumeSince({
-    walletId,
-    timestamp,
-  }: {
-    walletId: WalletId
-    timestamp: Date
-  }): Promise<TxVolume | LedgerServiceError>
+  intraledgerTxVolumeSince({ walletId, timestamp }: IGetVolumeArgs): VolumeResult
 
   isOnChainTxRecorded({
     walletId,

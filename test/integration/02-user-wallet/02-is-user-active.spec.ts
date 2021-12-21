@@ -1,10 +1,10 @@
-import { getRecentlyActiveAccount } from "@app/accounts/active-accounts"
+import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { getAndCreateUserWallet } from "test/helpers"
 import * as ledger from "@services/ledger"
 import { User } from "@services/mongoose/schema"
 import { toSats } from "@domain/bitcoin"
 
-describe("getRecentlyActiveAccount", () => {
+describe("getRecentlyActiveAccounts", () => {
   it("returns active users according to volume", async () => {
     await getAndCreateUserWallet(0)
 
@@ -18,7 +18,7 @@ describe("getRecentlyActiveAccount", () => {
       }),
     }))
 
-    const activeUsers = await getRecentlyActiveAccount()
+    const activeUsers = await getRecentlyActiveAccounts()
     if (activeUsers instanceof Error) throw activeUsers
     spy.mockClear()
 
@@ -28,7 +28,7 @@ describe("getRecentlyActiveAccount", () => {
 
     // userWallets used in the tests
     // TODO: test could be optimized. instead of fetching all the users, we could verify
-    // getRecentlyActiveAccount is only apply to some of them
+    // getRecentlyActiveAccounts is only apply to some of them
     expect(accountIds).toEqual(
       expect.arrayContaining([userWallet0AccountId, funderWalletAccountId]),
     )
@@ -41,7 +41,7 @@ describe("getRecentlyActiveAccount", () => {
       }),
     }))
 
-    const finalActiveUsers = await getRecentlyActiveAccount()
+    const finalActiveUsers = await getRecentlyActiveAccounts()
     if (finalActiveUsers instanceof Error) throw finalActiveUsers
 
     const finalNumActiveUsers = finalActiveUsers.length
