@@ -4,6 +4,14 @@ import * as PriceServiceImpl from "@services/price"
 import { LocalCacheService } from "@services/cache"
 import { PriceNotAvailableError } from "@domain/price"
 
+jest.mock("@services/redis", () => ({}))
+
+jest.mock("@config/app.ts", () => {
+  const config = jest.requireActual("@config/app.ts")
+  config.yamlConfig.lnds = []
+  return config
+})
+
 beforeEach(() => {
   LocalCacheService().clear(CacheKeys.CurrentPrice)
 })
