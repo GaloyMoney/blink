@@ -1,39 +1,39 @@
-import { once } from "events"
-import { sleep } from "@core/utils"
-import first from "lodash.first"
-import { baseLogger } from "@services/logger"
+import * as Wallets from "@app/wallets"
 import {
   getFeeRates,
+  getOnChainWalletConfig,
   getUserLimits,
   MS_PER_DAY,
-  getOnChainWalletConfig,
 } from "@config/app"
+import { TransactionRestrictedError, TwoFAError } from "@core/error"
+import { sleep } from "@core/utils"
+import { toTargetConfs } from "@domain/bitcoin"
+import { LedgerTransactionType } from "@domain/ledger"
+import { NotificationType } from "@domain/notifications"
+import { PaymentInitiationMethod, TxStatus } from "@domain/wallets"
+import { onchainTransactionEventHandler } from "@servers/trigger"
+import { baseLogger } from "@services/logger"
 import { Transaction } from "@services/mongoose/schema"
 import { getTitle } from "@services/notifications/payment"
-import { onchainTransactionEventHandler } from "@servers/trigger"
+import { once } from "events"
+import first from "lodash.first"
 import {
+  bitcoindClient,
+  bitcoindOutside,
   checkIsBalanced,
+  createChainAddress,
+  enable2FA,
+  generateTokenHelper,
   getAndCreateUserWallet,
   lndonchain,
   lndOutside1,
-  createChainAddress,
-  subscribeToTransactions,
-  bitcoindClient,
-  bitcoindOutside,
   mineBlockAndSync,
-  enable2FA,
-  generateTokenHelper,
-  RANDOM_ADDRESS,
   mineBlockAndSyncAll,
+  RANDOM_ADDRESS,
+  subscribeToTransactions,
 } from "test/helpers"
-import { ledger } from "@services/mongodb"
-import { PaymentInitiationMethod, TxStatus } from "@domain/wallets"
-import { Wallets } from "@app"
-import { TwoFAError, TransactionRestrictedError } from "@core/error"
+import { getAccountTransactions } from "test/helpers/ledger"
 import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
-import { NotificationType } from "@domain/notifications"
-import { toTargetConfs } from "@domain/bitcoin"
-import { LedgerTransactionType } from "@domain/ledger"
 
 jest.mock("@services/notifications/notification")
 
@@ -96,7 +96,7 @@ describe("UserWallet - onChainPay", () => {
     // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
     const {
       results: [pendingTxn],
-    } = await ledger.getAccountTransactions(userWallet0.walletPath, { pending: true })
+    } = await getAccountTransactions(userWallet0.accountPath, { pending: true })
 
     const interimBalance = await getBTCBalance(userWallet0.user.walletId)
     expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
@@ -136,7 +136,7 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet0.walletPath, {
+    } = await getAccountTransactions(userWallet0.accountPath, {
       hash: pendingTxn.hash,
     })
     const feeRates = getFeeRates()
@@ -190,7 +190,7 @@ describe("UserWallet - onChainPay", () => {
     // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
     const {
       results: [pendingTxn],
-    } = await ledger.getAccountTransactions(userWallet11.walletPath, { pending: true })
+    } = await getAccountTransactions(userWallet11.accountPath, { pending: true })
 
     const interimBalance = await getBTCBalance(userWallet11.user.walletId)
     expect(interimBalance).toBe(0)
@@ -230,7 +230,7 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet11.walletPath, {
+    } = await getAccountTransactions(userWallet11.accountPath, {
       hash: pendingTxn.hash,
     })
     const feeRates = getFeeRates()
@@ -301,7 +301,7 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet0.walletPath, {
+    } = await getAccountTransactions(userWallet0.accountPath, {
       type: "onchain_on_us",
     })
 
@@ -376,7 +376,7 @@ describe("UserWallet - onChainPay", () => {
 
     const {
       results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet12.walletPath, {
+    } = await getAccountTransactions(userWallet12.accountPath, {
       type: "onchain_on_us",
     })
 

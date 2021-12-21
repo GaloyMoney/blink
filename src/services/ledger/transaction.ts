@@ -1,4 +1,5 @@
 import { toLiabilitiesWalletId } from "@domain/ledger"
+import { baseLogger } from "@services/logger"
 import {
   bitcoindAccountingPath,
   escrowAccountingPath,
@@ -288,17 +289,9 @@ export const addHotWalletPayment = async ({ description, amount, fee, hash }) =>
     .commit()
 }
 
-export const voidTransactions = (journalId, reason) => {
-  return MainBook.void(journalId, reason)
-}
-
 export const settlePayment = async (hash) => {
   const result = await Transaction.updateMany({ hash }, { pending: false })
   return result.nModified > 0
-}
-
-export const settleLndPayment = (hash) => {
-  return settlePayment(hash)
 }
 
 export const settleOnchainPayment = (hash) => {
@@ -312,6 +305,8 @@ export const rebalancePortfolio = async ({ description, metadata, wallet }) => {
 
   const expectedBtc = wallet.user.ratioBtc * balances.total_in_BTC
   const expectedUsd = wallet.user.ratioUsd * balances.total_in_USD
+
+  baseLogger.warn({ dealerPath, balances, expectedBtc, expectedUsd })
 
   const diffBtc = expectedBtc - balances.BTC
   const btcAmount = Math.abs(diffBtc)
