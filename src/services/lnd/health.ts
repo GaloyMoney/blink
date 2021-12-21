@@ -26,6 +26,7 @@ export const isUp = async (param): Promise<void> => {
 
   try {
     // will throw if there is an error
+    // TODO: add is_ready validation when lnd is updated above 0.13.4 https://github.com/alexbosworth/ln-service#getwalletstatus
     const { is_active } = await getWalletStatus({ lnd })
     active = !!is_active
   } catch (err) {
