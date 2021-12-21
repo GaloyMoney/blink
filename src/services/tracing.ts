@@ -155,6 +155,7 @@ export const addAttributesToCurrentSpan = (attributes: SpanAttributes) => {
     }
   }
 }
+
 export const asyncRunInSpan = <F extends () => ReturnType<F>>(
   spanName: string,
   attributes: SpanAttributes,
@@ -169,6 +170,74 @@ export const asyncRunInSpan = <F extends () => ReturnType<F>>(
     return ret
   })
   return ret
+}
+
+// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+export const wrapToRunInSpan = <A extends Array<any>, R>({
+  fn,
+  namespace = "app",
+  spanAttributes = {},
+}: {
+  fn: (...args: A) => R
+  namespace?: string
+  spanAttributes?: SpanAttributes
+}) => {
+  return (...args: A): R => {
+    const name = fn.name
+    const spanName = `${namespace}.${name}`
+    const attributes = { [SemanticAttributes.CODE_FUNCTION]: name, ...spanAttributes }
+    if (args && args.length > 0) {
+      let params = { "0": args[0] }
+      if (typeof args[0] === "object") params = args[0]
+      for (const key in params) {
+        attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = params[key]
+      }
+    }
+    const ret = tracer.startActiveSpan(spanName, { attributes }, (span) => {
+      const ret = fn(...args)
+      if (ret instanceof Error) {
+        span.recordException(ret)
+      }
+      span.end()
+      return ret
+    })
+    return ret
+  }
+}
+
+type PromiseReturnType<T> = T extends Promise<infer Return> ? Return : T
+
+// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+export const wrapAsyncToRunInSpan = <A extends Array<any>, R>({
+  fn,
+  namespace = "app",
+  spanAttributes = {},
+}: {
+  fn: (...args: A) => Promise<PromiseReturnType<R>>
+  namespace?: string
+  spanAttributes?: SpanAttributes
+}) => {
+  return (...args: A): Promise<PromiseReturnType<R>> => {
+    const name = fn.name
+    const spanName = `${namespace}.${name}`
+    const attributes = { [SemanticAttributes.CODE_FUNCTION]: name, ...spanAttributes }
+    if (args && args.length > 0) {
+      let params = { "0": args[0] }
+      if (typeof args[0] === "object") params = args[0]
+      for (const key in params) {
+        attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = params[key]
+      }
+    }
+    const ret = tracer.startActiveSpan(spanName, { attributes }, async (span) => {
+      const ret = await fn(...args)
+      if (ret instanceof Error) {
+        span.recordException(ret)
+      }
+      span.end()
+      return ret
+    })
+    return ret
+  }
 }
 
 export const addAttributesToCurrentSpanAndPropagate = <F extends () => ReturnType<F>>(
