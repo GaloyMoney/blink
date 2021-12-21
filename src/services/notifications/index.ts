@@ -202,28 +202,27 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     if (balanceSats instanceof Error) throw balanceSats
 
     // Add commas to balancesats
-    const balanceSatsPrettified = balanceSats.toLocaleString("en")
-    // Round balanceusd to 2 decimal places and add commas
+    const balanceSatsAsFormattedString = balanceSats.toLocaleString("en")
 
-    let balanceUsd: string, title: string
+    let balanceUsdAsFormattedString: string, title: string
     const price = await getCurrentPrice()
     if (price instanceof Error) {
       logger.warn({ price }, "impossible to fetch price for notification")
 
       // TODO: i18n
-      title = `Your balance is ${balanceSatsPrettified} sats)`
+      title = `Your balance is ${balanceSatsAsFormattedString} sats)`
     } else {
       const usdValue = price * balanceSats
-      balanceUsd = usdValue.toLocaleString("en", {
+      balanceUsdAsFormattedString = usdValue.toLocaleString("en", {
         maximumFractionDigits: 2,
       })
 
       // TODO: i18n
-      title = `Your balance is $${balanceUsd} (${balanceSatsPrettified} sats)`
+      title = `Your balance is $${balanceUsdAsFormattedString} (${balanceSatsAsFormattedString} sats)`
     }
 
     logger.info(
-      { balanceSatsPrettified, title, ownerId: account.ownerId },
+      { balanceSatsAsFormattedString, title, ownerId: account.ownerId },
       `sending balance notification to user`,
     )
 
