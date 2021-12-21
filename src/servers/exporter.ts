@@ -70,11 +70,11 @@ const business_g = new client.Gauge({
 })
 
 const roles = ["dealer", "funder", "bankowner"]
-const account_roles = [getDealerWalletId(), getFunderWalletId(), getBankOwnerWalletId()]
-const wallet_roles = {}
+const accountRoles = [getDealerWalletId(), getFunderWalletId(), getBankOwnerWalletId()]
+const walletRoles = {}
 
 for (const role of roles) {
-  wallet_roles[role] = new client.Gauge({
+  walletRoles[role] = new client.Gauge({
     name: `${prefix}_${role}_balance`,
     help: "funder balance BTC",
   })
@@ -112,12 +112,12 @@ const main = async () => {
 
     for (const index in roles) {
       const role = roles[index]
-      const account = await account_roles[index]
+      const account = await accountRoles[index]
 
       const balanceSats = getBalanceForWalletId(account)
       if (balanceSats instanceof Error) throw balanceSats
 
-      wallet_roles[role].set(balanceSats)
+      walletRoles[role].set(balanceSats)
     }
 
     business_g.set(await User.count({ title: { $exists: true } }))
