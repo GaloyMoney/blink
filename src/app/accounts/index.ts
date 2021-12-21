@@ -3,8 +3,11 @@ import { AccountApiKeysRepository, AccountsRepository } from "@services/mongoose
 
 export * from "./add-api-key-for-account"
 export * from "./disable-api-key-for-account"
-export * from "./get-api-keys-for-account"
 export * from "./get-account-transactions-for-contact"
+export * from "./get-api-keys-for-account"
+export * from "./update-account-level"
+export * from "./update-account-status"
+export * from "./update-business-map-info"
 
 const accounts = AccountsRepository()
 

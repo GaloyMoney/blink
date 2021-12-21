@@ -1,10 +1,7 @@
 import { getCurrentPrice } from "@app/prices"
 import { addNewContact } from "@app/users/add-new-contact"
-import { getBalanceForWallet } from "@app/wallets"
-import {
-  checkAndVerifyTwoFA,
-  checkIntraledgerLimits,
-} from "@app/wallets/check-limit-helpers"
+import { getBalanceForWallet } from "./get-balance-for-wallet"
+import { checkAndVerifyTwoFA, checkIntraledgerLimits } from "./check-limit-helpers"
 import { toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {

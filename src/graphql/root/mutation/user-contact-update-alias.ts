@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 import Username from "@graphql/types/scalar/username"
 import ContactAlias from "@graphql/types/scalar/contact-alias"
 
-import * as Users from "@app/users"
+import { Users } from "@app"
 import UserContactUpdateAliasPayload from "@graphql/types/payload/user-contact-update-alias"
 
 const UserContactUpdateAliasInput = new GT.Input({

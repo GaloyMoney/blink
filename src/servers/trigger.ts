@@ -16,10 +16,9 @@ import { ledger, setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
 import { updatePriceHistory } from "@services/price/update-price-history"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
-import * as Wallets from "@app/wallets"
+import { Wallets, Prices } from "@app"
 import { NotificationsService } from "@services/notifications"
 import { toSats } from "@domain/bitcoin"
-import { getCurrentPrice } from "@app/prices"
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -93,7 +92,7 @@ export async function onchainTransactionEventHandler(tx) {
       return
     }
 
-    const price = await getCurrentPrice()
+    const price = await Prices.getCurrentPrice()
     const usdPerSat = price instanceof Error ? undefined : price
     await NotificationsService(onchainLogger).onChainTransactionPayment({
       walletId,
@@ -130,7 +129,7 @@ export async function onchainTransactionEventHandler(tx) {
         "mempool appearence",
       )
 
-      const price = await getCurrentPrice()
+      const price = await Prices.getCurrentPrice()
       const usdPerSat = price instanceof Error ? undefined : price
       await NotificationsService(onchainLogger).onChainTransactionReceivedPending({
         walletId: user.walletId,
@@ -166,7 +165,7 @@ export const onInvoiceUpdate = async (invoice) => {
 }
 
 const publishCurrentPrice = async () => {
-  const usdPerSat = await getCurrentPrice()
+  const usdPerSat = await Prices.getCurrentPrice()
   if (usdPerSat instanceof Error) return
 
   const notificationsService = NotificationsService(logger)

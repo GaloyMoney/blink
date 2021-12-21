@@ -1,10 +1,4 @@
-import { getCurrentPrice } from "@app/prices"
-import * as Wallets from "@app/wallets"
-import {
-  checkAndVerifyTwoFA,
-  checkIntraledgerLimits,
-  checkWithdrawalLimits,
-} from "@app/wallets/check-limit-helpers"
+import { Wallets, Prices } from "@app"
 import { BTC_NETWORK, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config/app"
 import { toSats } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
@@ -107,7 +101,7 @@ export const OnChainMixin = (superclass) =>
           }
 
           const twoFACheck = twoFA?.secret
-            ? await checkAndVerifyTwoFA({
+            ? await Wallets.checkAndVerifyTwoFA({
                 amount: toSats(amountToSendPayeeUser),
                 twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
                 twoFASecret: twoFA.secret,
@@ -123,7 +117,7 @@ export const OnChainMixin = (superclass) =>
 
           const onchainLoggerOnUs = onchainLogger.child({ onUs: true })
 
-          const intraledgerLimitCheck = await checkIntraledgerLimits({
+          const intraledgerLimitCheck = await Wallets.checkIntraledgerLimits({
             amount: toSats(amountToSendPayeeUser),
             walletId: this.user.walletId,
           })
@@ -145,7 +139,7 @@ export const OnChainMixin = (superclass) =>
             sendAll,
           }
 
-          const price = await getCurrentPrice()
+          const price = await Prices.getCurrentPrice()
           if (price instanceof Error) throw price
           const onChainFee = toSats(0)
           const usd = sats * price
@@ -208,7 +202,7 @@ export const OnChainMixin = (superclass) =>
           throw new DustAmountError(undefined, { logger: onchainLogger })
         }
 
-        const withdrawalLimitCheck = await checkWithdrawalLimits({
+        const withdrawalLimitCheck = await Wallets.checkWithdrawalLimits({
           amount: toSats(checksAmount),
           walletId: this.user.walletId,
         })
@@ -218,7 +212,7 @@ export const OnChainMixin = (superclass) =>
           })
 
         const twoFACheck = twoFA?.secret
-          ? await checkAndVerifyTwoFA({
+          ? await Wallets.checkAndVerifyTwoFA({
               amount: toSats(checksAmount),
               twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
               twoFASecret: twoFA.secret,

@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
 import MapMarker from "@graphql/types/object/map-marker"
-import * as Accounts from "@app/accounts"
+import { Accounts } from "@app"
 
 const BusinessMapMarkersQuery = GT.Field({
   type: GT.List(MapMarker),

@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import * as Wallets from "@app/wallets"
+import { Wallets } from "@app"
 import { mapError } from "@graphql/error-map"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"

@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import { USER_PRICE_UPDATE_EVENT, walletUpdateEvent } from "@config/app"
 import pubsub from "@services/pubsub"
-import { getCurrentPrice } from "@app/prices"
+import { Prices } from "@app"
 import IError from "@graphql/types/abstract/error"
 import Price from "@graphql/types/object/price"
 import PaymentHash from "@graphql/types/scalar/payment-hash"
@@ -101,7 +101,7 @@ const MeSubscription = {
       throw new Error("Not Authenticated")
     }
 
-    const satUsdPrice = await getCurrentPrice()
+    const satUsdPrice = await Prices.getCurrentPrice()
     if (!(satUsdPrice instanceof Error)) {
       pubsub.publishImmediate(USER_PRICE_UPDATE_EVENT, {
         price: { satUsdCentPrice: 100 * satUsdPrice },

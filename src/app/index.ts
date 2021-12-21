@@ -1,2 +1,6 @@
-export * as Wallets from "./wallets"
+export * as Accounts from "./accounts"
+export * as Admin from "./admin"
+export * as Lightning from "./lightning"
+export * as Prices from "./prices"
 export * as Users from "./users"
+export * as Wallets from "./wallets"

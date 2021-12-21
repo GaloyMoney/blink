@@ -1,5 +1,5 @@
 import { CacheKeys } from "@domain/cache"
-import { getCurrentPrice } from "@app/prices"
+import { Prices } from "@app"
 import * as PriceServiceImpl from "@services/price"
 import { LocalCacheService } from "@services/cache"
 import { PriceNotAvailableError } from "@domain/price"
@@ -22,10 +22,10 @@ describe("Prices", () => {
           getRealTimePrice: () => Promise.resolve(new PriceNotAvailableError()),
         }))
 
-      let price = await getCurrentPrice()
+      let price = await Prices.getCurrentPrice()
       expect(price).toEqual(0.0005)
 
-      price = await getCurrentPrice()
+      price = await Prices.getCurrentPrice()
       expect(price).toEqual(0.0005)
     })
 
@@ -35,7 +35,7 @@ describe("Prices", () => {
         getRealTimePrice: () => Promise.resolve(new PriceNotAvailableError()),
       }))
 
-      const price = await getCurrentPrice()
+      const price = await Prices.getCurrentPrice()
       expect(price).toBeInstanceOf(PriceNotAvailableError)
     })
   })

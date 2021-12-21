@@ -12,7 +12,7 @@ import UserContact from "./wallet-contact"
 import UserQuizQuestion from "./user-quiz-question"
 import Username from "../scalar/username"
 
-import * as Users from "@app/users"
+import { Users } from "@app"
 import { UnknownClientError } from "@core/error"
 
 const GraphQLUser = new GT.Object({

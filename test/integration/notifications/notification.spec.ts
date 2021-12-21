@@ -2,7 +2,7 @@ import { ledger } from "@services/mongodb"
 
 import { User } from "@services/mongoose/schema"
 import { sendBalanceToUsers } from "@servers/daily-balance-notification"
-import { getCurrentPrice } from "@app/prices"
+import { Prices } from "@app"
 
 jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -11,7 +11,7 @@ const { sendNotification } = require("@services/notifications/notification")
 let price
 
 beforeAll(async () => {
-  price = await getCurrentPrice()
+  price = await Prices.getCurrentPrice()
   if (price instanceof Error) throw price
   jest
     .spyOn(User, "getVolume")

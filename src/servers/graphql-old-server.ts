@@ -12,8 +12,7 @@ import { makeExecutableSchema } from "graphql-tools"
 import moment from "moment"
 import path from "path"
 import { getFeeRates, onboardingEarn, getBuildVersions } from "@config/app"
-import * as Wallets from "@app/wallets"
-import * as Prices from "@app/prices"
+import { Wallets, Prices, Users } from "@app"
 import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
@@ -33,9 +32,6 @@ import {
   ENDUSER_ALIAS,
 } from "@services/tracing"
 import { PriceInterval, PriceRange } from "@domain/price"
-import { login } from "@app/users/login"
-import { requestPhoneCode } from "@app/users/request-phone-code"
-import { getLightningFee, getNoAmountLightningFee } from "@app/wallets/get-lightning-fee"
 import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
@@ -237,7 +233,7 @@ const resolvers = {
         throw new ApolloError("Missing phone value", "GRAPHQL_VALIDATION_FAILED")
       }
       let success = true
-      const result = await requestPhoneCode({ phone, logger, ip })
+      const result = await Users.requestPhoneCode({ phone, logger, ip })
       if (result instanceof Error) success = false
       return { success }
     },
@@ -245,7 +241,7 @@ const resolvers = {
       if (!phone || !code) {
         throw new ApolloError("Missing phone/code value", "GRAPHQL_VALIDATION_FAILED")
       }
-      const authToken = await login({ phone, code, logger, ip })
+      const authToken = await Users.login({ phone, code, logger, ip })
 
       if (authToken instanceof Error) {
         return { token: null }
@@ -360,7 +356,7 @@ const resolvers = {
       getFee: async ({ amount, invoice }) => {
         let feeSatAmount: Satoshis | ApplicationError
         if (amount && amount > 0) {
-          feeSatAmount = await getNoAmountLightningFee({
+          feeSatAmount = await Wallets.getNoAmountLightningFee({
             walletId: wallet.user.walletId,
             amount,
             paymentRequest: invoice,
@@ -371,7 +367,7 @@ const resolvers = {
             throw mapError(feeSatAmount)
         }
 
-        feeSatAmount = await getLightningFee({
+        feeSatAmount = await Wallets.getLightningFee({
           walletId: wallet.user.walletId,
           paymentRequest: invoice,
           logger,

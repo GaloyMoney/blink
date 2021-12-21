@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import { lookupInvoiceByHash } from "@app/lightning"
+import { Lightning } from "@app"
 import PaymentHash from "@graphql/types/scalar/payment-hash"
 import LightningInvoice from "@graphql/admin/types/object/lightning-invoice"
 
@@ -11,7 +11,7 @@ const LightningInvoiceQuery = GT.Field({
   resolve: async (_, { hash }) => {
     if (hash instanceof Error) throw hash
 
-    const lightningInvoice = await lookupInvoiceByHash(hash)
+    const lightningInvoice = await Lightning.lookupInvoiceByHash(hash)
 
     if (lightningInvoice instanceof Error) throw lightningInvoice
 

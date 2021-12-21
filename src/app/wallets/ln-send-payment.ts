@@ -1,11 +1,11 @@
-import { reimburseFee } from "@app/wallets/reimburse-fee"
+import { getCurrentPrice } from "@app/prices"
 import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
   checkWithdrawalLimits,
-} from "@app/wallets/check-limit-helpers"
-import { getCurrentPrice } from "@app/prices"
-import { getBalanceForWallet } from "@app/wallets"
+} from "./check-limit-helpers"
+import { reimburseFee } from "./reimburse-fee"
+import { getBalanceForWallet } from "./get-balance-for-wallet"
 
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"

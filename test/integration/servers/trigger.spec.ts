@@ -15,17 +15,15 @@ import {
   getInvoice,
   RANDOM_ADDRESS,
 } from "test/helpers"
-import * as Wallets from "@app/wallets"
+import { Wallets, Prices } from "@app"
 import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
-import { addInvoice } from "@app/wallets"
 import { getHash } from "@core/utils"
 import { ledger } from "@services/mongodb"
 import { getTitle } from "@services/notifications/payment"
 import { TxStatus } from "@domain/wallets"
 import { getBTCBalance } from "test/helpers/wallet"
 import { NotificationType } from "@domain/notifications"
-import { getCurrentPrice } from "@app/prices"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 
 jest.mock("@services/notifications/notification")
@@ -143,7 +141,7 @@ describe("onchainBlockEventhandler", () => {
   it("should process pending invoices on invoice update event", async () => {
     const sats = 500
     const wallet = await getAndCreateUserWallet(12)
-    const lnInvoice = await addInvoice({
+    const lnInvoice = await Wallets.addInvoice({
       walletId: wallet.user.walletId as WalletId,
       amount: toSats(sats),
     })
@@ -160,7 +158,7 @@ describe("onchainBlockEventhandler", () => {
     expect(dbTx.sats).toBe(sats)
     expect(dbTx.pending).toBe(false)
 
-    const satsPrice = await getCurrentPrice()
+    const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
     const usd = (sats * satsPrice).toFixed(2)
     expect(sendNotification.mock.calls[0][0].title).toBe(

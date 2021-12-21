@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import { disableApiKey } from "@app/accounts"
+import { Accounts } from "@app"
 import SuccessPayload from "@graphql/types/payload/success-payload"
 import AccountApiKeyLabel from "@graphql/types/scalar/account-api-key-label"
 
@@ -23,7 +23,7 @@ const AccountApiKeyDisableMutation = GT.Field({
     }
 
     const accountId = domainUser.defaultAccountId
-    const result = await disableApiKey({ accountId, label })
+    const result = await Accounts.disableApiKey({ accountId, label })
 
     if (result instanceof Error) {
       const { message, name } = result

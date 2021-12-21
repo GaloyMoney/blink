@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import { addApiKeyForAccount } from "@app/accounts"
+import { Accounts } from "@app"
 import Timestamp from "@graphql/types/scalar/timestamp"
 import AccountApiKeyPayload from "@graphql/types/payload/account-api-key"
 import AccountApiKeyLabel from "@graphql/types/scalar/account-api-key-label"
@@ -27,7 +27,11 @@ const AccountApiKeyCreateMutation = GT.Field({
     }
 
     const accountId = domainUser.defaultAccountId
-    const accountApiKey = await addApiKeyForAccount({ accountId, label, expireAt })
+    const accountApiKey = await Accounts.addApiKeyForAccount({
+      accountId,
+      label,
+      expireAt,
+    })
 
     if (accountApiKey instanceof Error) {
       const { message, name } = accountApiKey

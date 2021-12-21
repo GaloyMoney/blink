@@ -1,4 +1,4 @@
-import { updateAccountLevel } from "@app/accounts/update-account-level"
+import { Accounts } from "@app"
 import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
 import AccountLevel from "@graphql/admin/types/scalar/account-level"
 import { mapError } from "@graphql/error-map"
@@ -32,7 +32,7 @@ const AccountUpdateLevelMutation = GT.Field({
       }
     }
 
-    const account = await updateAccountLevel({ id: uid, level } as {
+    const account = await Accounts.updateAccountLevel({ id: uid, level } as {
       id: string
       level: AccountLevel // TODO: check if that is the case given graphql validation of GT.Enum({ name: "AccountLevel" })
     })

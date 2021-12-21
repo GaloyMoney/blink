@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import GraphQLAccount from "@graphql/admin/types/object/account"
 import Phone from "@graphql/types/scalar/phone"
 
-import { getAccountByUserPhone } from "@app/admin"
+import { Admin } from "@app"
 
 const AccountDetailsByUserPhoneQuery = GT.Field({
   type: GT.NonNull(GraphQLAccount),
@@ -15,7 +15,7 @@ const AccountDetailsByUserPhoneQuery = GT.Field({
       throw phone
     }
 
-    const account = await getAccountByUserPhone(phone)
+    const account = await Admin.getAccountByUserPhone(phone)
     if (account instanceof Error) {
       throw account
     }

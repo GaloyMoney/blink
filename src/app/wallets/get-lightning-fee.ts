@@ -1,4 +1,3 @@
-import { getBalanceForWallet } from "@app/wallets"
 import { checkedToSats, toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { decodeInvoice, LnFeeCalculator } from "@domain/bitcoin/lightning"
 import {
@@ -9,6 +8,7 @@ import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { checkedToWalletId } from "@domain/wallets"
 import { LndService } from "@services/lnd"
 import { RoutesCache } from "@services/redis/routes"
+import { getBalanceForWallet } from "./get-balance-for-wallet"
 
 export const getLightningFee = async ({
   walletId,

@@ -9,7 +9,7 @@ import { CSVAccountExport } from "./csv-account-export"
 import { getGaloyInstanceName } from "@config/app"
 import { generateSecret, verifyToken } from "node-2fa"
 import { sendNotification } from "@services/notifications/notification"
-import * as Wallets from "@app/wallets"
+import { Wallets } from "@app"
 
 export abstract class UserWallet {
   static lastPrice: number

@@ -4,7 +4,7 @@ import { User } from "@services/mongoose/schema"
 
 import { LightningUserWallet } from "./lightning/wallet"
 import { UserWallet } from "./user-wallet"
-import { getCurrentPrice } from "@app/prices"
+import { Prices } from "@app"
 
 export const WalletFactory = async ({
   user,
@@ -14,7 +14,7 @@ export const WalletFactory = async ({
   logger: Logger
 }) => {
   // FIXME: update price on event outside of the wallet factory
-  const lastPrice = await getCurrentPrice()
+  const lastPrice = await Prices.getCurrentPrice()
   if (lastPrice instanceof Error) throw lastPrice
   UserWallet.setCurrentPrice(lastPrice)
 

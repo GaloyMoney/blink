@@ -3,7 +3,7 @@ import { InconsistentDataError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
-import { reimburseFee } from "@app/wallets/reimburse-fee"
+import { reimburseFee } from "./reimburse-fee"
 
 export const updatePendingPayments = async ({
   walletId,

@@ -1,4 +1,4 @@
-import * as Accounts from "@app/accounts"
+import { Accounts } from "@app"
 import { mapError } from "@graphql/error-map"
 
 const validateWalletId = async (resolve, parent, args, context, info) => {

@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import * as Wallets from "@app/wallets"
+import { Wallets } from "@app"
 import Transaction from "@graphql/types/object/transaction"
 import PaymentHash from "@graphql/types/scalar/payment-hash"
 

@@ -1,4 +1,4 @@
-import * as Wallets from "@app/wallets"
+import { Wallets } from "@app"
 import { getTwoFALimits, getUserLimits, MS_PER_DAY } from "@config/app"
 import { toSats } from "@domain/bitcoin"
 import { LedgerService } from "@services/ledger"
