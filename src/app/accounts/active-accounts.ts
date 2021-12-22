@@ -30,7 +30,7 @@ const sumActivityWalletIds = async ({
   walletIds: WalletId[]
   timestamp: Date
   getVolumeFn: (args: IGetVolumeArgs) => VolumeResult
-}) => {
+}): Promise<TxVolume | ApplicationError> => {
   const volumeCum: TxVolume = {
     outgoingSats: toSats(0),
     incomingSats: toSats(0),
@@ -50,7 +50,9 @@ const sumActivityWalletIds = async ({
 }
 
 // user is considered active if there has been one transaction of more than USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD sats in the last 30 days
-const isAccountRecentlyActive = async (walletIds: WalletId[]) => {
+const isAccountRecentlyActive = async (
+  walletIds: WalletId[],
+): Promise<boolean | ApplicationError> => {
   const timestamp30DaysAgo = new Date(Date.now() - MS_PER_30_DAYS)
   const activenessThreshold = USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD
 
@@ -61,7 +63,7 @@ const isAccountRecentlyActive = async (walletIds: WalletId[]) => {
     walletIds,
     getVolumeFn: ledger.allTxVolumeSince,
   })
-  if (volume instanceof LedgerServiceError) return volume
+  if (volume instanceof Error) return volume
 
   return (
     volume.outgoingSats > activenessThreshold || volume.incomingSats > activenessThreshold

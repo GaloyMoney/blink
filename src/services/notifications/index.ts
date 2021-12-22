@@ -1,5 +1,4 @@
 import { getCurrentPrice } from "@app/prices"
-import { getBalanceForWallet } from "@app/wallets"
 import {
   lnPaymentStatusEvent,
   SAT_USDCENT_PRICE,
