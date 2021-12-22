@@ -8,7 +8,7 @@ import { LnPayment } from "@services/lnd/schema"
 export const LnPaymentsRepository = (): ILnPaymentsRepository => {
   const findByPaymentHash = async (
     paymentHash: PaymentHash,
-  ): Promise<LnPaymentLookup | RepositoryError> => {
+  ): Promise<PersistedLnPaymentLookup | RepositoryError> => {
     try {
       const result = await LnPayment.findOne({ paymentHash })
       if (!result) {
@@ -20,9 +20,24 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
     }
   }
 
+  const persist = async (
+    payment: LnPaymentPartial,
+  ): Promise<LnPaymentPartial | RepositoryError> => {
+    try {
+      const result = await LnPayment.findOneAndUpdate(
+        { paymentHash: payment.paymentHash },
+        payment,
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+      )
+      return lnPaymentPartialFromRaw(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const update = async (
-    payment: LnPaymentLookup,
-  ): Promise<LnPaymentLookup | RepositoryError> => {
+    payment: PersistedLnPaymentLookup,
+  ): Promise<PersistedLnPaymentLookup | RepositoryError> => {
     try {
       const result = await LnPayment.findOneAndUpdate(
         { paymentHash: payment.paymentHash },
@@ -38,11 +53,12 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
 
   return {
     findByPaymentHash,
+    persist,
     update,
   }
 }
 
-const lnPaymentFromRaw = (result: LnPaymentType): LnPaymentLookup => ({
+const lnPaymentFromRaw = (result: LnPaymentType): PersistedLnPaymentLookup => ({
   createdAt: result.createdAt,
   status: result.status as PaymentStatus,
   paymentHash: result.paymentHash as PaymentHash,
@@ -64,6 +80,7 @@ const lnPaymentFromRaw = (result: LnPaymentType): LnPaymentLookup => ({
     : undefined,
   // cast away from CoreMongooseArray type
   attempts: result.attempts ? [...result.attempts] : [],
+  isCompleteRecord: result.isCompleteRecord,
 })
 
 const lnPaymentPartialFromRaw = (result: LnPaymentType): LnPaymentPartial => ({

@@ -8,4 +8,5 @@ interface LnPaymentType {
   roundedUpAmount: number
   confirmedDetails: LnPaymentConfirmedDetails | undefined
   attempts: LnPaymentAttempt[]
+  isCompleteRecord: boolean
 }

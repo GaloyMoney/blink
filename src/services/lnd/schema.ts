@@ -50,6 +50,10 @@ const paymentSchema = new Schema<LnPaymentType>({
   roundedUpAmount: Number,
   confirmedDetails: confirmedDetailsSchema,
   attempts: [paymentAttemptSchema],
+  isCompleteRecord: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 export const LnPayment = mongoose.model("LnPayment", paymentSchema)
