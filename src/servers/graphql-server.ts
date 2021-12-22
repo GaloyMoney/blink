@@ -33,6 +33,8 @@ import {
   SubscriptionServer,
 } from "subscriptions-transport-ws"
 
+import { parseIps } from "@domain/users-ips"
+
 import { playgroundTabs } from "../graphql/playground"
 
 import expressApiKeyAuth from "./middlewares/api-key-auth"
@@ -63,21 +65,8 @@ export const isEditor = rule({ cache: "contextual" })(
 const geeTestConfig = getGeetestConfig()
 const geetest = Geetest(geeTestConfig)
 
-const sessionContext = ({
-  token,
-  ips,
-  body,
-  apiKey,
-  apiSecret,
-}): Promise<GraphQLContext> => {
+const sessionContext = ({ token, ip, body, apiKey, apiSecret }) => {
   const userId = token?.uid ?? null
-  let ip: IpAddress | undefined
-
-  if (ips && Array.isArray(ips) && ips.length) {
-    ip = ips[0] as IpAddress
-  } else if (typeof ips === "string") {
-    ip = ips as IpAddress
-  }
 
   // TODO move from crypto.randomUUID() to a Jaeger standard
   const logger = graphqlLogger.child({ token, id: crypto.randomUUID(), body })
@@ -178,10 +167,17 @@ export const startApolloServer = async ({
       // @ts-expect-error: TODO
       const apiSecret = context.req?.apiSecret ?? null
 
-      const ips = context.req?.headers["x-real-ip"]
       const body = context.req?.body ?? null
 
-      return sessionContext({ token, apiKey, apiSecret, ips, body })
+      const ip = parseIps(context.req?.headers)
+
+      return sessionContext({
+        token,
+        apiKey,
+        apiSecret,
+        ip,
+        body,
+      })
     },
     formatError: (err) => {
       const exception = err.extensions?.exception as unknown as CustomError
@@ -314,7 +310,7 @@ export const startApolloServer = async ({
 
               return sessionContext({
                 token,
-                ips: [request?.socket?.remoteAddress],
+                ip: request?.socket?.remoteAddress,
 
                 // TODO: Resolve what's needed here
                 apiKey: null,

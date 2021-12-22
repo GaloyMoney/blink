@@ -15,7 +15,7 @@ export const getUserForLogin = async ({
   logger,
 }: {
   userId: string
-  ip?: IpAddress | undefined
+  ip: IpAddress | undefined
   logger: Logger
 }): Promise<User | ApplicationError> => {
   const user = await users.findById(userId as UserId)
