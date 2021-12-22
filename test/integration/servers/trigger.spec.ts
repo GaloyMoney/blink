@@ -6,13 +6,24 @@ import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { TxStatus } from "@domain/wallets"
 import { onchainBlockEventhandler, onInvoiceUpdate } from "@servers/trigger"
+import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
 import { getTitle } from "@services/notifications/payment"
 import {
-  amountAfterFeeDeduction, bitcoindClient,
-  bitcoindOutside, getAndCreateUserWallet, getInvoice, lnd1, lndOutside1, mineBlockAndSyncAll, pay, RANDOM_ADDRESS, subscribeToBlocks, waitFor, waitUntilSyncAll
+  amountAfterFeeDeduction,
+  bitcoindClient,
+  bitcoindOutside,
+  getAndCreateUserWallet,
+  getInvoice,
+  lnd1,
+  lndOutside1,
+  mineBlockAndSyncAll,
+  pay,
+  RANDOM_ADDRESS,
+  subscribeToBlocks,
+  waitFor,
+  waitUntilSyncAll,
 } from "test/helpers"
-import { getTransactionByHash } from "test/helpers/ledger"
 import { getBTCBalance } from "test/helpers/wallet"
 
 jest.mock("@services/notifications/notification")
@@ -143,9 +154,14 @@ describe("onchainBlockEventhandler", () => {
     const invoice = await getInvoice({ id: hash, lnd: lnd1 })
     await onInvoiceUpdate(invoice)
 
-    const dbTx = await getTransactionByHash(hash)
-    expect(dbTx.sats).toBe(sats)
-    expect(dbTx.pending).toBe(false)
+    const ledger = LedgerService()
+    const ledgerTxs = await ledger.getTransactionsByHash(hash)
+    if (ledgerTxs instanceof Error) throw ledgerTxs
+
+    const ledgerTx = ledgerTxs[0]
+
+    expect(ledgerTx.credit).toBe(sats)
+    expect(ledgerTx.pendingConfirmation).toBe(false)
 
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice

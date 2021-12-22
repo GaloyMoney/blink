@@ -618,7 +618,8 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const getWalletIdByTransactionHash = async (hash): Promise<WalletId | null> => {
-    const bankOwnerPath = await bankOwnerAccountPath()
+    const bankOwnerWalletId = await getBankOwnerWalletId()
+    const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
     const entry = await Transaction.findOne({
       account_path: liabilitiesMainAccount,
       accounts: { $ne: bankOwnerPath },
