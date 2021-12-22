@@ -28,6 +28,7 @@ import {
   PayViaRoutesResult,
   PayViaPaymentDetailsResult,
   GetInvoiceResult,
+  getPayments,
 } from "lightning"
 
 import { LndOfflineError } from "@core/error"
@@ -257,6 +258,40 @@ export const LndService = (): ILightningService | LightningServiceError => {
     return new PaymentNotFoundError("Payment hash not found")
   }
 
+  const listPayments = async ({
+    after,
+  }: {
+    after: PagingToken | undefined
+  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
+    try {
+      const pagingArgs = after ? { token: after } : {}
+      const result = await getPayments({ lnd: lndAuth, ...pagingArgs })
+      const { payments, next } = result
+
+      const lnPayments: LnPaymentLookup[] = payments.map((p) => ({
+        createdAt: new Date(p.created_at),
+        status: p.is_confirmed ? PaymentStatus.Settled : PaymentStatus.Pending,
+        paymentHash: p.id as PaymentHash,
+        paymentRequest: p.request as EncodedPaymentRequest,
+        milliSatsAmount: toMilliSatsFromString(p.mtokens),
+        roundedUpAmount: toSats(p.safe_tokens),
+        confirmedDetails: {
+          confirmedAt: new Date(p.confirmed_at),
+          destination: p.destination as Pubkey,
+          secret: p.secret as PaymentSecret,
+          roundedUpFee: toSats(p.safe_fee),
+          milliSatsFee: toMilliSatsFromString(p.fee_mtokens),
+          hopPubkeys: p.hops as Pubkey[],
+        },
+        attempts: p.attempts,
+      }))
+
+      return { lnPayments, endCursor: (next as PagingToken) || undefined }
+    } catch (err) {
+      return new UnknownLightningServiceError()
+    }
+  }
+
   const cancelInvoice = async ({
     pubkey,
     paymentHash,
@@ -397,6 +432,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     registerInvoice,
     lookupInvoice,
     lookupPayment,
+    listPayments,
     cancelInvoice,
     payInvoiceViaRoutes,
     payInvoiceViaPaymentDetails,
