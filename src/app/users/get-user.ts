@@ -4,12 +4,7 @@ import { IpFetcherServiceError } from "@domain/ipfetcher"
 import { IpFetcher } from "@services/ipfetcher"
 import { UsersRepository } from "@services/mongoose"
 import { UsersIpRepository } from "@services/mongoose/users-ips"
-import {
-  addAttributesToCurrentSpan,
-  asyncRunInSpan,
-  ENDUSER_ALIAS,
-  SemanticAttributes,
-} from "@services/tracing"
+import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"
 
 const users = UsersRepository()
 const usersIp = UsersIpRepository()
@@ -32,9 +27,7 @@ export const getUserForLogin = async ({
       if (user instanceof Error) {
         return user
       }
-      addAttributesToCurrentSpan({
-        [ENDUSER_ALIAS]: user.username,
-      })
+
       // this routing run asynchrously, to update metadata on the background
       updateUserIPsInfo({ userId, ip, logger } as {
         userId: UserId

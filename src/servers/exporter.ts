@@ -1,16 +1,17 @@
-import express from "express"
-import client, { register } from "prom-client"
-
+import { getBalanceForWalletId } from "@app/wallets"
+import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
 import { getBalancesDetail } from "@services/bitcoind"
+import {
+  getBankOwnerWalletId,
+  getDealerWalletId,
+  getFunderWalletId,
+} from "@services/ledger/accounts"
 import { getBosScore, lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
-
-import { getWalletFromRole } from "@core/wallet-factory"
-import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
-
-import * as Wallets from "@app/wallets"
+import express from "express"
+import client, { register } from "prom-client"
 
 const logger = baseLogger.child({ module: "exporter" })
 
@@ -69,10 +70,11 @@ const business_g = new client.Gauge({
 })
 
 const roles = ["dealer", "funder", "bankowner"]
-const wallet_roles = {}
+const accountRoles = [getDealerWalletId(), getFunderWalletId(), getBankOwnerWalletId()]
+const walletRoles = {}
 
 for (const role of roles) {
-  wallet_roles[role] = new client.Gauge({
+  walletRoles[role] = new client.Gauge({
     name: `${prefix}_${role}_balance`,
     help: "funder balance BTC",
   })
@@ -108,19 +110,14 @@ const main = async () => {
     const userCount = await User.countDocuments()
     userCount_g.set(userCount)
 
-    for (const role of roles) {
-      try {
-        const wallet = await getWalletFromRole({ role, logger })
-        const balanceSats = await Wallets.getBalanceForWallet({
-          walletId: wallet.user.walletId as WalletId,
-          logger,
-        })
-        if (balanceSats instanceof Error) throw balanceSats
+    for (const index in roles) {
+      const role = roles[index]
+      const account = await accountRoles[index]
 
-        wallet_roles[role].set(balanceSats)
-      } catch (err) {
-        baseLogger.error({ role }, `can't fetch balance for role`)
-      }
+      const balanceSats = getBalanceForWalletId(account)
+      if (balanceSats instanceof Error) throw balanceSats
+
+      walletRoles[role].set(balanceSats)
     }
 
     business_g.set(await User.count({ title: { $exists: true } }))

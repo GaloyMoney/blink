@@ -1,14 +1,11 @@
-import dedent from "dedent"
-import { GT } from "@graphql/index"
-
-import { connectionArgs, connectionFromArray } from "graphql-relay"
-import { TransactionConnection } from "./transaction"
-import * as Wallets from "@app/wallets"
-
-import ContactAlias from "../scalar/contact-alias"
 import * as Accounts from "@app/accounts"
-import Username from "../scalar/username"
 import { checkedToUsername } from "@domain/users"
+import { GT } from "@graphql/index"
+import dedent from "dedent"
+import { connectionArgs, connectionFromArray } from "graphql-relay"
+import ContactAlias from "../scalar/contact-alias"
+import Username from "../scalar/username"
+import { TransactionConnection } from "./transaction"
 
 const UserContact = new GT.Object({
   name: "UserContact",
@@ -43,7 +40,7 @@ const UserContact = new GT.Object({
           throw account
         }
 
-        const transactions = await Wallets.getAccountTransactionsForContact({
+        const transactions = await Accounts.getAccountTransactionsForContact({
           account,
           contactUsername,
         })

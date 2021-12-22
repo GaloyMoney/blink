@@ -1,16 +1,17 @@
+import { liabilitiesMainAccount, toLiabilitiesWalletId } from "@domain/ledger"
 import { ledger } from "@services/mongodb"
 
-const { walletPath, liabilitiesMainAccount, resolveWalletId } = ledger
+const { resolveWalletId } = ledger
 
 describe("ledger.ts", () => {
   describe("resolveWalletId", () => {
-    const accountId = "123542"
+    const walletId = "123542" as WalletId // FIXME: use a uuid v4 value
     it("returns account id from string path", () => {
-      expect(resolveWalletId(walletPath(accountId))).toEqual(accountId)
+      expect(resolveWalletId(toLiabilitiesWalletId(walletId))).toEqual(walletId)
     })
 
     it("returns account id from array path", () => {
-      expect(resolveWalletId([liabilitiesMainAccount, accountId])).toEqual(accountId)
+      expect(resolveWalletId([liabilitiesMainAccount, walletId])).toEqual(walletId)
     })
 
     it("returns null if invalid path", () => {

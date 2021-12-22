@@ -43,3 +43,9 @@ type SendIntraledgerTxArgs = IntraledgerTxArgs & {
     | AddOnChainIntraledgerTxSendMetadata
     | AddUsernameIntraledgerTxSendMetadata
 }
+
+type LoadLedgerParams = {
+  bankOwnerWalletResolver: () => Promise<WalletId>
+  dealerWalletResolver: () => Promise<WalletId>
+  funderWalletResolver: () => Promise<WalletId>
+}

@@ -56,6 +56,7 @@ export const getOnChainFee = async ({
   })
 }
 
+// FIXME: only use for v1
 export const getOnChainFeeByWalletId = async ({
   walletId,
   amount,

@@ -24,19 +24,16 @@ import {
   toLiabilitiesWalletId,
   toWalletId,
 } from "@domain/ledger"
-import { lndAccountingPath, bankOwnerAccountPath } from "./accounts"
-
-type LoadLedgerParams = {
-  bankOwnerWalletResolver: () => Promise<string>
-  dealerWalletResolver: () => Promise<string>
-}
+import { lndAccountingPath, getBankOwnerWalletId } from "./accounts"
 
 export const loadLedger = ({
   bankOwnerWalletResolver,
   dealerWalletResolver,
+  funderWalletResolver,
 }: LoadLedgerParams) => {
-  accounts.setbankOwnerWalletResolver(bankOwnerWalletResolver)
-  accounts.setdealerWalletResolver(dealerWalletResolver)
+  accounts.setBankOwnerWalletResolver(bankOwnerWalletResolver)
+  accounts.setDealerWalletResolver(dealerWalletResolver)
+  accounts.setFunderWalletResolver(funderWalletResolver)
   return {
     ...accounts,
     ...queries,
@@ -131,7 +128,7 @@ export const LedgerService = (): ILedgerService => {
     })
   }
 
-  const getAccountBalance = async (
+  const getWalletBalance = async (
     walletId: WalletId,
   ): Promise<Satoshis | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
@@ -316,7 +313,7 @@ export const LedgerService = (): ILedgerService => {
         .debit(lndAccountingPath, sats, metadata)
 
       if (fee > 0) {
-        const bankOwnerPath = await bankOwnerAccountPath()
+        const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
         entry.credit(bankOwnerPath, fee, metadata)
       }
 
@@ -357,7 +354,7 @@ export const LedgerService = (): ILedgerService => {
         .debit(lndAccountingPath, sats, metadata)
 
       if (fee > 0) {
-        const bankOwnerPath = await bankOwnerAccountPath()
+        const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
         entry.credit(bankOwnerPath, fee, metadata)
       }
 
@@ -627,7 +624,7 @@ export const LedgerService = (): ILedgerService => {
     getLiabilityTransactionsForContactUsername,
     listPendingPayments,
     getPendingPaymentsCount,
-    getAccountBalance,
+    getWalletBalance,
     allPaymentVolumeSince,
     externalPaymentVolumeSince,
     intraledgerTxVolumeSince,
