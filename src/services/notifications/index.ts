@@ -194,15 +194,15 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     }
   }
 
-  const sendBalance = async (account: Account): Promise<void> => {
-    const balanceSats = await getBalanceForWallet({
-      walletId: account.defaultWalletId,
-      logger,
-    })
-    if (balanceSats instanceof Error) throw balanceSats
-
+  const sendBalance = async ({
+    balance,
+    ownerId,
+  }: {
+    balance: Satoshis
+    ownerId: UserId
+  }): Promise<void> => {
     // Add commas to balancesats
-    const balanceSatsAsFormattedString = balanceSats.toLocaleString("en")
+    const balanceSatsAsFormattedString = balance.toLocaleString("en")
 
     let balanceUsdAsFormattedString: string, title: string
     const price = await getCurrentPrice()
@@ -212,7 +212,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       // TODO: i18n
       title = `Your balance is ${balanceSatsAsFormattedString} sats)`
     } else {
-      const usdValue = price * balanceSats
+      const usdValue = price * balance
       balanceUsdAsFormattedString = usdValue.toLocaleString("en", {
         maximumFractionDigits: 2,
       })
@@ -222,12 +222,12 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     }
 
     logger.info(
-      { balanceSatsAsFormattedString, title, ownerId: account.ownerId },
+      { balanceSatsAsFormattedString, title, ownerId },
       `sending balance notification to user`,
     )
 
     // FIXME:
-    const user = await User.find({ id: account.id })
+    const user = await User.find({ id: ownerId })
     if (user instanceof Error) {
       logger.warn({ user }, "impossible to fetch user to send transaction")
     }

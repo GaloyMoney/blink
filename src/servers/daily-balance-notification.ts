@@ -1,4 +1,5 @@
 import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
+import { getBalanceForWallet } from "@app/wallets"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { NotificationsService } from "@services/notifications"
@@ -19,7 +20,13 @@ export const sendBalanceToUsers = async () => {
   if (accounts instanceof Error) throw accounts
 
   for (const account of accounts) {
-    await NotificationsService(logger).sendBalance(account)
+    const balance = await getBalanceForWallet({
+      walletId: account.defaultWalletId,
+      logger,
+    })
+    if (balance instanceof Error) throw balance
+
+    await NotificationsService(logger).sendBalance({ balance, ownerId: account.ownerId })
   }
 }
 
