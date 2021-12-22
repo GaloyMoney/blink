@@ -92,7 +92,7 @@ const MeSubscription = {
     }
 
     if (source.intraLedger) {
-      return myPayload({ resolveType: "IntraLedgerUpdate", ...source.invoice })
+      return myPayload({ resolveType: "IntraLedgerUpdate", ...source.intraLedger })
     }
   },
 
