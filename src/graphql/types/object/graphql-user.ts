@@ -12,7 +12,6 @@ import UserContact from "./wallet-contact"
 import UserQuizQuestion from "./user-quiz-question"
 import Username from "../scalar/username"
 
-import * as Accounts from "@app/accounts"
 import * as Users from "@app/users"
 import { UnknownClientError } from "@core/error"
 
@@ -28,10 +27,15 @@ const GraphQLUser = new GT.Object({
       type: GT.NonNull(Phone),
       description: "Phone number with international calling code.",
     },
+
     username: {
       type: Username,
       description: "Optional immutable user friendly identifier.",
+      resolve: async (source, args, { domainAccount }) => {
+        return domainAccount.username
+      },
     },
+
     language: {
       type: GT.NonNull(Language),
       description: dedent`Preferred language for user.
@@ -84,14 +88,8 @@ const GraphQLUser = new GT.Object({
 
     defaultAccount: {
       type: GT.NonNull(Account),
-      resolve: async (source, args, { domainUser }: { domainUser: User }) => {
-        // TODO: could also be return domainAccount
-        const account = await Accounts.getAccount(domainUser.defaultAccountId)
-        if (account instanceof Error) {
-          throw account
-        }
-
-        return account
+      resolve: async (source, args, { domainAccount }) => {
+        return domainAccount
       },
     },
 
