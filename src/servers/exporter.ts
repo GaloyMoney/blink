@@ -70,7 +70,7 @@ const business_g = new client.Gauge({
 })
 
 const roles = ["dealer", "funder", "bankowner"]
-const accountRoles = [getDealerWalletId(), getFunderWalletId(), getBankOwnerWalletId()]
+const accountRoles = [getDealerWalletId, getFunderWalletId, getBankOwnerWalletId]
 const walletRoles = {}
 
 for (const role of roles) {
@@ -112,7 +112,7 @@ const main = async () => {
 
     for (const index in roles) {
       const role = roles[index]
-      const account = await accountRoles[index]
+      const account = await accountRoles[index]()
 
       const balanceSats = getBalanceForWalletId(account)
       if (balanceSats instanceof Error) throw balanceSats
