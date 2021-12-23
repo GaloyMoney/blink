@@ -1,4 +1,3 @@
-import moment from "moment"
 import { createObjectCsvStringifier, createObjectCsvWriter } from "csv-writer"
 
 import { ledger } from "@services/mongodb"
@@ -70,8 +69,8 @@ export class CSVAccountExport {
     const transactions: [] = txs.results.map((tx) => {
       const newTx = tx.toObject()
       newTx.meta = JSON.stringify(newTx.meta)
-      newTx.unix = moment(newTx.datetime).unix()
-      newTx.date = moment(newTx.datetime).format("L")
+      newTx.unix = Math.round(new Date(newTx.datetime).getTime() / 1000)
+      newTx.date = new Date(newTx.datetime).toISOString()
       return newTx
     })
 

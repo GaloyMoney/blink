@@ -9,7 +9,6 @@ import fs from "fs"
 import { applyMiddleware } from "graphql-middleware"
 import { shield } from "graphql-shield"
 import { makeExecutableSchema } from "graphql-tools"
-import moment from "moment"
 import path from "path"
 import { getFeeRates, onboardingEarn, getBuildVersions } from "@config/app"
 import { Wallets, Prices, Users } from "@app"
@@ -419,7 +418,7 @@ const resolvers = {
       await sendNotification({
         user,
         title: "Title",
-        body: `New message sent at ${moment.utc().format("YYYY-MM-DD HH:mm:ss")}`,
+        body: `New message sent at ${new Date().toISOString()}`,
         logger,
       })
       return { success: true }

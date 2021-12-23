@@ -1,4 +1,3 @@
-import moment from "moment"
 import { MS_PER_DAY } from "@config/app"
 import {
   deleteExpiredInvoiceUser,
@@ -53,7 +52,8 @@ describe("lndUtils", () => {
   it("test expiring invoice effect", async () => {
     const lnd = lndOutside2
 
-    const expires_at = moment().add(1, "s").toISOString()
+    // expire in 1 second
+    const expires_at = new Date(Date.now() + 1000).toISOString()
 
     const { id } = await createInvoice({ lnd, tokens: 10000, expires_at })
 

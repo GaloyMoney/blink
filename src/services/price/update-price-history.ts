@@ -1,5 +1,4 @@
 import ccxt from "ccxt"
-import moment from "moment"
 import last from "lodash.last"
 import { baseLogger } from "@services/logger"
 import { PriceHistory } from "./schema"
