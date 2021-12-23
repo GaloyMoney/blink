@@ -164,11 +164,13 @@ interface ILightningService {
     paymentHash: PaymentHash
   }): Promise<LnPaymentLookup | LnFailedPartialPaymentLookup | LightningServiceError>
 
-  listPayments({
-    after,
-  }: {
-    after: PagingToken | undefined
-  }): Promise<ListLnPaymentsResult | LightningServiceError>
+  listSettledPayments(
+    after: PagingToken | undefined,
+  ): Promise<ListLnPaymentsResult | LightningServiceError>
+
+  listFailedPayments(
+    after: PagingToken | undefined,
+  ): Promise<ListLnPaymentsResult | LightningServiceError>
 
   cancelInvoice({
     pubkey,

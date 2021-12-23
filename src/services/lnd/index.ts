@@ -29,6 +29,7 @@ import {
   PayViaPaymentDetailsResult,
   GetInvoiceResult,
   getPayments,
+  getFailedPayments,
 } from "lightning"
 
 import { LndOfflineError } from "@core/error"
@@ -258,37 +259,39 @@ export const LndService = (): ILightningService | LightningServiceError => {
     return new PaymentNotFoundError("Payment hash not found")
   }
 
-  const listPayments = async ({
-    after,
-  }: {
-    after: PagingToken | undefined
-  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
+  const listFailedPayments = async (
+    after: PagingToken | undefined,
+  ): Promise<ListLnPaymentsResult | LightningServiceError> => {
     try {
       const pagingArgs = after ? { token: after } : {}
-      const result = await getPayments({ lnd: lndAuth, ...pagingArgs })
-      const { payments, next } = result
+      const { payments, next } = await getFailedPayments({ lnd: lndAuth, ...pagingArgs })
 
-      const lnPayments: LnPaymentLookup[] = payments.map((p) => ({
-        createdAt: new Date(p.created_at),
-        status: p.is_confirmed ? PaymentStatus.Settled : PaymentStatus.Pending,
-        paymentHash: p.id as PaymentHash,
-        paymentRequest: p.request as EncodedPaymentRequest,
-        milliSatsAmount: toMilliSatsFromString(p.mtokens),
-        roundedUpAmount: toSats(p.safe_tokens),
-        confirmedDetails: {
-          confirmedAt: new Date(p.confirmed_at),
-          destination: p.destination as Pubkey,
-          secret: p.secret as PaymentSecret,
-          roundedUpFee: toSats(p.safe_fee),
-          milliSatsFee: toMilliSatsFromString(p.fee_mtokens),
-          hopPubkeys: p.hops as Pubkey[],
-        },
-        attempts: p.attempts,
-      }))
-
-      return { lnPayments, endCursor: (next as PagingToken) || undefined }
+      return {
+        lnPayments: payments
+          .map(translateLnPaymentLookup)
+          .map((p) => ({ ...p, status: PaymentStatus.Failed })),
+        endCursor: (next as PagingToken) || undefined,
+      }
     } catch (err) {
-      return new UnknownLightningServiceError()
+      return new UnknownLightningServiceError(err)
+    }
+  }
+
+  const listSettledPayments = async (
+    after: PagingToken | undefined,
+  ): Promise<ListLnPaymentsResult | LightningServiceError> => {
+    try {
+      const pagingArgs = after ? { token: after } : {}
+      const { payments, next } = await getPayments({ lnd: lndAuth, ...pagingArgs })
+
+      return {
+        lnPayments: payments
+          .map(translateLnPaymentLookup)
+          .filter((p) => p.status === PaymentStatus.Settled),
+        endCursor: (next as PagingToken) || undefined,
+      }
+    } catch (err) {
+      return new UnknownLightningServiceError(err)
     }
   }
 
@@ -432,7 +435,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
     registerInvoice,
     lookupInvoice,
     lookupPayment,
-    listPayments,
+    listSettledPayments,
+    listFailedPayments,
     cancelInvoice,
     payInvoiceViaRoutes,
     payInvoiceViaPaymentDetails,
@@ -545,3 +549,23 @@ const KnownLndErrorDetails = {
   InvoiceAlreadyPaid: "invoice is already paid",
   UnableToFindRoute: "PaymentPathfindingFailedToFindPossibleRoute",
 } as const
+
+const translateLnPaymentLookup = (p): LnPaymentLookup => ({
+  createdAt: new Date(p.created_at),
+  status: p.is_confirmed ? PaymentStatus.Settled : PaymentStatus.Pending,
+  paymentHash: p.id as PaymentHash,
+  paymentRequest: p.request as EncodedPaymentRequest,
+  milliSatsAmount: toMilliSatsFromString(p.mtokens),
+  roundedUpAmount: toSats(p.safe_tokens),
+  confirmedDetails: p.is_confirmed
+    ? {
+        confirmedAt: new Date(p.confirmed_at),
+        destination: p.destination as Pubkey,
+        revealedPreImage: p.secret as RevealedPreImage,
+        roundedUpFee: toSats(p.safe_fee),
+        milliSatsFee: toMilliSatsFromString(p.fee_mtokens),
+        hopPubkeys: p.hops as Pubkey[],
+      }
+    : undefined,
+  attempts: p.attempts,
+})
