@@ -54,7 +54,7 @@ export const addEarn = async ({
   if (shouldGiveReward instanceof Error) return shouldGiveReward
 
   const payment = await intraledgerPaymentSendWalletId({
-    payerWalletId: funderWalletId,
+    senderWalletId: funderWalletId,
     recipientWalletId,
     amount,
     memo: id,
