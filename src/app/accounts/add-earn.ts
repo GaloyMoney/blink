@@ -1,3 +1,4 @@
+import { getUser } from "@app/users"
 import { getBalanceForWalletId, intraledgerPaymentSendWalletId } from "@app/wallets"
 import { onboardingEarn } from "@config/app"
 import {
@@ -7,8 +8,8 @@ import {
 } from "@domain/errors"
 import { getFunderWalletId } from "@services/ledger/accounts"
 import { baseLogger } from "@services/logger"
-import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { RewardsRepository } from "@services/mongoose/rewards"
+import { getAccount } from "."
 
 export const addEarn = async ({ id, aid }: { id: QuizQuestionId; aid: AccountId }) => {
   const amount = onboardingEarn[id]
@@ -25,10 +26,10 @@ export const addEarn = async ({ id, aid }: { id: QuizQuestionId; aid: AccountId 
     return new RewardInsufficientBalanceError()
   }
 
-  const recipientAccount = await AccountsRepository().findById(aid)
+  const recipientAccount = await getAccount(aid)
   if (recipientAccount instanceof Error) return recipientAccount
 
-  const user = await UsersRepository().findById(recipientAccount.ownerId)
+  const user = await getUser(recipientAccount.ownerId)
   if (user instanceof Error) return user
 
   // FIXME for testing
