@@ -1,4 +1,3 @@
-import { getCurrentPrice } from "@app/prices"
 import {
   lnPaymentStatusEvent,
   SAT_USDCENT_PRICE,
@@ -196,15 +195,16 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   const sendBalance = async ({
     balance,
     ownerId,
+    price,
   }: {
     balance: Satoshis
     ownerId: UserId
+    price: UsdPerSat | ApplicationError
   }): Promise<void> => {
     // Add commas to balancesats
     const balanceSatsAsFormattedString = balance.toLocaleString("en")
 
     let balanceUsdAsFormattedString: string, title: string
-    const price = await getCurrentPrice()
     if (price instanceof Error) {
       logger.warn({ price }, "impossible to fetch price for notification")
 

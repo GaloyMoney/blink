@@ -1,4 +1,9 @@
 import { Wallets, Prices } from "@app"
+import {
+  checkAndVerifyTwoFA,
+  checkIntraledgerLimits,
+  checkWithdrawalLimits,
+} from "@app/wallets/check-limit-helpers"
 import { BTC_NETWORK, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config/app"
 import { toSats } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
@@ -101,7 +106,7 @@ export const OnChainMixin = (superclass) =>
           }
 
           const twoFACheck = twoFA?.secret
-            ? await Wallets.checkAndVerifyTwoFA({
+            ? await checkAndVerifyTwoFA({
                 amount: toSats(amountToSendPayeeUser),
                 twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
                 twoFASecret: twoFA.secret,
@@ -117,7 +122,7 @@ export const OnChainMixin = (superclass) =>
 
           const onchainLoggerOnUs = onchainLogger.child({ onUs: true })
 
-          const intraledgerLimitCheck = await Wallets.checkIntraledgerLimits({
+          const intraledgerLimitCheck = await checkIntraledgerLimits({
             amount: toSats(amountToSendPayeeUser),
             walletId: this.user.walletId,
           })
@@ -202,7 +207,7 @@ export const OnChainMixin = (superclass) =>
           throw new DustAmountError(undefined, { logger: onchainLogger })
         }
 
-        const withdrawalLimitCheck = await Wallets.checkWithdrawalLimits({
+        const withdrawalLimitCheck = await checkWithdrawalLimits({
           amount: toSats(checksAmount),
           walletId: this.user.walletId,
         })
@@ -212,7 +217,7 @@ export const OnChainMixin = (superclass) =>
           })
 
         const twoFACheck = twoFA?.secret
-          ? await Wallets.checkAndVerifyTwoFA({
+          ? await checkAndVerifyTwoFA({
               amount: toSats(checksAmount),
               twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
               twoFASecret: twoFA.secret,

@@ -29,6 +29,12 @@ type IntraLedgerArgs = {
   usdPerSat?: UsdPerSat
 }
 
+type SendBalanceArgs = {
+  balance: Satoshis
+  ownerId: UserId
+  price: UsdPerSat | ApplicationError
+}
+
 interface INotificationsService {
   onChainTransactionReceived(
     args: OnChainTxReceivedArgs,
@@ -40,7 +46,7 @@ interface INotificationsService {
     args: OnChainTxPaymentArgs,
   ): Promise<void | NotificationsServiceError>
   priceUpdate: (UsdPerSat: number) => void
-  lnInvoicePaid: (arg: LnInvoicePaidArgs) => void
+  lnInvoicePaid: (args: LnInvoicePaidArgs) => void
   intraLedgerPaid(args: IntraLedgerArgs): Promise<void | NotificationsServiceError>
-  sendBalance({ balance: Satoshis, ownerId: UserId }): Promise<void>
+  sendBalance(args: SendBalanceArgs): Promise<void>
 }
