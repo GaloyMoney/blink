@@ -8,16 +8,17 @@ import {
   ValidationError,
 } from "@domain/errors"
 import { getFunderWalletId } from "@services/ledger/accounts"
-import { baseLogger } from "@services/logger"
 import { RewardsRepository } from "@services/mongoose/rewards"
 import { getAccount } from "."
 
 export const addEarn = async ({
   id,
   aid,
+  logger,
 }: {
   id: QuizQuestionId
   aid: AccountId /* AccountId: aid validation */
+  logger: Logger
 }) => {
   const amount = onboardingEarn[id]
   if (!amount) {
@@ -54,11 +55,10 @@ export const addEarn = async ({
 
   const payment = await intraledgerPaymentSendWalletId({
     payerWalletId: funderWalletId,
-    payerUserId: recipientAccount.ownerId,
     recipientWalletId,
     amount,
     memo: id,
-    logger: baseLogger, // FIXME
+    logger,
   })
   if (payment instanceof Error) return payment
 

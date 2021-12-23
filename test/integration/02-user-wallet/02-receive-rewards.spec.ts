@@ -6,6 +6,7 @@ import { resetSelfWalletIdLimits } from "test/helpers/rate-limit"
 import { getBTCBalance } from "test/helpers/wallet"
 
 import { addEarn } from "@app/accounts/add-earn"
+import { baseLogger } from "@services/logger"
 let userWallet1
 
 const onBoardingEarnIds = [
@@ -44,6 +45,7 @@ describe("UserWallet - addEarn", () => {
         addEarn({
           id: onBoardingEarnId as QuizQuestionId,
           aid: userWallet1.user._id,
+          logger: baseLogger,
         }),
       )
       await Promise.all(promises)

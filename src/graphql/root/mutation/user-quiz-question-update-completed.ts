@@ -16,7 +16,7 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserQuizQuestionUpdateCompletedInput) },
   },
-  resolve: async (_, args, { uid }) => {
+  resolve: async (_, args, { uid, logger }) => {
     const { id } = args.input
 
     if (!onboardingEarn[id]) {
@@ -24,7 +24,7 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field({
     }
 
     try {
-      const quizQuestions = await addEarn({ id, aid: uid })
+      const quizQuestions = await addEarn({ id, aid: uid, logger })
       const question = quizQuestions[0]
 
       return {
