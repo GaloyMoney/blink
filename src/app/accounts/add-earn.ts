@@ -3,6 +3,7 @@ import { getBalanceForWalletId, intraledgerPaymentSendWalletId } from "@app/wall
 import { onboardingEarn } from "@config/app"
 import {
   RewardInsufficientBalanceError,
+  RewardMissingMetadataError,
   RewardNonValidTypeError,
   ValidationError,
 } from "@domain/errors"
@@ -11,7 +12,13 @@ import { baseLogger } from "@services/logger"
 import { RewardsRepository } from "@services/mongoose/rewards"
 import { getAccount } from "."
 
-export const addEarn = async ({ id, aid }: { id: QuizQuestionId; aid: AccountId }) => {
+export const addEarn = async ({
+  id,
+  aid,
+}: {
+  id: QuizQuestionId
+  aid: AccountId /* AccountId: aid validation */
+}) => {
   const amount = onboardingEarn[id]
   if (!amount) {
     return new ValidationError("incorrect reward id")
@@ -32,19 +39,17 @@ export const addEarn = async ({ id, aid }: { id: QuizQuestionId; aid: AccountId 
   const user = await getUser(recipientAccount.ownerId)
   if (user instanceof Error) return user
 
-  // FIXME for testing
-  // if (!user.phoneMetadata || !user.phoneMetadata.carrier) {
-  //   return new RewardMissingMetadataError()
-  // }
+  if (!user.phoneMetadata?.carrier) {
+    return new RewardMissingMetadataError()
+  }
 
-  // if (user.phoneMetadata.carrier.type === "voip") {
-  if (user.phoneMetadata?.carrier?.type === "voip") {
+  if (user.phoneMetadata.carrier.type === "voip") {
     return new RewardNonValidTypeError()
   }
 
-  const recipientWalletId = recipientAccount.walletIds[0]
+  const recipientWalletId = recipientAccount.defaultWalletId
 
-  const shouldGiveReward = await RewardsRepository(aid as AccountId).tentativelyAddNew(id)
+  const shouldGiveReward = await RewardsRepository(aid).tentativelyAddNew(id)
   if (shouldGiveReward instanceof Error) return shouldGiveReward
 
   const payment = await intraledgerPaymentSendWalletId({
