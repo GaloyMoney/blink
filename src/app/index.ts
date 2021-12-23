@@ -4,7 +4,7 @@ import * as LightningMod from "./lightning"
 import * as PricesMod from "./prices"
 import * as UsersMod from "./users"
 import * as WalletsMod from "./wallets"
-import { wrapAsyncToRunInSpan, wrapToRunInSpan } from "@services/tracing"
+import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 const allFunctions = {
   Accounts: { ...AccountsMod },
@@ -14,12 +14,10 @@ const allFunctions = {
   Users: { ...UsersMod },
   Wallets: { ...WalletsMod },
 }
-const syncFunctions = ["PaymentStatusChecker"]
 
 for (const subModule in allFunctions) {
   for (const fn in allFunctions[subModule]) {
-    const wrapper = syncFunctions.includes(fn) ? wrapToRunInSpan : wrapAsyncToRunInSpan
-    allFunctions[subModule][fn] = wrapper({
+    allFunctions[subModule][fn] = wrapAsyncToRunInSpan({
       namespace: `app.${subModule.toLowerCase()}`,
       fn: allFunctions[subModule][fn],
     })

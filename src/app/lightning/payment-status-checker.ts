@@ -2,7 +2,7 @@ import { RepositoryError } from "@domain/errors"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { LedgerService } from "@services/ledger"
 
-export const PaymentStatusChecker = ({ paymentRequest }) => {
+export const PaymentStatusChecker = async ({ paymentRequest }) => {
   const decodedInvoice = decodeInvoice(paymentRequest)
 
   if (decodedInvoice instanceof Error) return decodedInvoice

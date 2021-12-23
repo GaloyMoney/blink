@@ -33,7 +33,7 @@ const LnInvoicePaymentStatusSubscription = {
   subscribe: async (_, args) => {
     const { paymentRequest } = args.input
 
-    const paymentStatusChecker = Lightning.PaymentStatusChecker({ paymentRequest })
+    const paymentStatusChecker = await Lightning.PaymentStatusChecker({ paymentRequest })
 
     if (paymentStatusChecker instanceof Error) {
       pubsub.publishImmediate(paymentRequest, {

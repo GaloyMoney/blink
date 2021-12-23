@@ -202,11 +202,9 @@ const resolveFunctionSpanOptions = ({
 export const wrapToRunInSpan = <A extends Array<unknown>, R>({
   fn,
   namespace,
-  spanAttributes = {},
 }: {
   fn: (...args: A) => R
   namespace: string
-  spanAttributes?: SpanAttributes
 }) => {
   return (...args: A): R => {
     const functionName = fn.name
@@ -215,7 +213,7 @@ export const wrapToRunInSpan = <A extends Array<unknown>, R>({
       namespace,
       functionName,
       functionArgs: args,
-      spanAttributes,
+      spanAttributes: {},
     })
     const ret = tracer.startActiveSpan(spanName, spanOptions, (span) => {
       const ret = fn(...args)
@@ -234,11 +232,9 @@ type PromiseReturnType<T> = T extends Promise<infer Return> ? Return : T
 export const wrapAsyncToRunInSpan = <A extends Array<unknown>, R>({
   fn,
   namespace,
-  spanAttributes = {},
 }: {
   fn: (...args: A) => Promise<PromiseReturnType<R>>
   namespace: string
-  spanAttributes?: SpanAttributes
 }) => {
   return (...args: A): Promise<PromiseReturnType<R>> => {
     const functionName = fn.name
@@ -247,7 +243,7 @@ export const wrapAsyncToRunInSpan = <A extends Array<unknown>, R>({
       namespace,
       functionName,
       functionArgs: args,
-      spanAttributes,
+      spanAttributes: {},
     })
     const ret = tracer.startActiveSpan(spanName, spanOptions, async (span) => {
       const ret = await fn(...args)
