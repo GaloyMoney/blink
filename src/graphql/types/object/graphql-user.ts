@@ -34,6 +34,7 @@ const GraphQLUser = new GT.Object({
       resolve: async (source, args, { domainAccount }) => {
         return domainAccount.username
       },
+      deprecationReason: "will be moved to @Handle in Account and Wallet",
     },
 
     language: {
