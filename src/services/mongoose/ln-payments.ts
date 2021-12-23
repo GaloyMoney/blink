@@ -20,6 +20,19 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
     }
   }
 
+  const listIncomplete = async (): Promise<
+    PersistedLnPaymentLookup[] | RepositoryError
+  > => {
+    try {
+      const result = await LnPayment.find({
+        isCompleteRecord: false,
+      })
+      return result.map(lnPaymentFromRaw)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const persist = async (
     payment: LnPaymentPartial,
   ): Promise<LnPaymentPartial | RepositoryError> => {
@@ -53,6 +66,7 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
 
   return {
     findByPaymentHash,
+    listIncomplete,
     persist,
     update,
   }

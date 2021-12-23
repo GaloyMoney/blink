@@ -11,6 +11,7 @@ interface ILnPaymentsRepository {
   findByPaymentHash(
     paymentHash: PaymentHash,
   ): Promise<PersistedLnPaymentLookup | RepositoryError>
+  listIncomplete(): Promise<PersistedLnPaymentLookup[] | RepositoryError>
   persist(lnPaymentPartial: LnPaymentPartial): Promise<LnPaymentPartial | RepositoryError>
   update(
     lnPayment: PersistedLnPaymentLookup,
