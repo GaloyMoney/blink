@@ -42,38 +42,38 @@ services:
     volumes:
     - ${PWD}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   lnd1:
-    image: lncm/lnd:v0.13.3-monitoring
+    image: lightninglabs/lnd:v0.14.1-beta
     ports:
       - "10009:10009"
     volumes:
-    - ${PWD}/dev/lnd/lnd.conf:/data/.lnd/lnd.conf
-    - ${PWD}/dev/lnd/tls.key:/data/.lnd/tls.key
-    - ${PWD}/dev/lnd/tls.cert:/data/.lnd/tls.cert
+    - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+    - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
+    - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
     depends_on: [bitcoind]
   lnd2:
-    image: lncm/lnd:v0.13.3-monitoring
+    image: lightninglabs/lnd:v0.14.1-beta
     ports:
       - "10010:10009"
     volumes:
-    - ${PWD}/dev/lnd/lnd.conf:/data/.lnd/lnd.conf
-    - ${PWD}/dev/lnd/tls.key:/data/.lnd/tls.key
-    - ${PWD}/dev/lnd/tls.cert:/data/.lnd/tls.cert
+    - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+    - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
+    - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
     depends_on: [bitcoind]
   lnd-outside-1:
-    image: lncm/lnd:v0.13.3-monitoring
+    image: lightninglabs/lnd:v0.14.1-beta
     ports:
       - "10012:10009"
     volumes:
-    - ${PWD}/dev/lnd/lnd.conf:/data/.lnd/lnd.conf
-    - ${PWD}/dev/lnd/tls.key:/data/.lnd/tls.key
-    - ${PWD}/dev/lnd/tls.cert:/data/.lnd/tls.cert
+    - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+    - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
+    - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
     depends_on: [bitcoind]
   lnd-outside-2:
-    image: lncm/lnd:v0.13.3-monitoring
+    image: lightninglabs/lnd:v0.14.1-beta
     ports:
       - "10013:10009"
     volumes:
-    - ${PWD}/dev/lnd/lnd.conf:/data/.lnd/lnd.conf
-    - ${PWD}/dev/lnd/tls.key:/data/.lnd/tls.key
-    - ${PWD}/dev/lnd/tls.cert:/data/.lnd/tls.cert
+    - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+    - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
+    - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
     depends_on: [bitcoind]
