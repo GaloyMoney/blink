@@ -7,7 +7,7 @@ import { clearAccountLocks } from "test/helpers/redis"
 import { LedgerService } from "@services/ledger"
 import { toSats } from "@domain/bitcoin"
 import { DepositFeeCalculator } from "@domain/wallets"
-import { getCurrentPrice } from "@app/prices"
+import { Prices } from "@app"
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 
 let mongoose
@@ -59,7 +59,7 @@ const walletUSD = new User(fullUSDmeta)
 
 describe("receipt via Ledger Service", () => {
   it("btc receive on lightning via ledger service", async () => {
-    const price = await getCurrentPrice()
+    const price = await Prices.getCurrentPrice()
     expect(price).not.toBeInstanceOf(Error)
     if (price instanceof Error) throw price
     const fee = DepositFeeCalculator().lnDepositFee()
@@ -151,7 +151,7 @@ describe("receipt", () => {
 
 describe("payment with lnd via Ledger Service", () => {
   it("btc send on lightning via ledger service", async () => {
-    const price = await getCurrentPrice()
+    const price = await Prices.getCurrentPrice()
     expect(price).not.toBeInstanceOf(Error)
     if (price instanceof Error) throw price
     const fee = DepositFeeCalculator().lnDepositFee()
@@ -252,7 +252,7 @@ describe("on us payment via Ledger Service", () => {
     const payer = walletBTC
     const payee = walletBTC2
 
-    const price = await getCurrentPrice()
+    const price = await Prices.getCurrentPrice()
     expect(price).not.toBeInstanceOf(Error)
     if (price instanceof Error) throw price
     const fee = DepositFeeCalculator().lnDepositFee()

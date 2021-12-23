@@ -1,4 +1,4 @@
-import { addInvoiceForRecipient } from "@app/wallets"
+import { Wallets } from "@app"
 import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
@@ -31,7 +31,7 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
       }
     }
 
-    const result = await addInvoiceForRecipient({
+    const result = await Wallets.addInvoiceForRecipient({
       recipientWalletId,
       amount,
       memo,

@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import { getApiKeysForAccount } from "@app/accounts"
+import { Accounts } from "@app"
 import AccountApiKeyHashed from "@graphql/types/object/account-api-key-hashed"
 import { CouldNotFindError } from "@domain/errors"
 
@@ -8,7 +8,7 @@ const AccountApiKeysQuery = GT.Field({
   resolve: async (_, __, { domainUser }): Promise<AccountApiKey[]> => {
     const accountId = domainUser.defaultAccountId
 
-    const accountApiKeys = await getApiKeysForAccount(accountId)
+    const accountApiKeys = await Accounts.getApiKeysForAccount(accountId)
     if (accountApiKeys instanceof CouldNotFindError) return []
     if (accountApiKeys instanceof Error) throw accountApiKeys
 

@@ -1,4 +1,4 @@
-import { getBalanceForWalletId } from "@app/wallets"
+import { Wallets } from "@app"
 import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
 import { toSats } from "@domain/bitcoin"
 import { getBalancesDetail } from "@services/bitcoind"
@@ -117,7 +117,7 @@ const main = async () => {
 
       let balance: Satoshis
 
-      const balanceSats = await getBalanceForWalletId(account)
+      const balanceSats = await Wallets.getBalanceForWalletId(account)
       if (balanceSats instanceof Error) {
         baseLogger.warn({ account, role, balanceSats }, "impossible to get balance")
         balance = toSats(0)

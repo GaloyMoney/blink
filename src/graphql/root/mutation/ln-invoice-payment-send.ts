@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 import Memo from "@graphql/types/scalar/memo"
 import { mapError } from "@graphql/error-map"
 import WalletId from "@graphql/types/scalar/wallet-id"
-import { payLnInvoiceByWalletId } from "@app/wallets"
+import { Wallets } from "@app"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import {
@@ -41,7 +41,7 @@ const LnInvoicePaymentSendMutation = GT.Field({
           }
         }
 
-        const status = await payLnInvoiceByWalletId({
+        const status = await Wallets.payLnInvoiceByWalletId({
           walletId,
           paymentRequest,
           memo,

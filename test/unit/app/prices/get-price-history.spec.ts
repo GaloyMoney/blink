@@ -5,10 +5,18 @@ import {
   UnknownPriceServiceError,
 } from "@domain/price"
 import { CacheKeys } from "@domain/cache"
-import { getPriceHistory } from "@app/prices"
+import { Prices } from "@app"
 import * as PriceServiceImpl from "@services/price"
 import { LocalCacheService } from "@services/cache"
 import { generateSatoshiPriceHistory } from "test/helpers/price"
+
+jest.mock("@services/redis", () => ({}))
+
+jest.mock("@config/app.ts", () => {
+  const config = jest.requireActual("@config/app.ts")
+  config.yamlConfig.lnds = []
+  return config
+})
 
 beforeEach(() => {
   LocalCacheService().clear(
@@ -32,7 +40,7 @@ describe("Prices", () => {
         getRealTimePrice: jest.fn(),
       }))
 
-      const prices = await getPriceHistory({ range, interval })
+      const prices = await Prices.getPriceHistory({ range, interval })
       if (prices instanceof Error) throw prices
 
       expect(prices.length).toBe(24)
@@ -46,7 +54,7 @@ describe("Prices", () => {
         ]),
       )
 
-      const cachedPrices = await getPriceHistory({ range, interval })
+      const cachedPrices = await Prices.getPriceHistory({ range, interval })
       expect(cachedPrices).toEqual(prices)
     })
 
@@ -59,7 +67,7 @@ describe("Prices", () => {
         getRealTimePrice: jest.fn(),
       }))
 
-      const prices = await getPriceHistory({ range, interval })
+      const prices = await Prices.getPriceHistory({ range, interval })
       expect(prices).toBeInstanceOf(UnknownPriceServiceError)
     })
 
@@ -72,7 +80,7 @@ describe("Prices", () => {
         getRealTimePrice: jest.fn(),
       }))
 
-      const prices = await getPriceHistory({ range, interval })
+      const prices = await Prices.getPriceHistory({ range, interval })
       expect(prices).toBeInstanceOf(PriceHistoryNotAvailableError)
     })
   })

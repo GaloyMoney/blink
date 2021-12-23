@@ -9,11 +9,9 @@ import {
   getBTCBalance,
 } from "test/helpers"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
-import * as Wallets from "@app/wallets"
+import { Wallets, Lightning } from "@app"
 import { PaymentInitiationMethod } from "@domain/wallets"
-import { addInvoice, addInvoiceNoAmount } from "@app/wallets/add-invoice-for-wallet"
 import { toSats } from "@domain/bitcoin"
-import { PaymentStatusChecker } from "@app/lightning"
 
 let userWallet1
 let initBalance1
@@ -36,7 +34,7 @@ describe("UserWallet - Lightning", () => {
     const sats = 50000
     const memo = "myMemo"
 
-    const lnInvoice = await addInvoice({
+    const lnInvoice = await Wallets.addInvoice({
       walletId: userWallet1.user.walletId as WalletId,
       amount: toSats(sats),
       memo,
@@ -44,7 +42,7 @@ describe("UserWallet - Lightning", () => {
     if (lnInvoice instanceof Error) return lnInvoice
     const { paymentRequest: invoice } = lnInvoice
 
-    const checker = PaymentStatusChecker({ paymentRequest: invoice })
+    const checker = await Lightning.PaymentStatusChecker({ paymentRequest: invoice })
     expect(checker).not.toBeInstanceOf(Error)
     if (checker instanceof Error) throw checker
 
@@ -100,7 +98,7 @@ describe("UserWallet - Lightning", () => {
   it("receives zero amount invoice", async () => {
     const sats = 1000
 
-    const lnInvoice = await addInvoiceNoAmount({
+    const lnInvoice = await Wallets.addInvoiceNoAmount({
       walletId: userWallet1.user.walletId as WalletId,
     })
     if (lnInvoice instanceof Error) return lnInvoice
@@ -142,7 +140,7 @@ describe("UserWallet - Lightning", () => {
     expect(sats).toBeLessThan(MEMO_SHARING_SATS_THRESHOLD)
 
     // process spam transaction
-    const lnInvoice = await addInvoice({
+    const lnInvoice = await Wallets.addInvoice({
       walletId: userWallet1.user.walletId as WalletId,
       amount: toSats(sats),
       memo,

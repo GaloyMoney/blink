@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import Phone from "@graphql/types/scalar/phone"
 import SuccessPayload from "@graphql/types/payload/success-payload"
-import { requestPhoneCodeWithCaptcha } from "@app/users/request-phone-code"
+import { Users } from "@app"
 import { mapError } from "@graphql/error-map"
 
 const CaptchaRequestAuthCodeInput = new GT.Input({
@@ -34,7 +34,7 @@ const CaptchaRequestAuthCodeMutation = GT.Field({
       }
     }
 
-    const result = await requestPhoneCodeWithCaptcha({
+    const result = await Users.requestPhoneCodeWithCaptcha({
       phone,
       geetest,
       geetestChallenge,

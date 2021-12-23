@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import Username from "@graphql/types/scalar/username"
 
-import * as Users from "@app/users"
+import { Users } from "@app"
 
 const UsernameAvailableQuery = GT.Field({
   type: GT.Boolean,

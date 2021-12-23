@@ -11,6 +11,15 @@ processors:
     - key: graphql.variables.input.code
       action: update
       value: "<redacted>"
+    - key: code.function.params.code
+      action: update
+      value: "<redacted>"
+    - key: code.function.params.twoFASecret
+      action: update
+      value: "<redacted>"
+    - key: code.function.params.twoFAToken
+      action: update
+      value: "<redacted>"
 
 exporters:
   logging:
@@ -33,4 +42,3 @@ service:
       receivers: [jaeger]
       processors: [attributes, batch]
       exporters: [otlp, logging]
-

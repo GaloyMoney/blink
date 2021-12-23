@@ -4,7 +4,7 @@ import PricePayload from "@graphql/types/payload/price"
 import { SAT_USDCENT_PRICE } from "@config/app"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import pubsub from "@services/pubsub"
-import { getCurrentPrice } from "@app/prices"
+import { Prices } from "@app"
 
 const PriceInput = new GT.Input({
   name: "PriceInput",
@@ -60,7 +60,7 @@ const PriceSubscription = {
         errors: [{ message: "Unsupported exchange amount" }],
       })
     } else {
-      const satUsdPrice = await getCurrentPrice()
+      const satUsdPrice = await Prices.getCurrentPrice()
       if (!(satUsdPrice instanceof Error)) {
         pubsub.publishImmediate(eventName, { satUsdCentPrice: 100 * satUsdPrice })
       }

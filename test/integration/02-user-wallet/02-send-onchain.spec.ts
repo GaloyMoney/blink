@@ -28,7 +28,7 @@ import {
 } from "test/helpers"
 import { ledger } from "@services/mongodb"
 import { PaymentInitiationMethod, TxStatus } from "@domain/wallets"
-import * as Wallets from "@app/wallets"
+import { Wallets } from "@app"
 import { TwoFAError, TransactionRestrictedError } from "@core/error"
 import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
 import { NotificationType } from "@domain/notifications"

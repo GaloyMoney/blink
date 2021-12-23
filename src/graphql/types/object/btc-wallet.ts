@@ -6,7 +6,7 @@ import { TransactionConnection } from "./transaction"
 import IWallet from "../abstract/wallet"
 import SignedAmount from "../scalar/signed-amount"
 import WalletCurrency from "../scalar/wallet-currency"
-import * as Wallets from "@app/wallets"
+import { Wallets } from "@app"
 
 const BTCWallet = new GT.Object({
   name: "BTCWallet",

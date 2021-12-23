@@ -6,7 +6,7 @@ import { WalletInvoicesRepository } from "@services/mongoose"
 
 import { runInParallel } from "./utils"
 
-import * as Wallets from "@app/wallets"
+import { Wallets } from "@app"
 
 const logger = baseLogger.child({ module: "balanceSheet" })
 

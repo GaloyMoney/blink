@@ -4,7 +4,7 @@ import Memo from "@graphql/types/scalar/memo"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
-import { addInvoiceByWalletId } from "@app/wallets/add-invoice-for-wallet"
+import { Wallets } from "@app"
 
 const LnInvoiceCreateInput = new GT.Input({
   name: "LnInvoiceCreateInput",
@@ -29,7 +29,7 @@ const LnInvoiceCreateMutation = GT.Field({
       }
     }
 
-    const lnInvoice = await addInvoiceByWalletId({
+    const lnInvoice = await Wallets.addInvoiceByWalletId({
       walletId,
       amount,
       memo,

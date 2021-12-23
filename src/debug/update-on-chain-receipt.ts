@@ -3,7 +3,7 @@
  * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/update-on-chain-receipt.ts
  */
 
-import * as Wallets from "@app/wallets"
+import { Wallets } from "@app"
 import { baseLogger as logger } from "@services/logger"
 import { checkedToScanDepth } from "@domain/bitcoin/onchain"
 import { setupMongoConnectionSecondary } from "@services/mongodb"

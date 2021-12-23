@@ -3,7 +3,7 @@ import { mapError } from "@graphql/error-map"
 import Memo from "@graphql/types/scalar/memo"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import LnNoAmountInvoicePayload from "@graphql/types/payload/ln-noamount-invoice"
-import { addInvoiceNoAmountByWalletId } from "@app/wallets/add-invoice-for-wallet"
+import { Wallets } from "@app"
 
 const LnNoAmountInvoiceCreateInput = new GT.Input({
   name: "LnNoAmountInvoiceCreateInput",
@@ -27,7 +27,7 @@ const LnNoAmountInvoiceCreateMutation = GT.Field({
       }
     }
 
-    const lnInvoice = await addInvoiceNoAmountByWalletId({
+    const lnInvoice = await Wallets.addInvoiceNoAmountByWalletId({
       walletId,
       memo,
     })

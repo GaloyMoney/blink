@@ -3,7 +3,7 @@ import OneTimeAuthCode from "@graphql/types/scalar/one-time-auth-code"
 
 import Phone from "@graphql/types/scalar/phone"
 import AuthTokenPayload from "@graphql/types/payload/auth-token"
-import { login } from "@app/users/login"
+import { Users } from "@app"
 import { mapError } from "@graphql/error-map"
 
 const UserLoginInput = new GT.Input({
@@ -36,7 +36,7 @@ const UserLoginMutation = GT.Field({
       }
     }
 
-    const authToken = await login({ phone, code, logger, ip })
+    const authToken = await Users.login({ phone, code, logger, ip })
 
     if (authToken instanceof Error) {
       const appErr = mapError(authToken)

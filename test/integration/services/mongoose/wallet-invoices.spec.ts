@@ -1,4 +1,4 @@
-import { addInvoice } from "@app/wallets"
+import { Wallets } from "@app"
 import { toSats } from "@domain/bitcoin"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { InvoiceUser } from "@services/mongoose/schema"
@@ -63,7 +63,7 @@ describe("WalletInvoices", () => {
   it("find pending invoices by wallet id", async () => {
     const wallet = await getAndCreateUserWallet(1)
     for (let i = 0; i < 2; i++) {
-      await addInvoice({
+      await Wallets.addInvoice({
         walletId: wallet.user.walletId as WalletId,
         amount: toSats(1000),
       })

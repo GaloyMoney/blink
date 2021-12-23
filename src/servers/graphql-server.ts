@@ -13,8 +13,7 @@ import { v4 as uuidv4 } from "uuid"
 import helmet from "helmet"
 
 import { getApolloConfig, getGeetestConfig, isProd, JWT_SECRET } from "@config/app"
-import * as Users from "@app/users"
-import * as Accounts from "@app/accounts"
+import { Accounts, Users } from "@app"
 
 import { baseLogger } from "@services/logger"
 import { redis } from "@services/redis"

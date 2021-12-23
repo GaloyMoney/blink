@@ -1,4 +1,4 @@
-import * as Accounts from "@app/accounts"
+import { Accounts } from "@app"
 import { checkedToUsername } from "@domain/users"
 import { GT } from "@graphql/index"
 import dedent from "dedent"

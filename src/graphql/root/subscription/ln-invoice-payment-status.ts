@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import { PaymentStatusChecker } from "@app/lightning"
+import { Lightning } from "@app"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
 import { lnPaymentStatusEvent } from "@config/app"
@@ -33,7 +33,7 @@ const LnInvoicePaymentStatusSubscription = {
   subscribe: async (_, args) => {
     const { paymentRequest } = args.input
 
-    const paymentStatusChecker = PaymentStatusChecker({ paymentRequest })
+    const paymentStatusChecker = await Lightning.PaymentStatusChecker({ paymentRequest })
 
     if (paymentStatusChecker instanceof Error) {
       pubsub.publishImmediate(paymentRequest, {

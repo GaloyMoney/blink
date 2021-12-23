@@ -6,7 +6,7 @@ import IAccount from "../abstract/account"
 import Transaction from "./transaction"
 import WalletId from "../scalar/wallet-id"
 
-import * as Wallets from "@app/wallets"
+import { Wallets } from "@app"
 
 const BusinessAccount = new GT.Object({
   name: "BusinessAccount",

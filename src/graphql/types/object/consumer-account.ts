@@ -1,4 +1,4 @@
-import * as Wallets from "@app/wallets"
+import { Wallets } from "@app"
 import { GT } from "@graphql/index"
 import getUuidByString from "uuid-by-string"
 import IAccount from "../abstract/account"

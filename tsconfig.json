@@ -15,6 +15,7 @@
       "@config/*": ["src/config/*"],
       "@core/*": ["src/core/*"],
       "@app/*": ["src/app/*"],
+      "@app": ["src/app/index"],
       "@domain/*": ["src/domain/*"],
       "@services/*": ["src/services/*"],
 

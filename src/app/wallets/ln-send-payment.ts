@@ -1,21 +1,17 @@
-import { reimburseFee } from "@app/wallets/reimburse-fee"
+import { getCurrentPrice } from "@app/prices"
 import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
   checkWithdrawalLimits,
-} from "@app/wallets/check-limit-helpers"
-import { getCurrentPrice } from "@app/prices"
-import { getBalanceForWallet } from "@app/wallets"
+} from "./check-limit-helpers"
+import { reimburseFee } from "./reimburse-fee"
+import { getBalanceForWallet } from "./get-balance-for-wallet"
 
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
 
-import {
-  asyncRunInSpan,
-  SemanticAttributes,
-  addAttributesToCurrentSpan,
-} from "@services/tracing"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 import {
   decodeInvoice,
   LnPaymentPendingError,
@@ -51,53 +47,47 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
   userId,
   twoFAToken,
   logger,
-}: LnInvoicePaymentSendWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> =>
-  asyncRunInSpan(
-    "app.lnInvoicePaymentSendWithTwoFA",
-    {
-      [SemanticAttributes.CODE_FUNCTION]: "lnInvoicePaymentSendWithTwoFA",
-      "payment.initiation_method": PaymentInitiationMethod.Lightning,
-      "payment.wallet_id": walletId,
-      "payment.request": paymentRequest,
-    },
-    async () => {
-      const decodedInvoice = decodeInvoice(paymentRequest)
-      if (decodedInvoice instanceof Error) return decodedInvoice
+}: LnInvoicePaymentSendWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  addAttributesToCurrentSpan({
+    "payment.initiation_method": PaymentInitiationMethod.Lightning,
+  })
 
-      const { amount: lnInvoiceAmount } = decodedInvoice
-      if (!(lnInvoiceAmount && lnInvoiceAmount > 0)) {
-        return new LnPaymentRequestNonZeroAmountRequiredError()
-      }
+  const decodedInvoice = decodeInvoice(paymentRequest)
+  if (decodedInvoice instanceof Error) return decodedInvoice
 
-      const user = await UsersRepository().findById(userId)
-      if (user instanceof Error) return user
+  const { amount: lnInvoiceAmount } = decodedInvoice
+  if (!(lnInvoiceAmount && lnInvoiceAmount > 0)) {
+    return new LnPaymentRequestNonZeroAmountRequiredError()
+  }
 
-      const account = await AccountsRepository().findById(user.defaultAccountId)
-      if (account instanceof Error) return account
+  const user = await UsersRepository().findById(userId)
+  if (user instanceof Error) return user
 
-      const { twoFA } = user
-      const { username } = account
+  const account = await AccountsRepository().findById(user.defaultAccountId)
+  if (account instanceof Error) return account
 
-      const twoFACheck = twoFA?.secret
-        ? await checkAndVerifyTwoFA({
-            amount: lnInvoiceAmount,
-            twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
-            twoFASecret: twoFA.secret,
-            walletId,
-          })
-        : true
-      if (twoFACheck instanceof Error) return twoFACheck
+  const { twoFA } = user
+  const { username } = account
 
-      return lnSendPayment({
-        walletId,
-        username,
-        decodedInvoice,
+  const twoFACheck = twoFA?.secret
+    ? await checkAndVerifyTwoFA({
         amount: lnInvoiceAmount,
-        memo: memo || "",
-        logger,
+        twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
+        twoFASecret: twoFA.secret,
+        walletId,
       })
-    },
-  )
+    : true
+  if (twoFACheck instanceof Error) return twoFACheck
+
+  return lnSendPayment({
+    walletId,
+    username,
+    decodedInvoice,
+    amount: lnInvoiceAmount,
+    memo: memo || "",
+    logger,
+  })
+}
 
 export const payLnInvoiceByWalletId = async ({
   walletId,
@@ -121,42 +111,36 @@ export const lnInvoicePaymentSend = async ({
   walletId,
   userId,
   logger,
-}: LnInvoicePaymentSendArgs): Promise<PaymentSendStatus | ApplicationError> =>
-  asyncRunInSpan(
-    "app.lnInvoicePaymentSend",
-    {
-      [SemanticAttributes.CODE_FUNCTION]: "lnInvoicePaymentSend",
-      "payment.initiation_method": PaymentInitiationMethod.Lightning,
-      "payment.wallet_id": walletId,
-      "payment.request": paymentRequest,
-    },
-    async () => {
-      const decodedInvoice = decodeInvoice(paymentRequest)
-      if (decodedInvoice instanceof Error) return decodedInvoice
+}: LnInvoicePaymentSendArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  addAttributesToCurrentSpan({
+    "payment.initiation_method": PaymentInitiationMethod.Lightning,
+  })
 
-      const { amount: lnInvoiceAmount } = decodedInvoice
-      if (!(lnInvoiceAmount && lnInvoiceAmount > 0)) {
-        return new LnPaymentRequestNonZeroAmountRequiredError()
-      }
+  const decodedInvoice = decodeInvoice(paymentRequest)
+  if (decodedInvoice instanceof Error) return decodedInvoice
 
-      const user = await UsersRepository().findById(userId)
-      if (user instanceof Error) return user
+  const { amount: lnInvoiceAmount } = decodedInvoice
+  if (!(lnInvoiceAmount && lnInvoiceAmount > 0)) {
+    return new LnPaymentRequestNonZeroAmountRequiredError()
+  }
 
-      const account = await AccountsRepository().findById(user.defaultAccountId)
-      if (account instanceof Error) return account
+  const user = await UsersRepository().findById(userId)
+  if (user instanceof Error) return user
 
-      const { username } = account
+  const account = await AccountsRepository().findById(user.defaultAccountId)
+  if (account instanceof Error) return account
 
-      return lnSendPayment({
-        walletId,
-        username,
-        decodedInvoice,
-        amount: lnInvoiceAmount,
-        memo: memo || "",
-        logger,
-      })
-    },
-  )
+  const { username } = account
+
+  return lnSendPayment({
+    walletId,
+    username,
+    decodedInvoice,
+    amount: lnInvoiceAmount,
+    memo: memo || "",
+    logger,
+  })
+}
 
 export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
   paymentRequest,
@@ -168,58 +152,51 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
   logger,
 }: LnNoAmountInvoicePaymentSendWithTwoFAArgs): Promise<
   PaymentSendStatus | ApplicationError
-> =>
-  asyncRunInSpan(
-    "app.lnNoAmountInvoicePaymentSendWithTwoFA",
-    {
-      [SemanticAttributes.CODE_FUNCTION]: "lnNoAmountInvoicePaymentSendWithTwoFA",
-      "payment.initiation_method": PaymentInitiationMethod.Lightning,
-      "payment.wallet_id": walletId,
-      "payment.request": paymentRequest,
-      "payment.amount": amount,
-    },
-    async () => {
-      const decodedInvoice = decodeInvoice(paymentRequest)
-      if (decodedInvoice instanceof Error) return decodedInvoice
+> => {
+  addAttributesToCurrentSpan({
+    "payment.initiation_method": PaymentInitiationMethod.Lightning,
+  })
 
-      const { amount: lnInvoiceAmount } = decodedInvoice
-      if (lnInvoiceAmount && lnInvoiceAmount > 0) {
-        return new LnPaymentRequestZeroAmountRequiredError()
-      }
+  const decodedInvoice = decodeInvoice(paymentRequest)
+  if (decodedInvoice instanceof Error) return decodedInvoice
 
-      if (!(amount && amount > 0)) {
-        return new SatoshiAmountRequiredError()
-      }
+  const { amount: lnInvoiceAmount } = decodedInvoice
+  if (lnInvoiceAmount && lnInvoiceAmount > 0) {
+    return new LnPaymentRequestZeroAmountRequiredError()
+  }
 
-      const user = await UsersRepository().findById(userId)
-      if (user instanceof Error) return user
-      const { twoFA } = user
+  if (!(amount && amount > 0)) {
+    return new SatoshiAmountRequiredError()
+  }
 
-      const account = await AccountsRepository().findById(user.defaultAccountId)
-      if (account instanceof Error) return account
+  const user = await UsersRepository().findById(userId)
+  if (user instanceof Error) return user
+  const { twoFA } = user
 
-      const { username } = account
+  const account = await AccountsRepository().findById(user.defaultAccountId)
+  if (account instanceof Error) return account
 
-      const twoFACheck = twoFA?.secret
-        ? await checkAndVerifyTwoFA({
-            amount,
-            twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
-            twoFASecret: twoFA.secret,
-            walletId,
-          })
-        : true
-      if (twoFACheck instanceof Error) return twoFACheck
+  const { username } = account
 
-      return lnSendPayment({
-        walletId,
-        username,
-        decodedInvoice,
+  const twoFACheck = twoFA?.secret
+    ? await checkAndVerifyTwoFA({
         amount,
-        memo: memo || "",
-        logger,
+        twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
+        twoFASecret: twoFA.secret,
+        walletId,
       })
-    },
-  )
+    : true
+  if (twoFACheck instanceof Error) return twoFACheck
+
+  return lnSendPayment({
+    walletId,
+    username,
+    decodedInvoice,
+    amount,
+    memo: memo || "",
+    logger,
+  })
+}
 
 export const payLnNoAmountInvoiceByWalletId = async ({
   walletId,
@@ -246,47 +223,40 @@ export const lnNoAmountInvoicePaymentSend = async ({
   walletId,
   userId,
   logger,
-}: LnNoAmountInvoicePaymentSendArgs): Promise<PaymentSendStatus | ApplicationError> =>
-  asyncRunInSpan(
-    "app.lnNoAmountInvoicePaymentSend",
-    {
-      [SemanticAttributes.CODE_FUNCTION]: "lnNoAmountInvoicePaymentSend",
-      "payment.initiation_method": PaymentInitiationMethod.Lightning,
-      "payment.wallet_id": walletId,
-      "payment.request": paymentRequest,
-      "payment.amount": amount,
-    },
-    async () => {
-      const decodedInvoice = decodeInvoice(paymentRequest)
-      if (decodedInvoice instanceof Error) return decodedInvoice
+}: LnNoAmountInvoicePaymentSendArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  addAttributesToCurrentSpan({
+    "payment.initiation_method": PaymentInitiationMethod.Lightning,
+  })
 
-      const { amount: lnInvoiceAmount } = decodedInvoice
-      if (lnInvoiceAmount && lnInvoiceAmount > 0) {
-        return new LnPaymentRequestZeroAmountRequiredError()
-      }
+  const decodedInvoice = decodeInvoice(paymentRequest)
+  if (decodedInvoice instanceof Error) return decodedInvoice
 
-      if (!(amount && amount > 0)) {
-        return new SatoshiAmountRequiredError()
-      }
+  const { amount: lnInvoiceAmount } = decodedInvoice
+  if (lnInvoiceAmount && lnInvoiceAmount > 0) {
+    return new LnPaymentRequestZeroAmountRequiredError()
+  }
 
-      const user = await UsersRepository().findById(userId)
-      if (user instanceof Error) return user
+  if (!(amount && amount > 0)) {
+    return new SatoshiAmountRequiredError()
+  }
 
-      const account = await AccountsRepository().findById(user.defaultAccountId)
-      if (account instanceof Error) return account
+  const user = await UsersRepository().findById(userId)
+  if (user instanceof Error) return user
 
-      const { username } = account
+  const account = await AccountsRepository().findById(user.defaultAccountId)
+  if (account instanceof Error) return account
 
-      return lnSendPayment({
-        walletId,
-        username,
-        decodedInvoice,
-        amount,
-        memo: memo || "",
-        logger,
-      })
-    },
-  )
+  const { username } = account
+
+  return lnSendPayment({
+    walletId,
+    username,
+    decodedInvoice,
+    amount,
+    memo: memo || "",
+    logger,
+  })
+}
 
 const lnSendPayment = async ({
   walletId,

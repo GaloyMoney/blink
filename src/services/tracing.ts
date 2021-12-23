@@ -21,6 +21,7 @@ import {
   Span,
   SpanAttributes,
   SpanStatusCode,
+  SpanOptions,
 } from "@opentelemetry/api"
 import { tracingConfig } from "@config/app"
 
@@ -155,6 +156,7 @@ export const addAttributesToCurrentSpan = (attributes: SpanAttributes) => {
     }
   }
 }
+
 export const asyncRunInSpan = <F extends () => ReturnType<F>>(
   spanName: string,
   attributes: SpanAttributes,
@@ -169,6 +171,90 @@ export const asyncRunInSpan = <F extends () => ReturnType<F>>(
     return ret
   })
   return ret
+}
+
+const resolveFunctionSpanOptions = ({
+  namespace,
+  functionName,
+  functionArgs,
+  spanAttributes,
+}: {
+  namespace: string
+  functionName: string
+  functionArgs: Array<unknown>
+  spanAttributes: SpanAttributes
+}): SpanOptions => {
+  const attributes = {
+    [SemanticAttributes.CODE_FUNCTION]: functionName,
+    [SemanticAttributes.CODE_NAMESPACE]: namespace,
+    ...spanAttributes,
+  }
+  if (functionArgs && functionArgs.length > 0) {
+    const params =
+      typeof functionArgs[0] === "object" ? functionArgs[0] : { "0": functionArgs[0] }
+    for (const key in params) {
+      attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = params[key]
+    }
+  }
+  return { attributes }
+}
+
+export const wrapToRunInSpan = <A extends Array<unknown>, R>({
+  fn,
+  namespace,
+}: {
+  fn: (...args: A) => R
+  namespace: string
+}) => {
+  return (...args: A): R => {
+    const functionName = fn.name
+    const spanName = `${namespace}.${functionName}`
+    const spanOptions = resolveFunctionSpanOptions({
+      namespace,
+      functionName,
+      functionArgs: args,
+      spanAttributes: {},
+    })
+    const ret = tracer.startActiveSpan(spanName, spanOptions, (span) => {
+      const ret = fn(...args)
+      if (ret instanceof Error) {
+        span.recordException(ret)
+      }
+      span.end()
+      return ret
+    })
+    return ret
+  }
+}
+
+type PromiseReturnType<T> = T extends Promise<infer Return> ? Return : T
+
+export const wrapAsyncToRunInSpan = <A extends Array<unknown>, R>({
+  fn,
+  namespace,
+}: {
+  fn: (...args: A) => Promise<PromiseReturnType<R>>
+  namespace: string
+}) => {
+  return (...args: A): Promise<PromiseReturnType<R>> => {
+    const functionName = fn.name
+    const spanName = `${namespace}.${functionName}`
+    const spanOptions = resolveFunctionSpanOptions({
+      namespace,
+      functionName,
+      functionArgs: args,
+      spanAttributes: {},
+    })
+    const ret = tracer.startActiveSpan(spanName, spanOptions, async (span) => {
+      const ret = await fn(...args)
+      if (ret instanceof Error) {
+        span.recordException(ret)
+      }
+      span.end()
+      return ret
+    })
+    return ret
+  }
 }
 
 export const addAttributesToCurrentSpanAndPropagate = <F extends () => ReturnType<F>>(

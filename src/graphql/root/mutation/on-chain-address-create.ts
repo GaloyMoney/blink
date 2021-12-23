@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import * as Wallets from "@app/wallets"
+import { Wallets } from "@app"
 import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import { mapError } from "@graphql/error-map"

@@ -1,4 +1,4 @@
-import * as Wallets from "@app/wallets"
+import { Wallets } from "@app"
 import { getOnChainWalletConfig } from "@config/app"
 import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"

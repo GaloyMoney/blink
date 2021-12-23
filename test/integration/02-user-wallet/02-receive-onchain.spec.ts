@@ -16,13 +16,11 @@ import {
   bitcoindOutside,
   amountAfterFeeDeduction,
 } from "test/helpers"
-import * as Wallets from "@app/wallets"
+import { Wallets, Prices } from "@app"
 import { TxStatus } from "@domain/wallets"
 import { getBTCBalance } from "test/helpers/wallet"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
 import { NotificationType } from "@domain/notifications"
-
-import { getCurrentPrice } from "@app/prices"
 import { resetOnChainAddressWalletIdLimits } from "test/helpers/rate-limit"
 import { baseLogger } from "@services/logger"
 import { getFunderWalletId } from "@services/ledger/accounts"
@@ -225,7 +223,7 @@ describe("UserWallet - On chain", () => {
       NotificationType.OnchainReceiptPending,
     )
 
-    const satsPrice = await getCurrentPrice()
+    const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
     const usd = (btc2sat(amountBTC) * satsPrice).toFixed(2)
 
