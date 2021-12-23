@@ -1,5 +1,6 @@
 import { getBalanceForWalletId } from "@app/wallets"
 import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
+import { toSats } from "@domain/bitcoin"
 import { getBalancesDetail } from "@services/bitcoind"
 import {
   getBankOwnerWalletId,
@@ -114,10 +115,17 @@ const main = async () => {
       const role = roles[index]
       const account = await accountRoles[index]()
 
-      const balanceSats = getBalanceForWalletId(account)
-      if (balanceSats instanceof Error) throw balanceSats
+      let balance: Satoshis
 
-      walletRoles[role].set(balanceSats)
+      const balanceSats = await getBalanceForWalletId(account)
+      if (balanceSats instanceof Error) {
+        baseLogger.warn({ account, role, balanceSats }, "impossible to get balance")
+        balance = toSats(0)
+      } else {
+        balance = balanceSats
+      }
+
+      walletRoles[role].set(balance)
     }
 
     business_g.set(await User.count({ title: { $exists: true } }))
