@@ -13,7 +13,6 @@ export * from "./add-invoice-for-wallet"
 export * from "./get-lightning-fee"
 export * from "./ln-send-payment"
 export * from "./intraledger-send-payment"
-export * from "./check-limit-helpers"
 
 import { WalletsRepository } from "@services/mongoose"
 

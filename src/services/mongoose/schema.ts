@@ -4,9 +4,7 @@ import {
   getTwoFAConfig,
   getUserLimits,
   levels,
-  MS_PER_30_DAYs,
   MS_PER_DAY,
-  USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD,
 } from "@config/app"
 import { toLiabilitiesWalletId } from "@domain/ledger"
 import { UsernameRegex } from "@domain/users"
@@ -396,36 +394,8 @@ UserSchema.virtual("onchain_pubkey").get(function (this: typeof UserSchema) {
   return uniq(this.onchain.map((item) => item.pubkey))
 })
 
-// user is considered active if there has been one transaction of more than 1000 sats in the last 30 days
-// eslint-disable-next-line no-unused-vars
-UserSchema.virtual("userIsActive").get(async function (this: typeof UserSchema) {
-  const timestamp30DaysAgo = Date.now() - MS_PER_30_DAYs
-  const activenessThreshold = USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD
-
-  const volume = await User.getVolume({
-    after: timestamp30DaysAgo,
-    txnType: [{ type: { $exists: true } }],
-    accounts: this.walletPath,
-  })
-
-  return (
-    volume.outgoingSats > activenessThreshold || volume.incomingSats > activenessThreshold
-  )
-})
-
 UserSchema.statics.getUserByAddress = async function ({ address }) {
   return this.findOne({ "onchain.address": address }, { lastIPs: 0, lastConnection: 0 })
-}
-
-UserSchema.statics.getActiveUsers = async function (): Promise<Array<typeof User>> {
-  const users = await this.find({})
-  const activeUsers: Array<typeof User> = []
-  for (const user of users) {
-    if (await user.userIsActive) {
-      activeUsers.push(user)
-    }
-  }
-  return activeUsers
 }
 
 UserSchema.index({

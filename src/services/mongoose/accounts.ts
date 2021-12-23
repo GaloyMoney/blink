@@ -19,9 +19,20 @@ const projection = {
 }
 
 export const AccountsRepository = (): IAccountsRepository => {
+  const listUnlockedAccounts = async (): Promise<Account[] | RepositoryError> => {
+    try {
+      const result: UserType[] /* UserType actually not correct with {projection} */ =
+        await User.find({ status: AccountStatus.Active }, projection)
+      if (result.length === 0) return new CouldNotFindError()
+      return result.map((a) => translateToAccount(a))
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
     try {
-      const result: UserType /* UserType actually not correct with {projections} */ =
+      const result: UserType /* UserType actually not correct with {projection} */ =
         await User.findOne({ _id: accountId }, projection)
       if (!result) return new CouldNotFindError()
       return translateToAccount(result)
@@ -122,6 +133,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   }
 
   return {
+    listUnlockedAccounts,
     findById,
     listByUserId,
     findByWalletId,

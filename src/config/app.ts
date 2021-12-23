@@ -4,6 +4,7 @@ import merge from "lodash.merge"
 
 import { baseLogger } from "@services/logger"
 import { checkedToScanDepth } from "@domain/bitcoin/onchain"
+import { toSats } from "@domain/bitcoin"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)
@@ -29,7 +30,7 @@ export const BTC_NETWORK = btcNetwork as BtcNetwork
 
 export const MS_PER_HOUR = 60 * 60 * 1000
 export const MS_PER_DAY = 24 * MS_PER_HOUR
-export const MS_PER_30_DAYs = 30 * MS_PER_DAY
+export const MS_PER_30_DAYS = 30 * MS_PER_DAY
 
 export const SECS_PER_5_MINS = (60 * 5) as Seconds
 
@@ -81,8 +82,9 @@ export const ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE = getOnChainScanDepth(
   yamlConfig.onChainWallet.scanDepthChannelUpdate,
 )
 
-export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD =
-  yamlConfig.userActivenessMonthlyVolumeThreshold
+export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toSats(
+  yamlConfig.userActivenessMonthlyVolumeThreshold,
+)
 
 export const getGaloyInstanceName = (): string => yamlConfig.name
 

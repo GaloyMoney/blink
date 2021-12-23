@@ -7,6 +7,7 @@ import {
 import { NotificationsServiceError, NotificationType } from "@domain/notifications"
 import { User } from "@services/mongoose/schema"
 import pubsub from "@services/pubsub"
+import { sendNotification } from "./notification"
 import { transactionNotification } from "./payment"
 
 export const NotificationsService = (logger: Logger): INotificationsService => {
@@ -191,13 +192,59 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     }
   }
 
+  const sendBalance = async ({
+    balance,
+    ownerId,
+    price,
+  }: {
+    balance: Satoshis
+    ownerId: UserId
+    price: UsdPerSat | ApplicationError
+  }): Promise<void> => {
+    // Add commas to balancesats
+    const balanceSatsAsFormattedString = balance.toLocaleString("en")
+
+    let balanceUsdAsFormattedString: string, title: string
+    if (price instanceof Error) {
+      logger.warn({ price }, "impossible to fetch price for notification")
+
+      // TODO: i18n
+      title = `Your balance is ${balanceSatsAsFormattedString} sats)`
+    } else {
+      const usdValue = price * balance
+      balanceUsdAsFormattedString = usdValue.toLocaleString("en", {
+        maximumFractionDigits: 2,
+      })
+
+      // TODO: i18n
+      title = `Your balance is $${balanceUsdAsFormattedString} (${balanceSatsAsFormattedString} sats)`
+    }
+
+    logger.info(
+      { balanceSatsAsFormattedString, title, ownerId },
+      `sending balance notification to user`,
+    )
+
+    // FIXME:
+    const user = await User.find({ id: ownerId })
+    if (user instanceof Error) {
+      logger.warn({ user }, "impossible to fetch user to send transaction")
+    }
+
+    await sendNotification({
+      user,
+      title,
+      logger,
+    })
+  }
+
   return {
     onChainTransactionReceived,
     onChainTransactionReceivedPending,
     onChainTransactionPayment,
-
     priceUpdate,
     lnInvoicePaid,
     intraLedgerPaid,
+    sendBalance,
   }
 }

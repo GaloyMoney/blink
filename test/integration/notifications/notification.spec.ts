@@ -1,32 +1,43 @@
-import { ledger } from "@services/mongodb"
-
-import { User } from "@services/mongoose/schema"
-import { sendBalanceToUsers } from "@servers/daily-balance-notification"
 import { Prices } from "@app"
+import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
+import { toSats } from "@domain/bitcoin"
+import { sendBalanceToUsers } from "@servers/daily-balance-notification"
+import * as serviceLedger from "@services/ledger"
+import { ledger } from "@services/mongodb"
 
 jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
 
-let price
+let price, spy
 
 beforeAll(async () => {
   price = await Prices.getCurrentPrice()
   if (price instanceof Error) throw price
-  jest
-    .spyOn(User, "getVolume")
-    .mockImplementation(() => ({ outgoingSats: 1000, incomingSats: 1000 }))
+
+  const ledgerService = serviceLedger.LedgerService()
+
+  spy = jest.spyOn(serviceLedger, "LedgerService").mockImplementation(() => ({
+    ...ledgerService,
+    allTxVolumeSince: async () => ({
+      outgoingSats: toSats(1000),
+      incomingSats: toSats(1000),
+    }),
+  }))
 })
 
 afterAll(() => {
-  jest.restoreAllMocks()
+  spy.mockClear()
+  // jest.restoreAllMocks()
 })
 
 describe("notification", () => {
   describe("sendNotification", () => {
     it("sends daily balance to active users", async () => {
       await sendBalanceToUsers()
-      const numActiveUsers = (await User.getActiveUsers()).length
+      const users = await getRecentlyActiveAccounts()
+      if (users instanceof Error) throw users
+      const numActiveUsers = users.length
       expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
       for (const [call] of sendNotification.mock.calls) {
         const balance = await ledger.getWalletBalance(call.user.walletPath)
