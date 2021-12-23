@@ -320,8 +320,8 @@ const resolvers = {
               const status = await Wallets.lnInvoicePaymentSend({
                 paymentRequest: invoice,
                 memo,
-                walletId: wallet.user.walletId as WalletId,
-                userId: wallet.user.id as UserId,
+                senderWalletId: wallet.user.walletId as WalletId,
+                payerUserId: wallet.user.id as UserId,
                 logger,
               })
               if (status instanceof Error) throw mapError(status)
@@ -331,8 +331,8 @@ const resolvers = {
               paymentRequest: invoice,
               memo,
               amount,
-              walletId: wallet.user.walletId as WalletId,
-              userId: wallet.user.id as UserId,
+              senderWalletId: wallet.user.walletId as WalletId,
+              payerUserId: wallet.user.id as UserId,
               logger,
             })
             if (status instanceof Error) throw mapError(status)
@@ -340,12 +340,12 @@ const resolvers = {
           },
         ),
       payKeysendUsername: async ({ username, amount, memo }) => {
-        const status = await Wallets.intraledgerPaymentSend({
+        const status = await Wallets.intraledgerPaymentSendUsername({
           recipientUsername: username,
           memo,
           amount,
-          walletId: wallet.user.walletId,
-          userId: wallet.user.id,
+          senderWalletId: wallet.user.walletId,
+          payerUserId: wallet.user.id,
           logger,
         })
 

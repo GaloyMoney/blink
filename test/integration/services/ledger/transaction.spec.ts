@@ -249,8 +249,8 @@ describe("payment with lnd", () => {
 
 describe("on us payment via Ledger Service", () => {
   it("intraledger", async () => {
-    const payer = walletBTC
-    const payee = walletBTC2
+    const sender = walletBTC
+    const recipient = walletBTC2
 
     const price = await Prices.getCurrentPrice()
     expect(price).not.toBeInstanceOf(Error)
@@ -262,14 +262,14 @@ describe("on us payment via Ledger Service", () => {
     const usd = sats * price
     const usdFee = fee * price
 
-    const result = await LedgerService().addUsernameIntraledgerTxSend({
-      walletId: payer.walletId,
+    const result = await LedgerService().addWalletIdIntraledgerTxSend({
+      senderWalletId: sender.walletId,
       description: "desc",
       sats,
       fee: lnFee,
       usd,
       usdFee,
-      recipientWalletId: payee.walletId,
+      recipientWalletId: recipient.walletId,
       payerUsername: "payerUsername" as Username,
       recipientUsername: "recipientUsername" as Username,
       memoPayer: null,
@@ -281,8 +281,8 @@ describe("on us payment via Ledger Service", () => {
       if (tx instanceof Error) throw tx
       expect(tx.type).toBe(LedgerTransactionType.IntraLedger)
     }
-    await expectBalance({ account: payer.walletPath, currency: "BTC", balance: -1000 })
-    await expectBalance({ account: payee.walletPath, currency: "BTC", balance: 1000 })
+    await expectBalance({ account: sender.walletPath, currency: "BTC", balance: -1000 })
+    await expectBalance({ account: recipient.walletPath, currency: "BTC", balance: 1000 })
   })
 })
 

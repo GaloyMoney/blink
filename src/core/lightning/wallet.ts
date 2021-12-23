@@ -59,8 +59,8 @@ export class LightningUserWallet extends OnChainMixin(UserWallet) {
           const payResult = await Wallets.lnInvoicePaymentSend({
             paymentRequest: lnInvoice.paymentRequest,
             memo: null,
-            walletId: lightningFundingWallet.user.walletId,
-            userId: lightningFundingWallet.user.id,
+            senderWalletId: lightningFundingWallet.user.walletId,
+            payerUserId: lightningFundingWallet.user.id,
             logger: this.logger,
           })
           if (payResult instanceof Error) throw payResult

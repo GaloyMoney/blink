@@ -115,7 +115,7 @@ const UserSchema = new Schema<UserType>({
     enum: ["user", "editor", "dealer", "bankowner", "funder"],
     required: true,
     default: "user",
-    // TODO : enfore the fact there can be only one dealer
+    // TODO : enfore the fact there can be only one dealer/bankowner/funder
   },
 
   onchain: {

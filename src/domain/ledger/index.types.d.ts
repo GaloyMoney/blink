@@ -89,7 +89,7 @@ type AddLnTxSendArgs = LnTxArgs & {
 }
 
 type IntraledgerTxArgs = {
-  walletId: WalletId
+  senderWalletId: WalletId
   description: string
   sats: Satoshis
   recipientWalletId: WalletId
@@ -114,9 +114,7 @@ type AddOnChainIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
   sendAll: boolean
 }
 
-type AddUsernameIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
-  recipientUsername: Username
-}
+type addWalletIdIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs
 
 type AddLnFeeReeimbursementReceiveArgs = {
   walletId: WalletId
@@ -206,8 +204,8 @@ interface ILedgerService {
     args: AddOnChainIntraledgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  addUsernameIntraledgerTxSend(
-    args: AddUsernameIntraledgerTxSendArgs,
+  addWalletIdIntraledgerTxSend(
+    args: AddIntraLedgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
   settlePendingLnPayments(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>

@@ -31,11 +31,11 @@ const LnNoAmountInvoicePaymentSendMutation = GT.Field({
     }
 
     const status = await Wallets.payLnNoAmountInvoiceByWalletId({
-      walletId,
+      senderWalletId: walletId,
       paymentRequest,
       memo,
       amount,
-      userId: user.id as UserId,
+      payerUserId: user.id as UserId,
       logger,
     })
 

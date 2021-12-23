@@ -39,6 +39,7 @@ type GetOnChainFeeArgs = {
   targetConfirmations: TargetConfirmations
 }
 
+// FIXME: only use for v1
 type GetOnChainFeeByWalletIdArgs = {
   walletId: WalletId
   amount: number
@@ -47,31 +48,31 @@ type GetOnChainFeeByWalletIdArgs = {
 }
 
 type PaymentSendArgs = {
+  senderWalletId: WalletId
   memo: string | null
-  walletId: WalletId
-  userId: UserId
   logger: Logger
 }
 
 type PayLnInvoiceByWalletIdArgs = {
-  walletId: WalletId
+  senderWalletId: WalletId
   paymentRequest: EncodedPaymentRequest
   memo: string | null
-  userId: UserId
+  payerUserId: UserId
   logger: Logger
 }
 
 type payLnNoAmountInvoiceByWalletIdArgs = {
-  walletId: WalletId
+  senderWalletId: WalletId
   paymentRequest: EncodedPaymentRequest
   amount: Satoshis
   memo: string | null
-  userId: UserId
+  payerUserId: UserId
   logger: Logger
 }
 
 type LnInvoicePaymentSendArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
+  payerUserId: UserId
 }
 type LnInvoicePaymentSendWithTwoFAArgs = LnInvoicePaymentSendArgs & {
   twoFAToken: TwoFAToken
@@ -80,15 +81,23 @@ type LnInvoicePaymentSendWithTwoFAArgs = LnInvoicePaymentSendArgs & {
 type LnNoAmountInvoicePaymentSendArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
   amount: Satoshis
+  payerUserId: UserId
 }
 type LnNoAmountInvoicePaymentSendWithTwoFAArgs = LnNoAmountInvoicePaymentSendArgs & {
   twoFAToken: TwoFAToken
 }
 
-type IntraLedgerPaymentSendArgs = PaymentSendArgs & {
+type IntraLedgerPaymentSendUsernameArgs = PaymentSendArgs & {
+  payerUserId: UserId
   recipientUsername: Username
   amount: Satoshis
 }
-type IntraLedgerPaymentSendWithTwoFAArgs = IntraLedgerPaymentSendArgs & {
+
+type IntraLedgerPaymentSendWalletIdArgs = PaymentSendArgs & {
+  recipientWalletId: WalletId
+  amount: Satoshis
+}
+
+type IntraLedgerPaymentSendWithTwoFAArgs = IntraLedgerPaymentSendUsernameArgs & {
   twoFAToken: TwoFAToken
 }

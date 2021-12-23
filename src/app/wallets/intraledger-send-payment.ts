@@ -1,7 +1,8 @@
+import { getAccount } from "@app/accounts"
 import { getCurrentPrice } from "@app/prices"
+import { getUser } from "@app/users"
 import { addNewContact } from "@app/users/add-new-contact"
-import { getBalanceForWallet } from "./get-balance-for-wallet"
-import { checkAndVerifyTwoFA, checkIntraledgerLimits } from "./check-limit-helpers"
+import { getWallet } from "@app/wallets"
 import { toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
@@ -12,37 +13,33 @@ import {
 } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { LockService } from "@services/lock"
-import {
-  AccountsRepository,
-  UsersRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+import { UsersRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
+import { checkAndVerifyTwoFA, checkIntraledgerLimits } from "./check-limit-helpers"
+import { getBalanceForWallet } from "./get-balance-for-wallet"
 
-export const intraledgerPaymentSend = async ({
+export const intraledgerPaymentSendUsername = async ({
   recipientUsername,
   amount,
   memo,
-  walletId,
-  userId,
+  senderWalletId,
+  payerUserId,
   logger,
-}: IntraLedgerPaymentSendArgs): Promise<PaymentSendStatus | ApplicationError> => {
+}: IntraLedgerPaymentSendUsernameArgs): Promise<PaymentSendStatus | ApplicationError> => {
   if (!(amount && amount > 0)) {
     return new SatoshiAmountRequiredError()
   }
 
-  const user = await UsersRepository().findById(userId)
+  const user = await getUser(payerUserId)
   if (user instanceof Error) return user
 
-  const account = await AccountsRepository().findById(user.defaultAccountId)
+  const account = await getAccount(user.defaultAccountId)
   if (account instanceof Error) return account
 
-  const { username } = account
-
-  return lnSendPayment({
-    userId,
-    walletId,
-    username,
+  return intraLedgerSendPaymentUsername({
+    payerUserId,
+    senderWalletId,
+    payerUsername: account.username,
     recipientUsername,
     amount,
     memo: memo || "",
@@ -50,13 +47,41 @@ export const intraledgerPaymentSend = async ({
   })
 }
 
-export const intraledgerSendPaymentWithTwoFA = async ({
-  twoFAToken,
-  recipientUsername,
+export const intraledgerPaymentSendWalletId = async ({
+  recipientWalletId,
   amount,
   memo,
-  walletId,
-  userId,
+  senderWalletId,
+  logger,
+}: IntraLedgerPaymentSendWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  if (!(amount && amount > 0)) {
+    return new SatoshiAmountRequiredError()
+  }
+
+  if (senderWalletId === recipientWalletId) return new SelfPaymentError()
+
+  const paymentSendStatus = await executePaymentViaIntraledger({
+    senderWalletId,
+    recipientUsername: null,
+    recipientWalletId,
+    amount,
+    memoPayer: memo || "",
+    payerUsername: null,
+    logger,
+  })
+
+  return paymentSendStatus
+}
+
+// FIXME: unused currently
+export const intraledgerSendPaymentUsernameWithTwoFA = async ({
+  twoFAToken,
+  recipientUsername,
+  // payerUsername,
+  amount,
+  memo,
+  senderWalletId,
+  payerUserId,
   logger,
 }: IntraLedgerPaymentSendWithTwoFAArgs): Promise<
   PaymentSendStatus | ApplicationError
@@ -65,29 +90,27 @@ export const intraledgerSendPaymentWithTwoFA = async ({
     return new SatoshiAmountRequiredError()
   }
 
-  const user = await UsersRepository().findById(userId)
+  const user = await getUser(payerUserId)
   if (user instanceof Error) return user
   const { twoFA } = user
-
-  const account = await AccountsRepository().findById(user.defaultAccountId)
-  if (account instanceof Error) return account
-
-  const { username } = account
 
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
         amount,
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
-        walletId,
+        walletId: senderWalletId,
       })
     : true
   if (twoFACheck instanceof Error) return twoFACheck
 
-  return lnSendPayment({
-    userId,
-    walletId,
-    username,
+  const account = await getAccount(user.defaultAccountId)
+  if (account instanceof Error) return account
+
+  return intraLedgerSendPaymentUsername({
+    payerUserId,
+    senderWalletId,
+    payerUsername: account.username,
     recipientUsername,
     amount,
     memo: memo || "",
@@ -95,47 +118,64 @@ export const intraledgerSendPaymentWithTwoFA = async ({
   })
 }
 
-const lnSendPayment = async ({
-  userId,
-  walletId,
-  username,
+const intraLedgerSendPaymentUsername = async ({
+  payerUserId,
+  senderWalletId,
+  payerUsername,
   recipientUsername,
   amount,
   memo,
   logger,
 }: {
-  userId: UserId
-  walletId: WalletId
-  username: Username
+  payerUserId: UserId
+  senderWalletId: WalletId
+  payerUsername: Username
   recipientUsername: Username
   amount: Satoshis
   memo: string
   logger: Logger
 }) => {
+  const recipientUser = await UsersRepository().findByUsername(recipientUsername)
+  if (recipientUser instanceof Error) return recipientUser
+  if (recipientUser.id === payerUserId) return new SelfPaymentError()
+
+  const recipientAccount = await getAccount(recipientUser.defaultAccountId)
+  if (recipientAccount instanceof Error) return recipientAccount
+
+  // TODO(nicoals): is that condition necessary? I think we want to take the position
+  // that an account have, by definition, a wallet present at creation time
+  if (!(recipientAccount.walletIds && recipientAccount.walletIds.length > 0)) {
+    return new NoWalletExistsForUserError(recipientUsername)
+  }
+
+  const recipientWalletId = recipientAccount.defaultWalletId
+  const recipientWallet = await getWallet(recipientWalletId)
+  if (recipientWallet instanceof Error) return recipientWallet
+
   const paymentSendStatus = await executePaymentViaIntraledger({
-    userId,
+    senderWalletId,
     recipientUsername,
+    recipientWalletId,
     amount,
     memoPayer: memo || "",
-    walletId,
-    username,
+    payerUsername,
     logger,
   })
   if (paymentSendStatus instanceof Error) return paymentSendStatus
 
   const addContactToPayerResult = await addNewContact({
-    userId,
+    userId: payerUserId,
     contactUsername: recipientUsername,
   })
   if (addContactToPayerResult instanceof Error) return addContactToPayerResult
 
-  if (username) {
+  if (payerUsername) {
     const recipientUser = await UsersRepository().findByUsername(recipientUsername)
     if (recipientUser instanceof Error) return recipientUser
 
     const addContactToPayeeResult = await addNewContact({
       userId: recipientUser.id,
-      contactUsername: username,
+      contactUsername: payerUsername,
     })
     if (addContactToPayeeResult instanceof Error) return addContactToPayeeResult
   }
@@ -144,49 +184,30 @@ const lnSendPayment = async ({
 }
 
 const executePaymentViaIntraledger = async ({
-  userId,
+  senderWalletId,
+  payerUsername,
   recipientUsername,
+  recipientWalletId,
   amount,
   memoPayer,
-  walletId,
-  username,
   logger,
 }: {
-  userId: UserId
-  recipientUsername: Username
+  senderWalletId: WalletId
+  payerUsername: Username | null
+  recipientUsername: Username | null
+  recipientWalletId: WalletId
   amount: Satoshis
   memoPayer: string
-  walletId: WalletId
-  username: Username
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
+  if (senderWalletId === recipientWalletId) return new SelfPaymentError()
+
   const intraledgerLimitCheck = await checkIntraledgerLimits({
     amount,
-    walletId,
+    walletId: senderWalletId,
   })
 
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
-
-  const recipientUser = await UsersRepository().findByUsername(recipientUsername)
-  if (recipientUser instanceof Error) return recipientUser
-  if (recipientUser.id === userId) return new SelfPaymentError()
-  // FIXME: selfPayment should be at the walletId level, no longer at the UserId
-  // but this is not a bloquer until we have multiple wallets per account
-
-  const recipientAccount = await AccountsRepository().findById(
-    recipientUser.defaultAccountId,
-  )
-
-  if (recipientAccount instanceof Error) return recipientAccount
-  if (!(recipientAccount.walletIds && recipientAccount.walletIds.length > 0)) {
-    return new NoWalletExistsForUserError(recipientUsername)
-  }
-  const recipientWalletId = recipientAccount.walletIds[0]
-
-  const payerWallet = await WalletsRepository().findById(walletId)
-  if (payerWallet instanceof Error) return payerWallet
-  const recipientWallet = await WalletsRepository().findById(recipientWalletId)
-  if (recipientWallet instanceof Error) return recipientWallet
 
   const price = await getCurrentPrice()
   if (price instanceof Error) return price
@@ -195,39 +216,42 @@ const executePaymentViaIntraledger = async ({
   const usd = sats * price
   const usdFee = lnFee * price
 
-  return LockService().lockWalletId({ walletId, logger }, async (lock) => {
-    const balance = await getBalanceForWallet({ walletId, logger })
-    if (balance instanceof Error) return balance
-    if (balance < sats) {
-      return new InsufficientBalanceError(
-        `Payment amount '${sats}' exceeds balance '${balance}'`,
+  return LockService().lockWalletId(
+    { walletId: senderWalletId, logger },
+    async (lock) => {
+      const balance = await getBalanceForWallet({ walletId: senderWalletId, logger })
+      if (balance instanceof Error) return balance
+      if (balance < sats) {
+        return new InsufficientBalanceError(
+          `Payment amount '${sats}' exceeds balance '${balance}'`,
+        )
+      }
+
+      const journal = await LockService().extendLock({ logger, lock }, async () =>
+        LedgerService().addWalletIdIntraledgerTxSend({
+          senderWalletId,
+          description: "",
+          sats,
+          fee: lnFee,
+          usd,
+          usdFee,
+          recipientWalletId,
+          payerUsername,
+          recipientUsername,
+          memoPayer,
+        }),
       )
-    }
+      if (journal instanceof Error) return journal
 
-    const journal = await LockService().extendLock({ logger, lock }, async () =>
-      LedgerService().addUsernameIntraledgerTxSend({
-        walletId,
-        description: "",
-        sats,
-        fee: lnFee,
-        usd,
-        usdFee,
+      const notificationsService = NotificationsService(logger)
+      notificationsService.intraLedgerPaid({
+        senderWalletId,
         recipientWalletId,
-        payerUsername: username,
-        recipientUsername,
-        memoPayer,
-      }),
-    )
-    if (journal instanceof Error) return journal
+        amount: sats,
+        usdPerSat: price,
+      })
 
-    const notificationsService = NotificationsService(logger)
-    notificationsService.intraLedgerPaid({
-      payerWalletId: payerWallet.id,
-      recipientWalletId: recipientWallet.id,
-      amount: sats,
-      usdPerSat: price,
-    })
-
-    return PaymentSendStatus.Success
-  })
+      return PaymentSendStatus.Success
+    },
+  )
 }
