@@ -22,7 +22,7 @@ type LedgerJournal = {
 // Differentiate fields depending on what 'type' we have (see domain/wallets/index.types.d.ts)
 type LedgerTransaction = {
   readonly id: LedgerTransactionId
-  readonly walletId: WalletId | null // FIXME FIXME create a subclass so that this field is always set for liabilities wallets
+  readonly walletId: WalletId | null // FIXME create a subclass so that this field is always set for liabilities wallets
   readonly type: LedgerTransactionType
   readonly debit: Satoshis
   readonly credit: Satoshis
