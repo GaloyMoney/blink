@@ -30,10 +30,15 @@ import {
 } from "@domain/errors"
 import { TwoFAError } from "@domain/twoFA"
 import { LedgerService } from "@services/ledger"
-import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
+import {
+  getBTCBalance,
+  getRemainingTwoFALimit,
+  getRemainingWithdrawalLimit,
+} from "test/helpers/wallet"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { PaymentInitiationMethod } from "@domain/wallets"
+import { AccountLevel } from "@domain/accounts"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -772,6 +777,13 @@ describe("UserWallet - Lightning Pay", () => {
       it("don't settle hodl invoice", async () => {
         const { id } = createInvoiceHash()
 
+        const initialWithdrawalLimit = await getRemainingWithdrawalLimit({
+          walletId: userWallet1.user.walletId,
+          accountLevel: AccountLevel.One,
+        })
+        if (initialWithdrawalLimit instanceof Error) throw initialWithdrawalLimit
+        expect(initialWithdrawalLimit).toBeGreaterThan(0)
+
         const { request } = await createHodlInvoice({
           id,
           lnd: lndOutside1,
@@ -812,6 +824,14 @@ describe("UserWallet - Lightning Pay", () => {
 
         const finalBalance = await getBTCBalance(userWallet1.user.walletId)
         expect(finalBalance).toBe(initBalance1)
+
+        const finalWithdrawalLimit = await getRemainingWithdrawalLimit({
+          walletId: userWallet1.user.walletId,
+          accountLevel: AccountLevel.One,
+        })
+        if (finalWithdrawalLimit instanceof Error) throw finalWithdrawalLimit
+
+        expect(finalWithdrawalLimit).toBe(initialWithdrawalLimit)
       }, 60000)
     })
 

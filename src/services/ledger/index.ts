@@ -227,6 +227,8 @@ export const LedgerService = (): ILedgerService => {
         {
           $match: {
             accounts: liabilitiesWalletId,
+            voided: false, // avoid to sum voided transactions to outgoingSats
+            _original_journal: { $exists: false }, // avoid to sum voided transactions to incomingSats
             $or: txnTypesObj,
             $and: [{ timestamp: { $gte: timestamp } }],
           },

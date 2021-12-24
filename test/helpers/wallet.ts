@@ -39,7 +39,7 @@ export const getRemainingWithdrawalLimit = async ({
   walletId: WalletId
   accountLevel: AccountLevel
 }): Promise<Satoshis | ApplicationError> => {
-  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1Day = new Date(jest.getRealSystemTime() - MS_PER_DAY)
   const walletVolume = await LedgerService().externalPaymentVolumeSince({
     walletId,
     timestamp: timestamp1Day,
@@ -52,7 +52,7 @@ export const getRemainingWithdrawalLimit = async ({
 }
 
 export const getRemainingTwoFALimit = async (
-  walletId,
+  walletId: WalletId,
 ): Promise<Satoshis | ApplicationError> => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await LedgerService().externalPaymentVolumeSince({
