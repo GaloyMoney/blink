@@ -1,8 +1,5 @@
-declare const twoFASecretSymbol: unique symbol
-type TwoFASecret = string & { [twoFASecretSymbol]: never }
-
-declare const twoFATokenSymbol: unique symbol
-type TwoFAToken = string & { [twoFATokenSymbol]: never }
+type TwoFASecret = string & Unique
+type TwoFAToken = string & Unique
 
 type TwoFAError = import("./errors").TwoFAError
 

@@ -1,28 +1,13 @@
-declare const usdPerSatSymbol: unique symbol
-type UsdPerSat = number & { [usdPerSatSymbol]: never }
+type Unique = { readonly brand: unique symbol }
 
-declare const userIdSymbol: unique symbol
-type UserId = string & { [userIdSymbol]: never }
-
-declare const usernameSymbol: unique symbol
-type Username = string & { [usernameSymbol]: never }
-
-declare const pubkeySymbol: unique symbol
-type Pubkey = string & { [pubkeySymbol]: never }
-
-declare const walletIdSymbol: unique symbol
-type WalletId = string & { [walletIdSymbol]: never }
-
-declare const accountIdSymbol: unique symbol
-type AccountId = string & { [accountIdSymbol]: never }
-
-declare const secondsSymbol: unique symbol
-type Seconds = number & { [secondsSymbol]: never }
-
-declare const milliSecondsSymbol: unique symbol
-type MilliSeconds = number & { [secondsSymbol]: never }
-
-declare const jwtTokenSymbol: unique symbol
-type JwtToken = string & { [jwtTokenSymbol]: never }
+type UsdPerSat = number & Unique
+type UserId = string & Unique
+type Username = string & Unique
+type Pubkey = string & Unique
+type WalletId = string & Unique
+type AccountId = string & Unique
+type Seconds = number & Unique
+type MilliSeconds = number & Unique
+type JwtToken = string & Unique
 
 type TxDenominationCurrency = "USD" | "BTC"

@@ -1,20 +1,12 @@
-declare const phoneNumberSymbol: unique symbol
-type PhoneNumber = string & { [phoneNumberSymbol]: never }
-
-declare const phoneCodeSymbol: unique symbol
-type PhoneCode = string & { [phoneCodeSymbol]: never }
+type PhoneNumber = string & Unique
+type PhoneCode = string & Unique
 
 type UserLanguage =
   typeof import("./index").UserLanguage[keyof typeof import("./index").UserLanguage]
 
-declare const deviceTokenSymbol: unique symbol
-type DeviceToken = string & { [deviceTokenSymbol]: never }
-
-declare const contactAliasSymbol: unique symbol
-type ContactAlias = string & { [contactAliasSymbol]: never }
-
-declare const quizQuestionIdSymbol: unique symbol
-type QuizQuestionId = string & { [quizQuestionIdSymbol]: never }
+type DeviceToken = string & Unique
+type ContactAlias = string & Unique
+type QuizQuestionId = string & Unique
 
 type UserContact = {
   readonly id: Username

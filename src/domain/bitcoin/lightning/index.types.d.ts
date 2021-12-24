@@ -3,23 +3,12 @@ type LnInvoiceDecodeError = import("./errors").LnInvoiceDecodeError
 type LightningServiceError = import("./errors").LightningServiceError
 type RouteNotFoundError = import("./errors").RouteNotFoundError
 
-declare const invoiceExpirationSymbol: unique symbol
-type InvoiceExpiration = Date & { [invoiceExpirationSymbol]: never }
-
-declare const encodedPaymentRequestSymbol: unique symbol
-type EncodedPaymentRequest = string & { [encodedPaymentRequestSymbol]: never }
-
-declare const paymentHashSymbol: unique symbol
-type PaymentHash = string & { [paymentHashSymbol]: never }
-
-declare const paymentSecretSymbol: unique symbol
-type PaymentSecret = string & { [paymentSecretSymbol]: never }
-
-declare const featureBitSymbol: unique symbol
-type FeatureBit = number & { [featureBitSymbol]: never }
-
-declare const featureTypeSymbol: unique symbol
-type FeatureType = string & { [featureTypeSymbol]: never }
+type InvoiceExpiration = Date & Unique
+type EncodedPaymentRequest = string & Unique
+type PaymentHash = string & Unique
+type PaymentSecret = string & Unique
+type FeatureBit = number & Unique
+type FeatureType = string & Unique
 
 type PaymentStatus =
   typeof import("./index").PaymentStatus[keyof typeof import("./index").PaymentStatus]

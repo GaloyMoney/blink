@@ -1,8 +1,7 @@
 type IpFetcherError = import("./errors").IpFetcherError
 type IpFetcherServiceError = import("./errors").IpFetcherServiceError
 
-declare const ipAddressSymbol: unique symbol
-type IpAddress = string & { [ipAddressSymbol]: never }
+type IpAddress = string & Unique
 
 type IPInfo = {
   provider: string

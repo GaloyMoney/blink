@@ -1,7 +1,6 @@
 type AccountError = import("./errors").AccountError
 
-declare const currencyRatioSymbol: unique symbol
-type CurrencyRatio = number & { [currencyRatioSymbol]: never }
+type CurrencyRatio = number & Unique
 
 type AccountLevel =
   typeof import("./index").AccountLevel[keyof typeof import("./index").AccountLevel]
@@ -27,8 +26,7 @@ type Currencies = {
   ratio: CurrencyRatio
 }[]
 
-declare const businessMapTitleSymbol: unique symbol
-type BusinessMapTitle = string & { [businessMapTitleSymbol]: never }
+type BusinessMapTitle = string & Unique
 
 type Coordinates = {
   longitude: number

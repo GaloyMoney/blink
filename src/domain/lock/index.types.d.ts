@@ -2,8 +2,7 @@ type LockServiceError = import("./errors").LockServiceError
 
 type RedLock = import("redlock").Lock
 
-declare const distributedLockSymbol: unique symbol
-type DistributedLock = RedLock & { [distributedLockSymbol]: never }
+type DistributedLock = RedLock & Unique
 
 interface ILockService {
   lockWalletId<Res>(

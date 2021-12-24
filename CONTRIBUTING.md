@@ -24,11 +24,8 @@ These are unique types that are alternatives to generically typing things as Typ
 For example, an onchain address and a lightning network payment request are both strings, but they aren't interchangeable as a data type. Instead of using `string` type for these types we would define as follows using a "unique symbol":
 
 ```
-declare const encodedPaymentRequestSymbol: unique symbol
-type EncodedPaymentRequest = string & { [encodedPaymentRequestSymbol]: never }
-
-declare const onChainAddressSymbol: unique symbol
-type OnChainAddress = string & { [onChainAddressSymbol]: never }
+type EncodedPaymentRequest = string & Unique
+type OnChainAddress = string & Unique
 
 ```
 

@@ -1,5 +1,4 @@
-declare const hashedApiKeySymbol: unique symbol
-type HashedKey = string & { [hashedApiKeySymbol]: never }
+type HashedKey = string & Unique
 
 type ApiKey = {
   label: string

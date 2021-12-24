@@ -11,8 +11,7 @@ type Route = { roundedUpFee: Satoshis }
 
 type CachedRoute = { pubkey: Pubkey; route: RawRoute }
 
-declare const cachedRouteLookupKeySymbol: unique symbol
-type CachedRouteLookupKey = string & { [cachedRouteLookupKeySymbol]: never }
+type CachedRouteLookupKey = string & Unique
 
 type CachedRouteLookupKeyFactory = {
   create(args: {

@@ -124,11 +124,8 @@ type WalletTransactionHistoryWithPending = {
   readonly transactions: WalletTransaction[]
 }
 
-declare const depositFeeRatioSymbol: unique symbol
-type DepositFeeRatio = number & { [depositFeeRatioSymbol]: never }
-
-declare const withdrawFeeSymbol: unique symbol
-type WithdrawFee = number & { [withdrawFeeSymbol]: never }
+type DepositFeeRatio = number & Unique
+type WithdrawFee = number & Unique
 
 type Wallet = {
   readonly id: WalletId
