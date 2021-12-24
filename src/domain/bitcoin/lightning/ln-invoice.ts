@@ -28,19 +28,17 @@ export const decodeInvoice = (
     ? decodedInvoice.cltv_delta
     : null
 
-  const routeHints: Hop[][] = []
+  let routeHints: Hop[][] = []
   if (decodedInvoice.routes) {
-    decodedInvoice.routes.forEach((rawRoute) => {
-      const route: Hop[] = []
-      route.push({
-        baseFeeMTokens: rawRoute.base_fee_mtokens,
-        channel: rawRoute.channel,
-        cltvDelta: rawRoute.cltv_delta,
-        feeRate: rawRoute.fee_rate,
-        nodePubkey: rawRoute.public_key as Pubkey,
-      })
-      routeHints.push(route)
-    })
+    routeHints = decodedInvoice.routes.map((rawRoute) =>
+      rawRoute.map((route) => ({
+        baseFeeMTokens: route.base_fee_mtokens,
+        channel: route.channel,
+        cltvDelta: route.cltv_delta,
+        feeRate: route.fee_rate,
+        nodePubkey: route.public_key as Pubkey,
+      })),
+    )
   }
 
   return {
