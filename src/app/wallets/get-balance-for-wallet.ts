@@ -11,7 +11,12 @@ export const getBalanceForWallet = async ({
   lock?: DistributedLock
   logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
-  const [, updatePaymentsResult] = await Promise.all([
+  // FIXME(nicolas, arvin): lnd take some time long to respond for updatePendingInvoice
+  // so removing the await will enable a balance that will return a lot more quickly
+  // the real fix for that is to implement https://github.com/GaloyMoney/galoy/issues/604
+  // so that there is no longer a dependency between getBalanceForWallet and updatePendingInvoices
+  // const [, updatePaymentsResult] =
+  Promise.all([
     updatePendingInvoices({
       walletId,
       lock,
@@ -23,7 +28,7 @@ export const getBalanceForWallet = async ({
       logger,
     }),
   ])
-  if (updatePaymentsResult instanceof Error) throw updatePaymentsResult
+  // if (updatePaymentsResult instanceof Error) throw updatePaymentsResult
 
   return getBalanceForWalletId(walletId)
 }
