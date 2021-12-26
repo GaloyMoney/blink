@@ -1,8 +1,8 @@
-import { toSeconds } from "@domain/primitives"
+import { SECS_PER_2_MINS, SECS_PER_DAY } from "@config/app"
 
 const DEFAULT_EXPIRATIONS = {
-  BTC: { delay: toSeconds(60 * 60 * 24) },
-  USD: { delay: toSeconds(2 * 60) },
+  BTC: { delay: SECS_PER_DAY },
+  USD: { delay: SECS_PER_2_MINS },
 }
 
 export const invoiceExpirationForCurrency = (
