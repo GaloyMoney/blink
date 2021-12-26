@@ -725,7 +725,7 @@ type User {
   """
   Optional immutable user friendly identifier.
   """
-  username: Username
+  username: Username @deprecated(reason: "will be moved to @Handle in Account and Wallet")
 }
 
 type UserContact {
