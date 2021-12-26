@@ -4,15 +4,9 @@ type LedgerServiceError = import("./errors").LedgerServiceError
 declare const liabilitiesWalletId: unique symbol
 type LiabilitiesWalletId = string & { [liabilitiesWalletId]: never }
 
-declare const ledgerTransactionIdSymbol: unique symbol
-type LedgerTransactionId = string & { [ledgerTransactionIdSymbol]: never }
-
-declare const ledgerJournalIdSymbol: unique symbol
-type LedgerJournalId = string & { [ledgerJournalIdSymbol]: never }
-
-declare const ledgerAccountIdSymbol: unique symbol
-type LedgerAccountId = string & { [ledgerAccountIdSymbol]: never }
-
+type LedgerTransactionId = string & { readonly brand: unique symbol }
+type LedgerJournalId = string & { readonly brand: unique symbol }
+type LedgerAccountId = string & { readonly brand: unique symbol }
 type LedgerTransactionType =
   typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
 
