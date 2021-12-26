@@ -8,6 +8,7 @@ export * from "./get-api-keys-for-account"
 export * from "./update-account-level"
 export * from "./update-account-status"
 export * from "./update-business-map-info"
+export * from "./send-balance-to-accounts"
 
 const accounts = AccountsRepository()
 

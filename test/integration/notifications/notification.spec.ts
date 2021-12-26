@@ -1,6 +1,6 @@
 import { Prices } from "@app"
 import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
-import { sendBalanceToAccounts } from "@app/accounts/send-balance-to-users"
+import { sendBalanceToAccounts } from "@app/accounts/send-balance-to-accounts"
 import { toSats } from "@domain/bitcoin"
 import * as serviceLedger from "@services/ledger"
 import { baseLogger } from "@services/logger"

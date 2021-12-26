@@ -1,11 +1,11 @@
-import { sendBalanceToAccounts } from "@app/accounts/send-balance-to-users"
+import { Accounts } from "@app"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 
 const main = async () => {
   const logger = baseLogger.child({ module: "dailyBalanceNotification" })
   const mongoose = await setupMongoConnection()
-  await sendBalanceToAccounts(logger)
+  await Accounts.sendBalanceToAccounts(logger)
 
   await mongoose.connection.close()
 }
