@@ -7,5 +7,5 @@ type GraphQLContext = {
   user: User | null
   geetest: GeetestType
   account: Account | null
-  ip: string | undefined
+  ip: IpAddress | undefined
 }
