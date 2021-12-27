@@ -2,18 +2,10 @@ type OnChainError = import("./errors").OnChainError
 type TransactionDecodeError = import("./errors").TransactionDecodeError
 type OnChainServiceError = import("./errors").OnChainServiceError
 
-declare const onChainAddressSymbol: unique symbol
-type OnChainAddress = string & { [onChainAddressSymbol]: never }
-
-declare const blockIdSymbol: unique symbol
-type BlockId = string & { [blockIdSymbol]: never }
-
-declare const onChainTxHashSymbol: unique symbol
-type OnChainTxHash = string & { [onChainTxHashSymbol]: never }
-
-declare const ScanDepthSymbol: unique symbol
-type ScanDepth = number & { [ScanDepthSymbol]: never }
-
+type OnChainAddress = string & { readonly brand: unique symbol }
+type BlockId = string & { readonly brand: unique symbol }
+type OnChainTxHash = string & { readonly brand: unique symbol }
+type ScanDepth = number & { readonly brand: unique symbol }
 type TxOut = {
   sats: Satoshis
   // OP_RETURN utxos don't have valid addresses associated with them
