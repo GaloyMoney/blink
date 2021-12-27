@@ -30,6 +30,8 @@ export const addEarn = async ({
   const balanceFunder = await getBalanceForWalletId(funderWalletId)
   if (balanceFunder instanceof Error) return balanceFunder
 
+  // this check is redundant but we are using it to populate a more precise error
+  // instead of InsuffisantBalanceError, we get RewardInsufficientBalanceError
   if (amount > balanceFunder) {
     return new RewardInsufficientBalanceError()
   }
