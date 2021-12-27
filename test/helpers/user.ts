@@ -31,7 +31,10 @@ export const getAndCreateUserWallet = async (index: number) => {
   }
 
   if (entry.title) {
-    await User.findOneAndUpdate({ _id: uid }, { title: entry.title })
+    await User.findOneAndUpdate(
+      { _id: uid },
+      { title: entry.title, coordinates: { latitude: -1, longitude: 1 } },
+    )
   }
 
   const user = await User.findOne({ _id: uid })
