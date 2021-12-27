@@ -439,7 +439,7 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const addLnIntraledgerTxSend = async ({
-    walletId,
+    senderWalletId,
     paymentHash,
     description,
     sats,
@@ -467,7 +467,7 @@ export const LedgerService = (): ILedgerService => {
     }
 
     return addIntraledgerTxSend({
-      walletId,
+      senderWalletId,
       description,
       sats,
       recipientWalletId,
@@ -480,7 +480,7 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const addOnChainIntraledgerTxSend = async ({
-    walletId,
+    senderWalletId,
     description,
     sats,
     fee,
@@ -508,7 +508,7 @@ export const LedgerService = (): ILedgerService => {
     }
 
     return addIntraledgerTxSend({
-      walletId,
+      senderWalletId,
       description,
       sats,
       recipientWalletId,
@@ -520,8 +520,8 @@ export const LedgerService = (): ILedgerService => {
     })
   }
 
-  const addUsernameIntraledgerTxSend = async ({
-    walletId,
+  const addWalletIdIntraledgerTxSend = async ({
+    senderWalletId,
     description,
     sats,
     fee,
@@ -531,8 +531,8 @@ export const LedgerService = (): ILedgerService => {
     payerUsername,
     recipientUsername,
     memoPayer,
-  }: AddUsernameIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: AddUsernameIntraledgerTxSendMetadata = {
+  }: addWalletIdIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: addWalletIdIntraledgerTxSendMetadata = {
       type: LedgerTransactionType.IntraLedger,
       pending: false,
       fee,
@@ -545,7 +545,7 @@ export const LedgerService = (): ILedgerService => {
     }
 
     return addIntraledgerTxSend({
-      walletId,
+      senderWalletId,
       description,
       sats,
       recipientWalletId,
@@ -558,7 +558,7 @@ export const LedgerService = (): ILedgerService => {
   }
 
   const addIntraledgerTxSend = async ({
-    walletId,
+    senderWalletId,
     description,
     sats,
     recipientWalletId,
@@ -568,7 +568,7 @@ export const LedgerService = (): ILedgerService => {
     shareMemoWithPayee,
     metadata,
   }: SendIntraledgerTxArgs): Promise<LedgerJournal | LedgerError> => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    const senderLiabilitiesWalletId = toLiabilitiesWalletId(senderWalletId)
     const recipientLiabilitiesWalletId = toLiabilitiesWalletId(recipientWalletId)
 
     try {
@@ -583,7 +583,7 @@ export const LedgerService = (): ILedgerService => {
 
       entry
         .credit(recipientLiabilitiesWalletId, sats, creditMetadata)
-        .debit(liabilitiesWalletId, sats, debitMetadata)
+        .debit(senderLiabilitiesWalletId, sats, debitMetadata)
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)
@@ -637,7 +637,7 @@ export const LedgerService = (): ILedgerService => {
     addLnTxSend,
     addLnIntraledgerTxSend,
     addOnChainIntraledgerTxSend,
-    addUsernameIntraledgerTxSend,
+    addWalletIdIntraledgerTxSend,
     settlePendingLnPayments,
     voidLedgerTransactionsForJournal,
   }

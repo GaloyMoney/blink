@@ -1,9 +1,22 @@
-import { createHash, randomBytes } from "crypto"
+import { Wallets } from "@app"
 import { getUserLimits } from "@config/app"
+import { getHash, sleep } from "@core/utils"
+import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
+import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightning"
+import {
+  InsufficientBalanceError as DomainInsufficientBalanceError,
+  LimitsExceededError,
+  SelfPaymentError as DomainSelfPaymentError,
+  ValidationError,
+} from "@domain/errors"
+import { TwoFAError } from "@domain/twoFA"
+import { PaymentInitiationMethod } from "@domain/wallets"
+import { LedgerService } from "@services/ledger"
 import { getActiveLnd, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
+import { WalletInvoicesRepository } from "@services/mongoose"
 import { InvoiceUser } from "@services/mongoose/schema"
-import { getHash, sleep } from "@core/utils"
+import { createHash, randomBytes } from "crypto"
 import {
   cancelHodlInvoice,
   checkIsBalanced,
@@ -12,28 +25,15 @@ import {
   decodePaymentRequest,
   enable2FA,
   generateTokenHelper,
-  getInvoice,
   getAndCreateUserWallet,
+  getInvoice,
   lndOutside1,
   lndOutside2,
   settleHodlInvoice,
   waitFor,
   waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
-import { Wallets } from "@app"
-import { toSats, FEECAP_PERCENT } from "@domain/bitcoin"
-import {
-  SelfPaymentError as DomainSelfPaymentError,
-  InsufficientBalanceError as DomainInsufficientBalanceError,
-  ValidationError,
-  LimitsExceededError,
-} from "@domain/errors"
-import { TwoFAError } from "@domain/twoFA"
-import { LedgerService } from "@services/ledger"
 import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
-import { WalletInvoicesRepository } from "@services/mongoose"
-import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { PaymentInitiationMethod } from "@domain/wallets"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid oldEnoughForWithdrawal validation
@@ -85,8 +85,8 @@ describe("UserWallet - Lightning Pay", () => {
     const paymentResult = await Wallets.lnInvoicePaymentSend({
       paymentRequest: invoice,
       memo: null,
-      walletId: userWallet1.user.walletId,
-      userId: userWallet1.user.id,
+      senderWalletId: userWallet1.user.walletId,
+      payerUserId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
     if (paymentResult instanceof Error) throw paymentResult
@@ -137,8 +137,8 @@ describe("UserWallet - Lightning Pay", () => {
     const paymentResult = await Wallets.lnInvoicePaymentSend({
       paymentRequest: request,
       memo: memoPayer,
-      walletId: userWallet1.user.walletId,
-      userId: userWallet1.user.id,
+      senderWalletId: userWallet1.user.walletId,
+      payerUserId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
     if (paymentResult instanceof Error) throw paymentResult
@@ -169,12 +169,12 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("sends to another Galoy user a push payment", async () => {
-    const res = await Wallets.intraledgerPaymentSend({
+    const res = await Wallets.intraledgerPaymentSendUsername({
       recipientUsername: userWallet0.user.username,
       memo: "",
       amount: toSats(amountInvoice),
-      walletId: userWallet1.user.walletId,
-      userId: userWallet1.user.id,
+      senderWalletId: userWallet1.user.walletId,
+      payerUserId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
 
@@ -237,12 +237,12 @@ describe("UserWallet - Lightning Pay", () => {
     )
     const txnCount1 = contact1?.transactionsCount || 0
 
-    const res2 = await Wallets.intraledgerPaymentSend({
+    const res2 = await Wallets.intraledgerPaymentSendUsername({
       recipientUsername: userWallet0.user.username,
       memo: "",
       amount: toSats(amountInvoice),
-      walletId: userWallet1.user.walletId,
-      userId: userWallet1.user.id,
+      senderWalletId: userWallet1.user.walletId,
+      payerUserId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
     expect(res2).not.toBeInstanceOf(Error)
@@ -275,8 +275,8 @@ describe("UserWallet - Lightning Pay", () => {
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
       amount: toSats(amountInvoice),
-      walletId: userWallet1.user.walletId,
-      userId: userWallet1.user.id,
+      senderWalletId: userWallet1.user.walletId,
+      payerUserId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
     if (paymentResult instanceof Error) throw paymentResult
@@ -289,12 +289,12 @@ describe("UserWallet - Lightning Pay", () => {
   it("filters spam from send to another Galoy user as push payment", async () => {
     const satsBelow = 100
     const memoSpamBelowThreshold = "Spam BELOW threshold"
-    const resBelowThreshold = await Wallets.intraledgerPaymentSend({
+    const resBelowThreshold = await Wallets.intraledgerPaymentSendUsername({
       recipientUsername: userWallet0.user.username,
       memo: memoSpamBelowThreshold,
       amount: toSats(satsBelow),
-      walletId: userWallet1.user.walletId,
-      userId: userWallet1.user.id,
+      senderWalletId: userWallet1.user.walletId,
+      payerUserId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
     expect(resBelowThreshold).not.toBeInstanceOf(Error)
@@ -302,12 +302,12 @@ describe("UserWallet - Lightning Pay", () => {
 
     const satsAbove = 1100
     const memoSpamAboveThreshold = "Spam ABOVE threshold"
-    const resAboveThreshold = await Wallets.intraledgerPaymentSend({
+    const resAboveThreshold = await Wallets.intraledgerPaymentSendUsername({
       recipientUsername: userWallet0.user.username,
       memo: memoSpamAboveThreshold,
       amount: toSats(satsAbove),
-      walletId: userWallet1.user.walletId,
-      userId: userWallet1.user.id,
+      senderWalletId: userWallet1.user.walletId,
+      payerUserId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
     expect(resAboveThreshold).not.toBeInstanceOf(Error)
@@ -402,20 +402,20 @@ describe("UserWallet - Lightning Pay", () => {
     const paymentResult = await Wallets.lnInvoicePaymentSend({
       paymentRequest: invoice,
       memo: null,
-      walletId: userWallet1.user.walletId,
-      userId: userWallet1.user.id,
+      senderWalletId: userWallet1.user.walletId,
+      payerUserId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
     expect(paymentResult).toBeInstanceOf(DomainSelfPaymentError)
   })
 
   it("fails if sends to self an on us push payment", async () => {
-    const paymentResult = await Wallets.intraledgerPaymentSend({
+    const paymentResult = await Wallets.intraledgerPaymentSendUsername({
       recipientUsername: userWallet1.user.username,
       memo: "",
       amount: toSats(amountInvoice),
-      walletId: userWallet1.user.walletId,
-      userId: userWallet1.user.id,
+      senderWalletId: userWallet1.user.walletId,
+      payerUserId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
     expect(paymentResult).toBeInstanceOf(DomainSelfPaymentError)
@@ -429,8 +429,8 @@ describe("UserWallet - Lightning Pay", () => {
     const paymentResult = await Wallets.lnInvoicePaymentSend({
       paymentRequest: invoice as EncodedPaymentRequest,
       memo: null,
-      walletId: userWallet1.user.walletId,
-      userId: userWallet1.user.id,
+      senderWalletId: userWallet1.user.walletId,
+      payerUserId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
     await expect(paymentResult).toBeInstanceOf(DomainInsufficientBalanceError)
@@ -441,8 +441,8 @@ describe("UserWallet - Lightning Pay", () => {
     const paymentResult = await Wallets.lnInvoicePaymentSend({
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
-      walletId: userWallet0.user.walletId,
-      userId: userWallet0.user.id,
+      senderWalletId: userWallet0.user.walletId,
+      payerUserId: userWallet0.user.id,
       logger: userWallet0.logger,
     })
     expect(paymentResult).toBeInstanceOf(LightningServiceError)
@@ -454,8 +454,8 @@ describe("UserWallet - Lightning Pay", () => {
     const paymentResult = await Wallets.lnInvoicePaymentSend({
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
-      walletId: userWallet1.user.walletId,
-      userId: userWallet1.user.id,
+      senderWalletId: userWallet1.user.walletId,
+      payerUserId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
     expect(paymentResult).toBeInstanceOf(ValidationError)
@@ -469,8 +469,8 @@ describe("UserWallet - Lightning Pay", () => {
     const paymentResult = await Wallets.lnInvoicePaymentSend({
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
-      walletId: userWallet1.user.walletId,
-      userId: userWallet1.user.id,
+      senderWalletId: userWallet1.user.walletId,
+      payerUserId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
     expect(paymentResult).toBeInstanceOf(LimitsExceededError)
@@ -489,8 +489,8 @@ describe("UserWallet - Lightning Pay", () => {
     const paymentResult = await Wallets.lnInvoicePaymentSend({
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
-      walletId: userWallet1.user.walletId,
-      userId: userWallet1.user.id,
+      senderWalletId: userWallet1.user.walletId,
+      payerUserId: userWallet1.user.id,
       logger: userWallet1.logger,
     })
     expect(paymentResult).toBeInstanceOf(LimitsExceededError)
@@ -521,8 +521,8 @@ describe("UserWallet - Lightning Pay", () => {
           const paymentResult = await Wallets.lnInvoicePaymentSendWithTwoFA({
             paymentRequest: input.invoice as EncodedPaymentRequest,
             memo: input.memo,
-            walletId: wallet.user.walletId,
-            userId: wallet.user.id,
+            senderWalletId: wallet.user.walletId,
+            payerUserId: wallet.user.id,
             twoFAToken: input.twoFAToken || null,
             logger: wallet.logger,
           })
@@ -537,9 +537,9 @@ describe("UserWallet - Lightning Pay", () => {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           const paymentResult = await Wallets.lnInvoicePaymentSendWithTwoFA({
             paymentRequest: input.invoice as EncodedPaymentRequest,
+            payerUserId: wallet.user.id,
             memo: input.memo,
-            walletId: wallet.user.walletId,
-            userId: wallet.user.id,
+            senderWalletId: wallet.user.walletId,
             twoFAToken: input.twoFAToken || null,
             logger: wallet.logger,
           })

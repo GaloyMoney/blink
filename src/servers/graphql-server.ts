@@ -1,36 +1,32 @@
-import { createServer } from "http"
-import { execute, GraphQLError, subscribe } from "graphql"
+import { Accounts, Users } from "@app"
+import { getApolloConfig, getGeetestConfig, isProd, JWT_SECRET } from "@config/app"
+import { WalletFactory } from "@core/wallet-factory"
+import Geetest from "@services/geetest"
+import { baseLogger } from "@services/logger"
+import { User } from "@services/mongoose/schema"
+import { redis } from "@services/redis"
+import {
+  addAttributesToCurrentSpan,
+  addAttributesToCurrentSpanAndPropagate,
+  ENDUSER_ALIAS,
+  SemanticAttributes,
+} from "@services/tracing"
+import { ApolloServerPluginUsageReporting } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
-import { SubscriptionServer } from "subscriptions-transport-ws"
 import express from "express"
 import expressJwt from "express-jwt"
-import * as jwt from "jsonwebtoken"
+import { execute, GraphQLError, subscribe } from "graphql"
 import { rule } from "graphql-shield"
+import helmet from "helmet"
+import { createServer } from "http"
+import * as jwt from "jsonwebtoken"
 import mongoose from "mongoose"
 import pino from "pino"
 import PinoHttp from "pino-http"
+import { SubscriptionServer } from "subscriptions-transport-ws"
 import { v4 as uuidv4 } from "uuid"
-import helmet from "helmet"
-
-import { getApolloConfig, getGeetestConfig, isProd, JWT_SECRET } from "@config/app"
-import { Accounts, Users } from "@app"
-
-import { baseLogger } from "@services/logger"
-import { redis } from "@services/redis"
-import { User } from "@services/mongoose/schema"
-
-import { WalletFactory } from "@core/wallet-factory"
-import { ApolloServerPluginUsageReporting } from "apollo-server-core"
-import Geetest from "@services/geetest"
-import expressApiKeyAuth from "./graphql-middlewares/api-key-auth"
-import {
-  SemanticAttributes,
-  addAttributesToCurrentSpanAndPropagate,
-  addAttributesToCurrentSpan,
-  ENDUSER_ALIAS,
-} from "@services/tracing"
-import { AccountsRepository } from "@services/mongoose"
 import { playgroundTabs } from "../graphql/playground"
+import expressApiKeyAuth from "./graphql-middlewares/api-key-auth"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -92,7 +88,7 @@ const sessionContext = ({
           })
         domainUser = loggedInUser
 
-        const loggedInDomainAccount = await AccountsRepository().findById(
+        const loggedInDomainAccount = await Accounts.getAccount(
           domainUser.defaultAccountId,
         )
         if (loggedInDomainAccount instanceof Error) throw Error

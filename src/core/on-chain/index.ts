@@ -1,4 +1,4 @@
-import { Wallets, Prices } from "@app"
+import { Prices, Wallets, Users } from "@app"
 import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
@@ -13,7 +13,6 @@ import { OnChainService } from "@services/lnd/onchain-service"
 import { getActiveOnchainLnd } from "@services/lnd/utils"
 import { LockService } from "@services/lock"
 import { ledger } from "@services/mongodb"
-import { UsersRepository, WalletsRepository } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 import { NotificationsService } from "@services/notifications"
 import assert from "assert"
@@ -93,7 +92,7 @@ export const OnChainMixin = (superclass) =>
 
         const payeeUser = await User.getUserByAddress({ address })
 
-        const user = await UsersRepository().findById(this.user.id)
+        const user = await Users.getUser(this.user.id)
         if (user instanceof Error) throw user
         const { twoFA } = user
 
@@ -150,16 +149,16 @@ export const OnChainMixin = (superclass) =>
           const usd = sats * price
           const usdFee = onChainFee * price
 
-          const payerWallet = await WalletsRepository().findById(this.user.walletId)
-          if (payerWallet instanceof Error) throw payerWallet
-          const recipientWallet = await WalletsRepository().findById(payeeUser.walletId)
+          const senderWallet = await Wallets.getWallet(this.user.walletId)
+          if (senderWallet instanceof Error) throw senderWallet
+          const recipientWallet = await Wallets.getWallet(payeeUser.walletId)
           if (recipientWallet instanceof Error) throw recipientWallet
 
           const journal = await LockService().extendLock(
             { logger: onchainLoggerOnUs, lock },
             async () =>
               LedgerService().addOnChainIntraledgerTxSend({
-                walletId: this.user.walletId,
+                senderWalletId: this.user.walletId,
                 description: "",
                 sats: toSats(sats),
                 fee: onChainFee,
@@ -177,7 +176,7 @@ export const OnChainMixin = (superclass) =>
 
           const notificationsService = NotificationsService(onchainLoggerOnUs)
           notificationsService.intraLedgerPaid({
-            payerWalletId: payerWallet.id,
+            senderWalletId: senderWallet.id,
             recipientWalletId: recipientWallet.id,
             amount: toSats(sats),
             usdPerSat: price,

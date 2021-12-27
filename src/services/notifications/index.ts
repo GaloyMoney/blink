@@ -143,7 +143,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   }
 
   const intraLedgerPaid = async ({
-    payerWalletId,
+    senderWalletId,
     recipientWalletId,
     amount,
     usdPerSat,
@@ -162,11 +162,11 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         })
       }
 
-      publish(payerWalletId, NotificationType.IntraLedgerPayment)
+      publish(senderWalletId, NotificationType.IntraLedgerPayment)
       publish(recipientWalletId, NotificationType.IntraLedgerReceipt)
 
       // work around to move forward before re-wrighting the whole notifications module
-      const payerUser = await User.findOne({ walletId: payerWalletId })
+      const payerUser = await User.findOne({ walletId: senderWalletId })
 
       // Do not await this call for quicker processing
       transactionNotification({

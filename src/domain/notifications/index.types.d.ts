@@ -23,7 +23,7 @@ type LnInvoicePaidArgs = {
 }
 
 type IntraLedgerArgs = {
-  payerWalletId: WalletId
+  senderWalletId: WalletId
   recipientWalletId: WalletId
   amount: Satoshis
   usdPerSat?: UsdPerSat
