@@ -1,5 +1,4 @@
-import * as Accounts from "@app/accounts"
-import * as Users from "@app/users"
+import { Accounts, Users } from "@app"
 import { getApolloConfig, getGeetestConfig, isProd, JWT_SECRET } from "@config/app"
 import { WalletFactory } from "@core/wallet-factory"
 import Geetest from "@services/geetest"

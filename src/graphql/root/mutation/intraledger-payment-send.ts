@@ -1,5 +1,5 @@
-import { getUsernameFromWalletId } from "@app/accounts"
-import { getWallet, intraledgerPaymentSendUsername } from "@app/wallets"
+import { Wallets, Accounts } from "@app"
+import { getWallet } from "@app/wallets"
 import { checkedToWalletId } from "@domain/wallets"
 import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
@@ -49,13 +49,15 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       return { errors: [{ message: appErr.message }] }
     }
 
-    const recipientUsername = await getUsernameFromWalletId(recipientWalletIdChecked)
+    const recipientUsername = await Accounts.getUsernameFromWalletId(
+      recipientWalletIdChecked,
+    )
     if (recipientUsername instanceof Error) {
       const appErr = mapError(recipientUsername)
       return { errors: [{ message: appErr.message }] }
     }
 
-    const status = await intraledgerPaymentSendUsername({
+    const status = await Wallets.intraledgerPaymentSendUsername({
       recipientUsername,
       memo,
       amount,

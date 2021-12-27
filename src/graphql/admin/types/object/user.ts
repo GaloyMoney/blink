@@ -1,4 +1,4 @@
-import { getAccount } from "@app/accounts"
+import { Accounts } from "@app"
 import { GT } from "@graphql/index"
 import Language from "@graphql/types/scalar/language"
 import Phone from "@graphql/types/scalar/phone"
@@ -15,7 +15,7 @@ const User = new GT.Object({
     defaultAccount: {
       type: GT.NonNull(Account),
       resolve: async (source: User) => {
-        const account = await getAccount(source.defaultAccountId)
+        const account = await Accounts.getAccount(source.defaultAccountId)
         if (account instanceof Error) {
           throw account
         }

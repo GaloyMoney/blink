@@ -1,4 +1,4 @@
-import { getUser } from "@app/users"
+import { Users } from "@app"
 import { GT } from "@graphql/index"
 import Coordinates from "@graphql/types/object/coordinates"
 import Timestamp from "@graphql/types/scalar/timestamp"
@@ -24,7 +24,7 @@ const Account = new GT.Object({
 
       type: GT.NonNull(GraphQLUser),
       resolve: async (source: Account) => {
-        const user = await getUser(source.ownerId)
+        const user = await Users.getUser(source.ownerId)
         if (user instanceof Error) {
           throw user
         }

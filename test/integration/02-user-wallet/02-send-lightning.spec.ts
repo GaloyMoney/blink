@@ -1,5 +1,4 @@
 import { Wallets } from "@app"
-import { intraledgerPaymentSendUsername } from "@app/wallets"
 import { getUserLimits } from "@config/app"
 import { getHash, sleep } from "@core/utils"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
@@ -170,7 +169,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("sends to another Galoy user a push payment", async () => {
-    const res = await intraledgerPaymentSendUsername({
+    const res = await Wallets.intraledgerPaymentSendUsername({
       recipientUsername: userWallet0.user.username,
       memo: "",
       amount: toSats(amountInvoice),
@@ -238,7 +237,7 @@ describe("UserWallet - Lightning Pay", () => {
     )
     const txnCount1 = contact1?.transactionsCount || 0
 
-    const res2 = await intraledgerPaymentSendUsername({
+    const res2 = await Wallets.intraledgerPaymentSendUsername({
       recipientUsername: userWallet0.user.username,
       memo: "",
       amount: toSats(amountInvoice),
@@ -290,7 +289,7 @@ describe("UserWallet - Lightning Pay", () => {
   it("filters spam from send to another Galoy user as push payment", async () => {
     const satsBelow = 100
     const memoSpamBelowThreshold = "Spam BELOW threshold"
-    const resBelowThreshold = await intraledgerPaymentSendUsername({
+    const resBelowThreshold = await Wallets.intraledgerPaymentSendUsername({
       recipientUsername: userWallet0.user.username,
       memo: memoSpamBelowThreshold,
       amount: toSats(satsBelow),
@@ -303,7 +302,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     const satsAbove = 1100
     const memoSpamAboveThreshold = "Spam ABOVE threshold"
-    const resAboveThreshold = await intraledgerPaymentSendUsername({
+    const resAboveThreshold = await Wallets.intraledgerPaymentSendUsername({
       recipientUsername: userWallet0.user.username,
       memo: memoSpamAboveThreshold,
       amount: toSats(satsAbove),
@@ -411,7 +410,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if sends to self an on us push payment", async () => {
-    const paymentResult = await intraledgerPaymentSendUsername({
+    const paymentResult = await Wallets.intraledgerPaymentSendUsername({
       recipientUsername: userWallet1.user.username,
       memo: "",
       amount: toSats(amountInvoice),

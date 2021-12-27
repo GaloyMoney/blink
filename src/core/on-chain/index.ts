@@ -1,5 +1,4 @@
-import { Prices, Wallets } from "@app"
-import { getUser } from "@app/users"
+import { Prices, Wallets, Users } from "@app"
 import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
@@ -93,7 +92,7 @@ export const OnChainMixin = (superclass) =>
 
         const payeeUser = await User.getUserByAddress({ address })
 
-        const user = await getUser(this.user.id)
+        const user = await Users.getUser(this.user.id)
         if (user instanceof Error) throw user
         const { twoFA } = user
 
