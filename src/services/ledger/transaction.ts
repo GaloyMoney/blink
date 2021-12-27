@@ -306,8 +306,6 @@ export const rebalancePortfolio = async ({ description, metadata, wallet }) => {
   const expectedBtc = wallet.user.ratioBtc * balances.total_in_BTC
   const expectedUsd = wallet.user.ratioUsd * balances.total_in_USD
 
-  baseLogger.warn({ dealerPath, balances, expectedBtc, expectedUsd })
-
   const diffBtc = expectedBtc - balances.BTC
   const btcAmount = Math.abs(diffBtc)
   const usdAmount = Math.abs(expectedUsd - balances.USD)
