@@ -15,6 +15,9 @@ mutation lnInvoiceCreateOnBehalfOfRecipient(
     }
     invoice {
       paymentRequest
+      paymentHash
+      paymentSecret
+      satoshis
     }
   }
 }
