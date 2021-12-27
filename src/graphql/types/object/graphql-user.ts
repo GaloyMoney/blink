@@ -15,7 +15,7 @@ import Username from "../scalar/username"
 import { Users } from "@app"
 import { UnknownClientError } from "@core/error"
 
-const GraphQLUser = new GT.Object({
+const GraphQLUser = new GT.Object<User, GraphQLContext>({
   name: "User",
   fields: () => ({
     id: {
@@ -32,7 +32,7 @@ const GraphQLUser = new GT.Object({
       type: Username,
       description: "Optional immutable user friendly identifier.",
       resolve: async (source, args, { domainAccount }) => {
-        return domainAccount.username
+        return domainAccount?.username
       },
       deprecationReason: "will be moved to @Handle in Account and Wallet",
     },
@@ -63,6 +63,9 @@ const GraphQLUser = new GT.Object({
       },
       resolve: async (source, args, { domainUser }) => {
         const { username } = args
+        if (!domainUser) {
+          throw new UnknownClientError("Something went wrong")
+        }
         if (username instanceof Error) {
           throw username
         }
@@ -84,7 +87,6 @@ const GraphQLUser = new GT.Object({
 
     createdAt: {
       type: GT.NonNull(Timestamp),
-      resolve: (source) => source.createdAt ?? source.created_at, // TODO: Get rid of this resolver
     },
 
     defaultAccount: {

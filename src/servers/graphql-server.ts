@@ -55,7 +55,13 @@ export const isEditor = rule({ cache: "contextual" })((parent, args, ctx) => {
 const geeTestConfig = getGeetestConfig()
 const geetest = Geetest(geeTestConfig)
 
-const sessionContext = ({ token, ips, body, apiKey, apiSecret }) => {
+const sessionContext = ({
+  token,
+  ips,
+  body,
+  apiKey,
+  apiSecret,
+}): Promise<GraphQLContext> => {
   const userId = token?.uid ?? null
   let ip: string | undefined
 
