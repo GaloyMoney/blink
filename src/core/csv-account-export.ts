@@ -1,29 +1,31 @@
 import { LedgerService } from "@services/ledger"
 import { createObjectCsvStringifier, createObjectCsvWriter } from "csv-writer"
 
-const header = [
-  { id: "id", title: "id" },
-  { id: "walletId", title: "walletId" },
-  { id: "type", title: "type" },
-  { id: "credit", title: "credit" },
-  { id: "debit", title: "debit" },
-  { id: "fee", title: "fee" },
-  { id: "currency", title: "currency" },
-  { id: "timestamp", title: "timestamp" },
-  { id: "pendingConfirmation", title: "pendingConfirmation" },
-  { id: "journalId", title: "journalId" },
-  { id: "lnMemo", title: "lnMemo" },
-  { id: "usd", title: "usd" },
-  { id: "feeUsd", title: "feeUsd" },
-  { id: "recipientWalletId", title: "recipientWalletId" },
-  { id: "username", title: "username" },
-  { id: "memoFromPayer", title: "memoFromPayer" },
-  { id: "paymentHash", title: "paymentHash" },
-  { id: "pubkey", title: "pubkey" },
-  { id: "feeKnownInAdvance", title: "feeKnownInAdvance" },
-  { id: "address", title: "address" },
-  { id: "txHash", title: "txHash" },
+const headers_field = [
+  "id",
+  "walletId",
+  "type",
+  "credit",
+  "debit",
+  "fee",
+  "currency",
+  "timestamp",
+  "pendingConfirmation",
+  "journalId",
+  "lnMemo",
+  "usd",
+  "feeUsd",
+  "recipientWalletId",
+  "username",
+  "memoFromPayer",
+  "paymentHash",
+  "pubkey",
+  "feeKnownInAdvance",
+  "address",
+  "txHash",
 ]
+
+const header = headers_field.map((item) => ({ id: item, title: item }))
 
 export class CSVAccountExport {
   entries: LedgerTransaction[] = []
