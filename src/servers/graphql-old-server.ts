@@ -11,7 +11,7 @@ import { shield } from "graphql-shield"
 import { makeExecutableSchema } from "graphql-tools"
 import path from "path"
 import { getFeeRates, onboardingEarn, getBuildVersions } from "@config/app"
-import { Wallets, Prices, Users } from "@app"
+import { Wallets, Prices, Users, Accounts } from "@app"
 import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
@@ -375,7 +375,8 @@ const resolvers = {
         return feeSatAmount
       },
     }),
-    earnCompleted: async (_, { ids }, { wallet }) => wallet.addEarn(ids),
+    earnCompleted: async (_, { ids }, { uid, logger }) =>
+      Accounts.addEarn({ quizQuestionId: ids[0], accountId: uid, logger }),
     onchain: (_, __, { wallet }) => ({
       getNewAddress: async () => {
         const address = await Wallets.createOnChainAddress(wallet.user.walletId)

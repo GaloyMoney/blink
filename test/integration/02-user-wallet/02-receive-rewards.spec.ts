@@ -5,13 +5,18 @@ import { checkIsBalanced, getAndCreateUserWallet } from "test/helpers"
 import { resetSelfWalletIdLimits } from "test/helpers/rate-limit"
 import { getBTCBalance } from "test/helpers/wallet"
 
+import { addEarn } from "@app/accounts/add-earn"
+import { baseLogger } from "@services/logger"
 let userWallet1
 
-const earnsToGet = ["whereBitcoinExist", "whyStonesShellGold", "NoCounterfeitMoney"]
+const onBoardingEarnIds = [
+  "whereBitcoinExist" as QuizQuestionId,
+  "whyStonesShellGold" as QuizQuestionId,
+  "NoCounterfeitMoney" as QuizQuestionId,
+]
 const onBoardingEarnAmt: number = Object.keys(onboardingEarn)
-  .filter((k) => find(earnsToGet, (o) => o === k))
+  .filter((k) => find(onBoardingEarnIds, (o) => o === k))
   .reduce((p, k) => p + onboardingEarn[k], 0)
-const onBoardingEarnIds: string[] = earnsToGet
 
 // required to avoid withdrawalLimit validation
 const date = Date.now() + 2 * MS_PER_DAY
@@ -36,7 +41,14 @@ describe("UserWallet - addEarn", () => {
     const initialBalance = await getBTCBalance(userWallet1.user.walletId)
 
     const getAndVerifyRewards = async () => {
-      await userWallet1.addEarn(onBoardingEarnIds)
+      const promises = onBoardingEarnIds.map((onBoardingEarnId) =>
+        addEarn({
+          quizQuestionId: onBoardingEarnId as QuizQuestionId,
+          accountId: userWallet1.user._id,
+          logger: baseLogger,
+        }),
+      )
+      await Promise.all(promises)
       const finalBalance = await getBTCBalance(userWallet1.user.walletId)
       let rewards = onBoardingEarnAmt
       if (difference(onBoardingEarnIds, userWallet1.user.earn).length === 0) {

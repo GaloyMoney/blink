@@ -1,3 +1,4 @@
+import { Accounts } from "@app"
 import { onboardingEarn } from "@config/app"
 import { GT } from "@graphql/index"
 
@@ -15,7 +16,7 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserQuizQuestionUpdateCompletedInput) },
   },
-  resolve: async (_, args, { wallet }) => {
+  resolve: async (_, args, { uid, logger }) => {
     const { id } = args.input
 
     if (!onboardingEarn[id]) {
@@ -23,7 +24,11 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field({
     }
 
     try {
-      const quizQuestions = await wallet.addEarn([id])
+      const quizQuestions = await Accounts.addEarn({
+        quizQuestionId: id,
+        accountId: uid,
+        logger,
+      })
       const question = quizQuestions[0]
 
       return {
