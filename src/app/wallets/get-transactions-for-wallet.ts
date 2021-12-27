@@ -9,6 +9,7 @@ import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { WalletsRepository } from "@services/mongoose"
 
+// FIXME(nicolas): remove only used in api v1 and tests
 export const getTransactionsForWalletId = async ({
   walletId,
 }: {
