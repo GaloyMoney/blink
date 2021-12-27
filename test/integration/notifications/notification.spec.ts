@@ -1,8 +1,9 @@
 import { Prices } from "@app"
 import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
+import { sendBalanceToAccounts } from "@app/accounts/send-balance-to-accounts"
 import { toSats } from "@domain/bitcoin"
-import { sendBalanceToUsers } from "@servers/daily-balance-notification"
 import * as serviceLedger from "@services/ledger"
+import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
 
 jest.mock("@services/notifications/notification")
@@ -34,7 +35,7 @@ afterAll(() => {
 describe("notification", () => {
   describe("sendNotification", () => {
     it("sends daily balance to active users", async () => {
-      await sendBalanceToUsers()
+      await sendBalanceToAccounts(baseLogger)
       const users = await getRecentlyActiveAccounts()
       if (users instanceof Error) throw users
       const numActiveUsers = users.length
