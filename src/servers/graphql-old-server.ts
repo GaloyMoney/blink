@@ -376,7 +376,7 @@ const resolvers = {
       },
     }),
     earnCompleted: async (_, { ids }, { uid, logger }) =>
-      Accounts.addEarn({ id: ids[0], aid: uid, logger }),
+      Accounts.addEarn({ quizQuestionId: ids[0], accountId: uid, logger }),
     onchain: (_, __, { wallet }) => ({
       getNewAddress: async () => {
         const address = await Wallets.createOnChainAddress(wallet.user.walletId)

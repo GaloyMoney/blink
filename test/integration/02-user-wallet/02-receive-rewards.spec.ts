@@ -43,8 +43,8 @@ describe("UserWallet - addEarn", () => {
     const getAndVerifyRewards = async () => {
       const promises = onBoardingEarnIds.map((onBoardingEarnId) =>
         addEarn({
-          id: onBoardingEarnId as QuizQuestionId,
-          aid: userWallet1.user._id,
+          quizQuestionId: onBoardingEarnId as QuizQuestionId,
+          accountId: userWallet1.user._id,
           logger: baseLogger,
         }),
       )

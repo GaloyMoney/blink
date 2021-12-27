@@ -22,10 +22,10 @@ export const getAndCreateUserWallet = async (index: number) => {
     await User.findOneAndUpdate({ _id: uid }, { username: entry.username })
   }
 
-  if (entry.phoneMetadata_carrier_type) {
+  if (entry.phoneMetadataCarrierType) {
     await User.findOneAndUpdate(
       { _id: uid },
-      { twilio: { carrier: { type: entry.phoneMetadata_carrier_type } } },
+      { twilio: { carrier: { type: entry.phoneMetadataCarrierType } } },
     )
   }
 

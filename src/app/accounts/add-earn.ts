@@ -8,19 +8,19 @@ import {
   ValidationError,
 } from "@domain/errors"
 import { getFunderWalletId } from "@services/ledger/accounts"
-import { RewardsRepository } from "@services/mongoose/rewards"
+import { RewardsRepository } from "@services/mongoose"
 import { getAccount } from "."
 
 export const addEarn = async ({
-  id,
-  aid,
+  quizQuestionId,
+  accountId,
   logger,
 }: {
-  id: QuizQuestionId
-  aid: AccountId /* AccountId: aid validation */
+  quizQuestionId: QuizQuestionId
+  accountId: AccountId /* AccountId: aid validation */
   logger: Logger
 }) => {
-  const amount = onboardingEarn[id]
+  const amount = onboardingEarn[quizQuestionId]
   if (!amount) {
     return new ValidationError("incorrect reward id")
   }
@@ -36,7 +36,7 @@ export const addEarn = async ({
     return new RewardInsufficientBalanceError()
   }
 
-  const recipientAccount = await getAccount(aid)
+  const recipientAccount = await getAccount(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
 
   const user = await getUser(recipientAccount.ownerId)
@@ -52,17 +52,17 @@ export const addEarn = async ({
 
   const recipientWalletId = recipientAccount.defaultWalletId
 
-  const shouldGiveReward = await RewardsRepository(aid).tentativelyAddNew(id)
+  const shouldGiveReward = await RewardsRepository(accountId).add(quizQuestionId)
   if (shouldGiveReward instanceof Error) return shouldGiveReward
 
   const payment = await intraledgerPaymentSendWalletId({
     senderWalletId: funderWalletId,
     recipientWalletId,
     amount,
-    memo: id,
+    memo: quizQuestionId,
     logger,
   })
   if (payment instanceof Error) return payment
 
-  return { id, value: amount, completed: true }
+  return { id: quizQuestionId, value: amount, completed: true }
 }

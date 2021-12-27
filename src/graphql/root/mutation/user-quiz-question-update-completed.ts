@@ -24,7 +24,11 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field({
     }
 
     try {
-      const quizQuestions = await Accounts.addEarn({ id, aid: uid, logger })
+      const quizQuestions = await Accounts.addEarn({
+        quizQuestionId: id,
+        accountId: uid,
+        logger,
+      })
       const question = quizQuestions[0]
 
       return {

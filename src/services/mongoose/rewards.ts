@@ -3,7 +3,7 @@ import { User } from "./schema"
 
 // FIXME: improve boundary
 export const RewardsRepository = (accountId: AccountId) => {
-  const tentativelyAddNew = async (quizQuestionId: QuizQuestionId) => {
+  const add = async (quizQuestionId: QuizQuestionId) => {
     try {
       // by default, mongodb return the previous state before the update
       const oldState = await User.findOneAndUpdate(
@@ -15,17 +15,13 @@ export const RewardsRepository = (accountId: AccountId) => {
       const rewardNotFound =
         oldState.earn.findIndex((item) => item === quizQuestionId) === -1
 
-      if (rewardNotFound) {
-        return true
-      } else {
-        return new RewardAlreadyPresentError()
-      }
+      return rewardNotFound || new RewardAlreadyPresentError()
     } catch (err) {
       return new UnknownRepositoryError("reward issue")
     }
   }
 
   return {
-    tentativelyAddNew,
+    add,
   }
 }
