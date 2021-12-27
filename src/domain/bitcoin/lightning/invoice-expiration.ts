@@ -1,16 +1,15 @@
-import moment from "moment"
+import { SECS_PER_2_MINS, SECS_PER_DAY } from "@config/app"
 
 const DEFAULT_EXPIRATIONS = {
-  BTC: { value: 1, unit: "days" as moment.unitOfTime.DurationConstructor },
-  USD: { value: 2, unit: "minutes" as moment.unitOfTime.DurationConstructor },
+  BTC: { delay: SECS_PER_DAY },
+  USD: { delay: SECS_PER_2_MINS },
 }
 
 export const invoiceExpirationForCurrency = (
   currency: TxDenominationCurrency,
-  date: Date,
+  now: Date,
 ): InvoiceExpiration => {
-  const now = moment(date)
-  const delay = DEFAULT_EXPIRATIONS[currency]
-  now.add(delay.value, delay.unit)
-  return now.toDate() as InvoiceExpiration
+  const { delay } = DEFAULT_EXPIRATIONS[currency]
+  const expirationTimestamp = now.getTime() + delay * 1000
+  return new Date(expirationTimestamp) as InvoiceExpiration
 }

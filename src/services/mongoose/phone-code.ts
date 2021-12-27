@@ -3,7 +3,6 @@ import {
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
-import moment from "moment"
 import { PhoneCode } from "./schema"
 
 export const PhoneCodesRepository = (): IPhoneCodesRepository => {
@@ -16,12 +15,13 @@ export const PhoneCodesRepository = (): IPhoneCodesRepository => {
     code: PhoneCode
     age: Seconds
   }): Promise<true | RepositoryError> => {
+    const timestamp = Date.now() / 1000 - age
     try {
       const phoneCode = await PhoneCode.findOne({
         phone,
         code,
         created_at: {
-          $gte: moment().subtract(age, "seconds"),
+          $gte: timestamp,
         },
       })
       if (!phoneCode) {

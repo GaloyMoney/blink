@@ -1,4 +1,3 @@
-import moment from "moment"
 import { GT } from "@graphql/index"
 import PricePoint from "@graphql/types/object/price-point"
 import PriceGraphRange, {
@@ -75,7 +74,7 @@ const BtcPriceListQuery = GT.Field({
     if (!(currentPrice instanceof Error)) {
       const currentBtcPriceInCents = currentPrice * 100 * SATS_PER_BTC
       prices.push({
-        timestamp: moment().unix(),
+        timestamp: Math.round(new Date().getTime() / 1000),
         price: {
           formattedAmount: currentBtcPriceInCents.toString(),
           base: Math.round(currentBtcPriceInCents * 10 ** 4),

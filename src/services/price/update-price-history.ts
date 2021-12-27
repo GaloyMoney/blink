@@ -1,9 +1,8 @@
 import ccxt from "ccxt"
-import moment from "moment"
 import last from "lodash.last"
 import { baseLogger } from "@services/logger"
 import { PriceHistory } from "./schema"
-import { SATS_PER_BTC } from "@config/app"
+import { MS_PER_HOUR, SATS_PER_BTC } from "@config/app"
 
 const pair = "BTC/USD"
 const exchange = "bitfinex"
@@ -41,10 +40,8 @@ export const updatePriceHistory = async (
 
   // skip if it has not been an hour since last update
   try {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore-error: TODO
-    const diff = moment().diff(moment(last(doc.pair.exchange.price)._id))
-    if (diff < 1000 * 60 * 60) {
+    const lastUpdate: number | undefined = last(doc.pair.exchange.price._id)
+    if (!!lastUpdate && Date.now() - lastUpdate < MS_PER_HOUR) {
       return false
     }
   } catch (err) {
