@@ -2,7 +2,7 @@ import ccxt from "ccxt"
 import last from "lodash.last"
 import { baseLogger } from "@services/logger"
 import { PriceHistory } from "./schema"
-import { SATS_PER_BTC } from "@config/app"
+import { MS_PER_HOUR, SATS_PER_BTC } from "@config/app"
 
 const pair = "BTC/USD"
 const exchange = "bitfinex"
@@ -41,7 +41,7 @@ export const updatePriceHistory = async (
   // skip if it has not been an hour since last update
   try {
     const lastUpdate: number | undefined = last(doc.pair.exchange.price._id)
-    if (!!lastUpdate && Date.now() - lastUpdate < 1000 * 60 * 60) {
+    if (!!lastUpdate && Date.now() - lastUpdate < MS_PER_HOUR) {
       return false
     }
   } catch (err) {
