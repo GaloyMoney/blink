@@ -59,7 +59,9 @@ export class CSVAccountExport {
     console.log("saving complete")
   }
 
-  async addWallet({ wallet }): Promise<void | Error> {
+  async addWallet(wallet: WalletId): Promise<void | Error> {
+    // TODO: interface could be improved by returning self, so that it's
+    // possible to run csv.addWallet(wallet).getBase64()
     const txs = await LedgerService().getLiabilityTransactions(wallet)
     if (txs instanceof Error) return txs
 

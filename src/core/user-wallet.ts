@@ -3,7 +3,7 @@ import { getGaloyInstanceName } from "@config/app"
 import { LedgerService } from "@services/ledger"
 import { User } from "@services/mongoose/schema"
 import { generateSecret, verifyToken } from "node-2fa"
-import { CSVAccountExport } from "./csv-account-export"
+import { CSVAccountExport } from "../services/ledger/csv-account-export"
 import { DbError, TwoFAError } from "./error"
 import { Balances } from "./interface"
 
@@ -95,7 +95,7 @@ export abstract class UserWallet {
 
   async getStringCsv() {
     const csv = new CSVAccountExport()
-    await csv.addWallet({ wallet: this.user.walletId })
+    await csv.addWallet(this.user.walletId)
     return csv.getBase64()
   }
 
