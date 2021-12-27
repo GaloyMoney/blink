@@ -9,6 +9,7 @@ export * from "./update-account-level"
 export * from "./update-account-status"
 export * from "./update-business-map-info"
 export * from "./send-balance-to-accounts"
+export * from "./add-earn"
 
 const accounts = AccountsRepository()
 

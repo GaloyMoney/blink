@@ -11,7 +11,7 @@ import { shield } from "graphql-shield"
 import { makeExecutableSchema } from "graphql-tools"
 import path from "path"
 import { getFeeRates, onboardingEarn, getBuildVersions } from "@config/app"
-import { Wallets, Prices, Users } from "@app"
+import { Wallets, Prices, Users, Accounts } from "@app"
 import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
@@ -32,7 +32,6 @@ import {
 } from "@services/tracing"
 import { PriceInterval, PriceRange } from "@domain/price"
 import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
-import { addEarn } from "@app/accounts/add-earn"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -377,7 +376,7 @@ const resolvers = {
       },
     }),
     earnCompleted: async (_, { ids }, { uid, logger }) =>
-      addEarn({ id: ids[0], aid: uid, logger }),
+      Accounts.addEarn({ id: ids[0], aid: uid, logger }),
     onchain: (_, __, { wallet }) => ({
       getNewAddress: async () => {
         const address = await Wallets.createOnChainAddress(wallet.user.walletId)

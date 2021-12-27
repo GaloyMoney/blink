@@ -1,4 +1,4 @@
-import { addEarn } from "@app/accounts/add-earn"
+import { Accounts } from "@app"
 import { onboardingEarn } from "@config/app"
 import { GT } from "@graphql/index"
 
@@ -24,7 +24,7 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field({
     }
 
     try {
-      const quizQuestions = await addEarn({ id, aid: uid, logger })
+      const quizQuestions = await Accounts.addEarn({ id, aid: uid, logger })
       const question = quizQuestions[0]
 
       return {
