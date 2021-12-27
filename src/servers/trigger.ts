@@ -88,8 +88,8 @@ export async function onchainTransactionEventHandler(tx) {
     )
 
     const walletId = await LedgerService().getWalletIdByTransactionHash(tx.id)
-
-    if (!walletId) {
+    if (walletId instanceof Error) {
+      logger.info({ tx, walletId }, "impossible to find wallet id")
       return
     }
 

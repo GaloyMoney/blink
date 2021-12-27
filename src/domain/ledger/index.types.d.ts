@@ -208,5 +208,5 @@ interface ILedgerService {
     journalId: LedgerJournalId,
   ): Promise<void | LedgerServiceError>
 
-  getWalletIdByTransactionHash(hash): Promise<WalletId | null>
+  getWalletIdByTransactionHash(hash): Promise<WalletId | LedgerServiceError>
 }

@@ -617,7 +617,9 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const getWalletIdByTransactionHash = async (hash): Promise<WalletId | null> => {
+  const getWalletIdByTransactionHash = async (
+    hash,
+  ): Promise<WalletId | CouldNotFindTransactionError | UnknownLedgerError> => {
     const bankOwnerWalletId = await getBankOwnerWalletId()
     const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
     const entry = await Transaction.findOne({
@@ -625,7 +627,13 @@ export const LedgerService = (): ILedgerService => {
       accounts: { $ne: bankOwnerPath },
       hash,
     })
+    if (!entry) {
+      return new CouldNotFindTransactionError()
+    }
     const walletId = accounts.resolveWalletId(entry.account_path)
+    if (!walletId) {
+      return new UnknownLedgerError("no wallet id associated to transaction")
+    }
     return walletId
   }
 

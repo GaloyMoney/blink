@@ -27,7 +27,7 @@ const headers_field = [
 
 const header = headers_field.map((item) => ({ id: item, title: item }))
 
-export class CSVAccountExport {
+export class CsvWalletsExport {
   entries: LedgerTransaction[] = []
 
   getBase64(): string {
