@@ -499,6 +499,7 @@ type PricePoint {
 
 type Query {
   accountApiKeys: [AccountApiKeyHashed]
+  btcPrice: Price
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker]
   globals: Globals
