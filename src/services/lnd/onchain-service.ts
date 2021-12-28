@@ -15,6 +15,9 @@ import {
 } from "lightning"
 import { getActiveOnchainLnd } from "./utils"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { LocalCacheService } from "@services/cache"
+import { CacheKeys } from "@domain/cache"
+import { SECS_PER_5_MINS } from "@config/app"
 
 export const OnChainService = (
   decoder: TxDecoder,
@@ -34,10 +37,18 @@ export const OnChainService = (
     scanDepth: ScanDepth,
   ): Promise<GetChainTransactionsResult | OnChainServiceError> => {
     try {
-      const { current_block_height } = await getWalletInfo({ lnd })
+      let blockHeight = await getCachedHeight()
+      if (!blockHeight) {
+        ;({ current_block_height: blockHeight } = await getWalletInfo({ lnd }))
+        await LocalCacheService().set<number>({
+          key: CacheKeys.BlockHeight,
+          value: blockHeight,
+          ttlSecs: SECS_PER_5_MINS,
+        })
+      }
 
       // this is necessary for tests, otherwise after may be negative
-      const after = Math.max(0, current_block_height - scanDepth)
+      const after = Math.max(0, blockHeight - scanDepth)
 
       return getChainTransactions({
         lnd,
@@ -160,4 +171,10 @@ export const extractOutgoingTransactions = ({
           createdAt: new Date(tx.created_at),
         }),
     )
+}
+
+const getCachedHeight = async (): Promise<number> => {
+  const cachedHeight = await LocalCacheService().get<number>(CacheKeys.BlockHeight)
+  if (cachedHeight instanceof Error) return 0
+  return cachedHeight
 }
