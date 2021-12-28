@@ -1,8 +1,7 @@
 import { getUser } from "@app/users"
-import { getBalanceForWalletId, intraledgerPaymentSendWalletId } from "@app/wallets"
+import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { onboardingEarn } from "@config/app"
 import {
-  RewardInsufficientBalanceError,
   RewardMissingMetadataError,
   RewardNonValidTypeError,
   ValidationError,
@@ -26,15 +25,6 @@ export const addEarn = async ({
   }
 
   const funderWalletId = await getFunderWalletId()
-
-  const balanceFunder = await getBalanceForWalletId(funderWalletId)
-  if (balanceFunder instanceof Error) return balanceFunder
-
-  // this check is redundant but we are using it to populate a more precise error
-  // instead of InsuffisantBalanceError, we get RewardInsufficientBalanceError
-  if (amount > balanceFunder) {
-    return new RewardInsufficientBalanceError()
-  }
 
   const recipientAccount = await getAccount(accountId)
   if (recipientAccount instanceof Error) return recipientAccount

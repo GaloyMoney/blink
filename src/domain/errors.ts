@@ -32,7 +32,6 @@ export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
 export class RewardMissingMetadataError extends DomainError {}
 export class RewardAlreadyPresentError extends DomainError {}
 export class RewardNonValidTypeError extends DomainError {}
-export class RewardInsufficientBalanceError extends DomainError {}
 
 export class ValidationError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
