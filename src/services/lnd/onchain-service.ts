@@ -7,11 +7,11 @@ import {
 } from "@domain/bitcoin/onchain"
 import { toSats } from "@domain/bitcoin"
 import {
-  getHeight,
   getChainTransactions,
   GetChainTransactionsResult,
   createChainAddress,
   getChainFeeEstimate,
+  getWalletInfo,
 } from "lightning"
 import { getActiveOnchainLnd } from "./utils"
 
@@ -33,7 +33,7 @@ export const OnChainService = (
     scanDepth: ScanDepth,
   ): Promise<GetChainTransactionsResult | OnChainServiceError> => {
     try {
-      const { current_block_height } = await getHeight({ lnd })
+      const { current_block_height } = await getWalletInfo({ lnd })
 
       // this is necessary for tests, otherwise after may be negative
       const after = Math.max(0, current_block_height - scanDepth)
