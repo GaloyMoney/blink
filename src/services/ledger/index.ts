@@ -25,6 +25,7 @@ import {
   toWalletId,
 } from "@domain/ledger"
 import { lndAccountingPath, getBankOwnerWalletId } from "./accounts"
+import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 export const loadLedger = ({
   bankOwnerWalletResolver,
@@ -223,22 +224,26 @@ export const LedgerService = (): ILedgerService => {
     }))
 
     try {
-      const [result]: (TxVolume & { _id: null })[] = await Transaction.aggregate([
-        {
-          $match: {
-            accounts: liabilitiesWalletId,
-            $or: txnTypesObj,
-            $and: [{ timestamp: { $gte: timestamp } }],
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            outgoingSats: { $sum: "$debit" },
-            incomingSats: { $sum: "$credit" },
-          },
-        },
-      ])
+      const [result]: (TxVolume & { _id: null })[] = await wrapAsyncToRunInSpan({
+        namespace: `service.ledger`,
+        fn: async () =>
+          Transaction.aggregate([
+            {
+              $match: {
+                accounts: liabilitiesWalletId,
+                $or: txnTypesObj,
+                $and: [{ timestamp: { $gte: timestamp } }],
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                outgoingSats: { $sum: "$debit" },
+                incomingSats: { $sum: "$credit" },
+              },
+            },
+          ]),
+      })()
 
       return {
         outgoingSats: toSats(result?.outgoingSats ?? 0),
