@@ -13,7 +13,6 @@ import {
   RouteFindingError,
   InvalidCoordinatesError,
   InvalidBusinessTitleLengthError,
-  RewardInsufficientBalanceError,
   PhoneCodeError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
@@ -156,9 +155,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
 
     case "InvalidBusinessTitleLengthError":
       return new InvalidBusinessTitleLengthError({ logger: baseLogger })
-
-    case "RewardInsufficientBalanceError":
-      return new RewardInsufficientBalanceError({ message, logger: baseLogger })
 
     // ----------
     // Unhandled below here
