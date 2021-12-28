@@ -38,6 +38,8 @@ export const getTransactionsForWallet = async (
     return PartialResult.partial(confirmedHistory.transactions, onChain)
   }
 
+  // we are getting both the transactions in the mempool and the transaction that
+  // have been mined by not yet credited because they haven't reached enough confirmations
   const onChainTxs = await onChain.listIncomingTransactions(ONCHAIN_SCAN_DEPTH)
   if (onChainTxs instanceof OnChainError) {
     baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
