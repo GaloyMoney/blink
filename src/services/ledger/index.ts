@@ -619,7 +619,7 @@ export const LedgerService = (): ILedgerService => {
 
   const getWalletIdByTransactionHash = async (
     hash,
-  ): Promise<WalletId | CouldNotFindTransactionError | UnknownLedgerError> => {
+  ): Promise<WalletId | LedgerServiceError> => {
     const bankOwnerWalletId = await getBankOwnerWalletId()
     const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
     const entry = await Transaction.findOne({
