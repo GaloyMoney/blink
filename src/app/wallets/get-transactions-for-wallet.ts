@@ -1,6 +1,6 @@
 import { PartialResult } from "@app/partial-result"
 import { getCurrentPrice } from "@app/prices"
-import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS, ONCHAIN_SCAN_DEPTH } from "@config/app"
+import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
 import { OnChainError, TxDecoder, TxFilter } from "@domain/bitcoin/onchain"
 import { RepositoryError } from "@domain/errors"
 import { LedgerError } from "@domain/ledger"
@@ -40,7 +40,7 @@ export const getTransactionsForWallet = async (
 
   // we are getting both the transactions in the mempool and the transaction that
   // have been mined by not yet credited because they haven't reached enough confirmations
-  const onChainTxs = await onChain.listIncomingTransactions(ONCHAIN_SCAN_DEPTH)
+  const onChainTxs = await onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS)
   if (onChainTxs instanceof OnChainError) {
     baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
     return PartialResult.partial(confirmedHistory.transactions, onChainTxs)
