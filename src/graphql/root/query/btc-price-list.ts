@@ -4,7 +4,7 @@ import PriceGraphRange, {
   priceRangeValues,
 } from "@graphql/types/scalar/price-graph-range"
 import { PriceInterval, PriceRange } from "@domain/price"
-import { SATS_PER_BTC } from "@config/app"
+import { BTC_PRICE_PRECISION_OFFSET, SATS_PER_BTC } from "@config/app"
 import { Prices } from "@app"
 
 const parseRange: (string: typeof priceRangeValues[number]) => PriceRange = (range) => {
@@ -61,8 +61,8 @@ const BtcPriceListQuery = GT.Field({
         timestamp: Math.floor(date.getTime() / 1000),
         price: {
           formattedAmount: btcPriceInCents.toString(),
-          base: Math.round(btcPriceInCents * 10 ** 4),
-          offset: 4,
+          base: Math.round(btcPriceInCents * 10 ** BTC_PRICE_PRECISION_OFFSET),
+          offset: BTC_PRICE_PRECISION_OFFSET,
           currencyUnit: "USDCENT",
         },
       }
@@ -77,8 +77,8 @@ const BtcPriceListQuery = GT.Field({
         timestamp: Math.round(new Date().getTime() / 1000),
         price: {
           formattedAmount: currentBtcPriceInCents.toString(),
-          base: Math.round(currentBtcPriceInCents * 10 ** 4),
-          offset: 4,
+          base: Math.round(currentBtcPriceInCents * 10 ** BTC_PRICE_PRECISION_OFFSET),
+          offset: BTC_PRICE_PRECISION_OFFSET,
           currencyUnit: "USDCENT",
         },
       })

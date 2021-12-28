@@ -43,6 +43,8 @@ export const MAX_BYTES_FOR_MEMO = 639 // BOLT
 export const SATS_PER_BTC = 10 ** 8
 export const SAT_USDCENT_PRICE = "SAT-USDCENT-PRICE"
 export const USER_PRICE_UPDATE_EVENT = "USER-PRICE-UPDATE-EVENT"
+export const SAT_PRICE_PRECISION_OFFSET = 12
+export const BTC_PRICE_PRECISION_OFFSET = 4
 
 export const lnPaymentStatusEvent = (paymentHash: PaymentHash) =>
   `LN-PAYMENT-STATUS-${paymentHash}`
