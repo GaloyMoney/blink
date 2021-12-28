@@ -1,6 +1,7 @@
 import { GT } from "@graphql/index"
 import { Prices } from "@app"
 import Price from "@graphql/types/object/price"
+import { SAT_PRICE_PRECISION_OFFSET } from "@config/app"
 
 const BtcPriceQuery = GT.Field({
   type: Price,
@@ -15,8 +16,8 @@ const BtcPriceQuery = GT.Field({
 
     return {
       formattedAmount: price.toString(),
-      base: Math.round(price * 10 ** 12),
-      offset: 12,
+      base: Math.round(price * 10 ** SAT_PRICE_PRECISION_OFFSET),
+      offset: SAT_PRICE_PRECISION_OFFSET,
       currencyUnit: "USDCENT",
     }
   },

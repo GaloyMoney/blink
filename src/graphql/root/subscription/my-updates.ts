@@ -1,6 +1,10 @@
 import { GT } from "@graphql/index"
 
-import { USER_PRICE_UPDATE_EVENT, walletUpdateEvent } from "@config/app"
+import {
+  SAT_PRICE_PRECISION_OFFSET,
+  USER_PRICE_UPDATE_EVENT,
+  walletUpdateEvent,
+} from "@config/app"
 import pubsub from "@services/pubsub"
 import { Prices } from "@app"
 import IError from "@graphql/types/abstract/error"
@@ -76,8 +80,8 @@ const MeSubscription = {
     if (source.price) {
       return myPayload({
         resolveType: "Price",
-        base: Math.round(source.price.satUsdCentPrice * 10 ** 12),
-        offset: 12,
+        base: Math.round(source.price.satUsdCentPrice * 10 ** SAT_PRICE_PRECISION_OFFSET),
+        offset: SAT_PRICE_PRECISION_OFFSET,
         currencyUnit: "USDCENT",
         formattedAmount: source.price.satUsdCentPrice.toString(),
       })

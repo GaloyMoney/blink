@@ -11,6 +11,7 @@ import SettlementVia from "../abstract/settlement-via"
 import Timestamp from "../scalar/timestamp"
 import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
 import TxStatus from "../scalar/tx-status"
+import { SAT_PRICE_PRECISION_OFFSET } from "@config/app"
 
 const Transaction = new GT.Object({
   name: "Transaction",
@@ -44,8 +45,8 @@ const Transaction = new GT.Object({
         const settlementUsdPerSatInCents = source.settlementUsdPerSat * 100
         return {
           formattedAmount: settlementUsdPerSatInCents.toString(),
-          base: Math.round(settlementUsdPerSatInCents * 10 ** 4),
-          offset: 4,
+          base: Math.round(settlementUsdPerSatInCents * 10 ** SAT_PRICE_PRECISION_OFFSET),
+          offset: SAT_PRICE_PRECISION_OFFSET,
           currencyUnit: "USDCENT",
         }
       },
