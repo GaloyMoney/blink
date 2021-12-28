@@ -1,39 +1,38 @@
-import { once } from "events"
-import { sleep } from "@core/utils"
-import first from "lodash.first"
-import { baseLogger } from "@services/logger"
+import * as Wallets from "@app/wallets"
 import {
   getFeeRates,
+  getOnChainWalletConfig,
   getUserLimits,
   MS_PER_DAY,
-  getOnChainWalletConfig,
 } from "@config/app"
+import { TransactionRestrictedError, TwoFAError } from "@core/error"
+import { sleep } from "@core/utils"
+import { toTargetConfs } from "@domain/bitcoin"
+import { LedgerTransactionType } from "@domain/ledger"
+import { NotificationType } from "@domain/notifications"
+import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
+import { onchainTransactionEventHandler } from "@servers/trigger"
+import { baseLogger } from "@services/logger"
 import { Transaction } from "@services/mongoose/schema"
 import { getTitle } from "@services/notifications/payment"
-import { onchainTransactionEventHandler } from "@servers/trigger"
+import { once } from "events"
+import last from "lodash.last"
 import {
+  bitcoindClient,
+  bitcoindOutside,
   checkIsBalanced,
+  createChainAddress,
+  enable2FA,
+  generateTokenHelper,
   getAndCreateUserWallet,
   lndonchain,
   lndOutside1,
-  createChainAddress,
-  subscribeToTransactions,
-  bitcoindClient,
-  bitcoindOutside,
   mineBlockAndSync,
-  enable2FA,
-  generateTokenHelper,
-  RANDOM_ADDRESS,
   mineBlockAndSyncAll,
+  RANDOM_ADDRESS,
+  subscribeToTransactions,
 } from "test/helpers"
-import { ledger } from "@services/mongodb"
-import { PaymentInitiationMethod, TxStatus } from "@domain/wallets"
-import { Wallets } from "@app"
-import { TwoFAError, TransactionRestrictedError } from "@core/error"
 import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
-import { NotificationType } from "@domain/notifications"
-import { toTargetConfs } from "@domain/bitcoin"
-import { LedgerTransactionType } from "@domain/ledger"
 
 jest.mock("@services/notifications/notification")
 
@@ -93,27 +92,27 @@ describe("UserWallet - onChainPay", () => {
     // expect(sendNotification.mock.calls[0][0].data.type).toBe(NotificationType.OnchainPayment)
     // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
 
-    // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
-    const {
-      results: [pendingTxn],
-    } = await ledger.getAccountTransactions(userWallet0.walletPath, { pending: true })
+    let pendingTxHash: OnChainTxHash
 
-    const interimBalance = await getBTCBalance(userWallet0.user.walletId)
-    expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTxn.fee)
-    await checkIsBalanced()
+    {
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: userWallet0.user.walletId,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        throw txResult.error
+      }
+      const pendingTxs = txResult.result.filter(
+        ({ status }) => status === TxStatus.Pending,
+      )
+      expect(pendingTxs.length).toBe(1)
+      const pendingTx = pendingTxs[0]
+      expect(pendingTx.settlementAmount).toBe(-amount - pendingTx.settlementFee)
+      pendingTxHash = pendingTx.id as OnChainTxHash
 
-    await sleep(1000)
-
-    let txResult = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet0.user.walletId,
-    })
-    if (txResult.error instanceof Error || txResult.result === null) {
-      throw txResult.error
+      const interimBalance = await getBTCBalance(userWallet0.user.walletId)
+      expect(interimBalance).toBe(initialBalanceUser0 - amount - pendingTx.settlementFee)
+      await checkIsBalanced()
     }
-    let txs = txResult.result
-    const pendingTxs = txs.filter(({ status }) => status === TxStatus.Pending)
-    expect(pendingTxs.length).toBe(1)
-    expect(pendingTxs[0].settlementAmount).toBe(-amount - pendingTxs[0].settlementFee)
 
     // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
 
@@ -134,35 +133,39 @@ describe("UserWallet - onChainPay", () => {
       NotificationType.OnchainPayment,
     )
 
-    const {
-      results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet0.walletPath, {
-      hash: pendingTxn.hash,
-    })
-    const feeRates = getFeeRates()
+    {
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: userWallet0.user.walletId,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        throw txResult.error
+      }
+      const pendingTxs = txResult.result.filter(
+        ({ status }) => status === TxStatus.Pending,
+      )
+      expect(pendingTxs.length).toBe(0)
 
-    expect(pending).toBe(false)
-    expect(fee).toBe(feeRates.withdrawFeeFixed + 7050)
-    expect(feeUsd).toBeGreaterThan(0)
+      const settledTxs = txResult.result.filter(
+        ({ status, initiationVia, id }) =>
+          status === TxStatus.Success &&
+          initiationVia.type === PaymentInitiationMethod.OnChain &&
+          id === pendingTxHash,
+      )
+      expect(settledTxs.length).toBe(1)
+      const settledTx = last(settledTxs) as WalletTransaction
 
-    txResult = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet0.user.walletId,
-    })
-    if (txResult.error instanceof Error || txResult.result === null) {
-      throw txResult.error
+      const feeRates = getFeeRates()
+      const fee = feeRates.withdrawFeeFixed + 7050
+
+      expect(settledTx.settlementFee).toBe(fee)
+      expect(settledTx.settlementAmount).toBe(-amount - fee)
+
+      expect(settledTx.settlementUsdPerSat).toBeGreaterThan(0)
+
+      const finalBalance = await getBTCBalance(userWallet0.user.walletId)
+      expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
     }
-    txs = txResult.result
-    const txn = txs.find(
-      (tx: WalletTransaction) =>
-        tx.initiationVia.type === PaymentInitiationMethod.OnChain &&
-        tx.id === pendingTxn.id,
-    )
-    expect(txn).toBeTruthy()
-    expect(txn?.settlementAmount).toBe(-amount - fee)
-    expect(txn?.deprecated.type).toBe("onchain_payment")
 
-    const finalBalance = await getBTCBalance(userWallet0.user.walletId)
-    expect(finalBalance).toBe(initialBalanceUser0 - amount - fee)
     sub.removeAllListeners()
   })
 
@@ -187,27 +190,27 @@ describe("UserWallet - onChainPay", () => {
     // expect(sendNotification.mock.calls[0][0].data.type).toBe(NotificationType.OnchainPayment)
     // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
 
-    // FIXME: does this syntax always take the first match item in the array? (which is waht we want, items are return as newest first)
-    const {
-      results: [pendingTxn],
-    } = await ledger.getAccountTransactions(userWallet11.walletPath, { pending: true })
+    let pendingTxHash
 
-    const interimBalance = await getBTCBalance(userWallet11.user.walletId)
-    expect(interimBalance).toBe(0)
-    await checkIsBalanced()
+    {
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: userWallet11.user.walletId,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        throw txResult.error
+      }
+      const pendingTxs = txResult.result.filter(
+        ({ status }) => status === TxStatus.Pending,
+      )
+      expect(pendingTxs.length).toBe(1)
+      const pendingTx = pendingTxs[0]
+      expect(pendingTx.settlementAmount).toBe(-initialBalanceUser11)
+      pendingTxHash = pendingTx.id as OnChainTxHash
 
-    await sleep(1000)
-
-    let txResult = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet11.user.walletId,
-    })
-    if (txResult.error instanceof Error || txResult.result === null) {
-      throw txResult
+      const interimBalance = await getBTCBalance(userWallet11.user.walletId)
+      expect(interimBalance).toBe(0)
+      await checkIsBalanced()
     }
-    let txs = txResult.result
-    const pendingTxs = txs.filter(({ status }) => status === TxStatus.Pending)
-    expect(pendingTxs.length).toBe(1)
-    expect(pendingTxs[0].settlementAmount).toBe(-initialBalanceUser11)
 
     // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
 
@@ -228,35 +231,38 @@ describe("UserWallet - onChainPay", () => {
       NotificationType.OnchainPayment,
     )
 
-    const {
-      results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet11.walletPath, {
-      hash: pendingTxn.hash,
-    })
-    const feeRates = getFeeRates()
+    {
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: userWallet11.user.walletId,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        throw txResult.error
+      }
+      const pendingTxs = txResult.result.filter(
+        ({ status }) => status === TxStatus.Pending,
+      )
+      expect(pendingTxs.length).toBe(0)
 
-    expect(pending).toBe(false)
-    expect(fee).toBe(feeRates.withdrawFeeFixed + 7050) // 7050?
-    expect(feeUsd).toBeGreaterThan(0)
+      const settledTxs = txResult.result.filter(
+        ({ status, initiationVia, id }) =>
+          status === TxStatus.Success &&
+          initiationVia.type === PaymentInitiationMethod.OnChain &&
+          id === pendingTxHash,
+      )
+      expect(settledTxs.length).toBe(1)
+      const settledTx = last(settledTxs) as WalletTransaction
 
-    txResult = await Wallets.getTransactionsForWalletId({
-      walletId: userWallet11.user.walletId,
-    })
-    if (txResult.error instanceof Error || txResult.result === null) {
-      throw txResult.error
+      const feeRates = getFeeRates()
+      const fee = feeRates.withdrawFeeFixed + 7050
+
+      const finalBalance = await getBTCBalance(userWallet11.user.walletId)
+      expect(finalBalance).toBe(0)
+
+      expect(settledTx.settlementFee).toBe(fee)
+      expect(settledTx.settlementAmount).toBe(-initialBalanceUser11)
+      expect(settledTx.settlementUsdPerSat).toBeGreaterThan(0)
     }
-    txs = txResult.result
-    const txn = txs.find(
-      (tx) =>
-        tx.initiationVia.type === PaymentInitiationMethod.OnChain &&
-        tx.id === pendingTxn.id,
-    )
-    expect(txn).toBeTruthy()
-    expect(txn?.settlementAmount).toBe(-initialBalanceUser11)
-    expect(txn?.deprecated.type).toBe("onchain_payment")
 
-    const finalBalance = await getBTCBalance(userWallet11.user.walletId)
-    expect(finalBalance).toBe(0)
     sub.removeAllListeners()
   })
 
@@ -276,12 +282,49 @@ describe("UserWallet - onChainPay", () => {
     if (error instanceof Error || txs === null) {
       throw error
     }
-    const firstTxs = first(txs)
-    if (!firstTxs) {
+    if (txs.length === 0) {
       throw Error("No transactions found")
     }
-    expect(firstTxs.deprecated.description).toBe(memo)
-    await mineBlockAndSync({ lnds: [lndonchain] })
+    const firstTxs = txs[0]
+    expect(firstTxs.memo).toBe(memo)
+    const pendingTxHash = firstTxs.id
+
+    const sub = subscribeToTransactions({ lnd: lndonchain })
+    sub.on("chain_transaction", onchainTransactionEventHandler)
+
+    const results = await Promise.all([
+      once(sub, "chain_transaction"),
+      mineBlockAndSync({ lnds: [lndonchain] }),
+    ])
+
+    await sleep(1000)
+    await onchainTransactionEventHandler(results[0][0])
+
+    {
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: userWallet0.user.walletId,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        throw txResult.error
+      }
+      const pendingTxs = txResult.result.filter(
+        ({ status }) => status === TxStatus.Pending,
+      )
+      expect(pendingTxs.length).toBe(0)
+
+      const settledTxs = txResult.result.filter(
+        ({ status, initiationVia, id }) =>
+          status === TxStatus.Success &&
+          initiationVia.type === PaymentInitiationMethod.OnChain &&
+          id === pendingTxHash,
+      )
+      expect(settledTxs.length).toBe(1)
+      const settledTx = last(settledTxs) as WalletTransaction
+
+      expect(settledTx.memo).toBe(memo)
+    }
+
+    sub.removeAllListeners()
   })
 
   it("sends an on us transaction", async () => {
@@ -299,15 +342,34 @@ describe("UserWallet - onChainPay", () => {
     expect(finalBalanceUser0).toBe(initialBalanceUser0 - amount)
     expect(finalBalanceUser3).toBe(initialBalanceUser3 + amount)
 
-    const {
-      results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet0.walletPath, {
-      type: "onchain_on_us",
-    })
+    {
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: userWallet0.user.walletId,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        throw txResult.error
+      }
+      const pendingTxs = txResult.result.filter(
+        ({ status }) => status === TxStatus.Pending,
+      )
+      expect(pendingTxs.length).toBe(0)
 
-    expect(pending).toBe(false)
-    expect(fee).toBe(0)
-    expect(feeUsd).toBe(0)
+      const settledTxs = txResult.result.filter(
+        ({ status, initiationVia, settlementVia }) =>
+          status === TxStatus.Success &&
+          initiationVia.type === PaymentInitiationMethod.OnChain &&
+          settlementVia.type === SettlementMethod.IntraLedger,
+      )
+      expect(settledTxs.length).toBe(1)
+      const settledTx = last(settledTxs) as WalletTransaction
+
+      expect(settledTx.settlementFee).toBe(0)
+      expect(settledTx.settlementAmount).toBe(-amount)
+      expect(settledTx.settlementUsdPerSat).toBeGreaterThan(0)
+
+      const finalBalance = await getBTCBalance(userWallet0.user.walletId)
+      expect(finalBalance).toBe(initialBalanceUser0 - amount)
+    }
   })
 
   it("sends an on us transaction with memo", async () => {
@@ -374,15 +436,34 @@ describe("UserWallet - onChainPay", () => {
     expect(finalBalanceUser12).toBe(0)
     expect(finalBalanceUser3).toBe(initialBalanceUser3 + initialBalanceUser12)
 
-    const {
-      results: [{ pending, fee, feeUsd }],
-    } = await ledger.getAccountTransactions(userWallet12.walletPath, {
-      type: "onchain_on_us",
-    })
+    {
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: userWallet12.user.walletId,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        throw txResult.error
+      }
+      const pendingTxs = txResult.result.filter(
+        ({ status }) => status === TxStatus.Pending,
+      )
+      expect(pendingTxs.length).toBe(0)
 
-    expect(pending).toBe(false)
-    expect(fee).toBe(0)
-    expect(feeUsd).toBe(0)
+      const settledTxs = txResult.result.filter(
+        ({ status, initiationVia, settlementVia }) =>
+          status === TxStatus.Success &&
+          initiationVia.type === PaymentInitiationMethod.OnChain &&
+          settlementVia.type === SettlementMethod.IntraLedger,
+      )
+      expect(settledTxs.length).toBe(1)
+      const settledTx = last(settledTxs) as WalletTransaction
+
+      expect(settledTx.settlementFee).toBe(0)
+      expect(settledTx.settlementAmount).toBe(-initialBalanceUser12)
+      expect(settledTx.settlementUsdPerSat).toBeGreaterThan(0)
+
+      const finalBalance = await getBTCBalance(userWallet12.user.walletId)
+      expect(finalBalance).toBe(0)
+    }
   })
 
   it("fails if try to send a transaction to self", async () => {
@@ -450,7 +531,7 @@ describe("UserWallet - onChainPay", () => {
     const [result] = await Transaction.aggregate([
       {
         $match: {
-          accounts: userWallet0.walletPath,
+          accounts: userWallet0.user.walletPath,
           type: { $ne: "on_us" },
           timestamp: { $gte: timestampYesterday },
         },

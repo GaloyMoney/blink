@@ -2,6 +2,7 @@ import { getGenericLimits, MS_PER_HOUR } from "@config/app"
 import { generateTokenHelper, getAndCreateUserWallet } from "test/helpers"
 import { WalletsRepository } from "@services/mongoose"
 import { Accounts } from "@app"
+import { CsvWalletsExport } from "@services/ledger/csv-wallet-export"
 
 let userWallet0, userWallet1, userWallet2
 const username = "user0" as Username
@@ -134,9 +135,11 @@ describe("UserWallet", () => {
 
   describe("getStringCsv", () => {
     const csvHeader =
-      "voided,approved,_id,accounts,credit,debit,_journal,book,unix,date,datetime,currency,username,type,hash,txid,fee,feeUsd,sats,usd,memo,memoPayer,meta,pending"
+      "id,walletId,type,credit,debit,fee,currency,timestamp,pendingConfirmation,journalId,lnMemo,usd,feeUsd,recipientWalletId,username,memoFromPayer,paymentHash,pubkey,feeKnownInAdvance,address,txHash"
     it("exports to csv", async () => {
-      const base64Data = await userWallet0.getStringCsv()
+      const csv = new CsvWalletsExport()
+      await csv.addWallet(userWallet0.user.walletId)
+      const base64Data = csv.getBase64()
       expect(typeof base64Data).toBe("string")
       const data = Buffer.from(base64Data, "base64")
       expect(data.includes(csvHeader)).toBeTruthy()

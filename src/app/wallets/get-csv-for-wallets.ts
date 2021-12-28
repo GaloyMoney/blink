@@ -1,11 +1,11 @@
-import { CSVAccountExport } from "@core/csv-account-export"
+import { CsvWalletsExport } from "@services/ledger/csv-wallet-export"
 
 export const getCSVForWallets = async (
   walletIds: WalletId[],
 ): Promise<string | ApplicationError> => {
-  const csv = new CSVAccountExport()
+  const csv = new CsvWalletsExport()
   for (const walletId of walletIds) {
-    await csv.addWallet({ wallet: walletId })
+    await csv.addWallet(walletId)
   }
   return csv.getBase64()
 }

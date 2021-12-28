@@ -4,7 +4,7 @@ import { sendBalanceToAccounts } from "@app/accounts/send-balance-to-accounts"
 import { toSats } from "@domain/bitcoin"
 import * as serviceLedger from "@services/ledger"
 import { baseLogger } from "@services/logger"
-import { ledger } from "@services/mongodb"
+import { LedgerService } from "@services/ledger"
 
 jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -41,7 +41,8 @@ describe("notification", () => {
       const numActiveUsers = users.length
       expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
       for (const [call] of sendNotification.mock.calls) {
-        const balance = await ledger.getWalletBalance(call.user.walletPath)
+        const balance = await LedgerService().getWalletBalance(call.user.walletId)
+        if (balance instanceof Error) throw balance
 
         const expectedUsdBalance = (price * balance).toLocaleString("en", {
           maximumFractionDigits: 2,

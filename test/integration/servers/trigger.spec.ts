@@ -1,30 +1,30 @@
-import { onchainBlockEventhandler, onInvoiceUpdate } from "@servers/trigger"
-import { baseLogger } from "@services/logger"
-import {
-  getAndCreateUserWallet,
-  bitcoindClient,
-  bitcoindOutside,
-  lnd1,
-  subscribeToBlocks,
-  waitUntilSyncAll,
-  amountAfterFeeDeduction,
-  waitFor,
-  mineBlockAndSyncAll,
-  lndOutside1,
-  pay,
-  getInvoice,
-  RANDOM_ADDRESS,
-} from "test/helpers"
-import { Wallets, Prices } from "@app"
+import { Prices, Wallets } from "@app"
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
+import { getHash } from "@core/utils"
 import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
-import { getHash } from "@core/utils"
-import { ledger } from "@services/mongodb"
-import { getTitle } from "@services/notifications/payment"
-import { TxStatus } from "@domain/wallets"
-import { getBTCBalance } from "test/helpers/wallet"
 import { NotificationType } from "@domain/notifications"
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
+import { TxStatus } from "@domain/wallets"
+import { onchainBlockEventhandler, onInvoiceUpdate } from "@servers/trigger"
+import { LedgerService } from "@services/ledger"
+import { baseLogger } from "@services/logger"
+import { getTitle } from "@services/notifications/payment"
+import {
+  amountAfterFeeDeduction,
+  bitcoindClient,
+  bitcoindOutside,
+  getAndCreateUserWallet,
+  getInvoice,
+  lnd1,
+  lndOutside1,
+  mineBlockAndSyncAll,
+  pay,
+  RANDOM_ADDRESS,
+  subscribeToBlocks,
+  waitFor,
+  waitUntilSyncAll,
+} from "test/helpers"
+import { getBTCBalance } from "test/helpers/wallet"
 
 jest.mock("@services/notifications/notification")
 
@@ -154,9 +154,14 @@ describe("onchainBlockEventhandler", () => {
     const invoice = await getInvoice({ id: hash, lnd: lnd1 })
     await onInvoiceUpdate(invoice)
 
-    const dbTx = await ledger.getTransactionByHash(hash)
-    expect(dbTx.sats).toBe(sats)
-    expect(dbTx.pending).toBe(false)
+    const ledger = LedgerService()
+    const ledgerTxs = await ledger.getTransactionsByHash(hash)
+    if (ledgerTxs instanceof Error) throw ledgerTxs
+
+    const ledgerTx = ledgerTxs[0]
+
+    expect(ledgerTx.credit).toBe(sats)
+    expect(ledgerTx.pendingConfirmation).toBe(false)
 
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice

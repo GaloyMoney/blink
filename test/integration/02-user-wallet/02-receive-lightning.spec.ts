@@ -1,17 +1,18 @@
-import { ledger } from "@services/mongodb"
-import { baseLogger } from "@services/logger"
+import { Lightning } from "@app"
+import * as Wallets from "@app/wallets"
+import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
 import { getHash } from "@core/utils"
+import { toSats } from "@domain/bitcoin"
+import { PaymentInitiationMethod } from "@domain/wallets"
+import { baseLogger } from "@services/logger"
 import {
   checkIsBalanced,
   getAndCreateUserWallet,
+  getBTCBalance,
   lndOutside1,
   pay,
-  getBTCBalance,
 } from "test/helpers"
-import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
-import { Wallets, Lightning } from "@app"
-import { PaymentInitiationMethod } from "@domain/wallets"
-import { toSats } from "@domain/bitcoin"
+import { LedgerService } from "@services/ledger"
 
 let userWallet1
 let initBalance1
@@ -68,10 +69,15 @@ describe("UserWallet - Lightning", () => {
       }),
     ).not.toBeInstanceOf(Error)
 
-    const dbTx = await ledger.getTransactionByHash(hash)
-    expect(dbTx.sats).toBe(sats)
-    expect(dbTx.memo).toBe(memo)
-    expect(dbTx.pending).toBe(false)
+    const ledger = LedgerService()
+    const ledgerTxs = await ledger.getTransactionsByHash(hash)
+    if (ledgerTxs instanceof Error) throw ledgerTxs
+
+    const ledgerTx = ledgerTxs[0]
+
+    expect(ledgerTx.credit).toBe(sats)
+    expect(ledgerTx.lnMemo).toBe(memo)
+    expect(ledgerTx.pendingConfirmation).toBe(false)
 
     const isPaidAfterPay = await checker.invoiceIsPaid()
     expect(isPaidAfterPay).not.toBeInstanceOf(Error)
@@ -122,10 +128,15 @@ describe("UserWallet - Lightning", () => {
       }),
     ).not.toBeInstanceOf(Error)
 
-    const dbTx = await ledger.getTransactionByHash(hash)
-    expect(dbTx.sats).toBe(sats)
-    expect(dbTx.memo).toBe("")
-    expect(dbTx.pending).toBe(false)
+    const ledger = LedgerService()
+    const ledgerTxs = await ledger.getTransactionsByHash(hash)
+    if (ledgerTxs instanceof Error) throw ledgerTxs
+
+    const ledgerTx = ledgerTxs[0]
+
+    expect(ledgerTx.credit).toBe(sats)
+    expect(ledgerTx.lnMemo).toBe("")
+    expect(ledgerTx.pendingConfirmation).toBe(false)
 
     const finalBalance = await getBTCBalance(userWallet1.user.walletId)
     expect(finalBalance).toBe(initBalance1 + sats)
@@ -158,8 +169,12 @@ describe("UserWallet - Lightning", () => {
     ).not.toBeInstanceOf(Error)
 
     // check that spam memo is persisted to database
-    const dbTx = await ledger.getTransactionByHash(hash)
-    expect(dbTx.memo).toBe(memo)
+    const ledger = LedgerService()
+    const ledgerTxs = await ledger.getTransactionsByHash(hash)
+    if (ledgerTxs instanceof Error) throw ledgerTxs
+
+    const ledgerTx = ledgerTxs[0]
+    expect(ledgerTx.lnMemo).toBe(memo)
 
     // check that spam memo is filtered from transaction description
     const { result: txns, error } = await Wallets.getTransactionsForWalletId({
@@ -173,8 +188,8 @@ describe("UserWallet - Lightning", () => {
         txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
         txn.initiationVia.paymentHash === hash,
     ) as WalletTransaction
-    expect(dbTx.type).toBe("invoice")
-    expect(spamTxn.deprecated.description).toBe(dbTx.type)
+    expect(ledgerTx.type).toBe("invoice")
+    expect(spamTxn.deprecated.description).toBe(ledgerTx.type)
 
     // confirm expected final balance
     const finalBalance = await getBTCBalance(userWallet1.user.walletId)

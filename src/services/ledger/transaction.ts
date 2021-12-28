@@ -288,17 +288,9 @@ export const addHotWalletPayment = async ({ description, amount, fee, hash }) =>
     .commit()
 }
 
-export const voidTransactions = (journalId, reason) => {
-  return MainBook.void(journalId, reason)
-}
-
 export const settlePayment = async (hash) => {
   const result = await Transaction.updateMany({ hash }, { pending: false })
   return result.nModified > 0
-}
-
-export const settleLndPayment = (hash) => {
-  return settlePayment(hash)
 }
 
 export const settleOnchainPayment = (hash) => {

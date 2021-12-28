@@ -1,4 +1,16 @@
+import { Prices } from "@app"
+import * as Wallets from "@app/wallets"
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
+import { toSats } from "@domain/bitcoin"
 import { Storage } from "@google-cloud/storage"
+import { LedgerService } from "@services/ledger"
+import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
+import { onChannelUpdated } from "@services/lnd/utils"
+import { baseLogger } from "@services/logger"
+import { ledger, setupMongoConnection } from "@services/mongodb"
+import { User } from "@services/mongoose/schema"
+import { NotificationsService } from "@services/notifications"
+import { updatePriceHistory } from "@services/price/update-price-history"
 import crypto from "crypto"
 import { Dropbox } from "dropbox"
 import express from "express"
@@ -9,16 +21,6 @@ import {
   subscribeToInvoices,
   subscribeToTransactions,
 } from "lightning"
-import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
-import { onChannelUpdated } from "@services/lnd/utils"
-import { baseLogger } from "@services/logger"
-import { ledger, setupMongoConnection } from "@services/mongodb"
-import { User } from "@services/mongoose/schema"
-import { updatePriceHistory } from "@services/price/update-price-history"
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
-import { Wallets, Prices } from "@app"
-import { NotificationsService } from "@services/notifications"
-import { toSats } from "@domain/bitcoin"
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -85,10 +87,9 @@ export async function onchainTransactionEventHandler(tx) {
       "payment completed",
     )
 
-    const walletPath = await ledger.getAccountByTransactionHash(tx.id)
-    const walletId = ledger.resolveWalletId(walletPath)
-
-    if (!walletId) {
+    const walletId = await LedgerService().getWalletIdByTransactionHash(tx.id)
+    if (walletId instanceof Error) {
+      logger.info({ tx, walletId }, "impossible to find wallet id")
       return
     }
 

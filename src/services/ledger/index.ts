@@ -617,6 +617,26 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const getWalletIdByTransactionHash = async (
+    hash,
+  ): Promise<WalletId | LedgerServiceError> => {
+    const bankOwnerWalletId = await getBankOwnerWalletId()
+    const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
+    const entry = await Transaction.findOne({
+      account_path: liabilitiesMainAccount,
+      accounts: { $ne: bankOwnerPath },
+      hash,
+    })
+    if (!entry) {
+      return new CouldNotFindTransactionError()
+    }
+    const walletId = accounts.resolveWalletId(entry.account_path)
+    if (!walletId) {
+      return new UnknownLedgerError("no wallet id associated to transaction")
+    }
+    return walletId
+  }
+
   return {
     getTransactionById,
     getTransactionsByHash,
@@ -640,6 +660,7 @@ export const LedgerService = (): ILedgerService => {
     addWalletIdIntraledgerTxSend,
     settlePendingLnPayments,
     voidLedgerTransactionsForJournal,
+    getWalletIdByTransactionHash,
   }
 }
 
