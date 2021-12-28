@@ -18,7 +18,7 @@ const LnInvoiceFeeProbeMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(LnInvoiceFeeProbeInput) },
   },
-  resolve: async (_, args, { logger }) => {
+  resolve: async (_, args) => {
     const { walletId, paymentRequest } = args.input
 
     for (const input of [walletId, paymentRequest]) {
@@ -30,7 +30,6 @@ const LnInvoiceFeeProbeMutation = GT.Field({
     const feeSatAmount = await Wallets.getLightningFee({
       walletId,
       paymentRequest,
-      logger,
     })
     if (feeSatAmount instanceof Error) {
       const appErr = mapError(feeSatAmount)

@@ -8,35 +8,31 @@ import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { checkedToWalletId } from "@domain/wallets"
 import { LndService } from "@services/lnd"
 import { RoutesCache } from "@services/redis/routes"
-import { getBalanceForWallet } from "./get-balance-for-wallet"
+import { getBalanceForWalletId } from "./get-balance-for-wallet"
 
 export const getLightningFee = async ({
   walletId,
   paymentRequest,
-  logger,
 }: {
   walletId: WalletId
   paymentRequest: EncodedPaymentRequest
-  logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
   const decodedInvoice = decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
   const paymentAmount = checkedToSats(decodedInvoice.amount || 0)
   if (paymentAmount instanceof Error) return paymentAmount
 
-  return feeProbe({ walletId, decodedInvoice, paymentAmount, logger })
+  return feeProbe({ walletId, decodedInvoice, paymentAmount })
 }
 
 export const getNoAmountLightningFee = async ({
   walletId,
   paymentRequest,
   amount,
-  logger,
 }: {
   walletId: WalletId
   paymentRequest: EncodedPaymentRequest
   amount: Satoshis
-  logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
   const decodedInvoice = decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
@@ -49,26 +45,24 @@ export const getNoAmountLightningFee = async ({
   const paymentAmount = checkedToSats(amount)
   if (paymentAmount instanceof Error) return paymentAmount
 
-  return noAmountProbeForFee({ walletId, decodedInvoice, paymentAmount, logger })
+  return noAmountProbeForFee({ walletId, decodedInvoice, paymentAmount })
 }
 
 const feeProbe = async ({
   walletId,
   decodedInvoice,
   paymentAmount,
-  logger,
 }: {
   walletId: WalletId
   decodedInvoice: LnInvoice
   paymentAmount: Satoshis
-  logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
   const { destination, paymentHash } = decodedInvoice
 
   const walletIdChecked = checkedToWalletId(walletId)
   if (walletIdChecked instanceof Error) return walletIdChecked
 
-  const balance = await getBalanceForWallet({ walletId, logger })
+  const balance = await getBalanceForWalletId(walletId)
   if (balance instanceof Error) return balance
   if (balance < paymentAmount) {
     return new InsufficientBalanceError(
@@ -106,19 +100,17 @@ const noAmountProbeForFee = async ({
   walletId,
   decodedInvoice,
   paymentAmount,
-  logger,
 }: {
   walletId: WalletId
   decodedInvoice: LnInvoice
   paymentAmount: Satoshis
-  logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
   const { destination, paymentHash } = decodedInvoice
 
   const walletIdChecked = checkedToWalletId(walletId)
   if (walletIdChecked instanceof Error) return walletIdChecked
 
-  const balance = await getBalanceForWallet({ walletId, logger })
+  const balance = await getBalanceForWalletId(walletId)
   if (balance instanceof Error) return balance
   if (balance < paymentAmount) {
     return new InsufficientBalanceError(

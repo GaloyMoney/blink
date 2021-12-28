@@ -359,7 +359,6 @@ const resolvers = {
             walletId: wallet.user.walletId,
             amount,
             paymentRequest: invoice,
-            logger,
           })
           if (!(feeSatAmount instanceof Error)) return feeSatAmount
           if (!(feeSatAmount instanceof LnPaymentRequestZeroAmountRequiredError))
@@ -369,7 +368,6 @@ const resolvers = {
         feeSatAmount = await Wallets.getLightningFee({
           walletId: wallet.user.walletId,
           paymentRequest: invoice,
-          logger,
         })
         if (feeSatAmount instanceof Error) throw mapError(feeSatAmount)
         return feeSatAmount

@@ -20,7 +20,7 @@ const LnNoAmountInvoiceFeeProbeMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(LnNoAmountInvoiceFeeProbeInput) },
   },
-  resolve: async (_, args, { logger }) => {
+  resolve: async (_, args) => {
     const { walletId, paymentRequest, amount } = args.input
 
     for (const input of [walletId, paymentRequest, amount]) {
@@ -33,7 +33,6 @@ const LnNoAmountInvoiceFeeProbeMutation = GT.Field({
       walletId,
       amount,
       paymentRequest,
-      logger,
     })
     if (feeSatAmount instanceof Error) {
       const appErr = mapError(feeSatAmount)

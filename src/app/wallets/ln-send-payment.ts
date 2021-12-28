@@ -1,7 +1,7 @@
 import { getAccount } from "@app/accounts"
 import { getCurrentPrice } from "@app/prices"
 import { getUser } from "@app/users"
-import { getBalanceForWallet, getWallet } from "@app/wallets"
+import { getBalanceForWalletId, getWallet } from "@app/wallets"
 import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
@@ -355,7 +355,7 @@ const executePaymentViaIntraledger = async ({
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
     async (lock) => {
-      const balance = await getBalanceForWallet({ walletId: senderWalletId, logger })
+      const balance = await getBalanceForWalletId(senderWalletId)
       if (balance instanceof Error) return balance
       if (balance < sats) {
         return new InsufficientBalanceError(
@@ -456,7 +456,7 @@ const executePaymentViaLn = async ({
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
     async (lock) => {
-      const balance = await getBalanceForWallet({ walletId: senderWalletId, logger })
+      const balance = await getBalanceForWalletId(senderWalletId)
       if (balance instanceof Error) return balance
       if (balance < sats) {
         return new InsufficientBalanceError(
