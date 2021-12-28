@@ -14,6 +14,7 @@ import {
   getWalletInfo,
 } from "lightning"
 import { getActiveOnchainLnd } from "./utils"
+import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 export const OnChainService = (
   decoder: TxDecoder,
@@ -111,7 +112,10 @@ export const OnChainService = (
   }
 
   return {
-    listIncomingTransactions,
+    listIncomingTransactions: wrapAsyncToRunInSpan({
+      namespace: `service.lnd`,
+      fn: listIncomingTransactions,
+    }),
     lookupOnChainFee,
     createOnChainAddress,
     getOnChainFeeEstimate,

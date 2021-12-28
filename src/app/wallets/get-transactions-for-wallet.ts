@@ -9,6 +9,7 @@ import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { baseLogger } from "@services/logger"
 import { WalletsRepository } from "@services/mongoose"
+import { wrapToRunInSpan } from "@services/tracing"
 
 // FIXME(nicolas): remove only used in api v1 and tests
 export const getTransactionsForWalletId = async ({
@@ -51,7 +52,11 @@ export const getTransactionsForWallet = async (
     confirmationsLessThan: ONCHAIN_MIN_CONFIRMATIONS,
     addresses,
   })
-  const pendingTxs = filter.apply(onChainTxs)
+
+  const pendingTxs = wrapToRunInSpan({
+    namespace: `domain.bitcoin`,
+    fn: () => filter.apply(onChainTxs),
+  })()
 
   let price = await getCurrentPrice()
   if (price instanceof Error) {
