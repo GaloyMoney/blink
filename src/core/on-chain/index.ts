@@ -76,11 +76,7 @@ export const OnChainMixin = (superclass) =>
 
       const walletId_ = this.user.walletId // FIXME: just set this variable for easier code review. long variable would trigger adding a tab and much bigger diff
       return redlock({ path: walletId_, logger: onchainLogger }, async (lock) => {
-        const balanceSats = await Wallets.getBalanceForWallet({
-          walletId: this.user.walletId,
-          logger: onchainLogger,
-          lock,
-        })
+        const balanceSats = await Wallets.getBalanceForWalletId(this.user.walletId)
         if (balanceSats instanceof Error) throw balanceSats
 
         onchainLogger = onchainLogger.child({ balanceSats })

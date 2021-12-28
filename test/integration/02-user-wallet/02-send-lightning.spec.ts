@@ -515,7 +515,6 @@ describe("UserWallet - Lightning Pay", () => {
           const feeFromProbe = await Wallets.getLightningFee({
             walletId: wallet.user.walletId,
             paymentRequest: input.invoice,
-            logger: wallet.logger,
           })
           if (feeFromProbe instanceof Error) throw feeFromProbe
           const paymentResult = await Wallets.lnInvoicePaymentSendWithTwoFA({
