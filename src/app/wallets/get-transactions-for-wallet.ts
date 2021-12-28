@@ -7,6 +7,7 @@ import { LedgerError } from "@domain/ledger"
 import { WalletTransactionHistory } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
+import { baseLogger } from "@services/logger"
 import { WalletsRepository } from "@services/mongoose"
 
 export const getTransactionsForWalletId = async ({
@@ -32,11 +33,13 @@ export const getTransactionsForWallet = async (
 
   const onChain = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChain instanceof OnChainError) {
+    baseLogger.warn({ onChain }, "impossible to create OnChainService")
     return PartialResult.partial(confirmedHistory.transactions, onChain)
   }
 
   const onChainTxs = await onChain.listIncomingTransactions(ONCHAIN_SCAN_DEPTH)
   if (onChainTxs instanceof OnChainError) {
+    baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
     return PartialResult.partial(confirmedHistory.transactions, onChainTxs)
   }
 
