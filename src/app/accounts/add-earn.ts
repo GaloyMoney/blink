@@ -19,7 +19,7 @@ export const addEarn = async ({
   quizQuestionId: QuizQuestionId
   accountId: AccountId /* AccountId: aid validation */
   logger: Logger
-}) => {
+}): Promise<QuizQuestion | ApplicationError> => {
   const amount = onboardingEarn[quizQuestionId]
   if (!amount) {
     return new ValidationError("incorrect reward id")
@@ -55,5 +55,5 @@ export const addEarn = async ({
   })
   if (payment instanceof Error) return payment
 
-  return { id: quizQuestionId, value: amount, completed: true }
+  return { id: quizQuestionId, earnAmount: amount }
 }
