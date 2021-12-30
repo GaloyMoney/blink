@@ -2,10 +2,10 @@ import { getUser } from "@app/users"
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { onboardingEarn } from "@config/app"
 import {
+  InvalidPhoneMetadataForRewardError,
   InvalidQuizQuestionIdError,
-  RewardMissingMetadataError,
-  RewardNonValidTypeError,
 } from "@domain/errors"
+import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
 import { getFunderWalletId } from "@services/ledger/accounts"
 import { RewardsRepository } from "@services/mongoose"
 
@@ -31,13 +31,9 @@ export const addEarn = async ({
   const user = await getUser(recipientAccount.ownerId)
   if (user instanceof Error) return user
 
-  if (!user.phoneMetadata?.carrier) {
-    return new RewardMissingMetadataError()
-  }
-
-  if (user.phoneMetadata.carrier.type === "voip") {
-    return new RewardNonValidTypeError()
-  }
+  const validatedPhoneMetadata = PhoneMetadataValidator().validate(user.phoneMetadata)
+  if (validatedPhoneMetadata instanceof Error)
+    return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
 
   const recipientWalletId = recipientAccount.defaultWalletId
 
