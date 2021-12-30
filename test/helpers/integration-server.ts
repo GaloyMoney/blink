@@ -1,7 +1,7 @@
 import childProcess from "child_process"
 import kill from "tree-kill"
 
-let serverPid: number | null
+let serverPid = 0
 
 export const startServer = async (
   serverStartMessage = "Server ready",
@@ -12,7 +12,7 @@ export const startServer = async (
       serverPid = serverProcess.pid
       serverProcess.stdout.on("data", (data) => {
         if (data.includes(serverStartMessage)) {
-          resolve(serverPid!)
+          resolve(serverPid)
         }
         serverProcess.removeAllListeners()
       })
@@ -31,7 +31,7 @@ export const killServer = async (): Promise<null> => {
         } else {
           resolve(null)
         }
-        serverPid = null
+        serverPid = 0
       })
     } else {
       resolve(null)

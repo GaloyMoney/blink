@@ -6,6 +6,7 @@ import {
   HttpLink,
   split,
   NormalizedCacheObject,
+  FetchResult
 } from "@apollo/client/core"
 import { WebSocketLink } from "@apollo/client/link/ws"
 import { getMainDefinition } from "@apollo/client/utilities"
@@ -86,7 +87,7 @@ export const createApolloClient = (
   }
 }
 
-export const getSubscriptionNext = (subscription: Observable<any>): Promise<any> => {
+export const getSubscriptionNext = (subscription: Observable<FetchResult<any>>): Promise<FetchResult<any>> => {
   return new Promise((resolve, reject) => {
     subscription.subscribe({ next: resolve, error: reject })
   })

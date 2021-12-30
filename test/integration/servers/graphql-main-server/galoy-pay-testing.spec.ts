@@ -15,7 +15,7 @@ import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 import { startServer, killServer } from "test/helpers/integration-server"
 
 jest.mock("@services/twilio", () => require("test/mocks/twilio"))
-jest.setTimeout(100 * 1000)
+jest.setTimeout(5 * 60 * 1000)
 
 let apolloClient: ApolloClient<NormalizedCacheObject>, disposeClient: () => void
 const receivingUsername = "user0"
@@ -58,18 +58,23 @@ describe("galoy-pay", () => {
 
     it("returns an error for invalid username syntax", async () => {
       const input = { username: "username-incorrectly-formatted" }
+      const message = "Invalid value for Username"
+      const result = await apolloClient.query({ query: myQuery, variables: input })
 
-      const result: any = await apolloClient.query({ query: myQuery, variables: input })
-
-      expect(result.errors[0].code).toBe("BAD_USER_INPUT")
+      expect(result.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining(message)})]),
+      )
     })
 
     it("returns an error for an inexistant username", async () => {
       const input = { username: "user1234" }
+      const message = "Account does not exist for username"
 
-      const result: any = await apolloClient.query({ query: myQuery, variables: input })
+      const result = await apolloClient.query({ query: myQuery, variables: input })
 
-      expect(result.errors[0].code).toBe("NOT_FOUND")
+      expect(result.errors).toEqual(
+        expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining(message)})]),
+      )
     })
   })
 
@@ -170,7 +175,7 @@ describe("galoy-pay", () => {
         variables: input,
       })
       const result = await getSubscriptionNext(subscription)
-      const { price, errors } = result.data.price
+      const { price, errors } = result.data?.price
 
       expect(errors.length).toEqual(0)
       expect(price).toHaveProperty("base")
