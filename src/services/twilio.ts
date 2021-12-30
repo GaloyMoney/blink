@@ -4,9 +4,7 @@ import { baseLogger } from "@services/logger"
 import twilio from "twilio"
 
 export const TwilioClient = (): IPhoneProviderService => {
-  const client = twilio(getTwilioConfig().apiKey, getTwilioConfig().apiSecret, {
-    accountSid: getTwilioConfig().accountSid,
-  })
+  const client = twilio(getTwilioConfig().accountSid, getTwilioConfig().authToken)
 
   const sendText = async ({ body, to, logger }: SendTextArguments) => {
     const twilioPhoneNumber = getTwilioConfig().twilioPhoneNumber
