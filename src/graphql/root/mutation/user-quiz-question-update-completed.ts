@@ -1,5 +1,4 @@
 import { Accounts } from "@app"
-import { onboardingEarn } from "@config/app"
 import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
@@ -19,10 +18,6 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field({
   },
   resolve: async (_, args, { uid, logger }) => {
     const { id } = args.input
-
-    if (!onboardingEarn[id]) {
-      return { errors: [{ message: "Invalid input" }] }
-    }
 
     const question = await Accounts.addEarn({
       quizQuestionId: id,

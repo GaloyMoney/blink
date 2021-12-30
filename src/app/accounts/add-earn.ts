@@ -2,9 +2,9 @@ import { getUser } from "@app/users"
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { onboardingEarn } from "@config/app"
 import {
+  InvalidQuizQuestionIdError,
   RewardMissingMetadataError,
   RewardNonValidTypeError,
-  ValidationError,
 } from "@domain/errors"
 import { getFunderWalletId } from "@services/ledger/accounts"
 import { RewardsRepository } from "@services/mongoose"
@@ -21,9 +21,7 @@ export const addEarn = async ({
   logger: Logger
 }): Promise<QuizQuestion | ApplicationError> => {
   const amount = onboardingEarn[quizQuestionId]
-  if (!amount) {
-    return new ValidationError("incorrect reward id")
-  }
+  if (amount === undefined) return new InvalidQuizQuestionIdError()
 
   const funderWalletId = await getFunderWalletId()
 
