@@ -11,7 +11,7 @@ import { Wallets } from "@app"
 const BTCWallet = new GT.Object({
   name: "BTCWallet",
   interfaces: () => [IWallet],
-  isTypeOf: (source) => true || source.type === "btc", // TODO: make this work
+  isTypeOf: () => true, // TODO: make this work
   fields: () => ({
     id: {
       type: GT.NonNullID,
@@ -22,11 +22,8 @@ const BTCWallet = new GT.Object({
     },
     balance: {
       type: GT.NonNull(SignedAmount),
-      resolve: async (source: Wallet, __, { logger }) => {
-        const balanceSats = await Wallets.getBalanceForWallet({
-          walletId: source.id,
-          logger,
-        })
+      resolve: async (source: Wallet) => {
+        const balanceSats = await Wallets.getBalanceForWalletId(source.id)
         if (balanceSats instanceof Error) throw balanceSats
         return balanceSats
       },
