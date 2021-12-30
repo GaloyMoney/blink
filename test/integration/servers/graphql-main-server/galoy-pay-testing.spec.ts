@@ -1,34 +1,35 @@
-import { JWT_SECRET, yamlConfig } from "@config/app"
-import { sleep } from "@core/utils"
-import { startApolloServerForCoreSchema } from "@servers/graphql-main-server"
-import { createTestClient } from "apollo-server-integration-testing"
-import { createHttpTerminator } from "http-terminator"
-import * as jwt from "jsonwebtoken"
+import { yamlConfig } from "@config/app"
 import { clearAccountLocks, clearLimiters } from "test/helpers"
+import ME from "./queries/me.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
 import NODE_IDS from "./queries/node-ids.gql"
 import USER_DEFAULT_WALLET_ID from "./queries/user-default-walletid.gql"
 import LN_INVOICE_CREATE_ON_BEHALF_OF from "./mutations/ln-invoice-create-on-behalf-of-recipient.gql"
 import LN_NO_AMOUNT_INVOICE_CREATE_ON_BEHALF_OF from "./mutations/ln-no-amount-invoice-create-on-behalf-of-recipient.gql"
+import PRICE from "./subscriptions/price.gql"
+import LN_INVOICE_PAYMENT_STATUS from "./subscriptions/ln-invoice-payment-status.gql"
+import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
 import crypto from "crypto"
+import { createApolloClient, getSubscriptionNext } from "test/helpers/apollo-client"
+import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
+import { startServer, killServer } from "test/helpers/integration-server"
 
 jest.mock("@services/twilio", () => require("test/mocks/twilio"))
+jest.setTimeout(100 * 1000)
 
-let apolloServer, httpServer, httpTerminator, query, mutate, setOptions
+let apolloClient: ApolloClient<NormalizedCacheObject>, disposeClient: () => void
 const receivingUsername = "user0"
 let recievingWalletId
-const { phone, code } = yamlConfig.test_accounts[3]
+const { phone, code } = yamlConfig.test_accounts[4]
 
 beforeAll(async () => {
-  ;({ apolloServer, httpServer } = await startApolloServerForCoreSchema())
-  ;({ query, mutate, setOptions } = createTestClient({ apolloServer }))
-  httpTerminator = createHttpTerminator({ server: httpServer })
-  await sleep(2500)
+  await startServer()
+  ;({ apolloClient, disposeClient } = createApolloClient())
   const input = { phone, code: `${code}` }
-  const result = await mutate(USER_LOGIN, { variables: { input } })
-  const token = jwt.verify(result.data.userLogin.authToken, `${JWT_SECRET}`)
-  // mock jwt middleware
-  setOptions({ request: { token } })
+  const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
+  // Create a new authenticated client
+  disposeClient()
+  ;({ apolloClient, disposeClient } = createApolloClient(result.data.userLogin.authToken))
 })
 
 beforeEach(async () => {
@@ -37,8 +38,8 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
-  setOptions({ request: { token: null } })
-  await httpTerminator.terminate()
+  disposeClient()
+  await killServer()
 })
 
 describe("galoy-pay", () => {
@@ -47,22 +48,27 @@ describe("galoy-pay", () => {
 
     it("returns a value for an existing username", async () => {
       const input = { username: receivingUsername }
-      const result = await query(myQuery, { variables: input })
 
+      const result = await apolloClient.query({ query: myQuery, variables: input })
       const walletId = result.data.userDefaultWalletId
+
       expect(walletId).toBeTruthy()
       recievingWalletId = walletId
     })
 
     it("returns an error for invalid username syntax", async () => {
       const input = { username: "username-incorrectly-formatted" }
-      const result = await query(myQuery, { variables: input })
+
+      const result: any = await apolloClient.query({ query: myQuery, variables: input })
+
       expect(result.errors[0].code).toBe("BAD_USER_INPUT")
     })
 
     it("returns an error for an inexistant username", async () => {
       const input = { username: "user1234" }
-      const result = await query(myQuery, { variables: input })
+
+      const result: any = await apolloClient.query({ query: myQuery, variables: input })
+
       expect(result.errors[0].code).toBe("NOT_FOUND")
     })
   })
@@ -71,7 +77,8 @@ describe("galoy-pay", () => {
     const myQuery = NODE_IDS
 
     it("returns a nonempty list of nodes", async () => {
-      const result = await query(myQuery)
+      const result = await apolloClient.query({ query: myQuery })
+
       expect(result.data.globals.nodesIds.length).toBeGreaterThan(0)
     })
   })
@@ -88,7 +95,7 @@ describe("galoy-pay", () => {
         descriptionHash,
       }
 
-      const result = await mutate(mutation, { variables: input })
+      const result = await apolloClient.mutate({ mutation, variables: input })
       const { invoice, errors } = result.data.mutationData
 
       expect(errors).toHaveLength(0)
@@ -108,7 +115,7 @@ describe("galoy-pay", () => {
         descriptionHash,
       }
 
-      const result = await mutate(mutation, { variables: input })
+      const result = await apolloClient.mutate({ mutation, variables: input })
       const { invoice, errors } = result.data.mutationData
 
       expect(invoice).toBeNull()
@@ -124,7 +131,7 @@ describe("galoy-pay", () => {
         descriptionHash,
       }
 
-      const result = await mutate(mutation, { variables: input })
+      const result = await apolloClient.mutate({ mutation, variables: input })
       const { invoice, errors } = result.data.mutationData
 
       expect(errors.length).toBeGreaterThan(0)
@@ -140,11 +147,78 @@ describe("galoy-pay", () => {
         descriptionHash,
       }
 
-      const result = await mutate(mutation, { variables: input })
+      const result = await apolloClient.mutate({ mutation, variables: input })
       const { invoice, errors } = result.data.mutationData
 
       expect(errors.length).toBeGreaterThan(0)
       expect(invoice).toBe(null)
+    })
+  })
+
+  describe("price", () => {
+    const subscriptionQuery = PRICE
+
+    it("returns data with valid inputs", async () => {
+      const input = {
+        amount: "100",
+        amountCurrencyUnit: "BTCSAT",
+        priceCurrencyUnit: "USDCENT",
+      }
+
+      const subscription = apolloClient.subscribe({
+        query: subscriptionQuery,
+        variables: input,
+      })
+      const result = await getSubscriptionNext(subscription)
+      const { price, errors } = result.data.price
+
+      expect(errors.length).toEqual(0)
+      expect(price).toHaveProperty("base")
+      expect(price).toHaveProperty("offset")
+      expect(price).toHaveProperty("formattedAmount")
+      expect(price.currencyUnit).toEqual(input["priceCurrencyUnit"])
+    })
+  })
+
+  describe("lnInvoicePaymentStatus", () => {
+    const subscriptionQuery = LN_INVOICE_PAYMENT_STATUS
+
+    it("returns payment status when paid", async () => {
+      // Create an invoice on behalf of user0
+      const metadata = JSON.stringify([["text/plain", `Payment to ${receivingUsername}`]])
+      const descriptionHash = crypto.createHash("sha256").update(metadata).digest("hex")
+      const createPaymentRequestInput = {
+        walletId: recievingWalletId,
+        amount: 1000,
+        descriptionHash,
+      }
+      const createInvoice = await apolloClient.mutate({
+        mutation: LN_INVOICE_CREATE_ON_BEHALF_OF,
+        variables: createPaymentRequestInput,
+      })
+      const paymentRequest = createInvoice.data.mutationData.invoice.paymentRequest
+
+      // Subscribe to the invoice
+      const subscribeToPaymentInput = { paymentRequest }
+      const subscription = apolloClient.subscribe({
+        query: subscriptionQuery,
+        variables: { input: subscribeToPaymentInput },
+      })
+
+      // Pay the invoice
+      const fundingWalletId = (await apolloClient.query({ query: ME })).data.me
+        .defaultAccount.defaultWalletId
+      const makePaymentInput = { walletId: fundingWalletId, paymentRequest }
+      const makePayment = await apolloClient.mutate({
+        mutation: LN_INVOICE_PAYMENT_SEND,
+        variables: { input: makePaymentInput },
+      })
+      expect(makePayment.data.lnInvoicePaymentSend.status).toEqual("SUCCESS")
+
+      const result = await getSubscriptionNext(subscription)
+
+      // Assert the the invoice is paid
+      expect(result.data.lnInvoicePaymentStatus.status).toEqual("PAID")
     })
   })
 
@@ -154,7 +228,7 @@ describe("galoy-pay", () => {
     it("returns a valid lightning invoice", async () => {
       const input = { walletId: recievingWalletId }
 
-      const result = await mutate(mutation, { variables: input })
+      const result = await apolloClient.mutate({ mutation, variables: input })
       const { invoice, errors } = result.data.mutationData
 
       expect(errors).toHaveLength(0)
@@ -165,7 +239,7 @@ describe("galoy-pay", () => {
     it("returns an error with an invalid walletId", async () => {
       const input = { walletId: "wallet-id-does-not-exist" }
 
-      const result = await mutate(mutation, { variables: input })
+      const result = await apolloClient.mutate({ mutation, variables: input })
       const { invoice, errors } = result.data.mutationData
 
       expect(invoice).toBeNull()
