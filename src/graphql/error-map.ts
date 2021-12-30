@@ -135,6 +135,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invalid quiz question id was passed."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "RewardAlreadyPresentError":
+      message = "Reward for quiz question was already claimed."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "RouteNotFoundError":
       message = "Unable to find a route for payment."
       return new RouteFindingError({ message, logger: baseLogger })
@@ -262,7 +266,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownPhoneProviderServiceError":
     case "RewardMissingMetadataError":
     case "RewardNonValidTypeError":
-    case "RewardAlreadyPresentError":
     case "InvalidAccountStatusError":
     case "InvalidOnChainAddress":
     case "InvalidScanDepthAmount":
