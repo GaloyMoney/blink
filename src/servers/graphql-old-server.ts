@@ -373,8 +373,15 @@ const resolvers = {
         return feeSatAmount
       },
     }),
-    earnCompleted: async (_, { ids }, { uid, logger }) =>
-      Accounts.addEarn({ quizQuestionId: ids[0], accountId: uid, logger }),
+    earnCompleted: async (_, { ids }, { uid, logger }) => {
+      const earnCompleted = await Accounts.addEarn({
+        quizQuestionId: ids[0],
+        accountId: uid,
+        logger,
+      })
+      if (earnCompleted instanceof Error) throw mapError(earnCompleted)
+      return [earnCompleted]
+    },
     onchain: (_, __, { wallet }) => ({
       getNewAddress: async () => {
         const address = await Wallets.createOnChainAddress(wallet.user.walletId)
