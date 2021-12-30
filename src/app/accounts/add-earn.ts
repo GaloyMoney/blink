@@ -54,5 +54,5 @@ export const addEarn = async ({
   })
   if (payment instanceof Error) return payment
 
-  return { id: quizQuestionId, value: amount, completed: true }
+  return [{ id: quizQuestionId, value: amount, completed: true }]
 }
