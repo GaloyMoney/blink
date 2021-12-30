@@ -78,7 +78,7 @@ const MeSubscription = {
     const myPayload = userPayload(ctx.domainUser)
 
     if (source.price) {
-      return myPayload({
+      return userPayload(null)({
         resolveType: "Price",
         base: Math.round(source.price.satUsdCentPrice * 10 ** SAT_PRICE_PRECISION_OFFSET),
         offset: SAT_PRICE_PRECISION_OFFSET,
