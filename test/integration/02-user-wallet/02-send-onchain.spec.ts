@@ -1,6 +1,5 @@
 import { once } from "events"
 
-import { sleep } from "@app/utils"
 import * as Wallets from "@app/wallets"
 import {
   getFeeRates,

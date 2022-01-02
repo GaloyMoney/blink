@@ -16,7 +16,6 @@ const allFunctions = {
   Wallets: { ...WalletsMod },
 }
 
-
 for (const subModule in allFunctions) {
   for (const fn in allFunctions[subModule]) {
     allFunctions[subModule][fn] = wrapAsyncToRunInSpan({
