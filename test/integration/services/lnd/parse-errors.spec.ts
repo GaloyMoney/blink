@@ -3,6 +3,7 @@ import { parseLndErrorDetails } from "@services/lnd"
 import { getActiveLnd } from "@services/lnd/utils"
 
 import { createInvoice, payViaPaymentDetails, payViaRoutes } from "lightning"
+
 import { lndOutside1 } from "test/helpers"
 
 describe("'lightning' library error handling", () => {

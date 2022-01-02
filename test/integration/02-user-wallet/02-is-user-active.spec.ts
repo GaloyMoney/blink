@@ -1,8 +1,10 @@
 import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
-import { getAndCreateUserWallet } from "test/helpers"
+
 import * as ledger from "@services/ledger"
 import { User } from "@services/mongoose/schema"
 import { toSats } from "@domain/bitcoin"
+
+import { getAndCreateUserWallet } from "test/helpers"
 
 describe("getRecentlyActiveAccounts", () => {
   it("returns active users according to volume", async () => {

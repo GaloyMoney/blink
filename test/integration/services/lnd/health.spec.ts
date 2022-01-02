@@ -1,5 +1,6 @@
 import { isUp, lndStatusEvent } from "@services/lnd/health"
 import { params } from "@services/lnd/unauth"
+
 import { clearAccountLocks } from "test/helpers/redis"
 
 beforeAll(async () => {

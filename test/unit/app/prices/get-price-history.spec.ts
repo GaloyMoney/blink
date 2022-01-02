@@ -8,6 +8,7 @@ import { CacheKeys } from "@domain/cache"
 import { Prices } from "@app"
 import * as PriceServiceImpl from "@services/price"
 import { LocalCacheService } from "@services/cache"
+
 import { generateSatoshiPriceHistory } from "test/helpers/price"
 
 jest.mock("@services/redis", () => ({}))

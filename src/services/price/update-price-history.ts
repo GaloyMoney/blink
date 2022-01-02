@@ -1,8 +1,10 @@
 import ccxt from "ccxt"
 import last from "lodash.last"
 import { baseLogger } from "@services/logger"
-import { PriceHistory } from "./schema"
+
 import { MS_PER_HOUR, SATS_PER_BTC } from "@config/app"
+
+import { PriceHistory } from "./schema"
 
 const pair = "BTC/USD"
 const exchange = "bitfinex"

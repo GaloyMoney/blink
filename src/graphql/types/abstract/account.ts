@@ -1,4 +1,5 @@
 import { GT } from "@graphql/index"
+
 import WalletId from "../scalar/wallet-id"
 
 import Wallet from "./wallet"

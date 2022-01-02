@@ -1,9 +1,11 @@
+import crypto from "crypto"
+
 import { Wallets } from "@app"
 import { toSats } from "@domain/bitcoin"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { InvoiceUser } from "@services/mongoose/schema"
+
 import { getAndCreateUserWallet } from "test/helpers"
-import crypto from "crypto"
 
 const createTestWalletInvoice = () => {
   const randomPaymentHash = crypto.randomBytes(32).toString("hex") as PaymentHash

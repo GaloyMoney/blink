@@ -1,7 +1,9 @@
 import { btc2sat } from "@core/utils"
 import { balanceSheetIsBalanced, updateUsersPendingPayment } from "@core/balance-sheet"
-import { waitUntilChannelBalanceSyncAll } from "./lightning"
+
 import { generateToken } from "node-2fa"
+
+import { waitUntilChannelBalanceSyncAll } from "./lightning"
 
 export * from "./bitcoin-core"
 export * from "./lightning"

@@ -1,5 +1,7 @@
 import { GT } from "@graphql/index"
+
 import Username from "../scalar/username"
+
 import MapInfo from "./map-info"
 
 const MapMarker = new GT.Object({

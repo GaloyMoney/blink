@@ -1,3 +1,5 @@
+import { createServer } from "http"
+
 import { Accounts, Users } from "@app"
 import { getApolloConfig, getGeetestConfig, isProd, JWT_SECRET } from "@config/app"
 import { WalletFactory } from "@core/wallet-factory"
@@ -18,14 +20,15 @@ import expressJwt from "express-jwt"
 import { execute, GraphQLError, subscribe } from "graphql"
 import { rule } from "graphql-shield"
 import helmet from "helmet"
-import { createServer } from "http"
 import * as jwt from "jsonwebtoken"
 import mongoose from "mongoose"
 import pino from "pino"
 import PinoHttp from "pino-http"
 import { SubscriptionServer } from "subscriptions-transport-ws"
 import { v4 as uuidv4 } from "uuid"
+
 import { playgroundTabs } from "../graphql/playground"
+
 import expressApiKeyAuth from "./graphql-middlewares/api-key-auth"
 
 const graphqlLogger = baseLogger.child({

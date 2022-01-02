@@ -1,5 +1,6 @@
 import fs from "fs/promises"
 import path from "path"
+
 import prettier from "prettier"
 
 export const writeSDLFile = async (filePath, content) => {

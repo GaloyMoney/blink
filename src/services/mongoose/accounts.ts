@@ -6,6 +6,7 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
+
 import { caseInsensitiveRegex } from "."
 
 const projection = {

@@ -7,6 +7,7 @@ import {
 import { NotificationsServiceError, NotificationType } from "@domain/notifications"
 import { User } from "@services/mongoose/schema"
 import pubsub from "@services/pubsub"
+
 import { sendNotification } from "./notification"
 import { transactionNotification } from "./payment"
 

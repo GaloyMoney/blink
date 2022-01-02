@@ -1,15 +1,18 @@
+import fs from "fs"
+
+import path from "path"
+
+import dotenv from "dotenv"
+import { applyMiddleware } from "graphql-middleware"
+import { shield } from "graphql-shield"
+import { makeExecutableSchema } from "graphql-tools"
+
 import {
   stringLength,
   ValidateDirectiveVisitor,
   range,
   pattern,
 } from "@profusion/apollo-validation-directives"
-import dotenv from "dotenv"
-import fs from "fs"
-import { applyMiddleware } from "graphql-middleware"
-import { shield } from "graphql-shield"
-import { makeExecutableSchema } from "graphql-tools"
-import path from "path"
 import { getFeeRates, onboardingEarn, getBuildVersions } from "@config/app"
 import { Wallets, Prices, Users, Accounts } from "@app"
 import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
@@ -20,7 +23,7 @@ import { getActiveLnd, nodesStats, nodeStats } from "@services/lnd/utils"
 import { User } from "@services/mongoose/schema"
 import { sendNotification } from "@services/notifications/notification"
 import { usernameExists } from "@core/user"
-import { startApolloServer, isAuthenticated } from "./graphql-server"
+
 import { ApolloError } from "apollo-server-errors"
 import { addInvoiceForUsername, addInvoiceNoAmountForUsername } from "@core/wallets"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
@@ -32,6 +35,8 @@ import {
 } from "@services/tracing"
 import { PriceInterval, PriceRange } from "@domain/price"
 import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
+
+import { startApolloServer, isAuthenticated } from "./graphql-server"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 

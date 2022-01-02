@@ -1,3 +1,5 @@
+import crypto from "crypto"
+
 import { Prices } from "@app"
 import * as Wallets from "@app/wallets"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
@@ -11,7 +13,6 @@ import { ledger, setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
 import { NotificationsService } from "@services/notifications"
 import { updatePriceHistory } from "@services/price/update-price-history"
-import crypto from "crypto"
 import { Dropbox } from "dropbox"
 import express from "express"
 import {

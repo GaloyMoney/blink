@@ -1,6 +1,7 @@
 import { Wallets } from "@app"
 import { GT } from "@graphql/index"
 import getUuidByString from "uuid-by-string"
+
 import IAccount from "../abstract/account"
 import Wallet from "../abstract/wallet"
 import WalletId from "../scalar/wallet-id"

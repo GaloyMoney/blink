@@ -1,5 +1,6 @@
 import { CouldNotFindError } from "@domain/errors"
 import { WalletOnChainAddressesRepository } from "@services/mongoose"
+
 import { createOnChainAddress } from "./create-on-chain-address"
 
 export const getLastOnChainAddress = async (

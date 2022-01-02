@@ -1,11 +1,15 @@
 import { connectionArgs, connectionFromArray } from "graphql-relay"
 
 import { GT } from "@graphql/index"
-import { TransactionConnection } from "./transaction"
+
+import { Wallets } from "@app"
+
 import IWallet from "../abstract/wallet"
+
 import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"
-import { Wallets } from "@app"
+
+import { TransactionConnection } from "./transaction"
 
 const FiatWallet = new GT.Object({
   name: "FiatWallet",

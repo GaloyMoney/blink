@@ -2,18 +2,21 @@ import getUuidByString from "uuid-by-string"
 import dedent from "dedent"
 
 import { GT } from "@graphql/index"
+
+import { Users } from "@app"
+
+import { UnknownClientError } from "@core/error"
+
 import Account from "../abstract/account"
 
 import Timestamp from "../scalar/timestamp"
 import Language from "../scalar/language"
 import Phone from "../scalar/phone"
 
-import UserContact from "./wallet-contact"
-import UserQuizQuestion from "./user-quiz-question"
 import Username from "../scalar/username"
 
-import { Users } from "@app"
-import { UnknownClientError } from "@core/error"
+import UserContact from "./wallet-contact"
+import UserQuizQuestion from "./user-quiz-question"
 
 const GraphQLUser = new GT.Object<User, GraphQLContext>({
   name: "User",

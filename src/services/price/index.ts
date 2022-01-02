@@ -1,4 +1,5 @@
 import util from "util"
+
 import { credentials } from "@grpc/grpc-js"
 import {
   PriceServiceError,
@@ -6,10 +7,13 @@ import {
   PriceRange,
   PriceNotAvailableError,
 } from "@domain/price"
+
+import { SATS_PER_BTC } from "@config/app"
+
 import { baseLogger } from "../logger"
+
 import { PriceHistory } from "./schema"
 import { PriceProtoDescriptor } from "./grpc"
-import { SATS_PER_BTC } from "@config/app"
 
 const priceUrl = process.env.PRICE_ADDRESS ?? "galoy-price"
 const pricePort = process.env.PRICE_PORT ?? "50051"

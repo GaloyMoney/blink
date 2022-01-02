@@ -1,3 +1,5 @@
+import { liabilitiesMainAccount, toLiabilitiesWalletId } from "@domain/ledger"
+
 import {
   assetsMainAccount,
   getBankOwnerWalletId,
@@ -5,7 +7,6 @@ import {
   escrowAccountingPath,
   lndAccountingPath,
 } from "./accounts"
-import { liabilitiesMainAccount, toLiabilitiesWalletId } from "@domain/ledger"
 import { MainBook } from "./books"
 import { Transaction } from "./schema"
 

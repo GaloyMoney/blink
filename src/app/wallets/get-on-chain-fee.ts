@@ -9,6 +9,7 @@ import {
   LessThanDustThresholdError,
   InsufficientBalanceError,
 } from "@domain/errors"
+
 import { getBalanceForWalletId } from "./get-balance-for-wallet"
 
 const { dustThreshold } = getOnChainWalletConfig()

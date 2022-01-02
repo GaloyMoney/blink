@@ -2,9 +2,10 @@ import { getUserWalletConfig } from "@config/app"
 
 import { User } from "@services/mongoose/schema"
 
+import { Prices } from "@app"
+
 import { LightningUserWallet } from "./lightning/wallet"
 import { UserWallet } from "./user-wallet"
-import { Prices } from "@app"
 
 export const WalletFactory = async ({
   user,

@@ -1,12 +1,15 @@
 import { MS_PER_DAY, onboardingEarn } from "@config/app"
 import find from "lodash.find"
 import difference from "lodash.difference"
+
+import { addEarn } from "@app/accounts/add-earn"
+
+import { baseLogger } from "@services/logger"
+
 import { checkIsBalanced, getAndCreateUserWallet } from "test/helpers"
 import { resetSelfWalletIdLimits } from "test/helpers/rate-limit"
 import { getBTCBalance } from "test/helpers/wallet"
 
-import { addEarn } from "@app/accounts/add-earn"
-import { baseLogger } from "@services/logger"
 let userWallet1
 
 const onBoardingEarnIds = [

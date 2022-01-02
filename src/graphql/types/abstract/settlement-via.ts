@@ -2,11 +2,12 @@ import dedent from "dedent"
 
 import { GT } from "@graphql/index"
 
+import { SettlementMethod } from "@domain/wallets"
+
 import WalletId from "../scalar/wallet-id"
 import Username from "../scalar/username"
 import OnChainTxHash from "../scalar/onchain-tx-hash"
 import LnPaymentSecret from "../scalar/ln-payment-secret"
-import { SettlementMethod } from "@domain/wallets"
 
 const SettlementViaIntraLedger = new GT.Object({
   name: "SettlementViaIntraLedger",

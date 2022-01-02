@@ -8,6 +8,7 @@ import {
 } from "@domain/errors"
 import { getFunderWalletId } from "@services/ledger/accounts"
 import { RewardsRepository } from "@services/mongoose"
+
 import { getAccount } from "."
 
 export const addEarn = async ({

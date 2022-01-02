@@ -3,15 +3,18 @@ import { connectionDefinitions } from "graphql-relay"
 
 import { GT } from "@graphql/index"
 
+import { SAT_PRICE_PRECISION_OFFSET } from "@config/app"
+
 import Memo from "../scalar/memo"
-import Price from "./price"
+
 import SatAmount from "../scalar/sat-amount"
 import InitiationVia from "../abstract/initiation-via"
 import SettlementVia from "../abstract/settlement-via"
 import Timestamp from "../scalar/timestamp"
 import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
 import TxStatus from "../scalar/tx-status"
-import { SAT_PRICE_PRECISION_OFFSET } from "@config/app"
+
+import Price from "./price"
 
 const Transaction = new GT.Object({
   name: "Transaction",

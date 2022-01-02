@@ -1,3 +1,5 @@
+import { once } from "events"
+
 import * as Wallets from "@app/wallets"
 import {
   getFeeRates,
@@ -15,8 +17,8 @@ import { onchainTransactionEventHandler } from "@servers/trigger"
 import { baseLogger } from "@services/logger"
 import { Transaction } from "@services/mongoose/schema"
 import { getTitle } from "@services/notifications/payment"
-import { once } from "events"
 import last from "lodash.last"
+
 import {
   bitcoindClient,
   bitcoindOutside,

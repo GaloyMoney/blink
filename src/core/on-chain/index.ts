@@ -1,3 +1,5 @@
+import assert from "assert"
+
 import { Prices, Wallets, Users } from "@app"
 import {
   checkAndVerifyTwoFA,
@@ -15,8 +17,8 @@ import { LockService } from "@services/lock"
 import { ledger } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
 import { NotificationsService } from "@services/notifications"
-import assert from "assert"
 import { getChainBalance, getChainFeeEstimate, sendToChainAddress } from "lightning"
+
 import {
   DustAmountError,
   InsufficientBalanceError,

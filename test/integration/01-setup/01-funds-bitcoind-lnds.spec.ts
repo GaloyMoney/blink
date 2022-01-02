@@ -2,6 +2,7 @@ import { Wallets } from "@app"
 import { btc2sat } from "@core/utils"
 import { BitcoindWalletClient } from "@services/bitcoind"
 import { getFunderWalletId } from "@services/ledger/accounts"
+
 import {
   bitcoindClient,
   checkIsBalanced,
