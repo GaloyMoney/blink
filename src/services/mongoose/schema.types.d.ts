@@ -67,7 +67,7 @@ interface UserType {
   contacts: ContactObjectForUser[]
   created_at: string
   currencies: CurrencyObjectForUser[]
-  onchain?: OnChainObjectForUser[]
+  onchain: OnChainObjectForUser[]
   twoFA: TwoFAForUser
   walletId: WalletId
 
