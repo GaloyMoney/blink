@@ -1,6 +1,6 @@
 import { Prices, Wallets } from "@app"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
-import { toSats } from "@domain/bitcoin"
+import { sat2btc, toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { TxStatus } from "@domain/wallets"
@@ -45,10 +45,10 @@ afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
-const getWalletState = async (wallet) => {
-  const balance = await getBTCBalance(wallet.user.walletId)
+const getWalletState = async (walletId: WalletId) => {
+  const balance = await getBTCBalance(walletId)
   const { result: transactions, error } = await Wallets.getTransactionsForWalletId({
-    walletId: wallet.user.walletId as WalletId,
+    walletId,
   })
   if (error instanceof Error || transactions === null) {
     throw error
@@ -61,8 +61,8 @@ const getWalletState = async (wallet) => {
 
 describe("onchainBlockEventhandler", () => {
   it("should process block for incoming transactions", async () => {
-    const amount = 0.0001
-    const amount2 = 0.0002
+    const amount = 10_000 as Satoshis
+    const amount2 = 20_000 as Satoshis
     const blocksToMine = ONCHAIN_MIN_CONFIRMATIONS
     const scanDepth = ONCHAIN_MIN_CONFIRMATIONS + 1
     const wallet0 = await getAndCreateUserWallet(0)
@@ -72,11 +72,8 @@ describe("onchainBlockEventhandler", () => {
     const result = await Wallets.updateOnChainReceipt({ scanDepth, logger: baseLogger })
     if (result instanceof Error) throw result
 
-    const initWallet0State = await getWalletState(wallet0)
-    const initWallet3State = await getWalletState(wallet3)
-
-    const address = await Wallets.createOnChainAddress(wallet0.user.walletId)
-    if (address instanceof Error) throw address
+    const initWallet0State = await getWalletState(wallet0.user.walletId)
+    const initWallet3State = await getWalletState(wallet3.user.walletId)
 
     const initialBlock = await bitcoindClient.getBlockCount()
     let isFinalBlock = false
@@ -90,14 +87,17 @@ describe("onchainBlockEventhandler", () => {
       isFinalBlock = lastHeight >= initialBlock + blocksToMine
     })
 
+    const address = await Wallets.createOnChainAddress(wallet0.user.walletId)
+    if (address instanceof Error) throw address
+
     const output0 = {}
-    output0[address] = amount
+    output0[address] = sat2btc(amount)
 
     const address2 = await Wallets.createOnChainAddress(wallet3.user.walletId)
     if (address2 instanceof Error) throw address2
 
     const output1 = {}
-    output1[address2] = amount2
+    output1[address2] = sat2btc(amount2)
 
     const outputs = [output0, output1]
 
@@ -116,9 +116,16 @@ describe("onchainBlockEventhandler", () => {
 
     subBlocks.removeAllListeners()
 
-    const validateWalletState = async (wallet, initialState, amount, address) => {
-      const { balance, transactions } = await getWalletState(wallet)
-      const { depositFeeRatio } = wallet.user
+    const validateWalletState = async (
+      lightningWallet,
+      initialState,
+      amount,
+      address,
+    ) => {
+      const { balance, transactions } = await getWalletState(
+        lightningWallet.user.walletId,
+      )
+      const { depositFeeRatio } = lightningWallet.user
       const finalAmount = amountAfterFeeDeduction({ amount, depositFeeRatio })
       const lastTransaction = transactions[0]
 
