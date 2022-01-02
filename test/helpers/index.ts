@@ -1,4 +1,3 @@
-import { btc2sat } from "@domain/bitcoin"
 import { balanceSheetIsBalanced, updateUsersPendingPayment } from "@core/balance-sheet"
 
 import { generateToken } from "node-2fa"
@@ -12,8 +11,13 @@ export * from "./redis"
 export * from "./wallet"
 export * from "./price"
 
-export const amountAfterFeeDeduction = ({ amount, depositFeeRatio }) =>
-  Math.round(btc2sat(amount) * (1 - depositFeeRatio))
+export const amountAfterFeeDeduction = ({
+  amount,
+  depositFeeRatio,
+}: {
+  amount: Satoshis
+  depositFeeRatio: DepositFeeRatio
+}) => Math.round(amount * (1 - depositFeeRatio))
 
 export const checkIsBalanced = async () => {
   await updateUsersPendingPayment()
