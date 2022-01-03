@@ -42,6 +42,13 @@ describe("wallet invoice factory methods", () => {
         paymentHash: "paymentHash" as PaymentHash,
         paymentSecret: "paymentSecret" as PaymentSecret,
         paymentRequest: "paymentRequest" as EncodedPaymentRequest,
+        routeHints: [],
+        cltvDelta: null,
+        destination: "destination" as Pubkey,
+        amount: toSats(42),
+        milliSatsAmount: toMilliSatsFromNumber(42000),
+        description: "",
+        features: [],
       },
       pubkey: "pubkey" as Pubkey,
     }

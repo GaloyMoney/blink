@@ -144,21 +144,21 @@ interface ILedgerService {
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
   getLiabilityTransactions(
-    WalletId: WalletId,
+    walletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
   getLiabilityTransactionsForContactUsername(
-    WalletId: WalletId,
+    walletId: WalletId,
     contactUsername: Username,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
   listPendingPayments(
-    WalletId: WalletId,
+    walletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
-  getPendingPaymentsCount(WalletId: WalletId): Promise<number | LedgerServiceError>
+  getPendingPaymentsCount(walletId: WalletId): Promise<number | LedgerServiceError>
 
-  getWalletBalance(WalletId: WalletId): Promise<Satoshis | LedgerServiceError>
+  getWalletBalance(walletId: WalletId): Promise<Satoshis | LedgerServiceError>
 
   allPaymentVolumeSince({ walletId, timestamp }: IGetVolumeArgs): VolumeResult
 

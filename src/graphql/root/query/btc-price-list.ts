@@ -4,8 +4,9 @@ import PriceGraphRange, {
   priceRangeValues,
 } from "@graphql/types/scalar/price-graph-range"
 import { PriceInterval, PriceRange } from "@domain/price"
-import { BTC_PRICE_PRECISION_OFFSET, SATS_PER_BTC } from "@config/app"
+import { BTC_PRICE_PRECISION_OFFSET } from "@config/app"
 import { Prices } from "@app"
+import { SATS_PER_BTC } from "@domain/bitcoin"
 
 const parseRange: (string: typeof priceRangeValues[number]) => PriceRange = (range) => {
   switch (range) {

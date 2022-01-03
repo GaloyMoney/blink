@@ -1,5 +1,5 @@
 import { Wallets } from "@app"
-import { btc2sat } from "@core/utils"
+import { btc2sat } from "@domain/bitcoin"
 import { BitcoindWalletClient } from "@services/bitcoind"
 import { getFunderWalletId } from "@services/ledger/accounts"
 

@@ -1,5 +1,5 @@
 import { createHttpTerminator } from "http-terminator"
-import { sleep } from "@core/utils"
+import { sleep } from "@app/utils"
 import { yamlConfig, JWT_SECRET } from "@config/app"
 import { createTestClient } from "apollo-server-integration-testing"
 import { startApolloServerForCoreSchema } from "@servers/graphql-main-server"

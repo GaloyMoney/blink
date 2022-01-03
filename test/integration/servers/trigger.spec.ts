@@ -1,6 +1,5 @@
 import { Prices, Wallets } from "@app"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
-import { getHash } from "@core/utils"
 import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
@@ -15,6 +14,7 @@ import {
   bitcoindClient,
   bitcoindOutside,
   getAndCreateUserWallet,
+  getHash,
   getInvoice,
   lnd1,
   lndOutside1,

@@ -1,5 +1,15 @@
 import { InvalidSatoshiAmount, InvalidTargetConfirmations } from "@domain/errors"
 
+export const SATS_PER_BTC = 10 ** 8
+
+export const btc2sat = (btc: number) => {
+  return Math.round(btc * SATS_PER_BTC) as Satoshis
+}
+
+export const sat2btc = (sat: number) => {
+  return sat / SATS_PER_BTC
+}
+
 export const toSats = (amount: number): Satoshis => {
   return amount as Satoshis
 }

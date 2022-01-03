@@ -1,5 +1,5 @@
 import { createHttpTerminator } from "http-terminator"
-import { sleep } from "@core/utils"
+import { sleep } from "@app/utils"
 import {
   yamlConfig,
   getRequestPhoneCodePerPhoneLimits,

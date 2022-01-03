@@ -15,7 +15,7 @@ import {
   InsufficientBalanceForRoutingError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
-import { timeout } from "@core/utils"
+import { timeout } from "@app/utils"
 import {
   createInvoice,
   getInvoice,
@@ -185,7 +185,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
       if (returnedInvoice instanceof Error) {
         return new CouldNotDecodeReturnedPaymentRequest(returnedInvoice.message)
       }
-      return { invoice: returnedInvoice, pubkey: defaultPubkey } as RegisteredInvoice
+      const registerInvoice: RegisteredInvoice = {
+        invoice: returnedInvoice,
+        pubkey: defaultPubkey,
+      }
+      return registerInvoice
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
       switch (errDetails) {
