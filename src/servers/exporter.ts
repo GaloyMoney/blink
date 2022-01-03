@@ -154,7 +154,7 @@ const main = async () => {
     "/healthz",
     healthzHandler({
       checkDbConnectionStatus: true,
-      checkRedisStatus: true, // TODO: set to false when invoices/payments updates are removed from get balance
+      checkRedisStatus: false,
       checkLndsStatus: true,
     }),
   )
