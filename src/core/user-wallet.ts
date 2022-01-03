@@ -119,9 +119,7 @@ export abstract class UserWallet {
   }
 
   // TODO(remove) deprecated
-  async setUsername({
-    username,
-  }): Promise<{ username: string | undefined; id: string }> {
+  async setUsername({ username }): Promise<{ username: string | undefined; id: string }> {
     try {
       const result = await User.findOneAndUpdate(
         { _id: this.user.id, username: { $in: [null, ""] } },

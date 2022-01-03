@@ -16,7 +16,8 @@ const UserUpdateUsernameMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserUpdateUsernameInput) },
   },
-  deprecationReason: "Username will be moved to @Handle in Accounts. Also SetUsername should be used instead of UpdateUpdate to reflect the idempotenty of Handles",
+  deprecationReason:
+    "Username will be moved to @Handle in Accounts. Also SetUsername should be used instead of UpdateUpdate to reflect the idempotenty of Handles",
   resolve: async (_, args, { domainAccount }: { domainAccount: Account }) => {
     const { username } = args.input
 
