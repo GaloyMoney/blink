@@ -1,3 +1,6 @@
+import { onChannelUpdated, updateEscrows } from "@services/lnd/utils"
+import { ledger } from "@services/mongodb"
+
 import {
   checkIsBalanced,
   closeChannel,
@@ -13,8 +16,6 @@ import {
   waitFor,
   waitUntilSync,
 } from "test/helpers"
-import { onChannelUpdated, updateEscrows } from "@services/lnd/utils"
-import { ledger } from "@services/mongodb"
 
 //this is the fixed opening and closing channel fee on devnet
 const channelFee = 7637

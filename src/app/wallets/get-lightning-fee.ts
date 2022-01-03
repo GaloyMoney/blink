@@ -8,6 +8,7 @@ import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { checkedToWalletId } from "@domain/wallets"
 import { LndService } from "@services/lnd"
 import { RoutesCache } from "@services/redis/routes"
+
 import { getBalanceForWalletId } from "./get-balance-for-wallet"
 
 export const getLightningFee = async ({

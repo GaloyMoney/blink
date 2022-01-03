@@ -4,9 +4,9 @@ import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
 import { WalletInvoicesRepository } from "@services/mongoose"
 
-import { runInParallel } from "./utils"
-
 import { Wallets } from "@app"
+
+import { runInParallel } from "./utils"
 
 const logger = baseLogger.child({ module: "balanceSheet" })
 

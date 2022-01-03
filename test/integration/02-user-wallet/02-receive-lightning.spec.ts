@@ -5,6 +5,9 @@ import { getHash } from "@core/utils"
 import { toSats } from "@domain/bitcoin"
 import { PaymentInitiationMethod } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
+
+import { LedgerService } from "@services/ledger"
+
 import {
   checkIsBalanced,
   getAndCreateUserWallet,
@@ -12,7 +15,6 @@ import {
   lndOutside1,
   pay,
 } from "test/helpers"
-import { LedgerService } from "@services/ledger"
 
 let userWallet1
 let initBalance1

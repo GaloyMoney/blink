@@ -1,5 +1,6 @@
 import { SECS_PER_5_MINS } from "@config/app"
 import { CouldNotFindError, UnknownRepositoryError } from "@domain/errors"
+
 import { redis } from "./index"
 
 export const RoutesCache = (): IRoutesCache => {

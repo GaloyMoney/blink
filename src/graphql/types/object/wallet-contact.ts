@@ -3,8 +3,10 @@ import { checkedToUsername } from "@domain/users"
 import { GT } from "@graphql/index"
 import dedent from "dedent"
 import { connectionArgs, connectionFromArray } from "graphql-relay"
+
 import ContactAlias from "../scalar/contact-alias"
 import Username from "../scalar/username"
+
 import { TransactionConnection } from "./transaction"
 
 const UserContact = new GT.Object({

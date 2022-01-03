@@ -3,10 +3,11 @@
  * . ./.envrc && yarn ts-node src/debug/create-custom-invoices.ts
  */
 
+import util from "util"
+
 import { decode } from "bip66"
 import { createUnsignedRequest, parsePaymentRequest } from "invoices"
 import { createInvoice, signBytes } from "lightning"
-import util from "util"
 import lnService from "ln-service"
 
 import { getActiveLnd } from "@services/lnd/utils"

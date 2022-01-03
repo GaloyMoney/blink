@@ -5,12 +5,14 @@ import { or, shield } from "graphql-shield"
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
+
+import { gqlMainSchema } from "../graphql"
+
 import {
   isApiKeyAuthenticated,
   isAuthenticated,
   startApolloServer,
 } from "./graphql-server"
-import { gqlMainSchema } from "../graphql"
 import { walletIdMiddleware } from "./graphql-middlewares/wallet-id"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })

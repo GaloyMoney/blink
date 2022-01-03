@@ -1,10 +1,11 @@
+import { wrapAsyncToRunInSpan } from "@services/tracing"
+
 import * as AccountsMod from "./accounts"
 import * as AdminMod from "./admin"
 import * as LightningMod from "./lightning"
 import * as PricesMod from "./prices"
 import * as UsersMod from "./users"
 import * as WalletsMod from "./wallets"
-import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 const allFunctions = {
   Accounts: { ...AccountsMod },

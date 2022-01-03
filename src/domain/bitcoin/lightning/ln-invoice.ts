@@ -1,7 +1,9 @@
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { parsePaymentRequest } from "invoices"
-import { LnInvoiceMissingPaymentSecretError, UnknownLnInvoiceDecodeError } from "."
+
 import { LnInvoiceDecodeError } from "./errors"
+
+import { LnInvoiceMissingPaymentSecretError, UnknownLnInvoiceDecodeError } from "."
 
 const safeDecode = (bolt11EncodedInvoice: EncodedPaymentRequest) => {
   try {

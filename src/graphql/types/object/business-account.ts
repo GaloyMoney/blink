@@ -2,11 +2,13 @@ import getUuidByString from "uuid-by-string"
 
 import { GT } from "@graphql/index"
 
+import { Wallets } from "@app"
+
 import IAccount from "../abstract/account"
-import Transaction from "./transaction"
+
 import WalletId from "../scalar/wallet-id"
 
-import { Wallets } from "@app"
+import Transaction from "./transaction"
 
 const BusinessAccount = new GT.Object({
   name: "BusinessAccount",

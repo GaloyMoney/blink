@@ -1,8 +1,23 @@
 import { once } from "events"
+
 import { getOnChainAddressCreateAttemptLimits, getUserLimits } from "@config/app"
 import { btc2sat, sat2btc, sleep } from "@core/utils"
 import { getTitle } from "@services/notifications/payment"
 import { onchainTransactionEventHandler } from "@servers/trigger"
+
+import { Wallets, Prices } from "@app"
+import { TxStatus } from "@domain/wallets"
+
+import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
+import { NotificationType } from "@domain/notifications"
+
+import { baseLogger } from "@services/logger"
+import { getFunderWalletId } from "@services/ledger/accounts"
+import { WalletFactory } from "@core/wallet-factory"
+import { User } from "@services/mongoose/schema"
+
+import { resetOnChainAddressWalletIdLimits } from "test/helpers/rate-limit"
+import { getBTCBalance } from "test/helpers/wallet"
 import {
   checkIsBalanced,
   getAndCreateUserWallet,
@@ -16,16 +31,6 @@ import {
   bitcoindOutside,
   amountAfterFeeDeduction,
 } from "test/helpers"
-import { Wallets, Prices } from "@app"
-import { TxStatus } from "@domain/wallets"
-import { getBTCBalance } from "test/helpers/wallet"
-import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
-import { NotificationType } from "@domain/notifications"
-import { resetOnChainAddressWalletIdLimits } from "test/helpers/rate-limit"
-import { baseLogger } from "@services/logger"
-import { getFunderWalletId } from "@services/ledger/accounts"
-import { WalletFactory } from "@core/wallet-factory"
-import { User } from "@services/mongoose/schema"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 

@@ -13,11 +13,13 @@ import {
   getChainFeeEstimate,
   getWalletInfo,
 } from "lightning"
-import { getActiveOnchainLnd } from "./utils"
+
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 import { LocalCacheService } from "@services/cache"
 import { CacheKeys } from "@domain/cache"
 import { SECS_PER_5_MINS } from "@config/app"
+
+import { getActiveOnchainLnd } from "./utils"
 
 export const OnChainService = (
   decoder: TxDecoder,

@@ -1,4 +1,5 @@
 import { FEECAP_PERCENT, FEEMIN } from "@domain/bitcoin"
+
 import { toSats } from ".."
 
 export const LnFeeCalculator = (

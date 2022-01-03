@@ -1,10 +1,12 @@
-import { baseLogger } from "../logger"
-
 import mongoose from "mongoose"
 
-import { User, Transaction, InvoiceUser } from "../mongoose/schema"
-// we have to import schema before ledger
 import { loadLedger } from "@services/ledger"
+
+import { baseLogger } from "../logger"
+
+import { User, Transaction, InvoiceUser } from "../mongoose/schema"
+
+// we have to import schema before ledger
 
 export const ledger = loadLedger({
   bankOwnerWalletResolver: async () => {

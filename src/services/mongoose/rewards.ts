@@ -1,4 +1,5 @@
 import { RewardAlreadyPresentError, UnknownRepositoryError } from "@domain/errors"
+
 import { User } from "./schema"
 
 // FIXME: improve boundary

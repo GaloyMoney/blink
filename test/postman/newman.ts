@@ -1,4 +1,5 @@
 import newman from "newman"
+
 import { collection } from "./graphql.postman-collection.json"
 
 const environment = process.env.LOCAL

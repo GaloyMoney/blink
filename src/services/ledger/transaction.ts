@@ -1,4 +1,5 @@
 import { toLiabilitiesWalletId } from "@domain/ledger"
+
 import {
   bitcoindAccountingPath,
   escrowAccountingPath,

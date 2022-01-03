@@ -3,6 +3,7 @@ import {
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
+
 import { InvoiceUser } from "./schema"
 
 export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {

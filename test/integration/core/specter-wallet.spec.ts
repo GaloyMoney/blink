@@ -3,6 +3,7 @@ import { UserWallet } from "@core/user-wallet"
 import { SpecterWallet } from "@core/specter-wallet"
 import { getActiveOnchainLnd } from "@services/lnd/utils"
 import { getSpecterWalletConfig } from "@config/app"
+
 import { bitcoindClient, getChainBalance, mineBlockAndSyncAll } from "test/helpers"
 import { getBitcoindTransactions } from "test/helpers/ledger"
 

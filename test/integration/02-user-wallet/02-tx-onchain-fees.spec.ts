@@ -2,6 +2,7 @@ import { Wallets } from "@app"
 import { getOnChainWalletConfig } from "@config/app"
 import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
+
 import { bitcoindClient, bitcoindOutside, getAndCreateUserWallet } from "test/helpers"
 
 const defaultAmount = toSats(6000)

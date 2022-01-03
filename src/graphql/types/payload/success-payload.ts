@@ -1,4 +1,5 @@
 import { GT } from "@graphql/index"
+
 import IError from "../abstract/error"
 
 const SuccessPayload = new GT.Object({

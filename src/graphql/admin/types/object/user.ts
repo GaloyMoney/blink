@@ -3,6 +3,7 @@ import { GT } from "@graphql/index"
 import Language from "@graphql/types/scalar/language"
 import Phone from "@graphql/types/scalar/phone"
 import Timestamp from "@graphql/types/scalar/timestamp"
+
 import Account from "./account"
 
 const User = new GT.Object({

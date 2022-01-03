@@ -1,5 +1,6 @@
 import { GT } from "@graphql/index"
 import IError from "@graphql/types/abstract/error"
+
 import GraphQLAccount from "../object/account"
 
 const AccountDetailPayload = new GT.Object({

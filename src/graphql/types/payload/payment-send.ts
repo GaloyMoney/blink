@@ -1,4 +1,5 @@
 import { GT } from "@graphql/index"
+
 import IError from "../abstract/error"
 
 import PaymentSendResult from "../scalar/payment-send-result"

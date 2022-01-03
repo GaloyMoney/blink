@@ -1,5 +1,6 @@
-import { TwoFAValidationError, UnknownTwoFAError } from "./errors"
 import { verifyToken } from "node-2fa"
+
+import { TwoFAValidationError, UnknownTwoFAError } from "./errors"
 
 export * from "./errors"
 

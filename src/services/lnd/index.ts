@@ -29,9 +29,11 @@ import {
   PayViaPaymentDetailsResult,
   GetInvoiceResult,
 } from "lightning"
+
+import { LndOfflineError } from "@core/error"
+
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds, offchainLnds } from "./utils"
-import { LndOfflineError } from "@core/error"
 
 export const LndService = (): ILightningService | LightningServiceError => {
   let lndAuth: AuthenticatedLnd, defaultPubkey: Pubkey
