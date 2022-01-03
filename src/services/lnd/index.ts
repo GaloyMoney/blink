@@ -32,7 +32,7 @@ import {
 
 import { LndOfflineError } from "@core/error"
 
-import { timeout } from "../../utils"
+import { timeout } from "@utils"
 
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds, offchainLnds } from "./utils"

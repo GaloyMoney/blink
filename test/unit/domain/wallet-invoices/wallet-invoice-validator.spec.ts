@@ -15,7 +15,7 @@ describe("WalletInvoiceValidator", () => {
     walletInvoice.paid = false
     const walletInvoiceValidator = WalletInvoiceValidator(walletInvoice)
 
-    const validatorResult = walletInvoiceValidator.validateToSend({ fromWalletId })
+    const validatorResult = walletInvoiceValidator.validateToSend(fromWalletId)
     expect(validatorResult).not.toBeInstanceOf(Error)
   })
 
@@ -23,9 +23,7 @@ describe("WalletInvoiceValidator", () => {
     walletInvoice.paid = false
     const walletInvoiceValidator = WalletInvoiceValidator(walletInvoice)
 
-    const validatorResult = walletInvoiceValidator.validateToSend({
-      fromWalletId: walletInvoice.walletId,
-    })
+    const validatorResult = walletInvoiceValidator.validateToSend(walletInvoice.walletId)
     expect(validatorResult).toBeInstanceOf(SelfPaymentError)
   })
 
@@ -33,7 +31,7 @@ describe("WalletInvoiceValidator", () => {
     walletInvoice.paid = true
     const walletInvoiceValidator = WalletInvoiceValidator(walletInvoice)
 
-    const validatorResult = walletInvoiceValidator.validateToSend({ fromWalletId })
+    const validatorResult = walletInvoiceValidator.validateToSend(fromWalletId)
     expect(validatorResult).toBeInstanceOf(AlreadyPaidError)
   })
 })

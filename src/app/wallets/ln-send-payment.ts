@@ -335,9 +335,8 @@ const executePaymentViaIntraledger = async ({
   const walletInvoice = await invoicesRepo.findByPaymentHash(paymentHash)
   if (walletInvoice instanceof Error) return walletInvoice
 
-  const validatedResult = WalletInvoiceValidator(walletInvoice).validateToSend({
-    fromWalletId: senderWalletId,
-  })
+  const validatedResult =
+    WalletInvoiceValidator(walletInvoice).validateToSend(senderWalletId)
   if (validatedResult instanceof AlreadyPaidError) return PaymentSendStatus.AlreadyPaid
   if (validatedResult instanceof Error) return validatedResult
   const { pubkey: recipientPubkey, walletId: recipientWalletId } = walletInvoice

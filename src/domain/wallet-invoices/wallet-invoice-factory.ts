@@ -1,9 +1,5 @@
 export const WalletInvoiceFactory = (walletId: WalletId): WalletInvoiceFactory => {
-  const create = ({
-    registeredInvoice,
-  }: {
-    registeredInvoice: RegisteredInvoice
-  }): WalletInvoice => ({
+  const create = (registeredInvoice: RegisteredInvoice): WalletInvoice => ({
     paymentHash: registeredInvoice.invoice.paymentHash,
     walletId,
     selfGenerated: true,
@@ -11,11 +7,7 @@ export const WalletInvoiceFactory = (walletId: WalletId): WalletInvoiceFactory =
     paid: false,
   })
 
-  const createForRecipient = ({
-    registeredInvoice,
-  }: {
-    registeredInvoice: RegisteredInvoice
-  }): WalletInvoice => ({
+  const createForRecipient = (registeredInvoice: RegisteredInvoice): WalletInvoice => ({
     paymentHash: registeredInvoice.invoice.paymentHash,
     walletId,
     selfGenerated: false,

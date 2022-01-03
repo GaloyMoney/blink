@@ -24,7 +24,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
     input: { type: GT.NonNull(IntraLedgerPaymentSendInput) },
   },
   resolve: async (
-    _: void,
+    _,
     args,
     { domainUser, logger }: { domainUser: User; logger: Logger },
   ) => {
