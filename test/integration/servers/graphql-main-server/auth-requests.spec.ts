@@ -1,5 +1,4 @@
 import { JWT_SECRET, yamlConfig } from "@config/app"
-
 import { startApolloServerForCoreSchema } from "@servers/graphql-main-server"
 import { createTestClient } from "apollo-server-integration-testing"
 import { createHttpTerminator } from "http-terminator"

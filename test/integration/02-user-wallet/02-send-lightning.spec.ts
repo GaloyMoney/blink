@@ -1,7 +1,6 @@
 import { createHash, randomBytes } from "crypto"
 
 import { Wallets } from "@app"
-
 import { getUserLimits } from "@config/app"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
 import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightning"

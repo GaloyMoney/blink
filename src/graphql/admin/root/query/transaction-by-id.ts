@@ -2,7 +2,6 @@ import { GT } from "@graphql/index"
 
 import { Wallets } from "@app"
 import Transaction from "@graphql/types/object/transaction"
-import { CouldNotFindTransactionError } from "@domain/ledger"
 
 const TransactionByIdQuery = GT.Field({
   type: Transaction,
@@ -13,7 +12,6 @@ const TransactionByIdQuery = GT.Field({
     if (id instanceof Error) throw id
 
     const ledgerTx = await Wallets.getTransactionById(id)
-    if (ledgerTx instanceof CouldNotFindTransactionError) return null
     if (ledgerTx instanceof Error) throw ledgerTx
 
     return ledgerTx

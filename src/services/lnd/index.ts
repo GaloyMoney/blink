@@ -15,7 +15,6 @@ import {
   InsufficientBalanceForRoutingError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
-
 import {
   createInvoice,
   getInvoice,
