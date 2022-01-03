@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const ContactAlias = new GT.Scalar({
+const ContactAlias = GT.Scalar({
   name: "ContactAlias",
   description:
     "An alias name that a user can set for a wallet (with which they have transactions)",

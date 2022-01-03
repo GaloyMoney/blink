@@ -6,7 +6,7 @@ import AuthTokenPayload from "@graphql/types/payload/auth-token"
 import { Users } from "@app"
 import { mapError } from "@graphql/error-map"
 
-const UserLoginInput = new GT.Input({
+const UserLoginInput = GT.Input({
   name: "UserLoginInput",
   fields: () => ({
     phone: {

@@ -2,7 +2,7 @@ import { checkedToWalletId } from "@domain/wallets"
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const WalletId = new GT.Scalar({
+const WalletId = GT.Scalar({
   name: "WalletId",
   description: "Unique identifier of a wallet",
   parseValue(value) {

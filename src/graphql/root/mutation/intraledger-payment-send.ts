@@ -8,7 +8,7 @@ import Memo from "@graphql/types/scalar/memo"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
 
-const IntraLedgerPaymentSendInput = new GT.Input({
+const IntraLedgerPaymentSendInput = GT.Input({
   name: "IntraLedgerPaymentSendInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) }, // TODO: rename senderWalletId

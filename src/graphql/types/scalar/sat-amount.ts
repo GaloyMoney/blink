@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const SatAmount = new GT.Scalar({
+const SatAmount = GT.Scalar({
   name: "SatAmount",
   description: "(Positive) Satoshi amount (i.g. quiz earning)",
   parseValue(value) {

@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import { UserInputError } from "apollo-server-errors"
 
-const Timestamp = new GT.Scalar({
+const Timestamp = GT.Scalar({
   name: "Timestamp",
   description:
     "Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)",

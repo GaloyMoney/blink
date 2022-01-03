@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-const Coordinates = new GT.Object({
+const Coordinates = GT.Object({
   name: "Coordinates",
   fields: () => ({
     longitude: {

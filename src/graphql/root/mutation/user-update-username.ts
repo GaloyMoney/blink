@@ -5,7 +5,7 @@ import { GT } from "@graphql/index"
 import UserUpdateUsernamePayload from "@graphql/types/payload/user-update-username"
 import Username from "@graphql/types/scalar/username"
 
-const UserUpdateUsernameInput = new GT.Input({
+const UserUpdateUsernameInput = GT.Input({
   name: "UserUpdateUsernameInput",
   fields: () => ({
     username: { type: GT.NonNull(Username) },

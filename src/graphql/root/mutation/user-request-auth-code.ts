@@ -5,7 +5,7 @@ import SuccessPayload from "@graphql/types/payload/success-payload"
 import { Users } from "@app"
 import { mapError } from "@graphql/error-map"
 
-const UserRequestAuthCodeInput = new GT.Input({
+const UserRequestAuthCodeInput = GT.Input({
   name: "UserRequestAuthCodeInput",
   fields: () => ({
     phone: {

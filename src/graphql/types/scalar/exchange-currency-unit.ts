@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-const ExchangeCurrencyUnit = new GT.Enum({
+const ExchangeCurrencyUnit = GT.Enum({
   name: "ExchangeCurrencyUnit",
   values: {
     BTCSAT: {},

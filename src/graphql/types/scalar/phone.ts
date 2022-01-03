@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const Phone = new GT.Scalar({
+const Phone = GT.Scalar({
   name: "Phone",
   description: "Phone number which includes country code",
   parseValue(value) {

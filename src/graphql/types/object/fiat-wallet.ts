@@ -11,7 +11,7 @@ import SignedAmount from "../scalar/signed-amount"
 
 import { TransactionConnection } from "./transaction"
 
-const FiatWallet = new GT.Object({
+const FiatWallet = GT.Object({
   name: "FiatWallet",
   interfaces: () => [IWallet],
   isTypeOf: (source) => source.type === "fiat", // TODO: make this work

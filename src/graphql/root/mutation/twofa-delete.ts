@@ -4,7 +4,7 @@ import { mapError } from "@graphql/error-map"
 
 import SuccessPayload from "@graphql/types/payload/success-payload"
 
-const TwoFADeleteInput = new GT.Input({
+const TwoFADeleteInput = GT.Input({
   name: "TwoFADeleteInput",
   fields: () => ({
     token: {

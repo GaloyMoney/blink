@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import SuccessPayload from "@graphql/types/payload/success-payload"
 
-const DeviceNotificationTokenCreateInput = new GT.Input({
+const DeviceNotificationTokenCreateInput = GT.Input({
   name: "DeviceNotificationTokenCreateInput",
   fields: () => ({
     deviceToken: { type: GT.NonNull(GT.String) },

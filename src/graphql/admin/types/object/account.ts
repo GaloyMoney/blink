@@ -9,7 +9,7 @@ import AccountStatus from "../scalar/account-status"
 
 import GraphQLUser from "./user"
 
-const Account = new GT.Object({
+const Account = GT.Object({
   name: "Account",
   fields: () => ({
     id: { type: GT.NonNullID },

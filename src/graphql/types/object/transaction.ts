@@ -16,7 +16,7 @@ import TxStatus from "../scalar/tx-status"
 
 import Price from "./price"
 
-const Transaction = new GT.Object({
+const Transaction = GT.Object({
   name: "Transaction",
   description: dedent`Give details about an individual transaction.
   Galoy have a smart routing system which is automatically

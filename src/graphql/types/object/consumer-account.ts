@@ -6,7 +6,7 @@ import IAccount from "../abstract/account"
 import Wallet from "../abstract/wallet"
 import WalletId from "../scalar/wallet-id"
 
-const ConsumerAccount = new GT.Object({
+const ConsumerAccount = GT.Object({
   name: "ConsumerAccount",
   interfaces: () => [IAccount],
   isTypeOf: () => true, // TODO: improve

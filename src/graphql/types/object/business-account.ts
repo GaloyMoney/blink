@@ -10,7 +10,7 @@ import WalletId from "../scalar/wallet-id"
 
 import Transaction from "./transaction"
 
-const BusinessAccount = new GT.Object({
+const BusinessAccount = GT.Object({
   name: "BusinessAccount",
   interfaces: () => [IAccount],
   isTypeOf: () => false, // source.title || source.coordinates, // TODO: improve

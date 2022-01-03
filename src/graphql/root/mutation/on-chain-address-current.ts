@@ -4,7 +4,7 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
 import { Wallets } from "@app"
 
-const OnChainAddressCurrentInput = new GT.Input({
+const OnChainAddressCurrentInput = GT.Input({
   name: "OnChainAddressCurrentInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) },

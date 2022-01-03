@@ -2,7 +2,7 @@ import { MAX_BYTES_FOR_MEMO } from "@config/app"
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const Memo = new GT.Scalar({
+const Memo = GT.Scalar({
   name: "Memo",
   description: "Text field in a lightning payment transaction",
   parseValue(value) {

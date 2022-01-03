@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const LnPubkey = new GT.Scalar({
+const LnPubkey = GT.Scalar({
   name: "LnPubkey",
   parseValue(value) {
     return validLnPubkey(value)

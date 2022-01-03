@@ -4,7 +4,7 @@ import { GT } from "@graphql/index"
 
 import UserQuizQuestionUpdateCompletedPayload from "@graphql/types/payload/user-quiz-question-update-completed"
 
-const UserQuizQuestionUpdateCompletedInput = new GT.Input({
+const UserQuizQuestionUpdateCompletedInput = GT.Input({
   name: "UserQuizQuestionUpdateCompletedInput",
   fields: () => ({
     id: { type: GT.NonNull(GT.ID) },

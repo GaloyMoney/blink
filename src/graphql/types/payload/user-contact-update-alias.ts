@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import IError from "../abstract/error"
 import UserContact from "../object/wallet-contact"
 
-const UserContactUpdateAliasPayload = new GT.Object({
+const UserContactUpdateAliasPayload = GT.Object({
   name: "UserContactUpdateAliasPayload",
   fields: () => ({
     errors: {

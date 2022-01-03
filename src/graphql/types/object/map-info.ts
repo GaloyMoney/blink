@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import Coordinates from "./coordinates"
 
-const MapInfo = new GT.Object({
+const MapInfo = GT.Object({
   name: "MapInfo",
   fields: () => ({
     title: {

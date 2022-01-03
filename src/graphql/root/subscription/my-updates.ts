@@ -17,7 +17,7 @@ import TxNotificationType from "@graphql/types/scalar/tx-notification-type"
 import GraphQLUser from "@graphql/types/object/graphql-user"
 import WalletId from "@graphql/types/scalar/wallet-id"
 
-const IntraLedgerUpdate = new GT.Object({
+const IntraLedgerUpdate = GT.Object({
   name: "IntraLedgerUpdate",
   fields: () => ({
     txNotificationType: { type: GT.NonNull(TxNotificationType) },
@@ -27,7 +27,7 @@ const IntraLedgerUpdate = new GT.Object({
   }),
 })
 
-const LnUpdate = new GT.Object({
+const LnUpdate = GT.Object({
   name: "LnUpdate",
   fields: () => ({
     paymentHash: { type: GT.NonNull(PaymentHash) },
@@ -36,7 +36,7 @@ const LnUpdate = new GT.Object({
   }),
 })
 
-const OnChainUpdate = new GT.Object({
+const OnChainUpdate = GT.Object({
   name: "OnChainUpdate",
   fields: () => ({
     txNotificationType: { type: GT.NonNull(TxNotificationType) },
@@ -47,13 +47,13 @@ const OnChainUpdate = new GT.Object({
   }),
 })
 
-const UserUpdate = new GT.Union({
+const UserUpdate = GT.Union({
   name: "UserUpdate",
   types: [Price, LnUpdate, OnChainUpdate, IntraLedgerUpdate],
   resolveType: (obj) => obj.resolveType,
 })
 
-const MyUpdatesPayload = new GT.Object({
+const MyUpdatesPayload = GT.Object({
   name: "MyUpdatesPayload",
   fields: () => ({
     errors: { type: GT.NonNullList(IError) },

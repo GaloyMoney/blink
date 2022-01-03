@@ -4,7 +4,7 @@ import IError from "../abstract/error"
 
 import PaymentSendResult from "../scalar/payment-send-result"
 
-const PaymentSendPayload = new GT.Object({
+const PaymentSendPayload = GT.Object({
   name: "PaymentSendPayload",
   fields: () => ({
     errors: {

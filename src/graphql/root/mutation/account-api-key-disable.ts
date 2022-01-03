@@ -3,7 +3,7 @@ import { Accounts } from "@app"
 import SuccessPayload from "@graphql/types/payload/success-payload"
 import AccountApiKeyLabel from "@graphql/types/scalar/account-api-key-label"
 
-const AccountApiKeyDisableInput = new GT.Input({
+const AccountApiKeyDisableInput = GT.Input({
   name: "AccountApiKeyDisableInput",
   fields: () => ({
     label: { type: GT.NonNull(AccountApiKeyLabel) },

@@ -11,7 +11,7 @@ import WalletCurrency from "../scalar/wallet-currency"
 
 import { TransactionConnection } from "./transaction"
 
-const BTCWallet = new GT.Object({
+const BTCWallet = GT.Object({
   name: "BTCWallet",
   interfaces: () => [IWallet],
   isTypeOf: (source) => true || source.type === "btc", // TODO: make this work

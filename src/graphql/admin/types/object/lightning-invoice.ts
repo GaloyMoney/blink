@@ -4,7 +4,7 @@ import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import Timestamp from "@graphql/types/scalar/timestamp"
 
-const LightningInvoice = new GT.Object({
+const LightningInvoice = GT.Object({
   name: "LightningInvoice",
   fields: () => ({
     createdAt: { type: GT.NonNull(Timestamp) },

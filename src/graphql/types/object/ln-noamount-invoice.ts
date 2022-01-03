@@ -4,7 +4,7 @@ import LnPaymentRequest from "../scalar/ln-payment-request"
 import PaymentHash from "../scalar/payment-hash"
 import LnPaymentSecret from "../scalar/ln-payment-secret"
 
-const LnNoAmountInvoice = new GT.Object({
+const LnNoAmountInvoice = GT.Object({
   name: "LnNoAmountInvoice",
   fields: () => ({
     paymentRequest: {

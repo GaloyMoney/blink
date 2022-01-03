@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import IError from "../abstract/error"
 import GraphQLUser from "../object/graphql-user"
 
-const UserUpdateUsernamePayload = new GT.Object({
+const UserUpdateUsernamePayload = GT.Object({
   name: "UserUpdateUsernamePayload",
   fields: () => ({
     errors: {

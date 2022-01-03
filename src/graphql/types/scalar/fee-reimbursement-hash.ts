@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const FeeReimbursementHash = new GT.Scalar({
+const FeeReimbursementHash = GT.Scalar({
   name: "FeeReimbursementHash",
   description: "A LN hash used for fee reimbursement",
   parseValue(value) {

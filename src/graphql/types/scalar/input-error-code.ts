@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-const InputErrorCode = new GT.Enum({
+const InputErrorCode = GT.Enum({
   name: "InputErrorCode",
   values: {
     INVALID_INPUT: {},

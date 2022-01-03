@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-const InvoicePaymentStatus = new GT.Enum({
+const InvoicePaymentStatus = GT.Enum({
   name: "InvoicePaymentStatus",
   values: {
     PENDING: {},

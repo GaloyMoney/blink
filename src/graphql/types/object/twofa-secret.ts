@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-const TwoFASecret = new GT.Object({
+const TwoFASecret = GT.Object({
   name: "TwoFASecret",
   fields: () => ({
     secret: { type: GT.NonNull(GT.String) },

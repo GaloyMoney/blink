@@ -7,7 +7,7 @@ import { Wallets } from "@app"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnIPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 
-const LnNoAmountInvoicePaymentInput = new GT.Input({
+const LnNoAmountInvoicePaymentInput = GT.Input({
   name: "LnNoAmountInvoicePaymentInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) },

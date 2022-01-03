@@ -6,7 +6,7 @@ import SatAmount from "@graphql/types/scalar/sat-amount"
 import pubsub from "@services/pubsub"
 import { Prices } from "@app"
 
-const PriceInput = new GT.Input({
+const PriceInput = GT.Input({
   name: "PriceInput",
   fields: () => ({
     amount: { type: GT.NonNull(SatAmount) },

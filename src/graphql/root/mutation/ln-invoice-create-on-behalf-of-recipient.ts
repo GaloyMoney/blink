@@ -8,7 +8,7 @@ import Hex32Bytes from "@graphql/types/scalar/hex32bytes"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
 
-const LnInvoiceCreateOnBehalfOfRecipientInput = new GT.Input({
+const LnInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
   name: "LnInvoiceCreateOnBehalfOfRecipientInput",
   fields: () => ({
     recipientWalletId: { type: GT.NonNull(WalletId) },

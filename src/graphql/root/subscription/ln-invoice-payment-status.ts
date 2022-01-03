@@ -6,7 +6,7 @@ import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-pay
 import { lnPaymentStatusEvent } from "@config/app"
 import pubsub from "@services/pubsub"
 
-const LnInvoicePaymentStatusInput = new GT.Input({
+const LnInvoicePaymentStatusInput = GT.Input({
   name: "LnInvoicePaymentStatusInput",
   fields: () => ({
     paymentRequest: { type: GT.NonNull(LnPaymentRequest) },

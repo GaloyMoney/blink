@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const LnNoAmountInvoicePaymentRequest = new GT.Scalar({
+const LnNoAmountInvoicePaymentRequest = GT.Scalar({
   name: "LnNoAmountInvoicePaymentRequest",
   description: "BOLT11 lightning invoice payment request that does not include an amount",
   parseValue(value) {

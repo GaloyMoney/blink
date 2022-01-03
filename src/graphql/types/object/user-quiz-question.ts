@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import QuizQuestion from "./quiz-question"
 
-const UserQuizQuestion = new GT.Object({
+const UserQuizQuestion = GT.Object({
   name: "UserQuizQuestion",
   fields: () => ({
     question: { type: GT.NonNull(QuizQuestion) },

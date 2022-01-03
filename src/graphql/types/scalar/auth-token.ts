@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const AuthToken = new GT.Scalar({
+const AuthToken = GT.Scalar({
   name: "AuthToken",
   description: "An authentication code valid for a single use",
   parseValue(value) {
