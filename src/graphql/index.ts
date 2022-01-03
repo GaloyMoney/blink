@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   GraphQLID,
   GraphQLObjectType,
@@ -13,13 +14,34 @@ import {
   GraphQLList,
   GraphQLNonNull,
   Kind,
+  GraphQLFieldConfig,
 } from "graphql"
 
-// GraphQL Types
-export const GT = {
-  // Wrap root configurations for consistency
-  Field: (config) => config,
+type GTType = {
+  Field<TArgs = any, TSource = null, TContext = GraphQLContext>(
+    arg: GraphQLFieldConfig<TSource, TContext, TArgs>,
+  ): GraphQLFieldConfig<TSource, TContext, TArgs>
+  Interface: typeof GraphQLInterfaceType
+  Union: typeof GraphQLUnionType
+  Scalar: typeof GraphQLScalarType
+  Enum: typeof GraphQLEnumType
+  ID: GraphQLScalarType
+  String: GraphQLScalarType
+  Int: GraphQLScalarType
+  Boolean: GraphQLScalarType
+  Float: GraphQLScalarType
+  Object: typeof GraphQLObjectType
+  Input: typeof GraphQLInputObjectType
+  NonNull: (arg: any) => GraphQLNonNull<any>
+  List: (arg: any) => GraphQLList<any>
+  NonNullID: GraphQLNonNull<any>
+  NonNullList: (arg: any) => GraphQLNonNull<any>
+  Kind: typeof Kind
+}
 
+// GraphQL Types
+export const GT: GTType = {
+  Field: (config) => config,
   // Wrappers/shortners
   Interface: GraphQLInterfaceType,
   Union: GraphQLUnionType,
@@ -36,12 +58,12 @@ export const GT = {
   Object: GraphQLObjectType,
   Input: GraphQLInputObjectType,
 
-  NonNull: GraphQLNonNull,
-  List: GraphQLList,
+  NonNull: (arg) => new GraphQLNonNull(arg),
+  List: (arg) => new GraphQLList(arg),
 
   // Commonly-used Non-nulls
-  NonNullID: GraphQLNonNull(GraphQLID),
-  NonNullList: (GraphQLType) => GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLType))),
+  NonNullID: new GraphQLNonNull(GraphQLID),
+  NonNullList: (arg) => new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(arg))),
 
   Kind,
 }

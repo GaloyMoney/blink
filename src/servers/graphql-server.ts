@@ -62,12 +62,12 @@ const sessionContext = ({
   apiSecret,
 }): Promise<GraphQLContext> => {
   const userId = token?.uid ?? null
-  let ip: string | undefined
+  let ip: IpAddress | undefined
 
   if (ips && Array.isArray(ips) && ips.length) {
     ip = ips[0]
   } else if (typeof ips === "string") {
-    ip = ips
+    ip = ips as IpAddress
   }
 
   let wallet, user
