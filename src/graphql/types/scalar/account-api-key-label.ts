@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const AccountApiKeyLabel = new GT.Scalar({
+const AccountApiKeyLabel = GT.Scalar({
   name: "AccountApiKeyLabel",
   description: "Identifier of an account api key",
   parseValue(value) {

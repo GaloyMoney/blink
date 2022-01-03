@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import SatAmount from "../scalar/sat-amount"
 import TargetConfirmations from "../scalar/target-confirmations"
 
-const OnChainTxFee = new GT.Object({
+const OnChainTxFee = GT.Object({
   name: "OnChainTxFee",
   fields: () => ({
     amount: { type: GT.NonNull(SatAmount) },

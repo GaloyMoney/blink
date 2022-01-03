@@ -8,7 +8,7 @@ const languages = {
   "es": "es-SV",
 }
 
-const Language = new GT.Scalar({
+const Language = GT.Scalar({
   name: "Language",
   serialize(value) {
     return languages[value]

@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-const Limits = new GT.Object({
+const Limits = GT.Object({
   name: "Limits",
   fields: () => ({
     maxSend: { type: GT.NonNull(GT.Int) }, // LN | OnChain

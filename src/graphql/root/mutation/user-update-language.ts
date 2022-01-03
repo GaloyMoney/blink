@@ -5,7 +5,7 @@ import { GT } from "@graphql/index"
 import UserUpdateLanguagePayload from "@graphql/types/payload/user-update-language"
 import Language from "@graphql/types/scalar/language"
 
-const UserUpdateLanguageInput = new GT.Input({
+const UserUpdateLanguageInput = GT.Input({
   name: "UserUpdateLanguageInput",
   fields: () => ({
     language: { type: GT.NonNull(Language) },

@@ -2,7 +2,7 @@ import { isSha256Hash } from "@domain/bitcoin"
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const LnPaymentPreImage = new GT.Scalar({
+const LnPaymentPreImage = GT.Scalar({
   name: "LnPaymentPreImage",
   parseValue(value) {
     return validLnPaymentPreImage(value)

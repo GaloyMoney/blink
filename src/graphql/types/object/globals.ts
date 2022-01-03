@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 
 import BuildInformation from "./build-information"
 
-const Globals = new GT.Object({
+const Globals = GT.Object({
   name: "Globals",
   description:
     "Provides global settings for the application which might have an impact for the user.",

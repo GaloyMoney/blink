@@ -5,7 +5,7 @@ import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { Wallets } from "@app"
 import { mapError } from "@graphql/error-map"
 
-const LnInvoiceFeeProbeInput = new GT.Input({
+const LnInvoiceFeeProbeInput = GT.Input({
   name: "LnInvoiceFeeProbeInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) },

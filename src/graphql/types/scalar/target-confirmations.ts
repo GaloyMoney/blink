@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const TargetConfirmations = new GT.Scalar({
+const TargetConfirmations = GT.Scalar({
   name: "TargetConfirmations",
   description:
     "(Positive) Number of blocks in which the transaction is expected to be confirmed",

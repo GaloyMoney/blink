@@ -12,7 +12,7 @@ import OnChainTxFeeQuery from "@graphql/root/query/on-chain-tx-fee-query"
 import AccountApiKeysQuery from "@graphql/root/query/account-api-keys"
 import BtcPriceQuery from "@graphql/root/query/btc-price"
 
-const QueryType = new GT.Object({
+const QueryType = GT.Object({
   name: "Query",
   fields: () => ({
     globals: GlobalsQuery,

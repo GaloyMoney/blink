@@ -4,7 +4,7 @@ import { GT } from "@graphql/index"
 
 import SuccessPayload from "@graphql/types/payload/success-payload"
 
-const TwoFASaveInput = new GT.Input({
+const TwoFASaveInput = GT.Input({
   name: "TwoFASaveInput",
   fields: () => ({
     secret: {

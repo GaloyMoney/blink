@@ -28,7 +28,7 @@ import CaptchaCreateChallengeMutation from "@graphql/root/mutation/captcha-creat
 import AccountApiKeyCreateMutation from "@graphql/root/mutation/account-api-key-create"
 import AccountApiKeyDisableMutation from "@graphql/root/mutation/account-api-key-disable"
 
-const MutationType = new GT.Object({
+const MutationType = GT.Object({
   name: "Mutation",
   fields: () => ({
     // unauthed

@@ -15,48 +15,67 @@ import {
   GraphQLNonNull,
   Kind,
   GraphQLFieldConfig,
+  GraphQLObjectTypeConfig,
+  GraphQLInputObjectTypeConfig,
+  GraphQLInterfaceTypeConfig,
+  GraphQLUnionTypeConfig,
+  GraphQLScalarTypeConfig,
+  GraphQLEnumTypeConfig,
 } from "graphql"
 
 type GTType = {
-  Field<TArgs = any, TSource = null, TContext = GraphQLContext>(
+  Field<TArgs = any, TSource = any, TContext = GraphQLContext>(
     arg: GraphQLFieldConfig<TSource, TContext, TArgs>,
   ): GraphQLFieldConfig<TSource, TContext, TArgs>
-  Interface: typeof GraphQLInterfaceType
-  Union: typeof GraphQLUnionType
-  Scalar: typeof GraphQLScalarType
-  Enum: typeof GraphQLEnumType
+
   ID: GraphQLScalarType
   String: GraphQLScalarType
   Int: GraphQLScalarType
   Boolean: GraphQLScalarType
   Float: GraphQLScalarType
-  Object: typeof GraphQLObjectType
-  Input: typeof GraphQLInputObjectType
-  NonNull: (arg: any) => GraphQLNonNull<any>
-  List: (arg: any) => GraphQLList<any>
+
+  Interface<TSource = any, TContext = GraphQLContext>(
+    config: Readonly<GraphQLInterfaceTypeConfig<TSource, TContext>>,
+  ): GraphQLInterfaceType
+  Union<TSource = any, TContext = GraphQLContext>(
+    config: Readonly<GraphQLUnionTypeConfig<TSource, TContext>>,
+  ): GraphQLUnionType
+
+  Scalar(config: Readonly<GraphQLScalarTypeConfig<any, any>>): GraphQLScalarType<any, any>
+  Enum(config: Readonly<GraphQLEnumTypeConfig>): GraphQLEnumType
+
+  Object<TSource = any, TContext = GraphQLContext>(
+    arg: GraphQLObjectTypeConfig<TSource, TContext>,
+  ): GraphQLObjectType<TSource, TContext>
+  Input(arg: Readonly<GraphQLInputObjectTypeConfig>): GraphQLInputObjectType
+
+  NonNull(arg: any): GraphQLNonNull<any>
+  List(arg: any): GraphQLList<any>
+
   NonNullID: GraphQLNonNull<any>
-  NonNullList: (arg: any) => GraphQLNonNull<any>
+  NonNullList(arg: any): GraphQLNonNull<any>
+
   Kind: typeof Kind
 }
 
 // GraphQL Types
 export const GT: GTType = {
-  Field: (config) => config,
-  // Wrappers/shortners
-  Interface: GraphQLInterfaceType,
-  Union: GraphQLUnionType,
-
-  Scalar: GraphQLScalarType,
-  Enum: GraphQLEnumType,
-
   ID: GraphQLID,
   String: GraphQLString,
   Int: GraphQLInt,
   Boolean: GraphQLBoolean,
   Float: GraphQLFloat,
 
-  Object: GraphQLObjectType,
-  Input: GraphQLInputObjectType,
+  Field: (config) => config,
+
+  Interface: (arg) => new GraphQLInterfaceType(arg),
+  Union: (arg) => new GraphQLUnionType(arg),
+
+  Scalar: (arg) => new GraphQLScalarType(arg),
+  Enum: (arg) => new GraphQLEnumType(arg),
+
+  Object: (arg) => new GraphQLObjectType(arg),
+  Input: (arg) => new GraphQLInputObjectType(arg),
 
   NonNull: (arg) => new GraphQLNonNull(arg),
   List: (arg) => new GraphQLList(arg),

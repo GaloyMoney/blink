@@ -3,7 +3,7 @@ import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const OnChainAddress = new GT.Scalar({
+const OnChainAddress = GT.Scalar({
   name: "OnChainAddress",
   description: "An address for an on-chain bitcoin destination",
   parseValue(value) {

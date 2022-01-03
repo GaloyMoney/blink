@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const Hex32Bytes = new GT.Scalar({
+const Hex32Bytes = GT.Scalar({
   name: "Hex32Bytes",
   description: "Hex-encoded string of 32 bytes",
   parseValue(value) {

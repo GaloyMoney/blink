@@ -3,7 +3,7 @@ import AuthToken from "@graphql/types/scalar/auth-token"
 
 import IError from "../abstract/error"
 
-const AuthTokenPayload = new GT.Object({
+const AuthTokenPayload = GT.Object({
   name: "AuthTokenPayload",
   fields: () => ({
     errors: {

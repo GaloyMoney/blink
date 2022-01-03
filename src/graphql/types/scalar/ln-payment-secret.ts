@@ -2,7 +2,7 @@ import { isSha256Hash } from "@domain/bitcoin"
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const LnPaymentSecret = new GT.Scalar({
+const LnPaymentSecret = GT.Scalar({
   name: "LnPaymentSecret",
   parseValue(value) {
     return validLnPaymentSecret(value)

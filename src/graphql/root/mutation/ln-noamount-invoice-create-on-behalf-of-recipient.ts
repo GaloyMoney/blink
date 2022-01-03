@@ -6,7 +6,7 @@ import LnNoAmountInvoicePayload from "@graphql/types/payload/ln-noamount-invoice
 import Memo from "@graphql/types/scalar/memo"
 import WalletId from "@graphql/types/scalar/wallet-id"
 
-const LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = new GT.Input({
+const LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
   name: "LnNoAmountInvoiceCreateOnBehalfOfRecipientInput",
   fields: () => ({
     recipientWalletId: { type: GT.NonNull(WalletId) },

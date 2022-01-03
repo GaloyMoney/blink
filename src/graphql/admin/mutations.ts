@@ -7,7 +7,7 @@ import AccountUpdateLevelMutation from "@graphql/admin/root/mutation/account-upd
 import AccountUpdateStatusMutation from "@graphql/admin/root/mutation/account-update-status"
 import BusinessUpdateMapInfoMutation from "@graphql/admin/root/mutation/business-update-map-info"
 
-const MutationType = new GT.Object({
+const MutationType = GT.Object({
   name: "Mutation",
   fields: () => ({
     userRequestAuthCode: UserRequestAuthCodeMutation,

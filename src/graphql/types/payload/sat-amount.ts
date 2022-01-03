@@ -4,7 +4,7 @@ import IError from "../abstract/error"
 
 import SatAmount from "../scalar/sat-amount"
 
-const SatAmountPayload = new GT.Object({
+const SatAmountPayload = GT.Object({
   name: "SatAmountPayload",
   fields: () => ({
     errors: {

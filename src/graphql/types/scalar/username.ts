@@ -2,7 +2,7 @@ import { UsernameRegex } from "@domain/accounts"
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const Username = new GT.Scalar({
+const Username = GT.Scalar({
   name: "Username",
   description: "Unique identifier of a user",
   parseValue(value) {

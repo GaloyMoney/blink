@@ -4,7 +4,7 @@ import Timestamp from "@graphql/types/scalar/timestamp"
 import AccountApiKeyPayload from "@graphql/types/payload/account-api-key"
 import AccountApiKeyLabel from "@graphql/types/scalar/account-api-key-label"
 
-const AccountApiKeyCreateInput = new GT.Input({
+const AccountApiKeyCreateInput = GT.Input({
   name: "AccountApiKeyCreateInput",
   fields: () => ({
     label: { type: AccountApiKeyLabel },

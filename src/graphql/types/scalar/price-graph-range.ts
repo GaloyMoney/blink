@@ -8,7 +8,7 @@ export const priceRangeValues = [
   "FIVE_YEARS",
 ] as const
 
-const PriceGraphRange = new GT.Enum({
+const PriceGraphRange = GT.Enum({
   name: "PriceGraphRange",
   description: "The range for the X axis in the BTC price graph",
   values: priceRangeValues.reduce((acc, curr) => {

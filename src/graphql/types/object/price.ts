@@ -4,7 +4,7 @@ import SafeInt from "../scalar/safe-int"
 
 import ExchangeCurrencyUnit from "../scalar/exchange-currency-unit"
 
-const Price = new GT.Object({
+const Price = GT.Object({
   name: "Price",
   description:
     "Price amount expressed in base/offset. To calculate, use: `base / 10^offset`",

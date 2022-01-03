@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const SignedAmount = new GT.Scalar({
+const SignedAmount = GT.Scalar({
   name: "SignedAmount",
   description: "An amount (of a currency) that can be negative (i.g. in a transaction)",
   parseValue(value) {

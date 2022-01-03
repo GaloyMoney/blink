@@ -11,7 +11,7 @@ import {
   ENDUSER_ALIAS,
 } from "@services/tracing"
 
-const LnInvoicePaymentInput = new GT.Input({
+const LnInvoicePaymentInput = GT.Input({
   name: "LnInvoicePaymentInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) },

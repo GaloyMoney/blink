@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
-const OneTimeAuthCode = new GT.Scalar({
+const OneTimeAuthCode = GT.Scalar({
   name: "OneTimeAuthCode",
   description: "An authentication code valid for a single use",
   parseValue(value) {

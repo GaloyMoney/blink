@@ -9,7 +9,7 @@ import Username from "../scalar/username"
 
 import { TransactionConnection } from "./transaction"
 
-const AccountContact = new GT.Object({
+const AccountContact = GT.Object({
   name: "UserContact",
   fields: () => ({
     id: { type: GT.NonNull(Username) },
