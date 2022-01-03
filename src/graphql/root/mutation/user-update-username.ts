@@ -1,4 +1,5 @@
 import { Accounts } from "@app"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import UserUpdateUsernamePayload from "@graphql/types/payload/user-update-username"

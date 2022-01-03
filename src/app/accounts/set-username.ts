@@ -10,7 +10,6 @@ export const setUsername = async ({
   id: string
   username: string
 }): Promise<Account | ApplicationError> => {
-
   const checkedUsername = checkedToUsername(username)
   if (checkedUsername instanceof Error) return checkedUsername
 
