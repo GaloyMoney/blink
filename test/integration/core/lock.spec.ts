@@ -1,7 +1,9 @@
 import { redis } from "@services/redis"
-import { sleep } from "@app/utils"
+
 import { baseLogger } from "@services/logger"
 import { redlock, getResource, lockExtendOrThrow } from "@core/lock"
+
+import { sleep } from "src/utils"
 
 const walletId = "1234"
 

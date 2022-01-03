@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "crypto"
 
 import { Wallets } from "@app"
-import { sleep } from "@app/utils"
+
 import { getUserLimits } from "@config/app"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
 import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightning"
@@ -18,6 +18,8 @@ import { getActiveLnd, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { InvoiceUser } from "@services/mongoose/schema"
+
+import { sleep } from "src/utils"
 
 import {
   cancelHodlInvoice,

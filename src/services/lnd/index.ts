@@ -15,7 +15,7 @@ import {
   InsufficientBalanceForRoutingError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
-import { timeout } from "@app/utils"
+
 import {
   createInvoice,
   getInvoice,
@@ -34,6 +34,8 @@ import { LndOfflineError } from "@core/error"
 
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds, offchainLnds } from "./utils"
+
+import { timeout } from "src/utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
   let lndAuth: AuthenticatedLnd, defaultPubkey: Pubkey

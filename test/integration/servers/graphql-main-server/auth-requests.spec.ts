@@ -1,5 +1,5 @@
 import { JWT_SECRET, yamlConfig } from "@config/app"
-import { sleep } from "@app/utils"
+
 import { startApolloServerForCoreSchema } from "@servers/graphql-main-server"
 import { createTestClient } from "apollo-server-integration-testing"
 import { createHttpTerminator } from "http-terminator"
@@ -13,6 +13,8 @@ import LN_NO_AMOUNT_INVOICE_FEE_PROBE from "./mutations/ln-no-amount-invoice-fee
 import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-payment-send.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
 import ME from "./queries/me.gql"
+
+import { sleep } from "src/utils"
 
 import {
   clearAccountLocks,
