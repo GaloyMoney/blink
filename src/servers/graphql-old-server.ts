@@ -23,8 +23,8 @@ import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
 import {
+  ACCOUNT_USERNAME,
   addAttributesToCurrentSpanAndPropagate,
-  ENDUSER_ALIAS,
   SemanticAttributes,
 } from "@services/tracing"
 import { ApolloError } from "apollo-server-errors"
@@ -86,7 +86,7 @@ const resolvers = {
       addAttributesToCurrentSpanAndPropagate(
         {
           [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
-          [ENDUSER_ALIAS]: domainUser?.username,
+          [ACCOUNT_USERNAME]: domainAccount?.username,
           [SemanticAttributes.HTTP_CLIENT_IP]: ip,
         },
         async () => {
@@ -324,11 +324,15 @@ const resolvers = {
         if (result instanceof Error) throw result
         return result
       },
-      payInvoice: async ({ invoice, amount, memo }, _, { ip, domainUser }) =>
+      payInvoice: async (
+        { invoice, amount, memo },
+        _,
+        { ip, domainUser, domainAccount },
+      ) =>
         addAttributesToCurrentSpanAndPropagate(
           {
             [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
-            [ENDUSER_ALIAS]: domainUser?.username,
+            [ACCOUNT_USERNAME]: domainAccount?.username,
             [SemanticAttributes.HTTP_CLIENT_IP]: ip,
           },
           async () => {
