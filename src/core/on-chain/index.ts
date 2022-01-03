@@ -17,7 +17,6 @@ import { LockService } from "@services/lock"
 import { ledger } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
 import { NotificationsService } from "@services/notifications"
-import { getChainBalance, getChainFeeEstimate, sendToChainAddress } from "lightning"
 
 import {
   DustAmountError,
@@ -249,7 +248,10 @@ export const OnChainMixin = (superclass) =>
 
         const sendTo = [{ address, tokens: checksAmount }]
 
-        const checkedAddress = checkedToOnChainAddress(address)
+        const checkedAddress = checkedToOnChainAddress({
+          network: BTC_NETWORK,
+          value: address,
+        })
         if (checkedAddress instanceof Error) throw checkedAddress
 
         const getTargetConfirmations = (): TargetConfirmations => {

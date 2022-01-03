@@ -1,3 +1,4 @@
+import { BTC_NETWORK } from "@config/app"
 import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
@@ -17,7 +18,7 @@ const OnChainAddress = new GT.Scalar({
 })
 
 function validOnChainAddressValue(value) {
-  const address = checkedToOnChainAddress(value)
+  const address = checkedToOnChainAddress({ network: BTC_NETWORK, value })
   if (address instanceof Error)
     return new UserInputError("Invalid value for OnChainAddress")
   return address

@@ -12,6 +12,8 @@ import {
   createChainAddress,
   getChainFeeEstimate,
   getWalletInfo,
+  getChainBalance,
+  sendToChainAddress,
 } from "lightning"
 
 import { wrapAsyncToRunInSpan } from "@services/tracing"

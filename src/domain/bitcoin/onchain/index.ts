@@ -4,19 +4,21 @@ export * from "./errors"
 export * from "./tx-filter"
 export * from "./tx-decoder"
 
-export const checkedToOnChainAddress = (
-  value: string,
-): OnChainAddress | ValidationError => {
+export const checkedToOnChainAddress = ({
+  network,
+  value,
+}: {
+  network: BtcNetwork
+  value: string
+}): OnChainAddress | ValidationError => {
   // Regex patterns: https://regexland.com/regex-bitcoin-addresses/
-  const regexes = [
-    /^[13]{1}[a-km-zA-HJ-NP-Z1-9]{26,34}$/, // mainnet non-segwit
-    /^[mn2]{1}[a-km-zA-HJ-NP-Z1-9]{26,34}$/, // testnet non-segwit
-    /^bc1[a-z0-9]{39,59}$/i, // mainnet segwit
-    /^tb1[a-z0-9]{39,59}$/i, // testnet segwit
-    /^bcrt1[a-z0-9]{39,59}$/i, // regtest segwit
-  ]
+  const regexes = {
+    mainnet: [/^[13]{1}[a-km-zA-HJ-NP-Z1-9]{26,34}$/, /^bc1[a-z0-9]{39,59}$/i],
+    testnet: [/^[mn2]{1}[a-km-zA-HJ-NP-Z1-9]{26,34}$/, /^tb1[a-z0-9]{39,59}$/i],
+    regtest: [/^bcrt1[a-z0-9]{39,59}$/i],
+  }
 
-  if (regexes.some((r) => value.match(r))) return value as OnChainAddress
+  if (regexes[network].some((r) => value.match(r))) return value as OnChainAddress
   return new InvalidOnChainAddress()
 }
 
