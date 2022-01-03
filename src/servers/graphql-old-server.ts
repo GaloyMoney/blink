@@ -260,7 +260,7 @@ const resolvers = {
     updateUser: (_, __, { wallet }) => ({
       setUsername: async ({ username }) => wallet.setUsername({ username }),
       setLanguage: async ({ language }) => wallet.setLanguage({ language }),
-      updateUsername: (input) => wallet.updateUsername(input),
+      updateUsername: (input) => wallet.setUsername(input),
       updateLanguage: (input) => wallet.updateLanguage(input),
     }),
     updateContact: (_, __, { user }) => ({

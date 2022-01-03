@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import Username from "@graphql/types/scalar/username"
 
-import { Users } from "@app"
+import { Accounts } from "@app"
 
 const UsernameAvailableQuery = GT.Field({
   type: GT.Boolean,
@@ -17,7 +17,7 @@ const UsernameAvailableQuery = GT.Field({
       throw username
     }
 
-    const available = await Users.usernameAvailable(username)
+    const available = await Accounts.usernameAvailable(username)
 
     if (available instanceof Error) {
       throw available

@@ -10,7 +10,7 @@ type AccountStatus =
 type Account = {
   readonly id: AccountId
   readonly createdAt: Date
-  readonly username: Username
+  username: Username
   readonly defaultWalletId: WalletId
   readonly ownerId: UserId
   level: AccountLevel
