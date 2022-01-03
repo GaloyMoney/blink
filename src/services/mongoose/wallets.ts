@@ -10,6 +10,7 @@ import { User } from "@services/mongoose/schema"
 
 import { caseInsensitiveRegex } from "./users"
 
+//TODO : add projections
 export const WalletsRepository = (): IWalletsRepository => {
   const findById = async (walletId: WalletId): Promise<Wallet | RepositoryError> => {
     try {
@@ -79,14 +80,12 @@ const resultToWallet = (result: UserType): Wallet => {
   const depositFeeRatio = result.depositFeeRatio as DepositFeeRatio
   const withdrawFee = result.withdrawFee as WithdrawFee
 
-  const onChainAddressIdentifiers = result.onchain
-    ? result.onchain.map(({ pubkey, address }) => {
-        return {
-          pubkey: pubkey as Pubkey,
-          address: address as OnChainAddress,
-        }
-      })
-    : []
+  const onChainAddressIdentifiers = result.onchain.map(({ pubkey, address }) => {
+    return {
+      pubkey: pubkey as Pubkey,
+      address: address as OnChainAddress,
+    }
+  })
   const onChainAddresses = () => onChainAddressIdentifiers.map(({ address }) => address)
 
   return {
