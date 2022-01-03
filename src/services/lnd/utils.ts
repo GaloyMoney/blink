@@ -420,6 +420,7 @@ export const validate = async ({
         cltv_delta,
         expires_at,
         features,
+        // TODO: should be replaced by src/domain/bitcoin/lightning/ln-invoice.ts
       } = await parsePaymentRequest({ request: params.invoice }))
     } catch (err) {
       const error = `Error decoding the invoice`

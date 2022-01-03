@@ -3,7 +3,7 @@ import { AlreadyPaidError, SelfPaymentError } from "@domain/errors"
 export const WalletInvoiceValidator = (
   walletInvoice: WalletInvoice,
 ): WalletInvoiceValidator => {
-  const validateToSend = (fromWalletId: WalletId): true | ApplicationError => {
+  const validateToSend = (fromWalletId: WalletId): true | ValidationError => {
     if (walletInvoice.paid) return new AlreadyPaidError(walletInvoice.paymentHash)
     if (walletInvoice.walletId === fromWalletId) return new SelfPaymentError()
     return true
