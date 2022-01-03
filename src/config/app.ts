@@ -233,25 +233,22 @@ export const getSpecterWalletConfig = (): SpecterWalletConfig => {
 
 type TwilioConfig = {
   accountSid: string
-  apiKey: string
-  apiSecret: string
+  authToken: string
   twilioPhoneNumber: string
 }
 
 export const getTwilioConfig = (): TwilioConfig => {
   const accountSid = process.env.TWILIO_ACCOUNT_SID
-  const apiKey = process.env.TWILIO_API_KEY
-  const apiSecret = process.env.TWILIO_API_SECRET
+  const authToken = process.env.TWILIO_AUTH_TOKEN
   const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
 
-  if (!accountSid || !apiKey || !apiSecret || !twilioPhoneNumber) {
+  if (!accountSid || !authToken || !twilioPhoneNumber) {
     throw new ConfigError("missing key for twilio")
   }
 
   return {
     accountSid,
-    apiKey,
-    apiSecret,
+    authToken,
     twilioPhoneNumber,
   }
 }
