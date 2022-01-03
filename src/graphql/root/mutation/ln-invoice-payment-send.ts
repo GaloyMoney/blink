@@ -9,6 +9,7 @@ import {
   addAttributesToCurrentSpanAndPropagate,
   SemanticAttributes,
   ENDUSER_ALIAS,
+  ENDACCOUNT_DEFAULTWALLETID,
 } from "@services/tracing"
 
 const LnInvoicePaymentInput = new GT.Input({
@@ -25,11 +26,12 @@ const LnInvoicePaymentSendMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(LnInvoicePaymentInput) },
   },
-  resolve: async (_, args, { ip, domainUser, logger }) =>
+  resolve: async (_, args, { ip, domainUser, domainAccount, logger }) =>
     addAttributesToCurrentSpanAndPropagate(
       {
         [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
         [ENDUSER_ALIAS]: domainUser?.username,
+        [ENDACCOUNT_DEFAULTWALLETID]: domainAccount?.defaultWalletId,
         [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       },
       async () => {

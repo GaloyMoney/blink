@@ -9,6 +9,7 @@ import { User } from "@services/mongoose/schema"
 import {
   addAttributesToCurrentSpan,
   addAttributesToCurrentSpanAndPropagate,
+  ENDACCOUNT_DEFAULTWALLETID,
   ENDUSER_ALIAS,
   SemanticAttributes,
 } from "@services/tracing"
@@ -115,7 +116,10 @@ const sessionContext = ({
         account = loggedInAccount
       }
 
-      addAttributesToCurrentSpan({ [ENDUSER_ALIAS]: domainAccount?.username })
+      addAttributesToCurrentSpan({
+        [ENDUSER_ALIAS]: domainAccount?.username,
+        [ENDACCOUNT_DEFAULTWALLETID]: domainAccount?.defaultWalletId,
+      })
 
       return {
         logger,

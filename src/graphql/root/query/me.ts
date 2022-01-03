@@ -2,6 +2,7 @@ import {
   addAttributesToCurrentSpanAndPropagate,
   SemanticAttributes,
   ENDUSER_ALIAS,
+  ENDACCOUNT_DEFAULTWALLETID,
 } from "@services/tracing"
 import { GT } from "@graphql/index"
 
@@ -22,6 +23,7 @@ const MeQuery = GT.Field({
       {
         [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
         [ENDUSER_ALIAS]: domainAccount?.username,
+        [ENDACCOUNT_DEFAULTWALLETID]: domainAccount?.defaultWalletId,
         [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       },
       () => domainUser,
