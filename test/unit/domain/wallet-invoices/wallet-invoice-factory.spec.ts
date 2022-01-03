@@ -25,7 +25,7 @@ describe("wallet invoice factory methods", () => {
       pubkey: "pubkey" as Pubkey,
       descriptionHash: "descriptionHash" as string, // FIXME
     }
-    const result = walletInvoiceFactory.create({ registeredInvoice })
+    const result = walletInvoiceFactory.create(registeredInvoice)
     const expected = {
       paymentHash: "paymentHash",
       walletId: "id",
@@ -42,10 +42,17 @@ describe("wallet invoice factory methods", () => {
         paymentHash: "paymentHash" as PaymentHash,
         paymentSecret: "paymentSecret" as PaymentSecret,
         paymentRequest: "paymentRequest" as EncodedPaymentRequest,
+        routeHints: [],
+        cltvDelta: null,
+        destination: "destination" as Pubkey,
+        amount: toSats(42),
+        milliSatsAmount: toMilliSatsFromNumber(42000),
+        description: "",
+        features: [],
       },
       pubkey: "pubkey" as Pubkey,
     }
-    const result = walletInvoiceFactory.createForRecipient({ registeredInvoice })
+    const result = walletInvoiceFactory.createForRecipient(registeredInvoice)
     const expected = {
       paymentHash: "paymentHash",
       walletId: "id",

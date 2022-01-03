@@ -5,7 +5,6 @@ import {
   getRequestPhoneCodePerPhoneMinIntervalLimits,
   getTestAccounts,
 } from "@config/app"
-import { randomIntFromInterval } from "@core/utils"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
 import { RateLimitPrefix } from "@domain/rate-limit"
@@ -14,6 +13,9 @@ import { checkedToPhoneNumber } from "@domain/users"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { RedisRateLimitService } from "@services/rate-limit"
 import { TwilioClient } from "@services/twilio"
+
+const randomIntFromInterval = (min, max) =>
+  Math.floor(Math.random() * (max - min + 1) + min)
 
 export const requestPhoneCodeWithCaptcha = async ({
   phone,

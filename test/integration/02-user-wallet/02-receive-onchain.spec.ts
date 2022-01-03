@@ -1,36 +1,35 @@
 import { once } from "events"
 
+import { Prices, Wallets } from "@app"
 import { getOnChainAddressCreateAttemptLimits, getUserLimits } from "@config/app"
-import { btc2sat, sat2btc, sleep } from "@core/utils"
-import { getTitle } from "@services/notifications/payment"
-import { onchainTransactionEventHandler } from "@servers/trigger"
-
-import { Wallets, Prices } from "@app"
-import { TxStatus } from "@domain/wallets"
-
-import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
-import { NotificationType } from "@domain/notifications"
-
-import { baseLogger } from "@services/logger"
-import { getFunderWalletId } from "@services/ledger/accounts"
 import { WalletFactory } from "@core/wallet-factory"
+import { btc2sat, sat2btc } from "@domain/bitcoin"
+import { NotificationType } from "@domain/notifications"
+import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
+import { TxStatus } from "@domain/wallets"
+import { onchainTransactionEventHandler } from "@servers/trigger"
+import { getFunderWalletId } from "@services/ledger/accounts"
+import { baseLogger } from "@services/logger"
 import { User } from "@services/mongoose/schema"
+import { getTitle } from "@services/notifications/payment"
 
-import { resetOnChainAddressWalletIdLimits } from "test/helpers/rate-limit"
-import { getBTCBalance } from "test/helpers/wallet"
+import { sleep } from "@utils"
+
 import {
+  amountAfterFeeDeduction,
+  bitcoindClient,
+  bitcoindOutside,
   checkIsBalanced,
   getAndCreateUserWallet,
   lndonchain,
   RANDOM_ADDRESS,
-  waitUntilBlockHeight,
   sendToAddressAndConfirm,
   subscribeToChainAddress,
   subscribeToTransactions,
-  bitcoindClient,
-  bitcoindOutside,
-  amountAfterFeeDeduction,
+  waitUntilBlockHeight,
 } from "test/helpers"
+import { resetOnChainAddressWalletIdLimits } from "test/helpers/rate-limit"
+import { getBTCBalance } from "test/helpers/wallet"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 

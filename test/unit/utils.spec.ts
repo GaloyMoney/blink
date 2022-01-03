@@ -1,4 +1,4 @@
-import { btc2sat, sat2btc } from "@core/utils"
+import { btc2sat, sat2btc } from "@domain/bitcoin"
 
 describe("utils.ts", () => {
   describe("btc2sat", () => {

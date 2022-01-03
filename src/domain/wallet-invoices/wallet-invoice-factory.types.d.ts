@@ -1,8 +1,8 @@
 type WalletInvoiceFactory = {
-  create({ registeredInvoice: RegisteredInvoice }): WalletInvoice
-  createForRecipient({ registeredInvoice: RegisteredInvoice }): WalletInvoice
+  create(registeredInvoice: RegisteredInvoice): WalletInvoice
+  createForRecipient(registeredInvoice: RegisteredInvoice): WalletInvoice
 }
 
-type WalletInvoiceFactoryCreateMethod = ({
+type WalletInvoiceFactoryCreateMethod = (
   registeredInvoice: RegisteredInvoice,
-}) => WalletInvoice
+) => WalletInvoice

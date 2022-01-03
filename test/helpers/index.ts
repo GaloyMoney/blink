@@ -1,4 +1,4 @@
-import { btc2sat } from "@core/utils"
+import { btc2sat } from "@domain/bitcoin"
 import { balanceSheetIsBalanced, updateUsersPendingPayment } from "@core/balance-sheet"
 
 import { generateToken } from "node-2fa"

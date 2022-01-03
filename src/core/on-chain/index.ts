@@ -31,7 +31,6 @@ import {
 } from "../error"
 import { redlock } from "../lock"
 import { UserWallet } from "../user-wallet"
-import { LoggedError } from "../utils"
 
 export const OnChainMixin = (superclass) =>
   class extends superclass {
@@ -246,7 +245,7 @@ export const OnChainMixin = (superclass) =>
         } catch (err) {
           const error = `Unable to estimate fee for on-chain transaction`
           onchainLogger.error({ err, sendTo, success: false }, error)
-          throw new LoggedError(error)
+          throw new Error(error)
         }
 
         if (!sendAll) {

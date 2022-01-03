@@ -1,9 +1,11 @@
 import { JWT_SECRET, yamlConfig } from "@config/app"
-import { sleep } from "@core/utils"
+
 import { startApolloServerForCoreSchema } from "@servers/graphql-main-server"
 import { createTestClient } from "apollo-server-integration-testing"
 import { createHttpTerminator } from "http-terminator"
 import * as jwt from "jsonwebtoken"
+
+import { sleep } from "@utils"
 
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"

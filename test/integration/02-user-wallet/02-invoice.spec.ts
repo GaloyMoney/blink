@@ -3,12 +3,11 @@ import {
   getInvoiceCreateAttemptLimits,
   getInvoiceCreateForRecipientAttemptLimits,
 } from "@config/app"
-import { getHash } from "@core/utils"
 import { toSats } from "@domain/bitcoin"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { InvoiceUser } from "@services/mongoose/schema"
 
-import { getAndCreateUserWallet } from "test/helpers"
+import { getAndCreateUserWallet, getHash } from "test/helpers"
 import {
   resetRecipientWalletIdLimits,
   resetSelfWalletIdLimits,

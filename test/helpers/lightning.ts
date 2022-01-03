@@ -1,6 +1,5 @@
 import { once } from "events"
 
-import { sleep } from "@core/utils"
 import { baseLogger } from "@services/logger"
 import {
   offchainLnds,
@@ -23,6 +22,10 @@ import {
   updateRoutingFees,
 } from "lightning"
 
+import { parsePaymentRequest } from "invoices"
+
+import { sleep } from "@utils"
+
 import {
   bitcoindClient,
   bitcoindOutside,
@@ -35,6 +38,10 @@ export * from "lightning"
 export const lnd1 = offchainLnds[0].lnd
 export const lnd2 = offchainLnds[1].lnd
 export const lndonchain = onchainLnds[0].lnd
+
+export const getHash = (request) => {
+  return parsePaymentRequest({ request }).id
+}
 
 // TODO: this could be refactored with lndAuth
 export const lndOutside1 = authenticatedLndGrpc({

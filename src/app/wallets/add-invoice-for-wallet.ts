@@ -136,9 +136,7 @@ export const registerAndPersistInvoice = async ({
   if (registeredInvoice instanceof Error) return registeredInvoice
   const { invoice } = registeredInvoice
 
-  const walletInvoice = walletInvoiceCreateFn({
-    registeredInvoice,
-  })
+  const walletInvoice = walletInvoiceCreateFn(registeredInvoice)
   const persistedWalletInvoice = await walletInvoicesRepo.persistNew(walletInvoice)
   if (persistedWalletInvoice instanceof Error) return persistedWalletInvoice
 

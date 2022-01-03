@@ -1,5 +1,5 @@
 import { createHttpTerminator } from "http-terminator"
-import { sleep } from "@core/utils"
+
 import {
   yamlConfig,
   getRequestPhoneCodePerPhoneLimits,
@@ -7,6 +7,8 @@ import {
 } from "@config/app"
 import { createTestClient } from "apollo-server-testing"
 import { startApolloServerForOldSchema } from "@servers/graphql-old-server"
+
+import { sleep } from "@utils"
 
 import { clearAccountLocks, clearLimiters } from "test/helpers"
 

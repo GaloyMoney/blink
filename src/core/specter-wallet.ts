@@ -7,11 +7,10 @@ import { getActiveOnchainLnd, lndsBalances } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
 
 import { BTC_NETWORK, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config/app"
-import { toSats } from "@domain/bitcoin"
+import { btc2sat, sat2btc, toSats } from "@domain/bitcoin"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 
-import { btc2sat, sat2btc } from "./utils"
 import { UserWallet } from "./user-wallet"
 
 // TODO no longer used in tests, removing the creation of the default wallet didn't break anything

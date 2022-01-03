@@ -6,8 +6,10 @@ import {
 } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
-import { sleep } from "@core/utils"
+
 import { DbMetadata, InvoiceUser } from "@services/mongoose/schema"
+
+import { sleep } from "@utils"
 
 import {
   cancelHodlInvoice,

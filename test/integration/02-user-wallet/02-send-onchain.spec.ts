@@ -8,7 +8,6 @@ import {
   MS_PER_DAY,
 } from "@config/app"
 import { TransactionRestrictedError, TwoFAError } from "@core/error"
-import { sleep } from "@core/utils"
 import { toTargetConfs } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
@@ -18,6 +17,8 @@ import { baseLogger } from "@services/logger"
 import { Transaction } from "@services/mongoose/schema"
 import { getTitle } from "@services/notifications/payment"
 import last from "lodash.last"
+
+import { sleep } from "@utils"
 
 import {
   bitcoindClient,
