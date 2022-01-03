@@ -17,7 +17,12 @@ const AccountUpdateLevelInput = new GT.Input({
   }),
 })
 
-const AccountUpdateLevelMutation = GT.Field({
+const AccountUpdateLevelMutation = GT.Field<{
+  input: {
+    uid: string
+    level: AccountLevel | Error
+  }
+}>({
   type: GT.NonNull(AccountDetailPayload),
   args: {
     input: { type: GT.NonNull(AccountUpdateLevelInput) },
