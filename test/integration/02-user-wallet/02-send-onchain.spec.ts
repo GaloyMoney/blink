@@ -18,7 +18,7 @@ import { Transaction } from "@services/mongoose/schema"
 import { getTitle } from "@services/notifications/payment"
 import last from "lodash.last"
 
-import { sleep } from "src/utils"
+import { sleep } from "@utils"
 
 import {
   bitcoindClient,

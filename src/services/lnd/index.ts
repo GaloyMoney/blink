@@ -32,10 +32,10 @@ import {
 
 import { LndOfflineError } from "@core/error"
 
+import { timeout } from "../../utils"
+
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds, offchainLnds } from "./utils"
-
-import { timeout } from "src/utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
   let lndAuth: AuthenticatedLnd, defaultPubkey: Pubkey

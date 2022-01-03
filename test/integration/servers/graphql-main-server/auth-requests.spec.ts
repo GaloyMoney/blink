@@ -5,6 +5,8 @@ import { createTestClient } from "apollo-server-integration-testing"
 import { createHttpTerminator } from "http-terminator"
 import * as jwt from "jsonwebtoken"
 
+import { sleep } from "@utils"
+
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
@@ -13,8 +15,6 @@ import LN_NO_AMOUNT_INVOICE_FEE_PROBE from "./mutations/ln-no-amount-invoice-fee
 import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-payment-send.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
 import ME from "./queries/me.gql"
-
-import { sleep } from "src/utils"
 
 import {
   clearAccountLocks,

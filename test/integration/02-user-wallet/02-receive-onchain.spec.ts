@@ -13,7 +13,8 @@ import { baseLogger } from "@services/logger"
 import { User } from "@services/mongoose/schema"
 import { getTitle } from "@services/notifications/payment"
 
-import { sleep } from "src/utils"
+import { sleep } from "@utils"
+
 import {
   amountAfterFeeDeduction,
   bitcoindClient,

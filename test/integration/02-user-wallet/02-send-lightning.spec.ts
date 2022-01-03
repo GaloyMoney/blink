@@ -19,7 +19,7 @@ import { baseLogger } from "@services/logger"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { InvoiceUser } from "@services/mongoose/schema"
 
-import { sleep } from "src/utils"
+import { sleep } from "@utils"
 
 import {
   cancelHodlInvoice,

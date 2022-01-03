@@ -1,0 +1,14 @@
+{
+  "folders": [
+	{
+		"path": "."
+	},
+	{
+		"path": "../galoy-pay"
+	},
+	{
+		"path": "../charts"
+	}
+],
+  "settings": {}
+}

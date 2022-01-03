@@ -5,10 +5,10 @@ import { createTestClient } from "apollo-server-integration-testing"
 import { startApolloServerForCoreSchema } from "@servers/graphql-main-server"
 import * as jwt from "jsonwebtoken"
 
+import { sleep } from "@utils"
+
 import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
-
-import { sleep } from "src/utils"
 
 import { clearAccountLocks, clearLimiters } from "test/helpers"
 

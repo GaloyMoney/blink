@@ -8,7 +8,7 @@ import {
 import { createTestClient } from "apollo-server-testing"
 import { startApolloServerForOldSchema } from "@servers/graphql-old-server"
 
-import { sleep } from "src/utils"
+import { sleep } from "@utils"
 
 import { clearAccountLocks, clearLimiters } from "test/helpers"
 

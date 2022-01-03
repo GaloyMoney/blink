@@ -1,6 +1,5 @@
 import { once } from "events"
 
-import { sleep } from "@app/utils"
 import { baseLogger } from "@services/logger"
 import {
   offchainLnds,
@@ -24,6 +23,8 @@ import {
 } from "lightning"
 
 import { parsePaymentRequest } from "invoices"
+
+import { sleep } from "@utils"
 
 import {
   bitcoindClient,

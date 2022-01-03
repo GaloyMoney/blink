@@ -9,7 +9,7 @@ import { ledger } from "@services/mongodb"
 
 import { DbMetadata, InvoiceUser } from "@services/mongoose/schema"
 
-import { sleep } from "src/utils"
+import { sleep } from "@utils"
 
 import {
   cancelHodlInvoice,
