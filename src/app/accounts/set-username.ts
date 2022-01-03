@@ -3,7 +3,14 @@ import { UsernameIsImmutableError, UsernameNotAvailableError } from "@domain/acc
 import { checkedToUsername } from "@domain/users"
 import { AccountsRepository } from "@services/mongoose"
 
-export const setUsername = async ({ id, username }: { id: string; username: string }) => {
+export const setUsername = async ({
+  id,
+  username,
+}: {
+  id: string
+  username: string
+}): Promise<Account | ApplicationError> => {
+
   const checkedUsername = checkedToUsername(username)
   if (checkedUsername instanceof Error) return checkedUsername
 
