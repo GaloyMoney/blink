@@ -80,7 +80,6 @@ type TestAccount = {
   code: PhoneCode
   username: Username | undefined
   role: string | undefined // FIXME
-  currencies // FIXME
 }
 
 type TestAccountsChecker = (testAccounts: TestAccount[]) => {

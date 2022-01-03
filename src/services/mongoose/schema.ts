@@ -10,8 +10,6 @@ import {
 import { toLiabilitiesWalletId } from "@domain/ledger"
 import { UsernameRegex } from "@domain/users"
 import { Transaction } from "@services/ledger/schema"
-import find from "lodash.find"
-import sumBy from "lodash.sumby"
 import * as mongoose from "mongoose"
 
 export { Transaction }
@@ -175,30 +173,6 @@ const UserSchema = new Schema<UserType>({
     type: [String],
     default: [],
   },
-  currencies: {
-    validate: {
-      validator: function (v) {
-        return sumBy(v, "ratio") === 1
-      },
-    },
-    type: [
-      {
-        id: {
-          type: String,
-          enum: ["BTC", "USD"],
-          required: true,
-        },
-        ratio: {
-          type: Number,
-          required: true,
-          min: 0,
-          max: 1,
-        },
-      },
-    ],
-    required: true,
-    default: [{ id: "BTC", ratio: 1 }],
-  },
   contacts: {
     type: [
       {
@@ -241,11 +215,6 @@ const UserSchema = new Schema<UserType>({
     },
   },
 
-  excludeCashback: {
-    type: Boolean,
-    default: false,
-  },
-
   status: {
     type: String,
     enum: ["active", "locked"],
@@ -274,15 +243,6 @@ const UserSchema = new Schema<UserType>({
 // Define getter for ratioUsd
 // FIXME: this // An outer value of 'this' is shadowed by this container.
 // https://stackoverflow.com/questions/41944650/this-implicitly-has-type-any-because-it-does-not-have-a-type-annotation
-
-// TODO: remove lodash.find when this is removed
-UserSchema.virtual("ratioUsd").get(function (this: typeof UserSchema) {
-  return find(this.currencies, { id: "USD" })?.ratio ?? 0
-})
-
-UserSchema.virtual("ratioBtc").get(function (this: typeof UserSchema) {
-  return find(this.currencies, { id: "BTC" })?.ratio ?? 0
-})
 
 // this is the accounting path in medici for this user
 UserSchema.virtual("walletPath").get(function (this: typeof UserSchema) {

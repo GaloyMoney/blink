@@ -91,10 +91,6 @@ export const createUserWallet = async (index: number) => {
     )
   }
 
-  if (entry.currencies) {
-    await User.findOneAndUpdate({ _id: uid }, { currencies: entry.currencies })
-  }
-
   if (entry.role) {
     await User.findOneAndUpdate({ _id: uid }, { role: entry.role })
   }

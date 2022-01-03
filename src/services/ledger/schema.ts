@@ -40,28 +40,6 @@ const transactionSchema = new Schema({
     required: true,
   },
 
-  // used as metadata only to know for a particular transaction what was the split between
-  // USD and BTC
-  // TODO implement this to make it relevant for the user
-  currencies: {
-    // TODO: refactor with user
-    type: [
-      {
-        id: {
-          type: String,
-          enum: ["BTC", "USD"],
-          required: true,
-        },
-        ratio: {
-          type: Number,
-          required: true,
-          min: 0,
-          max: 1,
-        },
-      },
-    ],
-  },
-
   fee: {
     type: Number,
     default: 0,

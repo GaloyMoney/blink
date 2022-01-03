@@ -51,12 +51,6 @@ describe("UserWallet", () => {
     expect(dealer.role).toBe("dealer")
   })
 
-  it("has currencies if they were configured", async () => {
-    await createUserWallet(5)
-    const user5 = await getUserTypeByTestUserIndex(5)
-    expect(user5.currencies[0]).toMatchObject({ id: "USD", ratio: 1 })
-  })
-
   it("has a title if it was configured", () => {
     expect(userType2.title).toBeTruthy()
   })

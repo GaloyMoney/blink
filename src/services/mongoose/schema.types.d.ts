@@ -63,10 +63,8 @@ interface UserType {
   withdrawFee?: number
   earn?: string[]
   deviceToken?: string[]
-  excludeCashback?: boolean
   contacts: ContactObjectForUser[]
   created_at: string
-  currencies: CurrencyObjectForUser[]
   onchain: OnChainObjectForUser[]
   twoFA: TwoFAForUser
   walletId: WalletId
