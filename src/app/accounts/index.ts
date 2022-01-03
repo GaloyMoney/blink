@@ -10,6 +10,8 @@ export * from "./update-account-status"
 export * from "./update-business-map-info"
 export * from "./send-balance-to-accounts"
 export * from "./add-earn"
+export * from "./set-username"
+export * from "./username-available"
 
 const accounts = AccountsRepository()
 

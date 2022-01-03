@@ -6,7 +6,6 @@ export * from "./get-user"
 export * from "./login"
 export * from "./request-phone-code"
 export * from "./update-contact-alias"
-export * from "./username-available"
 
 const users = UsersRepository()
 

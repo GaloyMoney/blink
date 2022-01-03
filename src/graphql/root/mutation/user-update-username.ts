@@ -1,3 +1,5 @@
+import { Accounts } from "@app"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import UserUpdateUsernamePayload from "@graphql/types/payload/user-update-username"
@@ -15,17 +17,20 @@ const UserUpdateUsernameMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserUpdateUsernameInput) },
   },
-  resolve: async (_, args, { wallet }) => {
+  deprecationReason:
+    "Username will be moved to @Handle in Accounts. Also SetUsername should be used instead of UpdateUsername to reflect the idempotency of Handles",
+  resolve: async (_, args, { domainAccount }: { domainAccount: Account }) => {
     const { username } = args.input
 
     if (username instanceof Error) {
       return { errors: [{ message: username.message }] }
     }
 
-    const result = await wallet.updateUsername({ username })
+    const result = await Accounts.setUsername({ username, id: domainAccount.id })
 
     if (result instanceof Error) {
-      return { errors: [{ message: result.message }] }
+      const appErr = mapError(result)
+      return { errors: [{ message: appErr.message || appErr.name }] }
     }
 
     return {

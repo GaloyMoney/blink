@@ -218,3 +218,14 @@ export class InvalidBusinessTitleLengthError extends CustomApolloError {
     })
   }
 }
+
+export class UsernameError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Username issue",
+      forwardToClient: true,
+      code: "USERNAME_ERROR",
+      ...errData,
+    })
+  }
+}

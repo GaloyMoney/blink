@@ -102,25 +102,6 @@ export abstract class UserWallet {
   }
 
   // deprecated
-  async setUsername({ username }): Promise<true | ApplicationError> {
-    const result = await User.findOneAndUpdate(
-      { _id: this.user.id, username: null },
-      { username },
-    )
-
-    if (!result) {
-      const error = `Username is already set`
-      throw new DbError(error, {
-        forwardToClient: true,
-        logger: this.logger,
-        level: "warn",
-      })
-    }
-
-    return true
-  }
-
-  // deprecated
   async setLanguage({ language }): Promise<boolean> {
     const result = await User.findOneAndUpdate({ _id: this.user.id }, { language })
 
@@ -137,9 +118,8 @@ export abstract class UserWallet {
     return true
   }
 
-  async updateUsername({
-    username,
-  }): Promise<{ username: string | undefined; id: string }> {
+  // TODO(remove) deprecated
+  async setUsername({ username }): Promise<{ username: string | undefined; id: string }> {
     try {
       const result = await User.findOneAndUpdate(
         { _id: this.user.id, username: { $in: [null, ""] } },
