@@ -2,7 +2,7 @@ import crypto from "crypto"
 
 import { Prices } from "@app"
 import * as Wallets from "@app/wallets"
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
+import { ONCHAIN_MIN_CONFIRMATIONS, SECS_PER_5_MINS } from "@config/app"
 import { toSats } from "@domain/bitcoin"
 import { Storage } from "@google-cloud/storage"
 import { LedgerService } from "@services/ledger"
@@ -23,7 +23,7 @@ import {
   subscribeToTransactions,
 } from "lightning"
 
-import healthzHandler from "./healthz-handler"
+import healthzHandler from "./middlewares/healthz"
 
 const logger = baseLogger.child({ module: "trigger" })
 
@@ -168,20 +168,26 @@ export const onInvoiceUpdate = async (invoice) => {
   await Wallets.updatePendingInvoiceByPaymentHash({ paymentHash: invoice.id, logger })
 }
 
-const publishCurrentPrice = async () => {
-  const usdPerSat = await Prices.getCurrentPrice()
-  if (usdPerSat instanceof Error) return
-
+const publishCurrentPrice = () => {
+  const interval = 1000 * 30
   const notificationsService = NotificationsService(logger)
-  notificationsService.priceUpdate(usdPerSat)
+  return setInterval(async function () {
+    try {
+      const usdPerSat = await Prices.getCurrentPrice()
+      if (usdPerSat instanceof Error) throw usdPerSat
+
+      notificationsService.priceUpdate(usdPerSat)
+    } catch (err) {
+      logger.error({ err }, "can't publish the price")
+    }
+  }, interval)
 }
 
 const updatePriceForChart = () => {
-  const interval = 1000 * 30
+  const interval = 1000 * SECS_PER_5_MINS
   return setInterval(async function () {
     try {
       await updatePriceHistory()
-      await publishCurrentPrice()
     } catch (err) {
       logger.error({ err }, "can't update the price")
     }
@@ -253,6 +259,7 @@ const main = () => {
 
   activateLndHealthCheck()
   updatePriceForChart()
+  publishCurrentPrice()
 }
 
 const healthCheck = () => {
