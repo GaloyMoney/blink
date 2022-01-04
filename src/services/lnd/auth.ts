@@ -11,8 +11,6 @@ const inputs: LndParams[] = getLndParams()
 // TODO: use a mock instead.
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const isTest = require.main!.filename.indexOf(".spec.") !== -1
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-const isTrigger = require.main!.filename.indexOf("trigger") !== -1
 
 export const addProps = (array: LndParams[]) => {
   const result: LndParamsAuthed[] = array.map((input) => {
@@ -21,12 +19,7 @@ export const addProps = (array: LndParams[]) => {
       ...input,
       socket,
       lnd: authenticatedLndGrpc({ ...input, socket }).lnd,
-
-      // FIXME: should be inactive first
-      // find a way to mock this up for jest
-      // for now only trigger is active = false at start
-      // because trigger will start listening to lnd event on lnd start/restart
-      active: isTest || !isTrigger,
+      active: isTest,
     }
   })
   return result

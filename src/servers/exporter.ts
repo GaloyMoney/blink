@@ -7,6 +7,7 @@ import {
   getDealerWalletId,
   getFunderWalletId,
 } from "@services/ledger/accounts"
+import { activateLndHealthCheck } from "@services/lnd/health"
 import { getBosScore, lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
@@ -155,13 +156,14 @@ const main = async () => {
     healthzHandler({
       checkDbConnectionStatus: true,
       checkRedisStatus: false,
-      checkLndsStatus: false,
+      checkLndsStatus: true,
     }),
   )
 
   const port = process.env.PORT || 3000
   logger.info(`Server listening to ${port}, metrics exposed on /metrics endpoint`)
   await server.listen(port)
+  activateLndHealthCheck()
 }
 
 setupMongoConnection()
