@@ -1,24 +1,41 @@
-import { getGenericLimits, MS_PER_HOUR } from "@config/app"
-
-import { WalletsRepository } from "@services/mongoose"
 import { Accounts } from "@app"
+import { setUsername } from "@app/accounts"
+import { getGenericLimits, MS_PER_HOUR } from "@config/app"
+import { UsernameIsImmutableError, UsernameNotAvailableError } from "@domain/accounts"
+import { ValidationError } from "@domain/errors"
 import { CsvWalletsExport } from "@services/ledger/csv-wallet-export"
+import { WalletsRepository } from "@services/mongoose"
 
-import { generateTokenHelper, getAndCreateUserWallet } from "test/helpers"
+import {
+  createMandatoryUsers,
+  createUserWallet,
+  generateTokenHelper,
+  getAndCreateUserWallet,
+  getDefaultAccountIdByTestUserIndex,
+  getDefaultWalletIdByTestUserIndex,
+} from "test/helpers"
 
-let userWallet0, userWallet1, userWallet2
-const username = "user0" as Username
+let userWallet0, userWallet2
+let wallet0: WalletId
+let account0: AccountId, account1: AccountId, account2: AccountId
 
 describe("UserWallet", () => {
   beforeAll(async () => {
+    createMandatoryUsers()
+
     userWallet0 = await getAndCreateUserWallet(0)
-    userWallet1 = await getAndCreateUserWallet(1)
     userWallet2 = await getAndCreateUserWallet(2)
-    // load funder wallet before use it
-    await getAndCreateUserWallet(4)
+
+    wallet0 = await getDefaultWalletIdByTestUserIndex(0)
+    account0 = await getDefaultAccountIdByTestUserIndex(0)
+
+    await createUserWallet(1)
+    account1 = await getDefaultAccountIdByTestUserIndex(1)
+
+    account2 = await getDefaultAccountIdByTestUserIndex(2)
 
     // load edit for admin-panel manual testing
-    await getAndCreateUserWallet(13)
+    await createUserWallet(13)
   })
 
   it("has a role if it was configured", async () => {
@@ -64,49 +81,75 @@ describe("UserWallet", () => {
 
   describe("setUsername", () => {
     it("does not set username if length is less than 3", async () => {
-      await expect(userWallet0.setUsername({ username: "ab" })).rejects.toThrow()
+      await expect(setUsername({ username: "ab", id: account0 })).resolves.toBeInstanceOf(
+        ValidationError,
+      )
     })
 
     it("does not set username if contains invalid characters", async () => {
-      await expect(userWallet0.setUsername({ username: "ab+/" })).rejects.toThrow()
+      await expect(
+        setUsername({ username: "ab+/", id: account0 }),
+      ).resolves.toBeInstanceOf(ValidationError)
     })
 
     it("does not allow non english characters", async () => {
-      await expect(userWallet0.setUsername({ username: "ñ_user1" })).rejects.toThrow()
+      await expect(
+        setUsername({ username: "ñ_user1", id: account0 }),
+      ).resolves.toBeInstanceOf(ValidationError)
     })
 
     it("does not set username starting with 1, 3, bc1, lnbc1", async () => {
-      await expect(userWallet0.setUsername({ username: "1ab" })).rejects.toThrow()
-      await expect(userWallet0.setUsername({ username: "3basd" })).rejects.toThrow()
-      await expect(userWallet0.setUsername({ username: "bc1ba" })).rejects.toThrow()
-      await expect(userWallet0.setUsername({ username: "lnbc1qwe1" })).rejects.toThrow()
+      await expect(
+        setUsername({ username: "1ab", id: account0 }),
+      ).resolves.toBeInstanceOf(ValidationError)
+      await expect(
+        setUsername({ username: "3basd", id: account0 }),
+      ).resolves.toBeInstanceOf(ValidationError)
+      await expect(
+        setUsername({ username: "bc1ba", id: account0 }),
+      ).resolves.toBeInstanceOf(ValidationError)
+      await expect(
+        setUsername({ username: "lnbc1qwe1", id: account0 }),
+      ).resolves.toBeInstanceOf(ValidationError)
     })
 
     it("allows set username", async () => {
-      let result = await userWallet0.setUsername({ username: "user0" })
+      let result = await setUsername({ username: "user0", id: account0 })
       expect(!!result).toBeTruthy()
-      result = await userWallet1.setUsername({ username: "user1" })
-      expect(!!result).toBeTruthy()
-      result = await userWallet2.setUsername({ username: "lily" })
+      result = await setUsername({ username: "user1", id: account1 })
       expect(!!result).toBeTruthy()
     })
 
     it("does not allow set username if already taken", async () => {
-      await getAndCreateUserWallet(2)
-      await expect(userWallet2.setUsername({ username })).rejects.toThrow()
+      const username = "user0"
+
+      await createUserWallet(2)
+      await expect(setUsername({ username, id: account2 })).resolves.toBeInstanceOf(
+        UsernameNotAvailableError,
+      )
     })
 
     it("does not allow set username with only case difference", async () => {
-      await expect(userWallet2.setUsername({ username: "User1" })).rejects.toThrow()
+      await expect(
+        setUsername({ username: "User1", id: account2 }),
+      ).resolves.toBeInstanceOf(UsernameNotAvailableError)
+
+      // set username for account2
+      const result = await setUsername({ username: "lily", id: account2 })
+      expect(!!result).toBeTruthy()
     })
 
     it("does not allow re-setting username", async () => {
-      await expect(userWallet0.setUsername({ username: "abc" })).rejects.toThrow()
+      await expect(
+        setUsername({ username: "abc", id: account0 }),
+      ).resolves.toBeInstanceOf(UsernameIsImmutableError)
     })
   })
 
   describe("usernameExists", () => {
     it("return true if username already exists", async () => {
+      const username = "user0" as Username
+
       const walletsRepo = WalletsRepository()
       const wallet = await walletsRepo.findByUsername(username)
       expect(wallet).toStrictEqual(
@@ -117,6 +160,8 @@ describe("UserWallet", () => {
     })
 
     it("return true for other capitalization", async () => {
+      const username = "user0" as Username
+
       const walletsRepo = WalletsRepository()
       const wallet = await walletsRepo.findByUsername(
         username.toLocaleUpperCase() as Username,
@@ -140,7 +185,7 @@ describe("UserWallet", () => {
       "id,walletId,type,credit,debit,fee,currency,timestamp,pendingConfirmation,journalId,lnMemo,usd,feeUsd,recipientWalletId,username,memoFromPayer,paymentHash,pubkey,feeKnownInAdvance,address,txHash"
     it("exports to csv", async () => {
       const csv = new CsvWalletsExport()
-      await csv.addWallet(userWallet0.user.walletId)
+      await csv.addWallet(wallet0)
       const base64Data = csv.getBase64()
       expect(typeof base64Data).toBe("string")
       const data = Buffer.from(base64Data, "base64")
@@ -151,7 +196,7 @@ describe("UserWallet", () => {
   describe("updateAccountStatus", () => {
     it("sets account status for given user id", async () => {
       let user = await Accounts.updateAccountStatus({
-        id: userWallet2.user.id,
+        id: account2,
         status: "locked",
       })
       if (user instanceof Error) {

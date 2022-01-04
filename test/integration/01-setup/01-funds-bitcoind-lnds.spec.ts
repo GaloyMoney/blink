@@ -6,6 +6,7 @@ import { getFunderWalletId } from "@services/ledger/accounts"
 import {
   bitcoindClient,
   checkIsBalanced,
+  createMandatoryUsers,
   createUserWallet,
   fundLnd,
   getChainBalance,
@@ -19,11 +20,7 @@ import {
 let bitcoindOutside
 
 beforeAll(async () => {
-  // load funder wallet before use it
-  await createUserWallet(4)
-
-  // "bankowner" user
-  await createUserWallet(14)
+  await createMandatoryUsers()
 })
 
 afterAll(async () => {

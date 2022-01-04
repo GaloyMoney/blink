@@ -26,9 +26,21 @@ export const getAccountByTestUserIndex = async (index: number) => {
   return account
 }
 
+export const getDefaultAccountIdByTestUserIndex = async (index: number) => {
+  const account = await getAccountByTestUserIndex(index)
+  return account.id
+}
+
 export const getDefaultWalletIdByTestUserIndex = async (index: number) => {
   const account = await getAccountByTestUserIndex(index)
   return account.defaultWalletId
+}
+
+export const createMandatoryUsers = async () => {
+  const users = [4, 6, 14]
+  for (const user of users) {
+    await createUserWallet(user)
+  }
 }
 
 export const createUserWallet = async (index: number) => {
