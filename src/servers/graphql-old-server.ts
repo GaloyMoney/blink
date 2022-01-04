@@ -32,7 +32,6 @@ import {
   addAttributesToCurrentSpanAndPropagate,
   SemanticAttributes,
   ENDUSER_ALIAS,
-  ENDACCOUNT_DEFAULTWALLETID,
 } from "@services/tracing"
 import { PriceInterval, PriceRange } from "@domain/price"
 import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
@@ -86,12 +85,11 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
 
 const resolvers = {
   Query: {
-    me: (_, __, { uid, user, ip, domainUser, domainAccount }) =>
+    me: (_, __, { uid, user, ip, domainUser }) =>
       addAttributesToCurrentSpanAndPropagate(
         {
           [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
           [ENDUSER_ALIAS]: domainUser?.username,
-          [ENDACCOUNT_DEFAULTWALLETID]: domainAccount?.defaultWalletId,
           [SemanticAttributes.HTTP_CLIENT_IP]: ip,
         },
         async () => {
@@ -310,16 +308,11 @@ const resolvers = {
         if (result instanceof Error) throw result
         return result
       },
-      payInvoice: async (
-        { invoice, amount, memo },
-        _,
-        { ip, domainUser, domainAccount },
-      ) =>
+      payInvoice: async ({ invoice, amount, memo }, _, { ip, domainUser }) =>
         addAttributesToCurrentSpanAndPropagate(
           {
             [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
             [ENDUSER_ALIAS]: domainUser?.username,
-            [ENDACCOUNT_DEFAULTWALLETID]: domainAccount?.defaultWalletId,
             [SemanticAttributes.HTTP_CLIENT_IP]: ip,
           },
           async () => {
