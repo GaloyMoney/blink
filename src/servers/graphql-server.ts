@@ -28,8 +28,8 @@ import { v4 as uuidv4 } from "uuid"
 
 import { playgroundTabs } from "../graphql/playground"
 
-import healthzHandler from "./healthz-handler"
-import expressApiKeyAuth from "./graphql-middlewares/api-key-auth"
+import healthzHandler from "./middlewares/healthz"
+import expressApiKeyAuth from "./middlewares/api-key-auth"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",

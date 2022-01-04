@@ -13,7 +13,7 @@ import {
   isAuthenticated,
   startApolloServer,
 } from "./graphql-server"
-import { walletIdMiddleware } from "./graphql-middlewares/wallet-id"
+import { walletIdMiddleware } from "./middlewares/wallet-id"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
