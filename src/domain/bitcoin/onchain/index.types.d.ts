@@ -17,7 +17,7 @@ type OnChainTransaction = {
   outs: TxOut[]
 }
 
-type BaseOnChainTransaction = {
+type IncomingOnChainTransaction = {
   confirmations: number
   rawTx: OnChainTransaction
   fee: Satoshis
@@ -25,8 +25,13 @@ type BaseOnChainTransaction = {
   uniqueAddresses: () => OnChainAddress[]
 }
 
-type IncomingOnChainTransaction = BaseOnChainTransaction
-type OutgoingOnChainTransaction = BaseOnChainTransaction
+type OutgoingOnChainTransaction = {
+  confirmations: number
+  rawTx: OnChainTransaction
+  fee: Satoshis
+  createdAt: Date
+  uniqueAddresses: () => OnChainAddress[]
+}
 
 type TxDecoder = {
   decode(txHex: string): OnChainTransaction
@@ -47,7 +52,21 @@ type LookupOnChainFeeArgs = {
   scanDepth: ScanDepth
 }
 
+type GetOnChainFeeEstimateArgs = {
+  amount: Satoshis
+  address: OnChainAddress
+  targetConfirmations: TargetConfirmations
+}
+
+type PayToAddressArgs = {
+  amount: Satoshis
+  address: OnChainAddress
+  targetConfirmations: TargetConfirmations
+}
+
 interface IOnChainService {
+  getBalance(): Promise<Satoshis | OnChainServiceError>
+
   listIncomingTransactions(
     scanDepth: ScanDepth,
   ): Promise<IncomingOnChainTransaction[] | OnChainServiceError>
@@ -59,9 +78,15 @@ interface IOnChainService {
 
   createOnChainAddress(): Promise<OnChainAddressIdentifier | OnChainServiceError>
 
-  getOnChainFeeEstimate(
-    amount: Satoshis,
-    address: OnChainAddress,
-    targetConfirmations: TargetConfirmations,
-  ): Promise<Satoshis | OnChainServiceError>
+  getOnChainFeeEstimate({
+    amount,
+    address,
+    targetConfirmations,
+  }: GetOnChainFeeEstimateArgs): Promise<Satoshis | OnChainServiceError>
+
+  payToAddress({
+    amount,
+    address,
+    targetConfirmations,
+  }: PayToAddressArgs): Promise<OnChainTxHash | OnChainServiceError>
 }

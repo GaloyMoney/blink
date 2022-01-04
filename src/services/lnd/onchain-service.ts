@@ -12,6 +12,8 @@ import {
   createChainAddress,
   getChainFeeEstimate,
   getWalletInfo,
+  getChainBalance,
+  sendToChainAddress,
 } from "lightning"
 
 import { wrapAsyncToRunInSpan } from "@services/tracing"
@@ -33,6 +35,16 @@ export const OnChainService = (
     pubkey = activeNode.pubkey as Pubkey
   } catch (err) {
     return new OnChainServiceUnavailableError(err)
+  }
+
+  const getBalance = async (): Promise<Satoshis | OnChainServiceError> => {
+    try {
+      const { chain_balance } = await getChainBalance({ lnd })
+      return toSats(chain_balance)
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      return new UnknownOnChainServiceError(errDetails)
+    }
   }
 
   const listTransactions = async (
@@ -57,7 +69,8 @@ export const OnChainService = (
         after,
       })
     } catch (err) {
-      return new UnknownOnChainServiceError(err)
+      const errDetails = parseLndErrorDetails(err)
+      return new UnknownOnChainServiceError(errDetails)
     }
   }
 
@@ -90,7 +103,8 @@ export const OnChainService = (
 
       return { address: address as OnChainAddress, pubkey }
     } catch (err) {
-      return new UnknownOnChainServiceError(err)
+      const errDetails = parseLndErrorDetails(err)
+      return new UnknownOnChainServiceError(errDetails)
     }
   }
 
@@ -105,11 +119,11 @@ export const OnChainService = (
     return (tx && tx.fee) || new CouldNotFindOnChainTransactionError()
   }
 
-  const getOnChainFeeEstimate = async (
-    amount: Satoshis,
-    address: OnChainAddress,
-    targetConfirmations: TargetConfirmations,
-  ): Promise<Satoshis | OnChainServiceError> => {
+  const getOnChainFeeEstimate = async ({
+    amount,
+    address,
+    targetConfirmations,
+  }: GetOnChainFeeEstimateArgs): Promise<Satoshis | OnChainServiceError> => {
     const sendTo = [{ address, tokens: amount }]
     try {
       const { fee } = await getChainFeeEstimate({
@@ -120,11 +134,34 @@ export const OnChainService = (
 
       return fee as Satoshis
     } catch (err) {
-      return new UnknownOnChainServiceError(err[2]?.err?.details || err[1])
+      const errDetails = parseLndErrorDetails(err)
+      return new UnknownOnChainServiceError(errDetails)
+    }
+  }
+
+  const payToAddress = async ({
+    amount,
+    address,
+    targetConfirmations,
+  }: PayToAddressArgs): Promise<OnChainTxHash | OnChainServiceError> => {
+    try {
+      const { id } = await sendToChainAddress({
+        lnd,
+        address,
+        tokens: amount,
+        utxo_confirmations: 0,
+        target_confirmations: targetConfirmations,
+      })
+
+      return id as OnChainTxHash
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      return new UnknownOnChainServiceError(errDetails)
     }
   }
 
   return {
+    getBalance,
     listIncomingTransactions: wrapAsyncToRunInSpan({
       namespace: `service.lnd`,
       fn: listIncomingTransactions,
@@ -132,8 +169,12 @@ export const OnChainService = (
     lookupOnChainFee,
     createOnChainAddress,
     getOnChainFeeEstimate,
+    payToAddress,
   }
 }
+
+const parseLndErrorDetails = (err) =>
+  err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details || err[1]
 
 export const extractIncomingTransactions = ({
   decoder,
