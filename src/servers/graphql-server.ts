@@ -6,7 +6,6 @@ import { WalletFactory } from "@core/wallet-factory"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
 import { User } from "@services/mongoose/schema"
-import { redis } from "@services/redis"
 import {
   addAttributesToCurrentSpan,
   addAttributesToCurrentSpanAndPropagate,
@@ -21,7 +20,7 @@ import { execute, GraphQLError, subscribe } from "graphql"
 import { rule } from "graphql-shield"
 import helmet from "helmet"
 import * as jwt from "jsonwebtoken"
-import mongoose from "mongoose"
+
 import pino from "pino"
 import PinoHttp from "pino-http"
 import { SubscriptionServer } from "subscriptions-transport-ws"
@@ -29,6 +28,7 @@ import { v4 as uuidv4 } from "uuid"
 
 import { playgroundTabs } from "../graphql/playground"
 
+import healthzHandler from "./healthz-handler"
 import expressApiKeyAuth from "./graphql-middlewares/api-key-auth"
 
 const graphqlLogger = baseLogger.child({
@@ -274,11 +274,14 @@ export const startApolloServer = async ({
   app.use(expressApiKeyAuth)
 
   // Health check
-  app.get("/healthz", async function (req, res) {
-    const isMongoAlive = mongoose.connection.readyState === 1 ? true : false
-    const isRedisAlive = (await redis.ping()) === "PONG"
-    res.status(isMongoAlive && isRedisAlive ? 200 : 503).send()
-  })
+  app.get(
+    "/healthz",
+    healthzHandler({
+      checkDbConnectionStatus: true,
+      checkRedisStatus: true,
+      checkLndsStatus: false,
+    }),
+  )
 
   apolloServer.applyMiddleware({ app })
 

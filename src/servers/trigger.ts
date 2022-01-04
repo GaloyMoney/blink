@@ -23,6 +23,8 @@ import {
   subscribeToTransactions,
 } from "lightning"
 
+import healthzHandler from "./healthz-handler"
+
 const logger = baseLogger.child({ module: "trigger" })
 
 const txsReceived = new Set()
@@ -256,7 +258,14 @@ const main = () => {
 const healthCheck = () => {
   const app = express()
   const port = 8888
-  app.get("/healthz", (req, res) => res.sendStatus(200))
+  app.get(
+    "/healthz",
+    healthzHandler({
+      checkDbConnectionStatus: true,
+      checkRedisStatus: true,
+      checkLndsStatus: true,
+    }),
+  )
   app.listen(port, () => logger.info(`Health check listening on port ${port}!`))
 }
 

@@ -14,6 +14,8 @@ import { User } from "@services/mongoose/schema"
 import express from "express"
 import client, { register } from "prom-client"
 
+import healthzHandler from "./healthz-handler"
+
 const logger = baseLogger.child({ module: "exporter" })
 
 const server = express()
@@ -148,9 +150,14 @@ const main = async () => {
     res.end(await register.metrics())
   })
 
-  server.get("/healthz", async (req, res) => {
-    res.send("OK")
-  })
+  server.get(
+    "/healthz",
+    healthzHandler({
+      checkDbConnectionStatus: true,
+      checkRedisStatus: false,
+      checkLndsStatus: true,
+    }),
+  )
 
   const port = process.env.PORT || 3000
   logger.info(`Server listening to ${port}, metrics exposed on /metrics endpoint`)

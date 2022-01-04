@@ -26,8 +26,8 @@ export const isUp = async (param): Promise<void> => {
 
   try {
     // will throw if there is an error
-    const { is_active } = await getWalletStatus({ lnd })
-    active = !!is_active
+    const { is_active, is_ready } = await getWalletStatus({ lnd })
+    active = !!is_active && !!is_ready
   } catch (err) {
     baseLogger.warn({ err }, `can't get wallet info from ${socket}`)
     active = false
