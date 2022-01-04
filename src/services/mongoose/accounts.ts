@@ -114,11 +114,12 @@ export const AccountsRepository = (): IAccountsRepository => {
     status,
     coordinates,
     title,
+    username,
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
         { _id: id },
-        { level, status, coordinates, title },
+        { level, status, coordinates, title, username },
         {
           new: true,
           projection,

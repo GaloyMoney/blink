@@ -28,18 +28,19 @@ export async function startApolloServerForCoreSchema() {
         accountApiKeys: isAuthenticated,
       },
       Mutation: {
-        userQuizQuestionUpdateCompleted: isAuthenticated,
-        userUpdateLanguage: isAuthenticated,
-        userContactUpdateAlias: isAuthenticated,
-
         twoFAGenerate: isAuthenticated,
         twoFASave: isAuthenticated,
         twoFADelete: isAuthenticated,
 
+        userQuizQuestionUpdateCompleted: isAuthenticated,
         deviceNotificationTokenCreate: isAuthenticated,
 
         accountApiKeyCreate: isAuthenticated,
         accountApiKeyDisable: isAuthenticated,
+
+        userUpdateUsername: isAuthenticated,
+        userUpdateLanguage: isAuthenticated,
+        userContactUpdateAlias: isAuthenticated,
 
         lnInvoiceFeeProbe: or(isAuthenticated, isApiKeyAuthenticated),
         lnNoAmountInvoiceFeeProbe: or(isAuthenticated, isApiKeyAuthenticated),

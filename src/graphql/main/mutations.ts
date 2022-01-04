@@ -31,9 +31,14 @@ import AccountApiKeyDisableMutation from "@graphql/root/mutation/account-api-key
 const MutationType = new GT.Object({
   name: "Mutation",
   fields: () => ({
+    // unauthed
     userRequestAuthCode: UserRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
 
+    captchaCreateChallenge: CaptchaCreateChallengeMutation,
+    captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
+
+    // authed
     twoFAGenerate: TwoFAGenerateMutation,
     twoFASave: TwoFASaveMutation,
     twoFADelete: TwoFADeleteMutation,
@@ -67,9 +72,6 @@ const MutationType = new GT.Object({
     onChainAddressCurrent: OnChainAddressCurrentMutation,
     onChainPaymentSend: OnChainPaymentSendMutation,
     onChainPaymentSendAll: OnChainPaymentSendAllMutation,
-
-    captchaCreateChallenge: CaptchaCreateChallengeMutation,
-    captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
   }),
 })
 

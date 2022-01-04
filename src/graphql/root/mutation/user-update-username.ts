@@ -35,6 +35,9 @@ const UserUpdateUsernameMutation = GT.Field({
 
     return {
       errors: [],
+
+      // TODO: move to accounts
+      // TODO: username and id are not populated correctly (but those properties not been used currently by a client)
       user: result,
     }
   },
