@@ -5,6 +5,8 @@ import { and, shield } from "graphql-shield"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 
+import { activateLndHealthCheck } from "@services/lnd/health"
+
 import { gqlAdminSchema } from "../graphql"
 
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
@@ -42,6 +44,7 @@ if (require.main === module) {
   setupMongoConnection()
     .then(async () => {
       await startApolloServerForAdminSchema()
+      activateLndHealthCheck()
     })
     .catch((err) => graphqlLogger.error(err, "server error"))
 }

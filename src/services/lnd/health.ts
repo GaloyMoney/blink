@@ -13,12 +13,14 @@ import { params as authParams } from "./auth"
 /* eslint-disable @typescript-eslint/no-var-requires */
 const EventEmitter = require("events")
 
-const refresh_time = 10000 // ms
+const refreshTime = 10000 // ms
 
-const isUpLoop = (param) =>
+const isUpLoop = async (param) => {
+  await isUp(param)
   setInterval(async () => {
     await isUp(param)
-  }, refresh_time)
+  }, refreshTime)
+}
 
 export const isUp = async (param): Promise<void> => {
   let active = false
