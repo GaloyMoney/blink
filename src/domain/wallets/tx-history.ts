@@ -235,13 +235,8 @@ const shouldDisplayMemo = ({
   return isAuthorizedMemo(memo) || credit === 0 || credit >= MEMO_SHARING_SATS_THRESHOLD
 }
 
-const isAuthorizedMemo = (memo: string | undefined): boolean => {
-  if (memo && Object.keys(onboardingEarn).includes(memo)) {
-    return true
-  }
-
-  return false
-}
+const isAuthorizedMemo = (memo: string | undefined): boolean =>
+  !!memo && Object.keys(onboardingEarn).includes(memo)
 
 export const translateDescription = ({
   memoFromPayer,
