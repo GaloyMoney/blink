@@ -15,7 +15,7 @@ import { User } from "@services/mongoose/schema"
 import express from "express"
 import client, { register } from "prom-client"
 
-import healthzHandler from "./healthz-handler"
+import healthzHandler from "./middlewares/healthz"
 
 const logger = baseLogger.child({ module: "exporter" })
 
