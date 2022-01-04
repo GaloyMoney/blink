@@ -14,6 +14,7 @@ import {
   updateUsersPendingPayment,
 } from "@core/balance-sheet"
 import { SpecterWallet } from "@core/specter-wallet"
+import { activateLndHealthCheck } from "@services/lnd/health"
 
 const main = async () => {
   const mongoose = await setupMongoConnection()
@@ -59,6 +60,7 @@ const main = async () => {
 }
 
 try {
+  activateLndHealthCheck()
   main()
 } catch (err) {
   baseLogger.warn({ err }, "error in the cron job")
