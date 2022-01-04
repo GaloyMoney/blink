@@ -155,7 +155,7 @@ const main = async () => {
     healthzHandler({
       checkDbConnectionStatus: true,
       checkRedisStatus: false,
-      checkLndsStatus: true,
+      checkLndsStatus: false,
     }),
   )
 
