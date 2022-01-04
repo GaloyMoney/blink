@@ -232,11 +232,15 @@ const shouldDisplayMemo = ({
   memo: string | undefined
   credit: number
 }) => {
-  return (
-    (memo && Object.keys(onboardingEarn).includes(memo)) ||
-    credit === 0 ||
-    credit >= MEMO_SHARING_SATS_THRESHOLD
-  )
+  return isAuthorizedMemo(memo) || credit === 0 || credit >= MEMO_SHARING_SATS_THRESHOLD
+}
+
+const isAuthorizedMemo = (memo: string | undefined): boolean => {
+  if (memo && Object.keys(onboardingEarn).includes(memo)) {
+    return true
+  }
+
+  return false
 }
 
 export const translateDescription = ({
