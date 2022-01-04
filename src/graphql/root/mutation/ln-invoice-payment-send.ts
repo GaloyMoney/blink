@@ -9,7 +9,9 @@ import {
   addAttributesToCurrentSpanAndPropagate,
   SemanticAttributes,
   ENDUSER_ALIAS,
+  ENDUSER_PUBLICID,
 } from "@services/tracing"
+import getUuidByString from "uuid-by-string"
 
 const LnInvoicePaymentInput = new GT.Input({
   name: "LnInvoicePaymentInput",
@@ -29,6 +31,9 @@ const LnInvoicePaymentSendMutation = GT.Field({
     addAttributesToCurrentSpanAndPropagate(
       {
         [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
+        [ENDUSER_PUBLICID]: domainUser?.id
+          ? getUuidByString(domainUser?.id)
+          : domainUser?.id,
         [ENDUSER_ALIAS]: domainUser?.username,
         [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       },

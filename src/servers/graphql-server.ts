@@ -10,6 +10,7 @@ import {
   addAttributesToCurrentSpan,
   addAttributesToCurrentSpanAndPropagate,
   ENDUSER_ALIAS,
+  ENDUSER_PUBLICID,
   SemanticAttributes,
 } from "@services/tracing"
 import { ApolloServerPluginUsageReporting } from "apollo-server-core"
@@ -25,6 +26,7 @@ import pino from "pino"
 import PinoHttp from "pino-http"
 import { SubscriptionServer } from "subscriptions-transport-ws"
 import { v4 as uuidv4 } from "uuid"
+import getUuidByString from "uuid-by-string"
 
 import { playgroundTabs } from "../graphql/playground"
 
@@ -81,6 +83,7 @@ const sessionContext = ({
   return addAttributesToCurrentSpanAndPropagate(
     {
       [SemanticAttributes.ENDUSER_ID]: userId,
+      [ENDUSER_PUBLICID]: userId ? getUuidByString(userId) : userId,
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
     },
     async () => {

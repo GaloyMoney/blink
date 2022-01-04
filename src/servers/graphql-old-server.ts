@@ -32,9 +32,12 @@ import {
   addAttributesToCurrentSpanAndPropagate,
   SemanticAttributes,
   ENDUSER_ALIAS,
+  ENDUSER_PUBLICID,
 } from "@services/tracing"
 import { PriceInterval, PriceRange } from "@domain/price"
 import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
+
+import getUuidByString from "uuid-by-string"
 
 import { startApolloServer, isAuthenticated } from "./graphql-server"
 
@@ -89,6 +92,9 @@ const resolvers = {
       addAttributesToCurrentSpanAndPropagate(
         {
           [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
+          [ENDUSER_PUBLICID]: domainUser?.id
+            ? getUuidByString(domainUser?.id)
+            : domainUser?.id,
           [ENDUSER_ALIAS]: domainUser?.username,
           [SemanticAttributes.HTTP_CLIENT_IP]: ip,
         },
@@ -312,6 +318,9 @@ const resolvers = {
         addAttributesToCurrentSpanAndPropagate(
           {
             [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
+            [ENDUSER_PUBLICID]: domainUser?.id
+              ? getUuidByString(domainUser?.id)
+              : domainUser?.id,
             [ENDUSER_ALIAS]: domainUser?.username,
             [SemanticAttributes.HTTP_CLIENT_IP]: ip,
           },

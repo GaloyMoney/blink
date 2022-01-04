@@ -278,3 +278,4 @@ export const addAttributesToCurrentSpanAndPropagate = <F extends () => ReturnTyp
 export { SemanticAttributes, SemanticResourceAttributes }
 
 export const ENDUSER_ALIAS = "enduser.alias"
+export const ENDUSER_PUBLICID = "enduser.publicId"
