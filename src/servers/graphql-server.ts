@@ -157,7 +157,7 @@ export const startApolloServer = async ({
           settings: { "schema.polling.enable": false },
           tabs: [
             {
-              endpoint: "https://api.staging.galoy.io/graphql",
+              endpoint: apolloConfig.playgroundUrl,
               ...playgroundTabs.default,
             },
           ],

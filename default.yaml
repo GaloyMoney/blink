@@ -152,6 +152,7 @@ onChainWallet:
 
 apollo:
   playground: true
+  playgroundUrl: "https://api.staging.galoy.io/graphql"
 
 twoFA:
   threshold: 300000 # sats
