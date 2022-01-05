@@ -1,23 +1,27 @@
 import { Accounts } from "@app"
 import { setUsername } from "@app/accounts"
+import { delete2fa } from "@app/users"
 import { getGenericLimits, MS_PER_HOUR } from "@config/app"
 import { UsernameIsImmutableError, UsernameNotAvailableError } from "@domain/accounts"
 import { ValidationError } from "@domain/errors"
 import { CsvWalletsExport } from "@services/ledger/csv-wallet-export"
-import { WalletsRepository } from "@services/mongoose"
+import { UsersRepository, WalletsRepository } from "@services/mongoose"
 
 import {
   createMandatoryUsers,
   createUserWallet,
   generateTokenHelper,
   getAndCreateUserWallet,
-  getDefaultAccountIdByTestUserIndex,
+  getAccountIdByTestUserIndex,
   getDefaultWalletIdByTestUserIndex,
+  getUserIdByTestUserIndex,
+  enable2FA,
 } from "test/helpers"
 
 let userWallet0, userWallet2
 let wallet0: WalletId
 let account0: AccountId, account1: AccountId, account2: AccountId
+let user0: UserId
 
 describe("UserWallet", () => {
   beforeAll(async () => {
@@ -27,12 +31,14 @@ describe("UserWallet", () => {
     userWallet2 = await getAndCreateUserWallet(2)
 
     wallet0 = await getDefaultWalletIdByTestUserIndex(0)
-    account0 = await getDefaultAccountIdByTestUserIndex(0)
+    account0 = await getAccountIdByTestUserIndex(0)
 
     await createUserWallet(1)
-    account1 = await getDefaultAccountIdByTestUserIndex(1)
+    account1 = await getAccountIdByTestUserIndex(1)
 
-    account2 = await getDefaultAccountIdByTestUserIndex(2)
+    account2 = await getAccountIdByTestUserIndex(2)
+
+    user0 = await getUserIdByTestUserIndex(0)
 
     // load edit for admin-panel manual testing
     await createUserWallet(13)
@@ -213,9 +219,13 @@ describe("UserWallet", () => {
 
   describe("save2fa", () => {
     it("saves 2fa for user0", async () => {
-      const { secret } = userWallet0.generate2fa()
-      const token = generateTokenHelper({ secret })
-      await userWallet0.save2fa({ secret, token })
+      const usersRepo = UsersRepository()
+      const user = await usersRepo.findById(user0)
+      if (user instanceof Error) throw user
+
+      const secret = await enable2FA(user0)
+      if (secret instanceof Error) return secret
+
       userWallet0 = await getAndCreateUserWallet(0)
       expect(userWallet0.user.twoFAEnabled).toBe(true)
       expect(userWallet0.user.twoFA.secret).toBe(secret)
@@ -224,8 +234,12 @@ describe("UserWallet", () => {
 
   describe("delete2fa", () => {
     it("delete 2fa for user0", async () => {
-      const token = generateTokenHelper({ secret: userWallet0.user.twoFA.secret })
-      const result = await userWallet0.delete2fa({ token })
+      const usersRepo = UsersRepository()
+      const user = await usersRepo.findById(user0)
+      if (user instanceof Error) throw user
+
+      const token = generateTokenHelper(userWallet0.user.twoFA.secret)
+      const result = await delete2fa({ token, userId: user0 })
       expect(result).toBeTruthy()
       userWallet0 = await getAndCreateUserWallet(0)
       expect(userWallet0.user.twoFAEnabled).toBeFalsy()

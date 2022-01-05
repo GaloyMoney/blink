@@ -16,20 +16,20 @@ import { onchainTransactionEventHandler } from "@servers/trigger"
 import { baseLogger } from "@services/logger"
 import { Transaction } from "@services/mongoose/schema"
 import { getTitle } from "@services/notifications/payment"
-import last from "lodash.last"
-
 import { sleep } from "@utils"
+import last from "lodash.last"
 
 import {
   bitcoindClient,
   bitcoindOutside,
   checkIsBalanced,
   createChainAddress,
-  createUserWallet,
+  createMandatoryUsers,
   enable2FA,
   generateTokenHelper,
   getAndCreateUserWallet,
   getDefaultWalletIdByTestUserIndex,
+  getUserIdByTestUserIndex,
   lndonchain,
   lndOutside1,
   mineBlockAndSync,
@@ -49,6 +49,7 @@ let initialBalanceUser0
 let userWallet0, userWallet3, userWallet11, userWallet12 // using userWallet11 and userWallet12 to sendAll
 
 let wallet0: WalletId
+let user0: UserId
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
@@ -56,15 +57,13 @@ const { sendNotification } = require("@services/notifications/notification")
 beforeAll(async () => {
   userWallet0 = await getAndCreateUserWallet(0)
   wallet0 = await getDefaultWalletIdByTestUserIndex(0)
+  user0 = await getUserIdByTestUserIndex(0)
 
   userWallet3 = await getAndCreateUserWallet(3)
   userWallet11 = await getAndCreateUserWallet(11)
   userWallet12 = await getAndCreateUserWallet(12)
 
-  // FIXME: make a function out ot it
-  await createUserWallet(4) // funder
-  await createUserWallet(6) // dealer
-  await createUserWallet(14) // bankowner
+  await createMandatoryUsers()
 
   await bitcoindClient.loadWallet({ filename: "outside" })
 })
@@ -575,7 +574,8 @@ describe("UserWallet - onChainPay", () => {
 
   describe("2FA", () => {
     it("fails to pay above 2fa limit without 2fa token", async () => {
-      enable2FA({ wallet: userWallet0 })
+      enable2FA(user0)
+
       const remainingLimit = await getRemainingTwoFALimit(wallet0)
       expect(remainingLimit).not.toBeInstanceOf(Error)
       if (remainingLimit instanceof Error) return remainingLimit
@@ -590,13 +590,11 @@ describe("UserWallet - onChainPay", () => {
     })
 
     it("sends a successful large payment with a 2fa code", async () => {
-      enable2FA({ wallet: userWallet0 })
+      await enable2FA(user0)
 
       const initialBalance = await getBTCBalance(wallet0)
       const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-      const twoFAToken = generateTokenHelper({
-        secret: userWallet0.user.twoFA.secret,
-      })
+      const twoFAToken = generateTokenHelper(userWallet0.user.twoFA.secret)
       const amount = userWallet0.user.twoFA.threshold + 1
       const paid = await userWallet0.onChainPay({
         address,

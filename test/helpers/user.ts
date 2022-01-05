@@ -26,7 +26,12 @@ export const getAccountByTestUserIndex = async (index: number) => {
   return account
 }
 
-export const getDefaultAccountIdByTestUserIndex = async (index: number) => {
+export const getUserIdByTestUserIndex = async (index: number) => {
+  const user = await getUserByTestUserIndex(index)
+  return user.id
+}
+
+export const getAccountIdByTestUserIndex = async (index: number) => {
   const account = await getAccountByTestUserIndex(index)
   return account.id
 }

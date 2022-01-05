@@ -1,4 +1,6 @@
+import { generate2fa, save2fa } from "@app/users"
 import { balanceSheetIsBalanced, updateUsersPendingPayment } from "@core/balance-sheet"
+import { TwoFAAlreadySetError } from "@domain/twoFA"
 
 import { generateToken } from "node-2fa"
 
@@ -45,21 +47,29 @@ export const resetDatabase = async (mongoose) => {
     })
 }
 
-export const generateTokenHelper = ({ secret }) => {
+export const generateTokenHelper = (secret) => {
   const generateTokenResult = generateToken(secret)
   if (generateTokenResult && generateTokenResult.token) {
-    return generateTokenResult.token
+    return generateTokenResult.token as TwoFAToken
   }
 
   fail("generateToken returned null")
 }
 
-export const enable2FA = async ({ wallet }) => {
-  if (!wallet.user.twoFAEnabled) {
-    const { secret } = wallet.generate2fa()
-    const token = generateTokenHelper({ secret })
-    await wallet.save2fa({ secret, token })
+export const enable2FA = async (userId: UserId) => {
+  const generateResult = await generate2fa(userId)
+  if (generateResult instanceof Error) return generateResult
+
+  const { secret } = generateResult
+
+  const token = generateTokenHelper(secret)
+
+  const user = await save2fa({ secret, token, userId })
+  if (user instanceof Error && !(user instanceof TwoFAAlreadySetError)) {
+    throw user
   }
+
+  return secret
 }
 
 export const chunk = (a, n) =>
