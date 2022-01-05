@@ -31,8 +31,11 @@ propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 // FYI this hook is executed BEFORE the `formatError` hook from apollo
 // The data.errors field here may still change before being returned to the client
 const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
+  let isTopLevelErrorSet = false
+
   if (data.errors && data.errors.length > 0) {
     recordGqlErrors({ errors: data.errors, span, subPathName: "" })
+    isTopLevelErrorSet = true
   }
 
   let gqlNestedKeys: string[] = []
@@ -44,9 +47,18 @@ const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
     if (!nestedObjData) continue
 
     if (nestedObjData.errors && nestedObjData.errors.length > 0) {
+      if (!isTopLevelErrorSet) {
+        recordFirstGqlError({ errors: nestedObjData.errors, span, subPathName: "" })
+        isTopLevelErrorSet = true
+      }
       recordGqlErrors({ errors: nestedObjData.errors, span, subPathName: nestedObj })
     }
   }
+}
+
+const recordFirstGqlError = ({ errors, span, subPathName }) => {
+  const configuredSpan = setupGqlErrorSpan({ errors, span, subPathName })
+  setAttributesFirstGqlError({ errors, span: configuredSpan, subPathName })
 }
 
 const recordGqlErrors = ({ errors, span, subPathName }) => {
