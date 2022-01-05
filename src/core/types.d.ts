@@ -48,6 +48,7 @@ type IpConfig = {
 
 type ApolloConfig = {
   playground: boolean
+  playgroundUrl: string
 }
 
 type TwoFAConfig = {
