@@ -30,6 +30,10 @@ propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 // FYI this hook is executed BEFORE the `formatError` hook from apollo
 // The data.errors field here may still change before being returned to the client
 const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
+  if (data.errors && data.errors.length > 0) {
+    recordGqlErrors({ errors: data.errors, span, subPathName: "" })
+  }
+
   let gqlNestedKeys: string[] = []
   if (data.data) {
     gqlNestedKeys = Object.keys(data.data)
