@@ -14,6 +14,9 @@ export class ConfigError extends Error {
   name = this.constructor.name
 }
 
+export const GALOY_API_PORT = process.env.GALOY_API_PORT || 4002
+export const GALOY_ADMIN_PORT = process.env.GALOY_ADMIN_PORT || 4001
+
 const jwtSecret = process.env.JWT_SECRET
 if (!jwtSecret) {
   throw new ConfigError("missing JWT_SECRET")
