@@ -21,9 +21,10 @@ import {
   bitcoindClient,
   bitcoindOutside,
   checkIsBalanced,
+  createMandatoryUsers,
   createUserWallet,
-  getAndCreateUserWallet,
   getDefaultWalletIdByTestUserIndex,
+  getUserTypeByTestUserIndex,
   lndonchain,
   RANDOM_ADDRESS,
   sendToAddressAndConfirm,
@@ -45,11 +46,13 @@ jest.mock("@services/notifications/notification")
 const { sendNotification } = require("@services/notifications/notification")
 
 beforeAll(async () => {
-  // load funder wallet before use it
-  await createUserWallet(4)
+  await createMandatoryUsers()
+
   await bitcoindClient.loadWallet({ filename: "outside" })
 
   wallet0 = await getDefaultWalletIdByTestUserIndex(0)
+
+  await createUserWallet(2)
 })
 
 beforeEach(() => {
@@ -276,9 +279,9 @@ describe("UserWallet - On chain", () => {
   it("allows fee exemption for specific users", async () => {
     const amountSats = getRandomAmountOfSats()
 
-    const walletUser2 = await getAndCreateUserWallet(2)
-    walletUser2.user.depositFeeRatio = 0
-    await walletUser2.user.save()
+    const userType2 = await getUserTypeByTestUserIndex(2)
+    userType2.depositFeeRatio = 0
+    await userType2.save()
     const wallet2 = await getDefaultWalletIdByTestUserIndex(2)
 
     const initBalanceUser2 = await getBTCBalance(wallet2)

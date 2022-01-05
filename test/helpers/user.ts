@@ -2,7 +2,11 @@ import { yamlConfig } from "@config/app"
 import { WalletFactory } from "@core/wallet-factory"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import { baseLogger } from "@services/logger"
-import { AccountsRepository, UsersRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 const users = UsersRepository()
 
@@ -39,6 +43,20 @@ export const getAccountIdByTestUserIndex = async (index: number) => {
 export const getDefaultWalletIdByTestUserIndex = async (index: number) => {
   const account = await getAccountByTestUserIndex(index)
   return account.defaultWalletId
+}
+
+export const getDefaultWalletByTestUserIndex = async (index: number) => {
+  const account = await getAccountByTestUserIndex(index)
+  const user = await WalletsRepository().findById(account.defaultWalletId)
+  if (user instanceof Error) throw user
+  return user
+}
+
+export const getUserTypeByTestUserIndex = async (index: number) => {
+  const entry = yamlConfig.test_accounts[index]
+  const phone = entry.phone as PhoneNumber
+
+  return User.findOne({ phone }) as UserType
 }
 
 export const createMandatoryUsers = async () => {

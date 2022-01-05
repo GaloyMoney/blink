@@ -11,14 +11,14 @@ import {
   createMandatoryUsers,
   createUserWallet,
   generateTokenHelper,
-  getAndCreateUserWallet,
   getAccountIdByTestUserIndex,
   getDefaultWalletIdByTestUserIndex,
   getUserIdByTestUserIndex,
   enable2FA,
+  getUserTypeByTestUserIndex,
 } from "test/helpers"
 
-let userWallet0, userWallet2
+let userType0: UserType, userType2: UserType
 let wallet0: WalletId
 let account0: AccountId, account1: AccountId, account2: AccountId
 let user0: UserId
@@ -27,8 +27,11 @@ describe("UserWallet", () => {
   beforeAll(async () => {
     createMandatoryUsers()
 
-    userWallet0 = await getAndCreateUserWallet(0)
-    userWallet2 = await getAndCreateUserWallet(2)
+    await createUserWallet(0)
+    await createUserWallet(2)
+
+    userType0 = await getUserTypeByTestUserIndex(0)
+    userType2 = await getUserTypeByTestUserIndex(2)
 
     wallet0 = await getDefaultWalletIdByTestUserIndex(0)
     account0 = await getAccountIdByTestUserIndex(0)
@@ -45,21 +48,22 @@ describe("UserWallet", () => {
   })
 
   it("has a role if it was configured", async () => {
-    const dealer = await getAndCreateUserWallet(6)
-    expect(dealer.user.role).toBe("dealer")
+    const dealer = await getUserTypeByTestUserIndex(6)
+    expect(dealer.role).toBe("dealer")
   })
 
   it("has currencies if they were configured", async () => {
-    const user5 = await getAndCreateUserWallet(5)
-    expect(user5.user.currencies[0]).toMatchObject({ id: "USD", ratio: 1 })
+    await createUserWallet(5)
+    const user5 = await getUserTypeByTestUserIndex(5)
+    expect(user5.currencies[0]).toMatchObject({ id: "USD", ratio: 1 })
   })
 
   it("has a title if it was configured", () => {
-    expect(userWallet2.user.title).toBeTruthy()
+    expect(userType2.title).toBeTruthy()
   })
 
   it("does not allow withdraw if the user is new", () => {
-    expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
+    expect(userType2.oldEnoughForWithdrawal).toBeFalsy()
 
     // in 6 days:
     const genericLimits = getGenericLimits()
@@ -68,11 +72,11 @@ describe("UserWallet", () => {
 
     jest.spyOn(global.Date, "now").mockImplementationOnce(() => new Date(date).valueOf())
 
-    expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
+    expect(userType2.oldEnoughForWithdrawal).toBeFalsy()
   })
 
   it("allows withdraw if user is old enough", () => {
-    expect(userWallet2.user.oldEnoughForWithdrawal).toBeFalsy()
+    expect(userType2.oldEnoughForWithdrawal).toBeFalsy()
 
     // TODO make this configurable
     // in 8 days:
@@ -82,7 +86,7 @@ describe("UserWallet", () => {
 
     jest.spyOn(global.Date, "now").mockImplementationOnce(() => new Date(date).valueOf())
 
-    expect(userWallet2.user.oldEnoughForWithdrawal).toBeTruthy()
+    expect(userType2.oldEnoughForWithdrawal).toBeTruthy()
   })
 
   describe("setUsername", () => {
@@ -226,9 +230,8 @@ describe("UserWallet", () => {
       const secret = await enable2FA(user0)
       if (secret instanceof Error) return secret
 
-      userWallet0 = await getAndCreateUserWallet(0)
-      expect(userWallet0.user.twoFAEnabled).toBe(true)
-      expect(userWallet0.user.twoFA.secret).toBe(secret)
+      userType0 = await getUserTypeByTestUserIndex(0)
+      expect(userType0.twoFA.secret).toBe(secret)
     })
   })
 
@@ -238,11 +241,11 @@ describe("UserWallet", () => {
       const user = await usersRepo.findById(user0)
       if (user instanceof Error) throw user
 
-      const token = generateTokenHelper(userWallet0.user.twoFA.secret)
+      const token = generateTokenHelper(userType0.twoFA.secret)
       const result = await delete2fa({ token, userId: user0 })
       expect(result).toBeTruthy()
-      userWallet0 = await getAndCreateUserWallet(0)
-      expect(userWallet0.user.twoFAEnabled).toBeFalsy()
+      userType0 = await getUserTypeByTestUserIndex(0)
+      expect(userType0.twoFA.secret).toBeNull()
     })
   })
 })

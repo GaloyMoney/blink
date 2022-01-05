@@ -13,9 +13,11 @@ import {
   amountAfterFeeDeduction,
   bitcoindClient,
   bitcoindOutside,
-  getAndCreateUserWallet,
+  createUserWallet,
+  getDefaultWalletIdByTestUserIndex,
   getHash,
   getInvoice,
+  getUserTypeByTestUserIndex,
   lnd1,
   lndOutside1,
   mineBlockAndSyncAll,
@@ -32,8 +34,26 @@ jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
 
+let wallet0: WalletId
+let wallet3: WalletId
+let wallet12: WalletId
+
+let userType0: UserType
+let userType3: UserType
+
 beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
+
+  await createUserWallet(0)
+  await createUserWallet(3)
+  await createUserWallet(12)
+
+  wallet0 = await getDefaultWalletIdByTestUserIndex(0)
+  wallet3 = await getDefaultWalletIdByTestUserIndex(3)
+  wallet12 = await getDefaultWalletIdByTestUserIndex(12)
+
+  userType0 = await getUserTypeByTestUserIndex(0)
+  userType3 = await getUserTypeByTestUserIndex(3)
 })
 
 beforeEach(() => {
@@ -45,7 +65,12 @@ afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
-const getWalletState = async (walletId: WalletId) => {
+type WalletState = {
+  balance: Satoshis
+  transactions: WalletTransaction[]
+}
+
+const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
   const balance = await getBTCBalance(walletId)
   const { result: transactions, error } = await Wallets.getTransactionsForWalletId({
     walletId,
@@ -65,15 +90,13 @@ describe("onchainBlockEventhandler", () => {
     const amount2 = 20_000 as Satoshis
     const blocksToMine = ONCHAIN_MIN_CONFIRMATIONS
     const scanDepth = ONCHAIN_MIN_CONFIRMATIONS + 1
-    const wallet0 = await getAndCreateUserWallet(0)
-    const wallet3 = await getAndCreateUserWallet(3)
 
     await mineBlockAndSyncAll()
     const result = await Wallets.updateOnChainReceipt({ scanDepth, logger: baseLogger })
     if (result instanceof Error) throw result
 
-    const initWallet0State = await getWalletState(wallet0.user.walletId)
-    const initWallet3State = await getWalletState(wallet3.user.walletId)
+    const initWallet0State = await getWalletState(wallet0)
+    const initWallet3State = await getWalletState(wallet3)
 
     const initialBlock = await bitcoindClient.getBlockCount()
     let isFinalBlock = false
@@ -87,13 +110,13 @@ describe("onchainBlockEventhandler", () => {
       isFinalBlock = lastHeight >= initialBlock + blocksToMine
     })
 
-    const address = await Wallets.createOnChainAddress(wallet0.user.walletId)
+    const address = await Wallets.createOnChainAddress(wallet0)
     if (address instanceof Error) throw address
 
     const output0 = {}
     output0[address] = sat2btc(amount)
 
-    const address2 = await Wallets.createOnChainAddress(wallet3.user.walletId)
+    const address2 = await Wallets.createOnChainAddress(wallet3)
     if (address2 instanceof Error) throw address2
 
     const output1 = {}
@@ -116,16 +139,21 @@ describe("onchainBlockEventhandler", () => {
 
     subBlocks.removeAllListeners()
 
-    const validateWalletState = async (
-      lightningWallet,
+    const validateWalletState = async ({
+      walletId,
+      userType,
       initialState,
       amount,
       address,
-    ) => {
-      const { balance, transactions } = await getWalletState(
-        lightningWallet.user.walletId,
-      )
-      const { depositFeeRatio } = lightningWallet.user
+    }: {
+      walletId: WalletId
+      userType: UserType
+      initialState: WalletState
+      amount: Satoshis
+      address: string
+    }) => {
+      const { balance, transactions } = await getWalletState(walletId)
+      const depositFeeRatio = userType.depositFeeRatio as DepositFeeRatio
       const finalAmount = amountAfterFeeDeduction({ amount, depositFeeRatio })
       const lastTransaction = transactions[0]
 
@@ -142,15 +170,27 @@ describe("onchainBlockEventhandler", () => {
       expect(balance).toBe(initialState.balance + finalAmount)
     }
 
-    await validateWalletState(wallet0, initWallet0State, amount, address)
-    await validateWalletState(wallet3, initWallet3State, amount2, address2)
+    await validateWalletState({
+      walletId: wallet0,
+      userType: userType0,
+      initialState: initWallet0State,
+      amount: amount,
+      address: address,
+    })
+    await validateWalletState({
+      walletId: wallet3,
+      userType: userType3,
+      initialState: initWallet3State,
+      amount: amount2,
+      address: address2,
+    })
   })
 
   it("should process pending invoices on invoice update event", async () => {
     const sats = 500
-    const wallet = await getAndCreateUserWallet(12)
+
     const lnInvoice = await Wallets.addInvoice({
-      walletId: wallet.user.walletId as WalletId,
+      walletId: wallet12,
       amount: toSats(sats),
     })
     expect(lnInvoice).not.toBeInstanceOf(Error)
@@ -177,9 +217,7 @@ describe("onchainBlockEventhandler", () => {
     expect(sendNotification.mock.calls[0][0].title).toBe(
       getTitle[NotificationType.LnInvoicePaid]({ usd, amount: sats }),
     )
-    expect(sendNotification.mock.calls[0][0].user.walletId).toStrictEqual(
-      wallet.user.walletId,
-    )
+    expect(sendNotification.mock.calls[0][0].user.walletId).toStrictEqual(wallet12)
     expect(sendNotification.mock.calls[0][0].data.type).toBe(
       NotificationType.LnInvoicePaid,
     )
