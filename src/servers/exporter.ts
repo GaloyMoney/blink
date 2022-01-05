@@ -132,18 +132,25 @@ const main = async () => {
 
     business_g.set(await User.count({ title: { $exists: true } }))
 
+    let balances
+
     try {
-      const balances = await getBalancesDetail()
-      for (const { wallet, balance } of balances) {
-        const walletSanitized = wallet.replace("/", "_")
+      balances = await getBalancesDetail()
+    } catch (err) {
+      logger.error({ err }, "error setting bitcoind/specter balance")
+    }
+
+    for (const { wallet, balance } of balances) {
+      const walletSanitized = wallet.replace("/", "_")
+      try {
         const gauge = new client.Gauge({
           name: `${prefix}_bitcoind_${walletSanitized}`,
           help: `amount in wallet ${wallet}`,
         })
         gauge.set(balance)
+      } catch (err) {
+        logger.error({ err }, "impossible to set the gauge")
       }
-    } catch (err) {
-      logger.error({ err }, "error setting bitcoind/specter balance")
     }
 
     res.set("Content-Type", register.contentType)
