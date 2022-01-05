@@ -34,7 +34,9 @@ const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
   let isTopLevelErrorSet = false
 
   if (data.errors && data.errors.length > 0) {
-    recordGqlErrors({ errors: data.errors, span, subPathName: "" })
+    const args = { errors: data.errors, span, subPathName: "" }
+    triggerGqlErrorSpanEvent(args)
+    recordGqlErrors(args)
     isTopLevelErrorSet = true
   }
 
@@ -47,27 +49,25 @@ const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
     if (!nestedObjData) continue
 
     if (nestedObjData.errors && nestedObjData.errors.length > 0) {
+      const errors = nestedObjData.errors
       if (!isTopLevelErrorSet) {
-        recordFirstGqlError({ errors: nestedObjData.errors, span, subPathName: "" })
+        const args = { errors, span, subPathName: "" }
+        triggerGqlErrorSpanEvent(args)
+        recordFirstGqlError(args)
         isTopLevelErrorSet = true
       }
-      recordGqlErrors({ errors: nestedObjData.errors, span, subPathName: nestedObj })
+
+      recordGqlErrors({ errors, span, subPathName: nestedObj })
     }
   }
 }
 
-const recordFirstGqlError = ({ errors, span, subPathName }) => {
-  const configuredSpan = setupGqlErrorSpan({ errors, span, subPathName })
-  setAttributesFirstGqlError({ errors, span: configuredSpan, subPathName })
+const recordGqlErrors = (args) => {
+  recordFirstGqlError(args)
+  recordAllGqlErrorsByIndex(args)
 }
 
-const recordGqlErrors = ({ errors, span, subPathName }) => {
-  const configuredSpan = setupGqlErrorSpan({ errors, span, subPathName })
-  setAttributesFirstGqlError({ errors, span: configuredSpan, subPathName })
-  setAttributesAllGqlErrorsByIndex({ errors, span: configuredSpan, subPathName })
-}
-
-const setupGqlErrorSpan = ({ errors, span, subPathName }) => {
+const triggerGqlErrorSpanEvent = ({ errors, span, subPathName }) => {
   const subPath = subPathName ? `${subPathName}.` : ""
 
   span.recordException({
@@ -81,7 +81,7 @@ const setupGqlErrorSpan = ({ errors, span, subPathName }) => {
   return span
 }
 
-const setAttributesFirstGqlError = ({ errors, span, subPathName }) => {
+const recordFirstGqlError = ({ errors, span, subPathName }) => {
   const subPath = subPathName ? `${subPathName}.` : ""
 
   const firstErr = errors[0]
@@ -113,7 +113,7 @@ const setAttributesFirstGqlError = ({ errors, span, subPathName }) => {
   }
 }
 
-const setAttributesAllGqlErrorsByIndex = ({ errors, span, subPathName }) => {
+const recordAllGqlErrorsByIndex = ({ errors, span, subPathName }) => {
   const subPath = subPathName ? `${subPathName}.` : ""
 
   errors.forEach((err, idx) => {
