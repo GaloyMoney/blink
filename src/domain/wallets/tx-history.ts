@@ -1,6 +1,6 @@
 import { toSats } from "@domain/bitcoin"
 import { ExtendedLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
-import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
+import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config/app"
 
 import { SettlementMethod, PaymentInitiationMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
@@ -225,9 +225,18 @@ export const fromLedger = (
   }
 }
 
-const shouldDisplayMemo = (credit: number) => {
-  return credit === 0 || credit >= MEMO_SHARING_SATS_THRESHOLD
+const shouldDisplayMemo = ({
+  memo,
+  credit,
+}: {
+  memo: string | undefined
+  credit: number
+}) => {
+  return isAuthorizedMemo(memo) || credit === 0 || credit >= MEMO_SHARING_SATS_THRESHOLD
 }
+
+const isAuthorizedMemo = (memo: string | undefined): boolean =>
+  !!memo && Object.keys(onboardingEarn).includes(memo)
 
 export const translateDescription = ({
   memoFromPayer,
@@ -242,7 +251,7 @@ export const translateDescription = ({
   type: LedgerTransactionType
   credit: number
 }): string => {
-  if (shouldDisplayMemo(credit)) {
+  if (shouldDisplayMemo({ memo: memoFromPayer, credit })) {
     if (memoFromPayer) {
       return memoFromPayer
     }
@@ -271,7 +280,7 @@ export const translateMemo = ({
   lnMemo?: string
   credit: number
 }): string | null => {
-  if (shouldDisplayMemo(credit)) {
+  if (shouldDisplayMemo({ memo: memoFromPayer, credit })) {
     if (memoFromPayer) {
       return memoFromPayer
     }
