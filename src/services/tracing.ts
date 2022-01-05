@@ -30,79 +30,89 @@ propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 // FYI this hook is executed BEFORE the `formatError` hook from apollo
 // The data.errors field here may still change before being returned to the client
 const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
-  let gqlQueries: string[] = []
-  if (data.data) {
-    gqlQueries = Object.keys(data.data)
+  if (data.errors && data.errors.length > 0) {
+    recordGqlErrors({ errors: data.errors, span, subPathName: "" })
   }
-  for (const query of gqlQueries) {
-    const queryData = data.data?.[query]
-    if (!queryData) continue
 
-    if (queryData.errors && queryData.errors.length > 0) {
-      span.recordException({
-        name: `graphql.${query}.execution.error`,
-        message: JSON.stringify(queryData.errors),
-      })
-      span.setStatus({
-        code: SpanStatusCode.ERROR,
-      })
-      const firstErr = queryData.errors[0]
-      if (firstErr.message != "") {
-        span.setAttribute(`graphql.${query}.error.message`, firstErr.message)
-      }
-      if (firstErr.constructor?.name) {
-        span.setAttribute(`graphql.${query}.error.type`, firstErr.constructor.name)
-      }
-      if (firstErr.path) {
-        span.setAttribute(`graphql.${query}.error.path`, firstErr.path.join("."))
-      }
-      if (firstErr.extensions?.code) {
-        span.setAttribute(`graphql.${query}.error.code`, firstErr.extensions.code)
-      }
-      if (firstErr.originalError) {
-        if (firstErr.originalError.constructor?.name) {
-          span.setAttribute(
-            `graphql.${query}.error.original.type`,
-            firstErr.originalError.constructor.name,
-          )
-        }
-        if (firstErr.originalError.message != "") {
-          span.setAttribute(
-            `graphql.${query}.error.original.message`,
-            firstErr.originalError.message,
-          )
-        }
-      }
-      queryData.errors.forEach((err, idx) => {
-        if (err.message != "") {
-          span.setAttribute(`graphql.${query}.error.${idx}.message`, err.message)
-        }
-        if (err.constructor?.name) {
-          span.setAttribute(`graphql.${query}.error.${idx}.type`, err.constructor.name)
-        }
-        if (err.path) {
-          span.setAttribute(`graphql.${query}.error.${idx}.path`, err.path.join("."))
-        }
-        if (err.extensions?.code) {
-          span.setAttribute(`graphql.${query}.error.${idx}.code`, err.extensions.code)
-        }
-        if (err.originalError) {
-          if (err.originalError.constructor?.name != "") {
-            span.setAttribute(
-              `graphql.${query}.error.${idx}.original.type`,
-              err.originalError.constructor.name,
-            )
-          }
-          if (err.originalError.message != "") {
-            span.setAttribute(
-              `graphql.${query}.error.${idx}.original.message`,
-              err.originalError.message,
-            )
-          }
-        }
-      })
+  let gqlNestedKeys: string[] = []
+  if (data.data) {
+    gqlNestedKeys = Object.keys(data.data)
+  }
+  for (const nestedObj of gqlNestedKeys) {
+    const nestedObjData = data.data?.[nestedObj]
+    if (!nestedObjData) continue
+
+    if (nestedObjData.errors && nestedObjData.errors.length > 0) {
+      recordGqlErrors({ errors: nestedObjData.errors, span, subPathName: nestedObj })
     }
   }
+}
+
+const recordGqlErrors = ({ errors, span, subPathName }) => {
+  const subPath = subPathName ? `${subPathName}.` : ""
+
+  span.recordException({
+    name: `graphql.${subPath}execution.error`,
+    message: JSON.stringify(errors),
+  })
+  span.setStatus({
+    code: SpanStatusCode.ERROR,
+  })
+  const firstErr = errors[0]
+  if (firstErr.message != "") {
+    span.setAttribute(`graphql.${subPath}error.message`, firstErr.message)
+  }
+  if (firstErr.constructor?.name) {
+    span.setAttribute(`graphql.${subPath}error.type`, firstErr.constructor.name)
+  }
+  if (firstErr.path) {
+    span.setAttribute(`graphql.${subPath}error.path`, firstErr.path.join("."))
+  }
+  if (firstErr.extensions?.code) {
+    span.setAttribute(`graphql.${subPath}error.code`, firstErr.extensions.code)
+  }
+  if (firstErr.originalError) {
+    if (firstErr.originalError.constructor?.name) {
+      span.setAttribute(
+        `graphql.${subPath}error.original.type`,
+        firstErr.originalError.constructor.name,
+      )
+    }
+    if (firstErr.originalError.message != "") {
+      span.setAttribute(
+        `graphql.${subPath}error.original.message`,
+        firstErr.originalError.message,
+      )
+    }
+  }
+  errors.forEach((err, idx) => {
+    if (err.message != "") {
+      span.setAttribute(`graphql.${subPath}error.${idx}.message`, err.message)
+    }
+    if (err.constructor?.name) {
+      span.setAttribute(`graphql.${subPath}error.${idx}.type`, err.constructor.name)
+    }
+    if (err.path) {
+      span.setAttribute(`graphql.${subPath}error.${idx}.path`, err.path.join("."))
+    }
+    if (err.extensions?.code) {
+      span.setAttribute(`graphql.${subPath}error.${idx}.code`, err.extensions.code)
+    }
+    if (err.originalError) {
+      if (err.originalError.constructor?.name != "") {
+        span.setAttribute(
+          `graphql.${subPath}error.${idx}.original.type`,
+          err.originalError.constructor.name,
+        )
+      }
+      if (err.originalError.message != "") {
+        span.setAttribute(
+          `graphql.${subPath}error.${idx}.original.message`,
+          err.originalError.message,
+        )
+      }
+    }
+  })
 }
 
 registerInstrumentations({
