@@ -1,5 +1,8 @@
 import { getTwilioConfig } from "@config/app"
-import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
+import {
+  InvalidPhoneNumberPhoneProviderError,
+  UnknownPhoneProviderServiceError,
+} from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
 import twilio from "twilio"
 
@@ -16,6 +19,9 @@ export const TwilioClient = (): IPhoneProviderService => {
       })
     } catch (err) {
       logger.error({ err }, "impossible to send text")
+      if (err.message.includes("not a valid phone number")) {
+        return new InvalidPhoneNumberPhoneProviderError(err)
+      }
       return new UnknownPhoneProviderServiceError(err)
     }
 

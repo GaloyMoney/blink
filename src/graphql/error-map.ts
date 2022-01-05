@@ -105,6 +105,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invoice must be a zero-amount invoice"
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "InvalidPhoneNumberPhoneProviderError":
+      message = "Phone number is not a valid phone number"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "InvoiceCreateRateLimiterExceededError":
       message = "Too many invoices creation, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
