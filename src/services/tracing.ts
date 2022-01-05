@@ -31,21 +31,27 @@ propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 // FYI this hook is executed BEFORE the `formatError` hook from apollo
 // The data.errors field here may still change before being returned to the client
 const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
+  // Handle system-level errors in the response
   if (data.errors && data.errors.length > 0) {
     const args = { errors: data.errors, span, subPathName: "" }
     triggerGqlErrorSpanEvent(args)
     recordGqlErrors(args)
   }
 
-  let gqlNestedKeys: string[] = []
-  if (data.data) gqlNestedKeys = Object.keys(data.data)
-  for (const nestedObj of gqlNestedKeys) {
-    const nestedObjData = data.data?.[nestedObj]
-    if (!nestedObjData) continue
+  // Handle user-level errors within selection sets in the response
+  let selectionSetNames: string[] = []
+  if (data.data) selectionSetNames = Object.keys(data.data)
 
-    if (nestedObjData.errors && nestedObjData.errors.length > 0) {
-      const errors = nestedObjData.errors
-      recordGqlErrors({ errors, span, subPathName: nestedObj })
+  for (const i in selectionSetNames) {
+    const selectionSetName = selectionSetNames[i]
+    const selectionSetData = data.data?.[selectionSetName]
+    if (!selectionSetData) continue
+
+    if (selectionSetData.errors && selectionSetData.errors.length > 0) {
+      const errors = selectionSetData.errors
+      const subPathName = `selectionset${i}`
+      span.setAttribute(`graphql.${subPathName}.name`, selectionSetName)
+      recordGqlErrors({ errors, span, subPathName })
     }
   }
 }
