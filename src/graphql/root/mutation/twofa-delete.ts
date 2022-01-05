@@ -1,4 +1,6 @@
+import { delete2fa } from "@app/users"
 import { GT } from "@graphql/index"
+import { mapError } from "@graphql/error-map"
 
 import SuccessPayload from "@graphql/types/payload/success-payload"
 
@@ -16,15 +18,16 @@ const TwoFADeleteMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(TwoFADeleteInput) },
   },
-  resolve: async (_, args, { wallet }) => {
+  resolve: async (_, args, { domainUser }) => {
     const { token } = args.input
 
-    try {
-      const success = await wallet.delete2fa({ token })
-      return { errors: [], success }
-    } catch (err) {
-      return { errors: [{ message: err.message }] }
+    const user = await delete2fa({ token, userId: domainUser.id })
+    if (user instanceof Error) {
+      const appErr = mapError(user)
+      return { errors: [{ message: appErr.message }] }
     }
+
+    return { errors: [], success: true }
   },
 })
 

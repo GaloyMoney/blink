@@ -1,3 +1,5 @@
+import { save2fa } from "@app/users"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import SuccessPayload from "@graphql/types/payload/success-payload"
@@ -19,7 +21,7 @@ const TwoFASaveMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(TwoFASaveInput) },
   },
-  resolve: async (_, args, { wallet }) => {
+  resolve: async (_, args, { domainUser }) => {
     const { secret, token } = args.input
 
     for (const input of [secret, token]) {
@@ -28,12 +30,13 @@ const TwoFASaveMutation = GT.Field({
       }
     }
 
-    try {
-      const success = await wallet.save2fa({ secret, token })
-      return { errors: [], success }
-    } catch (err) {
-      return { errors: [{ message: err.message }] }
+    const user = await save2fa({ secret, token, userId: domainUser.id })
+    if (user instanceof Error) {
+      const appErr = mapError(user)
+      return { errors: [{ message: appErr.message }] }
     }
+
+    return { errors: [], success: true }
   },
 })
 
