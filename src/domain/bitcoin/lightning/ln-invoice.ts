@@ -22,7 +22,7 @@ export const decodeInvoice = (
   if (!decodedInvoice.payment) {
     return new LnInvoiceMissingPaymentSecretError()
   }
-  const paymentSecret: PaymentSecret = decodedInvoice.payment
+  const paymentSecret: PaymentIdentifyingSecret = decodedInvoice.payment
   const amount: Satoshis | null = decodedInvoice.tokens
     ? toSats(decodedInvoice.tokens)
     : null

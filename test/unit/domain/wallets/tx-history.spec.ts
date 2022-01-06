@@ -104,7 +104,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         memo: "SomeMemo",
         settlementVia: {
           type: SettlementMethod.Lightning,
-          paymentSecret: null,
+          revealedPreImage: null,
         },
         settlementAmount,
         settlementFee: toSats(0),

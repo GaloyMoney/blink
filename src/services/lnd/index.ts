@@ -223,7 +223,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         isSettled: !!invoice.is_confirmed,
         received: toSats(invoice.received),
         request: invoice.request,
-        secret: invoice.secret as PaymentSecret,
+        secretPreImage: invoice.secret as SecretPreImage,
       }
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
@@ -441,7 +441,7 @@ const lookupPaymentByPubkeyAndHash = async ({
       destination: "" as Pubkey,
       roundedUpFee: toSats(0),
       milliSatsAmount: toMilliSatsFromNumber(0),
-      secret: "" as PaymentSecret,
+      revealedPreImage: "" as RevealedPreImage,
       request: undefined,
       status,
     }
@@ -455,7 +455,7 @@ const lookupPaymentByPubkeyAndHash = async ({
         request: payment.request,
         roundedUpFee: toSats(payment.safe_fee),
         milliSatsAmount: toMilliSatsFromString(payment.mtokens),
-        secret: payment.secret as PaymentSecret,
+        revealedPreImage: payment.secret as RevealedPreImage,
         status,
       })
     }

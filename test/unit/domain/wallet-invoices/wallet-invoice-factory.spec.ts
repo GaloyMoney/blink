@@ -12,7 +12,7 @@ describe("wallet invoice factory methods", () => {
     const registeredInvoice: RegisteredInvoice = {
       invoice: {
         paymentHash: "paymentHash" as PaymentHash,
-        paymentSecret: "paymentSecret" as PaymentSecret,
+        paymentSecret: "paymentSecret" as PaymentIdentifyingSecret,
         paymentRequest: "paymentRequest" as EncodedPaymentRequest,
         routeHints: [],
         cltvDelta: null,
@@ -40,7 +40,7 @@ describe("wallet invoice factory methods", () => {
     const registeredInvoice = {
       invoice: {
         paymentHash: "paymentHash" as PaymentHash,
-        paymentSecret: "paymentSecret" as PaymentSecret,
+        paymentSecret: "paymentSecret" as PaymentIdentifyingSecret,
         paymentRequest: "paymentRequest" as EncodedPaymentRequest,
         routeHints: [],
         cltvDelta: null,

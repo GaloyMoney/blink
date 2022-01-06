@@ -41,7 +41,7 @@ type SettlementViaIntraledger = {
 
 type SettlementViaLn = {
   readonly type: SettlementMethod["Lightning"]
-  paymentSecret: PaymentSecret | null
+  revealedPreImage: RevealedPreImage | null
 }
 
 type SettlementViaOnChain = {
