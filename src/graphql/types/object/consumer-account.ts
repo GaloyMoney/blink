@@ -38,6 +38,8 @@ const ConsumerAccount = new GT.Object({
     },
 
     csvTransactions: {
+      description:
+        "return CSV stream, base64 encoded, of the list of transactions in the wallet",
       type: GT.NonNull(GT.String),
       args: {
         walletIds: {

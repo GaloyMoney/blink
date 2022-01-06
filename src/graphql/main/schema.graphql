@@ -93,6 +93,9 @@ input CaptchaRequestAuthCodeInput {
 }
 
 type ConsumerAccount implements Account {
+  """
+  return CSV stream, base64 encoded, of the list of transactions in the wallet
+  """
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
