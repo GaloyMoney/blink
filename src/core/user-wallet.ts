@@ -179,6 +179,7 @@ export abstract class UserWallet {
     return usdValue
   }
 
+  // deprecated
   generate2fa = () => {
     const { secret, uri } = generateSecret({
       name: getGaloyInstanceName(),

@@ -1,10 +1,30 @@
-import { verifyToken } from "node-2fa"
+import { generateSecret, verifyToken } from "node-2fa"
 
 import { TwoFAValidationError, UnknownTwoFAError } from "./errors"
 
 export * from "./errors"
 
 export const TwoFA = (): TwoFA => {
+  const generate = ({
+    galoyInstanceName,
+    phone,
+  }: {
+    galoyInstanceName: string
+    phone: PhoneNumber
+  }): {
+    secret: TwoFASecret
+    uri: TwoFAUri
+  } => {
+    const result = generateSecret({
+      name: galoyInstanceName,
+      account: phone,
+    })
+    return {
+      secret: result.secret as TwoFASecret,
+      uri: result.uri as TwoFAUri,
+    }
+  }
+
   const verify = ({
     secret,
     token,
@@ -24,5 +44,6 @@ export const TwoFA = (): TwoFA => {
   }
   return {
     verify,
+    generate,
   }
 }

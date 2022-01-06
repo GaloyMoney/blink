@@ -165,6 +165,14 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "username is immutable"
       return new UsernameError({ logger: baseLogger, message })
 
+    case "TwoFANeedToBeSetBeforeDeletionError":
+      message = "TwoFA need to be set before removal"
+      return new TwoFAError({ logger: baseLogger, message })
+
+    case "TwoFAAlreadySetError":
+      message = "TwoFA is already set"
+      return new TwoFAError({ logger: baseLogger, message })
+
     // ----------
     // Unhandled below here
     // ----------
