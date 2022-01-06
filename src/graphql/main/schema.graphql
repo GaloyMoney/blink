@@ -833,6 +833,11 @@ scalar Username
 interface Wallet {
   balance: SignedAmount!
   id: ID!
+
+  """
+  Transactions are ordered anti-chronogically,
+  ie: the newest transaction will be first
+  """
   transactions(
     """
     Returns the items in the list that come after the specified cursor.

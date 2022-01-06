@@ -1,3 +1,5 @@
+import dedent from "dedent"
+
 import { connectionArgs, connectionFromArray } from "graphql-relay"
 
 import { GT } from "@graphql/index"
@@ -19,6 +21,8 @@ const IWallet = new GT.Interface({
       type: GT.NonNull(SignedAmount),
     },
     transactions: {
+      description: dedent`Transactions are ordered anti-chronogically,
+      ie: the newest transaction will be first`,
       type: TransactionConnection,
       args: connectionArgs,
       resolve: (source, args) => {
