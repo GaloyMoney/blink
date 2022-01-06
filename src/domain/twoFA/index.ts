@@ -13,7 +13,7 @@ export const TwoFA = (): TwoFA => {
     phone: PhoneNumber
   }): {
     secret: TwoFASecret
-    uri: string
+    uri: TwoFAUri
   } => {
     const result = generateSecret({
       name: galoyInstanceName,
@@ -21,7 +21,7 @@ export const TwoFA = (): TwoFA => {
     })
     return {
       secret: result.secret as TwoFASecret,
-      uri: result.uri,
+      uri: result.uri as TwoFAUri,
     }
   }
 

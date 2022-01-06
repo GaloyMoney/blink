@@ -1,5 +1,6 @@
 type TwoFASecret = string & { readonly brand: unique symbol }
 type TwoFAToken = string & { readonly brand: unique symbol }
+type TwoFAUri = string & { readonly brand: unique symbol }
 type TwoFAError = import("./errors").TwoFAError
 
 interface TwoFA {
@@ -10,8 +11,10 @@ interface TwoFA {
   }: {
     galoyInstanceName: string
     phone: PhoneNumber
-  }): {
-    secret: TwoFASecret
-    uri: string
-  }
+  }): TwoFAGeneratedEntry
+}
+
+interface TwoFAGeneratedEntry {
+  secret: TwoFASecret
+  uri: TwoFAUri
 }

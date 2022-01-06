@@ -9,7 +9,7 @@ export const save2fa = async ({
   userId: UserId
   secret: TwoFASecret
   token: TwoFAToken
-}) => {
+}): Promise<User | ApplicationError> => {
   const usersRepo = UsersRepository()
 
   const user = await usersRepo.findById(userId)

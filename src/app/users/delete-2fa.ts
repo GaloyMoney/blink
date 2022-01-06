@@ -11,7 +11,7 @@ export const delete2fa = async ({
 }: {
   token: TwoFAToken
   userId: UserId
-}) => {
+}): Promise<User | ApplicationError> => {
   const usersRepo = UsersRepository()
 
   const user = await usersRepo.findById(userId)

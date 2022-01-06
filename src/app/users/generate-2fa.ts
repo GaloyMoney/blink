@@ -2,7 +2,9 @@ import { getGaloyInstanceName } from "@config/app"
 import { TwoFA } from "@domain/twoFA"
 import { UsersRepository } from "@services/mongoose"
 
-export const generate2fa = async (userId: UserId) => {
+export const generate2fa = async (
+  userId: UserId,
+): Promise<TwoFAGeneratedEntry | ApplicationError> => {
   const user = await UsersRepository().findById(userId)
   if (user instanceof Error) return user
 
