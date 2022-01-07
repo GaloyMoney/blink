@@ -37,7 +37,7 @@ import { getBTCBalance } from "test/helpers/wallet"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
-let wallet0
+let walletId0
 
 const userLimits = getUserLimits({ level: 1 })
 
@@ -50,7 +50,7 @@ beforeAll(async () => {
 
   await bitcoindClient.loadWallet({ filename: "outside" })
 
-  wallet0 = await getDefaultWalletIdByTestUserIndex(0)
+  walletId0 = await getDefaultWalletIdByTestUserIndex(0)
 
   await createUserWallet(2)
 })
@@ -84,8 +84,8 @@ describe("FunderWallet - On chain", () => {
 
 describe("UserWallet - On chain", () => {
   it("get last on chain address", async () => {
-    const address = await Wallets.createOnChainAddress(wallet0)
-    const lastAddress = await Wallets.getLastOnChainAddress(wallet0)
+    const address = await Wallets.createOnChainAddress(walletId0)
+    const lastAddress = await Wallets.getLastOnChainAddress(walletId0)
 
     expect(address).not.toBeInstanceOf(Error)
     expect(lastAddress).not.toBeInstanceOf(Error)
@@ -94,7 +94,7 @@ describe("UserWallet - On chain", () => {
 
   it("fails to create onChain Address past rate limit", async () => {
     // Reset limits before starting
-    let resetOk = await resetOnChainAddressWalletIdLimits(wallet0)
+    let resetOk = await resetOnChainAddressWalletIdLimits(walletId0)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
@@ -102,7 +102,7 @@ describe("UserWallet - On chain", () => {
     const limitsNum = getOnChainAddressCreateAttemptLimits().points
     const promises: Promise<OnChainAddress | ApplicationError>[] = []
     for (let i = 0; i < limitsNum; i++) {
-      const onChainAddressPromise = Wallets.createOnChainAddress(wallet0)
+      const onChainAddressPromise = Wallets.createOnChainAddress(walletId0)
       promises.push(onChainAddressPromise)
     }
     const onChainAddresses = await Promise.all(promises)
@@ -110,17 +110,17 @@ describe("UserWallet - On chain", () => {
     expect(onChainAddresses.every(isNotError)).toBe(true)
 
     // Test that first address past the limit fails
-    const onChainAddress = await Wallets.createOnChainAddress(wallet0)
+    const onChainAddress = await Wallets.createOnChainAddress(walletId0)
     expect(onChainAddress).toBeInstanceOf(OnChainAddressCreateRateLimiterExceededError)
 
     // Reset limits when done for other tests
-    resetOk = await resetOnChainAddressWalletIdLimits(wallet0)
+    resetOk = await resetOnChainAddressWalletIdLimits(walletId0)
     expect(resetOk).not.toBeInstanceOf(Error)
   })
 
   it("receives on-chain transaction", async () => {
     await sendToWalletTestWrapper({
-      walletId: wallet0,
+      walletId: walletId0,
       amountSats: getRandomAmountOfSats(),
     })
   })
@@ -141,7 +141,7 @@ describe("UserWallet - On chain", () => {
   })
 
   it("receives batch on-chain transaction", async () => {
-    const address0 = await Wallets.createOnChainAddress(wallet0)
+    const address0 = await Wallets.createOnChainAddress(walletId0)
     if (address0 instanceof Error) throw address0
 
     await createUserWallet(4)
@@ -150,7 +150,7 @@ describe("UserWallet - On chain", () => {
     const address4 = await Wallets.createOnChainAddress(walletId)
     if (address4 instanceof Error) throw address4
 
-    const initialBalanceUser0 = await getBTCBalance(wallet0)
+    const initialBalanceUser0 = await getBTCBalance(walletId0)
     const initBalanceUser4 = await getBTCBalance(walletId)
 
     const output0 = {}
@@ -182,7 +182,7 @@ describe("UserWallet - On chain", () => {
     }
 
     {
-      const balance0 = await getBTCBalance(wallet0)
+      const balance0 = await getBTCBalance(walletId0)
       const balance4 = await getBTCBalance(walletId)
 
       const depositFeeRatio = getFeeRates().depositFeeVariable as DepositFeeRatio
@@ -207,7 +207,7 @@ describe("UserWallet - On chain", () => {
   it("identifies unconfirmed incoming on-chain transactions", async () => {
     const amountSats = getRandomAmountOfSats()
 
-    const address = await Wallets.createOnChainAddress(wallet0)
+    const address = await Wallets.createOnChainAddress(walletId0)
     if (address instanceof Error) throw address
 
     const sub = subscribeToTransactions({ lnd: lndonchain })
@@ -224,7 +224,7 @@ describe("UserWallet - On chain", () => {
     await sleep(1000)
 
     const { result: txs, error } = await Wallets.getTransactionsForWalletId({
-      walletId: wallet0,
+      walletId: walletId0,
     })
     if (error instanceof Error || txs === null) {
       throw error

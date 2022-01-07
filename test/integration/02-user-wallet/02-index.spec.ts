@@ -19,9 +19,9 @@ import {
 } from "test/helpers"
 
 let userType0: UserType, userType2: UserType
-let wallet0: WalletId
-let account0: AccountId, account1: AccountId, account2: AccountId
-let user0: UserId
+let walletId0: WalletId
+let accountId0: AccountId, accountId1: AccountId, accountId2: AccountId
+let userId0: UserId
 
 describe("UserWallet", () => {
   beforeAll(async () => {
@@ -33,15 +33,15 @@ describe("UserWallet", () => {
     userType0 = await getUserTypeByTestUserIndex(0)
     userType2 = await getUserTypeByTestUserIndex(2)
 
-    wallet0 = await getDefaultWalletIdByTestUserIndex(0)
-    account0 = await getAccountIdByTestUserIndex(0)
+    walletId0 = await getDefaultWalletIdByTestUserIndex(0)
+    accountId0 = await getAccountIdByTestUserIndex(0)
 
     await createUserWallet(1)
-    account1 = await getAccountIdByTestUserIndex(1)
+    accountId1 = await getAccountIdByTestUserIndex(1)
 
-    account2 = await getAccountIdByTestUserIndex(2)
+    accountId2 = await getAccountIdByTestUserIndex(2)
 
-    user0 = await getUserIdByTestUserIndex(0)
+    userId0 = await getUserIdByTestUserIndex(0)
 
     // load edit for admin-panel manual testing
     await createUserWallet(13)
@@ -91,42 +91,42 @@ describe("UserWallet", () => {
 
   describe("setUsername", () => {
     it("does not set username if length is less than 3", async () => {
-      await expect(setUsername({ username: "ab", id: account0 })).resolves.toBeInstanceOf(
-        ValidationError,
-      )
+      await expect(
+        setUsername({ username: "ab", id: accountId0 }),
+      ).resolves.toBeInstanceOf(ValidationError)
     })
 
     it("does not set username if contains invalid characters", async () => {
       await expect(
-        setUsername({ username: "ab+/", id: account0 }),
+        setUsername({ username: "ab+/", id: accountId0 }),
       ).resolves.toBeInstanceOf(ValidationError)
     })
 
     it("does not allow non english characters", async () => {
       await expect(
-        setUsername({ username: "ñ_user1", id: account0 }),
+        setUsername({ username: "ñ_user1", id: accountId0 }),
       ).resolves.toBeInstanceOf(ValidationError)
     })
 
     it("does not set username starting with 1, 3, bc1, lnbc1", async () => {
       await expect(
-        setUsername({ username: "1ab", id: account0 }),
+        setUsername({ username: "1ab", id: accountId0 }),
       ).resolves.toBeInstanceOf(ValidationError)
       await expect(
-        setUsername({ username: "3basd", id: account0 }),
+        setUsername({ username: "3basd", id: accountId0 }),
       ).resolves.toBeInstanceOf(ValidationError)
       await expect(
-        setUsername({ username: "bc1ba", id: account0 }),
+        setUsername({ username: "bc1ba", id: accountId0 }),
       ).resolves.toBeInstanceOf(ValidationError)
       await expect(
-        setUsername({ username: "lnbc1qwe1", id: account0 }),
+        setUsername({ username: "lnbc1qwe1", id: accountId0 }),
       ).resolves.toBeInstanceOf(ValidationError)
     })
 
     it("allows set username", async () => {
-      let result = await setUsername({ username: "user0", id: account0 })
+      let result = await setUsername({ username: "user0", id: accountId0 })
       expect(!!result).toBeTruthy()
-      result = await setUsername({ username: "user1", id: account1 })
+      result = await setUsername({ username: "user1", id: accountId1 })
       expect(!!result).toBeTruthy()
     })
 
@@ -134,24 +134,24 @@ describe("UserWallet", () => {
       const username = "user0"
 
       await createUserWallet(2)
-      await expect(setUsername({ username, id: account2 })).resolves.toBeInstanceOf(
+      await expect(setUsername({ username, id: accountId2 })).resolves.toBeInstanceOf(
         UsernameNotAvailableError,
       )
     })
 
     it("does not allow set username with only case difference", async () => {
       await expect(
-        setUsername({ username: "User1", id: account2 }),
+        setUsername({ username: "User1", id: accountId2 }),
       ).resolves.toBeInstanceOf(UsernameNotAvailableError)
 
       // set username for account2
-      const result = await setUsername({ username: "lily", id: account2 })
+      const result = await setUsername({ username: "lily", id: accountId2 })
       expect(!!result).toBeTruthy()
     })
 
     it("does not allow re-setting username", async () => {
       await expect(
-        setUsername({ username: "abc", id: account0 }),
+        setUsername({ username: "abc", id: accountId0 }),
       ).resolves.toBeInstanceOf(UsernameIsImmutableError)
     })
   })
@@ -195,7 +195,7 @@ describe("UserWallet", () => {
       "id,walletId,type,credit,debit,fee,currency,timestamp,pendingConfirmation,journalId,lnMemo,usd,feeUsd,recipientWalletId,username,memoFromPayer,paymentHash,pubkey,feeKnownInAdvance,address,txHash"
     it("exports to csv", async () => {
       const csv = new CsvWalletsExport()
-      await csv.addWallet(wallet0)
+      await csv.addWallet(walletId0)
       const base64Data = csv.getBase64()
       expect(typeof base64Data).toBe("string")
       const data = Buffer.from(base64Data, "base64")
@@ -206,7 +206,7 @@ describe("UserWallet", () => {
   describe("updateAccountStatus", () => {
     it("sets account status for given user id", async () => {
       let user = await Accounts.updateAccountStatus({
-        id: account2,
+        id: accountId2,
         status: "locked",
       })
       if (user instanceof Error) {
@@ -224,10 +224,10 @@ describe("UserWallet", () => {
   describe("save2fa", () => {
     it("saves 2fa for user0", async () => {
       const usersRepo = UsersRepository()
-      const user = await usersRepo.findById(user0)
+      const user = await usersRepo.findById(userId0)
       if (user instanceof Error) throw user
 
-      const secret = await enable2FA(user0)
+      const secret = await enable2FA(userId0)
       if (secret instanceof Error) return secret
 
       userType0 = await getUserTypeByTestUserIndex(0)
@@ -238,11 +238,11 @@ describe("UserWallet", () => {
   describe("delete2fa", () => {
     it("delete 2fa for user0", async () => {
       const usersRepo = UsersRepository()
-      const user = await usersRepo.findById(user0)
+      const user = await usersRepo.findById(userId0)
       if (user instanceof Error) throw user
 
       const token = generateTokenHelper(userType0.twoFA.secret)
-      const result = await delete2fa({ token, userId: user0 })
+      const result = await delete2fa({ token, userId: userId0 })
       expect(result).toBeTruthy()
       userType0 = await getUserTypeByTestUserIndex(0)
       expect(userType0.twoFA.secret).toBeNull()

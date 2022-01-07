@@ -13,14 +13,14 @@ import {
 const defaultAmount = toSats(6000)
 const defaultTarget = toTargetConfs(3)
 const { dustThreshold } = getOnChainWalletConfig()
-let userWallet0: Wallet, userWallet1: Wallet
+let wallet0: Wallet, wallet1: Wallet
 
 beforeAll(async () => {
   await createUserWallet(0)
   await createUserWallet(1)
 
-  userWallet0 = await getDefaultWalletByTestUserIndex(0)
-  userWallet1 = await getDefaultWalletByTestUserIndex(1)
+  wallet0 = await getDefaultWalletByTestUserIndex(0)
+  wallet1 = await getDefaultWalletByTestUserIndex(1)
   await bitcoindClient.loadWallet({ filename: "outside" })
 })
 
@@ -32,21 +32,21 @@ describe("UserWallet - getOnchainFee", () => {
   it("returns a fee greater than zero for an external address", async () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
     const fee = await Wallets.getOnChainFee({
-      wallet: userWallet0,
+      wallet: wallet0,
       amount: defaultAmount,
       address,
       targetConfirmations: defaultTarget,
     })
     expect(fee).not.toBeInstanceOf(Error)
     expect(fee).toBeGreaterThan(0)
-    expect(fee).toBeGreaterThan(userWallet0.withdrawFee)
+    expect(fee).toBeGreaterThan(wallet0.withdrawFee)
   })
 
   it("returns zero for an on us address", async () => {
-    const address = await Wallets.createOnChainAddress(userWallet1.id)
+    const address = await Wallets.createOnChainAddress(wallet1.id)
     if (address instanceof Error) throw address
     const fee = await Wallets.getOnChainFee({
-      wallet: userWallet0,
+      wallet: wallet0,
       amount: defaultAmount,
       address,
       targetConfirmations: defaultTarget,
@@ -59,7 +59,7 @@ describe("UserWallet - getOnchainFee", () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
     const amount = toSats(dustThreshold - 1)
     const fee = await Wallets.getOnChainFee({
-      wallet: userWallet0,
+      wallet: wallet0,
       amount,
       address,
       targetConfirmations: defaultTarget,
@@ -75,7 +75,7 @@ describe("UserWallet - getOnchainFee", () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
     const amount = toSats(1000000000)
     const fee = await Wallets.getOnChainFee({
-      wallet: userWallet0,
+      wallet: wallet0,
       amount,
       address,
       targetConfirmations: defaultTarget,

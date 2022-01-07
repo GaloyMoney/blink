@@ -34,9 +34,9 @@ jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
 
-let wallet0: WalletId
-let wallet3: WalletId
-let wallet12: WalletId
+let walletId0: WalletId
+let walletId3: WalletId
+let walletId12: WalletId
 
 let userType0: UserType
 let userType3: UserType
@@ -48,9 +48,9 @@ beforeAll(async () => {
   await createUserWallet(3)
   await createUserWallet(12)
 
-  wallet0 = await getDefaultWalletIdByTestUserIndex(0)
-  wallet3 = await getDefaultWalletIdByTestUserIndex(3)
-  wallet12 = await getDefaultWalletIdByTestUserIndex(12)
+  walletId0 = await getDefaultWalletIdByTestUserIndex(0)
+  walletId3 = await getDefaultWalletIdByTestUserIndex(3)
+  walletId12 = await getDefaultWalletIdByTestUserIndex(12)
 
   userType0 = await getUserTypeByTestUserIndex(0)
   userType3 = await getUserTypeByTestUserIndex(3)
@@ -95,8 +95,8 @@ describe("onchainBlockEventhandler", () => {
     const result = await Wallets.updateOnChainReceipt({ scanDepth, logger: baseLogger })
     if (result instanceof Error) throw result
 
-    const initWallet0State = await getWalletState(wallet0)
-    const initWallet3State = await getWalletState(wallet3)
+    const initWallet0State = await getWalletState(walletId0)
+    const initWallet3State = await getWalletState(walletId3)
 
     const initialBlock = await bitcoindClient.getBlockCount()
     let isFinalBlock = false
@@ -110,13 +110,13 @@ describe("onchainBlockEventhandler", () => {
       isFinalBlock = lastHeight >= initialBlock + blocksToMine
     })
 
-    const address = await Wallets.createOnChainAddress(wallet0)
+    const address = await Wallets.createOnChainAddress(walletId0)
     if (address instanceof Error) throw address
 
     const output0 = {}
     output0[address] = sat2btc(amount)
 
-    const address2 = await Wallets.createOnChainAddress(wallet3)
+    const address2 = await Wallets.createOnChainAddress(walletId3)
     if (address2 instanceof Error) throw address2
 
     const output1 = {}
@@ -171,14 +171,14 @@ describe("onchainBlockEventhandler", () => {
     }
 
     await validateWalletState({
-      walletId: wallet0,
+      walletId: walletId0,
       userType: userType0,
       initialState: initWallet0State,
       amount: amount,
       address: address,
     })
     await validateWalletState({
-      walletId: wallet3,
+      walletId: walletId3,
       userType: userType3,
       initialState: initWallet3State,
       amount: amount2,
@@ -190,7 +190,7 @@ describe("onchainBlockEventhandler", () => {
     const sats = 500
 
     const lnInvoice = await Wallets.addInvoice({
-      walletId: wallet12,
+      walletId: walletId12,
       amount: toSats(sats),
     })
     expect(lnInvoice).not.toBeInstanceOf(Error)
@@ -217,7 +217,7 @@ describe("onchainBlockEventhandler", () => {
     expect(sendNotification.mock.calls[0][0].title).toBe(
       getTitle[NotificationType.LnInvoicePaid]({ usd, amount: sats }),
     )
-    expect(sendNotification.mock.calls[0][0].user.walletId).toStrictEqual(wallet12)
+    expect(sendNotification.mock.calls[0][0].user.walletId).toStrictEqual(walletId12)
     expect(sendNotification.mock.calls[0][0].data.type).toBe(
       NotificationType.LnInvoicePaid,
     )
