@@ -60,7 +60,11 @@ export const getUserTypeByTestUserIndex = async (index: number) => {
 }
 
 export const createMandatoryUsers = async () => {
-  const users = [4, 6, 14]
+  const users = [
+    4, // funder
+    6, // dealer
+    14, // bank owner
+  ]
   for (const user of users) {
     await createUserWallet(user)
   }
