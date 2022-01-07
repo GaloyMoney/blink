@@ -132,7 +132,7 @@ export const OnChainService = (
         target_confirmations: targetConfirmations,
       })
 
-      return fee as Satoshis
+      return toSats(fee)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
       return new UnknownOnChainServiceError(errDetails)

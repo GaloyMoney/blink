@@ -6,7 +6,7 @@ import {
   getOnChainAddressCreateAttemptLimits,
   getUserLimits,
 } from "@config/app"
-import { sat2btc } from "@domain/bitcoin"
+import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
 import { TxStatus } from "@domain/wallets"
@@ -190,14 +190,14 @@ describe("UserWallet - On chain", () => {
       expect(balance0).toBe(
         initialBalanceUser0 +
           amountAfterFeeDeduction({
-            amount: 100_000_000 as Satoshis,
+            amount: toSats(100_000_000),
             depositFeeRatio,
           }),
       )
       expect(balance4).toBe(
         initBalanceUser4 +
           amountAfterFeeDeduction({
-            amount: 200_000_000 as Satoshis,
+            amount: toSats(200_000_000),
             depositFeeRatio,
           }),
       )
@@ -376,4 +376,4 @@ async function sendToWalletTestWrapper({
 }
 
 const getRandomAmountOfSats = () =>
-  (+100_000_000 + Math.floor(Math.random() * 10 ** 6)) as Satoshis
+  toSats(+100_000_000 + Math.floor(Math.random() * 10 ** 6))

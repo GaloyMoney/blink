@@ -86,8 +86,8 @@ const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
 
 describe("onchainBlockEventhandler", () => {
   it("should process block for incoming transactions", async () => {
-    const amount = 10_000 as Satoshis
-    const amount2 = 20_000 as Satoshis
+    const amount = toSats(10_000)
+    const amount2 = toSats(20_000)
     const blocksToMine = ONCHAIN_MIN_CONFIRMATIONS
     const scanDepth = ONCHAIN_MIN_CONFIRMATIONS + 1
 

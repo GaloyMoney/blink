@@ -57,7 +57,7 @@ describe("UserWallet - getOnchainFee", () => {
 
   it("returns error for dust amount", async () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-    const amount = (dustThreshold - 1) as Satoshis
+    const amount = toSats(dustThreshold - 1)
     const fee = await Wallets.getOnChainFee({
       wallet: userWallet0,
       amount,
@@ -73,7 +73,7 @@ describe("UserWallet - getOnchainFee", () => {
 
   it("returns error for balance too low", async () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-    const amount = 1000000000 as Satoshis
+    const amount = toSats(1000000000)
     const fee = await Wallets.getOnChainFee({
       wallet: userWallet0,
       amount,
