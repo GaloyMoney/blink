@@ -144,8 +144,8 @@ export const getUserLimits = ({
   limitsConfig = yamlConfig.limits,
 }: UserLimitsArgs): IUserLimits => {
   return {
-    onUsLimit: limitsConfig.onUs.level[level],
-    withdrawalLimit: limitsConfig.withdrawal.level[level],
+    onUsLimit: limitsConfig.onUs.level[level] as Satoshis,
+    withdrawalLimit: limitsConfig.withdrawal.level[level] as Satoshis,
   }
 }
 

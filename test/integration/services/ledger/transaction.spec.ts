@@ -105,7 +105,7 @@ describe("receipt", () => {
       description: "transaction test",
       payeeUser: walletBTC,
       metadata: { type: "invoice", pending: false },
-      sats: 1000,
+      sats: toSats(1000),
       lastPrice: UserWallet.lastPrice,
     })
 
@@ -122,7 +122,7 @@ describe("receipt", () => {
       description: "transaction test",
       payeeUser: walletUSD,
       metadata: { type: "invoice", pending: false },
-      sats: 1000,
+      sats: toSats(1000),
       lastPrice: UserWallet.lastPrice,
     })
 
@@ -139,7 +139,7 @@ describe("receipt", () => {
       description: "transaction test",
       payeeUser: wallet5050,
       metadata: { type: "invoice", pending: false },
-      sats: 1000,
+      sats: toSats(1000),
       lastPrice: UserWallet.lastPrice,
     })
 
@@ -458,7 +458,7 @@ describe("rebalancePortfolio", () => {
       description: "first tx to have a balance",
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
-      sats: 1000,
+      sats: toSats(1000),
       lastPrice: UserWallet.lastPrice,
     })
 
@@ -490,7 +490,7 @@ describe("rebalancePortfolio", () => {
       description: "first tx to have a balance",
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
-      sats: 1000,
+      sats: toSats(1000),
       lastPrice: UserWallet.lastPrice,
     })
 
@@ -534,7 +534,7 @@ describe("rebalancePortfolio", () => {
       description: "first tx to have a balance",
       payeeUser: wallet.user,
       metadata: { type: "invoice", pending: false },
-      sats: 1000,
+      sats: toSats(1000),
       lastPrice: UserWallet.lastPrice,
     })
 

@@ -3,8 +3,8 @@ type IAddTransactionOnUsPayment = {
   description: string
   sats: number
   metadata: Record<string, unknown>
-  payerUser: UserType
-  payeeUser: UserType
+  payerUser: UserType // FIXME: move it to User
+  payeeUser: UserType // FIXME: move it to User
   memoPayer?: string
   shareMemoWithPayee?: boolean
   lastPrice: number

@@ -28,8 +28,8 @@ type FeeRates = {
 type UserLimitsArgs = { level: number; limitsConfig? }
 
 interface IUserLimits {
-  onUsLimit: number
-  withdrawalLimit: number
+  onUsLimit: Satoshis
+  withdrawalLimit: Satoshis
 }
 
 interface ITransactionLimits extends IUserLimits {

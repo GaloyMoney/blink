@@ -1,14 +1,15 @@
 import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
-
-import * as ledger from "@services/ledger"
-import { User } from "@services/mongoose/schema"
 import { toSats } from "@domain/bitcoin"
+import * as ledger from "@services/ledger"
 
-import { getAndCreateUserWallet } from "test/helpers"
+import { createUserWallet, getUserIdByTestUserIndex } from "test/helpers"
 
 describe("getRecentlyActiveAccounts", () => {
   it("returns active users according to volume", async () => {
-    await getAndCreateUserWallet(0)
+    await createUserWallet(0)
+
+    const user0 = await getUserIdByTestUserIndex(0)
+    const funderUserId = await getUserIdByTestUserIndex(4)
 
     const ledgerService = ledger.LedgerService()
 
@@ -25,15 +26,11 @@ describe("getRecentlyActiveAccounts", () => {
     spy.mockClear()
 
     const accountIds = activeUsers.map((user) => user.id)
-    const userWallet0AccountId = (await getAndCreateUserWallet(0)).user.id
-    const funderWalletAccountId = (await User.findOne({ role: "funder" })).id
 
     // userWallets used in the tests
     // TODO: test could be optimized. instead of fetching all the users, we could verify
     // getRecentlyActiveAccounts is only apply to some of them
-    expect(accountIds).toEqual(
-      expect.arrayContaining([userWallet0AccountId, funderWalletAccountId]),
-    )
+    expect(accountIds).toEqual(expect.arrayContaining([user0, funderUserId]))
 
     spy = jest.spyOn(ledger, "LedgerService").mockImplementation(() => ({
       ...ledgerService,

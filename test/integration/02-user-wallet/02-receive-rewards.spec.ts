@@ -1,18 +1,24 @@
-import { MEMO_SHARING_SATS_THRESHOLD, MS_PER_DAY, onboardingEarn } from "@config/app"
-import find from "lodash.find"
-import difference from "lodash.difference"
-
 import { addEarn } from "@app/accounts/add-earn"
 import { getTransactionsForWalletId, intraledgerPaymentSendWalletId } from "@app/wallets"
-
-import { baseLogger } from "@services/logger"
+import { MEMO_SHARING_SATS_THRESHOLD, MS_PER_DAY, onboardingEarn } from "@config/app"
 import { getFunderWalletId } from "@services/ledger/accounts"
+import { baseLogger } from "@services/logger"
+import difference from "lodash.difference"
+import find from "lodash.find"
 
-import { checkIsBalanced, getAndCreateUserWallet } from "test/helpers"
+import {
+  checkIsBalanced,
+  createMandatoryUsers,
+  createUserWallet,
+  getAccountIdByTestUserIndex,
+  getDefaultWalletIdByTestUserIndex,
+  getUserTypeByTestUserIndex,
+} from "test/helpers"
 import { resetSelfWalletIdLimits } from "test/helpers/rate-limit"
 import { getBTCBalance } from "test/helpers/wallet"
 
-let userWallet1
+let accountId1: AccountId
+let walletId1: WalletId
 
 const onBoardingEarnIds = [
   "whereBitcoinExist" as QuizQuestionId,
@@ -28,9 +34,12 @@ const date = Date.now() + 2 * MS_PER_DAY
 jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
 
 beforeAll(async () => {
-  userWallet1 = await getAndCreateUserWallet(1)
-  // load funder wallet before use it
-  await getAndCreateUserWallet(4)
+  await createUserWallet(1)
+
+  accountId1 = await getAccountIdByTestUserIndex(1)
+  walletId1 = await getDefaultWalletIdByTestUserIndex(1)
+
+  await createMandatoryUsers()
 })
 
 afterAll(() => {
@@ -39,26 +48,30 @@ afterAll(() => {
 
 describe("UserWallet - addEarn", () => {
   it("adds balance only once", async () => {
-    const resetOk = await resetSelfWalletIdLimits(userWallet1.user.walletId)
+    const resetOk = await resetSelfWalletIdLimits(walletId1)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
-    const initialBalance = await getBTCBalance(userWallet1.user.walletId)
+    const initialBalance = await getBTCBalance(walletId1)
+
+    const userType1BeforeEarn = await getUserTypeByTestUserIndex(1)
 
     const getAndVerifyRewards = async () => {
       const promises = onBoardingEarnIds.map((onBoardingEarnId) =>
         addEarn({
           quizQuestionId: onBoardingEarnId as QuizQuestionId,
-          accountId: userWallet1.user._id,
+          accountId: accountId1,
           logger: baseLogger,
         }),
       )
       await Promise.all(promises)
-      const finalBalance = await getBTCBalance(userWallet1.user.walletId)
+      const finalBalance = await getBTCBalance(walletId1)
       let rewards = onBoardingEarnAmt
-      if (difference(onBoardingEarnIds, userWallet1.user.earn).length === 0) {
+
+      if (difference(onBoardingEarnIds, userType1BeforeEarn.earn).length === 0) {
         rewards = 0
       }
+
       expect(finalBalance).toBe(initialBalance + rewards)
       await checkIsBalanced()
     }
@@ -75,7 +88,7 @@ describe("UserWallet - addEarn", () => {
     expect(onboardingEarnIds.length).toBeGreaterThanOrEqual(1)
 
     const { result: transactionsBefore } = await getTransactionsForWalletId({
-      walletId: userWallet1.user.walletId,
+      walletId: walletId1,
     })
 
     let onboardingEarnId = ""
@@ -92,7 +105,7 @@ describe("UserWallet - addEarn", () => {
     const funderWalletId = await getFunderWalletId()
     const payment = await intraledgerPaymentSendWalletId({
       senderWalletId: funderWalletId,
-      recipientWalletId: userWallet1.user.walletId,
+      recipientWalletId: walletId1,
       amount,
       memo: onboardingEarnId,
       logger: baseLogger,
@@ -100,7 +113,7 @@ describe("UserWallet - addEarn", () => {
     if (payment instanceof Error) return payment
 
     const { result: transactionsAfter } = await getTransactionsForWalletId({
-      walletId: userWallet1.user.walletId,
+      walletId: walletId1,
     })
     const rewardTx = transactionsAfter?.find((tx) => tx.memo === onboardingEarnId)
     expect(rewardTx).not.toBeUndefined()

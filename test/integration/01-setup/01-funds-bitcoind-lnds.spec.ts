@@ -6,8 +6,9 @@ import { getFunderWalletId } from "@services/ledger/accounts"
 import {
   bitcoindClient,
   checkIsBalanced,
+  createMandatoryUsers,
+  createUserWallet,
   fundLnd,
-  getAndCreateUserWallet,
   getChainBalance,
   lnd1,
   lndOutside1,
@@ -19,11 +20,7 @@ import {
 let bitcoindOutside
 
 beforeAll(async () => {
-  // load funder wallet before use it
-  await getAndCreateUserWallet(4)
-
-  // "bankowner" user
-  await getAndCreateUserWallet(14)
+  await createMandatoryUsers()
 })
 
 afterAll(async () => {
@@ -72,10 +69,10 @@ describe("Bitcoind", () => {
     const sats = initialBalance + btc2sat(amount)
 
     // initiate the dealer wallet
-    await getAndCreateUserWallet(6)
+    await createUserWallet(6)
 
     // load funder wallet before use it
-    await getAndCreateUserWallet(4)
+    await createUserWallet(4)
 
     const funderWalletId = await getFunderWalletId()
     const address = await Wallets.createOnChainAddress(funderWalletId)

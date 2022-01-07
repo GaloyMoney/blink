@@ -3,23 +3,24 @@ import { getOnChainWalletConfig } from "@config/app"
 import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 
-import { bitcoindClient, bitcoindOutside, getAndCreateUserWallet } from "test/helpers"
+import {
+  bitcoindClient,
+  bitcoindOutside,
+  createUserWallet,
+  getDefaultWalletByTestUserIndex,
+} from "test/helpers"
 
 const defaultAmount = toSats(6000)
 const defaultTarget = toTargetConfs(3)
 const { dustThreshold } = getOnChainWalletConfig()
-let userWallet0: Wallet, userWallet1: Wallet
-
-const getWallet = async (testWallet: number): Promise<Wallet> => {
-  const userWallet = await getAndCreateUserWallet(testWallet)
-  const wallet = await Wallets.getWallet(userWallet.user.walletId)
-  if (wallet instanceof Error) throw wallet
-  return wallet
-}
+let wallet0: Wallet, wallet1: Wallet
 
 beforeAll(async () => {
-  userWallet0 = await getWallet(0)
-  userWallet1 = await getWallet(1)
+  await createUserWallet(0)
+  await createUserWallet(1)
+
+  wallet0 = await getDefaultWalletByTestUserIndex(0)
+  wallet1 = await getDefaultWalletByTestUserIndex(1)
   await bitcoindClient.loadWallet({ filename: "outside" })
 })
 
@@ -31,21 +32,21 @@ describe("UserWallet - getOnchainFee", () => {
   it("returns a fee greater than zero for an external address", async () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
     const fee = await Wallets.getOnChainFee({
-      wallet: userWallet0,
+      wallet: wallet0,
       amount: defaultAmount,
       address,
       targetConfirmations: defaultTarget,
     })
     expect(fee).not.toBeInstanceOf(Error)
     expect(fee).toBeGreaterThan(0)
-    expect(fee).toBeGreaterThan(userWallet0.withdrawFee)
+    expect(fee).toBeGreaterThan(wallet0.withdrawFee)
   })
 
   it("returns zero for an on us address", async () => {
-    const address = await Wallets.createOnChainAddress(userWallet1.id)
+    const address = await Wallets.createOnChainAddress(wallet1.id)
     if (address instanceof Error) throw address
     const fee = await Wallets.getOnChainFee({
-      wallet: userWallet0,
+      wallet: wallet0,
       amount: defaultAmount,
       address,
       targetConfirmations: defaultTarget,
@@ -56,9 +57,9 @@ describe("UserWallet - getOnchainFee", () => {
 
   it("returns error for dust amount", async () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-    const amount = (dustThreshold - 1) as Satoshis
+    const amount = toSats(dustThreshold - 1)
     const fee = await Wallets.getOnChainFee({
-      wallet: userWallet0,
+      wallet: wallet0,
       amount,
       address,
       targetConfirmations: defaultTarget,
@@ -72,9 +73,9 @@ describe("UserWallet - getOnchainFee", () => {
 
   it("returns error for balance too low", async () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-    const amount = 1000000000 as Satoshis
+    const amount = toSats(1000000000)
     const fee = await Wallets.getOnChainFee({
-      wallet: userWallet0,
+      wallet: wallet0,
       amount,
       address,
       targetConfirmations: defaultTarget,

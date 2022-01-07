@@ -5,6 +5,7 @@ import SatAmount from "@graphql/types/scalar/sat-amount"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
+import { LightningUserWallet } from "@core/lightning/wallet"
 
 const OnChainPaymentSendInput = new GT.Input({
   name: "OnChainPaymentSendInput",
@@ -22,7 +23,7 @@ const OnChainPaymentSendMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(OnChainPaymentSendInput) },
   },
-  resolve: async (_, args, { wallet }) => {
+  resolve: async (_, args, { wallet }: { wallet: LightningUserWallet }) => {
     const { walletId, address, amount, memo, targetConfirmations } = args.input
 
     for (const input of [walletId, memo, amount, address, targetConfirmations]) {

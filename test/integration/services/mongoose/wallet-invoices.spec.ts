@@ -5,7 +5,15 @@ import { toSats } from "@domain/bitcoin"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { InvoiceUser } from "@services/mongoose/schema"
 
-import { getAndCreateUserWallet } from "test/helpers"
+import { createUserWallet, getDefaultWalletIdByTestUserIndex } from "test/helpers"
+
+let wallet1: WalletId
+
+beforeAll(async () => {
+  await createUserWallet(1)
+
+  wallet1 = await getDefaultWalletIdByTestUserIndex(1)
+})
 
 const createTestWalletInvoice = () => {
   const randomPaymentHash = crypto.randomBytes(32).toString("hex") as PaymentHash
@@ -63,21 +71,20 @@ describe("WalletInvoices", () => {
   })
 
   it("find pending invoices by wallet id", async () => {
-    const wallet = await getAndCreateUserWallet(1)
     for (let i = 0; i < 2; i++) {
       await Wallets.addInvoice({
-        walletId: wallet.user.walletId as WalletId,
+        walletId: wallet1,
         amount: toSats(1000),
       })
     }
 
     const invoicesCount = await InvoiceUser.countDocuments({
-      walletId: wallet.user.walletId,
+      walletId: wallet1,
       paid: false,
     })
 
     const repo = WalletInvoicesRepository()
-    const invoices = repo.findPendingByWalletId(wallet.user.walletId)
+    const invoices = repo.findPendingByWalletId(wallet1)
     expect(invoices).not.toBeInstanceOf(Error)
 
     const pendingInvoices = invoices as AsyncGenerator<WalletInvoice>

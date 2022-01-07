@@ -1,11 +1,9 @@
+import { Wallets } from "@app"
 import { getBalance as getBitcoindBalance } from "@services/bitcoind"
 import { lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
 import { WalletInvoicesRepository } from "@services/mongoose"
-
-import { Wallets } from "@app"
-
 import { runInParallel } from "@utils"
 
 const logger = baseLogger.child({ module: "balanceSheet" })
