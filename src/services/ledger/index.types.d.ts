@@ -18,6 +18,12 @@ type AddLnTxSendMetadata = TxMetadata & {
   feeKnownInAdvance: boolean
 }
 
+type AddOnchainTxSendMetadata = TxMetadata & {
+  hash: OnChainTxHash
+  payee_addresses: OnChainAddress[]
+  sendAll: boolean
+}
+
 type IntraledgerTxMetadata = TxMetadata & {
   memoPayer: string | null
   username: Username | null
