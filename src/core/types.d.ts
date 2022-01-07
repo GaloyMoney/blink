@@ -85,3 +85,17 @@ interface IQuoteRequest {
   satAmount?: number // sell
   invoice?: string // buy
 }
+
+type TransactionType =
+  | "payment"
+  | "paid-invoice"
+  | "on_us"
+  | "onchain_receipt"
+  | "onchain_payment"
+  | "onchain_on_us"
+  | "exchange_rebalance"
+  | "fee"
+  | "escrow"
+  | "deposit_fee"
+  | "routing_fee"
+  | "onchain_receipt_pending" // only for notification, not persistent in mongodb
