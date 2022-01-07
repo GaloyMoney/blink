@@ -75,11 +75,20 @@ type LnTxArgs = TxArgs & {
   paymentHash: PaymentHash
 }
 
+type OnChainTxArgs = TxArgs & {
+  txHash: OnChainTxHash
+  payeeAddress: OnChainAddress
+}
+
 type AddLnTxReceiveArgs = LnTxArgs
 
 type AddLnTxSendArgs = LnTxArgs & {
   pubkey: Pubkey
   feeKnownInAdvance: boolean
+}
+
+type AddOnChainTxSendArgs = OnChainTxArgs & {
+  sendAll: boolean
 }
 
 type IntraledgerTxArgs = {
@@ -192,6 +201,10 @@ interface ILedgerService {
 
   addLnIntraledgerTxSend(
     args: AddLnIntraledgerTxSendArgs,
+  ): Promise<LedgerJournal | LedgerServiceError>
+
+  addOnChainTxSend(
+    args: AddOnChainTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
   addOnChainIntraledgerTxSend(
