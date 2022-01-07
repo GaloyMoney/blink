@@ -3,7 +3,11 @@ import { createHash, randomBytes } from "crypto"
 import { Wallets } from "@app"
 import { getUserLimits } from "@config/app"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
-import { LightningServiceError, PaymentSendStatus } from "@domain/bitcoin/lightning"
+import {
+  LightningServiceError,
+  PaymentSendStatus,
+  PaymentStatus,
+} from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   LimitsExceededError,
@@ -15,11 +19,12 @@ import { PaymentInitiationMethod } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { getActiveLnd, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
-import { WalletInvoicesRepository } from "@services/mongoose"
+import { LnPaymentsRepository, WalletInvoicesRepository } from "@services/mongoose"
 import { InvoiceUser } from "@services/mongoose/schema"
 
 import { sleep } from "@utils"
 
+import { updateLnPayments } from "@app/lightning"
 import { delete2fa } from "@app/users"
 
 import {
@@ -789,7 +794,7 @@ describe("UserWallet - Lightning Pay", () => {
         expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
       })
 
-      it("pay hodl invoice", async () => {
+      it("pay hodl invoice & ln payments repo updates", async () => {
         const { id, secret } = createInvoiceHash()
 
         const { request } = await createHodlInvoice({
@@ -807,6 +812,52 @@ describe("UserWallet - Lightning Pay", () => {
         expect(balanceBeforeSettlement).toBe(
           initBalance1 - amountInvoice * (1 + initialFee),
         )
+
+        const lnPaymentsRepo = LnPaymentsRepository()
+        const incompleteLnPayment = {
+          createdAt: undefined,
+          status: undefined,
+          paymentHash: "",
+          paymentRequest: "",
+          milliSatsAmount: NaN,
+          roundedUpAmount: undefined,
+          confirmedDetails: {
+            confirmedAt: undefined,
+            destination: undefined,
+            revealedPreImage: undefined,
+            roundedUpFee: undefined,
+            milliSatsFee: undefined,
+            hopPubkeys: [],
+          },
+          attempts: [],
+          isCompleteRecord: false,
+        }
+
+        // Test 'lnpayment' is pending
+        const lnPaymentOnPay = await lnPaymentsRepo.findByPaymentHash(id as PaymentHash)
+        expect(lnPaymentOnPay).not.toBeInstanceOf(Error)
+        if (lnPaymentOnPay instanceof Error) throw lnPaymentOnPay
+        expect(lnPaymentOnPay).toStrictEqual({
+          ...incompleteLnPayment,
+          paymentHash: id as PaymentHash,
+          paymentRequest: request,
+        })
+
+        // Run update task
+        const lnPaymentUpdateOnPending = await updateLnPayments()
+        if (lnPaymentUpdateOnPending instanceof Error) throw lnPaymentUpdateOnPending
+
+        // Test 'lnpayment' is pending
+        const lnPaymentOnPending = await lnPaymentsRepo.findByPaymentHash(
+          id as PaymentHash,
+        )
+        expect(lnPaymentOnPending).not.toBeInstanceOf(Error)
+        if (lnPaymentOnPending instanceof Error) throw lnPaymentOnPending
+        expect(lnPaymentOnPending).toStrictEqual({
+          ...incompleteLnPayment,
+          paymentHash: id as PaymentHash,
+          paymentRequest: request,
+        })
 
         // FIXME: necessary to not have openHandler ?
         // https://github.com/alexbosworth/ln-service/issues/122
@@ -836,6 +887,22 @@ describe("UserWallet - Lightning Pay", () => {
 
         await waitUntilChannelBalanceSyncAll()
 
+        // Run update task
+        const lnPaymentUpdateOnSettled = await updateLnPayments()
+        if (lnPaymentUpdateOnSettled instanceof Error) throw lnPaymentUpdateOnSettled
+
+        // Test 'lnpayment' is complete
+        const lnPaymentOnSettled = await lnPaymentsRepo.findByPaymentHash(
+          id as PaymentHash,
+        )
+        expect(lnPaymentOnSettled).not.toBeInstanceOf(Error)
+        if (lnPaymentOnSettled instanceof Error) throw lnPaymentOnSettled
+        expect(lnPaymentOnSettled.status).toBe(PaymentStatus.Settled)
+        expect(lnPaymentOnSettled.isCompleteRecord).toBeTruthy()
+        expect(lnPaymentOnSettled.confirmedDetails?.revealedPreImage).not.toBeUndefined()
+        expect(lnPaymentOnSettled.attempts).not.toBeUndefined()
+        expect(lnPaymentOnSettled.attempts?.length).toBeGreaterThanOrEqual(1)
+
         const finalBalance = await getBTCBalance(walletId1)
         expect(finalBalance).toBe(initBalance1 - amountInvoice)
       }, 60000)
@@ -855,7 +922,6 @@ describe("UserWallet - Lightning Pay", () => {
 
         expect(result).toBe(PaymentSendStatus.Pending)
         baseLogger.info("payment has timeout. status is pending.")
-
         const intermediateBalance = await getBTCBalance(walletId1)
         expect(intermediateBalance).toBe(initBalance1 - amountInvoice * (1 + initialFee))
 
