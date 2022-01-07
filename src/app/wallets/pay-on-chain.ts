@@ -1,5 +1,6 @@
 import { getUsernameFromWalletId } from "@app/accounts"
 import { getCurrentPrice } from "@app/prices"
+import { getUser } from "@app/users"
 import {
   BTC_NETWORK,
   getOnChainWalletConfig,
@@ -22,11 +23,55 @@ import { baseLogger } from "@services/logger"
 import { WalletsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 
-import { checkIntraledgerLimits, checkWithdrawalLimits } from "./check-limit-helpers"
+import {
+  checkAndVerifyTwoFA,
+  checkIntraledgerLimits,
+  checkWithdrawalLimits,
+} from "./check-limit-helpers"
 import { getBalanceForWalletId } from "./get-balance-for-wallet"
 import { getOnChainFeeByWalletId } from "./get-on-chain-fee"
 
 const { dustThreshold } = getOnChainWalletConfig()
+
+export const payOnChainByWalletIdWithTwoFA = async ({
+  senderWalletId,
+  amount,
+  address,
+  targetConfirmations,
+  memo,
+  sendAll,
+  payerUserId,
+  twoFAToken,
+}: PayOnChainByWalletIdWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  const checkedAmount = sendAll
+    ? await getBalanceForWalletId(senderWalletId)
+    : checkedToSats(amount)
+  if (checkedAmount instanceof Error) return checkedAmount
+
+  const user = await getUser(payerUserId)
+  if (user instanceof Error) return user
+
+  const { twoFA } = user
+
+  const twoFACheck = twoFA?.secret
+    ? await checkAndVerifyTwoFA({
+        walletId: senderWalletId,
+        amount: checkedAmount,
+        twoFASecret: twoFA.secret,
+        twoFAToken,
+      })
+    : true
+  if (twoFACheck instanceof Error) return twoFACheck
+
+  return payOnChainByWalletId({
+    senderWalletId,
+    amount,
+    address,
+    targetConfirmations,
+    memo,
+    sendAll,
+  })
+}
 
 export const payOnChainByWalletId = async ({
   senderWalletId,

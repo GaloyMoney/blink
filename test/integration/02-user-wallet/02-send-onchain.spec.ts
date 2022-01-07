@@ -7,7 +7,6 @@ import {
   getUserLimits,
   MS_PER_DAY,
 } from "@config/app"
-import { TwoFAError } from "@core/error"
 import { toTargetConfs } from "@domain/bitcoin"
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
@@ -28,6 +27,8 @@ import {
   LimitsExceededError,
   SelfPaymentError,
 } from "@domain/errors"
+
+import { TwoFANewCodeNeededError } from "@domain/twoFA"
 
 import {
   bitcoindClient,
@@ -65,7 +66,7 @@ let walletId3: WalletId
 // using walletId11 and walletId12 to sendAll
 let walletId11: WalletId
 let walletId12: WalletId
-let user0: UserId
+let userId0: UserId
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
@@ -73,7 +74,7 @@ const { sendNotification } = require("@services/notifications/notification")
 beforeAll(async () => {
   userWallet0 = await getAndCreateUserWallet(0)
   walletId0 = await getDefaultWalletIdByTestUserIndex(0)
-  user0 = await getUserIdByTestUserIndex(0)
+  userId0 = await getUserIdByTestUserIndex(0)
 
   await createUserWallet(1)
   await createUserWallet(3)
@@ -169,7 +170,7 @@ describe("UserWallet - onChainPay", () => {
     expect(sendNotification.mock.calls[0][0].title).toBe(
       getTitle[NotificationType.OnchainPayment]({ amount }),
     )
-    expect(sendNotification.mock.calls[0][0].user._id.toString()).toStrictEqual(user0)
+    expect(sendNotification.mock.calls[0][0].user._id.toString()).toStrictEqual(userId0)
     expect(sendNotification.mock.calls[0][0].data.type).toBe(
       NotificationType.OnchainPayment,
     )
@@ -643,36 +644,45 @@ describe("UserWallet - onChainPay", () => {
 
   describe("2FA", () => {
     it("fails to pay above 2fa limit without 2fa token", async () => {
-      enable2FA(user0)
+      enable2FA(userId0)
 
       const remainingLimit = await getRemainingTwoFALimit(walletId0)
       expect(remainingLimit).not.toBeInstanceOf(Error)
       if (remainingLimit instanceof Error) return remainingLimit
 
-      expect(
-        userWallet0.onChainPay({
-          address: RANDOM_ADDRESS,
-          amount: remainingLimit + 1,
-          targetConfirmations,
-        }),
-      ).rejects.toThrowError(TwoFAError)
+      const status = await Wallets.payOnChainByWalletIdWithTwoFA({
+        senderWalletId: walletId0,
+        address: RANDOM_ADDRESS,
+        amount: remainingLimit + 1,
+        targetConfirmations,
+        memo: null,
+        sendAll: false,
+        payerUserId: userId0,
+        twoFAToken: "" as TwoFAToken,
+      })
+
+      expect(status).toBeInstanceOf(TwoFANewCodeNeededError)
     })
 
     it("sends a successful large payment with a 2fa code", async () => {
-      await enable2FA(user0)
+      await enable2FA(userId0)
 
       const initialBalance = await getBTCBalance(walletId0)
       const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
       const twoFAToken = generateTokenHelper(userWallet0.user.twoFA.secret)
       const amount = userWallet0.user.twoFA.threshold + 1
-      const paid = await userWallet0.onChainPay({
+      const paid = await Wallets.payOnChainByWalletIdWithTwoFA({
+        senderWalletId: walletId0,
         address,
         amount,
-        twoFAToken,
         targetConfirmations,
+        memo: null,
+        sendAll: false,
+        payerUserId: userId0,
+        twoFAToken,
       })
 
-      expect(paid).toBe(true)
+      expect(paid).toBe(PaymentSendStatus.Success)
 
       await mineBlockAndSyncAll()
       const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })

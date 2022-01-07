@@ -109,3 +109,8 @@ type PayOnChainByWalletIdArgs = {
   memo: string | null
   sendAll: boolean
 }
+
+type PayOnChainByWalletIdWithTwoFAArgs = PayOnChainByWalletIdArgs & {
+  payerUserId: UserId
+  twoFAToken: TwoFAToken
+}
