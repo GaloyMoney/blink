@@ -127,11 +127,6 @@ export const getLndParams = (): LndParams[] => {
   }))
 }
 
-export const getGenericLimits = (limitsConfig = yamlConfig.limits): GenericLimits => ({
-  oldEnoughForWithdrawalHours: limitsConfig.oldEnoughForWithdrawal / MS_PER_HOUR,
-  oldEnoughForWithdrawalMicroseconds: limitsConfig.oldEnoughForWithdrawal,
-})
-
 export const getFeeRates = (feesConfig = yamlConfig.fees): FeeRates => ({
   depositFeeVariable: feesConfig.deposit,
   depositFeeFixed: 0,
@@ -197,10 +192,7 @@ export const getTransactionLimits = ({
   level,
   limitsConfig = yamlConfig.limits,
 }: UserLimitsArgs): ITransactionLimits => {
-  const genericLimits = getGenericLimits(limitsConfig)
   return {
-    oldEnoughForWithdrawalMicroseconds: genericLimits.oldEnoughForWithdrawalMicroseconds,
-    oldEnoughForWithdrawalHours: genericLimits.oldEnoughForWithdrawalHours,
     ...getUserLimits({ level, limitsConfig }),
   }
 }

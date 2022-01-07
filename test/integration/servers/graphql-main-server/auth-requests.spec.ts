@@ -204,7 +204,7 @@ describe("graphql", () => {
     const mutation = LN_INVOICE_PAYMENT_SEND
     beforeAll(async () => {
       const date = Date.now() + 1000 * 60 * 60 * 24 * 8
-      // required to avoid oldEnoughForWithdrawal validation
+      // required to avoid withdrawal limits validation
       jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
     })
 
@@ -248,7 +248,7 @@ describe("graphql", () => {
     const mutation = LN_NO_AMOUNT_INVOICE_PAYMENT_SEND
     beforeAll(async () => {
       const date = Date.now() + 1000 * 60 * 60 * 24 * 8
-      // required to avoid oldEnoughForWithdrawal validation
+      // required to avoid withdrawal limits validation
       jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
     })
 

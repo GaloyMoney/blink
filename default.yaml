@@ -109,7 +109,6 @@ limits:
     duration: 3600
     blockDuration: 14400 # 60 * 60 * 4 s  # 4 hours
   memoSharingSatsThreshold: 1000
-  oldEnoughForWithdrawal: 172800000 # 1000 * 60 * 60 * 24 * 2, in ms # 2 days
   withdrawal:
     level:
       1: 2000000

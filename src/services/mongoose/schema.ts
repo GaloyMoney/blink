@@ -2,7 +2,6 @@ import crypto from "crypto"
 
 import {
   getFeeRates,
-  getGenericLimits,
   getTwoFAConfig,
   getUserLimits,
   levels,
@@ -291,12 +290,6 @@ UserSchema.virtual("walletPath").get(function (this: typeof UserSchema) {
   return toLiabilitiesWalletId(this.walletId)
 })
 
-UserSchema.virtual("oldEnoughForWithdrawal").get(function (this: typeof UserSchema) {
-  const elapsed = Date.now() - this.created_at.getTime()
-  const genericLimits = getGenericLimits()
-  return elapsed > genericLimits.oldEnoughForWithdrawalMicroseconds
-})
-
 UserSchema.virtual("twoFAEnabled").get(function (this: typeof UserSchema) {
   return this.twoFA.secret != null
 })
@@ -323,8 +316,6 @@ UserSchema.methods.remainingTwoFALimit = async function () {
 }
 
 UserSchema.methods.remainingWithdrawalLimit = async function () {
-  if (!this.oldEnoughForWithdrawal) return 0
-
   const userLimits = getUserLimits({ level: this.level })
   const withdrawalLimit = userLimits.withdrawalLimit
 

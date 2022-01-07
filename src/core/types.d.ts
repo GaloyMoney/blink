@@ -9,11 +9,6 @@ type Primitive = string | boolean | number
 // TODO: clean up this section when "constructor typing" work is
 //       being done
 
-type GenericLimits = {
-  oldEnoughForWithdrawalHours: number
-  oldEnoughForWithdrawalMicroseconds: number
-}
-
 type TwoFALimits = {
   threshold: number
 }
@@ -32,10 +27,7 @@ interface IUserLimits {
   withdrawalLimit: Satoshis
 }
 
-interface ITransactionLimits extends IUserLimits {
-  oldEnoughForWithdrawalMicroseconds: number
-  oldEnoughForWithdrawalHours: number
-}
+type ITransactionLimits = IUserLimits
 
 type onChainWalletConfig = {
   dustThreshold: number
