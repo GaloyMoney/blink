@@ -1,11 +1,12 @@
 import { GT } from "@graphql/index"
 import Memo from "@graphql/types/scalar/memo"
+import { mapError } from "@graphql/error-map"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
-import { LightningUserWallet } from "@core/lightning/wallet"
+import { Wallets } from "@app"
 
 const OnChainPaymentSendInput = new GT.Input({
   name: "OnChainPaymentSendInput",
@@ -23,32 +24,32 @@ const OnChainPaymentSendMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(OnChainPaymentSendInput) },
   },
-  resolve: async (_, args, { wallet }: { wallet: LightningUserWallet }) => {
+  resolve: async (_, args) => {
     const { walletId, address, amount, memo, targetConfirmations } = args.input
 
-    for (const input of [walletId, memo, amount, address, targetConfirmations]) {
+    for (const input of [walletId, amount, address, targetConfirmations, memo]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
     }
 
-    try {
-      const status = await wallet.onChainPay({
-        address,
-        amount,
-        memo,
-        targetConfirmations,
-      })
+    const status = await Wallets.payOnChainByWalletId({
+      senderWalletId: walletId,
+      amount,
+      address,
+      targetConfirmations,
+      memo,
+      sendAll: false,
+    })
 
-      return {
-        errors: [],
-        status: status ? "success" : "failed", // TODO: Figure out pending here
-      }
-    } catch (err) {
-      return {
-        status: "failed",
-        errors: [{ message: err.message }],
-      }
+    if (status instanceof Error) {
+      const appErr = mapError(status)
+      return { status: "failed", errors: [{ message: appErr.message }] }
+    }
+
+    return {
+      errors: [],
+      status: status.value,
     }
   },
 })

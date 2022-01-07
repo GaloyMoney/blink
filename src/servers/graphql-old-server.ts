@@ -393,18 +393,32 @@ const resolvers = {
         if (address instanceof Error) throw mapError(address)
         return address
       },
-      pay: ({ address, amount, memo }) => ({
-        success: wallet.onChainPay({ address, amount, memo, targetConfirmations: 1 }),
-      }),
-      payAll: ({ address, memo }) => ({
-        success: wallet.onChainPay({
+      pay: async ({ address, amount, memo }) => {
+        const status = await Wallets.payOnChainByWalletId({
+          senderWalletId: wallet.user.walletId,
+          amount,
           address,
+          targetConfirmations: 1,
+          memo,
+          sendAll: false,
+        })
+        if (status instanceof Error) throw mapError(status)
+
+        return { success: true }
+      },
+      payAll: async ({ address, memo }) => {
+        const status = await Wallets.payOnChainByWalletId({
+          senderWalletId: wallet.user.walletId,
           amount: 0,
+          address,
+          targetConfirmations: 1,
           memo,
           sendAll: true,
-          targetConfirmations: 1,
-        }),
-      }),
+        })
+        if (status instanceof Error) throw mapError(status)
+
+        return { success: true }
+      },
       getFee: async ({ address, amount }) => {
         const fee = await Wallets.getOnChainFeeByWalletId({
           walletId: wallet.user.walletId,
