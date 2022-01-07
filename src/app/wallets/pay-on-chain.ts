@@ -59,7 +59,7 @@ export const payOnChainByWalletId = async ({
   if (checkedAmount instanceof Error) return checkedAmount
 
   const wallets = WalletsRepository()
-  const recipientWallet = await wallets.findByAddress(address)
+  const recipientWallet = await wallets.findByAddress(checkedAddress)
   const isIntraLedger = !(recipientWallet instanceof Error)
 
   if (isIntraLedger)
@@ -288,6 +288,7 @@ const executePaymentViaOnChain = async ({
           description: memo || "",
           sats,
           fee,
+          bankFee: toSats(senderWallet.withdrawFee),
           usd,
           usdFee,
           payeeAddress: address,

@@ -497,6 +497,7 @@ export const LedgerService = (): ILedgerService => {
     description,
     sats,
     fee,
+    bankFee,
     usd,
     usdFee,
     sendAll,
@@ -523,8 +524,8 @@ export const LedgerService = (): ILedgerService => {
       const entry = MainBook.entry(description)
       // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
       entry
-        .credit(lndAccountingPath, sats - fee, metadata)
-        .credit(bankOwnerPath, fee, metadata)
+        .credit(lndAccountingPath, sats - bankFee, metadata)
+        .credit(bankOwnerPath, bankFee, metadata)
         .debit(liabilitiesWalletId, sats, metadata)
 
       const savedEntry = await entry.commit()
