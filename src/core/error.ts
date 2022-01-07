@@ -137,15 +137,6 @@ export class RouteFindingError extends CustomError {
   }
 }
 
-export class RebalanceNeededError extends CustomError {
-  constructor(
-    message = `Insufficient onchain balance on lnd`,
-    { forwardToClient = false, logger, level = "error" as const, ...metadata },
-  ) {
-    super(message, "REBALANCE_NEEDED", { forwardToClient, logger, level, metadata })
-  }
-}
-
 export class DustAmountError extends CustomError {
   constructor(
     message = `Use lightning to send amounts less than ${onChainWalletConfig.dustThreshold}`,

@@ -15,6 +15,7 @@ import {
   InvalidBusinessTitleLengthError,
   PhoneCodeError,
   UsernameError,
+  RebalanceNeededError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -173,6 +174,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "TwoFA is already set"
       return new TwoFAError({ logger: baseLogger, message })
 
+    case "RebalanceNeededError":
+      return new RebalanceNeededError({ logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -255,7 +259,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidOnChainAddress":
     case "InvalidScanDepthAmount":
     case "InsufficientBalanceForRoutingError":
-    case "RebalanceNeededError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 

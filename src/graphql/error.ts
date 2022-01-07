@@ -119,6 +119,7 @@ export class RebalanceNeededError extends CustomApolloError {
     super({
       code: "REBALANCE_NEEDED",
       message: "Insufficient onchain balance on lnd",
+      level: "error",
       forwardToClient: false,
       ...errData,
     })
