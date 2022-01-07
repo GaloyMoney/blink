@@ -89,6 +89,7 @@ type AddLnTxSendArgs = LnTxArgs & {
 
 type AddOnChainTxSendArgs = OnChainTxArgs & {
   sendAll: boolean
+  bankFee: Satoshis
 }
 
 type IntraledgerTxArgs = {

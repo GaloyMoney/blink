@@ -104,7 +104,7 @@ type IntraLedgerPaymentSendWithTwoFAArgs = IntraLedgerPaymentSendUsernameArgs & 
 type PayOnChainByWalletIdArgs = {
   senderWalletId: WalletId
   amount: number
-  address: OnChainAddress
+  address: string
   targetConfirmations: number
   memo: string | null
   sendAll: boolean
