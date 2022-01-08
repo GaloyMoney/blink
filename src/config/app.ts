@@ -245,8 +245,10 @@ export const getTwilioConfig = (): TwilioConfig => {
 }
 
 export const getBuildVersions = (): {
-  minBuildNumber: number
-  lastBuildNumber: number
+  minBuildNumberAndroid: number
+  lastBuildNumberAndroid: number
+  minBuildNumberIos: number
+  lastBuildNumberIos: number
 } => {
   return yamlConfig.buildVersion
 }
