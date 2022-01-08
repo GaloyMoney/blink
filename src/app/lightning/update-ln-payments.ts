@@ -39,7 +39,7 @@ const fetchAndUpdatePayments = async ({
   const pubkey = lndService.defaultPubkey()
 
   let lnPayments: LnPaymentLookup[]
-  let endCursor: PagingToken | undefined = undefined
+  let endCursor: PagingToken | false | undefined = undefined
   do {
     const result: ListLnPaymentsResult | LightningError = await listPaymentsFn({
       after: endCursor,

@@ -268,7 +268,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         lnPayments: payments
           .map(translateLnPaymentLookup)
           .map((p) => ({ ...p, status: PaymentStatus.Failed })),
-        endCursor: (next as PagingToken) || undefined,
+        endCursor: (next as PagingToken) || false,
       }
     } catch (err) {
       return new UnknownLightningServiceError(err)
@@ -291,7 +291,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         lnPayments: payments
           .map(translateLnPaymentLookup)
           .filter((p) => p.status === PaymentStatus.Settled),
-        endCursor: (next as PagingToken) || undefined,
+        endCursor: (next as PagingToken) || false,
       }
     } catch (err) {
       return new UnknownLightningServiceError(err)

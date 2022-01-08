@@ -123,7 +123,7 @@ type ListLnPaymentsArgs = {
 
 type ListLnPaymentsResult = {
   lnPayments: LnPaymentLookup[]
-  endCursor: PagingToken | undefined
+  endCursor: PagingToken | false
 }
 
 interface ILightningService {
