@@ -146,6 +146,8 @@ const translateToAccount = (result: UserType): Account => ({
   coordinates: result.coordinates as Coordinates,
   walletIds: [result.walletId as WalletId],
   ownerId: result.id as UserId,
+  depositFeeRatio: result.depositFeeRatio as DepositFeeRatio,
+  withdrawFee: result.withdrawFee as WithdrawFee,
 })
 
 const projection = {
@@ -156,4 +158,6 @@ const projection = {
   username: 1,
   title: 1,
   created_at: 1,
+  depositFeeRatio: 1,
+  withdrawFee: 1,
 }

@@ -7,12 +7,17 @@ type AccountLevel =
 type AccountStatus =
   typeof import("./index").AccountStatus[keyof typeof import("./index").AccountStatus]
 
+type DepositFeeRatio = number & { readonly brand: unique symbol }
+type WithdrawFee = number & { readonly brand: unique symbol }
+
 type Account = {
   readonly id: AccountId
   readonly createdAt: Date
   username: Username
   readonly defaultWalletId: WalletId
   readonly ownerId: UserId
+  readonly depositFeeRatio: DepositFeeRatio
+  readonly withdrawFee: WithdrawFee
   level: AccountLevel
   status: AccountStatus
   readonly walletIds: WalletId[]

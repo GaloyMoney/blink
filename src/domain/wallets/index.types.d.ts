@@ -124,12 +124,8 @@ type WalletTransactionHistoryWithPending = {
   readonly transactions: WalletTransaction[]
 }
 
-type DepositFeeRatio = number & { readonly brand: unique symbol }
-type WithdrawFee = number & { readonly brand: unique symbol }
 type Wallet = {
   readonly id: WalletId
-  readonly depositFeeRatio: DepositFeeRatio
-  readonly withdrawFee: WithdrawFee
   readonly onChainAddressIdentifiers: OnChainAddressIdentifier[]
   onChainAddresses(): OnChainAddress[]
 }
