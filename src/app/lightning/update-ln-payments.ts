@@ -40,7 +40,10 @@ const fetchAndUpdatePayments = async ({
 
   let lnPayments: LnPaymentLookup[]
   let endCursor: PagingToken | false | undefined = undefined
-  do {
+
+  while (processedLnPaymentsHashes.length < incompleteLnPaymentsHashes.length) {
+    if (endCursor === false) break
+
     const result: ListLnPaymentsResult | LightningError = await listPaymentsFn({
       after: endCursor,
       pubkey,
@@ -67,10 +70,7 @@ const fetchAndUpdatePayments = async ({
         processedLnPaymentsHashes.push(payment.paymentHash)
       }
     }
-  } while (
-    processedLnPaymentsHashes.length < incompleteLnPaymentsHashes.length &&
-    endCursor
-  )
+  }
 
   return incompleteLnPayments.filter(
     (p) => !processedLnPaymentsHashes.includes(p.paymentHash),
