@@ -53,21 +53,10 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const isLocal = (pubkey: Pubkey): boolean | LightningServiceError => {
-    let offchainLnds: LndParamsAuthed[]
-    try {
-      offchainLnds = getLnds({ type: "offchain" })
-    } catch (err) {
-      const errDetails = parseLndErrorDetails(err)
-      switch (errDetails) {
-        default:
-          return new UnknownLightningServiceError(err)
-      }
-    }
-    return !!offchainLnds
+  const isLocal = (pubkey: Pubkey): boolean | LightningServiceError =>
+    !!getLnds({ type: "offchain" })
       .map((item) => item.pubkey as Pubkey)
       .find((item) => item == pubkey)
-  }
 
   const findRouteForInvoice = async ({
     decodedInvoice,
