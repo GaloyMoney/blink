@@ -1,20 +1,18 @@
 import { Wallets } from "@app"
-
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { checkedToUsername } from "@domain/users"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
-
-import { WalletsRepository } from "@services/mongoose"
+import { AccountsRepository } from "@services/mongoose"
 
 // TODO: Remove. Used in v1 only
 const walletIdFromUsername = async (
   username: Username,
 ): Promise<WalletId | RepositoryError> => {
-  const walletsRepo = WalletsRepository()
-  const wallet = await walletsRepo.findByUsername(username)
-  if (wallet instanceof Error) return wallet
+  const accountsRepo = AccountsRepository()
+  const account = await accountsRepo.findByUsername(username)
+  if (account instanceof Error) return account
 
-  return wallet.id
+  return account.defaultWalletId
 }
 
 // TODO: Remove. Used in v1 only

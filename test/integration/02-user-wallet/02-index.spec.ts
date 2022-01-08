@@ -4,16 +4,16 @@ import { delete2fa } from "@app/users"
 import { UsernameIsImmutableError, UsernameNotAvailableError } from "@domain/accounts"
 import { ValidationError } from "@domain/errors"
 import { CsvWalletsExport } from "@services/ledger/csv-wallet-export"
-import { UsersRepository, WalletsRepository } from "@services/mongoose"
+import { AccountsRepository, UsersRepository } from "@services/mongoose"
 
 import {
   createMandatoryUsers,
   createUserWallet,
+  enable2FA,
   generateTokenHelper,
   getAccountIdByTestUserIndex,
   getDefaultWalletIdByTestUserIndex,
   getUserIdByTestUserIndex,
-  enable2FA,
   getUserTypeByTestUserIndex,
 } from "test/helpers"
 
@@ -132,9 +132,9 @@ describe("UserWallet", () => {
     it("return true if username already exists", async () => {
       const username = "user0" as Username
 
-      const walletsRepo = WalletsRepository()
-      const wallet = await walletsRepo.findByUsername(username)
-      expect(wallet).toStrictEqual(
+      const accountsRepo = AccountsRepository()
+      const account = await accountsRepo.findByUsername(username)
+      expect(account).toStrictEqual(
         expect.objectContaining({
           id: expect.any(String),
         }),
@@ -144,11 +144,11 @@ describe("UserWallet", () => {
     it("return true for other capitalization", async () => {
       const username = "user0" as Username
 
-      const walletsRepo = WalletsRepository()
-      const wallet = await walletsRepo.findByUsername(
+      const accountsRepo = AccountsRepository()
+      const account = await accountsRepo.findByUsername(
         username.toLocaleUpperCase() as Username,
       )
-      expect(wallet).toStrictEqual(
+      expect(account).toStrictEqual(
         expect.objectContaining({
           id: expect.any(String),
         }),
@@ -156,9 +156,9 @@ describe("UserWallet", () => {
     })
 
     it("return false if username does not exist", async () => {
-      const walletsRepo = WalletsRepository()
-      const wallet = await walletsRepo.findByUsername("user" as Username)
-      expect(wallet).toBeInstanceOf(Error)
+      const accountsRepo = AccountsRepository()
+      const account = await accountsRepo.findByUsername("user" as Username)
+      expect(account).toBeInstanceOf(Error)
     })
   })
 
