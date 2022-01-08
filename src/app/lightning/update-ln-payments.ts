@@ -26,15 +26,25 @@ const fetchAndUpdatePayments = async ({
   listPaymentsFn,
 }: {
   incompleteLnPayments: PersistedLnPaymentLookup[]
-  listPaymentsFn: (after) => Promise<ListLnPaymentsResult | LightningServiceError>
+  listPaymentsFn: ({
+    after,
+    pubkey,
+  }: ListLnPaymentsArgs) => Promise<ListLnPaymentsResult | LightningServiceError>
 }) => {
   const processedLnPaymentsHashes: PaymentHash[] | ApplicationError = []
   const incompleteLnPaymentsHashes = incompleteLnPayments.map((p) => p.paymentHash)
 
+  const lndService = LndService()
+  if (lndService instanceof Error) return lndService
+  const pubkey = lndService.defaultPubkey()
+
   let lnPayments: LnPaymentLookup[]
   let endCursor: PagingToken | undefined = undefined
   do {
-    const result: ListLnPaymentsResult | LightningError = await listPaymentsFn(endCursor)
+    const result: ListLnPaymentsResult | LightningError = await listPaymentsFn({
+      after: endCursor,
+      pubkey,
+    })
     if (result instanceof Error) return result
     ;({ lnPayments, endCursor } = result)
 

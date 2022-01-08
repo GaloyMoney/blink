@@ -252,12 +252,17 @@ export const LndService = (): ILightningService | LightningServiceError => {
     return new PaymentNotFoundError("Payment hash not found")
   }
 
-  const listFailedPayments = async (
-    after: PagingToken | undefined,
-  ): Promise<ListLnPaymentsResult | LightningServiceError> => {
+  const listFailedPayments = async ({
+    after,
+    pubkey,
+  }: {
+    after: PagingToken | undefined
+    pubkey: Pubkey
+  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
     try {
+      const { lnd } = getLndFromPubkey({ pubkey })
       const pagingArgs = after ? { token: after } : {}
-      const { payments, next } = await getFailedPayments({ lnd: lndAuth, ...pagingArgs })
+      const { payments, next } = await getFailedPayments({ lnd, ...pagingArgs })
 
       return {
         lnPayments: payments
@@ -270,12 +275,17 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const listSettledPayments = async (
-    after: PagingToken | undefined,
-  ): Promise<ListLnPaymentsResult | LightningServiceError> => {
+  const listSettledPayments = async ({
+    after,
+    pubkey,
+  }: {
+    after: PagingToken | undefined
+    pubkey: Pubkey
+  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
     try {
+      const { lnd } = getLndFromPubkey({ pubkey })
       const pagingArgs = after ? { token: after } : {}
-      const { payments, next } = await getPayments({ lnd: lndAuth, ...pagingArgs })
+      const { payments, next } = await getPayments({ lnd, ...pagingArgs })
 
       return {
         lnPayments: payments

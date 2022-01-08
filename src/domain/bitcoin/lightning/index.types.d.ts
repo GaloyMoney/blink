@@ -116,6 +116,11 @@ type PayInvoiceResult = {
   roundedUpFee: Satoshis
 }
 
+type ListLnPaymentsArgs = {
+  after: PagingToken | undefined
+  pubkey: Pubkey
+}
+
 type ListLnPaymentsResult = {
   lnPayments: LnPaymentLookup[]
   endCursor: PagingToken | undefined
@@ -166,13 +171,15 @@ interface ILightningService {
     paymentHash: PaymentHash
   }): Promise<LnPaymentLookup | LnFailedPartialPaymentLookup | LightningServiceError>
 
-  listSettledPayments(
-    after: PagingToken | undefined,
-  ): Promise<ListLnPaymentsResult | LightningServiceError>
+  listSettledPayments({
+    after,
+    pubkey,
+  }: ListLnPaymentsArgs): Promise<ListLnPaymentsResult | LightningServiceError>
 
-  listFailedPayments(
-    after: PagingToken | undefined,
-  ): Promise<ListLnPaymentsResult | LightningServiceError>
+  listFailedPayments({
+    after,
+    pubkey,
+  }: ListLnPaymentsArgs): Promise<ListLnPaymentsResult | LightningServiceError>
 
   cancelInvoice({
     pubkey,
