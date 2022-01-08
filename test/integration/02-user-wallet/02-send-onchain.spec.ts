@@ -39,9 +39,9 @@ import {
   createUserWallet,
   enable2FA,
   generateTokenHelper,
-  getAndCreateUserWallet,
   getDefaultWalletIdByTestUserIndex,
   getUserIdByTestUserIndex,
+  getUserTypeByTestUserIndex,
   lndonchain,
   lndOutside1,
   mineBlockAndSync,
@@ -57,8 +57,8 @@ const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 
 jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
 
-let initialBalanceUser0
-let userWallet0
+let initialBalanceUser0: Satoshis
+let user0: UserType
 
 let walletId0: WalletId
 let walletId1: WalletId
@@ -72,7 +72,7 @@ let userId0: UserId
 const { sendNotification } = require("@services/notifications/notification")
 
 beforeAll(async () => {
-  userWallet0 = await getAndCreateUserWallet(0)
+  user0 = await getUserTypeByTestUserIndex(0)
   walletId0 = await getDefaultWalletIdByTestUserIndex(0)
   userId0 = await getUserIdByTestUserIndex(0)
 
@@ -613,7 +613,9 @@ describe("UserWallet - onChainPay", () => {
     ])
     const { outgoingSats } = result || { outgoingSats: 0 }
 
-    const userLimits = getUserLimits({ level: userWallet0.user.level })
+    if (!user0.level) throw new Error("Invalid user level")
+
+    const userLimits = getUserLimits({ level: user0.level })
     const amount = userLimits.withdrawalLimit - outgoingSats + 1
 
     const status = await Wallets.payOnChainByWalletId({
@@ -669,8 +671,8 @@ describe("UserWallet - onChainPay", () => {
 
       const initialBalance = await getBTCBalance(walletId0)
       const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-      const twoFAToken = generateTokenHelper(userWallet0.user.twoFA.secret)
-      const amount = userWallet0.user.twoFA.threshold + 1
+      const twoFAToken = generateTokenHelper(user0.twoFA.secret)
+      const amount = user0.twoFA.threshold + 1
       const paid = await Wallets.payOnChainByWalletIdWithTwoFA({
         senderWalletId: walletId0,
         address,

@@ -162,14 +162,14 @@ const executePaymentViaIntraledger = async ({
   const usd = sats * usdPerSat
   const usdFee = fee * usdPerSat
 
-  const getUserName = async (walletId: WalletId) => {
+  const getUsername = async (walletId: WalletId) => {
     const username = await getUsernameFromWalletId(walletId)
     if (username instanceof Error) return null
     return username
   }
 
-  const payerUsername = await getUserName(senderWalletId)
-  const recipientUsername = await getUserName(recipientWalletId)
+  const payerUsername = await getUsername(senderWalletId)
+  const recipientUsername = await getUsername(recipientWalletId)
 
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
