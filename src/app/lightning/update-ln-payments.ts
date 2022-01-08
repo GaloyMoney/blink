@@ -36,38 +36,50 @@ const fetchAndUpdatePayments = async ({
 
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
-  const pubkey = lndService.defaultPubkey()
+  const pubkeys = lndService.listPubkeys()
 
   let lnPayments: LnPaymentLookup[]
-  let endCursor: PagingToken | false | undefined = undefined
+  const endCursors: { [key: Pubkey]: PagingToken | false | undefined } = {}
+  for (const key of pubkeys) endCursors[key] = undefined
 
+  // Breadth-first paginated fetch of payments across multiple lightning instances
   while (processedLnPaymentsHashes.length < incompleteLnPaymentsHashes.length) {
-    if (endCursor === false) break
+    const endCursorValues = new Set(Object.values(endCursors))
+    if (endCursorValues.has(false) && endCursorValues.size === 1) break
 
-    const result: ListLnPaymentsResult | LightningError = await listPaymentsFn({
-      after: endCursor,
-      pubkey,
-    })
-    if (result instanceof Error) return result
-    ;({ lnPayments, endCursor } = result)
+    for (const key in endCursors) {
+      const pubkey = key as Pubkey
+      const endCursor = endCursors[pubkey]
+      if (endCursor === false) continue
 
-    for (const payment of lnPayments) {
-      if (incompleteLnPaymentsHashes.includes(payment.paymentHash)) {
-        let persistedPaymentLookup = incompleteLnPayments.find(
-          (elem) => elem.paymentHash === payment.paymentHash,
-        )
-        if (!persistedPaymentLookup) continue
+      // Paginated fetch from single lightning instance
+      const result: ListLnPaymentsResult | LightningError = await listPaymentsFn({
+        after: endCursor,
+        pubkey,
+      })
+      if (result instanceof Error) return result
+      ;({ lnPayments, endCursor: endCursors[pubkey] } = result)
 
-        persistedPaymentLookup = Object.assign(persistedPaymentLookup, {
-          ...payment,
-          paymentRequest: payment.paymentRequest || persistedPaymentLookup.paymentRequest,
-          isCompleteRecord: true,
-        })
-        const updatedPaymentLookup = await LnPaymentsRepository().update(
-          persistedPaymentLookup,
-        )
-        if (updatedPaymentLookup instanceof Error) return updatedPaymentLookup
-        processedLnPaymentsHashes.push(payment.paymentHash)
+      // Update of LnPayments repository
+      for (const payment of lnPayments) {
+        if (incompleteLnPaymentsHashes.includes(payment.paymentHash)) {
+          let persistedPaymentLookup = incompleteLnPayments.find(
+            (elem) => elem.paymentHash === payment.paymentHash,
+          )
+          if (!persistedPaymentLookup) continue
+
+          persistedPaymentLookup = Object.assign(persistedPaymentLookup, {
+            ...payment,
+            paymentRequest:
+              payment.paymentRequest || persistedPaymentLookup.paymentRequest,
+            isCompleteRecord: true,
+          })
+          const updatedPaymentLookup = await LnPaymentsRepository().update(
+            persistedPaymentLookup,
+          )
+          if (updatedPaymentLookup instanceof Error) return updatedPaymentLookup
+          processedLnPaymentsHashes.push(payment.paymentHash)
+        }
       }
     }
   }
