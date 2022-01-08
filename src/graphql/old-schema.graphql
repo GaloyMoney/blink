@@ -206,7 +206,6 @@ type WalletFees {
 }
 
 type Limits {
-  oldEnoughForWithdrawal: Int
   withdrawal: Int
   onUs: Int
 }

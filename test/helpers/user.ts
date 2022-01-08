@@ -1,7 +1,5 @@
 import { yamlConfig } from "@config/app"
-import { WalletFactory } from "@core/wallet-factory"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
-import { baseLogger } from "@services/logger"
 import {
   AccountsRepository,
   UsersRepository,
@@ -107,18 +105,4 @@ export const createUserWallet = async (index: number) => {
       { title: entry.title, coordinates: { latitude: -1, longitude: 1 } },
     )
   }
-}
-
-export const getAndCreateUserWallet = async (index: number) => {
-  await createUserWallet(index)
-
-  const user = await users.findByPhone(getPhoneByTestUserIndex(index))
-  if (user instanceof CouldNotFindUserFromPhoneError) throw user
-
-  if (user instanceof Error) throw user
-  const uid = user.id
-
-  const userType = await User.findOne({ _id: uid })
-  const userWallet = await WalletFactory({ user: userType, logger: baseLogger })
-  return userWallet
 }

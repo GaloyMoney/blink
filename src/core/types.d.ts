@@ -9,11 +9,6 @@ type Primitive = string | boolean | number
 // TODO: clean up this section when "constructor typing" work is
 //       being done
 
-type GenericLimits = {
-  oldEnoughForWithdrawalHours: number
-  oldEnoughForWithdrawalMicroseconds: number
-}
-
 type TwoFALimits = {
   threshold: number
 }
@@ -32,10 +27,7 @@ interface IUserLimits {
   withdrawalLimit: Satoshis
 }
 
-interface ITransactionLimits extends IUserLimits {
-  oldEnoughForWithdrawalMicroseconds: number
-  oldEnoughForWithdrawalHours: number
-}
+type ITransactionLimits = IUserLimits
 
 type onChainWalletConfig = {
   dustThreshold: number
@@ -85,3 +77,17 @@ interface IQuoteRequest {
   satAmount?: number // sell
   invoice?: string // buy
 }
+
+type TransactionType =
+  | "payment"
+  | "paid-invoice"
+  | "on_us"
+  | "onchain_receipt"
+  | "onchain_payment"
+  | "onchain_on_us"
+  | "exchange_rebalance"
+  | "fee"
+  | "escrow"
+  | "deposit_fee"
+  | "routing_fee"
+  | "onchain_receipt_pending" // only for notification, not persistent in mongodb

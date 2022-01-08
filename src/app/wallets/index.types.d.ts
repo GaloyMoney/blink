@@ -39,7 +39,6 @@ type GetOnChainFeeArgs = {
   targetConfirmations: TargetConfirmations
 }
 
-// FIXME: only use for v1
 type GetOnChainFeeByWalletIdArgs = {
   walletId: WalletId
   amount: number
@@ -99,5 +98,19 @@ type IntraLedgerPaymentSendWalletIdArgs = PaymentSendArgs & {
 }
 
 type IntraLedgerPaymentSendWithTwoFAArgs = IntraLedgerPaymentSendUsernameArgs & {
+  twoFAToken: TwoFAToken
+}
+
+type PayOnChainByWalletIdArgs = {
+  senderWalletId: WalletId
+  amount: number
+  address: string
+  targetConfirmations: number
+  memo: string | null
+  sendAll: boolean
+}
+
+type PayOnChainByWalletIdWithTwoFAArgs = PayOnChainByWalletIdArgs & {
+  payerUserId: UserId
   twoFAToken: TwoFAToken
 }

@@ -9,7 +9,7 @@ import { CsvWalletsExport } from "../services/ledger/csv-wallet-export"
 import { DbError, TwoFAError } from "./error"
 import { Balances } from "./interface"
 
-export abstract class UserWallet {
+export class UserWallet {
   static lastPrice: number
 
   // FIXME typing : https://thecodebarbarian.com/working-with-mongoose-in-typescript.html

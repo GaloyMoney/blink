@@ -1,18 +1,12 @@
 import assert from "assert"
 
-import {
-  getGaloyInstanceName,
-  MS_PER_DAY,
-  ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE,
-} from "@config/app"
-import { DbError, LndOfflineError, ValidationInternalError } from "@core/error"
-import { LnFeeCalculator, UnknownLnInvoiceDecodeError } from "@domain/bitcoin/lightning"
+import { MS_PER_DAY, ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE } from "@config/app"
+import { DbError, LndOfflineError } from "@core/error"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { DbMetadata } from "@services/mongoose/schema"
 import { default as axios } from "axios"
-import { parsePaymentRequest } from "invoices"
 import {
   deleteFailedPayAttempts,
   getChainBalance,
@@ -27,10 +21,7 @@ import {
   SubscribeToChannelsChannelClosedEvent,
   SubscribeToChannelsChannelOpenedEvent,
 } from "lightning"
-import { Logger } from "pino"
-
 import sumBy from "lodash.sumby"
-
 import groupBy from "lodash.groupby"
 import mapValues from "lodash.mapvalues"
 import map from "lodash.map"
@@ -382,105 +373,5 @@ export const getLndFromPubkey = ({ pubkey }: { pubkey: string }) => {
     throw new LndOfflineError(`lnd with pubkey:${pubkey} is offline`)
   } else {
     return lnd[0]
-  }
-}
-
-export const validate = async ({
-  params,
-  logger,
-}: {
-  params: IFeeRequest
-  logger: Logger
-}) => {
-  let isPushPayment = false
-  let tokens
-  let expires_at
-  let features
-  let cltv_delta
-  let payment
-  let destination, id, description
-  let routeHint
-  let messages
-  let username
-
-  if (params.invoice) {
-    // TODO: use msat instead of sats for the db?
-
-    // used as an alternative to parsePaymentRequest
-    // const {lnd} = getActiveLnd()
-
-    try {
-      ;({
-        id,
-        safe_tokens: tokens,
-        destination,
-        description,
-        routes: routeHint,
-        payment,
-        cltv_delta,
-        expires_at,
-        features,
-        // TODO: should be replaced by src/domain/bitcoin/lightning/ln-invoice.ts
-      } = await parsePaymentRequest({ request: params.invoice }))
-    } catch (err) {
-      const error = `Error decoding the invoice`
-      logger.error({ params, success: false, error }, error)
-      return new UnknownLnInvoiceDecodeError(error)
-    }
-
-    // TODO: if expired_at expired, thrown an error
-  } else {
-    if (!params.username) {
-      const galoyInstanceName = getGaloyInstanceName()
-      const error = `a username is required for push payment to the ${galoyInstanceName}`
-      throw new ValidationInternalError(error, { logger })
-    }
-
-    isPushPayment = true
-    username = params.username
-  }
-
-  if (!!params.amount && !!tokens) {
-    const error = `Invoice contains non-zero amount, but amount was also passed separately`
-    // FIXME: create a new error. this is a not a graphl error.
-    // throw new ValidationInternalError(error, {logger})
-
-    throw new ValidationInternalError(error, { logger })
-  }
-
-  if (!params.amount && !tokens) {
-    const error =
-      "Invoice is a zero-amount invoice, or pushPayment is being used, but no amount was passed separately"
-    // FIXME: create a new error. this is a not a graphl error.
-    // throw new ValidationInternalError(error, {logger})
-
-    throw new ValidationInternalError(error, { logger })
-  }
-
-  tokens = tokens ? tokens : params.amount
-
-  if (tokens <= 0) {
-    logger.error("A negative amount was passed")
-    throw Error("amount can't be negative")
-  }
-
-  const max_fee = LnFeeCalculator().max(tokens)
-
-  return {
-    // FIXME String: https://github.com/alexbosworth/lightning/issues/24
-    tokens,
-    mtokens: String(tokens * 1000),
-    destination,
-    isPushPayment,
-    id,
-    routeHint,
-    messages,
-    max_fee,
-    memoInvoice: description,
-    payment,
-    cltv_delta,
-    expires_at,
-    features,
-    username,
   }
 }

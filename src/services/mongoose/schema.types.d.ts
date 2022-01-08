@@ -79,7 +79,6 @@ interface UserType {
   ratioUsd: number
   ratioBtc: number
   walletPath: string
-  oldEnoughForWithdrawal: boolean
 
   // methods
   remainingTwoFALimit: () => Promise<number>

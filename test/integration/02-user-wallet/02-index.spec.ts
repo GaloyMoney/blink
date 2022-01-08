@@ -1,7 +1,6 @@
 import { Accounts } from "@app"
 import { setUsername } from "@app/accounts"
 import { delete2fa } from "@app/users"
-import { getGenericLimits, MS_PER_HOUR } from "@config/app"
 import { UsernameIsImmutableError, UsernameNotAvailableError } from "@domain/accounts"
 import { ValidationError } from "@domain/errors"
 import { CsvWalletsExport } from "@services/ledger/csv-wallet-export"
@@ -60,33 +59,6 @@ describe("UserWallet", () => {
 
   it("has a title if it was configured", () => {
     expect(userType2.title).toBeTruthy()
-  })
-
-  it("does not allow withdraw if the user is new", () => {
-    expect(userType2.oldEnoughForWithdrawal).toBeFalsy()
-
-    // in 6 days:
-    const genericLimits = getGenericLimits()
-    const date =
-      Date.now() + genericLimits.oldEnoughForWithdrawalMicroseconds - MS_PER_HOUR
-
-    jest.spyOn(global.Date, "now").mockImplementationOnce(() => new Date(date).valueOf())
-
-    expect(userType2.oldEnoughForWithdrawal).toBeFalsy()
-  })
-
-  it("allows withdraw if user is old enough", () => {
-    expect(userType2.oldEnoughForWithdrawal).toBeFalsy()
-
-    // TODO make this configurable
-    // in 8 days:
-    const genericLimits = getGenericLimits()
-    const date =
-      Date.now() + genericLimits.oldEnoughForWithdrawalMicroseconds + MS_PER_HOUR
-
-    jest.spyOn(global.Date, "now").mockImplementationOnce(() => new Date(date).valueOf())
-
-    expect(userType2.oldEnoughForWithdrawal).toBeTruthy()
   })
 
   describe("setUsername", () => {

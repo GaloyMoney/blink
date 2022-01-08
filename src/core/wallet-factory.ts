@@ -4,7 +4,6 @@ import { User } from "@services/mongoose/schema"
 
 import { Prices } from "@app"
 
-import { LightningUserWallet } from "./lightning/wallet"
 import { UserWallet } from "./user-wallet"
 
 export const WalletFactory = async ({
@@ -21,5 +20,5 @@ export const WalletFactory = async ({
 
   const userWalletConfig = getUserWalletConfig(user)
 
-  return new LightningUserWallet({ user, logger, config: userWalletConfig })
+  return new UserWallet({ user, logger, config: userWalletConfig })
 }

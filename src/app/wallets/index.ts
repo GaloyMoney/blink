@@ -12,6 +12,7 @@ export * from "./update-pending-payments"
 export * from "./add-invoice-for-wallet"
 export * from "./get-lightning-fee"
 export * from "./ln-send-payment"
+export * from "./pay-on-chain"
 export * from "./intraledger-send-payment"
 
 import { WalletsRepository } from "@services/mongoose"

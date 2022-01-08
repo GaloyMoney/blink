@@ -490,6 +490,51 @@ export const LedgerService = (): ILedgerService => {
     })
   }
 
+  const addOnChainTxSend = async ({
+    walletId,
+    txHash,
+    payeeAddress,
+    description,
+    sats,
+    fee,
+    bankFee,
+    usd,
+    usdFee,
+    sendAll,
+  }: AddOnChainTxSendArgs): Promise<LedgerJournal | LedgerServiceError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    let metadata: AddOnchainTxSendMetadata
+    try {
+      metadata = {
+        type: LedgerTransactionType.OnchainPayment,
+        pending: true,
+        hash: txHash,
+        payee_addresses: [payeeAddress],
+        fee,
+        feeUsd: usdFee,
+        sats,
+        usd,
+        sendAll,
+        currency: "BTC",
+      }
+
+      const bankOwnerWalletId = await getBankOwnerWalletId()
+      const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
+
+      const entry = MainBook.entry(description)
+      // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
+      entry
+        .credit(lndAccountingPath, sats - bankFee, metadata)
+        .credit(bankOwnerPath, bankFee, metadata)
+        .debit(liabilitiesWalletId, sats, metadata)
+
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const addOnChainIntraledgerTxSend = async ({
     senderWalletId,
     description,
@@ -667,6 +712,7 @@ export const LedgerService = (): ILedgerService => {
     addLnFeeReimbursementReceive,
     addLnTxSend,
     addLnIntraledgerTxSend,
+    addOnChainTxSend,
     addOnChainIntraledgerTxSend,
     addWalletIdIntraledgerTxSend,
     settlePendingLnPayments,

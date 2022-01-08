@@ -45,7 +45,7 @@ import {
 import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
-// required to avoid oldEnoughForWithdrawal validation
+// required to avoid withdrawal limits validation
 jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
 
 let initBalance0, initBalance1
