@@ -10,10 +10,9 @@ import {
 import { toLiabilitiesWalletId } from "@domain/ledger"
 import { UsernameRegex } from "@domain/users"
 import { Transaction } from "@services/ledger/schema"
-import * as mongoose from "mongoose"
-import uniq from "lodash.uniq"
-import sumBy from "lodash.sumby"
 import find from "lodash.find"
+import sumBy from "lodash.sumby"
+import * as mongoose from "mongoose"
 
 export { Transaction }
 
@@ -373,21 +372,6 @@ UserSchema.statics.getVolume = async function ({
     outgoingSats: result?.outgoingSats ?? 0,
     incomingSats: result?.incomingSats ?? 0,
   }
-}
-
-// FIXME: for onchain wallet from multiple wallet
-// refactor with bitcoind wallet
-UserSchema.virtual("onchain_addresses").get(function (this: typeof UserSchema) {
-  return this.onchain.map((item) => item.address)
-})
-
-// return the list of nodes that this user has address associated to
-UserSchema.virtual("onchain_pubkey").get(function (this: typeof UserSchema) {
-  return uniq(this.onchain.map((item) => item.pubkey))
-})
-
-UserSchema.statics.getUserByAddress = async function ({ address }) {
-  return this.findOne({ "onchain.address": address }, { lastIPs: 0, lastConnection: 0 })
 }
 
 UserSchema.index({
