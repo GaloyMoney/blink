@@ -126,6 +126,8 @@ interface ILightningService {
 
   defaultPubkey(): Pubkey
 
+  listPubkeys(): Pubkey[]
+
   findRouteForInvoice({
     decodedInvoice,
     maxFee,
