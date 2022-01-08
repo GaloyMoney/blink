@@ -37,7 +37,7 @@ import { LndOfflineError } from "@core/error"
 import { timeout } from "@utils"
 
 import { TIMEOUT_PAYMENT } from "./auth"
-import { getActiveLnd, getLndFromPubkey, getLnds, offchainLnds } from "./utils"
+import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
   let lndAuth: AuthenticatedLnd, defaultPubkey: Pubkey
@@ -247,6 +247,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }): Promise<LnPaymentLookup | LnFailedPartialPaymentLookup | LightningServiceError> => {
     if (pubkey) return lookupPaymentByPubkeyAndHash({ pubkey, paymentHash })
 
+    const offchainLnds = getLnds({ type: "offchain" })
     for (const { pubkey } of offchainLnds) {
       const payment = await lookupPaymentByPubkeyAndHash({
         pubkey: pubkey as Pubkey,
