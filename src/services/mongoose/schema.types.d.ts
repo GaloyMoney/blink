@@ -50,7 +50,7 @@ type CoordinateObjectForUser = {
 interface UserType {
   _id: string
   id: string
-  username?: string
+  username: string | null
   phone: string
   role: string
 
