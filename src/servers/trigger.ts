@@ -10,7 +10,7 @@ import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import { onChannelUpdated } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger, setupMongoConnection } from "@services/mongodb"
-import { User } from "@services/mongoose/schema"
+import { WalletsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { updatePriceHistory } from "@services/price/update-price-history"
 import { Dropbox } from "dropbox"
@@ -107,13 +107,18 @@ export async function onchainTransactionEventHandler(tx) {
   } else {
     // incoming transaction
 
-    let user
+    let wallet: Wallet
     try {
-      user = await User.findOne(
-        { "onchain.address": { $in: tx.output_addresses } },
-        { lastIPs: 0, lastConnection: 0 },
-      )
-      if (!user) {
+      const walletsRepo = WalletsRepository()
+
+      // TODO: tx.output_addresses pass an array of address
+      // in the unlikely event multiple destination addresses are belong to the Galoy wallet
+      // only the first one will be notified
+      const wallet_ = await walletsRepo.findByAddress(tx.output_addresses)
+      if (wallet_ instanceof Error) return
+      wallet = wallet_
+
+      if (!wallet) {
         //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
         onchainLogger.fatal(`No user associated with the onchain address`)
         return
@@ -136,7 +141,7 @@ export async function onchainTransactionEventHandler(tx) {
       const price = await Prices.getCurrentPrice()
       const usdPerSat = price instanceof Error ? undefined : price
       await NotificationsService(onchainLogger).onChainTransactionReceivedPending({
-        walletId: user.walletId,
+        walletId: wallet.id,
         amount: toSats(Number(tx.tokens)),
         txHash: tx.id,
         usdPerSat,
