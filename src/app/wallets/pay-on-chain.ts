@@ -40,7 +40,7 @@ export const payOnChainByWalletIdWithTwoFA = async ({
   targetConfirmations,
   memo,
   sendAll,
-  payerUserId,
+  payerAccountId,
   twoFAToken,
 }: PayOnChainByWalletIdWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
   const checkedAmount = sendAll
@@ -48,9 +48,11 @@ export const payOnChainByWalletIdWithTwoFA = async ({
     : checkedToSats(amount)
   if (checkedAmount instanceof Error) return checkedAmount
 
-  const user = await getUser(payerUserId)
-  if (user instanceof Error) return user
+  const account = await AccountsRepository().findById(payerAccountId)
+  if (account instanceof Error) return account
 
+  const user = await getUser(account.ownerId)
+  if (user instanceof Error) return user
   const { twoFA } = user
 
   const twoFACheck = twoFA?.secret

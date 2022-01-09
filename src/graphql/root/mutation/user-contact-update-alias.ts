@@ -1,9 +1,8 @@
+import { Accounts } from "@app"
 import { GT } from "@graphql/index"
-import Username from "@graphql/types/scalar/username"
-import ContactAlias from "@graphql/types/scalar/contact-alias"
-
-import { Users } from "@app"
 import UserContactUpdateAliasPayload from "@graphql/types/payload/user-contact-update-alias"
+import ContactAlias from "@graphql/types/scalar/contact-alias"
+import Username from "@graphql/types/scalar/username"
 
 const UserContactUpdateAliasInput = new GT.Input({
   name: "UserContactUpdateAliasInput",
@@ -18,7 +17,8 @@ const USerContactUpdateAliasMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserContactUpdateAliasInput) },
   },
-  resolve: async (_, args, { uid }) => {
+  deprecationReason: "will be moved to AccountContact",
+  resolve: async (_, args, { domainAccount }) => {
     const { username, alias } = args.input
 
     for (const input of [username, alias]) {
@@ -27,8 +27,10 @@ const USerContactUpdateAliasMutation = GT.Field({
       }
     }
 
-    const contact = await Users.updateContactAlias({
-      userId: uid as UserId,
+    const accountId = domainAccount.id
+
+    const contact = await Accounts.updateContactAlias({
+      accountId,
       username,
       alias,
     })

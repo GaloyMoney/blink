@@ -4,14 +4,7 @@ type UserLanguage =
   typeof import("./index").UserLanguage[keyof typeof import("./index").UserLanguage]
 
 type DeviceToken = string & { readonly brand: unique symbol }
-type ContactAlias = string & { readonly brand: unique symbol }
 type QuizQuestionId = string & { readonly brand: unique symbol }
-type UserContact = {
-  readonly id: Username
-  readonly username: Username
-  alias: ContactAlias
-  transactionsCount: number
-}
 
 type QuizQuestion = {
   readonly id: QuizQuestionId
@@ -52,7 +45,6 @@ type PhoneMetadata = {
 
 type User = {
   readonly id: UserId
-  readonly contacts: UserContact[]
   readonly quizQuestions: UserQuizQuestion[]
   readonly defaultAccountId: AccountId
   readonly deviceTokens: DeviceToken[]
@@ -70,7 +62,6 @@ type NewUserInfo = {
 
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
-  findByUsername(username: Username): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
   persistNew({ phone, phoneMetadata }: NewUserInfo): Promise<User | RepositoryError>
   update(user: User): Promise<User | RepositoryError>

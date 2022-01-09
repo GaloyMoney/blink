@@ -1,35 +1,35 @@
-import { UsersRepository } from "@services/mongoose"
+import { AccountsRepository } from "@services/mongoose"
 
 export const addNewContact = async ({
-  userId,
+  accountId,
   contactUsername,
 }: {
-  userId: UserId
+  accountId: AccountId
   contactUsername: Username
-}): Promise<User | ApplicationError> => {
-  const usersRepo = UsersRepository()
+}): Promise<Account | ApplicationError> => {
+  const accountsRepo = AccountsRepository()
 
-  const contactUser = await usersRepo.findByUsername(contactUsername)
-  if (contactUser instanceof Error) return contactUser
+  const contactAccount = await accountsRepo.findByUsername(contactUsername)
+  if (contactAccount instanceof Error) return contactAccount
 
-  const user = await usersRepo.findById(userId)
-  if (user instanceof Error) return user
+  const account = await accountsRepo.findById(accountId)
+  if (account instanceof Error) return account
 
-  const idx = user.contacts.findIndex(
+  const idx = account.contacts.findIndex(
     (userContact) => userContact.username === contactUsername,
   )
   if (idx >= 0) {
-    user.contacts[idx].transactionsCount++
+    account.contacts[idx].transactionsCount++
   } else {
-    user.contacts.push({
+    account.contacts.push({
       id: contactUsername,
       username: contactUsername,
       alias: "" as ContactAlias,
       transactionsCount: 1,
     })
   }
-  const updateResult = await usersRepo.update(user)
+  const updateResult = await accountsRepo.update(account)
   if (updateResult instanceof Error) return updateResult
 
-  return user
+  return account
 }

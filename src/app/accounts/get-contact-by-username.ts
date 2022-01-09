@@ -1,13 +1,13 @@
 import { NoContactForUsernameError } from "@domain/errors"
 
 export const getContactByUsername = async ({
-  user,
+  account,
   contactUsername,
 }: {
-  user: User
+  account: Account
   contactUsername: string
-}): Promise<UserContact | ApplicationError> => {
-  const contact = user.contacts.find(
+}): Promise<AccountContact | ApplicationError> => {
+  const contact = account.contacts.find(
     (contact) => contact.username.toLocaleLowerCase() === contactUsername,
   )
   if (!contact) {

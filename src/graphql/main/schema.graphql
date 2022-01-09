@@ -332,7 +332,7 @@ type Mutation {
   twoFASave(input: TwoFASaveInput!): SuccessPayload!
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
-  ): UserContactUpdateAliasPayload!
+  ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
@@ -707,7 +707,7 @@ type User {
   Get full list of contacts.
   Can include the transactions associated with each contact.
   """
-  contacts: [UserContact!]!
+  contacts: [UserContact!]! @deprecated(reason: "will be moved to account")
   createdAt: Timestamp!
   defaultAccount: Account!
   id: ID!
