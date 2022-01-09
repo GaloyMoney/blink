@@ -6,7 +6,7 @@ interface IDataNotification {
 }
 
 interface INotification {
-  user: UserType
+  user: User
   title: string
   data?: IDataNotification
   body?: string
