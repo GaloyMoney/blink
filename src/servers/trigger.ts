@@ -107,29 +107,13 @@ export async function onchainTransactionEventHandler(tx) {
   } else {
     // incoming transaction
 
-    let wallet: Wallet
-    try {
-      const walletsRepo = WalletsRepository()
+    const walletsRepo = WalletsRepository()
 
-      // TODO: tx.output_addresses pass an array of address
-      // in the unlikely event multiple destination addresses are belong to the Galoy wallet
-      // only the first one will be notified
-      const wallet_ = await walletsRepo.findByAddress(tx.output_addresses)
-      if (wallet_ instanceof Error) return
-      wallet = wallet_
-
-      if (!wallet) {
-        //FIXME: Log the onchain address, need to first find which of the tx.output_addresses belongs to us
-        onchainLogger.fatal(`No user associated with the onchain address`)
-        return
-      }
-    } catch (error) {
-      onchainLogger.error(
-        { error },
-        "issue in onchainTransactionEventHandler to get User id attached to output_addresses",
-      )
-      throw error
-    }
+    // TODO: tx.output_addresses pass an array of address
+    // in the unlikely event multiple destination addresses are belong to the Galoy wallet
+    // only the first one will be notified
+    const wallet = await walletsRepo.findByAddress(tx.output_addresses)
+    if (wallet instanceof Error) return
 
     // we only handle pending notification here because we wait more than 1 block
     if (!tx.is_confirmed) {
