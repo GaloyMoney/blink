@@ -21,7 +21,7 @@ export const addEarn = async ({
   logger: Logger
 }): Promise<QuizQuestion | ApplicationError> => {
   const amount = onboardingEarn[quizQuestionId]
-  if (amount === undefined) return new InvalidQuizQuestionIdError()
+  if (!amount) return new InvalidQuizQuestionIdError()
 
   const funderWalletId = await getFunderWalletId()
 
