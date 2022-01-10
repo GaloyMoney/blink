@@ -265,10 +265,14 @@ const resolvers = {
       updateUsername: (input) => wallet.setUsername(input),
       updateLanguage: (input) => wallet.updateLanguage(input),
     }),
-    updateContact: (_, __, { user }) => ({
+    updateContact: (_, __, { domainAccount }) => ({
       setName: async ({ username, name }) => {
-        user.contacts.filter((item) => item.id === username)[0].name = name
-        await user.save()
+        const contact = await Accounts.updateContactAlias({
+          accountId: domainAccount.id,
+          username,
+          alias: name,
+        })
+        if (contact instanceof Error) throw mapError(contact)
         return true
       },
     }),
