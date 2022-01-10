@@ -211,11 +211,11 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
 
   const sendBalance = async ({
     balance,
-    ownerId,
+    userId,
     price,
   }: {
     balance: Satoshis
-    ownerId: UserId
+    userId: UserId
     price: UsdPerSat | ApplicationError
   }): Promise<void> => {
     // Add commas to balancesats
@@ -238,12 +238,12 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     }
 
     logger.info(
-      { balanceSatsAsFormattedString, title, ownerId },
+      { balanceSatsAsFormattedString, title, userId },
       `sending balance notification to user`,
     )
 
     // FIXME:
-    const user = await User.find({ id: ownerId })
+    const user = await User.find({ id: userId })
     if (user instanceof Error) {
       logger.warn({ user }, "impossible to fetch user to send transaction")
     }

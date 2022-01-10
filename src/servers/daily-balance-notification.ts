@@ -5,7 +5,7 @@ import { setupMongoConnection } from "@services/mongodb"
 const main = async () => {
   const logger = baseLogger.child({ module: "dailyBalanceNotification" })
   const mongoose = await setupMongoConnection()
-  await Accounts.sendBalanceToAccounts(logger)
+  await Accounts.sendDefaultWalletBalanceToUsers(logger)
 
   await mongoose.connection.close()
 }
