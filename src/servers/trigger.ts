@@ -1,5 +1,3 @@
-import crypto from "crypto"
-
 import { Prices } from "@app"
 import * as Wallets from "@app/wallets"
 import { ONCHAIN_MIN_CONFIRMATIONS, SECS_PER_5_MINS } from "@config/app"
@@ -21,13 +19,12 @@ import {
   subscribeToChannels,
   subscribeToInvoices,
   subscribeToTransactions,
+  SubscribeToTransactionsChainTransactionEvent,
 } from "lightning"
 
 import healthzHandler from "./middlewares/healthz"
 
 const logger = baseLogger.child({ module: "trigger" })
-
-const txsReceived = new Set()
 
 export const uploadBackup = async ({ backup, pubkey }) => {
   logger.debug({ backup }, "updating scb on dbx")
@@ -53,15 +50,9 @@ export const uploadBackup = async ({ backup, pubkey }) => {
   }
 }
 
-export async function onchainTransactionEventHandler(tx) {
-  // TODO: test+removed after upgrade to lnd v14 as this may has been fixed
-  // workaround for https://github.com/lightningnetwork/lnd/issues/2267
-  const hash = crypto.createHash("sha256").update(JSON.stringify(tx)).digest("base64")
-  if (txsReceived.has(hash)) {
-    return
-  }
-  txsReceived.add(hash)
-
+export async function onchainTransactionEventHandler(
+  tx: SubscribeToTransactionsChainTransactionEvent,
+) {
   logger.info({ tx }, "received new onchain tx event")
   const onchainLogger = logger.child({
     topic: "payment",
@@ -69,6 +60,9 @@ export async function onchainTransactionEventHandler(tx) {
     tx,
     onUs: false,
   })
+
+  const fee = tx.fee || 0
+  const txHash = tx.id as OnChainTxHash
 
   if (tx.is_outgoing) {
     if (!tx.is_confirmed) {
@@ -79,7 +73,7 @@ export async function onchainTransactionEventHandler(tx) {
       // transaction has been sent. and this events is trigger before
     }
 
-    const settled = await ledger.settleOnchainPayment(tx.id)
+    const settled = await ledger.settleOnchainPayment(txHash)
 
     if (!settled) {
       return
@@ -98,10 +92,11 @@ export async function onchainTransactionEventHandler(tx) {
 
     const price = await Prices.getCurrentPrice()
     const usdPerSat = price instanceof Error ? undefined : price
+
     await NotificationsService(onchainLogger).onChainTransactionPayment({
       walletId,
-      amount: toSats(Number(tx.tokens) - tx.fee),
-      txHash: tx.id,
+      amount: toSats(Number(tx.tokens) - fee),
+      txHash,
       usdPerSat,
     })
   } else {
@@ -109,11 +104,10 @@ export async function onchainTransactionEventHandler(tx) {
 
     const walletsRepo = WalletsRepository()
 
-    // TODO: tx.output_addresses pass an array of address
-    // in the unlikely event multiple destination addresses are belong to the Galoy wallet
-    // only the first one will be notified
-    const wallet = await walletsRepo.findByAddress(tx.output_addresses)
-    if (wallet instanceof Error) return
+    const outputAddresses = tx.output_addresses as OnChainAddress[]
+
+    const wallets = await walletsRepo.listByAddresses(outputAddresses)
+    if (wallets instanceof Error) return
 
     // we only handle pending notification here because we wait more than 1 block
     if (!tx.is_confirmed) {
@@ -124,12 +118,16 @@ export async function onchainTransactionEventHandler(tx) {
 
       const price = await Prices.getCurrentPrice()
       const usdPerSat = price instanceof Error ? undefined : price
-      await NotificationsService(onchainLogger).onChainTransactionReceivedPending({
-        walletId: wallet.id,
-        amount: toSats(Number(tx.tokens)),
-        txHash: tx.id,
-        usdPerSat,
-      })
+
+      wallets.forEach((wallet) =>
+        NotificationsService(onchainLogger).onChainTransactionReceivedPending({
+          walletId: wallet.id,
+          // TODO: tx.tokens represent the total sum, need to segregate amount by address
+          amount: toSats(Number(tx.tokens)),
+          txHash,
+          usdPerSat,
+        }),
+      )
     }
   }
 }
