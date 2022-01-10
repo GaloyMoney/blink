@@ -102,7 +102,7 @@ const resolvers = {
             username,
             contacts,
             language,
-            twoFAEnabled: user.twoFA.secret != null,
+            twoFAEnabled: !!user.twoFA.secret,
           }
         },
       ),
