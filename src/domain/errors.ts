@@ -33,11 +33,13 @@ export class RewardAlreadyPresentError extends DomainError {}
 export class RewardNonValidTypeError extends DomainError {}
 
 export class ValidationError extends DomainError {}
+export class ContactNotExistantError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
 export class InvalidOnChainAddress extends ValidationError {}
 export class InvalidScanDepthAmount extends ValidationError {}
 export class SatoshiAmountRequiredError extends ValidationError {}
 export class InvalidUsername extends ValidationError {}
+export class InvalidContactAlias extends ValidationError {}
 export class InvalidCoordinatesError extends ValidationError {}
 export class InvalidBusinessTitleLengthError extends ValidationError {}
 export class InvalidAccountStatusError extends ValidationError {}

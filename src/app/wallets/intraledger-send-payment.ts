@@ -1,7 +1,7 @@
 import { getAccount } from "@app/accounts"
 import { getCurrentPrice } from "@app/prices"
 import { getUser } from "@app/users"
-import { addNewContact } from "@app/users/add-new-contact"
+import { addNewContact } from "@app/accounts/add-new-contact"
 import { getWallet } from "@app/wallets"
 import { toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"

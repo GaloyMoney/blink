@@ -2,6 +2,8 @@ import {
   InvalidCoordinatesError,
   InvalidBusinessTitleLengthError,
   InvalidAccountStatusError,
+  InvalidUsername,
+  InvalidContactAlias,
 } from "@domain/errors"
 
 export * from "./errors"
@@ -44,4 +46,22 @@ export const checkedAccountStatus = (status: string) => {
     return new InvalidAccountStatusError()
   }
   return status as AccountStatus
+}
+
+export const UsernameRegex = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]{3,50}$/i
+
+export const checkedToUsername = (username: string): Username | ValidationError => {
+  if (!username.match(UsernameRegex)) {
+    return new InvalidUsername(username)
+  }
+  return username as Username
+}
+
+export const ContactAliasRegex = /^[0-9A-Za-z_]{3,50}$/i
+
+export const checkedToContactAlias = (alias: string): ContactAlias | ValidationError => {
+  if (!alias.match(ContactAliasRegex)) {
+    return new InvalidContactAlias(alias)
+  }
+  return alias as ContactAlias
 }

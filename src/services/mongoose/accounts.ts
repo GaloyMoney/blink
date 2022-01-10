@@ -174,6 +174,8 @@ const translateToAccount = (result: UserType): Account => ({
     },
     [],
   ),
+  depositFeeRatio: result.depositFeeRatio as DepositFeeRatio,
+  withdrawFee: result.withdrawFee as WithdrawFee,
 })
 
 const projection = {
@@ -185,4 +187,6 @@ const projection = {
   title: 1,
   created_at: 1,
   contacts: 1,
+  depositFeeRatio: 1,
+  withdrawFee: 1,
 }

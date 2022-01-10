@@ -1,5 +1,5 @@
 import { Accounts } from "@app"
-import { checkedToUsername } from "@domain/users"
+import { checkedToUsername } from "@domain/accounts"
 import { GT } from "@graphql/index"
 import dedent from "dedent"
 import { connectionArgs, connectionFromArray } from "graphql-relay"

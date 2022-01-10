@@ -4,16 +4,7 @@ export const UserLanguage = {
   ES_SV: "es",
 } as const
 
-import { InvalidPhoneNumber, InvalidUsername } from "@domain/errors"
-
-export const UsernameRegex = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]{3,50}$/i
-
-export const checkedToUsername = (username: string): Username | ValidationError => {
-  if (!username.match(UsernameRegex)) {
-    return new InvalidUsername(username)
-  }
-  return username as Username
-}
+import { InvalidPhoneNumber } from "@domain/errors"
 
 // TODO: we could be using https://gitlab.com/catamphetamine/libphonenumber-js#readme
 // for a more precise "regex"

@@ -1,4 +1,5 @@
-import { checkedToPhoneNumber, checkedToUsername } from "@domain/users"
+import { checkedToUsername } from "@domain/accounts"
+import { checkedToPhoneNumber } from "@domain/users"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 
 export const getAccountByUsername = async (username: string) => {

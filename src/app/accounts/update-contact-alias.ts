@@ -1,4 +1,5 @@
-import { ValidationError } from "@domain/errors"
+import { checkedToContactAlias } from "@domain/accounts"
+import { ContactNotExistantError } from "@domain/errors"
 import { AccountsRepository } from "@services/mongoose"
 
 export const updateContactAlias = async ({
@@ -11,6 +12,10 @@ export const updateContactAlias = async ({
   alias: string
 }): Promise<AccountContact | ApplicationError> => {
   const repo = AccountsRepository()
+
+  const aliasChecked = checkedToContactAlias(alias)
+  if (aliasChecked instanceof Error) return aliasChecked
+
   const account = await repo.findById(accountId)
   if (account instanceof Error) {
     return account
@@ -18,9 +23,10 @@ export const updateContactAlias = async ({
 
   const contact = account.contacts.find((contact) => contact.username === username)
   if (!contact) {
-    return new ValidationError(`User doesn't have contact ${username}`)
+    return new ContactNotExistantError()
   }
-  contact.alias = alias as ContactAlias
+
+  contact.alias = aliasChecked
 
   const result = await repo.update(account)
   if (result instanceof Error) {
