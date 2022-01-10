@@ -38,6 +38,9 @@ export const checkedToTargetConfs = (
   return toTargetConfs(confs)
 }
 
+// Check for hexadecimal (case insensitive) 64-char SHA-256 hash
+export const isSha256Hash = (value: string): boolean => !!value.match(/^[a-f0-9]{64}$/i)
+
 export const BtcNetwork = {
   mainnet: "mainnet",
   testnet: "testnet",

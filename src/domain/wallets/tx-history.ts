@@ -186,7 +186,7 @@ export const fromLedger = (
             },
             settlementVia: {
               type: SettlementMethod.Lightning,
-              paymentSecret: null,
+              revealedPreImage: null,
             },
           }
           return walletTransaction

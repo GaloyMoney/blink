@@ -6,7 +6,9 @@ type RouteNotFoundError = import("./errors").RouteNotFoundError
 type InvoiceExpiration = Date & { readonly brand: unique symbol }
 type EncodedPaymentRequest = string & { readonly brand: unique symbol }
 type PaymentHash = string & { readonly brand: unique symbol }
-type PaymentSecret = string & { readonly brand: unique symbol }
+type SecretPreImage = string & { readonly brand: unique symbol }
+type RevealedPreImage = string & { readonly brand: unique symbol }
+type PaymentIdentifyingSecret = string & { readonly brand: unique symbol }
 type FeatureBit = number & { readonly brand: unique symbol }
 type FeatureType = string & { readonly brand: unique symbol }
 
@@ -41,7 +43,7 @@ type LnInvoiceLookup = {
   readonly isSettled: boolean
   readonly received: Satoshis
   readonly request: string | undefined
-  readonly secret: PaymentSecret
+  readonly secretPreImage: SecretPreImage
 }
 
 type LnPaymentLookup = {
@@ -51,7 +53,7 @@ type LnPaymentLookup = {
   readonly createdAt: Date
   readonly confirmedAt: Date | undefined
   readonly amount: Satoshis
-  readonly secret: PaymentSecret
+  readonly revealedPreImage: RevealedPreImage
   readonly request: string | undefined
   readonly destination: Pubkey
 }
@@ -65,7 +67,7 @@ type LnInvoice = {
   readonly cltvDelta: number | null
   readonly amount: Satoshis | null
   readonly routeHints: Hop[][]
-  readonly paymentSecret: PaymentSecret | null
+  readonly paymentSecret: PaymentIdentifyingSecret | null
   readonly features: LnInvoiceFeature[]
 }
 

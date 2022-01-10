@@ -7,6 +7,7 @@ import { SettlementMethod } from "@domain/wallets"
 import WalletId from "../scalar/wallet-id"
 import Username from "../scalar/username"
 import OnChainTxHash from "../scalar/onchain-tx-hash"
+import LnPaymentPreImage from "../scalar/ln-payment-preimage"
 import LnPaymentSecret from "../scalar/ln-payment-secret"
 
 const SettlementViaIntraLedger = new GT.Object({
@@ -26,10 +27,17 @@ const SettlementViaIntraLedger = new GT.Object({
 
 const SettlementViaLn = new GT.Object({
   name: "SettlementViaLn",
-  isTypeOf: (source) => source.type === SettlementMethod.Lightning,
+  isTypeOf: (source: SettlementViaLn) => source.type === SettlementMethod.Lightning,
   fields: () => ({
     paymentSecret: {
       type: LnPaymentSecret,
+      resolve: (source: SettlementViaLn) => source.revealedPreImage,
+      deprecationReason:
+        "Shifting property to 'preImage' to improve granularity of the LnPaymentSecret type",
+    },
+    preImage: {
+      type: LnPaymentPreImage,
+      resolve: (source: SettlementViaLn) => source.revealedPreImage,
     },
   }),
 })

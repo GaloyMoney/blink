@@ -269,6 +269,8 @@ input LnNoAmountInvoicePaymentInput {
   walletId: WalletId!
 }
 
+scalar LnPaymentPreImage
+
 """
 BOLT11 lightning invoice payment request with the amount included
 """
@@ -557,6 +559,10 @@ type SettlementViaIntraLedger {
 
 type SettlementViaLn {
   paymentSecret: LnPaymentSecret
+    @deprecated(
+      reason: "Shifting property to 'preImage' to improve granularity of the LnPaymentSecret type"
+    )
+  preImage: LnPaymentPreImage
 }
 
 type SettlementViaOnChain {
