@@ -289,10 +289,6 @@ UserSchema.virtual("walletPath").get(function (this: typeof UserSchema) {
   return toLiabilitiesWalletId(this.walletId)
 })
 
-UserSchema.virtual("twoFAEnabled").get(function (this: typeof UserSchema) {
-  return this.twoFA.secret != null
-})
-
 const getTimestampYesterday = () => Date.now() - MS_PER_DAY
 
 UserSchema.methods.remainingTwoFALimit = async function () {
