@@ -250,7 +250,14 @@ export const getBuildVersions = (): {
   minBuildNumberIos: number
   lastBuildNumberIos: number
 } => {
-  return yamlConfig.buildVersion
+  const { android, ios } = yamlConfig.buildVersion
+
+  return {
+    minBuildNumberAndroid: android.minBuildNumber,
+    lastBuildNumberAndroid: android.lastBuildNumber,
+    minBuildNumberIos: ios.minBuildNumber,
+    lastBuildNumberIos: ios.lastBuildNumber,
+  }
 }
 
 export const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
