@@ -1,4 +1,4 @@
-import { WalletsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { NotificationsService } from "@services/notifications"
 import { LedgerService } from "@services/ledger"
@@ -89,12 +89,15 @@ const processTxForWallet = async (
       return recorded
     }
 
+    const account = await AccountsRepository().findByWalletId(wallet.id)
+    if (account instanceof Error) return account
+
     if (!recorded) {
       for (const { sats, address } of tx.rawTx.outs) {
         if (address !== null && walletAddresses.includes(address)) {
           const fee = DepositFeeCalculator().onChainDepositFee({
             amount: sats,
-            ratio: wallet.depositFeeRatio,
+            ratio: account.depositFeeRatio,
           })
           const usd = sats * usdPerSat
           const usdFee = fee * usdPerSat

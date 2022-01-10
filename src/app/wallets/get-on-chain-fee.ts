@@ -1,5 +1,5 @@
 import { TxDecoder } from "@domain/bitcoin/onchain"
-import { WalletsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { WithdrawalFeeCalculator } from "@domain/wallets"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config/app"
@@ -51,9 +51,14 @@ export const getOnChainFee = async ({
   })
   if (onChainFee instanceof Error) return onChainFee
 
+  const account = await AccountsRepository().findByWalletId(wallet.id)
+  if (account instanceof Error) return account
+
+  const fee = toSats(account.withdrawFee)
+
   return withdrawalFeeCalculator.onChainWithdrawalFee({
     onChainFee,
-    walletFee: toSats(wallet.withdrawFee),
+    walletFee: fee,
   })
 }
 

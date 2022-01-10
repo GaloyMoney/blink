@@ -20,7 +20,7 @@ import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { LockService } from "@services/lock"
 import { baseLogger } from "@services/logger"
-import { WalletsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 
 import {
@@ -283,6 +283,9 @@ const executePaymentViaOnChain = async ({
   const usdPerSat = await getCurrentPrice()
   if (usdPerSat instanceof Error) return usdPerSat
 
+  const senderAccount = await AccountsRepository().findByWalletId(senderWalletId)
+  if (senderAccount instanceof Error) return senderAccount
+
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
     async (lock) => {
@@ -320,7 +323,7 @@ const executePaymentViaOnChain = async ({
         const fee = onChainTxFee
           ? withdrawalFeeCalculator.onChainWithdrawalFee({
               onChainFee: onChainTxFee,
-              walletFee: toSats(senderWallet.withdrawFee),
+              walletFee: toSats(senderAccount.withdrawFee),
             })
           : estimatedFee
         const sats = toSats(amountToSend + fee)
@@ -333,7 +336,7 @@ const executePaymentViaOnChain = async ({
           description: memo || "",
           sats,
           fee,
-          bankFee: toSats(senderWallet.withdrawFee),
+          bankFee: toSats(senderAccount.withdrawFee),
           usd,
           usdFee,
           payeeAddress: address,

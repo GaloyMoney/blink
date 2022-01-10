@@ -2,6 +2,7 @@ import { Wallets } from "@app"
 import { getOnChainWalletConfig } from "@config/app"
 import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
+import { AccountsRepository } from "@services/mongoose"
 
 import {
   bitcoindClient,
@@ -39,7 +40,11 @@ describe("UserWallet - getOnchainFee", () => {
     })
     expect(fee).not.toBeInstanceOf(Error)
     expect(fee).toBeGreaterThan(0)
-    expect(fee).toBeGreaterThan(wallet0.withdrawFee)
+
+    const account = await AccountsRepository().findByWalletId(wallet0.id)
+    if (account instanceof Error) return account
+
+    expect(fee).toBeGreaterThan(account.withdrawFee)
   })
 
   it("returns zero for an on us address", async () => {
