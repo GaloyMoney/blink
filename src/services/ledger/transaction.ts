@@ -345,6 +345,6 @@ export const settlePayment = async (hash) => {
   return result.nModified > 0
 }
 
-export const settleOnchainPayment = (hash) => {
+export const settleOnchainPayment = (hash: OnChainTxHash) => {
   return settlePayment(hash)
 }
