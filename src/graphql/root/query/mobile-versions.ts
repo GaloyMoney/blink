@@ -6,18 +6,23 @@ import { getBuildVersions } from "@config/app"
 const MobileVersionsQuery = GT.Field({
   type: GT.List(MobileVersions),
   resolve: async () => {
-    const { minBuildNumber, lastBuildNumber } = getBuildVersions()
+    const {
+      minBuildNumberAndroid,
+      lastBuildNumberAndroid,
+      minBuildNumberIos,
+      lastBuildNumberIos,
+    } = getBuildVersions()
 
     return [
       {
         platform: "android",
-        currentSupported: lastBuildNumber,
-        minSupported: minBuildNumber,
+        currentSupported: lastBuildNumberAndroid,
+        minSupported: minBuildNumberAndroid,
       },
       {
         platform: "ios",
-        currentSupported: lastBuildNumber,
-        minSupported: minBuildNumber,
+        currentSupported: lastBuildNumberIos,
+        minSupported: minBuildNumberIos,
       },
     ]
   },

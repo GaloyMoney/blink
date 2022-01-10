@@ -139,16 +139,20 @@ const resolvers = {
     },
     nodesStats: async () => nodesStats(),
     buildParameters: async () => {
-      const { minBuildNumber, lastBuildNumber } = getBuildVersions()
+      const {
+        minBuildNumberAndroid,
+        lastBuildNumberAndroid,
+        minBuildNumberIos,
+        lastBuildNumberIos,
+      } = getBuildVersions()
       return {
-        id: lastBuildNumber,
         commitHash: () => commitHash,
         buildTime: () => buildTime,
         helmRevision: () => helmRevision,
-        minBuildNumberAndroid: minBuildNumber,
-        minBuildNumberIos: minBuildNumber,
-        lastBuildNumberAndroid: lastBuildNumber,
-        lastBuildNumberIos: lastBuildNumber,
+        minBuildNumberAndroid,
+        minBuildNumberIos,
+        lastBuildNumberAndroid,
+        lastBuildNumberIos,
       }
     },
     prices: async (_, { length = 365 * 24 * 10 }) => {
