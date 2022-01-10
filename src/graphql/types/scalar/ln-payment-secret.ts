@@ -1,3 +1,4 @@
+import { isSha256Hash } from "@domain/bitcoin"
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
@@ -15,11 +16,9 @@ const LnPaymentSecret = new GT.Scalar({
 })
 
 function validLnPaymentSecret(value) {
-  // TODO: verify/improve
-  if (value.match(/^[A-Fa-f0-9]{64}$/)) {
-    return value
-  }
-  return new UserInputError("Invalid value for LnPaymentSecret")
+  return isSha256Hash(value)
+    ? value
+    : new UserInputError("Invalid value for LnPaymentSecret")
 }
 
 export default LnPaymentSecret

@@ -1,3 +1,4 @@
+import { isSha256Hash } from "@domain/bitcoin"
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
@@ -15,11 +16,9 @@ const LnPaymentPreImage = new GT.Scalar({
 })
 
 function validLnPaymentPreImage(value) {
-  // TODO: verify/improve
-  if (value.match(/^[A-Fa-f0-9]{64}$/)) {
-    return value
-  }
-  return new UserInputError("Invalid value for LnPaymentPreImage")
+  return isSha256Hash(value)
+    ? value
+    : new UserInputError("Invalid value for LnPaymentPreImage")
 }
 
 export default LnPaymentPreImage
