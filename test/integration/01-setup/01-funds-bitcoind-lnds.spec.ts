@@ -7,7 +7,6 @@ import {
   bitcoindClient,
   checkIsBalanced,
   createMandatoryUsers,
-  createUserWallet,
   fundLnd,
   getChainBalance,
   lnd1,
@@ -64,15 +63,11 @@ describe("Bitcoind", () => {
   })
 
   it("funds lnd1 node", async () => {
+    await createMandatoryUsers()
+
     const amount = 1
     const { chain_balance: initialBalance } = await getChainBalance({ lnd: lnd1 })
     const sats = initialBalance + btc2sat(amount)
-
-    // initiate the dealer wallet
-    await createUserWallet(6)
-
-    // load funder wallet before use it
-    await createUserWallet(4)
 
     const funderWalletId = await getFunderWalletId()
     const address = await Wallets.createOnChainAddress(funderWalletId)

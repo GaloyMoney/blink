@@ -1,6 +1,6 @@
 import { CouldNotFindError } from "@domain/errors"
 import { checkedToUsername } from "@domain/users"
-import { WalletsRepository } from "@services/mongoose"
+import { AccountsRepository } from "@services/mongoose"
 
 export const usernameAvailable = async (
   username: Username,
@@ -8,10 +8,10 @@ export const usernameAvailable = async (
   const checkedUsername = checkedToUsername(username)
   if (checkedUsername instanceof Error) return checkedUsername
 
-  const walletsRepo = WalletsRepository()
+  const accountsRepo = AccountsRepository()
 
-  const wallet = await walletsRepo.findByUsername(checkedUsername)
-  if (wallet instanceof CouldNotFindError) return true
-  if (wallet instanceof Error) return wallet
+  const account = await accountsRepo.findByUsername(checkedUsername)
+  if (account instanceof CouldNotFindError) return true
+  if (account instanceof Error) return account
   return false
 }

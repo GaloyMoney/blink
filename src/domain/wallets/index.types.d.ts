@@ -133,7 +133,6 @@ type Wallet = {
 interface IWalletsRepository {
   findById(walletId: WalletId): Promise<Wallet | RepositoryError>
   findByAddress(address: OnChainAddress): Promise<Wallet | RepositoryError>
-  findByUsername(username: Username): Promise<Wallet | RepositoryError>
   listByAddresses(addresses: string[]): Promise<Wallet[] | RepositoryError>
 }
 

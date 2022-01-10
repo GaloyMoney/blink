@@ -2,13 +2,10 @@ import {
   CouldNotFindWalletFromIdError,
   CouldNotFindWalletFromOnChainAddressError,
   CouldNotFindWalletFromOnChainAddressesError,
-  CouldNotFindWalletFromUsernameError,
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
-
-import { caseInsensitiveRegex } from "./users"
 
 export const WalletsRepository = (): IWalletsRepository => {
   const findById = async (walletId: WalletId): Promise<Wallet | RepositoryError> => {
@@ -17,24 +14,6 @@ export const WalletsRepository = (): IWalletsRepository => {
       if (!result) {
         return new CouldNotFindWalletFromIdError()
       }
-      return resultToWallet(result)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
-  const findByUsername = async (
-    username: Username,
-  ): Promise<Wallet | RepositoryError> => {
-    try {
-      const result = await User.findOne(
-        { username: caseInsensitiveRegex(username) },
-        projection,
-      )
-      if (!result) {
-        return new CouldNotFindWalletFromUsernameError()
-      }
-
       return resultToWallet(result)
     } catch (err) {
       return new UnknownRepositoryError(err)
@@ -75,7 +54,6 @@ export const WalletsRepository = (): IWalletsRepository => {
   return {
     findById,
     findByAddress,
-    findByUsername,
     listByAddresses,
   }
 }
