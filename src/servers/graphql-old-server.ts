@@ -82,7 +82,7 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
 
 const resolvers = {
   Query: {
-    me: (_, __, { uid, user, ip, domainUser }) =>
+    me: (_, __, { uid, user, ip, domainUser, domainAccount }) =>
       addAttributesToCurrentSpanAndPropagate(
         {
           [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
@@ -90,7 +90,8 @@ const resolvers = {
           [SemanticAttributes.HTTP_CLIENT_IP]: ip,
         },
         async () => {
-          const { phone, username, contacts, language, level } = user
+          const { phone, username, language, level } = user
+          const { contacts } = domainAccount
 
           return {
             id: uid,
