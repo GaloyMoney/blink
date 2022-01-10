@@ -5,6 +5,7 @@ import {
   walletUpdateEvent,
 } from "@config/app"
 import { NotificationsServiceError, NotificationType } from "@domain/notifications"
+import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 import pubsub from "@services/pubsub"
 
@@ -26,8 +27,11 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     usdPerSat?: UsdPerSat
   }): Promise<void | NotificationsServiceError> => {
     try {
-      // work around to move forward before re-wrighting the whole notifications module
-      const user = await User.findOne({ walletId })
+      const account = await AccountsRepository().findByWalletId(walletId)
+      if (account instanceof Error) return account
+
+      const user = await UsersRepository().findById(account.ownerId)
+      if (user instanceof Error) return user
 
       // Do not await this call for quicker processing
       transactionNotification({
@@ -106,8 +110,11 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     usdPerSat,
   }: LnInvoicePaidArgs) => {
     try {
-      // work around to move forward before re-wrighting the whole notifications module
-      const user: UserType = await User.findOne({ walletId: recipientWalletId })
+      const account = await AccountsRepository().findByWalletId(recipientWalletId)
+      if (account instanceof Error) return account
+
+      const user = await UsersRepository().findById(account.ownerId)
+      if (user instanceof Error) return user
 
       // Do not await this call for quicker processing
       transactionNotification({
@@ -166,19 +173,28 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       publish(senderWalletId, NotificationType.IntraLedgerPayment)
       publish(recipientWalletId, NotificationType.IntraLedgerReceipt)
 
-      // work around to move forward before re-wrighting the whole notifications module
-      const payerUser = await User.findOne({ walletId: senderWalletId })
+      const senderAccount = await AccountsRepository().findByWalletId(senderWalletId)
+      if (senderAccount instanceof Error) return senderAccount
+
+      const senderUser = await UsersRepository().findById(senderAccount.ownerId)
+      if (senderUser instanceof Error) return senderUser
 
       // Do not await this call for quicker processing
       transactionNotification({
         type: NotificationType.IntraLedgerPayment,
-        user: payerUser,
+        user: senderUser,
         logger,
         amount,
         usdPerSat,
       })
 
-      const recipientUser = await User.findOne({ walletId: recipientWalletId })
+      const recipientAccount = await AccountsRepository().findByWalletId(
+        recipientWalletId,
+      )
+      if (recipientAccount instanceof Error) return recipientAccount
+
+      const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+      if (recipientUser instanceof Error) return recipientUser
 
       // Do not await this call for quicker processing
       transactionNotification({

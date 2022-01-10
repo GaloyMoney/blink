@@ -41,7 +41,7 @@ export const sendNotification = async ({
     message["notification"]["body"] = body
   }
 
-  if (!user.deviceToken || user.deviceToken.length === 0) {
+  if (!user.deviceTokens || user.deviceTokens.length === 0) {
     logger.info(
       { message, user },
       "skipping notification as no deviceToken has been registered",
@@ -49,7 +49,7 @@ export const sendNotification = async ({
     return
   }
 
-  if (user.deviceToken.length === 1 && user.deviceToken[0] === "test") {
+  if (user.deviceTokens.length === 1 && user.deviceTokens[0] === "test") {
     logger.info({ message, user }, "test token. skipping notification")
     return
   }
@@ -58,7 +58,7 @@ export const sendNotification = async ({
 
   try {
     const response = await admin.messaging().sendToDevice(
-      user.deviceToken.filter((token) => token.length === 163),
+      user.deviceTokens.filter((token) => token.length === 163),
       message,
       {
         // Required for background/quit data-only messages on iOS

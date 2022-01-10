@@ -17,6 +17,7 @@ import {
   getDefaultWalletIdByTestUserIndex,
   getHash,
   getInvoice,
+  getUserIdByTestUserIndex,
   getUserTypeByTestUserIndex,
   lnd1,
   lndOutside1,
@@ -38,6 +39,8 @@ let walletId0: WalletId
 let walletId3: WalletId
 let walletId12: WalletId
 
+let userId12: UserId
+
 let userType0: UserType
 let userType3: UserType
 
@@ -51,6 +54,8 @@ beforeAll(async () => {
   walletId0 = await getDefaultWalletIdByTestUserIndex(0)
   walletId3 = await getDefaultWalletIdByTestUserIndex(3)
   walletId12 = await getDefaultWalletIdByTestUserIndex(12)
+
+  userId12 = await getUserIdByTestUserIndex(12)
 
   userType0 = await getUserTypeByTestUserIndex(0)
   userType3 = await getUserTypeByTestUserIndex(3)
@@ -217,7 +222,7 @@ describe("onchainBlockEventhandler", () => {
     expect(sendNotification.mock.calls[0][0].title).toBe(
       getTitle[NotificationType.LnInvoicePaid]({ usd, amount: sats }),
     )
-    expect(sendNotification.mock.calls[0][0].user.walletId).toStrictEqual(walletId12)
+    expect(sendNotification.mock.calls[0][0].user.id).toStrictEqual(userId12)
     expect(sendNotification.mock.calls[0][0].data.type).toBe(
       NotificationType.LnInvoicePaid,
     )

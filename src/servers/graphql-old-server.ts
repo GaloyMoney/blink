@@ -2,41 +2,38 @@ import fs from "fs"
 
 import path from "path"
 
+import { Accounts, Prices, Users, Wallets } from "@app"
+import { getBuildVersions, getFeeRates, onboardingEarn } from "@config/app"
+import { usernameExists } from "@core/user"
+import { addInvoiceForUsername, addInvoiceNoAmountForUsername } from "@core/wallets"
+import { decodeInvoice } from "@domain/bitcoin/lightning"
+import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
+import { PriceInterval, PriceRange } from "@domain/price"
+import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
+import { mapError } from "@graphql/error-map"
+import {
+  pattern,
+  range,
+  stringLength,
+  ValidateDirectiveVisitor,
+} from "@profusion/apollo-validation-directives"
+import { activateLndHealthCheck } from "@services/lnd/health"
+import { getActiveLnd, nodesStats, nodeStats } from "@services/lnd/utils"
+import { baseLogger } from "@services/logger"
+import { setupMongoConnection } from "@services/mongodb"
+import { User } from "@services/mongoose/schema"
+import {
+  addAttributesToCurrentSpanAndPropagate,
+  ENDUSER_ALIAS,
+  SemanticAttributes,
+} from "@services/tracing"
+import { ApolloError } from "apollo-server-errors"
 import dotenv from "dotenv"
 import { applyMiddleware } from "graphql-middleware"
 import { shield } from "graphql-shield"
 import { makeExecutableSchema } from "graphql-tools"
 
-import {
-  stringLength,
-  ValidateDirectiveVisitor,
-  range,
-  pattern,
-} from "@profusion/apollo-validation-directives"
-import { getFeeRates, onboardingEarn, getBuildVersions } from "@config/app"
-import { Wallets, Prices, Users, Accounts } from "@app"
-import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
-import { setupMongoConnection } from "@services/mongodb"
-import { activateLndHealthCheck } from "@services/lnd/health"
-import { baseLogger } from "@services/logger"
-import { getActiveLnd, nodesStats, nodeStats } from "@services/lnd/utils"
-import { User } from "@services/mongoose/schema"
-import { sendNotification } from "@services/notifications/notification"
-import { usernameExists } from "@core/user"
-
-import { ApolloError } from "apollo-server-errors"
-import { addInvoiceForUsername, addInvoiceNoAmountForUsername } from "@core/wallets"
-import { decodeInvoice } from "@domain/bitcoin/lightning"
-import { mapError } from "@graphql/error-map"
-import {
-  addAttributesToCurrentSpanAndPropagate,
-  SemanticAttributes,
-  ENDUSER_ALIAS,
-} from "@services/tracing"
-import { PriceInterval, PriceRange } from "@domain/price"
-import { LnPaymentRequestZeroAmountRequiredError } from "@domain/errors"
-
-import { startApolloServer, isAuthenticated } from "./graphql-server"
+import { isAuthenticated, startApolloServer } from "./graphql-server"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
@@ -434,18 +431,6 @@ const resolvers = {
       user.deviceToken.addToSet(deviceToken)
       // TODO: check if this is ok to shared a mongoose user instance and mutate it.
       await user.save()
-      return { success: true }
-    },
-
-    // FIXME test
-    testMessage: async (_, __, { user, logger }) => {
-      // throw new LoggedError("test error")
-      await sendNotification({
-        user,
-        title: "Title",
-        body: `New message sent at ${new Date().toISOString()}`,
-        logger,
-      })
       return { success: true }
     },
   },

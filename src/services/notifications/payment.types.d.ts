@@ -1,7 +1,7 @@
 interface IPaymentNotification {
   amount: number
   type: string
-  user: UserType
+  user: User
   logger: Logger
   paymentHash?: PaymentHash
   txHash?: OnChainTxHash
