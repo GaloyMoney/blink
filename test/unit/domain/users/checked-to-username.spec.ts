@@ -1,4 +1,4 @@
-import { checkedToUsername } from "@domain/users"
+import { checkedToUsername } from "@domain/accounts"
 
 describe("username-check", () => {
   it("Passes alphanumeric username", () => {

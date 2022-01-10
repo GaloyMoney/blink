@@ -63,10 +63,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `User does not exist for id ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
-    case "CouldNotFindUserFromUsernameError":
-      message = `User does not exist for username ${error.message}`
-      return new NotFoundError({ message, logger: baseLogger })
-
     case "CouldNotFindAccountFromUsernameError":
       message = `Account does not exist for username ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
@@ -77,6 +73,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
 
     case "CouldNotFindUserFromWalletIdError":
       message = `User does not exist for wallet-id ${error.message}`
+      return new NotFoundError({ message, logger: baseLogger })
+
+    case "ContactNotExistantError":
+      message = `Contact does not exist for account ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
     case "SelfPaymentError":
@@ -108,6 +108,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
 
     case "InvalidPhoneNumberPhoneProviderError":
       message = "Phone number is not a valid phone number"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "InvalidContactAlias":
+      message = "ContactAlias has incorrect caracters or length"
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "InvoiceCreateRateLimiterExceededError":

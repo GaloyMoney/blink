@@ -39,6 +39,7 @@ import {
   createUserWallet,
   enable2FA,
   generateTokenHelper,
+  getAccountIdByTestUserIndex,
   getDefaultWalletIdByTestUserIndex,
   getUserIdByTestUserIndex,
   getUserTypeByTestUserIndex,
@@ -60,9 +61,12 @@ jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf()
 let initialBalanceUser0: Satoshis
 let user0: UserType
 
+let accountId0: AccountId
+
 let walletId0: WalletId
 let walletId1: WalletId
 let walletId3: WalletId
+
 // using walletId11 and walletId12 to sendAll
 let walletId11: WalletId
 let walletId12: WalletId
@@ -72,21 +76,22 @@ let userId0: UserId
 const { sendNotification } = require("@services/notifications/notification")
 
 beforeAll(async () => {
-  user0 = await getUserTypeByTestUserIndex(0)
-  walletId0 = await getDefaultWalletIdByTestUserIndex(0)
-  userId0 = await getUserIdByTestUserIndex(0)
+  await createMandatoryUsers()
 
   await createUserWallet(1)
   await createUserWallet(3)
   await createUserWallet(11)
   await createUserWallet(12)
 
+  user0 = await getUserTypeByTestUserIndex(0)
+  walletId0 = await getDefaultWalletIdByTestUserIndex(0)
+  userId0 = await getUserIdByTestUserIndex(0)
+  accountId0 = await getAccountIdByTestUserIndex(0)
+
   walletId1 = await getDefaultWalletIdByTestUserIndex(1)
   walletId3 = await getDefaultWalletIdByTestUserIndex(3)
   walletId11 = await getDefaultWalletIdByTestUserIndex(11)
   walletId12 = await getDefaultWalletIdByTestUserIndex(12)
-
-  await createMandatoryUsers()
 
   await bitcoindClient.loadWallet({ filename: "outside" })
 })
@@ -659,7 +664,7 @@ describe("UserWallet - onChainPay", () => {
         targetConfirmations,
         memo: null,
         sendAll: false,
-        payerUserId: userId0,
+        payerAccountId: accountId0,
         twoFAToken: "" as TwoFAToken,
       })
 
@@ -680,7 +685,7 @@ describe("UserWallet - onChainPay", () => {
         targetConfirmations,
         memo: null,
         sendAll: false,
-        payerUserId: userId0,
+        payerAccountId: accountId0,
         twoFAToken,
       })
 

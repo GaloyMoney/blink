@@ -1,4 +1,4 @@
-import { UsernameRegex } from "@domain/users"
+import { UsernameRegex } from "@domain/accounts"
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 

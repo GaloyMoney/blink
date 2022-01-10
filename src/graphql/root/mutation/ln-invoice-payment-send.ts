@@ -25,7 +25,7 @@ const LnInvoicePaymentSendMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(LnInvoicePaymentInput) },
   },
-  resolve: async (_, args, { ip, domainUser, logger }) =>
+  resolve: async (_, args, { ip, domainAccount, domainUser, logger }) =>
     addAttributesToCurrentSpanAndPropagate(
       {
         [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
@@ -45,7 +45,7 @@ const LnInvoicePaymentSendMutation = GT.Field({
           senderWalletId: walletId,
           paymentRequest,
           memo,
-          payerUserId: domainUser.id,
+          payerAccountId: domainAccount.id,
           logger,
         })
 

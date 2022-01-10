@@ -3,7 +3,6 @@ import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindUserFromIdError,
   CouldNotFindUserFromPhoneError,
-  CouldNotFindUserFromUsernameError,
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
@@ -16,10 +15,7 @@ export const caseInsensitiveRegex = (input: string) => {
 export const UsersRepository = (): IUsersRepository => {
   const findById = async (userId: UserId): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOne(
-        { _id: userId },
-        { lastIPs: 0, lastConnection: 0 },
-      )
+      const result = await User.findOne({ _id: userId }, projection)
       if (!result) {
         return new CouldNotFindUserFromIdError(userId)
       }
@@ -30,26 +26,9 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  // FIXME: remove
-  const findByUsername = async (username: Username): Promise<User | RepositoryError> => {
-    try {
-      const result = await User.findOne(
-        { username: caseInsensitiveRegex(username) },
-        { lastIPs: 0, lastConnection: 0 },
-      )
-      if (!result) {
-        return new CouldNotFindUserFromUsernameError(username)
-      }
-
-      return userFromRaw(result)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
   const findByPhone = async (phone: PhoneNumber): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOne({ phone })
+      const result = await User.findOne({ phone }, projection)
       if (!result) {
         return new CouldNotFindUserFromPhoneError(phone)
       }
@@ -79,7 +58,6 @@ export const UsersRepository = (): IUsersRepository => {
     id,
     phone,
     language,
-    contacts,
     deviceTokens,
     twoFA,
   }: User): Promise<User | RepositoryError> => {
@@ -87,19 +65,11 @@ export const UsersRepository = (): IUsersRepository => {
       const data = {
         phone,
         language,
-        contacts: contacts.map(({ username, alias, transactionsCount }: UserContact) => ({
-          id: username,
-          name: alias,
-          transactionsCount,
-        })),
         deviceToken: deviceTokens,
         twoFA,
       }
       const result = await User.findOneAndUpdate({ _id: id }, data, {
-        projection: {
-          lastIPs: 0,
-          lastConnection: 0,
-        },
+        projection,
         new: 1,
       })
       if (!result) {
@@ -113,7 +83,6 @@ export const UsersRepository = (): IUsersRepository => {
 
   return {
     findById,
-    findByUsername,
     findByPhone,
     persistNew,
     update,
@@ -125,20 +94,6 @@ const userFromRaw = (result: UserType): User => ({
   phone: result.phone as PhoneNumber,
   language: result.language as UserLanguage,
   twoFA: result.twoFA as TwoFAForUser,
-  contacts: result.contacts.reduce(
-    (res: UserContact[], contact: ContactObjectForUser): UserContact[] => {
-      if (contact.id) {
-        res.push({
-          id: contact.id as Username,
-          username: contact.id as Username,
-          alias: (contact.name || contact.id) as ContactAlias,
-          transactionsCount: contact.transactionsCount,
-        })
-      }
-      return res
-    },
-    [],
-  ),
   quizQuestions:
     result.earn?.map(
       (questionId: string): UserQuizQuestion => ({
@@ -154,3 +109,14 @@ const userFromRaw = (result: UserType): User => ({
   createdAt: new Date(result.created_at),
   phoneMetadata: result.twilio as PhoneMetadata,
 })
+
+const projection = {
+  phone: 1,
+  language: 1,
+  twoFA: 1,
+  quizQuestions: 1,
+  defaultAccountId: 1,
+  decideToken: 1,
+  created_at: 1,
+  twilio: 1,
+}

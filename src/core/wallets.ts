@@ -1,6 +1,6 @@
 import { Wallets } from "@app"
+import { checkedToUsername } from "@domain/accounts"
 import { checkedToSats, toSats } from "@domain/bitcoin"
-import { checkedToUsername } from "@domain/users"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { AccountsRepository } from "@services/mongoose"
 

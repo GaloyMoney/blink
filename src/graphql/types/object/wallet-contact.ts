@@ -1,5 +1,5 @@
 import { Accounts } from "@app"
-import { checkedToUsername } from "@domain/users"
+import { checkedToUsername } from "@domain/accounts"
 import { GT } from "@graphql/index"
 import dedent from "dedent"
 import { connectionArgs, connectionFromArray } from "graphql-relay"
@@ -9,7 +9,7 @@ import Username from "../scalar/username"
 
 import { TransactionConnection } from "./transaction"
 
-const UserContact = new GT.Object({
+const AccountContact = new GT.Object({
   name: "UserContact",
   fields: () => ({
     id: { type: GT.NonNull(Username) },
@@ -28,15 +28,14 @@ const UserContact = new GT.Object({
     transactions: {
       type: TransactionConnection,
       args: connectionArgs,
-      resolve: async (source, args, { domainUser }) => {
+      resolve: async (source, args, { domainAccount }) => {
         const contactUsername = checkedToUsername(source.username)
 
         if (contactUsername instanceof Error) {
           throw contactUsername
         }
 
-        // TODO: figure out what to do here when we have multiple accounts
-        const account = await Accounts.getAccount(domainUser.defaultAccountId)
+        const account = domainAccount
 
         if (account instanceof Error) {
           throw account
@@ -58,4 +57,4 @@ const UserContact = new GT.Object({
   }),
 })
 
-export default UserContact
+export default AccountContact

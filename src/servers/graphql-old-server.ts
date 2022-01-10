@@ -322,7 +322,7 @@ const resolvers = {
                 paymentRequest: invoice,
                 memo,
                 senderWalletId: wallet.user.walletId as WalletId,
-                payerUserId: wallet.user.id as UserId,
+                payerAccountId: wallet.user.id as AccountId,
                 logger,
               })
               if (status instanceof Error) throw mapError(status)
@@ -333,7 +333,7 @@ const resolvers = {
               memo,
               amount,
               senderWalletId: wallet.user.walletId as WalletId,
-              payerUserId: wallet.user.id as UserId,
+              payerAccountId: wallet.user.id as AccountId,
               logger,
             })
             if (status instanceof Error) throw mapError(status)
@@ -346,7 +346,7 @@ const resolvers = {
           memo,
           amount,
           senderWalletId: wallet.user.walletId,
-          payerUserId: wallet.user.id,
+          payerAccountId: wallet.user.id,
           logger,
         })
 

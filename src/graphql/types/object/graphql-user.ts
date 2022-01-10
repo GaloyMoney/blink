@@ -3,9 +3,9 @@ import dedent from "dedent"
 
 import { GT } from "@graphql/index"
 
-import { Users } from "@app"
-
 import { UnknownClientError } from "@core/error"
+
+import { Accounts } from "@app"
 
 import Account from "../abstract/account"
 
@@ -15,7 +15,7 @@ import Phone from "../scalar/phone"
 
 import Username from "../scalar/username"
 
-import UserContact from "./wallet-contact"
+import AccountContact from "./wallet-contact"
 import UserQuizQuestion from "./user-quiz-question"
 
 const GraphQLUser = new GT.Object<User, GraphQLContext>({
@@ -52,28 +52,29 @@ const GraphQLUser = new GT.Object<User, GraphQLContext>({
     },
 
     contacts: {
-      type: GT.NonNullList(UserContact), // TODO: Make it a Connection Interface
+      deprecationReason: "will be moved to account",
+      type: GT.NonNullList(AccountContact), // TODO: Make it a Connection Interface
       description: dedent`Get full list of contacts.
         Can include the transactions associated with each contact.`,
     },
 
     contactByUsername: {
-      type: GT.NonNull(UserContact),
+      type: GT.NonNull(AccountContact),
       description: dedent`Get single contact details.
         Can include the transactions associated with the contact.`,
       args: {
         username: { type: GT.NonNull(Username) },
       },
-      resolve: async (source, args, { domainUser }) => {
+      resolve: async (source, args, { domainAccount }) => {
         const { username } = args
-        if (!domainUser) {
+        if (!domainAccount) {
           throw new UnknownClientError("Something went wrong")
         }
         if (username instanceof Error) {
           throw username
         }
-        const contact = await Users.getContactByUsername({
-          user: domainUser,
+        const contact = await Accounts.getContactByUsername({
+          account: domainAccount,
           contactUsername: args.username,
         })
         if (contact instanceof Error) {

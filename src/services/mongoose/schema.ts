@@ -8,9 +8,9 @@ import {
   MS_PER_DAY,
 } from "@config/app"
 import { toLiabilitiesWalletId } from "@domain/ledger"
-import { UsernameRegex } from "@domain/users"
 import { Transaction } from "@services/ledger/schema"
 import * as mongoose from "mongoose"
+import { UsernameRegex } from "@domain/accounts"
 
 export { Transaction }
 
@@ -180,7 +180,10 @@ const UserSchema = new Schema<UserType>({
           type: String,
           collation: { locale: "en", strength: 2 },
         },
-        name: String,
+        name: {
+          type: String,
+          // TODO: add constraint here
+        },
         transactionsCount: {
           type: Number,
           default: 1,

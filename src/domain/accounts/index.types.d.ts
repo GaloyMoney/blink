@@ -10,6 +10,15 @@ type AccountStatus =
 type DepositFeeRatio = number & { readonly brand: unique symbol }
 type WithdrawFee = number & { readonly brand: unique symbol }
 
+type ContactAlias = string & { readonly brand: unique symbol }
+
+type AccountContact = {
+  readonly id: Username
+  readonly username: Username
+  alias: ContactAlias
+  transactionsCount: number
+}
+
 type Account = {
   readonly id: AccountId
   readonly createdAt: Date
@@ -23,6 +32,7 @@ type Account = {
   readonly walletIds: WalletId[]
   title: BusinessMapTitle
   coordinates: Coordinates
+  readonly contacts: AccountContact[]
 }
 
 type Currencies = {

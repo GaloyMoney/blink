@@ -103,13 +103,27 @@ export const AccountsRepository = (): IAccountsRepository => {
     level,
     status,
     coordinates,
+    contacts,
     title,
     username,
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
         { _id: id },
-        { level, status, coordinates, title, username },
+        {
+          level,
+          status,
+          coordinates,
+          title,
+          username,
+          contacts: contacts.map(
+            ({ username, alias, transactionsCount }: AccountContact) => ({
+              id: username,
+              name: alias,
+              transactionsCount,
+            }),
+          ),
+        },
         {
           new: true,
           projection,
@@ -146,6 +160,20 @@ const translateToAccount = (result: UserType): Account => ({
   coordinates: result.coordinates as Coordinates,
   walletIds: [result.walletId as WalletId],
   ownerId: result.id as UserId,
+  contacts: result.contacts.reduce(
+    (res: AccountContact[], contact: ContactObjectForUser): AccountContact[] => {
+      if (contact.id) {
+        res.push({
+          id: contact.id as Username,
+          username: contact.id as Username,
+          alias: (contact.name || contact.id) as ContactAlias,
+          transactionsCount: contact.transactionsCount,
+        })
+      }
+      return res
+    },
+    [],
+  ),
   depositFeeRatio: result.depositFeeRatio as DepositFeeRatio,
   withdrawFee: result.withdrawFee as WithdrawFee,
 })
@@ -158,6 +186,7 @@ const projection = {
   username: 1,
   title: 1,
   created_at: 1,
+  contacts: 1,
   depositFeeRatio: 1,
   withdrawFee: 1,
 }

@@ -56,7 +56,7 @@ type PayLnInvoiceByWalletIdArgs = {
   senderWalletId: WalletId
   paymentRequest: EncodedPaymentRequest
   memo: string | null
-  payerUserId: UserId
+  payerAccountId: AccountId
   logger: Logger
 }
 
@@ -65,13 +65,13 @@ type payLnNoAmountInvoiceByWalletIdArgs = {
   paymentRequest: EncodedPaymentRequest
   amount: Satoshis
   memo: string | null
-  payerUserId: UserId
+  payerAccountId: AccountId
   logger: Logger
 }
 
 type LnInvoicePaymentSendArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
-  payerUserId: UserId
+  payerAccountId: AccountId
 }
 type LnInvoicePaymentSendWithTwoFAArgs = LnInvoicePaymentSendArgs & {
   twoFAToken: TwoFAToken
@@ -80,14 +80,14 @@ type LnInvoicePaymentSendWithTwoFAArgs = LnInvoicePaymentSendArgs & {
 type LnNoAmountInvoicePaymentSendArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
   amount: Satoshis
-  payerUserId: UserId
+  payerAccountId: AccountId
 }
 type LnNoAmountInvoicePaymentSendWithTwoFAArgs = LnNoAmountInvoicePaymentSendArgs & {
   twoFAToken: TwoFAToken
 }
 
 type IntraLedgerPaymentSendUsernameArgs = PaymentSendArgs & {
-  payerUserId: UserId
+  payerAccountId: AccountId
   recipientUsername: Username
   amount: Satoshis
 }
@@ -111,6 +111,6 @@ type PayOnChainByWalletIdArgs = {
 }
 
 type PayOnChainByWalletIdWithTwoFAArgs = PayOnChainByWalletIdArgs & {
-  payerUserId: UserId
+  payerAccountId: AccountId
   twoFAToken: TwoFAToken
 }

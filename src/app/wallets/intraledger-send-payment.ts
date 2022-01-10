@@ -1,7 +1,7 @@
 import { getAccount } from "@app/accounts"
 import { getCurrentPrice } from "@app/prices"
 import { getUser } from "@app/users"
-import { addNewContact } from "@app/users/add-new-contact"
+import { addNewContact } from "@app/accounts/add-new-contact"
 import { getWallet } from "@app/wallets"
 import { toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
@@ -13,7 +13,7 @@ import {
 } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { LockService } from "@services/lock"
-import { UsersRepository } from "@services/mongoose"
+import { AccountsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 
 import { checkAndVerifyTwoFA, checkIntraledgerLimits } from "./check-limit-helpers"
@@ -24,21 +24,18 @@ export const intraledgerPaymentSendUsername = async ({
   amount,
   memo,
   senderWalletId,
-  payerUserId,
+  payerAccountId,
   logger,
 }: IntraLedgerPaymentSendUsernameArgs): Promise<PaymentSendStatus | ApplicationError> => {
   if (!(amount && amount > 0)) {
     return new SatoshiAmountRequiredError()
   }
 
-  const user = await getUser(payerUserId)
-  if (user instanceof Error) return user
-
-  const account = await getAccount(user.defaultAccountId)
+  const account = await getAccount(payerAccountId)
   if (account instanceof Error) return account
 
   return intraLedgerSendPaymentUsername({
-    payerUserId,
+    payerAccountId,
     senderWalletId,
     payerUsername: account.username,
     recipientUsername,
@@ -82,7 +79,7 @@ export const intraledgerSendPaymentUsernameWithTwoFA = async ({
   amount,
   memo,
   senderWalletId,
-  payerUserId,
+  payerAccountId,
   logger,
 }: IntraLedgerPaymentSendWithTwoFAArgs): Promise<
   PaymentSendStatus | ApplicationError
@@ -91,7 +88,10 @@ export const intraledgerSendPaymentUsernameWithTwoFA = async ({
     return new SatoshiAmountRequiredError()
   }
 
-  const user = await getUser(payerUserId)
+  const account = await AccountsRepository().findById(payerAccountId)
+  if (account instanceof Error) return account
+
+  const user = await getUser(account.ownerId)
   if (user instanceof Error) return user
   const { twoFA } = user
 
@@ -105,11 +105,8 @@ export const intraledgerSendPaymentUsernameWithTwoFA = async ({
     : true
   if (twoFACheck instanceof Error) return twoFACheck
 
-  const account = await getAccount(user.defaultAccountId)
-  if (account instanceof Error) return account
-
   return intraLedgerSendPaymentUsername({
-    payerUserId,
+    payerAccountId: user.defaultAccountId,
     senderWalletId,
     payerUsername: account.username,
     recipientUsername,
@@ -120,7 +117,7 @@ export const intraledgerSendPaymentUsernameWithTwoFA = async ({
 }
 
 const intraLedgerSendPaymentUsername = async ({
-  payerUserId,
+  payerAccountId,
   senderWalletId,
   payerUsername,
   recipientUsername,
@@ -128,7 +125,7 @@ const intraLedgerSendPaymentUsername = async ({
   memo,
   logger,
 }: {
-  payerUserId: UserId
+  payerAccountId: AccountId
   senderWalletId: WalletId
   payerUsername: Username
   recipientUsername: Username
@@ -136,12 +133,9 @@ const intraLedgerSendPaymentUsername = async ({
   memo: string
   logger: Logger
 }) => {
-  const recipientUser = await UsersRepository().findByUsername(recipientUsername)
-  if (recipientUser instanceof Error) return recipientUser
-  if (recipientUser.id === payerUserId) return new SelfPaymentError()
-
-  const recipientAccount = await getAccount(recipientUser.defaultAccountId)
+  const recipientAccount = await AccountsRepository().findByUsername(recipientUsername)
   if (recipientAccount instanceof Error) return recipientAccount
+  if (recipientAccount.id === payerAccountId) return new SelfPaymentError()
 
   // TODO(nicoals): is that condition necessary? I think we want to take the position
   // that an account have, by definition, a wallet present at creation time
@@ -165,17 +159,17 @@ const intraLedgerSendPaymentUsername = async ({
   if (paymentSendStatus instanceof Error) return paymentSendStatus
 
   const addContactToPayerResult = await addNewContact({
-    userId: payerUserId,
+    accountId: payerAccountId,
     contactUsername: recipientUsername,
   })
   if (addContactToPayerResult instanceof Error) return addContactToPayerResult
 
   if (payerUsername) {
-    const recipientUser = await UsersRepository().findByUsername(recipientUsername)
-    if (recipientUser instanceof Error) return recipientUser
+    const recipientAccount = await AccountsRepository().findByUsername(recipientUsername)
+    if (recipientAccount instanceof Error) return recipientAccount
 
     const addContactToPayeeResult = await addNewContact({
-      userId: recipientUser.id,
+      accountId: recipientAccount.id,
       contactUsername: payerUsername,
     })
     if (addContactToPayeeResult instanceof Error) return addContactToPayeeResult
