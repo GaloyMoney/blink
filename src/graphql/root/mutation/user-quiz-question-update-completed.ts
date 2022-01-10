@@ -30,7 +30,7 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field({
     })
     if (question instanceof Error) {
       const appErr = mapError(question)
-      return { errors: [{ message: appErr.message || appErr.name }] }
+      return { errors: [{ message: appErr.message }] }
     }
 
     return {
