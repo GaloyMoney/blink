@@ -28,9 +28,7 @@ export class CouldNotFindWalletFromOnChainAddressesError extends CouldNotFindErr
 export class CouldNotFindAccountFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
 
-export class RewardMissingMetadataError extends DomainError {}
 export class RewardAlreadyPresentError extends DomainError {}
-export class RewardNonValidTypeError extends DomainError {}
 
 export class ValidationError extends DomainError {}
 export class ContactNotExistantError extends DomainError {}
@@ -56,6 +54,10 @@ export class LnPaymentRequestNonZeroAmountRequiredError extends ValidationError 
 export class LnPaymentRequestZeroAmountRequiredError extends ValidationError {}
 export class NoWalletExistsForUserError extends ValidationError {}
 export class RebalanceNeededError extends ValidationError {}
+export class InvalidQuizQuestionIdError extends ValidationError {}
+export class MissingPhoneMetadataError extends ValidationError {}
+export class InvalidPhoneMetadataTypeError extends ValidationError {}
+export class InvalidPhoneMetadataForRewardError extends ValidationError {}
 
 export class LimitsExceededError extends ValidationError {}
 export class WithdrawalLimitsExceededError extends LimitsExceededError {}

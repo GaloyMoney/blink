@@ -1,5 +1,5 @@
 import { Accounts } from "@app"
-import { onboardingEarn } from "@config/app"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import UserQuizQuestionUpdateCompletedPayload from "@graphql/types/payload/user-quiz-question-update-completed"
@@ -16,32 +16,29 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserQuizQuestionUpdateCompletedInput) },
   },
-  resolve: async (_, args, { uid, logger }) => {
+  resolve: async (
+    _,
+    args,
+    { domainAccount, logger }: { domainAccount: Account; logger: Logger },
+  ) => {
     const { id } = args.input
 
-    if (!onboardingEarn[id]) {
-      return { errors: [{ message: "Invalid input" }] }
+    const question = await Accounts.addEarn({
+      quizQuestionId: id,
+      accountId: domainAccount.id,
+      logger,
+    })
+    if (question instanceof Error) {
+      const appErr = mapError(question)
+      return { errors: [{ message: appErr.message }] }
     }
 
-    try {
-      const quizQuestions = await Accounts.addEarn({
-        quizQuestionId: id,
-        accountId: uid,
-        logger,
-      })
-      const question = quizQuestions[0]
-
-      return {
-        errors: [],
-        userQuizQuestion: {
-          question: { id: question.id, earnAmount: question.value },
-          completed: question.completed,
-        },
-      }
-    } catch (err) {
-      return {
-        errors: [{ message: err.message || err.name }],
-      }
+    return {
+      errors: [],
+      userQuizQuestion: {
+        question,
+        completed: true,
+      },
     }
   },
 })

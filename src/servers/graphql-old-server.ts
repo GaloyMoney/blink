@@ -380,13 +380,20 @@ const resolvers = {
       },
     }),
     earnCompleted: async (_, { ids }, { uid, logger }) => {
-      const earnCompleted = await Accounts.addEarn({
+      const quizQuestion = await Accounts.addEarn({
         quizQuestionId: ids[0],
         accountId: uid,
         logger,
       })
-      if (earnCompleted instanceof Error) throw mapError(earnCompleted)
-      return [earnCompleted]
+      if (quizQuestion instanceof Error) throw mapError(quizQuestion)
+
+      return [
+        {
+          id: quizQuestion.id,
+          value: quizQuestion.earnAmount,
+          completed: true,
+        },
+      ]
     },
     onchain: (_, __, { wallet }) => ({
       getNewAddress: async () => {
