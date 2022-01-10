@@ -56,6 +56,7 @@ const GraphQLUser = new GT.Object<User, GraphQLContext>({
       type: GT.NonNullList(AccountContact), // TODO: Make it a Connection Interface
       description: dedent`Get full list of contacts.
         Can include the transactions associated with each contact.`,
+      resolve: async (source, args, { domainAccount }) => domainAccount?.contacts,
     },
 
     contactByUsername: {

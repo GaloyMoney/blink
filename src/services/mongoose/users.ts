@@ -114,9 +114,8 @@ const projection = {
   phone: 1,
   language: 1,
   twoFA: 1,
-  quizQuestions: 1,
-  defaultAccountId: 1,
-  decideToken: 1,
+  earn: 1,
+  deviceToken: 1,
   created_at: 1,
   twilio: 1,
 }

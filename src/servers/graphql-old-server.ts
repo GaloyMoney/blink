@@ -82,7 +82,7 @@ const translateWalletTx = (txs: WalletTransaction[]) => {
 
 const resolvers = {
   Query: {
-    me: (_, __, { uid, user, ip, domainUser }) =>
+    me: (_, __, { uid, user, ip, domainUser, domainAccount }) =>
       addAttributesToCurrentSpanAndPropagate(
         {
           [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
@@ -90,7 +90,8 @@ const resolvers = {
           [SemanticAttributes.HTTP_CLIENT_IP]: ip,
         },
         async () => {
-          const { phone, username, contacts, language, level } = user
+          const { phone, username, language, level } = user
+          const { contacts } = domainAccount
 
           return {
             id: uid,
@@ -264,10 +265,14 @@ const resolvers = {
       updateUsername: (input) => wallet.setUsername(input),
       updateLanguage: (input) => wallet.updateLanguage(input),
     }),
-    updateContact: (_, __, { user }) => ({
+    updateContact: (_, __, { domainAccount }) => ({
       setName: async ({ username, name }) => {
-        user.contacts.filter((item) => item.id === username)[0].name = name
-        await user.save()
+        const contact = await Accounts.updateContactAlias({
+          accountId: domainAccount.id,
+          username,
+          alias: name,
+        })
+        if (contact instanceof Error) throw mapError(contact)
         return true
       },
     }),
