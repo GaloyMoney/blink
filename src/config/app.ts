@@ -49,7 +49,7 @@ export const BTC_PRICE_PRECISION_OFFSET = 4
 export const lnPaymentStatusEvent = (paymentHash: PaymentHash) =>
   `LN-PAYMENT-STATUS-${paymentHash}`
 
-export const walletUpdateEvent = (walletId: WalletId) => `WALLET_UPDATE-${walletId}`
+export const accountUpdateEvent = (accountId: AccountId) => `ACCOUNT_UPDATE-${accountId}`
 
 let customContent, customConfig
 

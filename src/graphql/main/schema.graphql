@@ -181,6 +181,7 @@ type IntraLedgerUpdate {
   amount: SatAmount!
   txNotificationType: TxNotificationType!
   usdPerSat: Float!
+  walletId: WalletId!
 }
 
 enum InvoicePaymentStatus {
@@ -281,6 +282,7 @@ scalar LnPaymentSecret
 type LnUpdate {
   paymentHash: PaymentHash!
   status: InvoicePaymentStatus!
+  walletId: WalletId!
 }
 
 type MapInfo {
@@ -398,6 +400,7 @@ type OnChainUpdate {
   txHash: OnChainTxHash!
   txNotificationType: TxNotificationType!
   usdPerSat: Float!
+  walletId: WalletId!
 }
 
 """

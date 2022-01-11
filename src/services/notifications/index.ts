@@ -1,8 +1,8 @@
 import {
+  accountUpdateEvent,
   lnPaymentStatusEvent,
   SAT_USDCENT_PRICE,
   USER_PRICE_UPDATE_EVENT,
-  walletUpdateEvent,
 } from "@config/app"
 import { NotificationsServiceError, NotificationType } from "@domain/notifications"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
@@ -44,10 +44,11 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       })
 
       // Notify the recipient (via GraphQL subscription if any)
-      const walletUpdatedEventName = walletUpdateEvent(walletId)
+      const accountUpdatedEventName = accountUpdateEvent(account.id)
 
-      pubsub.publish(walletUpdatedEventName, {
+      pubsub.publish(accountUpdatedEventName, {
         transaction: {
+          walletId,
           txNotificationType: type,
           amount,
           txHash,
@@ -130,9 +131,10 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       pubsub.publish(eventName, { status: "PAID" })
 
       // Notify the recipient (via GraphQL subscription if any)
-      const walletUpdatedEventName = walletUpdateEvent(recipientWalletId)
-      pubsub.publish(walletUpdatedEventName, {
+      const accountUpdatedEventName = accountUpdateEvent(account.id)
+      pubsub.publish(accountUpdatedEventName, {
         invoice: {
+          walletId: recipientWalletId,
           paymentHash,
           status: "PAID",
         },
@@ -157,52 +159,49 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     usdPerSat,
   }: IntraLedgerArgs): Promise<void | NotificationsServiceError> => {
     try {
-      const publish = async (walletId: WalletId, type: NotificationType) => {
-        // Notify the recipient (via GraphQL subscription if any)
-        const walletUpdatedEventName = walletUpdateEvent(walletId)
+      const publish = async ({
+        walletId,
+        type,
+      }: {
+        walletId: WalletId
+        type: NotificationType
+      }) => {
+        const account = await AccountsRepository().findByWalletId(senderWalletId)
+        if (account instanceof Error) return account
 
-        pubsub.publish(walletUpdatedEventName, {
+        // Notify the recipient (via GraphQL subscription if any)
+        const accountUpdatedEventName = accountUpdateEvent(account.id)
+
+        pubsub.publish(accountUpdatedEventName, {
           intraLedger: {
+            walletId,
             txNotificationType: type,
             amount,
             usdPerSat,
           },
         })
+
+        const user = await UsersRepository().findById(account.ownerId)
+        if (user instanceof Error) return user
+
+        // Do not await this call for quicker processing
+        transactionNotification({
+          type: NotificationType.IntraLedgerPayment,
+          user,
+          logger,
+          amount,
+          usdPerSat,
+        })
       }
 
-      publish(senderWalletId, NotificationType.IntraLedgerPayment)
-      publish(recipientWalletId, NotificationType.IntraLedgerReceipt)
-
-      const senderAccount = await AccountsRepository().findByWalletId(senderWalletId)
-      if (senderAccount instanceof Error) return senderAccount
-
-      const senderUser = await UsersRepository().findById(senderAccount.ownerId)
-      if (senderUser instanceof Error) return senderUser
-
-      // Do not await this call for quicker processing
-      transactionNotification({
+      publish({
+        walletId: senderWalletId,
         type: NotificationType.IntraLedgerPayment,
-        user: senderUser,
-        logger,
-        amount,
-        usdPerSat,
       })
 
-      const recipientAccount = await AccountsRepository().findByWalletId(
-        recipientWalletId,
-      )
-      if (recipientAccount instanceof Error) return recipientAccount
-
-      const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
-      if (recipientUser instanceof Error) return recipientUser
-
-      // Do not await this call for quicker processing
-      transactionNotification({
+      publish({
+        walletId: recipientWalletId,
         type: NotificationType.IntraLedgerReceipt,
-        user: recipientUser,
-        logger,
-        amount,
-        usdPerSat,
       })
     } catch (err) {
       return new NotificationsServiceError(err)

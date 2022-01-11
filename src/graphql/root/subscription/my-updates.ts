@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import {
   SAT_PRICE_PRECISION_OFFSET,
   USER_PRICE_UPDATE_EVENT,
-  walletUpdateEvent,
+  accountUpdateEvent,
 } from "@config/app"
 import pubsub from "@services/pubsub"
 import { Prices } from "@app"
@@ -15,6 +15,7 @@ import SatAmount from "@graphql/types/scalar/sat-amount"
 import OnChainTxHash from "@graphql/types/scalar/onchain-tx-hash"
 import TxNotificationType from "@graphql/types/scalar/tx-notification-type"
 import GraphQLUser from "@graphql/types/object/graphql-user"
+import WalletId from "@graphql/types/scalar/wallet-id"
 
 const IntraLedgerUpdate = new GT.Object({
   name: "IntraLedgerUpdate",
@@ -22,6 +23,7 @@ const IntraLedgerUpdate = new GT.Object({
     txNotificationType: { type: GT.NonNull(TxNotificationType) },
     amount: { type: GT.NonNull(SatAmount) },
     usdPerSat: { type: GT.NonNull(GT.Float) },
+    walletId: { type: GT.NonNull(WalletId) },
   }),
 })
 
@@ -30,6 +32,7 @@ const LnUpdate = new GT.Object({
   fields: () => ({
     paymentHash: { type: GT.NonNull(PaymentHash) },
     status: { type: GT.NonNull(InvoicePaymentStatus) },
+    walletId: { type: GT.NonNull(WalletId) },
   }),
 })
 
@@ -40,6 +43,7 @@ const OnChainUpdate = new GT.Object({
     txHash: { type: GT.NonNull(OnChainTxHash) },
     amount: { type: GT.NonNull(SatAmount) },
     usdPerSat: { type: GT.NonNull(GT.Float) },
+    walletId: { type: GT.NonNull(WalletId) },
   }),
 })
 
@@ -114,7 +118,7 @@ const MeSubscription = {
 
     return pubsub.asyncIterator([
       USER_PRICE_UPDATE_EVENT,
-      walletUpdateEvent(ctx.domainAccount.defaultWalletId),
+      accountUpdateEvent(ctx.domainAccount.id),
     ])
   },
 }
