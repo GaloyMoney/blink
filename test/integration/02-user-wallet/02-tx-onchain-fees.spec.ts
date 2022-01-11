@@ -9,6 +9,7 @@ import {
   bitcoindOutside,
   createUserWallet,
   getDefaultWalletByTestUserIndex,
+  outsideWalletName,
 } from "test/helpers"
 
 const defaultAmount = toSats(6000)
@@ -22,11 +23,11 @@ beforeAll(async () => {
 
   wallet0 = await getDefaultWalletByTestUserIndex(0)
   wallet1 = await getDefaultWalletByTestUserIndex(1)
-  await bitcoindClient.loadWallet({ filename: "outside" })
+  await bitcoindClient.loadWallet(outsideWalletName)
 })
 
 afterAll(async () => {
-  await bitcoindClient.unloadWallet({ walletName: "outside" })
+  await bitcoindClient.unloadWallet(outsideWalletName)
 })
 
 describe("UserWallet - getOnchainFee", () => {

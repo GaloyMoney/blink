@@ -1,10 +1,11 @@
 import { Prices, Wallets } from "@app"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
-import { sat2btc, toSats } from "@domain/bitcoin"
+import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { TxStatus } from "@domain/wallets"
 import { onchainBlockEventhandler, onInvoiceUpdate } from "@servers/trigger"
+import { sat2btc } from "@services/bitcoind"
 import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
 import { getTitle } from "@services/notifications/payment"
@@ -12,6 +13,7 @@ import { getTitle } from "@services/notifications/payment"
 import {
   amountAfterFeeDeduction,
   bitcoindClient,
+  outsideWalletName,
   bitcoindOutside,
   createUserWallet,
   getDefaultWalletIdByTestUserIndex,
@@ -45,8 +47,6 @@ let userType0: UserType
 let userType3: UserType
 
 beforeAll(async () => {
-  await bitcoindClient.loadWallet({ filename: "outside" })
-
   await createUserWallet(0)
   await createUserWallet(3)
   await createUserWallet(12)
@@ -59,6 +59,8 @@ beforeAll(async () => {
 
   userType0 = await getUserTypeByTestUserIndex(0)
   userType3 = await getUserTypeByTestUserIndex(3)
+
+  await bitcoindClient.loadWallet(outsideWalletName)
 })
 
 beforeEach(() => {
@@ -67,7 +69,7 @@ beforeEach(() => {
 
 afterAll(async () => {
   jest.restoreAllMocks()
-  await bitcoindClient.unloadWallet({ walletName: "outside" })
+  await bitcoindClient.unloadWallet(outsideWalletName)
 })
 
 type WalletState = {

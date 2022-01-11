@@ -1,5 +1,5 @@
 import { Wallets } from "@app"
-import { getBalance as getBitcoindBalance } from "@services/bitcoind"
+import { getBalance } from "@services/bitcoind"
 import { lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
@@ -104,7 +104,7 @@ export const balanceSheetIsBalanced = async () => {
     await getLedgerAccounts()
   const { total: lnd } = await lndsBalances() // doesnt include escrow amount
 
-  const bitcoind = await getBitcoindBalance()
+  const bitcoind = await getBalance()
 
   const assetsLiabilitiesDifference =
     assets /* assets is ___ */ + liabilities /* liabilities is ___ */

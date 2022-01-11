@@ -26,6 +26,8 @@ import groupBy from "lodash.groupby"
 import mapValues from "lodash.mapvalues"
 import map from "lodash.map"
 
+import { toSats } from "@domain/bitcoin"
+
 import { params } from "./auth"
 
 export const deleteExpiredInvoiceUser = async () => {
@@ -61,11 +63,11 @@ export const deleteFailedPaymentsAttemptAllLnds = async () => {
 export const lndsBalances = async () => {
   const data = await Promise.all(getLnds().map(({ lnd }) => lndBalances({ lnd })))
   return {
-    total: sumBy(data, "total"),
-    onChain: sumBy(data, "onChain"),
-    offChain: sumBy(data, "offChain"),
-    opening_channel_balance: sumBy(data, "opening_channel_balance"),
-    closing_channel_balance: sumBy(data, "closing_channel_balance"),
+    total: toSats(sumBy(data, "total")),
+    onChain: toSats(sumBy(data, "onChain")),
+    offChain: toSats(sumBy(data, "offChain")),
+    opening_channel_balance: toSats(sumBy(data, "opening_channel_balance")),
+    closing_channel_balance: toSats(sumBy(data, "closing_channel_balance")),
   }
 }
 
@@ -89,18 +91,19 @@ export const lndBalances = async ({ lnd }) => {
     sumBy(channel.close_payments, (payment) => (payment.is_pending ? payment.tokens : 0)),
   )
 
-  const total =
+  const total = toSats(
     chain_balance +
-    channel_balance +
-    pending_chain_balance +
-    opening_channel_balance +
-    closing_channel_balance
+      channel_balance +
+      pending_chain_balance +
+      opening_channel_balance +
+      closing_channel_balance,
+  )
   return {
     total,
-    onChain: chain_balance + pending_chain_balance,
-    offChain: channel_balance,
-    opening_channel_balance,
-    closing_channel_balance,
+    onChain: toSats(chain_balance + pending_chain_balance),
+    offChain: toSats(channel_balance),
+    opening_channel_balance: toSats(opening_channel_balance),
+    closing_channel_balance: toSats(closing_channel_balance),
   }
 }
 

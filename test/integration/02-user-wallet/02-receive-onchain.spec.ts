@@ -6,7 +6,7 @@ import {
   getOnChainAddressCreateAttemptLimits,
   getUserLimits,
 } from "@config/app"
-import { sat2btc, toSats } from "@domain/bitcoin"
+import { toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
 import { TxStatus } from "@domain/wallets"
@@ -26,6 +26,7 @@ import {
   getDefaultWalletIdByTestUserIndex,
   getUserTypeByTestUserIndex,
   lndonchain,
+  outsideWalletName,
   RANDOM_ADDRESS,
   sendToAddressAndConfirm,
   subscribeToChainAddress,
@@ -46,12 +47,13 @@ jest.mock("@services/notifications/notification")
 const { sendNotification } = require("@services/notifications/notification")
 
 beforeAll(async () => {
-  await createMandatoryUsers()
+  await bitcoindClient.loadWallet(outsideWalletName)
 
-  await bitcoindClient.loadWallet({ filename: "outside" })
+  await createMandatoryUsers()
 
   walletId0 = await getDefaultWalletIdByTestUserIndex(0)
 
+  await createUserWallet(0)
   await createUserWallet(2)
 })
 
@@ -69,7 +71,7 @@ afterEach(async () => {
 
 afterAll(async () => {
   jest.restoreAllMocks()
-  await bitcoindClient.unloadWallet({ walletName: "outside" })
+  await bitcoindClient.unloadWallet(outsideWalletName)
 })
 
 describe("FunderWallet - On chain", () => {
@@ -217,7 +219,7 @@ describe("UserWallet - On chain", () => {
       once(sub, "chain_transaction"),
       bitcoindOutside.sendToAddress({
         address,
-        amount: sat2btc(amountSats),
+        amount: amountSats,
       }),
     ])
 
@@ -370,7 +372,7 @@ async function sendToWalletTestWrapper({
   await sendToAddressAndConfirm({
     walletClient: bitcoindOutside,
     address,
-    amount: sat2btc(amountSats),
+    amount: amountSats,
   })
   await checkBalance(blockNumber)
 }

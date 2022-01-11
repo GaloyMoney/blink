@@ -8,3 +8,5 @@ export class OnChainServiceError extends OnChainError {}
 export class UnknownOnChainServiceError extends OnChainServiceError {}
 export class CouldNotFindOnChainTransactionError extends OnChainServiceError {}
 export class OnChainServiceUnavailableError extends OnChainServiceError {}
+
+export class WalletAlreadyExistError extends OnChainServiceError {}

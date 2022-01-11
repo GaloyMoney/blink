@@ -1,5 +1,5 @@
 import { Wallets } from "@app"
-import { btc2sat } from "@domain/bitcoin"
+import { toSats } from "@domain/bitcoin"
 import { BitcoindWalletClient } from "@services/bitcoind"
 import { getFunderWalletId } from "@services/ledger/accounts"
 
@@ -12,6 +12,7 @@ import {
   lnd1,
   lndOutside1,
   mineAndConfirm,
+  outsideWalletName,
   sendToAddressAndConfirm,
   waitUntilBlockHeight,
 } from "test/helpers"
@@ -23,7 +24,7 @@ beforeAll(async () => {
 })
 
 afterAll(async () => {
-  await bitcoindClient.unloadWallet({ walletName: "outside" })
+  await bitcoindClient.unloadWallet(outsideWalletName)
 })
 
 describe("Bitcoind", () => {
@@ -33,12 +34,11 @@ describe("Bitcoind", () => {
   })
 
   it("create outside wallet", async () => {
-    const walletName = "outside"
-    const { name } = await bitcoindClient.createWallet({ wallet_name: walletName })
-    expect(name).toBe(walletName)
+    const { name } = await bitcoindClient.createWallet(outsideWalletName)
+    expect(name).toBe(outsideWalletName)
     const wallets = await bitcoindClient.listWallets()
-    expect(wallets).toContain(walletName)
-    bitcoindOutside = new BitcoindWalletClient({ walletName })
+    expect(wallets).toContain(outsideWalletName)
+    bitcoindOutside = BitcoindWalletClient(outsideWalletName)
   })
 
   it("should be funded mining 10 blocks", async () => {
@@ -54,9 +54,9 @@ describe("Bitcoind", () => {
   })
 
   it("funds outside lnd node", async () => {
-    const amount = 1
+    const amount = toSats(100_000_000)
     const { chain_balance: initialBalance } = await getChainBalance({ lnd: lndOutside1 })
-    const sats = initialBalance + btc2sat(amount)
+    const sats = initialBalance + amount
     await fundLnd(lndOutside1, amount)
     const { chain_balance: balance } = await getChainBalance({ lnd: lndOutside1 })
     expect(balance).toBe(sats)
@@ -65,9 +65,9 @@ describe("Bitcoind", () => {
   it("funds lnd1 node", async () => {
     await createMandatoryUsers()
 
-    const amount = 1
+    const amount = toSats(100_000_000)
     const { chain_balance: initialBalance } = await getChainBalance({ lnd: lnd1 })
-    const sats = initialBalance + btc2sat(amount)
+    const sats = initialBalance + amount
 
     const funderWalletId = await getFunderWalletId()
     const address = await Wallets.createOnChainAddress(funderWalletId)

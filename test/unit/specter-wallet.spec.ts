@@ -1,7 +1,7 @@
-import { btc2sat } from "@domain/bitcoin"
 import { SpecterWallet } from "@core/specter-wallet"
 import { getSpecterWalletConfig } from "@config/app"
 import { baseLogger } from "@services/logger"
+import { toSats } from "@domain/bitcoin"
 
 jest.mock("@config/app.ts", () => {
   const config = jest.requireActual("@config/app.ts")
@@ -28,8 +28,8 @@ afterAll(() => {
 describe("SpecterWallet", () => {
   describe("isRebalanceNeeded", () => {
     it("returns deposit amount calculation", () => {
-      const lndBalance = btc2sat(1)
-      const onChain = btc2sat(0.8)
+      const lndBalance = toSats(100_000_000)
+      const onChain = toSats(80_000_000)
       const result = specterWallet.isRebalanceNeeded({ lndBalance, onChain })
 
       expect(result).toStrictEqual({
@@ -40,16 +40,16 @@ describe("SpecterWallet", () => {
     })
 
     it("returns withdraw amount calculation", () => {
-      const lndBalance = btc2sat(0.2)
-      const onChain = btc2sat(0.1)
+      const lndBalance = toSats(20_000_000)
+      const onChain = toSats(10_000_000)
       const result = specterWallet.isRebalanceNeeded({ lndBalance, onChain })
 
       expect(result).toStrictEqual({ action: "withdraw", sats: 30000000 })
     })
 
     it("returns undefined when no action needed", () => {
-      const lndBalance = btc2sat(0.5)
-      const onChain = btc2sat(0.5)
+      const lndBalance = toSats(50_000_000)
+      const onChain = toSats(50_000_000)
       const result = specterWallet.isRebalanceNeeded({ lndBalance, onChain })
 
       expect(result).toStrictEqual({ action: undefined })

@@ -2,22 +2,27 @@ import assert from "assert"
 
 import { createChainAddress, sendToChainAddress } from "lightning"
 
-import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
+import {
+  bitcoindDefaultClient,
+  BitcoindWalletClient,
+  btc2sat,
+  sat2btc,
+} from "@services/bitcoind"
 import { getActiveOnchainLnd, lndsBalances } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
 
 import { BTC_NETWORK, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config/app"
-import { btc2sat, sat2btc, toSats } from "@domain/bitcoin"
+import { toSats } from "@domain/bitcoin"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 
 import { UserWallet } from "./user-wallet"
 
 // TODO no longer used in tests, removing the creation of the default wallet didn't break anything
-const staticClient = ""
+const staticClient = "" as BitcoindWalletName
 
 export class SpecterWallet {
-  bitcoindClient // TODO rename?
+  bitcoindClient
   readonly logger: Logger
   readonly config: SpecterWalletConfig
 
@@ -28,16 +33,8 @@ export class SpecterWallet {
     assert(this.config.onchainWallet !== "")
   }
 
-  async listWallets() {
-    return bitcoindDefaultClient.listWallets()
-  }
-
-  async createWallet() {
-    return bitcoindDefaultClient.createWallet({ wallet_name: "specter/coldstorage" })
-  }
-
-  async setBitcoindClient(): Promise<string> {
-    const wallets = await this.listWallets()
+  async setBitcoindClient(): Promise<BitcoindWalletName> {
+    const wallets = await bitcoindDefaultClient.listWallets()
 
     const pattern = this.config.onchainWallet
     const specterWallets = wallets.filter((item) => item.includes(pattern))
@@ -60,7 +57,7 @@ export class SpecterWallet {
 
     this.logger.info({ wallet: specterWallets[0] }, "setting BitcoindClient")
 
-    this.bitcoindClient = new BitcoindWalletClient({ walletName: specterWallets[0] })
+    this.bitcoindClient = BitcoindWalletClient(specterWallets[0])
 
     return specterWallets[0]
   }
@@ -84,15 +81,15 @@ export class SpecterWallet {
     return this.bitcoindClient.getAddressInfo({ address })
   }
 
-  async getBitcoindBalance(): Promise<number> {
+  async getBitcoindBalance(): Promise<Satoshis> {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === staticClient) {
-        return 0
+        return toSats(0)
       }
     }
 
-    return btc2sat(await this.bitcoindClient.getBalance())
+    return this.bitcoindClient.getBalance()
   }
 
   async tentativelyRebalance(): Promise<void> {
@@ -119,12 +116,12 @@ export class SpecterWallet {
     }
 
     if (!sats) {
-      logger.info("sats is null")
+      logger.info("sats is undefined")
       return
     }
 
     if (action === "deposit") {
-      await this.toColdStorage({ sats })
+      await this.toColdStorage(sats)
       logger.info("rebalancing succesfull")
     } else if (action === "withdraw") {
       logger.error("rebalancing is needed, but need manual intervention")
@@ -132,7 +129,13 @@ export class SpecterWallet {
     }
   }
 
-  isRebalanceNeeded({ lndBalance, onChain }) {
+  isRebalanceNeeded({
+    lndBalance,
+    onChain,
+  }: {
+    lndBalance: Satoshis
+    onChain: Satoshis
+  }) {
     // base number to calculate the different thresholds below
     const lndHoldingBase = this.config.lndHoldingBase
 
@@ -154,7 +157,7 @@ export class SpecterWallet {
     const targetWithdraw = lndHoldingBase * ratioTargetWithdraw
 
     if (lndBalance > thresholdHighBound) {
-      const sats = lndBalance - targetDeposit
+      const sats = toSats(lndBalance - targetDeposit)
       let action: string | undefined = "deposit"
       let reason: string | undefined
 
@@ -170,13 +173,13 @@ export class SpecterWallet {
     }
 
     if (lndBalance < thresholdLowBound) {
-      return { action: "withdraw", sats: targetWithdraw - lndBalance }
+      return { action: "withdraw", sats: toSats(targetWithdraw - lndBalance) }
     }
 
     return { action: undefined }
   }
 
-  async toColdStorage({ sats }) {
+  async toColdStorage(sats: Satoshis) {
     if (!this.bitcoindClient) {
       const wallet = await this.setBitcoindClient()
       if (wallet === staticClient) {
