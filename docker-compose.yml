@@ -23,6 +23,13 @@ services:
     environment:
     - ALLOW_EMPTY_PASSWORD=yes
     - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+  galoy-migrate:
+    depends_on: [mongodb]
+    build:
+      context: .
+      dockerfile: Dockerfile-migrate
+    environment:
+    - MONGODB_ADDRESS=mongodb
   mongodb:
     image: bitnami/mongodb:4.4.6-debian-10-r0
     ports:

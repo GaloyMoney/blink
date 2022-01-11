@@ -12,6 +12,10 @@
 #@   return data.values.docker_registry + "/galoy-app-debug"
 #@ end
 
+#@ def migrate_galoy_image():
+#@   return data.values.docker_registry + "/galoy-app-migrate"
+#@ end
+
 #@ def task_image_config():
 type: registry-image
 source:
@@ -38,6 +42,7 @@ groups:
   - check-code
   - build-edge-image
   - build-debug-edge-image
+  - build-migrate-edge-image
   - install-deps
   - bump-image-in-chart
 - name: image
@@ -222,12 +227,42 @@ jobs:
     params:
       image: image/image.tar
 
+- name: build-migrate-edge-image
+  serial: true
+  plan:
+  - { get: repo, trigger: true }
+  - task: build
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: vito/oci-build-task
+      inputs:
+      - name: repo
+      outputs:
+      - name: image
+      params:
+        CONTEXT: repo
+        BUILD_ARGS_FILE: repo/.env
+        DOCKERFILE: "repo/Dockerfile-migrate"
+      run:
+        path: build
+  - put: migrate-edge-image
+    params:
+      image: image/image.tar
+
 - name: bump-image-in-chart
   plan:
   - in_parallel:
     - get: edge-image
       trigger: true
       passed: [build-edge-image]
+      params: { skip_download: true }
+    - get: migrate-edge-image
+      trigger: true
+      passed: [build-migrate-edge-image]
       params: { skip_download: true }
     - get: repo
       trigger: true
@@ -236,6 +271,7 @@ jobs:
       - test-unit
       - test-integration
       - build-debug-edge-image
+      - build-migrate-edge-image
       - build-edge-image
     - get: charts-repo
       params: { skip_download: true }
@@ -312,6 +348,14 @@ resources:
     username: #@ data.values.docker_registry_user
     password: #@ data.values.docker_registry_password
     repository: #@ debug_galoy_image()
+
+- name: migrate-edge-image
+  type: registry-image
+  source:
+    tag: edge
+    username: #@ data.values.docker_registry_user
+    password: #@ data.values.docker_registry_password
+    repository: #@ migrate_galoy_image()
 
 - name: deps
   type: git
