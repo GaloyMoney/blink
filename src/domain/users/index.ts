@@ -4,7 +4,7 @@ export const UserLanguage = {
   ES_SV: "es",
 } as const
 
-import { InvalidPhoneNumber } from "@domain/errors"
+import { InvalidLanguageError, InvalidPhoneNumber } from "@domain/errors"
 
 // TODO: we could be using https://gitlab.com/catamphetamine/libphonenumber-js#readme
 // for a more precise "regex"
@@ -17,4 +17,10 @@ export const checkedToPhoneNumber = (
     return new InvalidPhoneNumber(phoneNumber)
   }
   return phoneNumber as PhoneNumber
+}
+
+export const checkedToLanguage = (language: string): UserLanguage | ValidationError => {
+  if (Object.values<string>(UserLanguage).includes(language))
+    return language as UserLanguage
+  return new InvalidLanguageError()
 }

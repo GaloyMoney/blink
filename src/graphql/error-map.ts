@@ -274,6 +274,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidOnChainAddress":
     case "InvalidScanDepthAmount":
     case "InsufficientBalanceForRoutingError":
+    case "InvalidLanguageError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
