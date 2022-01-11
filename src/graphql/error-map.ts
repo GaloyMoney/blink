@@ -115,6 +115,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "InvoiceCreateRateLimiterExceededError":
+    case "InvoiceCreateForRecipientRateLimiterExceededError":
       message = "Too many invoices creation, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
@@ -265,6 +266,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UserLoginIpRateLimiterExceededError":
     case "UserLoginPhoneRateLimiterExceededError":
     case "UserPhoneCodeAttemptPhoneRateLimiterExceededError":
+    case "UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError":
     case "UserPhoneCodeAttemptIpRateLimiterExceededError":
     case "PhoneProviderServiceError":
     case "UnknownPhoneProviderServiceError":
