@@ -148,7 +148,10 @@ export const openChannelTesting = async ({
 // all the following uses of bitcoind client that send/receive coin must be "outside"
 
 export const fundLnd = async (lnd, amount = 1) => {
-  const { address } = await createChainAddress({ format: "p2wpkh", lnd })
+  const { address } = (await createChainAddress({
+    format: "p2wpkh",
+    lnd,
+  })) as { address: OnChainAddress }
   await sendToAddressAndConfirm({ walletClient: bitcoindOutside, address, amount })
   await waitUntilBlockHeight({ lnd })
 }

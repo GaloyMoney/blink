@@ -1,10 +1,10 @@
 import { JWT_SECRET, yamlConfig } from "@config/app"
+import { toSats } from "@domain/bitcoin"
 import { startApolloServerForCoreSchema } from "@servers/graphql-main-server"
+import { sleep } from "@utils"
 import { createTestClient } from "apollo-server-integration-testing"
 import { createHttpTerminator } from "http-terminator"
 import * as jwt from "jsonwebtoken"
-
-import { sleep } from "@utils"
 
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
@@ -17,18 +17,29 @@ import ME from "./queries/me.gql"
 import MAIN from "./queries/main.gql"
 
 import {
+  bitcoindClient,
   clearAccountLocks,
   clearLimiters,
   createInvoice,
+  createMandatoryUsers,
+  createUserWallet,
+  fundWalletIdFromLightning,
+  getDefaultWalletIdByTestUserIndex,
   lndOutside2,
 } from "test/helpers"
 
 jest.mock("@services/twilio", () => require("test/mocks/twilio"))
 
 let apolloServer, httpServer, httpTerminator, query, mutate, setOptions, walletId
-const { phone, code } = yamlConfig.test_accounts[3]
+const { phone, code } = yamlConfig.test_accounts[0]
 
 beforeAll(async () => {
+  await bitcoindClient.loadWallet({ filename: "outside" })
+
+  await createMandatoryUsers()
+  await createUserWallet(0)
+  walletId = await getDefaultWalletIdByTestUserIndex(0)
+  await fundWalletIdFromLightning({ walletId, amount: toSats(50_000) })
   ;({ apolloServer, httpServer } = await startApolloServerForCoreSchema())
   ;({ query, mutate, setOptions } = createTestClient({ apolloServer }))
   httpTerminator = createHttpTerminator({ server: httpServer })
@@ -39,7 +50,7 @@ beforeAll(async () => {
   // mock jwt middleware
   setOptions({ request: { token } })
   const meResult = await query(ME)
-  walletId = meResult.data.me.defaultAccount.defaultWalletId
+  expect(meResult.data.me.defaultAccount.defaultWalletId).toBe(walletId)
 })
 
 beforeEach(async () => {
@@ -48,6 +59,8 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
+
   setOptions({ request: { token: null } })
   await httpTerminator.terminate()
 })
