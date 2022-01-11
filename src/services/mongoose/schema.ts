@@ -266,6 +266,7 @@ const UserSchema = new Schema<UserType>({
     {
       type: String,
       length: 36,
+      index: true,
       // FIXME can we make it a reference to id instead of _id?
       // ref: 'Wallet',
       // localField: '???',
