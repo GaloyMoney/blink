@@ -5,7 +5,7 @@ import {
   from,
   HttpLink,
   split,
-  NormalizedCacheObject
+  NormalizedCacheObject,
 } from "@apollo/client/core"
 import { WebSocketLink } from "@apollo/client/link/ws"
 import { getMainDefinition } from "@apollo/client/utilities"

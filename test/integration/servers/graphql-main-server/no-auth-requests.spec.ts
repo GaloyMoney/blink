@@ -33,7 +33,7 @@ const { phone, code } = yamlConfig.test_accounts[9]
 beforeAll(async () => {
   correctCode = `${code}`
   await startServer()
-    ; ({ apolloClient, disposeClient } = createApolloClient())
+  ;({ apolloClient, disposeClient } = createApolloClient())
 })
 
 beforeEach(async () => {
@@ -80,7 +80,7 @@ describe("graphql", () => {
 
     it("success with a valid phone", async () => {
       const input = { phone }
-      const result = await apolloClient.mutate({mutation, variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userRequestAuthCode).toEqual(
         expect.objectContaining({ success: true }),
       )
@@ -90,19 +90,19 @@ describe("graphql", () => {
       const message = "Invalid value for Phone"
       let input = { phone: "+123" }
 
-      let result = await apolloClient.mutate({mutation, variables: { input } })
+      let result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userRequestAuthCode.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
 
       input = { phone: "abcd" }
-      result = await apolloClient.mutate({mutation, variables: { input } })
+      result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userRequestAuthCode.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
 
       input = { phone: "" }
-      result = await apolloClient.mutate({mutation, variables: { input } })
+      result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userRequestAuthCode.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
@@ -120,7 +120,7 @@ describe("graphql", () => {
 
     it("returns a jwt token for a valid phone/code", async () => {
       const input = { phone, code: correctCode }
-      const result = await apolloClient.mutate({mutation, variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userLogin).toHaveProperty("authToken")
       const token = jwt.verify(result.data.userLogin.authToken, `${JWT_SECRET}`)
       expect(token).toHaveProperty("uid")
@@ -132,7 +132,7 @@ describe("graphql", () => {
       let phone = "+19999999999"
       let message = "Invalid or incorrect phone code entered."
       let input = { phone, code: correctCode }
-      let result = await apolloClient.mutate({mutation, variables: { input } })
+      let result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
@@ -140,21 +140,21 @@ describe("graphql", () => {
       phone = "+1999"
       message = "Invalid value for Phone"
       input = { phone, code: correctCode }
-      result = await apolloClient.mutate({mutation, variables: { input } })
+      result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
 
       phone = "abcd"
       input = { phone, code: correctCode }
-      result = await apolloClient.mutate({mutation, variables: { input } })
+      result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
 
       phone = ""
       input = { phone, code: correctCode }
-      result = await apolloClient.mutate({mutation, variables: { input } })
+      result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
@@ -163,20 +163,20 @@ describe("graphql", () => {
     it("returns error for invalid code", async () => {
       let message = "Invalid or incorrect phone code entered."
       let input = { phone, code: "113566" }
-      let result = await apolloClient.mutate({mutation, variables: { input } })
+      let result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
 
       message = "Invalid value for OneTimeAuthCode"
       input = { phone, code: "abcdef" }
-      result = await apolloClient.mutate({mutation, variables: { input } })
+      result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
 
       input = { phone, code: "" }
-      result = await apolloClient.mutate({mutation, variables: { input } })
+      result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )

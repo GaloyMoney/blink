@@ -61,7 +61,9 @@ describe("galoy-pay", () => {
       const result = await apolloClient.query({ query: myQuery, variables: input })
 
       expect(result.errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining(message) })]),
+        expect.arrayContaining([
+          expect.objectContaining({ message: expect.stringContaining(message) }),
+        ]),
       )
     })
 
@@ -72,7 +74,9 @@ describe("galoy-pay", () => {
       const result = await apolloClient.query({ query: myQuery, variables: input })
 
       expect(result.errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining(message) })]),
+        expect.arrayContaining([
+          expect.objectContaining({ message: expect.stringContaining(message) }),
+        ]),
       )
     })
   })
@@ -173,7 +177,7 @@ describe("galoy-pay", () => {
         query: subscriptionQuery,
         variables: input,
       })
-      const result = await getSubscriptionNext(subscription) as { data }
+      const result = (await getSubscriptionNext(subscription)) as { data }
       const { price, errors } = result.data?.price
 
       expect(errors.length).toEqual(0)
@@ -219,7 +223,7 @@ describe("galoy-pay", () => {
       })
       expect(makePayment.data.lnInvoicePaymentSend.status).toEqual("SUCCESS")
 
-      const result = await getSubscriptionNext(subscription) as { data }
+      const result = (await getSubscriptionNext(subscription)) as { data }
 
       // Assert the the invoice is paid
       expect(result.data.lnInvoicePaymentStatus.status).toEqual("PAID")
