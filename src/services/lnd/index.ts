@@ -212,12 +212,16 @@ export const LndService = (): ILightningService | LightningServiceError => {
       return {
         createdAt: new Date(invoice.created_at),
         confirmedAt: invoice.confirmed_at ? new Date(invoice.confirmed_at) : undefined,
-        description: invoice.description,
-        expiresAt: invoice.expires_at ? new Date(invoice.expires_at) : undefined,
         isSettled: !!invoice.is_confirmed,
-        received: toSats(invoice.received),
-        request: invoice.request,
+        roundedDownReceived: toSats(invoice.received),
+        milliSatsReceived: toMilliSatsFromString(invoice.received_mtokens),
         secretPreImage: invoice.secret as SecretPreImage,
+        lnInvoice: {
+          description: invoice.description,
+          paymentRequest: (invoice.request as EncodedPaymentRequest) || undefined,
+          expiresAt: new Date(invoice.expires_at),
+          roundedDownAmount: toSats(invoice.tokens),
+        },
       }
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
