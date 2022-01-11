@@ -27,23 +27,22 @@ describe("UserWallet", () => {
     createMandatoryUsers()
 
     await createUserWallet(0)
+    await createUserWallet(1)
     await createUserWallet(2)
+
+    // load edit for admin-panel manual testing
+    await createUserWallet(13)
 
     userType0 = await getUserTypeByTestUserIndex(0)
     userType2 = await getUserTypeByTestUserIndex(2)
 
     walletId0 = await getDefaultWalletIdByTestUserIndex(0)
+
     accountId0 = await getAccountIdByTestUserIndex(0)
-
-    await createUserWallet(1)
     accountId1 = await getAccountIdByTestUserIndex(1)
-
     accountId2 = await getAccountIdByTestUserIndex(2)
 
     userId0 = await getUserIdByTestUserIndex(0)
-
-    // load edit for admin-panel manual testing
-    await createUserWallet(13)
   })
 
   it("has a role if it was configured", async () => {
@@ -91,15 +90,13 @@ describe("UserWallet", () => {
 
     it("allows set username", async () => {
       let result = await setUsername({ username: "user0", id: accountId0 })
-      expect(!!result).toBeTruthy()
+      expect(result).not.toBeInstanceOf(Error)
       result = await setUsername({ username: "user1", id: accountId1 })
-      expect(!!result).toBeTruthy()
+      expect(result).not.toBeInstanceOf(Error)
     })
 
     it("does not allow set username if already taken", async () => {
       const username = "user0"
-
-      await createUserWallet(2)
       await expect(setUsername({ username, id: accountId2 })).resolves.toBeInstanceOf(
         UsernameNotAvailableError,
       )
@@ -112,7 +109,7 @@ describe("UserWallet", () => {
 
       // set username for account2
       const result = await setUsername({ username: "lily", id: accountId2 })
-      expect(!!result).toBeTruthy()
+      expect(result).not.toBeInstanceOf(Error)
     })
 
     it("does not allow re-setting username", async () => {

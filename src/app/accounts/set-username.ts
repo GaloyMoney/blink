@@ -19,8 +19,7 @@ export const setUsername = async ({
   const accountsRepo = AccountsRepository()
   const account = await accountsRepo.findById(id as AccountId)
   if (account instanceof Error) return account
-
-  if (account.username !== undefined) return new UsernameIsImmutableError()
+  if (account.username) return new UsernameIsImmutableError()
 
   const isAvailable = await usernameAvailable(checkedUsername)
   if (isAvailable instanceof Error) return isAvailable
