@@ -8,18 +8,19 @@ import { sleep } from "@utils"
 
 import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
+import MAIN from "./queries/main.gql"
 
 import { clearAccountLocks, clearLimiters } from "test/helpers"
 
 jest.mock("@services/twilio", () => require("test/mocks/twilio"))
 
-let apolloServer, httpServer, httpTerminator, mutate, correctCode
+let apolloServer, httpServer, httpTerminator, query, mutate, correctCode
 const { phone, code } = yamlConfig.test_accounts[9]
 
 beforeAll(async () => {
   correctCode = `${code}`
   ;({ apolloServer, httpServer } = await startApolloServerForCoreSchema())
-  ;({ mutate } = createTestClient({ apolloServer }))
+  ;({ query, mutate } = createTestClient({ apolloServer }))
   httpTerminator = createHttpTerminator({ server: httpServer })
   await sleep(2500)
 })
@@ -34,6 +35,34 @@ afterAll(async () => {
 })
 
 describe("graphql", () => {
+  describe("main query", () => {
+    it("returns valid data", async () => {
+      const { data } = await query(MAIN, { variables: { hasToken: false } })
+      expect(data.globals).toBeTruthy()
+      expect(data.mobileVersions).toBeTruthy()
+      expect(data.quizQuestions).toBeTruthy()
+
+      expect(data.globals.nodesIds).toEqual(expect.arrayContaining([expect.any(String)]))
+      expect(data.mobileVersions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            currentSupported: expect.any(Number),
+            minSupported: expect.any(Number),
+            platform: expect.any(String),
+          }),
+        ]),
+      )
+      expect(data.quizQuestions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            earnAmount: expect.any(Number),
+          }),
+        ]),
+      )
+    })
+  })
+
   describe("userRequestAuthCode", () => {
     const mutation = USER_REQUEST_AUTH_CODE
 
