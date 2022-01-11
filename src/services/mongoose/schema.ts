@@ -11,6 +11,7 @@ import { toLiabilitiesWalletId } from "@domain/ledger"
 import { Transaction } from "@services/ledger/schema"
 import * as mongoose from "mongoose"
 import { UsernameRegex } from "@domain/accounts"
+import { WalletType } from "@domain/wallets"
 
 export { Transaction }
 
@@ -65,6 +66,41 @@ const feeRates = getFeeRates()
 
 const twoFAConfig = getTwoFAConfig()
 
+const WalletSchema = new Schema({
+  id: {
+    type: String,
+    index: true,
+    unique: true,
+    required: true,
+    default: () => crypto.randomUUID(),
+  },
+  accountId: { type: Schema.Types.ObjectId, ref: "User", index: true },
+  type: {
+    type: String,
+    enum: Object.values(WalletType),
+    required: true,
+    default: WalletType.CheckingBTC,
+  },
+  onchain: {
+    type: [
+      {
+        pubkey: {
+          type: String,
+          required: true,
+        },
+        address: {
+          type: String,
+          // TODO: index?
+          required: true,
+        },
+      },
+    ],
+    default: [],
+  },
+})
+
+export const Wallet = mongoose.model("Wallet", WalletSchema)
+
 const UserSchema = new Schema<UserType>({
   depositFeeRatio: {
     type: Number,
@@ -117,21 +153,6 @@ const UserSchema = new Schema<UserType>({
     // TODO : enfore the fact there can be only one dealer/bankowner/funder
   },
 
-  onchain: {
-    type: [
-      {
-        pubkey: {
-          type: String,
-          required: true,
-        },
-        address: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
-    default: [],
-  },
   level: {
     type: Number,
     enum: levels,
@@ -236,13 +257,21 @@ const UserSchema = new Schema<UserType>({
     },
   },
 
-  walletId: {
+  defaultWalletId: {
     type: String,
     index: true,
-    unique: true,
-    required: true,
-    default: () => crypto.randomUUID(),
   },
+
+  walletIds: [
+    {
+      type: String,
+      length: 36,
+      // FIXME can we make it a reference to id instead of _id?
+      // ref: 'Wallet',
+      // localField: '???',
+      // foreignField: 'id'
+    },
+  ],
 })
 
 // Define getter for ratioUsd

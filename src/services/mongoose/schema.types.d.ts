@@ -67,7 +67,8 @@ interface UserType {
   created_at: string
   onchain: OnChainObjectForUser[]
   twoFA: TwoFAForUser
-  walletId: WalletId
+  walletIds: WalletId[]
+  defaultWalletId: WalletId
 
   // business:
   title?: string

@@ -124,14 +124,29 @@ type WalletTransactionHistoryWithPending = {
   readonly transactions: WalletTransaction[]
 }
 
+type WalletName = string & { readonly brand: unique symbol }
+
+// TODO: split with currency?
+type WalletType =
+  typeof import("./index").WalletType[keyof typeof import("./index").WalletType]
+
+type NewWalletInfo = {
+  accountId: AccountId
+  type: WalletType
+}
+
 type Wallet = {
   readonly id: WalletId
+  readonly accountId: AccountId
+  readonly type: WalletType
   readonly onChainAddressIdentifiers: OnChainAddressIdentifier[]
   onChainAddresses(): OnChainAddress[]
 }
 
 interface IWalletsRepository {
-  findById(walletId: WalletId): Promise<Wallet | RepositoryError>
+  persistNew({ accountId, type }: NewWalletInfo): Promise<Wallet | RepositoryError>
+  findById(id: WalletId): Promise<Wallet | RepositoryError>
+  findByAccountId(accountId: AccountId): Promise<Wallet | RepositoryError>
   findByAddress(address: OnChainAddress): Promise<Wallet | RepositoryError>
   listByAddresses(addresses: OnChainAddress[]): Promise<Wallet[] | RepositoryError>
 }

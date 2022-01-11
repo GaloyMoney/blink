@@ -10,16 +10,25 @@ import { User, Transaction, InvoiceUser } from "../mongoose/schema"
 
 export const ledger = loadLedger({
   bankOwnerWalletResolver: async () => {
-    const { walletId } = await User.findOne({ role: "bankowner" }, { walletId: 1 })
-    return walletId
+    const { defaultWalletId } = await User.findOne(
+      { role: "bankowner" },
+      { defaultWalletId: 1 },
+    )
+    return defaultWalletId
   },
   dealerWalletResolver: async () => {
-    const { walletId } = await User.findOne({ role: "dealer" }, { walletId: 1 })
-    return walletId
+    const { defaultWalletId } = await User.findOne(
+      { role: "dealer" },
+      { defaultWalletId: 1 },
+    )
+    return defaultWalletId
   },
   funderWalletResolver: async () => {
-    const { walletId } = await User.findOne({ role: "funder" }, { walletId: 1 })
-    return walletId
+    const { defaultWalletId } = await User.findOne(
+      { role: "funder" },
+      { defaultWalletId: 1 },
+    )
+    return defaultWalletId
   },
 })
 

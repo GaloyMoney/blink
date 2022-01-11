@@ -15,3 +15,8 @@ export const checkedToWalletId = (walletId: string): WalletId | ValidationError 
   }
   return walletId as WalletId
 }
+
+export const WalletType = {
+  CheckingBTC: "checkingbtc",
+  CheckingUSD: "checkingusd",
+} as const

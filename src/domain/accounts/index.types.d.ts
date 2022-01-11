@@ -23,13 +23,13 @@ type Account = {
   readonly id: AccountId
   readonly createdAt: Date
   username: Username
-  readonly defaultWalletId: WalletId
+  defaultWalletId: WalletId
   readonly ownerId: UserId
   readonly depositFeeRatio: DepositFeeRatio
   readonly withdrawFee: WithdrawFee
   level: AccountLevel
   status: AccountStatus
-  readonly walletIds: WalletId[]
+  walletIds: WalletId[]
   title: BusinessMapTitle
   coordinates: Coordinates
   readonly contacts: AccountContact[]
