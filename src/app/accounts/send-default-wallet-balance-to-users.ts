@@ -3,7 +3,7 @@ import { getCurrentPrice } from "@app/prices"
 import { getBalanceForWalletId } from "@app/wallets"
 import { NotificationsService } from "@services/notifications"
 
-export const sendBalanceToAccounts = async (logger: Logger) => {
+export const sendDefaultWalletBalanceToUsers = async (logger: Logger) => {
   const accounts = await getRecentlyActiveAccounts()
   if (accounts instanceof Error) throw accounts
 
@@ -15,7 +15,7 @@ export const sendBalanceToAccounts = async (logger: Logger) => {
 
     await NotificationsService(logger).sendBalance({
       balance,
-      ownerId: account.ownerId,
+      userId: account.ownerId,
       price,
     })
   }

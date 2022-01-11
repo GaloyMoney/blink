@@ -31,7 +31,7 @@ type IntraLedgerArgs = {
 
 type SendBalanceArgs = {
   balance: Satoshis
-  ownerId: UserId
+  userId: UserId
   price: UsdPerSat | ApplicationError
 }
 

@@ -1,6 +1,6 @@
 import { Prices } from "@app"
 import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
-import { sendBalanceToAccounts } from "@app/accounts/send-balance-to-accounts"
+import { sendDefaultWalletBalanceToUsers } from "@app/accounts/send-default-wallet-balance-to-users"
 import { toSats } from "@domain/bitcoin"
 import * as serviceLedger from "@services/ledger"
 import { baseLogger } from "@services/logger"
@@ -35,7 +35,7 @@ afterAll(() => {
 describe("notification", () => {
   describe("sendNotification", () => {
     it("sends daily balance to active users", async () => {
-      await sendBalanceToAccounts(baseLogger)
+      await sendDefaultWalletBalanceToUsers(baseLogger)
       const users = await getRecentlyActiveAccounts()
       if (users instanceof Error) throw users
       const numActiveUsers = users.length
