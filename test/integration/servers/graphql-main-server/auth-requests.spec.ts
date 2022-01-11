@@ -14,6 +14,7 @@ import LN_NO_AMOUNT_INVOICE_FEE_PROBE from "./mutations/ln-no-amount-invoice-fee
 import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-payment-send.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
 import ME from "./queries/me.gql"
+import MAIN from "./queries/main.gql"
 
 import {
   clearAccountLocks,
@@ -52,6 +53,69 @@ afterAll(async () => {
 })
 
 describe("graphql", () => {
+  describe("main query", () => {
+    it("returns valid data", async () => {
+      const { data } = await query(MAIN, { variables: { hasToken: true } })
+      expect(data.globals).toBeTruthy()
+      expect(data.me).toBeTruthy()
+      expect(data.mobileVersions).toBeTruthy()
+      expect(data.quizQuestions).toBeTruthy()
+
+      expect(data.globals.nodesIds).toEqual(expect.arrayContaining([expect.any(String)]))
+      expect(data.me).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          language: expect.any(String),
+          phone: expect.any(String),
+          defaultAccount: expect.objectContaining({
+            id: expect.any(String),
+            defaultWalletId: expect.any(String),
+            wallets: expect.arrayContaining([
+              expect.objectContaining({
+                id: expect.any(String),
+                balance: expect.any(Number),
+                walletCurrency: expect.any(String),
+                transactions: expect.objectContaining({
+                  edges: expect.arrayContaining([
+                    expect.objectContaining({
+                      cursor: expect.any(String),
+                      node: expect.objectContaining({
+                        id: expect.any(String),
+                        direction: expect.any(String),
+                        status: expect.any(String),
+                        settlementAmount: expect.any(Number),
+                        settlementFee: expect.any(Number),
+                        createdAt: expect.any(Number),
+                      }),
+                    }),
+                  ]),
+                  pageInfo: expect.any(Object),
+                }),
+              }),
+            ]),
+          }),
+        }),
+      )
+      expect(data.mobileVersions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            currentSupported: expect.any(Number),
+            minSupported: expect.any(Number),
+            platform: expect.any(String),
+          }),
+        ]),
+      )
+      expect(data.quizQuestions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            earnAmount: expect.any(Number),
+          }),
+        ]),
+      )
+    })
+  })
+
   describe("lnNoAmountInvoiceCreate", () => {
     const mutation = LN_NO_AMOUNT_INVOICE_CREATE
 
