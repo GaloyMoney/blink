@@ -23,12 +23,12 @@ const { phone, code } = yamlConfig.test_accounts[4]
 
 beforeAll(async () => {
   await startServer()
-    ; ({ apolloClient, disposeClient } = createApolloClient())
+  ;({ apolloClient, disposeClient } = createApolloClient())
   const input = { phone, code: `${code}` }
   const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
   // Create a new authenticated client
   disposeClient()
-    ; ({ apolloClient, disposeClient } = createApolloClient(result.data.userLogin.authToken))
+  ;({ apolloClient, disposeClient } = createApolloClient(result.data.userLogin.authToken))
 })
 
 beforeEach(async () => {
