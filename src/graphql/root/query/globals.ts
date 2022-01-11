@@ -1,3 +1,4 @@
+import { getGaloyBuildInformation } from "@config/app"
 import { GT } from "@graphql/index"
 import Globals from "@graphql/types/object/globals"
 import { getActiveOnchainLnd } from "@services/lnd/utils"
@@ -8,6 +9,7 @@ const GlobalsQuery = GT.Field({
     const { pubkey } = getActiveOnchainLnd()
     return {
       nodesIds: [pubkey],
+      buildInformation: getGaloyBuildInformation(),
     }
   },
 })
