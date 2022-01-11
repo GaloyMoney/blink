@@ -200,7 +200,7 @@ describe("graphql", () => {
     it("returns a valid fee", async () => {
       const { request: paymentRequest } = await createInvoice({
         lnd: lndOutside2,
-        tokens: 1001,
+        tokens: 1_001,
       })
 
       const input = { walletId, paymentRequest }
@@ -214,7 +214,7 @@ describe("graphql", () => {
       const messageRegex = /^Payment amount '\d+' exceeds balance '\d+'$/
       const { request: paymentRequest } = await createInvoice({
         lnd: lndOutside2,
-        tokens: 10010000000,
+        tokens: 10_010_000_000,
       })
 
       const input = { walletId, paymentRequest }
@@ -238,7 +238,7 @@ describe("graphql", () => {
         lnd: lndOutside2,
       })
 
-      const input = { walletId, amount: 1013, paymentRequest }
+      const input = { walletId, amount: 1_013, paymentRequest }
       const result = await mutate(mutation, { variables: { input } })
       const { amount, errors } = result.data.lnNoAmountInvoiceFeeProbe
       expect(errors).toHaveLength(0)
@@ -251,7 +251,7 @@ describe("graphql", () => {
         lnd: lndOutside2,
       })
 
-      const input = { walletId, amount: 10010000000, paymentRequest }
+      const input = { walletId, amount: 10_010_000_000, paymentRequest }
       const result = await mutate(mutation, { variables: { input } })
       const { amount, errors } = result.data.lnNoAmountInvoiceFeeProbe
       expect(errors).toHaveLength(1)
