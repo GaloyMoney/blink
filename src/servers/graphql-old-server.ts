@@ -259,11 +259,19 @@ const resolvers = {
     save2fa: async (_, { secret, token }, { wallet }) =>
       wallet.save2fa({ secret, token }),
     delete2fa: async (_, { token }, { wallet }) => wallet.delete2fa({ token }),
-    updateUser: (_, __, { wallet }) => ({
+    updateUser: (_, __, { wallet, domainUser }) => ({
       setUsername: async ({ username }) => wallet.setUsername({ username }),
-      setLanguage: async ({ language }) => wallet.setLanguage({ language }),
+      setLanguage: async ({ language }) => {
+        const result = await Users.updateLanguage({ userId: domainUser.id, language })
+        if (result instanceof Error) throw mapError(result)
+        return true
+      },
       updateUsername: (input) => wallet.setUsername(input),
-      updateLanguage: (input) => wallet.updateLanguage(input),
+      updateLanguage: async ({ language }) => {
+        const result = await Users.updateLanguage({ userId: domainUser.id, language })
+        if (result instanceof Error) throw mapError(result)
+        return { id: result.id, language: result.language }
+      },
     }),
     updateContact: (_, __, { domainAccount }) => ({
       setName: async ({ username, name }) => {

@@ -101,23 +101,6 @@ export class UserWallet {
     return csv.getBase64()
   }
 
-  // deprecated
-  async setLanguage({ language }): Promise<boolean> {
-    const result = await User.findOneAndUpdate({ _id: this.user.id }, { language })
-
-    if (!result) {
-      const error = `issue setting language preferences`
-      throw new DbError(error, {
-        forwardToClient: false,
-        logger: this.logger,
-        level: "warn",
-        result,
-      })
-    }
-
-    return true
-  }
-
   // TODO(remove) deprecated
   async setUsername({ username }): Promise<{ username: string | undefined; id: string }> {
     try {
@@ -142,18 +125,6 @@ export class UserWallet {
         level: "error",
         err,
       })
-    }
-  }
-
-  async updateLanguage({
-    language,
-  }): Promise<{ language: string | undefined; id: string }> {
-    try {
-      await User.findOneAndUpdate({ _id: this.user.id }, { language })
-      return { language, id: this.user.id }
-    } catch (err) {
-      this.logger.error({ err }, "error updating language")
-      return { language: undefined, id: this.user.id }
     }
   }
 

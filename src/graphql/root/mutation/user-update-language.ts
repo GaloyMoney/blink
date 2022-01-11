@@ -1,3 +1,5 @@
+import { Users } from "@app"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import UserUpdateLanguagePayload from "@graphql/types/payload/user-update-language"
@@ -15,17 +17,18 @@ const UserUpdateLanguageMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserUpdateLanguageInput) },
   },
-  resolve: async (_, args, { wallet }) => {
+  resolve: async (_, args, { domainUser }: { domainUser: User }) => {
     const { language } = args.input
 
     if (language instanceof Error) {
       return { errors: [{ message: language.message }] }
     }
 
-    const result = await wallet.updateLanguage({ language })
+    const result = await Users.updateLanguage({ userId: domainUser.id, language })
 
     if (result instanceof Error) {
-      return { errors: [{ message: result.message }] }
+      const appErr = mapError(result)
+      return { errors: [{ message: appErr.message }] }
     }
 
     return {
