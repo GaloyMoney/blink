@@ -39,8 +39,8 @@ export const lnd1 = offchainLnds[0].lnd
 export const lnd2 = offchainLnds[1].lnd
 export const lndonchain = onchainLnds[0].lnd
 
-export const getHash = (request) => {
-  return parsePaymentRequest({ request }).id
+export const getHash = (request: EncodedPaymentRequest) => {
+  return parsePaymentRequest({ request }).id as PaymentHash
 }
 
 // TODO: this could be refactored with lndAuth
