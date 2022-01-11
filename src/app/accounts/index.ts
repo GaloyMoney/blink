@@ -15,6 +15,8 @@ export * from "./username-available"
 export * from "./get-contact-by-username"
 export * from "./update-contact-alias"
 export * from "./add-new-contact"
+export * from "./add-wallet"
+export * from "./set-default-walletid"
 
 const accounts = AccountsRepository()
 

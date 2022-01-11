@@ -35,12 +35,12 @@ export class UserWallet {
   async getBalances(lock?): Promise<Balances> {
     // was the await omit on purpose?
     await Wallets.updatePendingInvoicesByWalletId({
-      walletId: this.user.walletId as WalletId,
+      walletId: this.user.defaultWalletId as WalletId,
       lock,
       logger: this.logger,
     })
     const result = await Wallets.updatePendingPaymentsByWalletId({
-      walletId: this.user.walletId as WalletId,
+      walletId: this.user.defaultWalletId as WalletId,
       lock,
       logger: this.logger,
     })
@@ -54,7 +54,7 @@ export class UserWallet {
       total_in_USD: NaN,
     }
 
-    const balance = await LedgerService().getWalletBalance(this.user.walletId)
+    const balance = await LedgerService().getWalletBalance(this.user.defaultWalletId)
     if (balance instanceof Error) throw balance
     balances["BTC"] = balance
 
@@ -97,7 +97,7 @@ export class UserWallet {
 
   async getStringCsv() {
     const csv = new CsvWalletsExport()
-    await csv.addWallet(this.user.walletId)
+    await csv.addWallet(this.user.defaultWalletId)
     return csv.getBase64()
   }
 

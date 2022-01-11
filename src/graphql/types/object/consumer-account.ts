@@ -31,6 +31,12 @@ const ConsumerAccount = new GT.Object({
       },
     },
 
+    walletIds: {
+      type: GT.NonNullList(WalletId),
+      result: (source, args, { domainAccount }: { domainAccount: Account }) =>
+        domainAccount.walletIds,
+    },
+
     defaultWalletId: {
       type: GT.NonNull(WalletId),
       resolve: (source, args, { domainAccount }: { domainAccount: Account }) =>

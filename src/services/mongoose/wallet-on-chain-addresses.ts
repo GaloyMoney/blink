@@ -1,4 +1,3 @@
-import { User } from "@services/mongoose/schema"
 import {
   CouldNotFindError,
   PersistError,
@@ -6,16 +5,17 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 import { baseLogger } from "@services/logger"
+import { Wallet } from "@services/mongoose/schema"
 
 export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepository => {
   const persistNew = async (
-    walletId: WalletId,
+    id: WalletId,
     onChainAddress: OnChainAddressIdentifier,
   ): Promise<OnChainAddressIdentifier | RepositoryError> => {
     try {
       const { address, pubkey } = onChainAddress
-      const result = await User.updateOne(
-        { walletId },
+      const result = await Wallet.updateOne(
+        { id },
         { $push: { onchain: { address, pubkey } } },
       )
 
@@ -34,11 +34,11 @@ export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepos
   }
 
   const findLastByWalletId = async (
-    walletId: WalletId,
+    id: WalletId,
   ): Promise<OnChainAddressIdentifier | RepositoryError> => {
     try {
-      const [result] = await User.aggregate([
-        { $match: { walletId } },
+      const [result] = await Wallet.aggregate([
+        { $match: { id } },
         { $project: { lastAddress: { $last: "$onchain" } } },
       ])
 

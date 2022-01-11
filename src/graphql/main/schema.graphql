@@ -2,6 +2,7 @@ interface Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+  walletIds: [WalletId!]!
   wallets: [Wallet!]!
 }
 
@@ -105,6 +106,7 @@ type ConsumerAccount implements Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+  walletIds: [WalletId!]!
   wallets: [Wallet!]!
 }
 

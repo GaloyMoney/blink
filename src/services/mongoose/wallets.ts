@@ -5,12 +5,43 @@ import {
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
-import { User } from "@services/mongoose/schema"
+
+import { Wallet } from "./schema"
 
 export const WalletsRepository = (): IWalletsRepository => {
-  const findById = async (walletId: WalletId): Promise<Wallet | RepositoryError> => {
+  const persistNew = async ({
+    accountId,
+    type,
+  }: NewWalletInfo): Promise<Wallet | RepositoryError> => {
     try {
-      const result = await User.findOne({ walletId }, projection)
+      const wallet = new Wallet({
+        accountId,
+        type,
+      })
+      await wallet.save()
+      return resultToWallet(wallet)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
+  const findById = async (id: WalletId): Promise<Wallet | RepositoryError> => {
+    try {
+      const result = await Wallet.findOne({ id })
+      if (!result) {
+        return new CouldNotFindWalletFromIdError()
+      }
+      return resultToWallet(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
+  const findByAccountId = async (
+    accountId: AccountId,
+  ): Promise<Wallet | RepositoryError> => {
+    try {
+      const result = await Wallet.findOne({ accountId })
       if (!result) {
         return new CouldNotFindWalletFromIdError()
       }
@@ -24,7 +55,7 @@ export const WalletsRepository = (): IWalletsRepository => {
     address: OnChainAddress,
   ): Promise<Wallet | RepositoryError> => {
     try {
-      const result = await User.findOne({ "onchain.address": address }, projection)
+      const result = await Wallet.findOne({ "onchain.address": address })
       if (!result) {
         return new CouldNotFindWalletFromOnChainAddressError()
       }
@@ -38,10 +69,7 @@ export const WalletsRepository = (): IWalletsRepository => {
     addresses: string[],
   ): Promise<Wallet[] | RepositoryError> => {
     try {
-      const result = await User.find(
-        { "onchain.address": { $in: addresses } },
-        projection,
-      )
+      const result = await Wallet.find({ "onchain.address": { $in: addresses } })
       if (!result) {
         return new CouldNotFindWalletFromOnChainAddressesError()
       }
@@ -53,14 +81,17 @@ export const WalletsRepository = (): IWalletsRepository => {
 
   return {
     findById,
+    findByAccountId,
     findByAddress,
     listByAddresses,
+    persistNew,
   }
 }
 
-const resultToWallet = (result: UserType): Wallet => {
-  const walletId = result.walletId as WalletId
-
+const resultToWallet = (result): Wallet => {
+  const id = result.id as WalletId
+  const accountId = result.accountId as AccountId
+  const type = result.type as WalletType
   const onChainAddressIdentifiers = result.onchain.map(({ pubkey, address }) => {
     return {
       pubkey: pubkey as Pubkey,
@@ -70,12 +101,10 @@ const resultToWallet = (result: UserType): Wallet => {
   const onChainAddresses = () => onChainAddressIdentifiers.map(({ address }) => address)
 
   return {
-    id: walletId,
+    id,
+    accountId,
+    type,
     onChainAddressIdentifiers,
     onChainAddresses,
   }
-}
-const projection = {
-  walletId: 1,
-  onchain: 1,
 }
