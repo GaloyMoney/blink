@@ -32,7 +32,7 @@ export const RateLimitPrefix = {
   onChainAddressCreate: "onchain_address_create",
 } as const
 
-export const RateLimitConfig = {
+export const RateLimitConfig: { [key: string]: RateLimitConfig } = {
   requestPhoneCodeAttemptPerPhone: {
     key: RateLimitPrefix.requestPhoneCodeAttemptPerPhone,
     limits: getRequestPhoneCodePerPhoneLimits(),
