@@ -1,16 +1,12 @@
-import {
-  getInvoiceCreateAttemptLimits,
-  getInvoiceCreateForRecipientAttemptLimits,
-} from "@config/app"
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
-import { RateLimitPrefix } from "@domain/rate-limit"
+import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { checkedToWalletId } from "@domain/wallets"
 import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
-import { RedisRateLimitService } from "@services/rate-limit"
+import { consumeLimiter } from "@services/rate-limit"
 
 export const addInvoiceByWalletId = async ({
   walletId,
@@ -145,23 +141,16 @@ export const registerAndPersistInvoice = async ({
 
 export const checkSelfWalletIdRateLimits = async (
   walletId: WalletId,
-): Promise<true | RateLimiterExceededError> => {
-  const invoiceCreateAttemptLimits = getInvoiceCreateAttemptLimits()
-  const limiterInvoiceCreateAttemptLimits = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.invoiceCreate,
-    limitOptions: invoiceCreateAttemptLimits,
+): Promise<true | RateLimiterExceededError> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.invoiceCreate,
+    keyToConsume: walletId,
   })
-  return limiterInvoiceCreateAttemptLimits.consume(walletId)
-}
 
 export const checkRecipientWalletIdRateLimits = async (
   walletId: WalletId,
-): Promise<true | RateLimiterExceededError> => {
-  const invoiceCreateForRecipientAttemptLimits =
-    getInvoiceCreateForRecipientAttemptLimits()
-  const limiterInvoiceCreateForRecipient = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.invoiceCreateForRecipient,
-    limitOptions: invoiceCreateForRecipientAttemptLimits,
+): Promise<true | RateLimiterExceededError> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.invoiceCreateForRecipient,
+    keyToConsume: walletId,
   })
-  return limiterInvoiceCreateForRecipient.consume(walletId)
-}

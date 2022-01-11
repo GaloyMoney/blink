@@ -1,13 +1,10 @@
-import { BTC_NETWORK, getOnChainAddressCreateAttemptLimits } from "@config/app"
+import { BTC_NETWORK } from "@config/app"
 import { TxDecoder } from "@domain/bitcoin/onchain"
-import { RateLimitPrefix } from "@domain/rate-limit"
-import {
-  OnChainAddressCreateRateLimiterExceededError,
-  RateLimiterExceededError,
-} from "@domain/rate-limit/errors"
+import { RateLimitConfig } from "@domain/rate-limit"
+import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { WalletOnChainAddressesRepository } from "@services/mongoose"
-import { RedisRateLimitService } from "@services/rate-limit"
+import { consumeLimiter } from "@services/rate-limit"
 
 export const createOnChainAddress = async (
   walletId: WalletId,
@@ -33,14 +30,8 @@ export const createOnChainAddress = async (
 
 const checkOnChainAddressWalletIdLimits = async (
   walletId: WalletId,
-): Promise<true | RateLimiterExceededError> => {
-  const onChainAddressCreateAttempt = getOnChainAddressCreateAttemptLimits()
-  const limiterOnChainAddressCreateAttempt = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.onChainAddressCreate,
-    limitOptions: onChainAddressCreateAttempt,
+): Promise<true | RateLimiterExceededError> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.onChainAddressCreate,
+    keyToConsume: walletId,
   })
-  const limitOk = await limiterOnChainAddressCreateAttempt.consume(walletId)
-  if (limitOk instanceof RateLimiterExceededError)
-    return new OnChainAddressCreateRateLimiterExceededError()
-  return limitOk
-}

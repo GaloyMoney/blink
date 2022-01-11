@@ -1,17 +1,11 @@
-import {
-  getGaloyInstanceName,
-  getRequestPhoneCodePerIpLimits,
-  getRequestPhoneCodePerPhoneLimits,
-  getRequestPhoneCodePerPhoneMinIntervalLimits,
-  getTestAccounts,
-} from "@config/app"
+import { getGaloyInstanceName, getTestAccounts } from "@config/app"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
-import { RateLimitPrefix } from "@domain/rate-limit"
+import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToPhoneNumber } from "@domain/users"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
-import { RedisRateLimitService } from "@services/rate-limit"
+import { consumeLimiter } from "@services/rate-limit"
 import { TwilioClient } from "@services/twilio"
 
 const randomIntFromInterval = (min, max) =>
@@ -104,30 +98,24 @@ export const requestPhoneCode = async ({
 
 const checkPhoneCodeAttemptPerIpLimits = async (
   ip: IpAddress,
-): Promise<true | RateLimiterExceededError> => {
-  const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.requestPhoneCodeAttemptPerIp,
-    limitOptions: getRequestPhoneCodePerIpLimits(),
+): Promise<true | RateLimiterExceededError> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerIp,
+    keyToConsume: ip,
   })
-  return limiter.consume(ip)
-}
 
 const checkPhoneCodeAttemptPerPhoneLimits = async (
   phone: PhoneNumber,
-): Promise<true | RateLimiterExceededError> => {
-  const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.requestPhoneCodeAttemptPerPhone,
-    limitOptions: getRequestPhoneCodePerPhoneLimits(),
+): Promise<true | RateLimiterExceededError> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerPhone,
+    keyToConsume: phone,
   })
-  return limiter.consume(phone)
-}
 
 const checkPhoneCodeAttemptPerPhoneMinIntervalLimits = async (
   phone: PhoneNumber,
-): Promise<true | RateLimiterExceededError> => {
-  const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.requestPhoneCodeAttemptPerPhoneMinInterval,
-    limitOptions: getRequestPhoneCodePerPhoneMinIntervalLimits(),
+): Promise<true | RateLimiterExceededError> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerPhoneMinInterval,
+    keyToConsume: phone,
   })
-  return limiter.consume(phone)
-}
