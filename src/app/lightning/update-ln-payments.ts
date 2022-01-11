@@ -1,4 +1,5 @@
 import { LndService } from "@services/lnd"
+import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 
 export const updateLnPayments = async (): Promise<true | ApplicationError> => {
@@ -32,24 +33,23 @@ const fetchAndUpdatePayments = async ({
   }: ListLnPaymentsArgs) => Promise<ListLnPaymentsResult | LightningServiceError>
 }) => {
   const processedLnPaymentsHashes: PaymentHash[] | ApplicationError = []
-  const incompleteLnPaymentsHashes = incompleteLnPayments.map((p) => p.paymentHash)
 
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
   const pubkeys = lndService.listPubkeys()
 
   let lnPayments: LnPaymentLookup[]
-  const endCursors: { [key: Pubkey]: PagingToken | false | undefined } = {}
-  for (const key of pubkeys) endCursors[key] = undefined
+  const lastSeenCursorByPubkey: { [key: Pubkey]: PagingToken | false | undefined } = {}
+  for (const key of pubkeys) lastSeenCursorByPubkey[key] = undefined
 
   // Breadth-first paginated fetch of payments across multiple lightning instances
-  while (processedLnPaymentsHashes.length < incompleteLnPaymentsHashes.length) {
-    const endCursorValues = new Set(Object.values(endCursors))
+  while (processedLnPaymentsHashes.length < incompleteLnPayments.length) {
+    const endCursorValues = new Set(Object.values(lastSeenCursorByPubkey))
     if (endCursorValues.has(false) && endCursorValues.size === 1) break
 
-    for (const key in endCursors) {
+    for (const key in lastSeenCursorByPubkey) {
       const pubkey = key as Pubkey
-      const endCursor = endCursors[pubkey]
+      const endCursor = lastSeenCursorByPubkey[pubkey]
       if (endCursor === false) continue
 
       // Paginated fetch from single lightning instance
@@ -58,28 +58,31 @@ const fetchAndUpdatePayments = async ({
         pubkey,
       })
       if (result instanceof Error) return result
-      ;({ lnPayments, endCursor: endCursors[pubkey] } = result)
+      ;({ lnPayments, endCursor: lastSeenCursorByPubkey[pubkey] } = result)
 
       // Update of LnPayments repository
       for (const payment of lnPayments) {
-        if (incompleteLnPaymentsHashes.includes(payment.paymentHash)) {
-          let persistedPaymentLookup = incompleteLnPayments.find(
-            (elem) => elem.paymentHash === payment.paymentHash,
-          )
-          if (!persistedPaymentLookup) continue
+        let persistedPaymentLookup = incompleteLnPayments.find(
+          (elem) => elem.paymentHash === payment.paymentHash,
+        )
+        if (!persistedPaymentLookup) continue
 
-          persistedPaymentLookup = Object.assign(persistedPaymentLookup, {
-            ...payment,
-            paymentRequest:
-              payment.paymentRequest || persistedPaymentLookup.paymentRequest,
-            isCompleteRecord: true,
-          })
-          const updatedPaymentLookup = await LnPaymentsRepository().update(
-            persistedPaymentLookup,
+        persistedPaymentLookup = Object.assign(persistedPaymentLookup, {
+          ...payment,
+          paymentRequest: payment.paymentRequest || persistedPaymentLookup.paymentRequest,
+          isCompleteRecord: true,
+        })
+        const updatedPaymentLookup = await LnPaymentsRepository().update(
+          persistedPaymentLookup,
+        )
+        if (updatedPaymentLookup instanceof Error) {
+          baseLogger.error(
+            { error: updatedPaymentLookup },
+            "Could not update LnPayments repository",
           )
-          if (updatedPaymentLookup instanceof Error) return updatedPaymentLookup
-          processedLnPaymentsHashes.push(payment.paymentHash)
+          continue
         }
+        processedLnPaymentsHashes.push(payment.paymentHash)
       }
     }
   }
