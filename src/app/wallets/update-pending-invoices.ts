@@ -146,10 +146,13 @@ const updatePendingInvoice = async ({
       const usdPerSat = await getCurrentPrice()
       if (usdPerSat instanceof Error) return usdPerSat
 
-      const { description, received } = lnInvoiceLookup
+      const {
+        lnInvoice: { description },
+        roundedDownReceived,
+      } = lnInvoiceLookup
       const fee = DepositFeeCalculator().lnDepositFee()
 
-      const usd = received * usdPerSat
+      const usd = roundedDownReceived * usdPerSat
       const usdFee = fee * usdPerSat
 
       const ledgerService = LedgerService()
@@ -157,7 +160,7 @@ const updatePendingInvoice = async ({
         walletId,
         paymentHash,
         description,
-        sats: received,
+        sats: roundedDownReceived,
         fee,
         usd,
         usdFee,
@@ -168,7 +171,7 @@ const updatePendingInvoice = async ({
       notificationsService.lnInvoicePaid({
         paymentHash,
         recipientWalletId: walletId,
-        amount: received,
+        amount: roundedDownReceived,
         usdPerSat,
       })
 
