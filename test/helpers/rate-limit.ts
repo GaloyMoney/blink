@@ -21,3 +21,27 @@ export const resetOnChainAddressWalletIdLimits = async (
     rateLimitConfig: RateLimitConfig.onChainAddressCreate,
     keyToConsume: walletId,
   })
+
+export const resetUserPhoneCodeAttemptPhoneMinIntervalLimits = async (
+  phone: PhoneNumber,
+): Promise<true | RateLimitServiceError> =>
+  resetLimiter({
+    rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerPhoneMinInterval,
+    keyToConsume: phone,
+  })
+
+export const resetUserPhoneCodeAttemptPhone = async (
+  phone: PhoneNumber,
+): Promise<true | RateLimitServiceError> =>
+  resetLimiter({
+    rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerPhone,
+    keyToConsume: phone,
+  })
+
+export const resetUserPhoneCodeAttemptIp = async (
+  ip: IpAddress,
+): Promise<true | RateLimitServiceError> =>
+  resetLimiter({
+    rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerIp,
+    keyToConsume: ip,
+  })
