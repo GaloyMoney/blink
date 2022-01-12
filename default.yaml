@@ -9,7 +9,7 @@ buildVersion:
     lastBuildNumber: 294
   ios:
     minBuildNumber: 182
-    lastBuildNumber: 269
+    lastBuildNumber: 295
 
 hedging:
   LOW_BOUND_RATIO_SHORTING: 0.95
