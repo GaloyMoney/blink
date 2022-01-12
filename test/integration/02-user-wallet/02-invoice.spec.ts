@@ -4,7 +4,10 @@ import {
   getInvoiceCreateForRecipientAttemptLimits,
 } from "@config/app"
 import { toSats } from "@domain/bitcoin"
-import { RateLimiterExceededError } from "@domain/rate-limit/errors"
+import {
+  InvoiceCreateForRecipientRateLimiterExceededError,
+  InvoiceCreateRateLimiterExceededError,
+} from "@domain/rate-limit/errors"
 import { WalletInvoicesRepository } from "@services/mongoose"
 
 import { getDefaultWalletIdByTestUserIndex, getHash } from "test/helpers"
@@ -163,12 +166,12 @@ const testPastSelfInvoiceLimits = async (walletId: WalletId) => {
     walletId,
     amount: toSats(1000),
   })
-  expect(lnInvoice).toBeInstanceOf(RateLimiterExceededError)
+  expect(lnInvoice).toBeInstanceOf(InvoiceCreateRateLimiterExceededError)
 
   const lnNoAmountInvoice = await Wallets.addInvoiceNoAmount({
     walletId,
   })
-  expect(lnNoAmountInvoice).toBeInstanceOf(RateLimiterExceededError)
+  expect(lnNoAmountInvoice).toBeInstanceOf(InvoiceCreateRateLimiterExceededError)
 
   // Test that recipient invoices still work
   const lnRecipientInvoice = await Wallets.addInvoiceForRecipient({
@@ -197,12 +200,16 @@ const testPastRecipientInvoiceLimits = async (walletId: WalletId) => {
     recipientWalletId: walletId,
     amount: toSats(1000),
   })
-  expect(lnRecipientInvoice).toBeInstanceOf(RateLimiterExceededError)
+  expect(lnRecipientInvoice).toBeInstanceOf(
+    InvoiceCreateForRecipientRateLimiterExceededError,
+  )
 
   const lnNoAmountRecipientInvoice = await Wallets.addInvoiceNoAmountForRecipient({
     recipientWalletId: walletId,
   })
-  expect(lnNoAmountRecipientInvoice).toBeInstanceOf(RateLimiterExceededError)
+  expect(lnNoAmountRecipientInvoice).toBeInstanceOf(
+    InvoiceCreateForRecipientRateLimiterExceededError,
+  )
 
   // Test that recipient invoices still work
   const lnInvoice = await Wallets.addInvoice({
