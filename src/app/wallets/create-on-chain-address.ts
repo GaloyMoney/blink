@@ -1,3 +1,4 @@
+import { getWallet } from "@app/wallets"
 import { BTC_NETWORK } from "@config/app"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { RateLimitConfig } from "@domain/rate-limit"
@@ -9,7 +10,10 @@ import { consumeLimiter } from "@services/rate-limit"
 export const createOnChainAddress = async (
   walletId: WalletId,
 ): Promise<OnChainAddress | ApplicationError> => {
-  const limitOk = await checkOnChainAddressWalletIdLimits(walletId)
+  const wallet = await getWallet(walletId)
+  if (wallet instanceof Error) return wallet
+
+  const limitOk = await checkOnChainAddressAccountIdLimits(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
 
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
@@ -28,10 +32,10 @@ export const createOnChainAddress = async (
   return savedOnChainAddress.address
 }
 
-const checkOnChainAddressWalletIdLimits = async (
-  walletId: WalletId,
+const checkOnChainAddressAccountIdLimits = async (
+  accountId: AccountId,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({
     rateLimitConfig: RateLimitConfig.onChainAddressCreate,
-    keyToConsume: walletId,
+    keyToConsume: accountId,
   })

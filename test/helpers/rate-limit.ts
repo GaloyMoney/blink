@@ -1,25 +1,28 @@
 import { RateLimitConfig } from "@domain/rate-limit"
 import { resetLimiter } from "@services/rate-limit"
 
-export const resetSelfWalletIdLimits = async (
-  walletId: WalletId,
+export const resetSelfAccountIdLimits = async (
+  accountId: AccountId,
 ): Promise<true | RateLimitServiceError> =>
-  resetLimiter({ rateLimitConfig: RateLimitConfig.invoiceCreate, keyToConsume: walletId })
+  resetLimiter({
+    rateLimitConfig: RateLimitConfig.invoiceCreate,
+    keyToConsume: accountId,
+  })
 
-export const resetRecipientWalletIdLimits = async (
-  walletId: WalletId,
+export const resetRecipientAccountIdLimits = async (
+  accountId: AccountId,
 ): Promise<true | RateLimitServiceError> =>
   resetLimiter({
     rateLimitConfig: RateLimitConfig.invoiceCreateForRecipient,
-    keyToConsume: walletId,
+    keyToConsume: accountId,
   })
 
-export const resetOnChainAddressWalletIdLimits = async (
-  walletId: WalletId,
+export const resetOnChainAddressAccountIdLimits = async (
+  accountId: AccountId,
 ): Promise<true | RateLimitServiceError> =>
   resetLimiter({
     rateLimitConfig: RateLimitConfig.onChainAddressCreate,
-    keyToConsume: walletId,
+    keyToConsume: accountId,
   })
 
 export const resetUserPhoneCodeAttemptPhoneMinIntervalLimits = async (
