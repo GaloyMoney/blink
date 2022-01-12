@@ -53,7 +53,6 @@ integration:
 reset-integration: reset-deps integration
 
 integration-in-ci:
-	docker compose run galoy-migrate
 	. ./.envrc && \
 		NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
 		yarn build && \
