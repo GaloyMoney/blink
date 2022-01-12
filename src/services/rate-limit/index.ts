@@ -58,3 +58,17 @@ export const consumeLimiter = async ({
   const consume = await limiter.consume(keyToConsume)
   return consume instanceof Error ? new rateLimitConfig.error() : consume
 }
+
+export const resetLimiter = async ({
+  rateLimitConfig,
+  keyToConsume,
+}: {
+  rateLimitConfig: RateLimitConfig
+  keyToConsume: IpAddress | PhoneNumber | WalletId
+}) => {
+  const limiter = RedisRateLimitService({
+    keyPrefix: rateLimitConfig.key,
+    limitOptions: rateLimitConfig.limits,
+  })
+  return limiter.reset(keyToConsume)
+}
