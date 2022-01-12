@@ -14,6 +14,7 @@ import { updatePriceHistory } from "@services/price/update-price-history"
 import { Dropbox } from "dropbox"
 import express from "express"
 import {
+  GetInvoiceResult,
   subscribeToBackups,
   subscribeToBlocks,
   subscribeToChannels,
@@ -145,14 +146,16 @@ export async function onchainBlockEventhandler({ height }) {
   logger.info(`finish block ${height} handler with ${txNumber} transactions`)
 }
 
-export const onInvoiceUpdate = async (invoice) => {
+export const onInvoiceUpdate = async (invoice: GetInvoiceResult) => {
   logger.debug({ invoice }, "onInvoiceUpdate")
 
   if (!invoice.is_confirmed) {
     return
   }
 
-  await Wallets.updatePendingInvoiceByPaymentHash({ paymentHash: invoice.id, logger })
+  const paymentHash = invoice.id as PaymentHash
+
+  await Wallets.updatePendingInvoiceByPaymentHash({ paymentHash, logger })
 }
 
 const publishCurrentPrice = () => {

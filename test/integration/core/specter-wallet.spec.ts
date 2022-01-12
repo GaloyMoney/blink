@@ -4,14 +4,21 @@ import { SpecterWallet } from "@core/specter-wallet"
 import { getActiveOnchainLnd } from "@services/lnd/utils"
 import { getSpecterWalletConfig } from "@config/app"
 
-import { bitcoindClient, getChainBalance, mineBlockAndSyncAll } from "test/helpers"
+import {
+  bitcoindClient,
+  createMandatoryUsers,
+  getChainBalance,
+  mineBlockAndSyncAll,
+} from "test/helpers"
 import { getBitcoindTransactions } from "test/helpers/ledger"
 
 const { lnd } = getActiveOnchainLnd()
 const specterWalletName = "specter/coldstorage"
 let specterWallet
 
-beforeEach(() => {
+beforeEach(async () => {
+  await createMandatoryUsers()
+
   UserWallet.setCurrentPrice(10000)
   const specterWalletConfig = getSpecterWalletConfig()
   specterWallet = new SpecterWallet({ logger: baseLogger, config: specterWalletConfig })

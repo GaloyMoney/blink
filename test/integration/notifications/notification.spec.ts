@@ -51,7 +51,7 @@ describe("notification", () => {
           maximumFractionDigits: 2,
         })
         expect(call.title).toBe(
-          `Your balance is $${expectedUsdBalance} (${expectedSatsBalance} ${balance} sats)`,
+          `Your balance is $${expectedUsdBalance} (${expectedSatsBalance} sats)`,
         )
       }
     })

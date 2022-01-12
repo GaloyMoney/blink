@@ -1,4 +1,14 @@
+import {
+  addInvoice,
+  createOnChainAddress,
+  getBalanceForWallet,
+  getBalanceForWalletId,
+} from "@app/wallets"
 import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
+import { baseLogger } from "@services/logger"
+import { pay } from "lightning"
+
+import { lndOutside1, waitUntilBlockHeight } from "."
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
@@ -10,7 +20,7 @@ export async function sendToAddressAndConfirm({
   amount,
 }: {
   walletClient: BitcoindWalletClient
-  address: string
+  address: OnChainAddress
   amount: number
 }) {
   await walletClient.sendToAddress({ address, amount })
@@ -58,4 +68,43 @@ function getBlockReward(height = 0, halvingBlocks = 150) {
   let reward = BigInt(50 * 100000000)
   reward >>= halvings
   return Number(reward)
+}
+
+export const fundWalletIdFromOnchain = async ({
+  walletId,
+  amountInBitcoin,
+  lnd,
+}: {
+  walletId: WalletId
+  amountInBitcoin: number
+  lnd: AuthenticatedLnd
+}) => {
+  const address = await createOnChainAddress(walletId)
+  if (address instanceof Error) throw address
+
+  await sendToAddressAndConfirm({
+    walletClient: bitcoindOutside,
+    address,
+    amount: amountInBitcoin,
+  })
+  await waitUntilBlockHeight({ lnd })
+
+  const balance = await getBalanceForWalletId(walletId)
+  if (balance instanceof Error) throw balance
+}
+
+export const fundWalletIdFromLightning = async ({
+  walletId,
+  amount,
+}: {
+  walletId: WalletId
+  amount: Satoshis
+}) => {
+  const invoice = await addInvoice({ walletId, amount })
+  if (invoice instanceof Error) return invoice
+
+  await pay({ lnd: lndOutside1, request: invoice.paymentRequest })
+
+  const balance = await getBalanceForWallet({ walletId, logger: baseLogger })
+  if (balance instanceof Error) throw balance
 }

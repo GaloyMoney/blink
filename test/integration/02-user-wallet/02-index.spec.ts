@@ -24,7 +24,7 @@ let userId0: UserId
 
 describe("UserWallet", () => {
   beforeAll(async () => {
-    createMandatoryUsers()
+    await createMandatoryUsers()
 
     await createUserWallet(0)
     await createUserWallet(1)

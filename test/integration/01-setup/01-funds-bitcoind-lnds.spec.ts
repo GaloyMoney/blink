@@ -1,4 +1,4 @@
-import { Wallets } from "@app"
+import { getBalanceForWalletId } from "@app/wallets"
 import { btc2sat } from "@domain/bitcoin"
 import { BitcoindWalletClient } from "@services/bitcoind"
 import { getFunderWalletId } from "@services/ledger/accounts"
@@ -8,12 +8,11 @@ import {
   checkIsBalanced,
   createMandatoryUsers,
   fundLnd,
+  fundWalletIdFromOnchain,
   getChainBalance,
   lnd1,
   lndOutside1,
   mineAndConfirm,
-  sendToAddressAndConfirm,
-  waitUntilBlockHeight,
 } from "test/helpers"
 
 let bitcoindOutside
@@ -63,21 +62,27 @@ describe("Bitcoind", () => {
   })
 
   it("funds lnd1 node", async () => {
-    await createMandatoryUsers()
-
     const amount = 1
     const { chain_balance: initialBalance } = await getChainBalance({ lnd: lnd1 })
     const sats = initialBalance + btc2sat(amount)
 
     const funderWalletId = await getFunderWalletId()
-    const address = await Wallets.createOnChainAddress(funderWalletId)
-    if (address instanceof Error) throw address
-
-    await sendToAddressAndConfirm({ walletClient: bitcoindOutside, address, amount })
-    await waitUntilBlockHeight({ lnd: lnd1 })
+    await fundWalletIdFromOnchain({
+      walletId: funderWalletId,
+      amountInBitcoin: amount,
+      lnd: lnd1,
+    })
 
     const { chain_balance: balance } = await getChainBalance({ lnd: lnd1 })
     expect(balance).toBe(sats)
+
     await checkIsBalanced()
+
+    const balanceFunderWalletId = await getBalanceForWalletId(funderWalletId)
+    balanceFunderWalletId
+    // console.log({ balanceFunderWalletId }, "funderWalletId")
+    // FIXME: this test is broken
+    // checkBalance should not be true because we received fund in lnd
+    // and this is not been credited by to balanceFunderWalletId
   })
 })
