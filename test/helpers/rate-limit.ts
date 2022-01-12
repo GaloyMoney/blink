@@ -7,18 +7,18 @@ import { RateLimitPrefix } from "@domain/rate-limit"
 import { RedisRateLimitService } from "@services/rate-limit"
 
 export const resetSelfWalletIdLimits = async (
-  walletId: WalletId,
+  accountId: AccountId,
 ): Promise<true | RateLimitServiceError> => {
   const invoiceCreateAttemptLimits = getInvoiceCreateAttemptLimits()
   const limiterInvoiceCreateAttemptLimits = RedisRateLimitService({
     keyPrefix: RateLimitPrefix.invoiceCreate,
     limitOptions: invoiceCreateAttemptLimits,
   })
-  return limiterInvoiceCreateAttemptLimits.reset(walletId)
+  return limiterInvoiceCreateAttemptLimits.reset(accountId)
 }
 
 export const resetRecipientWalletIdLimits = async (
-  walletId: WalletId,
+  accountId: AccountId,
 ): Promise<true | RateLimitServiceError> => {
   const invoiceCreateForRecipientAttemptLimits =
     getInvoiceCreateForRecipientAttemptLimits()
@@ -26,7 +26,7 @@ export const resetRecipientWalletIdLimits = async (
     keyPrefix: RateLimitPrefix.invoiceCreateForRecipient,
     limitOptions: invoiceCreateForRecipientAttemptLimits,
   })
-  return limiterInvoiceCreateForRecipientAttemptLimits.reset(walletId)
+  return limiterInvoiceCreateForRecipientAttemptLimits.reset(accountId)
 }
 
 export const resetOnChainAddressWalletIdLimits = async (

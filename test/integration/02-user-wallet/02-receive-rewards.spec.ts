@@ -48,7 +48,7 @@ afterAll(() => {
 
 describe("UserWallet - addEarn", () => {
   it("adds balance only once", async () => {
-    const resetOk = await resetSelfWalletIdLimits(walletId1)
+    const resetOk = await resetSelfWalletIdLimits(accountId1)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 

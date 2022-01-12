@@ -7,23 +7,29 @@ import { toSats } from "@domain/bitcoin"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { WalletInvoicesRepository } from "@services/mongoose"
 
-import { getDefaultWalletIdByTestUserIndex, getHash } from "test/helpers"
+import {
+  getAccountIdByTestUserIndex,
+  getDefaultWalletIdByTestUserIndex,
+  getHash,
+} from "test/helpers"
 import {
   resetRecipientWalletIdLimits,
   resetSelfWalletIdLimits,
 } from "test/helpers/rate-limit"
 
 let walletId1: WalletId
+let accountId1: AccountId
 
 const walletInvoices = WalletInvoicesRepository()
 
 beforeAll(async () => {
   walletId1 = await getDefaultWalletIdByTestUserIndex(1)
+  accountId1 = await getAccountIdByTestUserIndex(1)
 })
 
 describe("UserWallet - addInvoice", () => {
   it("add a self generated invoice", async () => {
-    const lnInvoice = await Wallets.addInvoice({
+    const lnInvoice = await Wallets.addInvoiceByWalletId({
       walletId: walletId1,
       amount: toSats(1000),
     })
@@ -38,7 +44,7 @@ describe("UserWallet - addInvoice", () => {
   })
 
   it("add a self generated invoice without amount", async () => {
-    const lnInvoice = await Wallets.addInvoiceNoAmount({
+    const lnInvoice = await Wallets.addInvoiceNoAmountByWalletId({
       walletId: walletId1,
     })
     if (lnInvoice instanceof Error) return lnInvoice
@@ -52,7 +58,7 @@ describe("UserWallet - addInvoice", () => {
 
   it("fails to add invoice past rate limit", async () => {
     // Reset limits before starting
-    const resetOk = await resetSelfWalletIdLimits(walletId1)
+    const resetOk = await resetSelfWalletIdLimits(accountId1)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
@@ -61,7 +67,7 @@ describe("UserWallet - addInvoice", () => {
 
     const promises: Promise<LnInvoice | ApplicationError>[] = []
     for (let i = 0; i < limitsNum; i++) {
-      const lnInvoicePromise = Wallets.addInvoice({
+      const lnInvoicePromise = Wallets.addInvoiceByWalletId({
         walletId: walletId1,
         amount: toSats(1000),
       })
@@ -71,12 +77,12 @@ describe("UserWallet - addInvoice", () => {
     const isNotError = (item) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
-    return testPastSelfInvoiceLimits(walletId1)
+    return testPastSelfInvoiceLimits({ walletId: walletId1, accountId: accountId1 })
   })
 
   it("fails to add no amount invoice past rate limit", async () => {
     // Reset limits before starting
-    const resetOk = await resetSelfWalletIdLimits(walletId1)
+    const resetOk = await resetSelfWalletIdLimits(accountId1)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
@@ -84,7 +90,7 @@ describe("UserWallet - addInvoice", () => {
     const limitsNum = getInvoiceCreateAttemptLimits().points
     const promises: Promise<LnInvoice | ApplicationError>[] = []
     for (let i = 0; i < limitsNum; i++) {
-      const lnInvoicePromise = Wallets.addInvoiceNoAmount({
+      const lnInvoicePromise = Wallets.addInvoiceNoAmountByWalletId({
         walletId: walletId1,
       })
       promises.push(lnInvoicePromise)
@@ -93,7 +99,7 @@ describe("UserWallet - addInvoice", () => {
     const isNotError = (item) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
-    return testPastSelfInvoiceLimits(walletId1)
+    return testPastSelfInvoiceLimits({ walletId: walletId1, accountId: accountId1 })
   })
 
   it("adds a public invoice", async () => {
@@ -113,7 +119,7 @@ describe("UserWallet - addInvoice", () => {
 
   it("fails to add public invoice past rate limit", async () => {
     // Reset limits before starting
-    const resetOk = await resetRecipientWalletIdLimits(walletId1)
+    const resetOk = await resetRecipientWalletIdLimits(accountId1)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
@@ -131,12 +137,12 @@ describe("UserWallet - addInvoice", () => {
     const isNotError = (item) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
-    return testPastRecipientInvoiceLimits(walletId1)
+    return testPastRecipientInvoiceLimits({ walletId: walletId1, accountId: accountId1 })
   })
 
   it("fails to add no amount public invoice past rate limit", async () => {
     // Reset limits before starting
-    const resetOk = await resetRecipientWalletIdLimits(walletId1)
+    const resetOk = await resetRecipientWalletIdLimits(accountId1)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
@@ -153,19 +159,25 @@ describe("UserWallet - addInvoice", () => {
     const isNotError = (item) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
-    return testPastRecipientInvoiceLimits(walletId1)
+    return testPastRecipientInvoiceLimits({ walletId: walletId1, accountId: accountId1 })
   })
 })
 
-const testPastSelfInvoiceLimits = async (walletId: WalletId) => {
+const testPastSelfInvoiceLimits = async ({
+  walletId,
+  accountId,
+}: {
+  walletId: WalletId
+  accountId: AccountId
+}) => {
   // Test that first invoice past the limit fails
-  const lnInvoice = await Wallets.addInvoice({
+  const lnInvoice = await Wallets.addInvoiceByWalletId({
     walletId,
     amount: toSats(1000),
   })
   expect(lnInvoice).toBeInstanceOf(RateLimiterExceededError)
 
-  const lnNoAmountInvoice = await Wallets.addInvoiceNoAmount({
+  const lnNoAmountInvoice = await Wallets.addInvoiceNoAmountByWalletId({
     walletId,
   })
   expect(lnNoAmountInvoice).toBeInstanceOf(RateLimiterExceededError)
@@ -185,13 +197,19 @@ const testPastSelfInvoiceLimits = async (walletId: WalletId) => {
   expect(lnNoAmountRecipientInvoice).toHaveProperty("paymentRequest")
 
   // Reset limits when done for other tests
-  let resetOk = await resetSelfWalletIdLimits(walletId)
+  let resetOk = await resetSelfWalletIdLimits(accountId)
   expect(resetOk).not.toBeInstanceOf(Error)
-  resetOk = await resetRecipientWalletIdLimits(walletId)
+  resetOk = await resetRecipientWalletIdLimits(accountId)
   expect(resetOk).not.toBeInstanceOf(Error)
 }
 
-const testPastRecipientInvoiceLimits = async (walletId: WalletId) => {
+const testPastRecipientInvoiceLimits = async ({
+  walletId,
+  accountId,
+}: {
+  walletId: WalletId
+  accountId: AccountId
+}) => {
   // Test that first invoice past the limit fails
   const lnRecipientInvoice = await Wallets.addInvoiceForRecipient({
     recipientWalletId: walletId,
@@ -205,22 +223,22 @@ const testPastRecipientInvoiceLimits = async (walletId: WalletId) => {
   expect(lnNoAmountRecipientInvoice).toBeInstanceOf(RateLimiterExceededError)
 
   // Test that recipient invoices still work
-  const lnInvoice = await Wallets.addInvoice({
+  const lnInvoice = await Wallets.addInvoiceByWalletId({
     walletId,
     amount: toSats(1000),
   })
   expect(lnInvoice).not.toBeInstanceOf(Error)
   expect(lnInvoice).toHaveProperty("paymentRequest")
 
-  const lnNoAmountInvoice = await Wallets.addInvoiceNoAmount({
+  const lnNoAmountInvoice = await Wallets.addInvoiceNoAmountByWalletId({
     walletId,
   })
   expect(lnNoAmountInvoice).not.toBeInstanceOf(Error)
   expect(lnNoAmountInvoice).toHaveProperty("paymentRequest")
 
   // Reset limits when done for other tests
-  let resetOk = await resetSelfWalletIdLimits(walletId)
+  let resetOk = await resetSelfWalletIdLimits(accountId)
   expect(resetOk).not.toBeInstanceOf(Error)
-  resetOk = await resetRecipientWalletIdLimits(walletId)
+  resetOk = await resetRecipientWalletIdLimits(accountId)
   expect(resetOk).not.toBeInstanceOf(Error)
 }
