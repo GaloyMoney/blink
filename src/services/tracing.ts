@@ -302,6 +302,10 @@ export const addAttributesToCurrentSpanAndPropagate = <F extends () => ReturnTyp
   return context.with(propagation.setBaggage(ctx, baggage), fn)
 }
 
+export const shutdownTracing = async () => {
+  provider.shutdown()
+}
+
 export { SemanticAttributes, SemanticResourceAttributes }
 
 export const ENDUSER_ALIAS = "enduser.alias"

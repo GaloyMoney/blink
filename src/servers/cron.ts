@@ -1,5 +1,5 @@
 import { getSpecterWalletConfig } from "@config/app"
-import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"
+import { asyncRunInSpan, SemanticAttributes, shutdownTracing } from "@services/tracing"
 
 import {
   deleteExpiredInvoiceUser,
@@ -74,6 +74,8 @@ const main = async () => {
       await mongoose.connection.close()
     },
   )
+
+  await shutdownTracing()
 
   // FIXME: we need to exit because we may have some pending promise
   process.exit(results.every((r) => r) ? 0 : 99)
