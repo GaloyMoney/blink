@@ -6,7 +6,7 @@ export const addWallet = async ({
 }: {
   accountId: AccountId
   type: WalletType
-}) => {
+}): Promise<Wallet | ApplicationError> => {
   const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
 
