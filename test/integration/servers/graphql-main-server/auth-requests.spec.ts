@@ -1,5 +1,18 @@
 import { toSats } from "@domain/bitcoin"
 import { yamlConfig } from "@config/app"
+
+import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
+import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
+import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
+import LN_NO_AMOUNT_INVOICE_CREATE from "./mutations/ln-no-amount-invoice-create.gql"
+import LN_NO_AMOUNT_INVOICE_FEE_PROBE from "./mutations/ln-no-amount-invoice-fee-probe.gql"
+import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-payment-send.gql"
+import USER_LOGIN from "./mutations/user-login.gql"
+import ME from "./queries/me.gql"
+import MAIN from "./queries/main.gql"
+
+import { createApolloClient, defaultTestClientConfig } from "test/helpers/apollo-client"
+import { startServer, killServer } from "test/helpers/integration-server"
 import {
   bitcoindClient,
   clearAccountLocks,
@@ -11,20 +24,9 @@ import {
   getDefaultWalletIdByTestUserIndex,
   lndOutside2,
 } from "test/helpers"
-import { startServer, killServer } from "test/helpers/integration-server"
-import { createApolloClient, defaultTestClientConfig } from "test/helpers/apollo-client"
-import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
-import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
-import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
-import LN_NO_AMOUNT_INVOICE_CREATE from "./mutations/ln-no-amount-invoice-create.gql"
-import LN_NO_AMOUNT_INVOICE_FEE_PROBE from "./mutations/ln-no-amount-invoice-fee-probe.gql"
-import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-payment-send.gql"
-import USER_LOGIN from "./mutations/user-login.gql"
-import ME from "./queries/me.gql"
-import MAIN from "./queries/main.gql"
 
 let apolloClient, disposeClient, walletId
-const USER_INDEX = 0
+const USER_INDEX = 3
 const { phone, code } = yamlConfig.test_accounts[USER_INDEX]
 
 beforeAll(async () => {

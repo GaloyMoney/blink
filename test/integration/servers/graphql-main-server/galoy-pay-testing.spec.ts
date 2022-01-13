@@ -1,11 +1,9 @@
 import crypto from "crypto"
 
 import { yamlConfig } from "@config/app"
-
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
 import ME from "./queries/me.gql"
-
 import USER_LOGIN from "./mutations/user-login.gql"
 import NODE_IDS from "./queries/node-ids.gql"
 import USER_DEFAULT_WALLET_ID from "./queries/user-default-walletid.gql"
@@ -15,7 +13,11 @@ import PRICE from "./subscriptions/price.gql"
 import LN_INVOICE_PAYMENT_STATUS from "./subscriptions/ln-invoice-payment-status.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
 
-import { clearAccountLocks, clearLimiters } from "test/helpers"
+import {
+  clearAccountLocks,
+  clearLimiters,
+  getDefaultWalletIdByTestUserIndex,
+} from "test/helpers"
 
 import {
   createApolloClient,
@@ -31,6 +33,7 @@ let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void,
   receivingWalletId
 const receivingUsername = "user0"
+const receivingUserIndex = 0
 const { phone, code } = yamlConfig.test_accounts[4]
 
 beforeAll(async () => {
@@ -43,12 +46,7 @@ beforeAll(async () => {
   ;({ apolloClient, disposeClient } = createApolloClient(
     defaultTestClientConfig(result.data.userLogin.authToken),
   ))
-  // Get walletId for receivingUsername
-  const walletIdResult = await apolloClient.query({
-    query: USER_DEFAULT_WALLET_ID,
-    variables: { username: receivingUsername },
-  })
-  receivingWalletId = walletIdResult.data.userDefaultWalletId
+  receivingWalletId = await getDefaultWalletIdByTestUserIndex(receivingUserIndex)
 })
 
 beforeEach(async () => {
