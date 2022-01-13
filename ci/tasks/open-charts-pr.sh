@@ -15,14 +15,14 @@ cat <<EOF >> ../body.md
 # Bump galoy image
 
 The galoy image will be bumped to digest:
-```
+\`\`\`
 ${digest}
-```
+\`\`\`
 
 The mongodbMigrate image will be bumped to digest:
-```
+\`\`\`
 ${migrate_digest}
-```
+\`\`\`
 
 Code diff contained in this image:
 
