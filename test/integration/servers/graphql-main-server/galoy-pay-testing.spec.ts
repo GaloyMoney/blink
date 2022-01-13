@@ -31,10 +31,11 @@ jest.setTimeout(60000)
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void,
-  receivingWalletId
+  receivingWalletId: WalletId
 const receivingUsername = "user0"
 const receivingUserIndex = 0
-const { phone, code } = yamlConfig.test_accounts[4]
+const sendingUserIndex = 4
+const { phone, code } = yamlConfig.test_accounts[sendingUserIndex]
 
 beforeAll(async () => {
   await startServer()

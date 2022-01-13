@@ -70,7 +70,3 @@ check-code:
 	yarn tsc-check
 	yarn eslint-check
 	yarn build
-
-format-code:
-	yarn prettier -w .
-	yarn eslint-check --fix

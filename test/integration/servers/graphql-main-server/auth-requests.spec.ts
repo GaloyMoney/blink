@@ -24,8 +24,9 @@ import {
   getDefaultWalletIdByTestUserIndex,
   lndOutside2,
 } from "test/helpers"
+import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
-let apolloClient, disposeClient, walletId
+let apolloClient: ApolloClient<NormalizedCacheObject>, disposeClient: () => void, walletId: WalletId
 const USER_INDEX = 3
 const { phone, code } = yamlConfig.test_accounts[USER_INDEX]
 

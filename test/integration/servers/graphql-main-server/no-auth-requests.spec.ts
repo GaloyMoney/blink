@@ -26,7 +26,8 @@ import {
 import { startServer, killServer } from "test/helpers/integration-server"
 import { createApolloClient, defaultTestClientConfig } from "test/helpers/apollo-client"
 
-let correctCode, apolloClient, disposeClient
+import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
+let correctCode, apolloClient: ApolloClient<NormalizedCacheObject>, disposeClient: () => void
 const { phone, code } = yamlConfig.test_accounts[9]
 
 beforeAll(async () => {
