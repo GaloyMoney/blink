@@ -43,7 +43,6 @@ const paymentSchema = new Schema<LnPaymentType>({
   },
   paymentRequest: {
     type: String,
-    unique: true,
     required: true,
   },
   milliSatsAmount: String,
