@@ -257,11 +257,9 @@ jobs:
   plan:
   - in_parallel:
     - get: edge-image
-      trigger: true
       passed: [build-edge-image]
       params: { skip_download: true }
     - get: migrate-edge-image
-      trigger: true
       passed: [build-migrate-edge-image]
       params: { skip_download: true }
     - get: repo
