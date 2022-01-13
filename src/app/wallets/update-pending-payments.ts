@@ -3,10 +3,39 @@ import { InconsistentDataError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
+import { runInParallel } from "@utils"
 
 import { reimburseFee } from "./reimburse-fee"
 
-export const updatePendingPayments = async ({
+export const updatePendingPayments = async (logger: Logger): Promise<void> => {
+  const ledgerService = LedgerService()
+  const walletIdsWithPendingPayments = ledgerService.listWalletIdsWithPendingPayments()
+
+  if (walletIdsWithPendingPayments instanceof Error) {
+    logger.error(
+      { error: walletIdsWithPendingPayments },
+      "finish updating pending payments with error",
+    )
+    return
+  }
+
+  await runInParallel({
+    iterator: walletIdsWithPendingPayments,
+    logger,
+    processor: async (walletId: WalletId, index: number) => {
+      logger.trace(
+        "updating pending payments for walletId %s in worker %d",
+        walletId,
+        index,
+      )
+      await updatePendingPaymentsByWalletId({ walletId, logger })
+    },
+  })
+
+  logger.info("finish updating pending payments")
+}
+
+export const updatePendingPaymentsByWalletId = async ({
   walletId,
   logger,
   lock,

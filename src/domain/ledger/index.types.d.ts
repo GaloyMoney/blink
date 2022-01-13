@@ -223,4 +223,6 @@ interface ILedgerService {
   ): Promise<void | LedgerServiceError>
 
   getWalletIdByTransactionHash(hash): Promise<WalletId | LedgerServiceError>
+
+  listWalletIdsWithPendingPayments: () => AsyncGenerator<WalletId> | LedgerServiceError
 }

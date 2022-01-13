@@ -1,6 +1,8 @@
+import { Wallets } from "@app"
 import { generate2fa, save2fa } from "@app/users"
-import { balanceSheetIsBalanced, updateUsersPendingPayment } from "@core/balance-sheet"
+import { balanceSheetIsBalanced } from "@core/balance-sheet"
 import { TwoFAAlreadySetError } from "@domain/twoFA"
+import { baseLogger } from "@services/logger"
 
 import { generateToken } from "node-2fa"
 
@@ -21,8 +23,14 @@ export const amountAfterFeeDeduction = ({
   depositFeeRatio: DepositFeeRatio
 }) => Math.round(amount * (1 - depositFeeRatio))
 
+const logger = baseLogger.child({ module: "test" })
+
 export const checkIsBalanced = async () => {
-  await updateUsersPendingPayment()
+  await Promise.all([
+    Wallets.updatePendingInvoices(logger),
+    Wallets.updatePendingPayments(logger),
+    Wallets.updateOnChainReceipt({ logger }),
+  ])
   // wait for balance updates because invoice event
   // arrives before wallet balances updates in lnd
   await waitUntilChannelBalanceSyncAll()

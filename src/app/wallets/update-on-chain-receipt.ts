@@ -55,6 +55,8 @@ export const updateOnChainReceipt = async ({
     }
   }
 
+  logger.info(`finish updating onchain receipts with ${onChainTxs.length} transactions`)
+
   return onChainTxs.length
 }
 

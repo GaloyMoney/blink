@@ -1,7 +1,7 @@
 import { LedgerService } from "@services/ledger"
 
-import { updatePendingInvoices } from "./update-pending-invoices"
-import { updatePendingPayments } from "./update-pending-payments"
+import { updatePendingInvoicesByWalletId } from "./update-pending-invoices"
+import { updatePendingPaymentsByWalletId } from "./update-pending-payments"
 
 export const getBalanceForWallet = async ({
   walletId,
@@ -13,18 +13,18 @@ export const getBalanceForWallet = async ({
   logger: Logger
 }): Promise<Satoshis | ApplicationError> => {
   const [, updatePaymentsResult] = await Promise.all([
-    updatePendingInvoices({
+    updatePendingInvoicesByWalletId({
       walletId,
       lock,
       logger,
     }),
-    updatePendingPayments({
+    updatePendingPaymentsByWalletId({
       walletId,
       lock,
       logger,
     }),
   ])
-  if (updatePaymentsResult instanceof Error) throw updatePaymentsResult
+  if (updatePaymentsResult instanceof Error) return updatePaymentsResult
 
   return getBalanceForWalletId(walletId)
 }
