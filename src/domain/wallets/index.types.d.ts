@@ -124,21 +124,17 @@ type WalletTransactionHistoryWithPending = {
   readonly transactions: WalletTransaction[]
 }
 
-type WalletName = string & { readonly brand: unique symbol }
-
 // TODO: split with currency?
 type WalletType =
   typeof import("./index").WalletType[keyof typeof import("./index").WalletType]
 
 type NewWalletInfo = {
-  accountId: AccountId
-  type: WalletType
-}
-
-type Wallet = {
-  readonly id: WalletId
   readonly accountId: AccountId
   readonly type: WalletType
+}
+
+type Wallet = NewWalletInfo & {
+  readonly id: WalletId
   readonly onChainAddressIdentifiers: OnChainAddressIdentifier[]
   onChainAddresses(): OnChainAddress[]
 }

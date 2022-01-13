@@ -7,11 +7,11 @@ export const setDefaultWalletId = async ({
 }: {
   accountId: AccountId
   walletId: WalletId
-}) => {
+}): Promise<Account | ApplicationError> => {
   const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
 
-  if (!account.walletIds.some((wid) => wid === walletId)) return InvalidWalletId
+  if (!account.walletIds.some((wid) => wid === walletId)) return new InvalidWalletId()
 
   account.defaultWalletId = walletId
 
