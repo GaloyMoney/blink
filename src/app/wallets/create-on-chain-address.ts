@@ -19,10 +19,10 @@ export const createOnChainAddress = async (
   if (onChainAddress instanceof Error) return onChainAddress
 
   const onChainAddressesRepo = WalletOnChainAddressesRepository()
-  const savedOnChainAddress = await onChainAddressesRepo.persistNew(
+  const savedOnChainAddress = await onChainAddressesRepo.persistNew({
     walletId,
     onChainAddress,
-  )
+  })
   if (savedOnChainAddress instanceof Error) return savedOnChainAddress
 
   return savedOnChainAddress.address

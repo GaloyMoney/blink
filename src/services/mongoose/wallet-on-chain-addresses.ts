@@ -8,14 +8,17 @@ import { baseLogger } from "@services/logger"
 import { Wallet } from "@services/mongoose/schema"
 
 export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepository => {
-  const persistNew = async (
-    id: WalletId,
-    onChainAddress: OnChainAddressIdentifier,
-  ): Promise<OnChainAddressIdentifier | RepositoryError> => {
+  const persistNew = async ({
+    walletId,
+    onChainAddress,
+  }: {
+    walletId: WalletId
+    onChainAddress: OnChainAddressIdentifier
+  }): Promise<OnChainAddressIdentifier | RepositoryError> => {
     try {
       const { address, pubkey } = onChainAddress
       const result = await Wallet.updateOne(
-        { id },
+        { id: walletId },
         { $push: { onchain: { address, pubkey } } },
       )
 
