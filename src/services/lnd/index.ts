@@ -54,9 +54,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }
 
   const isLocal = (pubkey: Pubkey): boolean | LightningServiceError =>
-    !!getLnds({ type: "offchain" })
-      .map((item) => item.pubkey as Pubkey)
-      .find((item) => item == pubkey)
+    getLnds({ type: "offchain" }).some((item) => item.pubkey === pubkey)
 
   const listActivePubkeys = (): Pubkey[] =>
     getLnds({ active: true, type: "offchain" }).map((lndAuth) => lndAuth.pubkey as Pubkey)
@@ -263,11 +261,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
     after: PagingToken | undefined
     pubkey: Pubkey
   }): Promise<ListLnPaymentsResult | LightningServiceError> => {
-    try {
-      const { lnd } = getLndFromPubkey({ pubkey })
-      const pagingArgs = after ? { token: after } : {}
-      const { payments, next } = await getFailedPayments({ lnd, ...pagingArgs })
+    const { lnd } = getLndFromPubkey({ pubkey })
+    const pagingArgs = after ? { token: after } : {}
 
+    try {
+      const { payments, next } = await getFailedPayments({ lnd, ...pagingArgs })
       return {
         lnPayments: payments
           .map(translateLnPaymentLookup)
