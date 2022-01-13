@@ -6,6 +6,8 @@ import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
 
+import { GALOY_API_PORT } from "@config/app"
+
 import { gqlMainSchema } from "../graphql"
 
 import {
@@ -63,7 +65,11 @@ export async function startApolloServerForCoreSchema() {
   )
 
   const schema = applyMiddleware(gqlMainSchema, permissions, walletIdMiddleware)
-  return startApolloServer({ schema, port: 4002, startSubscriptionServer: true })
+  return startApolloServer({
+    schema,
+    port: GALOY_API_PORT,
+    startSubscriptionServer: true,
+  })
 }
 
 if (require.main === module) {
