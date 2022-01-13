@@ -5,20 +5,28 @@ import { startApolloServerForCoreSchema } from "@servers/graphql-main-server"
 import * as jwt from "jsonwebtoken"
 
 import { sleep } from "@utils"
+import { RateLimitConfig } from "@domain/rate-limit"
 
 import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
 import MAIN from "./queries/main.gql"
 
 import { clearAccountLocks, clearLimiters } from "test/helpers"
+import {
+  resetUserPhoneCodeAttemptIp,
+  resetUserPhoneCodeAttemptPhone,
+  resetUserLoginIpRateLimits,
+  resetUserLoginPhoneRateLimits,
+  resetUserPhoneCodeAttemptPhoneMinIntervalLimits,
+} from "test/helpers/rate-limit"
 
 jest.mock("@services/twilio", () => require("test/mocks/twilio"))
 
-let apolloServer, httpServer, httpTerminator, query, mutate, correctCode
+let apolloServer, httpServer, httpTerminator, query, mutate, correctCode: PhoneCode
 const { phone, code } = yamlConfig.test_accounts[9]
 
 beforeAll(async () => {
-  correctCode = `${code}`
+  correctCode = `${code}` as PhoneCode
   ;({ apolloServer, httpServer } = await startApolloServerForCoreSchema())
   ;({ query, mutate } = createTestClient({ apolloServer }))
   httpTerminator = createHttpTerminator({ server: httpServer })
@@ -95,6 +103,12 @@ describe("graphql", () => {
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
     })
+
+    it("rate limits too many phone requests", async () => {
+      await testPhoneCodeAttemptPerPhoneMinInterval(mutation)
+      await testPhoneCodeAttemptPerPhone(mutation)
+      await testPhoneCodeAttemptPerIp(mutation)
+    })
   })
 
   describe("userLogin", () => {
@@ -163,5 +177,257 @@ describe("graphql", () => {
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
     })
+
+    it("rate limits too many invalid login requests by IP, wrong code", async () => {
+      const args = {
+        input: { phone, code: "000000" as PhoneCode },
+        expectedMessage: "Invalid or incorrect phone code entered.",
+        mutation,
+      }
+      await testRateLimitLoginByPhone(args)
+      await testRateLimitLoginByIp(args)
+    })
+
+    it.skip("rate limits too many invalid login requests by IP, invalid code", async () => {
+      const args = {
+        input: { phone, code: "<invalid>" as PhoneCode },
+        expectedMessage: "Invalid value for OneTimeAuthCode",
+        mutation,
+      }
+      await testRateLimitLoginByPhone(args)
+      await testRateLimitLoginByIp(args)
+    })
+
+    it("rate limits too many invalid login requests by IP, wrong phone", async () => {
+      const args = {
+        input: { phone: "+19999999999" as PhoneNumber, code: correctCode },
+        expectedMessage: "Invalid or incorrect phone code entered.",
+        mutation,
+      }
+      await testRateLimitLoginByPhone(args)
+      await testRateLimitLoginByIp(args)
+    })
+
+    it.skip("rate limits too many invalid login requests by IP, invalid phone", async () => {
+      const args = {
+        input: { phone: "<invalid>" as PhoneNumber, code: correctCode },
+        expectedMessage: "Invalid value for Phone",
+        mutation,
+      }
+      await testRateLimitLoginByPhone(args)
+      await testRateLimitLoginByIp(args)
+    })
   })
 })
+
+const testPhoneCodeAttemptPerPhoneMinInterval = async (mutation) => {
+  // Fetch limiter config
+  const {
+    limits: { points },
+    error,
+  } = RateLimitConfig.requestPhoneCodeAttemptPerPhoneMinInterval
+
+  // Reset limiter
+  const reset = await resetUserPhoneCodeAttemptPhoneMinIntervalLimits(phone)
+  expect(reset).not.toBeInstanceOf(Error)
+  if (reset instanceof Error) return reset
+
+  // Exhaust limiter
+  const input = { phone }
+  for (let i = 0; i < points; i++) {
+    {
+      const reset = await resetUserPhoneCodeAttemptPhone(phone)
+      expect(reset).not.toBeInstanceOf(Error)
+      if (reset instanceof Error) return reset
+    }
+    {
+      const reset = await resetUserPhoneCodeAttemptIp(undefined as unknown as IpAddress)
+      expect(reset).not.toBeInstanceOf(Error)
+      if (reset instanceof Error) return reset
+    }
+
+    const {
+      data: {
+        userRequestAuthCode: { success },
+      },
+    } = await mutate(mutation, { variables: { input } })
+    expect(success).toBeTruthy()
+  }
+
+  // Check limiter is exhausted
+  const {
+    errors: [{ message }],
+  } = await mutate(mutation, { variables: { input } })
+  expect(message).toMatch(new RegExp(`.*${error.name}.*`))
+}
+
+const testPhoneCodeAttemptPerPhone = async (mutation) => {
+  // Fetch limiter config
+  const {
+    limits: { points },
+    error,
+  } = RateLimitConfig.requestPhoneCodeAttemptPerPhone
+
+  // Reset limiter
+  const reset = await resetUserPhoneCodeAttemptPhone(phone)
+  expect(reset).not.toBeInstanceOf(Error)
+  if (reset instanceof Error) return reset
+
+  // Exhaust limiter
+  const input = { phone }
+  for (let i = 0; i < points; i++) {
+    {
+      const reset = await resetUserPhoneCodeAttemptPhoneMinIntervalLimits(phone)
+      expect(reset).not.toBeInstanceOf(Error)
+      if (reset instanceof Error) return reset
+    }
+    {
+      const reset = await resetUserPhoneCodeAttemptIp(undefined as unknown as IpAddress)
+      expect(reset).not.toBeInstanceOf(Error)
+      if (reset instanceof Error) return reset
+    }
+
+    const {
+      data: {
+        userRequestAuthCode: { success },
+      },
+    } = await mutate(mutation, { variables: { input } })
+    expect(success).toBeTruthy()
+  }
+
+  // Check limiter is exhausted
+  const {
+    errors: [{ message }],
+  } = await mutate(mutation, { variables: { input } })
+  expect(message).toMatch(new RegExp(`.*${error.name}.*`))
+}
+
+const testPhoneCodeAttemptPerIp = async (mutation) => {
+  // Fetch limiter config
+  const {
+    limits: { points },
+    error,
+  } = RateLimitConfig.requestPhoneCodeAttemptPerIp
+
+  // Reset limiter
+  const reset = await resetUserPhoneCodeAttemptIp(undefined as unknown as IpAddress)
+  expect(reset).not.toBeInstanceOf(Error)
+  if (reset instanceof Error) return reset
+
+  // Exhaust limiter
+  const input = { phone }
+  for (let i = 0; i < points; i++) {
+    {
+      const reset = await resetUserPhoneCodeAttemptPhoneMinIntervalLimits(phone)
+      expect(reset).not.toBeInstanceOf(Error)
+      if (reset instanceof Error) return reset
+    }
+    {
+      const reset = await resetUserPhoneCodeAttemptPhone(phone)
+      expect(reset).not.toBeInstanceOf(Error)
+      if (reset instanceof Error) return reset
+    }
+
+    const {
+      data: {
+        userRequestAuthCode: { success },
+      },
+    } = await mutate(mutation, { variables: { input } })
+    expect(success).toBeTruthy()
+  }
+
+  // Check limiter is exhausted
+  const {
+    errors: [{ message }],
+  } = await mutate(mutation, { variables: { input } })
+  expect(message).toMatch(new RegExp(`.*${error.name}.*`))
+}
+
+const testRateLimitLoginByPhone = async ({
+  input,
+  expectedMessage,
+  mutation,
+}: {
+  input: { phone: PhoneNumber; code: PhoneCode }
+  expectedMessage: string
+  mutation: DocumentNode
+}) => {
+  const { phone } = input
+
+  // Fetch limiter config
+  const {
+    limits: { points },
+    error,
+  } = RateLimitConfig.failedLoginAttemptPerPhone
+
+  // Reset limiter
+  const reset = await resetUserLoginPhoneRateLimits(phone)
+  expect(reset).not.toBeInstanceOf(Error)
+  if (reset instanceof Error) return reset
+
+  // Exhaust limiter
+  for (let i = 0; i < points; i++) {
+    const result = await mutate(mutation, { variables: { input } })
+    expect(result.data.userLogin.errors).toEqual(
+      expect.arrayContaining([expect.objectContaining({ message: expectedMessage })]),
+    )
+  }
+
+  // Check limiter is exhausted
+  const messageRegex = new RegExp(`.*${error.name}.*`)
+  const result = await mutate(mutation, { variables: { input } })
+  expect(result.data.userLogin.errors).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
+    ]),
+  )
+}
+
+const testRateLimitLoginByIp = async ({
+  input,
+  expectedMessage,
+  mutation,
+}: {
+  input: { phone: PhoneNumber; code: PhoneCode }
+  expectedMessage: string
+  mutation: DocumentNode
+}) => {
+  const ip = undefined as unknown as IpAddress
+  const { phone } = input
+
+  // Fetch limiter config
+  const {
+    limits: { points },
+    error,
+  } = RateLimitConfig.failedLoginAttemptPerIp
+
+  // Reset limiter
+  const resetIp = await resetUserLoginIpRateLimits(ip)
+  expect(resetIp).not.toBeInstanceOf(Error)
+  if (resetIp instanceof Error) return resetIp
+
+  // Exhaust limiter
+  for (let i = 0; i < points; i++) {
+    const resetPhone = await resetUserLoginPhoneRateLimits(phone)
+    expect(resetPhone).not.toBeInstanceOf(Error)
+    if (resetPhone instanceof Error) return resetPhone
+
+    const result = await mutate(mutation, { variables: { input } })
+    expect(result.data.userLogin.errors).toEqual(
+      expect.arrayContaining([expect.objectContaining({ message: expectedMessage })]),
+    )
+  }
+
+  // Check limiter is exhausted
+  const resetPhone = await resetUserLoginPhoneRateLimits(phone)
+  expect(resetPhone).not.toBeInstanceOf(Error)
+  if (resetPhone instanceof Error) return resetPhone
+
+  const messageRegex = new RegExp(`.*${error.name}.*`)
+  const result = await mutate(mutation, { variables: { input } })
+  expect(result.data.userLogin.errors).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
+    ]),
+  )
+}

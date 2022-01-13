@@ -1,19 +1,18 @@
 import {
   BTC_NETWORK,
   getFailedLoginAttemptPerIpLimits,
-  getFailedLoginAttemptPerPhoneLimits,
   VALIDITY_TIME_CODE,
   getTestAccounts,
 } from "@config/app"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
-import { RateLimitPrefix } from "@domain/rate-limit"
+import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToPhoneNumber } from "@domain/users"
 import { createToken } from "@services/jwt"
 import { UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
-import { RedisRateLimitService } from "@services/rate-limit"
+import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
 import { TwilioClient } from "@services/twilio"
 
 export const login = async ({
@@ -82,13 +81,11 @@ export const login = async ({
 
 const checkFailedLoginAttemptPerIpLimits = async (
   ip: IpAddress,
-): Promise<true | RateLimiterExceededError> => {
-  const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.failedLoginAttemptPerIp,
-    limitOptions: getFailedLoginAttemptPerIpLimits(),
+): Promise<true | RateLimiterExceededError> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerIp,
+    keyToConsume: ip,
   })
-  return limiter.consume(ip)
-}
 
 const rewardFailedLoginAttemptPerIpLimits = async (
   ip: IpAddress,
@@ -102,13 +99,11 @@ const rewardFailedLoginAttemptPerIpLimits = async (
 
 const checkFailedLoginAttemptPerPhoneLimits = async (
   phone: PhoneNumber,
-): Promise<true | RateLimiterExceededError> => {
-  const limiter = RedisRateLimitService({
-    keyPrefix: RateLimitPrefix.failedLoginAttemptPerPhone,
-    limitOptions: getFailedLoginAttemptPerPhoneLimits(),
+): Promise<true | RateLimiterExceededError> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerPhone,
+    keyToConsume: phone,
   })
-  return limiter.consume(phone)
-}
 
 const isCodeValid = async ({
   code,
