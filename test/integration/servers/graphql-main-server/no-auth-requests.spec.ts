@@ -6,6 +6,13 @@ import * as jwt from "jsonwebtoken"
 
 import { sleep } from "@utils"
 import { RateLimitConfig } from "@domain/rate-limit"
+import {
+  UserLoginIpRateLimiterExceededError,
+  UserLoginPhoneRateLimiterExceededError,
+  UserPhoneCodeAttemptIpRateLimiterExceededError,
+  UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError,
+  UserPhoneCodeAttemptPhoneRateLimiterExceededError,
+} from "@domain/rate-limit/errors"
 
 import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
@@ -258,6 +265,9 @@ const testPhoneCodeAttemptPerPhoneMinInterval = async (mutation) => {
   const {
     errors: [{ message }],
   } = await mutate(mutation, { variables: { input } })
+  expect(new error()).toBeInstanceOf(
+    UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError,
+  )
   expect(message).toMatch(new RegExp(`.*${error.name}.*`))
 }
 
@@ -299,6 +309,7 @@ const testPhoneCodeAttemptPerPhone = async (mutation) => {
   const {
     errors: [{ message }],
   } = await mutate(mutation, { variables: { input } })
+  expect(new error()).toBeInstanceOf(UserPhoneCodeAttemptPhoneRateLimiterExceededError)
   expect(message).toMatch(new RegExp(`.*${error.name}.*`))
 }
 
@@ -340,6 +351,7 @@ const testPhoneCodeAttemptPerIp = async (mutation) => {
   const {
     errors: [{ message }],
   } = await mutate(mutation, { variables: { input } })
+  expect(new error()).toBeInstanceOf(UserPhoneCodeAttemptIpRateLimiterExceededError)
   expect(message).toMatch(new RegExp(`.*${error.name}.*`))
 }
 
@@ -376,6 +388,7 @@ const testRateLimitLoginByPhone = async ({
   // Check limiter is exhausted
   const messageRegex = new RegExp(`.*${error.name}.*`)
   const result = await mutate(mutation, { variables: { input } })
+  expect(new error()).toBeInstanceOf(UserLoginPhoneRateLimiterExceededError)
   expect(result.data.userLogin.errors).toEqual(
     expect.arrayContaining([
       expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
@@ -425,6 +438,7 @@ const testRateLimitLoginByIp = async ({
 
   const messageRegex = new RegExp(`.*${error.name}.*`)
   const result = await mutate(mutation, { variables: { input } })
+  expect(new error()).toBeInstanceOf(UserLoginIpRateLimiterExceededError)
   expect(result.data.userLogin.errors).toEqual(
     expect.arrayContaining([
       expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
