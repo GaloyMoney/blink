@@ -45,3 +45,19 @@ export const resetUserPhoneCodeAttemptIp = async (
     rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerIp,
     keyToConsume: ip,
   })
+
+export const resetUserLoginPhoneRateLimits = async (
+  phone: PhoneNumber,
+): Promise<true | RateLimitServiceError> =>
+  resetLimiter({
+    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerPhone,
+    keyToConsume: phone,
+  })
+
+export const resetUserLoginIpRateLimits = async (
+  ip: IpAddress,
+): Promise<true | RateLimitServiceError> =>
+  resetLimiter({
+    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerIp,
+    keyToConsume: ip,
+  })
