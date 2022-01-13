@@ -1,91 +1,9 @@
-import { Wallets } from "@app"
 import { getBalance as getBitcoindBalance } from "@services/bitcoind"
 import { lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
-import { WalletInvoicesRepository } from "@services/mongoose"
-import { runInParallel } from "@utils"
 
 const logger = baseLogger.child({ module: "balanceSheet" })
-
-const updatePendingLightningInvoices = async () => {
-  const walletInvoicesRepo = WalletInvoicesRepository()
-
-  const walletIdsWithPendingInvoices =
-    walletInvoicesRepo.listWalletIdsWithPendingInvoices()
-
-  if (walletIdsWithPendingInvoices instanceof Error) {
-    logger.error(
-      { error: walletIdsWithPendingInvoices },
-      "finish updating pending invoices with error",
-    )
-    return
-  }
-
-  await runInParallel({
-    iterator: walletIdsWithPendingInvoices,
-    logger,
-    processor: async (walletId: WalletId, index) => {
-      logger.trace(
-        "updating pending invoices for wallet %s in worker %d",
-        walletId,
-        index,
-      )
-      await Wallets.updatePendingInvoices({
-        walletId,
-        logger,
-      })
-    },
-  })
-
-  logger.info("finish updating pending invoices")
-}
-
-const updatePendingLightningPayments = async () => {
-  const accountsWithPendingPayments = ledger.getAccountsWithPendingTransactions({
-    type: "payment",
-  })
-
-  await runInParallel({
-    iterator: accountsWithPendingPayments,
-    logger,
-    processor: async (account, index) => {
-      logger.trace(
-        "updating pending payments for account %s in worker %d",
-        account,
-        index,
-      )
-      const result = await Wallets.updatePendingPayments({
-        walletId: ledger.resolveWalletId(account) as WalletId,
-        logger,
-      })
-      if (result instanceof Error) throw result
-    },
-  })
-
-  logger.info("finish updating pending payments")
-}
-
-export const updatePendingLightningTransactions = async () => {
-  await updatePendingLightningInvoices()
-  await updatePendingLightningPayments()
-}
-
-export const updateUsersPendingPayment = async ({
-  onchainOnly,
-}: { onchainOnly?: boolean } = {}) => {
-  if (!onchainOnly) {
-    await updatePendingLightningTransactions()
-  }
-
-  const txNumber = await Wallets.updateOnChainReceipt({ logger })
-  if (txNumber instanceof Error) {
-    logger.error({ error: txNumber }, "error updating onchain receipt")
-    return
-  }
-
-  logger.info(`finish updating onchain receipt with ${txNumber} transactions`)
-}
 
 export const getLedgerAccounts = async () => {
   const [assets, liabilities, lightning, bitcoin, bankOwnerBalance] = await Promise.all([

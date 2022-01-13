@@ -693,6 +693,32 @@ export const LedgerService = (): ILedgerService => {
     return walletId
   }
 
+  async function* listWalletIdsWithPendingPayments():
+    | AsyncGenerator<WalletId>
+    | LedgerServiceError {
+    let transactions
+    try {
+      transactions = Transaction.aggregate([
+        {
+          $match: {
+            "type": "payment",
+            "pending": true,
+            "account_path.0": liabilitiesMainAccount,
+          },
+        },
+        { $group: { _id: "$accounts" } },
+      ])
+        .cursor({ batchSize: 100 })
+        .exec()
+    } catch (error) {
+      return new UnknownLedgerError(error)
+    }
+
+    for await (const { _id } of transactions) {
+      yield accounts.resolveWalletId(_id)
+    }
+  }
+
   return {
     getTransactionById,
     getTransactionsByHash,
@@ -718,6 +744,7 @@ export const LedgerService = (): ILedgerService => {
     settlePendingLnPayments,
     voidLedgerTransactionsForJournal,
     getWalletIdByTransactionHash,
+    listWalletIdsWithPendingPayments,
   }
 }
 

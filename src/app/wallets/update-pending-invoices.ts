@@ -7,8 +7,38 @@ import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
+import { runInParallel } from "@utils"
 
-export const updatePendingInvoices = async ({
+export const updatePendingInvoices = async (logger: Logger): Promise<void> => {
+  const invoicesRepo = WalletInvoicesRepository()
+
+  const walletIdsWithPendingInvoices = invoicesRepo.listWalletIdsWithPendingInvoices()
+
+  if (walletIdsWithPendingInvoices instanceof Error) {
+    logger.error(
+      { error: walletIdsWithPendingInvoices },
+      "finish updating pending invoices with error",
+    )
+    return
+  }
+
+  await runInParallel({
+    iterator: walletIdsWithPendingInvoices,
+    logger,
+    processor: async (walletId: WalletId, index: number) => {
+      logger.trace(
+        "updating pending invoices for wallet %s in worker %d",
+        walletId,
+        index,
+      )
+      await updatePendingInvoicesByWalletId({ walletId, logger })
+    },
+  })
+
+  logger.info("finish updating pending invoices")
+}
+
+export const updatePendingInvoicesByWalletId = async ({
   walletId,
   logger,
   lock,

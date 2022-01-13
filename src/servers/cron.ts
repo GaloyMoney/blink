@@ -1,5 +1,10 @@
 import { getSpecterWalletConfig } from "@config/app"
-import { asyncRunInSpan, SemanticAttributes, shutdownTracing } from "@services/tracing"
+import {
+  asyncRunInSpan,
+  SemanticAttributes,
+  shutdownTracing,
+  wrapAsyncToRunInSpan,
+} from "@services/tracing"
 
 import {
   deleteExpiredInvoiceUser,
@@ -10,12 +15,11 @@ import {
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 
-import {
-  updatePendingLightningTransactions,
-  updateUsersPendingPayment,
-} from "@core/balance-sheet"
 import { SpecterWallet } from "@core/specter-wallet"
 import { activateLndHealthCheck } from "@services/lnd/health"
+import { Wallets } from "@app"
+
+const logger = baseLogger.child({ module: "cron" })
 
 const main = async () => {
   const results: Array<boolean> = []
@@ -31,44 +35,47 @@ const main = async () => {
       const rebalance = () => {
         const specterWalletConfig = getSpecterWalletConfig()
         const specterWallet = new SpecterWallet({
-          logger: baseLogger,
+          logger,
           config: specterWalletConfig,
         })
         return specterWallet.tentativelyRebalance()
       }
 
-      const updatePendingOnChainPayments = () =>
-        updateUsersPendingPayment({ onchainOnly: true })
+      const updatePendingLightningInvoices = () => Wallets.updatePendingInvoices(logger)
+
+      const updatePendingLightningPayments = () => Wallets.updatePendingPayments(logger)
+
+      const updateOnChainReceipt = async () => {
+        const txNumber = await Wallets.updateOnChainReceipt({ logger })
+        if (txNumber instanceof Error) throw txNumber
+      }
+
+      const deleteExpiredInvoices = async () => {
+        await deleteExpiredInvoiceUser()
+      }
 
       const tasks = [
         updateEscrows,
-        updatePendingLightningTransactions,
-        deleteExpiredInvoiceUser,
+        updatePendingLightningInvoices,
+        updatePendingLightningPayments,
+        deleteExpiredInvoices,
         deleteFailedPaymentsAttemptAllLnds,
         rebalance,
         updateRoutingFees,
-        updatePendingOnChainPayments,
+        updateOnChainReceipt,
       ]
 
       for (const task of tasks) {
-        await asyncRunInSpan(
-          `cron.${task.name}`,
-          {
-            [SemanticAttributes.CODE_FUNCTION]: task.name,
-            [SemanticAttributes.CODE_NAMESPACE]: "cron",
-          },
-          async () => {
-            try {
-              baseLogger.info(`starting ${task.name}`)
-              await task()
-              results.push(true)
-            } catch (error) {
-              baseLogger.error({ error }, `issue with task ${task.name}`)
-              results.push(false)
-              return error
-            }
-          },
-        )
+        const wrappedTask = wrapAsyncToRunInSpan({ namespace: "cron", fn: task })
+        try {
+          logger.info(`starting ${task.name}`)
+          await wrappedTask()
+          results.push(true)
+        } catch (error) {
+          logger.error({ error }, `issue with task ${task.name}`)
+          results.push(false)
+          return error
+        }
       }
 
       await mongoose.connection.close()
@@ -77,7 +84,6 @@ const main = async () => {
 
   await shutdownTracing()
 
-  // FIXME: we need to exit because we may have some pending promise
   process.exit(results.every((r) => r) ? 0 : 99)
 }
 
@@ -85,5 +91,5 @@ try {
   activateLndHealthCheck()
   main()
 } catch (err) {
-  baseLogger.warn({ err }, "error in the cron job")
+  logger.warn({ err }, "error in the cron job")
 }

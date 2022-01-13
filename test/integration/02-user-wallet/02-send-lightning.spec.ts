@@ -821,7 +821,7 @@ describe("UserWallet - Lightning Pay", () => {
         })
 
         await waitFor(async () => {
-          const updatedPayments = await Wallets.updatePendingPayments({
+          const updatedPayments = await Wallets.updatePendingPaymentsByWalletId({
             walletId: walletId1,
             logger: baseLogger,
           })
@@ -862,7 +862,7 @@ describe("UserWallet - Lightning Pay", () => {
         await cancelHodlInvoice({ id, lnd: lndOutside1 })
 
         await waitFor(async () => {
-          const updatedPayments = await Wallets.updatePendingPayments({
+          const updatedPayments = await Wallets.updatePendingPaymentsByWalletId({
             walletId: walletId1,
             logger: baseLogger,
           })
