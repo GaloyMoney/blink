@@ -143,7 +143,7 @@
     "http-terminator": "^3.0.3",
     "jest": "^27.0.6",
     "jest-junit": "^12.2.0",
-    "migrate-mongo": "^8.2.2",
+    "migrate-mongo": "=8.2.2",
     "newman": "^5.2.4",
     "nodemon": "^2.0.9",
     "pino-pretty": "^5.1.0",

@@ -3,6 +3,7 @@
 set -eu
 
 export digest=$(cat ./edge-image/digest)
+export migrate_digest=$(cat ./migrate-edge-image/digest)
 
 pushd charts-repo
 
@@ -16,6 +17,11 @@ cat <<EOF >> ../body.md
 The galoy image will be bumped to digest:
 ```
 ${digest}
+```
+
+The mongodbMigrate image will be bumped to digest:
+```
+${migrate_digest}
 ```
 
 Code diff contained in this image:

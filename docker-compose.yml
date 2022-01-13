@@ -23,7 +23,7 @@ services:
     environment:
     - ALLOW_EMPTY_PASSWORD=yes
     - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
-  galoy-migrate:
+  mongodb-migrate:
     depends_on: [mongodb]
     build:
       context: .

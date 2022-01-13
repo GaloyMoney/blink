@@ -283,6 +283,7 @@ jobs:
       inputs:
       - name: repo
       - name: edge-image
+      - name: migrate-edge-image
       - name: pipeline-tasks
       - name: charts-repo
       outputs:
@@ -302,6 +303,7 @@ jobs:
       inputs:
       - name: pipeline-tasks
       - name: edge-image
+      - name: migrate-edge-image
       - name: charts-repo
       params:
         GH_TOKEN: #@ data.values.github_token
