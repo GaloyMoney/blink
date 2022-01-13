@@ -10,9 +10,10 @@ RUN yarn install --frozen-lockfile
 
 COPY ./src ./src
 COPY ./test ./test
-COPY ./scripts ./scripts
 
 RUN yarn build
+
+COPY ./scripts ./scripts
 
 FROM node:16-alpine
 COPY --from=BUILD_IMAGE /app/lib /app/lib
@@ -35,4 +36,4 @@ ARG COMMITHASH
 ENV BUILDTIME ${BUILDTIME}
 ENV COMMITHASH ${COMMITHASH}
 
-CMD ["scripts/migrate-mongodb.sh"]
+ENTRYPOINT ["scripts/mongodb-migrate.sh"]

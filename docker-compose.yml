@@ -23,7 +23,7 @@ services:
     environment:
     - ALLOW_EMPTY_PASSWORD=yes
     - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
-  migrate-mongodb:
+  mongodb-migrate:
     depends_on: [mongodb]
     build:
       context: .
