@@ -1,17 +1,17 @@
-name: "Integration test"
+name: "Migrate Mongodb"
 
 on:
   pull_request:
     branches: [ main ]
 
 jobs:
-  integration:
-    name: Integration test
+  migrate_mongodb:
+    name: Migrate Mongodb
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
     - run: yarn install
-    - name: Run integration tests
-      run: docker compose up integration-deps -d && make integration-in-ci
+    - name: Run clean mongodb migration
+      run: docker compose up mongodb-migrate
