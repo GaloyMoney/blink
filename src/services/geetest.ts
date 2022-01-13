@@ -1,7 +1,7 @@
 // Based on https://github.com/GeeTeam/gt3-server-node-express-bypass/blob/master/app.js
 
 // https://docs.geetest.com/captcha/apirefer/api/server
-// doing this: "If the storage space is not sufficient: Send request to check bypass status before starting the verfication process."
+// doing this: "If the storage space is not sufficient: Send request to check bypass status before starting the verification process."
 
 import { CaptchaUserFailToPassError, UnknownCaptchaError } from "@domain/captcha/error"
 import axios from "axios"

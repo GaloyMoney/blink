@@ -1,5 +1,5 @@
 import { checkedToContactAlias } from "@domain/accounts"
-import { ContactNotExistantError } from "@domain/errors"
+import { ContactNotExistentError } from "@domain/errors"
 import { AccountsRepository } from "@services/mongoose"
 
 export const updateContactAlias = async ({
@@ -23,7 +23,7 @@ export const updateContactAlias = async ({
 
   const contact = account.contacts.find((contact) => contact.username === username)
   if (!contact) {
-    return new ContactNotExistantError()
+    return new ContactNotExistentError()
   }
 
   contact.alias = aliasChecked

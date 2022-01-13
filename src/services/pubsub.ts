@@ -3,10 +3,10 @@ import { redisPubSub } from "./redis"
 const pubsub = {
   asyncIterator: (trigger: string | string[]) => redisPubSub.asyncIterator(trigger),
 
-  publish: (triger: string, payload: unknown) => redisPubSub.publish(triger, payload),
+  publish: (trigger: string, payload: unknown) => redisPubSub.publish(trigger, payload),
 
-  publishImmediate: (triger: string, payload: unknown) =>
-    setImmediate(() => setImmediate(() => redisPubSub.publish(triger, payload))),
+  publishImmediate: (trigger: string, payload: unknown) =>
+    setImmediate(() => setImmediate(() => redisPubSub.publish(trigger, payload))),
 }
 
 export default pubsub

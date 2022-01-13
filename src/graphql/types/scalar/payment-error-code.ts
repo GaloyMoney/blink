@@ -5,7 +5,7 @@ const PaymentErrorCode = new GT.Enum({
   values: {
     ACCOUNT_LOCKED: {},
     LIMIT_EXCEEDED: {},
-    INSUFFICENT_BALANCE: {},
+    INSUFFICIENT_BALANCE: {},
     INVOICE_PAID: {},
 
     // LN

@@ -58,7 +58,7 @@ export class UserWallet {
     if (balance instanceof Error) throw balance
     balances["BTC"] = balance
 
-    // This code to be deleted after v1 deletion. keeping it as referemce for now
+    // This code to be deleted after v1 deletion. keeping it as reference for now
 
     // // the dealer is the only one that is allowed to be short USD
     // if (this.user.role === "dealer" && id === "USD") {

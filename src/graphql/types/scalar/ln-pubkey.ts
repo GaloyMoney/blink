@@ -19,7 +19,7 @@ function validLnPubkey(value) {
   if (value.match(/^[a-f0-9]{66}$/i)) {
     return value
   }
-  return new UserInputError("Invaild value for LnPubkey")
+  return new UserInputError("Invalid value for LnPubkey")
 }
 
 export default LnPubkey

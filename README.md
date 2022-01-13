@@ -15,7 +15,7 @@ Want to try it out and contribute? Checkout the [dev documentation](./DEV.md) to
 
 If you have questions, you can [join our community Slack](https://join.slack.com/t/galoymoney-workspace/shared_invite/zt-rvnhsdb5-72AZCD_jzw6_Q05aCs0SgA)
 
-For an overview of all relevent repository checkout [awesome-galoy](https://github.com/GaloyMoney/awesome-galoy).
+For an overview of all relevant repository checkout [awesome-galoy](https://github.com/GaloyMoney/awesome-galoy).
 ### Galoy-Backend features
 
 - GraphqlAPI:
@@ -59,7 +59,7 @@ For an overview of all relevent repository checkout [awesome-galoy](https://gith
   - Databases (mongodb and redis) are run by default in high availability/resilience mode. If one pod/node goes down, there is an automatic failover on another pod/node.
 - Production ready
   - Supports horizontal scaling and highly available deployments via k8s
-  - Client side load balancing accross multiple LND nodes
+  - Client side load balancing across multiple LND nodes
   - Out-of-the-box dashboards for KPIs deployed to grafana showing metrics exported via prometheus
   - Quick response times thanks to pagination of large data sets
   - Returning error codes for full translation capability of the frontend

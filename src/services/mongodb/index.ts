@@ -24,7 +24,7 @@ export const ledger = loadLedger({
 })
 
 // TODO add an event listenever if we got disconnecter from MongoDb
-// after a first succesful connection
+// after a first successful connection
 
 const user = process.env.MONGODB_USER ?? "testGaloy"
 const password = process.env.MONGODB_PASSWORD

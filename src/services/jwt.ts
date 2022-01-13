@@ -12,7 +12,7 @@ export const createToken = ({
   network: BtcNetwork
 }): JwtToken => {
   return jwt.sign({ uid, network }, JWT_SECRET, {
-    // TODO use asymetric signature
+    // TODO use asymmetric signature
     // and verify the signature from the client
     // otherwise we could get subject to DDos attack
     //

@@ -782,7 +782,7 @@ describe("UserWallet - Lightning Pay", () => {
         // const { results: [{ fee }] } = await getAccountTransactions(userWallet1.user.walletPath, { hash: id })
         // ^^^^ this fetch the wrong transaction
 
-        // TODO: have a way to do this more programatically?
+        // TODO: have a way to do this more programmatically?
         // base rate: 1, fee Rate: 1
         const fee = 0
 
@@ -1000,7 +1000,7 @@ describe("UserWallet - Lightning Pay", () => {
     // await getBTCBalance(wallet1)
 
     // FIXME: test is failing.
-    // lnd doens't always delete invoice just after they have expired
+    // lnd doesn't always delete invoice just after they have expired
 
     // expect(await InvoiceUser.countDocuments({_id: id})).toBe(0)
 

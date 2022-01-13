@@ -217,7 +217,7 @@ export class SpecterWallet {
 
     try {
       // TODO: won't work automatically with a cold storage wallet
-      // make a PSBT instead accesible for further signing.
+      // make a PSBT instead accessible for further signing.
       // TODO: figure out a way to export the PSBT when there is a pending tx
       txid = await this.bitcoindClient.sendToAddress({ address, amount: sat2btc(sats) })
     } catch (err) {
@@ -239,6 +239,6 @@ export class SpecterWallet {
       hash: txid,
     })
 
-    subLogger.info({ txid, tx }, `rebalancing withdrawal was succesful`)
+    subLogger.info({ txid, tx }, `rebalancing withdrawal was successful`)
   }
 }
