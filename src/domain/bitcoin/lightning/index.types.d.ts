@@ -156,7 +156,7 @@ interface ILightningService {
   }): Promise<RawRoute | LightningServiceError>
 
   registerInvoice(
-    registerInvoiceArgs: RegisterInvoiceArgs,
+    args: RegisterInvoiceArgs,
   ): Promise<RegisteredInvoice | LightningServiceError>
 
   lookupInvoice({
@@ -175,15 +175,13 @@ interface ILightningService {
     paymentHash: PaymentHash
   }): Promise<LnPaymentLookup | LnFailedPartialPaymentLookup | LightningServiceError>
 
-  listSettledPayments({
-    after,
-    pubkey,
-  }: ListLnPaymentsArgs): Promise<ListLnPaymentsResult | LightningServiceError>
+  listSettledPayments(
+    args: ListLnPaymentsArgs,
+  ): Promise<ListLnPaymentsResult | LightningServiceError>
 
-  listFailedPayments({
-    after,
-    pubkey,
-  }: ListLnPaymentsArgs): Promise<ListLnPaymentsResult | LightningServiceError>
+  listFailedPayments(
+    args: ListLnPaymentsArgs,
+  ): Promise<ListLnPaymentsResult | LightningServiceError>
 
   cancelInvoice({
     pubkey,
