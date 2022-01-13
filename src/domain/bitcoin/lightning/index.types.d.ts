@@ -12,8 +12,7 @@ type PaymentIdentifyingSecret = string & { readonly brand: unique symbol }
 type FeatureBit = number & { readonly brand: unique symbol }
 type FeatureType = string & { readonly brand: unique symbol }
 
-declare const pagingTokenSymbol: unique symbol
-type PagingToken = string & { [pagingTokenSymbol]: never }
+type PagingToken = string & { readonly brand: unique symbol }
 
 type PaymentStatus =
   typeof import("./index").PaymentStatus[keyof typeof import("./index").PaymentStatus]
