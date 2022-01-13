@@ -30,7 +30,7 @@ describe("UserWallet - addInvoice", () => {
       walletId: walletId1,
       amount: toSats(1000),
     })
-    if (lnInvoice instanceof Error) return lnInvoice
+    if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
 
     expect(request.startsWith("lnbcrt10")).toBeTruthy()
@@ -44,7 +44,7 @@ describe("UserWallet - addInvoice", () => {
     const lnInvoice = await Wallets.addInvoiceNoAmount({
       walletId: walletId1,
     })
-    if (lnInvoice instanceof Error) return lnInvoice
+    if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
