@@ -1,5 +1,16 @@
 version: "2"
 services:
+  integration-deps:
+    image: busybox
+    depends_on:
+    - price
+    - redis
+    - mongodb
+    - bitcoind
+    - lnd1
+    - lnd2
+    - lnd-outside-1
+    - lnd-outside-2
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.37.1
     command: ["--config=/etc/otel-agent-config.yaml", "--log-level=debug"]
