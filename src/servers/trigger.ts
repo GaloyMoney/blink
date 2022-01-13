@@ -161,7 +161,7 @@ export const onInvoiceUpdate = async (invoice: GetInvoiceResult) => {
 const publishCurrentPrice = () => {
   const interval = 1000 * 30
   const notificationsService = NotificationsService(logger)
-  return setInterval(async function () {
+  return setInterval(async () => {
     try {
       const usdPerSat = await Prices.getCurrentPrice()
       if (usdPerSat instanceof Error) throw usdPerSat
@@ -175,7 +175,7 @@ const publishCurrentPrice = () => {
 
 const updatePriceForChart = () => {
   const interval = 1000 * SECS_PER_5_MINS
-  return setInterval(async function () {
+  return setInterval(async () => {
     try {
       await updatePriceHistory()
     } catch (err) {

@@ -12,7 +12,7 @@ newman.run(
     environment,
     reporters: "cli",
   },
-  function (err, summary) {
+  (err, summary) => {
     if (err) {
       throw err
     }
