@@ -36,7 +36,7 @@ const fetchAndUpdatePayments = async ({
 
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
-  const pubkeys = lndService.listPubkeys()
+  const pubkeys = lndService.listActivePubkeys()
 
   let lnPayments: LnPaymentLookup[]
   const lastSeenCursorByPubkey: { [key: Pubkey]: PagingToken | false | undefined } = {}
