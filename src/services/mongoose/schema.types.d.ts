@@ -68,6 +68,8 @@ interface UserType {
   onchain: OnChainObjectForUser[]
   twoFA: TwoFAForUser
   walletId: WalletId
+  walletIds: WalletId[] | undefined
+  defaultWalletId: WalletId | undefined
 
   // business:
   title?: string

@@ -35,12 +35,23 @@ export const AccountsRepository = (): IAccountsRepository => {
   const findByWalletId = async (
     walletId: WalletId,
   ): Promise<Account | RepositoryError> => {
+    const oldFindUser = async () => {
+      try {
+        const result: UserType = await User.findOne({ walletId }, projection)
+        if (!result) return new CouldNotFindError("Invalid wallet")
+        return translateToAccount(result)
+      } catch (err) {
+        return new UnknownRepositoryError(err)
+      }
+    }
     try {
-      const result: UserType = await User.findOne({ walletId }, projection)
-      if (!result) return new CouldNotFindError("Invalid wallet")
+      const result: UserType = await User.findOne({ walletIds: walletId }, projection)
+      if (!result) {
+        return oldFindUser()
+      }
       return translateToAccount(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return oldFindUser()
     }
   }
 
@@ -106,6 +117,8 @@ export const AccountsRepository = (): IAccountsRepository => {
     contacts,
     title,
     username,
+    walletIds,
+    defaultWalletId,
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
@@ -123,6 +136,8 @@ export const AccountsRepository = (): IAccountsRepository => {
               transactionsCount,
             }),
           ),
+          walletIds,
+          defaultWalletId,
         },
         {
           new: true,
@@ -152,13 +167,13 @@ export const AccountsRepository = (): IAccountsRepository => {
 const translateToAccount = (result: UserType): Account => ({
   id: result.id as AccountId,
   createdAt: new Date(result.created_at),
-  defaultWalletId: result.walletId as WalletId, // TODO: add defaultWalletId at the persistence layer when Account have multiple wallet
+  defaultWalletId: (result.defaultWalletId || result.walletId) as WalletId,
   username: result.username as Username,
   level: (result.level as AccountLevel) || AccountLevel.One,
   status: (result.status as AccountStatus) || AccountStatus.Active,
   title: result.title as BusinessMapTitle,
   coordinates: result.coordinates as Coordinates,
-  walletIds: [result.walletId as WalletId],
+  walletIds: (result.walletIds || [result.walletId]) as WalletId[],
   ownerId: result.id as UserId,
   contacts: result.contacts.reduce(
     (res: AccountContact[], contact: ContactObjectForUser): AccountContact[] => {
@@ -183,6 +198,8 @@ const projection = {
   status: 1,
   coordinates: 1,
   walletId: 1,
+  walletIds: 1,
+  defaultWalletId: 1,
   username: 1,
   title: 1,
   created_at: 1,
