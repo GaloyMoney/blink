@@ -31,21 +31,21 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
       }
     }
 
-    const lnInvoice = await Wallets.addInvoiceForRecipient({
+    const invoice = await Wallets.addInvoiceForRecipient({
       recipientWalletId,
       amount,
       memo,
       descriptionHash,
     })
 
-    if (lnInvoice instanceof Error) {
-      const appErr = mapError(lnInvoice)
+    if (invoice instanceof Error) {
+      const appErr = mapError(invoice)
       return { errors: [{ message: appErr.message || appErr.name }] } // TODO: refine error
     }
 
     return {
       errors: [],
-      invoice: lnInvoice,
+      invoice,
     }
   },
 })

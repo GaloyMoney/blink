@@ -17,25 +17,38 @@ import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
 
 import { clearAccountLocks, clearLimiters } from "test/helpers"
 
-import { createApolloClient, getSubscriptionNext } from "test/helpers/apollo-client"
+import {
+  createApolloClient,
+  getSubscriptionNext,
+  defaultTestClientConfig,
+} from "test/helpers/apollo-client"
 
 import { startServer, killServer } from "test/helpers/integration-server"
 
-jest.mock("@services/twilio", () => require("test/mocks/twilio"))
+jest.setTimeout(60000)
 
-let apolloClient: ApolloClient<NormalizedCacheObject>, disposeClient: () => void
+let apolloClient: ApolloClient<NormalizedCacheObject>,
+  disposeClient: () => void,
+  receivingWalletId
 const receivingUsername = "user0"
-let recievingWalletId
 const { phone, code } = yamlConfig.test_accounts[4]
 
 beforeAll(async () => {
   await startServer()
-  ;({ apolloClient, disposeClient } = createApolloClient())
+  ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
   const input = { phone, code: `${code}` }
   const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
   // Create a new authenticated client
   disposeClient()
-  ;({ apolloClient, disposeClient } = createApolloClient(result.data.userLogin.authToken))
+  ;({ apolloClient, disposeClient } = createApolloClient(
+    defaultTestClientConfig(result.data.userLogin.authToken),
+  ))
+  // Get walletId for receivingUsername
+  const walletIdResult = await apolloClient.query({
+    query: USER_DEFAULT_WALLET_ID,
+    variables: { username: receivingUsername },
+  })
+  receivingWalletId = walletIdResult.data.userDefaultWalletId
 })
 
 beforeEach(async () => {
@@ -59,7 +72,6 @@ describe("galoy-pay", () => {
       const walletId = result.data.userDefaultWalletId
 
       expect(walletId).toBeTruthy()
-      recievingWalletId = walletId
     })
 
     it("returns an error for invalid username syntax", async () => {
@@ -105,7 +117,7 @@ describe("galoy-pay", () => {
       const metadata = JSON.stringify([["text/plain", `Payment to ${receivingUsername}`]])
       const descriptionHash = crypto.createHash("sha256").update(metadata).digest("hex")
       const input = {
-        walletId: recievingWalletId,
+        walletId: receivingWalletId,
         amount: 1000,
         descriptionHash,
       }
@@ -141,7 +153,7 @@ describe("galoy-pay", () => {
       const metadata = JSON.stringify([["text/plain", `Payment to ${receivingUsername}`]])
       const descriptionHash = crypto.createHash("sha256").update(metadata).digest("hex")
       const input = {
-        walletId: recievingWalletId,
+        walletId: receivingWalletId,
         amount: -1,
         descriptionHash,
       }
@@ -157,7 +169,7 @@ describe("galoy-pay", () => {
       const metadata = JSON.stringify([["text/plain", `Payment to ${receivingUsername}`]])
       const descriptionHash = crypto.createHash("sha256").update(metadata).digest("hex")
       const input = {
-        walletId: recievingWalletId,
+        walletId: receivingWalletId,
         amount: 0,
         descriptionHash,
       }
@@ -203,7 +215,7 @@ describe("galoy-pay", () => {
       const metadata = JSON.stringify([["text/plain", `Payment to ${receivingUsername}`]])
       const descriptionHash = crypto.createHash("sha256").update(metadata).digest("hex")
       const createPaymentRequestInput = {
-        walletId: recievingWalletId,
+        walletId: receivingWalletId,
         amount: 1000,
         descriptionHash,
       }
@@ -241,7 +253,7 @@ describe("galoy-pay", () => {
     const mutation = LN_NO_AMOUNT_INVOICE_CREATE_ON_BEHALF_OF
 
     it("returns a valid lightning invoice", async () => {
-      const input = { walletId: recievingWalletId }
+      const input = { walletId: receivingWalletId }
 
       const result = await apolloClient.mutate({ mutation, variables: input })
       const { invoice, errors } = result.data.mutationData

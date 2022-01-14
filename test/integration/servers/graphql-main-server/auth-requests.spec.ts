@@ -1,6 +1,5 @@
 import { toSats } from "@domain/bitcoin"
 import { yamlConfig } from "@config/app"
-<<<<<<< HEAD
 import {
   bitcoindClient,
   clearAccountLocks,
@@ -12,11 +11,8 @@ import {
   getDefaultWalletIdByTestUserIndex,
   lndOutside2,
 } from "test/helpers"
-import { createApolloClient } from "test/helpers/apollo-client"
 import { startServer, killServer } from "test/helpers/integration-server"
-=======
-
->>>>>>> a9b328d2 (apply eslint fixes)
+import { createApolloClient, defaultTestClientConfig } from "test/helpers/apollo-client"
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
@@ -27,37 +23,25 @@ import USER_LOGIN from "./mutations/user-login.gql"
 import ME from "./queries/me.gql"
 import MAIN from "./queries/main.gql"
 
-<<<<<<< HEAD
-=======
-import { startServer, killServer } from "test/helpers/integration-server"
-import { createApolloClient } from "test/helpers/apollo-client"
-import {
-  clearAccountLocks,
-  clearLimiters,
-  createInvoice,
-  lndOutside2,
-} from "test/helpers"
-
-jest.mock("@services/twilio", () => require("test/mocks/twilio"))
->>>>>>> a9b328d2 (apply eslint fixes)
 let apolloClient, disposeClient, walletId
 const USER_INDEX = 0
 const { phone, code } = yamlConfig.test_accounts[USER_INDEX]
 
 beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
-
   await createMandatoryUsers()
   await createUserWallet(0)
   walletId = await getDefaultWalletIdByTestUserIndex(USER_INDEX)
   await fundWalletIdFromLightning({ walletId, amount: toSats(50_000) })
   await startServer()
-  ;({ apolloClient, disposeClient } = createApolloClient())
+  ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
   const input = { phone, code: `${code}` }
   const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
   // Create a new authenticated client
   disposeClient()
-  ;({ apolloClient, disposeClient } = createApolloClient(result.data.userLogin.authToken))
+  ;({ apolloClient, disposeClient } = createApolloClient(
+    defaultTestClientConfig(result.data.userLogin.authToken),
+  ))
   const meResult = await apolloClient.query({ query: ME })
   expect(meResult.data.me.defaultAccount.defaultWalletId).toBe(walletId)
 })

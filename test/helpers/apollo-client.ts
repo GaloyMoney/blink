@@ -13,12 +13,26 @@ import fetch from "cross-fetch"
 import { SubscriptionClient } from "subscriptions-transport-ws"
 import ws from "ws"
 
+export type ApolloTestClientConfig = {
+  authToken?: string
+  port: number
+  graphqlPath: string
+  graphqlSubscriptionPath: string
+}
+
+export const defaultTestClientConfig = (authToken?: string): ApolloTestClientConfig => {
+  return {
+    authToken,
+    port: 4002,
+    graphqlPath: "/graphql",
+    graphqlSubscriptionPath: "/graphql",
+  }
+}
+
 export const createApolloClient = (
-  authToken?: string,
-  port = 4002,
-  graphqlPath = "/graphql",
-  graphqlSubscriptionPath = "/graphql",
+  testClientConfg: ApolloTestClientConfig,
 ): { apolloClient: ApolloClient<NormalizedCacheObject>; disposeClient: () => void } => {
+  const { authToken, port, graphqlPath, graphqlSubscriptionPath } = testClientConfg
   const cache = new InMemoryCache()
 
   const authLink = new ApolloLink((operation, forward) => {

@@ -24,9 +24,7 @@ import {
 } from "test/helpers/rate-limit"
 
 import { startServer, killServer } from "test/helpers/integration-server"
-import { createApolloClient } from "test/helpers/apollo-client"
-
-jest.mock("@services/twilio", () => require("test/mocks/twilio"))
+import { createApolloClient, defaultTestClientConfig } from "test/helpers/apollo-client"
 
 let correctCode, apolloClient, disposeClient
 const { phone, code } = yamlConfig.test_accounts[9]
@@ -34,7 +32,7 @@ const { phone, code } = yamlConfig.test_accounts[9]
 beforeAll(async () => {
   correctCode = `${code}`
   await startServer()
-    ; ({ apolloClient, disposeClient } = createApolloClient())
+  ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
 })
 
 beforeEach(async () => {
