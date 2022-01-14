@@ -1,6 +1,8 @@
 import { toSats } from "@domain/bitcoin"
 import { yamlConfig } from "@config/app"
 
+import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
+
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
@@ -24,9 +26,10 @@ import {
   getDefaultWalletIdByTestUserIndex,
   lndOutside2,
 } from "test/helpers"
-import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
-let apolloClient: ApolloClient<NormalizedCacheObject>, disposeClient: () => void, walletId: WalletId
+let apolloClient: ApolloClient<NormalizedCacheObject>,
+  disposeClient: () => void,
+  walletId: WalletId
 const USER_INDEX = 3
 const { phone, code } = yamlConfig.test_accounts[USER_INDEX]
 

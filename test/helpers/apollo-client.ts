@@ -12,10 +12,11 @@ import { getMainDefinition } from "@apollo/client/utilities"
 import fetch from "cross-fetch"
 import { SubscriptionClient } from "subscriptions-transport-ws"
 import ws from "ws"
+import { GALOY_API_PORT } from "@config/app"
 
 export type ApolloTestClientConfig = {
   authToken?: string
-  port: number
+  port: string | number
   graphqlPath: string
   graphqlSubscriptionPath: string
 }
@@ -23,7 +24,7 @@ export type ApolloTestClientConfig = {
 export const defaultTestClientConfig = (authToken?: string): ApolloTestClientConfig => {
   return {
     authToken,
-    port: 4002,
+    port: GALOY_API_PORT,
     graphqlPath: "/graphql",
     graphqlSubscriptionPath: "/graphql",
   }
