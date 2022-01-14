@@ -14,7 +14,7 @@ const LightningPayment = new GT.Object({
     createdAt: { type: Timestamp },
     confirmedAt: { type: Timestamp },
     amount: { type: SatAmount },
-    secret: { type: LnPaymentSecret },
+    revealedPreImage: { type: LnPaymentSecret },
     request: { type: LnPaymentRequest },
     destination: { type: LnPubkey },
   }),
