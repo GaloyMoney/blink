@@ -124,13 +124,16 @@ type WalletTransactionHistoryWithPending = {
   readonly transactions: WalletTransaction[]
 }
 
-// TODO: split with currency?
 type WalletType =
   typeof import("./index").WalletType[keyof typeof import("./index").WalletType]
+
+type WalletCurrency =
+  typeof import("./index").WalletCurrency[keyof typeof import("./index").WalletCurrency]
 
 type NewWalletInfo = {
   readonly accountId: AccountId
   readonly type: WalletType
+  readonly currency: WalletCurrency
 }
 
 type Wallet = NewWalletInfo & {
@@ -140,7 +143,11 @@ type Wallet = NewWalletInfo & {
 }
 
 interface IWalletsRepository {
-  persistNew({ accountId, type }: NewWalletInfo): Promise<Wallet | RepositoryError>
+  persistNew({
+    accountId,
+    type,
+    currency,
+  }: NewWalletInfo): Promise<Wallet | RepositoryError>
   findById(walletId: WalletId): Promise<Wallet | RepositoryError>
 
   listByAccountId(accountId: AccountId): Promise<Wallet[] | RepositoryError>

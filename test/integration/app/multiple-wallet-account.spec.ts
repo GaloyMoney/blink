@@ -1,5 +1,5 @@
 import { addWallet, getAccount, setDefaultWalletId } from "@app/accounts"
-import { listWalletIdsByAccountId, WalletType } from "@domain/wallets"
+import { listWalletIdsByAccountId, WalletCurrency, WalletType } from "@domain/wallets"
 import { setupMongoConnection } from "@services/mongodb"
 
 import {
@@ -31,7 +31,11 @@ afterAll(async () => {
 })
 
 it("add a wallet to account0", async () => {
-  const wallet = await addWallet({ accountId: accountId0, type: WalletType.CheckingBTC })
+  const wallet = await addWallet({
+    accountId: accountId0,
+    type: WalletType.Checking,
+    currency: WalletCurrency.Btc,
+  })
   if (wallet instanceof Error) return Error
 
   expect(wallet).toBeTruthy()

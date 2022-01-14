@@ -12,11 +12,13 @@ export const WalletsRepository = (): IWalletsRepository => {
   const persistNew = async ({
     accountId,
     type,
+    currency,
   }: NewWalletInfo): Promise<Wallet | RepositoryError> => {
     try {
       const wallet = new Wallet({
         accountId,
         type,
+        currency,
       })
       await wallet.save()
       return resultToWallet(wallet)
@@ -92,6 +94,7 @@ const resultToWallet = (result): Wallet => {
   const id = result.id as WalletId
   const accountId = result.accountId as AccountId
   const type = result.type as WalletType
+  const currency = result.currency as WalletCurrency
   const onChainAddressIdentifiers = result.onchain.map(({ pubkey, address }) => {
     return {
       pubkey: pubkey as Pubkey,
@@ -106,5 +109,6 @@ const resultToWallet = (result): Wallet => {
     type,
     onChainAddressIdentifiers,
     onChainAddresses,
+    currency,
   }
 }
