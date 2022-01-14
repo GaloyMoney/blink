@@ -14,7 +14,7 @@ const LightningInvoice = new GT.Object({
     isSettled: { type: GT.NonNull(GT.Boolean) },
     received: { type: GT.NonNull(SatAmount) },
     request: { type: LnPaymentRequest },
-    secret: { type: GT.NonNull(LnPaymentSecret) },
+    secretPreImage: { type: GT.NonNull(LnPaymentSecret) },
   }),
 })
 
