@@ -217,11 +217,10 @@ export const getUserWalletConfig = (
 export const getSpecterWalletConfig = (): SpecterWalletConfig => {
   const config = yamlConfig.rebalancing
   return {
-    lndHoldingBase: config.lndHoldingBase,
-    ratioTargetDeposit: config.ratioTargetDeposit,
-    ratioTargetWithdraw: config.ratioTargetWithdraw,
-    minOnchain: config.minOnchain,
-    onchainWallet: config.onchainWallet ?? "specter",
+    minOnChainHotWalletBalance: toSats(config.minOnChainHotWalletBalance),
+    maxHotWalletBalance: toSats(config.maxHotWalletBalance),
+    minRebalanceSize: toSats(config.minRebalanceSize),
+    onchainWallet: config.onchainWallet,
   }
 }
 

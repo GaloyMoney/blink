@@ -1,8 +1,4 @@
-type SpecterWalletConfig = {
-  lndHoldingBase: number
-  ratioTargetDeposit: number
-  ratioTargetWithdraw: number
-  minOnchain: number
+type SpecterWalletConfig = RebalanceCheckerConfig & {
   onchainWallet: string
 }
 
