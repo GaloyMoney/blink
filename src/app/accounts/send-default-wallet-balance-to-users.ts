@@ -1,4 +1,4 @@
-import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
+import { getRecentlyActiveAccounts } from "./active-accounts"
 import { getCurrentPrice } from "@app/prices"
 import { getBalanceForWalletId } from "@app/wallets"
 import { NotificationsService } from "@services/notifications"

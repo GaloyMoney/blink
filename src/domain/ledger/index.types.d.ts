@@ -226,3 +226,12 @@ interface ILedgerService {
 
   listWalletIdsWithPendingPayments: () => AsyncGenerator<WalletId> | LedgerServiceError
 }
+
+type ActivityCheckerConfig = {
+  monthlyVolumeThreshold: Satoshis
+  getVolumeFn: (args: IGetVolumeArgs) => VolumeResult
+}
+
+type ActivityChecker = {
+  aboveThreshold: (walletIds: WalletId[]) => Promise<boolean | LedgerServiceError>
+}

@@ -1,6 +1,7 @@
 import { InvalidLedgerTransactionId } from "@domain/errors"
 
 export * from "./errors"
+export * from "./activity-checker"
 
 export const liabilitiesMainAccount = "Liabilities"
 
