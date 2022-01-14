@@ -94,7 +94,7 @@ type LightningInvoice {
   isSettled: Boolean!
   received: SatAmount!
   request: LnPaymentRequest
-  secretPreImage: LnPaymentSecret!
+  secretPreImage: LnPaymentPreImage!
 }
 
 type LightningPayment {
@@ -103,7 +103,7 @@ type LightningPayment {
   createdAt: Timestamp
   destination: LnPubkey
   request: LnPaymentRequest
-  revealedPreImage: LnPaymentSecret
+  revealedPreImage: LnPaymentPreImage
   roundedUpFee: SatAmount
   status: LnPaymentStatus
 }
