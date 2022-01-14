@@ -1,5 +1,6 @@
 import { LedgerError } from "@domain/ledger"
-import { listWalletIdsByAccountId, WalletTransactionHistory } from "@domain/wallets"
+import { listWalletIdsByAccountId} from "@app/wallets"
+import { WalletTransactionHistory } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 
 export const getAccountTransactionsForContact = async ({

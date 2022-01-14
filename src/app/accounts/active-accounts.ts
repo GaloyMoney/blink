@@ -1,7 +1,7 @@
 import { MS_PER_30_DAYS, USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD } from "@config/app"
 import { toSats } from "@domain/bitcoin"
 import { LedgerServiceError } from "@domain/ledger"
-import { listWalletIdsByAccountId } from "@domain/wallets"
+import { listWalletIdsByAccountId } from "@app/wallets"
 import { LedgerService } from "@services/ledger"
 import { AccountsRepository } from "@services/mongoose"
 
