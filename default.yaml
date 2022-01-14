@@ -26,10 +26,9 @@ hedging:
   HIGH_BOUND_LEVERAGE: 3
 
 rebalancing:
-  lndHoldingBase: 50000000 # 0.5
-  ratioTargetDeposit: 1
-  ratioTargetWithdraw: 1
-  minOnchain: 10000000 # 0.1
+  minOnChainHotWalletBalance: 1000000 # 0.1
+  minRebalanceSize: 10000000 # 0.1
+  maxHotWalletBalance: 200000000 # 2
 
   # select which bitcoind wallet is used for rebalancing
   # string.include() is being used as a filter

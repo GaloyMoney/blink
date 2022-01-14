@@ -8,6 +8,7 @@ import { ledger } from "@services/mongodb"
 
 import { BTC_NETWORK, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config/app"
 import { btc2sat, sat2btc, toSats } from "@domain/bitcoin"
+import { RebalanceChecker } from "@domain/cold-storage"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 
@@ -105,75 +106,20 @@ export class SpecterWallet {
       }
     }
 
-    const { total, onChain } = await lndsBalances()
-    const { action, sats, reason } = this.isRebalanceNeeded({
-      lndBalance: total,
-      onChain,
+    const { offChain, onChain, total } = await lndsBalances()
+    const logger = this.logger.child({ offChain, onChain, total })
+
+    const withdrawFromHotWalletAmount = RebalanceChecker(
+      this.config,
+    ).getWithdrawFromHotWalletAmount({
+      onChainHotWalletBalance: toSats(onChain),
+      offChainHotWalletBalance: toSats(offChain),
     })
 
-    const logger = this.logger.child({ sats, action, total, onChain })
-
-    if (action === undefined) {
-      logger.info({ reason }, "no rebalancing needed or possible")
-      return
+    if (withdrawFromHotWalletAmount > 0) {
+      logger.info(`attempting to rebalance ${withdrawFromHotWalletAmount} satoshis`)
+      await this.toColdStorage({ sats: withdrawFromHotWalletAmount })
     }
-
-    if (!sats) {
-      logger.info("sats is null")
-      return
-    }
-
-    if (action === "deposit") {
-      await this.toColdStorage({ sats })
-      logger.info("rebalancing succesfull")
-    } else if (action === "withdraw") {
-      logger.error("rebalancing is needed, but need manual intervention")
-      // this.toLndWallet({ sats })
-    }
-  }
-
-  isRebalanceNeeded({ lndBalance, onChain }) {
-    // base number to calculate the different thresholds below
-    const lndHoldingBase = this.config.lndHoldingBase
-
-    const ratioTargetDeposit = this.config.ratioTargetDeposit
-    const ratioTargetWithdraw = this.config.ratioTargetWithdraw
-
-    // threshold for when we need to move money from cold storage to the lnd wallet
-    const thresholdLowBound = (lndHoldingBase * 70) / 100
-
-    // threshold for when we need to move money out of lnd to multisig storage
-    const thresholdHighBound = (lndHoldingBase * 130) / 100
-
-    // what is the target amount to be in lnd wallet holding
-    // when there is too much money in lnd and we need to deposit in cold storage
-    const targetDeposit = lndHoldingBase * ratioTargetDeposit
-
-    // what is the target amount to be in lnd wallet holding
-    //when there is a not enough money in lnd and we need to withdraw from cold storage
-    const targetWithdraw = lndHoldingBase * ratioTargetWithdraw
-
-    if (lndBalance > thresholdHighBound) {
-      const sats = lndBalance - targetDeposit
-      let action: string | undefined = "deposit"
-      let reason: string | undefined
-
-      const minOnchain = this.config.minOnchain
-
-      if (onChain - sats < minOnchain) {
-        action = undefined
-        reason =
-          "rebalancing is needed, but not enough money is onchain. loop might be needed"
-      }
-
-      return { action, sats, reason }
-    }
-
-    if (lndBalance < thresholdLowBound) {
-      return { action: "withdraw", sats: targetWithdraw - lndBalance }
-    }
-
-    return { action: undefined }
   }
 
   async toColdStorage({ sats }) {
