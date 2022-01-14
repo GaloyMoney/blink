@@ -1,7 +1,7 @@
 BIN_DIR=node_modules/.bin
 
 start-deps:
-	docker compose up -d
+	docker compose up integration-deps -d
 	direnv reload
 
 start-old:
