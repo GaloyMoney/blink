@@ -5,7 +5,6 @@ module.exports = {
         {
           $set: {
             defaultWalletId: "$walletId",
-            walletIds: ["$walletId"],
           },
         },
       ])
