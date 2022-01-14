@@ -1,7 +1,6 @@
 import { addWallet, getAccount, setDefaultWalletId } from "@app/accounts"
-import { WalletType } from "@domain/wallets"
+import { listWalletIdsByAccountId, WalletType } from "@domain/wallets"
 import { setupMongoConnection } from "@services/mongodb"
-import { WalletsRepository } from "@services/mongoose"
 
 import {
   createUserWallet,
@@ -43,7 +42,7 @@ it("add a wallet to account0", async () => {
   const userType0 = await getUserTypeByTestUserIndex(0)
   expect(userType0.defaultWalletId).toBe(walletId0)
 
-  const walletIds = await WalletsRepository().listWalletIdsByAccountId(accountId0)
+  const walletIds = await listWalletIdsByAccountId(accountId0)
   if (walletIds instanceof Error) throw walletIds
 
   expect(walletIds).toEqual([walletId0, wallet.id])

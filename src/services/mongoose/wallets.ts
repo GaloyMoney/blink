@@ -51,18 +51,6 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
-  const listWalletIdsByAccountId = async (
-    accountId: AccountId,
-  ): Promise<WalletId[] | RepositoryError> => {
-    try {
-      const wallets = await listByAccountId(accountId)
-      if (wallets instanceof Error) return wallets
-      return wallets.map((wallet) => wallet.id)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
   const findByAddress = async (
     address: OnChainAddress,
   ): Promise<Wallet | RepositoryError> => {
@@ -94,7 +82,6 @@ export const WalletsRepository = (): IWalletsRepository => {
   return {
     findById,
     listByAccountId,
-    listWalletIdsByAccountId,
     findByAddress,
     listByAddresses,
     persistNew,
