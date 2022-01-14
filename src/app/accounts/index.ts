@@ -19,12 +19,13 @@ export * from "./username-available"
 export * from "./get-contact-by-username"
 export * from "./update-contact-alias"
 export * from "./add-new-contact"
-export * from "./add-wallet"
-export * from "./set-default-walletid"
+export * from "./update-default-walletid"
 
 const accounts = AccountsRepository()
 
-export const getAccount = async (accountId: AccountId) => {
+export const getAccount = async (
+  accountId: AccountId,
+): Promise<Account | RepositoryError> => {
   return accounts.findById(accountId)
 }
 

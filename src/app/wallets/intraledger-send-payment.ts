@@ -1,4 +1,3 @@
-import { getAccount } from "@app/accounts"
 import { addNewContact } from "@app/accounts/add-new-contact"
 import { getCurrentPrice } from "@app/prices"
 import { getUser } from "@app/users"
@@ -30,7 +29,7 @@ export const intraledgerPaymentSendUsername = async ({
     return new SatoshiAmountRequiredError()
   }
 
-  const account = await getAccount(payerAccountId)
+  const account = await AccountsRepository().findById(payerAccountId)
   if (account instanceof Error) return account
 
   return intraLedgerSendPaymentUsername({
