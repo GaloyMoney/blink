@@ -28,7 +28,8 @@ module.exports = {
       const wallet = {
         id: user.defaultWalletId,
         accountId: String(user._id),
-        type: "checkingbtc",
+        type: "checking",
+        currency: "USD",
         onchain: user.onchain,
       }
 
