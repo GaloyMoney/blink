@@ -1,8 +1,9 @@
 import { MS_PER_30_DAYS, USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD } from "@config/app"
 import { toSats } from "@domain/bitcoin"
 import { LedgerServiceError } from "@domain/ledger"
+import { listWalletIdsByAccountId } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { AccountsRepository } from "@services/mongoose"
 
 export const getRecentlyActiveAccounts = async (): Promise<
   Account[] | ApplicationError
@@ -10,15 +11,13 @@ export const getRecentlyActiveAccounts = async (): Promise<
   const unlockedAccounts = await AccountsRepository().listUnlockedAccounts()
   if (unlockedAccounts instanceof Error) return unlockedAccounts
 
-  const walletsRepo = WalletsRepository()
-
   const activeAccounts: Account[] = []
   for (const account of unlockedAccounts) {
     // FIXME: this is a very slow query (not critical as only run daily on cron currently).
     // a mongodb query would be able to get the wallet in aggregate directly
     // from medici_transactions instead
 
-    const walletIds = await walletsRepo.listWalletIdsByAccountId(account.id)
+    const walletIds = await listWalletIdsByAccountId(account.id)
     if (walletIds instanceof Error) return walletIds
 
     if (await isAccountRecentlyActive(walletIds)) {

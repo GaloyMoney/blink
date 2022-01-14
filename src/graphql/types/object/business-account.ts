@@ -1,15 +1,11 @@
+import { Wallets } from "@app"
+import { listWalletIdsByAccountId } from "@domain/wallets"
+import { GT } from "@graphql/index"
 import getUuidByString from "uuid-by-string"
 
-import { GT } from "@graphql/index"
-
-import { Wallets } from "@app"
-
-import { WalletsRepository } from "@services/mongoose"
-
 import IAccount from "../abstract/account"
-
-import WalletId from "../scalar/wallet-id"
 import Wallet from "../abstract/wallet"
+import WalletId from "../scalar/wallet-id"
 
 const BusinessAccount = new GT.Object({
   name: "BusinessAccount",
@@ -24,7 +20,7 @@ const BusinessAccount = new GT.Object({
     wallets: {
       type: GT.NonNullList(Wallet),
       resolve: async (source: Account) => {
-        const walletIds = await WalletsRepository().listWalletIdsByAccountId(source.id)
+        const walletIds = await listWalletIdsByAccountId(source.id)
         if (walletIds instanceof Error) return walletIds
 
         const wallets = walletIds.map(async (id: WalletId) => {
@@ -54,7 +50,7 @@ const BusinessAccount = new GT.Object({
         },
       },
       resolve: async (source) => {
-        const walletIds = await WalletsRepository().listWalletIdsByAccountId(source.id)
+        const walletIds = await listWalletIdsByAccountId(source.id)
         if (walletIds instanceof Error) return walletIds
 
         return Wallets.getCSVForWallets(walletIds)

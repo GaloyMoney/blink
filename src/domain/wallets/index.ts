@@ -1,9 +1,10 @@
 import { InvalidWalletId } from "@domain/errors"
+import { WalletsRepository } from "@services/mongoose"
 
+export * from "./deposit-fee-calculator"
 export { WalletTransactionHistory } from "./tx-history"
 export * from "./tx-methods"
 export * from "./tx-status"
-export * from "./deposit-fee-calculator"
 export * from "./withdrawal-fee-calculator"
 
 export const WalletIdRegex =
@@ -20,3 +21,11 @@ export const WalletType = {
   CheckingBTC: "checkingbtc",
   CheckingUSD: "checkingusd",
 } as const
+
+export const listWalletIdsByAccountId = async (
+  accountId: AccountId,
+): Promise<WalletId[] | RepositoryError> => {
+  const wallets = await WalletsRepository().listByAccountId(accountId)
+  if (wallets instanceof Error) return wallets
+  return wallets.map((wallet) => wallet.id)
+}

@@ -143,7 +143,6 @@ interface IWalletsRepository {
   persistNew({ accountId, type }: NewWalletInfo): Promise<Wallet | RepositoryError>
   findById(walletId: WalletId): Promise<Wallet | RepositoryError>
 
-  listWalletIdsByAccountId(accountId: AccountId): Promise<WalletId[] | RepositoryError>
   listByAccountId(accountId: AccountId): Promise<Wallet[] | RepositoryError>
 
   findByAddress(address: OnChainAddress): Promise<Wallet | RepositoryError>
