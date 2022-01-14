@@ -131,7 +131,7 @@ const main = async () => {
       walletRoles[role].set(balance)
     }
 
-    business_g.set(await User.count({ title: { $exists: true } }))
+    business_g.set(await User.count({ title: { $ne: null } }))
 
     try {
       const balances = await getBalancesDetail()
