@@ -49,13 +49,13 @@ export const hasPermissions = async (
   const userAccount = await accounts.findByUserId(userId)
   if (userAccount instanceof Error) return userAccount
 
-  const accountIdFromWallet = await WalletsRepository().getAccountId(walletId)
-  if (accountIdFromWallet instanceof Error) return accountIdFromWallet
+  const wallet = await WalletsRepository().findById(walletId)
+  if (wallet instanceof Error) return wallet
 
   // FIXME: why is the String() wrapper necessary?
-  // console.log(accountIdFromWallet) shows: 61e17bad0159c6372bf57be5 without "" around id
+  // console.log(wallet.accountId) shows: 61e17bad0159c6372bf57be5 without "" around id
   // userAccount.id has "" around it
-  return String(userAccount.id) === String(accountIdFromWallet)
+  return String(userAccount.id) === String(wallet.accountId)
 }
 
 export const getBusinessMapMarkers = async () => {
@@ -65,10 +65,10 @@ export const getBusinessMapMarkers = async () => {
 export const getUsernameFromWalletId = async (
   walletId: WalletId,
 ): Promise<Username | ApplicationError> => {
-  const accountId = await WalletsRepository().getAccountId(walletId)
-  if (accountId instanceof Error) return accountId
+  const wallet = await WalletsRepository().findById(walletId)
+  if (wallet instanceof Error) return wallet
 
-  const account = await accounts.findById(accountId)
+  const account = await accounts.findById(wallet.accountId)
   if (account instanceof Error) return account
   return account.username
 }

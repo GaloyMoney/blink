@@ -41,10 +41,10 @@ describe("UserWallet - getOnchainFee", () => {
     expect(fee).not.toBeInstanceOf(Error)
     expect(fee).toBeGreaterThan(0)
 
-    const accountId = await WalletsRepository().getAccountId(wallet0.id)
-    if (accountId instanceof Error) throw accountId
+    const wallet = await WalletsRepository().findById(wallet0.id)
+    if (wallet instanceof Error) throw wallet
 
-    const account = await AccountsRepository().findById(accountId)
+    const account = await AccountsRepository().findById(wallet.accountId)
     if (account instanceof Error) throw account
 
     expect(fee).toBeGreaterThan(account.withdrawFee)
