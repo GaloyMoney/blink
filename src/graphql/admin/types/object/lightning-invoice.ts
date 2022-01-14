@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
+import LnPaymentPreImage from "@graphql/types/scalar/ln-payment-preimage"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
-import LnPaymentSecret from "@graphql/types/scalar/ln-payment-secret"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import Timestamp from "@graphql/types/scalar/timestamp"
 
@@ -14,7 +14,7 @@ const LightningInvoice = new GT.Object({
     isSettled: { type: GT.NonNull(GT.Boolean) },
     received: { type: GT.NonNull(SatAmount) },
     request: { type: LnPaymentRequest },
-    secretPreImage: { type: GT.NonNull(LnPaymentSecret) },
+    secretPreImage: { type: GT.NonNull(LnPaymentPreImage) },
   }),
 })
 
