@@ -91,7 +91,7 @@ const processTxForWallet = async (
       return recorded
     }
 
-    const account = await AccountsRepository().findByWalletId(wallet.id)
+    const account = await AccountsRepository().findById(wallet.accountId)
     if (account instanceof Error) return account
 
     if (!recorded) {

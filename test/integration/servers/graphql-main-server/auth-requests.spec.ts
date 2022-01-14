@@ -6,6 +6,8 @@ import { createTestClient } from "apollo-server-integration-testing"
 import { createHttpTerminator } from "http-terminator"
 import * as jwt from "jsonwebtoken"
 
+import { setupMongoConnection } from "@services/mongodb"
+
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
@@ -33,7 +35,13 @@ jest.mock("@services/twilio", () => require("test/mocks/twilio"))
 let apolloServer, httpServer, httpTerminator, query, mutate, setOptions, walletId
 const { phone, code } = yamlConfig.test_accounts[0]
 
+let mongoose
+
 beforeAll(async () => {
+  mongoose = await setupMongoConnection()
+  await mongoose.connection.db.dropCollection("users")
+  await mongoose.connection.db.dropCollection("wallets")
+
   await bitcoindClient.loadWallet({ filename: "outside" })
 
   await createMandatoryUsers()
@@ -63,6 +71,8 @@ afterAll(async () => {
 
   setOptions({ request: { token: null } })
   await httpTerminator.terminate()
+
+  await mongoose.connection.close()
 })
 
 describe("graphql", () => {
@@ -132,7 +142,7 @@ describe("graphql", () => {
   describe("lnNoAmountInvoiceCreate", () => {
     const mutation = LN_NO_AMOUNT_INVOICE_CREATE
 
-    it("returns a valid lightning invoice", async () => {
+    it.only("returns a valid lightning invoice", async () => {
       const input = { walletId, memo: "This is a lightning invoice" }
       const result = await mutate(mutation, { variables: { input } })
       const { invoice, errors } = result.data.lnNoAmountInvoiceCreate

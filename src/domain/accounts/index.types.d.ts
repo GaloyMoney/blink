@@ -29,7 +29,6 @@ type Account = {
   readonly withdrawFee: WithdrawFee
   level: AccountLevel
   status: AccountStatus
-  walletIds: WalletId[]
   title: BusinessMapTitle
   coordinates: Coordinates
   readonly contacts: AccountContact[]
@@ -84,7 +83,6 @@ interface IAccountsRepository {
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   findByUserId(userId: UserId): Promise<Account | RepositoryError>
-  findByWalletId(walletId: WalletId): Promise<Account | RepositoryError>
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
   update(account: Account): Promise<Account | RepositoryError>

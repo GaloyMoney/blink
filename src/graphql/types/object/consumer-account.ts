@@ -1,5 +1,6 @@
 import { Wallets } from "@app"
 import { GT } from "@graphql/index"
+import { WalletsRepository } from "@services/mongoose"
 import getUuidByString from "uuid-by-string"
 
 import IAccount from "../abstract/account"
@@ -19,8 +20,11 @@ const ConsumerAccount = new GT.Object({
 
     wallets: {
       type: GT.NonNullList(Wallet),
-      resolve: (source) => {
-        const wallets = source.walletIds.map(async (id: WalletId) => {
+      resolve: async (source: Account) => {
+        const walletIds = await WalletsRepository().listWalletIdsByAccountId(source.id)
+        if (walletIds instanceof Error) return walletIds
+
+        const wallets = walletIds.map(async (id: WalletId) => {
           const wallet = await Wallets.getWallet(id)
           if (wallet instanceof Error) {
             throw wallet
@@ -29,12 +33,6 @@ const ConsumerAccount = new GT.Object({
         })
         return wallets
       },
-    },
-
-    walletIds: {
-      type: GT.NonNullList(WalletId),
-      result: (source, args, { domainAccount }: { domainAccount: Account }) =>
-        domainAccount.walletIds,
     },
 
     defaultWalletId: {
@@ -52,8 +50,11 @@ const ConsumerAccount = new GT.Object({
           type: GT.NonNullList(WalletId),
         },
       },
-      resolve: async (source) => {
-        return Wallets.getCSVForWallets(source.walletIds)
+      resolve: async (source: Account) => {
+        const walletIds = await WalletsRepository().listWalletIdsByAccountId(source.id)
+        if (walletIds instanceof Error) return walletIds
+
+        return Wallets.getCSVForWallets(walletIds)
       },
     },
   }),

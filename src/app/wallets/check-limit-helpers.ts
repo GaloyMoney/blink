@@ -2,7 +2,7 @@ import { getTwoFALimits, getUserLimits, MS_PER_DAY } from "@config/app"
 import { LimitsChecker } from "@domain/accounts"
 import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
 import { LedgerService } from "@services/ledger"
-import { AccountsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 export const checkIntraledgerLimits = async ({
   amount,
@@ -110,7 +110,10 @@ export const checkAndVerifyTwoFA = async ({
 const getLimitsChecker = async (
   walletId: WalletId,
 ): Promise<LimitsChecker | ApplicationError> => {
-  const account = await AccountsRepository().findByWalletId(walletId)
+  const accountId = await WalletsRepository().getAccountId(walletId)
+  if (accountId instanceof Error) return accountId
+
+  const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
   const { level } = account
 

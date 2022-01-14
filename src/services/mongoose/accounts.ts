@@ -32,18 +32,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const findByWalletId = async (
-    walletId: WalletId,
-  ): Promise<Account | RepositoryError> => {
-    try {
-      const result: UserType = await User.findOne({ walletIds: walletId }, projection)
-      if (!result) return new CouldNotFindError("Invalid wallet")
-      return translateToAccount(result)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
   const findByUsername = async (
     username: Username,
   ): Promise<Account | RepositoryError> => {
@@ -106,7 +94,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     contacts,
     title,
     username,
-    walletIds,
     defaultWalletId,
   }: Account): Promise<Account | RepositoryError> => {
     try {
@@ -125,7 +112,6 @@ export const AccountsRepository = (): IAccountsRepository => {
               transactionsCount,
             }),
           ),
-          walletIds,
           defaultWalletId,
         },
         {
@@ -146,7 +132,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     listUnlockedAccounts,
     findById,
     findByUserId,
-    findByWalletId,
     findByUsername,
     listBusinessesForMap,
     update,
@@ -162,7 +147,6 @@ const translateToAccount = (result: UserType): Account => ({
   status: (result.status as AccountStatus) || AccountStatus.Active,
   title: result.title as BusinessMapTitle,
   coordinates: result.coordinates as Coordinates,
-  walletIds: result.walletIds as WalletId[],
   ownerId: result.id as UserId,
   contacts: result.contacts.reduce(
     (res: AccountContact[], contact: ContactObjectForUser): AccountContact[] => {
@@ -186,7 +170,6 @@ const projection = {
   level: 1,
   status: 1,
   coordinates: 1,
-  walletIds: 1,
   defaultWalletId: 1,
   username: 1,
   title: 1,

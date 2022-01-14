@@ -13,9 +13,6 @@ const IAccount = new GT.Interface({
     wallets: {
       type: GT.NonNullList(Wallet),
     },
-    walletIds: {
-      type: GT.NonNullList(WalletId),
-    },
     defaultWalletId: {
       type: GT.NonNull(WalletId),
     },
