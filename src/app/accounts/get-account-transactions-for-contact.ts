@@ -1,6 +1,7 @@
 import { LedgerService } from "@services/ledger"
 import { LedgerError } from "@domain/ledger"
 import { WalletTransactionHistory } from "@domain/wallets"
+import { WalletsRepository } from "@services/mongoose"
 
 export const getAccountTransactionsForContact = async ({
   account,
@@ -12,7 +13,10 @@ export const getAccountTransactionsForContact = async ({
   const ledger = LedgerService()
   let transactions: WalletTransaction[] = []
 
-  for (const walletId of account.walletIds) {
+  const walletIds = await WalletsRepository().listWalletIdsByAccountId(account.id)
+  if (walletIds instanceof Error) return walletIds
+
+  for (const walletId of walletIds) {
     const ledgerTransactions = await ledger.getLiabilityTransactionsForContactUsername(
       walletId,
       contactUsername,

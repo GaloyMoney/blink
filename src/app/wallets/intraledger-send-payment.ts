@@ -1,13 +1,12 @@
 import { getAccount } from "@app/accounts"
+import { addNewContact } from "@app/accounts/add-new-contact"
 import { getCurrentPrice } from "@app/prices"
 import { getUser } from "@app/users"
-import { addNewContact } from "@app/accounts/add-new-contact"
 import { getWallet } from "@app/wallets"
 import { toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError,
-  NoWalletExistsForUserError,
   SatoshiAmountRequiredError,
   SelfPaymentError,
 } from "@domain/errors"
@@ -136,12 +135,6 @@ const intraLedgerSendPaymentUsername = async ({
   const recipientAccount = await AccountsRepository().findByUsername(recipientUsername)
   if (recipientAccount instanceof Error) return recipientAccount
   if (recipientAccount.id === payerAccountId) return new SelfPaymentError()
-
-  // TODO(nicoals): is that condition necessary? I think we want to take the position
-  // that an account have, by definition, a wallet present at creation time
-  if (!(recipientAccount.walletIds && recipientAccount.walletIds.length > 0)) {
-    return new NoWalletExistsForUserError(recipientUsername)
-  }
 
   const recipientWalletId = recipientAccount.defaultWalletId
   const recipientWallet = await getWallet(recipientWalletId)

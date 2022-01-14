@@ -1,5 +1,9 @@
 import { hashApiKey } from "@domain/accounts"
-import { AccountApiKeysRepository, AccountsRepository } from "@services/mongoose"
+import {
+  AccountApiKeysRepository,
+  AccountsRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 
 export * from "./add-api-key-for-account"
 export * from "./disable-api-key-for-account"
@@ -45,10 +49,10 @@ export const hasPermissions = async (
   const userAccount = await accounts.findByUserId(userId)
   if (userAccount instanceof Error) return userAccount
 
-  const walletAccount = await accounts.findByWalletId(walletId)
-  if (walletAccount instanceof Error) return walletAccount
+  const accountIdFromWallet = await WalletsRepository().getAccountId(walletId)
+  if (accountIdFromWallet instanceof Error) return accountIdFromWallet
 
-  return userAccount.id === walletAccount.id
+  return userAccount.id === accountIdFromWallet
 }
 
 export const getBusinessMapMarkers = async () => {
@@ -58,7 +62,10 @@ export const getBusinessMapMarkers = async () => {
 export const getUsernameFromWalletId = async (
   walletId: WalletId,
 ): Promise<Username | ApplicationError> => {
-  const account = await accounts.findByWalletId(walletId)
+  const accountId = await WalletsRepository().getAccountId(walletId)
+  if (accountId instanceof Error) return accountId
+
+  const account = await accounts.findById(accountId)
   if (account instanceof Error) return account
   return account.username
 }

@@ -3,6 +3,8 @@ import { yamlConfig } from "@config/app"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
+import { setupMongoConnection } from "@services/mongodb"
+
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
@@ -37,7 +39,13 @@ let apolloClient: ApolloClient<NormalizedCacheObject>,
 const USER_INDEX = 3
 const { phone, code } = yamlConfig.test_accounts[USER_INDEX]
 
+let mongoose
+
 beforeAll(async () => {
+  mongoose = await setupMongoConnection()
+  await mongoose.connection.db.dropCollection("users")
+  await mongoose.connection.db.dropCollection("wallets")
+
   await bitcoindClient.loadWallet({ filename: "outside" })
   await createMandatoryUsers()
   await createUserWallet(0)
@@ -137,7 +145,7 @@ describe("graphql", () => {
   describe("lnNoAmountInvoiceCreate", () => {
     const mutation = LN_NO_AMOUNT_INVOICE_CREATE
 
-    it("returns a valid lightning invoice", async () => {
+    it.only("returns a valid lightning invoice", async () => {
       const input = { walletId, memo: "This is a lightning invoice" }
       const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { invoice, errors } = result.data.lnNoAmountInvoiceCreate

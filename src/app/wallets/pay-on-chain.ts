@@ -285,7 +285,10 @@ const executePaymentViaOnChain = async ({
   const usdPerSat = await getCurrentPrice()
   if (usdPerSat instanceof Error) return usdPerSat
 
-  const senderAccount = await AccountsRepository().findByWalletId(senderWalletId)
+  const accountId = await WalletsRepository().getAccountId(senderWalletId)
+  if (accountId instanceof Error) return accountId
+
+  const senderAccount = await AccountsRepository().findById(accountId)
   if (senderAccount instanceof Error) return senderAccount
 
   return LockService().lockWalletId(

@@ -1,6 +1,7 @@
 import { addWallet, getAccount, setDefaultWalletId } from "@app/accounts"
 import { WalletType } from "@domain/wallets"
 import { setupMongoConnection } from "@services/mongodb"
+import { WalletsRepository } from "@services/mongoose"
 
 import {
   createUserWallet,
@@ -10,6 +11,7 @@ import {
 } from "test/helpers"
 
 let walletId0: WalletId
+let walletIdNew: WalletId
 let accountId0: AccountId
 
 let mongoose
@@ -17,6 +19,7 @@ let mongoose
 beforeAll(async () => {
   mongoose = await setupMongoConnection()
   await mongoose.connection.db.dropCollection("users")
+  await mongoose.connection.db.dropCollection("wallets")
 
   await createUserWallet(0)
 
@@ -35,9 +38,15 @@ it("add a wallet to account0", async () => {
   expect(wallet).toBeTruthy()
   expect(walletId0).not.toBe(wallet.id)
 
+  walletIdNew = wallet.id
+
   const userType0 = await getUserTypeByTestUserIndex(0)
-  expect([...userType0.walletIds]).toEqual([walletId0, wallet.id])
   expect(userType0.defaultWalletId).toBe(walletId0)
+
+  const walletIds = await WalletsRepository().listWalletIdsByAccountId(accountId0)
+  if (walletIds instanceof Error) throw walletIds
+
+  expect(walletIds).toEqual([walletId0, wallet.id])
 })
 
 it("change default walletId of account0", async () => {
@@ -46,10 +55,10 @@ it("change default walletId of account0", async () => {
 
   expect(account.defaultWalletId).toBe(walletId0)
 
-  await setDefaultWalletId({ accountId: accountId0, walletId: account.walletIds[1] })
+  await setDefaultWalletId({ accountId: accountId0, walletId: walletIdNew })
   const newAccount = await getAccount(accountId0)
   if (newAccount instanceof Error) throw newAccount
 
-  expect(newAccount.defaultWalletId).toBe(newAccount.walletIds[1])
+  expect(newAccount.defaultWalletId).toBe(walletIdNew)
   expect(newAccount.defaultWalletId).not.toBe(walletId0)
 })

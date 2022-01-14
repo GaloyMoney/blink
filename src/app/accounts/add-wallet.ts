@@ -20,7 +20,6 @@ export const addWallet = async ({
     account.defaultWalletId = wallet.id
   }
 
-  account.walletIds.push(wallet.id)
   const result = await AccountsRepository().update(account)
   if (result instanceof Error) return result
 

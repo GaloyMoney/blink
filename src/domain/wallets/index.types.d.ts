@@ -141,8 +141,12 @@ type Wallet = NewWalletInfo & {
 
 interface IWalletsRepository {
   persistNew({ accountId, type }: NewWalletInfo): Promise<Wallet | RepositoryError>
-  findById(id: WalletId): Promise<Wallet | RepositoryError>
+  findById(walletId: WalletId): Promise<Wallet | RepositoryError>
+  getAccountId(walletId: WalletId): Promise<AccountId | RepositoryError>
+
+  listWalletIdsByAccountId(accountId: AccountId): Promise<WalletId[] | RepositoryError>
   listByAccountId(accountId: AccountId): Promise<Wallet[] | RepositoryError>
+
   findByAddress(address: OnChainAddress): Promise<Wallet | RepositoryError>
   listByAddresses(addresses: OnChainAddress[]): Promise<Wallet[] | RepositoryError>
 }
