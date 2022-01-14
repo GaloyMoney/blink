@@ -2,7 +2,7 @@ import { InvalidWalletId } from "@domain/errors"
 import { listWalletIdsByAccountId } from "@domain/wallets"
 import { AccountsRepository } from "@services/mongoose"
 
-export const setDefaultWalletId = async ({
+export const updateDefaultWalletId = async ({
   accountId,
   walletId,
 }: {
