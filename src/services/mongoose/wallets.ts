@@ -37,15 +37,15 @@ export const WalletsRepository = (): IWalletsRepository => {
     }
   }
 
-  const findByAccountId = async (
+  const listByAccountId = async (
     accountId: AccountId,
-  ): Promise<Wallet | RepositoryError> => {
+  ): Promise<Wallet[] | RepositoryError> => {
     try {
-      const result = await Wallet.findOne({ accountId })
+      const result = await Wallet.find({ accountId })
       if (!result) {
         return new CouldNotFindWalletFromIdError()
       }
-      return resultToWallet(result)
+      return result.map(resultToWallet)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -81,7 +81,7 @@ export const WalletsRepository = (): IWalletsRepository => {
 
   return {
     findById,
-    findByAccountId,
+    listByAccountId,
     findByAddress,
     listByAddresses,
     persistNew,
