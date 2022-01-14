@@ -13,6 +13,7 @@ import {
 import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
 import MAIN from "./queries/main.gql"
+
 import { clearAccountLocks, clearLimiters } from "test/helpers"
 import {
   resetUserPhoneCodeAttemptIp,
@@ -33,7 +34,7 @@ const { phone, code } = yamlConfig.test_accounts[9]
 beforeAll(async () => {
   correctCode = `${code}`
   await startServer()
-  ;({ apolloClient, disposeClient } = createApolloClient())
+    ; ({ apolloClient, disposeClient } = createApolloClient())
 })
 
 beforeEach(async () => {
@@ -49,7 +50,10 @@ afterAll(async () => {
 describe("graphql", () => {
   describe("main query", () => {
     it("returns valid data", async () => {
-      const { data } = await apolloClient.query({query:MAIN, variables: { hasToken: false } })
+      const { data } = await apolloClient.query({
+        query: MAIN,
+        variables: { hasToken: false },
+      })
       expect(data.globals).toBeTruthy()
       expect(data.mobileVersions).toBeTruthy()
       expect(data.quizQuestions).toBeTruthy()
@@ -261,9 +265,9 @@ const testPhoneCodeAttemptPerPhoneMinInterval = async (mutation) => {
   // Check limiter is exhausted
   const {
     errors: [{ message }],
-  } = await apolloClient.mutate({mutation,  variables: { input } })
+  } = await apolloClient.mutate({ mutation, variables: { input } })
   expect(new error()).toBeInstanceOf(
-  UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError)
+    UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError)
   expect(message).toMatch(new RegExp(`.*${error.name}.*`))
 }
 
@@ -297,7 +301,7 @@ const testPhoneCodeAttemptPerPhone = async (mutation) => {
       data: {
         userRequestAuthCode: { success },
       },
-    } = await mutate(mutation, { variables: { input } })
+    } = await apolloClient.mutate({ mutation, variables: { input } })
     expect(success).toBeTruthy()
   }
 
@@ -306,7 +310,7 @@ const testPhoneCodeAttemptPerPhone = async (mutation) => {
     "Too many phone code attempts, please wait for a while and try again."
   const {
     errors: [{ message }],
-  } = await mutate(mutation, { variables: { input } })
+  } = await apolloClient.mutate({ mutation, variables: { input } })
   expect(new error()).toBeInstanceOf(UserPhoneCodeAttemptPhoneRateLimiterExceededError)
   expect(message).toBe(expectedErrorMessage)
 }
@@ -341,7 +345,7 @@ const testPhoneCodeAttemptPerIp = async (mutation) => {
       data: {
         userRequestAuthCode: { success },
       },
-    } = await mutate(mutation, { variables: { input } })
+    } = await apolloClient.mutate({ mutation, variables: { input } })
     expect(success).toBeTruthy()
   }
 
@@ -350,7 +354,7 @@ const testPhoneCodeAttemptPerIp = async (mutation) => {
     "Too many phone code attempts on same network, please wait for a while and try again."
   const {
     errors: [{ message }],
-  } = await mutate(mutation, { variables: { input } })
+  } = await apolloClient.mutate({ mutation, variables: { input } })
   expect(new error()).toBeInstanceOf(UserPhoneCodeAttemptIpRateLimiterExceededError)
   expect(message).toBe(expectedErrorMessage)
 }
@@ -379,7 +383,7 @@ const testRateLimitLoginByPhone = async ({
 
   // Exhaust limiter
   for (let i = 0; i < points; i++) {
-    const result = await mutate(mutation, { variables: { input } })
+    const result = await apolloClient.mutate({ mutation, variables: { input } })
     expect(result.data.userLogin.errors).toEqual(
       expect.arrayContaining([expect.objectContaining({ message: expectedMessage })]),
     )
@@ -388,7 +392,7 @@ const testRateLimitLoginByPhone = async ({
   // Check limiter is exhausted
   const expectedErrorMessage =
     "Too many login attempts, please wait for a while and try again."
-  const result = await mutate(mutation, { variables: { input } })
+  const result = await apolloClient.mutate({ mutation, variables: { input } })
   expect(new error()).toBeInstanceOf(UserLoginPhoneRateLimiterExceededError)
   expect(result.data.userLogin.errors).toEqual(
     expect.arrayContaining([expect.objectContaining({ message: expectedErrorMessage })]),
@@ -424,7 +428,7 @@ const testRateLimitLoginByIp = async ({
     expect(resetPhone).not.toBeInstanceOf(Error)
     if (resetPhone instanceof Error) return resetPhone
 
-    const result = await mutate(mutation, { variables: { input } })
+    const result = await apolloClient.mutate({ mutation, variables: { input } })
     expect(result.data.userLogin.errors).toEqual(
       expect.arrayContaining([expect.objectContaining({ message: expectedMessage })]),
     )
@@ -437,7 +441,7 @@ const testRateLimitLoginByIp = async ({
 
   const expectedErrorMessage =
     "Too many login attempts on same network, please wait for a while and try again."
-  const result = await mutate(mutation, { variables: { input } })
+  const result = await apolloClient.mutate({ mutation, variables: { input } })
   expect(new error()).toBeInstanceOf(UserLoginIpRateLimiterExceededError)
   expect(result.data.userLogin.errors).toEqual(
     expect.arrayContaining([expect.objectContaining({ message: expectedErrorMessage })]),
