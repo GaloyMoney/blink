@@ -36,7 +36,7 @@ const { phone, code } = yamlConfig.test_accounts[9]
 beforeAll(async () => {
   correctCode = `${code}` as PhoneCode
   await startServer()
-    ; ({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
+  ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
 })
 
 beforeEach(async () => {
@@ -267,7 +267,8 @@ const testPhoneCodeAttemptPerPhoneMinInterval = async (mutation) => {
   // Check limiter is exhausted
   const { errors } = await apolloClient.mutate({ mutation, variables: { input } })
   expect(new error()).toBeInstanceOf(
-    UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError)
+    UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError,
+  )
   expect(errors && errors[0].message).toMatch(new RegExp(`.*${error.name}.*`))
 }
 
