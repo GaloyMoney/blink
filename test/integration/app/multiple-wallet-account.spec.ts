@@ -1,8 +1,8 @@
 import * as Accounts from "@app/accounts"
 import * as Users from "@app/users"
-import { WalletType, WalletCurrency } from "@domain/wallets"
 import { setupMongoConnection } from "@services/mongodb"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { WalletCurrency, WalletType } from "@services/mongoose/schema"
 
 let mongoose
 

@@ -3,9 +3,8 @@ import { LedgerTransactionType } from "@domain/ledger"
 
 const Schema = mongoose.Schema
 
-const ledgerTransactionTypes = Object.keys(LedgerTransactionType).map(
-  (txType) => LedgerTransactionType[txType],
-)
+const ledgerTransactionTypes = Object.values(LedgerTransactionType)
+
 const transactionSchema = new Schema({
   hash: {
     type: Schema.Types.String,

@@ -11,9 +11,21 @@ import { toLiabilitiesWalletId } from "@domain/ledger"
 import { Transaction } from "@services/ledger/schema"
 import * as mongoose from "mongoose"
 import { UsernameRegex } from "@domain/accounts"
-import { WalletCurrency, WalletType } from "@domain/wallets"
 
 export { Transaction }
+
+// in the future, we may have:
+// - saving account (not redeemable instantly)
+// - borrowing account based on collateral
+export const WalletType = {
+  Checking: "checking",
+} as const
+
+// TODO: think how to differenciate physical from synthetic USD
+export const WalletCurrency = {
+  Usd: "USD",
+  Btc: "BTC",
+} as const
 
 // mongoose.set("debug", true)
 
@@ -79,11 +91,13 @@ const WalletSchema = new Schema({
     type: String,
     enum: Object.values(WalletType),
     required: true,
+    default: WalletType.Checking,
   },
   currency: {
     type: String,
     enum: Object.values(WalletCurrency),
     required: true,
+    default: WalletCurrency.Btc,
   },
   onchain: {
     type: [
