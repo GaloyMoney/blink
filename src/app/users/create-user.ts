@@ -1,11 +1,11 @@
 import { checkedToPhoneNumber } from "@domain/users"
-import { WalletCurrency, WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
 import {
   WalletsRepository,
   AccountsRepository,
   UsersRepository,
 } from "@services/mongoose"
+import { WalletCurrency, WalletType } from "@services/mongoose/schema"
 import { TwilioClient } from "@services/twilio"
 
 export const createUser = async ({

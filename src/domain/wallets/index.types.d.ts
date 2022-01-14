@@ -124,12 +124,6 @@ type WalletTransactionHistoryWithPending = {
   readonly transactions: WalletTransaction[]
 }
 
-type WalletType =
-  typeof import("./index").WalletType[keyof typeof import("./index").WalletType]
-
-type WalletCurrency =
-  typeof import("./index").WalletCurrency[keyof typeof import("./index").WalletCurrency]
-
 type NewWalletInfo = {
   readonly accountId: AccountId
   readonly type: WalletType
