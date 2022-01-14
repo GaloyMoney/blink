@@ -129,6 +129,20 @@ type ListLnPaymentsResult = {
   endCursor: PagingToken | false
 }
 
+type ListSettledAndFailedLnPaymentsByPubkeyArgs = {
+  [key: Pubkey]: {
+    settledAfter: PagingToken | undefined | false
+    failedAfter: PagingToken | undefined | false
+  }
+}
+
+type ListSettledAndFailedLnPaymentsByPubkeyResult = {
+  [key: Pubkey]: {
+    settled: ListLnPaymentsResult | LightningServiceError
+    failed: ListLnPaymentsResult | LightningServiceError
+  }
+}
+
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
 
@@ -181,6 +195,10 @@ interface ILightningService {
   listFailedPayments(
     args: ListLnPaymentsArgs,
   ): Promise<ListLnPaymentsResult | LightningServiceError>
+
+  listSettledAndFailedPaymentsByPubkey(
+    args: ListSettledAndFailedLnPaymentsByPubkeyArgs,
+  ): Promise<ListSettledAndFailedLnPaymentsByPubkeyResult>
 
   cancelInvoice({
     pubkey,

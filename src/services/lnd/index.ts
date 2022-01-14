@@ -36,6 +36,8 @@ import { LndOfflineError } from "@core/error"
 
 import { timeout } from "@utils"
 
+import { baseLogger } from "@services/logger"
+
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
 
@@ -300,6 +302,41 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
+  const listSettledAndFailedPaymentsByPubkey = async (
+    cursors: ListSettledAndFailedLnPaymentsByPubkeyArgs,
+  ) => {
+    const result: ListSettledAndFailedLnPaymentsByPubkeyResult = {}
+
+    for (const key in cursors) {
+      const pubkey = key as Pubkey
+      const { settledAfter, failedAfter } = cursors[pubkey]
+
+      const nullListLnPaymentsResult: ListLnPaymentsResult = {
+        lnPayments: [],
+        endCursor: false,
+      }
+
+      result[pubkey] = {
+        settled:
+          settledAfter !== false
+            ? await listSettledPayments({
+                after: settledAfter,
+                pubkey,
+              })
+            : nullListLnPaymentsResult,
+        failed:
+          failedAfter !== false
+            ? await listFailedPayments({
+                after: failedAfter,
+                pubkey,
+              })
+            : nullListLnPaymentsResult,
+      }
+    }
+
+    return result
+  }
+
   const cancelInvoice = async ({
     pubkey,
     paymentHash,
@@ -443,6 +480,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     lookupPayment,
     listSettledPayments,
     listFailedPayments,
+    listSettledAndFailedPaymentsByPubkey,
     cancelInvoice,
     payInvoiceViaRoutes,
     payInvoiceViaPaymentDetails,
