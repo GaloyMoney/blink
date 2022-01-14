@@ -110,10 +110,10 @@ export const checkAndVerifyTwoFA = async ({
 const getLimitsChecker = async (
   walletId: WalletId,
 ): Promise<LimitsChecker | ApplicationError> => {
-  const accountId = await WalletsRepository().getAccountId(walletId)
-  if (accountId instanceof Error) return accountId
+  const wallet = await WalletsRepository().findById(walletId)
+  if (wallet instanceof Error) return wallet
 
-  const account = await AccountsRepository().findById(accountId)
+  const account = await AccountsRepository().findById(wallet.accountId)
   if (account instanceof Error) return account
   const { level } = account
 
