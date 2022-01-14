@@ -110,7 +110,7 @@ const UserSchema = new Schema<UserType>({
     // FIXME: role is a mix between 2 things here
     // there can be many users and editors
     // there can be only one dealer, bankowner and funder
-    // so we may want different property to differentiate thoses
+    // so we may want different property to differentiate those
     enum: ["user", "editor", "dealer", "bankowner", "funder"],
     required: true,
     default: "user",

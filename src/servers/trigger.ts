@@ -114,7 +114,7 @@ export async function onchainTransactionEventHandler(
     if (!tx.is_confirmed) {
       onchainLogger.info(
         { transactionType: "receipt", pending: true },
-        "mempool appearence",
+        "mempool appearance",
       )
 
       const price = await Prices.getCurrentPrice()

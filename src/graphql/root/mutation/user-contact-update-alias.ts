@@ -12,7 +12,7 @@ const UserContactUpdateAliasInput = new GT.Input({
   }),
 })
 
-const USerContactUpdateAliasMutation = GT.Field({
+const UserContactUpdateAliasMutation = GT.Field({
   type: GT.NonNull(UserContactUpdateAliasPayload),
   args: {
     input: { type: GT.NonNull(UserContactUpdateAliasInput) },
@@ -46,4 +46,4 @@ const USerContactUpdateAliasMutation = GT.Field({
   },
 })
 
-export default USerContactUpdateAliasMutation
+export default UserContactUpdateAliasMutation

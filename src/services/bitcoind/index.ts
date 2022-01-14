@@ -21,7 +21,7 @@ type GetAddressInfoResult = {
   isscript: boolean
   ischange: boolean
   iswitness: boolean
-  // TODO? all avaialable: https://developer.bitcoin.org/reference/rpc/getaddressinfo.html#result
+  // TODO? all available: https://developer.bitcoin.org/reference/rpc/getaddressinfo.html#result
 }
 
 type InWalletTransaction = {
@@ -40,7 +40,7 @@ type InWalletTransaction = {
   "comment": string
   "bip125-replaceable": string
   "hex": string
-  // TODO? all avaialable: https://developer.bitcoin.org/reference/rpc/gettransaction.html#result
+  // TODO? all available: https://developer.bitcoin.org/reference/rpc/gettransaction.html#result
 }
 
 export class BitcoindClient {

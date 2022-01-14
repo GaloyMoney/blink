@@ -81,7 +81,7 @@ describe("UserWallet", () => {
         setUsername({ username: "3basd", id: accountId0 }),
       ).resolves.toBeInstanceOf(ValidationError)
       await expect(
-        setUsername({ username: "bc1ba", id: accountId0 }),
+        setUsername({ username: "bc1be", id: accountId0 }),
       ).resolves.toBeInstanceOf(ValidationError)
       await expect(
         setUsername({ username: "lnbc1qwe1", id: accountId0 }),

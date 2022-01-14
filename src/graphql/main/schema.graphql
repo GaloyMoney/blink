@@ -441,7 +441,7 @@ type PaymentError implements Error {
 
 enum PaymentErrorCode {
   ACCOUNT_LOCKED
-  INSUFFICENT_BALANCE
+  INSUFFICIENT_BALANCE
   INVOICE_PAID
   LIMIT_EXCEEDED
   NO_LIQUIDITY

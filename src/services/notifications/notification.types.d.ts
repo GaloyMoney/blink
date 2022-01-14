@@ -2,7 +2,7 @@ interface IDataNotification {
   type: TransactionType
   amount: number
   hash?: string
-  txid?: string // FIXME in mongodb, there is no differenciation between hash and txid?
+  txid?: string // FIXME in mongodb, there is no differentiation between hash and txid?
 }
 
 interface INotification {

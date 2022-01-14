@@ -253,10 +253,10 @@ export const updateEscrows = async () => {
   const { lnd } = getActiveLnd()
   const { channels } = await getChannels({ lnd })
 
-  const selfInitatedChannels = channels.filter(
+  const selfInitiatedChannels = channels.filter(
     ({ is_partner_initiated }) => is_partner_initiated === false,
   )
-  const escrowInLnd = sumBy(selfInitatedChannels, "commit_transaction_fee")
+  const escrowInLnd = sumBy(selfInitiatedChannels, "commit_transaction_fee")
 
   const result = await ledger.updateLndEscrow({ amount: escrowInLnd })
 

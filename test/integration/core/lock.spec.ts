@@ -70,7 +70,7 @@ describe("Lock", () => {
           throw Error("dummy error")
         })
       } catch (err) {
-        baseLogger.info(`error is being catched ${err}`)
+        baseLogger.info(`error is being caught ${err}`)
       }
 
       expect(await checkLockExist(redis)).toBeFalsy()

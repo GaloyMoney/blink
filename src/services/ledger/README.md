@@ -26,7 +26,7 @@ Running a bitcoin bank over lightning involves ongoing costs:
 - opening channels
 - closing channels
 
-Also, as funds are stored both in cold and hot wallets with some rebalancing threshhold, there are  onchain fees related to the rebalancing that would not be associated to a single user but to the bank owner.
+Also, as funds are stored both in cold and hot wallets with some rebalancing threshold, there are  onchain fees related to the rebalancing that would not be associated to a single user but to the bank owner.
 
 Additionally, there are escrow funds in channel. The escrow varies depending on the current market fee on the bitcoin network. This also needs to be handled to have real time reconciliation of all the accounts. (note: this is only the case for non anchored channel)
 

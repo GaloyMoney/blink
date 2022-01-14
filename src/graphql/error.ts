@@ -212,7 +212,7 @@ export class InvalidCoordinatesError extends CustomApolloError {
 export class InvalidBusinessTitleLengthError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
-      message: "Title should be between 3 and 100 caracters long",
+      message: "Title should be between 3 and 100 characters long",
       forwardToClient: true,
       code: "INVALID_TITLE",
       ...errData,

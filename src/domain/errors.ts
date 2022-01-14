@@ -31,7 +31,7 @@ export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
 export class RewardAlreadyPresentError extends DomainError {}
 
 export class ValidationError extends DomainError {}
-export class ContactNotExistantError extends DomainError {}
+export class ContactNotExistentError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
 export class InvalidOnChainAddress extends ValidationError {}
 export class InvalidScanDepthAmount extends ValidationError {}

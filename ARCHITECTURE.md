@@ -48,7 +48,7 @@ Lnd stores the data in a bbolt database internally.
 Every successful payment within lnd is being recorded on mongodb.
 
 Offchain-wise, nothing is needed within the lnd side to present a transaction to a user after it has been executed.
-Onchain-wise, it's possible that a user shared an onchain address. This is currently tied to lnd. (we intend to not use lnd for onchain transaction to remove this dependancy and simplify lnd instance recyling)
+Onchain-wise, it's possible that a user shared an onchain address. This is currently tied to lnd. (we intend to not use lnd for onchain transaction to remove this dependency and simplify lnd instance recycling)
 
 ### Mongodb
 

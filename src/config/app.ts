@@ -125,7 +125,7 @@ export const getLndParams = (): LndParams[] => {
     node: process.env[`${input.name}_DNS`],
     port: process.env[`${input.name}_RPCPORT`] ?? 10009,
     pubkey: process.env[`${input.name}_PUBKEY`],
-    priority: 1, // will be overriden if present in the yaml
+    priority: 1, // will be overridden if present in the yaml
     ...input,
   }))
 }
