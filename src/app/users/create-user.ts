@@ -1,6 +1,6 @@
 import { addWallet } from "@app/accounts"
 import { checkedToPhoneNumber } from "@domain/users"
-import { WalletType } from "@domain/wallets"
+import { WalletCurrency, WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { TwilioClient } from "@services/twilio"
@@ -34,7 +34,11 @@ export const createUser = async ({
   const account = await AccountsRepository().findByUserId(user.id)
   if (account instanceof Error) return account
 
-  const wallet = await addWallet({ accountId: account.id, type: WalletType.CheckingBTC })
+  const wallet = await addWallet({
+    accountId: account.id,
+    type: WalletType.Checking,
+    currency: WalletCurrency.Btc,
+  })
   if (wallet instanceof Error) return wallet
 
   return user

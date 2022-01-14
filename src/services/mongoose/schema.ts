@@ -11,7 +11,7 @@ import { toLiabilitiesWalletId } from "@domain/ledger"
 import { Transaction } from "@services/ledger/schema"
 import * as mongoose from "mongoose"
 import { UsernameRegex } from "@domain/accounts"
-import { WalletType } from "@domain/wallets"
+import { WalletCurrency, WalletType } from "@domain/wallets"
 
 export { Transaction }
 
@@ -79,7 +79,11 @@ const WalletSchema = new Schema({
     type: String,
     enum: Object.values(WalletType),
     required: true,
-    default: WalletType.CheckingBTC,
+  },
+  currency: {
+    type: String,
+    enum: Object.values(WalletCurrency),
+    required: true,
   },
   onchain: {
     type: [

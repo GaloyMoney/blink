@@ -18,9 +18,17 @@ export const checkedToWalletId = (walletId: string): WalletId | ValidationError 
 }
 
 export const WalletType = {
-  CheckingBTC: "checkingbtc",
-  CheckingUSD: "checkingusd",
+  // in the future, we may have:
+  // - saving account (not redeemable instantly)
+  // - borrowing account based on collateral
+  Checking: "checking",
 } as const
+
+export const WalletCurrency = {
+  // TODO: think how to differenciate physical from synthetic USD
+  Usd: "usd",
+  Btc: "btc",
+}
 
 export const listWalletIdsByAccountId = async (
   accountId: AccountId,
