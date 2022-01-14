@@ -8,7 +8,7 @@ export const startServer = async (
 ): Promise<number> => {
   return new Promise<number>((resolve) => {
     if (!serverPid) {
-      const serverProcess = childProcess.spawn("make", ["start"])
+      const serverProcess = childProcess.spawn("make", ["start-server-ci"])
       serverPid = serverProcess.pid
       serverProcess.stdout.on("data", (data) => {
         if (data.includes(serverStartMessage)) {

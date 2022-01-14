@@ -1,21 +1,5 @@
-import { JWT_SECRET, yamlConfig } from "@config/app"
 import { toSats } from "@domain/bitcoin"
-import { startApolloServerForCoreSchema } from "@servers/graphql-main-server"
-import { sleep } from "@utils"
-import { createTestClient } from "apollo-server-integration-testing"
-import { createHttpTerminator } from "http-terminator"
-import * as jwt from "jsonwebtoken"
-
-import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
-import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
-import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
-import LN_NO_AMOUNT_INVOICE_CREATE from "./mutations/ln-no-amount-invoice-create.gql"
-import LN_NO_AMOUNT_INVOICE_FEE_PROBE from "./mutations/ln-no-amount-invoice-fee-probe.gql"
-import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-payment-send.gql"
-import USER_LOGIN from "./mutations/user-login.gql"
-import ME from "./queries/me.gql"
-import MAIN from "./queries/main.gql"
-
+import { yamlConfig } from "@config/app"
 import {
   bitcoindClient,
   clearAccountLocks,
@@ -27,29 +11,37 @@ import {
   getDefaultWalletIdByTestUserIndex,
   lndOutside2,
 } from "test/helpers"
+import { createApolloClient } from "test/helpers/apollo-client"
+import { startServer, killServer } from "test/helpers/integration-server"
+import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
+import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
+import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
+import LN_NO_AMOUNT_INVOICE_CREATE from "./mutations/ln-no-amount-invoice-create.gql"
+import LN_NO_AMOUNT_INVOICE_FEE_PROBE from "./mutations/ln-no-amount-invoice-fee-probe.gql"
+import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-payment-send.gql"
+import USER_LOGIN from "./mutations/user-login.gql"
+import ME from "./queries/me.gql"
+import MAIN from "./queries/main.gql"
 
-jest.mock("@services/twilio", () => require("test/mocks/twilio"))
-
-let apolloServer, httpServer, httpTerminator, query, mutate, setOptions, walletId
-const { phone, code } = yamlConfig.test_accounts[0]
+let apolloClient, disposeClient, walletId
+const USER_INDEX = 0
+const { phone, code } = yamlConfig.test_accounts[USER_INDEX]
 
 beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
 
   await createMandatoryUsers()
   await createUserWallet(0)
-  walletId = await getDefaultWalletIdByTestUserIndex(0)
+  walletId = await getDefaultWalletIdByTestUserIndex(USER_INDEX)
   await fundWalletIdFromLightning({ walletId, amount: toSats(50_000) })
-  ;({ apolloServer, httpServer } = await startApolloServerForCoreSchema())
-  ;({ query, mutate, setOptions } = createTestClient({ apolloServer }))
-  httpTerminator = createHttpTerminator({ server: httpServer })
-  await sleep(2500)
+  await startServer()
+    ; ({ apolloClient, disposeClient } = createApolloClient())
   const input = { phone, code: `${code}` }
-  const result = await mutate(USER_LOGIN, { variables: { input } })
-  const token = jwt.verify(result.data.userLogin.authToken, `${JWT_SECRET}`)
-  // mock jwt middleware
-  setOptions({ request: { token } })
-  const meResult = await query(ME)
+  const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
+  // Create a new authenticated client
+  disposeClient()
+    ; ({ apolloClient, disposeClient } = createApolloClient(result.data.userLogin.authToken))
+  const meResult = await apolloClient.query({ query: ME })
   expect(meResult.data.me.defaultAccount.defaultWalletId).toBe(walletId)
 })
 
@@ -60,15 +52,14 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
-
-  setOptions({ request: { token: null } })
-  await httpTerminator.terminate()
+  disposeClient()
+  await killServer()
 })
 
 describe("graphql", () => {
   describe("main query", () => {
     it("returns valid data", async () => {
-      const { data } = await query(MAIN, { variables: { hasToken: true } })
+      const { data } = await apolloClient.query({query: MAIN, variables: { hasToken: true } })
       expect(data.globals).toBeTruthy()
       expect(data.me).toBeTruthy()
       expect(data.mobileVersions).toBeTruthy()
@@ -134,7 +125,7 @@ describe("graphql", () => {
 
     it("returns a valid lightning invoice", async () => {
       const input = { walletId, memo: "This is a lightning invoice" }
-      const result = await mutate(mutation, { variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { invoice, errors } = result.data.lnNoAmountInvoiceCreate
       expect(errors).toHaveLength(0)
       expect(invoice).toHaveProperty("paymentRequest")
@@ -145,7 +136,7 @@ describe("graphql", () => {
 
     it("returns a valid lightning invoice if memo is not passed", async () => {
       const input = { walletId }
-      const result = await mutate(mutation, { variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { invoice, errors } = result.data.lnNoAmountInvoiceCreate
       expect(errors).toHaveLength(0)
       expect(invoice).toHaveProperty("paymentRequest")
@@ -160,7 +151,7 @@ describe("graphql", () => {
 
     it("returns a valid lightning invoice", async () => {
       const input = { walletId, amount: 1000, memo: "This is a lightning invoice" }
-      const result = await mutate(mutation, { variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { invoice, errors } = result.data.lnInvoiceCreate
       expect(errors).toHaveLength(0)
       expect(invoice).toHaveProperty("paymentRequest")
@@ -171,7 +162,7 @@ describe("graphql", () => {
 
     it("returns a valid lightning invoice if memo is not passed", async () => {
       const input = { walletId, amount: 1000 }
-      const result = await mutate(mutation, { variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { invoice, errors } = result.data.lnInvoiceCreate
       expect(errors).toHaveLength(0)
       expect(invoice).toHaveProperty("paymentRequest")
@@ -183,7 +174,7 @@ describe("graphql", () => {
     it("returns an error if amount is negative", async () => {
       const message = "Invalid value for SatAmount"
       const input = { walletId, amount: -1, memo: "This is a lightning invoice" }
-      const result = await mutate(mutation, { variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { invoice, errors } = result.data.lnInvoiceCreate
 
       expect(errors).toHaveLength(1)
@@ -196,7 +187,7 @@ describe("graphql", () => {
     it("returns an error if amount is zero", async () => {
       const message = "A valid satoshi amount is required"
       const input = { walletId, amount: 0, memo: "This is a lightning invoice" }
-      const result = await mutate(mutation, { variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { invoice, errors } = result.data.lnInvoiceCreate
 
       expect(errors).toHaveLength(1)
@@ -217,7 +208,7 @@ describe("graphql", () => {
       })
 
       const input = { walletId, paymentRequest }
-      const result = await mutate(mutation, { variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { amount, errors } = result.data.lnInvoiceFeeProbe
       expect(errors).toHaveLength(0)
       expect(amount).toBe(0)
@@ -231,7 +222,7 @@ describe("graphql", () => {
       })
 
       const input = { walletId, paymentRequest }
-      const result = await mutate(mutation, { variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { amount, errors } = result.data.lnInvoiceFeeProbe
       expect(errors).toHaveLength(1)
       expect(amount).toBe(null)
@@ -252,7 +243,7 @@ describe("graphql", () => {
       })
 
       const input = { walletId, amount: 1_013, paymentRequest }
-      const result = await mutate(mutation, { variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { amount, errors } = result.data.lnNoAmountInvoiceFeeProbe
       expect(errors).toHaveLength(0)
       expect(amount).toBe(0)
@@ -265,7 +256,7 @@ describe("graphql", () => {
       })
 
       const input = { walletId, amount: 10_010_000_000, paymentRequest }
-      const result = await mutate(mutation, { variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { amount, errors } = result.data.lnNoAmountInvoiceFeeProbe
       expect(errors).toHaveLength(1)
       expect(amount).toBe(null)
@@ -296,7 +287,7 @@ describe("graphql", () => {
       })
 
       const input = { walletId, paymentRequest }
-      const result = await mutate(mutation, { variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { status, errors } = result.data.lnInvoicePaymentSend
       expect(errors).toHaveLength(0)
       expect(status).toBe("SUCCESS")
@@ -305,13 +296,13 @@ describe("graphql", () => {
     it("returns error when sends a payment to self", async () => {
       const message = "User tried to pay themselves"
       const input = { walletId, amount: 1, memo: "This is a lightning invoice" }
-      const res = await mutate(LN_INVOICE_CREATE, { variables: { input } })
+      const res = await apolloClient.mutate({ mutation: LN_INVOICE_CREATE, variables: { input } })
       const {
         invoice: { paymentRequest },
       } = res.data.lnInvoiceCreate
 
-      const query = { variables: { input: { walletId, paymentRequest } } }
-      const result = await mutate(mutation, query)
+      const paymentSendvariables = { input: { walletId, paymentRequest } }
+      const result = await apolloClient.mutate({ mutation, variables: paymentSendvariables })
       const { status, errors } = result.data.lnInvoicePaymentSend
       expect(errors).toHaveLength(1)
       expect(status).toBe("FAILURE")
@@ -340,7 +331,7 @@ describe("graphql", () => {
       })
 
       const input = { walletId, paymentRequest, amount: 1 }
-      const result = await mutate(mutation, { variables: { input } })
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { status, errors } = result.data.lnNoAmountInvoicePaymentSend
       expect(errors).toHaveLength(0)
       expect(status).toBe("SUCCESS")
@@ -349,13 +340,13 @@ describe("graphql", () => {
     it("returns error when sends a payment to self", async () => {
       const message = "User tried to pay themselves"
       const input = { walletId, memo: "This is a lightning invoice" }
-      const res = await mutate(LN_NO_AMOUNT_INVOICE_CREATE, { variables: { input } })
+      const res = await apolloClient.mutate({ mutation: LN_NO_AMOUNT_INVOICE_CREATE, variables: { input } })
       const {
         invoice: { paymentRequest },
       } = res.data.lnNoAmountInvoiceCreate
 
-      const query = { variables: { input: { walletId, paymentRequest, amount: 1 } } }
-      const result = await mutate(mutation, query)
+      const paymentSendVariables = { input: { walletId, paymentRequest, amount: 1 } }
+      const result = await apolloClient.mutate({ mutation, variables: paymentSendVariables })
       const { status, errors } = result.data.lnNoAmountInvoicePaymentSend
       expect(errors).toHaveLength(1)
       expect(status).toBe("FAILURE")

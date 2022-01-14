@@ -15,7 +15,6 @@ import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 import { startServer, killServer } from "test/helpers/integration-server"
 
 jest.mock("@services/twilio", () => require("test/mocks/twilio"))
-jest.setTimeout(5 * 60 * 1000)
 
 let apolloClient: ApolloClient<NormalizedCacheObject>, disposeClient: () => void
 const receivingUsername = "user0"
@@ -24,12 +23,12 @@ const { phone, code } = yamlConfig.test_accounts[4]
 
 beforeAll(async () => {
   await startServer()
-  ;({ apolloClient, disposeClient } = createApolloClient())
+    ; ({ apolloClient, disposeClient } = createApolloClient())
   const input = { phone, code: `${code}` }
   const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
   // Create a new authenticated client
   disposeClient()
-  ;({ apolloClient, disposeClient } = createApolloClient(result.data.userLogin.authToken))
+    ; ({ apolloClient, disposeClient } = createApolloClient(result.data.userLogin.authToken))
 })
 
 beforeEach(async () => {
@@ -62,7 +61,7 @@ describe("galoy-pay", () => {
       const result = await apolloClient.query({ query: myQuery, variables: input })
 
       expect(result.errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining(message)})]),
+        expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining(message) })]),
       )
     })
 
@@ -73,7 +72,7 @@ describe("galoy-pay", () => {
       const result = await apolloClient.query({ query: myQuery, variables: input })
 
       expect(result.errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining(message)})]),
+        expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining(message) })]),
       )
     })
   })
@@ -174,7 +173,7 @@ describe("galoy-pay", () => {
         query: subscriptionQuery,
         variables: input,
       })
-      const result = await getSubscriptionNext(subscription)
+      const result = await getSubscriptionNext(subscription) as { data }
       const { price, errors } = result.data?.price
 
       expect(errors.length).toEqual(0)
@@ -220,7 +219,7 @@ describe("galoy-pay", () => {
       })
       expect(makePayment.data.lnInvoicePaymentSend.status).toEqual("SUCCESS")
 
-      const result = await getSubscriptionNext(subscription)
+      const result = await getSubscriptionNext(subscription) as { data }
 
       // Assert the the invoice is paid
       expect(result.data.lnInvoicePaymentStatus.status).toEqual("PAID")
