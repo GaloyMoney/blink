@@ -124,6 +124,15 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "Too many onchain addresses creation, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
+    case "UserPhoneCodeAttemptPhoneRateLimiterExceededError":
+      message = "Too many phone code attempts, please wait for a while and try again."
+      return new TooManyRequestError({ message, logger: baseLogger })
+
+    case "UserPhoneCodeAttemptIpRateLimiterExceededError":
+      message =
+        "Too many phone code attempts on same network, please wait for a while and try again."
+      return new TooManyRequestError({ message, logger: baseLogger })
+
     case "CouldNotFindPhoneCodeError":
       message = "Invalid or incorrect phone code entered."
       return new PhoneCodeError({ message, logger: baseLogger })
@@ -131,6 +140,15 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CouldNotFindAccountFromPhoneError":
       message = "Invalid or incorrect phone entered."
       return new PhoneCodeError({ message, logger: baseLogger })
+
+    case "UserLoginPhoneRateLimiterExceededError":
+      message = "Too many login attempts, please wait for a while and try again."
+      return new TooManyRequestError({ message, logger: baseLogger })
+
+    case "UserLoginIpRateLimiterExceededError":
+      message =
+        "Too many login attempts on same network, please wait for a while and try again."
+      return new TooManyRequestError({ message, logger: baseLogger })
 
     case "InvalidQuizQuestionIdError":
       message = "Invalid quiz question id was passed."
@@ -263,11 +281,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LocalCacheServiceError":
     case "LocalCacheUndefinedError":
     case "UnknownLocalCacheServiceError":
-    case "UserLoginIpRateLimiterExceededError":
-    case "UserLoginPhoneRateLimiterExceededError":
-    case "UserPhoneCodeAttemptPhoneRateLimiterExceededError":
     case "UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError":
-    case "UserPhoneCodeAttemptIpRateLimiterExceededError":
     case "PhoneProviderServiceError":
     case "UnknownPhoneProviderServiceError":
     case "MissingPhoneMetadataError":
