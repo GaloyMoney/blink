@@ -7,9 +7,7 @@ import {
 } from "@domain/errors"
 import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
 import { getFunderWalletId } from "@services/ledger/accounts"
-import { RewardsRepository } from "@services/mongoose"
-
-import { getAccount } from "."
+import { RewardsRepository, AccountsRepository } from "@services/mongoose"
 
 export const addEarn = async ({
   quizQuestionId,
@@ -25,7 +23,7 @@ export const addEarn = async ({
 
   const funderWalletId = await getFunderWalletId()
 
-  const recipientAccount = await getAccount(accountId)
+  const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
 
   const user = await getUser(recipientAccount.ownerId)

@@ -23,7 +23,9 @@ export * from "./update-default-walletid"
 
 const accounts = AccountsRepository()
 
-export const getAccount = async (accountId: AccountId) => {
+export const getAccount = async (
+  accountId: AccountId,
+): Promise<Account | RepositoryError> => {
   return accounts.findById(accountId)
 }
 

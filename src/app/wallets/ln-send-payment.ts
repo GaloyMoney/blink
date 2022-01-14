@@ -1,4 +1,3 @@
-import { getAccount } from "@app/accounts"
 import { getCurrentPrice } from "@app/prices"
 import { getUser } from "@app/users"
 import { getBalanceForWalletId, getWallet } from "@app/wallets"
@@ -29,7 +28,7 @@ import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
-import { WalletInvoicesRepository } from "@services/mongoose"
+import { WalletInvoicesRepository, AccountsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { RoutesCache } from "@services/redis/routes"
 import { addAttributesToCurrentSpan } from "@services/tracing"
@@ -54,7 +53,8 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
     return new LnPaymentRequestNonZeroAmountRequiredError()
   }
 
-  const account = await getAccount(payerAccountId)
+  const account = await AccountsRepository().findById(payerAccountId)
+
   if (account instanceof Error) return account
 
   const user = await getUser(account.ownerId)
@@ -118,7 +118,7 @@ export const lnInvoicePaymentSend = async ({
     return new LnPaymentRequestNonZeroAmountRequiredError()
   }
 
-  const account = await getAccount(payerAccountId)
+  const account = await AccountsRepository().findById(payerAccountId)
   if (account instanceof Error) return account
 
   const { username } = account
@@ -160,7 +160,8 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
     return new SatoshiAmountRequiredError()
   }
 
-  const account = await getAccount(payerAccountId)
+  const account = await AccountsRepository().findById(payerAccountId)
+
   if (account instanceof Error) return account
 
   const user = await getUser(account.ownerId)
@@ -227,7 +228,7 @@ export const lnNoAmountInvoicePaymentSend = async ({
     return new LnPaymentRequestZeroAmountRequiredError()
   }
 
-  const account = await getAccount(payerAccountId)
+  const account = await AccountsRepository().findById(payerAccountId)
   if (account instanceof Error) return account
 
   const { username } = account
