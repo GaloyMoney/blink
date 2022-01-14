@@ -145,7 +145,7 @@ describe("graphql", () => {
   describe("lnNoAmountInvoiceCreate", () => {
     const mutation = LN_NO_AMOUNT_INVOICE_CREATE
 
-    it.only("returns a valid lightning invoice", async () => {
+    it("returns a valid lightning invoice", async () => {
       const input = { walletId, memo: "This is a lightning invoice" }
       const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { invoice, errors } = result.data.lnNoAmountInvoiceCreate
