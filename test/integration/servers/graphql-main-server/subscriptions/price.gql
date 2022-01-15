@@ -1,0 +1,23 @@
+subscription price(
+  $amount: SatAmount!
+  $amountCurrencyUnit: ExchangeCurrencyUnit!
+  $priceCurrencyUnit: ExchangeCurrencyUnit!
+) {
+  price(
+    input: {
+      amount: $amount
+      amountCurrencyUnit: $amountCurrencyUnit
+      priceCurrencyUnit: $priceCurrencyUnit
+    }
+  ) {
+    errors {
+      message
+    }
+    price {
+      base
+      offset
+      currencyUnit
+      formattedAmount
+    }
+  }
+}
