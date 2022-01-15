@@ -16,11 +16,3 @@ export const checkedToWalletId = (walletId: string): WalletId | ValidationError 
   }
   return walletId as WalletId
 }
-
-export const listWalletIdsByAccountId = async (
-  accountId: AccountId,
-): Promise<WalletId[] | RepositoryError> => {
-  const wallets = await WalletsRepository().listByAccountId(accountId)
-  if (wallets instanceof Error) return wallets
-  return wallets.map((wallet) => wallet.id)
-}
