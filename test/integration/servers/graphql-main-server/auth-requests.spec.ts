@@ -13,8 +13,6 @@ import USER_LOGIN from "./mutations/user-login.gql"
 import ME from "./queries/me.gql"
 import MAIN from "./queries/main.gql"
 
-import { createApolloClient, defaultTestClientConfig } from "test/helpers/apollo-client"
-import { startServer, killServer } from "test/helpers/integration-server"
 import {
   bitcoindClient,
   clearAccountLocks,
@@ -25,13 +23,17 @@ import {
   fundWalletIdFromLightning,
   getDefaultWalletIdByTestUserIndex,
   lndOutside2,
+  createApolloClient,
+  defaultTestClientConfig,
+  startServer,
+  killServer,
+  PID,
 } from "test/helpers"
-
-jest.setTimeout(300000)
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void,
-  walletId: WalletId
+  walletId: WalletId,
+  serverPid: PID
 const USER_INDEX = 3
 const { phone, code } = yamlConfig.test_accounts[USER_INDEX]
 
@@ -41,7 +43,7 @@ beforeAll(async () => {
   await createUserWallet(0)
   walletId = await getDefaultWalletIdByTestUserIndex(USER_INDEX)
   await fundWalletIdFromLightning({ walletId, amount: toSats(50_000) })
-  await startServer()
+  serverPid = await startServer()
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
   const input = { phone, code: `${code}` }
   const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
@@ -62,7 +64,7 @@ beforeEach(async () => {
 afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
   disposeClient()
-  await killServer()
+  await killServer(serverPid)
 })
 
 describe("graphql", () => {

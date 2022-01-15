@@ -5,16 +5,10 @@ import kill from "tree-kill"
 
 export type PID = number & { readonly brand: unique symbol }
 
-let serverPid: PID = 0 as PID
-
 export const startServer = async (serverStartMessage = "Server ready"): Promise<PID> => {
   return new Promise<PID>((resolve) => {
-    if (serverPid) {
-      resolve(serverPid)
-      return
-    }
-    const serverProcess = childProcess.spawn("make", ["start-servers-ci"])
-    serverPid = serverProcess.pid as PID
+    const serverProcess = childProcess.spawn("make", ["start-api-ci"])
+    const serverPid = serverProcess.pid as PID
     serverProcess.stdout.on("data", (data) => {
       if (data.includes(serverStartMessage)) {
         resolve(serverPid)
@@ -24,9 +18,7 @@ export const startServer = async (serverStartMessage = "Server ready"): Promise<
   })
 }
 
-const killAsync = promisify(kill)
+const killAsync = promisify<number, string>(kill)
 
-export const killServer = async (): Promise<void> => {
-  await killAsync(serverPid)
-  serverPid = 0 as PID
-}
+export const killServer = async (serverPid: PID): Promise<void> =>
+  killAsync(serverPid, "SIGKILL")

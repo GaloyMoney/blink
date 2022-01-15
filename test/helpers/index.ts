@@ -8,12 +8,15 @@ import { generateToken } from "node-2fa"
 
 import { waitUntilChannelBalanceSyncAll } from "./lightning"
 
+export * from "./apollo-client"
 export * from "./bitcoin-core"
+export * from "./integration-server"
 export * from "./lightning"
 export * from "./user"
 export * from "./redis"
 export * from "./wallet"
 export * from "./price"
+export * from "./rate-limit"
 
 export const amountAfterFeeDeduction = ({
   amount,

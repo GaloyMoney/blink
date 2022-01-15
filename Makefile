@@ -23,9 +23,8 @@ trigger: start-deps
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/trigger.ts | yarn pino-pretty -c -l
 
-start-servers-ci:
-	yarn build
-	. ./.envrc && node lib/servers/graphql-main-server.js & node lib/servers/trigger.js
+start-api-ci:
+	node lib/servers/graphql-main-server.js
 
 exporter: start-deps
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
@@ -58,9 +57,9 @@ reset-integration: reset-deps integration
 
 integration-in-ci:
 	. ./.envrc && \
-		NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
-		yarn build && \
-		LOGLEVEL=error node lib/servers/cron.js
+	yarn build && \
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
+	LOGLEVEL=error node lib/servers/cron.js
 
 unit-in-ci:
 	. ./.envrc && \
