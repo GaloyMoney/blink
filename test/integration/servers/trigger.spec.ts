@@ -190,6 +190,9 @@ describe("onchainBlockEventhandler", () => {
       amount: amount2,
       address: address2,
     })
+
+    // notification are not been awaited, so explicit sleep is necessary
+    await sleep(250)
   })
 
   it("should process pending invoices on invoice update event", async () => {
@@ -209,7 +212,7 @@ describe("onchainBlockEventhandler", () => {
     await onInvoiceUpdate(invoice)
 
     // notification are not been awaited, so explicit sleep is necessary
-    await sleep(100)
+    await sleep(250)
 
     const ledger = LedgerService()
     const ledgerTxs = await ledger.getTransactionsByHash(hash)
