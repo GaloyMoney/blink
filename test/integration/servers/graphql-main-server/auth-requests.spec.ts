@@ -27,6 +27,8 @@ import {
   lndOutside2,
 } from "test/helpers"
 
+jest.setTimeout(120000)
+
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void,
   walletId: WalletId
