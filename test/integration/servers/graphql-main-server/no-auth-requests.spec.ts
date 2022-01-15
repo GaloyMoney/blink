@@ -28,6 +28,8 @@ import {
 import { startServer, killServer } from "test/helpers/integration-server"
 import { createApolloClient, defaultTestClientConfig } from "test/helpers/apollo-client"
 
+jest.setTimeout(300000)
+
 let correctCode: PhoneCode,
   apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void
