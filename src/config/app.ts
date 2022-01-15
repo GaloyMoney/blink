@@ -95,6 +95,14 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toSats(
 
 export const getGaloyInstanceName = (): string => yamlConfig.name
 
+export const getGaloyBuildInformation = () => {
+  return {
+    commitHash: process.env.COMMITHASH,
+    buildTime: process.env.BUILDTIME,
+    helmRevision: process.env.HELMREVISION,
+  }
+}
+
 export const getGeetestConfig = () => {
   const config = {
     id: process.env.GEETEST_ID,

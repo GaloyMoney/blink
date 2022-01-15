@@ -73,6 +73,12 @@ type BTCWallet implements Wallet {
   walletCurrency: WalletCurrency!
 }
 
+type BuildInformation {
+  buildTime: Timestamp
+  commitHash: String
+  helmRevision: Int
+}
+
 type CaptchaCreateChallengePayload {
   errors: [Error!]!
   result: CaptchaCreateChallengeResult
@@ -130,6 +136,8 @@ enum ExchangeCurrencyUnit {
 Provides global settings for the application which might have an impact for the user.
 """
 type Globals {
+  buildInformation: BuildInformation!
+
   """
   A list of public keys for the running lightning nodes.
   This can be used to know if an invoice belongs to one of our nodes.
