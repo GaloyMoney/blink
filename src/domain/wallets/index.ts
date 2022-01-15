@@ -1,5 +1,4 @@
 import { InvalidWalletId } from "@domain/errors"
-import { WalletsRepository } from "@services/mongoose"
 
 export * from "./deposit-fee-calculator"
 export { WalletTransactionHistory } from "./tx-history"

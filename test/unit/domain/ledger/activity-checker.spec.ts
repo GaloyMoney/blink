@@ -2,7 +2,7 @@ import { toSats } from "@domain/bitcoin"
 import { ActivityChecker } from "@domain/ledger/activity-checker"
 
 describe("ActivityChecker", () => {
-  it("aboveThrehold returns false below threshold", () => {
+  it("aboveThreshold returns false below threshold", () => {
     const getVolumeFn = () =>
       Promise.resolve({ outgoingSats: toSats(10), incomingSats: toSats(10) })
     const checker = ActivityChecker({
