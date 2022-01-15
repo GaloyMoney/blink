@@ -27,7 +27,7 @@ import {
 
 import { startServer, killServer } from "test/helpers/integration-server"
 
-jest.setTimeout(300000)
+jest.setTimeout(600000)
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void,
