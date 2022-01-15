@@ -3,6 +3,8 @@ type PartialResult<T> = {
   error?: ApplicationError
 }
 
+type ValueOf<T> = T[keyof T]
+
 type ApplicationErrors = typeof import("./errors").ApplicationErrors
 type ApplicationErrorKey = keyof ApplicationErrors
 

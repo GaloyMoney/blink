@@ -1,7 +1,8 @@
 import { GT } from "@graphql/index"
-import { Accounts } from "@app"
 import SuccessPayload from "@graphql/types/payload/success-payload"
 import AccountApiKeyLabel from "@graphql/types/scalar/account-api-key-label"
+import { Accounts } from "@app"
+import { UserInputError } from "apollo-server-errors"
 
 const AccountApiKeyDisableInput = GT.Input({
   name: "AccountApiKeyDisableInput",
@@ -10,7 +11,11 @@ const AccountApiKeyDisableInput = GT.Input({
   }),
 })
 
-const AccountApiKeyDisableMutation = GT.Field({
+const AccountApiKeyDisableMutation = GT.Field<
+  { input: { label: string | UserInputError } },
+  null,
+  GraphQLContextForUser
+>({
   type: GT.NonNull(SuccessPayload),
   args: {
     input: { type: GT.NonNull(AccountApiKeyDisableInput) },
@@ -18,7 +23,7 @@ const AccountApiKeyDisableMutation = GT.Field({
   resolve: async (_, args, { domainUser }) => {
     const { label } = args.input
 
-    if (label instanceof Error) {
+    if (label instanceof UserInputError) {
       return { errors: [{ message: label.message }], success: false }
     }
 

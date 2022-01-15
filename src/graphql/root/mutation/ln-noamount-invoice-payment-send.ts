@@ -6,6 +6,7 @@ import SatAmount from "@graphql/types/scalar/sat-amount"
 import { Wallets } from "@app"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnIPaymentRequest from "@graphql/types/scalar/ln-payment-request"
+import { UserInputError } from "apollo-server-errors"
 
 const LnNoAmountInvoicePaymentInput = GT.Input({
   name: "LnNoAmountInvoicePaymentInput",
@@ -17,23 +18,42 @@ const LnNoAmountInvoicePaymentInput = GT.Input({
   }),
 })
 
-const LnNoAmountInvoicePaymentSendMutation = GT.Field({
+const LnNoAmountInvoicePaymentSendMutation = GT.Field<
+  {
+    input: {
+      walletId: WalletId | UserInputError
+      paymentRequest: EncodedPaymentRequest | UserInputError
+      amount: Satoshis | UserInputError
+      memo?: string | UserInputError
+    }
+  },
+  null,
+  GraphQLContextForUser
+>({
   type: GT.NonNull(PaymentSendPayload),
   args: {
     input: { type: GT.NonNull(LnNoAmountInvoicePaymentInput) },
   },
   resolve: async (_, args, { domainAccount, logger }) => {
     const { walletId, paymentRequest, amount, memo } = args.input
-    for (const input of [walletId, memo, amount, paymentRequest]) {
-      if (input instanceof Error) {
-        return { errors: [{ message: input.message }] }
-      }
+
+    if (walletId instanceof UserInputError) {
+      return { errors: [{ message: walletId.message }] }
+    }
+    if (paymentRequest instanceof UserInputError) {
+      return { errors: [{ message: paymentRequest.message }] }
+    }
+    if (amount instanceof UserInputError) {
+      return { errors: [{ message: amount.message }] }
+    }
+    if (memo instanceof UserInputError) {
+      return { errors: [{ message: memo.message }] }
     }
 
     const status = await Wallets.payLnNoAmountInvoiceByWalletId({
       senderWalletId: walletId,
       paymentRequest,
-      memo,
+      memo: memo ?? null,
       amount,
       payerAccountId: domainAccount.id,
       logger,

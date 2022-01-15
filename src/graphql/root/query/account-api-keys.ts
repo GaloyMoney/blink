@@ -3,7 +3,7 @@ import { Accounts } from "@app"
 import AccountApiKeyHashed from "@graphql/types/object/account-api-key-hashed"
 import { CouldNotFindError } from "@domain/errors"
 
-const AccountApiKeysQuery = GT.Field({
+const AccountApiKeysQuery = GT.Field<null, null, GraphQLContextForUser>({
   type: GT.List(AccountApiKeyHashed),
   resolve: async (_, __, { domainUser }): Promise<AccountApiKey[]> => {
     const accountId = domainUser.defaultAccountId

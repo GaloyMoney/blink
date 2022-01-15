@@ -87,6 +87,8 @@ interface UserType {
   save: () => Promise<UserType>
 }
 
+type UserDBDocument = import("mongoose").HydratedDocument<UserType>
+
 // ?: improve this
 interface UserIPsType {
   _id: string
