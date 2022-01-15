@@ -130,18 +130,16 @@ type ListLnPaymentsResult = {
 }
 
 type ListSettledAndFailedLnPaymentsByPubkeyArgs = {
-  [key: Pubkey]: {
-    settledAfter: PagingToken | undefined | false
-    failedAfter: PagingToken | undefined | false
-  }
-}
+  settledAfter: PagingToken | undefined | false
+  failedAfter: PagingToken | undefined | false
+  pubkey: Pubkey
+}[]
 
 type ListSettledAndFailedLnPaymentsByPubkeyResult = {
-  [key: Pubkey]: {
-    settled: ListLnPaymentsResult | LightningServiceError
-    failed: ListLnPaymentsResult | LightningServiceError
-  }
-}
+  settled: ListLnPaymentsResult | LightningServiceError
+  failed: ListLnPaymentsResult | LightningServiceError
+  pubkey: Pubkey
+}[]
 
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
