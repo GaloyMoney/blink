@@ -16,28 +16,30 @@ import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
 import MAIN from "./queries/main.gql"
 
-import { clearAccountLocks, clearLimiters } from "test/helpers"
 import {
+  clearAccountLocks,
+  clearLimiters,
   resetUserPhoneCodeAttemptIp,
   resetUserPhoneCodeAttemptPhone,
   resetUserLoginIpRateLimits,
   resetUserLoginPhoneRateLimits,
   resetUserPhoneCodeAttemptPhoneMinIntervalLimits,
-} from "test/helpers/rate-limit"
-
-import { startServer, killServer } from "test/helpers/integration-server"
-import { createApolloClient, defaultTestClientConfig } from "test/helpers/apollo-client"
-
-jest.setTimeout(300000)
+  startServer,
+  killServer,
+  createApolloClient,
+  defaultTestClientConfig,
+  PID,
+} from "test/helpers"
 
 let correctCode: PhoneCode,
   apolloClient: ApolloClient<NormalizedCacheObject>,
-  disposeClient: () => void
+  disposeClient: () => void,
+  serverPid: PID
 const { phone, code } = yamlConfig.test_accounts[9]
 
 beforeAll(async () => {
   correctCode = `${code}` as PhoneCode
-  await startServer()
+  serverPid = await startServer()
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
 })
 
@@ -48,7 +50,7 @@ beforeEach(async () => {
 
 afterAll(async () => {
   disposeClient()
-  await killServer()
+  await killServer(serverPid)
 })
 
 describe("graphql", () => {

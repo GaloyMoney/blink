@@ -17,28 +17,25 @@ import {
   clearAccountLocks,
   clearLimiters,
   getDefaultWalletIdByTestUserIndex,
-} from "test/helpers"
-
-import {
   createApolloClient,
   getSubscriptionNext,
   defaultTestClientConfig,
-} from "test/helpers/apollo-client"
-
-import { startServer, killServer } from "test/helpers/integration-server"
-
-jest.setTimeout(120000)
+  startServer,
+  killServer,
+  PID,
+} from "test/helpers"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void,
-  receivingWalletId: WalletId
+  receivingWalletId: WalletId,
+  serverPid: PID
 const receivingUsername = "user0"
 const receivingUserIndex = 0
 const sendingUserIndex = 4
 const { phone, code } = yamlConfig.test_accounts[sendingUserIndex]
 
 beforeAll(async () => {
-  await startServer()
+  serverPid = await startServer()
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
   const input = { phone, code: `${code}` }
   const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
@@ -57,7 +54,7 @@ beforeEach(async () => {
 
 afterAll(async () => {
   disposeClient()
-  await killServer()
+  await killServer(serverPid)
 })
 
 describe("galoy-pay", () => {
