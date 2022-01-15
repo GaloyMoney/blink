@@ -49,8 +49,8 @@
     ],
 
     "arrow-body-style": "off",
-    "prefer-arrow-callback": "off",
 
+    "prefer-arrow-callback": "error",
     "no-duplicate-imports": "error",
     "no-empty-function": "error",
     "no-empty": ["error", { "allowEmptyCatch": true }],
