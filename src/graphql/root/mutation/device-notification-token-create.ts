@@ -9,7 +9,11 @@ const DeviceNotificationTokenCreateInput = GT.Input({
   }),
 })
 
-const DeviceNotificationTokenCreateMutation = GT.Field({
+const DeviceNotificationTokenCreateMutation = GT.Field<
+  { input: { deviceToken: string } },
+  null,
+  GraphQLContextForUser
+>({
   type: GT.NonNull(SuccessPayload),
   args: {
     input: { type: GT.NonNull(DeviceNotificationTokenCreateInput) },

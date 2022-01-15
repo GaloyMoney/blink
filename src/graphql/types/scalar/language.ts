@@ -6,28 +6,31 @@ const languages = {
   "": "DEFAULT",
   "en": "en-US",
   "es": "es-SV",
-}
+} as const
 
-const Language = GT.Scalar({
+type InternalLang = keyof typeof languages
+type ExternalLang = ValueOf<typeof languages>
+
+const Language = GT.Scalar<InternalLang | UserInputError, ExternalLang>({
   name: "Language",
   serialize(value) {
-    return languages[value]
+    return languages[value as InternalLang]
   },
   parseValue(value) {
     return validLanguageValue(value)
   },
-  parseLiteral(ast) {
-    if (ast.kind === GT.Kind.STRING) {
-      return validLanguageValue(ast.value)
+  parseLiteral(valueNode) {
+    if (valueNode.kind === GT.Kind.STRING) {
+      return validLanguageValue(valueNode.value)
     }
     return new UserInputError("Invalid type for Language")
   },
 })
 
-function validLanguageValue(value) {
+function validLanguageValue(value): InternalLang | UserInputError {
   const languageEntry = Object.entries(languages).find(([, v]) => v === value)
   if (languageEntry) {
-    return languageEntry[0]
+    return languageEntry[0] as InternalLang
   }
   return new UserInputError("Invalid value for Language")
 }

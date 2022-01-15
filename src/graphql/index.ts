@@ -41,7 +41,9 @@ type GTType = {
     config: Readonly<GraphQLUnionTypeConfig<TSource, TContext>>,
   ): GraphQLUnionType
 
-  Scalar(config: Readonly<GraphQLScalarTypeConfig<any, any>>): GraphQLScalarType<any, any>
+  Scalar<TInternal = unknown, TExternal = unknown>(
+    config: Readonly<GraphQLScalarTypeConfig<TInternal, TExternal>>,
+  ): GraphQLScalarType<TInternal, TExternal>
   Enum(config: Readonly<GraphQLEnumTypeConfig>): GraphQLEnumType
 
   Object<TSource = any, TContext = GraphQLContext>(

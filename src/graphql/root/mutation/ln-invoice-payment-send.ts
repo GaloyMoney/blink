@@ -10,6 +10,7 @@ import {
   SemanticAttributes,
   ENDUSER_ALIAS,
 } from "@services/tracing"
+import { UserInputError } from "apollo-server-errors"
 
 const LnInvoicePaymentInput = GT.Input({
   name: "LnInvoicePaymentInput",
@@ -20,31 +21,44 @@ const LnInvoicePaymentInput = GT.Input({
   }),
 })
 
-const LnInvoicePaymentSendMutation = GT.Field({
+const LnInvoicePaymentSendMutation = GT.Field<
+  {
+    input: {
+      walletId: WalletId | UserInputError
+      paymentRequest: EncodedPaymentRequest | UserInputError
+      memo?: string | UserInputError
+    }
+  },
+  null,
+  GraphQLContextForUser
+>({
   type: GT.NonNull(PaymentSendPayload),
   args: {
     input: { type: GT.NonNull(LnInvoicePaymentInput) },
   },
-  resolve: async (_, args, { ip, domainAccount, domainUser, logger }) =>
+  resolve: async (_, args, { ip, domainAccount, domainUser, user, logger }) =>
     addAttributesToCurrentSpanAndPropagate(
       {
         [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
-        [ENDUSER_ALIAS]: domainUser?.username,
+        [ENDUSER_ALIAS]: user?.username,
         [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       },
       async () => {
         const { walletId, paymentRequest, memo } = args.input
-
-        for (const input of [walletId, memo, paymentRequest]) {
-          if (input instanceof Error) {
-            return { errors: [{ message: input.message }] }
-          }
+        if (walletId instanceof UserInputError) {
+          return { errors: [{ message: walletId.message }] }
+        }
+        if (paymentRequest instanceof UserInputError) {
+          return { errors: [{ message: paymentRequest.message }] }
+        }
+        if (memo instanceof UserInputError) {
+          return { errors: [{ message: memo.message }] }
         }
 
         const status = await Wallets.payLnInvoiceByWalletId({
           senderWalletId: walletId,
           paymentRequest,
-          memo,
+          memo: memo ?? null,
           payerAccountId: domainAccount.id,
           logger,
         })

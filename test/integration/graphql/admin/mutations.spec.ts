@@ -1,9 +1,63 @@
-import { graphql } from "graphql"
-
 import { User } from "@services/mongoose/schema"
-import { gqlAdminSchema } from "@graphql/admin"
+
+import { graphqlAdmin } from "test/helpers"
 
 let user: UserRecord
+
+// TODO?: use generated types
+
+type AccountUpdateLevelMutation = GraphQLResult<{
+  accountUpdateLevel: {
+    errors: IError[]
+    accountDetails: {
+      id?: string
+      level?: string
+      createdAt?: string
+      username?: string
+    }
+  }
+}>
+
+type AccountDetailsByUsernameQuery = GraphQLResult<{
+  accountDetailsByUsername: {
+    id?: string
+    level?: string
+    status?: string
+    title?: string
+    coordinates?: {
+      latitude?: number
+      longitude?: number
+    }
+  }
+}>
+
+type AccountUpdateStatusMutation = GraphQLResult<{
+  accountUpdateStatus: {
+    errors: IError[]
+    accountDetails: {
+      id?: string
+      level?: string
+      createdAt?: string
+    }
+  }
+}>
+
+type BusinessUpdateMapInfoQuery = GraphQLResult<{
+  businessUpdateMapInfo: {
+    errors: IError[]
+    accountDetails: {
+      id?: string
+      level?: string
+      status?: string
+      title?: string
+      coordinates?: {
+        latitude?: number
+        longitude?: number
+      }
+      createdAt?: string
+    }
+  }
+}>
 
 beforeAll(async () => {
   user = await User.findOne({ username: "tester", phone: "+19876543210" })
@@ -32,22 +86,26 @@ describe("GraphQLMutationRoot", () => {
 
     let username
     {
-      const { errors, data } = await graphql(gqlAdminSchema, mutation, {})
+      const { errors, data } = await graphqlAdmin<AccountUpdateLevelMutation>({
+        source: mutation,
+      })
       expect(errors).toBeUndefined()
       expect(data?.accountUpdateLevel.accountDetails.level).toEqual("TWO")
       username = data?.accountUpdateLevel.accountDetails.username
     }
 
     const query = `
-    query {
-      accountDetailsByUsername(username: "${username}") {
-        level
+      query {
+        accountDetailsByUsername(username: "${username}") {
+          level
+        }
       }
-    }
     `
 
     {
-      const { errors, data } = await graphql(gqlAdminSchema, query, {})
+      const { errors, data } = await graphqlAdmin<AccountDetailsByUsernameQuery>({
+        source: query,
+      })
       expect(errors).toBeUndefined()
       expect(data?.accountDetailsByUsername.level).toEqual("TWO")
     }
@@ -68,21 +126,23 @@ describe("GraphQLMutationRoot", () => {
         }
       }
     `
-    const result = await graphql(gqlAdminSchema, mutation, {})
+    const result = await graphqlAdmin<AccountUpdateStatusMutation>({ source: mutation })
     const { data: dataMutation, errors } = result
     expect(errors).toBeUndefined()
 
     const query = `
-    query {
-      accountDetailsByUsername(username: "tester") {
-        id
-        status
+      query {
+        accountDetailsByUsername(username: "tester") {
+          id
+          status
+        }
       }
-    }
     `
 
     {
-      const { errors, data } = await graphql(gqlAdminSchema, query, {})
+      const { errors, data } = await graphqlAdmin<AccountDetailsByUsernameQuery>({
+        source: query,
+      })
       expect(errors).toBeUndefined()
       expect(data?.accountDetailsByUsername.id).toEqual(
         dataMutation?.accountUpdateStatus.accountDetails.id,
@@ -113,24 +173,26 @@ describe("GraphQLMutationRoot", () => {
       }
     `
 
-    const result = await graphql(gqlAdminSchema, mutation, {})
+    const result = await graphqlAdmin<BusinessUpdateMapInfoQuery>({ source: mutation })
     const { errors: errorsMutation, data: dataMutation } = result
     expect(errorsMutation).toBeUndefined()
 
     const query = `
-    query {
-      accountDetailsByUsername(username: "tester") {
-        id
-        title
-        coordinates {
-          latitude
-          longitude
+      query {
+        accountDetailsByUsername(username: "tester") {
+          id
+          title
+          coordinates {
+            latitude
+            longitude
+          }
         }
       }
-    }
     `
 
-    const { errors, data } = await graphql(gqlAdminSchema, query, {})
+    const { errors, data } = await graphqlAdmin<AccountDetailsByUsernameQuery>({
+      source: query,
+    })
     expect(errors).toBeUndefined()
 
     expect(dataMutation?.businessUpdateMapInfo.accountDetails.id).toEqual(
