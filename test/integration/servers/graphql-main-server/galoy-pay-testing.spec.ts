@@ -85,7 +85,7 @@ describe("galoy-pay", () => {
       )
     })
 
-    it("returns an error for an inexistant username", async () => {
+    it("returns an error for an inexistent username", async () => {
       const input = { username: "user1234" }
       const message = "Account does not exist for username"
 
