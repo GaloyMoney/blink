@@ -19,12 +19,5 @@ export const addWallet = async ({
   })
   if (wallet instanceof Error) return wallet
 
-  if (!account.defaultWalletId) {
-    account.defaultWalletId = wallet.id
-  }
-
-  const result = await AccountsRepository().update(account)
-  if (result instanceof Error) return result
-
   return wallet
 }
