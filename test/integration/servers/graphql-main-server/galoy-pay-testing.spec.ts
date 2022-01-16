@@ -26,7 +26,7 @@ import {
 } from "test/helpers"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
-  disposeClient: () => void,
+  disposeClient: () => void = () => null,
   receivingWalletId: WalletId,
   serverPid: PID
 const receivingUsername = "user0"

@@ -33,7 +33,7 @@ import {
 
 let correctCode: PhoneCode,
   apolloClient: ApolloClient<NormalizedCacheObject>,
-  disposeClient: () => void,
+  disposeClient: () => void = () => null,
   serverPid: PID
 const { phone, code } = yamlConfig.test_accounts[9]
 

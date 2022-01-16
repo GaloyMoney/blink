@@ -11,6 +11,7 @@ services:
     - lnd2
     - lnd-outside-1
     - lnd-outside-2
+    - otel-agent
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.37.1
     command: ["--config=/etc/otel-agent-config.yaml", "--log-level=debug"]
