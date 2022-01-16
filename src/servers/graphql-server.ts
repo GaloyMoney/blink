@@ -14,6 +14,7 @@ import {
   SemanticAttributes,
 } from "@services/tracing"
 import {
+  ApolloServerPluginDrainHttpServer,
   ApolloServerPluginLandingPageDisabled,
   ApolloServerPluginLandingPageGraphQLPlayground,
   ApolloServerPluginUsageReporting,
@@ -150,8 +151,10 @@ export const startApolloServer = async ({
   startSubscriptionServer = false,
 }): Promise<Record<string, unknown>> => {
   const app = express()
+  const httpServer = createServer(app)
 
   const apolloPulgins = [
+    ApolloServerPluginDrainHttpServer({ httpServer }),
     apolloConfig.playground
       ? ApolloServerPluginLandingPageGraphQLPlayground({
           settings: { "schema.polling.enable": false },
@@ -303,8 +306,6 @@ export const startApolloServer = async ({
   await apolloServer.start()
 
   apolloServer.applyMiddleware({ app, path: "/graphql" })
-
-  const httpServer = createServer(app)
 
   return new Promise((resolve, reject) => {
     httpServer.listen({ port }, () => {
