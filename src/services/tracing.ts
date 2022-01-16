@@ -243,12 +243,16 @@ export const wrapToRunInSpan = <A extends Array<unknown>, R>({
       spanAttributes: {},
     })
     const ret = tracer.startActiveSpan(spanName, spanOptions, (span) => {
-      const ret = fn(...args)
-      if (ret instanceof Error) {
-        span.recordException(ret)
+      try {
+        const ret = fn(...args)
+        if (ret instanceof Error) span.recordException(ret)
+        span.end()
+        return ret
+      } catch (error) {
+        span.recordException(error)
+        span.end()
+        throw error
       }
-      span.end()
-      return ret
     })
     return ret
   }
@@ -273,17 +277,16 @@ export const wrapAsyncToRunInSpan = <A extends Array<unknown>, R>({
       spanAttributes: {},
     })
     const ret = tracer.startActiveSpan(spanName, spanOptions, async (span) => {
-      let ret: PromiseReturnType<R>
       try {
-        ret = await fn(...args)
+        const ret = await fn(...args)
+        if (ret instanceof Error) span.recordException(ret)
+        span.end()
+        return ret
       } catch (error) {
-        ret = error
+        span.recordException(error)
+        span.end()
+        throw error
       }
-      if (ret instanceof Error) {
-        span.recordException(ret)
-      }
-      span.end()
-      return ret
     })
     return ret
   }
