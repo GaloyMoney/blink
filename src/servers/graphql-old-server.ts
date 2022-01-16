@@ -31,7 +31,7 @@ import { ApolloError } from "apollo-server-errors"
 import dotenv from "dotenv"
 import { applyMiddleware } from "graphql-middleware"
 import { shield } from "graphql-shield"
-import { makeExecutableSchema } from "graphql-tools"
+import { makeExecutableSchema } from "@graphql-tools/schema"
 
 import { isAuthenticated, startApolloServer } from "./graphql-server"
 
