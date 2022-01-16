@@ -174,7 +174,7 @@ describe("UserWallet - Lightning Pay", () => {
       amount: toSats(amountInvoice),
       memo,
     })
-    if (lnInvoice instanceof Error) return lnInvoice
+    if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
 
     const paymentResult = await Wallets.lnInvoicePaymentSend({
@@ -431,7 +431,7 @@ describe("UserWallet - Lightning Pay", () => {
       amount: toSats(amountInvoice),
       memo: "self payment",
     })
-    if (lnInvoice instanceof Error) return lnInvoice
+    if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: invoice } = lnInvoice
 
     const paymentResult = await Wallets.lnInvoicePaymentSend({
@@ -518,7 +518,7 @@ describe("UserWallet - Lightning Pay", () => {
       walletId: walletId0 as WalletId,
       amount: toSats(userLimits.onUsLimit + 1),
     })
-    if (lnInvoice instanceof Error) return lnInvoice
+    if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
 
     const paymentResult = await Wallets.lnInvoicePaymentSend({
@@ -670,7 +670,7 @@ describe("UserWallet - Lightning Pay", () => {
             walletId: walletIdPayee as WalletId,
             amount: toSats(amountInvoice),
           })
-          if (lnInvoice instanceof Error) return lnInvoice
+          if (lnInvoice instanceof Error) throw lnInvoice
           const { paymentRequest: request } = lnInvoice
           const result = await fn({ accountId: accountIdPayer, walletId: walletIdPayer })(
             {
@@ -901,7 +901,7 @@ describe("UserWallet - Lightning Pay", () => {
 
         const remainingLimit = await getRemainingTwoFALimit(walletId0)
         expect(remainingLimit).not.toBeInstanceOf(Error)
-        if (remainingLimit instanceof Error) return remainingLimit
+        if (remainingLimit instanceof Error) throw remainingLimit
 
         const { request } = await createInvoice({
           lnd: lndOutside1,
@@ -959,7 +959,7 @@ describe("UserWallet - Lightning Pay", () => {
       amount: toSats(amountInvoice),
       memo,
     })
-    if (lnInvoice instanceof Error) return lnInvoice
+    if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
 
     const { id } = await decodePaymentRequest({ lnd, request })

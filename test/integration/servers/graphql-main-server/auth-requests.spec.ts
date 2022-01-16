@@ -31,7 +31,7 @@ import {
 } from "test/helpers"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
-  disposeClient: () => void,
+  disposeClient: () => void = () => null,
   walletId: WalletId,
   serverPid: PID
 const USER_INDEX = 3
@@ -40,7 +40,7 @@ const { phone, code } = yamlConfig.test_accounts[USER_INDEX]
 beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
   await createMandatoryUsers()
-  await createUserWallet(0)
+  await createUserWallet(USER_INDEX)
   walletId = await getDefaultWalletIdByTestUserIndex(USER_INDEX)
   await fundWalletIdFromLightning({ walletId, amount: toSats(50_000) })
   serverPid = await startServer()
