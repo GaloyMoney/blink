@@ -21,4 +21,4 @@ export const startServer = async (serverStartMessage = "Server ready"): Promise<
 const killAsync = promisify<number, string>(kill)
 
 export const killServer = async (serverPid: PID): Promise<void> =>
-  killAsync(serverPid, "SIGKILL")
+  killAsync(serverPid, "SIGTERM")
