@@ -8,12 +8,17 @@ import {
 
 import { Wallet } from "./schema"
 
+import { AccountsRepository } from "."
+
 export const WalletsRepository = (): IWalletsRepository => {
   const persistNew = async ({
     accountId,
     type,
     currency,
   }: NewWalletInfo): Promise<Wallet | RepositoryError> => {
+    const account = await AccountsRepository().findById(accountId)
+    if (account instanceof Error) return account
+
     try {
       const wallet = new Wallet({
         accountId,

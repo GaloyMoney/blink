@@ -3,17 +3,18 @@ import * as Users from "@app/users"
 import { setupMongoConnection } from "@services/mongodb"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { WalletCurrency, WalletType } from "@services/mongoose/schema"
+import mongoose from "mongoose"
 
-let mongoose
+let mongoose_connection
 
 beforeAll(async () => {
-  mongoose = await setupMongoConnection()
-  await mongoose.connection.db.dropCollection("users")
-  await mongoose.connection.db.dropCollection("wallets")
+  mongoose_connection = await setupMongoConnection()
+  await mongoose_connection.connection.db.dropCollection("users")
+  await mongoose_connection.connection.db.dropCollection("wallets")
 })
 
 afterAll(async () => {
-  await mongoose.connection.close()
+  await mongoose_connection.connection.close()
 })
 
 it("change default walletId of account", async () => {
@@ -40,4 +41,16 @@ it("change default walletId of account", async () => {
   if (newAccount instanceof Error) throw newAccount
 
   expect(newAccount.defaultWalletId).toBe(newWallet.id)
+})
+
+it("fail to create an invalid account", async () => {
+  const id = new mongoose.Types.ObjectId()
+
+  const newWallet = await WalletsRepository().persistNew({
+    accountId: id as unknown as AccountId,
+    type: WalletType.Checking,
+    currency: WalletCurrency.Btc,
+  })
+
+  expect(newWallet).toBeInstanceOf(Error)
 })

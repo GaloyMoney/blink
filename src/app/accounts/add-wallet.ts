@@ -1,4 +1,4 @@
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { WalletsRepository } from "@services/mongoose"
 
 export const addWallet = async ({
   accountId,
@@ -9,9 +9,6 @@ export const addWallet = async ({
   type: WalletType
   currency: WalletCurrency
 }): Promise<Wallet | ApplicationError> => {
-  const account = await AccountsRepository().findById(accountId)
-  if (account instanceof Error) return account
-
   const wallet = await WalletsRepository().persistNew({
     accountId,
     type,

@@ -86,7 +86,7 @@ const WalletSchema = new Schema({
     required: true,
     default: () => crypto.randomUUID(),
   },
-  accountId: { type: Schema.Types.ObjectId, ref: "User", index: true },
+  accountId: { type: Schema.Types.ObjectId, ref: "User", index: true, required: true },
   type: {
     type: String,
     enum: Object.values(WalletType),
