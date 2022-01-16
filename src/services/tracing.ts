@@ -273,7 +273,12 @@ export const wrapAsyncToRunInSpan = <A extends Array<unknown>, R>({
       spanAttributes: {},
     })
     const ret = tracer.startActiveSpan(spanName, spanOptions, async (span) => {
-      const ret = await fn(...args)
+      let ret: PromiseReturnType<R>
+      try {
+        ret = await fn(...args)
+      } catch (error) {
+        ret = error
+      }
       if (ret instanceof Error) {
         span.recordException(ret)
       }
