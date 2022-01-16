@@ -29,7 +29,7 @@ const logger = baseLogger.child({ module: "trigger" })
 
 export const uploadBackup = async ({ backup, pubkey }) => {
   logger.debug({ backup }, "updating scb on dbx")
-  const filename = `${process.env.NETWORK}_lnd_scb_${pubkey}`
+  const filename = `${process.env.NETWORK}_lnd_scb_${pubkey}_${Date.now()}`
 
   try {
     const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN })
