@@ -29,3 +29,9 @@ export const listWalletIdsByAccountId = async (
   if (wallets instanceof Error) return wallets
   return wallets.map((wallet) => wallet.id)
 }
+
+export const listWalletsByAccountId = async (
+  accountId: AccountId,
+): Promise<Wallet[] | RepositoryError> => {
+  return WalletsRepository().listByAccountId(accountId)
+}
