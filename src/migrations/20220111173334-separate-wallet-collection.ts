@@ -29,7 +29,7 @@ module.exports = {
         id: user.defaultWalletId,
         accountId: String(user._id),
         type: "checking",
-        currency: "USD",
+        currency: "BTC",
         onchain: user.onchain,
       }
 
