@@ -105,7 +105,7 @@ export class UserWallet {
   async setUsername({ username }): Promise<{ username: string | undefined; id: string }> {
     try {
       const result = await User.findOneAndUpdate(
-        { _id: String(this.user._id), username: { $in: [null, ""] } },
+        { _id: this.user._id, username: { $in: [null, ""] } },
         { username },
       )
 

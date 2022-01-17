@@ -10,7 +10,6 @@ import {
   UsersRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { User } from "@services/mongoose/schema"
 import pubsub from "@services/pubsub"
 
 import { sendNotification } from "./notification"
@@ -257,10 +256,10 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       `sending balance notification to user`,
     )
 
-    // FIXME:
-    const user = await User.find({ id: userId })
+    const user = await UsersRepository().findById(userId)
     if (user instanceof Error) {
       logger.warn({ user }, "impossible to fetch user to send transaction")
+      return
     }
 
     await sendNotification({

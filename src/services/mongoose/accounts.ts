@@ -7,6 +7,8 @@ import {
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
 
+import { Types as MongooseTypes } from "mongoose"
+
 import { caseInsensitiveRegex } from "."
 
 export const AccountsRepository = (): IAccountsRepository => {
@@ -24,7 +26,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
     try {
       const result: UserRecord /* UserRecord actually not correct with {projection} */ =
-        await User.findOne({ _id: accountId }, projection)
+        await User.findOne({ _id: new MongooseTypes.ObjectId(accountId) }, projection)
       if (!result) return new CouldNotFindError()
       return translateToAccount(result)
     } catch (err) {
@@ -98,7 +100,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
-        { _id: id },
+        { _id: new MongooseTypes.ObjectId(id) },
         {
           level,
           status,

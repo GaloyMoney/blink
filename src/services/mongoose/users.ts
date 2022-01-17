@@ -72,10 +72,14 @@ export const UsersRepository = (): IUsersRepository => {
         deviceToken: deviceTokens,
         twoFA,
       }
-      const result = await User.findOneAndUpdate({ _id: id }, data, {
-        projection,
-        new: 1,
-      })
+      const result = await User.findOneAndUpdate(
+        { _id: new MongooseTypes.ObjectId(id) },
+        data,
+        {
+          projection,
+          new: 1,
+        },
+      )
       if (!result) {
         return new RepositoryError("Couldn't update user")
       }

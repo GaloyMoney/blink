@@ -7,11 +7,13 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 
+import { Types as MongooseTypes } from "mongoose"
+
 export const UsersIpRepository = (): IUsersIPsRepository => {
   const update = async (userIp: UserIPs): Promise<true | RepositoryError> => {
     try {
       const result = await User.updateOne(
-        { _id: userIp.id },
+        { _id: new MongooseTypes.ObjectId(userIp.id) },
         { $set: { lastConnection: new Date(), lastIPs: userIp.lastIPs } },
       )
 
@@ -31,7 +33,10 @@ export const UsersIpRepository = (): IUsersIPsRepository => {
 
   const findById = async (userId: UserId): Promise<UserIPs | RepositoryError> => {
     try {
-      const result = await User.findOne({ _id: userId }, { lastIPs: 1 })
+      const result = await User.findOne(
+        { _id: new MongooseTypes.ObjectId(userId) },
+        { lastIPs: 1 },
+      )
       if (!result) {
         return new CouldNotFindUserFromIdError(userId)
       }
