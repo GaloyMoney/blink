@@ -39,25 +39,5 @@ module.exports = {
         console.log(`${progress} users updated`)
       }
     }
-
-    console.log("completed creation of the wallets collection")
-
-    db.collection("users").dropIndex("walletId_1")
-
-    console.log("index dropped for users/walletId_1")
-
-    {
-      const result = await db.collection("users").updateMany(
-        {},
-        {
-          $unset: {
-            onchain: "",
-            walletId: "",
-          },
-        },
-      )
-
-      console.log({ result }, "removing onchain and walletId field from users")
-    }
   },
 }
