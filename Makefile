@@ -51,6 +51,7 @@ watch-compile:
 	$(BIN_DIR)/tsc --watch  --noEmit --skipLibCheck
 
 integration:
+	yarn build && \
 	yarn test:integration
 
 reset-integration: reset-deps integration
