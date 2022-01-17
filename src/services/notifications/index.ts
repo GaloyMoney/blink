@@ -5,7 +5,11 @@ import {
   USER_PRICE_UPDATE_EVENT,
 } from "@config/app"
 import { NotificationsServiceError, NotificationType } from "@domain/notifications"
-import { AccountsRepository, UsersRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 import pubsub from "@services/pubsub"
 
@@ -26,8 +30,14 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     txHash: OnChainTxHash
     usdPerSat?: UsdPerSat
   }): Promise<void | NotificationsServiceError> => {
+    // FIXME: this try/catch is probably a no-op
+    // because the error would not be awaited if they arise
+    // see if this is safe to delete
     try {
-      const account = await AccountsRepository().findByWalletId(walletId)
+      const wallet = await WalletsRepository().findById(walletId)
+      if (wallet instanceof Error) throw wallet
+
+      const account = await AccountsRepository().findById(wallet.accountId)
       if (account instanceof Error) return account
 
       const user = await UsersRepository().findById(account.ownerId)
@@ -55,7 +65,6 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
           usdPerSat,
         },
       })
-
       return
     } catch (err) {
       return new NotificationsServiceError(err)
@@ -111,7 +120,10 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     usdPerSat,
   }: LnInvoicePaidArgs) => {
     try {
-      const account = await AccountsRepository().findByWalletId(recipientWalletId)
+      const wallet = await WalletsRepository().findById(recipientWalletId)
+      if (wallet instanceof Error) throw wallet
+
+      const account = await AccountsRepository().findById(wallet.accountId)
       if (account instanceof Error) return account
 
       const user = await UsersRepository().findById(account.ownerId)
@@ -126,6 +138,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         paymentHash,
         usdPerSat,
       })
+
       // Notify public subscribers (via GraphQL subscription if any)
       const eventName = lnPaymentStatusEvent(paymentHash)
       pubsub.publish(eventName, { status: "PAID" })
@@ -166,7 +179,10 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         walletId: WalletId
         type: NotificationType
       }) => {
-        const account = await AccountsRepository().findByWalletId(senderWalletId)
+        const wallet = await WalletsRepository().findById(senderWalletId)
+        if (wallet instanceof Error) return wallet
+
+        const account = await AccountsRepository().findById(wallet.accountId)
         if (account instanceof Error) return account
 
         // Notify the recipient (via GraphQL subscription if any)

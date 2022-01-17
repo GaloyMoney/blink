@@ -1,3 +1,10 @@
+// FIXME(nicolas): type should be in domain but having an issue of undefined
+type WalletType =
+  typeof import("./schema").WalletType[keyof typeof import("./schema").WalletType]
+
+type WalletCurrency =
+  typeof import("./schema").WalletCurrency[keyof typeof import("./schema").WalletCurrency]
+
 type IPType = {
   ip: string
   provider?: string
@@ -67,7 +74,7 @@ interface UserType {
   created_at: string
   onchain: OnChainObjectForUser[]
   twoFA: TwoFAForUser
-  walletId: WalletId
+  defaultWalletId: WalletId
 
   // business:
   title?: string

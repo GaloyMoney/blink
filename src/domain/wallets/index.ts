@@ -1,9 +1,9 @@
 import { InvalidWalletId } from "@domain/errors"
 
+export * from "./deposit-fee-calculator"
 export { WalletTransactionHistory } from "./tx-history"
 export * from "./tx-methods"
 export * from "./tx-status"
-export * from "./deposit-fee-calculator"
 export * from "./withdrawal-fee-calculator"
 
 export const WalletIdRegex =

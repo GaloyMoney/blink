@@ -1,7 +1,8 @@
-import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { getCurrentPrice } from "@app/prices"
 import { getBalanceForWalletId } from "@app/wallets"
 import { NotificationsService } from "@services/notifications"
+
+import { getRecentlyActiveAccounts } from "./active-accounts"
 
 export const sendDefaultWalletBalanceToUsers = async (logger: Logger) => {
   const accounts = await getRecentlyActiveAccounts()

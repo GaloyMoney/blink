@@ -3,6 +3,8 @@ import crypto from "crypto"
 import { yamlConfig } from "@config/app"
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
+import { toSats } from "@domain/bitcoin"
+
 import ME from "./queries/me.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
 import NODE_IDS from "./queries/node-ids.gql"
@@ -23,18 +25,26 @@ import {
   startServer,
   killServer,
   PID,
+  createUserWallet,
+  fundWalletIdFromLightning,
 } from "test/helpers"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,
   receivingWalletId: WalletId,
   serverPid: PID
-const receivingUsername = "user0"
-const receivingUserIndex = 0
+const receivingUsername = "user15"
+const receivingUserIndex = 15
 const sendingUserIndex = 4
 const { phone, code } = yamlConfig.test_accounts[sendingUserIndex]
 
 beforeAll(async () => {
+  await createUserWallet(sendingUserIndex)
+  await createUserWallet(receivingUserIndex)
+  const sendingWalletId = await getDefaultWalletIdByTestUserIndex(sendingUserIndex)
+  await fundWalletIdFromLightning({ walletId: sendingWalletId, amount: toSats(50_000) })
+  receivingWalletId = await getDefaultWalletIdByTestUserIndex(receivingUserIndex)
+
   serverPid = await startServer()
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
   const input = { phone, code: `${code}` }
@@ -44,7 +54,6 @@ beforeAll(async () => {
   ;({ apolloClient, disposeClient } = createApolloClient(
     defaultTestClientConfig(result.data.userLogin.authToken),
   ))
-  receivingWalletId = await getDefaultWalletIdByTestUserIndex(receivingUserIndex)
 })
 
 beforeEach(async () => {

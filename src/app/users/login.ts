@@ -1,8 +1,8 @@
 import {
   BTC_NETWORK,
   getFailedLoginAttemptPerIpLimits,
-  VALIDITY_TIME_CODE,
   getTestAccounts,
+  VALIDITY_TIME_CODE,
 } from "@config/app"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
@@ -13,7 +13,8 @@ import { createToken } from "@services/jwt"
 import { UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
-import { TwilioClient } from "@services/twilio"
+
+import { createUser } from "."
 
 export const login = async ({
   phone,
@@ -56,18 +57,8 @@ export const login = async ({
 
   if (user instanceof CouldNotFindUserFromPhoneError) {
     subLogger.info({ phone }, "new user signup")
-
     const userRaw: NewUserInfo = { phone: phoneNumberValid, phoneMetadata: null }
-
-    const carrierInfo = await TwilioClient().getCarrier(phoneNumberValid)
-    if (carrierInfo instanceof Error) {
-      // non fatal error
-      subLogger.warn({ phone }, "impossible to fetch carrier")
-    } else {
-      userRaw.phoneMetadata = carrierInfo
-    }
-
-    user = await userRepo.persistNew(userRaw)
+    user = await createUser(userRaw)
     if (user instanceof Error) return user
   } else if (user instanceof Error) {
     return user

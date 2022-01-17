@@ -1,11 +1,12 @@
 import { Users } from "@app"
 import { InvalidLanguageError } from "@domain/errors"
 
-import { getUserIdByTestUserIndex } from "test/helpers"
+import { createUserWallet, getUserIdByTestUserIndex } from "test/helpers"
 
 let userId0: UserId
 
 beforeAll(async () => {
+  await createUserWallet(0)
   userId0 = await getUserIdByTestUserIndex(0)
 })
 

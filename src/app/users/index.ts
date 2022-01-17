@@ -7,6 +7,7 @@ export * from "./generate-2fa"
 export * from "./save-2fa"
 export * from "./delete-2fa"
 export * from "./update-language"
+export * from "./create-user"
 
 const users = UsersRepository()
 

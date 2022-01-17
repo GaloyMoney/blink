@@ -41,7 +41,7 @@ describe("notification", () => {
       const numActiveUsers = users.length
       expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
       for (const [call] of sendNotification.mock.calls) {
-        const balance = await LedgerService().getWalletBalance(call.user.walletId)
+        const balance = await LedgerService().getWalletBalance(call.user.defaultWalletId)
         if (balance instanceof Error) throw balance
 
         const expectedUsdBalance = (price * balance).toLocaleString("en", {
