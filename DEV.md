@@ -5,15 +5,15 @@
 This setup was last tested with the following tools:
 ```
 $ node --version
-v14.17.0
+v16.13.1
 $ yarn --version
-1.22.10
+1.22.17
 $ direnv --version
 2.28.0
 $ jq --version
 jq-1.6
 $ docker --version
-Docker version 20.10.7, build f0df350
+Docker version 20.10.8, build f0df350
 $ docker compose version
 Docker Compose version 2.0.0
 ```
