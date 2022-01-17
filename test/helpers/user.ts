@@ -7,6 +7,8 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
+import { toObjectId } from "@services/mongoose/utils"
+
 const users = UsersRepository()
 
 export const getPhoneByTestUserIndex = (index: number) => {
@@ -94,16 +96,19 @@ export const createUserWallet = async (index: number) => {
   const uid = userRepo.id
 
   if (entry.username) {
-    await User.findOneAndUpdate({ _id: uid }, { username: entry.username })
+    await User.findOneAndUpdate(
+      { _id: toObjectId<UserId>(uid) },
+      { username: entry.username },
+    )
   }
 
   if (entry.role) {
-    await User.findOneAndUpdate({ _id: uid }, { role: entry.role })
+    await User.findOneAndUpdate({ _id: toObjectId<UserId>(uid) }, { role: entry.role })
   }
 
   if (entry.title) {
     await User.findOneAndUpdate(
-      { _id: uid },
+      { _id: toObjectId<UserId>(uid) },
       { title: entry.title, coordinates: { latitude: -1, longitude: 1 } },
     )
   }

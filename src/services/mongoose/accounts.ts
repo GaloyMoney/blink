@@ -6,6 +6,7 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
+import { toObjectId, fromObjectId } from "./utils"
 
 import { Types as MongooseTypes } from "mongoose"
 
@@ -26,7 +27,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
     try {
       const result: UserRecord /* UserRecord actually not correct with {projection} */ =
-        await User.findOne({ _id: new MongooseTypes.ObjectId(accountId) }, projection)
+        await User.findOne({ _id: toObjectId<AccountId>(accountId) }, projection)
       if (!result) return new CouldNotFindError()
       return translateToAccount(result)
     } catch (err) {
@@ -100,7 +101,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
-        { _id: new MongooseTypes.ObjectId(id) },
+        { _id: toObjectId<AccountId>(id) },
         {
           level,
           status,
@@ -141,7 +142,7 @@ export const AccountsRepository = (): IAccountsRepository => {
 }
 
 const translateToAccount = (result: UserRecord): Account => ({
-  id: String(result._id) as AccountId,
+  id: fromObjectId<AccountId>(result._id),
   createdAt: new Date(result.created_at),
   defaultWalletId: result.defaultWalletId as WalletId,
   username: result.username as Username,

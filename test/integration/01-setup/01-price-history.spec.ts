@@ -1,6 +1,6 @@
 import { SATS_PER_BTC } from "@domain/bitcoin"
 import { PriceHistory } from "@services/price/schema"
-import { Types as MongooseTypes } from "mongoose"
+import { toObjectId } from "@services/mongoose/utils"
 
 import { chunk, generateSatoshiPriceHistory } from "test/helpers"
 
@@ -23,7 +23,7 @@ describe("Price history", () => {
 
     const bulkOps = chunk(generateSatoshiPriceHistory(1 * 12, 50000), 500).map((c) => ({
       updateOne: {
-        filter: { _id: new MongooseTypes.ObjectId(doc.id) },
+        filter: { _id: toObjectId<UserId>(doc.id) },
         update: {
           $push: {
             "pair.exchange.price": {

@@ -125,11 +125,8 @@ describe("UserWallet", () => {
 
       const accountsRepo = AccountsRepository()
       const account = await accountsRepo.findByUsername(username)
-      expect(account).toStrictEqual(
-        expect.objectContaining({
-          id: expect.any(String),
-        }),
-      )
+      if (account instanceof Error) throw account
+      expect(account.id).toStrictEqual(accountId0)
     })
 
     it("return true for other capitalization", async () => {
@@ -139,11 +136,8 @@ describe("UserWallet", () => {
       const account = await accountsRepo.findByUsername(
         username.toLocaleUpperCase() as Username,
       )
-      expect(account).toStrictEqual(
-        expect.objectContaining({
-          id: expect.any(String),
-        }),
-      )
+      if (account instanceof Error) throw account
+      expect(account.id).toStrictEqual(accountId0)
     })
 
     it("return false if username does not exist", async () => {
