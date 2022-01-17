@@ -1,4 +1,5 @@
 import { GT } from "@graphql/index"
+import { WalletsRepository } from "@services/mongoose"
 
 import WalletId from "../scalar/wallet-id"
 
@@ -12,6 +13,9 @@ const IAccount = new GT.Interface({
     },
     wallets: {
       type: GT.NonNullList(Wallet),
+      resolve: async (source, args, { domainAccount }: { domainAccount: Account }) => {
+        return WalletsRepository().listByAccountId(domainAccount.id)
+      },
     },
     defaultWalletId: {
       type: GT.NonNull(WalletId),
