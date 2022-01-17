@@ -14,6 +14,19 @@ import { UsernameRegex } from "@domain/accounts"
 
 export { Transaction }
 
+// in the future, we may have:
+// - saving account (not redeemable instantly)
+// - borrowing account based on collateral
+export const WalletType = {
+  Checking: "checking",
+} as const
+
+// TODO: think how to differentiate physical from synthetic USD
+export const WalletCurrency = {
+  Usd: "USD",
+  Btc: "BTC",
+} as const
+
 // mongoose.set("debug", true)
 
 const Schema = mongoose.Schema
@@ -64,6 +77,47 @@ export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
 const feeRates = getFeeRates()
 
 const twoFAConfig = getTwoFAConfig()
+
+const WalletSchema = new Schema({
+  id: {
+    type: String,
+    index: true,
+    unique: true,
+    required: true,
+    default: () => crypto.randomUUID(),
+  },
+  accountId: { type: Schema.Types.ObjectId, ref: "User", index: true, required: true },
+  type: {
+    type: String,
+    enum: Object.values(WalletType),
+    required: true,
+    default: WalletType.Checking,
+  },
+  currency: {
+    type: String,
+    enum: Object.values(WalletCurrency),
+    required: true,
+    default: WalletCurrency.Btc,
+  },
+  onchain: {
+    type: [
+      {
+        pubkey: {
+          type: String,
+          required: true,
+        },
+        address: {
+          type: String,
+          // TODO: index?
+          required: true,
+        },
+      },
+    ],
+    default: [],
+  },
+})
+
+export const Wallet = mongoose.model("Wallet", WalletSchema)
 
 const UserSchema = new Schema<UserType>({
   depositFeeRatio: {
@@ -117,21 +171,6 @@ const UserSchema = new Schema<UserType>({
     // TODO : enfore the fact there can be only one dealer/bankowner/funder
   },
 
-  onchain: {
-    type: [
-      {
-        pubkey: {
-          type: String,
-          required: true,
-        },
-        address: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
-    default: [],
-  },
   level: {
     type: Number,
     enum: levels,
@@ -236,12 +275,9 @@ const UserSchema = new Schema<UserType>({
     },
   },
 
-  walletId: {
+  defaultWalletId: {
     type: String,
     index: true,
-    unique: true,
-    required: true,
-    default: () => crypto.randomUUID(),
   },
 })
 

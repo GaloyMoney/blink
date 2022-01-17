@@ -1,3 +1,4 @@
+import { createUser } from "@app/users"
 import { yamlConfig } from "@config/app"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import {
@@ -74,7 +75,19 @@ export const createUserWallet = async (index: number) => {
 
   let userRepo = await users.findByPhone(phone)
   if (userRepo instanceof CouldNotFindUserFromPhoneError) {
-    userRepo = await users.persistNew({ phone, phoneMetadata: null })
+    const phoneMetadata = entry.phoneMetadataCarrierType
+      ? {
+          carrier: {
+            type: entry.phoneMetadataCarrierType,
+            name: "",
+            mobile_network_code: "",
+            mobile_country_code: "",
+            error_code: "",
+          },
+          countryCode: "US",
+        }
+      : null
+    userRepo = await createUser({ phone, phoneMetadata })
   }
 
   if (userRepo instanceof Error) throw userRepo
@@ -82,13 +95,6 @@ export const createUserWallet = async (index: number) => {
 
   if (entry.username) {
     await User.findOneAndUpdate({ _id: uid }, { username: entry.username })
-  }
-
-  if (entry.phoneMetadataCarrierType) {
-    await User.findOneAndUpdate(
-      { _id: uid },
-      { twilio: { carrier: { type: entry.phoneMetadataCarrierType } } },
-    )
   }
 
   if (entry.role) {

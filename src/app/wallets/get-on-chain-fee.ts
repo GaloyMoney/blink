@@ -51,7 +51,7 @@ export const getOnChainFee = async ({
   })
   if (onChainFee instanceof Error) return onChainFee
 
-  const account = await AccountsRepository().findByWalletId(wallet.id)
+  const account = await AccountsRepository().findById(wallet.accountId)
   if (account instanceof Error) return account
 
   const fee = toSats(account.withdrawFee)

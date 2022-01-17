@@ -19,8 +19,11 @@ const ConsumerAccount = new GT.Object({
 
     wallets: {
       type: GT.NonNullList(Wallet),
-      resolve: (source) => {
-        const wallets = source.walletIds.map(async (id: WalletId) => {
+      resolve: async (source: Account) => {
+        const walletIds = await Wallets.listWalletIdsByAccountId(source.id)
+        if (walletIds instanceof Error) return walletIds
+
+        const wallets = walletIds.map(async (id: WalletId) => {
           const wallet = await Wallets.getWallet(id)
           if (wallet instanceof Error) {
             throw wallet
@@ -46,8 +49,11 @@ const ConsumerAccount = new GT.Object({
           type: GT.NonNullList(WalletId),
         },
       },
-      resolve: async (source) => {
-        return Wallets.getCSVForWallets(source.walletIds)
+      resolve: async (source: Account) => {
+        const walletIds = await Wallets.listWalletIdsByAccountId(source.id)
+        if (walletIds instanceof Error) return walletIds
+
+        return Wallets.getCSVForWallets(walletIds)
       },
     },
   }),

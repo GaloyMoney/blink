@@ -4,10 +4,13 @@ type OnChainAddressIdentifier = {
 }
 
 interface IWalletOnChainAddressesRepository {
-  persistNew(
-    walletId: WalletId,
-    onChainAddress: OnChainAddressIdentifier,
-  ): Promise<OnChainAddressIdentifier | RepositoryError>
+  persistNew({
+    walletId,
+    onChainAddress,
+  }: {
+    walletId: WalletId
+    onChainAddress: OnChainAddressIdentifier
+  }): Promise<OnChainAddressIdentifier | RepositoryError>
   findLastByWalletId(
     walletId: WalletId,
   ): Promise<OnChainAddressIdentifier | RepositoryError>
