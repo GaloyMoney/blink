@@ -20,7 +20,7 @@ export const addLndReceipt = async ({
   lastPrice,
 }: {
   description: string
-  payeeUser: UserType // FIXME: move it to User
+  payeeUser: UserRecord // FIXME: move it to User
   metadata: Record<string, unknown>
   sats: Satoshis
   lastPrice: number

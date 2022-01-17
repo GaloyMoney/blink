@@ -24,7 +24,7 @@ import {
   createMandatoryUsers,
   createUserWallet,
   getDefaultWalletIdByTestUserIndex,
-  getUserTypeByTestUserIndex,
+  getUserRecordByTestUserIndex,
   lndonchain,
   RANDOM_ADDRESS,
   sendToAddressAndConfirm,
@@ -279,7 +279,7 @@ describe("UserWallet - On chain", () => {
   it("allows fee exemption for specific users", async () => {
     const amountSats = getRandomAmountOfSats()
 
-    const userType2 = await getUserTypeByTestUserIndex(2)
+    const userType2 = await getUserRecordByTestUserIndex(2)
     userType2.depositFeeRatio = 0
     await userType2.save()
     const wallet2 = await getDefaultWalletIdByTestUserIndex(2)

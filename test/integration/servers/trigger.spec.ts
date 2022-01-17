@@ -19,7 +19,7 @@ import {
   getHash,
   getInvoice,
   getUserIdByTestUserIndex,
-  getUserTypeByTestUserIndex,
+  getUserRecordByTestUserIndex,
   lnd1,
   lndOutside1,
   mineBlockAndSyncAll,
@@ -42,8 +42,8 @@ let walletId12: WalletId
 
 let userId12: UserId
 
-let userType0: UserType
-let userType3: UserType
+let userType0: UserRecord
+let userType3: UserRecord
 
 beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
@@ -58,8 +58,8 @@ beforeAll(async () => {
 
   userId12 = await getUserIdByTestUserIndex(12)
 
-  userType0 = await getUserTypeByTestUserIndex(0)
-  userType3 = await getUserTypeByTestUserIndex(3)
+  userType0 = await getUserRecordByTestUserIndex(0)
+  userType3 = await getUserRecordByTestUserIndex(3)
 })
 
 beforeEach(() => {
@@ -153,7 +153,7 @@ describe("onchainBlockEventhandler", () => {
       address,
     }: {
       walletId: WalletId
-      userType: UserType
+      userType: UserRecord
       initialState: WalletState
       amount: Satoshis
       address: string

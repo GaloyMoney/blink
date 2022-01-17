@@ -14,10 +14,10 @@ import {
   getAccountIdByTestUserIndex,
   getDefaultWalletIdByTestUserIndex,
   getUserIdByTestUserIndex,
-  getUserTypeByTestUserIndex,
+  getUserRecordByTestUserIndex,
 } from "test/helpers"
 
-let userType0: UserType, userType2: UserType
+let userType0: UserRecord, userType2: UserRecord
 let walletId0: WalletId
 let accountId0: AccountId, accountId1: AccountId, accountId2: AccountId
 let userId0: UserId
@@ -33,8 +33,8 @@ describe("UserWallet", () => {
     // load edit for admin-panel manual testing
     await createUserWallet(13)
 
-    userType0 = await getUserTypeByTestUserIndex(0)
-    userType2 = await getUserTypeByTestUserIndex(2)
+    userType0 = await getUserRecordByTestUserIndex(0)
+    userType2 = await getUserRecordByTestUserIndex(2)
 
     walletId0 = await getDefaultWalletIdByTestUserIndex(0)
 
@@ -46,7 +46,7 @@ describe("UserWallet", () => {
   })
 
   it("has a role if it was configured", async () => {
-    const dealer = await getUserTypeByTestUserIndex(6)
+    const dealer = await getUserRecordByTestUserIndex(6)
     expect(dealer.role).toBe("dealer")
   })
 
@@ -193,7 +193,7 @@ describe("UserWallet", () => {
       const secret = await enable2FA(userId0)
       if (secret instanceof Error) return secret
 
-      userType0 = await getUserTypeByTestUserIndex(0)
+      userType0 = await getUserRecordByTestUserIndex(0)
       expect(userType0.twoFA.secret).toBe(secret)
     })
   })
@@ -207,7 +207,7 @@ describe("UserWallet", () => {
       const token = generateTokenHelper(userType0.twoFA.secret)
       const result = await delete2fa({ token, userId: userId0 })
       expect(result).toBeTruthy()
-      userType0 = await getUserTypeByTestUserIndex(0)
+      userType0 = await getUserRecordByTestUserIndex(0)
       expect(userType0.twoFA.secret).toBeNull()
     })
   })

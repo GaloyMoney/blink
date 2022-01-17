@@ -12,7 +12,7 @@ import {
   createUserWallet,
   getAccountIdByTestUserIndex,
   getDefaultWalletIdByTestUserIndex,
-  getUserTypeByTestUserIndex,
+  getUserRecordByTestUserIndex,
 } from "test/helpers"
 import { resetSelfWalletIdLimits } from "test/helpers/rate-limit"
 import { getBTCBalance } from "test/helpers/wallet"
@@ -54,7 +54,7 @@ describe("UserWallet - addEarn", () => {
 
     const initialBalance = await getBTCBalance(walletId1)
 
-    const userType1BeforeEarn = await getUserTypeByTestUserIndex(1)
+    const userType1BeforeEarn = await getUserRecordByTestUserIndex(1)
 
     const getAndVerifyRewards = async () => {
       const promises = onBoardingEarnIds.map((onBoardingEarnId) =>

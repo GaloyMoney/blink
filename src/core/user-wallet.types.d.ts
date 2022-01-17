@@ -6,7 +6,7 @@ type UserWalletConfig = {
 }
 
 type UserWalletConstructorArgs = {
-  user: UserType
+  user: UserRecord
   logger: Logger
   config: UserWalletConfig
 }
