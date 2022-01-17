@@ -31,7 +31,7 @@ EOF
 
 gh pr close ${BOT_BRANCH} || true
 gh pr create \
-  --title bump-galoy-image-${ref} \
+  --title "build: bump-galoy-image-${ref}" \
   --body-file ../body.md \
   --base ${BRANCH} \
   --head ${BOT_BRANCH} \
