@@ -6,6 +6,7 @@ import { WalletFactory } from "@core/wallet-factory"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
 import { User } from "@services/mongoose/schema"
+import { toObjectId } from "@services/mongoose/utils"
 import {
   addAttributesToCurrentSpan,
   addAttributesToCurrentSpanAndPropagate,
@@ -25,8 +26,6 @@ import pino from "pino"
 import PinoHttp from "pino-http"
 import { SubscriptionServer } from "subscriptions-transport-ws"
 import { v4 as uuidv4 } from "uuid"
-
-import { Types as MongooseTypes } from "mongoose"
 
 import { playgroundTabs } from "../graphql/playground"
 
@@ -100,7 +99,7 @@ const sessionContext = ({
         if (loggedInDomainAccount instanceof Error) throw Error
         domainAccount = loggedInDomainAccount
 
-        user = await User.findOne({ _id: new MongooseTypes.ObjectId(userId) })
+        user = await User.findOne({ _id: toObjectId<UserId>(userId) })
         wallet =
           !!user && user.status === "active"
             ? await WalletFactory({ user, logger })

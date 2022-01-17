@@ -1,8 +1,7 @@
 import { RewardAlreadyPresentError, UnknownRepositoryError } from "@domain/errors"
 
-import { Types as MongooseTypes } from "mongoose"
-
 import { User } from "./schema"
+import { toObjectId } from "./utils"
 
 // FIXME: improve boundary
 export const RewardsRepository = (accountId: AccountId) => {
@@ -10,7 +9,7 @@ export const RewardsRepository = (accountId: AccountId) => {
     try {
       // by default, mongodb return the previous state before the update
       const oldState = await User.findOneAndUpdate(
-        { _id: new MongooseTypes.ObjectId(accountId) },
+        { _id: toObjectId<AccountId>(accountId) },
         { $push: { earn: quizQuestionId } },
         // { upsert: true },
       )

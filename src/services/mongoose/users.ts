@@ -7,7 +7,8 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
-import { Types as MongooseTypes } from "mongoose"
+
+import { toObjectId, fromObjectId } from "./utils"
 
 export const caseInsensitiveRegex = (input: string) => {
   return new RegExp(`^${input}$`, "i")
@@ -16,10 +17,8 @@ export const caseInsensitiveRegex = (input: string) => {
 export const UsersRepository = (): IUsersRepository => {
   const findById = async (userId: UserId): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOne(
-        { _id: new MongooseTypes.ObjectId(userId) },
-        projection,
-      )
+      const result = await User.findOne({ _id: toObjectId<UserId>(userId) }, projection)
+
       if (!result) {
         return new CouldNotFindUserFromIdError(userId)
       }
@@ -72,14 +71,10 @@ export const UsersRepository = (): IUsersRepository => {
         deviceToken: deviceTokens,
         twoFA,
       }
-      const result = await User.findOneAndUpdate(
-        { _id: new MongooseTypes.ObjectId(id) },
-        data,
-        {
-          projection,
-          new: 1,
-        },
-      )
+      const result = await User.findOneAndUpdate({ _id: toObjectId<UserId>(id) }, data, {
+        projection,
+        new: 1,
+      })
       if (!result) {
         return new RepositoryError("Couldn't update user")
       }
@@ -98,7 +93,7 @@ export const UsersRepository = (): IUsersRepository => {
 }
 
 const userFromRaw = (result: UserRecord): User => ({
-  id: String(result._id) as UserId,
+  id: fromObjectId<UserId>(result._id),
   phone: result.phone as PhoneNumber,
   language: result.language as UserLanguage,
   twoFA: result.twoFA as TwoFAForUser,
@@ -112,7 +107,7 @@ const userFromRaw = (result: UserRecord): User => ({
         completed: true,
       }),
     ) || [],
-  defaultAccountId: result._id as AccountId,
+  defaultAccountId: fromObjectId<AccountId>(result._id),
   deviceTokens: (result.deviceToken || []) as DeviceToken[],
   createdAt: new Date(result.created_at),
   phoneMetadata: result.twilio as PhoneMetadata,

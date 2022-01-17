@@ -6,12 +6,11 @@ import {
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
-
 import { Types } from "mongoose"
 
+import { toObjectId, fromObjectId } from "./utils"
 import { Wallet } from "./schema"
-
-import { AccountsRepository } from "."
+import { AccountsRepository } from "./accounts"
 
 export interface WalletRecord {
   id: string
@@ -33,7 +32,7 @@ export const WalletsRepository = (): IWalletsRepository => {
 
     try {
       const wallet = new Wallet({
-        _accountId: accountId,
+        _accountId: toObjectId<AccountId>(accountId),
         type,
         currency,
       })
@@ -113,7 +112,7 @@ export const WalletsRepository = (): IWalletsRepository => {
 
 const resultToWallet = (result: WalletRecord): Wallet => {
   const id = result.id as WalletId
-  const accountId = String(result._accountId) as AccountId
+  const accountId = fromObjectId<AccountId>(result._accountId)
   const type = result.type as WalletType
   const currency = result.currency as WalletCurrency
   const onChainAddressIdentifiers = result.onchain.map(({ pubkey, address }) => {
