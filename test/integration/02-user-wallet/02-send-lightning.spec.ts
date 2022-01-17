@@ -39,7 +39,7 @@ import {
   getHash,
   getUserIdByTestUserIndex,
   getDefaultWalletIdByTestUserIndex,
-  getUserTypeByTestUserIndex,
+  getUserRecordByTestUserIndex,
   createUserWallet,
   getAccountIdByTestUserIndex,
 } from "test/helpers"
@@ -54,7 +54,7 @@ const amountInvoice = 1000
 const userLimits = getUserLimits({ level: 1 })
 
 const invoicesRepo = WalletInvoicesRepository()
-let userType0: UserType
+let userType0: UserRecord
 
 let userId0: UserId
 
@@ -85,13 +85,13 @@ beforeAll(async () => {
   walletId1 = await getDefaultWalletIdByTestUserIndex(1)
   walletId2 = await getDefaultWalletIdByTestUserIndex(2)
 
-  userType0 = await getUserTypeByTestUserIndex(0)
+  userType0 = await getUserRecordByTestUserIndex(0)
   username0 = userType0.username as Username
 
-  const userType1 = await getUserTypeByTestUserIndex(1)
+  const userType1 = await getUserRecordByTestUserIndex(1)
   username1 = userType1.username as Username
 
-  const userType2 = await getUserTypeByTestUserIndex(2)
+  const userType2 = await getUserRecordByTestUserIndex(2)
   username2 = userType2.username as Username
 })
 
@@ -257,8 +257,8 @@ describe("UserWallet - Lightning Pay", () => {
     const oldFields1 = userTransaction1[0].deprecated
     expect(oldFields1).toHaveProperty("description", `to ${username0}`)
 
-    let userType0 = await getUserTypeByTestUserIndex(0)
-    let userType1 = await getUserTypeByTestUserIndex(1)
+    let userType0 = await getUserRecordByTestUserIndex(0)
+    let userType1 = await getUserRecordByTestUserIndex(1)
 
     expect(userType0.contacts).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: username1 })]),
@@ -288,7 +288,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (res2 instanceof Error) throw res2
     expect(res2).toBe(PaymentSendStatus.Success)
 
-    userType0 = await getUserTypeByTestUserIndex(0)
+    userType0 = await getUserRecordByTestUserIndex(0)
     expect(userType0.contacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -297,7 +297,7 @@ describe("UserWallet - Lightning Pay", () => {
         }),
       ]),
     )
-    userType1 = await getUserTypeByTestUserIndex(1)
+    userType1 = await getUserRecordByTestUserIndex(1)
     expect(userType1.contacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -413,8 +413,8 @@ describe("UserWallet - Lightning Pay", () => {
     )
 
     // check contacts being added
-    const userType0 = await getUserTypeByTestUserIndex(0)
-    const userType1 = await getUserTypeByTestUserIndex(1)
+    const userType0 = await getUserRecordByTestUserIndex(0)
+    const userType1 = await getUserRecordByTestUserIndex(1)
 
     expect(userType0.contacts).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: username1 })]),
@@ -750,7 +750,7 @@ describe("UserWallet - Lightning Pay", () => {
         //     .mockReturnValueOnce(addProps(inputs.shift()))
         // }))
         // await paymentOtherGaloyUser({walletPayee: userWallet1, walletPayer: userWallet2})
-        const userType0 = await getUserTypeByTestUserIndex(0)
+        const userType0 = await getUserRecordByTestUserIndex(0)
         expect(userType0.contacts).toEqual(
           expect.not.arrayContaining([expect.objectContaining({ id: username2 })]),
         )
@@ -896,7 +896,7 @@ describe("UserWallet - Lightning Pay", () => {
         }
 
         const secret = await enable2FA(userId0)
-        userType0 = await getUserTypeByTestUserIndex(0)
+        userType0 = await getUserRecordByTestUserIndex(0)
         expect(secret).toBe(userType0.twoFA.secret)
 
         const remainingLimit = await getRemainingTwoFALimit(walletId0)
@@ -918,7 +918,7 @@ describe("UserWallet - Lightning Pay", () => {
 
       it(`Makes large payment with a 2fa code`, async () => {
         await enable2FA(userId0)
-        const userType0 = await getUserTypeByTestUserIndex(0)
+        const userType0 = await getUserRecordByTestUserIndex(0)
         const secret = userType0.twoFA.secret
 
         const { request } = await createInvoice({

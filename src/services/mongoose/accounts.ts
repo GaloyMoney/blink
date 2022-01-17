@@ -7,12 +7,14 @@ import {
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
 
+import { Types as MongooseTypes } from "mongoose"
+
 import { caseInsensitiveRegex } from "."
 
 export const AccountsRepository = (): IAccountsRepository => {
   const listUnlockedAccounts = async (): Promise<Account[] | RepositoryError> => {
     try {
-      const result: UserType[] /* UserType actually not correct with {projection} */ =
+      const result: UserRecord[] /* UserRecord actually not correct with {projection} */ =
         await User.find({ status: AccountStatus.Active }, projection)
       if (result.length === 0) return new CouldNotFindError()
       return result.map((a) => translateToAccount(a))
@@ -23,8 +25,8 @@ export const AccountsRepository = (): IAccountsRepository => {
 
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
     try {
-      const result: UserType /* UserType actually not correct with {projection} */ =
-        await User.findOne({ _id: accountId }, projection)
+      const result: UserRecord /* UserRecord actually not correct with {projection} */ =
+        await User.findOne({ _id: new MongooseTypes.ObjectId(accountId) }, projection)
       if (!result) return new CouldNotFindError()
       return translateToAccount(result)
     } catch (err) {
@@ -61,7 +63,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     BusinessMapMarker[] | RepositoryError
   > => {
     try {
-      const accounts: UserType[] = await User.find(
+      const accounts: UserRecord[] = await User.find(
         {
           title: { $exists: true, $ne: null },
           coordinates: { $exists: true, $ne: null },
@@ -98,7 +100,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
-        { _id: id },
+        { _id: new MongooseTypes.ObjectId(id) },
         {
           level,
           status,
@@ -138,8 +140,8 @@ export const AccountsRepository = (): IAccountsRepository => {
   }
 }
 
-const translateToAccount = (result: UserType): Account => ({
-  id: result.id as AccountId,
+const translateToAccount = (result: UserRecord): Account => ({
+  id: String(result._id) as AccountId,
   createdAt: new Date(result.created_at),
   defaultWalletId: result.defaultWalletId as WalletId,
   username: result.username as Username,
@@ -147,7 +149,7 @@ const translateToAccount = (result: UserType): Account => ({
   status: (result.status as AccountStatus) || AccountStatus.Active,
   title: result.title as BusinessMapTitle,
   coordinates: result.coordinates as Coordinates,
-  ownerId: result.id as UserId,
+  ownerId: result._id as UserId,
   contacts: result.contacts.reduce(
     (res: AccountContact[], contact: ContactObjectForUser): AccountContact[] => {
       if (contact.id) {

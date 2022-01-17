@@ -53,10 +53,15 @@ type CoordinateObjectForUser = {
   longitude: number
 }
 
+type OnChainMongooseType = {
+  pubkey: string
+  address: string
+}
+
 // ?: improve this
-interface UserType {
+interface UserRecord {
   _id: string
-  id: string
+
   username: string | null
   phone: string
   role: string
@@ -91,7 +96,7 @@ interface UserType {
   remainingWithdrawalLimit: () => Promise<number>
 
   // mongoose in-built functions
-  save: () => Promise<UserType>
+  save: () => Promise<UserRecord>
 }
 
 // ?: improve this

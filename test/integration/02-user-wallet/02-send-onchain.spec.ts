@@ -42,7 +42,7 @@ import {
   getAccountIdByTestUserIndex,
   getDefaultWalletIdByTestUserIndex,
   getUserIdByTestUserIndex,
-  getUserTypeByTestUserIndex,
+  getUserRecordByTestUserIndex,
   lndonchain,
   lndOutside1,
   mineBlockAndSync,
@@ -59,7 +59,7 @@ const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
 
 let initialBalanceUser0: Satoshis
-let user0: UserType
+let user0: UserRecord
 
 let accountId0: AccountId
 
@@ -83,7 +83,7 @@ beforeAll(async () => {
   await createUserWallet(11)
   await createUserWallet(12)
 
-  user0 = await getUserTypeByTestUserIndex(0)
+  user0 = await getUserRecordByTestUserIndex(0)
   walletId0 = await getDefaultWalletIdByTestUserIndex(0)
   userId0 = await getUserIdByTestUserIndex(0)
   accountId0 = await getAccountIdByTestUserIndex(0)

@@ -26,6 +26,8 @@ import PinoHttp from "pino-http"
 import { SubscriptionServer } from "subscriptions-transport-ws"
 import { v4 as uuidv4 } from "uuid"
 
+import { Types as MongooseTypes } from "mongoose"
+
 import { playgroundTabs } from "../graphql/playground"
 
 import healthzHandler from "./middlewares/healthz"
@@ -71,7 +73,7 @@ const sessionContext = ({
   }
 
   let wallet, user
-  // FIXME: type issue with let wallet: LightningUserWallet | null, user: UserType | null
+  // FIXME: type issue with let wallet: LightningUserWallet | null, user: UserRecord | null
 
   // TODO move from id: uuidv4() to a Jaeger standard
   const logger = graphqlLogger.child({ token, id: uuidv4(), body })
@@ -98,7 +100,7 @@ const sessionContext = ({
         if (loggedInDomainAccount instanceof Error) throw Error
         domainAccount = loggedInDomainAccount
 
-        user = await User.findOne({ _id: userId })
+        user = await User.findOne({ _id: new MongooseTypes.ObjectId(userId) })
         wallet =
           !!user && user.status === "active"
             ? await WalletFactory({ user, logger })

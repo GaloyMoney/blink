@@ -12,6 +12,8 @@ import { Transaction } from "@services/ledger/schema"
 import * as mongoose from "mongoose"
 import { UsernameRegex } from "@domain/accounts"
 
+import { WalletRecord } from "./wallets"
+
 export { Transaction }
 
 // in the future, we may have:
@@ -78,7 +80,7 @@ const feeRates = getFeeRates()
 
 const twoFAConfig = getTwoFAConfig()
 
-const WalletSchema = new Schema({
+const WalletSchema = new Schema<WalletRecord>({
   id: {
     type: String,
     index: true,
@@ -86,7 +88,7 @@ const WalletSchema = new Schema({
     required: true,
     default: () => crypto.randomUUID(),
   },
-  accountId: { type: Schema.Types.ObjectId, ref: "User", index: true, required: true },
+  _accountId: { type: Schema.Types.ObjectId, ref: "User", index: true, required: true },
   type: {
     type: String,
     enum: Object.values(WalletType),
@@ -119,167 +121,170 @@ const WalletSchema = new Schema({
 
 export const Wallet = mongoose.model("Wallet", WalletSchema)
 
-const UserSchema = new Schema<UserType>({
-  depositFeeRatio: {
-    type: Number,
-    default: feeRates.depositFeeVariable,
-    min: 0,
-    max: 1,
-  },
-  withdrawFee: {
-    type: Number,
-    default: feeRates.withdrawFeeFixed,
-    min: 0,
-  },
-  lastConnection: Date,
-  lastIPs: {
-    type: [
-      {
-        ip: String,
-        provider: String,
-        country: String,
-        region: String,
-        city: String,
-        //using Type instead of type due to its special status in mongoose
-        Type: String,
-        firstConnection: {
-          type: Date,
-          default: Date.now,
-        },
-        lastConnection: Date,
-      },
-    ],
-    default: [],
-  },
-  created_at: {
-    type: Date,
-    default: Date.now,
-  },
-  earn: {
-    type: [String],
-    default: [],
-  },
-  role: {
-    type: String,
-    // FIXME: role is a mix between 2 things here
-    // there can be many users and editors
-    // there can be only one dealer, bankowner and funder
-    // so we may want different property to differentiate those
-    enum: ["user", "editor", "dealer", "bankowner", "funder"],
-    required: true,
-    default: "user",
-    // TODO : enfore the fact there can be only one dealer/bankowner/funder
-  },
-
-  level: {
-    type: Number,
-    enum: levels,
-    default: 1,
-  },
-
-  // TODO: refactor, have phone and twilio metadata in the same sub-object.
-  phone: {
-    // TODO we should store country as a separate string
-    type: String,
-    required: true,
-    unique: true,
-  },
-  twilio: {
-    // TODO: rename to PhoneMetadata
-    carrier: {
-      error_code: String, // check this is the right syntax
-      mobile_country_code: String,
-      mobile_network_code: String,
-      name: String,
-      type: {
-        types: String,
-        enum: ["landline", "voip", "mobile"],
-      },
-    },
-    countryCode: String,
-  },
-
-  username: {
-    type: String,
-    match: [UsernameRegex, "Username can only have alphabets, numbers and underscores"],
-    minlength: 3,
-    maxlength: 50,
-    index: {
-      unique: true,
-      collation: { locale: "en", strength: 2 },
-      partialFilterExpression: { username: { $type: "string" } },
-    },
-  },
-  deviceToken: {
-    type: [String],
-    default: [],
-  },
-  contacts: {
-    type: [
-      {
-        id: {
-          type: String,
-          collation: { locale: "en", strength: 2 },
-        },
-        name: {
-          type: String,
-          // TODO: add constraint here
-        },
-        transactionsCount: {
-          type: Number,
-          default: 1,
-        },
-      },
-    ],
-    default: [],
-  },
-  language: {
-    type: String,
-    enum: ["en", "es", ""],
-    default: "",
-  },
-  // firstName,
-  // lastName,
-  // activated,
-  // etc
-
-  title: {
-    type: String,
-    minlength: 3,
-    maxlength: 100,
-  },
-  coordinates: {
-    type: {
-      latitude: {
-        type: Number,
-      },
-      longitude: {
-        type: Number,
-      },
-    },
-  },
-
-  status: {
-    type: String,
-    enum: ["active", "locked"],
-    default: "active",
-  },
-
-  twoFA: {
-    secret: {
-      type: String,
-    },
-    threshold: {
+const UserSchema = new Schema<UserRecord>(
+  {
+    depositFeeRatio: {
       type: Number,
-      default: twoFAConfig.threshold,
+      default: feeRates.depositFeeVariable,
+      min: 0,
+      max: 1,
+    },
+    withdrawFee: {
+      type: Number,
+      default: feeRates.withdrawFeeFixed,
+      min: 0,
+    },
+    lastConnection: Date,
+    lastIPs: {
+      type: [
+        {
+          ip: String,
+          provider: String,
+          country: String,
+          region: String,
+          city: String,
+          //using Type instead of type due to its special status in mongoose
+          Type: String,
+          firstConnection: {
+            type: Date,
+            default: Date.now,
+          },
+          lastConnection: Date,
+        },
+      ],
+      default: [],
+    },
+    created_at: {
+      type: Date,
+      default: Date.now,
+    },
+    earn: {
+      type: [String],
+      default: [],
+    },
+    role: {
+      type: String,
+      // FIXME: role is a mix between 2 things here
+      // there can be many users and editors
+      // there can be only one dealer, bankowner and funder
+      // so we may want different property to differentiate those
+      enum: ["user", "editor", "dealer", "bankowner", "funder"],
+      required: true,
+      default: "user",
+      // TODO : enfore the fact there can be only one dealer/bankowner/funder
+    },
+
+    level: {
+      type: Number,
+      enum: levels,
+      default: 1,
+    },
+
+    // TODO: refactor, have phone and twilio metadata in the same sub-object.
+    phone: {
+      // TODO we should store country as a separate string
+      type: String,
+      required: true,
+      unique: true,
+    },
+    twilio: {
+      // TODO: rename to PhoneMetadata
+      carrier: {
+        error_code: String, // check this is the right syntax
+        mobile_country_code: String,
+        mobile_network_code: String,
+        name: String,
+        type: {
+          types: String,
+          enum: ["landline", "voip", "mobile"],
+        },
+      },
+      countryCode: String,
+    },
+
+    username: {
+      type: String,
+      match: [UsernameRegex, "Username can only have alphabets, numbers and underscores"],
+      minlength: 3,
+      maxlength: 50,
+      index: {
+        unique: true,
+        collation: { locale: "en", strength: 2 },
+        partialFilterExpression: { username: { $type: "string" } },
+      },
+    },
+    deviceToken: {
+      type: [String],
+      default: [],
+    },
+    contacts: {
+      type: [
+        {
+          id: {
+            type: String,
+            collation: { locale: "en", strength: 2 },
+          },
+          name: {
+            type: String,
+            // TODO: add constraint here
+          },
+          transactionsCount: {
+            type: Number,
+            default: 1,
+          },
+        },
+      ],
+      default: [],
+    },
+    language: {
+      type: String,
+      enum: ["en", "es", ""],
+      default: "",
+    },
+    // firstName,
+    // lastName,
+    // activated,
+    // etc
+
+    title: {
+      type: String,
+      minlength: 3,
+      maxlength: 100,
+    },
+    coordinates: {
+      type: {
+        latitude: {
+          type: Number,
+        },
+        longitude: {
+          type: Number,
+        },
+      },
+    },
+
+    status: {
+      type: String,
+      enum: ["active", "locked"],
+      default: "active",
+    },
+
+    twoFA: {
+      secret: {
+        type: String,
+      },
+      threshold: {
+        type: Number,
+        default: twoFAConfig.threshold,
+      },
+    },
+
+    defaultWalletId: {
+      type: String,
+      index: true,
     },
   },
-
-  defaultWalletId: {
-    type: String,
-    index: true,
-  },
-})
+  { id: false },
+)
 
 // Define getter for ratioUsd
 // FIXME: this // An outer value of 'this' is shadowed by this container.
@@ -376,7 +381,7 @@ UserSchema.index({
   coordinates: 1,
 })
 
-export const User = mongoose.model<UserType>("User", UserSchema)
+export const User = mongoose.model<UserRecord>("User", UserSchema)
 
 // TODO: this DB should be capped.
 const PhoneCodeSchema = new Schema({

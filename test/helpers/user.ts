@@ -51,11 +51,11 @@ export const getDefaultWalletByTestUserIndex = async (index: number) => {
   return user
 }
 
-export const getUserTypeByTestUserIndex = async (index: number) => {
+export const getUserRecordByTestUserIndex = async (index: number) => {
   const entry = yamlConfig.test_accounts[index]
   const phone = entry.phone as PhoneNumber
 
-  return User.findOne({ phone }) as UserType
+  return User.findOne({ phone }) as UserRecord
 }
 
 export const createMandatoryUsers = async () => {

@@ -3,7 +3,7 @@ import { graphql } from "graphql"
 import { User } from "@services/mongoose/schema"
 import { gqlAdminSchema } from "@graphql/admin"
 
-let user
+let user: UserRecord
 
 beforeAll(async () => {
   user = await User.findOne({ username: "tester", phone: "+19876543210" })
@@ -16,7 +16,7 @@ describe("GraphQLMutationRoot", () => {
   it("exposes accountUpdateLevel", async () => {
     const mutation = `
       mutation {
-        accountUpdateLevel(input: { uid: "${user.id}", level: TWO}) {
+        accountUpdateLevel(input: { uid: "${user._id}", level: TWO}) {
           errors {
             message
           }
@@ -56,7 +56,7 @@ describe("GraphQLMutationRoot", () => {
   it("exposes accountUpdateStatus", async () => {
     const mutation = `
       mutation {
-        accountUpdateStatus(input: { uid: "${user.id}", status: LOCKED}) {
+        accountUpdateStatus(input: { uid: "${user._id}", status: LOCKED}) {
           errors {
             message
           }

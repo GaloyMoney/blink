@@ -7,6 +7,7 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
+import { Types as MongooseTypes } from "mongoose"
 
 export const caseInsensitiveRegex = (input: string) => {
   return new RegExp(`^${input}$`, "i")
@@ -15,7 +16,10 @@ export const caseInsensitiveRegex = (input: string) => {
 export const UsersRepository = (): IUsersRepository => {
   const findById = async (userId: UserId): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOne({ _id: userId }, projection)
+      const result = await User.findOne(
+        { _id: new MongooseTypes.ObjectId(userId) },
+        projection,
+      )
       if (!result) {
         return new CouldNotFindUserFromIdError(userId)
       }
@@ -68,10 +72,14 @@ export const UsersRepository = (): IUsersRepository => {
         deviceToken: deviceTokens,
         twoFA,
       }
-      const result = await User.findOneAndUpdate({ _id: id }, data, {
-        projection,
-        new: 1,
-      })
+      const result = await User.findOneAndUpdate(
+        { _id: new MongooseTypes.ObjectId(id) },
+        data,
+        {
+          projection,
+          new: 1,
+        },
+      )
       if (!result) {
         return new RepositoryError("Couldn't update user")
       }
@@ -89,8 +97,8 @@ export const UsersRepository = (): IUsersRepository => {
   }
 }
 
-const userFromRaw = (result: UserType): User => ({
-  id: result.id as UserId,
+const userFromRaw = (result: UserRecord): User => ({
+  id: String(result._id) as UserId,
   phone: result.phone as PhoneNumber,
   language: result.language as UserLanguage,
   twoFA: result.twoFA as TwoFAForUser,
@@ -104,7 +112,7 @@ const userFromRaw = (result: UserType): User => ({
         completed: true,
       }),
     ) || [],
-  defaultAccountId: result.id as AccountId,
+  defaultAccountId: result._id as AccountId,
   deviceTokens: (result.deviceToken || []) as DeviceToken[],
   createdAt: new Date(result.created_at),
   phoneMetadata: result.twilio as PhoneMetadata,

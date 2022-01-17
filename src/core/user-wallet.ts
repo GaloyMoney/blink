@@ -13,7 +13,7 @@ export class UserWallet {
   static lastPrice: number
 
   // FIXME typing : https://thecodebarbarian.com/working-with-mongoose-in-typescript.html
-  user: UserType // mongoose object
+  user: UserRecord // mongoose object
   readonly logger: Logger
   readonly config: UserWalletConfig
 
@@ -105,7 +105,7 @@ export class UserWallet {
   async setUsername({ username }): Promise<{ username: string | undefined; id: string }> {
     try {
       const result = await User.findOneAndUpdate(
-        { _id: this.user.id, username: { $in: [null, ""] } },
+        { _id: this.user._id, username: { $in: [null, ""] } },
         { username },
       )
 
@@ -116,7 +116,7 @@ export class UserWallet {
           level: "warn",
         })
       }
-      return { username, id: this.user.id }
+      return { username, id: String(this.user._id) }
     } catch (err) {
       this.logger.error({ err })
       throw new DbError("error updating username", {
