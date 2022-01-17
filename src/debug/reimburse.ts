@@ -5,31 +5,30 @@
 
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { getBankOwnerWalletId } from "@services/ledger/accounts"
-import { baseLogger, baseLogger as logger } from "@services/logger"
+import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
-import { redis } from "@services/redis"
 
 type recipient = {
   recipientWalletId: WalletId
   amount: Satoshis
+  memo: string
 }
 
 const reimburse = async (recipients: Array<recipient>) => {
   const mongoose = await setupMongoConnection()
+  console.log("Mongoose connection ready")
   const bankOwnerWalletId = await getBankOwnerWalletId()
 
   for (const recipient of recipients) {
-    await intraledgerPaymentSendWalletId({
+    console.log("attempting reimburse:", { recipient })
+    const res = await intraledgerPaymentSendWalletId({
       recipientWalletId: recipient.recipientWalletId,
       amount: recipient.amount,
       logger: baseLogger,
       senderWalletId: bankOwnerWalletId,
-      memo: "",
+      memo: recipient.memo,
     })
   }
-
-  await mongoose.connection.close()
-  redis.disconnect()
 }
 
 // Populate the array below with the recipient wallet public ids, sats and memo to be shown in the reimbursement txn
@@ -37,7 +36,7 @@ const recipients = [
   {
     recipientWalletId: "" as WalletId,
     amount: 0 as Satoshis,
-    memo: "",
+    memo: "refund",
   },
 ]
 
