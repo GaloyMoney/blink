@@ -6,9 +6,8 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
-import { toObjectId, fromObjectId } from "./utils"
 
-import { Types as MongooseTypes } from "mongoose"
+import { toObjectId, fromObjectId } from "./utils"
 
 import { caseInsensitiveRegex } from "."
 

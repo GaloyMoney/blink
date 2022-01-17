@@ -1,5 +1,5 @@
 import { User } from "@services/mongoose/schema"
-import { toObjectId } from "./utils"
+
 import {
   CouldNotFindError,
   CouldNotFindUserFromIdError,
@@ -8,7 +8,7 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 
-import { Types as MongooseTypes } from "mongoose"
+import { toObjectId } from "./utils"
 
 export const UsersIpRepository = (): IUsersIPsRepository => {
   const update = async (userIp: UserIPs): Promise<true | RepositoryError> => {

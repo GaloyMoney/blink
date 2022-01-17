@@ -27,8 +27,6 @@ import PinoHttp from "pino-http"
 import { SubscriptionServer } from "subscriptions-transport-ws"
 import { v4 as uuidv4 } from "uuid"
 
-import { Types as MongooseTypes } from "mongoose"
-
 import { playgroundTabs } from "../graphql/playground"
 
 import healthzHandler from "./middlewares/healthz"

@@ -1,7 +1,5 @@
 import { RewardAlreadyPresentError, UnknownRepositoryError } from "@domain/errors"
 
-import { Types as MongooseTypes } from "mongoose"
-
 import { User } from "./schema"
 import { toObjectId } from "./utils"
 

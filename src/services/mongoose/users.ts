@@ -7,6 +7,7 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
+
 import { toObjectId, fromObjectId } from "./utils"
 
 export const caseInsensitiveRegex = (input: string) => {
