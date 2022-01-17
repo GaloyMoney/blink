@@ -16,7 +16,7 @@ export const startServer = async (serverStartMessage = "Server ready"): Promise<
       }
       serverProcess.removeAllListeners()
     })
-    serverProcess.stderr.on('data', (data) => {
+    serverProcess.stderr.on("data", (data) => {
       console.error(`stderr: ${data.toString()}`)
     })
   })
