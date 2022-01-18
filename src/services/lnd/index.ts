@@ -379,6 +379,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       ])) as PayViaRoutesResult
       return {
         roundedUpFee: toSats(paymentResult.safe_fee),
+        sentFromPubkey: pubkey,
       }
     } catch (err) {
       if (err.message === "Timeout") return new LnPaymentPendingError()
@@ -445,6 +446,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       ])) as PayViaPaymentDetailsResult
       return {
         roundedUpFee: toSats(paymentResult.safe_fee),
+        sentFromPubkey: defaultPubkey,
       }
     } catch (err) {
       if (err.message === "Timeout") return new LnPaymentPendingError()
