@@ -221,6 +221,8 @@ const resolveFunctionSpanOptions = ({
       typeof functionArgs[0] === "object" ? functionArgs[0] : { "0": functionArgs[0] }
     for (const key in params) {
       attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = params[key]
+      attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}.null`] =
+        params[key] === null
     }
   }
   return { attributes }
