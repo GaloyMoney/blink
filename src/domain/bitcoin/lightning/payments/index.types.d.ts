@@ -1,9 +1,11 @@
 type LnPaymentPartial = {
   readonly paymentHash: PaymentHash
   readonly paymentRequest: EncodedPaymentRequest
+  readonly sentFromPubkey: Pubkey
 }
 
 type PersistedLnPaymentLookup = LnPaymentLookup & {
+  readonly sentFromPubkey: Pubkey
   isCompleteRecord: boolean
 }
 

@@ -77,6 +77,7 @@ const lnPaymentFromRaw = (result: LnPaymentType): PersistedLnPaymentLookup => ({
   status: result.status as PaymentStatus,
   paymentHash: result.paymentHash as PaymentHash,
   paymentRequest: result.paymentRequest as EncodedPaymentRequest,
+  sentFromPubkey: result.sentFromPubkey as Pubkey,
   milliSatsAmount: toMilliSatsFromString(result.milliSatsAmount),
   roundedUpAmount: toSats(result.roundedUpAmount),
   confirmedDetails: result.confirmedDetails
@@ -96,4 +97,5 @@ const lnPaymentFromRaw = (result: LnPaymentType): PersistedLnPaymentLookup => ({
 const lnPaymentPartialFromRaw = (result: LnPaymentType): LnPaymentPartial => ({
   paymentHash: result.paymentHash as PaymentHash,
   paymentRequest: result.paymentRequest as EncodedPaymentRequest,
+  sentFromPubkey: result.sentFromPubkey as Pubkey,
 })

@@ -494,6 +494,7 @@ const executePaymentViaLn = async ({
       LnPaymentsRepository().persistNew({
         paymentHash: decodedInvoice.paymentHash,
         paymentRequest: decodedInvoice.paymentRequest,
+        sentFromPubkey: rawRoute ? pubkey : lndService.defaultPubkey(),
       })
 
       if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending

@@ -21,6 +21,7 @@ import { getActiveLnd, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository, WalletInvoicesRepository } from "@services/mongoose"
 import { InvoiceUser } from "@services/mongoose/schema"
+import { LndService } from "@services/lnd"
 
 import { sleep } from "@utils"
 
@@ -839,6 +840,11 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnPay.paymentRequest).toBe(request)
         expect(lnPaymentOnPay.isCompleteRecord).toBeFalsy()
         expect(lnPaymentOnPay.status).toBeUndefined()
+
+        const lndService = LndService()
+        if (lndService instanceof Error) throw lndService
+        const pubkeys = lndService.listActivePubkeys()
+        expect(pubkeys).toContain(lnPaymentOnPay.sentFromPubkey)
 
         // FIXME: necessary to not have openHandler ?
         // https://github.com/alexbosworth/ln-service/issues/122
