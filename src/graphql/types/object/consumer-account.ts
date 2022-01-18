@@ -1,4 +1,4 @@
-import { Wallets } from "@app"
+import { Accounts, Wallets } from "@app"
 import { GT } from "@graphql/index"
 import getUuidByString from "uuid-by-string"
 
@@ -40,10 +40,7 @@ const ConsumerAccount = new GT.Object({
         },
       },
       resolve: async (source: Account) => {
-        const walletIds = await Wallets.listWalletIdsByAccountId(source.id)
-        if (walletIds instanceof Error) return walletIds
-
-        return Wallets.getCSVForWallets(walletIds)
+        return Accounts.getCSVForAccount(source.id)
       },
     },
   }),
