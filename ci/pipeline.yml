@@ -120,7 +120,7 @@ jobs:
         GOOGLE_CREDENTIALS: #@ data.values.staging_inception_creds
         SSH_PRIVATE_KEY: #@ data.values.staging_ssh_private_key
         SSH_PUB_KEY: #@ data.values.staging_ssh_pub_key
-        JEST_TIMEOUT: 60000
+        JEST_TIMEOUT: 90000
       run:
         path: pipeline-tasks/ci/tasks/test-integration.sh
   on_failure: #@ slack_failure_notification()
