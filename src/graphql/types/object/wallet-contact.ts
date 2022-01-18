@@ -9,7 +9,7 @@ import Username from "../scalar/username"
 
 import { TransactionConnection } from "./transaction"
 
-const AccountContact = GT.Object<UserType, GraphQLContextForUser>({
+const AccountContact = GT.Object<UserRecord, GraphQLContextForUser>({
   name: "UserContact",
   fields: () => ({
     id: { type: GT.NonNull(Username) },
