@@ -12,7 +12,9 @@ type PaymentIdentifyingSecret = string & { readonly brand: unique symbol }
 type FeatureBit = number & { readonly brand: unique symbol }
 type FeatureType = string & { readonly brand: unique symbol }
 
-type PagingToken = string & { readonly brand: unique symbol }
+type PagingStartToken = undefined
+type PagingContinueToken = string & { readonly brand: unique symbol }
+type PagingStopToken = false
 
 type PaymentStatus =
   typeof import("./index").PaymentStatus[keyof typeof import("./index").PaymentStatus]
@@ -120,13 +122,13 @@ type PayInvoiceResult = {
 }
 
 type ListLnPaymentsArgs = {
-  after: PagingToken | undefined
+  after: PagingStartToken | PagingContinueToken
   pubkey: Pubkey
 }
 
 type ListLnPaymentsResult = {
   lnPayments: LnPaymentLookup[]
-  endCursor: PagingToken | false
+  endCursor: PagingContinueToken | PagingStopToken
 }
 
 type StartingListSettledAndFailedLnPaymentsByPubkeyArg = {
@@ -136,8 +138,8 @@ type StartingListSettledAndFailedLnPaymentsByPubkeyArg = {
 }
 
 type ContinueListSettledAndFailedLnPaymentsByPubkeyArg = {
-  settledAfter: PagingToken | false
-  failedAfter: PagingToken | false
+  settledAfter: PagingContinueToken | PagingStopToken
+  failedAfter: PagingContinueToken | PagingStopToken
   pubkey: Pubkey
 }
 

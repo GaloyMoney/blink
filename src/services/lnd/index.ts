@@ -258,7 +258,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     after,
     pubkey,
   }: {
-    after: PagingToken | undefined
+    after: PagingStartToken | PagingContinueToken
     pubkey: Pubkey
   }): Promise<ListLnPaymentsResult | LightningServiceError> => {
     const { lnd } = getLndFromPubkey({ pubkey })
@@ -270,7 +270,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         lnPayments: payments
           .map(translateLnPaymentLookup)
           .map((p) => ({ ...p, status: PaymentStatus.Failed })),
-        endCursor: (next as PagingToken) || false,
+        endCursor: (next as PagingContinueToken) || false,
       }
     } catch (err) {
       return new UnknownLightningServiceError(err)
@@ -281,7 +281,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     after,
     pubkey,
   }: {
-    after: PagingToken | undefined
+    after: PagingStartToken | PagingContinueToken
     pubkey: Pubkey
   }): Promise<ListLnPaymentsResult | LightningServiceError> => {
     try {
@@ -293,7 +293,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         lnPayments: payments
           .map(translateLnPaymentLookup)
           .filter((p) => p.status === PaymentStatus.Settled),
-        endCursor: (next as PagingToken) || false,
+        endCursor: (next as PagingStartToken) || false,
       }
     } catch (err) {
       return new UnknownLightningServiceError(err)
