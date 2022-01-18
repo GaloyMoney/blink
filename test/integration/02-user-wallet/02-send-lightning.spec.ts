@@ -814,34 +814,15 @@ describe("UserWallet - Lightning Pay", () => {
         )
 
         const lnPaymentsRepo = LnPaymentsRepository()
-        const incompleteLnPayment = {
-          createdAt: undefined,
-          status: undefined,
-          paymentHash: "",
-          paymentRequest: "",
-          milliSatsAmount: NaN,
-          roundedUpAmount: undefined,
-          confirmedDetails: {
-            confirmedAt: undefined,
-            destination: undefined,
-            revealedPreImage: undefined,
-            roundedUpFee: undefined,
-            milliSatsFee: undefined,
-            hopPubkeys: [],
-          },
-          attempts: [],
-          isCompleteRecord: false,
-        }
 
         // Test 'lnpayment' is pending
         const lnPaymentOnPay = await lnPaymentsRepo.findByPaymentHash(id as PaymentHash)
         expect(lnPaymentOnPay).not.toBeInstanceOf(Error)
         if (lnPaymentOnPay instanceof Error) throw lnPaymentOnPay
-        expect(lnPaymentOnPay).toStrictEqual({
-          ...incompleteLnPayment,
-          paymentHash: id as PaymentHash,
-          paymentRequest: request,
-        })
+        expect(lnPaymentOnPay.paymentHash).toBe(id)
+        expect(lnPaymentOnPay.paymentRequest).toBe(request)
+        expect(lnPaymentOnPay.isCompleteRecord).toBeFalsy()
+        expect(lnPaymentOnPay.status).toBeUndefined()
 
         // Run update task
         const lnPaymentUpdateOnPending = await updateLnPayments()
@@ -853,11 +834,11 @@ describe("UserWallet - Lightning Pay", () => {
         )
         expect(lnPaymentOnPending).not.toBeInstanceOf(Error)
         if (lnPaymentOnPending instanceof Error) throw lnPaymentOnPending
-        expect(lnPaymentOnPending).toStrictEqual({
-          ...incompleteLnPayment,
-          paymentHash: id as PaymentHash,
-          paymentRequest: request,
-        })
+
+        expect(lnPaymentOnPay.paymentHash).toBe(id)
+        expect(lnPaymentOnPay.paymentRequest).toBe(request)
+        expect(lnPaymentOnPay.isCompleteRecord).toBeFalsy()
+        expect(lnPaymentOnPay.status).toBeUndefined()
 
         // FIXME: necessary to not have openHandler ?
         // https://github.com/alexbosworth/ln-service/issues/122

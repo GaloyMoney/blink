@@ -86,14 +86,10 @@ const lnPaymentFromRaw = (result: LnPaymentType): PersistedLnPaymentLookup => ({
         revealedPreImage: result.confirmedDetails.revealedPreImage,
         roundedUpFee: result.confirmedDetails.roundedUpFee,
         milliSatsFee: result.confirmedDetails.milliSatsFee,
-        // cast away from CoreMongooseArray type
-        hopPubkeys: result.confirmedDetails.hopPubkeys
-          ? [...result.confirmedDetails.hopPubkeys]
-          : [],
+        hopPubkeys: result.confirmedDetails.hopPubkeys,
       }
     : undefined,
-  // cast away from CoreMongooseArray type
-  attempts: result.attempts ? [...result.attempts] : [],
+  attempts: result.attempts,
   isCompleteRecord: result.isCompleteRecord,
 })
 
