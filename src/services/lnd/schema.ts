@@ -1,3 +1,4 @@
+import { PaymentStatus } from "@domain/bitcoin/lightning"
 import * as mongoose from "mongoose"
 
 const Schema = mongoose.Schema
@@ -32,7 +33,7 @@ const paymentSchema = new Schema<LnPaymentType>({
   createdAt: Date,
   status: {
     type: String,
-    enum: ["settled", "failed", "pending"],
+    enum: Object.values(PaymentStatus),
     required: true,
   },
   paymentHash: {
