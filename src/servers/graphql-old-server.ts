@@ -121,7 +121,7 @@ const resolvers = {
         },
         transactions: async () => {
           const { result: txs, error } = await Wallets.getTransactionsForWalletId({
-            walletId: wallet.user.walletId,
+            walletId: wallet.user.defaultWalletId,
           })
           if (error instanceof Error || txs === null) {
             throw error
