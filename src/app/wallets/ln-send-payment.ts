@@ -491,7 +491,7 @@ const executePaymentViaLn = async ({
           })
 
       // Fire-and-forget update to 'lnPayments' collection
-      LnPaymentsRepository().persist({
+      LnPaymentsRepository().persistNew({
         paymentHash: decodedInvoice.paymentHash,
         paymentRequest: decodedInvoice.paymentRequest,
       })

@@ -33,7 +33,7 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
     }
   }
 
-  const persist = async (
+  const persistNew = async (
     payment: LnPaymentPartial,
   ): Promise<LnPaymentPartial | RepositoryError> => {
     try {
@@ -67,7 +67,7 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
   return {
     findByPaymentHash,
     listIncomplete,
-    persist,
+    persistNew,
     update,
   }
 }
