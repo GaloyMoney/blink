@@ -53,10 +53,7 @@ export const hasPermissions = async (
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
 
-  // FIXME: why is the String() wrapper necessary?
-  // console.log(wallet.accountId) shows: 61e17bad0159c6372bf57be5 without "" around id
-  // userAccount.id has "" around it
-  return String(userAccount.id) === String(wallet.accountId)
+  return userAccount.id === wallet.accountId
 }
 
 export const getBusinessMapMarkers = async () => {
