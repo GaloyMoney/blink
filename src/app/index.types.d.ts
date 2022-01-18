@@ -1,6 +1,7 @@
 type PartialResult<T> = {
   result: T | null
   error?: ApplicationError
+  partialResult: true
 }
 
 type ApplicationErrors = typeof import("./errors").ApplicationErrors
