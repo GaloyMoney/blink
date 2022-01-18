@@ -37,7 +37,7 @@ describe("UserWallet - addInvoice", () => {
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
     const { walletId } = result
-    expect(String(walletId)).toBe(String(walletId1))
+    expect(walletId).toBe(walletId1)
   })
 
   it("add a self generated invoice without amount", async () => {
@@ -50,7 +50,7 @@ describe("UserWallet - addInvoice", () => {
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
     const { walletId } = result
-    expect(String(walletId)).toBe(String(walletId1))
+    expect(walletId).toBe(walletId1)
   })
 
   it("fails to add invoice past rate limit", async () => {
@@ -110,7 +110,7 @@ describe("UserWallet - addInvoice", () => {
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
     const { walletId, selfGenerated } = result
-    expect(String(walletId)).toBe(String(walletId1))
+    expect(walletId).toBe(walletId1)
     expect(selfGenerated).toBe(false)
   })
 

@@ -1,6 +1,5 @@
 export * from "./create-on-chain-address"
 export * from "./get-balance-for-wallet"
-export * from "./get-csv-for-wallets"
 export * from "./get-transactions-for-wallet"
 export * from "./get-last-on-chain-address"
 export * from "./get-on-chain-fee"
@@ -20,14 +19,6 @@ import { WalletsRepository } from "@services/mongoose"
 export const getWallet = async (walletId: WalletId) => {
   const wallets = WalletsRepository()
   return wallets.findById(walletId)
-}
-
-export const listWalletIdsByAccountId = async (
-  accountId: AccountId,
-): Promise<WalletId[] | RepositoryError> => {
-  const wallets = await WalletsRepository().listByAccountId(accountId)
-  if (wallets instanceof Error) return wallets
-  return wallets.map((wallet) => wallet.id)
 }
 
 export const listWalletsByAccountId = async (

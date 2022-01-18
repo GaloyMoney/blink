@@ -1,8 +1,7 @@
 import { USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD } from "@config/app"
 import { ActivityChecker } from "@domain/ledger"
-import { listWalletIdsByAccountId } from "@app/wallets"
+import { WalletsRepository, AccountsRepository } from "@services/mongoose"
 import { LedgerService } from "@services/ledger"
-import { AccountsRepository } from "@services/mongoose"
 
 export const getRecentlyActiveAccounts = async (): Promise<
   Account[] | ApplicationError
@@ -21,10 +20,10 @@ export const getRecentlyActiveAccounts = async (): Promise<
     // a mongodb query would be able to get the wallet in aggregate directly
     // from medici_transactions instead
 
-    const walletIds = await listWalletIdsByAccountId(account.id)
-    if (walletIds instanceof Error) return walletIds
+    const wallets = await WalletsRepository().listByAccountId(account.id)
+    if (wallets instanceof Error) return wallets
 
-    const volume = await activityChecker.aboveThreshold(walletIds)
+    const volume = await activityChecker.aboveThreshold(wallets.map((w) => w.id))
     if (volume instanceof Error) continue
     if (volume) {
       activeAccounts.push(account)
