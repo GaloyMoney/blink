@@ -3,23 +3,10 @@ import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 
 export const updateLnPayments = async (): Promise<true | ApplicationError> => {
-  let incompleteLnPayments = await LnPaymentsRepository().listIncomplete()
-  if (incompleteLnPayments instanceof Error) return incompleteLnPayments
-
-  const lndService = LndService()
-  if (lndService instanceof Error) return lndService
-
-  incompleteLnPayments = await fetchAndUpdatePayments(incompleteLnPayments)
-  if (incompleteLnPayments instanceof Error) return incompleteLnPayments
-  if (incompleteLnPayments.length == 0) return true
-
-  return true
-}
-
-const fetchAndUpdatePayments = async (
-  incompleteLnPayments: PersistedLnPaymentLookup[],
-) => {
   const processedLnPaymentsHashes: PaymentHash[] | ApplicationError = []
+
+  const incompleteLnPayments = await LnPaymentsRepository().listIncomplete()
+  if (incompleteLnPayments instanceof Error) return incompleteLnPayments
 
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
@@ -96,7 +83,5 @@ const fetchAndUpdatePayments = async (
     }
   }
 
-  return incompleteLnPayments.filter(
-    (p) => !processedLnPaymentsHashes.includes(p.paymentHash),
-  )
+  return true
 }
