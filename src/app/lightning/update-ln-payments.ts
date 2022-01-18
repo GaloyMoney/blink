@@ -8,17 +8,19 @@ export const updateLnPayments = async (): Promise<true | ApplicationError> => {
   const incompleteLnPayments = await LnPaymentsRepository().listIncomplete()
   if (incompleteLnPayments instanceof Error) return incompleteLnPayments
 
+  const pubkeysFromPayments = new Set(incompleteLnPayments.map((p) => p.sentFromPubkey))
+
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
   const pubkeys = lndService.listActivePubkeys()
 
-  let lastSeenCursorByPubkey: ListSettledAndFailedLnPaymentsByPubkeyArgs = pubkeys.map(
-    (pubkey) => ({
+  let lastSeenCursorByPubkey: ListSettledAndFailedLnPaymentsByPubkeyArgs = pubkeys
+    .filter((pubkey) => pubkeysFromPayments.has(pubkey))
+    .map((pubkey) => ({
       settledAfter: undefined,
       failedAfter: undefined,
       pubkey,
-    }),
-  )
+    }))
 
   while (
     processedLnPaymentsHashes.length < incompleteLnPayments.length &&
