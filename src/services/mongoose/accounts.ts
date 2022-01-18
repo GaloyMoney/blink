@@ -52,10 +52,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   }
 
   const findByUserId = async (userId: UserId): Promise<Account | RepositoryError> => {
-    const accountId = `${userId}` as AccountId
-    const account = await findById(accountId)
-    if (account instanceof Error) return account
-    return account
+    return findById(userId as string as AccountId)
   }
 
   // FIXME: could be in a different file? does not return an Account
