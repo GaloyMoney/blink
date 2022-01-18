@@ -40,10 +40,10 @@ import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
-  let lndAuth: AuthenticatedLnd, defaultPubkey: Pubkey
+  let defaultLnd: AuthenticatedLnd, defaultPubkey: Pubkey
   try {
     const { lnd, pubkey } = getActiveLnd()
-    lndAuth = lnd
+    defaultLnd = lnd
     defaultPubkey = pubkey as Pubkey
   } catch (err) {
     const errDetails = parseLndErrorDetails(err)
@@ -120,7 +120,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       )
 
       const probeForRouteArgs: ProbeForRouteArgs = {
-        lnd: lndAuth,
+        lnd: defaultLnd,
         destination: decodedInvoice.destination,
         mtokens:
           decodedInvoice.milliSatsAmount > 0
@@ -165,7 +165,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     expiresAt,
   }: RegisterInvoiceArgs): Promise<RegisteredInvoice | LightningServiceError> => {
     const input = {
-      lnd: lndAuth,
+      lnd: defaultLnd,
       description,
       description_hash: descriptionHash,
       tokens: satoshis as number,
@@ -403,7 +403,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     maxFee: Satoshis
   }): Promise<PayInvoiceResult | LightningServiceError> => {
     const paymentDetailsArgs: PayViaPaymentDetailsArgs = {
-      lnd: lndAuth,
+      lnd: defaultLnd,
       id: decodedInvoice.paymentHash,
       destination: decodedInvoice.destination,
       mtokens: milliSatsAmount.toString(),
