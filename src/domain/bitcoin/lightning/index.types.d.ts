@@ -129,11 +129,22 @@ type ListLnPaymentsResult = {
   endCursor: PagingToken | false
 }
 
-type ListSettledAndFailedLnPaymentsByPubkeyArgs = {
-  settledAfter: PagingToken | undefined | false
-  failedAfter: PagingToken | undefined | false
+type StartingListSettledAndFailedLnPaymentsByPubkeyArg = {
+  settledAfter: undefined | false
+  failedAfter: undefined | false
   pubkey: Pubkey
-}[]
+}
+
+type ContinueListSettledAndFailedLnPaymentsByPubkeyArg = {
+  settledAfter: PagingToken | false
+  failedAfter: PagingToken | false
+  pubkey: Pubkey
+}
+
+type ListSettledAndFailedLnPaymentsByPubkeyArgs = (
+  | StartingListSettledAndFailedLnPaymentsByPubkeyArg
+  | ContinueListSettledAndFailedLnPaymentsByPubkeyArg
+)[]
 
 type ListSettledAndFailedLnPaymentsByPubkeyResult = {
   settled: ListLnPaymentsResult | LightningServiceError
