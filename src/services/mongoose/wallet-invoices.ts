@@ -31,15 +31,10 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   const update = async ({
     paymentHash,
     paid,
-  }: {
-    paymentHash: PaymentHash
-    paid: boolean
-  }): Promise<WalletInvoice | RepositoryError> => {
+  }: WalletInvoice): Promise<WalletInvoice | RepositoryError> => {
     try {
       const data = { paid }
-      const invoiceUser = await InvoiceUser.findOneAndUpdate({ _id: paymentHash }, data, {
-        new: true,
-      })
+      const invoiceUser = await InvoiceUser.findOneAndUpdate({ _id: paymentHash }, data)
       if (!invoiceUser) {
         return new RepositoryError("Couldn't update invoice for payment hash")
       }
