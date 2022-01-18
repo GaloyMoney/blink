@@ -221,12 +221,17 @@ const resolveFunctionSpanOptions = ({
       typeof functionArgs[0] === "object" ? functionArgs[0] : { "0": functionArgs[0] }
     for (const key in params) {
       attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = params[key]
+      attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}.null`] =
+        params[key] === null
     }
   }
   return { attributes }
 }
 
-export const wrapToRunInSpan = <A extends Array<unknown>, R>({
+export const wrapToRunInSpan = <
+  A extends Array<unknown>,
+  R extends PartialResult<unknown> | unknown,
+>({
   fn,
   namespace,
 }: {
@@ -246,6 +251,9 @@ export const wrapToRunInSpan = <A extends Array<unknown>, R>({
       try {
         const ret = fn(...args)
         if (ret instanceof Error) span.recordException(ret)
+        const partialRet = ret as PartialResult<unknown>
+        if (partialRet?.partialResult && partialRet?.error)
+          span.recordException(partialRet.error)
         span.end()
         return ret
       } catch (error) {
@@ -260,7 +268,10 @@ export const wrapToRunInSpan = <A extends Array<unknown>, R>({
 
 type PromiseReturnType<T> = T extends Promise<infer Return> ? Return : T
 
-export const wrapAsyncToRunInSpan = <A extends Array<unknown>, R>({
+export const wrapAsyncToRunInSpan = <
+  A extends Array<unknown>,
+  R extends PartialResult<unknown> | unknown,
+>({
   fn,
   namespace,
 }: {
@@ -280,6 +291,9 @@ export const wrapAsyncToRunInSpan = <A extends Array<unknown>, R>({
       try {
         const ret = await fn(...args)
         if (ret instanceof Error) span.recordException(ret)
+        const partialRet = ret as PartialResult<unknown>
+        if (partialRet?.partialResult && partialRet?.error)
+          span.recordException(partialRet.error)
         span.end()
         return ret
       } catch (error) {
