@@ -1,9 +1,13 @@
 module.exports = {
   async up(db) {
     {
-      const result = await db.collection("users").dropIndex("walletId_1")
+      try {
+        const result = await db.collection("users").dropIndex("walletId_1")
 
-      console.log({ result }, "index dropped for users/walletId_1")
+        console.log({ result }, "index dropped for users/walletId_1")
+      } catch (error) {
+        console.log({ result: error }, "index dropped for users/walletId_1")
+      }
     }
 
     {
