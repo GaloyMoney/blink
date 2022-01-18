@@ -1,6 +1,5 @@
 import { InvalidWalletId } from "@domain/errors"
-import { listWalletIdsByAccountId } from "@app/wallets"
-import { AccountsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 export const updateDefaultWalletId = async ({
   accountId,
@@ -12,10 +11,10 @@ export const updateDefaultWalletId = async ({
   const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
 
-  const walletIds = await listWalletIdsByAccountId(account.id)
-  if (walletIds instanceof Error) return walletIds
+  const wallets = await WalletsRepository().listByAccountId(account.id)
+  if (wallets instanceof Error) return wallets
 
-  if (!walletIds.some((wid) => wid === walletId)) return new InvalidWalletId()
+  if (!wallets.some((w) => w.id === walletId)) return new InvalidWalletId()
 
   account.defaultWalletId = walletId
 
