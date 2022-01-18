@@ -40,6 +40,11 @@ reset-deps: clean-deps start-deps
 
 test: unit integration
 
+test-migrate:
+	docker compose down -v
+	docker compose build
+	docker compose up mongodb-migrate
+
 unit:
 	yarn test:unit
 

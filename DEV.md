@@ -127,7 +127,13 @@ if within a specific test suite you want to run/debug only a describe or it(test
 * [it.only](https://jestjs.io/docs/api#testonlyname-fn-timeout): just for debug purposes
 * [it.skip](https://jestjs.io/docs/api#testskipname-fn): use it when a test is temporarily broken. Please don't commit commented test cases
 
+### Testing migrations
 
+Migrations are stored in the `src/migrations` folder.
+When developing migrations the best way to test them on a clean database is:
+```
+make test-migrate
+```
 
 ### Known issues
 
