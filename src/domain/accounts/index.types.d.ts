@@ -26,7 +26,7 @@ type Account = {
   defaultWalletId: WalletId
   readonly ownerId: UserId
   readonly depositFeeRatio: DepositFeeRatio
-  readonly withdrawFee: WithdrawFee
+  withdrawFee: WithdrawFee
   level: AccountLevel
   status: AccountStatus
   title: BusinessMapTitle
