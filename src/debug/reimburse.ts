@@ -1,6 +1,6 @@
 /**
  * how to run:
- * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/update-on-chain-receipt.ts
+ * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/reimburse.ts
  */
 
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
