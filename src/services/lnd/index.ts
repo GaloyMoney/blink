@@ -300,33 +300,20 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const listSettledAndFailedPaymentsMultiplePubkeys = async (
-    cursors: ListSettledAndFailedLnPaymentsByPubkeyArgs,
-  ): Promise<ListSettledAndFailedLnPaymentsByPubkeyResult> => {
-    const nullListLnPaymentsResult: ListLnPaymentsResult = {
-      lnPayments: [],
-      endCursor: false,
-    }
+  const listSettledAndFailedPayments = async (args: {
+    after: PagingStartToken | PagingContinueToken
+    pubkey: Pubkey
+  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
+    const settledPayments = await listSettledPayments(args)
+    if (settledPayments instanceof Error) return settledPayments
 
-    return Promise.all(
-      cursors.map(async ({ pubkey, settledAfter, failedAfter }) => ({
-        pubkey,
-        settled:
-          settledAfter !== false
-            ? await listSettledPayments({
-                after: settledAfter,
-                pubkey,
-              })
-            : nullListLnPaymentsResult,
-        failed:
-          failedAfter !== false
-            ? await listFailedPayments({
-                after: failedAfter,
-                pubkey,
-              })
-            : nullListLnPaymentsResult,
-      })),
-    )
+    const failedPayments = await listFailedPayments(args)
+    if (failedPayments instanceof Error) return failedPayments
+
+    return {
+      lnPayments: [...settledPayments.lnPayments, ...failedPayments.lnPayments],
+      endCursor: settledPayments.endCursor,
+    }
   }
 
   const cancelInvoice = async ({
@@ -474,7 +461,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     lookupPayment,
     listSettledPayments,
     listFailedPayments,
-    listSettledAndFailedPaymentsMultiplePubkeys,
+    listSettledAndFailedPayments,
     cancelInvoice,
     payInvoiceViaRoutes,
     payInvoiceViaPaymentDetails,
