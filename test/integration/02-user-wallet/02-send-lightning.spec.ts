@@ -112,7 +112,7 @@ describe("UserWallet - Lightning Pay", () => {
   it("sends to another Galoy user with memo", async () => {
     const memo = "invoiceMemo"
 
-    const lnInvoice = await Wallets.addInvoice({
+    const lnInvoice = await Wallets.addInvoiceByWalletId({
       walletId: walletId2 as WalletId,
       amount: toSats(amountInvoice),
       memo,
@@ -169,7 +169,7 @@ describe("UserWallet - Lightning Pay", () => {
     const memo = "invoiceMemo"
     const memoPayer = "my memo as a payer"
 
-    const lnInvoice = await Wallets.addInvoice({
+    const lnInvoice = await Wallets.addInvoiceByWalletId({
       walletId: walletId2 as WalletId,
       amount: toSats(amountInvoice),
       memo,
@@ -426,7 +426,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if sends to self", async () => {
-    const lnInvoice = await Wallets.addInvoice({
+    const lnInvoice = await Wallets.addInvoiceByWalletId({
       walletId: walletId1 as WalletId,
       amount: toSats(amountInvoice),
       memo: "self payment",
@@ -514,7 +514,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails to pay when amount exceeds onUs limit", async () => {
-    const lnInvoice = await Wallets.addInvoice({
+    const lnInvoice = await Wallets.addInvoiceByWalletId({
       walletId: walletId0 as WalletId,
       amount: toSats(userLimits.onUsLimit + 1),
     })
@@ -666,7 +666,7 @@ describe("UserWallet - Lightning Pay", () => {
           const payerInitialBalance = await getBTCBalance(walletIdPayer)
           const payeeInitialBalance = await getBTCBalance(walletIdPayee)
 
-          const lnInvoice = await Wallets.addInvoice({
+          const lnInvoice = await Wallets.addInvoiceByWalletId({
             walletId: walletIdPayee as WalletId,
             amount: toSats(amountInvoice),
           })
@@ -954,7 +954,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     const { lnd } = getActiveLnd()
 
-    const lnInvoice = await Wallets.addInvoice({
+    const lnInvoice = await Wallets.addInvoiceByWalletId({
       walletId: walletId1 as WalletId,
       amount: toSats(amountInvoice),
       memo,

@@ -198,7 +198,7 @@ describe("onchainBlockEventhandler", () => {
   it("should process pending invoices on invoice update event", async () => {
     const sats = 500
 
-    const lnInvoice = await Wallets.addInvoice({
+    const lnInvoice = await Wallets.addInvoiceByWalletId({
       walletId: walletId12,
       amount: toSats(sats),
     })
