@@ -13,7 +13,7 @@ type WalletInvoiceValidator = {
 interface IWalletInvoicesRepository {
   persistNew: (invoice: WalletInvoice) => Promise<WalletInvoice | RepositoryError>
 
-  update: (invoice: WalletInvoice) => Promise<WalletInvoice | RepositoryError>
+  markAsPaid: (paymentHash: PaymentHash) => Promise<WalletInvoice | RepositoryError>
 
   findByPaymentHash: (
     paymentHash: PaymentHash,

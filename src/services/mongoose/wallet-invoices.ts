@@ -15,45 +15,34 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     paid,
   }: WalletInvoice): Promise<WalletInvoice | RepositoryError> => {
     try {
-      await new InvoiceUser({
+      const invoiceUser = await new InvoiceUser({
         _id: paymentHash,
         walletId,
         selfGenerated,
         pubkey,
         paid,
       }).save()
-      return {
-        paymentHash,
-        walletId,
-        selfGenerated,
-        pubkey,
-        paid,
-      } as WalletInvoice
+      return walletInvoiceFromRaw(invoiceUser)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
   }
 
-  const update = async ({
-    paymentHash,
-    walletId,
-    selfGenerated,
-    pubkey,
-    paid,
-  }: WalletInvoice): Promise<WalletInvoice | RepositoryError> => {
+  const markAsPaid = async (
+    paymentHash: PaymentHash,
+  ): Promise<WalletInvoice | RepositoryError> => {
     try {
-      const data = { walletId, selfGenerated, pubkey, paid }
-      const doc = await InvoiceUser.updateOne({ _id: paymentHash }, { $set: data })
-      if (doc.nModified !== 1) {
+      const invoiceUser = await InvoiceUser.findOneAndUpdate(
+        { _id: paymentHash },
+        { paid: true },
+        {
+          new: true,
+        },
+      )
+      if (!invoiceUser) {
         return new RepositoryError("Couldn't update invoice for payment hash")
       }
-      return {
-        paymentHash,
-        walletId,
-        selfGenerated,
-        pubkey,
-        paid,
-      }
+      return walletInvoiceFromRaw(invoiceUser)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -67,13 +56,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       if (!invoiceUser) {
         return new CouldNotFindWalletInvoiceError(paymentHash)
       }
-      return {
-        paymentHash,
-        walletId: invoiceUser.walletId,
-        selfGenerated: invoiceUser.selfGenerated,
-        pubkey: invoiceUser.pubkey,
-        paid: invoiceUser.paid,
-      }
+      return walletInvoiceFromRaw(invoiceUser)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -91,14 +74,8 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       return new RepositoryError(error)
     }
 
-    for await (const invoice of pending) {
-      yield {
-        paymentHash: invoice.id as PaymentHash,
-        walletId: invoice.walletId as WalletId,
-        selfGenerated: invoice.selfGenerated,
-        pubkey: invoice.pubkey as Pubkey,
-        paid: invoice.paid,
-      } as WalletInvoice
+    for await (const invoiceUser of pending) {
+      yield walletInvoiceFromRaw(invoiceUser)
     }
   }
 
@@ -153,7 +130,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
 
   return {
     persistNew,
-    update,
+    markAsPaid,
     findByPaymentHash,
     findPendingByWalletId,
     listWalletIdsWithPendingInvoices,
@@ -161,3 +138,11 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     deleteUnpaidOlderThan,
   }
 }
+
+const walletInvoiceFromRaw = (result): WalletInvoice => ({
+  paymentHash: result.id as PaymentHash,
+  walletId: result.walletId as WalletId,
+  selfGenerated: result.selfGenerated,
+  pubkey: result.pubkey as Pubkey,
+  paid: result.paid,
+})
