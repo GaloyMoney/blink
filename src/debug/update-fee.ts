@@ -22,7 +22,7 @@ const updateFee = async (operations: Array<feeUpdateOperation>) => {
     const wallet = await walletRepo.findById(walletId)
     if (wallet instanceof RepositoryError) {
       console.error(`Could not fetch wallet for walletId: ${walletId}`, { wallet })
-      break
+      continue
     }
 
     const { accountId: id } = wallet
@@ -30,7 +30,7 @@ const updateFee = async (operations: Array<feeUpdateOperation>) => {
     const updateResult = await updateAccountWithdrawFee({ id, fee })
     if (updateResult instanceof Error) {
       console.error(`Could not set fee for walletId: ${walletId}`, { updateResult })
-      break
+      continue
     }
     console.log(`Fee for walletId: ${walletId} set to ${fee}`)
   }
