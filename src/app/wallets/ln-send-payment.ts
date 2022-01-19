@@ -32,6 +32,7 @@ import { WalletInvoicesRepository, AccountsRepository } from "@services/mongoose
 import { NotificationsService } from "@services/notifications"
 import { RoutesCache } from "@services/redis/routes"
 import { addAttributesToCurrentSpan } from "@services/tracing"
+import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 
 export const lnInvoicePaymentSendWithTwoFA = async ({
   paymentRequest,
@@ -488,6 +489,14 @@ const executePaymentViaLn = async ({
             milliSatsAmount: toMilliSatsFromNumber(amount * 1000),
             maxFee,
           })
+
+      // Fire-and-forget update to 'lnPayments' collection
+      LnPaymentsRepository().persistNew({
+        paymentHash: decodedInvoice.paymentHash,
+        paymentRequest: decodedInvoice.paymentRequest,
+        sentFromPubkey: rawRoute ? pubkey : lndService.defaultPubkey(),
+      })
+
       if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending
 
       const settled = await ledgerService.settlePendingLnPayments(paymentHash)

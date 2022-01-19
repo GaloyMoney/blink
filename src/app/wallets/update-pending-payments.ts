@@ -1,3 +1,4 @@
+import { toSats } from "@domain/bitcoin"
 import { PaymentStatus } from "@domain/bitcoin/lightning"
 import { InconsistentDataError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
@@ -99,7 +100,12 @@ const updatePendingPayment = async ({
     lightningLogger.error({ err: lnPaymentLookup }, "issue fetching payment")
     return lnPaymentLookup
   }
-  const { status, roundedUpFee } = lnPaymentLookup
+
+  let roundedUpFee: Satoshis
+  const { status } = lnPaymentLookup
+  if (status != PaymentStatus.Failed) {
+    roundedUpFee = lnPaymentLookup.confirmedDetails?.roundedUpFee || toSats(0)
+  }
 
   if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {
     const ledgerService = LedgerService()
@@ -156,7 +162,7 @@ const revertTransaction = async ({
   logger,
 }: {
   paymentLiabilityTx: LedgerTransaction
-  lnPaymentLookup: LnPaymentLookup
+  lnPaymentLookup: LnPaymentLookup | LnFailedPartialPaymentLookup
   logger: Logger
 }): Promise<void | ApplicationError> => {
   const ledgerService = LedgerService()

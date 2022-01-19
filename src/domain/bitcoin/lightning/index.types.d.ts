@@ -12,8 +12,14 @@ type PaymentIdentifyingSecret = string & { readonly brand: unique symbol }
 type FeatureBit = number & { readonly brand: unique symbol }
 type FeatureType = string & { readonly brand: unique symbol }
 
+type PagingStartToken = undefined
+type PagingContinueToken = string & { readonly brand: unique symbol }
+type PagingStopToken = false
+
 type PaymentStatus =
   typeof import("./index").PaymentStatus[keyof typeof import("./index").PaymentStatus]
+
+type FailedPaymentStatus = typeof import("./index").PaymentStatus.Failed
 
 type PaymentSendStatus =
   typeof import("./index").PaymentSendStatus[keyof typeof import("./index").PaymentSendStatus]
@@ -38,24 +44,47 @@ type LnInvoiceFeature = {
 type LnInvoiceLookup = {
   readonly createdAt: Date
   readonly confirmedAt: Date | undefined
-  readonly description: string
-  readonly expiresAt: Date | undefined
   readonly isSettled: boolean
-  readonly received: Satoshis
-  readonly request: string | undefined
+  readonly roundedDownReceived: Satoshis
+  readonly milliSatsReceived: MilliSatoshis
   readonly secretPreImage: SecretPreImage
+  readonly lnInvoice: {
+    readonly description: string
+    readonly paymentRequest: EncodedPaymentRequest | undefined
+    readonly expiresAt: Date
+    readonly roundedDownAmount: Satoshis
+  }
+}
+
+type GetPaymentsResults = import("lightning").GetPaymentsResult
+type GetFailedPaymentsResults = import("lightning").GetFailedPaymentsResult
+type LnPaymentAttempt =
+  | GetPaymentsResults["payments"][number]["attempts"][number]
+  | GetFailedPaymentsResults["payments"][number]["attempts"][number]
+
+type LnPaymentConfirmedDetails = {
+  readonly confirmedAt: Date
+  readonly destination: Pubkey
+  readonly revealedPreImage: RevealedPreImage
+  readonly roundedUpFee: Satoshis
+  readonly milliSatsFee: MilliSatoshis
+  readonly hopPubkeys: Pubkey[] | undefined
 }
 
 type LnPaymentLookup = {
-  readonly status: PaymentStatus
-  readonly roundedUpFee: Satoshis
-  readonly milliSatsAmount: MilliSatoshis
   readonly createdAt: Date
-  readonly confirmedAt: Date | undefined
-  readonly amount: Satoshis
-  readonly revealedPreImage: RevealedPreImage
-  readonly request: string | undefined
-  readonly destination: Pubkey
+  readonly status: PaymentStatus
+  readonly paymentHash: PaymentHash
+  readonly paymentRequest: EncodedPaymentRequest | undefined
+  readonly milliSatsAmount: MilliSatoshis
+  readonly roundedUpAmount: Satoshis
+
+  readonly confirmedDetails: LnPaymentConfirmedDetails | undefined
+  readonly attempts: LnPaymentAttempt[] | undefined
+}
+
+type LnFailedPartialPaymentLookup = {
+  readonly status: FailedPaymentStatus
 }
 
 type LnInvoice = {
@@ -90,12 +119,48 @@ type LnFeeCalculator = {
 
 type PayInvoiceResult = {
   roundedUpFee: Satoshis
+  sentFromPubkey: Pubkey
 }
+
+type ListLnPaymentsArgs = {
+  after: PagingStartToken | PagingContinueToken
+  pubkey: Pubkey
+}
+
+type ListLnPaymentsResult = {
+  lnPayments: LnPaymentLookup[]
+  endCursor: PagingContinueToken | PagingStopToken
+}
+
+type StartingListSettledAndFailedLnPaymentsByPubkeyArg = {
+  settledAfter: undefined | false
+  failedAfter: undefined | false
+  pubkey: Pubkey
+}
+
+type ContinueListSettledAndFailedLnPaymentsByPubkeyArg = {
+  settledAfter: PagingContinueToken | PagingStopToken
+  failedAfter: PagingContinueToken | PagingStopToken
+  pubkey: Pubkey
+}
+
+type ListSettledAndFailedLnPaymentsByPubkeyArgs = (
+  | StartingListSettledAndFailedLnPaymentsByPubkeyArg
+  | ContinueListSettledAndFailedLnPaymentsByPubkeyArg
+)[]
+
+type ListSettledAndFailedLnPaymentsByPubkeyResult = {
+  settled: ListLnPaymentsResult | LightningServiceError
+  failed: ListLnPaymentsResult | LightningServiceError
+  pubkey: Pubkey
+}[]
 
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
 
   defaultPubkey(): Pubkey
+
+  listActivePubkeys(): Pubkey[]
 
   findRouteForInvoice({
     decodedInvoice,
@@ -116,7 +181,7 @@ interface ILightningService {
   }): Promise<RawRoute | LightningServiceError>
 
   registerInvoice(
-    registerInvoiceArgs: RegisterInvoiceArgs,
+    args: RegisterInvoiceArgs,
   ): Promise<RegisteredInvoice | LightningServiceError>
 
   lookupInvoice({
@@ -133,7 +198,19 @@ interface ILightningService {
   }: {
     pubkey?: Pubkey
     paymentHash: PaymentHash
-  }): Promise<LnPaymentLookup | LightningServiceError>
+  }): Promise<LnPaymentLookup | LnFailedPartialPaymentLookup | LightningServiceError>
+
+  listSettledPayments(
+    args: ListLnPaymentsArgs,
+  ): Promise<ListLnPaymentsResult | LightningServiceError>
+
+  listFailedPayments(
+    args: ListLnPaymentsArgs,
+  ): Promise<ListLnPaymentsResult | LightningServiceError>
+
+  listSettledAndFailedPaymentsMultiplePubkeys(
+    args: ListSettledAndFailedLnPaymentsByPubkeyArgs,
+  ): Promise<ListSettledAndFailedLnPaymentsByPubkeyResult>
 
   cancelInvoice({
     pubkey,
