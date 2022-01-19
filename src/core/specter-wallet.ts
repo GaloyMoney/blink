@@ -20,7 +20,7 @@ const staticClient = ""
 export class SpecterWallet {
   bitcoindClient // TODO rename?
   readonly logger: Logger
-  readonly config: SpecterWalletConfig
+  readonly config: ColdStorageConfig
 
   constructor({ logger, config }: SpecterWalletConstructorArgs) {
     this.logger = logger.child({ topic: "bitcoind" })

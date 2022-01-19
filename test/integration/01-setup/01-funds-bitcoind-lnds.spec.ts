@@ -31,6 +31,14 @@ describe("Bitcoind", () => {
     expect(wallets.length).toBe(0)
   })
 
+  it("create cold wallet", async () => {
+    const walletName = "specter/coldstorage"
+    const { name } = await bitcoindClient.createWallet({ wallet_name: walletName })
+    expect(name).toBe(walletName)
+    const wallets = await bitcoindClient.listWallets()
+    expect(wallets).toContain(walletName)
+  })
+
   it("create outside wallet", async () => {
     const walletName = "outside"
     const { name } = await bitcoindClient.createWallet({ wallet_name: walletName })

@@ -35,6 +35,7 @@ rebalancing:
   #
   # specter wallet always
   onchainWallet: "specter"
+  targetConfirmations: 6
 
 lndScbBackupBucketName: "lnd-static-channel-backups"
 

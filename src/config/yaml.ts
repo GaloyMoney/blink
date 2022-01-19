@@ -48,6 +48,17 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toSats(
 
 export const getGaloyInstanceName = (): string => yamlConfig.name
 
+export const getBitcoinCoreRPCConfig = () => {
+  return {
+    network: process.env.NETWORK,
+    username: process.env.BITCOINDRPCUSER || "rpcuser",
+    password: process.env.BITCOINDRPCPASS,
+    host: process.env.BITCOINDADDR,
+    port: process.env.BITCOINDPORT,
+    version: "0.22.0",
+  }
+}
+
 export const getLndParams = (): LndParams[] => {
   const config = yamlConfig.lnds
 
@@ -155,13 +166,14 @@ export const getUserWalletConfig = (
   }
 }
 
-export const getSpecterWalletConfig = (): SpecterWalletConfig => {
+export const getColdStorageConfig = (): ColdStorageConfig => {
   const config = yamlConfig.rebalancing
   return {
     minOnChainHotWalletBalance: toSats(config.minOnChainHotWalletBalance),
     maxHotWalletBalance: toSats(config.maxHotWalletBalance),
     minRebalanceSize: toSats(config.minRebalanceSize),
     onchainWallet: config.onchainWallet,
+    targetConfirmations: config.targetConfirmations,
   }
 }
 

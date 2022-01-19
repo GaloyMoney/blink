@@ -24,6 +24,11 @@ type AddOnchainTxSendMetadata = TxMetadata & {
   sendAll: boolean
 }
 
+type AddColdStorageTxSendMetadata = TxMetadata & {
+  hash: OnChainTxHash
+  payee_addresses: OnChainAddress[]
+}
+
 type IntraledgerTxMetadata = TxMetadata & {
   memoPayer: string | null
   username: Username | null

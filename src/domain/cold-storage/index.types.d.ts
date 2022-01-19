@@ -1,3 +1,5 @@
+type ColdStorageServiceError = import("./errors").ColdStorageServiceError
+
 type RebalanceCheckerConfig = {
   minOnChainHotWalletBalance: Satoshis
   maxHotWalletBalance: Satoshis
@@ -12,4 +14,9 @@ type RebalanceChecker = {
     onChainHotWalletBalance: Satoshis
     offChainHotWalletBalance: Satoshis
   }): Satoshis
+}
+
+interface IColdStorageService {
+  getBalance(): Promise<Satoshis | ColdStorageServiceError>
+  createOnChainAddress(): Promise<OnChainAddress | ColdStorageServiceError>
 }

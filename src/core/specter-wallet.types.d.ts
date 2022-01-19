@@ -1,8 +1,9 @@
-type SpecterWalletConfig = RebalanceCheckerConfig & {
+type ColdStorageConfig = RebalanceCheckerConfig & {
   onchainWallet: string
+  targetConfirmations: number
 }
 
 type SpecterWalletConstructorArgs = {
-  config: SpecterWalletConfig
+  config: ColdStorageConfig
   logger: Logger
 }
