@@ -94,6 +94,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "An amount is required to complete payment"
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "InvalidWithdrawFeeError":
+      message = "A valid fee amount is required"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "InvalidSatoshiAmount":
       message = "A valid satoshi amount is required"
       return new ValidationInternalError({ message, logger: baseLogger })
