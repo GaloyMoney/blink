@@ -140,8 +140,8 @@ fees:
   deposit: 0.003 # 0.3 percent
 
 withdrawFeeRange:
-  min: 0
-  max: 2000
+  min: 0 # sats
+  max: 50000 # sats
 
 lnds:
   - name: LND1
