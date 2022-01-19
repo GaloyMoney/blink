@@ -301,12 +301,12 @@ const resolvers = {
       addInvoice: async ({ value, memo }) => {
         const lnInvoice =
           value && value > 0
-            ? await Wallets.addInvoice({
+            ? await Wallets.addInvoiceByWalletId({
                 walletId: wallet.user.walletId,
                 amount: value,
                 memo,
               })
-            : await Wallets.addInvoiceNoAmount({
+            : await Wallets.addInvoiceNoAmountByWalletId({
                 walletId: wallet.user.walletId,
                 memo,
               })

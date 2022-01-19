@@ -38,7 +38,7 @@ describe("UserWallet - Lightning", () => {
     const sats = 50000
     const memo = "myMemo"
 
-    const lnInvoice = await Wallets.addInvoice({
+    const lnInvoice = await Wallets.addInvoiceByWalletId({
       walletId: walletId1 as WalletId,
       amount: toSats(sats),
       memo,
@@ -107,7 +107,7 @@ describe("UserWallet - Lightning", () => {
   it("receives zero amount invoice", async () => {
     const sats = 1000
 
-    const lnInvoice = await Wallets.addInvoiceNoAmount({
+    const lnInvoice = await Wallets.addInvoiceNoAmountByWalletId({
       walletId: walletId1 as WalletId,
     })
     if (lnInvoice instanceof Error) return lnInvoice
@@ -154,7 +154,7 @@ describe("UserWallet - Lightning", () => {
     expect(sats).toBeLessThan(MEMO_SHARING_SATS_THRESHOLD)
 
     // process spam transaction
-    const lnInvoice = await Wallets.addInvoice({
+    const lnInvoice = await Wallets.addInvoiceByWalletId({
       walletId: walletId1 as WalletId,
       amount: toSats(sats),
       memo,

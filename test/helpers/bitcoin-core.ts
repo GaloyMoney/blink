@@ -1,5 +1,5 @@
 import {
-  addInvoice,
+  addInvoiceByWalletId,
   createOnChainAddress,
   getBalanceForWallet,
   getBalanceForWalletId,
@@ -100,7 +100,7 @@ export const fundWalletIdFromLightning = async ({
   walletId: WalletId
   amount: Satoshis
 }) => {
-  const invoice = await addInvoice({ walletId, amount })
+  const invoice = await addInvoiceByWalletId({ walletId, amount })
   if (invoice instanceof Error) return invoice
 
   await pay({ lnd: lndOutside1, request: invoice.paymentRequest })

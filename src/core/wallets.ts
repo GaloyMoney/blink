@@ -2,7 +2,7 @@ import { Wallets } from "@app"
 import { checkedToUsername } from "@domain/accounts"
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
-import { AccountsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 // TODO: Remove. Used in v1 only
 const walletIdFromUsername = async (
@@ -26,7 +26,10 @@ export const addInvoiceForUsername = async ({
   const walletId = await walletIdFromUsername(checkedUsername)
   if (walletId instanceof Error) return walletId
 
-  const limitOk = await Wallets.checkRecipientWalletIdRateLimits(walletId)
+  const wallet = await WalletsRepository().findById(walletId)
+  if (wallet instanceof Error) return wallet
+
+  const limitOk = await Wallets.checkRecipientWalletIdRateLimits(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
   const sats = checkedToSats(amount)
   if (sats instanceof Error) return sats
@@ -49,7 +52,10 @@ export const addInvoiceNoAmountForUsername = async ({
   const walletId = await walletIdFromUsername(checkedUsername)
   if (walletId instanceof Error) return walletId
 
-  const limitOk = await Wallets.checkRecipientWalletIdRateLimits(walletId)
+  const wallet = await WalletsRepository().findById(walletId)
+  if (wallet instanceof Error) return wallet
+
+  const limitOk = await Wallets.checkRecipientWalletIdRateLimits(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
 
   const walletInvoiceFactory = WalletInvoiceFactory(walletId)

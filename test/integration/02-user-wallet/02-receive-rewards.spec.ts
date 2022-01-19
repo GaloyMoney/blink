@@ -14,7 +14,7 @@ import {
   getDefaultWalletIdByTestUserIndex,
   getUserRecordByTestUserIndex,
 } from "test/helpers"
-import { resetSelfWalletIdLimits } from "test/helpers/rate-limit"
+import { resetSelfAccountIdLimits } from "test/helpers/rate-limit"
 import { getBTCBalance } from "test/helpers/wallet"
 
 let accountId1: AccountId
@@ -48,7 +48,7 @@ afterAll(() => {
 
 describe("UserWallet - addEarn", () => {
   it("adds balance only once", async () => {
-    const resetOk = await resetSelfWalletIdLimits(walletId1)
+    const resetOk = await resetSelfAccountIdLimits(accountId1)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 

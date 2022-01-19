@@ -23,6 +23,7 @@ import {
   checkIsBalanced,
   createMandatoryUsers,
   createUserWallet,
+  getAccountIdByTestUserIndex,
   getDefaultWalletIdByTestUserIndex,
   getUserRecordByTestUserIndex,
   lndonchain,
@@ -32,12 +33,13 @@ import {
   subscribeToTransactions,
   waitUntilBlockHeight,
 } from "test/helpers"
-import { resetOnChainAddressWalletIdLimits } from "test/helpers/rate-limit"
+import { resetOnChainAddressAccountIdLimits } from "test/helpers/rate-limit"
 import { getBTCBalance } from "test/helpers/wallet"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
-let walletId0
+let walletId0: WalletId
+let accountId0: AccountId
 
 const userLimits = getUserLimits({ level: 1 })
 
@@ -51,6 +53,7 @@ beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
 
   walletId0 = await getDefaultWalletIdByTestUserIndex(0)
+  accountId0 = await getAccountIdByTestUserIndex(0)
 
   await createUserWallet(2)
 })
@@ -94,7 +97,7 @@ describe("UserWallet - On chain", () => {
 
   it("fails to create onChain Address past rate limit", async () => {
     // Reset limits before starting
-    let resetOk = await resetOnChainAddressWalletIdLimits(walletId0)
+    let resetOk = await resetOnChainAddressAccountIdLimits(accountId0)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
@@ -114,7 +117,7 @@ describe("UserWallet - On chain", () => {
     expect(onChainAddress).toBeInstanceOf(OnChainAddressCreateRateLimiterExceededError)
 
     // Reset limits when done for other tests
-    resetOk = await resetOnChainAddressWalletIdLimits(walletId0)
+    resetOk = await resetOnChainAddressAccountIdLimits(accountId0)
     expect(resetOk).not.toBeInstanceOf(Error)
   })
 
