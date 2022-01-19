@@ -4,8 +4,9 @@ type LnPaymentPartial = {
   readonly sentFromPubkey: Pubkey
 }
 
-type PersistedLnPaymentLookup = LnPaymentLookup & {
+type PersistedLnPaymentLookup = Omit<LnPaymentLookup, "paymentRequest"> & {
   readonly sentFromPubkey: Pubkey
+  paymentRequest: EncodedPaymentRequest | undefined
   isCompleteRecord: boolean
 }
 

@@ -81,16 +81,15 @@ const fetchAndUpdatePayments = async ({
     ]
 
     for (const payment of lnPayments) {
-      let persistedPaymentLookup = incompleteLnPayments.find(
+      const persistedPaymentLookup = incompleteLnPayments.find(
         (elem) => elem.paymentHash === payment.paymentHash,
       )
       if (!persistedPaymentLookup) continue
 
-      persistedPaymentLookup = Object.assign(persistedPaymentLookup, {
-        ...payment,
-        paymentRequest: payment.paymentRequest || persistedPaymentLookup.paymentRequest,
-        isCompleteRecord: true,
-      })
+      persistedPaymentLookup.paymentRequest =
+        payment.paymentRequest || persistedPaymentLookup.paymentRequest
+      persistedPaymentLookup.isCompleteRecord = true
+
       const updatedPaymentLookup = await LnPaymentsRepository().update(
         persistedPaymentLookup,
       )
