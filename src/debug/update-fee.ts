@@ -1,8 +1,12 @@
+/**
+ * how to run:
+ * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/update-fee.ts
+ */
+
 import { updateAccountWithdrawFee } from "@app/accounts/update-account-withdraw-fee"
 import { RepositoryError } from "@domain/errors"
-import { baseLogger } from "@services/logger"
-import { WalletsRepository } from "@services/mongoose"
 import { setupMongoConnection } from "@services/mongodb"
+import { WalletsRepository } from "@services/mongoose"
 import mongoose from "mongoose"
 
 type feeUpdateOperation = {
@@ -33,11 +37,16 @@ const updateFee = async (operations: Array<feeUpdateOperation>) => {
   return mongoose.connection.close()
 }
 
-let feeUpdateOperations: Array<feeUpdateOperation>
+// Populate the array below with the wallet ids and fees to be set
 
-feeUpdateOperations = [
-  { walletId: "70767cc2-9cab-4bab-b78a-5e6b2d947163" as WalletId, fee: 13 as Satoshis },
-  { walletId: "70767cc2-9cab-4bab-b78a-5e6b2d947163" as WalletId, fee: -1 as Satoshis },
+const feeUpdateOperations: Array<feeUpdateOperation> = [
+  { walletId: "" as WalletId, fee: 0 as Satoshis },
 ]
+
+// For example:
+// feeUpdateOperations = [
+//   { walletId: "70767cc2-9cab-4bab-b78a-5e6b2d947163" as WalletId, fee: 13 as Satoshis },
+//   { walletId: "70767cc2-9cab-4bab-b78a-5e6b2d947163" as WalletId, fee: -1 as Satoshis },
+// ]
 
 updateFee(feeUpdateOperations).then(console.log).catch(console.error)
