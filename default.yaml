@@ -139,6 +139,10 @@ fees:
   withdraw: 2000 # 2000 sats flat per tx
   deposit: 0.003 # 0.3 percent
 
+withdrawFeeRange:
+  min: 0
+  max: 2000
+
 lnds:
   - name: LND1
     type: ["offchain", "onchain"]

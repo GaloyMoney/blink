@@ -4,7 +4,10 @@ import {
   InvalidAccountStatusError,
   InvalidUsername,
   InvalidContactAlias,
+  InvalidWithdrawFeeError,
 } from "@domain/errors"
+
+import { getWithdrawFeeRange } from "@config/app"
 
 export * from "./errors"
 export * from "./api-keys"
@@ -64,4 +67,12 @@ export const checkedToContactAlias = (alias: string): ContactAlias | ValidationE
     return new InvalidContactAlias(alias)
   }
   return alias as ContactAlias
+}
+
+export const checkedToWithdrawFee = (fee: number): WithdrawFee | ValidationError => {
+  const { min, max } = getWithdrawFeeRange()
+  if (fee < min || fee > max) {
+    return new InvalidWithdrawFeeError(fee.toString())
+  }
+  return fee as WithdrawFee
 }
