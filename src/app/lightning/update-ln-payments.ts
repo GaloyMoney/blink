@@ -3,7 +3,7 @@ import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 
 export const updateLnPayments = async (): Promise<true | ApplicationError> => {
-  let processedLnPaymentsHashes: PaymentHash[] | ApplicationError = []
+  const processedLnPaymentsHashes: PaymentHash[] | ApplicationError = []
 
   const incompleteLnPayments = await LnPaymentsRepository().listIncomplete()
   if (incompleteLnPayments instanceof Error) return incompleteLnPayments
@@ -12,107 +12,61 @@ export const updateLnPayments = async (): Promise<true | ApplicationError> => {
 
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
-  const pubkeys = lndService.listActivePubkeys()
-
-  let lastSeenCursorByPubkey: ListSettledAndFailedLnPaymentsByPubkeyArgs = pubkeys
+  const pubkeys = lndService
+    .listActivePubkeys()
     .filter((pubkey) => pubkeysFromPayments.has(pubkey))
-    .map((pubkey) => ({
-      settledAfter: undefined,
-      failedAfter: undefined,
-      pubkey,
-    }))
 
-  while (
-    processedLnPaymentsHashes.length < incompleteLnPayments.length &&
-    lastSeenCursorByPubkey.length
-  ) {
-    ;({ lastSeenCursorByPubkey, processedLnPaymentsHashes } =
-      await fetchAndUpdatePayments({
-        incompleteLnPayments,
-        lastSeenCursorByPubkey,
-        lndService,
-      }))
-  }
+  for (const key of pubkeys) {
+    const pubkey = key as Pubkey
 
-  return true
-}
-
-const fetchAndUpdatePayments = async ({
-  incompleteLnPayments,
-  lastSeenCursorByPubkey,
-  lndService,
-}: {
-  incompleteLnPayments: PersistedLnPaymentLookup[]
-  lastSeenCursorByPubkey: ListSettledAndFailedLnPaymentsByPubkeyArgs
-  lndService: ILightningService
-}) => {
-  // Fetch from Lightning service
-  const results = await lndService.listSettledAndFailedPaymentsMultiplePubkeys(
-    lastSeenCursorByPubkey,
-  )
-
-  // Update cursors & drop completed pubkeys
-  const updatedLastSeenCursorByPubkey = results
-    .map(
-      ({
-        settled,
-        failed,
-        pubkey,
-      }): ContinueListSettledAndFailedLnPaymentsByPubkeyArg => ({
-        settledAfter:
-          settled instanceof Error || settled.endCursor === false
-            ? false
-            : settled.endCursor,
-        failedAfter:
-          failed instanceof Error || failed.endCursor === false
-            ? false
-            : failed.endCursor,
-        pubkey,
-      }),
-    )
-    .filter(({ settledAfter, failedAfter }) => settledAfter || failedAfter)
-
-  // Update LnPayments repository
-  const processedLnPaymentsHashes: PaymentHash[] | ApplicationError = []
-  for (const { settled, failed } of results) {
-    const lnPayments: LnPaymentLookup[] = [
-      ...(settled instanceof Error ? [] : settled.lnPayments),
-      ...(failed instanceof Error ? [] : failed.lnPayments),
-    ]
-
-    for (const payment of lnPayments) {
-      const persistedPaymentLookup = incompleteLnPayments.find(
-        (elem) => elem.paymentHash === payment.paymentHash,
-      )
-      if (!persistedPaymentLookup) continue
-
-      persistedPaymentLookup.createdAt = payment.createdAt
-      persistedPaymentLookup.status = payment.status
-      persistedPaymentLookup.milliSatsAmount = payment.milliSatsAmount
-      persistedPaymentLookup.roundedUpAmount = payment.roundedUpAmount
-      persistedPaymentLookup.confirmedDetails = payment.confirmedDetails
-      persistedPaymentLookup.attempts = payment.attempts
-
-      persistedPaymentLookup.paymentRequest =
-        payment.paymentRequest || persistedPaymentLookup.paymentRequest
-      persistedPaymentLookup.isCompleteRecord = true
-
-      const updatedPaymentLookup = await LnPaymentsRepository().update(
-        persistedPaymentLookup,
-      )
-      if (updatedPaymentLookup instanceof Error) {
+    let after: PagingStartToken | PagingContinueToken = undefined
+    while (processedLnPaymentsHashes.length < incompleteLnPayments.length) {
+      // Fetch from Lightning service
+      const results: ListLnPaymentsResult | LightningServiceError =
+        await lndService.listSettledAndFailedPayments({
+          pubkey,
+          after,
+        })
+      if (results instanceof Error) {
         baseLogger.error(
-          { error: updatedPaymentLookup },
-          "Could not update LnPayments repository",
+          { error: results },
+          `Could not fetch payments for pubkey ${pubkey}`,
         )
         continue
       }
-      processedLnPaymentsHashes.push(payment.paymentHash)
+
+      // Update LnPayments repository
+      for (const payment of results.lnPayments) {
+        const persistedPaymentLookup = incompleteLnPayments.find(
+          (elem) => elem.paymentHash === payment.paymentHash,
+        )
+        if (!persistedPaymentLookup) continue
+
+        persistedPaymentLookup.createdAt = payment.createdAt
+        persistedPaymentLookup.status = payment.status
+        persistedPaymentLookup.milliSatsAmount = payment.milliSatsAmount
+        persistedPaymentLookup.roundedUpAmount = payment.roundedUpAmount
+        persistedPaymentLookup.confirmedDetails = payment.confirmedDetails
+        persistedPaymentLookup.attempts = payment.attempts
+
+        persistedPaymentLookup.isCompleteRecord = true
+
+        const updatedPaymentLookup = await LnPaymentsRepository().update(
+          persistedPaymentLookup,
+        )
+        if (updatedPaymentLookup instanceof Error) {
+          baseLogger.error(
+            { error: updatedPaymentLookup },
+            "Could not update LnPayments repository",
+          )
+          continue
+        }
+        processedLnPaymentsHashes.push(payment.paymentHash)
+
+        if (results.endCursor === false) break
+        after = results.endCursor
+      }
     }
   }
-
-  return {
-    lastSeenCursorByPubkey: updatedLastSeenCursorByPubkey,
-    processedLnPaymentsHashes,
-  }
+  return true
 }
