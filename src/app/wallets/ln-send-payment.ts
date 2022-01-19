@@ -384,9 +384,8 @@ const executePaymentViaIntraledger = async ({
       })
       if (deletedLnInvoice instanceof Error) return deletedLnInvoice
 
-      walletInvoice.paid = true
-      const updatedWalletInvoice = await invoicesRepo.update(walletInvoice)
-      if (updatedWalletInvoice instanceof Error) return updatedWalletInvoice
+      const newWalletInvoice = await invoicesRepo.markAsPaid(walletInvoice.paymentHash)
+      if (newWalletInvoice instanceof Error) return newWalletInvoice
 
       const notificationsService = NotificationsService(logger)
       notificationsService.lnInvoicePaid({

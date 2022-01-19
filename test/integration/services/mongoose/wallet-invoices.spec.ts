@@ -2,8 +2,9 @@ import crypto from "crypto"
 
 import { Wallets } from "@app"
 import { toSats } from "@domain/bitcoin"
-import { WalletInvoicesRepository } from "@services/mongoose"
 import { InvoiceUser } from "@services/mongoose/schema"
+
+import { WalletInvoicesRepository } from "@services/mongoose"
 
 import { createUserWallet, getDefaultWalletIdByTestUserIndex } from "test/helpers"
 
@@ -46,8 +47,7 @@ describe("WalletInvoices", () => {
     expect(persistResult).not.toBeInstanceOf(Error)
 
     const invoiceToUpdate = persistResult as WalletInvoice
-    invoiceToUpdate.paid = true
-    const updatedResult = await repo.update(invoiceToUpdate)
+    const updatedResult = await repo.markAsPaid(invoiceToUpdate.paymentHash)
     expect(updatedResult).not.toBeInstanceOf(Error)
     expect(updatedResult).toHaveProperty("paid", true)
 

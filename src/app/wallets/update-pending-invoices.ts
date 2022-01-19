@@ -138,9 +138,9 @@ const updatePendingInvoice = async ({
         return true
       }
 
-      invoiceToUpdate.paid = true
-
-      const updatedWalletInvoice = await walletInvoicesRepo.update(invoiceToUpdate)
+      const updatedWalletInvoice = await walletInvoicesRepo.markAsPaid(
+        invoiceToUpdate.paymentHash,
+      )
       if (updatedWalletInvoice instanceof Error) return updatedWalletInvoice
 
       const usdPerSat = await getCurrentPrice()
