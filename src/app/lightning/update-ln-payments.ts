@@ -86,6 +86,13 @@ const fetchAndUpdatePayments = async ({
       )
       if (!persistedPaymentLookup) continue
 
+      persistedPaymentLookup.createdAt = payment.createdAt
+      persistedPaymentLookup.status = payment.status
+      persistedPaymentLookup.milliSatsAmount = payment.milliSatsAmount
+      persistedPaymentLookup.roundedUpAmount = payment.roundedUpAmount
+      persistedPaymentLookup.confirmedDetails = payment.confirmedDetails
+      persistedPaymentLookup.attempts = payment.attempts
+
       persistedPaymentLookup.paymentRequest =
         payment.paymentRequest || persistedPaymentLookup.paymentRequest
       persistedPaymentLookup.isCompleteRecord = true

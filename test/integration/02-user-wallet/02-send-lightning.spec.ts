@@ -879,16 +879,32 @@ describe("UserWallet - Lightning Pay", () => {
         if (lnPaymentUpdateOnSettled instanceof Error) throw lnPaymentUpdateOnSettled
 
         // Test 'lnpayment' is complete
+        const payments = await lndService.listSettledPayments({
+          pubkey: lnPaymentOnPay.sentFromPubkey,
+          after: undefined,
+        })
+        if (payments instanceof Error) throw payments
+        const payment = payments.lnPayments.find((p) => p.paymentHash === id)
+        expect(payment).not.toBeUndefined()
+        if (payment === undefined) throw new Error("Could not find payment in lnd")
+
         const lnPaymentOnSettled = await lnPaymentsRepo.findByPaymentHash(
           id as PaymentHash,
         )
         expect(lnPaymentOnSettled).not.toBeInstanceOf(Error)
         if (lnPaymentOnSettled instanceof Error) throw lnPaymentOnSettled
+
+        expect(lnPaymentOnSettled.createdAt).toStrictEqual(payment.createdAt)
         expect(lnPaymentOnSettled.status).toBe(PaymentStatus.Settled)
-        expect(lnPaymentOnSettled.isCompleteRecord).toBeTruthy()
+        expect(lnPaymentOnSettled.milliSatsAmount).toBe(payment.milliSatsAmount)
+        expect(lnPaymentOnSettled.roundedUpAmount).toBe(payment.roundedUpAmount)
         expect(lnPaymentOnSettled.confirmedDetails?.revealedPreImage).not.toBeUndefined()
         expect(lnPaymentOnSettled.attempts).not.toBeUndefined()
         expect(lnPaymentOnSettled.attempts?.length).toBeGreaterThanOrEqual(1)
+
+        expect(lnPaymentOnSettled.paymentRequest).toBe(request)
+        expect(lnPaymentOnSettled.sentFromPubkey).toBe(lnPaymentOnPay.sentFromPubkey)
+        expect(lnPaymentOnSettled.isCompleteRecord).toBeTruthy()
 
         const finalBalance = await getBTCBalance(walletId1)
         expect(finalBalance).toBe(initBalance1 - amountInvoice)
