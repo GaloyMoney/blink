@@ -823,6 +823,7 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnPay.paymentHash).toBe(id)
         expect(lnPaymentOnPay.paymentRequest).toBe(request)
         expect(lnPaymentOnPay.isCompleteRecord).toBeFalsy()
+        expect(lnPaymentOnPay.createdAt).toBeInstanceOf(Date)
         expect(lnPaymentOnPay.status).toBeUndefined()
 
         // Run update task
@@ -839,6 +840,7 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnPay.paymentHash).toBe(id)
         expect(lnPaymentOnPay.paymentRequest).toBe(request)
         expect(lnPaymentOnPay.isCompleteRecord).toBeFalsy()
+        expect(lnPaymentOnPay.createdAt).toBeInstanceOf(Date)
         expect(lnPaymentOnPay.status).toBeUndefined()
 
         const lndService = LndService()
