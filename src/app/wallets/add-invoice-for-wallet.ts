@@ -17,18 +17,6 @@ export const addInvoiceByWalletId = async ({
   const wallet = await wallets.findById(walletId)
   if (wallet instanceof Error) return wallet
 
-  return addInvoice({
-    wallet,
-    amount,
-    memo,
-  })
-}
-
-export const addInvoice = async ({
-  wallet,
-  amount,
-  memo = "",
-}: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
   const limitOk = await checkSelfWalletIdRateLimits(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
   const sats = checkedToSats(amount)
@@ -50,16 +38,6 @@ export const addInvoiceNoAmountByWalletId = async ({
   const wallet = await wallets.findById(walletId)
   if (wallet instanceof Error) return wallet
 
-  return addInvoiceNoAmount({
-    wallet,
-    memo,
-  })
-}
-
-export const addInvoiceNoAmount = async ({
-  wallet,
-  memo = "",
-}: AddInvoiceNoAmountArgs): Promise<LnInvoice | ApplicationError> => {
   const limitOk = await checkSelfWalletIdRateLimits(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
 
@@ -150,7 +128,7 @@ export const registerAndPersistInvoice = async ({
   return invoice
 }
 
-export const checkSelfWalletIdRateLimits = async (
+const checkSelfWalletIdRateLimits = async (
   accountId: AccountId,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({

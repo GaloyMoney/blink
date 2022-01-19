@@ -4,19 +4,8 @@ type addInvoiceByWalletIdArgs = {
   memo?: string
 }
 
-type AddInvoiceArgs = {
-  wallet: Wallet
-  amount: number
-  memo?: string
-}
-
 type AddInvoiceNoAmountByWalletIdArgs = {
   walletId: WalletId
-  memo?: string
-}
-
-type AddInvoiceNoAmountArgs = {
-  wallet: Wallet
   memo?: string
 }
 
