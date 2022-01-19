@@ -300,7 +300,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const listSettledAndFailedPaymentsByPubkey = async (
+  const listSettledAndFailedPaymentsMultiplePubkeys = async (
     cursors: ListSettledAndFailedLnPaymentsByPubkeyArgs,
   ): Promise<ListSettledAndFailedLnPaymentsByPubkeyResult> => {
     const nullListLnPaymentsResult: ListLnPaymentsResult = {
@@ -474,7 +474,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     lookupPayment,
     listSettledPayments,
     listFailedPayments,
-    listSettledAndFailedPaymentsByPubkey,
+    listSettledAndFailedPaymentsMultiplePubkeys,
     cancelInvoice,
     payInvoiceViaRoutes,
     payInvoiceViaPaymentDetails,

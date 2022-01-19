@@ -47,7 +47,7 @@ const fetchAndUpdatePayments = async ({
   lndService: ILightningService
 }) => {
   // Fetch from Lightning service
-  const results = await lndService.listSettledAndFailedPaymentsByPubkey(
+  const results = await lndService.listSettledAndFailedPaymentsMultiplePubkeys(
     lastSeenCursorByPubkey,
   )
 

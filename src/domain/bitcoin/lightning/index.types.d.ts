@@ -208,7 +208,7 @@ interface ILightningService {
     args: ListLnPaymentsArgs,
   ): Promise<ListLnPaymentsResult | LightningServiceError>
 
-  listSettledAndFailedPaymentsByPubkey(
+  listSettledAndFailedPaymentsMultiplePubkeys(
     args: ListSettledAndFailedLnPaymentsByPubkeyArgs,
   ): Promise<ListSettledAndFailedLnPaymentsByPubkeyResult>
 
