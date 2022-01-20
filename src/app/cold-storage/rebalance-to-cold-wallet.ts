@@ -5,7 +5,7 @@ import {
   ONCHAIN_SCAN_DEPTH_OUTGOING,
 } from "@config/app"
 import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
-import { checkedToOnChainAddress, TxDecoder } from "@domain/bitcoin/onchain"
+import { TxDecoder } from "@domain/bitcoin/onchain"
 import { RebalanceChecker } from "@domain/cold-storage"
 import { ColdStorageService } from "@services/cold-storage"
 import { LedgerService } from "@services/ledger"
@@ -51,11 +51,8 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const address = await coldStorageService.createOnChainAddress()
   if (address instanceof Error) return address
 
-  const checkedAddress = checkedToOnChainAddress({ network: BTC_NETWORK, value: address })
-  if (checkedAddress instanceof Error) return checkedAddress
-
   const txHash = await onChainService.payToAddress({
-    address: checkedAddress,
+    address,
     amount: rebalanceAmount,
     targetConfirmations: checkedTargetConfirmations,
   })
@@ -80,7 +77,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
     fee,
     usd,
     usdFee,
-    payeeAddress: checkedAddress,
+    payeeAddress: address,
   })
 
   if (journal instanceof Error) return journal

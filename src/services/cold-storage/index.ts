@@ -1,7 +1,8 @@
 import BitcoindClient from "bitcoin-core"
 import { btc2sat } from "@domain/bitcoin"
-import { getBitcoinCoreRPCConfig, getColdStorageConfig } from "@config/app"
+import { BTC_NETWORK, getBitcoinCoreRPCConfig, getColdStorageConfig } from "@config/app"
 import { UnknownColdStorageServiceError } from "@domain/cold-storage/errors"
+import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
 
 export const ColdStorageService = async (): Promise<
   IColdStorageService | ColdStorageServiceError
@@ -21,7 +22,10 @@ export const ColdStorageService = async (): Promise<
     OnChainAddress | ColdStorageServiceError
   > => {
     try {
-      return bitcoindClient.getNewAddress() as OnChainAddress
+      return checkedToOnChainAddress({
+        network: BTC_NETWORK,
+        value: await bitcoindClient.getNewAddress(),
+      })
     } catch (err) {
       return new UnknownColdStorageServiceError(err)
     }
