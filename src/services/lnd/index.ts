@@ -35,6 +35,7 @@ import {
 import { LndOfflineError } from "@core/error"
 
 import { timeout } from "@utils"
+import { baseLogger } from "@services/logger"
 
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
@@ -277,7 +278,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const listSettledPayments = async ({
+  const listSettledAndPendingPayments = async ({
     after,
     pubkey,
   }: {
@@ -290,13 +291,39 @@ export const LndService = (): ILightningService | LightningServiceError => {
       const { payments, next } = await getPayments({ lnd, ...pagingArgs })
 
       return {
-        lnPayments: payments
-          .map(translateLnPaymentLookup)
-          .filter((p) => p.status === PaymentStatus.Settled),
+        lnPayments: payments.map(translateLnPaymentLookup),
         endCursor: (next as PagingStartToken) || false,
       }
     } catch (err) {
       return new UnknownLightningServiceError(err)
+    }
+  }
+
+  const listSettledPayments = async (args: {
+    after: PagingStartToken | PagingContinueToken
+    pubkey: Pubkey
+  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
+    const settledAndPendingPayments = await listSettledAndPendingPayments(args)
+    if (settledAndPendingPayments instanceof Error) return settledAndPendingPayments
+
+    const { lnPayments, endCursor } = settledAndPendingPayments
+    return {
+      lnPayments: lnPayments.filter((p) => p.status === PaymentStatus.Settled),
+      endCursor,
+    }
+  }
+
+  const listPendingPayments = async (args: {
+    after: PagingStartToken | PagingContinueToken
+    pubkey: Pubkey
+  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
+    const settledAndPendingPayments = await listSettledAndPendingPayments(args)
+    if (settledAndPendingPayments instanceof Error) return settledAndPendingPayments
+
+    const { lnPayments, endCursor } = settledAndPendingPayments
+    return {
+      lnPayments: lnPayments.filter((p) => p.status !== PaymentStatus.Settled),
+      endCursor,
     }
   }
 
@@ -444,7 +471,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
     lookupInvoice,
     lookupPayment,
     listSettledPayments,
+    listPendingPayments,
     listFailedPayments,
+    listSettledAndPendingPayments,
     cancelInvoice,
     payInvoiceViaRoutes,
     payInvoiceViaPaymentDetails,
