@@ -34,15 +34,17 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
   }
 
   const persistNew = async (
-    payment: LnPaymentPartial,
-  ): Promise<LnPaymentPartial | RepositoryError> => {
+    payment: LnPaymentPartial | PersistedLnPaymentLookup,
+  ): Promise<LnPaymentPartial | PersistedLnPaymentLookup | RepositoryError> => {
     try {
-      const result = await LnPayment.findOneAndUpdate(
+      const result: LnPaymentType = await LnPayment.findOneAndUpdate(
         { paymentHash: payment.paymentHash },
         payment,
         { upsert: true, new: true, setDefaultsOnInsert: true },
       )
-      return lnPaymentPartialFromRaw(result)
+      return result.isCompleteRecord
+        ? lnPaymentFromRaw(result)
+        : lnPaymentPartialFromRaw(result)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
