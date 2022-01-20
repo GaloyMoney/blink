@@ -1,4 +1,4 @@
-import { rebalanceToColdWallet } from "@app/admin/rebalance-to-cold-wallet"
+import { ColdStorage } from "@app"
 import * as appConfig from "@config/app"
 import { btc2sat, toSats } from "@domain/bitcoin"
 import { RebalanceChecker } from "@domain/cold-storage"
@@ -43,7 +43,7 @@ describe("Admin - rebalanceToColdWallet", () => {
       offChainHotWalletBalance: offChain,
     })
 
-    const result = await rebalanceToColdWallet()
+    const result = await ColdStorage.rebalanceToColdWallet()
     expect(result).not.toBeInstanceOf(Error)
     expect(result).toBeTruthy()
 
@@ -66,7 +66,7 @@ describe("Admin - rebalanceToColdWallet", () => {
 
     const initialBalance = await coldStorageWalletClient.getBalance()
 
-    const result = await rebalanceToColdWallet()
+    const result = await ColdStorage.rebalanceToColdWallet()
     expect(result).not.toBeInstanceOf(Error)
     expect(result).toBeFalsy()
 

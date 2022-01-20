@@ -10,7 +10,7 @@ import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 
 import { activateLndHealthCheck } from "@services/lnd/health"
-import { Admin, Lightning, Wallets } from "@app"
+import { ColdStorage, Lightning, Wallets } from "@app"
 
 const logger = baseLogger.child({ module: "cron" })
 
@@ -19,7 +19,7 @@ const main = async () => {
   const mongoose = await setupMongoConnection()
 
   const rebalance = async () => {
-    const result = await Admin.rebalanceToColdWallet()
+    const result = await ColdStorage.rebalanceToColdWallet()
     if (result instanceof Error) throw result
   }
 

@@ -2,8 +2,6 @@ import { checkedToUsername } from "@domain/accounts"
 import { checkedToPhoneNumber } from "@domain/users"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 
-export * from "./rebalance-to-cold-wallet"
-
 export const getAccountByUsername = async (username: string) => {
   const usernameValid = checkedToUsername(username)
   if (usernameValid instanceof Error) return usernameValid
