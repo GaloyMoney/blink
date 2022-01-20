@@ -23,7 +23,7 @@ afterEach(async () => {
   await checkIsBalanced()
 })
 
-describe("Admin - rebalanceToColdWallet", () => {
+describe("ColdStorage - rebalanceToColdWallet", () => {
   it("rebalance successfully", async () => {
     const coldStorageConfig = appConfig.getColdStorageConfig()
     const config = {

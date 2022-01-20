@@ -1,7 +1,8 @@
 import BitcoindClient from "bitcoin-core"
-import { btc2sat } from "@domain/bitcoin"
+import { btc2sat, sat2btc } from "@domain/bitcoin"
 import { BTC_NETWORK, getBitcoinCoreRPCConfig, getColdStorageConfig } from "@config/app"
 import {
+  InsufficientBalanceForRebalanceError,
   InvalidCurrentColdStorageWalletServiceError,
   UnknownColdStorageServiceError,
 } from "@domain/cold-storage/errors"
@@ -54,9 +55,41 @@ export const ColdStorageService = async (): Promise<
     }
   }
 
+  const createPsbt = async ({
+    walletName,
+    onChainAddress,
+    amount,
+    targetConfirmations,
+  }: GetColdStoragePsbtArgs): Promise<ColdStoragePsbt | ColdStorageServiceError> => {
+    try {
+      const client = await getBitcoindClient(walletName)
+      if (client instanceof Error) return client
+
+      const output0 = {}
+      output0[onChainAddress] = sat2btc(amount)
+
+      const fundedPsbt = await client.walletCreateFundedPsbt({
+        inputs: [],
+        outputs: [output0],
+        options: { conf_target: targetConfirmations },
+      })
+
+      return {
+        psbt: fundedPsbt.psbt,
+        fee: btc2sat(fundedPsbt.fee),
+      }
+    } catch (err) {
+      if (err && err.message && err.message.includes("Insufficient funds")) {
+        return new InsufficientBalanceForRebalanceError(err)
+      }
+      return new UnknownColdStorageServiceError(err)
+    }
+  }
+
   return {
     getBalances,
     createOnChainAddress,
+    createPsbt,
   }
 }
 
