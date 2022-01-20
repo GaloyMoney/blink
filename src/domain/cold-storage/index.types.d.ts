@@ -16,7 +16,12 @@ type RebalanceChecker = {
   }): Satoshis
 }
 
+type ColdStorageBalance = {
+  walletName: string
+  amount: Satoshis
+}
+
 interface IColdStorageService {
-  getBalance(): Promise<Satoshis | ColdStorageServiceError>
+  getBalances(): Promise<ColdStorageBalance[] | ColdStorageServiceError>
   createOnChainAddress(): Promise<OnChainAddress | ColdStorageServiceError>
 }

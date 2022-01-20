@@ -1,4 +1,5 @@
 type ColdStorageConfig = RebalanceCheckerConfig & {
+  walletPattern: string
   onchainWallet: string
   targetConfirmations: number
 }

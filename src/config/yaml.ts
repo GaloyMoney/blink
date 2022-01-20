@@ -167,11 +167,12 @@ export const getUserWalletConfig = (
 }
 
 export const getColdStorageConfig = (): ColdStorageConfig => {
-  const config = yamlConfig.rebalancing
+  const config = yamlConfig.coldStorage
   return {
     minOnChainHotWalletBalance: toSats(config.minOnChainHotWalletBalance),
     maxHotWalletBalance: toSats(config.maxHotWalletBalance),
     minRebalanceSize: toSats(config.minRebalanceSize),
+    walletPattern: config.walletPattern,
     onchainWallet: config.onchainWallet,
     targetConfirmations: config.targetConfirmations,
   }

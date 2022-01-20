@@ -25,13 +25,14 @@ afterEach(async () => {
 
 describe("Admin - rebalanceToColdWallet", () => {
   it("rebalance successfully", async () => {
-    const rebalancing = appConfig.getColdStorageConfig()
+    const coldStorageConfig = appConfig.getColdStorageConfig()
     const config = {
       minOnChainHotWalletBalance: toSats(100000),
       maxHotWalletBalance: toSats(100000),
       minRebalanceSize: toSats(10000),
-      onchainWallet: rebalancing.onchainWallet,
-      targetConfirmations: rebalancing.targetConfirmations,
+      walletPattern: coldStorageConfig.walletPattern,
+      onchainWallet: coldStorageConfig.onchainWallet,
+      targetConfirmations: coldStorageConfig.targetConfirmations,
     }
     jest.spyOn(appConfig, "getColdStorageConfig").mockImplementationOnce(() => config)
 
@@ -54,13 +55,14 @@ describe("Admin - rebalanceToColdWallet", () => {
   })
 
   it("returns false if no rebalance is needed", async () => {
-    const rebalancing = appConfig.getColdStorageConfig()
+    const coldStorageConfig = appConfig.getColdStorageConfig()
     const config = {
       minOnChainHotWalletBalance: btc2sat(20),
       maxHotWalletBalance: btc2sat(20),
       minRebalanceSize: btc2sat(20),
-      onchainWallet: rebalancing.onchainWallet,
-      targetConfirmations: rebalancing.targetConfirmations,
+      walletPattern: coldStorageConfig.walletPattern,
+      onchainWallet: coldStorageConfig.onchainWallet,
+      targetConfirmations: coldStorageConfig.targetConfirmations,
     }
     jest.spyOn(appConfig, "getColdStorageConfig").mockImplementationOnce(() => config)
 
