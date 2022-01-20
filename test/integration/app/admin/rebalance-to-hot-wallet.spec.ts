@@ -27,7 +27,7 @@ describe("ColdStorage - rebalanceToHotWallet", () => {
     expect(result).not.toBeInstanceOf(Error)
     expect(result).toEqual(
       expect.objectContaining({
-        psbt: expect.any(String),
+        transaction: expect.any(String),
         fee: expect.any(Number),
       }),
     )

@@ -13,6 +13,12 @@ type RebalanceCheckerConfig = {
   minRebalanceSize: Satoshis
 }
 
+type ColdStorageConfig = RebalanceCheckerConfig & {
+  walletPattern: string
+  onchainWallet: string
+  targetConfirmations: number
+}
+
 type RebalanceChecker = {
   getWithdrawFromHotWalletAmount({
     onChainHotWalletBalance,
