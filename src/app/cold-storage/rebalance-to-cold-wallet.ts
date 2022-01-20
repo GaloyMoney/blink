@@ -70,7 +70,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const usd = rebalanceAmount * usdPerSat
   const usdFee = fee * usdPerSat
 
-  const journal = await ledgerService.addColdStorageTxSend({
+  const journal = await ledgerService.addColdStorageTxReceive({
     txHash,
     description,
     sats: rebalanceAmount,

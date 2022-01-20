@@ -24,6 +24,11 @@ type AddOnchainTxSendMetadata = TxMetadata & {
   sendAll: boolean
 }
 
+type AddColdStorageTxReceiveMetadata = TxMetadata & {
+  hash: OnChainTxHash
+  payee_addresses: OnChainAddress[]
+}
+
 type AddColdStorageTxSendMetadata = TxMetadata & {
   hash: OnChainTxHash
   payee_addresses: OnChainAddress[]

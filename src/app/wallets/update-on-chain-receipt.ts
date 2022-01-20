@@ -7,6 +7,7 @@ import { DepositFeeCalculator } from "@domain/wallets"
 import { LockService } from "@services"
 import { ONCHAIN_SCAN_DEPTH, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config"
 import { getCurrentPrice } from "@app/prices"
+import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
 
 export const updateOnChainReceipt = async ({
   scanDepth = ONCHAIN_SCAN_DEPTH,
@@ -39,6 +40,18 @@ export const updateOnChainReceipt = async ({
     const txHash = tx.rawTx.txHash
     const addresses = tx.uniqueAddresses()
     const wallets = await walletRepo.listByAddresses(addresses)
+
+    if (wallets instanceof CouldNotFindWalletFromOnChainAddressesError) {
+      const result = await processTxForHotWallet({ tx, logger })
+      if (result instanceof Error) {
+        logger.error(
+          { txHash, error: result },
+          "Could not updateOnChainReceipt for rebalance tx",
+        )
+      }
+      continue
+    }
+
     if (wallets instanceof Error) {
       logError({ walletId: null, txHash, error: wallets })
       continue
@@ -124,6 +137,54 @@ const processTxForWallet = async (
             txHash: tx.rawTx.txHash,
             usdPerSat,
           })
+        }
+      }
+    }
+  })
+}
+
+const processTxForHotWallet = async ({
+  tx,
+  logger,
+}: {
+  tx: IncomingOnChainTransaction
+  logger: Logger
+}): Promise<void | ApplicationError> => {
+  const ledger = LedgerService()
+
+  const usdPerSat = await getCurrentPrice()
+  if (usdPerSat instanceof Error) return usdPerSat
+
+  const lockService = LockService()
+  return lockService.lockOnChainTxHash({ txHash: tx.rawTx.txHash, logger }, async () => {
+    const recorded = await ledger.isToHotWalletTxRecorded(tx.rawTx.txHash)
+    if (recorded instanceof Error) {
+      logger.error({ error: recorded }, "Could not query ledger")
+      return recorded
+    }
+
+    if (recorded) return
+
+    for (const { sats, address } of tx.rawTx.outs) {
+      if (address) {
+        const fee = tx.fee
+        const usd = sats * usdPerSat
+        const usdFee = fee * usdPerSat
+
+        const description = `deposit to hot wallet of ${sats} sats from the cold storage wallet`
+
+        const journal = await ledger.addColdStorageTxSend({
+          txHash: tx.rawTx.txHash,
+          description,
+          sats,
+          fee,
+          usd,
+          usdFee,
+          payeeAddress: address,
+        })
+
+        if (journal instanceof Error) {
+          logger.error({ error: journal }, "Could not record to hot wallet tx in ledger")
         }
       }
     }
