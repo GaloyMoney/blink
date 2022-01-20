@@ -54,6 +54,12 @@ input BusinessUpdateMapInfoInput {
   username: Username!
 }
 
+input ColdStorageRebalanceToHotWalletInput {
+  amount: SatAmount!
+  targetConfirmations: TargetConfirmations = 1
+  walletName: String!
+}
+
 type Coordinates {
   latitude: Float!
   longitude: Float!
@@ -134,6 +140,9 @@ type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
   businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
+  coldStorageRebalanceToHotWallet(
+    input: ColdStorageRebalanceToHotWalletInput!
+  ): PsbtDetailPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
 }
@@ -165,6 +174,16 @@ type Price {
   currencyUnit: ExchangeCurrencyUnit!
   formattedAmount: String!
   offset: Int!
+}
+
+type PsbtDetail {
+  fee: SatAmount!
+  transaction: String!
+}
+
+type PsbtDetailPayload {
+  errors: [Error!]!
+  psbtDetail: PsbtDetail
 }
 
 type Query {
@@ -213,6 +232,11 @@ type SuccessPayload {
   errors: [Error!]!
   success: Boolean
 }
+
+"""
+(Positive) Number of blocks in which the transaction is expected to be confirmed
+"""
+scalar TargetConfirmations
 
 """
 Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)

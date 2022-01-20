@@ -75,7 +75,7 @@ export const ColdStorageService = async (): Promise<
       })
 
       return {
-        psbt: fundedPsbt.psbt,
+        transaction: fundedPsbt.psbt,
         fee: btc2sat(fundedPsbt.fee),
       }
     } catch (err) {

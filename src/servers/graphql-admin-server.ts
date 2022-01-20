@@ -33,6 +33,7 @@ export async function startApolloServerForAdminSchema() {
         accountUpdateStatus: and(isAuthenticated, isEditor),
         accountUpdateLevel: and(isAuthenticated, isEditor),
         businessUpdateMapInfo: and(isAuthenticated, isEditor),
+        coldStorageRebalanceToHotWallet: and(isAuthenticated, isEditor),
       },
     },
     { allowExternalErrors: true },

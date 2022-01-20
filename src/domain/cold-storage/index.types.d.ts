@@ -3,7 +3,7 @@ type ColdStorageServiceError = import("./errors").ColdStorageServiceError
 type Psbt = string & { readonly brand: unique symbol }
 
 type ColdStoragePsbt = {
-  psbt: Psbt
+  transaction: Psbt
   fee: Satoshis
 }
 
