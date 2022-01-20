@@ -45,10 +45,7 @@ const paymentSchema = new Schema<LnPaymentType>({
     unique: true,
     required: true,
   },
-  paymentRequest: {
-    type: String,
-    required: true,
-  },
+  paymentRequest: String,
   sentFromPubkey: {
     type: String,
     required: true,
