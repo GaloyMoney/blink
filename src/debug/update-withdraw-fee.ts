@@ -1,17 +1,27 @@
 /**
  * how to run:
- * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/update-fee.ts
+ *
+ * Make sure there's a file named fee-update-operations.json in src/debug
+ * following the structure:
+ * {
+ *  "feeUpdateOperations" = [
+ *    { "walletId": "first-wallet-id", fee: 13 },
+ *    { "walletId": "second-wallet-id", fee: 10 },
+ *  ]
+ * }
+ * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/update-withdraw-fee.ts
  */
 
+import { feeUpdateOperations } from "./fee-update-operations.json"
 import { updateAccountWithdrawFee } from "@app/accounts/update-account-withdraw-fee"
-import { RepositoryError } from "@domain/errors"
 import { setupMongoConnection } from "@services/mongodb"
 import { WalletsRepository } from "@services/mongoose"
 import mongoose from "mongoose"
+import { checkedToWalletId } from "@domain/wallets"
 
 type feeUpdateOperation = {
-  walletId: WalletId
-  fee: Satoshis
+  walletId: string
+  fee: number
 }
 
 const updateFee = async (operations: Array<feeUpdateOperation>) => {
@@ -19,8 +29,15 @@ const updateFee = async (operations: Array<feeUpdateOperation>) => {
   console.log("Mongoose connection ready")
   const walletRepo = WalletsRepository()
   for (const { walletId, fee } of operations) {
-    const wallet = await walletRepo.findById(walletId)
-    if (wallet instanceof RepositoryError) {
+    const checkedWalletid = checkedToWalletId(walletId)
+
+    if (checkedWalletid instanceof Error) {
+      console.error(`Invalid walletId: ${walletId}`)
+      continue
+    }
+
+    const wallet = await walletRepo.findById(checkedWalletid)
+    if (wallet instanceof Error) {
       console.error(`Could not fetch wallet for walletId: ${walletId}`, { wallet })
       continue
     }
@@ -36,17 +53,5 @@ const updateFee = async (operations: Array<feeUpdateOperation>) => {
   }
   return mongoose.connection.close()
 }
-
-// Populate the array below with the wallet ids and fees to be set
-
-const feeUpdateOperations: Array<feeUpdateOperation> = [
-  { walletId: "" as WalletId, fee: 0 as Satoshis },
-]
-
-// For example:
-// feeUpdateOperations = [
-//   { walletId: "70767cc2-9cab-4bab-b78a-5e6b2d947163" as WalletId, fee: 13 as Satoshis },
-//   { walletId: "70767cc2-9cab-4bab-b78a-5e6b2d947163" as WalletId, fee: -1 as Satoshis },
-// ]
 
 updateFee(feeUpdateOperations).then(console.log).catch(console.error)
