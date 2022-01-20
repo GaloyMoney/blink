@@ -1,6 +1,6 @@
 type LnPaymentPartial = {
   readonly paymentHash: PaymentHash
-  readonly paymentRequest: EncodedPaymentRequest
+  readonly paymentRequest: EncodedPaymentRequest | undefined
   readonly sentFromPubkey: Pubkey
 }
 
