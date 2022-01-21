@@ -9,8 +9,7 @@ import {
   LessThanDustThresholdError,
   InsufficientBalanceError,
 } from "@domain/errors"
-
-import { getBalanceForWalletId } from "./get-balance-for-wallet"
+import { LedgerService } from "@services/ledger"
 
 const { dustThreshold } = getOnChainWalletConfig()
 
@@ -35,7 +34,7 @@ export const getOnChainFee = async ({
       `Use lightning to send amounts less than ${dustThreshold}`,
     )
 
-  const balance = await getBalanceForWalletId(wallet.id)
+  const balance = await LedgerService().getWalletBalance(wallet.id)
   if (balance instanceof Error) return balance
 
   // avoids lnd balance sniffing attack
