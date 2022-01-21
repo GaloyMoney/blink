@@ -2,7 +2,7 @@ import * as Accounts from "@app/accounts"
 import * as Users from "@app/users"
 import { setupMongoConnection } from "@services/mongodb"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
-import { WalletCurrency, WalletType } from "@services/mongoose/schema"
+import { WalletCurrency, WalletType } from "@domain/wallets"
 import mongoose from "mongoose"
 
 let mongoose_connection

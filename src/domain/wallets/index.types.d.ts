@@ -2,6 +2,11 @@ type PaymentInitiationMethod = typeof import("./tx-methods").PaymentInitiationMe
 type SettlementMethod = typeof import("./tx-methods").SettlementMethod
 type TxStatus =
   typeof import("./tx-status").TxStatus[keyof typeof import("./tx-status").TxStatus]
+type WalletType =
+  typeof import("./primitives").WalletType[keyof typeof import("./primitives").WalletType]
+
+type WalletCurrency =
+  typeof import("./primitives").WalletCurrency[keyof typeof import("./primitives").WalletCurrency]
 
 type Deprecated = {
   readonly description: string
