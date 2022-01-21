@@ -9,11 +9,23 @@ const LightningInvoice = new GT.Object({
   fields: () => ({
     createdAt: { type: GT.NonNull(Timestamp) },
     confirmedAt: { type: Timestamp },
-    description: { type: GT.NonNull(GT.String) },
-    expiresAt: { type: Timestamp },
+    description: {
+      type: GT.NonNull(GT.String),
+      resolve: (source: LnInvoiceLookup) => source.lnInvoice.description,
+    },
+    expiresAt: {
+      type: Timestamp,
+      resolve: (source: LnInvoiceLookup) => source.lnInvoice.expiresAt,
+    },
     isSettled: { type: GT.NonNull(GT.Boolean) },
-    received: { type: GT.NonNull(SatAmount) },
-    request: { type: LnPaymentRequest },
+    received: {
+      type: GT.NonNull(SatAmount),
+      resolve: (source: LnInvoiceLookup) => source.roundedDownReceived,
+    },
+    request: {
+      type: LnPaymentRequest,
+      resolve: (source: LnInvoiceLookup) => source.lnInvoice.paymentRequest,
+    },
     secretPreImage: { type: GT.NonNull(LnPaymentPreImage) },
   }),
 })
