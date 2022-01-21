@@ -19,8 +19,11 @@ export const updateLnPayments = async (): Promise<true | ApplicationError> => {
   for (const key of pubkeys) {
     const pubkey = key as Pubkey
 
-    let after: PagingStartToken | PagingContinueToken = undefined
-    while (processedLnPaymentsHashes.length < incompleteLnPayments.length) {
+    let after: PagingStartToken | PagingContinueToken | PagingStopToken = undefined
+    while (
+      processedLnPaymentsHashes.length < incompleteLnPayments.length &&
+      after !== false
+    ) {
       // Fetch from Lightning service
       const results: ListLnPaymentsResult | LightningServiceError =
         await lndService.listSettledAndFailedPayments({
@@ -32,8 +35,10 @@ export const updateLnPayments = async (): Promise<true | ApplicationError> => {
           { error: results },
           `Could not fetch payments for pubkey ${pubkey}`,
         )
-        continue
+        break
       }
+      if (after === results.endCursor) break
+      after = results.endCursor
 
       // Update LnPayments repository
       for (const payment of results.lnPayments) {
@@ -62,9 +67,6 @@ export const updateLnPayments = async (): Promise<true | ApplicationError> => {
           continue
         }
         processedLnPaymentsHashes.push(payment.paymentHash)
-
-        if (results.endCursor === false) break
-        after = results.endCursor
       }
     }
   }
