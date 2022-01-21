@@ -1,4 +1,3 @@
-import { Wallets } from "@app"
 import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
 import { toSats } from "@domain/bitcoin"
 import { getBalancesDetail } from "@services/bitcoind"
@@ -7,6 +6,7 @@ import {
   getDealerWalletId,
   getFunderWalletId,
 } from "@services/ledger/accounts"
+import { LedgerService } from "@services/ledger"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { getBosScore, lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
@@ -116,13 +116,13 @@ const main = async () => {
 
     for (const index in roles) {
       const role = roles[index]
-      const account = await accountRoles[index]()
+      const walletId = await accountRoles[index]()
 
       let balance: Satoshis
 
-      const balanceSats = await Wallets.getBalanceForWalletId(account)
+      const balanceSats = await LedgerService().getWalletBalance(walletId)
       if (balanceSats instanceof Error) {
-        baseLogger.warn({ account, role, balanceSats }, "impossible to get balance")
+        baseLogger.warn({ walletId, role, balanceSats }, "impossible to get balance")
         balance = toSats(0)
       } else {
         balance = balanceSats

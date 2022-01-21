@@ -1,4 +1,4 @@
-import { getBalanceForWalletId } from "@app/wallets"
+import { LedgerService } from "@services/ledger"
 import { btc2sat } from "@domain/bitcoin"
 import { BitcoindWalletClient } from "@services/bitcoind"
 import { getFunderWalletId } from "@services/ledger/accounts"
@@ -78,7 +78,7 @@ describe("Bitcoind", () => {
 
     await checkIsBalanced()
 
-    const balanceFunderWalletId = await getBalanceForWalletId(funderWalletId)
+    const balanceFunderWalletId = await LedgerService().getWalletBalance(funderWalletId)
     balanceFunderWalletId
     // console.log({ balanceFunderWalletId }, "funderWalletId")
     // FIXME: this test is broken

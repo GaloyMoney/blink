@@ -15,7 +15,6 @@ import { AccountsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 
 import { checkAndVerifyTwoFA, checkIntraledgerLimits } from "./check-limit-helpers"
-import { getBalanceForWalletId } from "./get-balance-for-wallet"
 
 export const intraledgerPaymentSendUsername = async ({
   recipientUsername,
@@ -206,7 +205,7 @@ const executePaymentViaIntraledger = async ({
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
     async (lock) => {
-      const balance = await getBalanceForWalletId(senderWalletId)
+      const balance = await LedgerService().getWalletBalance(senderWalletId)
       if (balance instanceof Error) return balance
       if (balance < sats) {
         return new InsufficientBalanceError(
