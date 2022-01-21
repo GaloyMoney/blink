@@ -12,12 +12,13 @@
  * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/update-withdraw-fee.ts
  */
 
-import { feeUpdateOperations } from "./fee-update-operations.json"
+import mongoose from "mongoose"
 import { updateAccountWithdrawFee } from "@app/accounts/update-account-withdraw-fee"
 import { setupMongoConnection } from "@services/mongodb"
 import { WalletsRepository } from "@services/mongoose"
-import mongoose from "mongoose"
 import { checkedToWalletId } from "@domain/wallets"
+
+import { feeUpdateOperations } from "./fee-update-operations.json"
 
 type feeUpdateOperation = {
   walletId: string
