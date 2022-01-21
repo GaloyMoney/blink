@@ -11,7 +11,7 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { WithdrawalFeeCalculator } from "@domain/wallets"
+import { WithdrawalFeeCalculator, PaymentInputValidator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { LockService } from "@services"
@@ -29,13 +29,13 @@ import { getOnChainFeeByWalletId } from "./get-on-chain-fee"
 const { dustThreshold } = getOnChainWalletConfig()
 
 export const payOnChainByWalletIdWithTwoFA = async ({
+  senderAccount,
   senderWalletId,
   amount,
   address,
   targetConfirmations,
   memo,
   sendAll,
-  payerAccountId,
   twoFAToken,
 }: PayOnChainByWalletIdWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
   const checkedAmount = sendAll
@@ -43,10 +43,7 @@ export const payOnChainByWalletIdWithTwoFA = async ({
     : checkedToSats(amount)
   if (checkedAmount instanceof Error) return checkedAmount
 
-  const account = await AccountsRepository().findById(payerAccountId)
-  if (account instanceof Error) return account
-
-  const user = await getUser(account.ownerId)
+  const user = await getUser(senderAccount.ownerId)
   if (user instanceof Error) return user
   const { twoFA } = user
 
@@ -61,6 +58,7 @@ export const payOnChainByWalletIdWithTwoFA = async ({
   if (twoFACheck instanceof Error) return twoFACheck
 
   return payOnChainByWalletId({
+    senderAccount,
     senderWalletId,
     amount,
     address,
@@ -71,6 +69,7 @@ export const payOnChainByWalletIdWithTwoFA = async ({
 }
 
 export const payOnChainByWalletId = async ({
+  senderAccount,
   senderWalletId,
   amount,
   address,
@@ -78,12 +77,26 @@ export const payOnChainByWalletId = async ({
   memo,
   sendAll,
 }: PayOnChainByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  const checkedAmount = sendAll
+    ? await LedgerService().getWalletBalance(senderWalletId)
+    : checkedToSats(amount)
+  if (checkedAmount instanceof Error) return checkedAmount
+
+  const validator = PaymentInputValidator(WalletsRepository().findById)
+  const validationResult = await validator.validatePaymentInput({
+    amount: checkedAmount,
+    senderAccount,
+    senderWalletId,
+    recipientWalletId: null,
+  })
+  if (validationResult instanceof Error) return validationResult
+
   const onchainLogger = baseLogger.child({
     topic: "payment",
     protocol: "onchain",
     transactionType: "payment",
     address,
-    amount,
+    checkedAmount,
     memo,
   })
   const checkedAddress = checkedToOnChainAddress({
@@ -94,11 +107,6 @@ export const payOnChainByWalletId = async ({
 
   const checkedTargetConfirmations = checkedToTargetConfs(targetConfirmations)
   if (checkedTargetConfirmations instanceof Error) return checkedTargetConfirmations
-
-  const checkedAmount = sendAll
-    ? await LedgerService().getWalletBalance(senderWalletId)
-    : checkedToSats(amount)
-  if (checkedAmount instanceof Error) return checkedAmount
 
   const wallets = WalletsRepository()
   const recipientWallet = await wallets.findByAddress(checkedAddress)
