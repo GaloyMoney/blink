@@ -1,11 +1,7 @@
 import { getUsernameFromWalletId } from "@app/accounts"
 import { getCurrentPrice } from "@app/prices"
 import { getUser } from "@app/users"
-import {
-  BTC_NETWORK,
-  getOnChainWalletConfig,
-  ONCHAIN_SCAN_DEPTH_OUTGOING,
-} from "@config/app"
+import { BTC_NETWORK, getOnChainWalletConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { checkedToOnChainAddress, TxDecoder } from "@domain/bitcoin/onchain"

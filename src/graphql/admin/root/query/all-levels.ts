@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import { levels } from "@config/app"
+import { levels } from "@config"
 
 import AccountLevel from "@graphql/admin/types/scalar/account-level"
 

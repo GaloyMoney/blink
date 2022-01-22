@@ -3,7 +3,7 @@ import { connectionDefinitions } from "graphql-relay"
 
 import { GT } from "@graphql/index"
 
-import { SAT_PRICE_PRECISION_OFFSET } from "@config/app"
+import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
 import Memo from "../scalar/memo"
 

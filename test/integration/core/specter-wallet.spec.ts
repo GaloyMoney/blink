@@ -2,7 +2,7 @@ import { baseLogger } from "@services/logger"
 import { UserWallet } from "@core/user-wallet"
 import { SpecterWallet } from "@core/specter-wallet"
 import { getActiveOnchainLnd } from "@services/lnd/utils"
-import { getSpecterWalletConfig } from "@config/app"
+import { getSpecterWalletConfig } from "@config"
 
 import {
   bitcoindClient,

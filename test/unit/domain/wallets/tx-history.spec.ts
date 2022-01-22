@@ -1,4 +1,4 @@
-import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
+import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { LedgerTransactionType } from "@domain/ledger"
 import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
 import {

@@ -1,4 +1,4 @@
-import { BTC_NETWORK } from "@config/app"
+import { BTC_NETWORK } from "@config"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"

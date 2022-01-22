@@ -1,6 +1,6 @@
 import { Lightning } from "@app"
 import * as Wallets from "@app/wallets"
-import { MEMO_SHARING_SATS_THRESHOLD } from "@config/app"
+import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { toSats } from "@domain/bitcoin"
 import { PaymentInitiationMethod } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"

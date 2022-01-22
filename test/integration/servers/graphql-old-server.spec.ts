@@ -3,7 +3,7 @@ import {
   yamlConfig,
   getRequestPhoneCodePerPhoneLimits,
   getFailedLoginAttemptPerPhoneLimits,
-} from "@config/app"
+} from "@config"
 import { createTestClient } from "apollo-server-testing"
 import { startApolloServerForOldSchema } from "@servers/graphql-old-server"
 

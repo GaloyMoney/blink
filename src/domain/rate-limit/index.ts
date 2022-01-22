@@ -7,7 +7,7 @@ import {
   getRequestPhoneCodePerIpLimits,
   getRequestPhoneCodePerPhoneLimits,
   getRequestPhoneCodePerPhoneMinIntervalLimits,
-} from "@config/app"
+} from "@config"
 
 import {
   InvoiceCreateForRecipientRateLimiterExceededError,

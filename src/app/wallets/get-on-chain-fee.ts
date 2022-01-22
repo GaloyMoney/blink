@@ -2,7 +2,7 @@ import { TxDecoder } from "@domain/bitcoin/onchain"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { WithdrawalFeeCalculator } from "@domain/wallets"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { BTC_NETWORK, getOnChainWalletConfig } from "@config/app"
+import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import {
   CouldNotFindError,

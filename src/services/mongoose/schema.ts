@@ -1,12 +1,6 @@
 import crypto from "crypto"
 
-import {
-  getFeeRates,
-  getTwoFAConfig,
-  getUserLimits,
-  levels,
-  MS_PER_DAY,
-} from "@config/app"
+import { getFeeRates, getTwoFAConfig, getUserLimits, levels, MS_PER_DAY } from "@config"
 import { toLiabilitiesWalletId } from "@domain/ledger"
 import { Transaction } from "@services/ledger/schema"
 import * as mongoose from "mongoose"

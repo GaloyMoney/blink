@@ -6,8 +6,8 @@ import { PriceNotAvailableError } from "@domain/price"
 
 jest.mock("@services/redis", () => ({}))
 
-jest.mock("@config/app.ts", () => {
-  const config = jest.requireActual("@config/app.ts")
+jest.mock("@config", () => {
+  const config = jest.requireActual("@config")
   config.yamlConfig.lnds = []
   return config
 })

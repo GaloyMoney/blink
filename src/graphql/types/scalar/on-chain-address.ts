@@ -1,4 +1,4 @@
-import { BTC_NETWORK } from "@config/app"
+import { BTC_NETWORK } from "@config"
 import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"

@@ -1,6 +1,6 @@
 import { getUser } from "@app/users"
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
-import { onboardingEarn } from "@config/app"
+import { onboardingEarn } from "@config"
 import {
   InvalidPhoneMetadataForRewardError,
   InvalidQuizQuestionIdError,

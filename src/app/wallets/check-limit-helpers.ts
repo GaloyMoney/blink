@@ -1,4 +1,4 @@
-import { getTwoFALimits, getUserLimits, MS_PER_DAY } from "@config/app"
+import { getTwoFALimits, getUserLimits, MS_PER_DAY } from "@config"
 import { LimitsChecker } from "@domain/accounts"
 import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
 import { LedgerService } from "@services/ledger"

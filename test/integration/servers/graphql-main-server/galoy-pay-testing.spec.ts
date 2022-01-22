@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { yamlConfig } from "@config/app"
+import { yamlConfig } from "@config"
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
 import { toSats } from "@domain/bitcoin"

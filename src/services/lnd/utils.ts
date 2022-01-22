@@ -1,6 +1,6 @@
 import assert from "assert"
 
-import { MS_PER_DAY, ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE } from "@config/app"
+import { MS_PER_DAY, ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE } from "@config"
 import { DbError, LndOfflineError } from "@core/error"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"

@@ -1,7 +1,7 @@
 import { createServer } from "http"
 
 import { Accounts, Users } from "@app"
-import { getApolloConfig, getGeetestConfig, isProd, JWT_SECRET } from "@config/app"
+import { getApolloConfig, getGeetestConfig, isProd, JWT_SECRET } from "@config"
 import { WalletFactory } from "@core/wallet-factory"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"

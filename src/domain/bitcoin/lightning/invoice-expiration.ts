@@ -1,4 +1,4 @@
-import { SECS_PER_2_MINS, SECS_PER_DAY } from "@config/app"
+import { SECS_PER_2_MINS, SECS_PER_DAY } from "@config"
 
 const DEFAULT_EXPIRATIONS = {
   BTC: { delay: SECS_PER_DAY },

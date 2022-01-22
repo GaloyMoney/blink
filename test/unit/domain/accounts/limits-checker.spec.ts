@@ -1,4 +1,4 @@
-import { getTwoFALimits, getUserLimits } from "@config/app"
+import { getTwoFALimits, getUserLimits } from "@config"
 import { LimitsChecker } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
 import { LimitsExceededError } from "@domain/errors"

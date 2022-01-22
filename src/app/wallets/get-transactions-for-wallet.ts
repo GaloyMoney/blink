@@ -1,6 +1,6 @@
 import { PartialResult } from "@app/partial-result"
 import { getCurrentPrice } from "@app/prices"
-import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
+import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 import { OnChainError, TxDecoder, TxFilter } from "@domain/bitcoin/onchain"
 import { RepositoryError } from "@domain/errors"
 import { LedgerError } from "@domain/ledger"

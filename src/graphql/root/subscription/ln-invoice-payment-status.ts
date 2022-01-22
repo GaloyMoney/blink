@@ -3,8 +3,8 @@ import { GT } from "@graphql/index"
 import { Lightning } from "@app"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
-import { lnPaymentStatusEvent } from "@config/app"
 import pubsub from "@services/pubsub"
+import { lnPaymentStatusEvent } from "@domain/bitcoin/lightning"
 
 const LnInvoicePaymentStatusInput = new GT.Input({
   name: "LnInvoicePaymentStatusInput",

@@ -1,4 +1,4 @@
-import { MAX_BYTES_FOR_MEMO } from "@config/app"
+import { MAX_BYTES_FOR_MEMO } from "@config"
 import { GT } from "@graphql/index"
 import { UserInputError } from "apollo-server-errors"
 
