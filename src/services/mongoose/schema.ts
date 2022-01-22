@@ -5,7 +5,7 @@ import { toLiabilitiesWalletId } from "@domain/ledger"
 import { Transaction } from "@services/ledger/schema"
 import * as mongoose from "mongoose"
 import { UsernameRegex } from "@domain/accounts"
-import { WalletType, WalletCurrency } from "@domain/wallets"
+import { WalletType, WalletCurrency, WalletIdRegex } from "@domain/wallets"
 
 import { WalletRecord } from "./wallets"
 
@@ -27,11 +27,24 @@ export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
 
 const invoiceUserSchema = new Schema({
   _id: String, // hash of invoice
-  walletId: String,
+  walletId: {
+    required: true,
+    type: String,
+    validate: {
+      validator: function (v) {
+        return v.match(WalletIdRegex)
+      },
+    },
+  },
 
   // usd equivalent. sats is attached in the invoice directly.
   // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
-  usd: Number,
+  fiat: Number,
+  currency: {
+    required: true,
+    type: String,
+    // TODO: validation
+  },
 
   timestamp: {
     type: Date,

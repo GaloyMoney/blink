@@ -1,16 +1,20 @@
 import { Wallets } from "@app"
+import { addWallet } from "@app/accounts/add-wallet"
+import { getCurrentPrice } from "@app/prices"
 import {
   getInvoiceCreateAttemptLimits,
   getInvoiceCreateForRecipientAttemptLimits,
 } from "@config"
-import { toSats } from "@domain/bitcoin"
+import { decodeInvoice } from "@domain/bitcoin/lightning"
 import {
   InvoiceCreateForRecipientRateLimiterExceededError,
   InvoiceCreateRateLimiterExceededError,
 } from "@domain/rate-limit/errors"
+import { WalletCurrency, WalletType } from "@domain/wallets"
 import { WalletInvoicesRepository } from "@services/mongoose"
 
 import {
+  createUserWallet,
   getAccountIdByTestUserIndex,
   getDefaultWalletIdByTestUserIndex,
   getHash,
@@ -20,21 +24,41 @@ import {
   resetSelfAccountIdLimits,
 } from "test/helpers/rate-limit"
 
-let walletId1: WalletId
+let walletIdBtc: WalletId
+let walletIdUsd: WalletId
 let accountId1: AccountId
+
+jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
 const walletInvoices = WalletInvoicesRepository()
 
 beforeAll(async () => {
-  walletId1 = await getDefaultWalletIdByTestUserIndex(1)
-  accountId1 = await getAccountIdByTestUserIndex(1)
+  const userIndex = 1
+  await createUserWallet(userIndex)
+
+  walletIdBtc = await getDefaultWalletIdByTestUserIndex(userIndex)
+  accountId1 = await getAccountIdByTestUserIndex(userIndex)
+
+  const wallet = await addWallet({
+    accountId: accountId1,
+    type: WalletType.Checking,
+    currency: WalletCurrency.Usd,
+  })
+  if (wallet instanceof Error) return wallet
+  walletIdUsd = wallet.id
 })
 
-describe("UserWallet - addInvoice", () => {
+afterAll(() => {
+  jest.restoreAllMocks()
+})
+
+describe("Wallet - addInvoice BTC", () => {
   it("add a self generated invoice", async () => {
+    const amountInput = 1000
+
     const lnInvoice = await Wallets.addInvoiceByWalletId({
-      walletId: walletId1,
-      amount: toSats(1000),
+      walletId: walletIdBtc,
+      amount: amountInput,
     })
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
@@ -42,23 +66,163 @@ describe("UserWallet - addInvoice", () => {
     expect(request.startsWith("lnbcrt10")).toBeTruthy()
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId } = result
-    expect(walletId).toBe(walletId1)
+    const { walletId, currency } = result
+    expect(walletId).toBe(walletIdBtc)
+    expect(currency).toBe(WalletCurrency.Btc)
+
+    const decodedInvoice = decodeInvoice(request)
+    if (decodedInvoice instanceof Error) throw decodedInvoice
+
+    const { amount } = decodedInvoice
+    expect(amount).toBe(amountInput)
   })
 
   it("add a self generated invoice without amount", async () => {
     const lnInvoice = await Wallets.addInvoiceNoAmountByWalletId({
-      walletId: walletId1,
+      walletId: walletIdBtc,
     })
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId } = result
-    expect(walletId).toBe(walletId1)
+    const { walletId, currency } = result
+    expect(walletId).toBe(walletIdBtc)
+    expect(currency).toBe(WalletCurrency.Btc)
   })
 
+  it("adds a public with amount invoice", async () => {
+    const amountInput = 10
+
+    const lnInvoice = await Wallets.addInvoiceForRecipient({
+      recipientWalletId: walletIdBtc,
+      amount: amountInput,
+    })
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentRequest: request } = lnInvoice
+    expect(request.startsWith("lnbcrt1")).toBeTruthy()
+
+    const result = await walletInvoices.findByPaymentHash(getHash(request))
+    if (result instanceof Error) throw result
+    const { walletId, selfGenerated } = result
+    expect(String(walletId)).toBe(String(walletIdBtc))
+    expect(selfGenerated).toBe(false)
+
+    const decodedInvoice = decodeInvoice(request)
+    if (decodedInvoice instanceof Error) throw decodedInvoice
+
+    const { amount } = decodedInvoice
+    expect(amount).toBe(amountInput)
+  })
+
+  it("adds a public no amount invoice", async () => {
+    const lnInvoice = await Wallets.addInvoiceNoAmountForRecipient({
+      recipientWalletId: walletIdBtc,
+    })
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentRequest: request } = lnInvoice
+    expect(request.startsWith("lnbcrt1")).toBeTruthy()
+
+    const result = await walletInvoices.findByPaymentHash(getHash(request))
+    if (result instanceof Error) throw result
+    const { walletId, selfGenerated } = result
+    expect(String(walletId)).toBe(String(walletIdBtc))
+    expect(selfGenerated).toBe(false)
+  })
+})
+
+describe("Wallet - addInvoice Fiat", () => {
+  it("add a self generated fiat invoice", async () => {
+    const price = await getCurrentPrice()
+    if (price instanceof Error) return price
+
+    const fiatInput = 100
+    const sats = fiatInput / price
+
+    const lnInvoice = await Wallets.addInvoiceByWalletId({
+      walletId: walletIdUsd,
+      amount: fiatInput,
+    })
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentRequest: request } = lnInvoice
+
+    expect(request.startsWith("lnbcrt")).toBeTruthy()
+    const result = await walletInvoices.findByPaymentHash(getHash(request))
+    if (result instanceof Error) throw result
+    const { walletId, fiat, currency } = result
+    expect(String(walletId)).toBe(String(walletIdUsd))
+    expect(fiat).toBe(fiatInput)
+    expect(currency).toBe(WalletCurrency.Usd)
+
+    const decodedInvoice = decodeInvoice(request)
+    if (decodedInvoice instanceof Error) throw decodedInvoice
+
+    const { amount } = decodedInvoice
+    expect(amount).toBe(sats)
+  })
+
+  it("add a self generated invoice without amount", async () => {
+    const lnInvoice = await Wallets.addInvoiceNoAmountByWalletId({
+      walletId: walletIdUsd,
+    })
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentRequest: request } = lnInvoice
+
+    const result = await walletInvoices.findByPaymentHash(getHash(request))
+    if (result instanceof Error) throw result
+    const { walletId, fiat } = result
+    expect(String(walletId)).toBe(String(walletIdUsd))
+    expect(fiat).toBe(null)
+  })
+
+  it("adds a public with amount invoice", async () => {
+    const price = await getCurrentPrice()
+    if (price instanceof Error) return price
+
+    const fiatInput = 15
+    const sats = fiatInput / price
+
+    const lnInvoice = await Wallets.addInvoiceForRecipient({
+      recipientWalletId: walletIdUsd,
+      amount: fiatInput,
+    })
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentRequest: request } = lnInvoice
+    expect(request.startsWith("lnbcrt")).toBeTruthy()
+
+    const result = await walletInvoices.findByPaymentHash(getHash(request))
+    if (result instanceof Error) throw result
+    const { walletId, selfGenerated, fiat } = result
+    expect(fiat).toBe(fiatInput)
+
+    expect(String(walletId)).toBe(String(walletIdUsd))
+    expect(selfGenerated).toBe(false)
+
+    const decodedInvoice = decodeInvoice(request)
+    if (decodedInvoice instanceof Error) throw decodedInvoice
+
+    const { amount } = decodedInvoice
+    expect(amount).toBe(sats)
+  })
+
+  it("adds a public invoice", async () => {
+    const lnInvoice = await Wallets.addInvoiceNoAmountForRecipient({
+      recipientWalletId: walletIdUsd,
+    })
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentRequest: request } = lnInvoice
+    expect(request.startsWith("lnbcrt1")).toBeTruthy()
+
+    const result = await walletInvoices.findByPaymentHash(getHash(request))
+    if (result instanceof Error) throw result
+    const { walletId, selfGenerated, fiat } = result
+    expect(String(walletId)).toBe(String(walletIdUsd))
+    expect(selfGenerated).toBe(false)
+    expect(fiat).toBe(null)
+  })
+})
+
+describe("Wallet - rate limiting test", () => {
   it("fails to add invoice past rate limit", async () => {
     // Reset limits before starting
     const resetOk = await resetSelfAccountIdLimits(accountId1)
@@ -71,8 +235,8 @@ describe("UserWallet - addInvoice", () => {
     const promises: Promise<LnInvoice | ApplicationError>[] = []
     for (let i = 0; i < limitsNum; i++) {
       const lnInvoicePromise = Wallets.addInvoiceByWalletId({
-        walletId: walletId1,
-        amount: toSats(1000),
+        walletId: walletIdBtc,
+        amount: 1000,
       })
       promises.push(lnInvoicePromise)
     }
@@ -80,7 +244,7 @@ describe("UserWallet - addInvoice", () => {
     const isNotError = (item) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
-    return testPastSelfInvoiceLimits({ walletId: walletId1, accountId: accountId1 })
+    return testPastSelfInvoiceLimits({ walletId: walletIdBtc, accountId: accountId1 })
   })
 
   it("fails to add no amount invoice past rate limit", async () => {
@@ -94,7 +258,7 @@ describe("UserWallet - addInvoice", () => {
     const promises: Promise<LnInvoice | ApplicationError>[] = []
     for (let i = 0; i < limitsNum; i++) {
       const lnInvoicePromise = Wallets.addInvoiceNoAmountByWalletId({
-        walletId: walletId1,
+        walletId: walletIdBtc,
       })
       promises.push(lnInvoicePromise)
     }
@@ -102,22 +266,7 @@ describe("UserWallet - addInvoice", () => {
     const isNotError = (item) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
-    return testPastSelfInvoiceLimits({ walletId: walletId1, accountId: accountId1 })
-  })
-
-  it("adds a public invoice", async () => {
-    const lnInvoice = await Wallets.addInvoiceNoAmountForRecipient({
-      recipientWalletId: walletId1,
-    })
-    if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentRequest: request } = lnInvoice
-    expect(request.startsWith("lnbcrt1")).toBeTruthy()
-
-    const result = await walletInvoices.findByPaymentHash(getHash(request))
-    if (result instanceof Error) throw result
-    const { walletId, selfGenerated } = result
-    expect(walletId).toBe(walletId1)
-    expect(selfGenerated).toBe(false)
+    return testPastSelfInvoiceLimits({ walletId: walletIdBtc, accountId: accountId1 })
   })
 
   it("fails to add public invoice past rate limit", async () => {
@@ -131,8 +280,8 @@ describe("UserWallet - addInvoice", () => {
     const promises: Promise<LnInvoice | ApplicationError>[] = []
     for (let i = 0; i < limitsNum; i++) {
       const lnInvoicePromise = Wallets.addInvoiceForRecipient({
-        recipientWalletId: walletId1,
-        amount: toSats(1000),
+        recipientWalletId: walletIdBtc,
+        amount: 1000,
       })
       promises.push(lnInvoicePromise)
     }
@@ -140,7 +289,10 @@ describe("UserWallet - addInvoice", () => {
     const isNotError = (item) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
-    return testPastRecipientInvoiceLimits({ walletId: walletId1, accountId: accountId1 })
+    return testPastRecipientInvoiceLimits({
+      walletId: walletIdBtc,
+      accountId: accountId1,
+    })
   })
 
   it("fails to add no amount public invoice past rate limit", async () => {
@@ -154,7 +306,7 @@ describe("UserWallet - addInvoice", () => {
     const promises: Promise<LnInvoice | ApplicationError>[] = []
     for (let i = 0; i < limitsNum; i++) {
       const lnInvoicePromise = Wallets.addInvoiceNoAmountForRecipient({
-        recipientWalletId: walletId1,
+        recipientWalletId: walletIdBtc,
       })
       promises.push(lnInvoicePromise)
     }
@@ -162,7 +314,10 @@ describe("UserWallet - addInvoice", () => {
     const isNotError = (item) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
-    return testPastRecipientInvoiceLimits({ walletId: walletId1, accountId: accountId1 })
+    return testPastRecipientInvoiceLimits({
+      walletId: walletIdBtc,
+      accountId: accountId1,
+    })
   })
 })
 
@@ -176,7 +331,7 @@ const testPastSelfInvoiceLimits = async ({
   // Test that first invoice past the limit fails
   const lnInvoice = await Wallets.addInvoiceByWalletId({
     walletId,
-    amount: toSats(1000),
+    amount: 1000,
   })
   expect(lnInvoice).toBeInstanceOf(InvoiceCreateRateLimiterExceededError)
 
@@ -188,7 +343,7 @@ const testPastSelfInvoiceLimits = async ({
   // Test that recipient invoices still work
   const lnRecipientInvoice = await Wallets.addInvoiceForRecipient({
     recipientWalletId: walletId,
-    amount: toSats(1000),
+    amount: 1000,
   })
   expect(lnRecipientInvoice).not.toBeInstanceOf(Error)
   expect(lnRecipientInvoice).toHaveProperty("paymentRequest")
@@ -216,7 +371,7 @@ const testPastRecipientInvoiceLimits = async ({
   // Test that first invoice past the limit fails
   const lnRecipientInvoice = await Wallets.addInvoiceForRecipient({
     recipientWalletId: walletId,
-    amount: toSats(1000),
+    amount: 1000,
   })
   expect(lnRecipientInvoice).toBeInstanceOf(
     InvoiceCreateForRecipientRateLimiterExceededError,
@@ -232,7 +387,7 @@ const testPastRecipientInvoiceLimits = async ({
   // Test that recipient invoices still work
   const lnInvoice = await Wallets.addInvoiceByWalletId({
     walletId,
-    amount: toSats(1000),
+    amount: 1000,
   })
   expect(lnInvoice).not.toBeInstanceOf(Error)
   expect(lnInvoice).toHaveProperty("paymentRequest")

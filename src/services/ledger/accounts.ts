@@ -31,7 +31,6 @@ export const resolveWalletId = (walletPath: string | string[]) => {
     id = path[1] as WalletId
   }
 
-  // TODO: add check for WalletId syntax validity
   return id as WalletId
 }
 

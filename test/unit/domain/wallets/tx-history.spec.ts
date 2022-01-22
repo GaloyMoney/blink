@@ -7,6 +7,7 @@ import {
 } from "@domain/wallets/tx-history"
 import { toSats } from "@domain/bitcoin"
 import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
+import { v4 as uuidv4 } from "uuid"
 
 describe("WalletTransactionHistory.fromLedger", () => {
   it("translates ledger txs to wallet txs", () => {
@@ -15,11 +16,12 @@ describe("WalletTransactionHistory.fromLedger", () => {
     const settlementAmount = toSats(100000)
     const usd = 10
     const settlementUsdPerSat = Math.abs(usd / settlementAmount)
+    const walletId = uuidv4() as WalletId
 
     const ledgerTransactions: LedgerTransaction[] = [
       {
         id: "id" as LedgerTransactionId,
-        walletId: "walletId" as WalletId,
+        walletId,
         type: LedgerTransactionType.Invoice,
         paymentHash: "paymentHash" as PaymentHash,
         pubkey: "pubkey" as Pubkey,
@@ -37,7 +39,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       },
       {
         id: "id" as LedgerTransactionId,
-        walletId: "walletId" as WalletId,
+        walletId,
         recipientWalletId: "walletIdRecipient" as WalletId,
         type: LedgerTransactionType.IntraLedger,
         paymentHash: "paymentHash" as PaymentHash,
@@ -56,7 +58,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       },
       {
         id: "id" as LedgerTransactionId,
-        walletId: "walletId" as WalletId,
+        walletId,
         recipientWalletId: "walletIdRecipient" as WalletId,
         type: LedgerTransactionType.OnchainIntraLedger,
         address: "address" as OnChainAddress,
@@ -75,7 +77,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       },
       {
         id: "id" as LedgerTransactionId,
-        walletId: "walletId" as WalletId,
+        walletId,
         type: LedgerTransactionType.OnchainReceipt,
         debit: toSats(0),
         fee: toSats(0),
@@ -95,7 +97,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
     const expected = [
       {
         id: "id" as LedgerTransactionId,
-        walletId: "walletId" as WalletId,
+        walletId,
         initiationVia: {
           type: PaymentInitiationMethod.Lightning,
           paymentHash: "paymentHash" as PaymentHash,
@@ -120,7 +122,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       },
       {
         id: "id" as LedgerTransactionId,
-        walletId: "walletId" as WalletId,
+        walletId,
         initiationVia: {
           type: PaymentInitiationMethod.Lightning,
           paymentHash: "paymentHash" as PaymentHash,
@@ -147,7 +149,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       },
       {
         id: "id" as LedgerTransactionId,
-        walletId: "walletId" as WalletId,
+        walletId,
         initiationVia: {
           type: PaymentInitiationMethod.OnChain,
           address: "address" as OnChainAddress,
@@ -173,7 +175,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
       },
       {
         id: "id" as LedgerTransactionId,
-        walletId: "walletId" as WalletId,
+        walletId,
         initiationVia: {
           type: PaymentInitiationMethod.OnChain,
           address: "address" as OnChainAddress,
@@ -250,6 +252,8 @@ describe("translateDescription", () => {
 
 describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
   it("translates submitted txs to wallet txs", () => {
+    const walletId = uuidv4() as WalletId
+
     const timestamp = new Date(Date.now())
     const incomingTxs: IncomingOnChainTransaction[] = [
       IncomingOnChainTransaction({
@@ -278,7 +282,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const history = WalletTransactionHistory.fromLedger([])
     const addresses = ["userAddress1", "userAddress2"] as OnChainAddress[]
     const result = history.addPendingIncoming(
-      "walletId" as WalletId,
+      walletId,
       incomingTxs,
       addresses,
       1 as UsdPerSat,
@@ -286,7 +290,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const expected = [
       {
         id: "txHash" as OnChainTxHash,
-        walletId: "walletId" as WalletId,
+        walletId,
         initiationVia: {
           type: PaymentInitiationMethod.OnChain,
           address: "userAddress1" as OnChainAddress,
@@ -310,7 +314,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       },
       {
         id: "txHash" as OnChainTxHash,
-        walletId: "walletId" as WalletId,
+        walletId,
         initiationVia: {
           type: PaymentInitiationMethod.OnChain,
           address: "userAddress2" as OnChainAddress,
@@ -336,7 +340,10 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     ]
     expect(result.transactions).toEqual(expected)
   })
+
   it("translates handles price NaN", () => {
+    const walletId = uuidv4() as WalletId
+
     const timestamp = new Date(Date.now())
     const incomingTxs: IncomingOnChainTransaction[] = [
       IncomingOnChainTransaction({
@@ -357,7 +364,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const history = WalletTransactionHistory.fromLedger([])
     const addresses = ["userAddress1"] as OnChainAddress[]
     const result = history.addPendingIncoming(
-      "walletId" as WalletId,
+      walletId,
       incomingTxs,
       addresses,
       NaN as UsdPerSat,
@@ -365,7 +372,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const expected = [
       {
         id: "txHash" as OnChainTxHash,
-        walletId: "walletId" as WalletId,
+        walletId,
         initiationVia: {
           type: PaymentInitiationMethod.OnChain,
           address: "userAddress1" as OnChainAddress,

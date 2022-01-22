@@ -35,6 +35,7 @@ export class RewardAlreadyPresentError extends DomainError {}
 export class ValidationError extends DomainError {}
 export class ContactNotExistentError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
+export class InvalidFiatAmount extends ValidationError {}
 export class InvalidOnChainAddress extends ValidationError {}
 export class InvalidScanDepthAmount extends ValidationError {}
 export class SatoshiAmountRequiredError extends ValidationError {}
