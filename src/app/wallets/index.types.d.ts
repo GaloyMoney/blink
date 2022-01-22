@@ -29,14 +29,8 @@ type AddInvoiceNoAmountForRecipientArgs = {
 }
 
 type GetOnChainFeeArgs = {
-  wallet: Wallet
-  amount: Satoshis
-  address: OnChainAddress
-  targetConfirmations: TargetConfirmations
-}
-
-type GetOnChainFeeByWalletIdArgs = {
   walletId: WalletId
+  withdrawFee: WithdrawFee
   amount: number
   address: OnChainAddress
   targetConfirmations: number

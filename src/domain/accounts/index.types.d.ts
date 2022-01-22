@@ -34,11 +34,6 @@ type Account = {
   readonly contacts: AccountContact[]
 }
 
-type Currencies = {
-  id: Currency
-  ratio: CurrencyRatio
-}[]
-
 type BusinessMapTitle = string & { readonly brand: unique symbol }
 type Coordinates = {
   longitude: number

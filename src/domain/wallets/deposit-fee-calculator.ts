@@ -7,6 +7,6 @@ export const DepositFeeCalculator = (): DepositFeeCalculator => {
 
   return {
     onChainDepositFee,
-    lnDepositFee: () => toSats(0),
+    lnDepositFee: () => toSats(0), // TODO: implement
   }
 }

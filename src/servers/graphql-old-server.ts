@@ -442,9 +442,14 @@ const resolvers = {
 
         return { success: true }
       },
-      getFee: async ({ address, amount }) => {
-        const fee = await Wallets.getOnChainFeeByWalletId({
+      getFee: async (
+        { address, amount },
+        _,
+        { domainAccount }: { domainAccount: Account },
+      ) => {
+        const fee = await Wallets.getOnChainFee({
           walletId: wallet.user.defaultWalletId,
+          withdrawFee: domainAccount.withdrawFee,
           amount,
           address,
           targetConfirmations: 1,

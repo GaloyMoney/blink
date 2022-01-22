@@ -445,10 +445,10 @@ const executePaymentViaLn = async ({
   }
 
   const maxFee = LnFeeCalculator().max(amount)
-  const lnFee = route ? route.roundedUpFee : maxFee
-  const sats = toSats(amount + lnFee)
-  const usd = sats * usdPerSat
-  const usdFee = lnFee * usdPerSat
+  const feeRouting = route ? route.roundedUpFee : maxFee
+  const sats = toSats(amount + feeRouting)
+  const usdDisplay = (sats * usdPerSat) as FiatAmount
+  const usdFeeRouting = (feeRouting * usdPerSat) as FiatAmount
 
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
@@ -468,9 +468,9 @@ const executePaymentViaLn = async ({
           paymentHash,
           description: decodedInvoice.description,
           sats,
-          fee: lnFee,
-          usd,
-          usdFee,
+          feeRouting,
+          usdDisplay,
+          usdFeeRouting,
           pubkey,
           feeKnownInAdvance: !!rawRoute,
         }),

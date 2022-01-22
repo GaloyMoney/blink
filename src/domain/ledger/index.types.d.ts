@@ -66,9 +66,7 @@ type TxArgs = {
   walletId: WalletId
   description: string
   sats: Satoshis
-  fee: Satoshis
-  usd: number
-  usdFee: number
+  usdDisplay: FiatAmount
 }
 
 type LnTxArgs = TxArgs & {
@@ -80,16 +78,25 @@ type OnChainTxArgs = TxArgs & {
   payeeAddress: OnChainAddress
 }
 
-type AddLnTxReceiveArgs = LnTxArgs
+type AddLnTxReceiveArgs = LnTxArgs & {
+  currency: WalletCurrency
+  fiat: FiatAmount | null
+  usdFeeLightningLiquidity: FiatAmount
+  feeLightningLiquidity: Satoshis
+}
 
 type AddLnTxSendArgs = LnTxArgs & {
   pubkey: Pubkey
   feeKnownInAdvance: boolean
+  feeRouting: Satoshis
+  usdFeeRouting: FiatAmount
 }
 
 type AddOnChainTxSendArgs = OnChainTxArgs & {
   sendAll: boolean
+  totalFee: Satoshis
   bankFee: Satoshis
+  usdTotalFee: FiatAmount
 }
 
 type IntraledgerTxArgs = {
