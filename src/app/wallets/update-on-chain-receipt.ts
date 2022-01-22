@@ -8,6 +8,8 @@ import { LockService } from "@services"
 import { ONCHAIN_SCAN_DEPTH, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config"
 import { getCurrentPrice } from "@app/prices"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
+import { toSats } from "@domain/bitcoin"
+import { ColdStorageService } from "@services/cold-storage"
 
 export const updateOnChainReceipt = async ({
   scanDepth = ONCHAIN_SCAN_DEPTH,
@@ -150,6 +152,16 @@ const processTxForHotWallet = async ({
   tx: IncomingOnChainTransaction
   logger: Logger
 }): Promise<void | ApplicationError> => {
+  const coldStorageService = await ColdStorageService()
+  if (coldStorageService instanceof Error) return coldStorageService
+
+  const isFromColdStorage = await coldStorageService.isWithdrawalTransaction(
+    tx.rawTx.txHash,
+  )
+  if (coldStorageService instanceof Error) return coldStorageService
+
+  if (!isFromColdStorage) return
+
   const ledger = LedgerService()
 
   const usdPerSat = await getCurrentPrice()
@@ -167,7 +179,15 @@ const processTxForHotWallet = async ({
 
     for (const { sats, address } of tx.rawTx.outs) {
       if (address) {
-        const fee = tx.fee
+        const isColdStorageAddress = await coldStorageService.isDerivedAddress(address)
+        if (isColdStorageAddress instanceof Error || isColdStorageAddress) continue
+
+        // we can't trust the lnd decoded tx fee because it sets the fee to zero when it's a deposit
+        let fee =
+          tx.fee || (await coldStorageService.lookupTransactionFee(tx.rawTx.txHash))
+
+        if (fee instanceof Error) fee = toSats(0)
+
         const usd = sats * usdPerSat
         const usdFee = fee * usdPerSat
 

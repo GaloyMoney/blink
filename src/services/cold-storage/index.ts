@@ -42,19 +42,6 @@ export const ColdStorageService = async (): Promise<
     }
   }
 
-  const createOnChainAddress = async (): Promise<
-    OnChainAddress | ColdStorageServiceError
-  > => {
-    try {
-      return checkedToOnChainAddress({
-        network: BTC_NETWORK,
-        value: await bitcoindCurrentWalletClient.getNewAddress(),
-      })
-    } catch (err) {
-      return new UnknownColdStorageServiceError(err)
-    }
-  }
-
   const createPsbt = async ({
     walletName,
     onChainAddress,
@@ -86,10 +73,59 @@ export const ColdStorageService = async (): Promise<
     }
   }
 
+  const createOnChainAddress = async (): Promise<
+    OnChainAddress | ColdStorageServiceError
+  > => {
+    try {
+      return checkedToOnChainAddress({
+        network: BTC_NETWORK,
+        value: await bitcoindCurrentWalletClient.getNewAddress(),
+      })
+    } catch (err) {
+      return new UnknownColdStorageServiceError(err)
+    }
+  }
+
+  const isDerivedAddress = async (
+    address: OnChainAddress,
+  ): Promise<boolean | ColdStorageServiceError> => {
+    try {
+      const { ismine: isMine } = await bitcoindCurrentWalletClient.getAddressInfo(address)
+      return !!isMine
+    } catch (err) {
+      return new UnknownColdStorageServiceError(err)
+    }
+  }
+
+  const isWithdrawalTransaction = async (
+    txHash: OnChainTxHash,
+  ): Promise<boolean | ColdStorageServiceError> => {
+    try {
+      const { amount } = await bitcoindCurrentWalletClient.getTransaction(txHash)
+      return amount < 0
+    } catch (err) {
+      return new UnknownColdStorageServiceError(err)
+    }
+  }
+
+  const lookupTransactionFee = async (
+    txHash: OnChainTxHash,
+  ): Promise<Satoshis | ColdStorageServiceError> => {
+    try {
+      const { fee } = await bitcoindCurrentWalletClient.getTransaction(txHash)
+      return btc2sat(Math.abs(fee))
+    } catch (err) {
+      return new UnknownColdStorageServiceError(err)
+    }
+  }
+
   return {
     getBalances,
-    createOnChainAddress,
     createPsbt,
+    createOnChainAddress,
+    isDerivedAddress,
+    isWithdrawalTransaction,
+    lookupTransactionFee,
   }
 }
 

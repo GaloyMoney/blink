@@ -49,4 +49,9 @@ interface IColdStorageService {
     amount,
   }: GetColdStoragePsbtArgs): Promise<ColdStoragePsbt | ColdStorageServiceError>
   createOnChainAddress(): Promise<OnChainAddress | ColdStorageServiceError>
+  isDerivedAddress(address: OnChainAddress): Promise<boolean | ColdStorageServiceError>
+  isWithdrawalTransaction(
+    txHash: OnChainTxHash,
+  ): Promise<boolean | ColdStorageServiceError>
+  lookupTransactionFee(txHash: OnChainTxHash): Promise<Satoshis | ColdStorageServiceError>
 }

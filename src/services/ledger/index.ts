@@ -813,9 +813,9 @@ export const LedgerService = (): ILedgerService => {
 
       const entry = MainBook.entry(description)
       entry
-        .debit(lndAccountingPath, sats, metadata)
-        .debit(bankOwnerPath, fee, metadata)
         .credit(bitcoindAccountingPath, sats + fee, metadata)
+        .debit(bankOwnerPath, fee, metadata)
+        .debit(lndAccountingPath, sats, metadata)
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)

@@ -59,11 +59,19 @@ export class BitcoindClient {
   }
 
   async createWallet({
-    wallet_name,
+    walletName,
+    disablePrivateKeys,
+    descriptors,
   }: {
-    wallet_name: string
+    walletName: string
+    disablePrivateKeys?: boolean
+    descriptors?: boolean
   }): Promise<{ name: string; warning: string }> {
-    return this.client.createWallet({ wallet_name })
+    return this.client.createWallet({
+      wallet_name: walletName,
+      disable_private_keys: disablePrivateKeys,
+      descriptors,
+    })
   }
 
   async listWallets(): Promise<[string]> {
