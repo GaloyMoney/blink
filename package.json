@@ -5,18 +5,13 @@
     "eslint-check": "eslint \"{src,test}/**/*.ts\"",
     "eslint-fix": "eslint \"{src,test}/**/*.ts\" --fix",
     "build": "tsc -p tsconfig-build.json --skipLibCheck && cp -R src/services/price/protos lib/services/price/ && cp src/graphql/old-schema.graphql lib/graphql/ && tscpaths -p tsconfig.json -s ./src -o ./lib",
-    "start": "yarn build && source ./scripts/export-local.sh && node lib/servers/graphql-old-server.js | pino-pretty -c -l",
-    "trigger": "yarn build && source ./scripts/export-local.sh && node lib/servers/trigger.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x yarn trigger",
     "kill-graphql": "kill $(lsof -t -i:4000)",
     "forward-mongodb": "kubectl port-forward $(kubectl get pods -l app.kubernetes.io/name=mongodb | awk '/mongo/ {print $1}') 27017",
     "cron": "yarn build && source scripts/export-local.sh && node src/servers/cron.js",
     "exporter": "yarn build && node lib/servers/exporter.js",
-    "lnd-connection": "source scripts/export-local.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDDNS}:${LNDRPCPORT} getinfo",
-    "lncli": "source scripts/export-local.sh && echo $MACAROON | base64 -d > ./macaroon && echo $TLS | base64 -d > ./tls.cert && lncli --network regtest --macaroonpath=./macaroon --tlscertpath=./tls.cert --rpcserver=${LNDDNS}:${LNDRPCPORT}",
     "postman": "yarn node test/postman/newman.ts",
-    "bitcoin-cli": "source ./scripts/export-local.sh && kubectl exec bitcoind-0 -- bitcoin-cli -rpcuser=rpcuser -rpcpassword=$BITCOINDRPCPASS -regtest",
     "update-postman": "curl --location --request GET \"https://api.getpostman.com/collections/4e3fee88-7267-44e1-a316-b81e90b0bd2b\" --header \"X-Api-Key: $POSTMANAPIKEY\" | jq . > test/postman/graphql.postman-collection.json",
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit",
     "test:unit": ". ./.envrc && LOGLEVEL=warn jest --config ./test/jest-unit.config.js --bail --verbose $TEST | yarn pino-pretty -c -l",
@@ -83,8 +78,8 @@
     "lodash.merge": "^4.6.2",
     "lodash.sortby": "^4.7.0",
     "lodash.sumby": "^4.6.0",
-    "medici": "^4.0.2",
-    "mongoose": "~5.10.14",
+    "medici": "^5.1.0",
+    "mongoose": "^6.1.7",
     "node-2fa": "^2.0.2",
     "node-cache": "^5.1.2",
     "pino": "^6.11.3",
@@ -124,7 +119,7 @@
     "@types/lodash.sortby": "^4.7.6",
     "@types/lodash.sumby": "^4.6.6",
     "@types/migrate-mongo": "^8.1.2",
-    "@types/mongoose": "~5.11.97",
+    "@types/mongoose": "^5.11.97",
     "@types/newman": "^5.1.4",
     "@types/node": "^14.0.0",
     "@types/nodemon": "^1.19.1",
@@ -162,8 +157,7 @@
   },
   "resolutions": {
     "**/**/ws": ">=7.4.6",
-    "**/**/json-bigint": ">=1.0.0",
-    "**/**/mongoose": "~5.10.14"
+    "**/**/json-bigint": ">=1.0.0"
   },
   "private": true
 }
