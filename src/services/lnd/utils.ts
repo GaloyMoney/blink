@@ -28,7 +28,7 @@ import map from "lodash.map"
 
 import { params } from "./auth"
 
-export const deleteExpiredInvoiceUser = async () => {
+export const deleteExpiredWalletInvoice = async () => {
   const walletInvoicesRepo = WalletInvoicesRepository()
 
   // this should be longer than the invoice validity time

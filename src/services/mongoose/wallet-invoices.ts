@@ -4,7 +4,7 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 
-import { InvoiceUser } from "./schema"
+import { WalletInvoice } from "./schema"
 
 export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   const persistNew = async ({
@@ -17,7 +17,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     currency,
   }: WalletInvoice): Promise<WalletInvoice | RepositoryError> => {
     try {
-      const invoiceUser = await new InvoiceUser({
+      const walletInvoice = await new WalletInvoice({
         _id: paymentHash,
         walletId,
         selfGenerated,
@@ -26,7 +26,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
         fiat,
         currency,
       }).save()
-      return walletInvoiceFromRaw(invoiceUser)
+      return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -36,17 +36,17 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     paymentHash: PaymentHash,
   ): Promise<WalletInvoice | RepositoryError> => {
     try {
-      const invoiceUser = await InvoiceUser.findOneAndUpdate(
+      const walletInvoice = await WalletInvoice.findOneAndUpdate(
         { _id: paymentHash },
         { paid: true },
         {
           new: true,
         },
       )
-      if (!invoiceUser) {
+      if (!walletInvoice) {
         return new RepositoryError("Couldn't update invoice for payment hash")
       }
-      return walletInvoiceFromRaw(invoiceUser)
+      return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -56,11 +56,11 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     paymentHash: PaymentHash,
   ): Promise<WalletInvoice | RepositoryError> => {
     try {
-      const invoiceUser = await InvoiceUser.findOne({ _id: paymentHash })
-      if (!invoiceUser) {
+      const walletInvoice = await WalletInvoice.findOne({ _id: paymentHash })
+      if (!walletInvoice) {
         return new CouldNotFindWalletInvoiceError(paymentHash)
       }
-      return walletInvoiceFromRaw(invoiceUser)
+      return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -71,15 +71,15 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   ): AsyncGenerator<WalletInvoice> | RepositoryError {
     let pending
     try {
-      pending = InvoiceUser.find({ walletId, paid: false }).cursor({
+      pending = WalletInvoice.find({ walletId, paid: false }).cursor({
         batchSize: 100,
       })
     } catch (error) {
       return new RepositoryError(error)
     }
 
-    for await (const invoiceUser of pending) {
-      yield walletInvoiceFromRaw(invoiceUser)
+    for await (const walletInvoice of pending) {
+      yield walletInvoiceFromRaw(walletInvoice)
     }
   }
 
@@ -89,7 +89,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     let pending
     try {
       // select distinct user ids from pending invoices
-      pending = InvoiceUser.aggregate([
+      pending = WalletInvoice.aggregate([
         { $match: { paid: false } },
         { $group: { _id: "$walletId" } },
       ])
@@ -108,7 +108,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     paymentHash: PaymentHash,
   ): Promise<boolean | RepositoryError> => {
     try {
-      const result = await InvoiceUser.deleteOne({ _id: paymentHash })
+      const result = await WalletInvoice.deleteOne({ _id: paymentHash })
       if (result.deletedCount === 0) {
         return new CouldNotFindWalletInvoiceError(paymentHash)
       }
@@ -122,7 +122,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     before: Date,
   ): Promise<number | RepositoryError> => {
     try {
-      const result = await InvoiceUser.deleteMany({
+      const result = await WalletInvoice.deleteMany({
         timestamp: { $lt: before },
         paid: false,
       })

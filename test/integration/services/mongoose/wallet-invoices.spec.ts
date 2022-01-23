@@ -2,7 +2,7 @@ import crypto from "crypto"
 
 import { Wallets } from "@app"
 import { toSats } from "@domain/bitcoin"
-import { InvoiceUser } from "@services/mongoose/schema"
+import { WalletInvoice } from "@services/mongoose/schema"
 
 import { WalletInvoicesRepository } from "@services/mongoose"
 
@@ -83,7 +83,7 @@ describe("WalletInvoices", () => {
       })
     }
 
-    const invoicesCount = await InvoiceUser.countDocuments({
+    const invoicesCount = await WalletInvoice.countDocuments({
       walletId: wallet1,
       paid: false,
     })

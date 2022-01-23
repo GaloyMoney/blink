@@ -2,7 +2,7 @@ import { getSpecterWalletConfig } from "@config"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 import {
-  deleteExpiredInvoiceUser,
+  deleteExpiredWalletInvoice,
   deleteFailedPaymentsAttemptAllLnds,
   updateEscrows,
   updateRoutingFees,
@@ -40,7 +40,7 @@ const main = async () => {
   }
 
   const deleteExpiredInvoices = async () => {
-    await deleteExpiredInvoiceUser()
+    await deleteExpiredWalletInvoice()
   }
 
   const updateLnPaymentsCollection = async () => {

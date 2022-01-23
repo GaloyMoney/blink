@@ -25,7 +25,7 @@ const dbMetadataSchema = new Schema({
 })
 export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
 
-const invoiceUserSchema = new Schema({
+const walletInvoiceSchema = new Schema({
   _id: String, // hash of invoice
   walletId: {
     required: true,
@@ -67,9 +67,9 @@ const invoiceUserSchema = new Schema({
   },
 })
 
-invoiceUserSchema.index({ walletId: 1, paid: 1 })
+walletInvoiceSchema.index({ walletId: 1, paid: 1 })
 
-export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
+export const WalletInvoice = mongoose.model("WalletInvoice", walletInvoiceSchema)
 
 const feeRates = getFeeRates()
 

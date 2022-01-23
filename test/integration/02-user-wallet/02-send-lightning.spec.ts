@@ -20,7 +20,7 @@ import { LedgerService } from "@services/ledger"
 import { getActiveLnd, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository, WalletInvoicesRepository } from "@services/mongoose"
-import { InvoiceUser } from "@services/mongoose/schema"
+import { WalletInvoice } from "@services/mongoose/schema"
 import { LndService } from "@services/lnd"
 
 import { sleep } from "@utils"
@@ -1034,7 +1034,7 @@ describe("UserWallet - Lightning Pay", () => {
     const { paymentRequest: request } = lnInvoice
 
     const { id } = await decodePaymentRequest({ lnd, request })
-    expect(await InvoiceUser.countDocuments({ _id: id })).toBe(1)
+    expect(await WalletInvoice.countDocuments({ _id: id })).toBe(1)
 
     // is deleting the invoice the same as when as invoice expired?
     // const res = await cancelHodlInvoice({ lnd, id })
@@ -1073,7 +1073,7 @@ describe("UserWallet - Lightning Pay", () => {
     // FIXME: test is failing.
     // lnd doesn't always delete invoice just after they have expired
 
-    // expect(await InvoiceUser.countDocuments({_id: id})).toBe(0)
+    // expect(await WalletInvoice.countDocuments({_id: id})).toBe(0)
 
     // try {
     //   await getInvoice({ lnd, id })

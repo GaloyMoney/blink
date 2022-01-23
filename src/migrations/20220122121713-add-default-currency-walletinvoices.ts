@@ -1,8 +1,11 @@
 module.exports = {
   async up(db) {
     console.log("Begin up migration")
+
+    db.collection("invoiceusers").renameCollection("walletinvoices")
+
     const result = await db
-      .collection("invoiceusers")
+      .collection("walletinvoices")
       .updateMany({}, { $set: { currency: "BTC" } })
 
     console.log({ result }, "migration completed")
