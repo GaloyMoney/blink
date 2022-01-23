@@ -7,7 +7,7 @@ import { LedgerService } from "@services/ledger"
 import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import { onChannelUpdated } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
-import { ledger, setupMongoConnection } from "@services/mongodb"
+import { setupMongoConnection } from "@services/mongodb"
 import { WalletsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { updatePriceHistory } from "@services/price/update-price-history"
@@ -49,9 +49,13 @@ export async function onchainTransactionEventHandler(
       // transaction has been sent. and this events is trigger before
     }
 
-    const settled = await ledger.settleOnchainPayment(txHash)
+    const settled = await LedgerService().settlePendingOnChainPayments(txHash)
 
-    if (!settled) {
+    if (settled instanceof Error || !settled) {
+      onchainLogger.error(
+        { success: false, settled, transactionType: "payment" },
+        "payment settle fail",
+      )
       return
     }
 
