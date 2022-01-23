@@ -303,12 +303,12 @@ const resolvers = {
       addInvoice: async ({ value, memo }) => {
         const lnInvoice =
           value && value > 0
-            ? await Wallets.addInvoiceByWalletId({
+            ? await Wallets.addInvoiceForSelf({
                 walletId: wallet.user.defaultWalletId,
                 amount: value,
                 memo,
               })
-            : await Wallets.addInvoiceNoAmountByWalletId({
+            : await Wallets.addInvoiceNoAmountForSelf({
                 walletId: wallet.user.defaultWalletId,
                 memo,
               })

@@ -77,7 +77,7 @@ describe("WalletInvoices", () => {
 
   it("find pending invoices by wallet id", async () => {
     for (let i = 0; i < 2; i++) {
-      await Wallets.addInvoiceByWalletId({
+      await Wallets.addInvoiceForSelf({
         walletId: wallet1,
         amount: toSats(1000),
       })

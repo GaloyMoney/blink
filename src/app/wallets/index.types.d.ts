@@ -1,4 +1,4 @@
-type AddInvoiceByWalletIdArgs = {
+type AddInvoiceForSelfArgs = {
   walletId: string
   amount: number
   memo?: string
@@ -13,13 +13,7 @@ type AddInvoiceArgs = {
   descriptionHash?: string
 }
 
-type AddInvoiceNoAmountArgs = {
-  wallet: Wallet
-  currency: WalletCurrency
-  memo?: string
-}
-
-type AddInvoiceNoAmountByWalletIdArgs = {
+type AddInvoiceNoAmountForSelfArgs = {
   walletId: string
   memo?: string
 }

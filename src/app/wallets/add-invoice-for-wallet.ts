@@ -10,11 +10,11 @@ import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 import { consumeLimiter } from "@services/rate-limit"
 
-export const addInvoiceByWalletId = async ({
+export const addInvoiceForSelf = async ({
   walletId,
   amount,
   memo = "",
-}: AddInvoiceByWalletIdArgs): Promise<LnInvoice | ApplicationError> => {
+}: AddInvoiceForSelfArgs): Promise<LnInvoice | ApplicationError> => {
   const walletIdChecked = checkedToWalletId(walletId)
   if (walletIdChecked instanceof Error) return walletIdChecked
 
@@ -25,14 +25,16 @@ export const addInvoiceByWalletId = async ({
   const limitOk = await checkSelfWalletIdRateLimits(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
 
-  let addInvoice: (args: AddInvoiceArgs) => Promise<LnInvoice | ApplicationError>
+  let addInvoiceWithAmount: (
+    args: AddInvoiceArgs,
+  ) => Promise<LnInvoice | ApplicationError>
 
   switch (wallet.currency) {
     case WalletCurrency.Btc:
-      addInvoice = addInvoiceSatsDenomiation
+      addInvoiceWithAmount = addInvoiceSatsDenomiation
       break
     case WalletCurrency.Usd:
-      addInvoice = addInvoiceFiatDenomiation
+      addInvoiceWithAmount = addInvoiceFiatDenomiation
       break
   }
 
@@ -41,17 +43,17 @@ export const addInvoiceByWalletId = async ({
     currency: wallet.currency,
   })
 
-  return addInvoice({
+  return addInvoiceWithAmount({
     walletInvoiceCreateFn: walletInvoiceFactory.createForSelf,
     amount,
     memo,
   })
 }
 
-export const addInvoiceNoAmountByWalletId = async ({
+export const addInvoiceNoAmountForSelf = async ({
   walletId,
   memo = "",
-}: AddInvoiceNoAmountByWalletIdArgs): Promise<LnInvoice | ApplicationError> => {
+}: AddInvoiceNoAmountForSelfArgs): Promise<LnInvoice | ApplicationError> => {
   const walletIdChecked = checkedToWalletId(walletId)
   if (walletIdChecked instanceof Error) return walletIdChecked
 
@@ -59,10 +61,25 @@ export const addInvoiceNoAmountByWalletId = async ({
   const wallet = await wallets.findById(walletIdChecked)
   if (wallet instanceof Error) return wallet
 
-  return addInvoiceNoAmount({
-    wallet,
-    memo,
+  const limitOk = await checkSelfWalletIdRateLimits(wallet.accountId)
+  if (limitOk instanceof Error) return limitOk
+
+  // when an invoice have a fiat deonimation but doesn't have an amount,
+  // the exchange rate will be defined at settlement time, not at the invoice creation time
+  // therefore this is safe to have an extended period of time for those invoices
+  const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Btc, new Date())
+
+  const walletInvoiceFactory = WalletInvoiceFactory({
+    walletId: wallet.id,
     currency: wallet.currency,
+  })
+
+  return registerAndPersistInvoice({
+    sats: toSats(0),
+    memo,
+    walletInvoiceCreateFn: walletInvoiceFactory.createForSelf,
+    expiresAt,
+    fiat: null,
   })
 }
 
@@ -167,7 +184,7 @@ const addInvoiceFiatDenomiation = async ({
   const fiat = checkedToFiat(amount)
   if (fiat instanceof Error) return fiat
 
-  const expiresAt = invoiceExpirationForCurrency("USD", new Date())
+  const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Usd, new Date())
 
   // TODO: ensure we don't get a stalled price // fail otherwise
   const price = await getCurrentPrice()
@@ -182,29 +199,6 @@ const addInvoiceFiatDenomiation = async ({
     expiresAt,
     descriptionHash,
     fiat,
-  })
-}
-
-const addInvoiceNoAmount = async ({
-  wallet,
-  memo = "",
-  currency,
-}: AddInvoiceNoAmountArgs): Promise<LnInvoice | ApplicationError> => {
-  const limitOk = await checkSelfWalletIdRateLimits(wallet.accountId)
-  if (limitOk instanceof Error) return limitOk
-
-  // when an invoice have a fiat deonimation but doesn't have an amount,
-  // the exchange rate will be defined at settlement time, not at the invoice creation time
-  // therefore this is safe to have an extended period of time for those invoices
-  const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Btc, new Date())
-
-  const walletInvoiceFactory = WalletInvoiceFactory({ walletId: wallet.id, currency })
-  return registerAndPersistInvoice({
-    sats: toSats(0),
-    memo,
-    walletInvoiceCreateFn: walletInvoiceFactory.createForSelf,
-    expiresAt,
-    fiat: null,
   })
 }
 
