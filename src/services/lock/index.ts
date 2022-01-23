@@ -1,5 +1,6 @@
 import { UnknownLockServiceError } from "@domain/lock"
 import { lockExtendOrThrow, redlock } from "@core/lock"
+import { asyncRunInSpan } from "@services/tracing"
 
 export const LockService = (): ILockService => {
   const lockWalletId = async <Res>(
@@ -11,7 +12,9 @@ export const LockService = (): ILockService => {
     f: () => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     try {
-      return redlock({ path: walletId, logger, lock }, f)
+      return asyncRunInSpan("redlock", { walletId }, () =>
+        redlock({ path: walletId, logger, lock }, f),
+      )
     } catch (err) {
       return new UnknownLockServiceError(err)
     }
@@ -26,7 +29,9 @@ export const LockService = (): ILockService => {
     f: () => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     try {
-      return redlock({ path: paymentHash, logger, lock }, f)
+      return asyncRunInSpan("redlock", { paymentHash }, () =>
+        redlock({ path: paymentHash, logger, lock }, f),
+      )
     } catch (err) {
       return new UnknownLockServiceError(err)
     }
@@ -41,7 +46,9 @@ export const LockService = (): ILockService => {
     f: (lock?: DistributedLock) => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     try {
-      return redlock({ path: txHash, logger, lock }, f)
+      return asyncRunInSpan("redlock", { txHash }, () =>
+        redlock({ path: txHash, logger, lock }, f),
+      )
     } catch (err) {
       return new UnknownLockServiceError(err)
     }
@@ -52,7 +59,11 @@ export const LockService = (): ILockService => {
     f: () => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     try {
-      return lockExtendOrThrow({ lock, logger }, f) as Promise<Res>
+      return asyncRunInSpan(
+        "redlock",
+        { extend: true },
+        () => lockExtendOrThrow({ lock, logger }, f) as Promise<Res>,
+      )
     } catch (err) {
       return new UnknownLockServiceError(err)
     }
