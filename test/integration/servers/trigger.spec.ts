@@ -1,5 +1,5 @@
 import { Prices, Wallets } from "@app"
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config/app"
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"

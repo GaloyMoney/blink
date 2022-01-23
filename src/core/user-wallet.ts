@@ -1,5 +1,5 @@
 import * as Wallets from "@app/wallets"
-import { getGaloyInstanceName } from "@config/app"
+import { getGaloyInstanceName } from "@config"
 import { LedgerService } from "@services/ledger"
 import { User } from "@services/mongoose/schema"
 import { generateSecret, verifyToken } from "node-2fa"

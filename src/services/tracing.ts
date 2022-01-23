@@ -24,7 +24,7 @@ import {
   SpanOptions,
   TimeInput,
 } from "@opentelemetry/api"
-import { tracingConfig } from "@config/app"
+import { tracingConfig } from "@config"
 
 propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 

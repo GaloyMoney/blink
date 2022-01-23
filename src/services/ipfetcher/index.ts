@@ -1,6 +1,6 @@
 import axios from "axios"
 import { UnknownIpFetcherServiceError } from "@domain/ipfetcher"
-import { PROXY_CHECK_APIKEY } from "@config/app"
+import { PROXY_CHECK_APIKEY } from "@config"
 
 export const IpFetcher = (): IIpFetcherService => {
   const fetchIPInfo = async (ip: string): Promise<IPInfo | IpFetcherServiceError> => {

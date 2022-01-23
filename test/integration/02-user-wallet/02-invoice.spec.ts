@@ -2,7 +2,7 @@ import { Wallets } from "@app"
 import {
   getInvoiceCreateAttemptLimits,
   getInvoiceCreateForRecipientAttemptLimits,
-} from "@config/app"
+} from "@config"
 import { toSats } from "@domain/bitcoin"
 import {
   InvoiceCreateForRecipientRateLimiterExceededError,

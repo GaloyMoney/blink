@@ -1,4 +1,4 @@
-import { getTwilioConfig } from "@config/app"
+import { getTwilioConfig } from "@config"
 import {
   InvalidPhoneNumberPhoneProviderError,
   UnknownPhoneProviderServiceError,

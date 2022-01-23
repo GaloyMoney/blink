@@ -7,51 +7,10 @@ import { baseLogger } from "@services/logger"
 import { checkedToScanDepth } from "@domain/bitcoin/onchain"
 import { toSats } from "@domain/bitcoin"
 
+import { ConfigError } from "./error"
+
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 export const defaultConfig = yaml.load(defaultContent)
-
-export class ConfigError extends Error {
-  name = this.constructor.name
-}
-
-export const GALOY_API_PORT = process.env.GALOY_API_PORT || 4002
-export const GALOY_ADMIN_PORT = process.env.GALOY_ADMIN_PORT || 4001
-
-const jwtSecret = process.env.JWT_SECRET
-if (!jwtSecret) {
-  throw new ConfigError("missing JWT_SECRET")
-}
-
-export const JWT_SECRET = jwtSecret
-
-const btcNetwork = process.env.NETWORK
-const networks = ["mainnet", "testnet", "regtest"]
-if (!!btcNetwork && !networks.includes(btcNetwork)) {
-  throw new ConfigError(`missing or invalid NETWORK: ${btcNetwork}`)
-}
-
-export const BTC_NETWORK = btcNetwork as BtcNetwork
-
-export const MS_PER_HOUR = (60 * 60 * 1000) as MilliSeconds
-export const MS_PER_DAY = (24 * MS_PER_HOUR) as MilliSeconds
-
-export const SECS_PER_2_MINS = (60 * 2) as Seconds
-export const SECS_PER_5_MINS = (60 * 5) as Seconds
-export const SECS_PER_DAY = (60 * 60 * 24) as Seconds
-
-export const VALIDITY_TIME_CODE = (20 * 60) as Seconds
-
-export const MAX_BYTES_FOR_MEMO = 639 // BOLT
-
-export const SAT_USDCENT_PRICE = "SAT-USDCENT-PRICE"
-export const USER_PRICE_UPDATE_EVENT = "USER-PRICE-UPDATE-EVENT"
-export const SAT_PRICE_PRECISION_OFFSET = 12
-export const BTC_PRICE_PRECISION_OFFSET = 4
-
-export const lnPaymentStatusEvent = (paymentHash: PaymentHash) =>
-  `LN-PAYMENT-STATUS-${paymentHash}`
-
-export const accountUpdateEvent = (accountId: AccountId) => `ACCOUNT_UPDATE-${accountId}`
 
 let customContent, customConfig
 
@@ -66,11 +25,6 @@ try {
 
 export const yamlConfig = merge(defaultConfig, customConfig)
 
-export const tracingConfig = {
-  jaegerHost: process.env.JAEGER_HOST || "localhost",
-  jaegerPort: parseInt(process.env.JAEGER_PORT || "6832", 10),
-  tracingServiceName: process.env.TRACING_SERVICE_NAME || "galoy-dev",
-}
 export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.limits.memoSharingSatsThreshold
 
 export const ONCHAIN_MIN_CONFIRMATIONS = yamlConfig.onChainWallet.minConfirmations
@@ -93,26 +47,6 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toSats(
 )
 
 export const getGaloyInstanceName = (): string => yamlConfig.name
-
-export const getGaloyBuildInformation = () => {
-  return {
-    commitHash: process.env.COMMITHASH,
-    buildTime: process.env.BUILDTIME,
-    helmRevision: process.env.HELMREVISION,
-  }
-}
-
-export const getGeetestConfig = () => {
-  const config = {
-    id: process.env.GEETEST_ID,
-    key: process.env.GEETEST_KEY,
-  }
-  // FIXME: Geetest should be optional.
-  if (!config.id || !config.key) {
-    throw new ConfigError("Geetest config not found")
-  }
-  return config
-}
 
 export const getLndParams = (): LndParams[] => {
   const config = yamlConfig.lnds
@@ -231,28 +165,6 @@ export const getSpecterWalletConfig = (): SpecterWalletConfig => {
   }
 }
 
-type TwilioConfig = {
-  accountSid: string
-  authToken: string
-  twilioPhoneNumber: string
-}
-
-export const getTwilioConfig = (): TwilioConfig => {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID
-  const authToken = process.env.TWILIO_AUTH_TOKEN
-  const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
-
-  if (!accountSid || !authToken || !twilioPhoneNumber) {
-    throw new ConfigError("missing key for twilio")
-  }
-
-  return {
-    accountSid,
-    authToken,
-    twilioPhoneNumber,
-  }
-}
-
 export const getBuildVersions = (): {
   minBuildNumberAndroid: number
   lastBuildNumberAndroid: number
@@ -271,12 +183,6 @@ export const getBuildVersions = (): {
 
 export const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
 
-// FIXME: we have process.env.NODE_ENV === "production" | "development" | "test"
-// "test" might not be needed
-
-export const isProd = process.env.NODE_ENV === "production"
-export const isDev = process.env.NODE_ENV === "development"
-
 export const getIpConfig = (config = yamlConfig): IpConfig => ({
   ipRecordingEnabled:
     process.env.NODE_ENV === "test" ? false : config.ipRecording?.enabled,
@@ -288,33 +194,3 @@ export const getTwoFAConfig = (config = yamlConfig): TwoFAConfig => config.twoFA
 
 export const getTestAccounts = (config = yamlConfig): TestAccount[] =>
   config.test_accounts
-
-export const levels: Levels = [1, 2]
-
-// onboarding
-export const onboardingEarn: Record<string, Satoshis> = {
-  walletDownloaded: 1 as Satoshis,
-  walletActivated: 1 as Satoshis,
-  whatIsBitcoin: 1 as Satoshis,
-  sat: 2 as Satoshis,
-  whereBitcoinExist: 5 as Satoshis,
-  whoControlsBitcoin: 5 as Satoshis,
-  copyBitcoin: 5 as Satoshis,
-  moneyImportantGovernement: 10 as Satoshis,
-  moneyIsImportant: 10 as Satoshis,
-  whyStonesShellGold: 10 as Satoshis,
-  moneyEvolution: 10 as Satoshis,
-  coincidenceOfWants: 10 as Satoshis,
-  moneySocialAggrement: 10 as Satoshis,
-  WhatIsFiat: 10 as Satoshis,
-  whyCareAboutFiatMoney: 10 as Satoshis,
-  GovernementCanPrintMoney: 10 as Satoshis,
-  FiatLosesValueOverTime: 10 as Satoshis,
-  OtherIssues: 10 as Satoshis,
-  LimitedSupply: 20 as Satoshis,
-  Decentralized: 20 as Satoshis,
-  NoCounterfeitMoney: 20 as Satoshis,
-  HighlyDivisible: 20 as Satoshis,
-  securePartOne: 20 as Satoshis,
-  securePartTwo: 20 as Satoshis,
-}

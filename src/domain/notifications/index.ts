@@ -8,3 +8,5 @@ export const NotificationType = {
   OnchainPayment: "onchain_payment",
   LnInvoicePaid: "paid-invoice",
 } as const
+
+export const accountUpdateEvent = (accountId: AccountId) => `ACCOUNT_UPDATE-${accountId}`

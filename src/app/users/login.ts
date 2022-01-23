@@ -3,7 +3,7 @@ import {
   getFailedLoginAttemptPerIpLimits,
   getTestAccounts,
   VALIDITY_TIME_CODE,
-} from "@config/app"
+} from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"

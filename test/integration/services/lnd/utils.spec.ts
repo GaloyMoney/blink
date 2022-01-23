@@ -1,4 +1,4 @@
-import { MS_PER_DAY } from "@config/app"
+import { MS_PER_DAY } from "@config"
 import {
   deleteExpiredInvoiceUser,
   getInvoiceAttempt,

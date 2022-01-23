@@ -1,8 +1,8 @@
 import { Prices } from "@app"
+import { uploadBackup } from "@app/admin/backup"
 import * as Wallets from "@app/wallets"
-import { ONCHAIN_MIN_CONFIRMATIONS, SECS_PER_5_MINS } from "@config/app"
+import { ONCHAIN_MIN_CONFIRMATIONS, SECS_PER_5_MINS } from "@config"
 import { toSats } from "@domain/bitcoin"
-import { Storage } from "@google-cloud/storage"
 import { LedgerService } from "@services/ledger"
 import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import { onChannelUpdated } from "@services/lnd/utils"
@@ -11,7 +11,6 @@ import { ledger, setupMongoConnection } from "@services/mongodb"
 import { WalletsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { updatePriceHistory } from "@services/price/update-price-history"
-import { Dropbox } from "dropbox"
 import express from "express"
 import {
   GetInvoiceResult,
@@ -26,30 +25,6 @@ import {
 import healthzHandler from "./middlewares/healthz"
 
 const logger = baseLogger.child({ module: "trigger" })
-
-export const uploadBackup = async ({ backup, pubkey }) => {
-  logger.debug({ backup }, "updating scb on dbx")
-  const filename = `${process.env.NETWORK}_lnd_scb_${pubkey}_${Date.now()}`
-
-  try {
-    const dbx = new Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN })
-    await dbx.filesUpload({ path: `/${filename}`, contents: backup })
-    logger.info({ backup }, "scb backed up on dbx successfully")
-  } catch (error) {
-    logger.error({ error }, "scb backup to dbx failed")
-  }
-
-  logger.debug({ backup }, "updating scb on gcs")
-  try {
-    const storage = new Storage({ keyFilename: process.env.GCS_APPLICATION_CREDENTIALS })
-    const bucket = storage.bucket("lnd-static-channel-backups")
-    const file = bucket.file(`${filename}`)
-    await file.save(backup)
-    logger.info({ backup }, "scb backed up on gcs successfully")
-  } catch (error) {
-    logger.error({ error }, "scb backup to gcs failed")
-  }
-}
 
 export async function onchainTransactionEventHandler(
   tx: SubscribeToTransactionsChainTransactionEvent,
@@ -223,7 +198,7 @@ const listenerOffchain = ({ lnd, pubkey }) => {
   })
 
   const subBackups = subscribeToBackups({ lnd })
-  subBackups.on("backup", ({ backup }) => uploadBackup({ backup, pubkey }))
+  subBackups.on("backup", ({ backup }) => uploadBackup(logger)({ backup, pubkey }))
   subBackups.on("error", (err) => {
     baseLogger.info({ err }, "error subBackups")
     subBackups.removeAllListeners()

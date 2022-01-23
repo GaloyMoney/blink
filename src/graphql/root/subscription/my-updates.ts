@@ -1,10 +1,6 @@
 import { GT } from "@graphql/index"
 
-import {
-  SAT_PRICE_PRECISION_OFFSET,
-  USER_PRICE_UPDATE_EVENT,
-  accountUpdateEvent,
-} from "@config/app"
+import { SAT_PRICE_PRECISION_OFFSET, USER_PRICE_UPDATE_EVENT } from "@config"
 import pubsub from "@services/pubsub"
 import { Prices } from "@app"
 import IError from "@graphql/types/abstract/error"
@@ -16,6 +12,7 @@ import OnChainTxHash from "@graphql/types/scalar/onchain-tx-hash"
 import TxNotificationType from "@graphql/types/scalar/tx-notification-type"
 import GraphQLUser from "@graphql/types/object/graphql-user"
 import WalletId from "@graphql/types/scalar/wallet-id"
+import { accountUpdateEvent } from "@domain/notifications"
 
 const IntraLedgerUpdate = new GT.Object({
   name: "IntraLedgerUpdate",

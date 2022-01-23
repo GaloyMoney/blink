@@ -1,4 +1,4 @@
-import { getUserWalletConfig } from "@config/app"
+import { getUserWalletConfig } from "@config"
 
 import { User } from "@services/mongoose/schema"
 

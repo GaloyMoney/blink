@@ -1,10 +1,10 @@
+import { SAT_USDCENT_PRICE, USER_PRICE_UPDATE_EVENT } from "@config"
+import { lnPaymentStatusEvent } from "@domain/bitcoin/lightning"
 import {
   accountUpdateEvent,
-  lnPaymentStatusEvent,
-  SAT_USDCENT_PRICE,
-  USER_PRICE_UPDATE_EVENT,
-} from "@config/app"
-import { NotificationsServiceError, NotificationType } from "@domain/notifications"
+  NotificationsServiceError,
+  NotificationType,
+} from "@domain/notifications"
 import {
   AccountsRepository,
   UsersRepository,

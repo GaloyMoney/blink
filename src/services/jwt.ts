@@ -1,4 +1,4 @@
-import { JWT_SECRET } from "@config/app"
+import { JWT_SECRET } from "@config"
 import * as jwt from "jsonwebtoken"
 
 // TODO: replace network by uri of the server

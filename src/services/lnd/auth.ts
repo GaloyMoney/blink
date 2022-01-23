@@ -1,5 +1,5 @@
 import { authenticatedLndGrpc } from "lightning"
-import { getLndParams } from "@config/app"
+import { getLndParams } from "@config"
 import sortBy from "lodash.sortby"
 
 const inputs: LndParams[] = getLndParams()

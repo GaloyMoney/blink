@@ -7,7 +7,7 @@ import { setupMongoConnection } from "@services/mongodb"
 
 import { activateLndHealthCheck } from "@services/lnd/health"
 
-import { GALOY_ADMIN_PORT } from "@config/app"
+import { GALOY_ADMIN_PORT } from "@config"
 
 import { gqlAdminSchema } from "../graphql"
 

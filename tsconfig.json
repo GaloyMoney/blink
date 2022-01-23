@@ -12,7 +12,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "paths": {
-      "@config/*": ["src/config/*"],
+      "@config": ["src/config/index"],
       "@core/*": ["src/core/*"],
       "@app/*": ["src/app/*"],
       "@app": ["src/app/index"],

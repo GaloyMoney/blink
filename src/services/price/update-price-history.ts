@@ -2,7 +2,7 @@ import ccxt from "ccxt"
 import last from "lodash.last"
 import { baseLogger } from "@services/logger"
 
-import { MS_PER_HOUR } from "@config/app"
+import { MS_PER_HOUR } from "@config"
 
 import { SATS_PER_BTC } from "@domain/bitcoin"
 

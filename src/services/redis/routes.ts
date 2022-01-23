@@ -1,4 +1,4 @@
-import { SECS_PER_5_MINS } from "@config/app"
+import { SECS_PER_5_MINS } from "@config"
 import { CouldNotFindError, UnknownRepositoryError } from "@domain/errors"
 
 import { redis } from "./index"
