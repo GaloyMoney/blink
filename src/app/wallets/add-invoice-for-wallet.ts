@@ -121,7 +121,7 @@ export const addInvoiceNoAmountForRecipient = async ({
   // when an invoice have a fiat deonimation but doesn't have an amount,
   // the exchange rate will be defined at settlement time, not at the invoice creation time
   // therefore this is safe to have an extended period of time for those invoices
-  const expiresAt = invoiceExpirationForCurrency("BTC", new Date())
+  const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Btc, new Date())
 
   const walletInvoiceFactory = WalletInvoiceFactory({
     walletId: walletIdChecked,
@@ -146,7 +146,7 @@ const addInvoiceSatsDenomiation = async ({
   const sats = checkedToSats(amount)
   if (sats instanceof Error) return sats
 
-  const expiresAt = invoiceExpirationForCurrency("BTC", new Date())
+  const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Btc, new Date())
 
   return registerAndPersistInvoice({
     sats,
@@ -196,7 +196,7 @@ const addInvoiceNoAmount = async ({
   // when an invoice have a fiat deonimation but doesn't have an amount,
   // the exchange rate will be defined at settlement time, not at the invoice creation time
   // therefore this is safe to have an extended period of time for those invoices
-  const expiresAt = invoiceExpirationForCurrency("BTC", new Date())
+  const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Btc, new Date())
 
   const walletInvoiceFactory = WalletInvoiceFactory({ walletId: wallet.id, currency })
   return registerAndPersistInvoice({

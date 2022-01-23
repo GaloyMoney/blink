@@ -27,7 +27,7 @@ type LedgerTransaction = {
   readonly debit: Satoshis
   readonly credit: Satoshis
   readonly fee: Satoshis
-  readonly currency: TxDenominationCurrency
+  readonly currency: WalletCurrency
   readonly timestamp: Date
   readonly pendingConfirmation: boolean
   readonly journalId: LedgerJournalId

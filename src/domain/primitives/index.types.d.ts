@@ -7,4 +7,3 @@ type AccountId = string & { readonly brand: unique symbol }
 type Seconds = number & { readonly brand: unique symbol }
 type MilliSeconds = number & { readonly brand: unique symbol }
 type JwtToken = string & { readonly brand: unique symbol }
-type TxDenominationCurrency = "USD" | "BTC"
