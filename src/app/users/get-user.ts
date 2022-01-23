@@ -49,26 +49,14 @@ const updateUserIPsInfo = async ({
     async () => {
       const ipConfig = getIpConfig()
 
+      if (!ipConfig.ipRecordingEnabled) {
+        return
+      }
+
       const lastConnection = new Date()
 
       const userIP = await usersIp.findById(userId)
-
       if (userIP instanceof RepositoryError) return userIP
-
-      if (!ip || !ipConfig.ipRecordingEnabled) {
-        const result = await usersIp.update(userIP)
-
-        if (result instanceof Error) {
-          logger.error(
-            { result, userId, ip },
-            "impossible to update user last connection",
-          )
-
-          return result
-        }
-
-        return
-      }
 
       const lastIP = userIP.lastIPs.find((ipObject) => ipObject.ip === ip)
 
