@@ -1,7 +1,13 @@
 import { once } from "events"
 
 import { Wallets } from "@app"
-import { getFeeRates, getOnChainWalletConfig, getUserLimits, MS_PER_DAY } from "@config"
+import {
+  getFeeRates,
+  getOnChainWalletConfig,
+  getUserLimits,
+  getLocaleConfig,
+  MS_PER_DAY,
+} from "@config"
 import { toTargetConfs } from "@domain/bitcoin"
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
@@ -67,6 +73,8 @@ let walletId11: WalletId
 let walletId12: WalletId
 let userId0: UserId
 
+const locale = getLocaleConfig()
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
 
@@ -105,6 +113,7 @@ afterAll(async () => {
 })
 
 const amount = 10040 // sats
+const amountString = amount.toLocaleString(locale.localeString)
 const targetConfirmations = toTargetConfs(1)
 
 describe("UserWallet - onChainPay", () => {
@@ -168,7 +177,7 @@ describe("UserWallet - onChainPay", () => {
     // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
 
     expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitle[NotificationType.OnchainPayment]({ amount }),
+      getTitle[NotificationType.OnchainPayment]({ amount: amountString }),
     )
     expect(sendNotification.mock.calls[0][0].user.id.toString()).toStrictEqual(userId0)
     expect(sendNotification.mock.calls[0][0].data.type).toBe(
