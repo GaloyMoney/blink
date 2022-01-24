@@ -64,6 +64,10 @@ type PhoneMetadataValidator = {
   validate(phoneMetadata: PhoneMetadata | null): true | ApplicationError
 }
 
+type IpMetadataValidator = {
+  validate(userIP: UserIPs): true | ApplicationError
+}
+
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>

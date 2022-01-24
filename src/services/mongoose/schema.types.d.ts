@@ -5,6 +5,8 @@ type IPType = {
   region?: string
   city?: string
   Type?: string
+  asn?: string
+  proxy?: string
   firstConnection: Date
   lastConnection: Date
 }

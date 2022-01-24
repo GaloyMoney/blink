@@ -162,6 +162,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Unsupported phone carrier for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "InvalidIpMetadataForRewardError":
+      message = "Unsupported IP address for rewards."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "RouteNotFoundError":
       message = "Unable to find a route for payment."
       return new RouteFindingError({ message, logger: baseLogger })
@@ -288,7 +292,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "PhoneProviderServiceError":
     case "UnknownPhoneProviderServiceError":
     case "MissingPhoneMetadataError":
+    case "MissingIpMetadataError":
     case "InvalidPhoneMetadataTypeError":
+    case "InvalidIpMetadataTypeError":
     case "InvalidAccountStatusError":
     case "InvalidOnChainAddress":
     case "InvalidScanDepthAmount":

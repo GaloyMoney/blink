@@ -2,8 +2,7 @@ import { getIpConfig } from "@config"
 import { RepositoryError } from "@domain/errors"
 import { IpFetcherServiceError } from "@domain/ipfetcher"
 import { IpFetcher } from "@services/ipfetcher"
-import { UsersRepository } from "@services/mongoose"
-import { UsersIpRepository } from "@services/mongoose/users-ips"
+import { UsersRepository, UsersIpRepository } from "@services/mongoose"
 import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"
 
 const users = UsersRepository()

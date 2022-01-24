@@ -3,11 +3,17 @@ import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { onboardingEarn } from "@config"
 import {
   InvalidPhoneMetadataForRewardError,
+  InvalidIpMetadataForRewardError,
   InvalidQuizQuestionIdError,
 } from "@domain/errors"
 import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
+import { IpMetadataValidator } from "@domain/users/ip-metadata-validator"
 import { getFunderWalletId } from "@services/ledger/accounts"
-import { RewardsRepository, AccountsRepository } from "@services/mongoose"
+import {
+  RewardsRepository,
+  AccountsRepository,
+  UsersIpRepository,
+} from "@services/mongoose"
 
 export const addEarn = async ({
   quizQuestionId,
@@ -32,6 +38,13 @@ export const addEarn = async ({
   const validatedPhoneMetadata = PhoneMetadataValidator().validate(user.phoneMetadata)
   if (validatedPhoneMetadata instanceof Error)
     return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
+
+  const userIP = await UsersIpRepository().findById(user.id)
+  if (userIP instanceof Error) return userIP
+
+  const validatedIpMetadata = IpMetadataValidator().validate(userIP)
+  if (validatedIpMetadata instanceof Error)
+    return new InvalidIpMetadataForRewardError(validatedIpMetadata.name)
 
   const recipientWalletId = recipientAccount.defaultWalletId
 
