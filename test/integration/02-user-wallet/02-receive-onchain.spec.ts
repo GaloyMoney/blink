@@ -1,7 +1,12 @@
 import { once } from "events"
 
 import { Prices, Wallets } from "@app"
-import { getFeeRates, getOnChainAddressCreateAttemptLimits, getUserLimits } from "@config"
+import {
+  getFeeRates,
+  getOnChainAddressCreateAttemptLimits,
+  getUserLimits,
+  getLocaleConfig,
+} from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
@@ -38,6 +43,8 @@ let walletId0: WalletId
 let accountId0: AccountId
 
 const userLimits = getUserLimits({ level: 1 })
+
+const locale = getLocaleConfig()
 
 jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -205,6 +212,7 @@ describe("UserWallet - On chain", () => {
 
   it("identifies unconfirmed incoming on-chain transactions", async () => {
     const amountSats = getRandomAmountOfSats()
+    const amountSatsString = amountSats.toLocaleString(locale.localeString)
 
     const address = await Wallets.createOnChainAddress(walletId0)
     if (address instanceof Error) throw address
@@ -245,12 +253,18 @@ describe("UserWallet - On chain", () => {
 
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
-    const usd = (amountSats * satsPrice).toFixed(2)
+    const usd = Number(amountSats * satsPrice)
+
+    const usdString = usd.toLocaleString(locale.localeString, {
+      maximumFractionDigits: 2,
+      style: "currency",
+      currency: locale.localeCurrency,
+    })
 
     expect(sendNotification.mock.calls[0][0].title).toBe(
       getTitle[NotificationType.OnchainReceiptPending]({
-        usd,
-        amount: amountSats,
+        usd: usdString,
+        amount: amountSatsString,
       }),
     )
 
