@@ -1,4 +1,4 @@
-import { BTC_NETWORK } from "@config/app"
+import { BTC_NETWORK } from "@config"
 import { checkedToSats, checkedToTargetConfs } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { ColdStorageService } from "@services/cold-storage"

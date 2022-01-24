@@ -4,7 +4,7 @@ import {
   createOnChainAddress,
   getBalanceForWallet,
 } from "@app/wallets"
-import { getBitcoinCoreRPCConfig } from "@config/app"
+import { getBitcoinCoreRPCConfig } from "@config"
 import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"

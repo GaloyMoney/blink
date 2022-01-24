@@ -1,6 +1,6 @@
 import BitcoindClient from "bitcoin-core"
 import { btc2sat, sat2btc } from "@domain/bitcoin"
-import { BTC_NETWORK, getBitcoinCoreRPCConfig, getColdStorageConfig } from "@config/app"
+import { BTC_NETWORK, getBitcoinCoreRPCConfig, getColdStorageConfig } from "@config"
 import {
   InsufficientBalanceForRebalanceError,
   InvalidCurrentColdStorageWalletServiceError,

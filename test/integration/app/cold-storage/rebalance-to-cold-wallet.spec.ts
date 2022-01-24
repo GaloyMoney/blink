@@ -1,11 +1,19 @@
 import { ColdStorage } from "@app"
-import * as appConfig from "@config/app"
+import * as appConfig from "@config"
 import { btc2sat, toSats } from "@domain/bitcoin"
 import { RebalanceChecker } from "@domain/cold-storage"
 import { BitcoindWalletClient } from "@services/bitcoind"
 import { lndsBalances } from "@services/lnd/utils"
 
 import { bitcoindClient, checkIsBalanced, mineBlockAndSyncAll } from "test/helpers"
+
+jest.mock("@config", () => {
+  const config = jest.requireActual("@config")
+  return {
+    ...config,
+    getColdStorageConfig: jest.fn(() => config.getColdStorageConfig()),
+  }
+})
 
 let coldStorageWalletClient: BitcoindWalletClient
 
@@ -26,15 +34,14 @@ afterEach(async () => {
 describe("ColdStorage - rebalanceToColdWallet", () => {
   it("rebalance successfully", async () => {
     const coldStorageConfig = appConfig.getColdStorageConfig()
+    const getColdStorageConfigMock = appConfig.getColdStorageConfig as jest.Mock
     const config = {
+      ...coldStorageConfig,
       minOnChainHotWalletBalance: toSats(100000),
       maxHotWalletBalance: toSats(100000),
       minRebalanceSize: toSats(10000),
-      walletPattern: coldStorageConfig.walletPattern,
-      onchainWallet: coldStorageConfig.onchainWallet,
-      targetConfirmations: coldStorageConfig.targetConfirmations,
     }
-    jest.spyOn(appConfig, "getColdStorageConfig").mockImplementationOnce(() => config)
+    getColdStorageConfigMock.mockReturnValueOnce(config)
 
     const initialBalance = await coldStorageWalletClient.getBalance()
     const { offChain, onChain } = await lndsBalances()
@@ -56,15 +63,14 @@ describe("ColdStorage - rebalanceToColdWallet", () => {
 
   it("returns false if no rebalance is needed", async () => {
     const coldStorageConfig = appConfig.getColdStorageConfig()
+    const getColdStorageConfigMock = appConfig.getColdStorageConfig as jest.Mock
     const config = {
+      ...coldStorageConfig,
       minOnChainHotWalletBalance: btc2sat(20),
       maxHotWalletBalance: btc2sat(20),
       minRebalanceSize: btc2sat(20),
-      walletPattern: coldStorageConfig.walletPattern,
-      onchainWallet: coldStorageConfig.onchainWallet,
-      targetConfirmations: coldStorageConfig.targetConfirmations,
     }
-    jest.spyOn(appConfig, "getColdStorageConfig").mockImplementationOnce(() => config)
+    getColdStorageConfigMock.mockReturnValueOnce(config)
 
     const initialBalance = await coldStorageWalletClient.getBalance()
 

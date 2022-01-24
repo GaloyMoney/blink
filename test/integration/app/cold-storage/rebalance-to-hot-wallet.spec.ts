@@ -1,6 +1,6 @@
 import { bip32, networks, Psbt } from "bitcoinjs-lib"
 import { ColdStorage, Wallets } from "@app"
-import { BTC_NETWORK, getColdStorageConfig } from "@config/app"
+import { BTC_NETWORK, getColdStorageConfig } from "@config"
 import { InsufficientBalanceForRebalanceError } from "@domain/cold-storage/errors"
 
 import { baseLogger } from "@services/logger"

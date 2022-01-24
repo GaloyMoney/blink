@@ -1,9 +1,5 @@
 import { getCurrentPrice } from "@app/prices"
-import {
-  BTC_NETWORK,
-  getColdStorageConfig,
-  ONCHAIN_SCAN_DEPTH_OUTGOING,
-} from "@config/app"
+import { BTC_NETWORK, getColdStorageConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { RebalanceChecker } from "@domain/cold-storage"
