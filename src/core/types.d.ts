@@ -20,11 +20,6 @@ type FeeRates = {
   withdrawFeeFixed: number
 }
 
-type WithdrawFeeRange = {
-  min: number
-  max: number
-}
-
 type UserLimitsArgs = { level: number; limitsConfig? }
 
 interface IUserLimits {

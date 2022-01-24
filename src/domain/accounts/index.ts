@@ -69,9 +69,11 @@ export const checkedToContactAlias = (alias: string): ContactAlias | ValidationE
   return alias as ContactAlias
 }
 
-export const checkedToWithdrawFee = (fee: number): WithdrawFee | ValidationError => {
-  const { min, max } = getWithdrawFeeRange()
-  if (fee < min || fee > max) {
+export const checkedToWithdrawFee = (
+  fee: number,
+  withdrawFeeRange: WithdrawFeeRange,
+): WithdrawFee | ValidationError => {
+  if (fee < withdrawFeeRange.min || fee > withdrawFeeRange.max) {
     return new InvalidWithdrawFeeError(fee.toString())
   }
   return fee as WithdrawFee

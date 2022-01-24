@@ -174,3 +174,8 @@ type WithdrawalFeeCalculator = {
   onChainWithdrawalFee({ onChainFee, walletFee }: OnChainWithdrawalFeeArgs): Satoshis
   onChainIntraLedgerFee(): Satoshis
 }
+
+type WithdrawFeeRange = {
+  min: number
+  max: number
+}
