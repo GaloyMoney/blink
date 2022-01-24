@@ -5,8 +5,8 @@
  * following the structure:
  * {
  *  "feeUpdateOperations" = [
- *    { "walletId": "first-wallet-id", fee: 13 },
- *    { "walletId": "second-wallet-id", fee: 10 },
+ *    { "walletId": "first-wallet-id", fee: 13, memo: "your memo" },
+ *    { "walletId": "second-wallet-id", fee: 10, memo: "refund" },
  *  ]
  * }
  * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/reimburse.ts
