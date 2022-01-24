@@ -1,6 +1,6 @@
 import { checkedToWithdrawFee } from "@domain/accounts"
 import { AccountsRepository } from "@services/mongoose"
-import { getWithdrawFeeRange } from "@config/app"
+import { getWithdrawFeeRange } from "@config"
 
 export const updateAccountWithdrawFee = async ({
   id,
