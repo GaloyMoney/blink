@@ -292,7 +292,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "PhoneProviderServiceError":
     case "UnknownPhoneProviderServiceError":
     case "MissingPhoneMetadataError":
-    case "MissingIpMetadataError":
     case "InvalidPhoneMetadataTypeError":
     case "InvalidIpMetadataTypeError":
     case "InvalidAccountStatusError":

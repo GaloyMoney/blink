@@ -58,7 +58,6 @@ export class NoWalletExistsForUserError extends ValidationError {}
 export class RebalanceNeededError extends ValidationError {}
 export class InvalidQuizQuestionIdError extends ValidationError {}
 export class MissingPhoneMetadataError extends ValidationError {}
-export class MissingIpMetadataError extends ValidationError {}
 export class InvalidPhoneMetadataTypeError extends ValidationError {}
 export class InvalidIpMetadataTypeError extends ValidationError {}
 export class PhoneMetadataForRewardBlockedError extends ValidationError {}

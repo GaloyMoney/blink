@@ -1,4 +1,4 @@
-import { MissingIpMetadataError, InvalidIpMetadataTypeError } from "@domain/errors"
+import { InvalidIpMetadataTypeError } from "@domain/errors"
 import { getBlockListedASNs, getAllowListedCountries } from "@config"
 
 export const IpMetadataValidator = (): IpMetadataValidator => {
@@ -10,7 +10,7 @@ export const IpMetadataValidator = (): IpMetadataValidator => {
       (a, b) => b.lastConnection.getTime() - a.lastConnection.getTime(),
     )[0]
 
-    if (!lastIP) return new MissingIpMetadataError()
+    if (!lastIP) return true
 
     if (lastIP.proxy && lastIP.proxy == "yes") return new InvalidIpMetadataTypeError()
 
