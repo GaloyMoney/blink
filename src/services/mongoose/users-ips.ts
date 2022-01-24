@@ -8,7 +8,7 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 
-import { toObjectId } from "./utils"
+import { toObjectId, fromObjectId } from "./utils"
 
 export const UsersIpRepository = (): IUsersIPsRepository => {
   const update = async (userIp: UserIPs): Promise<true | RepositoryError> => {
@@ -56,7 +56,7 @@ export const UsersIpRepository = (): IUsersIPsRepository => {
 
 const userIPsFromRaw = (result: UserIPsType): UserIPs => {
   return {
-    id: result.id as UserId,
+    id: fromObjectId<UserId>(result._id) as UserId,
     lastIPs: (result.lastIPs || []) as IPType[],
   }
 }
