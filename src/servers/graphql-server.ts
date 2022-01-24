@@ -68,7 +68,7 @@ const sessionContext = ({
   if (ips && Array.isArray(ips) && ips.length) {
     ip = ips[0]
   } else if (typeof ips === "string") {
-    ip = ips
+    ip = ips.split(',')[0]
   }
 
   let wallet, user
@@ -175,7 +175,7 @@ export const startApolloServer = async ({
       // @ts-expect-error: TODO
       const apiSecret = context.req?.apiSecret ?? null
 
-      const ips = context.req?.headers["x-real-ip"]
+      const ips = context.req?.headers["x-real-ip"] || context.req?.headers['x-forwarded-for']
       const body = context.req?.body ?? null
 
       return sessionContext({ token, apiKey, apiSecret, ips, body })
