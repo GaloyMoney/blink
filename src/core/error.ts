@@ -1,7 +1,7 @@
 import { ApolloError } from "apollo-server-errors"
 import { Logger } from "pino"
 
-import { getOnChainWalletConfig } from "@config/app"
+import { getOnChainWalletConfig } from "@config"
 
 import { baseLogger } from "@services/logger"
 

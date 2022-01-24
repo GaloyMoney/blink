@@ -1,6 +1,6 @@
 import { GraphQLSchema, lexicographicSortSchema, printSchema } from "graphql"
 
-import { isDev } from "@config/app"
+import { isDev } from "@config"
 
 import QueryType from "./queries"
 import MutationType from "./mutations"

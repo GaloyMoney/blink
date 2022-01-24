@@ -10,13 +10,31 @@ const LightningPayment = new GT.Object({
   name: "LightningPayment",
   fields: () => ({
     status: { type: LnPaymentStatus },
-    roundedUpFee: { type: SatAmount },
+    roundedUpFee: {
+      type: SatAmount,
+      resolve: (source: LnPaymentLookup) => source.confirmedDetails?.roundedUpFee,
+    },
     createdAt: { type: Timestamp },
-    confirmedAt: { type: Timestamp },
-    amount: { type: SatAmount },
-    revealedPreImage: { type: LnPaymentPreImage },
-    request: { type: LnPaymentRequest },
-    destination: { type: LnPubkey },
+    confirmedAt: {
+      type: Timestamp,
+      resolve: (source: LnPaymentLookup) => source.confirmedDetails?.confirmedAt,
+    },
+    amount: {
+      type: SatAmount,
+      resolve: (source: LnPaymentLookup) => source.roundedUpAmount,
+    },
+    revealedPreImage: {
+      type: LnPaymentPreImage,
+      resolve: (source: LnPaymentLookup) => source.confirmedDetails?.revealedPreImage,
+    },
+    request: {
+      type: LnPaymentRequest,
+      resolve: (source: LnPaymentLookup) => source.paymentRequest,
+    },
+    destination: {
+      type: LnPubkey,
+      resolve: (source: LnPaymentLookup) => source.confirmedDetails?.destination,
+    },
   }),
 })
 

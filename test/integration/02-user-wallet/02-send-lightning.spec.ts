@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "crypto"
 
 import { Wallets } from "@app"
-import { getUserLimits } from "@config/app"
+import { getUserLimits } from "@config"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
 import {
   LightningServiceError,
@@ -823,6 +823,7 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnPay.paymentHash).toBe(id)
         expect(lnPaymentOnPay.paymentRequest).toBe(request)
         expect(lnPaymentOnPay.isCompleteRecord).toBeFalsy()
+        expect(lnPaymentOnPay.createdAt).toBeInstanceOf(Date)
         expect(lnPaymentOnPay.status).toBeUndefined()
 
         // Run update task
@@ -839,6 +840,7 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnPay.paymentHash).toBe(id)
         expect(lnPaymentOnPay.paymentRequest).toBe(request)
         expect(lnPaymentOnPay.isCompleteRecord).toBeFalsy()
+        expect(lnPaymentOnPay.createdAt).toBeInstanceOf(Date)
         expect(lnPaymentOnPay.status).toBeUndefined()
 
         const lndService = LndService()

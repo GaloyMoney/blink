@@ -3,7 +3,7 @@ import { PaymentStatus } from "@domain/bitcoin/lightning"
 import { InconsistentDataError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
-import { LockService } from "@services/lock"
+import { LockService } from "@services"
 import { runInParallel } from "@utils"
 
 import { reimburseFee } from "./reimburse-fee"

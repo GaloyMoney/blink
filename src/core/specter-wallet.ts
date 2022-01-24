@@ -6,7 +6,7 @@ import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
 import { getActiveOnchainLnd, lndsBalances } from "@services/lnd/utils"
 import { ledger } from "@services/mongodb"
 
-import { BTC_NETWORK, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config/app"
+import { BTC_NETWORK, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 import { btc2sat, sat2btc, toSats } from "@domain/bitcoin"
 import { RebalanceChecker } from "@domain/cold-storage"
 import { OnChainService } from "@services/lnd/onchain-service"

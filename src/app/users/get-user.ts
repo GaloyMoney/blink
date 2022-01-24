@@ -1,4 +1,4 @@
-import { getIpConfig } from "@config/app"
+import { getIpConfig } from "@config"
 import { RepositoryError } from "@domain/errors"
 import { IpFetcherServiceError } from "@domain/ipfetcher"
 import { IpFetcher } from "@services/ipfetcher"

@@ -1,11 +1,7 @@
 import { once } from "events"
 
 import { Prices, Wallets } from "@app"
-import {
-  getFeeRates,
-  getOnChainAddressCreateAttemptLimits,
-  getUserLimits,
-} from "@config/app"
+import { getFeeRates, getOnChainAddressCreateAttemptLimits, getUserLimits } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"

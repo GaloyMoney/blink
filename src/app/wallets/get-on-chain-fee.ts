@@ -2,15 +2,14 @@ import { TxDecoder } from "@domain/bitcoin/onchain"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { WithdrawalFeeCalculator } from "@domain/wallets"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { BTC_NETWORK, getOnChainWalletConfig } from "@config/app"
+import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import {
   CouldNotFindError,
   LessThanDustThresholdError,
   InsufficientBalanceError,
 } from "@domain/errors"
-
-import { getBalanceForWalletId } from "./get-balance-for-wallet"
+import { LedgerService } from "@services/ledger"
 
 const { dustThreshold } = getOnChainWalletConfig()
 
@@ -35,7 +34,7 @@ export const getOnChainFee = async ({
       `Use lightning to send amounts less than ${dustThreshold}`,
     )
 
-  const balance = await getBalanceForWalletId(wallet.id)
+  const balance = await LedgerService().getWalletBalance(wallet.id)
   if (balance instanceof Error) return balance
 
   // avoids lnd balance sniffing attack

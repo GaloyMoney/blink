@@ -19,7 +19,7 @@ import {
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 import { LocalCacheService } from "@services/cache"
 import { CacheKeys } from "@domain/cache"
-import { SECS_PER_5_MINS } from "@config/app"
+import { SECS_PER_5_MINS } from "@config"
 
 import { getActiveOnchainLnd } from "./utils"
 

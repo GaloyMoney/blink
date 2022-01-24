@@ -9,7 +9,6 @@ import {
 } from "./accounts"
 import { MainBook } from "./books"
 import { getLndEscrowBalance } from "./query"
-import { Transaction } from "./schema"
 
 // FIXME: this is only used in test with transaction.spec.ts
 export const addLndReceipt = async ({
@@ -338,13 +337,4 @@ export const addHotWalletPayment = async ({ description, amount, fee, hash }) =>
     .debit(bankOwnerPath, fee, txMetadata)
     .credit(bitcoindAccountingPath, amount + fee, txMetadata)
     .commit()
-}
-
-export const settlePayment = async (hash) => {
-  const result = await Transaction.updateMany({ hash }, { pending: false })
-  return result.nModified > 0
-}
-
-export const settleOnchainPayment = (hash: OnChainTxHash) => {
-  return settlePayment(hash)
 }

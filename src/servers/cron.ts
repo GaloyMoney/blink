@@ -1,4 +1,4 @@
-import { getSpecterWalletConfig } from "@config/app"
+import { getSpecterWalletConfig } from "@config"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 import {

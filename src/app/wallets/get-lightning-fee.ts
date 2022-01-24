@@ -7,9 +7,8 @@ import {
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { checkedToWalletId } from "@domain/wallets"
 import { LndService } from "@services/lnd"
+import { LedgerService } from "@services/ledger"
 import { RoutesCache } from "@services/redis/routes"
-
-import { getBalanceForWalletId } from "./get-balance-for-wallet"
 
 export const getLightningFee = async ({
   walletId,
@@ -63,7 +62,7 @@ const feeProbe = async ({
   const walletIdChecked = checkedToWalletId(walletId)
   if (walletIdChecked instanceof Error) return walletIdChecked
 
-  const balance = await getBalanceForWalletId(walletId)
+  const balance = await LedgerService().getWalletBalance(walletId)
   if (balance instanceof Error) return balance
   if (balance < paymentAmount) {
     return new InsufficientBalanceError(
@@ -111,7 +110,7 @@ const noAmountProbeForFee = async ({
   const walletIdChecked = checkedToWalletId(walletId)
   if (walletIdChecked instanceof Error) return walletIdChecked
 
-  const balance = await getBalanceForWalletId(walletId)
+  const balance = await LedgerService().getWalletBalance(walletId)
   if (balance instanceof Error) return balance
   if (balance < paymentAmount) {
     return new InsufficientBalanceError(

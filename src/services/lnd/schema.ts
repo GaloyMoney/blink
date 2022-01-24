@@ -30,7 +30,10 @@ const confirmedDetailsSchema = new Schema<LnPaymentConfirmedDetails>({
 const paymentAttemptSchema = Schema.Types.Mixed
 
 const paymentSchema = new Schema<LnPaymentType>({
-  createdAt: Date,
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
   status: {
     type: String,
     enum: Object.values(PaymentStatus),

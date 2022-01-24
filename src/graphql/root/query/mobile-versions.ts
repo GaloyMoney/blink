@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
 import MobileVersions from "@graphql/types/object/mobile-versions"
-import { getBuildVersions } from "@config/app"
+import { getBuildVersions } from "@config"
 
 const MobileVersionsQuery = GT.Field({
   type: GT.List(MobileVersions),

@@ -36,6 +36,8 @@ rebalancing:
   # specter wallet always
   onchainWallet: "specter"
 
+lndScbBackupBucketName: "lnd-static-channel-backups"
+
 test_accounts:
 - phone: "+16505554321" # user0
   code: 321321

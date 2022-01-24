@@ -1,4 +1,4 @@
-import { getGaloyInstanceName, getTestAccounts } from "@config/app"
+import { getGaloyInstanceName, getTestAccounts } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
 import { RateLimitConfig } from "@domain/rate-limit"

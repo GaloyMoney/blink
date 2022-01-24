@@ -1,4 +1,4 @@
-import { getUserLimits, getTransactionLimits } from "@config/app"
+import { getUserLimits, getTransactionLimits } from "@config"
 
 const testLimitsConfig = {
   withdrawal: {

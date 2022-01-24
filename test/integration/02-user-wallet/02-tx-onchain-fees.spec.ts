@@ -1,5 +1,5 @@
 import { Wallets } from "@app"
-import { getOnChainWalletConfig } from "@config/app"
+import { getOnChainWalletConfig } from "@config"
 import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
@@ -81,7 +81,7 @@ describe("UserWallet - getOnchainFee", () => {
 
   it("returns error for balance too low", async () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-    const amount = toSats(1000000000)
+    const amount = toSats(1_000_000_000)
     const fee = await Wallets.getOnChainFee({
       wallet: wallet0,
       amount,

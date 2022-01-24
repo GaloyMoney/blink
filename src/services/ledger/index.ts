@@ -23,7 +23,7 @@ import {
   toWalletId,
 } from "@domain/ledger"
 
-import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { addEventToCurrentSpan } from "@services/tracing"
 
 import * as accounts from "./accounts"
 import * as queries from "./query"
@@ -230,26 +230,24 @@ export const LedgerService = (): ILedgerService => {
     }))
 
     try {
-      const [result]: (TxVolume & { _id: null })[] = await wrapAsyncToRunInSpan({
-        namespace: `service.ledger`,
-        fn: async () =>
-          Transaction.aggregate([
-            {
-              $match: {
-                accounts: liabilitiesWalletId,
-                $or: txnTypesObj,
-                $and: [{ timestamp: { $gte: timestamp } }],
-              },
-            },
-            {
-              $group: {
-                _id: null,
-                outgoingSats: { $sum: "$debit" },
-                incomingSats: { $sum: "$credit" },
-              },
-            },
-          ]),
-      })()
+      addEventToCurrentSpan("volume aggregation starts")
+      const [result]: (TxVolume & { _id: null })[] = await Transaction.aggregate([
+        {
+          $match: {
+            accounts: liabilitiesWalletId,
+            $or: txnTypesObj,
+            $and: [{ timestamp: { $gte: timestamp } }],
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            outgoingSats: { $sum: "$debit" },
+            incomingSats: { $sum: "$credit" },
+          },
+        },
+      ])
+      addEventToCurrentSpan("volume aggregation ends")
 
       return {
         outgoingSats: toSats(result?.outgoingSats ?? 0),
@@ -662,6 +660,17 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const settlePendingOnChainPayments = async (
+    hash: OnChainTxHash,
+  ): Promise<boolean | LedgerServiceError> => {
+    try {
+      const result = await Transaction.updateMany({ hash }, { pending: false })
+      return result.nModified > 0
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const voidLedgerTransactionsForJournal = async (
     journalId: LedgerJournalId,
   ): Promise<void | LedgerServiceError> => {
@@ -742,6 +751,7 @@ export const LedgerService = (): ILedgerService => {
     addOnChainIntraledgerTxSend,
     addWalletIdIntraledgerTxSend,
     settlePendingLnPayments,
+    settlePendingOnChainPayments,
     voidLedgerTransactionsForJournal,
     getWalletIdByTransactionHash,
     listWalletIdsWithPendingPayments,

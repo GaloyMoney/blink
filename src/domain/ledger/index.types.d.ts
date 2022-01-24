@@ -218,6 +218,8 @@ interface ILedgerService {
 
   settlePendingLnPayments(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
 
+  settlePendingOnChainPayments(hash: OnChainTxHash): Promise<boolean | LedgerServiceError>
+
   voidLedgerTransactionsForJournal(
     journalId: LedgerJournalId,
   ): Promise<void | LedgerServiceError>

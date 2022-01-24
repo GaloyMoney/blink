@@ -1,6 +1,6 @@
 import { getCurrentPrice } from "@app/prices"
 import { getUser } from "@app/users"
-import { getBalanceForWalletId, getWallet } from "@app/wallets"
+import { getWallet } from "@app/wallets"
 import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
@@ -27,7 +27,7 @@ import { WalletInvoiceValidator } from "@domain/wallet-invoices"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
-import { LockService } from "@services/lock"
+import { LockService } from "@services"
 import { WalletInvoicesRepository, AccountsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { RoutesCache } from "@services/redis/routes"
@@ -353,7 +353,7 @@ const executePaymentViaIntraledger = async ({
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
     async (lock) => {
-      const balance = await getBalanceForWalletId(senderWalletId)
+      const balance = await LedgerService().getWalletBalance(senderWalletId)
       if (balance instanceof Error) return balance
       if (balance < sats) {
         return new InsufficientBalanceError(
@@ -453,7 +453,7 @@ const executePaymentViaLn = async ({
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
     async (lock) => {
-      const balance = await getBalanceForWalletId(senderWalletId)
+      const balance = await LedgerService().getWalletBalance(senderWalletId)
       if (balance instanceof Error) return balance
       if (balance < sats) {
         return new InsufficientBalanceError(

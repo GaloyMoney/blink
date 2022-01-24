@@ -1,4 +1,4 @@
-import { onboardingEarn } from "@config/app"
+import { onboardingEarn } from "@config"
 import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindUserFromIdError,

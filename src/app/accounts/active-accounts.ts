@@ -1,4 +1,4 @@
-import { USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD } from "@config/app"
+import { USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD } from "@config"
 import { ActivityChecker } from "@domain/ledger"
 import { WalletsRepository, AccountsRepository } from "@services/mongoose"
 import { LedgerService } from "@services/ledger"

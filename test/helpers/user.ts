@@ -1,5 +1,5 @@
 import { createUser } from "@app/users"
-import { yamlConfig } from "@config/app"
+import { yamlConfig } from "@config"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import {
   AccountsRepository,

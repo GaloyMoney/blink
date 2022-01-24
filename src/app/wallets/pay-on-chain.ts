@@ -1,11 +1,7 @@
 import { getUsernameFromWalletId } from "@app/accounts"
 import { getCurrentPrice } from "@app/prices"
 import { getUser } from "@app/users"
-import {
-  BTC_NETWORK,
-  getOnChainWalletConfig,
-  ONCHAIN_SCAN_DEPTH_OUTGOING,
-} from "@config/app"
+import { BTC_NETWORK, getOnChainWalletConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { checkedToOnChainAddress, TxDecoder } from "@domain/bitcoin/onchain"
@@ -18,7 +14,7 @@ import {
 import { WithdrawalFeeCalculator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { LockService } from "@services/lock"
+import { LockService } from "@services"
 import { baseLogger } from "@services/logger"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
@@ -28,7 +24,6 @@ import {
   checkIntraledgerLimits,
   checkWithdrawalLimits,
 } from "./check-limit-helpers"
-import { getBalanceForWalletId } from "./get-balance-for-wallet"
 import { getOnChainFeeByWalletId } from "./get-on-chain-fee"
 
 const { dustThreshold } = getOnChainWalletConfig()
@@ -44,7 +39,7 @@ export const payOnChainByWalletIdWithTwoFA = async ({
   twoFAToken,
 }: PayOnChainByWalletIdWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
   const checkedAmount = sendAll
-    ? await getBalanceForWalletId(senderWalletId)
+    ? await LedgerService().getWalletBalance(senderWalletId)
     : checkedToSats(amount)
   if (checkedAmount instanceof Error) return checkedAmount
 
@@ -101,7 +96,7 @@ export const payOnChainByWalletId = async ({
   if (checkedTargetConfirmations instanceof Error) return checkedTargetConfirmations
 
   const checkedAmount = sendAll
-    ? await getBalanceForWalletId(senderWalletId)
+    ? await LedgerService().getWalletBalance(senderWalletId)
     : checkedToSats(amount)
   if (checkedAmount instanceof Error) return checkedAmount
 
@@ -176,7 +171,7 @@ const executePaymentViaIntraledger = async ({
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
     async (lock) => {
-      const balance = await getBalanceForWalletId(senderWalletId)
+      const balance = await LedgerService().getWalletBalance(senderWalletId)
       if (balance instanceof Error) return balance
       if (balance < sats)
         return new InsufficientBalanceError(
@@ -294,7 +289,7 @@ const executePaymentViaOnChain = async ({
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
     async (lock) => {
-      const balance = await getBalanceForWalletId(senderWalletId)
+      const balance = await LedgerService().getWalletBalance(senderWalletId)
       if (balance instanceof Error) return balance
       if (balance < amountToSend + estimatedFee)
         return new InsufficientBalanceError(

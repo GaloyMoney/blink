@@ -1,4 +1,4 @@
-import { getTestAccounts } from "@config/app"
+import { getTestAccounts } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 
 describe("test-accounts", () => {

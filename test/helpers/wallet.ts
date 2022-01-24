@@ -1,5 +1,5 @@
 import { Wallets } from "@app"
-import { getTwoFALimits, getUserLimits, MS_PER_DAY } from "@config/app"
+import { getTwoFALimits, getUserLimits, MS_PER_DAY } from "@config"
 import { toSats } from "@domain/bitcoin"
 import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"

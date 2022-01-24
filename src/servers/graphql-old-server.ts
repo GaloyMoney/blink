@@ -3,7 +3,7 @@ import fs from "fs"
 import path from "path"
 
 import { Accounts, Prices, Users, Wallets } from "@app"
-import { getBuildVersions, getFeeRates, onboardingEarn } from "@config/app"
+import { getBuildVersions, getFeeRates, onboardingEarn } from "@config"
 import { usernameExists } from "@core/user"
 import { addInvoiceForUsername, addInvoiceNoAmountForUsername } from "@core/wallets"
 import { decodeInvoice } from "@domain/bitcoin/lightning"

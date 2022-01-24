@@ -1,4 +1,4 @@
-import { yamlConfig, JWT_SECRET } from "@config/app"
+import { yamlConfig, JWT_SECRET } from "@config"
 import * as jwt from "jsonwebtoken"
 
 import { RateLimitConfig } from "@domain/rate-limit"

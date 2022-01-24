@@ -4,8 +4,8 @@ import { NotificationsService } from "@services/notifications"
 import { LedgerService } from "@services/ledger"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { DepositFeeCalculator } from "@domain/wallets"
-import { LockService } from "@services/lock"
-import { ONCHAIN_SCAN_DEPTH, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config/app"
+import { LockService } from "@services"
+import { ONCHAIN_SCAN_DEPTH, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config"
 import { getCurrentPrice } from "@app/prices"
 
 export const updateOnChainReceipt = async ({

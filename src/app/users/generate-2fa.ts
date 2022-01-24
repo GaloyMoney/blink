@@ -1,4 +1,4 @@
-import { getGaloyInstanceName } from "@config/app"
+import { getGaloyInstanceName } from "@config"
 import { TwoFA } from "@domain/twoFA"
 import { UsersRepository } from "@services/mongoose"
 

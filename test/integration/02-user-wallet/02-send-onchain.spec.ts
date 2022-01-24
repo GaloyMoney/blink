@@ -1,12 +1,7 @@
 import { once } from "events"
 
 import { Wallets } from "@app"
-import {
-  getFeeRates,
-  getOnChainWalletConfig,
-  getUserLimits,
-  MS_PER_DAY,
-} from "@config/app"
+import { getFeeRates, getOnChainWalletConfig, getUserLimits, MS_PER_DAY } from "@config"
 import { toTargetConfs } from "@domain/bitcoin"
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"

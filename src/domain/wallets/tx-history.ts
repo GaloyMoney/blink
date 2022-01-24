@@ -1,6 +1,6 @@
 import { toSats } from "@domain/bitcoin"
 import { ExtendedLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
-import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config/app"
+import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
 
 import { SettlementMethod, PaymentInitiationMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
