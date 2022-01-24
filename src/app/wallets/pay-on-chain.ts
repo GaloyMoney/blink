@@ -14,7 +14,7 @@ import {
 import { WithdrawalFeeCalculator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { LockService } from "@services/lock"
+import { LockService } from "@services"
 import { baseLogger } from "@services/logger"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"

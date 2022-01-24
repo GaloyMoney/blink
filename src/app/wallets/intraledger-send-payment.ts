@@ -10,7 +10,7 @@ import {
   SelfPaymentError,
 } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
-import { LockService } from "@services/lock"
+import { LockService } from "@services"
 import { AccountsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 

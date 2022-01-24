@@ -11,6 +11,7 @@ module.exports = {
   moduleNameMapper: {
     "^@config$": ["<rootDir>src/config/index"],
     "^@app$": ["<rootDir>src/app/index"],
+    "^@services$": ["<rootDir>src/services/index"],
     "^@utils$": ["<rootDir>src/utils/index"],
 
     "^@core/(.*)$": ["<rootDir>src/core/$1"],
