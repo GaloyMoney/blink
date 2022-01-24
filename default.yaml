@@ -163,3 +163,7 @@ twoFA:
   threshold: 300000 # sats
 
 userActivenessMonthlyVolumeThreshold: 1000 # sats
+
+locale:
+  string: "en-US"
+  currency: "USD"

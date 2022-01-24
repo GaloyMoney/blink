@@ -194,3 +194,8 @@ export const getTwoFAConfig = (config = yamlConfig): TwoFAConfig => config.twoFA
 
 export const getTestAccounts = (config = yamlConfig): TestAccount[] =>
   config.test_accounts
+
+export const getLocaleConfig = (config = yamlConfig): LocaleConfig => ({
+  localeString: config.locale?.string,
+  localeCurrency: config.locale?.currency,
+})

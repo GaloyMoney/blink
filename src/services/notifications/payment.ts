@@ -1,12 +1,14 @@
+import { getLocaleConfig } from "@config"
+
 import { sendNotification } from "./notification"
 
 export const getTitle = {
-  "paid-invoice": ({ usd, amount }) => `+$${usd} | ${amount} sats`,
-  "onchain_receipt": ({ usd, amount }) => `+$${usd} | ${amount} sats`,
-  "onchain_receipt_pending": ({ usd, amount }) => `pending +$${usd} | ${amount} sats`,
+  "paid-invoice": ({ usd, amount }) => `+${usd} | ${amount} sats`,
+  "onchain_receipt": ({ usd, amount }) => `+${usd} | ${amount} sats`,
+  "onchain_receipt_pending": ({ usd, amount }) => `pending +${usd} | ${amount} sats`,
   "onchain_payment": ({ amount }) => `Sent onchain payment of ${amount} sats confirmed`,
-  "intra_ledger_receipt": ({ usd, amount }) => `+$${usd} | ${amount} sats`,
-  "intra_ledger_payment": ({ usd, amount }) => `Sent payment of $${usd} | ${amount} sats`,
+  "intra_ledger_receipt": ({ usd, amount }) => `+${usd} | ${amount} sats`,
+  "intra_ledger_payment": ({ usd, amount }) => `Sent payment of ${usd} | ${amount} sats`,
 }
 
 export const getTitleNoUsd = {
@@ -27,11 +29,22 @@ export const transactionNotification = async ({
   txHash,
   usdPerSat,
 }: IPaymentNotification) => {
-  let title = getTitleNoUsd[type]({ amount })
+  const locale = getLocaleConfig()
+
+  const amountString = amount.toLocaleString(locale.localeString)
+
+  let title = getTitleNoUsd[type]({ amount: amountString })
 
   if (usdPerSat) {
-    const usd = (amount * usdPerSat).toFixed(2)
-    title = getTitle[type]({ usd, amount })
+    const usd = Number(amount * usdPerSat)
+
+    const usdString = usd.toLocaleString(locale.localeString, {
+      maximumFractionDigits: 2,
+      style: "currency",
+      currency: locale.localeCurrency,
+    })
+
+    title = getTitle[type]({ usd: usdString, amount: amountString })
   }
 
   const data: IDataNotification = {

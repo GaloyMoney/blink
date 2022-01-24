@@ -47,6 +47,11 @@ type TwoFAConfig = {
   threshold: number
 }
 
+type LocaleConfig = {
+  localeString: string
+  localeCurrency: string
+}
+
 // Currently unused types
 
 interface IAddBTCInvoiceRequest {

@@ -1,4 +1,4 @@
-import { SAT_USDCENT_PRICE, USER_PRICE_UPDATE_EVENT } from "@config"
+import { SAT_USDCENT_PRICE, USER_PRICE_UPDATE_EVENT, getLocaleConfig } from "@config"
 import { lnPaymentStatusEvent } from "@domain/bitcoin/lightning"
 import {
   accountUpdateEvent,
@@ -232,8 +232,10 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     userId: UserId
     price: UsdPerSat | ApplicationError
   }): Promise<void> => {
+    const locale = getLocaleConfig()
+
     // Add commas to balancesats
-    const balanceSatsAsFormattedString = balance.toLocaleString("en")
+    const balanceSatsAsFormattedString = balance.toLocaleString(locale.localeString)
 
     let balanceUsdAsFormattedString: string, title: string
     if (price instanceof Error) {
@@ -242,13 +244,15 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       // TODO: i18n
       title = `Your balance is ${balanceSatsAsFormattedString} sats)`
     } else {
-      const usdValue = price * balance
-      balanceUsdAsFormattedString = usdValue.toLocaleString("en", {
+      const usdValue = Number(price * balance)
+      balanceUsdAsFormattedString = usdValue.toLocaleString(locale.localeString, {
         maximumFractionDigits: 2,
+        style: "currency",
+        currency: locale.localeCurrency,
       })
 
       // TODO: i18n
-      title = `Your balance is $${balanceUsdAsFormattedString} (${balanceSatsAsFormattedString} sats)`
+      title = `Your balance is ${balanceUsdAsFormattedString} (${balanceSatsAsFormattedString} sats)`
     }
 
     logger.info(
