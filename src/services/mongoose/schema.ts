@@ -37,13 +37,21 @@ const walletInvoiceSchema = new Schema({
     },
   },
 
-  // usd equivalent. sats is attached in the invoice directly.
-  // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
-  fiat: Number,
+  // fiat equivalent. sats is attached in the invoice directly.
+  // this is the option price given by the dealer
+  // optional, BTC wallet or USD with no amount doesn't have fiatAmount
+  fiatAmount: {
+    type: Number,
+    validate: {
+      validator: Number.isInteger,
+      message: "{VALUE} is not an integer value",
+    },
+  },
+
   currency: {
     required: true,
     type: String,
-    // TODO: validation
+    enum: Object.values(WalletCurrency),
   },
 
   timestamp: {

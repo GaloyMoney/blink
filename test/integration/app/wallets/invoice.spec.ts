@@ -149,9 +149,9 @@ describe("Wallet - addInvoice Fiat", () => {
     expect(request.startsWith("lnbcrt")).toBeTruthy()
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, fiat, currency } = result
+    const { walletId, fiatAmount, currency } = result
     expect(String(walletId)).toBe(String(walletIdUsd))
-    expect(fiat).toBe(fiatInput)
+    expect(fiatAmount).toBe(fiatInput)
     expect(currency).toBe(WalletCurrency.Usd)
 
     const decodedInvoice = decodeInvoice(request)
@@ -170,9 +170,9 @@ describe("Wallet - addInvoice Fiat", () => {
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, fiat } = result
+    const { walletId, fiatAmount } = result
     expect(String(walletId)).toBe(String(walletIdUsd))
-    expect(fiat).toBe(null)
+    expect(fiatAmount).toBe(undefined)
   })
 
   it("adds a public with amount invoice", async () => {
@@ -192,8 +192,8 @@ describe("Wallet - addInvoice Fiat", () => {
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, selfGenerated, fiat } = result
-    expect(fiat).toBe(fiatInput)
+    const { walletId, selfGenerated, fiatAmount } = result
+    expect(fiatAmount).toBe(fiatInput)
 
     expect(String(walletId)).toBe(String(walletIdUsd))
     expect(selfGenerated).toBe(false)
@@ -215,10 +215,10 @@ describe("Wallet - addInvoice Fiat", () => {
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, selfGenerated, fiat } = result
+    const { walletId, selfGenerated, fiatAmount } = result
     expect(String(walletId)).toBe(String(walletIdUsd))
     expect(selfGenerated).toBe(false)
-    expect(fiat).toBe(null)
+    expect(fiatAmount).toBe(undefined)
   })
 })
 

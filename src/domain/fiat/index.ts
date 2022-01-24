@@ -12,14 +12,14 @@ export const checkedToFiat = (amount: number): FiatAmount | ValidationError => {
 
 export const satsToFiatOptionPricing = ({
   price,
-  fiat,
+  fiatAmount,
 }: {
   price: UsdPerSat
-  fiat: FiatAmount
+  fiatAmount: FiatAmount
   // TODO: should we have a currency property? or make FiatAmount subtype per fiat currency?
 }) => {
   // TODO: add time value of option
   // TODO: add spread
 
-  return toSats(Math.ceil(fiat / price))
+  return toSats(Math.ceil(fiatAmount / price))
 }

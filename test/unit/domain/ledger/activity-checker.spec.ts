@@ -1,8 +1,6 @@
 import { toSats } from "@domain/bitcoin"
 import { ActivityChecker } from "@domain/ledger/activity-checker"
 
-import { v4 as uuidv4 } from "uuid"
-
 describe("ActivityChecker", () => {
   it("aboveThreshold returns false below threshold", () => {
     const getVolumeFn = () =>
@@ -11,7 +9,7 @@ describe("ActivityChecker", () => {
       monthlyVolumeThreshold: toSats(20),
       getVolumeFn,
     })
-    expect(checker.aboveThreshold([uuidv4() as WalletId])).resolves.toBe(false)
+    expect(checker.aboveThreshold(["walletId" as WalletId])).resolves.toBe(false)
   })
 
   it("Returns true if outgoing or incoming sats are above threshold", () => {
@@ -21,7 +19,7 @@ describe("ActivityChecker", () => {
       monthlyVolumeThreshold: toSats(20),
       getVolumeFn,
     })
-    expect(checker.aboveThreshold([uuidv4() as WalletId])).resolves.toBe(true)
+    expect(checker.aboveThreshold(["walletId" as WalletId])).resolves.toBe(true)
 
     getVolumeFn = () =>
       Promise.resolve({ outgoingSats: toSats(10), incomingSats: toSats(21) })
@@ -29,7 +27,7 @@ describe("ActivityChecker", () => {
       monthlyVolumeThreshold: toSats(20),
       getVolumeFn,
     })
-    expect(checker.aboveThreshold([uuidv4() as WalletId])).resolves.toBe(true)
+    expect(checker.aboveThreshold(["walletId" as WalletId])).resolves.toBe(true)
   })
 
   it("Sums up consecutive volumes", () => {
@@ -40,7 +38,7 @@ describe("ActivityChecker", () => {
       getVolumeFn,
     })
     expect(
-      checker.aboveThreshold([uuidv4() as WalletId, "walletId2" as WalletId]),
+      checker.aboveThreshold(["walletId" as WalletId, "walletId2" as WalletId]),
     ).resolves.toBe(true)
   })
 })

@@ -79,7 +79,7 @@ export const addInvoiceNoAmountForSelf = async ({
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForSelf,
     expiresAt,
-    fiat: null,
+    fiatAmount: undefined,
   })
 }
 
@@ -150,7 +150,7 @@ export const addInvoiceNoAmountForRecipient = async ({
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
     expiresAt,
-    fiat: null,
+    fiatAmount: undefined,
   })
 }
 
@@ -171,7 +171,7 @@ const addInvoiceSatsDenomiation = async ({
     walletInvoiceCreateFn,
     expiresAt,
     descriptionHash,
-    fiat: null,
+    fiatAmount: undefined,
   })
 }
 
@@ -181,8 +181,8 @@ const addInvoiceFiatDenomiation = async ({
   memo = "",
   descriptionHash,
 }: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
-  const fiat = checkedToFiat(amount)
-  if (fiat instanceof Error) return fiat
+  const fiatAmount = checkedToFiat(amount)
+  if (fiatAmount instanceof Error) return fiatAmount
 
   const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Usd, new Date())
 
@@ -190,7 +190,7 @@ const addInvoiceFiatDenomiation = async ({
   const price = await getCurrentPrice()
   if (price instanceof Error) return price
 
-  const sats = satsToFiatOptionPricing({ fiat, price })
+  const sats = satsToFiatOptionPricing({ fiatAmount, price })
 
   return registerAndPersistInvoice({
     sats,
@@ -198,7 +198,7 @@ const addInvoiceFiatDenomiation = async ({
     walletInvoiceCreateFn,
     expiresAt,
     descriptionHash,
-    fiat,
+    fiatAmount,
   })
 }
 
@@ -209,14 +209,14 @@ export const registerAndPersistInvoice = async ({
   walletInvoiceCreateFn,
   expiresAt,
   descriptionHash,
-  fiat,
+  fiatAmount,
 }: {
   sats: Satoshis
   memo: string
   walletInvoiceCreateFn: WalletInvoiceFactoryCreateMethod
   expiresAt: InvoiceExpiration
   descriptionHash?: string
-  fiat: FiatAmount | null
+  fiatAmount: FiatAmount | undefined
 }): Promise<LnInvoice | ApplicationError> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
   const lndService = LndService()
@@ -231,7 +231,7 @@ export const registerAndPersistInvoice = async ({
   if (registeredInvoice instanceof Error) return registeredInvoice
   const { invoice } = registeredInvoice
 
-  const walletInvoice = walletInvoiceCreateFn({ registeredInvoice, fiat })
+  const walletInvoice = walletInvoiceCreateFn({ registeredInvoice, fiatAmount })
   const persistedWalletInvoice = await walletInvoicesRepo.persistNew(walletInvoice)
   if (persistedWalletInvoice instanceof Error) return persistedWalletInvoice
 
