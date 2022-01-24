@@ -1,4 +1,4 @@
-import { getWithdrawFeeRange } from "@config/app"
+import { getWithdrawFeeRange } from "@config"
 import { checkedToWithdrawFee } from "@domain/accounts"
 import { ValidationError } from "@domain/errors"
 
