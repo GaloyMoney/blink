@@ -7,8 +7,6 @@ import {
   InvalidWithdrawFeeError,
 } from "@domain/errors"
 
-import { getWithdrawFeeRange } from "@config/app"
-
 export * from "./errors"
 export * from "./api-keys"
 export * from "./limits-checker"

@@ -176,6 +176,6 @@ type WithdrawalFeeCalculator = {
 }
 
 type WithdrawFeeRange = {
-  min: number
-  max: number
+  min: Satoshis
+  max: Satoshis
 }
