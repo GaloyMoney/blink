@@ -23,7 +23,7 @@ export const addEarn = async ({
   quizQuestionId: QuizQuestionId
   accountId: AccountId /* AccountId: aid validation */
   logger: Logger
-}): Promise<QuizQuestion | ApplicationError> => {
+}): Promise<QuizQuestion | ValidationError> => {
   const amount = onboardingEarn[quizQuestionId]
   if (!amount) return new InvalidQuizQuestionIdError()
 

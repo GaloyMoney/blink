@@ -61,11 +61,11 @@ type NewUserInfo = {
 }
 
 type PhoneMetadataValidator = {
-  validate(phoneMetadata: PhoneMetadata | null): true | ApplicationError
+  validate(phoneMetadata: PhoneMetadata | null): true | ValidationError
 }
 
 type IpMetadataValidator = {
-  validate(userIP: UserIPs): true | ApplicationError
+  validate(userIP: UserIPs): true | ValidationError
 }
 
 interface IUsersRepository {

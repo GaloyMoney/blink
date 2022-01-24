@@ -2,7 +2,7 @@ import { MissingIpMetadataError, InvalidIpMetadataTypeError } from "@domain/erro
 import { getBlockListedASNs, getAllowListedCountries } from "@config"
 
 export const IpMetadataValidator = (): IpMetadataValidator => {
-  const validate = (userIP: UserIPs): true | ApplicationError => {
+  const validate = (userIP: UserIPs): true | ValidationError => {
     const blockListedASNs = getBlockListedASNs()
     const allowListedCountries = getAllowListedCountries()
 

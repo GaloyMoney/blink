@@ -1,7 +1,7 @@
 import { MissingPhoneMetadataError, InvalidPhoneMetadataTypeError } from "@domain/errors"
 
 export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
-  const validate = (phoneMetadata: PhoneMetadata | null): true | ApplicationError => {
+  const validate = (phoneMetadata: PhoneMetadata | null): true | ValidationError => {
     if (phoneMetadata === null || !phoneMetadata.carrier)
       return new MissingPhoneMetadataError()
 
