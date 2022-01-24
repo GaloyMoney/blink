@@ -12,6 +12,8 @@ export const IpMetadataValidator = (): IpMetadataValidator => {
 
     if (!lastIP) return new MissingIpMetadataError()
 
+    if (lastIP.proxy && lastIP.proxy == "yes") return new InvalidIpMetadataTypeError()
+
     if (lastIP.asn && blacklistedASNs.length && blacklistedASNs.indexOf(lastIP.asn) != -1)
       return new InvalidIpMetadataTypeError()
 
