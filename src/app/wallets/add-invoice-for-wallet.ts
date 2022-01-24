@@ -202,7 +202,7 @@ const addInvoiceFiatDenomiation = async ({
   })
 }
 
-// TODO: remove export once core has been deleted.
+// TODO: remove export once core v1 has been deleted.
 export const registerAndPersistInvoice = async ({
   sats,
   memo,
@@ -231,7 +231,7 @@ export const registerAndPersistInvoice = async ({
   if (registeredInvoice instanceof Error) return registeredInvoice
   const { invoice } = registeredInvoice
 
-  const walletInvoice = walletInvoiceCreateFn(registeredInvoice)(fiat)
+  const walletInvoice = walletInvoiceCreateFn({ registeredInvoice, fiat })
   const persistedWalletInvoice = await walletInvoicesRepo.persistNew(walletInvoice)
   if (persistedWalletInvoice instanceof Error) return persistedWalletInvoice
 

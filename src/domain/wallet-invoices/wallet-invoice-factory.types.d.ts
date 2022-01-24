@@ -1,12 +1,11 @@
-type WalletInvoiceFactory = {
-  createForSelf(
-    registeredInvoice: RegisteredInvoice,
-  ): (fiat: FiatAmount | null) => WalletInvoice
-  createForRecipient(
-    registeredInvoice: RegisteredInvoice,
-  ): (fiat: FiatAmount | null) => WalletInvoice
+type WalletInvoiceFactoryArgs = {
+  registeredInvoice: RegisteredInvoice
+  fiat: FiatAmount | null
 }
 
-type WalletInvoiceFactoryCreateMethod = (
-  registeredInvoice: RegisteredInvoice,
-) => (fiat: FiatAmount | null) => WalletInvoice
+type WalletInvoiceFactory = {
+  createForSelf(args: WalletInvoiceFactoryArgs): WalletInvoice
+  createForRecipient(args: WalletInvoiceFactoryArgs): WalletInvoice
+}
+
+type WalletInvoiceFactoryCreateMethod = (args: WalletInvoiceFactoryArgs) => WalletInvoice

@@ -28,7 +28,10 @@ describe("wallet invoice factory methods", () => {
       pubkey: "pubkey" as Pubkey,
       descriptionHash: "descriptionHash" as string, // FIXME
     }
-    const result = walletInvoiceFactory.createForSelf(registeredInvoice)(12 as FiatAmount)
+    const result = walletInvoiceFactory.createForSelf({
+      registeredInvoice,
+      fiat: 12 as FiatAmount,
+    })
     const expected = {
       paymentHash: "paymentHash",
       walletId: "id",
@@ -58,9 +61,10 @@ describe("wallet invoice factory methods", () => {
       pubkey: "pubkey" as Pubkey,
       currency: WalletCurrency.Btc,
     }
-    const result = walletInvoiceFactory.createForRecipient(registeredInvoice)(
-      10 as FiatAmount,
-    )
+    const result = walletInvoiceFactory.createForRecipient({
+      registeredInvoice,
+      fiat: 10 as FiatAmount,
+    })
     const expected = {
       paymentHash: "paymentHash",
       walletId: "id",

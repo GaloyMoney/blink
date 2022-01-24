@@ -5,9 +5,7 @@ type AddInvoiceForSelfArgs = {
 }
 
 type AddInvoiceArgs = {
-  walletInvoiceCreateFn: (
-    registeredInvoice: RegisteredInvoice,
-  ) => (fiat: FiatAmount | null) => WalletInvoice
+  walletInvoiceCreateFn: (args: WalletInvoiceFactoryArgs) => WalletInvoice
   amount: number
   memo?: string
   descriptionHash?: string
