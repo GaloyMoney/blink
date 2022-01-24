@@ -158,12 +158,12 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Reward for quiz question was already claimed."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "InvalidPhoneMetadataForRewardError":
-      message = "Unsupported phone carrier for rewards."
+    case "PhoneMetadataForRewardBlockedError":
+      message = "Your phone carrier is blocked from receiving rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "InvalidIpMetadataForRewardError":
-      message = "Unsupported IP address for rewards."
+    case "IpMetadataForRewardBlockedError":
+      message = "Your IP address is blocked from receiving rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "RouteNotFoundError":

@@ -2,8 +2,8 @@ import { getUser } from "@app/users"
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { onboardingEarn } from "@config"
 import {
-  InvalidPhoneMetadataForRewardError,
-  InvalidIpMetadataForRewardError,
+  PhoneMetadataForRewardBlockedError,
+  IpMetadataForRewardBlockedError,
   InvalidQuizQuestionIdError,
 } from "@domain/errors"
 import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
@@ -37,14 +37,14 @@ export const addEarn = async ({
 
   const validatedPhoneMetadata = PhoneMetadataValidator().validate(user.phoneMetadata)
   if (validatedPhoneMetadata instanceof Error)
-    return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
+    return new PhoneMetadataForRewardBlockedError(validatedPhoneMetadata.name)
 
   const userIP = await UsersIpRepository().findById(user.id)
   if (userIP instanceof Error) return userIP
 
   const validatedIpMetadata = IpMetadataValidator().validate(userIP)
   if (validatedIpMetadata instanceof Error)
-    return new InvalidIpMetadataForRewardError(validatedIpMetadata.name)
+    return new IpMetadataForRewardBlockedError(validatedIpMetadata.name)
 
   const recipientWalletId = recipientAccount.defaultWalletId
 

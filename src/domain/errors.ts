@@ -61,8 +61,8 @@ export class MissingPhoneMetadataError extends ValidationError {}
 export class MissingIpMetadataError extends ValidationError {}
 export class InvalidPhoneMetadataTypeError extends ValidationError {}
 export class InvalidIpMetadataTypeError extends ValidationError {}
-export class InvalidPhoneMetadataForRewardError extends ValidationError {}
-export class InvalidIpMetadataForRewardError extends ValidationError {}
+export class PhoneMetadataForRewardBlockedError extends ValidationError {}
+export class IpMetadataForRewardBlockedError extends ValidationError {}
 export class InvalidLanguageError extends ValidationError {}
 
 export class LimitsExceededError extends ValidationError {}
