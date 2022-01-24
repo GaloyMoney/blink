@@ -18,10 +18,10 @@ jest.mock("@config", () => {
 let coldStorageWalletClient: BitcoindWalletClient
 
 beforeAll(async () => {
-  const { onchainWallet } = appConfig.getColdStorageConfig()
+  const { onChainWallet } = appConfig.getColdStorageConfig()
 
   const wallets = await bitcoindClient.listWallets()
-  const walletName = wallets.find((item) => item.includes(onchainWallet))
+  const walletName = wallets.find((item) => item.includes(onChainWallet))
   if (!walletName) throw new Error("Invalid specter wallet name")
 
   coldStorageWalletClient = new BitcoindWalletClient({ walletName })

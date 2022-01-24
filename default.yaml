@@ -34,7 +34,7 @@ coldStorage:
   walletPattern: "specter"
 
   # select which bitcoind wallet is used for automatic rebalancing
-  onchainWallet: "specter/coldstorage"
+  onChainWallet: "specter/coldstorage"
   targetConfirmations: 6
 
 lndScbBackupBucketName: "lnd-static-channel-backups"

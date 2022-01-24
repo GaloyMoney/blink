@@ -22,11 +22,11 @@ let coldStorageWalletClient: BitcoindWalletClient
 let walletName: string
 
 beforeAll(async () => {
-  const { onchainWallet } = getColdStorageConfig()
+  const { onChainWallet } = getColdStorageConfig()
 
   const wallets = await bitcoindClient.listWallets()
   walletName =
-    wallets.find((item) => item.includes(onchainWallet)) || "specter/coldstorage"
+    wallets.find((item) => item.includes(onChainWallet)) || "specter/coldstorage"
 
   coldStorageWalletClient = new BitcoindWalletClient({ walletName })
 })

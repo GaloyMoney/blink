@@ -173,7 +173,7 @@ export const getColdStorageConfig = (): ColdStorageConfig => {
     maxHotWalletBalance: toSats(config.maxHotWalletBalance),
     minRebalanceSize: toSats(config.minRebalanceSize),
     walletPattern: config.walletPattern,
-    onchainWallet: config.onchainWallet,
+    onChainWallet: config.onChainWallet,
     targetConfirmations: config.targetConfirmations,
   }
 }

@@ -8,7 +8,7 @@ import {
 } from "@domain/cold-storage/errors"
 import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
 
-const { onchainWallet, walletPattern } = getColdStorageConfig()
+const { onChainWallet, walletPattern } = getColdStorageConfig()
 
 export const ColdStorageService = async (): Promise<
   IColdStorageService | ColdStorageServiceError
@@ -146,7 +146,7 @@ const getBitcoindCurrentWalletClient = async () => {
     const wallets = await client.listWallets()
     const wallet = wallets
       .filter((item: string) => item.includes(walletPattern))
-      .find((item: string) => item.includes(onchainWallet))
+      .find((item: string) => item.includes(onChainWallet))
     if (wallet) return getBitcoindClient(wallet)
 
     return new InvalidCurrentColdStorageWalletServiceError()

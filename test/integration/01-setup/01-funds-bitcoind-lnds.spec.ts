@@ -33,7 +33,7 @@ describe("Bitcoind", () => {
   })
 
   it("create cold wallet", async () => {
-    const { onchainWallet: walletName } = getColdStorageConfig()
+    const { onChainWallet: walletName } = getColdStorageConfig()
     const { name } = await createColdStorageWallet(walletName)
     expect(name).toBe(walletName)
     const wallets = await bitcoindClient.listWallets()
