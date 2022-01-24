@@ -1,5 +1,5 @@
 import { MissingIpMetadataError, InvalidIpMetadataTypeError } from "@domain/errors"
-import { getBlacklistedASNs, getWhitelistedCountries } from "@config/app"
+import { getBlacklistedASNs, getWhitelistedCountries } from "@config"
 
 export const IpMetadataValidator = (): IpMetadataValidator => {
   const validate = (userIP: UserIPs): true | ApplicationError => {
