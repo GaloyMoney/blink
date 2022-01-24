@@ -1,4 +1,9 @@
-import { BTC_NETWORK, DropboxAccessToken, GcsApplicationCredentials } from "@config"
+import {
+  BTC_NETWORK,
+  DropboxAccessToken,
+  GcsApplicationCredentials,
+  LND_SCB_BACKUP_BUCKET_NAME,
+} from "@config"
 import { Storage } from "@google-cloud/storage"
 import { Dropbox } from "dropbox"
 
@@ -21,7 +26,7 @@ export const uploadBackup =
       const storage = new Storage({
         keyFilename: GcsApplicationCredentials,
       })
-      const bucket = storage.bucket("lnd-static-channel-backups")
+      const bucket = storage.bucket(LND_SCB_BACKUP_BUCKET_NAME)
       const file = bucket.file(`${filename}`)
       await file.save(backup)
       logger.info({ backup }, "scb backed up on gcs successfully")

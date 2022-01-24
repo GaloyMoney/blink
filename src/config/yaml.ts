@@ -192,5 +192,7 @@ export const getIpConfig = (config = yamlConfig): IpConfig => ({
 export const getApolloConfig = (config = yamlConfig): ApolloConfig => config.apollo
 export const getTwoFAConfig = (config = yamlConfig): TwoFAConfig => config.twoFA
 
+export const LND_SCB_BACKUP_BUCKET_NAME = yamlConfig.lndScbBackupBucketName
+
 export const getTestAccounts = (config = yamlConfig): TestAccount[] =>
   config.test_accounts
