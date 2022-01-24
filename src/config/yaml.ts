@@ -181,8 +181,9 @@ export const getBuildVersions = (): {
   }
 }
 
-export const getBlacklistedASNs = (): Array<string> => yamlConfig?.blacklistedASNs
-export const getWhitelistedCountries = (): Array<string> => yamlConfig?.whitelistedCountries
+export const getBlockListedASNs = (): Array<string> => yamlConfig?.blockListedASNs
+export const getAllowListedCountries = (): Array<string> =>
+  yamlConfig?.allowListedCountries
 
 export const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
 

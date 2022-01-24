@@ -1,10 +1,10 @@
 import { MissingIpMetadataError, InvalidIpMetadataTypeError } from "@domain/errors"
-import { getBlacklistedASNs, getWhitelistedCountries } from "@config"
+import { getBlockListedASNs, getAllowListedCountries } from "@config"
 
 export const IpMetadataValidator = (): IpMetadataValidator => {
   const validate = (userIP: UserIPs): true | ApplicationError => {
-    const blacklistedASNs = getBlacklistedASNs()
-    const whitelistedCountries = getWhitelistedCountries()
+    const blockListedASNs = getBlockListedASNs()
+    const allowListedCountries = getAllowListedCountries()
 
     const lastIP = userIP.lastIPs.sort(
       (a, b) => b.lastConnection.getTime() - a.lastConnection.getTime(),
@@ -14,13 +14,13 @@ export const IpMetadataValidator = (): IpMetadataValidator => {
 
     if (lastIP.proxy && lastIP.proxy == "yes") return new InvalidIpMetadataTypeError()
 
-    if (lastIP.asn && blacklistedASNs.length && blacklistedASNs.indexOf(lastIP.asn) != -1)
+    if (lastIP.asn && blockListedASNs.length && blockListedASNs.indexOf(lastIP.asn) != -1)
       return new InvalidIpMetadataTypeError()
 
     if (
       lastIP.country &&
-      whitelistedCountries.length &&
-      whitelistedCountries.indexOf(lastIP.country) == -1
+      allowListedCountries.length &&
+      allowListedCountries.indexOf(lastIP.country) == -1
     )
       return new InvalidIpMetadataTypeError()
 
