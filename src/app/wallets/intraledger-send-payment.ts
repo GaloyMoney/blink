@@ -10,8 +10,8 @@ import {
   SelfPaymentError,
 } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
-import { LockService } from "@services"
-import { AccountsRepository } from "@services/mongoose"
+import { LockService } from "@services/lock"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 
 import { checkAndVerifyTwoFA, checkIntraledgerLimits } from "./check-limit-helpers"
@@ -54,6 +54,9 @@ export const intraledgerPaymentSendWalletId = async ({
   }
 
   if (senderWalletId === recipientWalletId) return new SelfPaymentError()
+
+  const recipientWallet = await WalletsRepository().findById(recipientWalletId)
+  if (recipientWallet instanceof Error) return recipientWallet
 
   const paymentSendStatus = await executePaymentViaIntraledger({
     senderWalletId,
