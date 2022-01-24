@@ -1,5 +1,5 @@
 import { Prices, Wallets } from "@app"
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { ONCHAIN_MIN_CONFIRMATIONS, getLocaleConfig } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
@@ -30,6 +30,8 @@ import {
   waitUntilSyncAll,
 } from "test/helpers"
 import { getBTCBalance } from "test/helpers/wallet"
+
+const locale = getLocaleConfig()
 
 jest.mock("@services/notifications/notification")
 
@@ -197,6 +199,7 @@ describe("onchainBlockEventhandler", () => {
 
   it("should process pending invoices on invoice update event", async () => {
     const sats = 500
+    const satsString = sats.toLocaleString(locale.localeString)
 
     const lnInvoice = await Wallets.addInvoiceByWalletId({
       walletId: walletId12,
@@ -225,9 +228,16 @@ describe("onchainBlockEventhandler", () => {
 
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
-    const usd = (sats * satsPrice).toFixed(2)
+    const usd = Number(sats * satsPrice)
+
+    const usdString = usd.toLocaleString(locale.localeString, {
+      maximumFractionDigits: 2,
+      style: "currency",
+      currency: locale.localeCurrency,
+    })
+
     expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitle[NotificationType.LnInvoicePaid]({ usd, amount: sats }),
+      getTitle[NotificationType.LnInvoicePaid]({ usd: usdString, amount: satsString }),
     )
     expect(sendNotification.mock.calls[0][0].user.id).toStrictEqual(userId12)
     expect(sendNotification.mock.calls[0][0].data.type).toBe(
