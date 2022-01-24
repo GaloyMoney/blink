@@ -12,7 +12,7 @@ type WalletInvoiceValidator = {
   validateToSend(fromWalletId: WalletId): true | ApplicationError
 }
 
-type WalletFactoryArgs = {
+type WalletFactoryConfig = {
   walletId: WalletId
   currency: WalletCurrency
 }

@@ -1,7 +1,7 @@
 export const WalletInvoiceFactory = ({
   walletId,
   currency,
-}: WalletFactoryArgs): WalletInvoiceFactory => {
+}: WalletFactoryConfig): WalletInvoiceFactory => {
   const createForSelf = ({
     registeredInvoice,
     fiat,
