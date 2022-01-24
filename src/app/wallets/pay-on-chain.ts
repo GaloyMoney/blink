@@ -98,6 +98,7 @@ export const payOnChainByWalletId = async ({
     address,
     checkedAmount,
     memo,
+    sendAll,
   })
   const checkedAddress = checkedToOnChainAddress({
     network: BTC_NETWORK,
