@@ -1,4 +1,4 @@
-import { getUserLimits, getTransactionLimits } from "@config"
+import { getUserLimits, getTransactionLimits, getLocaleConfig } from "@config"
 
 const testLimitsConfig = {
   withdrawal: {
@@ -13,6 +13,11 @@ const testLimitsConfig = {
       2: 100000000,
     },
   },
+}
+
+const testLocaleConfig = {
+  localeString: "en-US",
+  localeCurrency: "USD",
 }
 
 describe("config.ts", () => {
@@ -45,6 +50,14 @@ describe("config.ts", () => {
       })
       expect(transactionLimits.onUsLimit).toEqual(100000000)
       expect(transactionLimits.withdrawalLimit).toEqual(100000000)
+    })
+  })
+
+  describe("generates expected locale strings from a locale config object", () => {
+    it("confirms correct locale strings exist", () => {
+      const locale = getLocaleConfig()
+      expect(locale.localeString).toEqual(testLocaleConfig.localeString)
+      expect(locale.localeCurrency).toEqual(testLocaleConfig.localeCurrency)
     })
   })
 })
