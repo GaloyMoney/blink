@@ -1,5 +1,5 @@
+import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
-import { UserInputError } from "apollo-server-errors"
 
 const LnPaymentRequest = GT.Scalar({
   name: "LnPaymentRequest",
@@ -11,7 +11,7 @@ const LnPaymentRequest = GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return validLnPaymentRequest(ast.value)
     }
-    return new UserInputError("Invalid type for LnPaymentRequest")
+    return new InputValidationError({ message: "Invalid type for LnPaymentRequest" })
   },
 })
 
@@ -20,7 +20,7 @@ function validLnPaymentRequest(value) {
   if (value.match(/^ln[a-z0-9]+$/i)) {
     return value
   }
-  return new UserInputError("Invalid value for LnPaymentRequest")
+  return new InputValidationError({ message: "Invalid value for LnPaymentRequest" })
 }
 
 export default LnPaymentRequest

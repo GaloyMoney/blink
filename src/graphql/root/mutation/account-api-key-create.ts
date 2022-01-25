@@ -3,7 +3,7 @@ import Timestamp from "@graphql/types/scalar/timestamp"
 import AccountApiKeyPayload from "@graphql/types/payload/account-api-key"
 import AccountApiKeyLabel from "@graphql/types/scalar/account-api-key-label"
 import { Accounts } from "@app"
-import { UserInputError } from "apollo-server-errors"
+import { InputValidationError } from "@graphql/error"
 
 const AccountApiKeyCreateInput = GT.Input({
   name: "AccountApiKeyCreateInput",
@@ -14,7 +14,12 @@ const AccountApiKeyCreateInput = GT.Input({
 })
 
 const AccountApiKeyCreateMutation = GT.Field<
-  { input: { label: string | UserInputError; expireAt: Date | UserInputError } },
+  {
+    input: {
+      label: string | InputValidationError
+      expireAt: Date | InputValidationError
+    }
+  },
   null,
   GraphQLContextForUser
 >({
@@ -25,11 +30,11 @@ const AccountApiKeyCreateMutation = GT.Field<
   resolve: async (_, args, { domainUser }) => {
     const { label, expireAt } = args.input
 
-    if (label instanceof UserInputError) {
+    if (label instanceof InputValidationError) {
       return { errors: [{ message: label.message }] }
     }
 
-    if (expireAt instanceof UserInputError) {
+    if (expireAt instanceof InputValidationError) {
       return { errors: [{ message: expireAt.message }] }
     }
 

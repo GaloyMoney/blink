@@ -1,6 +1,6 @@
 import { UsernameRegex } from "@domain/accounts"
+import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
-import { UserInputError } from "apollo-server-errors"
 
 const Username = GT.Scalar({
   name: "Username",
@@ -12,7 +12,7 @@ const Username = GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return validUsernameValue(ast.value)
     }
-    return new UserInputError("Invalid type for Username")
+    return new InputValidationError({ message: "Invalid type for Username" })
   },
 })
 
@@ -20,7 +20,7 @@ function validUsernameValue(value) {
   if (value.match(UsernameRegex)) {
     return value.toLowerCase()
   }
-  return new UserInputError("Invalid value for Username")
+  return new InputValidationError({ message: "Invalid value for Username" })
 }
 
 export default Username

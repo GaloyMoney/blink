@@ -16,13 +16,11 @@ const AccountDefaultWalletIdQuery = GT.Field({
     const { username } = args
 
     if (username instanceof Error) {
-      console.log({ username }, "UsernameError")
       throw username
     }
 
     const account = await AccountsRepository().findByUsername(username)
     if (account instanceof Error) {
-      console.log({ account }, "accountError")
       return mapError(account)
     }
 

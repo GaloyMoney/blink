@@ -1,5 +1,5 @@
+import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
-import { UserInputError } from "apollo-server-errors"
 
 const SatAmount = GT.Scalar({
   name: "SatAmount",
@@ -11,7 +11,7 @@ const SatAmount = GT.Scalar({
     if (ast.kind === GT.Kind.INT) {
       return validSatAmount(ast.value)
     }
-    return new UserInputError("Invalid type for SatAmount")
+    return new InputValidationError({ message: "Invalid type for SatAmount" })
   },
 })
 
@@ -20,7 +20,7 @@ function validSatAmount(value) {
   if (Number.isInteger(intValue) && intValue >= 0) {
     return intValue
   }
-  return new UserInputError("Invalid value for SatAmount")
+  return new InputValidationError({ message: "Invalid value for SatAmount" })
 }
 
 export default SatAmount

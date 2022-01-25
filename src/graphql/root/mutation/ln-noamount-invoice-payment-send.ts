@@ -6,7 +6,7 @@ import SatAmount from "@graphql/types/scalar/sat-amount"
 import { Wallets } from "@app"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnIPaymentRequest from "@graphql/types/scalar/ln-payment-request"
-import { UserInputError } from "apollo-server-errors"
+import { InputValidationError } from "@graphql/error"
 
 const LnNoAmountInvoicePaymentInput = GT.Input({
   name: "LnNoAmountInvoicePaymentInput",
@@ -21,10 +21,10 @@ const LnNoAmountInvoicePaymentInput = GT.Input({
 const LnNoAmountInvoicePaymentSendMutation = GT.Field<
   {
     input: {
-      walletId: WalletId | UserInputError
-      paymentRequest: EncodedPaymentRequest | UserInputError
-      amount: Satoshis | UserInputError
-      memo?: string | UserInputError
+      walletId: WalletId | InputValidationError
+      paymentRequest: EncodedPaymentRequest | InputValidationError
+      amount: Satoshis | InputValidationError
+      memo?: string | InputValidationError
     }
   },
   null,
@@ -37,16 +37,16 @@ const LnNoAmountInvoicePaymentSendMutation = GT.Field<
   resolve: async (_, args, { domainAccount, logger }) => {
     const { walletId, paymentRequest, amount, memo } = args.input
 
-    if (walletId instanceof UserInputError) {
+    if (walletId instanceof InputValidationError) {
       return { errors: [{ message: walletId.message }] }
     }
-    if (paymentRequest instanceof UserInputError) {
+    if (paymentRequest instanceof InputValidationError) {
       return { errors: [{ message: paymentRequest.message }] }
     }
-    if (amount instanceof UserInputError) {
+    if (amount instanceof InputValidationError) {
       return { errors: [{ message: amount.message }] }
     }
-    if (memo instanceof UserInputError) {
+    if (memo instanceof InputValidationError) {
       return { errors: [{ message: memo.message }] }
     }
 

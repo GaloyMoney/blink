@@ -1,5 +1,5 @@
+import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
-import { UserInputError } from "apollo-server-errors"
 
 const AccountApiKeyLabel = GT.Scalar({
   name: "AccountApiKeyLabel",
@@ -11,7 +11,7 @@ const AccountApiKeyLabel = GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return validAccountApiKeyLabelValue(ast.value)
     }
-    return new UserInputError("Invalid type for AccountApiKeyLabel")
+    return new InputValidationError({ message: "Invalid type for AccountApiKeyLabel" })
   },
 })
 
@@ -19,7 +19,7 @@ function validAccountApiKeyLabelValue(value) {
   if (value.match(/^[a-z0-9]{3,50}$/i)) {
     return value.trim().toLowerCase()
   }
-  return new UserInputError("Invalid value for AccountApiKeyLabel")
+  return new InputValidationError({ message: "Invalid value for AccountApiKeyLabel" })
 }
 
 export default AccountApiKeyLabel

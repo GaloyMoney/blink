@@ -3,7 +3,7 @@ import UserContactUpdateAliasPayload from "@graphql/types/payload/user-contact-u
 import ContactAlias from "@graphql/types/scalar/contact-alias"
 import Username from "@graphql/types/scalar/username"
 import { Accounts } from "@app"
-import { UserInputError } from "apollo-server-errors"
+import { InputValidationError } from "@graphql/error"
 
 const UserContactUpdateAliasInput = GT.Input({
   name: "UserContactUpdateAliasInput",
@@ -14,7 +14,12 @@ const UserContactUpdateAliasInput = GT.Input({
 })
 
 const UserContactUpdateAliasMutation = GT.Field<
-  { input: { username: string | UserInputError; alias: string | UserInputError } },
+  {
+    input: {
+      username: string | InputValidationError
+      alias: string | InputValidationError
+    }
+  },
   null,
   GraphQLContextForUser
 >({
@@ -26,11 +31,11 @@ const UserContactUpdateAliasMutation = GT.Field<
   resolve: async (_, args, { domainAccount }) => {
     const { username, alias } = args.input
 
-    if (username instanceof UserInputError) {
+    if (username instanceof InputValidationError) {
       return { errors: [{ message: username.message }] }
     }
 
-    if (alias instanceof UserInputError) {
+    if (alias instanceof InputValidationError) {
       return { errors: [{ message: alias.message }] }
     }
 

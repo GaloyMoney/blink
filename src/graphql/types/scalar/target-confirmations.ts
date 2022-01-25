@@ -1,5 +1,5 @@
+import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
-import { UserInputError } from "apollo-server-errors"
 
 const TargetConfirmations = GT.Scalar({
   name: "TargetConfirmations",
@@ -12,7 +12,7 @@ const TargetConfirmations = GT.Scalar({
     if (ast.kind === GT.Kind.INT) {
       return validTargetConfirmations(ast.value)
     }
-    return new UserInputError("Invalid type for TargetConfirmations")
+    return new InputValidationError({ message: "Invalid type for TargetConfirmations" })
   },
 })
 
@@ -21,7 +21,7 @@ function validTargetConfirmations(value) {
   if (Number.isInteger(intValue) && intValue > 0) {
     return intValue
   }
-  return new UserInputError("Invalid value for TargetConfirmations")
+  return new InputValidationError({ message: "Invalid value for TargetConfirmations" })
 }
 
 export default TargetConfirmations

@@ -1,5 +1,5 @@
+import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
-import { UserInputError } from "apollo-server-errors"
 
 const OneTimeAuthCode = GT.Scalar({
   name: "OneTimeAuthCode",
@@ -11,7 +11,7 @@ const OneTimeAuthCode = GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return validOneTimeAuthCodeValue(ast.value)
     }
-    return new UserInputError("Invalid type for OneTimeAuthCode")
+    return new InputValidationError({ message: "Invalid type for OneTimeAuthCode" })
   },
 })
 
@@ -20,7 +20,7 @@ function validOneTimeAuthCodeValue(value) {
   if (value.match(/^[0-9_]{6}/i)) {
     return value.toLowerCase()
   }
-  return new UserInputError("Invalid value for OneTimeAuthCode")
+  return new InputValidationError({ message: "Invalid value for OneTimeAuthCode" })
 }
 
 export default OneTimeAuthCode

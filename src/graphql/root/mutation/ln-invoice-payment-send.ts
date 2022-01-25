@@ -10,7 +10,7 @@ import {
   SemanticAttributes,
   ENDUSER_ALIAS,
 } from "@services/tracing"
-import { UserInputError } from "apollo-server-errors"
+import { InputValidationError } from "@graphql/error"
 
 const LnInvoicePaymentInput = GT.Input({
   name: "LnInvoicePaymentInput",
@@ -24,9 +24,9 @@ const LnInvoicePaymentInput = GT.Input({
 const LnInvoicePaymentSendMutation = GT.Field<
   {
     input: {
-      walletId: WalletId | UserInputError
-      paymentRequest: EncodedPaymentRequest | UserInputError
-      memo?: string | UserInputError
+      walletId: WalletId | InputValidationError
+      paymentRequest: EncodedPaymentRequest | InputValidationError
+      memo?: string | InputValidationError
     }
   },
   null,
@@ -45,13 +45,13 @@ const LnInvoicePaymentSendMutation = GT.Field<
       },
       async () => {
         const { walletId, paymentRequest, memo } = args.input
-        if (walletId instanceof UserInputError) {
+        if (walletId instanceof InputValidationError) {
           return { errors: [{ message: walletId.message }] }
         }
-        if (paymentRequest instanceof UserInputError) {
+        if (paymentRequest instanceof InputValidationError) {
           return { errors: [{ message: paymentRequest.message }] }
         }
-        if (memo instanceof UserInputError) {
+        if (memo instanceof InputValidationError) {
           return { errors: [{ message: memo.message }] }
         }
 
