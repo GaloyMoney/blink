@@ -22,6 +22,10 @@ const DeviceNotificationTokenCreateMutation = GT.Field<
     const { deviceToken } = args.input
 
     try {
+      // FIXME: this should be moved to a use case
+      // deviceToken is casted as a string[], and doesn't have addToSet function
+      // (but this exist from mongoose)
+      // @ts-expect-error: FIXME.
       user.deviceToken.addToSet(deviceToken)
       await user.save()
     } catch (err) {

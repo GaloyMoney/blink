@@ -34,6 +34,10 @@ const CaptchaRequestAuthCodeMutation = GT.Field({
       }
     }
 
+    if (ip === undefined) {
+      return { errors: [{ message: "ip is undefined" }] }
+    }
+
     const result = await Users.requestPhoneCodeWithCaptcha({
       phone,
       geetest,

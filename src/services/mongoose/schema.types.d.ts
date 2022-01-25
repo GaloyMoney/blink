@@ -67,7 +67,7 @@ interface UserRecord {
   depositFeeRatio?: number
   withdrawFee?: number
   earn?: string[]
-  deviceToken?: string[]
+  deviceToken: string[]
   contacts: ContactObjectForUser[]
   created_at: string
   onchain: OnChainObjectForUser[]
@@ -91,8 +91,6 @@ interface UserRecord {
   // mongoose in-built functions
   save: () => Promise<UserRecord>
 }
-
-type UserDBDocument = import("mongoose").HydratedDocument<UserType>
 
 // ?: improve this
 interface UserIPsType {

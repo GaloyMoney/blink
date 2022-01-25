@@ -74,10 +74,10 @@ const sessionContext = ({
   apiSecret,
 }): Promise<GraphQLContext> => {
   const userId = token?.uid ?? null
-  let ip = "UNKNOWN_IP" as IpAddress
+  let ip: IpAddress | undefined
 
   if (ips && Array.isArray(ips) && ips.length) {
-    ip = ips[0]
+    ip = ips[0] as IpAddress
   } else if (typeof ips === "string") {
     ip = ips as IpAddress
   }

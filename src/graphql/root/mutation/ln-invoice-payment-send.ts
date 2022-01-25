@@ -36,11 +36,11 @@ const LnInvoicePaymentSendMutation = GT.Field<
   args: {
     input: { type: GT.NonNull(LnInvoicePaymentInput) },
   },
-  resolve: async (_, args, { ip, domainAccount, domainUser, user, logger }) =>
+  resolve: async (_, args, { ip, domainAccount, domainUser, logger }) =>
     addAttributesToCurrentSpanAndPropagate(
       {
         [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
-        [ENDUSER_ALIAS]: user?.username,
+        [ENDUSER_ALIAS]: domainAccount?.username,
         [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       },
       async () => {

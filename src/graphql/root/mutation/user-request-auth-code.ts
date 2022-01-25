@@ -30,6 +30,10 @@ const UserRequestAuthCodeMutation = GT.Field({
       return { errors: [{ message: phone.message }] }
     }
 
+    if (ip === undefined) {
+      return { errors: [{ message: "ip is undefined" }] }
+    }
+
     const status = await Users.requestPhoneCode({ phone, logger, ip })
 
     if (status instanceof Error) {

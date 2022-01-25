@@ -36,6 +36,10 @@ const UserLoginMutation = GT.Field({
       }
     }
 
+    if (ip === undefined) {
+      return { errors: [{ message: "ip is undefined" }] }
+    }
+
     const authToken = await Users.login({ phone, code, logger, ip })
 
     if (authToken instanceof Error) {

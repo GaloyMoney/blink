@@ -4,10 +4,10 @@ type GraphQLContext = {
   wallet: Wallet | null
   domainUser: User | null
   domainAccount: Account | null
-  user: UserDBDocument | null
+  user: UserRecord | null
   geetest: GeetestType
   account: Account | null
-  ip: IpAddress
+  ip: IpAddress | undefined
 }
 
 type GraphQLContextForUser = {
@@ -16,7 +16,7 @@ type GraphQLContextForUser = {
   wallet: Wallet
   domainUser: User
   domainAccount: Account
-  user: UserDBDocument
+  user: UserRecord
   geetest: GeetestType
   account: Account
   ip: IpAddress
