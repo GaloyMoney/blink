@@ -85,6 +85,32 @@ type AddLnTxReceiveArgs = LnTxArgs & {
   feeLightningLiquidity: Satoshis
 }
 
+type LnAccountingAmounts<T> = {
+  settlementAmount: T
+  bankingFee: T
+}
+
+type OnChainAccountingAmounts<T> = {
+  settlementAmount: T
+  bankingFee: T
+  miningFee: T
+}
+
+type AddLnTxReceiveWithDealerArgs = {
+  walletId: WalletId
+  description: string
+  // sats: Satoshis
+  // usdDisplay: FiatAmount
+  // currency: WalletCurrency
+  paymentHash: PaymentHash
+  // fiat: FiatAmount | null
+  // usdFeeLightningLiquidity: FiatAmount
+  // feeLightningLiquidity: Satoshis
+  display: LnAccountingAmounts<DisplayCurrency>
+  btc: LnAccountingAmounts<Satoshis>
+  fiat: LnAccountingAmounts<FiatBase>
+}
+
 type AddLnTxSendArgs = LnTxArgs & {
   pubkey: Pubkey
   feeKnownInAdvance: boolean

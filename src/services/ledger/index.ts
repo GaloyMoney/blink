@@ -15,6 +15,7 @@ import {
 } from "@domain/ledger/errors"
 
 import { toSats } from "@domain/bitcoin"
+import { WalletCurrency } from "@domain/wallets"
 
 import {
   LedgerTransactionType,
@@ -369,6 +370,70 @@ export const LedgerService = (): ILedgerService => {
       if (feeLightningLiquidity > 0) {
         const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
         entry.credit(bankOwnerPath, feeLightningLiquidity, metadata)
+      }
+
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
+  const addLnTxReceiveWithDealer = async ({
+    walletId,
+    paymentHash,
+    description,
+    sats,
+    fiatFeeLightningLiquidity,
+    fiatDisplay,
+    feeLightningLiquidity,
+    fiat,
+    feeUsd,
+    currency,
+  }: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    const dealerPathBtc = toLiabilitiesWalletId(await getDealerWalletIdBtc())
+    const dealerPathUsd = toLiabilitiesWalletId(await getDealerWalletIdUsd())
+
+    if (currency !== WalletCurrency.Usd) return new CurrencyMismatchError()
+
+    let metadata: AddLnTxReceiveMetadata
+    try {
+      metadata = {
+        type: LedgerTransactionType.Invoice,
+        pending: false,
+        hash: paymentHash,
+        fee: feeLightningLiquidity,
+        feeFiatDisplay: fiatFeeLightningLiquidity,
+        feeUsd,
+        sats,
+        fiatDisplay,
+        usd: fiat,
+      }
+
+      // fiat // TODO handle the case where currency = USD
+      const entry = MainBook.entry(description)
+      entry
+        .credit(liabilitiesWalletId, fiat - feeInUsd, {
+          ...metadata,
+          currency: WalletCurrency.Btc,
+        })
+        .debit(lndAccountingPath, sats, { ...metadata, currency: WalletCurrency.Btc })
+        .debit(dealerPathUsd, fiat - feeInUsd, {
+          ...metadata,
+          currency: WalletCurrency.Usd,
+        })
+        .credit(dealerPathBtc, sats - feeLightningLiquidity, {
+          ...metadata,
+          currency: WalletCurrency.Btc,
+        })
+
+      if (feeLightningLiquidity > 0) {
+        const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
+        entry.credit(bankOwnerPath, feeLightningLiquidity, {
+          ...metadata,
+          currency: WalletCurrency.Btc,
+        })
       }
 
       const savedEntry = await entry.commit()
@@ -750,6 +815,7 @@ export const LedgerService = (): ILedgerService => {
     isLnTxRecorded,
     addOnChainTxReceive,
     addLnTxReceive,
+    addLnTxReceiveWithDealer,
     addLnFeeReimbursementReceive,
     addLnTxSend,
     addLnIntraledgerTxSend,
