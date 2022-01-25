@@ -21,8 +21,8 @@ beforeAll(async () => {
   spy = jest.spyOn(serviceLedger, "LedgerService").mockImplementation(() => ({
     ...ledgerService,
     allTxVolumeSince: async () => ({
-      outgoingSats: toSats(1000),
-      incomingSats: toSats(1000),
+      outgoingSats: toSats(10000),
+      incomingSats: toSats(10000),
     }),
   }))
 })
@@ -36,20 +36,26 @@ describe("notification", () => {
   describe("sendNotification", () => {
     it("sends daily balance to active users", async () => {
       await sendDefaultWalletBalanceToUsers(baseLogger)
-      const users = await getRecentlyActiveAccounts()
-      if (users instanceof Error) throw users
-      const numActiveUsers = users.length
-      expect(sendNotification.mock.calls.length).toBe(numActiveUsers)
-      for (const [call] of sendNotification.mock.calls) {
-        const balance = await LedgerService().getWalletBalance(call.user.defaultWalletId)
+      const activeAccounts = await getRecentlyActiveAccounts()
+      if (activeAccounts instanceof Error) throw activeAccounts
+
+      expect(activeAccounts.length).toBeGreaterThan(0)
+      expect(sendNotification.mock.calls.length).toBeGreaterThan(0)
+      expect(sendNotification.mock.calls.length).toBe(activeAccounts.length)
+
+      const localeOpts = { maximumFractionDigits: 2 }
+
+      for (let i = 0; i < activeAccounts.length; i++) {
+        const [call] = sendNotification.mock.calls[i]
+        const { id, defaultWalletId } = activeAccounts[i]
+        expect(id).toBe(call.user.defaultAccountId)
+
+        const balance = await LedgerService().getWalletBalance(defaultWalletId)
         if (balance instanceof Error) throw balance
 
-        const expectedUsdBalance = (price * balance).toLocaleString("en", {
-          maximumFractionDigits: 2,
-        })
-        const expectedSatsBalance = balance.toLocaleString("en", {
-          maximumFractionDigits: 2,
-        })
+        const expectedUsdBalance = (price * balance).toLocaleString("en", localeOpts)
+        const expectedSatsBalance = balance.toLocaleString("en", localeOpts)
+
         expect(call.title).toBe(
           `Your balance is $${expectedUsdBalance} (${expectedSatsBalance} sats)`,
         )
