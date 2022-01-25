@@ -28,7 +28,7 @@ beforeAll(async () => {
   walletName =
     wallets.find((item) => item.includes(onChainWallet)) || "specter/coldstorage"
 
-  coldStorageWalletClient = new BitcoindWalletClient({ walletName })
+  coldStorageWalletClient = new BitcoindWalletClient(walletName)
 })
 
 afterEach(async () => {

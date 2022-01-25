@@ -16,7 +16,7 @@ import { lndOutside1, waitUntilBlockHeight } from "."
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
-export const bitcoindOutside = new BitcoindWalletClient({ walletName: "outside" })
+export const bitcoindOutside = new BitcoindWalletClient("outside")
 
 export async function sendToAddressAndConfirm({
   walletClient,

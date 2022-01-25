@@ -24,7 +24,7 @@ beforeAll(async () => {
   const walletName = wallets.find((item) => item.includes(onChainWallet))
   if (!walletName) throw new Error("Invalid specter wallet name")
 
-  coldStorageWalletClient = new BitcoindWalletClient({ walletName })
+  coldStorageWalletClient = new BitcoindWalletClient(walletName)
 })
 
 afterEach(async () => {

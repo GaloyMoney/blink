@@ -46,7 +46,7 @@ describe("Bitcoind", () => {
     expect(name).toBe(walletName)
     const wallets = await bitcoindClient.listWallets()
     expect(wallets).toContain(walletName)
-    bitcoindOutside = new BitcoindWalletClient({ walletName })
+    bitcoindOutside = new BitcoindWalletClient(walletName)
   })
 
   it("should be funded mining 10 blocks", async () => {

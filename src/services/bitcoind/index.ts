@@ -100,7 +100,7 @@ export class BitcoindClient {
 export class BitcoindWalletClient {
   readonly client
 
-  constructor({ walletName }: { walletName: string }) {
+  constructor(walletName: string) {
     this.client = new Client({ ...connection_obj, wallet: walletName })
   }
 
@@ -189,7 +189,7 @@ export const getBalancesDetail = async (): Promise<
       continue
     }
 
-    const client = new BitcoindWalletClient({ walletName: wallet })
+    const client = new BitcoindWalletClient(wallet)
     const balance = btc2sat(await client.getBalance())
     balances.push({ wallet, balance })
   }
