@@ -90,6 +90,19 @@ type InitiationViaOnChain {
   address: OnChainAddress!
 }
 
+type InputError implements Error {
+  code: InputErrorCode!
+  message: String!
+  path: [String]
+}
+
+enum InputErrorCode {
+  INVALID_INPUT
+  VALUE_NOT_ALLOWED
+  VALUE_TOO_LONG
+  VALUE_TOO_SHORT
+}
+
 scalar Language
 
 type LightningInvoice {
