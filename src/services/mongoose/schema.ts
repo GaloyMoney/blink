@@ -66,7 +66,7 @@ const walletInvoiceSchema = new Schema({
 
   pubkey: {
     type: String,
-    require: true,
+    required: true,
   },
 
   paid: {
