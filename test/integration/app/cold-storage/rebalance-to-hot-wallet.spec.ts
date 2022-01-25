@@ -51,7 +51,7 @@ describe("ColdStorage - rebalanceToHotWallet", () => {
     )
   })
 
-  it("successfully handle hot walet deposit", async () => {
+  it("successfully handle hot wallet deposit", async () => {
     const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
     if (onChainService instanceof Error) throw onChainService
 

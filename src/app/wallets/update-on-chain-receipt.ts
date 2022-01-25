@@ -158,7 +158,7 @@ const processTxForHotWallet = async ({
   const isFromColdStorage = await coldStorageService.isWithdrawalTransaction(
     tx.rawTx.txHash,
   )
-  if (coldStorageService instanceof Error) return coldStorageService
+  if (isFromColdStorage instanceof Error) return isFromColdStorage
 
   if (!isFromColdStorage) return
 
