@@ -1,7 +1,9 @@
 import { Wallets } from "@app"
 import { checkedToUsername } from "@domain/accounts"
 import { checkedToSats, toSats } from "@domain/bitcoin"
+import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
+import { WalletCurrency } from "@domain/wallets"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 // TODO: Remove. Used in v1 only
@@ -34,11 +36,18 @@ export const addInvoiceForUsername = async ({
   const sats = checkedToSats(amount)
   if (sats instanceof Error) return sats
 
-  const walletInvoiceFactory = WalletInvoiceFactory(walletId)
+  const walletInvoiceFactory = WalletInvoiceFactory({
+    walletId,
+    currency: WalletCurrency.Btc,
+  })
+  const expiresAt = invoiceExpirationForCurrency("BTC", new Date())
+
   return Wallets.registerAndPersistInvoice({
     sats,
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
+    expiresAt,
+    fiatAmount: undefined,
   })
 }
 
@@ -58,10 +67,17 @@ export const addInvoiceNoAmountForUsername = async ({
   const limitOk = await Wallets.checkRecipientWalletIdRateLimits(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
 
-  const walletInvoiceFactory = WalletInvoiceFactory(walletId)
+  const walletInvoiceFactory = WalletInvoiceFactory({
+    walletId,
+    currency: WalletCurrency.Btc,
+  })
+  const expiresAt = invoiceExpirationForCurrency("BTC", new Date())
+
   return Wallets.registerAndPersistInvoice({
     sats: toSats(0),
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
+    expiresAt,
+    fiatAmount: undefined,
   })
 }

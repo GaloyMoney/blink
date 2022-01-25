@@ -8,7 +8,7 @@ const ledgerTransactionTypes = Object.values(LedgerTransactionType)
 const transactionSchema = new Schema({
   hash: {
     type: Schema.Types.String,
-    ref: "InvoiceUser",
+    ref: "invoiceusers",
     // TODO: not always, use another hashOnchain?
   },
 

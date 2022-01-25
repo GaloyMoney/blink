@@ -3,11 +3,18 @@ type WalletInvoice = {
   readonly walletId: WalletId
   readonly selfGenerated: boolean
   readonly pubkey: Pubkey
+  readonly fiatAmount: FiatAmount | undefined
+  readonly currency: WalletCurrency
   paid: boolean
 }
 
 type WalletInvoiceValidator = {
   validateToSend(fromWalletId: WalletId): true | ApplicationError
+}
+
+type WalletFactoryConfig = {
+  walletId: WalletId
+  currency: WalletCurrency
 }
 
 interface IWalletInvoicesRepository {

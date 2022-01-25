@@ -20,7 +20,7 @@ import { LedgerService } from "@services/ledger"
 import { getActiveLnd, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository, WalletInvoicesRepository } from "@services/mongoose"
-import { InvoiceUser } from "@services/mongoose/schema"
+import { WalletInvoice } from "@services/mongoose/schema"
 import { LndService } from "@services/lnd"
 
 import { sleep } from "@utils"
@@ -118,7 +118,7 @@ describe("UserWallet - Lightning Pay", () => {
   it("sends to another Galoy user with memo", async () => {
     const memo = "invoiceMemo"
 
-    const lnInvoice = await Wallets.addInvoiceByWalletId({
+    const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletId2 as WalletId,
       amount: toSats(amountInvoice),
       memo,
@@ -175,7 +175,7 @@ describe("UserWallet - Lightning Pay", () => {
     const memo = "invoiceMemo"
     const memoPayer = "my memo as a payer"
 
-    const lnInvoice = await Wallets.addInvoiceByWalletId({
+    const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletId2 as WalletId,
       amount: toSats(amountInvoice),
       memo,
@@ -432,7 +432,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if sends to self", async () => {
-    const lnInvoice = await Wallets.addInvoiceByWalletId({
+    const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletId1 as WalletId,
       amount: toSats(amountInvoice),
       memo: "self payment",
@@ -520,7 +520,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails to pay when amount exceeds onUs limit", async () => {
-    const lnInvoice = await Wallets.addInvoiceByWalletId({
+    const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletId0 as WalletId,
       amount: toSats(userLimits.onUsLimit + 1),
     })
@@ -672,7 +672,7 @@ describe("UserWallet - Lightning Pay", () => {
           const payerInitialBalance = await getBTCBalance(walletIdPayer)
           const payeeInitialBalance = await getBTCBalance(walletIdPayee)
 
-          const lnInvoice = await Wallets.addInvoiceByWalletId({
+          const lnInvoice = await Wallets.addInvoiceForSelf({
             walletId: walletIdPayee as WalletId,
             amount: toSats(amountInvoice),
           })
@@ -1025,7 +1025,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     const { lnd } = getActiveLnd()
 
-    const lnInvoice = await Wallets.addInvoiceByWalletId({
+    const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletId1 as WalletId,
       amount: toSats(amountInvoice),
       memo,
@@ -1034,7 +1034,7 @@ describe("UserWallet - Lightning Pay", () => {
     const { paymentRequest: request } = lnInvoice
 
     const { id } = await decodePaymentRequest({ lnd, request })
-    expect(await InvoiceUser.countDocuments({ _id: id })).toBe(1)
+    expect(await WalletInvoice.countDocuments({ _id: id })).toBe(1)
 
     // is deleting the invoice the same as when as invoice expired?
     // const res = await cancelHodlInvoice({ lnd, id })
@@ -1073,7 +1073,7 @@ describe("UserWallet - Lightning Pay", () => {
     // FIXME: test is failing.
     // lnd doesn't always delete invoice just after they have expired
 
-    // expect(await InvoiceUser.countDocuments({_id: id})).toBe(0)
+    // expect(await WalletInvoice.countDocuments({_id: id})).toBe(0)
 
     // try {
     //   await getInvoice({ lnd, id })

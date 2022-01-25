@@ -1,22 +1,35 @@
-export const WalletInvoiceFactory = (walletId: WalletId): WalletInvoiceFactory => {
-  const create = (registeredInvoice: RegisteredInvoice): WalletInvoice => ({
+export const WalletInvoiceFactory = ({
+  walletId,
+  currency,
+}: WalletFactoryConfig): WalletInvoiceFactory => {
+  const createForSelf = ({
+    registeredInvoice,
+    fiatAmount,
+  }: WalletInvoiceFactoryArgs): WalletInvoice => ({
     paymentHash: registeredInvoice.invoice.paymentHash,
     walletId,
     selfGenerated: true,
     pubkey: registeredInvoice.pubkey,
     paid: false,
+    fiatAmount,
+    currency,
   })
 
-  const createForRecipient = (registeredInvoice: RegisteredInvoice): WalletInvoice => ({
+  const createForRecipient = ({
+    registeredInvoice,
+    fiatAmount,
+  }: WalletInvoiceFactoryArgs): WalletInvoice => ({
     paymentHash: registeredInvoice.invoice.paymentHash,
     walletId,
     selfGenerated: false,
     pubkey: registeredInvoice.pubkey,
     paid: false,
+    fiatAmount,
+    currency,
   })
 
   return {
-    create,
+    createForSelf,
     createForRecipient,
   }
 }

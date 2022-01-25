@@ -2,9 +2,12 @@ import crypto from "crypto"
 
 import { Wallets } from "@app"
 import { toSats } from "@domain/bitcoin"
-import { InvoiceUser } from "@services/mongoose/schema"
+import { WalletInvoice } from "@services/mongoose/schema"
 
 import { WalletInvoicesRepository } from "@services/mongoose"
+
+import { WalletCurrency } from "@domain/wallets"
+import { v4 as uuidv4 } from "uuid"
 
 import { createUserWallet, getDefaultWalletIdByTestUserIndex } from "test/helpers"
 
@@ -20,10 +23,12 @@ const createTestWalletInvoice = () => {
   const randomPaymentHash = crypto.randomBytes(32).toString("hex") as PaymentHash
   return {
     paymentHash: randomPaymentHash,
-    walletId: "walletId" as WalletId,
+    walletId: uuidv4() as WalletId,
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
     paid: false,
+    fiatAmount: 10 as FiatAmount,
+    currency: WalletCurrency.Btc,
   }
 }
 
@@ -72,13 +77,13 @@ describe("WalletInvoices", () => {
 
   it("find pending invoices by wallet id", async () => {
     for (let i = 0; i < 2; i++) {
-      await Wallets.addInvoiceByWalletId({
+      await Wallets.addInvoiceForSelf({
         walletId: wallet1,
         amount: toSats(1000),
       })
     }
 
-    const invoicesCount = await InvoiceUser.countDocuments({
+    const invoicesCount = await WalletInvoice.countDocuments({
       walletId: wallet1,
       paid: false,
     })

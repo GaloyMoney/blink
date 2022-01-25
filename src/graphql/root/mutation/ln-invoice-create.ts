@@ -29,7 +29,7 @@ const LnInvoiceCreateMutation = GT.Field({
       }
     }
 
-    const lnInvoice = await Wallets.addInvoiceByWalletId({
+    const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId,
       amount,
       memo,

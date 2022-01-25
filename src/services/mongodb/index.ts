@@ -4,7 +4,7 @@ import { loadLedger } from "@services/ledger"
 
 import { baseLogger } from "../logger"
 
-import { User, Transaction, InvoiceUser } from "../mongoose/schema"
+import { User, Transaction, WalletInvoice } from "../mongoose/schema"
 
 // we have to import schema before ledger
 
@@ -60,7 +60,7 @@ export const setupMongoConnection = async (syncIndexes = false) => {
     if (syncIndexes) {
       await User.syncIndexes()
       await Transaction.syncIndexes()
-      await InvoiceUser.syncIndexes()
+      await WalletInvoice.syncIndexes()
     }
   } catch (err) {
     baseLogger.fatal({ err, user, address, db }, `error setting the indexes`)

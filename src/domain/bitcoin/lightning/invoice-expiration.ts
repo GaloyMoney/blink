@@ -6,7 +6,7 @@ const DEFAULT_EXPIRATIONS = {
 }
 
 export const invoiceExpirationForCurrency = (
-  currency: TxDenominationCurrency,
+  currency: WalletCurrency,
   now: Date,
 ): InvoiceExpiration => {
   const { delay } = DEFAULT_EXPIRATIONS[currency]

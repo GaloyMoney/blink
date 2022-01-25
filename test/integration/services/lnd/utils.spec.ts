@@ -1,12 +1,12 @@
 import { MS_PER_DAY } from "@config"
 import {
-  deleteExpiredInvoiceUser,
+  deleteExpiredWalletInvoice,
   getInvoiceAttempt,
   updateRoutingFees,
 } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
-import { DbMetadata, InvoiceUser } from "@services/mongoose/schema"
+import { DbMetadata, WalletInvoice } from "@services/mongoose/schema"
 
 import { sleep } from "@utils"
 
@@ -130,7 +130,7 @@ describe("lndUtils", () => {
     expect((endBalance - initBalance) * 1000).toBeCloseTo(totalFees, 0)
   })
 
-  it("deletes expired InvoiceUser without throw an exception", async () => {
+  it("deletes expired WalletInvoice without throw an exception", async () => {
     const delta = 90 // days
     const mockDate = new Date()
     mockDate.setDate(mockDate.getDate() + delta)
@@ -139,11 +139,11 @@ describe("lndUtils", () => {
     const queryDate = new Date(Date.now())
     queryDate.setDate(queryDate.getDate() - delta)
 
-    const invoicesCount = await InvoiceUser.countDocuments({
+    const invoicesCount = await WalletInvoice.countDocuments({
       timestamp: { $lt: queryDate },
       paid: false,
     })
-    const result = await deleteExpiredInvoiceUser()
+    const result = await deleteExpiredWalletInvoice()
     expect(result).toBe(invoicesCount)
   })
 })
