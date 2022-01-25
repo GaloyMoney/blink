@@ -1,6 +1,6 @@
 import { getCurrentPrice } from "@app/prices"
 import { BTC_NETWORK, getColdStorageConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
-import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
+import { toSats } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { RebalanceChecker } from "@domain/cold-storage"
 import { ColdStorageService } from "@services/cold-storage"
@@ -39,18 +39,13 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
 
   if (rebalanceAmount <= 0) return false
 
-  const checkedTargetConfirmations = checkedToTargetConfs(
-    coldStorageConfig.targetConfirmations,
-  )
-  if (checkedTargetConfirmations instanceof Error) return checkedTargetConfirmations
-
   const address = await coldStorageService.createOnChainAddress()
   if (address instanceof Error) return address
 
   const txHash = await onChainService.payToAddress({
     address,
     amount: rebalanceAmount,
-    targetConfirmations: checkedTargetConfirmations,
+    targetConfirmations: coldStorageConfig.targetConfirmations,
   })
   if (txHash instanceof Error) return txHash
 

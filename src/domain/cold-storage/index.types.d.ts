@@ -16,7 +16,7 @@ type RebalanceCheckerConfig = {
 type ColdStorageConfig = RebalanceCheckerConfig & {
   walletPattern: string
   onChainWallet: string
-  targetConfirmations: number
+  targetConfirmations: TargetConfirmations
 }
 
 type RebalanceChecker = {

@@ -5,7 +5,7 @@ import merge from "lodash.merge"
 
 import { baseLogger } from "@services/logger"
 import { checkedToScanDepth } from "@domain/bitcoin/onchain"
-import { toSats } from "@domain/bitcoin"
+import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
 
 import { ConfigError } from "./error"
 
@@ -168,13 +168,17 @@ export const getUserWalletConfig = (
 
 export const getColdStorageConfig = (): ColdStorageConfig => {
   const config = yamlConfig.coldStorage
+
+  const targetConfirmations = checkedToTargetConfs(config.targetConfirmations)
+  if (targetConfirmations instanceof Error) throw targetConfirmations
+
   return {
     minOnChainHotWalletBalance: toSats(config.minOnChainHotWalletBalance),
     maxHotWalletBalance: toSats(config.maxHotWalletBalance),
     minRebalanceSize: toSats(config.minRebalanceSize),
     walletPattern: config.walletPattern,
     onChainWallet: config.onChainWallet,
-    targetConfirmations: config.targetConfirmations,
+    targetConfirmations,
   }
 }
 
