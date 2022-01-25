@@ -532,6 +532,7 @@ type Query {
   ): OnChainTxFee!
   quizQuestions: [QuizQuestion]
   userDefaultWalletId(username: Username!): WalletId!
+    @deprecated(reason: "will be migrated to AccountDefaultWalletId")
   usernameAvailable(username: Username!): Boolean
 }
 
