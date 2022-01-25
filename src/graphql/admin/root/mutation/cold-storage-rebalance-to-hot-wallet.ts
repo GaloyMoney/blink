@@ -35,7 +35,7 @@ const ColdStorageRebalanceToHotWalletMutation = GT.Field({
 
     if (result instanceof Error) {
       const appErr = mapError(result)
-      return { errors: [{ message: appErr.message }] }
+      return { errors: [appErr] }
     }
 
     return { errors: [], psbtDetail: result }
