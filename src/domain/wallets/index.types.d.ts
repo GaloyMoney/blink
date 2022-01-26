@@ -183,12 +183,12 @@ type ValidatePaymentInputArgs = {
   amount: number
   senderWalletId: string
   senderAccount: Account
-  recipientWalletId: string | null
+  recipientWalletId?: string
 }
 type ValidatePaymentInputRet = {
   amount: Satoshis
   senderWallet: Wallet
-  recipientWallet: Wallet | null
+  recipientWallet?: Wallet
 }
 
 type PaymentInputValidator = {

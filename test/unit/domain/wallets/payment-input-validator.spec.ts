@@ -122,7 +122,7 @@ describe("PaymentInputValidator", () => {
     expect(result instanceof Error).toBe(true)
   })
 
-  it("Returns null for recipient when id is null", async () => {
+  it("Returns undefined for recipient when id is undefined", async () => {
     const getWalletFn: PaymentInputValidatorConfig = (walletId: WalletId) => {
       const wallet = {
         senderWalletId: dummySenderWallet,
@@ -137,10 +137,9 @@ describe("PaymentInputValidator", () => {
       amount: 2,
       senderWalletId: "senderWalletId",
       senderAccount: dummyAccount,
-      recipientWalletId: null,
     })
     if (result instanceof Error) throw result
     const { recipientWallet } = result
-    expect(recipientWallet).toBe(null)
+    expect(recipientWallet).toBe(undefined)
   })
 })

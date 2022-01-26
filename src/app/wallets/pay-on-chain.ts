@@ -87,7 +87,6 @@ export const payOnChainByWalletId = async ({
     amount: checkedAmount,
     senderAccount,
     senderWalletId,
-    recipientWalletId: null,
   })
   if (validationResult instanceof Error) return validationResult
 
