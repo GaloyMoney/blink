@@ -31,17 +31,17 @@ const { dustThreshold } = getOnChainWalletConfig()
 export const payOnChainByWalletIdWithTwoFA = async ({
   senderAccount,
   senderWalletId,
-  amount,
+  amount: amountRaw,
   address,
   targetConfirmations,
   memo,
   sendAll,
   twoFAToken,
 }: PayOnChainByWalletIdWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
-  const checkedAmount = sendAll
+  const amount = sendAll
     ? await LedgerService().getWalletBalance(senderWalletId)
-    : checkedToSats(amount)
-  if (checkedAmount instanceof Error) return checkedAmount
+    : checkedToSats(amountRaw)
+  if (amount instanceof Error) return amount
 
   const user = await getUser(senderAccount.ownerId)
   if (user instanceof Error) return user
@@ -50,7 +50,7 @@ export const payOnChainByWalletIdWithTwoFA = async ({
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
         walletId: senderWalletId,
-        amount: checkedAmount,
+        amount,
         twoFASecret: twoFA.secret,
         twoFAToken,
       })
@@ -71,7 +71,7 @@ export const payOnChainByWalletIdWithTwoFA = async ({
 export const payOnChainByWalletId = async ({
   senderAccount,
   senderWalletId,
-  amount,
+  amount: amountRaw,
   address,
   targetConfirmations,
   memo,
@@ -79,7 +79,7 @@ export const payOnChainByWalletId = async ({
 }: PayOnChainByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
   const checkedAmount = sendAll
     ? await LedgerService().getWalletBalance(senderWalletId)
-    : checkedToSats(amount)
+    : checkedToSats(amountRaw)
   if (checkedAmount instanceof Error) return checkedAmount
 
   const validator = PaymentInputValidator(WalletsRepository().findById)
@@ -90,12 +90,14 @@ export const payOnChainByWalletId = async ({
   })
   if (validationResult instanceof Error) return validationResult
 
+  const { amount } = validationResult
+
   const onchainLogger = baseLogger.child({
     topic: "payment",
     protocol: "onchain",
     transactionType: "payment",
     address,
-    checkedAmount,
+    amount,
     memo,
     sendAll,
   })
@@ -116,7 +118,7 @@ export const payOnChainByWalletId = async ({
     return executePaymentViaIntraledger({
       senderWalletId,
       recipientWalletId: recipientWallet.id,
-      amount: checkedAmount,
+      amount,
       address: checkedAddress,
       memo,
       sendAll,
@@ -125,7 +127,7 @@ export const payOnChainByWalletId = async ({
 
   return executePaymentViaOnChain({
     senderWalletId,
-    amount: checkedAmount,
+    amount,
     address: checkedAddress,
     targetConfirmations: checkedTargetConfirmations,
     memo,
