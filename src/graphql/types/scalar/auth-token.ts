@@ -11,7 +11,7 @@ const AuthToken = GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return validAuthTokenValue(ast.value)
     }
-    return new InputValidationError({ masseg: "Invalid type for AuthToken" })
+    return new InputValidationError({ message: "Invalid type for AuthToken" })
   },
 })
 
@@ -20,7 +20,7 @@ function validAuthTokenValue(value) {
   if (value.match(/^[a-z0-9]+/i)) {
     return value
   }
-  return new InputValidationError({ masseg: "Invalid value for AuthToken" })
+  return new InputValidationError({ message: "Invalid value for AuthToken" })
 }
 
 export default AuthToken
