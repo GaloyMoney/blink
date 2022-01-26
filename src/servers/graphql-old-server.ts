@@ -518,8 +518,8 @@ export async function startApolloServerForOldSchema() {
 if (require.main === module) {
   setupMongoConnection()
     .then(async () => {
-      await startApolloServerForOldSchema()
       activateLndHealthCheck()
+      await startApolloServerForOldSchema()
     })
     .catch((err) => graphqlLogger.error(err, "server error"))
 }
