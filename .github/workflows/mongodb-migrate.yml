@@ -14,4 +14,4 @@ jobs:
     - uses: actions/setup-node@v2
     - run: yarn install
     - name: Run clean mongodb migration
-      run: docker compose up --build mongodb-migrate
+      run: make test-migrate
