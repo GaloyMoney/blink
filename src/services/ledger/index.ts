@@ -115,47 +115,6 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const createListPaymentHashesGenerator = async (): Promise<
-    AggregationCursor<{ _id: PaymentHash }> | LedgerError
-  > => {
-    const aggregationParams = [
-      {
-        $match: {
-          type: LedgerTransactionType.Payment,
-        },
-      },
-      {
-        $group: {
-          _id: "$hash",
-          createdAt: { $first: "$timestamp" },
-        },
-      },
-      {
-        $sort: {
-          createdAt: -1,
-        },
-      },
-    ]
-
-    try {
-      return Transaction.aggregate(aggregationParams).cursor({ batchSize: 100 }).exec()
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const nextPayment = async (
-    generator: AggregationCursor<{ _id: PaymentHash }>,
-  ): Promise<PaymentHash | undefined | LedgerServiceError> => {
-    try {
-      const res = await generator.next()
-      if (!res) return undefined
-      return res._id
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
   async function* listPaymentHashes(): AsyncGenerator<PaymentHash | LedgerError> {
     const aggregationParams = [
       {
@@ -300,8 +259,6 @@ export const LedgerService = (): ILedgerService => {
     getTransactionsByWalletId,
     getTransactionsByWalletIdAndContactUsername,
     listPendingPayments,
-    createListPaymentHashesGenerator,
-    nextPayment,
     listPaymentHashes,
     getPendingPaymentsCount,
     getWalletBalance,
