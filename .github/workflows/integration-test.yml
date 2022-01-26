@@ -8,6 +8,8 @@ jobs:
   integration:
     name: Integration test
     runs-on: ubuntu-latest
+    container:
+      image: 'node:16-alpine'
     timeout-minutes: 15
     steps:
     - uses: actions/checkout@v2
