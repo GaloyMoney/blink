@@ -1,86 +1,73 @@
-import { TxDecoder } from "@domain/bitcoin/onchain"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
-import { WithdrawalFeeCalculator } from "@domain/wallets"
-import { OnChainService } from "@services/lnd/onchain-service"
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
+import { TxDecoder } from "@domain/bitcoin/onchain"
 import {
   CouldNotFindError,
-  LessThanDustThresholdError,
   InsufficientBalanceError,
+  LessThanDustThresholdError,
 } from "@domain/errors"
+import { checkedToWalletId, WithdrawalFeeCalculator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
+import { OnChainService } from "@services/lnd/onchain-service"
+import { WalletsRepository } from "@services/mongoose"
 
 const { dustThreshold } = getOnChainWalletConfig()
 
 export const getOnChainFee = async ({
-  wallet,
+  walletId,
+  account,
   amount,
   address,
   targetConfirmations,
 }: GetOnChainFeeArgs): Promise<Satoshis | ApplicationError> => {
-  const withdrawalFeeCalculator = WithdrawalFeeCalculator()
+  const amountChecked = checkedToSats(amount)
+  if (amountChecked instanceof Error) return amountChecked
+
+  const targetConfsChecked = checkedToTargetConfs(targetConfirmations)
+  if (targetConfsChecked instanceof Error) return targetConfsChecked
+
+  const walletIdChecked = checkedToWalletId(walletId)
+  if (walletIdChecked instanceof Error) return walletIdChecked
+
   const walletsRepo = WalletsRepository()
+  const wallet = await walletsRepo.findById(walletIdChecked)
+  if (wallet instanceof Error) return wallet
+
+  const withdrawFeeCalculator = WithdrawalFeeCalculator()
   const payeeWallet = await walletsRepo.findByAddress(address)
 
   const isIntraLedger = !(payeeWallet instanceof Error)
-  if (isIntraLedger) return withdrawalFeeCalculator.onChainIntraLedgerFee()
+  if (isIntraLedger) return withdrawFeeCalculator.onChainIntraLedgerFee()
 
   const isError = !(payeeWallet instanceof CouldNotFindError)
   if (isError) return payeeWallet
 
-  if (amount < dustThreshold)
+  if (amountChecked < dustThreshold) {
     return new LessThanDustThresholdError(
       `Use lightning to send amounts less than ${dustThreshold}`,
     )
+  }
 
   const balance = await LedgerService().getWalletBalance(wallet.id)
   if (balance instanceof Error) return balance
 
   // avoids lnd balance sniffing attack
-  if (balance < amount) return new InsufficientBalanceError("Balance is too low")
+  if (balance < amountChecked) return new InsufficientBalanceError("Balance is too low")
 
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
 
-  const onChainFee = await onChainService.getOnChainFeeEstimate({
-    amount,
+  const minerFee = await onChainService.getOnChainFeeEstimate({
+    amount: amountChecked,
     address,
-    targetConfirmations,
+    targetConfirmations: targetConfsChecked,
   })
-  if (onChainFee instanceof Error) return onChainFee
+  if (minerFee instanceof Error) return minerFee
 
-  const account = await AccountsRepository().findById(wallet.accountId)
-  if (account instanceof Error) return account
+  const bankFee = toSats(account.withdrawFee)
 
-  const fee = toSats(account.withdrawFee)
-
-  return withdrawalFeeCalculator.onChainWithdrawalFee({
-    onChainFee,
-    walletFee: fee,
-  })
-}
-
-export const getOnChainFeeByWalletId = async ({
-  walletId,
-  amount,
-  address,
-  targetConfirmations,
-}: GetOnChainFeeByWalletIdArgs): Promise<Satoshis | ApplicationError> => {
-  const sats = checkedToSats(amount)
-  if (sats instanceof Error) return sats
-
-  const targetConfs = checkedToTargetConfs(targetConfirmations)
-  if (targetConfs instanceof Error) return targetConfs
-
-  const wallets = WalletsRepository()
-  const wallet = await wallets.findById(walletId)
-  if (wallet instanceof Error) return wallet
-
-  return getOnChainFee({
-    wallet,
-    amount: sats,
-    address,
-    targetConfirmations: targetConfs,
+  return withdrawFeeCalculator.onChainWithdrawalFee({
+    minerFee,
+    bankFee,
   })
 }

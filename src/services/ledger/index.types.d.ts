@@ -5,7 +5,7 @@ type TxMetadata = {
   feeUsd: number
   sats: Satoshis
   usd: number
-  currency: Currency
+  currency: WalletCurrency
 }
 
 type AddLnTxReceiveMetadata = TxMetadata & {

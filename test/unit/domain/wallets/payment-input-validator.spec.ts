@@ -16,7 +16,7 @@ describe("PaymentInputValidator", () => {
     defaultWalletId: "senderWalletId" as WalletId,
     ownerId: "ownerId" as UserId,
     depositFeeRatio: 0 as DepositFeeRatio,
-    withdrawFee: 0 as WithdrawFee,
+    withdrawFee: 0 as Satoshis,
     level: AccountLevel.One,
     status: AccountStatus.Active,
     title: "" as BusinessMapTitle,

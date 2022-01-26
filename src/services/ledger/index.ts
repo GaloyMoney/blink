@@ -356,9 +356,11 @@ export const LedgerService = (): ILedgerService => {
     paymentHash,
     description,
     sats,
-    fee,
-    usd,
-    usdFee,
+    usdFeeLightningLiquidity,
+    usdDisplay,
+    feeLightningLiquidity,
+    fiat,
+    currency,
   }: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
 
@@ -368,21 +370,23 @@ export const LedgerService = (): ILedgerService => {
         type: LedgerTransactionType.Invoice,
         pending: false,
         hash: paymentHash,
-        fee,
-        feeUsd: usdFee,
+        fee: feeLightningLiquidity,
+        feeUsd: usdFeeLightningLiquidity,
         sats,
-        usd,
-        currency: "BTC",
+        usd: usdDisplay,
+        currency,
       }
+
+      fiat // TODO handle the case where currency = USD
 
       const entry = MainBook.entry(description)
       entry
-        .credit(liabilitiesWalletId, sats - fee, metadata)
+        .credit(liabilitiesWalletId, sats - feeLightningLiquidity, metadata)
         .debit(lndAccountingPath, sats, metadata)
 
-      if (fee > 0) {
+      if (feeLightningLiquidity > 0) {
         const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
-        entry.credit(bankOwnerPath, fee, metadata)
+        entry.credit(bankOwnerPath, feeLightningLiquidity, metadata)
       }
 
       const savedEntry = await entry.commit()
@@ -429,10 +433,10 @@ export const LedgerService = (): ILedgerService => {
     paymentHash,
     description,
     sats,
-    fee,
-    usd,
-    usdFee,
+    feeRouting,
+    usdFeeRouting,
     pubkey,
+    usdDisplay,
     feeKnownInAdvance,
   }: AddLnTxSendArgs): Promise<LedgerJournal | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
@@ -443,10 +447,10 @@ export const LedgerService = (): ILedgerService => {
         type: LedgerTransactionType.Payment,
         pending: true,
         hash: paymentHash,
-        fee,
-        feeUsd: usdFee,
+        fee: feeRouting,
+        feeUsd: usdFeeRouting,
         sats,
-        usd,
+        usd: usdDisplay,
         pubkey,
         feeKnownInAdvance,
         currency: "BTC",
@@ -512,10 +516,10 @@ export const LedgerService = (): ILedgerService => {
     payeeAddress,
     description,
     sats,
-    fee,
     bankFee,
-    usd,
-    usdFee,
+    usdDisplay,
+    totalFee,
+    usdTotalFee,
     sendAll,
   }: AddOnChainTxSendArgs): Promise<LedgerJournal | LedgerServiceError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
@@ -526,23 +530,25 @@ export const LedgerService = (): ILedgerService => {
         pending: true,
         hash: txHash,
         payee_addresses: [payeeAddress],
-        fee,
-        feeUsd: usdFee,
+        fee: totalFee,
+        feeUsd: usdTotalFee,
         sats,
-        usd,
+        usd: usdDisplay,
         sendAll,
         currency: "BTC",
       }
 
-      const bankOwnerWalletId = await getBankOwnerWalletId()
-      const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
-
       const entry = MainBook.entry(description)
-      // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
       entry
         .credit(lndAccountingPath, sats - bankFee, metadata)
-        .credit(bankOwnerPath, bankFee, metadata)
         .debit(liabilitiesWalletId, sats, metadata)
+
+      if (bankFee > 0) {
+        const bankOwnerWalletId = await getBankOwnerWalletId()
+        const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
+
+        entry.credit(bankOwnerPath, bankFee, metadata)
+      }
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)

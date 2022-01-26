@@ -9,10 +9,10 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { WithdrawalFeeCalculator, PaymentInputValidator } from "@domain/wallets"
+import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
+import { LockService } from "@services"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { LockService } from "@services"
 import { baseLogger } from "@services/logger"
 import {
   AccountsRepository,
@@ -26,7 +26,7 @@ import {
   checkIntraledgerLimits,
   checkWithdrawalLimits,
 } from "./check-limit-helpers"
-import { getOnChainFeeByWalletId } from "./get-on-chain-fee"
+import { getOnChainFee } from "./get-on-chain-fee"
 
 const { dustThreshold } = getOnChainWalletConfig()
 
@@ -256,7 +256,7 @@ const executePaymentViaOnChain = async ({
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
   const ledgerService = LedgerService()
-  const withdrawalFeeCalculator = WithdrawalFeeCalculator()
+  const withdrawFeeCalculator = WithdrawalFeeCalculator()
 
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
@@ -268,8 +268,9 @@ const executePaymentViaOnChain = async ({
   })
   if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
 
-  const estimatedFee = await getOnChainFeeByWalletId({
+  const estimatedFee = await getOnChainFee({
     walletId: senderWallet.id,
+    account: senderAccount,
     amount,
     address,
     targetConfirmations,
@@ -296,10 +297,11 @@ const executePaymentViaOnChain = async ({
     async (lock) => {
       const balance = await LedgerService().getWalletBalance(senderWallet.id)
       if (balance instanceof Error) return balance
-      if (balance < amountToSend + estimatedFee)
+      if (balance < amountToSend + estimatedFee) {
         return new InsufficientBalanceError(
-          `Payment amount '${amountToSend + estimatedFee}' exceeds balance '${balance}'`,
+          `${amountToSend + estimatedFee} exceeds balance ${balance}`,
         )
+      }
 
       const journal = await LockService().extendLock({ logger, lock }, async () => {
         const txHash = await onChainService.payToAddress({
@@ -315,37 +317,38 @@ const executePaymentViaOnChain = async ({
           return txHash
         }
 
-        let onChainTxFee = await onChainService.lookupOnChainFee({
+        let totalFee: Satoshis
+
+        const minerFee = await onChainService.lookupOnChainFee({
           txHash,
           scanDepth: ONCHAIN_SCAN_DEPTH_OUTGOING,
         })
 
-        if (onChainTxFee instanceof Error) {
-          logger.fatal({ err: onChainTxFee }, "impossible to get fee for onchain payment")
-          onChainTxFee = toSats(0)
+        if (minerFee instanceof Error) {
+          logger.error({ err: minerFee }, "impossible to get fee for onchain payment")
+          totalFee = estimatedFee
+        } else {
+          totalFee = withdrawFeeCalculator.onChainWithdrawalFee({
+            minerFee,
+            bankFee: toSats(senderAccount.withdrawFee),
+          })
         }
 
-        const fee = onChainTxFee
-          ? withdrawalFeeCalculator.onChainWithdrawalFee({
-              onChainFee: onChainTxFee,
-              walletFee: toSats(senderAccount.withdrawFee),
-            })
-          : estimatedFee
-        const sats = toSats(amountToSend + fee)
-        const usd = sats * usdPerSat
-        const usdFee = fee * usdPerSat
+        const sats = toSats(amountToSend + totalFee)
+        const usdDisplay = (sats * usdPerSat) as FiatAmount
+        const usdTotalFee = (totalFee * usdPerSat) as FiatAmount
 
         return ledgerService.addOnChainTxSend({
           walletId: senderWallet.id,
           txHash,
           description: memo || "",
           sats,
-          fee,
+          totalFee,
           bankFee: toSats(senderAccount.withdrawFee),
-          usd,
-          usdFee,
+          usdDisplay,
           payeeAddress: address,
           sendAll,
+          usdTotalFee,
         })
       })
       if (journal instanceof Error) return journal

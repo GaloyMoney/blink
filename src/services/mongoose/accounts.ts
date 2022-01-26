@@ -162,7 +162,7 @@ const translateToAccount = (result: UserRecord): Account => ({
     [],
   ),
   depositFeeRatio: result.depositFeeRatio as DepositFeeRatio,
-  withdrawFee: result.withdrawFee as WithdrawFee,
+  withdrawFee: result.withdrawFee as Satoshis,
 })
 
 const projection = {
