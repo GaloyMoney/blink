@@ -65,3 +65,7 @@ type LoadLedgerParams = {
   dealerWalletResolver: () => Promise<WalletId>
   funderWalletResolver: () => Promise<WalletId>
 }
+
+type AggregationCursor<T> = {
+  next(): T | undefined
+}
