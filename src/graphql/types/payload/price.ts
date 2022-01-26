@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import IError from "../abstract/error"
 import Price from "../object/price"
 
-const PricePayload = new GT.Object({
+const PricePayload = GT.Object({
   name: "PricePayload",
   fields: () => ({
     errors: {

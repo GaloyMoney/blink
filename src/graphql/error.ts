@@ -64,6 +64,17 @@ export class ValidationInternalError extends CustomApolloError {
   }
 }
 
+export class InputValidationError extends CustomApolloError {
+  constructor(errData: PartialBy<CustomApolloErrorData, "logger" | "forwardToClient">) {
+    super({
+      code: "INVALID_INPUT",
+      forwardToClient: true,
+      ...errData,
+      logger: baseLogger,
+    })
+  }
+}
+
 export class NotFoundError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({ code: "NOT_FOUND", forwardToClient: true, ...errData })

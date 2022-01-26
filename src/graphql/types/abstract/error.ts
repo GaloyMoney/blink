@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-const IError = new GT.Interface({
+const IError = GT.Interface({
   name: "Error",
   fields: () => ({
     message: {

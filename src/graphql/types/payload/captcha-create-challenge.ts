@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import IError from "../abstract/error"
 
-const CaptchaCreateChallengeResult = new GT.Object({
+const CaptchaCreateChallengeResult = GT.Object({
   name: "CaptchaCreateChallengeResult",
   fields: () => ({
     id: {
@@ -20,7 +20,7 @@ const CaptchaCreateChallengeResult = new GT.Object({
   }),
 })
 
-const CaptchaCreateChallengePayload = new GT.Object({
+const CaptchaCreateChallengePayload = GT.Object({
   name: "CaptchaCreateChallengePayload",
   fields: () => ({
     errors: {

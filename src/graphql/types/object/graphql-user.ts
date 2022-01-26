@@ -18,7 +18,7 @@ import Username from "../scalar/username"
 import AccountContact from "./wallet-contact"
 import UserQuizQuestion from "./user-quiz-question"
 
-const GraphQLUser = new GT.Object<User, GraphQLContext>({
+const GraphQLUser = GT.Object({
   name: "User",
   fields: () => ({
     id: {

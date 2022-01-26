@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-const MobileVersions = new GT.Object({
+const MobileVersions = GT.Object({
   name: "MobileVersions",
   fields: () => ({
     platform: { type: GT.NonNull(GT.String) },

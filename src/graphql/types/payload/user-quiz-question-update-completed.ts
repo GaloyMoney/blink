@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import IError from "../abstract/error"
 import UserQuizQuestion from "../object/user-quiz-question"
 
-const UserQuizQuestionUpdateCompletedPayload = new GT.Object({
+const UserQuizQuestionUpdateCompletedPayload = GT.Object({
   name: "UserQuizQuestionUpdateCompletedPayload",
   fields: () => ({
     errors: {

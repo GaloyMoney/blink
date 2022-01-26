@@ -14,6 +14,8 @@ import { SubscriptionClient } from "subscriptions-transport-ws"
 import ws from "ws"
 import { GALOY_API_PORT } from "@config"
 
+export const localIpAddress = "127.0.0.1" as IpAddress
+
 export type ApolloTestClientConfig = {
   authToken?: string
   port: string | number
@@ -39,7 +41,8 @@ export const createApolloClient = (
   const authLink = new ApolloLink((operation, forward) => {
     operation.setContext(({ headers }: { headers: Record<string, string> }) => ({
       headers: {
-        authorization: authToken ? `Bearer ${authToken}` : "",
+        "authorization": authToken ? `Bearer ${authToken}` : "",
+        "x-real-ip": localIpAddress,
         ...headers,
       },
     }))

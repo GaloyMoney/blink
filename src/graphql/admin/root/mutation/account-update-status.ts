@@ -5,7 +5,7 @@ import AccountStatus from "@graphql/admin/types/scalar/account-status"
 import { Accounts } from "@app"
 import { mapError } from "@graphql/error-map"
 
-const AccountUpdateStatusInput = new GT.Input({
+const AccountUpdateStatusInput = GT.Input({
   name: "AccountUpdateStatusInput",
   fields: () => ({
     uid: {

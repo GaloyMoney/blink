@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-const AccountStatus = new GT.Enum({
+const AccountStatus = GT.Enum({
   name: "AccountStatus",
   values: {
     LOCKED: { value: "locked" },

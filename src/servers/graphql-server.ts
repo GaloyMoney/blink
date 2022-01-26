@@ -13,7 +13,12 @@ import {
   ENDUSER_ALIAS,
   SemanticAttributes,
 } from "@services/tracing"
-import { ApolloServerPluginUsageReporting } from "apollo-server-core"
+import {
+  ApolloServerPluginDrainHttpServer,
+  ApolloServerPluginLandingPageDisabled,
+  ApolloServerPluginLandingPageGraphQLPlayground,
+  ApolloServerPluginUsageReporting,
+} from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import express from "express"
 import expressJwt from "express-jwt"
@@ -24,8 +29,14 @@ import * as jwt from "jsonwebtoken"
 
 import pino from "pino"
 import PinoHttp from "pino-http"
-import { SubscriptionServer } from "subscriptions-transport-ws"
+import {
+  ExecuteFunction,
+  SubscribeFunction,
+  SubscriptionServer,
+} from "subscriptions-transport-ws"
 import { v4 as uuidv4 } from "uuid"
+
+import { CustomError } from "@core/error"
 
 import { playgroundTabs } from "../graphql/playground"
 
@@ -63,12 +74,12 @@ const sessionContext = ({
   apiSecret,
 }): Promise<GraphQLContext> => {
   const userId = token?.uid ?? null
-  let ip: string | undefined
+  let ip: IpAddress | undefined
 
   if (ips && Array.isArray(ips) && ips.length) {
-    ip = ips[0]
+    ip = ips[0] as IpAddress
   } else if (typeof ips === "string") {
-    ip = ips
+    ip = ips as IpAddress
   }
 
   let wallet, user
@@ -140,21 +151,12 @@ export const startApolloServer = async ({
   startSubscriptionServer = false,
 }): Promise<Record<string, unknown>> => {
   const app = express()
+  const httpServer = createServer(app)
 
-  const apolloPulgins = isProd
-    ? [
-        ApolloServerPluginUsageReporting({
-          rewriteError(err) {
-            graphqlLogger.error(err, "Error caught in rewriteError")
-            return err
-          },
-        }),
-      ]
-    : []
-  const apolloServer = new ApolloServer({
-    schema,
-    playground: apolloConfig.playground
-      ? {
+  const apolloPulgins = [
+    ApolloServerPluginDrainHttpServer({ httpServer }),
+    apolloConfig.playground
+      ? ApolloServerPluginLandingPageGraphQLPlayground({
           settings: { "schema.polling.enable": false },
           tabs: [
             {
@@ -162,8 +164,23 @@ export const startApolloServer = async ({
               ...playgroundTabs.default,
             },
           ],
-        }
-      : false,
+        })
+      : ApolloServerPluginLandingPageDisabled(),
+  ]
+
+  if (isProd) {
+    apolloPulgins.push(
+      ApolloServerPluginUsageReporting({
+        rewriteError(err) {
+          graphqlLogger.error(err, "Error caught in rewriteError")
+          return err
+        },
+      }),
+    )
+  }
+
+  const apolloServer = new ApolloServer({
+    schema,
     introspection: apolloConfig.playground,
     plugins: apolloPulgins,
     context: async (context) => {
@@ -181,7 +198,8 @@ export const startApolloServer = async ({
       return sessionContext({ token, apiKey, apiSecret, ips, body })
     },
     formatError: (err) => {
-      const log = err.extensions?.exception?.log
+      const exception = err.extensions?.exception as unknown as CustomError
+      const log = exception.log
 
       // An err object needs to necessarily have the forwardToClient field to be forwarded
       // i.e. catch-all errors will not be forwarded
@@ -192,8 +210,8 @@ export const startApolloServer = async ({
         // ex: fields that indicate whether a payment succeeded or not, or stacktraces, that are required
         // for metrics or debugging
         // the err.extensions.metadata field contains such fields
-        log({ ...errObj, ...err.extensions?.metadata })
-        if (err.extensions?.exception.forwardToClient) {
+        // log({ ...errObj, ...err?.extensions?.metadata })
+        if (exception?.forwardToClient) {
           return errObj
         }
       } else {
@@ -210,7 +228,8 @@ export const startApolloServer = async ({
 
       const reportErrorToClient =
         ["GRAPHQL_PARSE_FAILED", "GRAPHQL_VALIDATION_FAILED", "BAD_USER_INPUT"].includes(
-          err.extensions?.code,
+          // err.extensions?.code,
+          err.toString(),
         ) ||
         isShieldError ||
         err instanceof ApolloError ||
@@ -284,17 +303,17 @@ export const startApolloServer = async ({
     }),
   )
 
-  apolloServer.applyMiddleware({ app })
+  await apolloServer.start()
 
-  const httpServer = createServer(app)
+  apolloServer.applyMiddleware({ app, path: "/graphql" })
 
   return new Promise((resolve, reject) => {
     httpServer.listen({ port }, () => {
       if (startSubscriptionServer) {
-        new SubscriptionServer(
+        const apolloSubscriptionServer = new SubscriptionServer(
           {
-            execute,
-            subscribe,
+            execute: execute as unknown as ExecuteFunction,
+            subscribe: subscribe as unknown as SubscribeFunction,
             schema,
             async onConnect(connectionParams, webSocket, connectionContext) {
               const { request } = connectionContext
@@ -323,6 +342,9 @@ export const startApolloServer = async ({
             path: apolloServer.graphqlPath,
           },
         )
+        ;["SIGINT", "SIGTERM"].forEach((signal) => {
+          process.on(signal, () => apolloSubscriptionServer.close())
+        })
       }
 
       console.log(

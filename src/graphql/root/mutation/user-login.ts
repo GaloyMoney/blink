@@ -6,7 +6,7 @@ import AuthTokenPayload from "@graphql/types/payload/auth-token"
 import { Users } from "@app"
 import { mapError } from "@graphql/error-map"
 
-const UserLoginInput = new GT.Input({
+const UserLoginInput = GT.Input({
   name: "UserLoginInput",
   fields: () => ({
     phone: {
@@ -34,6 +34,10 @@ const UserLoginMutation = GT.Field({
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
+    }
+
+    if (ip === undefined) {
+      return { errors: [{ message: "ip is undefined" }] }
     }
 
     const authToken = await Users.login({ phone, code, logger, ip })

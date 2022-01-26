@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-const AccountLevel = new GT.Enum({
+const AccountLevel = GT.Enum({
   name: "AccountLevel",
   values: {
     ONE: { value: 1 }, // We have the user's phone number

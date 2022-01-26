@@ -1,10 +1,11 @@
 import { GT } from "@graphql/index"
-import { Accounts } from "@app"
 import Timestamp from "@graphql/types/scalar/timestamp"
 import AccountApiKeyPayload from "@graphql/types/payload/account-api-key"
 import AccountApiKeyLabel from "@graphql/types/scalar/account-api-key-label"
+import { Accounts } from "@app"
+import { InputValidationError } from "@graphql/error"
 
-const AccountApiKeyCreateInput = new GT.Input({
+const AccountApiKeyCreateInput = GT.Input({
   name: "AccountApiKeyCreateInput",
   fields: () => ({
     label: { type: AccountApiKeyLabel },
@@ -12,7 +13,16 @@ const AccountApiKeyCreateInput = new GT.Input({
   }),
 })
 
-const AccountApiKeyCreateMutation = GT.Field({
+const AccountApiKeyCreateMutation = GT.Field<
+  {
+    input: {
+      label: string | InputValidationError
+      expireAt: Date | InputValidationError
+    }
+  },
+  null,
+  GraphQLContextForUser
+>({
   type: GT.NonNull(AccountApiKeyPayload),
   args: {
     input: { type: GT.NonNull(AccountApiKeyCreateInput) },
@@ -20,10 +30,12 @@ const AccountApiKeyCreateMutation = GT.Field({
   resolve: async (_, args, { domainUser }) => {
     const { label, expireAt } = args.input
 
-    for (const input of [label, expireAt]) {
-      if (input instanceof Error) {
-        return { errors: [{ message: input.message }] }
-      }
+    if (label instanceof InputValidationError) {
+      return { errors: [{ message: label.message }] }
+    }
+
+    if (expireAt instanceof InputValidationError) {
+      return { errors: [{ message: expireAt.message }] }
     }
 
     const accountId = domainUser.defaultAccountId

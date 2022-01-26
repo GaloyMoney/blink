@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import AccountApiKeyLabel from "../scalar/account-api-key-label"
 import Timestamp from "../scalar/timestamp"
 
-const AccountApiKey = new GT.Object({
+const AccountApiKey = GT.Object({
   name: "AccountApiKey",
   fields: () => ({
     label: { type: GT.NonNull(AccountApiKeyLabel) },

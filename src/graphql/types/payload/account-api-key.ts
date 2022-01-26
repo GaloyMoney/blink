@@ -4,7 +4,7 @@ import IError from "../abstract/error"
 
 import AccountApiKey from "../object/account-api-key"
 
-const AccountApiKeyPayload = new GT.Object({
+const AccountApiKeyPayload = GT.Object({
   name: "AccountApiKeyPayload",
   fields: () => ({
     errors: {

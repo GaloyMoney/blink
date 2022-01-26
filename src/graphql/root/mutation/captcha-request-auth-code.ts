@@ -5,7 +5,7 @@ import SuccessPayload from "@graphql/types/payload/success-payload"
 import { Users } from "@app"
 import { mapError } from "@graphql/error-map"
 
-const CaptchaRequestAuthCodeInput = new GT.Input({
+const CaptchaRequestAuthCodeInput = GT.Input({
   name: "CaptchaRequestAuthCodeInput",
   fields: () => ({
     phone: { type: GT.NonNull(Phone) },
@@ -32,6 +32,10 @@ const CaptchaRequestAuthCodeMutation = GT.Field({
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
+    }
+
+    if (ip === undefined) {
+      return { errors: [{ message: "ip is undefined" }] }
     }
 
     const result = await Users.requestPhoneCodeWithCaptcha({

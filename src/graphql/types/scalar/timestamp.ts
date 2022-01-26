@@ -1,26 +1,33 @@
+import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
 
-import { UserInputError } from "apollo-server-errors"
+type InternalDate = Date
+type ExternalDate = number | InputValidationError
 
-const Timestamp = new GT.Scalar({
+const Timestamp = GT.Scalar<InternalDate | InputValidationError, ExternalDate>({
   name: "Timestamp",
   description:
     "Timestamp field, serialized as Unix time (the number of seconds since the Unix epoch)",
   serialize(value) {
-    if (value.getTime) {
+    if (value instanceof Date) {
       return Math.floor(value.getTime() / 1000)
     }
-    return value
+    if (typeof value === "number") {
+      return value
+    }
+    return new InputValidationError({ message: "Invalid value for Date" })
   },
-  // TODO: db work for dates
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for Date" })
+    }
     return new Date(value)
   },
   parseLiteral(ast) {
     if (ast.kind === GT.Kind.STRING) {
       return new Date(parseInt(ast.value, 10))
     }
-    return new UserInputError("Invalid type for Date")
+    return new InputValidationError({ message: "Invalid type for Date" })
   },
 })
 

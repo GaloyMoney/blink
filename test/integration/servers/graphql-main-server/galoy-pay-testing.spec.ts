@@ -201,6 +201,7 @@ describe("galoy-pay", () => {
         query: subscriptionQuery,
         variables: input,
       })
+
       const result = (await getSubscriptionNext(subscription)) as { data }
       const { price, errors } = result.data?.price
 

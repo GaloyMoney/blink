@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import IError from "../abstract/error"
 import TwoFASecret from "../object/twofa-secret"
 
-const TwoFAGeneratePayload = new GT.Object({
+const TwoFAGeneratePayload = GT.Object({
   name: "TwoFAGeneratePayload",
   fields: () => ({
     errors: {

@@ -7,7 +7,7 @@ import Username from "../scalar/username"
 import OnChainAddress from "../scalar/on-chain-address"
 import PaymentHash from "../scalar/payment-hash"
 
-const InitiationViaIntraLedger = new GT.Object({
+const InitiationViaIntraLedger = GT.Object({
   name: "InitiationViaIntraLedger",
   isTypeOf: (source) => source.type === PaymentInitiationMethod.IntraLedger,
   fields: () => ({
@@ -21,7 +21,7 @@ const InitiationViaIntraLedger = new GT.Object({
   }),
 })
 
-const InitiationViaLn = new GT.Object({
+const InitiationViaLn = GT.Object({
   name: "InitiationViaLn",
   isTypeOf: (source) => source.type === PaymentInitiationMethod.Lightning,
   fields: () => ({
@@ -31,7 +31,7 @@ const InitiationViaLn = new GT.Object({
   }),
 })
 
-const InitiationViaOnChain = new GT.Object({
+const InitiationViaOnChain = GT.Object({
   name: "InitiationViaOnChain",
   isTypeOf: (source) => source.type === PaymentInitiationMethod.OnChain,
   fields: () => ({
@@ -41,7 +41,7 @@ const InitiationViaOnChain = new GT.Object({
   }),
 })
 
-const InitiationVia = new GT.Union({
+const InitiationVia = GT.Union({
   name: "InitiationVia",
   types: () => [InitiationViaIntraLedger, InitiationViaLn, InitiationViaOnChain],
 })

@@ -4,7 +4,7 @@ import { GT } from "@graphql/index"
 
 import SuccessPayload from "@graphql/types/payload/success-payload"
 
-const TwoFASaveInput = new GT.Input({
+const TwoFASaveInput = GT.Input({
   name: "TwoFASaveInput",
   fields: () => ({
     secret: {
@@ -16,7 +16,11 @@ const TwoFASaveInput = new GT.Input({
   }),
 })
 
-const TwoFASaveMutation = GT.Field({
+const TwoFASaveMutation = GT.Field<
+  { input: { secret: string; token: string } },
+  null,
+  GraphQLContextForUser
+>({
   type: GT.NonNull(SuccessPayload),
   args: {
     input: { type: GT.NonNull(TwoFASaveInput) },
@@ -24,13 +28,12 @@ const TwoFASaveMutation = GT.Field({
   resolve: async (_, args, { domainUser }) => {
     const { secret, token } = args.input
 
-    for (const input of [secret, token]) {
-      if (input instanceof Error) {
-        return { errors: [{ message: input.message }] }
-      }
-    }
-
-    const user = await save2fa({ secret, token, userId: domainUser.id })
+    const user = await save2fa({
+      // FIXME: check token and secret before casting
+      secret: secret as TwoFASecret,
+      token: token as TwoFAToken,
+      userId: domainUser.id,
+    })
     if (user instanceof Error) {
       const appErr = mapError(user)
       return { errors: [{ message: appErr.message }] }

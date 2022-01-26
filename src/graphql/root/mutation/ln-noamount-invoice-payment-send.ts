@@ -6,8 +6,9 @@ import SatAmount from "@graphql/types/scalar/sat-amount"
 import { Wallets } from "@app"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnIPaymentRequest from "@graphql/types/scalar/ln-payment-request"
+import { InputValidationError } from "@graphql/error"
 
-const LnNoAmountInvoicePaymentInput = new GT.Input({
+const LnNoAmountInvoicePaymentInput = GT.Input({
   name: "LnNoAmountInvoicePaymentInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) },
@@ -17,23 +18,42 @@ const LnNoAmountInvoicePaymentInput = new GT.Input({
   }),
 })
 
-const LnNoAmountInvoicePaymentSendMutation = GT.Field({
+const LnNoAmountInvoicePaymentSendMutation = GT.Field<
+  {
+    input: {
+      walletId: WalletId | InputValidationError
+      paymentRequest: EncodedPaymentRequest | InputValidationError
+      amount: Satoshis | InputValidationError
+      memo?: string | InputValidationError
+    }
+  },
+  null,
+  GraphQLContextForUser
+>({
   type: GT.NonNull(PaymentSendPayload),
   args: {
     input: { type: GT.NonNull(LnNoAmountInvoicePaymentInput) },
   },
   resolve: async (_, args, { domainAccount, logger }) => {
     const { walletId, paymentRequest, amount, memo } = args.input
-    for (const input of [walletId, memo, amount, paymentRequest]) {
-      if (input instanceof Error) {
-        return { errors: [{ message: input.message }] }
-      }
+
+    if (walletId instanceof InputValidationError) {
+      return { errors: [{ message: walletId.message }] }
+    }
+    if (paymentRequest instanceof InputValidationError) {
+      return { errors: [{ message: paymentRequest.message }] }
+    }
+    if (amount instanceof InputValidationError) {
+      return { errors: [{ message: amount.message }] }
+    }
+    if (memo instanceof InputValidationError) {
+      return { errors: [{ message: memo.message }] }
     }
 
     const status = await Wallets.payLnNoAmountInvoiceByWalletId({
       senderWalletId: walletId,
       paymentRequest,
-      memo,
+      memo: memo ?? null,
       amount,
       payerAccountId: domainAccount.id,
       logger,

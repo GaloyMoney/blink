@@ -1,8 +1,8 @@
 import { isSha256Hash } from "@domain/bitcoin"
+import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
-import { UserInputError } from "apollo-server-errors"
 
-const OnChainTxHash = new GT.Scalar({
+const OnChainTxHash = GT.Scalar({
   name: "OnChainTxHash",
   parseValue(value) {
     return validOnChainTxHash(value)
@@ -11,14 +11,14 @@ const OnChainTxHash = new GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return validOnChainTxHash(ast.value)
     }
-    return new UserInputError("Invalid type for OnChainTxHash")
+    return new InputValidationError({ message: "Invalid type for OnChainTxHash" })
   },
 })
 
 function validOnChainTxHash(value) {
   return isSha256Hash(value)
     ? value
-    : new UserInputError("Invalid value for OnChainTxHash")
+    : new InputValidationError({ message: "Invalid value for OnChainTxHash" })
 }
 
 export default OnChainTxHash

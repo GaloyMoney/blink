@@ -4,7 +4,7 @@ import Username from "../scalar/username"
 
 import MapInfo from "./map-info"
 
-const MapMarker = new GT.Object({
+const MapMarker = GT.Object({
   name: "MapMarker",
   fields: () => ({
     username: {

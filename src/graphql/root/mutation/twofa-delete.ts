@@ -4,7 +4,7 @@ import { mapError } from "@graphql/error-map"
 
 import SuccessPayload from "@graphql/types/payload/success-payload"
 
-const TwoFADeleteInput = new GT.Input({
+const TwoFADeleteInput = GT.Input({
   name: "TwoFADeleteInput",
   fields: () => ({
     token: {
@@ -13,7 +13,11 @@ const TwoFADeleteInput = new GT.Input({
   }),
 })
 
-const TwoFADeleteMutation = GT.Field({
+const TwoFADeleteMutation = GT.Field<
+  { input: { token: string } },
+  null,
+  GraphQLContextForUser
+>({
   type: GT.NonNull(SuccessPayload),
   args: {
     input: { type: GT.NonNull(TwoFADeleteInput) },
@@ -21,7 +25,11 @@ const TwoFADeleteMutation = GT.Field({
   resolve: async (_, args, { domainUser }) => {
     const { token } = args.input
 
-    const user = await delete2fa({ token, userId: domainUser.id })
+    const user = await delete2fa({
+      // FIXME: check token before casting
+      token: token as TwoFAToken,
+      userId: domainUser.id,
+    })
     if (user instanceof Error) {
       const appErr = mapError(user)
       return { errors: [{ message: appErr.message }] }

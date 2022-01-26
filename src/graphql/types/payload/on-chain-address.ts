@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import IError from "../abstract/error"
 import OnChainAddress from "../scalar/on-chain-address"
 
-const OnChainAddressPayload = new GT.Object({
+const OnChainAddressPayload = GT.Object({
   name: "OnChainAddressPayload",
   fields: () => ({
     errors: {

@@ -1,8 +1,8 @@
 import { isSha256Hash } from "@domain/bitcoin"
+import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
-import { UserInputError } from "apollo-server-errors"
 
-const LnPaymentSecret = new GT.Scalar({
+const LnPaymentSecret = GT.Scalar({
   name: "LnPaymentSecret",
   parseValue(value) {
     return validLnPaymentSecret(value)
@@ -11,14 +11,14 @@ const LnPaymentSecret = new GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return validLnPaymentSecret(ast.value)
     }
-    return new UserInputError("Invalid type for LnPaymentSecret")
+    return new InputValidationError({ message: "Invalid type for LnPaymentSecret" })
   },
 })
 
 function validLnPaymentSecret(value) {
   return isSha256Hash(value)
     ? value
-    : new UserInputError("Invalid value for LnPaymentSecret")
+    : new InputValidationError({ message: "Invalid value for LnPaymentSecret" })
 }
 
 export default LnPaymentSecret

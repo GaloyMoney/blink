@@ -8,7 +8,7 @@ import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 import { Wallets } from "@app"
 
-const OnChainPaymentSendInput = new GT.Input({
+const OnChainPaymentSendInput = GT.Input({
   name: "OnChainPaymentSendInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) },

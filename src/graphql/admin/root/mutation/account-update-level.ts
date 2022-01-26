@@ -4,7 +4,7 @@ import AccountLevel from "@graphql/admin/types/scalar/account-level"
 import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
-const AccountUpdateLevelInput = new GT.Input({
+const AccountUpdateLevelInput = GT.Input({
   name: "AccountUpdateLevelInput",
   fields: () => ({
     // FIXME: should be account id
@@ -17,7 +17,12 @@ const AccountUpdateLevelInput = new GT.Input({
   }),
 })
 
-const AccountUpdateLevelMutation = GT.Field({
+const AccountUpdateLevelMutation = GT.Field<{
+  input: {
+    uid: string
+    level: AccountLevel | Error
+  }
+}>({
   type: GT.NonNull(AccountDetailPayload),
   args: {
     input: { type: GT.NonNull(AccountUpdateLevelInput) },

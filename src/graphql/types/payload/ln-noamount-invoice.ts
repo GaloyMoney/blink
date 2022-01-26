@@ -4,7 +4,7 @@ import IError from "../abstract/error"
 
 import LnNoAmountInvoice from "../object/ln-noamount-invoice"
 
-const LnNoAmountInvoicePayload = new GT.Object({
+const LnNoAmountInvoicePayload = GT.Object({
   name: "LnNoAmountInvoicePayload",
   fields: () => ({
     errors: {

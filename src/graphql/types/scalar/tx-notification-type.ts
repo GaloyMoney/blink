@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-const TxNotificationType = new GT.Enum({
+const TxNotificationType = GT.Enum({
   name: "TxNotificationType",
   values: {
     OnchainReceipt: { value: "onchain_receipt" },
