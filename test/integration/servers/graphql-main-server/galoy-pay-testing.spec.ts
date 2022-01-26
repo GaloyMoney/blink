@@ -5,8 +5,6 @@ import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
 import { toSats } from "@domain/bitcoin"
 
-import { sleep } from "@app/utils"
-
 import ME from "./queries/me.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
 import NODE_IDS from "./queries/node-ids.gql"
@@ -203,8 +201,6 @@ describe("galoy-pay", () => {
         query: subscriptionQuery,
         variables: input,
       })
-
-      await sleep(1000)
 
       const result = (await getSubscriptionNext(subscription)) as { data }
       const { price, errors } = result.data?.price
