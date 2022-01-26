@@ -6,16 +6,9 @@ import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository } from "@services/mongoose"
 
 export const migrateLnPaymentsFromLnd = async (): Promise<true | ApplicationError> => {
-  const ledgerService = LedgerService()
-  const result = await ledgerService.createListPaymentHashesGenerator()
-  if (result instanceof Error) return result
-
-  let paymentHash: true | PaymentHash | undefined | LedgerServiceError = true
-  while (paymentHash) {
-    // Fetch next payment to increment the loop
-    paymentHash = await ledgerService.nextPayment(result)
+  const paymentHashes = await LedgerService().listPaymentHashes()
+  for await (const paymentHash of paymentHashes) {
     if (paymentHash instanceof Error) return paymentHash
-    if (paymentHash === undefined) break
 
     // Check if hash exists in lnPayments repo
     const lnPaymentsRepo = LnPaymentsRepository()
