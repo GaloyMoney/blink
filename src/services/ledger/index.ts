@@ -475,7 +475,7 @@ export const LedgerService = (): ILedgerService => {
     usdFee,
     pubkey,
     recipientWalletId,
-    payerUsername,
+    senderUsername,
     recipientUsername,
     memoPayer,
   }: AddLnIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
@@ -498,7 +498,7 @@ export const LedgerService = (): ILedgerService => {
       description,
       sats,
       recipientWalletId,
-      payerUsername,
+      senderUsername,
       recipientUsername,
       memoPayer,
       shareMemoWithPayee: false,
@@ -561,7 +561,7 @@ export const LedgerService = (): ILedgerService => {
     payeeAddresses,
     sendAll,
     recipientWalletId,
-    payerUsername,
+    senderUsername,
     recipientUsername,
     memoPayer,
   }: AddOnChainIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
@@ -584,7 +584,7 @@ export const LedgerService = (): ILedgerService => {
       description,
       sats,
       recipientWalletId,
-      payerUsername,
+      senderUsername,
       recipientUsername,
       memoPayer,
       shareMemoWithPayee: false,
@@ -600,7 +600,7 @@ export const LedgerService = (): ILedgerService => {
     usd,
     usdFee,
     recipientWalletId,
-    payerUsername,
+    senderUsername,
     recipientUsername,
     memoPayer,
   }: addWalletIdIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
@@ -621,7 +621,7 @@ export const LedgerService = (): ILedgerService => {
       description,
       sats,
       recipientWalletId,
-      payerUsername,
+      senderUsername,
       recipientUsername,
       memoPayer,
       shareMemoWithPayee: true,
@@ -634,7 +634,7 @@ export const LedgerService = (): ILedgerService => {
     description,
     sats,
     recipientWalletId,
-    payerUsername,
+    senderUsername,
     recipientUsername,
     memoPayer,
     shareMemoWithPayee,
@@ -646,7 +646,7 @@ export const LedgerService = (): ILedgerService => {
     try {
       const creditMetadata = {
         ...metadata,
-        username: payerUsername,
+        username: senderUsername,
         memoPayer: shareMemoWithPayee ? memoPayer : null,
       }
       const debitMetadata = { ...metadata, username: recipientUsername, memoPayer }
