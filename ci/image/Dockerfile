@@ -1,8 +1,10 @@
-FROM node:16-alpine
+FROM node:16-stretch
 
-RUN apk update \
-  && apk add bash make git docker curl python3 jq rsync openssh wget \
-  && apk add yq --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+RUN apt-get update && apt-get install -y \
+  make git docker curl python3 jq rsync wget
+
+RUN wget https://github.com/mikefarah/yq/releases/download/v4.17.2/yq_linux_386.tar.gz -O - |\
+  tar xz && mv yq_linux_386 /usr/bin/yq
 
 RUN mkdir -p /usr/local/lib/docker/cli-plugins \
   && curl -SL https://github.com/docker/compose/releases/download/v2.0.1/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose \
