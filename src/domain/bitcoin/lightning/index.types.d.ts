@@ -185,10 +185,6 @@ interface ILightningService {
     args: ListLnPaymentsArgs,
   ): Promise<ListLnPaymentsResult | LightningServiceError>
 
-  listSettledAndFailedPayments(
-    args: ListLnPaymentsArgs,
-  ): Promise<ListLnPaymentsResult | LightningServiceError>
-
   cancelInvoice({
     pubkey,
     paymentHash,
