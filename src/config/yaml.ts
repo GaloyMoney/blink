@@ -5,7 +5,7 @@ import merge from "lodash.merge"
 
 import { baseLogger } from "@services/logger"
 import { checkedToScanDepth } from "@domain/bitcoin/onchain"
-import { toSats } from "@domain/bitcoin"
+import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
 
 import { ConfigError } from "./error"
 
@@ -47,6 +47,17 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toSats(
 )
 
 export const getGaloyInstanceName = (): string => yamlConfig.name
+
+export const getBitcoinCoreRPCConfig = () => {
+  return {
+    network: process.env.NETWORK,
+    username: process.env.BITCOINDRPCUSER || "rpcuser",
+    password: process.env.BITCOINDRPCPASS,
+    host: process.env.BITCOINDADDR,
+    port: process.env.BITCOINDPORT,
+    version: "0.22.0",
+  }
+}
 
 export const getLndParams = (): LndParams[] => {
   const config = yamlConfig.lnds
@@ -155,13 +166,19 @@ export const getUserWalletConfig = (
   }
 }
 
-export const getSpecterWalletConfig = (): SpecterWalletConfig => {
-  const config = yamlConfig.rebalancing
+export const getColdStorageConfig = (): ColdStorageConfig => {
+  const config = yamlConfig.coldStorage
+
+  const targetConfirmations = checkedToTargetConfs(config.targetConfirmations)
+  if (targetConfirmations instanceof Error) throw targetConfirmations
+
   return {
     minOnChainHotWalletBalance: toSats(config.minOnChainHotWalletBalance),
     maxHotWalletBalance: toSats(config.maxHotWalletBalance),
     minRebalanceSize: toSats(config.minRebalanceSize),
-    onchainWallet: config.onchainWallet,
+    walletPattern: config.walletPattern,
+    onChainWallet: config.onChainWallet,
+    targetConfirmations,
   }
 }
 
