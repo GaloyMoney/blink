@@ -84,6 +84,8 @@ for (const role of roles) {
   })
 }
 
+const coldWallets: { [key: string]: client.Gauge<string> } = {}
+
 const main = async () => {
   server.get("/metrics", async (req, res) => {
     const bosScore = await getBosScore()
@@ -138,11 +140,13 @@ const main = async () => {
       if (balances instanceof Error) balances = []
       for (const { walletName, amount } of balances) {
         const walletSanitized = walletName.replace("/", "_")
-        const gauge = new client.Gauge({
-          name: `${prefix}_bitcoind_${walletSanitized}`,
-          help: `amount in wallet ${walletName}`,
-        })
-        gauge.set(amount)
+        if (!coldWallets[walletSanitized]) {
+          coldWallets[walletSanitized] = new client.Gauge({
+            name: `${prefix}_bitcoind_${walletSanitized}`,
+            help: `amount in wallet ${walletName}`,
+          })
+        }
+        coldWallets[walletSanitized].set(amount)
       }
     } catch (err) {
       logger.error({ err }, "error setting bitcoind/specter balance")
