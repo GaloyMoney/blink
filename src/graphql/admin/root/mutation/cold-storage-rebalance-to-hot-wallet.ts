@@ -5,7 +5,7 @@ import { mapError } from "@graphql/error-map"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 
-const ColdStorageRebalanceToHotWalletInput = new GT.Input({
+const ColdStorageRebalanceToHotWalletInput = GT.Input({
   name: "ColdStorageRebalanceToHotWalletInput",
   fields: () => ({
     walletName: { type: GT.NonNull(GT.String) },
