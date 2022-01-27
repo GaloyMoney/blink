@@ -3,7 +3,7 @@ import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 
 export const updateLnPayments = async (): Promise<true | ApplicationError> => {
-  const processedLnPaymentsHashes: PaymentHash[] | ApplicationError = []
+  let processedLnPaymentsHashes: PaymentHash[] | ApplicationError = []
 
   const incompleteLnPayments = await LnPaymentsRepository().listIncomplete()
   if (incompleteLnPayments instanceof Error) return incompleteLnPayments
@@ -12,18 +12,21 @@ export const updateLnPayments = async (): Promise<true | ApplicationError> => {
 
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
+
+  const listFns = [lndService.listSettledPayments, lndService.listFailedPayments]
   const pubkeys = lndService
     .listActivePubkeys()
     .filter((pubkey) => pubkeysFromPayments.has(pubkey))
 
-  for (const key of pubkeys) {
-    const pubkey = key as Pubkey
-    await updateLnPaymentsByFunction({
-      processedLnPaymentsHashes,
-      incompleteLnPayments,
-      pubkey,
-      listFn: lndService.listSettledAndFailedPayments,
-    })
+  for (const listFn of listFns) {
+    for (const key of pubkeys) {
+      processedLnPaymentsHashes = await updateLnPaymentsByFunction({
+        processedLnPaymentsHashes,
+        incompleteLnPayments,
+        pubkey: key as Pubkey,
+        listFn,
+      })
+    }
   }
   return true
 }
@@ -33,7 +36,7 @@ const updateLnPaymentsByFunction = async ({
   incompleteLnPayments,
   pubkey,
   listFn,
-}) => {
+}): Promise<PaymentHash[]> => {
   let after: PagingStartToken | PagingContinueToken | PagingStopToken = undefined
   while (
     processedLnPaymentsHashes.length < incompleteLnPayments.length &&
