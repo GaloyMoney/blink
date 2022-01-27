@@ -92,6 +92,26 @@ type AddOnChainTxSendArgs = OnChainTxArgs & {
   bankFee: Satoshis
 }
 
+type AddColdStorageTxReceiveArgs = {
+  txHash: OnChainTxHash
+  payeeAddress: OnChainAddress
+  description: string
+  sats: Satoshis
+  fee: Satoshis
+  usd: number
+  usdFee: number
+}
+
+type AddColdStorageTxSendArgs = {
+  txHash: OnChainTxHash
+  payeeAddress: OnChainAddress
+  description: string
+  sats: Satoshis
+  fee: Satoshis
+  usd: number
+  usdFee: number
+}
+
 type IntraledgerTxArgs = {
   senderWalletId: WalletId
   description: string
@@ -186,6 +206,8 @@ interface ILedgerService {
     txHash: OnChainTxHash
   }): Promise<boolean | LedgerServiceError>
 
+  isToHotWalletTxRecorded(txHash: OnChainTxHash): Promise<boolean | LedgerServiceError>
+
   isLnTxRecorded(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
 
   addOnChainTxReceive(
@@ -227,6 +249,14 @@ interface ILedgerService {
   getWalletIdByTransactionHash(hash): Promise<WalletId | LedgerServiceError>
 
   listWalletIdsWithPendingPayments: () => AsyncGenerator<WalletId> | LedgerServiceError
+
+  addColdStorageTxReceive(
+    args: AddColdStorageTxReceiveArgs,
+  ): Promise<LedgerJournal | LedgerServiceError>
+
+  addColdStorageTxSend(
+    args: AddColdStorageTxSendArgs,
+  ): Promise<LedgerJournal | LedgerServiceError>
 }
 
 type ActivityCheckerConfig = {
