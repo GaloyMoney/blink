@@ -1,22 +1,18 @@
-import BitcoindClient from "bitcoin-core"
 import {
   addInvoiceForSelf,
   createOnChainAddress,
   getBalanceForWallet,
 } from "@app/wallets"
-import { getBitcoinCoreRPCConfig } from "@config"
 import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 import { pay } from "lightning"
 
-import { descriptors } from "./multisig-wallet"
-
 import { lndOutside1, waitUntilBlockHeight } from "."
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
-export const bitcoindOutside = new BitcoindWalletClient("outside")
+export const bitcoindOutside = new BitcoindWalletClient({ walletName: "outside" })
 
 export async function sendToAddressAndConfirm({
   walletClient,
@@ -111,34 +107,4 @@ export const fundWalletIdFromLightning = async ({
 
   const balance = await getBalanceForWallet({ walletId, logger: baseLogger })
   if (balance instanceof Error) throw balance
-}
-
-export const createColdStorageWallet = async (walletName: string) => {
-  const client = await getBitcoindClient()
-  const wallet = await client.createWallet({
-    wallet_name: walletName,
-    disable_private_keys: true,
-    descriptors: true,
-  })
-
-  const walletClient = await getBitcoindClient(walletName)
-  // hack to avoid importdescriptors error in bitcoin-core library
-  walletClient.methods["importdescriptors"] = {
-    features: {
-      multiwallet: {
-        supported: true,
-      },
-    },
-    supported: true,
-  }
-
-  const result = await walletClient.command("importdescriptors", descriptors)
-  if (result.some((d) => !d.success)) throw new Error("Invalid descriptors")
-
-  return wallet
-}
-
-const getBitcoindClient = (wallet?: string) => {
-  const bitcoinCoreRPCConfig = getBitcoinCoreRPCConfig()
-  return new BitcoindClient({ ...bitcoinCoreRPCConfig, wallet })
 }

@@ -11,7 +11,6 @@ import * as AccountErrors from "@domain/accounts/errors"
 import * as NotificationsErrors from "@domain/notifications/errors"
 import * as CacheErrors from "@domain/cache/errors"
 import * as PhoneProviderServiceErrors from "@domain/phone-provider/errors"
-import * as ColdStorageServiceErrors from "@domain/cold-storage/errors"
 
 export const ApplicationErrors = {
   ...DomainErrors,
@@ -27,5 +26,4 @@ export const ApplicationErrors = {
   ...NotificationsErrors,
   ...CacheErrors,
   ...PhoneProviderServiceErrors,
-  ...ColdStorageServiceErrors,
 } as const

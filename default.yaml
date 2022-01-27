@@ -25,20 +25,16 @@ hedging:
   HIGH_SAFEBOUND_LEVERAGE: 2.25
   HIGH_BOUND_LEVERAGE: 3
 
-coldStorage:
+rebalancing:
   minOnChainHotWalletBalance: 1000000 # 0.1
   minRebalanceSize: 10000000 # 0.1
   maxHotWalletBalance: 200000000 # 2
-  
-  # pattern used to load cold storage wallet balances
+
+  # select which bitcoind wallet is used for rebalancing
   # string.include() is being used as a filter
-  walletPattern: "specter"
-
-  # select which bitcoind wallet is used for automatic rebalancing
-  onChainWallet: "specter/coldstorage"
-
-  # number of blocks in which a rebalance transaction is expected to be confirmed
-  targetConfirmations: 6
+  #
+  # specter wallet always
+  onchainWallet: "specter"
 
 lndScbBackupBucketName: "lnd-static-channel-backups"
 

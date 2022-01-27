@@ -1,3 +1,4 @@
+import { getSpecterWalletConfig } from "@config"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 import {
@@ -9,8 +10,10 @@ import {
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 
+import { SpecterWallet } from "@core/specter-wallet"
 import { activateLndHealthCheck } from "@services/lnd/health"
-import { ColdStorage, Lightning, Wallets } from "@app"
+import { Wallets } from "@app"
+import { updateLnPayments } from "@app/lightning"
 
 const logger = baseLogger.child({ module: "cron" })
 
@@ -18,9 +21,13 @@ const main = async () => {
   const results: Array<boolean> = []
   const mongoose = await setupMongoConnection()
 
-  const rebalance = async () => {
-    const result = await ColdStorage.rebalanceToColdWallet()
-    if (result instanceof Error) throw result
+  const rebalance = () => {
+    const specterWalletConfig = getSpecterWalletConfig()
+    const specterWallet = new SpecterWallet({
+      logger,
+      config: specterWalletConfig,
+    })
+    return specterWallet.tentativelyRebalance()
   }
 
   const updatePendingLightningInvoices = () => Wallets.updatePendingInvoices(logger)
@@ -37,7 +44,7 @@ const main = async () => {
   }
 
   const updateLnPaymentsCollection = async () => {
-    const result = await Lightning.updateLnPayments()
+    const result = await updateLnPayments()
     if (result instanceof Error) throw result
   }
 

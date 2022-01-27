@@ -1,4 +1,4 @@
-import { getColdStorageConfig } from "@config"
+import { LedgerService } from "@services/ledger"
 import { btc2sat } from "@domain/bitcoin"
 import { BitcoindWalletClient } from "@services/bitcoind"
 import { getFunderWalletId } from "@services/ledger/accounts"
@@ -6,7 +6,6 @@ import { getFunderWalletId } from "@services/ledger/accounts"
 import {
   bitcoindClient,
   checkIsBalanced,
-  createColdStorageWallet,
   createMandatoryUsers,
   fundLnd,
   fundWalletIdFromOnchain,
@@ -32,21 +31,13 @@ describe("Bitcoind", () => {
     expect(wallets.length).toBe(0)
   })
 
-  it("create cold wallet", async () => {
-    const { onChainWallet: walletName } = getColdStorageConfig()
-    const { name } = await createColdStorageWallet(walletName)
-    expect(name).toBe(walletName)
-    const wallets = await bitcoindClient.listWallets()
-    expect(wallets).toContain(walletName)
-  })
-
   it("create outside wallet", async () => {
     const walletName = "outside"
-    const { name } = await bitcoindClient.createWallet({ walletName })
+    const { name } = await bitcoindClient.createWallet({ wallet_name: walletName })
     expect(name).toBe(walletName)
     const wallets = await bitcoindClient.listWallets()
     expect(wallets).toContain(walletName)
-    bitcoindOutside = new BitcoindWalletClient(walletName)
+    bitcoindOutside = new BitcoindWalletClient({ walletName })
   })
 
   it("should be funded mining 10 blocks", async () => {
@@ -86,5 +77,12 @@ describe("Bitcoind", () => {
     expect(balance).toBe(sats)
 
     await checkIsBalanced()
+
+    const balanceFunderWalletId = await LedgerService().getWalletBalance(funderWalletId)
+    balanceFunderWalletId
+    // console.log({ balanceFunderWalletId }, "funderWalletId")
+    // FIXME: this test is broken
+    // checkBalance should not be true because we received fund in lnd
+    // and this is not been credited by to balanceFunderWalletId
   })
 })

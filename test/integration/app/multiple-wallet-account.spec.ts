@@ -1,7 +1,21 @@
-import mongoose from "mongoose"
-import { Accounts, Users } from "@app"
+import * as Accounts from "@app/accounts"
+import * as Users from "@app/users"
+import { setupMongoConnection } from "@services/mongodb"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { WalletCurrency, WalletType } from "@domain/wallets"
+import mongoose from "mongoose"
+
+let mongoose_connection
+
+beforeAll(async () => {
+  mongoose_connection = await setupMongoConnection()
+  await mongoose_connection.connection.db.dropCollection("users")
+  await mongoose_connection.connection.db.dropCollection("wallets")
+})
+
+afterAll(async () => {
+  await mongoose_connection.connection.close()
+})
 
 it("change default walletId of account", async () => {
   const user = await Users.createUser({ phone: "+123456789", phoneMetadata: null })

@@ -1,6 +1,6 @@
-import { ColdStorage } from "@app"
 import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
 import { toSats } from "@domain/bitcoin"
+import { getBalancesDetail } from "@services/bitcoind"
 import {
   getBankOwnerWalletId,
   getDealerWalletId,
@@ -134,15 +134,14 @@ const main = async () => {
     business_g.set(await User.count({ title: { $ne: null } }))
 
     try {
-      let balances = await ColdStorage.getBalances()
-      if (balances instanceof Error) balances = []
-      for (const { walletName, amount } of balances) {
-        const walletSanitized = walletName.replace("/", "_")
+      const balances = await getBalancesDetail()
+      for (const { wallet, balance } of balances) {
+        const walletSanitized = wallet.replace("/", "_")
         const gauge = new client.Gauge({
           name: `${prefix}_bitcoind_${walletSanitized}`,
-          help: `amount in wallet ${walletName}`,
+          help: `amount in wallet ${wallet}`,
         })
-        gauge.set(amount)
+        gauge.set(balance)
       }
     } catch (err) {
       logger.error({ err }, "error setting bitcoind/specter balance")
