@@ -4,9 +4,9 @@ set -eu
 
 . pipeline-tasks/ci/tasks/helpers.sh
 
-unpack_deps
-
 CI_ROOT=$(pwd)
+
+unpack_deps
 
 cat <<EOF > ${CI_ROOT}/gcloud-creds.json
 ${GOOGLE_CREDENTIALS}
