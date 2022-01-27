@@ -6,12 +6,16 @@ import { LnPaymentsRepository } from "@services/mongoose"
 export const migrateLnPaymentsFromLnd = async (): Promise<true | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
+
+  const listFns = [
+    lndService.listSettledAndPendingPayments,
+    lndService.listFailedPayments,
+  ]
   const pubkeys = lndService.listActivePubkeys()
 
-  for (const key of pubkeys) {
-    const pubkey = key as Pubkey
-    await migrateLnPaymentsByFunction({ pubkey, listFn: lndService.listPayments })
-  }
+  await listFns.map((listFn) =>
+    pubkeys.map(async (pubkey) => migrateLnPaymentsByFunction({ pubkey, listFn })),
+  )
   return true
 }
 
