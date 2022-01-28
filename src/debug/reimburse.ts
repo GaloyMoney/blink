@@ -18,6 +18,7 @@ import { checkedToWalletId } from "@domain/wallets"
 import { getBankOwnerWalletId } from "@services/ledger/accounts"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 import { reimbursements } from "./reimbursements.json"
 
@@ -31,6 +32,10 @@ const reimburse = async (reimbursements: Array<reimbursement>) => {
   await setupMongoConnection()
   console.log("Mongoose connection ready")
   const bankOwnerWalletId = await getBankOwnerWalletId()
+  const bankOwnerWallet = await WalletsRepository().findById(bankOwnerWalletId)
+  if (bankOwnerWallet instanceof Error) throw bankOwnerWallet
+  const bankOwnerAccount = await AccountsRepository().findById(bankOwnerWallet.accountId)
+  if (bankOwnerAccount instanceof Error) throw bankOwnerAccount
 
   for (const reimbursement of reimbursements) {
     const recipientWalletId = checkedToWalletId(reimbursement.recipientWalletId)
@@ -51,6 +56,7 @@ const reimburse = async (reimbursements: Array<reimbursement>) => {
       amount,
       logger: baseLogger,
       senderWalletId: bankOwnerWalletId,
+      senderAccount: bankOwnerAccount,
       memo: reimbursement.memo,
     })
     console.log({ ...reimbursement, reimbursementStatus: reimburseResult })

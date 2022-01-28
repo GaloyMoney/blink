@@ -1,6 +1,7 @@
 import { addEarn } from "@app/accounts/add-earn"
 import { getTransactionsForWalletId, intraledgerPaymentSendWalletId } from "@app/wallets"
 import { MEMO_SHARING_SATS_THRESHOLD, MS_PER_DAY, onboardingEarn } from "@config"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { getFunderWalletId } from "@services/ledger/accounts"
 import { baseLogger } from "@services/logger"
 import difference from "lodash.difference"
@@ -103,8 +104,13 @@ describe("UserWallet - addEarn", () => {
     expect(amount).toBeLessThan(MEMO_SHARING_SATS_THRESHOLD)
 
     const funderWalletId = await getFunderWalletId()
+    const funderWallet = await WalletsRepository().findById(funderWalletId)
+    if (funderWallet instanceof Error) throw funderWallet
+    const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
+    if (funderAccount instanceof Error) throw funderAccount
     const payment = await intraledgerPaymentSendWalletId({
       senderWalletId: funderWalletId,
+      senderAccount: funderAccount,
       recipientWalletId: walletId1,
       amount,
       memo: onboardingEarnId,

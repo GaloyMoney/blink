@@ -65,7 +65,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       memo,
       amount,
       senderWalletId: walletId,
-      payerAccountId: domainAccount.id,
+      senderAccount: domainAccount,
       logger,
     })
     if (status instanceof Error) {

@@ -5,7 +5,7 @@ import {
   checkWithdrawalLimits,
 } from "@app/wallets/check-limit-helpers"
 import { reimburseFee } from "@app/wallets/reimburse-fee"
-import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromNumber, checkedToSats, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   LnAlreadyPaidError,
@@ -18,11 +18,14 @@ import {
   InsufficientBalanceError,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
-  SatoshiAmountRequiredError,
 } from "@domain/errors"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
-import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
+import {
+  PaymentInitiationMethod,
+  SettlementMethod,
+  PaymentInputValidator,
+} from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services"
@@ -66,6 +69,7 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
         walletId: senderWalletId,
+        account: senderAccount,
       })
     : true
   if (twoFACheck instanceof Error) return twoFACheck
@@ -111,7 +115,7 @@ export const payInvoiceByWalletId = async ({
 
 export const payNoAmountInvoiceByWalletIdWithTwoFAArgs = async ({
   paymentRequest,
-  amount,
+  amount: amountRaw,
   memo,
   senderWalletId,
   senderAccount,
@@ -132,13 +136,12 @@ export const payNoAmountInvoiceByWalletIdWithTwoFAArgs = async ({
     return new LnPaymentRequestZeroAmountRequiredError()
   }
 
-  if (!(amount && amount > 0)) {
-    return new SatoshiAmountRequiredError()
-  }
-
   const user = await UsersRepository().findById(senderAccount.ownerId)
   if (user instanceof Error) return user
   const { twoFA } = user
+
+  const amount = checkedToSats(amountRaw)
+  if (amount instanceof Error) return amount
 
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
@@ -146,6 +149,7 @@ export const payNoAmountInvoiceByWalletIdWithTwoFAArgs = async ({
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
         walletId: senderWalletId,
+        account: senderAccount,
       })
     : true
   if (twoFACheck instanceof Error) return twoFACheck
@@ -194,23 +198,32 @@ const lnSendPayment = async ({
   senderWalletId,
   senderAccount,
   decodedInvoice,
-  amount,
+  amount: amountRaw,
   memo,
   logger,
 }: {
   senderWalletId: WalletId
   senderAccount: Account
   decodedInvoice: LnInvoice
-  amount: Satoshis
+  amount: number
   memo: string
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
-    "payment.amount": amount,
+    "payment.amount": amountRaw,
     "payment.request.destination": decodedInvoice.destination,
     "payment.request.hash": decodedInvoice.paymentHash,
     "payment.request.description": decodedInvoice.description,
   })
+
+  const validator = PaymentInputValidator(WalletsRepository().findById)
+  const validationResult = await validator.validatePaymentInput({
+    amount: amountRaw,
+    senderAccount,
+    senderWalletId,
+  })
+  if (validationResult instanceof Error) return validationResult
+  const { amount, senderWallet } = validationResult
 
   const usdPerSat = await getCurrentPrice()
   if (usdPerSat instanceof Error) return usdPerSat
@@ -227,8 +240,8 @@ const lnSendPayment = async ({
       amount,
       usdPerSat,
       memo,
-      senderWalletId,
-      senderUsername: senderAccount.username,
+      senderWallet,
+      senderAccount,
       lndService,
       logger,
     })
@@ -241,6 +254,7 @@ const lnSendPayment = async ({
     amount,
     usdPerSat,
     senderWalletId,
+    senderAccount,
     lndService,
     logger,
   })
@@ -252,8 +266,8 @@ const executePaymentViaIntraledger = async ({
   amount,
   usdPerSat,
   memo,
-  senderWalletId,
-  senderUsername,
+  senderWallet,
+  senderAccount,
   lndService,
   logger,
 }: {
@@ -262,8 +276,8 @@ const executePaymentViaIntraledger = async ({
   amount: Satoshis
   usdPerSat: UsdPerSat
   memo: string
-  senderWalletId: WalletId
-  senderUsername: Username
+  senderWallet: Wallet
+  senderAccount: Account
   lndService: ILightningService
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
@@ -272,7 +286,8 @@ const executePaymentViaIntraledger = async ({
   })
   const intraledgerLimitCheck = await checkIntraledgerLimits({
     amount,
-    walletId: senderWalletId,
+    walletId: senderWallet.id,
+    account: senderAccount,
   })
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
@@ -280,16 +295,14 @@ const executePaymentViaIntraledger = async ({
   const walletInvoice = await invoicesRepo.findByPaymentHash(paymentHash)
   if (walletInvoice instanceof Error) return walletInvoice
 
-  const validatedResult =
-    WalletInvoiceValidator(walletInvoice).validateToSend(senderWalletId)
+  const validatedResult = WalletInvoiceValidator(walletInvoice).validateToSend(
+    senderWallet.id,
+  )
   if (validatedResult instanceof AlreadyPaidError) return PaymentSendStatus.AlreadyPaid
   if (validatedResult instanceof Error) return validatedResult
   const { pubkey: recipientPubkey, walletId: recipientWalletId } = walletInvoice
 
-  const wallets = WalletsRepository()
-  const senderWallet = await wallets.findById(senderWalletId)
-  if (senderWallet instanceof Error) return senderWallet
-  const recipientWallet = await wallets.findById(recipientWalletId)
+  const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
   const lnFee = toSats(0)
@@ -298,9 +311,9 @@ const executePaymentViaIntraledger = async ({
   const usdFee = lnFee * usdPerSat
 
   return LockService().lockWalletId(
-    { walletId: senderWalletId, logger },
+    { walletId: senderWallet.id, logger },
     async (lock) => {
-      const balance = await LedgerService().getWalletBalance(senderWalletId)
+      const balance = await LedgerService().getWalletBalance(senderWallet.id)
       if (balance instanceof Error) return balance
       if (balance < sats) {
         return new InsufficientBalanceError(
@@ -310,7 +323,7 @@ const executePaymentViaIntraledger = async ({
 
       const journal = await LockService().extendLock({ logger, lock }, async () =>
         LedgerService().addLnIntraledgerTxSend({
-          senderWalletId,
+          senderWalletId: senderWallet.id,
           paymentHash,
           description,
           sats,
@@ -319,7 +332,7 @@ const executePaymentViaIntraledger = async ({
           usdFee,
           recipientWalletId,
           pubkey: lndService.defaultPubkey(),
-          senderUsername,
+          senderUsername: senderAccount.username,
           recipientUsername: null,
           memoPayer: memo,
         }),
@@ -353,6 +366,7 @@ const executePaymentViaLn = async ({
   amount,
   usdPerSat,
   senderWalletId,
+  senderAccount,
   lndService,
   logger,
 }: {
@@ -360,6 +374,7 @@ const executePaymentViaLn = async ({
   amount: Satoshis
   usdPerSat: UsdPerSat
   senderWalletId: WalletId
+  senderAccount: Account
   lndService: ILightningService
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
@@ -371,6 +386,7 @@ const executePaymentViaLn = async ({
   const withdrawalLimitCheck = await checkWithdrawalLimits({
     amount,
     walletId: senderWalletId,
+    account: senderAccount,
   })
   if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
 

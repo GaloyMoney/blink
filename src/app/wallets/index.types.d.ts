@@ -44,6 +44,7 @@ type GetOnChainFeeByWalletIdArgs = {
 
 type PaymentSendArgs = {
   senderWalletId: WalletId
+  senderAccount: Account
   memo: string | null
   logger: Logger
 }
@@ -58,7 +59,7 @@ type PayInvoiceByWalletIdWithTwoFAArgs = PayInvoiceByWalletIdArgs & {
 
 type PayNoAmountInvoiceByWalletIdArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
-  amount: Satoshis
+  amount: number
   senderAccount: Account
 }
 type PayNoAmountInvoiceByWalletIdWithTwoFAArgs = PayNoAmountInvoiceByWalletIdArgs & {
@@ -66,7 +67,6 @@ type PayNoAmountInvoiceByWalletIdWithTwoFAArgs = PayNoAmountInvoiceByWalletIdArg
 }
 
 type IntraLedgerPaymentSendUsernameArgs = PaymentSendArgs & {
-  payerAccountId: AccountId
   recipientUsername: Username
   amount: Satoshis
 }

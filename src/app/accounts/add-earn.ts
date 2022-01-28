@@ -8,6 +8,7 @@ import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
 import { getFunderWalletId } from "@services/ledger/accounts"
 import {
   RewardsRepository,
+  WalletsRepository,
   AccountsRepository,
   UsersRepository,
 } from "@services/mongoose"
@@ -25,6 +26,10 @@ export const addEarn = async ({
   if (!amount) return new InvalidQuizQuestionIdError()
 
   const funderWalletId = await getFunderWalletId()
+  const funderWallet = await WalletsRepository().findById(funderWalletId)
+  if (funderWallet instanceof Error) return funderWallet
+  const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
+  if (funderAccount instanceof Error) return funderAccount
 
   const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
@@ -47,6 +52,7 @@ export const addEarn = async ({
     amount,
     memo: quizQuestionId,
     logger,
+    senderAccount: funderAccount,
   })
   if (payment instanceof Error) return payment
 
