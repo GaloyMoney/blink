@@ -9,7 +9,7 @@ type WalletInvoice = {
 }
 
 type WalletInvoiceValidator = {
-  validateToSend(fromWalletId: WalletId): true | ApplicationError
+  validateToSend(fromWalletId: WalletId): true | ValidationError
 }
 
 type WalletFactoryConfig = {

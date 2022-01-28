@@ -58,7 +58,7 @@ type PayInvoiceByWalletIdWithTwoFAArgs = PayInvoiceByWalletIdArgs & {
 
 type PayNoAmountInvoiceByWalletIdArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
-  amount: Satoshis
+  amount: number
   senderAccount: Account
 }
 type PayNoAmountInvoiceByWalletIdWithTwoFAArgs = PayNoAmountInvoiceByWalletIdArgs & {
