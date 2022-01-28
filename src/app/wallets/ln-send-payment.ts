@@ -1,6 +1,4 @@
 import { getCurrentPrice } from "@app/prices"
-import { getUser } from "@app/users"
-import { getWallet } from "@app/wallets"
 import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
@@ -28,7 +26,12 @@ import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services"
-import { WalletInvoicesRepository, AccountsRepository } from "@services/mongoose"
+import {
+  WalletInvoicesRepository,
+  AccountsRepository,
+  WalletsRepository,
+  UsersRepository,
+} from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { RoutesCache } from "@services/redis/routes"
 import { addAttributesToCurrentSpan } from "@services/tracing"
@@ -58,7 +61,7 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
 
   if (account instanceof Error) return account
 
-  const user = await getUser(account.ownerId)
+  const user = await UsersRepository().findById(account.ownerId)
   if (user instanceof Error) return user
   const { twoFA } = user
 
@@ -165,7 +168,7 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
 
   if (account instanceof Error) return account
 
-  const user = await getUser(account.ownerId)
+  const user = await UsersRepository().findById(account.ownerId)
   if (user instanceof Error) return user
   const { twoFA } = user
 
@@ -340,9 +343,10 @@ const executePaymentViaIntraledger = async ({
   if (validatedResult instanceof Error) return validatedResult
   const { pubkey: recipientPubkey, walletId: recipientWalletId } = walletInvoice
 
-  const senderWallet = await getWallet(senderWalletId)
+  const wallets = WalletsRepository()
+  const senderWallet = await wallets.findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
-  const recipientWallet = await getWallet(recipientWalletId)
+  const recipientWallet = await wallets.findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
   const lnFee = toSats(0)
