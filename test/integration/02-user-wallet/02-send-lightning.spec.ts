@@ -47,7 +47,6 @@ import {
   getDefaultWalletIdByTestUserIndex,
   getUserRecordByTestUserIndex,
   createUserWallet,
-  getAccountIdByTestUserIndex,
   getAccountByTestUserIndex,
 } from "test/helpers"
 import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
@@ -66,7 +65,6 @@ let userType0: UserRecord
 let userId0: UserId
 
 let account0: Account
-let accountId1: AccountId
 let account1: Account
 let account2: Account
 
@@ -86,7 +84,6 @@ beforeAll(async () => {
   userId0 = await getUserIdByTestUserIndex(0)
 
   account0 = await getAccountByTestUserIndex(0)
-  accountId1 = await getAccountIdByTestUserIndex(1)
   account1 = await getAccountByTestUserIndex(1)
   account2 = await getAccountByTestUserIndex(2)
 

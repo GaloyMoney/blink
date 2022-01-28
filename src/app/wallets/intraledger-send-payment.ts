@@ -3,11 +3,7 @@ import { getCurrentPrice } from "@app/prices"
 import { toSats } from "@domain/bitcoin"
 import { PaymentInputValidator } from "@domain/wallets"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import {
-  InsufficientBalanceError,
-  SatoshiAmountRequiredError,
-  SelfPaymentError,
-} from "@domain/errors"
+import { InsufficientBalanceError, SelfPaymentError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { LockService } from "@services/lock"
 import {
