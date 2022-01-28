@@ -203,7 +203,8 @@ describe("galoy-pay", () => {
       })
 
       const result = (await getSubscriptionNext(subscription)) as { data }
-      const { price, errors } = result.data?.price
+      const price_ = result.data?.price
+      const { price, errors } = price_
 
       expect(errors.length).toEqual(0)
       expect(price).toHaveProperty("base")
