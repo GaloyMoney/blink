@@ -27,9 +27,9 @@ export const addEarn = async ({
 
   const funderWalletId = await getFunderWalletId()
   const funderWallet = await WalletsRepository().findById(funderWalletId)
-  if (funderWallet instanceof Error) throw funderWallet
+  if (funderWallet instanceof Error) return funderWallet
   const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
-  if (funderAccount instanceof Error) throw funderAccount
+  if (funderAccount instanceof Error) return funderAccount
 
   const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount

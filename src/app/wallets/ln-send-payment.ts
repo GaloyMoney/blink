@@ -5,7 +5,7 @@ import {
   checkWithdrawalLimits,
 } from "@app/wallets/check-limit-helpers"
 import { reimburseFee } from "@app/wallets/reimburse-fee"
-import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromNumber, checkedToSats, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   LnAlreadyPaidError,
@@ -115,7 +115,7 @@ export const payInvoiceByWalletId = async ({
 
 export const payNoAmountInvoiceByWalletIdWithTwoFAArgs = async ({
   paymentRequest,
-  amount,
+  amount: amountRaw,
   memo,
   senderWalletId,
   senderAccount,
@@ -140,9 +140,12 @@ export const payNoAmountInvoiceByWalletIdWithTwoFAArgs = async ({
   if (user instanceof Error) return user
   const { twoFA } = user
 
+  const amount = checkedToSats(amountRaw)
+  if (amount instanceof Error) return amount
+
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
-        amount: toSats(amount),
+        amount,
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
         walletId: senderWalletId,
