@@ -174,3 +174,25 @@ type WithdrawalFeeCalculator = {
   onChainWithdrawalFee({ onChainFee, walletFee }: OnChainWithdrawalFeeArgs): Satoshis
   onChainIntraLedgerFee(): Satoshis
 }
+
+type PaymentInputValidatorConfig = (
+  walletId: WalletId,
+) => Promise<Wallet | RepositoryError>
+
+type ValidatePaymentInputArgs = {
+  amount: number
+  senderWalletId: string
+  senderAccount: Account
+  recipientWalletId?: string
+}
+type ValidatePaymentInputRet = {
+  amount: Satoshis
+  senderWallet: Wallet
+  recipientWallet?: Wallet
+}
+
+type PaymentInputValidator = {
+  validatePaymentInput: (
+    args: ValidatePaymentInputArgs,
+  ) => Promise<ValidatePaymentInputRet | ValidationError | RepositoryError>
+}

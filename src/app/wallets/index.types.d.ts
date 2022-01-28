@@ -98,6 +98,7 @@ type IntraLedgerPaymentSendWithTwoFAArgs = IntraLedgerPaymentSendUsernameArgs & 
 }
 
 type PayOnChainByWalletIdArgs = {
+  senderAccount: Account
   senderWalletId: WalletId
   amount: number
   address: string
@@ -107,6 +108,5 @@ type PayOnChainByWalletIdArgs = {
 }
 
 type PayOnChainByWalletIdWithTwoFAArgs = PayOnChainByWalletIdArgs & {
-  payerAccountId: AccountId
   twoFAToken: TwoFAToken
 }

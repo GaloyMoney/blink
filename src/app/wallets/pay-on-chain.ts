@@ -11,7 +11,7 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { WithdrawalFeeCalculator } from "@domain/wallets"
+import { WithdrawalFeeCalculator, PaymentInputValidator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { LockService } from "@services"
@@ -29,31 +29,28 @@ import { getOnChainFeeByWalletId } from "./get-on-chain-fee"
 const { dustThreshold } = getOnChainWalletConfig()
 
 export const payOnChainByWalletIdWithTwoFA = async ({
+  senderAccount,
   senderWalletId,
-  amount,
+  amount: amountRaw,
   address,
   targetConfirmations,
   memo,
   sendAll,
-  payerAccountId,
   twoFAToken,
 }: PayOnChainByWalletIdWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
-  const checkedAmount = sendAll
+  const amount = sendAll
     ? await LedgerService().getWalletBalance(senderWalletId)
-    : checkedToSats(amount)
-  if (checkedAmount instanceof Error) return checkedAmount
+    : checkedToSats(amountRaw)
+  if (amount instanceof Error) return amount
 
-  const account = await AccountsRepository().findById(payerAccountId)
-  if (account instanceof Error) return account
-
-  const user = await getUser(account.ownerId)
+  const user = await getUser(senderAccount.ownerId)
   if (user instanceof Error) return user
   const { twoFA } = user
 
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
         walletId: senderWalletId,
-        amount: checkedAmount,
+        amount,
         twoFASecret: twoFA.secret,
         twoFAToken,
       })
@@ -61,6 +58,7 @@ export const payOnChainByWalletIdWithTwoFA = async ({
   if (twoFACheck instanceof Error) return twoFACheck
 
   return payOnChainByWalletId({
+    senderAccount,
     senderWalletId,
     amount,
     address,
@@ -71,13 +69,29 @@ export const payOnChainByWalletIdWithTwoFA = async ({
 }
 
 export const payOnChainByWalletId = async ({
+  senderAccount,
   senderWalletId,
-  amount,
+  amount: amountRaw,
   address,
   targetConfirmations,
   memo,
   sendAll,
 }: PayOnChainByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  const checkedAmount = sendAll
+    ? await LedgerService().getWalletBalance(senderWalletId)
+    : checkedToSats(amountRaw)
+  if (checkedAmount instanceof Error) return checkedAmount
+
+  const validator = PaymentInputValidator(WalletsRepository().findById)
+  const validationResult = await validator.validatePaymentInput({
+    amount: checkedAmount,
+    senderAccount,
+    senderWalletId,
+  })
+  if (validationResult instanceof Error) return validationResult
+
+  const { amount } = validationResult
+
   const onchainLogger = baseLogger.child({
     topic: "payment",
     protocol: "onchain",
@@ -85,6 +99,7 @@ export const payOnChainByWalletId = async ({
     address,
     amount,
     memo,
+    sendAll,
   })
   const checkedAddress = checkedToOnChainAddress({
     network: BTC_NETWORK,
@@ -95,11 +110,6 @@ export const payOnChainByWalletId = async ({
   const checkedTargetConfirmations = checkedToTargetConfs(targetConfirmations)
   if (checkedTargetConfirmations instanceof Error) return checkedTargetConfirmations
 
-  const checkedAmount = sendAll
-    ? await LedgerService().getWalletBalance(senderWalletId)
-    : checkedToSats(amount)
-  if (checkedAmount instanceof Error) return checkedAmount
-
   const wallets = WalletsRepository()
   const recipientWallet = await wallets.findByAddress(checkedAddress)
   const isIntraLedger = !(recipientWallet instanceof Error)
@@ -108,7 +118,7 @@ export const payOnChainByWalletId = async ({
     return executePaymentViaIntraledger({
       senderWalletId,
       recipientWalletId: recipientWallet.id,
-      amount: checkedAmount,
+      amount,
       address: checkedAddress,
       memo,
       sendAll,
@@ -117,7 +127,7 @@ export const payOnChainByWalletId = async ({
 
   return executePaymentViaOnChain({
     senderWalletId,
-    amount: checkedAmount,
+    amount,
     address: checkedAddress,
     targetConfirmations: checkedTargetConfirmations,
     memo,

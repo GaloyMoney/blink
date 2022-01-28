@@ -410,7 +410,7 @@ const resolvers = {
         },
       ]
     },
-    onchain: (_, __, { wallet }) => ({
+    onchain: (_, __, { wallet, domainAccount }) => ({
       getNewAddress: async () => {
         const address = await Wallets.createOnChainAddress(wallet.user.defaultWalletId)
         if (address instanceof Error) throw mapError(address)
@@ -418,6 +418,7 @@ const resolvers = {
       },
       pay: async ({ address, amount, memo }) => {
         const status = await Wallets.payOnChainByWalletId({
+          senderAccount: domainAccount,
           senderWalletId: wallet.user.defaultWalletId,
           amount,
           address,
@@ -431,6 +432,7 @@ const resolvers = {
       },
       payAll: async ({ address, memo }) => {
         const status = await Wallets.payOnChainByWalletId({
+          senderAccount: domainAccount,
           senderWalletId: wallet.user.defaultWalletId,
           amount: 0,
           address,

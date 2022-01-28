@@ -24,7 +24,7 @@ const OnChainPaymentSendMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(OnChainPaymentSendInput) },
   },
-  resolve: async (_, args) => {
+  resolve: async (_, args, { domainAccount }) => {
     const { walletId, address, amount, memo, targetConfirmations } = args.input
 
     for (const input of [walletId, amount, address, targetConfirmations, memo]) {
@@ -34,6 +34,7 @@ const OnChainPaymentSendMutation = GT.Field({
     }
 
     const status = await Wallets.payOnChainByWalletId({
+      senderAccount: domainAccount,
       senderWalletId: walletId,
       amount,
       address,
