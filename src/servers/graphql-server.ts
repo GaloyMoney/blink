@@ -10,7 +10,7 @@ import { toObjectId } from "@services/mongoose/utils"
 import {
   addAttributesToCurrentSpan,
   addAttributesToCurrentSpanAndPropagate,
-  ENDUSER_ALIAS,
+  ACCOUNT_USERNAME,
   SemanticAttributes,
 } from "@services/tracing"
 import {
@@ -127,7 +127,7 @@ const sessionContext = ({
         account = loggedInAccount
       }
 
-      addAttributesToCurrentSpan({ [ENDUSER_ALIAS]: domainAccount?.username })
+      addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
 
       return {
         logger,

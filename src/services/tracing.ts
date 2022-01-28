@@ -341,4 +341,4 @@ export const shutdownTracing = async () => {
 
 export { SemanticAttributes, SemanticResourceAttributes }
 
-export const ENDUSER_ALIAS = "enduser.alias"
+export const ACCOUNT_USERNAME = "account.username"

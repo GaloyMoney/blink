@@ -8,7 +8,7 @@ import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import {
   addAttributesToCurrentSpanAndPropagate,
   SemanticAttributes,
-  ENDUSER_ALIAS,
+  ACCOUNT_USERNAME,
 } from "@services/tracing"
 import { InputValidationError } from "@graphql/error"
 
@@ -40,7 +40,7 @@ const LnInvoicePaymentSendMutation = GT.Field<
     addAttributesToCurrentSpanAndPropagate(
       {
         [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
-        [ENDUSER_ALIAS]: domainAccount?.username,
+        [ACCOUNT_USERNAME]: domainAccount?.username,
         [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       },
       async () => {
