@@ -8,6 +8,7 @@ import { LockService } from "@services"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { runInParallel } from "@utils"
+import { toFiat } from "@domain/fiat"
 
 export const updatePendingInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -150,8 +151,8 @@ const updatePendingInvoice = async ({
     } = lnInvoiceLookup
     const feeLightningLiquidity = DepositFeeCalculator().lnDepositFee()
 
-    const usdDisplay = (roundedDownReceived * usdPerSat) as FiatAmount
-    const usdFeeLightningLiquidity = (feeLightningLiquidity * usdPerSat) as FiatAmount // TODO: toFiatFeeDisplay()
+    const usdDisplay = toFiat(roundedDownReceived * usdPerSat)
+    const usdFeeLightningLiquidity = toFiat(feeLightningLiquidity * usdPerSat) // TODO: toFiatFeeDisplay()
 
     const ledgerService = LedgerService()
     const result = await ledgerService.addLnTxReceive({

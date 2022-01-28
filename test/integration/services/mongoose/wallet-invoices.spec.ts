@@ -10,6 +10,7 @@ import { WalletCurrency } from "@domain/wallets"
 import { v4 as uuidv4 } from "uuid"
 
 import { createUserWallet, getDefaultWalletIdByTestUserIndex } from "test/helpers"
+import { toFiat } from "@domain/fiat"
 
 let wallet1: WalletId
 
@@ -27,7 +28,7 @@ const createTestWalletInvoice = () => {
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
     paid: false,
-    fiatAmount: 10 as FiatAmount,
+    fiatAmount: toFiat(10),
     currency: WalletCurrency.Btc,
   }
 }

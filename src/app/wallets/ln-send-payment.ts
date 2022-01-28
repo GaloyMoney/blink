@@ -38,6 +38,7 @@ import { NotificationsService } from "@services/notifications"
 import { RoutesCache } from "@services/redis/routes"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
+import { toFiat } from "@domain/fiat"
 
 export const payInvoiceByWalletIdWithTwoFA = async ({
   paymentRequest,
@@ -410,8 +411,8 @@ const executePaymentViaLn = async ({
   const maxFee = LnFeeCalculator().max(amount)
   const feeRouting = route ? route.roundedUpFee : maxFee
   const sats = toSats(amount + feeRouting)
-  const usdDisplay = (sats * usdPerSat) as FiatAmount
-  const usdFeeRouting = (feeRouting * usdPerSat) as FiatAmount
+  const usdDisplay = toFiat(sats * usdPerSat)
+  const usdFeeRouting = toFiat(feeRouting * usdPerSat)
 
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },

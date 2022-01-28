@@ -1,4 +1,5 @@
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
+import { toFiat } from "@domain/fiat"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { WalletCurrency } from "@domain/wallets"
 
@@ -30,7 +31,7 @@ describe("wallet invoice factory methods", () => {
     }
     const result = walletInvoiceFactory.createForSelf({
       registeredInvoice,
-      fiatAmount: 12 as FiatAmount,
+      fiatAmount: toFiat(12),
     })
     const expected = {
       paymentHash: "paymentHash",
@@ -63,7 +64,7 @@ describe("wallet invoice factory methods", () => {
     }
     const result = walletInvoiceFactory.createForRecipient({
       registeredInvoice,
-      fiatAmount: 10 as FiatAmount,
+      fiatAmount: toFiat(10),
     })
     const expected = {
       paymentHash: "paymentHash",
