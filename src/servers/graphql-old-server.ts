@@ -345,7 +345,7 @@ const resolvers = {
                 paymentRequest: invoice,
                 memo,
                 senderWalletId: wallet.user.defaultWalletId as WalletId,
-                payerAccountId: wallet.user.id as AccountId,
+                senderAccount: domainAccount,
                 logger,
               })
               if (status instanceof Error) throw mapError(status)
@@ -356,7 +356,7 @@ const resolvers = {
               memo,
               amount,
               senderWalletId: wallet.user.defaultWalletId as WalletId,
-              payerAccountId: wallet.user.id as AccountId,
+              senderAccount: domainAccount,
               logger,
             })
             if (status instanceof Error) throw mapError(status)

@@ -28,7 +28,6 @@ import { LndService } from "@services/lnd"
 import { LockService } from "@services"
 import {
   WalletInvoicesRepository,
-  AccountsRepository,
   WalletsRepository,
   UsersRepository,
 } from "@services/mongoose"
@@ -41,7 +40,7 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
   paymentRequest,
   memo,
   senderWalletId,
-  payerAccountId,
+  senderAccount,
   twoFAToken,
   logger,
 }: LnInvoicePaymentSendWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
@@ -57,15 +56,9 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
     return new LnPaymentRequestNonZeroAmountRequiredError()
   }
 
-  const account = await AccountsRepository().findById(payerAccountId)
-
-  if (account instanceof Error) return account
-
-  const user = await UsersRepository().findById(account.ownerId)
+  const user = await UsersRepository().findById(senderAccount.ownerId)
   if (user instanceof Error) return user
   const { twoFA } = user
-
-  const { username } = account
 
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
@@ -79,7 +72,7 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
 
   return lnSendPayment({
     senderWalletId,
-    username,
+    senderAccount,
     decodedInvoice,
     amount: lnInvoiceAmount,
     memo: memo || "",
@@ -91,14 +84,14 @@ export const payLnInvoiceByWalletId = async ({
   senderWalletId,
   paymentRequest,
   memo,
-  payerAccountId,
+  senderAccount,
   logger,
 }: PayLnInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
   return lnInvoicePaymentSend({
     senderWalletId,
     paymentRequest,
     memo,
-    payerAccountId,
+    senderAccount,
     logger,
   })
 }
@@ -107,7 +100,7 @@ export const lnInvoicePaymentSend = async ({
   paymentRequest,
   memo,
   senderWalletId,
-  payerAccountId,
+  senderAccount,
   logger,
 }: LnInvoicePaymentSendArgs): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -122,14 +115,9 @@ export const lnInvoicePaymentSend = async ({
     return new LnPaymentRequestNonZeroAmountRequiredError()
   }
 
-  const account = await AccountsRepository().findById(payerAccountId)
-  if (account instanceof Error) return account
-
-  const { username } = account
-
   return lnSendPayment({
     senderWalletId,
-    username,
+    senderAccount,
     decodedInvoice,
     amount: lnInvoiceAmount,
     memo: memo || "",
@@ -142,7 +130,7 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
   amount,
   memo,
   senderWalletId,
-  payerAccountId,
+  senderAccount,
   twoFAToken,
   logger,
 }: LnNoAmountInvoicePaymentSendWithTwoFAArgs): Promise<
@@ -164,15 +152,9 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
     return new SatoshiAmountRequiredError()
   }
 
-  const account = await AccountsRepository().findById(payerAccountId)
-
-  if (account instanceof Error) return account
-
-  const user = await UsersRepository().findById(account.ownerId)
+  const user = await UsersRepository().findById(senderAccount.ownerId)
   if (user instanceof Error) return user
   const { twoFA } = user
-
-  const { username } = account
 
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
@@ -186,7 +168,7 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
 
   return lnSendPayment({
     senderWalletId,
-    username,
+    senderAccount,
     decodedInvoice,
     amount,
     memo: memo || "",
@@ -199,7 +181,7 @@ export const payLnNoAmountInvoiceByWalletId = async ({
   paymentRequest,
   amount,
   memo,
-  payerAccountId,
+  senderAccount,
   logger,
 }: payLnNoAmountInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
   return lnNoAmountInvoicePaymentSend({
@@ -207,7 +189,7 @@ export const payLnNoAmountInvoiceByWalletId = async ({
     paymentRequest,
     amount,
     memo,
-    payerAccountId,
+    senderAccount,
     logger,
   })
 }
@@ -217,7 +199,7 @@ export const lnNoAmountInvoicePaymentSend = async ({
   amount,
   memo,
   senderWalletId,
-  payerAccountId,
+  senderAccount,
   logger,
 }: LnNoAmountInvoicePaymentSendArgs): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -232,14 +214,9 @@ export const lnNoAmountInvoicePaymentSend = async ({
     return new LnPaymentRequestZeroAmountRequiredError()
   }
 
-  const account = await AccountsRepository().findById(payerAccountId)
-  if (account instanceof Error) return account
-
-  const { username } = account
-
   return lnSendPayment({
     senderWalletId,
-    username,
+    senderAccount,
     decodedInvoice,
     amount,
     memo: memo || "",
@@ -249,14 +226,14 @@ export const lnNoAmountInvoicePaymentSend = async ({
 
 const lnSendPayment = async ({
   senderWalletId,
-  username,
+  senderAccount,
   decodedInvoice,
   amount,
   memo,
   logger,
 }: {
   senderWalletId: WalletId
-  username: Username
+  senderAccount: Account
   decodedInvoice: LnInvoice
   amount: Satoshis
   memo: string
@@ -285,7 +262,7 @@ const lnSendPayment = async ({
       usdPerSat,
       memo,
       senderWalletId,
-      senderUsername: username,
+      senderUsername: senderAccount.username,
       lndService,
       logger,
     })

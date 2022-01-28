@@ -55,7 +55,7 @@ const LnNoAmountInvoicePaymentSendMutation = GT.Field<
       paymentRequest,
       memo: memo ?? null,
       amount,
-      payerAccountId: domainAccount.id,
+      senderAccount: domainAccount,
       logger,
     })
 

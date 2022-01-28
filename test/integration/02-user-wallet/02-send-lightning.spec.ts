@@ -48,6 +48,7 @@ import {
   getUserRecordByTestUserIndex,
   createUserWallet,
   getAccountIdByTestUserIndex,
+  getAccountByTestUserIndex,
 } from "test/helpers"
 import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
 
@@ -64,9 +65,10 @@ let userType0: UserRecord
 
 let userId0: UserId
 
-let accountId0: AccountId
+let account0: Account
 let accountId1: AccountId
-let accountId2: AccountId
+let account1: Account
+let account2: Account
 
 let walletId0: WalletId
 let walletId1: WalletId
@@ -83,9 +85,10 @@ beforeAll(async () => {
 
   userId0 = await getUserIdByTestUserIndex(0)
 
-  accountId0 = await getAccountIdByTestUserIndex(0)
+  account0 = await getAccountByTestUserIndex(0)
   accountId1 = await getAccountIdByTestUserIndex(1)
-  accountId2 = await getAccountIdByTestUserIndex(2)
+  account1 = await getAccountByTestUserIndex(1)
+  account2 = await getAccountByTestUserIndex(2)
 
   walletId0 = await getDefaultWalletIdByTestUserIndex(0)
   walletId1 = await getDefaultWalletIdByTestUserIndex(1)
@@ -135,7 +138,7 @@ describe("UserWallet - Lightning Pay", () => {
       paymentRequest: invoice,
       memo: null,
       senderWalletId: walletId1,
-      payerAccountId: accountId1,
+      senderAccount: account1,
       logger: baseLogger,
     })
     if (paymentResult instanceof Error) throw paymentResult
@@ -187,7 +190,7 @@ describe("UserWallet - Lightning Pay", () => {
       paymentRequest: request,
       memo: memoPayer,
       senderWalletId: walletId1,
-      payerAccountId: accountId1,
+      senderAccount: account1,
       logger: baseLogger,
     })
     if (paymentResult instanceof Error) throw paymentResult
@@ -321,7 +324,7 @@ describe("UserWallet - Lightning Pay", () => {
       memo: null,
       amount: toSats(amountInvoice),
       senderWalletId: walletId1,
-      payerAccountId: accountId1,
+      senderAccount: account1,
       logger: baseLogger,
     })
     if (paymentResult instanceof Error) throw paymentResult
@@ -444,7 +447,7 @@ describe("UserWallet - Lightning Pay", () => {
       paymentRequest: invoice,
       memo: null,
       senderWalletId: walletId1,
-      payerAccountId: accountId1,
+      senderAccount: account1,
       logger: baseLogger,
     })
     expect(paymentResult).toBeInstanceOf(DomainSelfPaymentError)
@@ -471,7 +474,7 @@ describe("UserWallet - Lightning Pay", () => {
       paymentRequest: invoice as EncodedPaymentRequest,
       memo: null,
       senderWalletId: walletId1,
-      payerAccountId: accountId1,
+      senderAccount: account1,
       logger: baseLogger,
     })
     await expect(paymentResult).toBeInstanceOf(DomainInsufficientBalanceError)
@@ -483,7 +486,7 @@ describe("UserWallet - Lightning Pay", () => {
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
       senderWalletId: walletId0,
-      payerAccountId: accountId0,
+      senderAccount: account0,
       logger: baseLogger,
     })
     expect(paymentResult).toBeInstanceOf(LightningServiceError)
@@ -496,7 +499,7 @@ describe("UserWallet - Lightning Pay", () => {
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
       senderWalletId: walletId1,
-      payerAccountId: accountId1,
+      senderAccount: account1,
       logger: baseLogger,
     })
     expect(paymentResult).toBeInstanceOf(ValidationError)
@@ -511,7 +514,7 @@ describe("UserWallet - Lightning Pay", () => {
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
       senderWalletId: walletId1,
-      payerAccountId: accountId1,
+      senderAccount: account1,
       logger: baseLogger,
     })
     expect(paymentResult).toBeInstanceOf(LimitsExceededError)
@@ -531,7 +534,7 @@ describe("UserWallet - Lightning Pay", () => {
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
       senderWalletId: walletId1,
-      payerAccountId: accountId1,
+      senderAccount: account1,
       logger: baseLogger,
     })
     expect(paymentResult).toBeInstanceOf(LimitsExceededError)
@@ -551,13 +554,7 @@ describe("UserWallet - Lightning Pay", () => {
     {
       name: "getFeeAndPay",
       initialFee: 0,
-      fn: function fn({
-        walletId,
-        accountId,
-      }: {
-        walletId: WalletId
-        accountId: AccountId
-      }) {
+      fn: function fn({ walletId, account }: { walletId: WalletId; account: Account }) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           const feeFromProbe = await Wallets.getLightningFee({
             walletId: walletId,
@@ -568,7 +565,7 @@ describe("UserWallet - Lightning Pay", () => {
             paymentRequest: input.invoice as EncodedPaymentRequest,
             memo: input.memo,
             senderWalletId: walletId,
-            payerAccountId: accountId,
+            senderAccount: account,
             twoFAToken: input.twoFAToken || null,
             logger: baseLogger,
           })
@@ -579,17 +576,11 @@ describe("UserWallet - Lightning Pay", () => {
     {
       name: "directPay",
       initialFee: FEECAP_PERCENT,
-      fn: function fn({
-        walletId,
-        accountId,
-      }: {
-        walletId: WalletId
-        accountId: AccountId
-      }) {
+      fn: function fn({ walletId, account }: { walletId: WalletId; account: Account }) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           const paymentResult = await Wallets.lnInvoicePaymentSendWithTwoFA({
             paymentRequest: input.invoice as EncodedPaymentRequest,
-            payerAccountId: accountId,
+            senderAccount: account,
             memo: input.memo,
             senderWalletId: walletId,
             twoFAToken: input.twoFAToken || null,
@@ -608,7 +599,7 @@ describe("UserWallet - Lightning Pay", () => {
           lnd: lndOutside1,
           tokens: amountInvoice,
         })
-        const result = await fn({ accountId: accountId1, walletId: walletId1 })({
+        const result = await fn({ account: account1, walletId: walletId1 })({
           invoice: request,
         })
         if (result instanceof Error) throw result
@@ -624,7 +615,7 @@ describe("UserWallet - Lightning Pay", () => {
           tokens: amountInvoice,
         })
         const intermediateResult = await fn({
-          accountId: accountId1,
+          account: account1,
           walletId: walletId1,
         })({
           invoice: request,
@@ -632,7 +623,7 @@ describe("UserWallet - Lightning Pay", () => {
         if (intermediateResult instanceof Error) throw intermediateResult
         const intermediateBalanceSats = await getBTCBalance(walletId1)
 
-        const result = await fn({ accountId: accountId1, walletId: walletId1 })({
+        const result = await fn({ account: account1, walletId: walletId1 })({
           invoice: request,
         })
         if (result instanceof Error) throw result
@@ -648,7 +639,7 @@ describe("UserWallet - Lightning Pay", () => {
           tokens: amountInvoice,
           cltv_delta: 200,
         })
-        const result = await fn({ accountId: accountId1, walletId: walletId1 })({
+        const result = await fn({ account: account1, walletId: walletId1 })({
           invoice: request,
         })
         if (result instanceof Error) throw result
@@ -662,11 +653,11 @@ describe("UserWallet - Lightning Pay", () => {
 
         const paymentOtherGaloyUser = async ({
           walletIdPayer,
-          accountIdPayer,
+          accountPayer,
           walletIdPayee,
         }: {
           walletIdPayer: WalletId
-          accountIdPayer: AccountId
+          accountPayer: Account
           walletIdPayee: WalletId
         }) => {
           const payerInitialBalance = await getBTCBalance(walletIdPayer)
@@ -678,12 +669,10 @@ describe("UserWallet - Lightning Pay", () => {
           })
           if (lnInvoice instanceof Error) throw lnInvoice
           const { paymentRequest: request } = lnInvoice
-          const result = await fn({ accountId: accountIdPayer, walletId: walletIdPayer })(
-            {
-              invoice: request,
-              memo,
-            },
-          )
+          const result = await fn({ account: accountPayer, walletId: walletIdPayer })({
+            invoice: request,
+            memo,
+          })
           if (result instanceof Error) throw result
 
           const payerFinalBalance = await getBTCBalance(walletIdPayer)
@@ -736,17 +725,17 @@ describe("UserWallet - Lightning Pay", () => {
         await paymentOtherGaloyUser({
           walletIdPayee: walletId2,
           walletIdPayer: walletId1,
-          accountIdPayer: accountId1,
+          accountPayer: account1,
         })
         await paymentOtherGaloyUser({
           walletIdPayee: walletId2,
           walletIdPayer: walletId0,
-          accountIdPayer: accountId0,
+          accountPayer: account0,
         })
         await paymentOtherGaloyUser({
           walletIdPayee: walletId1,
           walletIdPayer: walletId2,
-          accountIdPayer: accountId2,
+          accountPayer: account2,
         })
 
         // jest.mock("@services/wallet0/auth", () => ({
@@ -771,7 +760,7 @@ describe("UserWallet - Lightning Pay", () => {
 
         const initialBalance = await getBTCBalance(walletId1)
 
-        const result = await fn({ accountId: accountId1, walletId: walletId1 })({
+        const result = await fn({ account: account1, walletId: walletId1 })({
           invoice: request,
           memo: "pay an unconnected node",
         })
@@ -803,7 +792,7 @@ describe("UserWallet - Lightning Pay", () => {
           lnd: lndOutside1,
           tokens: amountInvoice,
         })
-        const result = await fn({ accountId: accountId1, walletId: walletId1 })({
+        const result = await fn({ account: account1, walletId: walletId1 })({
           invoice: request,
         })
         if (result instanceof Error) throw result
@@ -920,7 +909,7 @@ describe("UserWallet - Lightning Pay", () => {
           lnd: lndOutside1,
           tokens: amountInvoice,
         })
-        const result = await fn({ accountId: accountId1, walletId: walletId1 })({
+        const result = await fn({ account: account1, walletId: walletId1 })({
           invoice: request,
         })
         if (result instanceof Error) throw result
@@ -978,7 +967,7 @@ describe("UserWallet - Lightning Pay", () => {
           lnd: lndOutside1,
           tokens: remainingLimit + 1,
         })
-        const result = await fn({ accountId: accountId0, walletId: walletId0 })({
+        const result = await fn({ account: account0, walletId: walletId0 })({
           invoice: request,
         })
         expect(result).toBeInstanceOf(TwoFAError)
@@ -998,7 +987,7 @@ describe("UserWallet - Lightning Pay", () => {
         })
 
         const twoFAToken = generateTokenHelper(secret)
-        const result = await fn({ accountId: accountId0, walletId: walletId0 })({
+        const result = await fn({ account: account0, walletId: walletId0 })({
           invoice: request,
           twoFAToken,
         })
