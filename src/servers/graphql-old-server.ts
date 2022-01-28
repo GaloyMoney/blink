@@ -390,7 +390,7 @@ const resolvers = {
             throw mapError(feeSatAmount)
         }
 
-        feeSatAmount = await Wallets.getLightningFee({
+        feeSatAmount = await Wallets.getRoutingFee({
           walletId: wallet.user.defaultWalletId,
           paymentRequest: invoice,
         })

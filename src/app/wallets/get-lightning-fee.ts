@@ -10,7 +10,7 @@ import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
 import { RoutesCache } from "@services/redis/routes"
 
-export const getLightningFee = async ({
+export const getRoutingFee = async ({
   walletId,
   paymentRequest,
 }: {
