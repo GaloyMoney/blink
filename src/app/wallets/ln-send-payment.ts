@@ -282,7 +282,7 @@ const lnSendPayment = async ({
       usdPerSat,
       memo,
       senderWalletId,
-      payerUsername: username,
+      senderUsername: username,
       lndService,
       logger,
     })
@@ -307,7 +307,7 @@ const executePaymentViaIntraledger = async ({
   usdPerSat,
   memo,
   senderWalletId,
-  payerUsername,
+  senderUsername,
   lndService,
   logger,
 }: {
@@ -317,7 +317,7 @@ const executePaymentViaIntraledger = async ({
   usdPerSat: UsdPerSat
   memo: string
   senderWalletId: WalletId
-  payerUsername: Username
+  senderUsername: Username
   lndService: ILightningService
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
@@ -372,7 +372,7 @@ const executePaymentViaIntraledger = async ({
           usdFee,
           recipientWalletId,
           pubkey: lndService.defaultPubkey(),
-          payerUsername,
+          senderUsername,
           recipientUsername: null,
           memoPayer: memo,
         }),

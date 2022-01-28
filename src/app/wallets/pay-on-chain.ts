@@ -1,4 +1,3 @@
-import { getUsernameFromWalletId } from "@app/accounts"
 import { getCurrentPrice } from "@app/prices"
 import { getUser } from "@app/users"
 import { BTC_NETWORK, getOnChainWalletConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
@@ -116,8 +115,9 @@ export const payOnChainByWalletId = async ({
 
   if (isIntraLedger)
     return executePaymentViaIntraledger({
+      senderAccount,
       senderWalletId,
-      recipientWalletId: recipientWallet.id,
+      recipientWallet,
       amount,
       address: checkedAddress,
       memo,
@@ -137,23 +137,25 @@ export const payOnChainByWalletId = async ({
 }
 
 const executePaymentViaIntraledger = async ({
+  senderAccount,
   senderWalletId,
-  recipientWalletId,
+  recipientWallet,
   amount,
   address,
   memo,
   sendAll,
   logger,
 }: {
+  senderAccount: Account
   senderWalletId: WalletId
-  recipientWalletId: WalletId
+  recipientWallet: Wallet
   amount: Satoshis
   address: OnChainAddress
   memo: string | null
   sendAll: boolean
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
-  if (recipientWalletId === senderWalletId) return new SelfPaymentError()
+  if (recipientWallet.id === senderWalletId) return new SelfPaymentError()
 
   const intraledgerLimitCheck = await checkIntraledgerLimits({
     amount,
@@ -169,14 +171,8 @@ const executePaymentViaIntraledger = async ({
   const usd = sats * usdPerSat
   const usdFee = fee * usdPerSat
 
-  const getUsername = async (walletId: WalletId) => {
-    const username = await getUsernameFromWalletId(walletId)
-    if (username instanceof Error) return null
-    return username
-  }
-
-  const payerUsername = await getUsername(senderWalletId)
-  const recipientUsername = await getUsername(recipientWalletId)
+  const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
+  if (recipientAccount instanceof Error) return recipientAccount
 
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
@@ -201,9 +197,9 @@ const executePaymentViaIntraledger = async ({
             usdFee,
             payeeAddresses: [address],
             sendAll,
-            recipientWalletId,
-            payerUsername,
-            recipientUsername,
+            recipientWalletId: recipientWallet.id,
+            senderUsername: senderAccount.username,
+            recipientUsername: recipientAccount.username,
             memoPayer: memo ?? null,
           }),
       )
@@ -212,7 +208,7 @@ const executePaymentViaIntraledger = async ({
       const notificationsService = NotificationsService(logger)
       notificationsService.intraLedgerPaid({
         senderWalletId,
-        recipientWalletId,
+        recipientWalletId: recipientWallet.id,
         amount: sats,
         usdPerSat,
       })
