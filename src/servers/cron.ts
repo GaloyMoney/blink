@@ -4,7 +4,7 @@ import {
   deleteExpiredWalletInvoice,
   deleteFailedPaymentsAttemptAllLnds,
   updateEscrows,
-  updateRoutingFees,
+  updateRoutingRevenues,
 } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
@@ -47,7 +47,7 @@ const main = async () => {
     updatePendingLightningPayments,
     deleteExpiredInvoices,
     deleteFailedPaymentsAttemptAllLnds,
-    updateRoutingFees,
+    updateRoutingRevenues,
     updateOnChainReceipt,
     rebalance,
     updateLnPaymentsCollection,

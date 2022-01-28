@@ -20,6 +20,8 @@ export const LedgerTransactionType = {
   OnchainDepositFee: "deposit_fee", // onchain
   Fee: "fee",
   Escrow: "escrow",
+
+  // TODO: rename. should be routing_revenue
   RoutingFee: "routing_fee", // channel-related
   ExchangeRebalance: "exchange_rebalance", // send/receive btc from the exchange
   UserRebalance: "user_rebalance", // buy/sell btc in the user wallet

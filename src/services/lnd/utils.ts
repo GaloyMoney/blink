@@ -196,7 +196,7 @@ export const getInvoiceAttempt = async ({ lnd, id }) => {
   }
 }
 
-export const updateRoutingFees = async () => {
+export const updateRoutingRevenues = async () => {
   // TODO: move to a service
   const dbMetadata = await DbMetadata.findOne({})
   let lastDate
@@ -232,7 +232,7 @@ export const updateRoutingFees = async () => {
   for (const forward of forwards) {
     const [[day, fee]] = Object.entries(forward)
     try {
-      await ledger.addLndRoutingFee({ amount: fee, collectedOn: day })
+      await ledger.addLndRoutingRevenue({ amount: fee, collectedOn: day })
     } catch (err) {
       throw new DbError("Unable to record routing revenue", {
         forwardToClient: false,

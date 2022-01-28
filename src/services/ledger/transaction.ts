@@ -20,7 +20,7 @@ export const addLndChannelFee = async ({ description, amount, metadata }) => {
     .commit()
 }
 
-export const addLndRoutingFee = async ({ amount, collectedOn }) => {
+export const addLndRoutingRevenue = async ({ amount, collectedOn }) => {
   const metadata = {
     type: "routing_fee",
     currency: "BTC",

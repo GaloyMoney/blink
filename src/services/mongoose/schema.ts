@@ -16,7 +16,7 @@ export { Transaction }
 const Schema = mongoose.Schema
 
 const dbMetadataSchema = new Schema({
-  routingFeeLastEntry: Date,
+  routingFeeLastEntry: Date, // TODO: rename to routingRevenueLastEntry
 })
 export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
 

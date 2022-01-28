@@ -2,7 +2,7 @@ import { MS_PER_DAY } from "@config"
 import {
   deleteExpiredWalletInvoice,
   getInvoiceAttempt,
-  updateRoutingFees,
+  updateRoutingRevenues,
 } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledger } from "@services/mongodb"
@@ -123,7 +123,7 @@ describe("lndUtils", () => {
       { upsert: true },
     )
 
-    await updateRoutingFees()
+    await updateRoutingRevenues()
 
     const endBalance = await ledger.getBankOwnerBalance()
 
