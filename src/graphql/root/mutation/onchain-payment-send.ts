@@ -19,7 +19,7 @@ const OnChainPaymentSendInput = GT.Input({
   }),
 })
 
-const OnChainPaymentSendMutation = GT.Field({
+const OnChainPaymentSendMutation = GT.Field<{ input }, null, GraphQLContextForUser>({
   type: GT.NonNull(PaymentSendPayload),
   args: {
     input: { type: GT.NonNull(OnChainPaymentSendInput) },
