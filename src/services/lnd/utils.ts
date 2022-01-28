@@ -197,6 +197,7 @@ export const getInvoiceAttempt = async ({ lnd, id }) => {
 }
 
 export const updateRoutingFees = async () => {
+  // TODO: move to a service
   const dbMetadata = await DbMetadata.findOne({})
   let lastDate
 
@@ -243,6 +244,8 @@ export const updateRoutingFees = async () => {
 
   endDate.setDate(endDate.getDate() + 1)
   const endDay = endDate.toDateString()
+
+  // TODO: move to a service
   await DbMetadata.findOneAndUpdate(
     {},
     { $set: { routingFeeLastEntry: endDay } },

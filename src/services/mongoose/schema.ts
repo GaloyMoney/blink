@@ -16,11 +16,6 @@ export { Transaction }
 const Schema = mongoose.Schema
 
 const dbMetadataSchema = new Schema({
-  version: Number,
-  minBuildNumberAndroid: Number,
-  lastBuildNumberAndroid: Number,
-  minBuildNumberIos: Number,
-  lastBuildNumberIos: Number,
   routingFeeLastEntry: Date,
 })
 export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
