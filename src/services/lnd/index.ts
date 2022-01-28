@@ -1,5 +1,3 @@
-import { assert } from "console"
-
 import { toMilliSatsFromString, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
@@ -42,25 +40,17 @@ import { baseLogger } from "@services/logger"
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
 
-export const LndService = (
-  lnd?: AuthenticatedLnd,
-): ILightningService | LightningServiceError => {
+export const LndService = (): ILightningService | LightningServiceError => {
   let defaultLnd: AuthenticatedLnd, defaultPubkey: Pubkey
-  if (lnd) {
+  try {
+    const { lnd, pubkey } = getActiveLnd()
     defaultLnd = lnd
-    defaultPubkey =
-      "0325bb9bda523a85dc834b190289b7e25e8d92615ab2f2abffbe97983f0bb12ffb" as Pubkey
-  } else {
-    try {
-      const { lnd, pubkey } = getActiveLnd()
-      defaultLnd = lnd
-      defaultPubkey = pubkey as Pubkey
-    } catch (err) {
-      const errDetails = parseLndErrorDetails(err)
-      switch (errDetails) {
-        default:
-          return new UnknownLightningServiceError(err)
-      }
+    defaultPubkey = pubkey as Pubkey
+  } catch (err) {
+    const errDetails = parseLndErrorDetails(err)
+    switch (errDetails) {
+      default:
+        return new UnknownLightningServiceError(err)
     }
   }
 
@@ -212,9 +202,7 @@ export const LndService = (
     paymentHash: PaymentHash
   }): Promise<LnInvoiceLookup | LightningServiceError> => {
     try {
-      // const { lnd } = getLndFromPubkey({ pubkey })
-      assert(pubkey)
-      const lnd = defaultLnd
+      const { lnd } = getLndFromPubkey({ pubkey })
       const invoice: GetInvoiceResult = await getInvoice({
         lnd,
         id: paymentHash,
@@ -252,15 +240,13 @@ export const LndService = (
     pubkey?: Pubkey
     paymentHash: PaymentHash
   }): Promise<LnPaymentLookup | LnFailedPartialPaymentLookup | LightningServiceError> => {
-    if (pubkey)
-      return lookupPaymentByPubkeyAndHash({ pubkey, paymentHash, lnd: defaultLnd })
+    if (pubkey) return lookupPaymentByPubkeyAndHash({ pubkey, paymentHash })
 
     const offchainLnds = getLnds({ type: "offchain" })
     for (const { pubkey } of offchainLnds) {
       const payment = await lookupPaymentByPubkeyAndHash({
         pubkey: pubkey as Pubkey,
         paymentHash,
-        lnd: defaultLnd,
       })
       if (payment instanceof Error) continue
       return payment
@@ -276,9 +262,7 @@ export const LndService = (
     after: PagingStartToken | PagingContinueToken
     pubkey: Pubkey
   }): Promise<ListLnPaymentsResult | LightningServiceError> => {
-    // const { lnd } = getLndFromPubkey({ pubkey })
-    assert(pubkey)
-    const lnd = defaultLnd
+    const { lnd } = getLndFromPubkey({ pubkey })
     const pagingArgs = after ? { token: after } : {}
 
     try {
@@ -302,9 +286,7 @@ export const LndService = (
     pubkey: Pubkey
   }): Promise<ListLnPaymentsResult | LightningServiceError> => {
     try {
-      // const { lnd } = getLndFromPubkey({ pubkey })
-      assert(pubkey)
-      const lnd = defaultLnd
+      const { lnd } = getLndFromPubkey({ pubkey })
       const pagingArgs = after ? { token: after } : {}
       const { payments, next } = await getPayments({ lnd, ...pagingArgs })
 
@@ -501,16 +483,13 @@ export const LndService = (
 const lookupPaymentByPubkeyAndHash = async ({
   pubkey,
   paymentHash,
-  lnd,
 }: {
   pubkey: Pubkey
   paymentHash: PaymentHash
-  lnd: AuthenticatedLnd
 }): Promise<LnPaymentLookup | LnFailedPartialPaymentLookup | LightningServiceError> => {
-  // let lnd: AuthenticatedLnd
+  let lnd: AuthenticatedLnd
   try {
-    // const { lnd } = getLndFromPubkey({ pubkey })
-    assert(pubkey)
+    ;({ lnd } = getLndFromPubkey({ pubkey }))
   } catch (err) {
     const errDetails = parseLndErrorDetails(err)
     switch (errDetails) {

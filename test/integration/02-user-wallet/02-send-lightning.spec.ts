@@ -1,7 +1,5 @@
 import { createHash, randomBytes } from "crypto"
 
-import { authenticatedLndGrpc } from "lightning"
-
 import { Wallets, Lightning } from "@app"
 import { getUserLimits } from "@config"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
@@ -28,7 +26,6 @@ import { LndService } from "@services/lnd"
 import { sleep } from "@utils"
 
 import { delete2fa } from "@app/users"
-import { migrateLnPaymentsFromLnd } from "@app/lightning/migrate-ln-payments-trackpaymentsv2"
 
 import {
   cancelHodlInvoice,
@@ -117,32 +114,6 @@ afterAll(() => {
 })
 
 describe("UserWallet - Lightning Pay", () => {
-  it.only("custom test", async () => {
-    const getLnd = () => {
-      try {
-        const { lnd } = authenticatedLndGrpc({
-          cert: "<base64 LND1_TLS goes here>",
-          macaroon: "<base64 LND1_MACAROON goes here>",
-          socket: "34.68.18.9:10009",
-        })
-        return lnd
-      } catch (err) {
-        console.log({ err })
-        return null
-      }
-    }
-    const lnd = getLnd()
-    if (!lnd) return
-
-    const lndService = LndService(lnd)
-    if (lndService instanceof Error) {
-      return lndService
-    }
-
-    const result = await migrateLnPaymentsFromLnd(lnd)
-    console.log(result)
-  })
-
   it("sends to another Galoy user with memo", async () => {
     const memo = "invoiceMemo"
 
