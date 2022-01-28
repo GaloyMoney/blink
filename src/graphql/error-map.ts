@@ -295,6 +295,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InsufficientBalanceForRoutingError":
     case "InvalidLanguageError":
     case "InvalidFiatAmount":
+    case "NonIntegeterFiatAmount":
     case "ColdStorageError":
     case "ColdStorageServiceError":
     case "InvalidCurrentColdStorageWalletServiceError":

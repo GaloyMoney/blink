@@ -5,15 +5,12 @@
 
 // we have to import schema before medici
 // eslint-disable-next-line
-import { Transaction } from "./schema"
-
 import {
   CouldNotFindTransactionError,
   UnknownLedgerError,
   LedgerError,
   LedgerServiceError,
 } from "@domain/ledger/errors"
-
 import { toSats } from "@domain/bitcoin"
 
 import {
@@ -24,6 +21,10 @@ import {
 } from "@domain/ledger"
 
 import { addEventToCurrentSpan } from "@services/tracing"
+
+import { WalletCurrency } from "@domain/wallets"
+
+import { Transaction } from "./schema"
 
 import * as accounts from "./accounts"
 import * as queries from "./query"
@@ -356,11 +357,9 @@ export const LedgerService = (): ILedgerService => {
     paymentHash,
     description,
     sats,
-    usdFeeLightningLiquidity,
+    usdFeeInboundLiquidity,
     usdDisplay,
-    feeLightningLiquidity,
-    fiat,
-    currency,
+    feeInboundLiquidity,
   }: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
 
@@ -370,23 +369,21 @@ export const LedgerService = (): ILedgerService => {
         type: LedgerTransactionType.Invoice,
         pending: false,
         hash: paymentHash,
-        fee: feeLightningLiquidity,
-        feeUsd: usdFeeLightningLiquidity,
+        fee: feeInboundLiquidity,
+        feeUsd: usdFeeInboundLiquidity,
         sats,
         usd: usdDisplay,
-        currency,
+        currency: WalletCurrency.Btc,
       }
-
-      fiat // TODO handle the case where currency = USD
 
       const entry = MainBook.entry(description)
       entry
-        .credit(liabilitiesWalletId, sats - feeLightningLiquidity, metadata)
+        .credit(liabilitiesWalletId, sats - feeInboundLiquidity, metadata)
         .debit(lndAccountingPath, sats, metadata)
 
-      if (feeLightningLiquidity > 0) {
+      if (feeInboundLiquidity > 0) {
         const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
-        entry.credit(bankOwnerPath, feeLightningLiquidity, metadata)
+        entry.credit(bankOwnerPath, feeInboundLiquidity, metadata)
       }
 
       const savedEntry = await entry.commit()

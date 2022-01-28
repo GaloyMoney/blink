@@ -149,10 +149,10 @@ const updatePendingInvoice = async ({
       lnInvoice: { description },
       roundedDownReceived,
     } = lnInvoiceLookup
-    const feeLightningLiquidity = DepositFeeCalculator().lnDepositFee()
+    const feeInboundLiquidity = DepositFeeCalculator().lnDepositFee()
 
     const usdDisplay = toFiat(roundedDownReceived * usdPerSat)
-    const usdFeeLightningLiquidity = toFiat(feeLightningLiquidity * usdPerSat) // TODO: toFiatFeeDisplay()
+    const usdFeeInboundLiquidity = toFiat(feeInboundLiquidity * usdPerSat) // TODO: toFiatFeeDisplay()
 
     const ledgerService = LedgerService()
     const result = await ledgerService.addLnTxReceive({
@@ -163,8 +163,8 @@ const updatePendingInvoice = async ({
       fiat: fiatAmount,
       usdDisplay,
       currency,
-      feeLightningLiquidity,
-      usdFeeLightningLiquidity,
+      feeInboundLiquidity,
+      usdFeeInboundLiquidity,
     })
     if (result instanceof Error) return result
 

@@ -9,8 +9,9 @@ import { WalletInvoicesRepository } from "@services/mongoose"
 import { WalletCurrency } from "@domain/wallets"
 import { v4 as uuidv4 } from "uuid"
 
-import { createUserWallet, getDefaultWalletIdByTestUserIndex } from "test/helpers"
 import { toFiat } from "@domain/fiat"
+
+import { createUserWallet, getDefaultWalletIdByTestUserIndex } from "test/helpers"
 
 let wallet1: WalletId
 

@@ -81,8 +81,8 @@ type OnChainTxArgs = TxArgs & {
 type AddLnTxReceiveArgs = LnTxArgs & {
   currency: WalletCurrency
   fiat: FiatAmount | undefined
-  usdFeeLightningLiquidity: FiatAmount
-  feeLightningLiquidity: Satoshis
+  usdFeeInboundLiquidity: FiatAmount
+  feeInboundLiquidity: Satoshis
 }
 
 type AddLnTxSendArgs = LnTxArgs & {
