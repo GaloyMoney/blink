@@ -4,6 +4,8 @@ import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 import { toObjectId } from "@services/mongoose/utils"
+import { addWallet } from "@app/accounts/add-wallet"
+import { WalletType } from "@domain/wallets"
 
 const users = UsersRepository()
 
@@ -97,6 +99,17 @@ const createUserWallet = async (entry) => {
         }
       : null
     userRepo = await createUser({ phone, phoneMetadata })
+    if (userRepo instanceof Error) throw userRepo
+
+    if (entry.additionalWallets) {
+      for (const { currency } of entry.additionalWallets) {
+        await addWallet({
+          currency,
+          accountId: userRepo.defaultAccountId,
+          type: WalletType.Checking,
+        })
+      }
+    }
   }
 
   if (userRepo instanceof Error) throw userRepo
