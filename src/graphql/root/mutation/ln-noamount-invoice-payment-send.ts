@@ -50,7 +50,7 @@ const LnNoAmountInvoicePaymentSendMutation = GT.Field<
       return { errors: [{ message: memo.message }] }
     }
 
-    const status = await Wallets.payLnNoAmountInvoiceByWalletId({
+    const status = await Wallets.payNoAmountInvoiceByWalletId({
       senderWalletId: walletId,
       paymentRequest,
       memo: memo ?? null,

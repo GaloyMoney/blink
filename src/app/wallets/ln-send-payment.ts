@@ -36,14 +36,14 @@ import { RoutesCache } from "@services/redis/routes"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 
-export const lnInvoicePaymentSendWithTwoFA = async ({
+export const payInvoiceByWalletIdWithTwoFA = async ({
   paymentRequest,
   memo,
   senderWalletId,
   senderAccount,
   twoFAToken,
   logger,
-}: LnInvoicePaymentSendWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
+}: PayInvoiceByWalletIdWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.initiation_method": PaymentInitiationMethod.Lightning,
   })
@@ -80,29 +80,13 @@ export const lnInvoicePaymentSendWithTwoFA = async ({
   })
 }
 
-export const payLnInvoiceByWalletId = async ({
-  senderWalletId,
-  paymentRequest,
-  memo,
-  senderAccount,
-  logger,
-}: PayLnInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
-  return lnInvoicePaymentSend({
-    senderWalletId,
-    paymentRequest,
-    memo,
-    senderAccount,
-    logger,
-  })
-}
-
-export const lnInvoicePaymentSend = async ({
+export const payInvoiceByWalletId = async ({
   paymentRequest,
   memo,
   senderWalletId,
   senderAccount,
   logger,
-}: LnInvoicePaymentSendArgs): Promise<PaymentSendStatus | ApplicationError> => {
+}: PayInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.initiation_method": PaymentInitiationMethod.Lightning,
   })
@@ -125,7 +109,7 @@ export const lnInvoicePaymentSend = async ({
   })
 }
 
-export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
+export const payNoAmountInvoiceByWalletIdWithTwoFAArgs = async ({
   paymentRequest,
   amount,
   memo,
@@ -133,7 +117,7 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
   senderAccount,
   twoFAToken,
   logger,
-}: LnNoAmountInvoicePaymentSendWithTwoFAArgs): Promise<
+}: PayNoAmountInvoiceByWalletIdWithTwoFAArgs): Promise<
   PaymentSendStatus | ApplicationError
 > => {
   addAttributesToCurrentSpan({
@@ -176,32 +160,14 @@ export const lnNoAmountInvoicePaymentSendWithTwoFA = async ({
   })
 }
 
-export const payLnNoAmountInvoiceByWalletId = async ({
-  senderWalletId,
-  paymentRequest,
-  amount,
-  memo,
-  senderAccount,
-  logger,
-}: payLnNoAmountInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
-  return lnNoAmountInvoicePaymentSend({
-    senderWalletId,
-    paymentRequest,
-    amount,
-    memo,
-    senderAccount,
-    logger,
-  })
-}
-
-export const lnNoAmountInvoicePaymentSend = async ({
+export const payNoAmountInvoiceByWalletId = async ({
   paymentRequest,
   amount,
   memo,
   senderWalletId,
   senderAccount,
   logger,
-}: LnNoAmountInvoicePaymentSendArgs): Promise<PaymentSendStatus | ApplicationError> => {
+}: PayNoAmountInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.initiation_method": PaymentInitiationMethod.Lightning,
   })
