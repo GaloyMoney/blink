@@ -1,5 +1,4 @@
 import { Wallets, Accounts } from "@app"
-import { getWallet } from "@app/wallets"
 import { checkedToWalletId } from "@domain/wallets"
 import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
@@ -35,7 +34,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       }
     }
 
-    const wallet = await getWallet(walletId)
+    const wallet = await Wallets.getWallet(walletId)
     const senderWalletId = checkedToWalletId(walletId)
     if (senderWalletId instanceof Error) {
       const appErr = mapError(senderWalletId)

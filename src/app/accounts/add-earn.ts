@@ -1,4 +1,3 @@
-import { getUser } from "@app/users"
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { onboardingEarn } from "@config"
 import {
@@ -7,7 +6,11 @@ import {
 } from "@domain/errors"
 import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
 import { getFunderWalletId } from "@services/ledger/accounts"
-import { RewardsRepository, AccountsRepository } from "@services/mongoose"
+import {
+  RewardsRepository,
+  AccountsRepository,
+  UsersRepository,
+} from "@services/mongoose"
 
 export const addEarn = async ({
   quizQuestionId,
@@ -26,7 +29,7 @@ export const addEarn = async ({
   const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
 
-  const user = await getUser(recipientAccount.ownerId)
+  const user = await UsersRepository().findById(recipientAccount.ownerId)
   if (user instanceof Error) return user
 
   const validatedPhoneMetadata = PhoneMetadataValidator().validate(user.phoneMetadata)

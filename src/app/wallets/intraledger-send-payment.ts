@@ -1,7 +1,5 @@
 import { addNewContact } from "@app/accounts/add-new-contact"
 import { getCurrentPrice } from "@app/prices"
-import { getUser } from "@app/users"
-import { getWallet } from "@app/wallets"
 import { toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
@@ -11,7 +9,11 @@ import {
 } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { LockService } from "@services/lock"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  WalletsRepository,
+  UsersRepository,
+} from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 
 import { checkAndVerifyTwoFA, checkIntraledgerLimits } from "./check-limit-helpers"
@@ -91,7 +93,7 @@ export const intraledgerSendPaymentUsernameWithTwoFA = async ({
   const account = await AccountsRepository().findById(payerAccountId)
   if (account instanceof Error) return account
 
-  const user = await getUser(account.ownerId)
+  const user = await UsersRepository().findById(account.ownerId)
   if (user instanceof Error) return user
   const { twoFA } = user
 
@@ -138,7 +140,7 @@ const intraLedgerSendPaymentUsername = async ({
   if (recipientAccount.id === payerAccountId) return new SelfPaymentError()
 
   const recipientWalletId = recipientAccount.defaultWalletId
-  const recipientWallet = await getWallet(recipientWalletId)
+  const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
   const paymentSendStatus = await executePaymentViaIntraledger({

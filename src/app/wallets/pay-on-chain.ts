@@ -1,5 +1,4 @@
 import { getCurrentPrice } from "@app/prices"
-import { getUser } from "@app/users"
 import { BTC_NETWORK, getOnChainWalletConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
@@ -15,7 +14,11 @@ import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { LockService } from "@services"
 import { baseLogger } from "@services/logger"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 
 import {
@@ -42,7 +45,7 @@ export const payOnChainByWalletIdWithTwoFA = async ({
     : checkedToSats(amountRaw)
   if (amount instanceof Error) return amount
 
-  const user = await getUser(senderAccount.ownerId)
+  const user = await UsersRepository().findById(senderAccount.ownerId)
   if (user instanceof Error) return user
   const { twoFA } = user
 
