@@ -2,16 +2,17 @@ import { getTwoFALimits, getUserLimits, MS_PER_DAY } from "@config"
 import { LimitsChecker } from "@domain/accounts"
 import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
 import { LedgerService } from "@services/ledger"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 export const checkIntraledgerLimits = async ({
   amount,
   walletId,
+  account,
 }: {
   amount: Satoshis
   walletId: WalletId
+  account: Account
 }) => {
-  const limitsChecker = await getLimitsChecker(walletId)
+  const limitsChecker = await getLimitsChecker(account)
   if (limitsChecker instanceof Error) return limitsChecker
 
   const ledgerService = LedgerService()
@@ -32,11 +33,13 @@ export const checkIntraledgerLimits = async ({
 export const checkWithdrawalLimits = async ({
   amount,
   walletId,
+  account,
 }: {
   amount: Satoshis
   walletId: WalletId
+  account: Account
 }) => {
-  const limitsChecker = await getLimitsChecker(walletId)
+  const limitsChecker = await getLimitsChecker(account)
   if (limitsChecker instanceof Error) return limitsChecker
 
   const ledgerService = LedgerService()
@@ -57,11 +60,13 @@ export const checkWithdrawalLimits = async ({
 export const checkTwoFALimits = async ({
   amount,
   walletId,
+  account,
 }: {
   amount: Satoshis
   walletId: WalletId
+  account: Account
 }) => {
-  const limitsChecker = await getLimitsChecker(walletId)
+  const limitsChecker = await getLimitsChecker(account)
   if (limitsChecker instanceof Error) return limitsChecker
 
   const ledgerService = LedgerService()
@@ -84,15 +89,18 @@ export const checkAndVerifyTwoFA = async ({
   twoFAToken,
   twoFASecret,
   walletId,
+  account,
 }: {
   amount: Satoshis
   twoFAToken: TwoFAToken | null
   twoFASecret: TwoFASecret
   walletId: WalletId
+  account: Account
 }): Promise<true | ApplicationError> => {
   const twoFALimitCheck = await checkTwoFALimits({
     amount,
     walletId,
+    account,
   })
   if (!(twoFALimitCheck instanceof Error)) return true
 
@@ -108,16 +116,9 @@ export const checkAndVerifyTwoFA = async ({
 }
 
 const getLimitsChecker = async (
-  walletId: WalletId,
+  account: Account,
 ): Promise<LimitsChecker | ApplicationError> => {
-  const wallet = await WalletsRepository().findById(walletId)
-  if (wallet instanceof Error) return wallet
-
-  const account = await AccountsRepository().findById(wallet.accountId)
-  if (account instanceof Error) return account
-  const { level } = account
-
-  const userLimits = getUserLimits({ level })
+  const userLimits = getUserLimits({ level: account.level })
   const twoFALimits = getTwoFALimits()
   return LimitsChecker({
     userLimits,

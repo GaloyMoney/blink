@@ -69,6 +69,7 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
         walletId: senderWalletId,
+        account: senderAccount,
       })
     : true
   if (twoFACheck instanceof Error) return twoFACheck
@@ -145,6 +146,7 @@ export const payNoAmountInvoiceByWalletIdWithTwoFAArgs = async ({
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
         walletId: senderWalletId,
+        account: senderAccount,
       })
     : true
   if (twoFACheck instanceof Error) return twoFACheck
@@ -249,6 +251,7 @@ const lnSendPayment = async ({
     amount,
     usdPerSat,
     senderWalletId,
+    senderAccount,
     lndService,
     logger,
   })
@@ -281,6 +284,7 @@ const executePaymentViaIntraledger = async ({
   const intraledgerLimitCheck = await checkIntraledgerLimits({
     amount,
     walletId: senderWallet.id,
+    account: senderAccount,
   })
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
@@ -359,6 +363,7 @@ const executePaymentViaLn = async ({
   amount,
   usdPerSat,
   senderWalletId,
+  senderAccount,
   lndService,
   logger,
 }: {
@@ -366,6 +371,7 @@ const executePaymentViaLn = async ({
   amount: Satoshis
   usdPerSat: UsdPerSat
   senderWalletId: WalletId
+  senderAccount: Account
   lndService: ILightningService
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
@@ -377,6 +383,7 @@ const executePaymentViaLn = async ({
   const withdrawalLimitCheck = await checkWithdrawalLimits({
     amount,
     walletId: senderWalletId,
+    account: senderAccount,
   })
   if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
 

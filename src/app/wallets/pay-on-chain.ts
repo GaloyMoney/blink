@@ -55,6 +55,7 @@ export const payOnChainByWalletIdWithTwoFA = async ({
         amount,
         twoFASecret: twoFA.secret,
         twoFAToken,
+        account: senderAccount,
       })
     : true
   if (twoFACheck instanceof Error) return twoFACheck
@@ -92,7 +93,7 @@ export const payOnChainByWalletId = async ({
   })
   if (validationResult instanceof Error) return validationResult
 
-  const { amount } = validationResult
+  const { amount, senderWallet } = validationResult
 
   const onchainLogger = baseLogger.child({
     topic: "payment",
@@ -129,7 +130,8 @@ export const payOnChainByWalletId = async ({
     })
 
   return executePaymentViaOnChain({
-    senderWalletId,
+    senderWallet,
+    senderAccount,
     amount,
     address: checkedAddress,
     targetConfirmations: checkedTargetConfirmations,
@@ -163,6 +165,7 @@ const executePaymentViaIntraledger = async ({
   const intraledgerLimitCheck = await checkIntraledgerLimits({
     amount,
     walletId: senderWalletId,
+    account: senderAccount,
   })
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
@@ -234,7 +237,8 @@ const executePaymentViaIntraledger = async ({
 }
 
 const executePaymentViaOnChain = async ({
-  senderWalletId,
+  senderWallet,
+  senderAccount,
   amount,
   address,
   targetConfirmations,
@@ -242,7 +246,8 @@ const executePaymentViaOnChain = async ({
   sendAll,
   logger,
 }: {
-  senderWalletId: WalletId
+  senderWallet: Wallet
+  senderAccount: Account
   amount: Satoshis
   address: OnChainAddress
   targetConfirmations: TargetConfirmations
@@ -250,24 +255,21 @@ const executePaymentViaOnChain = async ({
   sendAll: boolean
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
-  const wallets = WalletsRepository()
   const ledgerService = LedgerService()
   const withdrawalFeeCalculator = WithdrawalFeeCalculator()
-
-  const senderWallet = await wallets.findById(senderWalletId)
-  if (senderWallet instanceof Error) return senderWallet
 
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
 
   const withdrawalLimitCheck = await checkWithdrawalLimits({
     amount,
-    walletId: senderWalletId,
+    walletId: senderWallet.id,
+    account: senderAccount,
   })
   if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
 
   const estimatedFee = await getOnChainFeeByWalletId({
-    walletId: senderWalletId,
+    walletId: senderWallet.id,
     amount,
     address,
     targetConfirmations,
@@ -289,16 +291,10 @@ const executePaymentViaOnChain = async ({
   const usdPerSat = await getCurrentPrice()
   if (usdPerSat instanceof Error) return usdPerSat
 
-  const wallet = await WalletsRepository().findById(senderWalletId)
-  if (wallet instanceof Error) return wallet
-
-  const senderAccount = await AccountsRepository().findById(wallet.accountId)
-  if (senderAccount instanceof Error) return senderAccount
-
   return LockService().lockWalletId(
-    { walletId: senderWalletId, logger },
+    { walletId: senderWallet.id, logger },
     async (lock) => {
-      const balance = await LedgerService().getWalletBalance(senderWalletId)
+      const balance = await LedgerService().getWalletBalance(senderWallet.id)
       if (balance instanceof Error) return balance
       if (balance < amountToSend + estimatedFee)
         return new InsufficientBalanceError(
@@ -340,7 +336,7 @@ const executePaymentViaOnChain = async ({
         const usdFee = fee * usdPerSat
 
         return ledgerService.addOnChainTxSend({
-          walletId: senderWalletId,
+          walletId: senderWallet.id,
           txHash,
           description: memo || "",
           sats,

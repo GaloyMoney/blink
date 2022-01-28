@@ -299,7 +299,7 @@ const resolvers = {
       if (lnInvoice instanceof Error) throw mapError(lnInvoice)
       return lnInvoice.paymentRequest
     },
-    invoice: (_, __, { wallet, logger }) => ({
+    invoice: (_, __, { wallet, logger, domainAccount }) => ({
       addInvoice: async ({ value, memo }) => {
         const lnInvoice =
           value && value > 0
@@ -369,7 +369,7 @@ const resolvers = {
           memo,
           amount,
           senderWalletId: wallet.user.defaultWalletId,
-          payerAccountId: wallet.user.id,
+          senderAccount: domainAccount,
           logger,
         })
 

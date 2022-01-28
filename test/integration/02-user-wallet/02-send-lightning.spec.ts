@@ -226,7 +226,7 @@ describe("UserWallet - Lightning Pay", () => {
       memo: "",
       amount: toSats(amountInvoice),
       senderWalletId: walletId1,
-      payerAccountId: accountId1,
+      senderAccount: account1,
       logger: baseLogger,
     })
 
@@ -290,7 +290,7 @@ describe("UserWallet - Lightning Pay", () => {
       memo: "",
       amount: toSats(amountInvoice),
       senderWalletId: walletId1,
-      payerAccountId: accountId1,
+      senderAccount: account1,
       logger: baseLogger,
     })
     expect(res2).not.toBeInstanceOf(Error)
@@ -342,7 +342,7 @@ describe("UserWallet - Lightning Pay", () => {
       memo: memoSpamBelowThreshold,
       amount: toSats(satsBelow),
       senderWalletId: walletId1,
-      payerAccountId: accountId1,
+      senderAccount: account1,
       logger: baseLogger,
     })
     expect(resBelowThreshold).not.toBeInstanceOf(Error)
@@ -355,7 +355,7 @@ describe("UserWallet - Lightning Pay", () => {
       memo: memoSpamAboveThreshold,
       amount: toSats(satsAbove),
       senderWalletId: walletId1,
-      payerAccountId: accountId1,
+      senderAccount: account1,
       logger: baseLogger,
     })
     expect(resAboveThreshold).not.toBeInstanceOf(Error)
@@ -459,7 +459,7 @@ describe("UserWallet - Lightning Pay", () => {
       memo: "",
       amount: toSats(amountInvoice),
       senderWalletId: walletId1,
-      payerAccountId: accountId1,
+      senderAccount: account1,
       logger: baseLogger,
     })
     expect(paymentResult).toBeInstanceOf(DomainSelfPaymentError)
