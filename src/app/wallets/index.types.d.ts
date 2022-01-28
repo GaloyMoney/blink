@@ -48,37 +48,20 @@ type PaymentSendArgs = {
   logger: Logger
 }
 
-type PayLnInvoiceByWalletIdArgs = {
-  senderWalletId: WalletId
-  paymentRequest: EncodedPaymentRequest
-  memo: string | null
-  senderAccount: Account
-  logger: Logger
-}
-
-type payLnNoAmountInvoiceByWalletIdArgs = {
-  senderWalletId: WalletId
-  paymentRequest: EncodedPaymentRequest
-  amount: Satoshis
-  memo: string | null
-  senderAccount: Account
-  logger: Logger
-}
-
-type LnInvoicePaymentSendArgs = PaymentSendArgs & {
+type PayInvoiceByWalletIdArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
   senderAccount: Account
 }
-type LnInvoicePaymentSendWithTwoFAArgs = LnInvoicePaymentSendArgs & {
+type PayInvoiceByWalletIdWithTwoFAArgs = PayInvoiceByWalletIdArgs & {
   twoFAToken: TwoFAToken
 }
 
-type LnNoAmountInvoicePaymentSendArgs = PaymentSendArgs & {
+type PayNoAmountInvoiceByWalletIdArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
   amount: Satoshis
   senderAccount: Account
 }
-type LnNoAmountInvoicePaymentSendWithTwoFAArgs = LnNoAmountInvoicePaymentSendArgs & {
+type PayNoAmountInvoiceByWalletIdWithTwoFAArgs = PayNoAmountInvoiceByWalletIdArgs & {
   twoFAToken: TwoFAToken
 }
 

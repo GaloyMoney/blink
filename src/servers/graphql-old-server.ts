@@ -341,7 +341,7 @@ const resolvers = {
 
             const { amount: lnInvoiceAmount } = decodedInvoice
             if (lnInvoiceAmount && lnInvoiceAmount > 0) {
-              const status = await Wallets.lnInvoicePaymentSend({
+              const status = await Wallets.payInvoiceByWalletId({
                 paymentRequest: invoice,
                 memo,
                 senderWalletId: wallet.user.defaultWalletId as WalletId,
@@ -351,7 +351,7 @@ const resolvers = {
               if (status instanceof Error) throw mapError(status)
               return status.value
             }
-            const status = await Wallets.lnNoAmountInvoicePaymentSend({
+            const status = await Wallets.payNoAmountInvoiceByWalletId({
               paymentRequest: invoice,
               memo,
               amount,
