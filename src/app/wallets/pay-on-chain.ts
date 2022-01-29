@@ -9,7 +9,7 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { toFiat } from "@domain/fiat"
+import { toDisplayCurrency } from "@domain/fiat/display-currency"
 import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
 import { LockService } from "@services"
 import { LedgerService } from "@services/ledger"
@@ -336,8 +336,8 @@ const executePaymentViaOnChain = async ({
         }
 
         const sats = toSats(amountToSend + totalFee)
-        const usdDisplay = toFiat(sats * usdPerSat)
-        const usdTotalFee = toFiat(totalFee * usdPerSat)
+        const amountDisplayCurrency = toDisplayCurrency(usdPerSat)(sats)
+        const totalFeeDisplayCurrency = toDisplayCurrency(usdPerSat)(totalFee)
 
         return ledgerService.addOnChainTxSend({
           walletId: senderWallet.id,
@@ -345,11 +345,11 @@ const executePaymentViaOnChain = async ({
           description: memo || "",
           sats,
           totalFee,
-          bankFee: toSats(senderAccount.withdrawFee),
-          usdDisplay,
+          bankFee: senderAccount.withdrawFee,
+          amountDisplayCurrency,
           payeeAddress: address,
           sendAll,
-          usdTotalFee,
+          totalFeeDisplayCurrency,
         })
       })
       if (journal instanceof Error) return journal

@@ -56,7 +56,7 @@ type SettlementViaOnChain = {
 
 type BaseWalletTransaction = {
   readonly id: LedgerTransactionId | OnChainTxHash
-  readonly walletId: WalletId | null
+  readonly walletId: WalletId | undefined
   readonly settlementAmount: Satoshis
   readonly settlementFee: Satoshis
   readonly settlementUsdPerSat: number

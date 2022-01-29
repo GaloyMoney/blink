@@ -1,1 +1,2 @@
-type FiatAmount = number & { readonly brand: unique symbol }
+type UsdAmount = number & { readonly brand: unique symbol }
+type DisplayCurrencyAmount = number & { readonly brand: unique symbol }

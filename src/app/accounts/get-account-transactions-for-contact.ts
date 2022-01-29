@@ -17,7 +17,7 @@ export const getAccountTransactionsForContact = async ({
   if (wallets instanceof Error) return wallets
 
   for (const wallet of wallets) {
-    const ledgerTransactions = await ledger.getLiabilityTransactionsForContactUsername(
+    const ledgerTransactions = await ledger.getTransactionsByWalletIdAndContactUsername(
       wallet.id,
       contactUsername,
     )

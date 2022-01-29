@@ -27,7 +27,7 @@ export const getTransactionsForWallet = async (
   wallet: Wallet,
 ): Promise<PartialResult<WalletTransaction[]>> => {
   const ledger = LedgerService()
-  const ledgerTransactions = await ledger.getLiabilityTransactions(wallet.id)
+  const ledgerTransactions = await ledger.getTransactionsByWalletId(wallet.id)
   if (ledgerTransactions instanceof LedgerError)
     return PartialResult.err(ledgerTransactions)
 

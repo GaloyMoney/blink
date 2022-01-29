@@ -34,7 +34,7 @@ export const ExtendedLedgerTransactionType = {
   LnIntraLedger: "ln_on_us",
 } as const
 
-export const toWalletId = (walletIdPath: LiabilitiesWalletId): WalletId | null => {
+export const toWalletId = (walletIdPath: LiabilitiesWalletId): WalletId | undefined => {
   const path = walletIdPath.split(":")
 
   if (
@@ -46,7 +46,7 @@ export const toWalletId = (walletIdPath: LiabilitiesWalletId): WalletId | null =
     return path[1] as WalletId
   }
 
-  return null
+  return undefined
 }
 
 export const isOnChainTransaction = (type: LedgerTransactionType): boolean =>

@@ -61,7 +61,7 @@ export const OnChainService = (
         })
       }
 
-      // this is necessary for tests, otherwise after may be negative
+      // this is necessary for tests, otherwise `after` may be negative
       const after = Math.max(0, blockHeight - scanDepth)
 
       return getChainTransactions({

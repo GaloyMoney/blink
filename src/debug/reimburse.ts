@@ -15,7 +15,7 @@
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { checkedToSats } from "@domain/bitcoin"
 import { checkedToWalletId } from "@domain/wallets"
-import { getBankOwnerWalletId } from "@services/ledger/accounts"
+import { getBankOwnerWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"

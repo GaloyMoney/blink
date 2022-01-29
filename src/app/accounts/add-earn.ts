@@ -5,7 +5,7 @@ import {
   InvalidQuizQuestionIdError,
 } from "@domain/errors"
 import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
-import { getFunderWalletId } from "@services/ledger/accounts"
+import { getFunderWalletId } from "@services/ledger/caching"
 import {
   RewardsRepository,
   WalletsRepository,

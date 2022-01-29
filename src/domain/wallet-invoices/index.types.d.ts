@@ -3,7 +3,7 @@ type WalletInvoice = {
   readonly walletId: WalletId
   readonly selfGenerated: boolean
   readonly pubkey: Pubkey
-  readonly fiatAmount: FiatAmount | undefined
+  readonly usdAmount: UsdAmount | undefined
   readonly currency: WalletCurrency
   paid: boolean
 }

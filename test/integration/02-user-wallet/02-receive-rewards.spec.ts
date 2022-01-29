@@ -2,10 +2,11 @@ import { addEarn } from "@app/accounts/add-earn"
 import { getTransactionsForWalletId, intraledgerPaymentSendWalletId } from "@app/wallets"
 import { MEMO_SHARING_SATS_THRESHOLD, MS_PER_DAY, onboardingEarn } from "@config"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
-import { getFunderWalletId } from "@services/ledger/accounts"
 import { baseLogger } from "@services/logger"
 import difference from "lodash.difference"
 import find from "lodash.find"
+
+import { getFunderWalletId } from "@services/ledger/caching"
 
 import {
   checkIsBalanced,

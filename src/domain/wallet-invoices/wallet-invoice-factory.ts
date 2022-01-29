@@ -4,27 +4,27 @@ export const WalletInvoiceFactory = ({
 }: WalletFactoryConfig): WalletInvoiceFactory => {
   const createForSelf = ({
     registeredInvoice,
-    fiatAmount,
+    usdAmount,
   }: WalletInvoiceFactoryArgs): WalletInvoice => ({
     paymentHash: registeredInvoice.invoice.paymentHash,
     walletId,
     selfGenerated: true,
     pubkey: registeredInvoice.pubkey,
     paid: false,
-    fiatAmount,
+    usdAmount,
     currency,
   })
 
   const createForRecipient = ({
     registeredInvoice,
-    fiatAmount,
+    usdAmount,
   }: WalletInvoiceFactoryArgs): WalletInvoice => ({
     paymentHash: registeredInvoice.invoice.paymentHash,
     walletId,
     selfGenerated: false,
     pubkey: registeredInvoice.pubkey,
     paid: false,
-    fiatAmount,
+    usdAmount,
     currency,
   })
 

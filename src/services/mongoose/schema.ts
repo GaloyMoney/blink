@@ -1,15 +1,14 @@
 import crypto from "crypto"
 
-import { getFeeRates, getTwoFAConfig, getUserLimits, levels, MS_PER_DAY } from "@config"
-import { toLiabilitiesWalletId } from "@domain/ledger"
 import { Transaction } from "@services/ledger/schema"
-import * as mongoose from "mongoose"
+
+import { getFeeRates, getTwoFAConfig, getUserLimits, levels, MS_PER_DAY } from "@config"
 import { UsernameRegex } from "@domain/accounts"
-import { WalletType, WalletCurrency, WalletIdRegex } from "@domain/wallets"
+import { toLiabilitiesWalletId } from "@domain/ledger"
+import { WalletCurrency, WalletIdRegex, WalletType } from "@domain/wallets"
+import * as mongoose from "mongoose"
 
 import { WalletRecord } from "./wallets"
-
-export { Transaction }
 
 // mongoose.set("debug", true)
 
@@ -34,8 +33,8 @@ const walletInvoiceSchema = new Schema({
 
   // fiat equivalent. sats is attached in the invoice directly.
   // this is the option price given by the dealer
-  // optional, BTC wallet or USD with no amount doesn't have fiatAmount
-  fiatAmount: {
+  // optional, BTC wallet or USD with no amount doesn't have usdAmount
+  usdAmount: {
     type: Number,
     validate: {
       validator: Number.isInteger,

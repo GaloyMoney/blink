@@ -1,5 +1,5 @@
 import { onChannelUpdated, updateEscrows } from "@services/lnd/utils"
-import { ledger } from "@services/mongodb"
+import { ledgerAdmin } from "@services/mongodb"
 
 import {
   checkIsBalanced,
@@ -55,7 +55,7 @@ describe("Lightning channels", () => {
   it("opens channel from lnd1 to lndOutside1", async () => {
     const socket = `lnd-outside-1:9735`
 
-    const initFeeInLedger = await ledger.getBankOwnerBalance()
+    const initFeeInLedger = await ledgerAdmin.getBankOwnerBalance()
 
     const { lndNewChannel: channel } = await openChannelTesting({
       lnd: lnd1,
@@ -66,7 +66,7 @@ describe("Lightning channels", () => {
     const { channels } = await getChannels({ lnd: lnd1 })
     expect(channels.length).toEqual(channelLengthMain + 1)
 
-    const finalFeeInLedger = await ledger.getBankOwnerBalance()
+    const finalFeeInLedger = await ledgerAdmin.getBankOwnerBalance()
     expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 
     await setChannelFees({ lnd: lnd1, channel, base: 1, rate: 0 })
@@ -92,7 +92,7 @@ describe("Lightning channels", () => {
   it("opens channel from lnd1 to lndOutside2", async () => {
     const socket = `lnd-outside-2:9735`
 
-    const initFeeInLedger = await ledger.getBankOwnerBalance()
+    const initFeeInLedger = await ledgerAdmin.getBankOwnerBalance()
 
     const { lndNewChannel: channel } = await openChannelTesting({
       lnd: lnd1,
@@ -103,7 +103,7 @@ describe("Lightning channels", () => {
     const { channels } = await getChannels({ lnd: lnd1 })
     expect(channels.length).toEqual(channelLengthMain + 1)
 
-    const finalFeeInLedger = await ledger.getBankOwnerBalance()
+    const finalFeeInLedger = await ledgerAdmin.getBankOwnerBalance()
     expect(finalFeeInLedger - initFeeInLedger).toBe(channelFee * -1)
 
     await setChannelFees({ lnd: lnd1, channel, base: 1, rate: 0 })

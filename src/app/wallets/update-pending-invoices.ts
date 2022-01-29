@@ -1,14 +1,14 @@
 import { getCurrentPrice } from "@app/prices"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { CouldNotFindError } from "@domain/errors"
+import { toDisplayCurrency } from "@domain/fiat/display-currency"
 import { DepositFeeCalculator } from "@domain/wallets"
+import { LockService } from "@services"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
-import { LockService } from "@services"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { runInParallel } from "@utils"
-import { toFiat } from "@domain/fiat"
 
 export const updatePendingInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -91,7 +91,7 @@ const updatePendingInvoice = async ({
 
   const walletInvoicesRepo = WalletInvoicesRepository()
 
-  const { pubkey, paymentHash, walletId, currency, fiatAmount } = walletInvoice
+  const { pubkey, paymentHash, walletId, currency, usdAmount } = walletInvoice
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
     const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
@@ -151,8 +151,9 @@ const updatePendingInvoice = async ({
     } = lnInvoiceLookup
     const feeInboundLiquidity = DepositFeeCalculator().lnDepositFee()
 
-    const usdDisplay = toFiat(roundedDownReceived * usdPerSat)
-    const usdFeeInboundLiquidity = toFiat(feeInboundLiquidity * usdPerSat) // TODO: toFiatFeeDisplay()
+    const amountDisplayCurrency = toDisplayCurrency(usdPerSat)(roundedDownReceived)
+    const feeInboundLiquidityDisplayCurrency =
+      toDisplayCurrency(usdPerSat)(feeInboundLiquidity)
 
     const ledgerService = LedgerService()
     const result = await ledgerService.addLnTxReceive({
@@ -160,11 +161,11 @@ const updatePendingInvoice = async ({
       paymentHash,
       description,
       sats: roundedDownReceived,
-      fiat: fiatAmount,
-      usdDisplay,
+      usd: usdAmount,
+      amountDisplayCurrency,
       currency,
       feeInboundLiquidity,
-      usdFeeInboundLiquidity,
+      feeInboundLiquidityDisplayCurrency,
     })
     if (result instanceof Error) return result
 
