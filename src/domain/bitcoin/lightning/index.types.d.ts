@@ -126,6 +126,7 @@ type LnFeeCalculator = {
 
 type PayInvoiceResult = {
   roundedUpFee: Satoshis
+  revealedPreImage: RevealedPreImage
   sentFromPubkey: Pubkey
 }
 
