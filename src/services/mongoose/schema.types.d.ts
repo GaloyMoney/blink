@@ -1,5 +1,5 @@
 type IPType = {
-  ip: string
+  ip: IpAddress
   provider?: string
   country?: string
   region?: string

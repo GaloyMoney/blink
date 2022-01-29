@@ -14,22 +14,18 @@ export const getUserForLogin = async ({
   ip,
   logger,
 }: {
-  userId: string
+  userId: UserId // TODO: validation
   ip: IpAddress | undefined
   logger: Logger
 }): Promise<User | ApplicationError> => {
-  const user = await users.findById(userId as UserId)
+  const user = await users.findById(userId)
 
   if (user instanceof Error) {
     return user
   }
 
   // this routing run asynchrously, to update metadata on the background
-  updateUserIPsInfo({ userId, ip, logger } as {
-    userId: UserId
-    ip: IpAddress
-    logger: Logger
-  })
+  updateUserIPsInfo({ userId, ip, logger })
 
   return user
 }
@@ -74,15 +70,15 @@ const updateUserIPsInfo = async ({
       if (lastIP) {
         lastIP.lastConnection = lastConnection
       } else {
-        let ipInfo = {
+        let ipInfo: IPType = {
           ip,
           firstConnection: lastConnection,
           lastConnection: lastConnection,
-        } as IPType
+        }
 
         if (ipConfig.proxyCheckingEnabled) {
           const ipFetcher = IpFetcher()
-          const ipFetcherInfo = await ipFetcher.fetchIPInfo(ip as IpAddress)
+          const ipFetcherInfo = await ipFetcher.fetchIPInfo(ip)
 
           if (ipFetcherInfo instanceof IpFetcherServiceError) {
             logger.error({ userId, ip }, "impossible to get ip detail")

@@ -57,6 +57,6 @@ export const UsersIpRepository = (): IUsersIPsRepository => {
 const userIPsFromRaw = (result: UserIPsType): UserIPs => {
   return {
     id: result.id as UserId,
-    lastIPs: (result.lastIPs || []) as IPType[],
+    lastIPs: result.lastIPs as IPType[],
   }
 }
