@@ -97,5 +97,8 @@ const lnPaymentFromRaw = (result: LnPaymentType): PersistedLnPaymentLookup => ({
 const lnPaymentPartialFromRaw = (result: LnPaymentType): LnPaymentPartial => ({
   paymentHash: result.paymentHash as PaymentHash,
   paymentRequest: result.paymentRequest as EncodedPaymentRequest,
+  confirmedDetails: result?.confirmedDetails?.revealedPreImage
+    ? { revealedPreImage: result.confirmedDetails.revealedPreImage }
+    : undefined,
   sentFromPubkey: result.sentFromPubkey as Pubkey,
 })

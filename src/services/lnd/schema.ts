@@ -4,26 +4,11 @@ import * as mongoose from "mongoose"
 const Schema = mongoose.Schema
 
 const confirmedDetailsSchema = new Schema<LnPaymentConfirmedDetails>({
-  confirmedAt: {
-    type: Date,
-    required: true,
-  },
-  destination: {
-    type: String,
-    required: true,
-  },
-  revealedPreImage: {
-    type: String,
-    required: true,
-  },
-  roundedUpFee: {
-    type: Number,
-    required: true,
-  },
-  milliSatsFee: {
-    type: Number,
-    required: true,
-  },
+  confirmedAt: Date,
+  destination: String,
+  revealedPreImage: String,
+  roundedUpFee: Number,
+  milliSatsFee: Number,
   hopPubkeys: [String],
 })
 
