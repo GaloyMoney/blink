@@ -31,11 +31,11 @@ import { LockService } from "@services"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import {
+  LnPaymentsRepository,
   UsersRepository,
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 import { NotificationsService } from "@services/notifications"
 import { RoutesCache } from "@services/redis/routes"
 import { addAttributesToCurrentSpan } from "@services/tracing"
@@ -455,11 +455,19 @@ const executePaymentViaLn = async ({
           })
 
       // Fire-and-forget update to 'lnPayments' collection
-      LnPaymentsRepository().persistNew({
-        paymentHash: decodedInvoice.paymentHash,
-        paymentRequest: decodedInvoice.paymentRequest,
-        sentFromPubkey: rawRoute ? pubkey : lndService.defaultPubkey(),
-      })
+      if (!(payResult instanceof LnAlreadyPaidError)) {
+        LnPaymentsRepository().persistNew({
+          paymentHash: decodedInvoice.paymentHash,
+          paymentRequest: decodedInvoice.paymentRequest,
+          sentFromPubkey: rawRoute ? pubkey : lndService.defaultPubkey(),
+        })
+
+        if (!(payResult instanceof Error))
+          ledgerService.updateMetadata({
+            hash: paymentHash,
+            metadata: { revealedPreImage: payResult.revealedPreImage },
+          })
+      }
 
       if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending
 
