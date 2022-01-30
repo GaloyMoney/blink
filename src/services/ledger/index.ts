@@ -241,8 +241,8 @@ export const LedgerService = (): ILedgerService => {
   }
 }
 
-export const translateToLedgerTx = (tx): LedgerTransaction => ({
-  id: tx.id,
+const translateToLedgerTx = (tx): LedgerTransaction => ({
+  id: tx.id || tx._id,
   walletId: toWalletId(tx.accounts),
   type: tx.type,
   debit: toSats(tx.debit),
