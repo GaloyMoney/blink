@@ -33,7 +33,7 @@ type InitiationViaOnChainLegacy = {
 type SettlementViaIntraledger = {
   readonly type: "intraledger"
   readonly counterPartyWalletId: WalletId
-  readonly counterPartyUsername: Username | null
+  readonly counterPartyUsername: Username | undefined
 }
 
 type SettlementViaLn = {
