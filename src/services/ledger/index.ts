@@ -22,6 +22,7 @@ import {
   BigIntFloatConversionError,
   ErrorLevel,
   paymentAmountFromNumber,
+  WalletCurrency,
 } from "@domain/shared"
 import { toObjectId } from "@services/mongoose/utils"
 import {
@@ -54,6 +55,8 @@ export const lazyLoadLedgerAdmin = ({
   }
 }
 
+const txnMetadataRepo = TransactionsMetadataRepository()
+
 export const LedgerService = (): ILedgerService => {
   const updateMetadataByHash = async (
     ledgerTxMetadata:
@@ -65,16 +68,18 @@ export const LedgerService = (): ILedgerService => {
   const getTransactionById = async (
     id: LedgerTransactionId,
   ): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError> => {
+    let txnRecord: TransactionRecord
     try {
       const _id = toObjectId<LedgerTransactionId>(id)
       const { results } = await MainBook.ledger({
         account_path: liabilitiesMainAccount,
         _id,
       })
-      if (results.length === 1) {
-        return translateToLedgerTx(results[0])
+      txnRecord = results[0]
+      if (results.length !== 1) {
+        return new CouldNotFindTransactionError()
       }
-      return new CouldNotFindTransactionError()
+      return translateTxRecordsToLedgerTxs([txnRecord])[0]
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -83,12 +88,13 @@ export const LedgerService = (): ILedgerService => {
   const getTransactionsByHash = async (
     hash: PaymentHash | OnChainTxHash,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
+    let txnRecords: TransactionRecord[]
     try {
-      const { results } = await MainBook.ledger({
+      ;({ results: txnRecords } = await MainBook.ledger({
         account_path: liabilitiesMainAccount,
         hash,
-      })
-      return results.map((tx) => translateToLedgerTx(tx))
+      }))
+      return translateTxRecordsToLedgerTxs(txnRecords)
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -98,9 +104,12 @@ export const LedgerService = (): ILedgerService => {
     walletId: WalletId,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    let txnRecords: TransactionRecord[]
     try {
-      const { results } = await MainBook.ledger({ account: liabilitiesWalletId })
-      return results.map((tx) => translateToLedgerTx(tx))
+      ;({ results: txnRecords } = await MainBook.ledger({
+        account: liabilitiesWalletId,
+      }))
+      return translateTxRecordsToLedgerTxs(txnRecords)
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -110,9 +119,12 @@ export const LedgerService = (): ILedgerService => {
     walletIds: WalletId[],
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
+    let txnRecords: TransactionRecord[]
     try {
-      const { results } = await MainBook.ledger({ account: liabilitiesWalletIds })
-      return results.map((tx) => translateToLedgerTx(tx))
+      ;({ results: txnRecords } = await MainBook.ledger({
+        account: liabilitiesWalletIds,
+      }))
+      return translateTxRecordsToLedgerTxs(txnRecords)
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -123,12 +135,13 @@ export const LedgerService = (): ILedgerService => {
     contactUsername,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    let txnRecords: TransactionRecord[]
     try {
-      const { results } = await MainBook.ledger({
+      ;({ results: txnRecords } = await MainBook.ledger({
         account: liabilitiesWalletId,
         username: contactUsername,
-      })
-      return results.map((tx) => translateToLedgerTx(tx))
+      }))
+      return translateTxRecordsToLedgerTxs(txnRecords)
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -138,13 +151,14 @@ export const LedgerService = (): ILedgerService => {
     walletId: WalletId,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    let txnRecords: TransactionRecord[]
     try {
-      const { results } = await MainBook.ledger({
+      ;({ results: txnRecords } = await MainBook.ledger({
         account: liabilitiesWalletId,
         type: LedgerTransactionType.Payment,
         pending: true,
-      })
-      return results.map((tx) => translateToLedgerTx(tx))
+      }))
+      return translateTxRecordsToLedgerTxs(txnRecords)
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -375,45 +389,94 @@ export const LedgerService = (): ILedgerService => {
   })
 }
 
-export const translateToLedgerTx = (
-  tx: TransactionRecord,
-): LedgerTransaction<WalletCurrency> => ({
-  id: tx.id as LedgerTransactionId,
-  walletId: toWalletId(tx.accounts as LiabilitiesWalletId),
-  type: tx.type as LedgerTransactionType,
-  debit: toSats(tx.debit),
-  credit: toSats(tx.credit),
-  fee: toSats(tx.fee),
-  usd: tx.usd,
-  feeUsd: tx.feeUsd,
-  currency: tx.currency as WalletCurrency,
-  timestamp: tx.timestamp,
-  pendingConfirmation: tx.pending,
-  journalId: tx._journal.toString() as LedgerJournalId,
-  lnMemo: tx.memo,
-  username: (tx.username as Username) || undefined,
-  memoFromPayer: tx.memoPayer,
-  paymentHash: (tx.hash as PaymentHash) || undefined,
-  pubkey: (tx.pubkey as Pubkey) || undefined,
-  address:
-    tx.payee_addresses && tx.payee_addresses.length > 0
-      ? (tx.payee_addresses[0] as OnChainAddress)
-      : undefined,
-  txHash: (tx.hash as OnChainTxHash) || undefined,
-  feeKnownInAdvance: tx.feeKnownInAdvance || false,
+const translateToLedgerTx = <S extends WalletCurrency>({
+  txnRecord,
+  txnMetadata,
+}: {
+  txnRecord: TransactionRecord
+  txnMetadata: LedgerTransactionMetadata | undefined
+}): LedgerTransaction<S> => {
+  const currency = txnRecord.currency as S
 
-  satsAmount: tx?.satsAmount ? toSats(tx.satsAmount) : undefined,
-  centsAmount: tx?.centsAmount ? toCents(tx.centsAmount) : undefined,
-  satsFee: tx?.satsFee ? toSats(tx.satsFee) : undefined,
-  centsFee: tx?.centsFee ? toCents(tx.centsFee) : undefined,
-  displayAmount: tx?.displayAmount
-    ? (tx.displayAmount as DisplayCurrencyBaseAmount)
-    : undefined,
-  displayFee: tx?.displayFee ? (tx.displayFee as DisplayCurrencyBaseAmount) : undefined,
-  displayCurrency: tx?.displayCurrency
-    ? (tx.displayCurrency as DisplayCurrency)
-    : undefined,
-})
+  const fromTxnRecord: LedgerTransaction<S> = {
+    id: txnRecord.id as LedgerTransactionId,
+    walletId: toWalletId(txnRecord.accounts as LiabilitiesWalletId),
+    type: txnRecord.type as LedgerTransactionType,
+    debit:
+      currency === WalletCurrency.Btc
+        ? toSats(txnRecord.debit)
+        : toCents(txnRecord.debit),
+    credit:
+      currency === WalletCurrency.Btc
+        ? toSats(txnRecord.credit)
+        : toCents(txnRecord.credit),
+    fee: toSats(txnRecord.fee),
+    usd: txnRecord.usd,
+    feeUsd: txnRecord.feeUsd,
+    currency,
+    timestamp: txnRecord.timestamp,
+    pendingConfirmation: txnRecord.pending,
+    journalId: txnRecord._journal.toString() as LedgerJournalId,
+    lnMemo: txnRecord.memo,
+    username: (txnRecord.username as Username) || undefined,
+    memoFromPayer: txnRecord.memoPayer,
+    paymentHash: (txnRecord.hash as PaymentHash) || undefined,
+    pubkey: (txnRecord.pubkey as Pubkey) || undefined,
+    address:
+      txnRecord.payee_addresses && txnRecord.payee_addresses.length > 0
+        ? (txnRecord.payee_addresses[0] as OnChainAddress)
+        : undefined,
+    txHash: (txnRecord.hash as OnChainTxHash) || undefined,
+    feeKnownInAdvance: txnRecord.feeKnownInAdvance || false,
+
+    satsAmount:
+      txnRecord?.satsAmount !== undefined ? toSats(txnRecord.satsAmount) : undefined,
+    centsAmount:
+      txnRecord?.centsAmount !== undefined ? toCents(txnRecord.centsAmount) : undefined,
+    satsFee: txnRecord?.satsFee !== undefined ? toSats(txnRecord.satsFee) : undefined,
+    centsFee: txnRecord?.centsFee !== undefined ? toCents(txnRecord.centsFee) : undefined,
+    displayAmount:
+      txnRecord?.displayAmount !== undefined
+        ? (txnRecord.displayAmount as DisplayCurrencyBaseAmount)
+        : undefined,
+    displayFee:
+      txnRecord?.displayFee !== undefined
+        ? (txnRecord.displayFee as DisplayCurrencyBaseAmount)
+        : undefined,
+    displayCurrency:
+      txnRecord?.displayCurrency !== undefined
+        ? (txnRecord.displayCurrency as DisplayCurrency)
+        : undefined,
+  }
+
+  if (txnMetadata === undefined) return fromTxnRecord
+
+  let fromTxnMetadata: PartialLedgerTransactionFromMetadata = {}
+  if ("revealedPreImage" in txnMetadata) {
+    fromTxnMetadata = { revealedPreImage: txnMetadata.revealedPreImage }
+  }
+  return { ...fromTxnRecord, ...fromTxnMetadata }
+}
+
+const translateTxRecordsToLedgerTxs = async (
+  txnRecords: TransactionRecord[],
+): Promise<LedgerTransaction<WalletCurrency>[]> => {
+  const txnsMetadata = await Promise.all(
+    txnRecords.map(async (tx): Promise<LedgerTransactionMetadata | undefined> => {
+      const txnMetadataResult = await txnMetadataRepo.findById(
+        tx.id as LedgerTransactionId,
+      )
+      return txnMetadataResult instanceof Error ? undefined : txnMetadataResult
+    }),
+  )
+
+  return txnRecords.map((txnRecord, i) =>
+    translateToLedgerTx({
+      txnRecord,
+      txnMetadata: txnsMetadata[i],
+    }),
+  )
+}
 
 export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
   journalId: savedEntry._id.toString(),
