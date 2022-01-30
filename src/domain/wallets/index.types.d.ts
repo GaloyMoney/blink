@@ -38,7 +38,7 @@ type SettlementViaIntraledger = {
 
 type SettlementViaLn = {
   readonly type: "lightning"
-  revealedPreImage: RevealedPreImage | null
+  revealedPreImage: RevealedPreImage | undefined
 }
 
 type SettlementViaOnChain = {
