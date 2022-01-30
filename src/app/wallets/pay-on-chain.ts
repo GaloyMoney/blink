@@ -9,7 +9,7 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { toDisplayCurrency } from "@domain/fiat/display-currency"
+import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
 import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
 import { LockService } from "@services"
 import { LedgerService } from "@services/ledger"
@@ -336,8 +336,8 @@ const executePaymentViaOnChain = async ({
         }
 
         const sats = toSats(amountToSend + totalFee)
-        const amountDisplayCurrency = toDisplayCurrency(usdPerSat)(sats)
-        const totalFeeDisplayCurrency = toDisplayCurrency(usdPerSat)(totalFee)
+        const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(sats)
+        const totalFeeDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(totalFee)
 
         return ledgerService.addOnChainTxSend({
           walletId: senderWallet.id,

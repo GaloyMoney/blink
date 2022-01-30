@@ -1,7 +1,7 @@
 import { getCurrentPrice } from "@app/prices"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { CouldNotFindError } from "@domain/errors"
-import { toDisplayCurrency } from "@domain/fiat/display-currency"
+import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { LockService } from "@services"
 import { LedgerService } from "@services/ledger"
@@ -91,7 +91,7 @@ const updatePendingInvoice = async ({
 
   const walletInvoicesRepo = WalletInvoicesRepository()
 
-  const { pubkey, paymentHash, walletId, currency, usdAmount } = walletInvoice
+  const { pubkey, paymentHash, walletId, currency, usdCents } = walletInvoice
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
     const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
@@ -151,9 +151,10 @@ const updatePendingInvoice = async ({
     } = lnInvoiceLookup
     const feeInboundLiquidity = DepositFeeCalculator().lnDepositFee()
 
-    const amountDisplayCurrency = toDisplayCurrency(usdPerSat)(roundedDownReceived)
+    const amountDisplayCurrency =
+      DisplayCurrencyConversionRate(usdPerSat)(roundedDownReceived)
     const feeInboundLiquidityDisplayCurrency =
-      toDisplayCurrency(usdPerSat)(feeInboundLiquidity)
+      DisplayCurrencyConversionRate(usdPerSat)(feeInboundLiquidity)
 
     const ledgerService = LedgerService()
     const result = await ledgerService.addLnTxReceive({
@@ -161,7 +162,7 @@ const updatePendingInvoice = async ({
       paymentHash,
       description,
       sats: roundedDownReceived,
-      usd: usdAmount,
+      usd: usdCents,
       amountDisplayCurrency,
       currency,
       feeInboundLiquidity,

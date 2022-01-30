@@ -19,7 +19,7 @@ import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
 } from "@domain/errors"
-import { toDisplayCurrency } from "@domain/fiat/display-currency"
+import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
 import {
@@ -411,8 +411,8 @@ const executePaymentViaLn = async ({
   const maxFee = LnFeeCalculator().max(amount)
   const feeRouting = route ? route.roundedUpFee : maxFee
   const sats = toSats(amount + feeRouting)
-  const amountDisplayCurrency = toDisplayCurrency(usdPerSat)(sats)
-  const feeRoutingDisplayCurrency = toDisplayCurrency(usdPerSat)(feeRouting)
+  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(sats)
+  const feeRoutingDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(feeRouting)
 
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },

@@ -22,13 +22,11 @@ export const reimburseFee = async ({
     actualFee,
   })
   if (feeDifference instanceof Error) {
-    logger.warn(
-      {
-        maxFee,
-        actualFee,
-      },
-      `Invalid reimbursement fee`,
-    )
+    logger.warn({ maxFee, actualFee }, `Invalid reimbursement fee`)
+    return
+  }
+
+  if (feeDifference === 0) {
     return
   }
 

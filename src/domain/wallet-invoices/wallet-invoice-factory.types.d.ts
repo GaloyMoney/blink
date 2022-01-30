@@ -1,6 +1,6 @@
 type WalletInvoiceFactoryArgs = {
   registeredInvoice: RegisteredInvoice
-  usdAmount: UsdAmount | undefined
+  usdCents: UsdCents | undefined
 }
 
 type WalletInvoiceFactory = {

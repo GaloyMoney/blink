@@ -1,5 +1,5 @@
-export const toDisplayCurrency =
+export const DisplayCurrencyConversionRate =
   (price: UsdPerSat) =>
-  (amount: Satoshis): DisplayCurrencyAmount => {
-    return (amount * price) as DisplayCurrencyAmount
+  (amount: Satoshis): DisplayCurrencyBaseAmount => {
+    return (amount * price) as DisplayCurrencyBaseAmount
   }

@@ -1,30 +1,30 @@
 import { toSats } from "@domain/bitcoin"
-import { InvalidUsdAmount, NonIntegeterUsdAmount } from "@domain/errors"
+import { InvalidUsdCents, NonIntegeterUsdCents } from "@domain/errors"
 
-export const toUsd = (amount: number): UsdAmount => {
+export const toCents = (amount: number): UsdCents => {
   // safety protection during dev. remove before prod (should not throw)
   if (!Number.isInteger(amount))
-    throw new NonIntegeterUsdAmount(`${amount} type ${typeof amount} is not an integer`)
-  return amount as UsdAmount
+    throw new NonIntegeterUsdCents(`${amount} type ${typeof amount} is not an integer`)
+  return amount as UsdCents
 }
 
-export const checkedtoUsd = (amount: number): UsdAmount | ValidationError => {
-  if (!(amount && amount > 0)) return new InvalidUsdAmount()
+export const checkedtoCents = (amount: number): UsdCents | ValidationError => {
+  if (!(amount && amount > 0)) return new InvalidUsdCents()
   if (!Number.isInteger(amount))
-    return new NonIntegeterUsdAmount(`${amount} type ${typeof amount} is not an integer`)
-  return toUsd(amount)
+    return new NonIntegeterUsdCents(`${amount} type ${typeof amount} is not an integer`)
+  return toCents(amount)
 }
 
-export const satstoUsdOptionPricing = ({
+export const satsToCentsOptionPricing = ({
   price,
-  usdAmount,
+  usdCents,
 }: {
   price: UsdPerSat
-  usdAmount: UsdAmount
-  // TODO: should we have a currency property? or make UsdAmount subtype per fiat currency?
+  usdCents: UsdCents
+  // TODO: should we have a currency property? or make UsdCents subtype per fiat currency?
 }) => {
   // TODO: add time value of option
   // TODO: add spread
 
-  return toSats(Math.ceil(usdAmount / price))
+  return toSats(Math.ceil(usdCents / price))
 }

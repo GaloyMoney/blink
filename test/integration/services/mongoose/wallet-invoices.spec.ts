@@ -9,7 +9,7 @@ import { WalletInvoicesRepository } from "@services/mongoose"
 import { WalletCurrency } from "@domain/wallets"
 import { v4 as uuidv4 } from "uuid"
 
-import { toUsd } from "@domain/fiat"
+import { toCents } from "@domain/fiat"
 
 import { createUserWallet, getDefaultWalletIdByTestUserIndex } from "test/helpers"
 
@@ -29,7 +29,7 @@ const createTestWalletInvoice = () => {
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
     paid: false,
-    usdAmount: toUsd(10),
+    usdCents: toCents(10),
     currency: WalletCurrency.Btc,
   }
 }

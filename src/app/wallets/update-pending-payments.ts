@@ -128,10 +128,7 @@ const updatePendingPayment = async ({
 
       const settled = await ledgerService.settlePendingLnPayment(paymentHash)
       if (settled instanceof Error) {
-        paymentLogger.error(
-          { error: settled },
-          "we didn't have any transaction to update",
-        )
+        paymentLogger.error({ error: settled }, "no transaction to update")
         return settled
       }
 
@@ -150,13 +147,18 @@ const updatePendingPayment = async ({
           actualFee: roundedUpFee,
           logger,
         })
-      }
+      } else if (status === PaymentStatus.Failed) {
+        paymentLogger.warn(
+          { success: false, id: paymentHash, payment: pendingPayment },
+          "payment has failed. reverting transaction",
+        )
 
-      return revertTransaction({
-        pendingPayment,
-        lnPaymentLookup,
-        logger: paymentLogger,
-      })
+        return revertTransaction({
+          pendingPayment,
+          lnPaymentLookup,
+          logger: paymentLogger,
+        })
+      }
     })
   }
 }

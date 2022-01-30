@@ -67,7 +67,7 @@ type TxArgs = {
   walletId: WalletId
   description: string
   sats: Satoshis
-  amountDisplayCurrency: DisplayCurrencyAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
 type LnTxArgs = TxArgs & {
@@ -81,8 +81,8 @@ type OnChainTxArgs = TxArgs & {
 
 type AddLnTxReceiveArgs = LnTxArgs & {
   currency: WalletCurrency
-  usd: UsdAmount | undefined
-  feeInboundLiquidityDisplayCurrency: DisplayCurrencyAmount
+  usd: UsdCents | undefined
+  feeInboundLiquidityDisplayCurrency: DisplayCurrencyBaseAmount
   feeInboundLiquidity: Satoshis
 }
 
@@ -90,14 +90,14 @@ type AddLnTxSendArgs = LnTxArgs & {
   pubkey: Pubkey
   feeKnownInAdvance: boolean
   feeRouting: Satoshis
-  feeRoutingDisplayCurrency: DisplayCurrencyAmount
+  feeRoutingDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
 type AddOnChainTxSendArgs = OnChainTxArgs & {
   sendAll: boolean
   totalFee: Satoshis
   bankFee: Satoshis
-  totalFeeDisplayCurrency: DisplayCurrencyAmount
+  totalFeeDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
 type AddColdStorageTxReceiveArgs = {
