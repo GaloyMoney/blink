@@ -64,6 +64,7 @@ export const fromLedger = (
       paymentHash,
       txHash,
       pubkey,
+      revealedPreImage,
       username,
       address,
       pendingConfirmation,
@@ -186,7 +187,7 @@ export const fromLedger = (
             },
             settlementVia: {
               type: SettlementMethod.Lightning,
-              revealedPreImage: null,
+              revealedPreImage,
             },
           }
           return walletTransaction
