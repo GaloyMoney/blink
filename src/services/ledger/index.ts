@@ -281,9 +281,35 @@ const bookLedgerQuery = async (args) => {
     ? { accounts: account }
     : {}
 
+  const preImageJoin = [
+    {
+      $lookup: {
+        from: "lnpayments",
+        let: { hash: "$hash" },
+        pipeline: [
+          { $match: { $expr: { $eq: ["$paymentHash", "$$hash"] } } },
+          {
+            $project: {
+              _id: 0,
+              revealedPreImage: "$confirmedDetails.revealedPreImage",
+            },
+          },
+        ],
+        as: "lnPayments",
+      },
+    },
+    {
+      $replaceRoot: {
+        newRoot: { $mergeObjects: [{ $arrayElemAt: ["$lnPayments", 0] }, "$$ROOT"] },
+      },
+    },
+    { $project: { lnPayments: 0 } },
+  ]
+
   try {
     const results = await Transaction.aggregate([
       { $match: { ...keysToMatch, ...accountMatch } },
+      ...preImageJoin,
       { $sort: { datetime: -1, timestamp: -1 } },
     ])
     return { results, total: results.length }
