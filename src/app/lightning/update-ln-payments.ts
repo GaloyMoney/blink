@@ -13,17 +13,20 @@ export const updateLnPayments = async (): Promise<true | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
-  const listFns = [lndService.listSettledPayments, lndService.listFailedPayments]
+  const listFns: ListLnPayments[] = [
+    lndService.listSettledPayments,
+    lndService.listFailedPayments,
+  ]
   const pubkeys = lndService
     .listActivePubkeys()
     .filter((pubkey) => pubkeysFromPayments.has(pubkey))
 
   for (const listFn of listFns) {
-    for (const key of pubkeys) {
+    for (const pubkey of pubkeys) {
       processedLnPaymentsHashes = await updateLnPaymentsByFunction({
         processedLnPaymentsHashes,
         incompleteLnPayments,
-        pubkey: key as Pubkey,
+        pubkey,
         listFn,
       })
     }
