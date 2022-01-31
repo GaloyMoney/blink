@@ -9,7 +9,7 @@ export const FeeReimbursement = (prepaidFee: Satoshis): FeeReimbursement => {
     actualFee: Satoshis
   }): Satoshis | FeeDifferenceError => {
     const feeDifference = toSats(prepaidFee - actualFee)
-    if (feeDifference < 0 || feeDifference > prepaidFee) return new FeeDifferenceError()
+    if (feeDifference < 0) return new FeeDifferenceError()
     return feeDifference
   }
 
