@@ -19,7 +19,7 @@
     "bitcoin-cli": "source ./scripts/export-local.sh && kubectl exec bitcoind-0 -- bitcoin-cli -rpcuser=rpcuser -rpcpassword=$BITCOINDRPCPASS -regtest",
     "update-postman": "curl --location --request GET \"https://api.getpostman.com/collections/4e3fee88-7267-44e1-a316-b81e90b0bd2b\" --header \"X-Api-Key: $POSTMANAPIKEY\" | jq . > test/postman/graphql.postman-collection.json",
     "test": "export JEST_JUNIT_OUTPUT_DIR=\"./artifacts\" && jest --ci --reporters=default --reporters=jest-junit",
-    "test:unit": ". ./.envrc && LOGLEVEL=warn jest --config ./test/jest-unit.config.js --bail --verbose $TEST | yarn pino-pretty -c -l",
+    "test:unit": "LOGLEVEL=warn jest --config ./test/jest-unit.config.js --bail --verbose $TEST | yarn pino-pretty -c -l",
     "test:integration": ". ./.envrc && LOGLEVEL=warn jest --config ./test/jest-integration.config.js --bail --runInBand --verbose $TEST | yarn pino-pretty -c -l",
     "build-docs": "npx spectaql spectaql-config.yml -1"
   },
@@ -84,8 +84,8 @@
     "lodash.merge": "^4.6.2",
     "lodash.sortby": "^4.7.0",
     "lodash.sumby": "^4.6.0",
-    "medici": "^4.0.2",
-    "mongoose": "~5.10.14",
+    "medici": "^5.1.0",
+    "mongoose": "^6.1.8",
     "node-2fa": "^2.0.2",
     "node-cache": "^5.1.2",
     "pino": "^6.11.3",
@@ -145,7 +145,8 @@
     "http-terminator": "^3.0.3",
     "jest": "^27.0.6",
     "jest-junit": "^12.2.0",
-    "migrate-mongo": "=8.2.2",
+    "migrate-mongo": "^8.2.3",
+    "mongodb-memory-server": "^8.2.0",
     "newman": "^5.2.4",
     "nodemon": "^2.0.15",
     "pino-pretty": "^5.1.0",
@@ -162,8 +163,7 @@
   },
   "resolutions": {
     "**/**/ws": ">=7.4.6",
-    "**/**/json-bigint": ">=1.0.0",
-    "**/**/mongoose": "~5.10.14"
+    "**/**/json-bigint": ">=1.0.0"
   },
   "private": true
 }
