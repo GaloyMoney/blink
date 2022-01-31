@@ -106,8 +106,8 @@ type AddColdStorageTxReceiveArgs = {
   description: string
   sats: Satoshis
   fee: Satoshis
-  usd: number
-  usdFee: number
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
 type AddColdStorageTxSendArgs = {
@@ -116,24 +116,24 @@ type AddColdStorageTxSendArgs = {
   description: string
   sats: Satoshis
   fee: Satoshis
-  usd: number
-  usdFee: number
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
 type IntraledgerTxArgs = {
   senderWalletId: WalletId
+  senderWalletCurrency: WalletCurrency
+  senderUsername: Username | null
   description: string
   sats: Satoshis
   recipientWalletId: WalletId
-  senderUsername: Username | null
+  recipientWalletCurrency: WalletCurrency
   recipientUsername: Username | null
   memoPayer: string | null
 }
 
 type AddIntraLedgerTxSendArgs = IntraledgerTxArgs & {
-  fee: Satoshis
-  usd: number
-  usdFee: number
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
 type AddLnIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {

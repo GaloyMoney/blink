@@ -7,7 +7,6 @@ import { WalletInvoice } from "@services/mongoose/schema"
 import { WalletInvoicesRepository } from "@services/mongoose"
 
 import { WalletCurrency } from "@domain/wallets"
-import { v4 as uuidv4 } from "uuid"
 
 import { toCents } from "@domain/fiat"
 
@@ -25,7 +24,7 @@ const createTestWalletInvoice = () => {
   const randomPaymentHash = crypto.randomBytes(32).toString("hex") as PaymentHash
   return {
     paymentHash: randomPaymentHash,
-    walletId: uuidv4() as WalletId,
+    walletId: crypto.randomUUID() as WalletId,
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
     paid: false,

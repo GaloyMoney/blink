@@ -1,35 +1,37 @@
 type TxMetadata = {
   type: LedgerTransactionType
   pending: boolean
-  fee: Satoshis
-  feeUsd: number
-  sats: Satoshis
-  usd: number
-  currency: WalletCurrency
+  usd: DisplayCurrencyBaseAmount // to be renamed amountDisplayCurrency
 }
 
-type AddLnTxReceiveMetadata = TxMetadata & {
+type NonIntraledgerTxMetadata = TxMetadata & {
+  currency: WalletCurrency
+  fee: Satoshis
+  feeUsd: DisplayCurrencyBaseAmount // to be renamed feeDisplayCurrency
+}
+
+type AddLnTxReceiveMetadata = NonIntraledgerTxMetadata & {
   hash: PaymentHash
 }
 
-type AddLnTxSendMetadata = TxMetadata & {
+type AddLnTxSendMetadata = NonIntraledgerTxMetadata & {
   hash: PaymentHash
   pubkey: Pubkey
   feeKnownInAdvance: boolean
 }
 
-type AddOnchainTxSendMetadata = TxMetadata & {
+type AddOnchainTxSendMetadata = NonIntraledgerTxMetadata & {
   hash: OnChainTxHash
   payee_addresses: OnChainAddress[]
   sendAll: boolean
 }
 
-type AddColdStorageTxReceiveMetadata = TxMetadata & {
+type AddColdStorageTxReceiveMetadata = NonIntraledgerTxMetadata & {
   hash: OnChainTxHash
   payee_addresses: OnChainAddress[]
 }
 
-type AddColdStorageTxSendMetadata = TxMetadata & {
+type AddColdStorageTxSendMetadata = NonIntraledgerTxMetadata & {
   hash: OnChainTxHash
   payee_addresses: OnChainAddress[]
 }
@@ -49,7 +51,7 @@ type AddOnChainIntraledgerTxSendMetadata = IntraledgerTxMetadata & {
   sendAll: boolean
 }
 
-type addWalletIdIntraledgerTxSendMetadata = IntraledgerTxMetadata
+type AddWalletIdIntraledgerTxSendMetadata = IntraledgerTxMetadata
 
 type SendIntraledgerTxArgs = IntraledgerTxArgs & {
   recipientUsername: Username | null
@@ -57,7 +59,7 @@ type SendIntraledgerTxArgs = IntraledgerTxArgs & {
   metadata:
     | AddLnIntraledgerTxSendMetadata
     | AddOnChainIntraledgerTxSendMetadata
-    | addWalletIdIntraledgerTxSendMetadata
+    | AddWalletIdIntraledgerTxSendMetadata
 }
 
 type LoadLedgerParams = {

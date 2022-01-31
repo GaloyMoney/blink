@@ -1,8 +1,10 @@
+import crypto from "crypto"
+
 import { liabilitiesMainAccount, toLiabilitiesWalletId, toWalletId } from "@domain/ledger"
 
 describe("ledger.ts", () => {
   describe("resolveWalletId", () => {
-    const walletId = "123542" as WalletId // FIXME: use a uuid v4 value
+    const walletId = crypto.randomUUID() as WalletId
     it("returns account id from string path", () => {
       expect(toWalletId(toLiabilitiesWalletId(walletId))).toEqual(walletId)
     })

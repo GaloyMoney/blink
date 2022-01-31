@@ -179,20 +179,30 @@ type PaymentInputValidatorConfig = (
   walletId: WalletId,
 ) => Promise<Wallet | RepositoryError>
 
-type ValidatePaymentInputArgs = {
+type ValidatePaymentInputSenderArgs = {
   amount: number
   senderWalletId: string
   senderAccount: Account
-  recipientWalletId?: string
 }
+
 type ValidatePaymentInputRet = {
   amount: Satoshis
   senderWallet: Wallet
-  recipientWallet?: Wallet
+}
+
+type ValidatePaymentInputRecipientArgs = {
+  recipientWalletId: string
+  senderWallet: Wallet
+}
+type ValidatePaymentInputRecipientRet = {
+  recipientWallet: Wallet
 }
 
 type PaymentInputValidator = {
-  validatePaymentInput: (
-    args: ValidatePaymentInputArgs,
+  validateSender: (
+    args: ValidatePaymentInputSenderArgs,
   ) => Promise<ValidatePaymentInputRet | ValidationError | RepositoryError>
+  validateRecipient: (
+    args: ValidatePaymentInputRecipientArgs,
+  ) => Promise<ValidatePaymentInputRecipientRet | ValidationError | RepositoryError>
 }

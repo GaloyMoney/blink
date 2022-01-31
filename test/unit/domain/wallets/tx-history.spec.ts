@@ -1,3 +1,5 @@
+import crypto from "crypto"
+
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { LedgerTransactionType } from "@domain/ledger"
 import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
@@ -7,7 +9,6 @@ import {
 } from "@domain/wallets/tx-history"
 import { toSats } from "@domain/bitcoin"
 import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
-import { v4 as uuidv4 } from "uuid"
 
 describe("WalletTransactionHistory.fromLedger", () => {
   it("translates ledger txs to wallet txs", () => {
@@ -16,7 +17,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
     const settlementAmount = toSats(100000)
     const usd = 10
     const settlementUsdPerSat = Math.abs(usd / settlementAmount)
-    const walletId = uuidv4() as WalletId
+    const walletId = crypto.randomUUID() as WalletId
 
     const ledgerTransactions: LedgerTransaction[] = [
       {
@@ -252,7 +253,7 @@ describe("translateDescription", () => {
 
 describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
   it("translates submitted txs to wallet txs", () => {
-    const walletId = uuidv4() as WalletId
+    const walletId = crypto.randomUUID() as WalletId
 
     const timestamp = new Date(Date.now())
     const incomingTxs: IncomingOnChainTransaction[] = [
@@ -342,7 +343,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
   })
 
   it("translates handles price NaN", () => {
-    const walletId = uuidv4() as WalletId
+    const walletId = crypto.randomUUID() as WalletId
 
     const timestamp = new Date(Date.now())
     const incomingTxs: IncomingOnChainTransaction[] = [

@@ -218,7 +218,7 @@ const lnSendPayment = async ({
   })
 
   const validator = PaymentInputValidator(WalletsRepository().findById)
-  const validationResult = await validator.validatePaymentInput({
+  const validationResult = await validator.validateSender({
     amount: amountRaw,
     senderAccount,
     senderWalletId,
@@ -306,35 +306,32 @@ const executePaymentViaIntraledger = async ({
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  const lnFee = toSats(0)
-  const sats = toSats(amount + lnFee)
-  const usd = sats * usdPerSat
-  const usdFee = lnFee * usdPerSat
+  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(amount)
 
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
     async (lock) => {
       const balance = await LedgerService().getWalletBalance(senderWallet.id)
       if (balance instanceof Error) return balance
-      if (balance < sats) {
+      if (balance < amount) {
         return new InsufficientBalanceError(
-          `Payment amount '${sats}' exceeds balance '${balance}'`,
+          `Payment amount '${amount}' exceeds balance '${balance}'`,
         )
       }
 
       const journal = await LockService().extendLock({ logger, lock }, async () =>
         LedgerService().addLnIntraledgerTxSend({
           senderWalletId: senderWallet.id,
+          senderWalletCurrency: senderWallet.currency,
+          senderUsername: senderAccount.username,
           paymentHash,
           description,
-          sats,
-          fee: lnFee,
-          usd,
-          usdFee,
+          sats: amount,
+          amountDisplayCurrency,
           recipientWalletId,
-          pubkey: lndService.defaultPubkey(),
-          senderUsername: senderAccount.username,
+          recipientWalletCurrency: recipientWallet.currency,
           recipientUsername: null,
+          pubkey: lndService.defaultPubkey(),
           memoPayer: memo,
         }),
       )

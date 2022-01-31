@@ -10,6 +10,7 @@ import { getCurrentPrice } from "@app/prices"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
 import { toSats } from "@domain/bitcoin"
 import { ColdStorageService } from "@services/cold-storage"
+import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
 
 export const updateOnChainReceipt = async ({
   scanDepth = ONCHAIN_SCAN_DEPTH,
@@ -188,8 +189,8 @@ const processTxForHotWallet = async ({
 
         if (fee instanceof Error) fee = toSats(0)
 
-        const usd = sats * usdPerSat
-        const usdFee = fee * usdPerSat
+        const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(sats)
+        const feeDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(fee)
 
         const description = `deposit to hot wallet of ${sats} sats from the cold storage wallet`
 
@@ -198,8 +199,8 @@ const processTxForHotWallet = async ({
           description,
           sats,
           fee,
-          usd,
-          usdFee,
+          amountDisplayCurrency,
+          feeDisplayCurrency,
           payeeAddress: address,
         })
 

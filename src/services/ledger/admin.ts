@@ -32,8 +32,8 @@ export const admin = {
     description,
     sats,
     fee,
-    usd,
-    usdFee,
+    feeDisplayCurrency,
+    amountDisplayCurrency,
   }: AddColdStorageTxReceiveArgs): Promise<LedgerJournal | LedgerServiceError> => {
     let metadata: AddColdStorageTxReceiveMetadata
     try {
@@ -43,9 +43,8 @@ export const admin = {
         hash: txHash,
         payee_addresses: [payeeAddress],
         fee,
-        feeUsd: usdFee,
-        sats,
-        usd,
+        feeUsd: feeDisplayCurrency,
+        usd: amountDisplayCurrency,
         currency: WalletCurrency.Btc,
       }
 
@@ -71,8 +70,8 @@ export const admin = {
     description,
     sats,
     fee,
-    usd,
-    usdFee,
+    amountDisplayCurrency,
+    feeDisplayCurrency,
   }: AddColdStorageTxSendArgs): Promise<LedgerJournal | LedgerServiceError> => {
     let metadata: AddColdStorageTxSendMetadata
     try {
@@ -82,9 +81,8 @@ export const admin = {
         hash: txHash,
         payee_addresses: [payeeAddress],
         fee,
-        feeUsd: usdFee,
-        sats,
-        usd,
+        feeUsd: feeDisplayCurrency,
+        usd: amountDisplayCurrency,
         currency: WalletCurrency.Btc,
       }
 

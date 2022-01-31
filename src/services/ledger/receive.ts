@@ -68,7 +68,6 @@ export const receive = {
         hash: paymentHash,
         fee: feeInboundLiquidity,
         feeUsd: feeInboundLiquidityDisplayCurrency,
-        sats,
         usd: amountDisplayCurrency,
         currency: WalletCurrency.Btc,
       }

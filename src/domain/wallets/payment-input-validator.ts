@@ -10,12 +10,11 @@ import { AccountStatus } from "@domain/accounts"
 export const PaymentInputValidator = (
   getWalletFn: PaymentInputValidatorConfig,
 ): PaymentInputValidator => {
-  const validatePaymentInput = async ({
+  const validateSender = async ({
     amount,
     senderWalletId: uncheckedSenderWalletId,
     senderAccount,
-    recipientWalletId: uncheckedRecipientWalletId,
-  }: ValidatePaymentInputArgs) => {
+  }: ValidatePaymentInputSenderArgs) => {
     const validAmount = checkedToSats(amount)
     if (validAmount instanceof Error) return validAmount
 
@@ -31,27 +30,27 @@ export const PaymentInputValidator = (
 
     if (senderWallet.accountId !== senderAccount.id) return new InvalidWalletId()
 
-    if (uncheckedRecipientWalletId) {
-      const recipientWalletId = checkedToWalletId(uncheckedRecipientWalletId)
-      if (recipientWalletId instanceof Error) return recipientWalletId
-
-      const recipientWallet = await getWalletFn(recipientWalletId)
-      if (recipientWallet instanceof Error) return recipientWallet
-      if (recipientWallet.id === senderWallet.id) return new SelfPaymentError()
-      return {
-        amount: validAmount,
-        senderWallet,
-        recipientWallet,
-      }
-    }
-
     return {
       amount: validAmount,
       senderWallet,
     }
   }
 
+  const validateRecipient = async ({
+    recipientWalletId: uncheckedRecipientWalletId,
+    senderWallet,
+  }: ValidatePaymentInputRecipientArgs) => {
+    const recipientWalletId = checkedToWalletId(uncheckedRecipientWalletId)
+    if (recipientWalletId instanceof Error) return recipientWalletId
+
+    const recipientWallet = await getWalletFn(recipientWalletId)
+    if (recipientWallet instanceof Error) return recipientWallet
+    if (recipientWallet.id === senderWallet.id) return new SelfPaymentError()
+    return { recipientWallet }
+  }
+
   return {
-    validatePaymentInput,
+    validateSender,
+    validateRecipient,
   }
 }

@@ -1,4 +1,5 @@
 import { createServer } from "http"
+import crypto from "crypto"
 
 import { Accounts, Users } from "@app"
 import { getApolloConfig, getGeetestConfig, isProd, JWT_SECRET } from "@config"
@@ -34,7 +35,6 @@ import {
   SubscribeFunction,
   SubscriptionServer,
 } from "subscriptions-transport-ws"
-import { v4 as uuidv4 } from "uuid"
 
 import { CustomError } from "@core/error"
 
@@ -85,8 +85,8 @@ const sessionContext = ({
   let wallet, user
   // FIXME: type issue with let wallet: LightningUserWallet | null, user: UserRecord | null
 
-  // TODO move from id: uuidv4() to a Jaeger standard
-  const logger = graphqlLogger.child({ token, id: uuidv4(), body })
+  // TODO move from crypto.randomUUID() to a Jaeger standard
+  const logger = graphqlLogger.child({ token, id: crypto.randomUUID(), body })
 
   let domainUser: User | null = null
   let domainAccount: Account | undefined
