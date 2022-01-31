@@ -39,6 +39,11 @@ const updateLnPaymentsByFunction = async ({
   incompleteLnPayments,
   pubkey,
   listFn,
+}: {
+  processedLnPaymentsHashes: PaymentHash[]
+  incompleteLnPayments: PersistedLnPaymentLookup[]
+  pubkey: Pubkey
+  listFn: ListLnPayments
 }): Promise<PaymentHash[]> => {
   let after: PagingStartToken | PagingContinueToken | PagingStopToken = undefined
   while (
