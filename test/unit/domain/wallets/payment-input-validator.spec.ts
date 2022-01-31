@@ -55,77 +55,53 @@ describe("PaymentInputValidator", () => {
 
   it("returns the correct types when everything is valid", async () => {
     const validator: PaymentInputValidator = PaymentInputValidator(getWalletFn)
-    const result = await validator.validateSender({
+    const result = await validator.validatePaymentInput({
       amount: 2,
       senderWalletId: dummySenderWallet.id,
       senderAccount: dummyAccount,
+      recipientWalletId: dummyRecipientWallet.id,
     })
     if (result instanceof Error) throw result
 
-    const { amount, senderWallet } = result
+    const { amount, senderWallet, recipientWallet } = result
     expect(amount).toBe(2)
     expect(senderWallet).toEqual(expect.objectContaining(dummySenderWallet))
-
-    const recipient = await validator.validateRecipient({
-      senderWallet,
-      recipientWalletId: dummyRecipientWallet.id,
-    })
-    if (recipient instanceof Error) throw recipient
-    const { recipientWallet } = recipient
-
     expect(recipientWallet).toEqual(expect.objectContaining(dummyRecipientWallet))
   })
 
   it("Fails on invalid amount", async () => {
     const validator: PaymentInputValidator = PaymentInputValidator(getWalletFn)
-    const result = await validator.validateSender({
+    const result = await validator.validatePaymentInput({
       amount: -1,
       senderWalletId: dummySenderWallet.id,
       senderAccount: dummyAccount,
+      recipientWalletId: dummyRecipientWallet.id,
     })
     expect(result).toBeInstanceOf(InvalidSatoshiAmount)
   })
 
   it("Fails when sender === recipient", async () => {
     const validator: PaymentInputValidator = PaymentInputValidator(getWalletFn)
-    const result = await validator.validateSender({
+    const result = await validator.validatePaymentInput({
       amount: 2,
       senderWalletId: dummySenderWallet.id,
       senderAccount: dummyAccount,
-    })
-    if (result instanceof Error) throw result
-    const { senderWallet } = result
-    const recipient = await validator.validateRecipient({
-      senderWallet,
       recipientWalletId: dummySenderWallet.id,
     })
-    expect(recipient).toBeInstanceOf(SelfPaymentError)
+    expect(result).toBeInstanceOf(SelfPaymentError)
   })
 
   it("Fails if the account is not active", async () => {
     const validator: PaymentInputValidator = PaymentInputValidator(getWalletFn)
-    const result = await validator.validateSender({
+    const result = await validator.validatePaymentInput({
       amount: 2,
       senderWalletId: dummySenderWallet.id,
       senderAccount: {
         ...dummyAccount,
         status: AccountStatus.Locked,
       },
+      recipientWalletId: dummyRecipientWallet.id,
     })
     expect(result).toBeInstanceOf(InvalidAccountStatusError)
-  })
-
-  it("Returns undefined for recipient when id is undefined", async () => {
-    const validator: PaymentInputValidator = PaymentInputValidator(getWalletFn)
-    const result = await validator.validateSender({
-      amount: 2,
-      senderWalletId: dummySenderWallet.id,
-      senderAccount: dummyAccount,
-    })
-    if (result instanceof Error) throw result
-
-    const { senderWallet, amount } = result
-    expect(amount).toBe(2)
-    expect(senderWallet).toEqual(expect.objectContaining(dummySenderWallet))
   })
 })

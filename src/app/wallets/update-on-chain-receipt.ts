@@ -117,16 +117,17 @@ const processTxForWallet = async (
             amount: sats,
             ratio: account.depositFeeRatio,
           })
-          const usd = sats * usdPerSat
-          const usdFee = fee * usdPerSat
+          const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(sats)
+          const feeDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(fee)
 
           const result = await ledger.addOnChainTxReceive({
             walletId: wallet.id,
+            walletCurrency: wallet.currency,
             txHash: tx.rawTx.txHash,
             sats,
             fee,
-            usd,
-            usdFee,
+            amountDisplayCurrency,
+            feeDisplayCurrency,
             receivingAddress: address,
           })
           if (result instanceof Error) {

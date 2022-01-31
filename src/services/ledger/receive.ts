@@ -1,3 +1,5 @@
+import assert from "assert"
+
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
 import { WalletCurrency } from "@domain/wallets"
@@ -11,46 +13,49 @@ import { translateToLedgerJournal } from "."
 export const receive = {
   addOnChainTxReceive: async ({
     walletId,
+    walletCurrency,
     txHash,
     sats,
     fee,
-    usd,
-    usdFee,
+    feeDisplayCurrency,
+    amountDisplayCurrency,
     receivingAddress,
   }: ReceiveOnChainTxArgs): Promise<LedgerJournal | LedgerError> => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    const metadata: OnChainReceiveLedgerMetadata = {
+      type: LedgerTransactionType.OnchainReceipt,
+      pending: false,
+      hash: txHash,
+      fee,
+      feeUsd: feeDisplayCurrency,
+      usd: amountDisplayCurrency,
+      payee_addresses: [receivingAddress],
+    }
 
-    try {
-      const metadata = {
-        currency: "BTC",
-        type: LedgerTransactionType.OnchainReceipt,
-        pending: false,
-        hash: txHash,
-        fee,
-        usdFee,
+    const description = ""
+
+    if (fee > 0) {
+      return addReceiptFee({
+        metadata,
+        walletId,
+        walletCurrency,
         sats,
-        usd,
-        payee_addresses: [receivingAddress],
-      }
-
-      const entry = MainBook.entry("")
-        .credit(liabilitiesWalletId, sats - fee, metadata)
-        .debit(lndAccountingPath, sats, metadata)
-
-      if (fee > 0) {
-        const bankOwnerPath = toLiabilitiesWalletId(await caching.getBankOwnerWalletId())
-        entry.credit(bankOwnerPath, fee, metadata)
-      }
-
-      const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
-    } catch (err) {
-      return new UnknownLedgerError(err)
+        fee,
+        description,
+      })
+    } else {
+      return addReceiptNoFee({
+        metadata,
+        walletId,
+        walletCurrency,
+        sats,
+        description,
+      })
     }
   },
 
   addLnTxReceive: async ({
     walletId,
+    walletCurrency,
     paymentHash,
     description,
     sats,
@@ -58,66 +63,123 @@ export const receive = {
     amountDisplayCurrency,
     feeInboundLiquidity,
   }: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerError> => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    const metadata: LnReceiveLedgerMetadata = {
+      type: LedgerTransactionType.Invoice,
+      pending: false,
+      hash: paymentHash,
+      fee: feeInboundLiquidity,
+      feeUsd: feeInboundLiquidityDisplayCurrency,
+      usd: amountDisplayCurrency,
+    }
 
-    let metadata: AddLnTxReceiveMetadata
-    try {
-      metadata = {
-        type: LedgerTransactionType.Invoice,
-        pending: false,
-        hash: paymentHash,
+    if (feeInboundLiquidity > 0) {
+      return addReceiptFee({
+        metadata,
+        walletId,
+        walletCurrency,
+        sats,
         fee: feeInboundLiquidity,
-        feeUsd: feeInboundLiquidityDisplayCurrency,
-        usd: amountDisplayCurrency,
-        currency: WalletCurrency.Btc,
-      }
-
-      const entry = MainBook.entry(description)
-      entry
-        .credit(liabilitiesWalletId, sats - feeInboundLiquidity, metadata)
-        .debit(lndAccountingPath, sats, metadata)
-
-      if (feeInboundLiquidity > 0) {
-        const bankOwnerPath = toLiabilitiesWalletId(await caching.getBankOwnerWalletId())
-        entry.credit(bankOwnerPath, feeInboundLiquidity, metadata)
-      }
-
-      const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
-    } catch (err) {
-      return new UnknownLedgerError(err)
+        description,
+      })
+    } else {
+      return addReceiptNoFee({
+        metadata,
+        walletId,
+        walletCurrency,
+        sats,
+        description,
+      })
     }
   },
 
+  // this use case run for a lightning payment (not on an initial receive),
+  // when the sender overpaid in fee;
+  // the bankowner needs to reimburse the end user
   addLnFeeReimbursementReceive: async ({
     walletId,
+    walletCurrency,
     paymentHash,
-    sats,
-    usd,
+    amountDisplayCurrency,
     journalId,
+    sats,
   }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-
-    try {
-      const metadata = {
-        type: LedgerTransactionType.LnFeeReimbursement,
-        currency: "BTC",
-        hash: paymentHash,
-        related_journal: journalId,
-        pending: false,
-        usd,
-      }
-
-      const description = "fee reimbursement"
-      const entry = MainBook.entry(description)
-      entry
-        .credit(liabilitiesWalletId, sats, metadata)
-        .debit(lndAccountingPath, sats, metadata)
-
-      const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
-    } catch (err) {
-      return new UnknownLedgerError(err)
+    const metadata: FeeReimbursementLedgerMetadata = {
+      type: LedgerTransactionType.LnFeeReimbursement,
+      hash: paymentHash,
+      related_journal: journalId,
+      pending: false,
+      usd: amountDisplayCurrency,
     }
+
+    const description = "fee reimbursement"
+    return addReceiptNoFee({ metadata, description, walletId, sats, walletCurrency })
   },
+}
+
+const addReceiptNoFee = async ({
+  metadata: metaInput,
+  walletId,
+  walletCurrency,
+  sats,
+  description,
+}: {
+  metadata: ReceiveLedgerMetadata
+  walletId: WalletId
+  walletCurrency: WalletCurrency
+  sats: Satoshis
+  description: string
+}) => {
+  const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+
+  // TODO: remove once implemented
+  assert(walletCurrency === WalletCurrency.Btc)
+
+  const metadata = { ...metaInput, currency: WalletCurrency.Btc }
+
+  try {
+    const entry = MainBook.entry(description)
+      .credit(liabilitiesWalletId, sats, metadata)
+      .debit(lndAccountingPath, sats, metadata)
+
+    const savedEntry = await entry.commit()
+    return translateToLedgerJournal(savedEntry)
+  } catch (err) {
+    return new UnknownLedgerError(err)
+  }
+}
+
+const addReceiptFee = async ({
+  metadata: metaInput,
+  fee,
+  walletId,
+  walletCurrency,
+  sats,
+  description,
+}: {
+  metadata: ReceiveLedgerMetadata
+  fee: Satoshis
+  walletId: WalletId
+  walletCurrency: WalletCurrency
+  sats: Satoshis
+  description: string
+}) => {
+  const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+  const bankOwnerPath = toLiabilitiesWalletId(await caching.getBankOwnerWalletId())
+
+  // TODO: remove once implemented
+  assert(walletCurrency === WalletCurrency.Btc)
+
+  const metadata = { ...metaInput, currency: WalletCurrency.Btc }
+
+  try {
+    const entry = MainBook.entry(description)
+      .credit(liabilitiesWalletId, sats - fee, metadata)
+      .debit(lndAccountingPath, sats, metadata)
+      .credit(bankOwnerPath, fee, metadata)
+
+    const savedEntry = await entry.commit()
+    return translateToLedgerJournal(savedEntry)
+  } catch (err) {
+    return new UnknownLedgerError(err)
+  }
 }

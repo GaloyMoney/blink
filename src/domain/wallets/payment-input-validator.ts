@@ -10,11 +10,12 @@ import { AccountStatus } from "@domain/accounts"
 export const PaymentInputValidator = (
   getWalletFn: PaymentInputValidatorConfig,
 ): PaymentInputValidator => {
-  const validateSender = async ({
+  const validatePaymentInput = async <T extends undefined | string>({
     amount,
     senderWalletId: uncheckedSenderWalletId,
     senderAccount,
-  }: ValidatePaymentInputSenderArgs) => {
+    recipientWalletId: uncheckedRecipientWalletId,
+  }: ValidatePaymentInputArgs<T>) => {
     const validAmount = checkedToSats(amount)
     if (validAmount instanceof Error) return validAmount
 
@@ -30,27 +31,27 @@ export const PaymentInputValidator = (
 
     if (senderWallet.accountId !== senderAccount.id) return new InvalidWalletId()
 
+    if (uncheckedRecipientWalletId) {
+      const recipientWalletId = checkedToWalletId(uncheckedRecipientWalletId)
+      if (recipientWalletId instanceof Error) return recipientWalletId
+
+      const recipientWallet = await getWalletFn(recipientWalletId)
+      if (recipientWallet instanceof Error) return recipientWallet
+      if (recipientWallet.id === senderWallet.id) return new SelfPaymentError()
+      return {
+        amount: validAmount,
+        senderWallet,
+        recipientWallet,
+      } as ValidatePaymentInputRet<T>
+    }
+
     return {
       amount: validAmount,
       senderWallet,
-    }
-  }
-
-  const validateRecipient = async ({
-    recipientWalletId: uncheckedRecipientWalletId,
-    senderWallet,
-  }: ValidatePaymentInputRecipientArgs) => {
-    const recipientWalletId = checkedToWalletId(uncheckedRecipientWalletId)
-    if (recipientWalletId instanceof Error) return recipientWalletId
-
-    const recipientWallet = await getWalletFn(recipientWalletId)
-    if (recipientWallet instanceof Error) return recipientWallet
-    if (recipientWallet.id === senderWallet.id) return new SelfPaymentError()
-    return { recipientWallet }
+    } as ValidatePaymentInputRet<T>
   }
 
   return {
-    validateSender,
-    validateRecipient,
+    validatePaymentInput,
   }
 }

@@ -23,8 +23,8 @@ export const intraledger = {
     recipientWalletCurrency,
     recipientUsername,
     memoPayer,
-  }: AddOnChainIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: AddOnChainIntraledgerTxSendMetadata = {
+  }: AddOnChainIntraledgerTxTransferArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: AddOnChainIntraledgerSendLedgerMetadata = {
       type: LedgerTransactionType.OnchainIntraLedger,
       pending: false,
       usd: amountDisplayCurrency,
@@ -34,7 +34,7 @@ export const intraledger = {
       sendAll,
     }
 
-    return addIntraledgerTxSend({
+    return addIntraledgerTxTransfer({
       senderWalletId,
       senderWalletCurrency,
       senderUsername,
@@ -49,7 +49,7 @@ export const intraledger = {
     })
   },
 
-  addWalletIdIntraledgerTxSend: async ({
+  addWalletIdIntraledgerTxTransfer: async ({
     senderWalletId,
     senderWalletCurrency,
     senderUsername,
@@ -60,8 +60,8 @@ export const intraledger = {
     recipientWalletCurrency,
     recipientUsername,
     memoPayer,
-  }: addWalletIdIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: AddWalletIdIntraledgerTxSendMetadata = {
+  }: AddWalletIdIntraledgerTxTransferArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: AddWalletIdIntraledgerSendLedgerMetadata = {
       type: LedgerTransactionType.IntraLedger,
       pending: false,
       usd: amountDisplayCurrency,
@@ -69,7 +69,7 @@ export const intraledger = {
       username: null,
     }
 
-    return addIntraledgerTxSend({
+    return addIntraledgerTxTransfer({
       senderWalletId,
       senderWalletCurrency,
       senderUsername,
@@ -84,7 +84,7 @@ export const intraledger = {
     })
   },
 
-  addLnIntraledgerTxSend: async ({
+  addLnIntraledgerTxTransfer: async ({
     senderWalletId,
     senderWalletCurrency,
     senderUsername,
@@ -97,8 +97,8 @@ export const intraledger = {
     recipientWalletCurrency,
     recipientUsername,
     memoPayer,
-  }: AddLnIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: AddLnIntraledgerTxSendMetadata = {
+  }: AddLnIntraledgerTxTransferArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: AddLnIntraledgerSendLedgerMetadata = {
       type: LedgerTransactionType.IntraLedger,
       pending: false,
       hash: paymentHash,
@@ -108,7 +108,7 @@ export const intraledger = {
       username: null,
     }
 
-    return addIntraledgerTxSend({
+    return addIntraledgerTxTransfer({
       senderWalletId,
       senderWalletCurrency,
       senderUsername,
@@ -124,7 +124,7 @@ export const intraledger = {
   },
 }
 
-const addIntraledgerTxSend = async ({
+const addIntraledgerTxTransfer = async ({
   senderWalletId,
   senderWalletCurrency,
   senderUsername,

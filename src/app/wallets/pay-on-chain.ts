@@ -87,7 +87,7 @@ export const payOnChainByWalletId = async ({
   if (checkedAmount instanceof Error) return checkedAmount
 
   const validator = PaymentInputValidator(WalletsRepository().findById)
-  const validationResult = await validator.validateSender({
+  const validationResult = await validator.validatePaymentInput({
     amount: checkedAmount,
     senderAccount,
     senderWalletId,
@@ -192,7 +192,7 @@ const executePaymentViaIntraledger = async ({
       const journal = await LockService().extendLock(
         { logger: onchainLoggerOnUs, lock },
         async () =>
-          LedgerService().addOnChainIntraledgerTxSend({
+          LedgerService().addOnChainIntraledgerTxTransfer({
             senderWalletId: senderWallet.id,
             senderWalletCurrency: senderWallet.currency,
             senderUsername: senderAccount.username,
@@ -336,6 +336,7 @@ const executePaymentViaOnChain = async ({
 
         return ledgerService.addOnChainTxSend({
           walletId: senderWallet.id,
+          walletCurrency: senderWallet.currency,
           txHash,
           description: memo || "",
           sats,

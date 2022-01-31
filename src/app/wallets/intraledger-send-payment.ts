@@ -157,22 +157,15 @@ const executePaymentViaIntraledger = async ({
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
   const validator = PaymentInputValidator(WalletsRepository().findById)
-  const validationSender = await validator.validateSender({
+  const validationSender = await validator.validatePaymentInput({
     amount: amountRaw,
     senderAccount,
     senderWalletId,
+    recipientWalletId,
   })
   if (validationSender instanceof Error) return validationSender
 
-  const { amount, senderWallet } = validationSender
-
-  const validationRecipient = await validator.validateRecipient({
-    senderWallet,
-    recipientWalletId,
-  })
-  if (validationRecipient instanceof Error) return validationRecipient
-
-  const { recipientWallet } = validationRecipient
+  const { amount, senderWallet, recipientWallet } = validationSender
 
   const intraledgerLimitCheck = await checkIntraledgerLimits({
     amount,
@@ -199,7 +192,7 @@ const executePaymentViaIntraledger = async ({
       }
 
       const journal = await LockService().extendLock({ logger, lock }, async () =>
-        LedgerService().addWalletIdIntraledgerTxSend({
+        LedgerService().addWalletIdIntraledgerTxTransfer({
           senderWalletId,
           senderWalletCurrency: senderWallet.currency,
           senderUsername: senderAccount.username,

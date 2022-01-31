@@ -6,6 +6,8 @@ import { LndService } from "@services/lnd"
 import { LockService } from "@services"
 import { runInParallel } from "@utils"
 
+import { WalletsRepository } from "@services/mongoose"
+
 import { reimburseFee } from "./reimburse-fee"
 
 export const updatePendingPayments = async (logger: Logger): Promise<void> => {
@@ -132,6 +134,9 @@ const updatePendingPayment = async ({
         return settled
       }
 
+      const wallet = await WalletsRepository().findById(walletId)
+      if (wallet instanceof Error) return wallet
+
       if (status === PaymentStatus.Settled) {
         paymentLogger.info(
           { success: true, id: paymentHash, payment: pendingPayment },
@@ -141,6 +146,7 @@ const updatePendingPayment = async ({
 
         return reimburseFee({
           walletId,
+          walletCurrency: wallet.currency,
           journalId: pendingPayment.journalId,
           paymentHash,
           maxFee: pendingPayment.fee,
