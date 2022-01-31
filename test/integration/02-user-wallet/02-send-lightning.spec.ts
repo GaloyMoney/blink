@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "crypto"
 
-import { Wallets } from "@app"
+import { Wallets, Lightning } from "@app"
 import { getUserLimits } from "@config"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
 import {
@@ -25,7 +25,6 @@ import { LndService } from "@services/lnd"
 
 import { sleep } from "@utils"
 
-import { updateLnPayments } from "@app/lightning"
 import { delete2fa } from "@app/users"
 
 import {
@@ -813,7 +812,7 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnPay.status).toBeUndefined()
 
         // Run update task
-        const lnPaymentUpdateOnPending = await updateLnPayments()
+        const lnPaymentUpdateOnPending = await Lightning.updateLnPayments()
         if (lnPaymentUpdateOnPending instanceof Error) throw lnPaymentUpdateOnPending
 
         // Test 'lnpayment' is pending
@@ -863,7 +862,7 @@ describe("UserWallet - Lightning Pay", () => {
         await waitUntilChannelBalanceSyncAll()
 
         // Run update task
-        const lnPaymentUpdateOnSettled = await updateLnPayments()
+        const lnPaymentUpdateOnSettled = await Lightning.updateLnPayments()
         if (lnPaymentUpdateOnSettled instanceof Error) throw lnPaymentUpdateOnSettled
 
         // Test 'lnpayment' is complete
