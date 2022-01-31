@@ -2,6 +2,11 @@ import { UnknownLightningServiceError } from "@domain/bitcoin/lightning"
 import { LndService } from "@services/lnd"
 import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
+import {
+  addAttributesToCurrentSpan,
+  asyncRunInSpan,
+  SemanticAttributes,
+} from "@services/tracing"
 
 export const updateLnPayments = async (): Promise<true | ApplicationError> => {
   let processedLnPaymentsHashes: PaymentHash[] | ApplicationError = []
@@ -21,6 +26,9 @@ export const updateLnPayments = async (): Promise<true | ApplicationError> => {
   const pubkeys = lndService
     .listActivePubkeys()
     .filter((pubkey) => pubkeysFromPayments.has(pubkey))
+
+  for (const idx in pubkeys)
+    addAttributesToCurrentSpan({ [`pubkey.${idx}`]: pubkeys[idx] })
 
   for (const listFn of listFns) {
     for (const pubkey of pubkeys) {
@@ -49,13 +57,27 @@ const updateLnPaymentsByFunction = async ({
   let after: PagingStartToken | PagingContinueToken | PagingStopToken = undefined
   let updatedProcessedHashes = processedLnPaymentsHashes
   while (updatedProcessedHashes.length < incompleteLnPayments.length && after !== false) {
-    const results = await updateLnPaymentsPaginated({
-      processedLnPaymentsHashes: updatedProcessedHashes,
-      incompleteLnPayments,
-      after: after,
-      pubkey,
-      listFn,
-    })
+    const results = await asyncRunInSpan(
+      "app.updateLnPaymentsPaginated",
+      {
+        [SemanticAttributes.CODE_FUNCTION]: "app.updateLnPaymentsPaginated",
+        "updateLnPaymentsByFunction.cursor": String(after),
+        "updateLnPaymentsByFunction.listPaymentsMethod": listFn.name,
+        "updateLnPaymentsByFunction.pubkey": pubkey,
+        "updateLnPaymentsByFunction.totalIncomplete": incompleteLnPayments.length,
+        "updateLnPaymentsByFunction.processedCount": updatedProcessedHashes.length,
+      },
+      async () => {
+        if (after === false) return new UnknownLightningServiceError()
+        return updateLnPaymentsPaginated({
+          processedLnPaymentsHashes: updatedProcessedHashes,
+          incompleteLnPayments,
+          after: after,
+          pubkey,
+          listFn,
+        })
+      },
+    )
     if (results instanceof Error) break
     ;({ after, processedLnPaymentsHashes: updatedProcessedHashes } = results)
   }
