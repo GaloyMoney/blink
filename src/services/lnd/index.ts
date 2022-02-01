@@ -14,6 +14,7 @@ import {
   UnknownRouteNotFoundError,
   InsufficientBalanceForRoutingError,
   BadPaymentDataError,
+  CorruptLndDbError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
 import {
@@ -274,7 +275,13 @@ export const LndService = (): ILightningService | LightningServiceError => {
         endCursor: (next as PagingContinueToken) || false,
       }
     } catch (err) {
-      return new UnknownLightningServiceError(err)
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.LndDbCorruption:
+          return new CorruptLndDbError()
+        default:
+          return new UnknownRouteNotFoundError(err)
+      }
     }
   }
 
@@ -295,7 +302,13 @@ export const LndService = (): ILightningService | LightningServiceError => {
         endCursor: (next as PagingStartToken) || false,
       }
     } catch (err) {
-      return new UnknownLightningServiceError(err)
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.LndDbCorruption:
+          return new CorruptLndDbError()
+        default:
+          return new UnknownRouteNotFoundError(err)
+      }
     }
   }
 
@@ -585,6 +598,7 @@ const KnownLndErrorDetails = {
   InvoiceNotFound: "unable to locate invoice",
   InvoiceAlreadyPaid: "invoice is already paid",
   UnableToFindRoute: "PaymentPathfindingFailedToFindPossibleRoute",
+  LndDbCorruption: "payment isn't initiated",
 } as const
 
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({

@@ -18,3 +18,4 @@ export class RouteNotFoundError extends LightningServiceError {}
 export class InsufficientBalanceForRoutingError extends LightningServiceError {}
 export class UnknownRouteNotFoundError extends LightningServiceError {}
 export class BadPaymentDataError extends LightningServiceError {}
+export class CorruptLndDbError extends LightningServiceError {}
