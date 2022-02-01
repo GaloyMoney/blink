@@ -1,4 +1,5 @@
 import { toSats } from "@domain/bitcoin"
+import { FeeDifferenceError } from "@domain/ledger"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
 
 describe("FeeReimbursement", () => {
@@ -14,13 +15,13 @@ describe("FeeReimbursement", () => {
     const feeReimbursement = FeeReimbursement(prepaidFee)
     const actualFee = toSats(20)
     const feeDifference = feeReimbursement.getReimbursement({ actualFee })
-    expect(feeDifference).toBeNull()
+    expect(feeDifference).toBeInstanceOf(FeeDifferenceError)
   })
   it("returns null if actual fee is greater than prepaid fee", () => {
     const prepaidFee = toSats(100)
     const feeReimbursement = FeeReimbursement(prepaidFee)
     const actualFee = toSats(300)
     const feeDifference = feeReimbursement.getReimbursement({ actualFee })
-    expect(feeDifference).toBeNull()
+    expect(feeDifference).toBeInstanceOf(FeeDifferenceError)
   })
 })

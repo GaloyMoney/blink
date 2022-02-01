@@ -29,14 +29,8 @@ type AddInvoiceNoAmountForRecipientArgs = {
 }
 
 type GetOnChainFeeArgs = {
-  wallet: Wallet
-  amount: Satoshis
-  address: OnChainAddress
-  targetConfirmations: TargetConfirmations
-}
-
-type GetOnChainFeeByWalletIdArgs = {
   walletId: WalletId
+  account: Account
   amount: number
   address: OnChainAddress
   targetConfirmations: number
@@ -81,8 +75,8 @@ type IntraLedgerPaymentSendWithTwoFAArgs = IntraLedgerPaymentSendUsernameArgs & 
 }
 
 type PayOnChainByWalletIdArgs = {
-  senderAccount: Account
   senderWalletId: WalletId
+  senderAccount: Account
   amount: number
   address: string
   targetConfirmations: number

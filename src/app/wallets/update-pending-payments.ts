@@ -50,22 +50,27 @@ export const updatePendingPaymentsByWalletId = async ({
   if (count instanceof Error) return count
   if (count === 0) return
 
-  const pendingPaymentTransactions = await ledgerService.listPendingPayments(walletId)
-  if (pendingPaymentTransactions instanceof Error) return pendingPaymentTransactions
+  const pendingPayments = await ledgerService.listPendingPayments(walletId)
+  if (pendingPayments instanceof Error) return pendingPayments
 
-  for (const paymentLiabilityTx of pendingPaymentTransactions) {
-    await updatePendingPayment({ walletId, paymentLiabilityTx, logger, lock })
+  for (const pendingPayment of pendingPayments) {
+    await updatePendingPayment({
+      walletId,
+      pendingPayment,
+      logger,
+      lock,
+    })
   }
 }
 
 const updatePendingPayment = async ({
   walletId,
-  paymentLiabilityTx,
+  pendingPayment,
   logger,
   lock,
 }: {
   walletId: WalletId
-  paymentLiabilityTx: LedgerTransaction
+  pendingPayment: LedgerTransaction
   logger: Logger
   lock?: DistributedLock
 }): Promise<void | ApplicationError> => {
@@ -74,13 +79,13 @@ const updatePendingPayment = async ({
     protocol: "lightning",
     transactionType: "payment",
     onUs: false,
-    payment: paymentLiabilityTx,
+    payment: pendingPayment,
   })
 
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
-  const { paymentHash, pubkey } = paymentLiabilityTx
+  const { paymentHash, pubkey } = pendingPayment
   // If we had PaymentLedgerType => no need for checking the fields
   if (!paymentHash)
     throw new InconsistentDataError("paymentHash missing from payment transaction")
@@ -121,54 +126,54 @@ const updatePendingPayment = async ({
         return
       }
 
-      const settled = await ledgerService.settlePendingLnPayments(paymentHash)
+      const settled = await ledgerService.settlePendingLnPayment(paymentHash)
       if (settled instanceof Error) {
-        paymentLogger.error(
-          { error: settled },
-          "we didn't have any transaction to update",
-        )
+        paymentLogger.error({ error: settled }, "no transaction to update")
         return settled
       }
 
       if (status === PaymentStatus.Settled) {
         paymentLogger.info(
-          { success: true, id: paymentHash, payment: paymentLiabilityTx },
+          { success: true, id: paymentHash, payment: pendingPayment },
           "payment has been confirmed",
         )
-        if (paymentLiabilityTx.feeKnownInAdvance) return
+        if (pendingPayment.feeKnownInAdvance) return
 
         return reimburseFee({
           walletId,
-          journalId: paymentLiabilityTx.journalId,
+          journalId: pendingPayment.journalId,
           paymentHash,
-          maxFee: paymentLiabilityTx.fee,
+          maxFee: pendingPayment.fee,
           actualFee: roundedUpFee,
           logger,
         })
-      }
+      } else if (status === PaymentStatus.Failed) {
+        paymentLogger.warn(
+          { success: false, id: paymentHash, payment: pendingPayment },
+          "payment has failed. reverting transaction",
+        )
 
-      return revertTransaction({
-        paymentLiabilityTx,
-        lnPaymentLookup,
-        logger: paymentLogger,
-      })
+        return revertTransaction({
+          pendingPayment,
+          lnPaymentLookup,
+          logger: paymentLogger,
+        })
+      }
     })
   }
 }
 
 const revertTransaction = async ({
-  paymentLiabilityTx,
+  pendingPayment,
   lnPaymentLookup,
   logger,
 }: {
-  paymentLiabilityTx: LedgerTransaction
+  pendingPayment: LedgerTransaction
   lnPaymentLookup: LnPaymentLookup | LnFailedPartialPaymentLookup
   logger: Logger
 }): Promise<void | ApplicationError> => {
   const ledgerService = LedgerService()
-  const voided = await ledgerService.voidLedgerTransactionsForJournal(
-    paymentLiabilityTx.journalId,
-  )
+  const voided = await ledgerService.revertLightningPayment(pendingPayment.journalId)
   if (voided instanceof Error) {
     const error = `error voiding payment entry`
     logger.fatal(

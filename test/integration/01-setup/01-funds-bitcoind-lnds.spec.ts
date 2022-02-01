@@ -1,7 +1,7 @@
 import { getColdStorageConfig } from "@config"
 import { btc2sat } from "@domain/bitcoin"
 import { BitcoindWalletClient } from "@services/bitcoind"
-import { getFunderWalletId } from "@services/ledger/accounts"
+import { getFunderWalletId } from "@services/ledger/caching"
 
 import {
   bitcoindClient,

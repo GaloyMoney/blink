@@ -89,7 +89,7 @@ const sessionContext = ({
   const logger = graphqlLogger.child({ token, id: uuidv4(), body })
 
   let domainUser: User | null = null
-  let domainAccount: Account | null = null
+  let domainAccount: Account | undefined
   return addAttributesToCurrentSpanAndPropagate(
     {
       [SemanticAttributes.ENDUSER_ID]: userId,
@@ -117,7 +117,7 @@ const sessionContext = ({
             : null
       }
 
-      let account: Account | null = null
+      let account: Account | undefined
       if (apiKey && apiSecret) {
         const loggedInAccount = await Accounts.getAccountByApiKey(apiKey, apiSecret)
         if (loggedInAccount instanceof Error)

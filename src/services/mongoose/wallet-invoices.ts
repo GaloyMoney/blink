@@ -3,6 +3,7 @@ import {
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
+import { toCents } from "@domain/fiat"
 
 import { WalletInvoice } from "./schema"
 
@@ -13,7 +14,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     selfGenerated,
     pubkey,
     paid,
-    fiatAmount,
+    usdCents,
     currency,
   }: WalletInvoice): Promise<WalletInvoice | RepositoryError> => {
     try {
@@ -23,7 +24,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
         selfGenerated,
         pubkey,
         paid,
-        fiatAmount,
+        usdCents,
         currency,
       }).save()
       return walletInvoiceFromRaw(walletInvoice)
@@ -149,6 +150,6 @@ const walletInvoiceFromRaw = (result): WalletInvoice => ({
   selfGenerated: result.selfGenerated,
   pubkey: result.pubkey as Pubkey,
   paid: result.paid as boolean,
-  fiatAmount: result.fiatAmount as FiatAmount | undefined,
+  usdCents: result.usdCents ? toCents(result.usdCents) : undefined,
   currency: result.currency as WalletCurrency,
 })

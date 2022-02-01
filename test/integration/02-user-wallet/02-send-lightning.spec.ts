@@ -553,7 +553,7 @@ describe("UserWallet - Lightning Pay", () => {
       initialFee: 0,
       fn: function fn({ walletId, account }: { walletId: WalletId; account: Account }) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
-          const feeFromProbe = await Wallets.getLightningFee({
+          const feeFromProbe = await Wallets.getRoutingFee({
             walletId: walletId,
             paymentRequest: input.invoice,
           })

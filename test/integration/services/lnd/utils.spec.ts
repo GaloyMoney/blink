@@ -2,10 +2,10 @@ import { MS_PER_DAY } from "@config"
 import {
   deleteExpiredWalletInvoice,
   getInvoiceAttempt,
-  updateRoutingFees,
+  updateRoutingRevenues,
 } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
-import { ledger } from "@services/mongodb"
+import { ledgerAdmin } from "@services/mongodb"
 import { DbMetadata, WalletInvoice } from "@services/mongoose/schema"
 
 import { sleep } from "@utils"
@@ -84,7 +84,7 @@ describe("lndUtils", () => {
   it("sets routing fee correctly", async () => {
     const { request } = await createInvoice({ lnd: lndOutside2, tokens: 10000 })
 
-    const initBalance = await ledger.getBankOwnerBalance()
+    const initBalance = await ledgerAdmin.getBankOwnerBalance()
 
     await waitFor(async () => {
       try {
@@ -123,9 +123,9 @@ describe("lndUtils", () => {
       { upsert: true },
     )
 
-    await updateRoutingFees()
+    await updateRoutingRevenues()
 
-    const endBalance = await ledger.getBankOwnerBalance()
+    const endBalance = await ledgerAdmin.getBankOwnerBalance()
 
     expect((endBalance - initBalance) * 1000).toBeCloseTo(totalFees, 0)
   })

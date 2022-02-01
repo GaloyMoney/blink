@@ -7,3 +7,5 @@ import { book } from "medici"
 
 // we have to import schema before medici
 export const MainBook = new book("MainBook")
+
+export { Transaction }

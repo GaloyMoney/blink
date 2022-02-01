@@ -1,9 +1,14 @@
 import assert from "assert"
 
 import { MS_PER_DAY, ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE } from "@config"
-import { DbError, LndOfflineError } from "@core/error"
+import { LndOfflineError } from "@core/error"
+import { toSats } from "@domain/bitcoin"
+import {
+  addLndChannelOpeningOrClosingFee,
+  addLndRoutingRevenue,
+  updateLndEscrow,
+} from "@services/ledger/admin-legacy"
 import { baseLogger } from "@services/logger"
-import { ledger } from "@services/mongodb"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { DbMetadata } from "@services/mongoose/schema"
 import { default as axios } from "axios"
@@ -21,12 +26,10 @@ import {
   SubscribeToChannelsChannelClosedEvent,
   SubscribeToChannelsChannelOpenedEvent,
 } from "lightning"
-import sumBy from "lodash.sumby"
 import groupBy from "lodash.groupby"
-import mapValues from "lodash.mapvalues"
 import map from "lodash.map"
-
-import { toSats } from "@domain/bitcoin"
+import mapValues from "lodash.mapvalues"
+import sumBy from "lodash.sumby"
 
 import { params } from "./auth"
 
@@ -147,7 +150,11 @@ export const getRoutingFees = async ({
   lnd,
   before,
   after,
-}): Promise<Array<Record<string, number>>> => {
+}: {
+  lnd: AuthenticatedLnd
+  before: string // FIXME should be Date?
+  after: string // FIXME should be Date?
+}): Promise<Array<Record<string, Satoshis>>> => {
   const forwardsList = await getForwards({ lnd, before, after })
   let next = forwardsList.next
   let forwards = forwardsList.forwards
@@ -173,9 +180,8 @@ export const getRoutingFees = async ({
   )
 
   // returns revenue for each date by reducing all forwards for each date
-  const feePerDate = mapValues(
-    dateGroupedForwards,
-    (e) => e.reduce((sum, { fee_mtokens }) => sum + +fee_mtokens, 0) / 1000,
+  const feePerDate = mapValues(dateGroupedForwards, (e) =>
+    toSats(e.reduce((sum, { fee_mtokens }) => sum + +fee_mtokens, 0) / 1000),
   )
 
   // returns an array of objects where each object has key = date and value = fees
@@ -196,7 +202,7 @@ export const getInvoiceAttempt = async ({ lnd, id }) => {
   }
 }
 
-export const updateRoutingFees = async () => {
+export const updateRoutingRevenues = async () => {
   // TODO: move to a service
   const dbMetadata = await DbMetadata.findOne({})
   let lastDate
@@ -231,10 +237,12 @@ export const updateRoutingFees = async () => {
 
   for (const forward of forwards) {
     const [[day, fee]] = Object.entries(forward)
-    try {
-      await ledger.addLndRoutingFee({ amount: fee, collectedOn: day })
-    } catch (err) {
-      throw new DbError("Unable to record routing revenue", {
+    const result = await addLndRoutingRevenue({
+      amount: fee,
+      collectedOn: day,
+    })
+    if (result instanceof Error) {
+      baseLogger.error("Unable to record routing revenue", {
         forwardToClient: false,
         logger: baseLogger,
         level: "error",
@@ -263,7 +271,7 @@ export const updateEscrows = async () => {
   )
   const escrowInLnd = sumBy(selfInitiatedChannels, "commit_transaction_fee")
 
-  const result = await ledger.updateLndEscrow({ amount: escrowInLnd })
+  const result = await updateLndEscrow({ amount: escrowInLnd })
 
   baseLogger.info({ ...result, channels }, "escrow recording")
 }
@@ -280,6 +288,9 @@ export const onChannelUpdated = async ({
   baseLogger.info({ channel, stateChange }, `channel update`)
 
   if (channel.is_partner_initiated) {
+    // FIXME: this assume legacy channel, ie: non-anchored channel type
+    // with anchor channels, the closing fees are not paid necessarily by the channel opener
+    // but by whoever is closing the channel
     return
   }
 
@@ -318,13 +329,18 @@ export const onChannelUpdated = async ({
 
   assert(fee > 0)
 
-  await ledger.addLndChannelFee({
+  const data = {
     description: `channel ${stateChange} onchain fee`,
     amount: fee,
     metadata: { txid },
-  })
+  }
 
-  baseLogger.info({ channel, fee, txid }, `${stateChange} channel fee added to ledger`)
+  const success = await addLndChannelOpeningOrClosingFee(data)
+  if (success instanceof Error) {
+    baseLogger.error(data, "error onChannelUpdated")
+  } else {
+    baseLogger.info({ channel, fee, txid }, `${stateChange} channel fee added to ledger`)
+  }
 }
 
 export const getLnds = ({

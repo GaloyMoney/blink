@@ -1,4 +1,5 @@
 type LedgerError = import("./errors").LedgerError
+type FeeDifferenceError = import("./errors").FeeDifferenceError
 type LedgerServiceError = import("./errors").LedgerServiceError
 
 declare const liabilitiesWalletId: unique symbol
@@ -22,7 +23,7 @@ type LedgerJournal = {
 // Differentiate fields depending on what 'type' we have (see domain/wallets/index.types.d.ts)
 type LedgerTransaction = {
   readonly id: LedgerTransactionId
-  readonly walletId: WalletId | null // FIXME create a subclass so that this field is always set for liabilities wallets
+  readonly walletId: WalletId | undefined // FIXME create a subclass so that this field is always set for liabilities wallets
   readonly type: LedgerTransactionType
   readonly debit: Satoshis
   readonly credit: Satoshis
@@ -66,9 +67,7 @@ type TxArgs = {
   walletId: WalletId
   description: string
   sats: Satoshis
-  fee: Satoshis
-  usd: number
-  usdFee: number
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
 type LnTxArgs = TxArgs & {
@@ -80,16 +79,25 @@ type OnChainTxArgs = TxArgs & {
   payeeAddress: OnChainAddress
 }
 
-type AddLnTxReceiveArgs = LnTxArgs
+type AddLnTxReceiveArgs = LnTxArgs & {
+  currency: WalletCurrency
+  usd: UsdCents | undefined
+  feeInboundLiquidityDisplayCurrency: DisplayCurrencyBaseAmount
+  feeInboundLiquidity: Satoshis
+}
 
 type AddLnTxSendArgs = LnTxArgs & {
   pubkey: Pubkey
   feeKnownInAdvance: boolean
+  feeRouting: Satoshis
+  feeRoutingDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
 type AddOnChainTxSendArgs = OnChainTxArgs & {
   sendAll: boolean
+  totalFee: Satoshis
   bankFee: Satoshis
+  totalFeeDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
 type AddColdStorageTxReceiveArgs = {
@@ -149,7 +157,7 @@ type AddLnFeeReeimbursementReceiveArgs = {
 }
 
 type FeeReimbursement = {
-  getReimbursement({ actualFee }: { actualFee: Satoshis }): Satoshis | null
+  getReimbursement({ actualFee }: { actualFee: Satoshis }): Satoshis | FeeDifferenceError
 }
 
 type TxVolume = {
@@ -173,11 +181,11 @@ interface ILedgerService {
     paymentHash: PaymentHash | OnChainTxHash,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
-  getLiabilityTransactions(
+  getTransactionsByWalletId(
     walletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
-  getLiabilityTransactionsForContactUsername(
+  getTransactionsByWalletIdAndContactUsername(
     walletId: WalletId,
     contactUsername: Username,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
@@ -230,7 +238,7 @@ interface ILedgerService {
     args: AddOnChainTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  addOnChainIntraledgerTxSend(
+  addOnChainIntraledgerTxTransfer(
     args: AddOnChainIntraledgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
@@ -238,15 +246,15 @@ interface ILedgerService {
     args: AddIntraLedgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  settlePendingLnPayments(paymentHash: PaymentHash): Promise<boolean | LedgerServiceError>
+  settlePendingLnPayment(paymentHash: PaymentHash): Promise<true | LedgerServiceError>
 
-  settlePendingOnChainPayments(hash: OnChainTxHash): Promise<boolean | LedgerServiceError>
+  settlePendingOnChainPayment(hash: OnChainTxHash): Promise<true | LedgerServiceError>
 
-  voidLedgerTransactionsForJournal(
-    journalId: LedgerJournalId,
-  ): Promise<void | LedgerServiceError>
+  revertLightningPayment(journalId: LedgerJournalId): Promise<void | LedgerServiceError>
 
-  getWalletIdByTransactionHash(hash): Promise<WalletId | LedgerServiceError>
+  getWalletIdByTransactionHash(
+    hash: OnChainTxHash,
+  ): Promise<WalletId | LedgerServiceError>
 
   listWalletIdsWithPendingPayments: () => AsyncGenerator<WalletId> | LedgerServiceError
 

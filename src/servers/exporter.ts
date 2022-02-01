@@ -1,12 +1,12 @@
 import { ColdStorage } from "@app"
 import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
 import { toSats } from "@domain/bitcoin"
+import { LedgerService } from "@services/ledger"
 import {
   getBankOwnerWalletId,
   getDealerWalletId,
   getFunderWalletId,
-} from "@services/ledger/accounts"
-import { LedgerService } from "@services/ledger"
+} from "@services/ledger/caching"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { getBosScore, lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"

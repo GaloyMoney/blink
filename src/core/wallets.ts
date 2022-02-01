@@ -47,7 +47,7 @@ export const addInvoiceForUsername = async ({
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
     expiresAt,
-    fiatAmount: undefined,
+    usdCents: undefined,
   })
 }
 
@@ -78,6 +78,6 @@ export const addInvoiceNoAmountForUsername = async ({
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
     expiresAt,
-    fiatAmount: undefined,
+    usdCents: undefined,
   })
 }

@@ -5,7 +5,7 @@ import {
   checkWithdrawalLimits,
 } from "@app/wallets/check-limit-helpers"
 import { reimburseFee } from "@app/wallets/reimburse-fee"
-import { toMilliSatsFromNumber, checkedToSats, toSats } from "@domain/bitcoin"
+import { checkedToSats, toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   LnAlreadyPaidError,
@@ -19,25 +19,26 @@ import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
 } from "@domain/errors"
+import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
 import {
   PaymentInitiationMethod,
-  SettlementMethod,
   PaymentInputValidator,
+  SettlementMethod,
 } from "@domain/wallets"
+import { LockService } from "@services"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
-import { LockService } from "@services"
 import {
+  UsersRepository,
   WalletInvoicesRepository,
   WalletsRepository,
-  UsersRepository,
 } from "@services/mongoose"
+import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 import { NotificationsService } from "@services/notifications"
 import { RoutesCache } from "@services/redis/routes"
 import { addAttributesToCurrentSpan } from "@services/tracing"
-import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 
 export const payInvoiceByWalletIdWithTwoFA = async ({
   paymentRequest,
@@ -408,10 +409,10 @@ const executePaymentViaLn = async ({
   }
 
   const maxFee = LnFeeCalculator().max(amount)
-  const lnFee = route ? route.roundedUpFee : maxFee
-  const sats = toSats(amount + lnFee)
-  const usd = sats * usdPerSat
-  const usdFee = lnFee * usdPerSat
+  const feeRouting = route ? route.roundedUpFee : maxFee
+  const sats = toSats(amount + feeRouting)
+  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(sats)
+  const feeRoutingDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(feeRouting)
 
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
@@ -431,9 +432,9 @@ const executePaymentViaLn = async ({
           paymentHash,
           description: decodedInvoice.description,
           sats,
-          fee: lnFee,
-          usd,
-          usdFee,
+          feeRouting,
+          amountDisplayCurrency,
+          feeRoutingDisplayCurrency,
           pubkey,
           feeKnownInAdvance: !!rawRoute,
         }),
@@ -462,11 +463,11 @@ const executePaymentViaLn = async ({
 
       if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending
 
-      const settled = await ledgerService.settlePendingLnPayments(paymentHash)
+      const settled = await ledgerService.settlePendingLnPayment(paymentHash)
       if (settled instanceof Error) return settled
 
       if (payResult instanceof Error) {
-        const voided = await ledgerService.voidLedgerTransactionsForJournal(journalId)
+        const voided = await ledgerService.revertLightningPayment(journalId)
         if (voided instanceof Error) return voided
 
         if (payResult instanceof LnAlreadyPaidError) return PaymentSendStatus.AlreadyPaid

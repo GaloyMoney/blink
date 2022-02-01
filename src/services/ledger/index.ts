@@ -3,52 +3,39 @@
  * https://en.wikipedia.org/wiki/Double-entry_bookkeeping
  */
 
-// we have to import schema before medici
-// eslint-disable-next-line
-import { Transaction } from "./schema"
-
-import {
-  CouldNotFindTransactionError,
-  UnknownLedgerError,
-  LedgerError,
-  LedgerServiceError,
-} from "@domain/ledger/errors"
-
 import { toSats } from "@domain/bitcoin"
-
 import {
   LedgerTransactionType,
   liabilitiesMainAccount,
   toLiabilitiesWalletId,
   toWalletId,
 } from "@domain/ledger"
-
-import { addEventToCurrentSpan } from "@services/tracing"
-
-import * as accounts from "./accounts"
-import * as queries from "./query"
-import * as transactions from "./transaction"
-
-import { MainBook } from "./books"
-
 import {
-  lndAccountingPath,
-  getBankOwnerWalletId,
-  bitcoindAccountingPath,
-} from "./accounts"
+  CouldNotFindTransactionError,
+  LedgerError,
+  LedgerServiceError,
+  UnknownLedgerError,
+} from "@domain/ledger/errors"
 
-export const loadLedger = ({
+import { admin } from "./admin"
+import * as adminLegacy from "./admin-legacy"
+import { MainBook, Transaction } from "./books"
+import * as caching from "./caching"
+import { intraledger } from "./intraledger"
+import { receive } from "./receive"
+import { send } from "./send"
+import { volume } from "./volume"
+
+export const lazyLoadLedgerAdmin = ({
   bankOwnerWalletResolver,
   dealerWalletResolver,
   funderWalletResolver,
 }: LoadLedgerParams) => {
-  accounts.setBankOwnerWalletResolver(bankOwnerWalletResolver)
-  accounts.setDealerWalletResolver(dealerWalletResolver)
-  accounts.setFunderWalletResolver(funderWalletResolver)
+  caching.setBankOwnerWalletResolver(bankOwnerWalletResolver)
+  caching.setDealerWalletResolver(dealerWalletResolver)
+  caching.setFunderWalletResolver(funderWalletResolver)
   return {
-    ...accounts,
-    ...queries,
-    ...transactions,
+    ...adminLegacy,
   }
 }
 
@@ -84,7 +71,7 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const getLiabilityTransactions = async (
+  const getTransactionsByWalletId = async (
     walletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
@@ -96,7 +83,7 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const getLiabilityTransactionsForContactUsername = async (
+  const getTransactionsByWalletIdAndContactUsername = async (
     walletId: WalletId,
     contactUsername,
   ): Promise<LedgerTransaction[] | LedgerError> => {
@@ -134,7 +121,7 @@ export const LedgerService = (): ILedgerService => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     return Transaction.countDocuments({
       accounts: liabilitiesWalletId,
-      type: "payment",
+      type: LedgerTransactionType.Payment,
       pending: true,
     })
   }
@@ -146,117 +133,8 @@ export const LedgerService = (): ILedgerService => {
     try {
       const { balance } = await MainBook.balance({
         account: liabilitiesWalletId,
-        currency: "BTC",
       })
       return toSats(balance)
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const allPaymentVolumeSince = async ({
-    walletId,
-    timestamp,
-  }: {
-    walletId: WalletId
-    timestamp: Date
-  }) => {
-    return txVolumeSince({
-      walletId,
-      timestamp,
-      txnTypes: [
-        LedgerTransactionType.IntraLedger,
-        LedgerTransactionType.OnchainIntraLedger,
-        LedgerTransactionType.Payment,
-        LedgerTransactionType.OnchainPayment,
-      ],
-    })
-  }
-
-  const externalPaymentVolumeSince = async ({
-    walletId,
-    timestamp,
-  }: {
-    walletId: WalletId
-    timestamp: Date
-  }) => {
-    return txVolumeSince({
-      walletId,
-      timestamp,
-      txnTypes: [LedgerTransactionType.Payment, LedgerTransactionType.OnchainPayment],
-    })
-  }
-
-  const intraledgerTxVolumeSince = async ({
-    walletId,
-    timestamp,
-  }: {
-    walletId: WalletId
-    timestamp: Date
-  }) => {
-    return txVolumeSince({
-      walletId,
-      timestamp,
-      txnTypes: [
-        LedgerTransactionType.IntraLedger,
-        LedgerTransactionType.OnchainIntraLedger,
-      ],
-    })
-  }
-
-  const allTxVolumeSince = async ({
-    walletId,
-    timestamp,
-  }: {
-    walletId: WalletId
-    timestamp: Date
-  }) => {
-    return txVolumeSince({
-      walletId,
-      timestamp,
-      txnTypes: Object.values(LedgerTransactionType),
-    })
-  }
-
-  const txVolumeSince = async ({
-    walletId,
-    timestamp,
-    txnTypes,
-  }: {
-    walletId: WalletId
-    timestamp: Date
-    txnTypes: LedgerTransactionType[]
-  }): Promise<TxVolume | LedgerServiceError> => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-
-    const txnTypesObj = txnTypes.map((txnType) => ({
-      type: txnType,
-    }))
-
-    try {
-      addEventToCurrentSpan("volume aggregation starts")
-      const [result]: (TxVolume & { _id: null })[] = await Transaction.aggregate([
-        {
-          $match: {
-            accounts: liabilitiesWalletId,
-            $or: txnTypesObj,
-            $and: [{ timestamp: { $gte: timestamp } }],
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            outgoingSats: { $sum: "$debit" },
-            incomingSats: { $sum: "$credit" },
-          },
-        },
-      ])
-      addEventToCurrentSpan("volume aggregation ends")
-
-      return {
-        outgoingSats: toSats(result?.outgoingSats ?? 0),
-        incomingSats: toSats(result?.incomingSats ?? 0),
-      }
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -283,20 +161,6 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const isToHotWalletTxRecorded = async (
-    txHash: OnChainTxHash,
-  ): Promise<boolean | LedgerServiceError> => {
-    try {
-      const result = await Transaction.countDocuments({
-        type: LedgerTransactionType.ToHotWallet,
-        hash: txHash,
-      })
-      return result > 0
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
   const isLnTxRecorded = async (
     paymentHash: PaymentHash,
   ): Promise<boolean | LedgerServiceError> => {
@@ -311,399 +175,10 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const addOnChainTxReceive = async ({
-    walletId,
-    txHash,
-    sats,
-    fee,
-    usd,
-    usdFee,
-    receivingAddress,
-  }: ReceiveOnChainTxArgs): Promise<LedgerJournal | LedgerError> => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-
-    try {
-      const metadata = {
-        currency: "BTC",
-        type: LedgerTransactionType.OnchainReceipt,
-        pending: false,
-        hash: txHash,
-        fee,
-        usdFee,
-        sats,
-        usd,
-        payee_addresses: [receivingAddress],
-      }
-
-      const entry = MainBook.entry("")
-        .credit(liabilitiesWalletId, sats - fee, metadata)
-        .debit(lndAccountingPath, sats, metadata)
-
-      if (fee > 0) {
-        const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
-        entry.credit(bankOwnerPath, fee, metadata)
-      }
-
-      const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const addLnTxReceive = async ({
-    walletId,
-    paymentHash,
-    description,
-    sats,
-    fee,
-    usd,
-    usdFee,
-  }: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerError> => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-
-    let metadata: AddLnTxReceiveMetadata
-    try {
-      metadata = {
-        type: LedgerTransactionType.Invoice,
-        pending: false,
-        hash: paymentHash,
-        fee,
-        feeUsd: usdFee,
-        sats,
-        usd,
-        currency: "BTC",
-      }
-
-      const entry = MainBook.entry(description)
-      entry
-        .credit(liabilitiesWalletId, sats - fee, metadata)
-        .debit(lndAccountingPath, sats, metadata)
-
-      if (fee > 0) {
-        const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
-        entry.credit(bankOwnerPath, fee, metadata)
-      }
-
-      const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const addLnFeeReimbursementReceive = async ({
-    walletId,
-    paymentHash,
-    sats,
-    usd,
-    journalId,
-  }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-
-    try {
-      const metadata = {
-        type: LedgerTransactionType.LnFeeReimbursement,
-        currency: "BTC",
-        hash: paymentHash,
-        related_journal: journalId,
-        pending: false,
-        usd,
-      }
-
-      const description = "fee reimbursement"
-      const entry = MainBook.entry(description)
-      entry
-        .credit(liabilitiesWalletId, sats, metadata)
-        .debit(lndAccountingPath, sats, metadata)
-
-      const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const addLnTxSend = async ({
-    walletId,
-    paymentHash,
-    description,
-    sats,
-    fee,
-    usd,
-    usdFee,
-    pubkey,
-    feeKnownInAdvance,
-  }: AddLnTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-
-    let metadata: AddLnTxSendMetadata
-    try {
-      metadata = {
-        type: LedgerTransactionType.Payment,
-        pending: true,
-        hash: paymentHash,
-        fee,
-        feeUsd: usdFee,
-        sats,
-        usd,
-        pubkey,
-        feeKnownInAdvance,
-        currency: "BTC",
-      }
-
-      const entry = MainBook.entry(description)
-
-      entry
-        .credit(lndAccountingPath, sats, metadata)
-        .debit(liabilitiesWalletId, sats, metadata)
-
-      const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const addLnIntraledgerTxSend = async ({
-    senderWalletId,
-    paymentHash,
-    description,
-    sats,
-    fee,
-    usd,
-    usdFee,
-    pubkey,
-    recipientWalletId,
-    senderUsername,
-    recipientUsername,
-    memoPayer,
-  }: AddLnIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: AddLnIntraledgerTxSendMetadata = {
-      type: LedgerTransactionType.IntraLedger,
-      pending: false,
-      hash: paymentHash,
-      fee,
-      feeUsd: usdFee,
-      sats,
-      usd,
-      pubkey,
-      memoPayer: null,
-      username: null,
-      currency: "BTC",
-    }
-
-    return addIntraledgerTxSend({
-      senderWalletId,
-      description,
-      sats,
-      recipientWalletId,
-      senderUsername,
-      recipientUsername,
-      memoPayer,
-      shareMemoWithPayee: false,
-      metadata,
-    })
-  }
-
-  const addOnChainTxSend = async ({
-    walletId,
-    txHash,
-    payeeAddress,
-    description,
-    sats,
-    fee,
-    bankFee,
-    usd,
-    usdFee,
-    sendAll,
-  }: AddOnChainTxSendArgs): Promise<LedgerJournal | LedgerServiceError> => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-    let metadata: AddOnchainTxSendMetadata
-    try {
-      metadata = {
-        type: LedgerTransactionType.OnchainPayment,
-        pending: true,
-        hash: txHash,
-        payee_addresses: [payeeAddress],
-        fee,
-        feeUsd: usdFee,
-        sats,
-        usd,
-        sendAll,
-        currency: "BTC",
-      }
-
-      const bankOwnerWalletId = await getBankOwnerWalletId()
-      const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
-
-      const entry = MainBook.entry(description)
-      // TODO/FIXME refactor. add the transaction first and set the fees in a second tx.
-      entry
-        .credit(lndAccountingPath, sats - bankFee, metadata)
-        .credit(bankOwnerPath, bankFee, metadata)
-        .debit(liabilitiesWalletId, sats, metadata)
-
-      const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const addOnChainIntraledgerTxSend = async ({
-    senderWalletId,
-    description,
-    sats,
-    fee,
-    usd,
-    usdFee,
-    payeeAddresses,
-    sendAll,
-    recipientWalletId,
-    senderUsername,
-    recipientUsername,
-    memoPayer,
-  }: AddOnChainIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: AddOnChainIntraledgerTxSendMetadata = {
-      type: LedgerTransactionType.OnchainIntraLedger,
-      pending: false,
-      fee,
-      feeUsd: usdFee,
-      sats,
-      usd,
-      memoPayer: null,
-      username: null,
-      payee_addresses: payeeAddresses,
-      sendAll,
-      currency: "BTC",
-    }
-
-    return addIntraledgerTxSend({
-      senderWalletId,
-      description,
-      sats,
-      recipientWalletId,
-      senderUsername,
-      recipientUsername,
-      memoPayer,
-      shareMemoWithPayee: false,
-      metadata,
-    })
-  }
-
-  const addWalletIdIntraledgerTxSend = async ({
-    senderWalletId,
-    description,
-    sats,
-    fee,
-    usd,
-    usdFee,
-    recipientWalletId,
-    senderUsername,
-    recipientUsername,
-    memoPayer,
-  }: addWalletIdIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: addWalletIdIntraledgerTxSendMetadata = {
-      type: LedgerTransactionType.IntraLedger,
-      pending: false,
-      fee,
-      feeUsd: usdFee,
-      sats,
-      usd,
-      memoPayer: null,
-      username: null,
-      currency: "BTC",
-    }
-
-    return addIntraledgerTxSend({
-      senderWalletId,
-      description,
-      sats,
-      recipientWalletId,
-      senderUsername,
-      recipientUsername,
-      memoPayer,
-      shareMemoWithPayee: true,
-      metadata,
-    })
-  }
-
-  const addIntraledgerTxSend = async ({
-    senderWalletId,
-    description,
-    sats,
-    recipientWalletId,
-    senderUsername,
-    recipientUsername,
-    memoPayer,
-    shareMemoWithPayee,
-    metadata,
-  }: SendIntraledgerTxArgs): Promise<LedgerJournal | LedgerError> => {
-    const senderLiabilitiesWalletId = toLiabilitiesWalletId(senderWalletId)
-    const recipientLiabilitiesWalletId = toLiabilitiesWalletId(recipientWalletId)
-
-    try {
-      const creditMetadata = {
-        ...metadata,
-        username: senderUsername,
-        memoPayer: shareMemoWithPayee ? memoPayer : null,
-      }
-      const debitMetadata = { ...metadata, username: recipientUsername, memoPayer }
-
-      const entry = MainBook.entry(description)
-
-      entry
-        .credit(recipientLiabilitiesWalletId, sats, creditMetadata)
-        .debit(senderLiabilitiesWalletId, sats, debitMetadata)
-
-      const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const settlePendingLnPayments = async (
-    paymentHash: PaymentHash,
-  ): Promise<boolean | LedgerServiceError> => {
-    try {
-      const result = await Transaction.updateMany(
-        { hash: paymentHash },
-        { pending: false },
-      )
-      return result.nModified > 0
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const settlePendingOnChainPayments = async (
-    hash: OnChainTxHash,
-  ): Promise<boolean | LedgerServiceError> => {
-    try {
-      const result = await Transaction.updateMany({ hash }, { pending: false })
-      return result.nModified > 0
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const voidLedgerTransactionsForJournal = async (
-    journalId: LedgerJournalId,
-  ): Promise<void | LedgerServiceError> => {
-    const reason = "Payment canceled"
-    try {
-      await MainBook.void(journalId, reason)
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
   const getWalletIdByTransactionHash = async (
-    hash,
+    hash: OnChainTxHash,
   ): Promise<WalletId | LedgerServiceError> => {
-    const bankOwnerWalletId = await getBankOwnerWalletId()
+    const bankOwnerWalletId = await caching.getBankOwnerWalletId()
     const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
     const entry = await Transaction.findOne({
       account_path: liabilitiesMainAccount,
@@ -713,14 +188,14 @@ export const LedgerService = (): ILedgerService => {
     if (!entry) {
       return new CouldNotFindTransactionError()
     }
-    const walletId = accounts.resolveWalletId(entry.account_path)
+    const walletId = toWalletId(entry.accounts)
     if (!walletId) {
       return new UnknownLedgerError("no wallet id associated to transaction")
     }
     return walletId
   }
 
-  async function* listWalletIdsWithPendingPayments():
+  const listWalletIdsWithPendingPayments = async function* ():
     | AsyncGenerator<WalletId>
     | LedgerServiceError {
     let transactions
@@ -742,122 +217,31 @@ export const LedgerService = (): ILedgerService => {
     }
 
     for await (const { _id } of transactions) {
-      yield accounts.resolveWalletId(_id)
-    }
-  }
-
-  const addColdStorageTxReceive = async ({
-    txHash,
-    payeeAddress,
-    description,
-    sats,
-    fee,
-    usd,
-    usdFee,
-  }: AddColdStorageTxReceiveArgs): Promise<LedgerJournal | LedgerServiceError> => {
-    let metadata: AddColdStorageTxReceiveMetadata
-    try {
-      metadata = {
-        type: LedgerTransactionType.ToColdStorage,
-        pending: false,
-        hash: txHash,
-        payee_addresses: [payeeAddress],
-        fee,
-        feeUsd: usdFee,
-        sats,
-        usd,
-        currency: "BTC",
-      }
-
-      const bankOwnerWalletId = await getBankOwnerWalletId()
-      const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
-
-      const entry = MainBook.entry(description)
-      entry
-        .credit(lndAccountingPath, sats + fee, metadata)
-        .debit(bankOwnerPath, fee, metadata)
-        .debit(bitcoindAccountingPath, sats, metadata)
-
-      const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const addColdStorageTxSend = async ({
-    txHash,
-    payeeAddress,
-    description,
-    sats,
-    fee,
-    usd,
-    usdFee,
-  }: AddColdStorageTxSendArgs): Promise<LedgerJournal | LedgerServiceError> => {
-    let metadata: AddColdStorageTxSendMetadata
-    try {
-      metadata = {
-        type: LedgerTransactionType.ToHotWallet,
-        pending: false,
-        hash: txHash,
-        payee_addresses: [payeeAddress],
-        fee,
-        feeUsd: usdFee,
-        sats,
-        usd,
-        currency: "BTC",
-      }
-
-      const bankOwnerWalletId = await getBankOwnerWalletId()
-      const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
-
-      const entry = MainBook.entry(description)
-      entry
-        .credit(bitcoindAccountingPath, sats + fee, metadata)
-        .debit(bankOwnerPath, fee, metadata)
-        .debit(lndAccountingPath, sats, metadata)
-
-      const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
-    } catch (err) {
-      return new UnknownLedgerError(err)
+      yield toWalletId(_id)
     }
   }
 
   return {
     getTransactionById,
     getTransactionsByHash,
-    getLiabilityTransactions,
-    getLiabilityTransactionsForContactUsername,
+    getTransactionsByWalletId,
+    getTransactionsByWalletIdAndContactUsername,
     listPendingPayments,
     getPendingPaymentsCount,
     getWalletBalance,
-    allPaymentVolumeSince,
-    externalPaymentVolumeSince,
-    intraledgerTxVolumeSince,
-    allTxVolumeSince,
     isOnChainTxRecorded,
-    isToHotWalletTxRecorded,
     isLnTxRecorded,
-    addOnChainTxReceive,
-    addLnTxReceive,
-    addLnFeeReimbursementReceive,
-    addLnTxSend,
-    addLnIntraledgerTxSend,
-    addOnChainTxSend,
-    addOnChainIntraledgerTxSend,
-    addWalletIdIntraledgerTxSend,
-    settlePendingLnPayments,
-    settlePendingOnChainPayments,
-    voidLedgerTransactionsForJournal,
     getWalletIdByTransactionHash,
     listWalletIdsWithPendingPayments,
-    addColdStorageTxReceive,
-    addColdStorageTxSend,
+    ...admin,
+    ...intraledger,
+    ...volume,
+    ...send,
+    ...receive,
   }
 }
 
-const translateToLedgerTx = (tx): LedgerTransaction => ({
+export const translateToLedgerTx = (tx): LedgerTransaction => ({
   id: tx.id,
   walletId: toWalletId(tx.accounts),
   type: tx.type,
@@ -883,7 +267,7 @@ const translateToLedgerTx = (tx): LedgerTransaction => ({
   feeKnownInAdvance: tx.feeKnownInAdvance || false,
 })
 
-const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
+export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
   journalId: savedEntry._id.toString(),
   voided: savedEntry.voided,
   transactionIds: savedEntry._transactions.map((id) => id.toString()),

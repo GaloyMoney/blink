@@ -33,6 +33,10 @@ const OnChainPaymentSendMutation = GT.Field<{ input }, null, GraphQLContextForUs
       }
     }
 
+    // FIXME: if we have the right domainAccount type, Account has to be defined here
+    // and should never be undefined, which would make the check below unecessay
+    if (!domainAccount) return { errors: [{ message: "account issue" }] }
+
     const status = await Wallets.payOnChainByWalletId({
       senderAccount: domainAccount,
       senderWalletId: walletId,

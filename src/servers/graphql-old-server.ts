@@ -390,7 +390,7 @@ const resolvers = {
             throw mapError(feeSatAmount)
         }
 
-        feeSatAmount = await Wallets.getLightningFee({
+        feeSatAmount = await Wallets.getRoutingFee({
           walletId: wallet.user.defaultWalletId,
           paymentRequest: invoice,
         })
@@ -414,13 +414,17 @@ const resolvers = {
         },
       ]
     },
-    onchain: (_, __, { wallet, domainAccount }) => ({
+    onchain: (_, __, { wallet }) => ({
       getNewAddress: async () => {
         const address = await Wallets.createOnChainAddress(wallet.user.defaultWalletId)
         if (address instanceof Error) throw mapError(address)
         return address
       },
-      pay: async ({ address, amount, memo }) => {
+      pay: async (
+        { address, amount, memo },
+        _,
+        { domainAccount }: { domainAccount: Account },
+      ) => {
         const status = await Wallets.payOnChainByWalletId({
           senderAccount: domainAccount,
           senderWalletId: wallet.user.defaultWalletId,
@@ -434,7 +438,11 @@ const resolvers = {
 
         return { success: true }
       },
-      payAll: async ({ address, memo }) => {
+      payAll: async (
+        { address, memo },
+        _,
+        { domainAccount }: { domainAccount: Account },
+      ) => {
         const status = await Wallets.payOnChainByWalletId({
           senderAccount: domainAccount,
           senderWalletId: wallet.user.defaultWalletId,
@@ -448,9 +456,14 @@ const resolvers = {
 
         return { success: true }
       },
-      getFee: async ({ address, amount }) => {
-        const fee = await Wallets.getOnChainFeeByWalletId({
+      getFee: async (
+        { address, amount },
+        _,
+        { domainAccount }: { domainAccount: Account },
+      ) => {
+        const fee = await Wallets.getOnChainFee({
           walletId: wallet.user.defaultWalletId,
+          account: domainAccount,
           amount,
           address,
           targetConfirmations: 1,

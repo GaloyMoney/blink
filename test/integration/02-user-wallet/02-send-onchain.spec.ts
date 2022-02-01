@@ -3,18 +3,7 @@ import { once } from "events"
 import { Wallets } from "@app"
 import { getFeeRates, getOnChainWalletConfig, getUserLimits, MS_PER_DAY } from "@config"
 import { toTargetConfs } from "@domain/bitcoin"
-import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
-import { NotificationType } from "@domain/notifications"
-import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
-import { onchainTransactionEventHandler } from "@servers/trigger"
-import { baseLogger } from "@services/logger"
-import { Transaction } from "@services/mongoose/schema"
-import { getTitle } from "@services/notifications/payment"
-import { sleep } from "@utils"
-import last from "lodash.last"
-
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-
 import {
   InsufficientBalanceError,
   InvalidSatoshiAmount,
@@ -22,8 +11,16 @@ import {
   LimitsExceededError,
   SelfPaymentError,
 } from "@domain/errors"
-
+import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
+import { NotificationType } from "@domain/notifications"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
+import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
+import { onchainTransactionEventHandler } from "@servers/trigger"
+import { Transaction } from "@services/ledger/schema"
+import { baseLogger } from "@services/logger"
+import { getTitle } from "@services/notifications/payment"
+import { sleep } from "@utils"
+import last from "lodash.last"
 
 import {
   bitcoindClient,
@@ -34,8 +31,8 @@ import {
   createUserWallet,
   enable2FA,
   generateTokenHelper,
-  getDefaultWalletIdByTestUserIndex,
   getAccountByTestUserIndex,
+  getDefaultWalletIdByTestUserIndex,
   getUserIdByTestUserIndex,
   getUserRecordByTestUserIndex,
   lndonchain,

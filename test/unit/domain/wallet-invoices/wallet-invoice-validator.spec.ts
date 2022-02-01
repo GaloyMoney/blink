@@ -1,4 +1,5 @@
 import { AlreadyPaidError, SelfPaymentError } from "@domain/errors"
+import { toCents } from "@domain/fiat"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
 import { WalletCurrency } from "@domain/wallets"
 
@@ -8,7 +9,7 @@ describe("WalletInvoiceValidator", () => {
     walletId: "toWalletId" as WalletId,
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
-    fiatAmount: 10 as FiatAmount,
+    usdCents: toCents(10),
     paid: false,
     currency: WalletCurrency.Btc,
   }

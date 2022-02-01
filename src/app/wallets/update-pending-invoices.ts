@@ -1,10 +1,11 @@
 import { getCurrentPrice } from "@app/prices"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { CouldNotFindError } from "@domain/errors"
+import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
 import { DepositFeeCalculator } from "@domain/wallets"
+import { LockService } from "@services"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
-import { LockService } from "@services"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { runInParallel } from "@utils"
@@ -90,10 +91,10 @@ const updatePendingInvoice = async ({
 
   const walletInvoicesRepo = WalletInvoicesRepository()
 
-  const { pubkey, paymentHash, walletId } = walletInvoice
+  const { pubkey, paymentHash, walletId, currency, usdCents } = walletInvoice
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
-    const isDeleted = walletInvoicesRepo.deleteByPaymentHash(paymentHash)
+    const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
     if (isDeleted instanceof Error) {
       logger.error(
         { walletInvoice, error: isDeleted },
@@ -105,79 +106,78 @@ const updatePendingInvoice = async ({
   }
   if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
 
-  if (lnInvoiceLookup.isSettled) {
-    const pendingInvoiceLogger = logger.child({
-      hash: paymentHash,
-      walletId,
-      topic: "payment",
-      protocol: "lightning",
-      transactionType: "receipt",
-      onUs: false,
-    })
+  if (!lnInvoiceLookup.isSettled) {
+    logger.debug({ invoice: lnInvoiceLookup }, "invoice has not been paid")
+    return false
+  }
 
-    if (walletInvoice.paid) {
+  const pendingInvoiceLogger = logger.child({
+    hash: paymentHash,
+    walletId,
+    topic: "payment",
+    protocol: "lightning",
+    transactionType: "receipt",
+    onUs: false,
+  })
+
+  if (walletInvoice.paid) {
+    pendingInvoiceLogger.info("invoice has already been processed")
+    return true
+  }
+
+  const lockService = LockService()
+  return lockService.lockPaymentHash({ paymentHash, logger, lock }, async () => {
+    // we're getting the invoice another time, now behind the lock, to avoid potential race condition
+    const invoiceToUpdate = await walletInvoicesRepo.findByPaymentHash(paymentHash)
+    if (invoiceToUpdate instanceof CouldNotFindError) {
+      pendingInvoiceLogger.error({ paymentHash }, "WalletInvoice doesn't exist")
+      return false
+    }
+    if (invoiceToUpdate instanceof Error) return invoiceToUpdate
+    if (invoiceToUpdate.paid) {
       pendingInvoiceLogger.info("invoice has already been processed")
       return true
     }
 
-    const lockService = LockService()
-    return lockService.lockPaymentHash({ paymentHash, logger, lock }, async () => {
-      const invoiceToUpdate = await walletInvoicesRepo.findByPaymentHash(
-        walletInvoice.paymentHash,
-      )
-      if (invoiceToUpdate instanceof CouldNotFindError) {
-        pendingInvoiceLogger.error(
-          { paymentHash: walletInvoice.paymentHash },
-          "WalletInvoice doesn't exist",
-        )
-        return false
-      }
-      if (invoiceToUpdate instanceof Error) return invoiceToUpdate
-      if (invoiceToUpdate.paid) {
-        pendingInvoiceLogger.info("invoice has already been processed")
-        return true
-      }
+    const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
+    if (invoicePaid instanceof Error) return invoicePaid
 
-      const updatedWalletInvoice = await walletInvoicesRepo.markAsPaid(
-        invoiceToUpdate.paymentHash,
-      )
-      if (updatedWalletInvoice instanceof Error) return updatedWalletInvoice
+    const usdPerSat = await getCurrentPrice()
+    if (usdPerSat instanceof Error) return usdPerSat
 
-      const usdPerSat = await getCurrentPrice()
-      if (usdPerSat instanceof Error) return usdPerSat
+    const {
+      lnInvoice: { description },
+      roundedDownReceived,
+    } = lnInvoiceLookup
+    const feeInboundLiquidity = DepositFeeCalculator().lnDepositFee()
 
-      const {
-        lnInvoice: { description },
-        roundedDownReceived,
-      } = lnInvoiceLookup
-      const fee = DepositFeeCalculator().lnDepositFee()
+    const amountDisplayCurrency =
+      DisplayCurrencyConversionRate(usdPerSat)(roundedDownReceived)
+    const feeInboundLiquidityDisplayCurrency =
+      DisplayCurrencyConversionRate(usdPerSat)(feeInboundLiquidity)
 
-      const usd = roundedDownReceived * usdPerSat
-      const usdFee = fee * usdPerSat
-
-      const ledgerService = LedgerService()
-      const result = await ledgerService.addLnTxReceive({
-        walletId,
-        paymentHash,
-        description,
-        sats: roundedDownReceived,
-        fee,
-        usd,
-        usdFee,
-      })
-      if (result instanceof Error) return result
-
-      const notificationsService = NotificationsService(logger)
-      notificationsService.lnInvoicePaid({
-        paymentHash,
-        recipientWalletId: walletId,
-        amount: roundedDownReceived,
-        usdPerSat,
-      })
-
-      return true
+    const ledgerService = LedgerService()
+    const result = await ledgerService.addLnTxReceive({
+      walletId,
+      paymentHash,
+      description,
+      sats: roundedDownReceived,
+      usd: usdCents,
+      amountDisplayCurrency,
+      currency,
+      feeInboundLiquidity,
+      feeInboundLiquidityDisplayCurrency,
     })
-  }
-  logger.debug({ invoice: lnInvoiceLookup }, "invoice has not been paid")
-  return false
+    if (result instanceof Error) return result
+
+    const notificationsService = NotificationsService(logger)
+    notificationsService.lnInvoicePaid({
+      paymentHash,
+      recipientWalletId: walletId,
+      amount: roundedDownReceived,
+      usdPerSat,
+    })
+
+    return true
+  })
 }

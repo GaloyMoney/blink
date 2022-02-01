@@ -56,7 +56,7 @@ type SettlementViaOnChain = {
 
 type BaseWalletTransaction = {
   readonly id: LedgerTransactionId | OnChainTxHash
-  readonly walletId: WalletId | null
+  readonly walletId: WalletId | undefined
   readonly settlementAmount: Satoshis
   readonly settlementFee: Satoshis
   readonly settlementUsdPerSat: number
@@ -166,12 +166,12 @@ type DepositFeeCalculator = {
 }
 
 type OnChainWithdrawalFeeArgs = {
-  onChainFee: Satoshis
-  walletFee: Satoshis
+  minerFee: Satoshis
+  bankFee: Satoshis
 }
 
 type WithdrawalFeeCalculator = {
-  onChainWithdrawalFee({ onChainFee, walletFee }: OnChainWithdrawalFeeArgs): Satoshis
+  onChainWithdrawalFee({ minerFee, bankFee }: OnChainWithdrawalFeeArgs): Satoshis
   onChainIntraLedgerFee(): Satoshis
 }
 

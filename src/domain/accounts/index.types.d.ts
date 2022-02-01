@@ -8,7 +8,6 @@ type AccountStatus =
   typeof import("./index").AccountStatus[keyof typeof import("./index").AccountStatus]
 
 type DepositFeeRatio = number & { readonly brand: unique symbol }
-type WithdrawFee = number & { readonly brand: unique symbol }
 
 type ContactAlias = string & { readonly brand: unique symbol }
 
@@ -26,18 +25,13 @@ type Account = {
   defaultWalletId: WalletId
   readonly ownerId: UserId
   readonly depositFeeRatio: DepositFeeRatio
-  readonly withdrawFee: WithdrawFee
+  readonly withdrawFee: Satoshis
   level: AccountLevel
   status: AccountStatus
   title: BusinessMapTitle
   coordinates: Coordinates
   readonly contacts: AccountContact[]
 }
-
-type Currencies = {
-  id: Currency
-  ratio: CurrencyRatio
-}[]
 
 type BusinessMapTitle = string & { readonly brand: unique symbol }
 type Coordinates = {

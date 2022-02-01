@@ -294,12 +294,15 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidScanDepthAmount":
     case "InsufficientBalanceForRoutingError":
     case "InvalidLanguageError":
-    case "InvalidFiatAmount":
+    case "InvalidUsdCents":
+    case "NonIntegerUsdCents":
     case "ColdStorageError":
     case "ColdStorageServiceError":
     case "InvalidCurrentColdStorageWalletServiceError":
     case "InsufficientBalanceForRebalanceError":
     case "UnknownColdStorageServiceError":
+    case "FeeDifferenceError":
+    case "NoTransactionToSettleError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 

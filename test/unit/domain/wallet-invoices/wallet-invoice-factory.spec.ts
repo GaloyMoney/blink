@@ -1,4 +1,5 @@
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { WalletCurrency } from "@domain/wallets"
 
@@ -30,7 +31,7 @@ describe("wallet invoice factory methods", () => {
     }
     const result = walletInvoiceFactory.createForSelf({
       registeredInvoice,
-      fiatAmount: 12 as FiatAmount,
+      usdCents: toCents(12),
     })
     const expected = {
       paymentHash: "paymentHash",
@@ -38,7 +39,7 @@ describe("wallet invoice factory methods", () => {
       selfGenerated: true,
       pubkey: "pubkey",
       paid: false,
-      fiatAmount: 12,
+      usdCents: 12,
       currency: WalletCurrency.Btc,
     }
     expect(result).toEqual(expected)
@@ -63,7 +64,7 @@ describe("wallet invoice factory methods", () => {
     }
     const result = walletInvoiceFactory.createForRecipient({
       registeredInvoice,
-      fiatAmount: 10 as FiatAmount,
+      usdCents: toCents(10),
     })
     const expected = {
       paymentHash: "paymentHash",
@@ -71,7 +72,7 @@ describe("wallet invoice factory methods", () => {
       selfGenerated: false,
       pubkey: "pubkey",
       paid: false,
-      fiatAmount: 10,
+      usdCents: 10,
       currency: WalletCurrency.Btc,
     }
     expect(result).toEqual(expected)

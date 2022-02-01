@@ -2,9 +2,9 @@ import { toSats } from "@domain/bitcoin"
 
 export const WithdrawalFeeCalculator = (): WithdrawalFeeCalculator => {
   const onChainWithdrawalFee = ({
-    onChainFee,
-    walletFee,
-  }: OnChainWithdrawalFeeArgs): Satoshis => toSats(onChainFee + walletFee)
+    minerFee,
+    bankFee,
+  }: OnChainWithdrawalFeeArgs): Satoshis => toSats(minerFee + bankFee)
 
   return {
     onChainWithdrawalFee,

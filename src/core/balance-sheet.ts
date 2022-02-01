@@ -1,17 +1,17 @@
 import { getBalance as getBitcoindBalance } from "@services/bitcoind"
 import { lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
-import { ledger } from "@services/mongodb"
+import { ledgerAdmin } from "@services/mongodb"
 
 const logger = baseLogger.child({ module: "balanceSheet" })
 
 export const getLedgerAccounts = async () => {
   const [assets, liabilities, lightning, bitcoin, bankOwnerBalance] = await Promise.all([
-    ledger.getAssetsBalance(),
-    ledger.getLiabilitiesBalance(),
-    ledger.getLndBalance(),
-    ledger.getBitcoindBalance(),
-    ledger.getBankOwnerBalance(),
+    ledgerAdmin.getAssetsBalance(),
+    ledgerAdmin.getLiabilitiesBalance(),
+    ledgerAdmin.getLndBalance(),
+    ledgerAdmin.getBitcoindBalance(),
+    ledgerAdmin.getBankOwnerBalance(),
   ])
 
   return { assets, liabilities, lightning, bitcoin, bankOwnerBalance }
