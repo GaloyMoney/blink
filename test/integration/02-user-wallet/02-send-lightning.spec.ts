@@ -807,11 +807,11 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnPay.createdAt).toBeInstanceOf(Date)
         expect(lnPaymentOnPay.status).toBeUndefined()
 
-        // Run update task
+        // Run lnPayments update task
         const lnPaymentUpdateOnPending = await Lightning.updateLnPayments()
         if (lnPaymentUpdateOnPending instanceof Error) throw lnPaymentUpdateOnPending
 
-        // Test 'lnpayment' is pending
+        // Test 'lnpayment' is still pending
         const lnPaymentOnPending = await lnPaymentsRepo.findByPaymentHash(
           id as PaymentHash,
         )
@@ -857,7 +857,21 @@ describe("UserWallet - Lightning Pay", () => {
 
         await waitUntilChannelBalanceSyncAll()
 
-        // Run update task
+        // Test 'lnpayment' is updated after settlement
+        const lnPaymentOnAfterPending = await lnPaymentsRepo.findByPaymentHash(
+          id as PaymentHash,
+        )
+        if (lnPaymentOnAfterPending instanceof Error) throw lnPaymentOnAfterPending
+
+        expect(lnPaymentOnAfterPending.paymentHash).toBe(id)
+        expect(lnPaymentOnAfterPending.paymentRequest).toBe(request)
+        expect(lnPaymentOnAfterPending.isCompleteRecord).toBeFalsy()
+        expect(lnPaymentOnAfterPending.createdAt).toBeInstanceOf(Date)
+        expect(lnPaymentOnAfterPending.status).toBeUndefined()
+
+        expect(lnPaymentOnAfterPending.confirmedDetails).not.toBeUndefined()
+
+        // Run lnPayments update task
         const lnPaymentUpdateOnSettled = await Lightning.updateLnPayments()
         if (lnPaymentUpdateOnSettled instanceof Error) throw lnPaymentUpdateOnSettled
 
@@ -881,9 +895,14 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnSettled.status).toBe(PaymentStatus.Settled)
         expect(lnPaymentOnSettled.milliSatsAmount).toBe(payment.milliSatsAmount)
         expect(lnPaymentOnSettled.roundedUpAmount).toBe(payment.roundedUpAmount)
-        expect(lnPaymentOnSettled.confirmedDetails?.revealedPreImage).not.toBeUndefined()
+        expect(lnPaymentOnSettled.confirmedDetails).not.toBeUndefined()
         expect(lnPaymentOnSettled.attempts).not.toBeUndefined()
         expect(lnPaymentOnSettled.attempts?.length).toBeGreaterThanOrEqual(1)
+
+        const preImage = payment.confirmedDetails?.revealedPreImage
+        expect(preImage).toHaveLength(64)
+        expect(lnPaymentOnSettled.confirmedDetails?.revealedPreImage).toBe(preImage)
+        expect(lnPaymentOnAfterPending.confirmedDetails?.revealedPreImage).toBe(preImage)
 
         expect(lnPaymentOnSettled.paymentRequest).toBe(request)
         expect(lnPaymentOnSettled.sentFromPubkey).toBe(lnPaymentOnPay.sentFromPubkey)

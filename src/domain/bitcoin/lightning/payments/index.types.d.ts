@@ -15,6 +15,10 @@ type PersistedLnPaymentLookup = Writeable<LnPaymentLookup, "paymentHash"> & {
   isCompleteRecord: boolean
 }
 
+type LnPaymentUpdatePreImage = Pick<LnPaymentLookup, "paymentHash"> & {
+  readonly confirmedDetails: Pick<LnPaymentConfirmedDetails, "revealedPreImage">
+}
+
 interface ILnPaymentsRepository {
   findByPaymentHash(
     paymentHash: PaymentHash,
@@ -24,6 +28,6 @@ interface ILnPaymentsRepository {
     lnPaymentPartial: LnPaymentPartial,
   ): Promise<LnPaymentPartial | RepositoryError>
   update(
-    lnPayment: PersistedLnPaymentLookup,
+    lnPayment: PersistedLnPaymentLookup | LnPaymentUpdatePreImage,
   ): Promise<PersistedLnPaymentLookup | RepositoryError>
 }

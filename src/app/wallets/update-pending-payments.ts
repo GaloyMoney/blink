@@ -4,6 +4,7 @@ import { InconsistentDataError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services"
+import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 import { runInParallel } from "@utils"
 
 import { reimburseFee } from "./reimburse-fee"
@@ -110,6 +111,18 @@ const updatePendingPayment = async ({
   const { status } = lnPaymentLookup
   if (status != PaymentStatus.Failed) {
     roundedUpFee = lnPaymentLookup.confirmedDetails?.roundedUpFee || toSats(0)
+  }
+
+  if (
+    status === PaymentStatus.Settled &&
+    lnPaymentLookup.confirmedDetails?.revealedPreImage
+  ) {
+    LnPaymentsRepository().update({
+      paymentHash,
+      confirmedDetails: {
+        revealedPreImage: lnPaymentLookup.confirmedDetails.revealedPreImage,
+      },
+    })
   }
 
   if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {

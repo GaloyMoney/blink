@@ -49,7 +49,7 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
   }
 
   const update = async (
-    payment: PersistedLnPaymentLookup,
+    payment: PersistedLnPaymentLookup | LnPaymentUpdatePreImage,
   ): Promise<PersistedLnPaymentLookup | RepositoryError> => {
     try {
       const result = await LnPayment.findOneAndUpdate(
