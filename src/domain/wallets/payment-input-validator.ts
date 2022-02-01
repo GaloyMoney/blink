@@ -10,12 +10,12 @@ import { AccountStatus } from "@domain/accounts"
 export const PaymentInputValidator = (
   getWalletFn: PaymentInputValidatorConfig,
 ): PaymentInputValidator => {
-  const validatePaymentInput = async ({
+  const validatePaymentInput = async <T extends undefined | string>({
     amount,
     senderWalletId: uncheckedSenderWalletId,
     senderAccount,
     recipientWalletId: uncheckedRecipientWalletId,
-  }: ValidatePaymentInputArgs) => {
+  }: ValidatePaymentInputArgs<T>) => {
     const validAmount = checkedToSats(amount)
     if (validAmount instanceof Error) return validAmount
 
@@ -42,13 +42,13 @@ export const PaymentInputValidator = (
         amount: validAmount,
         senderWallet,
         recipientWallet,
-      }
+      } as ValidatePaymentInputRet<T>
     }
 
     return {
       amount: validAmount,
       senderWallet,
-    }
+    } as ValidatePaymentInputRet<T>
   }
 
   return {
