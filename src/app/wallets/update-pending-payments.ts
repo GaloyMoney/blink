@@ -142,6 +142,15 @@ const updatePendingPayment = async ({
           { success: true, id: paymentHash, payment: pendingPayment },
           "payment has been confirmed",
         )
+
+        const revealedPreImage = lnPaymentLookup.confirmedDetails?.revealedPreImage
+        if (revealedPreImage)
+          LedgerService().updateMetadata({
+            hash: paymentHash,
+            metadata: {
+              revealedPreImage,
+            },
+          })
         if (pendingPayment.feeKnownInAdvance) return true
 
         return reimburseFee({
