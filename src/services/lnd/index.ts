@@ -300,22 +300,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const listSettledAndFailedPayments = async (args: {
-    after: PagingStartToken | PagingContinueToken
-    pubkey: Pubkey
-  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
-    const settledPayments = await listSettledPayments(args)
-    if (settledPayments instanceof Error) return settledPayments
-
-    const failedPayments = await listFailedPayments(args)
-    if (failedPayments instanceof Error) return failedPayments
-
-    return {
-      lnPayments: [...settledPayments.lnPayments, ...failedPayments.lnPayments],
-      endCursor: settledPayments.endCursor,
-    }
-  }
-
   const cancelInvoice = async ({
     pubkey,
     paymentHash,
@@ -461,7 +445,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
     lookupPayment,
     listSettledPayments,
     listFailedPayments,
-    listSettledAndFailedPayments,
     cancelInvoice,
     payInvoiceViaRoutes,
     payInvoiceViaPaymentDetails,
