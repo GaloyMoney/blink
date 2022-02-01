@@ -769,10 +769,6 @@ describe("UserWallet - Lightning Pay", () => {
         expect(result).toBe(PaymentSendStatus.Success)
         const finalBalance = await getBTCBalance(walletId1)
 
-        // const { id } = await decodePaymentRequest({ lnd: lndOutside2, request })
-        // const { results: [{ fee }] } = await getAccountTransactions(userWallet1.user.walletPath, { hash: id })
-        // ^^^^ this fetch the wrong transaction
-
         // TODO: have a way to do this more programmatically?
         // base rate: 1, fee Rate: 1
         const fee = 0
