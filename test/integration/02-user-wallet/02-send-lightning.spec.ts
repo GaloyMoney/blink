@@ -806,6 +806,7 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnPay.isCompleteRecord).toBeFalsy()
         expect(lnPaymentOnPay.createdAt).toBeInstanceOf(Date)
         expect(lnPaymentOnPay.status).toBeUndefined()
+        expect(lnPaymentOnPay.confirmedDetails).toBeUndefined()
 
         // Run lnPayments update task
         const lnPaymentUpdateOnPending = await Lightning.updateLnPayments()
@@ -823,6 +824,7 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnPending.isCompleteRecord).toBeFalsy()
         expect(lnPaymentOnPending.createdAt).toBeInstanceOf(Date)
         expect(lnPaymentOnPending.status).toBeUndefined()
+        expect(lnPaymentOnPending.confirmedDetails).toBeUndefined()
 
         const lndService = LndService()
         if (lndService instanceof Error) throw lndService
