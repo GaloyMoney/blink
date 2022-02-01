@@ -864,9 +864,13 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnSettled.status).toBe(PaymentStatus.Settled)
         expect(lnPaymentOnSettled.milliSatsAmount).toBe(payment.milliSatsAmount)
         expect(lnPaymentOnSettled.roundedUpAmount).toBe(payment.roundedUpAmount)
-        expect(lnPaymentOnSettled.confirmedDetails?.revealedPreImage).not.toBeUndefined()
+        expect(lnPaymentOnSettled.confirmedDetails).not.toBeUndefined()
         expect(lnPaymentOnSettled.attempts).not.toBeUndefined()
         expect(lnPaymentOnSettled.attempts?.length).toBeGreaterThanOrEqual(1)
+
+        const preImage = payment.confirmedDetails?.revealedPreImage
+        expect(preImage).toHaveLength(64)
+        expect(lnPaymentOnSettled.confirmedDetails?.revealedPreImage).toBe(preImage)
 
         expect(lnPaymentOnSettled.paymentRequest).toBe(request)
         expect(lnPaymentOnSettled.sentFromPubkey).toBe(lnPaymentOnPay.sentFromPubkey)
