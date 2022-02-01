@@ -36,7 +36,7 @@ export class ValidationError extends DomainError {}
 export class ContactNotExistentError extends DomainError {}
 export class InvalidSatoshiAmount extends ValidationError {}
 export class InvalidUsdCents extends ValidationError {}
-export class NonIntegeterUsdCents extends ValidationError {}
+export class NonIntegerUsdCents extends ValidationError {}
 export class InvalidOnChainAddress extends ValidationError {}
 export class InvalidScanDepthAmount extends ValidationError {}
 export class SatoshiAmountRequiredError extends ValidationError {}

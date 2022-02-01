@@ -195,7 +195,7 @@ const executePaymentViaIntraledger = async ({
       const journal = await LockService().extendLock(
         { logger: onchainLoggerOnUs, lock },
         async () =>
-          LedgerService().addOnChainIntraledgerTxSend({
+          LedgerService().addOnChainIntraledgerTxTransfer({
             senderWalletId,
             description: "",
             sats,

@@ -6,7 +6,7 @@ import { MainBook } from "./books"
 import { translateToLedgerJournal } from "."
 
 export const intraledger = {
-  addOnChainIntraledgerTxSend: async ({
+  addOnChainIntraledgerTxTransfer: async ({
     senderWalletId,
     description,
     sats,
