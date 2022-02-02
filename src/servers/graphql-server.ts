@@ -169,7 +169,7 @@ export const startApolloServer = async ({
 
       const body = context.req?.body ?? null
 
-      const ip = parseIps(context.req?.headers)
+      const ip = parseIps(context)
 
       return sessionContext({
         token,

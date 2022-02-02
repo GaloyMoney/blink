@@ -96,5 +96,5 @@ interface UserRecord {
 interface UserIPsType {
   _id: string
   id: string
-  lastIPs?: IPType[]
+  lastIPs?: IPType[] | undefined
 }
