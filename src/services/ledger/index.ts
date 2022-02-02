@@ -9,6 +9,7 @@ import {
   liabilitiesMainAccount,
   toLiabilitiesWalletId,
   toWalletId,
+  NoTransactionToUpdateError,
 } from "@domain/ledger"
 import {
   CouldNotFindTransactionError,
@@ -25,6 +26,7 @@ import { MainBook, Transaction } from "./books"
 import * as caching from "./caching"
 import { intraledger } from "./intraledger"
 import { receive } from "./receive"
+import { TransactionMetadata } from "./schema"
 import { send } from "./send"
 import { volume } from "./volume"
 
@@ -44,6 +46,25 @@ export const lazyLoadLedgerAdmin = ({
 }
 
 export const LedgerService = (): ILedgerService => {
+  const updateMetadata = async ({
+    hash,
+    metadata,
+  }: {
+    hash: PaymentHash
+    metadata
+  }): Promise<true | LedgerServiceError> => {
+    try {
+      const result = await TransactionMetadata.updateMany({ hash }, metadata)
+      const success = result.nModified > 0
+      if (!success) {
+        return new NoTransactionToUpdateError()
+      }
+      return true
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const getTransactionById = async (
     id: LedgerTransactionId,
   ): Promise<LedgerTransaction | LedgerServiceError> => {
@@ -261,6 +282,7 @@ export const LedgerService = (): ILedgerService => {
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.ledger",
     fns: {
+      updateMetadata,
       getTransactionById,
       getTransactionsByHash,
       getTransactionsByWalletId,

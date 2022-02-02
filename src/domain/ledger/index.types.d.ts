@@ -197,6 +197,14 @@ type VolumeResult = Promise<TxBaseVolume | LedgerServiceError>
 type GetVolumeSinceFn = (args: VolumeSinceArgs) => VolumeResult
 
 interface ILedgerService {
+  updateMetadata({
+    hash,
+    metadata,
+  }: {
+    hash: PaymentHash
+    metadata
+  }): Promise<true | LedgerServiceError>
+
   getTransactionById(
     id: LedgerTransactionId,
   ): Promise<LedgerTransaction | LedgerServiceError>

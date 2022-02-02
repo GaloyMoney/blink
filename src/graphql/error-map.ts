@@ -341,6 +341,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "DomainError":
     case "ErrorLevel":
     case "InvalidCurrencyBaseAmountError":
+    case "NoTransactionToUpdateError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
