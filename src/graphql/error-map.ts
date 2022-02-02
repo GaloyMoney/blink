@@ -304,6 +304,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownColdStorageServiceError":
     case "FeeDifferenceError":
     case "NoTransactionToSettleError":
+    case "NoTransactionToUpdateError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
