@@ -24,6 +24,9 @@ import { getActiveLnd, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository, WalletInvoicesRepository } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
+
+import { migrateLnPaymentsFromLnd } from "@app/lightning/migrate-ln-payments-listpayments"
+
 import { sleep } from "@utils"
 
 import {
@@ -113,6 +116,11 @@ afterAll(() => {
 })
 
 describe("UserWallet - Lightning Pay", () => {
+  it.skip("custom test", async () => {
+    const res = await migrateLnPaymentsFromLnd()
+    console.log(res)
+  })
+
   it("sends to another Galoy user with memo", async () => {
     const memo = "invoiceMemo"
 
@@ -759,7 +767,7 @@ describe("UserWallet - Lightning Pay", () => {
         expect(finalBalance).toBe(initialBalance - amountInvoice - fee)
       })
 
-      it("pay hodl invoice & ln payments repo updates", async () => {
+      it.skip("pay hodl invoice & ln payments repo updates", async () => {
         const { id, secret } = createInvoiceHash()
 
         const { request } = await createHodlInvoice({
