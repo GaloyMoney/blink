@@ -1,8 +1,8 @@
 import { checkedToWalletId } from "@domain/wallets"
+import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
-import { UserInputError } from "apollo-server-errors"
 
-const WalletId = new GT.Scalar({
+const WalletId = GT.Scalar({
   name: "WalletId",
   description: "Unique identifier of a wallet",
   parseValue(value) {
@@ -12,14 +12,14 @@ const WalletId = new GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return validWalletIdValue(ast.value)
     }
-    return new UserInputError("Invalid type for WalletId")
+    return new InputValidationError({ message: "Invalid type for WalletId" })
   },
 })
 
 function validWalletIdValue(value) {
   const checkedWalletId = checkedToWalletId(value)
   if (checkedWalletId instanceof Error) {
-    return new UserInputError("Invalid value for WalletId")
+    return new InputValidationError({ message: "Invalid value for WalletId" })
   }
   return checkedWalletId
 }

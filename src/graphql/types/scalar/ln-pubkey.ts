@@ -1,7 +1,7 @@
+import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
-import { UserInputError } from "apollo-server-errors"
 
-const LnPubkey = new GT.Scalar({
+const LnPubkey = GT.Scalar({
   name: "LnPubkey",
   parseValue(value) {
     return validLnPubkey(value)
@@ -10,7 +10,7 @@ const LnPubkey = new GT.Scalar({
     if (ast.kind === GT.Kind.STRING) {
       return validLnPubkey(ast.value)
     }
-    return new UserInputError("Invalid type for LnPubkey")
+    return new InputValidationError({ message: "Invalid type for LnPubkey" })
   },
 })
 
@@ -19,7 +19,7 @@ function validLnPubkey(value) {
   if (value.match(/^[a-f0-9]{66}$/i)) {
     return value
   }
-  return new UserInputError("Invalid value for LnPubkey")
+  return new InputValidationError({ message: "Invalid value for LnPubkey" })
 }
 
 export default LnPubkey

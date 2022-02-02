@@ -1,19 +1,16 @@
-import { getSpecterWalletConfig } from "@config"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 import {
-  deleteExpiredInvoiceUser,
+  deleteExpiredWalletInvoice,
   deleteFailedPaymentsAttemptAllLnds,
   updateEscrows,
-  updateRoutingFees,
+  updateRoutingRevenues,
 } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 
-import { SpecterWallet } from "@core/specter-wallet"
 import { activateLndHealthCheck } from "@services/lnd/health"
-import { Wallets } from "@app"
-import { updateLnPayments } from "@app/lightning"
+import { ColdStorage, Lightning, Wallets } from "@app"
 
 const logger = baseLogger.child({ module: "cron" })
 
@@ -21,13 +18,9 @@ const main = async () => {
   const results: Array<boolean> = []
   const mongoose = await setupMongoConnection()
 
-  const rebalance = () => {
-    const specterWalletConfig = getSpecterWalletConfig()
-    const specterWallet = new SpecterWallet({
-      logger,
-      config: specterWalletConfig,
-    })
-    return specterWallet.tentativelyRebalance()
+  const rebalance = async () => {
+    const result = await ColdStorage.rebalanceToColdWallet()
+    if (result instanceof Error) throw result
   }
 
   const updatePendingLightningInvoices = () => Wallets.updatePendingInvoices(logger)
@@ -40,11 +33,11 @@ const main = async () => {
   }
 
   const deleteExpiredInvoices = async () => {
-    await deleteExpiredInvoiceUser()
+    await deleteExpiredWalletInvoice()
   }
 
   const updateLnPaymentsCollection = async () => {
-    const result = await updateLnPayments()
+    const result = await Lightning.updateLnPayments()
     if (result instanceof Error) throw result
   }
 
@@ -54,7 +47,7 @@ const main = async () => {
     updatePendingLightningPayments,
     deleteExpiredInvoices,
     deleteFailedPaymentsAttemptAllLnds,
-    updateRoutingFees,
+    updateRoutingRevenues,
     updateOnChainReceipt,
     rebalance,
     updateLnPaymentsCollection,

@@ -139,13 +139,13 @@ export class UserWallet {
   }) {
     return {
       fee,
-      feeUsd: fee ? UserWallet.satsToUsd(fee) : undefined,
+      feeUsd: fee ? UserWallet.satsToCents(fee) : undefined,
       sats,
-      usd: usd ?? UserWallet.satsToUsd(sats),
+      usd: usd ?? UserWallet.satsToCents(sats),
     }
   }
 
-  static satsToUsd = (sats) => {
+  static satsToCents = (sats) => {
     const usdValue = UserWallet.lastPrice * sats
     return usdValue
   }

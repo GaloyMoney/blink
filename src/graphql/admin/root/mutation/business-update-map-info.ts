@@ -4,7 +4,7 @@ import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 import Username from "@graphql/types/scalar/username"
 
-const BusinessUpdateMapInfoInput = new GT.Input({
+const BusinessUpdateMapInfoInput = GT.Input({
   name: "BusinessUpdateMapInfoInput",
   fields: () => ({
     username: {

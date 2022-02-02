@@ -4,7 +4,7 @@ import WalletId from "../scalar/wallet-id"
 
 import Wallet from "./wallet"
 
-const IAccount = new GT.Interface({
+const IAccount = GT.Interface({
   name: "Account",
   fields: () => ({
     id: {

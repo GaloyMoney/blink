@@ -4,7 +4,7 @@ import IError from "../abstract/error"
 
 import InvoicePaymentStatus from "../scalar/invoice-payment-status"
 
-const LnInvoicePaymentStatusPayload = new GT.Object({
+const LnInvoicePaymentStatusPayload = GT.Object({
   name: "LnInvoicePaymentStatusPayload",
   fields: () => ({
     errors: {

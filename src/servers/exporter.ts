@@ -1,12 +1,12 @@
+import { ColdStorage } from "@app"
 import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
 import { toSats } from "@domain/bitcoin"
-import { getBalancesDetail } from "@services/bitcoind"
+import { LedgerService } from "@services/ledger"
 import {
   getBankOwnerWalletId,
   getDealerWalletId,
   getFunderWalletId,
-} from "@services/ledger/accounts"
-import { LedgerService } from "@services/ledger"
+} from "@services/ledger/caching"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { getBosScore, lndsBalances } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
@@ -84,6 +84,8 @@ for (const role of roles) {
   })
 }
 
+const coldWallets: { [key: string]: client.Gauge<string> } = {}
+
 const main = async () => {
   server.get("/metrics", async (req, res) => {
     const bosScore = await getBosScore()
@@ -134,14 +136,17 @@ const main = async () => {
     business_g.set(await User.count({ title: { $ne: null } }))
 
     try {
-      const balances = await getBalancesDetail()
-      for (const { wallet, balance } of balances) {
-        const walletSanitized = wallet.replace("/", "_")
-        const gauge = new client.Gauge({
-          name: `${prefix}_bitcoind_${walletSanitized}`,
-          help: `amount in wallet ${wallet}`,
-        })
-        gauge.set(balance)
+      let balances = await ColdStorage.getBalances()
+      if (balances instanceof Error) balances = []
+      for (const { walletName, amount } of balances) {
+        const walletSanitized = walletName.replace("/", "_")
+        if (!coldWallets[walletSanitized]) {
+          coldWallets[walletSanitized] = new client.Gauge({
+            name: `${prefix}_bitcoind_${walletSanitized}`,
+            help: `amount in wallet ${walletName}`,
+          })
+        }
+        coldWallets[walletSanitized].set(amount)
       }
     } catch (err) {
       logger.error({ err }, "error setting bitcoind/specter balance")

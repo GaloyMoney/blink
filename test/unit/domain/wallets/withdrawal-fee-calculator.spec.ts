@@ -6,11 +6,11 @@ const calculator = WithdrawalFeeCalculator()
 describe("WithdrawalFeeCalculator", () => {
   describe("onChainWithdrawalFee", () => {
     it("returns the sum of onchain fee and wallet fee", () => {
-      const onChainFee = toSats(7200)
-      const walletFee = toSats(2000)
+      const minerFee = toSats(7200)
+      const bankFee = toSats(2000)
       const fee = calculator.onChainWithdrawalFee({
-        onChainFee,
-        walletFee,
+        minerFee,
+        bankFee,
       })
       expect(fee).toEqual(9200)
     })

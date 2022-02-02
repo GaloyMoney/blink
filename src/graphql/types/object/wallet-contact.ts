@@ -9,7 +9,7 @@ import Username from "../scalar/username"
 
 import { TransactionConnection } from "./transaction"
 
-const AccountContact = new GT.Object({
+const AccountContact = GT.Object<UserRecord, GraphQLContextForUser>({
   name: "UserContact",
   fields: () => ({
     id: { type: GT.NonNull(Username) },
@@ -29,6 +29,9 @@ const AccountContact = new GT.Object({
       type: TransactionConnection,
       args: connectionArgs,
       resolve: async (source, args, { domainAccount }) => {
+        if (!source.username) {
+          throw new Error("Missing username for contact")
+        }
         const contactUsername = checkedToUsername(source.username)
 
         if (contactUsername instanceof Error) {

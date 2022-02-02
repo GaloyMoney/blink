@@ -59,11 +59,19 @@ export class BitcoindClient {
   }
 
   async createWallet({
-    wallet_name,
+    walletName,
+    disablePrivateKeys,
+    descriptors,
   }: {
-    wallet_name: string
+    walletName: string
+    disablePrivateKeys?: boolean
+    descriptors?: boolean
   }): Promise<{ name: string; warning: string }> {
-    return this.client.createWallet({ wallet_name })
+    return this.client.createWallet({
+      wallet_name: walletName,
+      disable_private_keys: disablePrivateKeys,
+      descriptors,
+    })
   }
 
   async listWallets(): Promise<[string]> {
@@ -92,7 +100,7 @@ export class BitcoindClient {
 export class BitcoindWalletClient {
   readonly client
 
-  constructor({ walletName }: { walletName: string }) {
+  constructor(walletName: string) {
     this.client = new Client({ ...connection_obj, wallet: walletName })
   }
 
@@ -181,7 +189,7 @@ export const getBalancesDetail = async (): Promise<
       continue
     }
 
-    const client = new BitcoindWalletClient({ walletName: wallet })
+    const client = new BitcoindWalletClient(wallet)
     const balance = btc2sat(await client.getBalance())
     balances.push({ wallet, balance })
   }

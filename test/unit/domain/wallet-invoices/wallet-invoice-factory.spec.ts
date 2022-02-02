@@ -1,10 +1,14 @@
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
+import { WalletCurrency } from "@domain/wallets"
 
 let walletInvoiceFactory: WalletInvoiceFactory
 
 beforeAll(async () => {
-  walletInvoiceFactory = WalletInvoiceFactory("id" as WalletId)
+  const walletId = "id" as WalletId
+  const currency = WalletCurrency.Btc
+  walletInvoiceFactory = WalletInvoiceFactory({ walletId, currency })
 })
 
 describe("wallet invoice factory methods", () => {
@@ -25,13 +29,18 @@ describe("wallet invoice factory methods", () => {
       pubkey: "pubkey" as Pubkey,
       descriptionHash: "descriptionHash" as string, // FIXME
     }
-    const result = walletInvoiceFactory.create(registeredInvoice)
+    const result = walletInvoiceFactory.createForSelf({
+      registeredInvoice,
+      usdCents: toCents(12),
+    })
     const expected = {
       paymentHash: "paymentHash",
       walletId: "id",
       selfGenerated: true,
       pubkey: "pubkey",
       paid: false,
+      usdCents: 12,
+      currency: WalletCurrency.Btc,
     }
     expect(result).toEqual(expected)
   })
@@ -51,14 +60,20 @@ describe("wallet invoice factory methods", () => {
         features: [],
       },
       pubkey: "pubkey" as Pubkey,
+      currency: WalletCurrency.Btc,
     }
-    const result = walletInvoiceFactory.createForRecipient(registeredInvoice)
+    const result = walletInvoiceFactory.createForRecipient({
+      registeredInvoice,
+      usdCents: toCents(10),
+    })
     const expected = {
       paymentHash: "paymentHash",
       walletId: "id",
       selfGenerated: false,
       pubkey: "pubkey",
       paid: false,
+      usdCents: 10,
+      currency: WalletCurrency.Btc,
     }
     expect(result).toEqual(expected)
   })

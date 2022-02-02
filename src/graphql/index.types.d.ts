@@ -1,3 +1,5 @@
+type GraphQLError = import("graphql").GraphQLError
+
 type IError = {
   message: string
   path?: string
@@ -26,6 +28,11 @@ type CustomApolloErrorData = {
   level?: "fatal" | "error" | "warn" | "info" | "debug" | "trace" | "silent"
   forwardToClient?: boolean
   [key: string]: unknown
+}
+
+type GraphQLResult<T> = {
+  errors: GraphQLError[]
+  data: T
 }
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>

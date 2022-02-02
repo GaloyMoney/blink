@@ -5,6 +5,7 @@ export { WalletTransactionHistory } from "./tx-history"
 export * from "./tx-methods"
 export * from "./tx-status"
 export * from "./withdrawal-fee-calculator"
+export * from "./payment-input-validator"
 export * from "./primitives"
 
 export const WalletIdRegex =

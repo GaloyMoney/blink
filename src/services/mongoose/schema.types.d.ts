@@ -67,7 +67,7 @@ interface UserRecord {
   depositFeeRatio?: number
   withdrawFee?: number
   earn?: string[]
-  deviceToken?: string[]
+  deviceToken: string[]
   contacts: ContactObjectForUser[]
   created_at: string
   onchain: OnChainObjectForUser[]

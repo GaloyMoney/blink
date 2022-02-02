@@ -159,7 +159,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }
 
   const registerInvoice = async ({
-    satoshis,
+    sats,
     description,
     descriptionHash,
     expiresAt,
@@ -168,7 +168,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       lnd: defaultLnd,
       description,
       description_hash: descriptionHash,
-      tokens: satoshis as number,
+      tokens: sats as number,
       expires_at: expiresAt.toISOString(),
     }
 
@@ -297,22 +297,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
       }
     } catch (err) {
       return new UnknownLightningServiceError(err)
-    }
-  }
-
-  const listSettledAndFailedPayments = async (args: {
-    after: PagingStartToken | PagingContinueToken
-    pubkey: Pubkey
-  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
-    const settledPayments = await listSettledPayments(args)
-    if (settledPayments instanceof Error) return settledPayments
-
-    const failedPayments = await listFailedPayments(args)
-    if (failedPayments instanceof Error) return failedPayments
-
-    return {
-      lnPayments: [...settledPayments.lnPayments, ...failedPayments.lnPayments],
-      endCursor: settledPayments.endCursor,
     }
   }
 
@@ -461,7 +445,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
     lookupPayment,
     listSettledPayments,
     listFailedPayments,
-    listSettledAndFailedPayments,
     cancelInvoice,
     payInvoiceViaRoutes,
     payInvoiceViaPaymentDetails,

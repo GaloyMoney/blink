@@ -1,7 +1,7 @@
+import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
-import { UserInputError } from "apollo-server-errors"
 
-const SignedAmount = new GT.Scalar({
+const SignedAmount = GT.Scalar({
   name: "SignedAmount",
   description: "An amount (of a currency) that can be negative (i.g. in a transaction)",
   parseValue(value) {
@@ -11,7 +11,7 @@ const SignedAmount = new GT.Scalar({
     if (ast.kind === GT.Kind.INT) {
       return validSignedAmount(ast.value)
     }
-    return new UserInputError("Invalid type for SignedAmount")
+    return new InputValidationError({ message: "Invalid type for SignedAmount" })
   },
 })
 
@@ -19,7 +19,7 @@ function validSignedAmount(value) {
   if (Number.isInteger(value)) {
     return value
   }
-  return new UserInputError("Invalid value for SignedAmount")
+  return new InputValidationError({ message: "Invalid value for SignedAmount" })
 }
 
 export default SignedAmount

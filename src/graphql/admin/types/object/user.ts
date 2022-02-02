@@ -6,7 +6,7 @@ import Timestamp from "@graphql/types/scalar/timestamp"
 
 import Account from "./account"
 
-const User = new GT.Object({
+const User = GT.Object({
   name: "User",
 
   fields: () => ({

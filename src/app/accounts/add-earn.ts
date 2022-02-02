@@ -1,4 +1,3 @@
-import { getUser } from "@app/users"
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { onboardingEarn } from "@config"
 import {
@@ -6,8 +5,13 @@ import {
   InvalidQuizQuestionIdError,
 } from "@domain/errors"
 import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
-import { getFunderWalletId } from "@services/ledger/accounts"
-import { RewardsRepository, AccountsRepository } from "@services/mongoose"
+import { getFunderWalletId } from "@services/ledger/caching"
+import {
+  RewardsRepository,
+  WalletsRepository,
+  AccountsRepository,
+  UsersRepository,
+} from "@services/mongoose"
 
 export const addEarn = async ({
   quizQuestionId,
@@ -22,11 +26,15 @@ export const addEarn = async ({
   if (!amount) return new InvalidQuizQuestionIdError()
 
   const funderWalletId = await getFunderWalletId()
+  const funderWallet = await WalletsRepository().findById(funderWalletId)
+  if (funderWallet instanceof Error) return funderWallet
+  const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
+  if (funderAccount instanceof Error) return funderAccount
 
   const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
 
-  const user = await getUser(recipientAccount.ownerId)
+  const user = await UsersRepository().findById(recipientAccount.ownerId)
   if (user instanceof Error) return user
 
   const validatedPhoneMetadata = PhoneMetadataValidator().validate(user.phoneMetadata)
@@ -44,6 +52,7 @@ export const addEarn = async ({
     amount,
     memo: quizQuestionId,
     logger,
+    senderAccount: funderAccount,
   })
   if (payment instanceof Error) return payment
 

@@ -5,7 +5,7 @@ type TxMetadata = {
   feeUsd: number
   sats: Satoshis
   usd: number
-  currency: Currency
+  currency: WalletCurrency
 }
 
 type AddLnTxReceiveMetadata = TxMetadata & {
@@ -22,6 +22,16 @@ type AddOnchainTxSendMetadata = TxMetadata & {
   hash: OnChainTxHash
   payee_addresses: OnChainAddress[]
   sendAll: boolean
+}
+
+type AddColdStorageTxReceiveMetadata = TxMetadata & {
+  hash: OnChainTxHash
+  payee_addresses: OnChainAddress[]
+}
+
+type AddColdStorageTxSendMetadata = TxMetadata & {
+  hash: OnChainTxHash
+  payee_addresses: OnChainAddress[]
 }
 
 type IntraledgerTxMetadata = TxMetadata & {

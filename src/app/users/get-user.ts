@@ -15,7 +15,7 @@ export const getUserForLogin = async ({
   logger,
 }: {
   userId: string
-  ip?: string
+  ip?: IpAddress | undefined
   logger: Logger
 }): Promise<User | ApplicationError> => {
   const user = await users.findById(userId as UserId)
@@ -52,7 +52,6 @@ const updateUserIPsInfo = async ({
       const lastConnection = new Date()
 
       const userIP = await usersIp.findById(userId)
-
       if (userIP instanceof RepositoryError) return userIP
 
       if (!ip || !ipConfig.ipRecordingEnabled) {

@@ -103,7 +103,7 @@ type LnInvoice = {
 type RegisterInvoiceArgs = {
   description: string
   descriptionHash?: string
-  satoshis: Satoshis
+  sats: Satoshis
   expiresAt: InvoiceExpiration
 }
 
@@ -131,6 +131,10 @@ type ListLnPaymentsResult = {
   lnPayments: LnPaymentLookup[]
   endCursor: PagingContinueToken | PagingStopToken
 }
+
+type ListLnPayments = (
+  args: ListLnPaymentsArgs,
+) => Promise<ListLnPaymentsResult | LightningError>
 
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
@@ -177,17 +181,9 @@ interface ILightningService {
     paymentHash: PaymentHash
   }): Promise<LnPaymentLookup | LnFailedPartialPaymentLookup | LightningServiceError>
 
-  listSettledPayments(
-    args: ListLnPaymentsArgs,
-  ): Promise<ListLnPaymentsResult | LightningServiceError>
+  listSettledPayments: ListLnPayments
 
-  listFailedPayments(
-    args: ListLnPaymentsArgs,
-  ): Promise<ListLnPaymentsResult | LightningServiceError>
-
-  listSettledAndFailedPayments(
-    args: ListLnPaymentsArgs,
-  ): Promise<ListLnPaymentsResult | LightningServiceError>
+  listFailedPayments: ListLnPayments
 
   cancelInvoice({
     pubkey,

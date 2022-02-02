@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-const PaymentSendResult = new GT.Enum({
+const PaymentSendResult = GT.Enum({
   name: "PaymentSendResult",
   values: {
     SUCCESS: { value: "success" },

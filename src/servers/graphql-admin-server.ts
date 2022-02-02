@@ -33,6 +33,7 @@ export async function startApolloServerForAdminSchema() {
         accountUpdateStatus: and(isAuthenticated, isEditor),
         accountUpdateLevel: and(isAuthenticated, isEditor),
         businessUpdateMapInfo: and(isAuthenticated, isEditor),
+        coldStorageRebalanceToHotWallet: and(isAuthenticated, isEditor),
       },
     },
     { allowExternalErrors: true },
@@ -45,8 +46,8 @@ export async function startApolloServerForAdminSchema() {
 if (require.main === module) {
   setupMongoConnection()
     .then(async () => {
-      await startApolloServerForAdminSchema()
       activateLndHealthCheck()
+      await startApolloServerForAdminSchema()
     })
     .catch((err) => graphqlLogger.error(err, "server error"))
 }

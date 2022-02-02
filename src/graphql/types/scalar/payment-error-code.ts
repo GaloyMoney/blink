@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-const PaymentErrorCode = new GT.Enum({
+const PaymentErrorCode = GT.Enum({
   name: "PaymentErrorCode",
   values: {
     ACCOUNT_LOCKED: {},

@@ -7,7 +7,7 @@ import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 import { Wallets } from "@app"
 
-const OnChainPaymentSendAllInput = new GT.Input({
+const OnChainPaymentSendAllInput = GT.Input({
   name: "OnChainPaymentSendAllInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) },
@@ -17,12 +17,12 @@ const OnChainPaymentSendAllInput = new GT.Input({
   }),
 })
 
-const OnChainPaymentSendAllMutation = GT.Field({
+const OnChainPaymentSendAllMutation = GT.Field<{ input }, null, GraphQLContextForUser>({
   type: GT.NonNull(PaymentSendPayload),
   args: {
     input: { type: GT.NonNull(OnChainPaymentSendAllInput) },
   },
-  resolve: async (_, args) => {
+  resolve: async (_, args, { domainAccount }) => {
     const { walletId, address, memo, targetConfirmations } = args.input
 
     for (const input of [walletId, memo, address, targetConfirmations]) {
@@ -31,7 +31,12 @@ const OnChainPaymentSendAllMutation = GT.Field({
       }
     }
 
+    // FIXME: if we have the right domainAccount type, Account has to be defined here
+    // and should never be undefined, which would make the check below unecessay
+    if (!domainAccount) return { errors: [{ message: "account issue" }] }
+
     const status = await Wallets.payOnChainByWalletId({
+      senderAccount: domainAccount,
       senderWalletId: walletId,
       amount: 0,
       address,

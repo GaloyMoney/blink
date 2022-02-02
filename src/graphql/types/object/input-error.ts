@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import IError from "../abstract/error"
 import InputErrorCode from "../scalar/input-error-code"
 
-const InputError = new GT.Object({
+const InputError = GT.Object({
   name: "InputError",
   interfaces: () => [IError],
   isTypeOf: (source) => true || source.code, // TODO: make this work through GQL ENUM values

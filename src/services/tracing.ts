@@ -40,9 +40,8 @@ const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
     gqlNestedKeys = Object.keys(data.data)
   }
   for (const nestedObj of gqlNestedKeys) {
-    const nestedObjData = data.data?.[nestedObj]
+    const nestedObjData = data.data?.[nestedObj] as Required<{ errors: IError[] }>
     if (!nestedObjData) continue
-
     if (nestedObjData.errors && nestedObjData.errors.length > 0) {
       recordGqlErrors({ errors: nestedObjData.errors, span, subPathName: nestedObj })
     }
@@ -342,4 +341,4 @@ export const shutdownTracing = async () => {
 
 export { SemanticAttributes, SemanticResourceAttributes }
 
-export const ENDUSER_ALIAS = "enduser.alias"
+export const ACCOUNT_USERNAME = "account.username"

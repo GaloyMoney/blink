@@ -4,7 +4,7 @@ import Timestamp from "../scalar/timestamp"
 
 import Price from "./price"
 
-const PricePoint = new GT.Object({
+const PricePoint = GT.Object({
   name: "PricePoint",
   fields: () => ({
     timestamp: {

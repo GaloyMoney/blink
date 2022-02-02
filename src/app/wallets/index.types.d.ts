@@ -1,35 +1,36 @@
-type addInvoiceByWalletIdArgs = {
-  walletId: WalletId
+type AddInvoiceForSelfArgs = {
+  walletId: string
   amount: number
   memo?: string
 }
 
-type AddInvoiceNoAmountByWalletIdArgs = {
-  walletId: WalletId
+type AddInvoiceArgs = {
+  walletInvoiceCreateFn: (args: WalletInvoiceFactoryArgs) => WalletInvoice
+  amount: number
+  memo?: string
+  descriptionHash?: string
+}
+
+type AddInvoiceNoAmountForSelfArgs = {
+  walletId: string
   memo?: string
 }
 
 type AddInvoiceForRecipientArgs = {
-  recipientWalletId: WalletId
+  recipientWalletId: string
   amount: number
   memo?: string
   descriptionHash?: string
 }
 
 type AddInvoiceNoAmountForRecipientArgs = {
-  recipientWalletId: WalletId
+  recipientWalletId: string
   memo?: string
 }
 
 type GetOnChainFeeArgs = {
-  wallet: Wallet
-  amount: Satoshis
-  address: OnChainAddress
-  targetConfirmations: TargetConfirmations
-}
-
-type GetOnChainFeeByWalletIdArgs = {
   walletId: WalletId
+  account: Account
   amount: number
   address: OnChainAddress
   targetConfirmations: number
@@ -37,46 +38,29 @@ type GetOnChainFeeByWalletIdArgs = {
 
 type PaymentSendArgs = {
   senderWalletId: WalletId
+  senderAccount: Account
   memo: string | null
   logger: Logger
 }
 
-type PayLnInvoiceByWalletIdArgs = {
-  senderWalletId: WalletId
+type PayInvoiceByWalletIdArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
-  memo: string | null
-  payerAccountId: AccountId
-  logger: Logger
+  senderAccount: Account
 }
-
-type payLnNoAmountInvoiceByWalletIdArgs = {
-  senderWalletId: WalletId
-  paymentRequest: EncodedPaymentRequest
-  amount: Satoshis
-  memo: string | null
-  payerAccountId: AccountId
-  logger: Logger
-}
-
-type LnInvoicePaymentSendArgs = PaymentSendArgs & {
-  paymentRequest: EncodedPaymentRequest
-  payerAccountId: AccountId
-}
-type LnInvoicePaymentSendWithTwoFAArgs = LnInvoicePaymentSendArgs & {
+type PayInvoiceByWalletIdWithTwoFAArgs = PayInvoiceByWalletIdArgs & {
   twoFAToken: TwoFAToken
 }
 
-type LnNoAmountInvoicePaymentSendArgs = PaymentSendArgs & {
+type PayNoAmountInvoiceByWalletIdArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
-  amount: Satoshis
-  payerAccountId: AccountId
+  amount: number
+  senderAccount: Account
 }
-type LnNoAmountInvoicePaymentSendWithTwoFAArgs = LnNoAmountInvoicePaymentSendArgs & {
+type PayNoAmountInvoiceByWalletIdWithTwoFAArgs = PayNoAmountInvoiceByWalletIdArgs & {
   twoFAToken: TwoFAToken
 }
 
 type IntraLedgerPaymentSendUsernameArgs = PaymentSendArgs & {
-  payerAccountId: AccountId
   recipientUsername: Username
   amount: Satoshis
 }
@@ -92,6 +76,7 @@ type IntraLedgerPaymentSendWithTwoFAArgs = IntraLedgerPaymentSendUsernameArgs & 
 
 type PayOnChainByWalletIdArgs = {
   senderWalletId: WalletId
+  senderAccount: Account
   amount: number
   address: string
   targetConfirmations: number
@@ -100,6 +85,5 @@ type PayOnChainByWalletIdArgs = {
 }
 
 type PayOnChainByWalletIdWithTwoFAArgs = PayOnChainByWalletIdArgs & {
-  payerAccountId: AccountId
   twoFAToken: TwoFAToken
 }

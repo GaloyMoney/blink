@@ -20,6 +20,8 @@ export const LedgerTransactionType = {
   OnchainDepositFee: "deposit_fee", // onchain
   Fee: "fee",
   Escrow: "escrow",
+
+  // TODO: rename. should be routing_revenue
   RoutingFee: "routing_fee", // channel-related
   ExchangeRebalance: "exchange_rebalance", // send/receive btc from the exchange
   UserRebalance: "user_rebalance", // buy/sell btc in the user wallet
@@ -32,7 +34,7 @@ export const ExtendedLedgerTransactionType = {
   LnIntraLedger: "ln_on_us",
 } as const
 
-export const toWalletId = (walletIdPath: LiabilitiesWalletId): WalletId | null => {
+export const toWalletId = (walletIdPath: LiabilitiesWalletId): WalletId | undefined => {
   const path = walletIdPath.split(":")
 
   if (
@@ -44,7 +46,7 @@ export const toWalletId = (walletIdPath: LiabilitiesWalletId): WalletId | null =
     return path[1] as WalletId
   }
 
-  return null
+  return undefined
 }
 
 export const isOnChainTransaction = (type: LedgerTransactionType): boolean =>

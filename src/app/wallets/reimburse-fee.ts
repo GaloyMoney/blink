@@ -21,14 +21,12 @@ export const reimburseFee = async ({
   const feeDifference = feeReimbursement.getReimbursement({
     actualFee,
   })
-  if (feeDifference === null) {
-    logger.warn(
-      {
-        maxFee,
-        actualFee,
-      },
-      `Invalid reimbursement fee`,
-    )
+  if (feeDifference instanceof Error) {
+    logger.warn({ maxFee, actualFee }, `Invalid reimbursement fee`)
+    return
+  }
+
+  if (feeDifference === 0) {
     return
   }
 

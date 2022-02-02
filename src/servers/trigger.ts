@@ -49,9 +49,9 @@ export async function onchainTransactionEventHandler(
       // transaction has been sent. and this events is trigger before
     }
 
-    const settled = await LedgerService().settlePendingOnChainPayments(txHash)
+    const settled = await LedgerService().settlePendingOnChainPayment(txHash)
 
-    if (settled instanceof Error || !settled) {
+    if (settled instanceof Error) {
       onchainLogger.error(
         { success: false, settled, transactionType: "payment" },
         "payment settle fail",
@@ -64,7 +64,9 @@ export async function onchainTransactionEventHandler(
       "payment completed",
     )
 
-    const walletId = await LedgerService().getWalletIdByTransactionHash(tx.id)
+    // FIXME a tx.id should return a walletId[] instead, in case
+    // multiple UXTO goes to the wallet within the same tx
+    const walletId = await LedgerService().getWalletIdByTransactionHash(txHash)
     if (walletId instanceof Error) {
       logger.info({ tx, walletId }, "impossible to find wallet id")
       return

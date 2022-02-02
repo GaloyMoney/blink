@@ -1,14 +1,14 @@
 import mongoose from "mongoose"
 
-import { loadLedger } from "@services/ledger"
+import { Transaction } from "@services/ledger/schema"
+
+import { lazyLoadLedgerAdmin } from "@services/ledger"
 
 import { baseLogger } from "../logger"
 
-import { User, Transaction, InvoiceUser } from "../mongoose/schema"
+import { User, WalletInvoice } from "../mongoose/schema"
 
-// we have to import schema before ledger
-
-export const ledger = loadLedger({
+export const ledgerAdmin = lazyLoadLedgerAdmin({
   bankOwnerWalletResolver: async () => {
     const { defaultWalletId } = await User.findOne(
       { role: "bankowner" },
@@ -60,7 +60,7 @@ export const setupMongoConnection = async (syncIndexes = false) => {
     if (syncIndexes) {
       await User.syncIndexes()
       await Transaction.syncIndexes()
-      await InvoiceUser.syncIndexes()
+      await WalletInvoice.syncIndexes()
     }
   } catch (err) {
     baseLogger.fatal({ err, user, address, db }, `error setting the indexes`)

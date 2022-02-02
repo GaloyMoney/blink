@@ -3,18 +3,7 @@ import { once } from "events"
 import { Wallets } from "@app"
 import { getFeeRates, getOnChainWalletConfig, getUserLimits, MS_PER_DAY } from "@config"
 import { toTargetConfs } from "@domain/bitcoin"
-import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
-import { NotificationType } from "@domain/notifications"
-import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
-import { onchainTransactionEventHandler } from "@servers/trigger"
-import { baseLogger } from "@services/logger"
-import { Transaction } from "@services/mongoose/schema"
-import { getTitle } from "@services/notifications/payment"
-import { sleep } from "@utils"
-import last from "lodash.last"
-
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-
 import {
   InsufficientBalanceError,
   InvalidSatoshiAmount,
@@ -22,8 +11,16 @@ import {
   LimitsExceededError,
   SelfPaymentError,
 } from "@domain/errors"
-
+import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
+import { NotificationType } from "@domain/notifications"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
+import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
+import { onchainTransactionEventHandler } from "@servers/trigger"
+import { Transaction } from "@services/ledger/schema"
+import { baseLogger } from "@services/logger"
+import { getTitle } from "@services/notifications/payment"
+import { sleep } from "@utils"
+import last from "lodash.last"
 
 import {
   bitcoindClient,
@@ -34,7 +31,7 @@ import {
   createUserWallet,
   enable2FA,
   generateTokenHelper,
-  getAccountIdByTestUserIndex,
+  getAccountByTestUserIndex,
   getDefaultWalletIdByTestUserIndex,
   getUserIdByTestUserIndex,
   getUserRecordByTestUserIndex,
@@ -56,9 +53,10 @@ jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf()
 let initialBalanceUser0: Satoshis
 let user0: UserRecord
 
-let accountId0: AccountId
+let account0: Account
 
 let walletId0: WalletId
+let account1: Account
 let walletId1: WalletId
 let walletId3: WalletId
 
@@ -81,9 +79,10 @@ beforeAll(async () => {
   user0 = await getUserRecordByTestUserIndex(0)
   walletId0 = await getDefaultWalletIdByTestUserIndex(0)
   userId0 = await getUserIdByTestUserIndex(0)
-  accountId0 = await getAccountIdByTestUserIndex(0)
+  account0 = await getAccountByTestUserIndex(0)
 
   walletId1 = await getDefaultWalletIdByTestUserIndex(1)
+  account1 = await getAccountByTestUserIndex(1)
   walletId3 = await getDefaultWalletIdByTestUserIndex(3)
   walletId11 = await getDefaultWalletIdByTestUserIndex(11)
   walletId12 = await getDefaultWalletIdByTestUserIndex(12)
@@ -117,6 +116,7 @@ describe("UserWallet - onChainPay", () => {
     const results = await Promise.all([
       once(sub, "chain_transaction"),
       Wallets.payOnChainByWalletId({
+        senderAccount: account0,
         senderWalletId: walletId0,
         address,
         amount,
@@ -218,10 +218,12 @@ describe("UserWallet - onChainPay", () => {
     sub.on("chain_transaction", onchainTransactionEventHandler)
 
     const initialBalanceUser11 = await getBTCBalance(walletId11)
+    const senderAccount = await getAccountByTestUserIndex(11)
 
     const results = await Promise.all([
       once(sub, "chain_transaction"),
       Wallets.payOnChainByWalletId({
+        senderAccount,
         senderWalletId: walletId11,
         address,
         amount: 0,
@@ -319,6 +321,7 @@ describe("UserWallet - onChainPay", () => {
     const memo = "this is my onchain memo"
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
     const paymentResult = await Wallets.payOnChainByWalletId({
+      senderAccount: account0,
       senderWalletId: walletId0,
       address,
       amount,
@@ -385,6 +388,7 @@ describe("UserWallet - onChainPay", () => {
     const initialBalanceUser3 = await getBTCBalance(walletId3)
 
     const paid = await Wallets.payOnChainByWalletId({
+      senderAccount: account0,
       senderWalletId: walletId0,
       address,
       amount,
@@ -437,6 +441,7 @@ describe("UserWallet - onChainPay", () => {
     if (address instanceof Error) throw address
 
     const paid = await Wallets.payOnChainByWalletId({
+      senderAccount: account0,
       senderWalletId: walletId0,
       address,
       amount,
@@ -481,8 +486,10 @@ describe("UserWallet - onChainPay", () => {
     if (address instanceof Error) throw address
 
     const initialBalanceUser3 = await getBTCBalance(walletId3)
+    const senderAccount = await getAccountByTestUserIndex(12)
 
     const paid = await Wallets.payOnChainByWalletId({
+      senderAccount,
       senderWalletId: walletId12,
       address,
       amount: 0,
@@ -533,6 +540,7 @@ describe("UserWallet - onChainPay", () => {
     if (address instanceof Error) throw address
 
     const status = await Wallets.payOnChainByWalletId({
+      senderAccount: account0,
       senderWalletId: walletId0,
       address,
       amount,
@@ -548,8 +556,10 @@ describe("UserWallet - onChainPay", () => {
     if (address instanceof Error) throw address
 
     const initialBalanceUser11 = await getBTCBalance(walletId11)
+    const senderAccount = await getAccountByTestUserIndex(11)
 
     const status = await Wallets.payOnChainByWalletId({
+      senderAccount,
       senderWalletId: walletId11,
       address,
       amount: initialBalanceUser11 + 1,
@@ -568,6 +578,7 @@ describe("UserWallet - onChainPay", () => {
     const initialBalanceUser1 = await getBTCBalance(walletId1)
 
     const status = await Wallets.payOnChainByWalletId({
+      senderAccount: account1,
       senderWalletId: walletId1,
       address,
       amount: initialBalanceUser1,
@@ -584,6 +595,7 @@ describe("UserWallet - onChainPay", () => {
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
     const status = await Wallets.payOnChainByWalletId({
+      senderAccount: account0,
       senderWalletId: walletId0,
       address,
       amount,
@@ -619,6 +631,7 @@ describe("UserWallet - onChainPay", () => {
     const amount = userLimits.withdrawalLimit - outgoingSats + 1
 
     const status = await Wallets.payOnChainByWalletId({
+      senderAccount: account0,
       senderWalletId: walletId0,
       address,
       amount,
@@ -634,6 +647,7 @@ describe("UserWallet - onChainPay", () => {
     const onChainWalletConfig = getOnChainWalletConfig()
 
     const status = await Wallets.payOnChainByWalletId({
+      senderAccount: account0,
       senderWalletId: walletId0,
       address,
       amount: onChainWalletConfig.dustThreshold - 1,
@@ -653,13 +667,13 @@ describe("UserWallet - onChainPay", () => {
       if (remainingLimit instanceof Error) return remainingLimit
 
       const status = await Wallets.payOnChainByWalletIdWithTwoFA({
+        senderAccount: account0,
         senderWalletId: walletId0,
         address: RANDOM_ADDRESS,
         amount: remainingLimit + 1,
         targetConfirmations,
         memo: null,
         sendAll: false,
-        payerAccountId: accountId0,
         twoFAToken: "" as TwoFAToken,
       })
 
@@ -674,13 +688,13 @@ describe("UserWallet - onChainPay", () => {
       const twoFAToken = generateTokenHelper(user0.twoFA.secret)
       const amount = user0.twoFA.threshold + 1
       const paid = await Wallets.payOnChainByWalletIdWithTwoFA({
+        senderAccount: account0,
         senderWalletId: walletId0,
         address,
         amount,
         targetConfirmations,
         memo: null,
         sendAll: false,
-        payerAccountId: accountId0,
         twoFAToken,
       })
 

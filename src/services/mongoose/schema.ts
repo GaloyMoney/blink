@@ -1,37 +1,52 @@
 import crypto from "crypto"
 
-import { getFeeRates, getTwoFAConfig, getUserLimits, levels, MS_PER_DAY } from "@config"
-import { toLiabilitiesWalletId } from "@domain/ledger"
 import { Transaction } from "@services/ledger/schema"
-import * as mongoose from "mongoose"
+
+import { getFeeRates, getTwoFAConfig, getUserLimits, levels, MS_PER_DAY } from "@config"
 import { UsernameRegex } from "@domain/accounts"
-import { WalletType, WalletCurrency } from "@domain/wallets"
+import { toLiabilitiesWalletId } from "@domain/ledger"
+import { WalletCurrency, WalletIdRegex, WalletType } from "@domain/wallets"
+import * as mongoose from "mongoose"
 
 import { WalletRecord } from "./wallets"
-
-export { Transaction }
 
 // mongoose.set("debug", true)
 
 const Schema = mongoose.Schema
 
 const dbMetadataSchema = new Schema({
-  version: Number,
-  minBuildNumberAndroid: Number,
-  lastBuildNumberAndroid: Number,
-  minBuildNumberIos: Number,
-  lastBuildNumberIos: Number,
-  routingFeeLastEntry: Date,
+  routingFeeLastEntry: Date, // TODO: rename to routingRevenueLastEntry
 })
 export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
 
-const invoiceUserSchema = new Schema({
+const walletInvoiceSchema = new Schema({
   _id: String, // hash of invoice
-  walletId: String,
+  walletId: {
+    required: true,
+    type: String,
+    validate: {
+      validator: function (v) {
+        return v.match(WalletIdRegex)
+      },
+    },
+  },
 
-  // usd equivalent. sats is attached in the invoice directly.
-  // optional, as BTC wallet doesn't have to set a sat amount when creating the invoice
-  usd: Number,
+  // fiat equivalent. sats is attached in the invoice directly.
+  // this is the option price given by the dealer
+  // optional, BTC wallet or USD with no amount doesn't have usdCents
+  usdCents: {
+    type: Number,
+    validate: {
+      validator: Number.isInteger,
+      message: "{VALUE} is not an integer value",
+    },
+  },
+
+  currency: {
+    required: true,
+    type: String,
+    enum: Object.values(WalletCurrency),
+  },
 
   timestamp: {
     type: Date,
@@ -45,7 +60,7 @@ const invoiceUserSchema = new Schema({
 
   pubkey: {
     type: String,
-    require: true,
+    required: true,
   },
 
   paid: {
@@ -54,9 +69,9 @@ const invoiceUserSchema = new Schema({
   },
 })
 
-invoiceUserSchema.index({ walletId: 1, paid: 1 })
+walletInvoiceSchema.index({ walletId: 1, paid: 1 })
 
-export const InvoiceUser = mongoose.model("InvoiceUser", invoiceUserSchema)
+export const WalletInvoice = mongoose.model("InvoiceUser", walletInvoiceSchema)
 
 const feeRates = getFeeRates()
 

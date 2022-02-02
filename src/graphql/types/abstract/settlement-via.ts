@@ -10,7 +10,7 @@ import OnChainTxHash from "../scalar/onchain-tx-hash"
 import LnPaymentPreImage from "../scalar/ln-payment-preimage"
 import LnPaymentSecret from "../scalar/ln-payment-secret"
 
-const SettlementViaIntraLedger = new GT.Object({
+const SettlementViaIntraLedger = GT.Object({
   name: "SettlementViaIntraLedger",
   isTypeOf: (source) => source.type === SettlementMethod.IntraLedger,
   fields: () => ({
@@ -25,7 +25,7 @@ const SettlementViaIntraLedger = new GT.Object({
   }),
 })
 
-const SettlementViaLn = new GT.Object({
+const SettlementViaLn = GT.Object({
   name: "SettlementViaLn",
   isTypeOf: (source: SettlementViaLn) => source.type === SettlementMethod.Lightning,
   fields: () => ({
@@ -42,7 +42,7 @@ const SettlementViaLn = new GT.Object({
   }),
 })
 
-const SettlementViaOnChain = new GT.Object({
+const SettlementViaOnChain = GT.Object({
   name: "SettlementViaOnChain",
   isTypeOf: (source) => source.type === SettlementMethod.OnChain,
   fields: () => ({
@@ -52,7 +52,7 @@ const SettlementViaOnChain = new GT.Object({
   }),
 })
 
-const SettlementVia = new GT.Union({
+const SettlementVia = GT.Union({
   name: "SettlementVia",
   types: () => [SettlementViaIntraLedger, SettlementViaLn, SettlementViaOnChain],
 })

@@ -5,7 +5,7 @@ import SuccessPayload from "@graphql/types/payload/success-payload"
 import { Users } from "@app"
 import { mapError } from "@graphql/error-map"
 
-const UserRequestAuthCodeInput = new GT.Input({
+const UserRequestAuthCodeInput = GT.Input({
   name: "UserRequestAuthCodeInput",
   fields: () => ({
     phone: {
@@ -28,6 +28,10 @@ const UserRequestAuthCodeMutation = GT.Field({
 
     if (phone instanceof Error) {
       return { errors: [{ message: phone.message }] }
+    }
+
+    if (ip === undefined) {
+      return { errors: [{ message: "ip is undefined" }] }
     }
 
     const status = await Users.requestPhoneCode({ phone, logger, ip })

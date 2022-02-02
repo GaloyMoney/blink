@@ -5,7 +5,7 @@ export const txDirectionValues = {
   RECEIVE: "receive",
 } as const
 
-const TxDirection = new GT.Enum({
+const TxDirection = GT.Enum({
   name: "TxDirection",
   values: {
     SEND: { value: txDirectionValues.SEND },

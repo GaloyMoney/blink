@@ -23,15 +23,15 @@ import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
 import {
+  ACCOUNT_USERNAME,
   addAttributesToCurrentSpanAndPropagate,
-  ENDUSER_ALIAS,
   SemanticAttributes,
 } from "@services/tracing"
 import { ApolloError } from "apollo-server-errors"
 import dotenv from "dotenv"
 import { applyMiddleware } from "graphql-middleware"
 import { shield } from "graphql-shield"
-import { makeExecutableSchema } from "graphql-tools"
+import { makeExecutableSchema } from "@graphql-tools/schema"
 
 import { isAuthenticated, startApolloServer } from "./graphql-server"
 
@@ -86,7 +86,7 @@ const resolvers = {
       addAttributesToCurrentSpanAndPropagate(
         {
           [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
-          [ENDUSER_ALIAS]: domainUser?.username,
+          [ACCOUNT_USERNAME]: domainAccount?.username,
           [SemanticAttributes.HTTP_CLIENT_IP]: ip,
         },
         async () => {
@@ -299,16 +299,16 @@ const resolvers = {
       if (lnInvoice instanceof Error) throw mapError(lnInvoice)
       return lnInvoice.paymentRequest
     },
-    invoice: (_, __, { wallet, logger }) => ({
+    invoice: (_, __, { wallet, logger, domainAccount }) => ({
       addInvoice: async ({ value, memo }) => {
         const lnInvoice =
           value && value > 0
-            ? await Wallets.addInvoiceByWalletId({
+            ? await Wallets.addInvoiceForSelf({
                 walletId: wallet.user.defaultWalletId,
                 amount: value,
                 memo,
               })
-            : await Wallets.addInvoiceNoAmountByWalletId({
+            : await Wallets.addInvoiceNoAmountForSelf({
                 walletId: wallet.user.defaultWalletId,
                 memo,
               })
@@ -324,11 +324,15 @@ const resolvers = {
         if (result instanceof Error) throw result
         return result
       },
-      payInvoice: async ({ invoice, amount, memo }, _, { ip, domainUser }) =>
+      payInvoice: async (
+        { invoice, amount, memo },
+        _,
+        { ip, domainUser, domainAccount },
+      ) =>
         addAttributesToCurrentSpanAndPropagate(
           {
             [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
-            [ENDUSER_ALIAS]: domainUser?.username,
+            [ACCOUNT_USERNAME]: domainAccount?.username,
             [SemanticAttributes.HTTP_CLIENT_IP]: ip,
           },
           async () => {
@@ -337,22 +341,22 @@ const resolvers = {
 
             const { amount: lnInvoiceAmount } = decodedInvoice
             if (lnInvoiceAmount && lnInvoiceAmount > 0) {
-              const status = await Wallets.lnInvoicePaymentSend({
+              const status = await Wallets.payInvoiceByWalletId({
                 paymentRequest: invoice,
                 memo,
                 senderWalletId: wallet.user.defaultWalletId as WalletId,
-                payerAccountId: wallet.user.id as AccountId,
+                senderAccount: domainAccount,
                 logger,
               })
               if (status instanceof Error) throw mapError(status)
               return status.value
             }
-            const status = await Wallets.lnNoAmountInvoicePaymentSend({
+            const status = await Wallets.payNoAmountInvoiceByWalletId({
               paymentRequest: invoice,
               memo,
               amount,
               senderWalletId: wallet.user.defaultWalletId as WalletId,
-              payerAccountId: wallet.user.id as AccountId,
+              senderAccount: domainAccount,
               logger,
             })
             if (status instanceof Error) throw mapError(status)
@@ -365,7 +369,7 @@ const resolvers = {
           memo,
           amount,
           senderWalletId: wallet.user.defaultWalletId,
-          payerAccountId: wallet.user.id,
+          senderAccount: domainAccount,
           logger,
         })
 
@@ -386,7 +390,7 @@ const resolvers = {
             throw mapError(feeSatAmount)
         }
 
-        feeSatAmount = await Wallets.getLightningFee({
+        feeSatAmount = await Wallets.getRoutingFee({
           walletId: wallet.user.defaultWalletId,
           paymentRequest: invoice,
         })
@@ -416,8 +420,13 @@ const resolvers = {
         if (address instanceof Error) throw mapError(address)
         return address
       },
-      pay: async ({ address, amount, memo }) => {
+      pay: async (
+        { address, amount, memo },
+        _,
+        { domainAccount }: { domainAccount: Account },
+      ) => {
         const status = await Wallets.payOnChainByWalletId({
+          senderAccount: domainAccount,
           senderWalletId: wallet.user.defaultWalletId,
           amount,
           address,
@@ -429,8 +438,13 @@ const resolvers = {
 
         return { success: true }
       },
-      payAll: async ({ address, memo }) => {
+      payAll: async (
+        { address, memo },
+        _,
+        { domainAccount }: { domainAccount: Account },
+      ) => {
         const status = await Wallets.payOnChainByWalletId({
+          senderAccount: domainAccount,
           senderWalletId: wallet.user.defaultWalletId,
           amount: 0,
           address,
@@ -442,9 +456,14 @@ const resolvers = {
 
         return { success: true }
       },
-      getFee: async ({ address, amount }) => {
-        const fee = await Wallets.getOnChainFeeByWalletId({
+      getFee: async (
+        { address, amount },
+        _,
+        { domainAccount }: { domainAccount: Account },
+      ) => {
+        const fee = await Wallets.getOnChainFee({
           walletId: wallet.user.defaultWalletId,
+          account: domainAccount,
           amount,
           address,
           targetConfirmations: 1,
@@ -518,8 +537,8 @@ export async function startApolloServerForOldSchema() {
 if (require.main === module) {
   setupMongoConnection()
     .then(async () => {
-      await startApolloServerForOldSchema()
       activateLndHealthCheck()
+      await startApolloServerForOldSchema()
     })
     .catch((err) => graphqlLogger.error(err, "server error"))
 }

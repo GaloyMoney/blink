@@ -5,6 +5,7 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import { AccountsRepository } from "@services/mongoose"
 
 const AccountDefaultWalletIdQuery = GT.Field({
+  deprecationReason: "will be migrated to AccountDefaultWalletId",
   type: GT.NonNull(WalletId),
   args: {
     username: {
@@ -19,7 +20,9 @@ const AccountDefaultWalletIdQuery = GT.Field({
     }
 
     const account = await AccountsRepository().findByUsername(username)
-    if (account instanceof Error) return mapError(account)
+    if (account instanceof Error) {
+      return mapError(account)
+    }
 
     const walletId = account.defaultWalletId
     return walletId

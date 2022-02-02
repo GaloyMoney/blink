@@ -4,7 +4,7 @@ import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import { mapError } from "@graphql/error-map"
 
-const OnChainAddressCreateInput = new GT.Input({
+const OnChainAddressCreateInput = GT.Input({
   name: "OnChainAddressCreateInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) },

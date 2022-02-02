@@ -56,7 +56,7 @@ type SettlementViaOnChain = {
 
 type BaseWalletTransaction = {
   readonly id: LedgerTransactionId | OnChainTxHash
-  readonly walletId: WalletId | null
+  readonly walletId: WalletId | undefined
   readonly settlementAmount: Satoshis
   readonly settlementFee: Satoshis
   readonly settlementUsdPerSat: number
@@ -166,16 +166,40 @@ type DepositFeeCalculator = {
 }
 
 type OnChainWithdrawalFeeArgs = {
-  onChainFee: Satoshis
-  walletFee: Satoshis
+  minerFee: Satoshis
+  bankFee: Satoshis
 }
 
 type WithdrawalFeeCalculator = {
-  onChainWithdrawalFee({ onChainFee, walletFee }: OnChainWithdrawalFeeArgs): Satoshis
+  onChainWithdrawalFee({ minerFee, bankFee }: OnChainWithdrawalFeeArgs): Satoshis
   onChainIntraLedgerFee(): Satoshis
 }
 
 type WithdrawFeeRange = {
   min: Satoshis
   max: Satoshis
+}
+
+type PaymentInputValidatorConfig = (
+  walletId: WalletId,
+) => Promise<Wallet | RepositoryError>
+
+type ValidatePaymentInputArgs<T extends undefined | string> = {
+  amount: number
+  senderWalletId: string
+  senderAccount: Account
+  recipientWalletId?: T
+}
+type ValidatePaymentInputRetBase = {
+  amount: Satoshis
+  senderWallet: Wallet
+}
+type ValidatePaymentInputRet<T extends undefined | string> = T extends undefined
+  ? ValidatePaymentInputRetBase
+  : ValidatePaymentInputRetBase & { recipientWallet: Wallet }
+
+type PaymentInputValidator = {
+  validatePaymentInput: <T extends undefined | string>(
+    args: ValidatePaymentInputArgs<T>,
+  ) => Promise<ValidatePaymentInputRet<T> | ValidationError | RepositoryError>
 }

@@ -1,8 +1,6 @@
 // globally used types
 type Logger = import("pino").Logger
 
-type Currency = "USD" | "BTC"
-
 type Primitive = string | boolean | number
 
 // configs & constructors

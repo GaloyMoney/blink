@@ -1,5 +1,4 @@
 import { Wallets, Accounts } from "@app"
-import { getWallet } from "@app/wallets"
 import { checkedToWalletId } from "@domain/wallets"
 import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
@@ -8,7 +7,7 @@ import Memo from "@graphql/types/scalar/memo"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
 
-const IntraLedgerPaymentSendInput = new GT.Input({
+const IntraLedgerPaymentSendInput = GT.Input({
   name: "IntraLedgerPaymentSendInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) }, // TODO: rename senderWalletId
@@ -35,7 +34,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       }
     }
 
-    const wallet = await getWallet(walletId)
+    const wallet = await Wallets.getWallet(walletId)
     const senderWalletId = checkedToWalletId(walletId)
     if (senderWalletId instanceof Error) {
       const appErr = mapError(senderWalletId)
@@ -66,7 +65,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       memo,
       amount,
       senderWalletId: walletId,
-      payerAccountId: domainAccount.id,
+      senderAccount: domainAccount,
       logger,
     })
     if (status instanceof Error) {
