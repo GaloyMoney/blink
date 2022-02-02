@@ -1,6 +1,6 @@
 type UserIPs = {
   readonly id: UserId
-  lastIPs: IPType[] | undefined
+  lastIPs: IPType[]
 }
 
 interface IUsersIPsRepository {

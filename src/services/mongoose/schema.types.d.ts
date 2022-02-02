@@ -1,5 +1,5 @@
 type IPType = {
-  ip: IpAddress
+  ip: IpAddress | undefined
   provider?: string
   country?: string
   region?: string
@@ -96,5 +96,5 @@ interface UserRecord {
 interface UserIPsType {
   _id: string
   id: string
-  lastIPs?: IPType[] | undefined
+  lastIPs?: IPType[]
 }
