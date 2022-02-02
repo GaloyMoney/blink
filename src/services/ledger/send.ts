@@ -11,7 +11,7 @@ import {
 import { WalletCurrency } from "@domain/wallets"
 
 import { lndAccountingPath } from "./accounts"
-import { MainBook, Transaction } from "./books"
+import { MainBook, Transaction, TransactionMetadata } from "./books"
 import * as caching from "./caching"
 
 import { translateToLedgerJournal } from "."
@@ -168,7 +168,13 @@ const addSendNoInternalFee = async ({
       .debit(liabilitiesWalletId, sats, metadata)
 
     const savedEntry = await entry.commit()
-    return translateToLedgerJournal(savedEntry)
+    const journalEntry = translateToLedgerJournal(savedEntry)
+
+    journalEntry.transactionIds.map((_id) =>
+      TransactionMetadata.create({ _id, hash: metadata.hash }),
+    )
+
+    return journalEntry
   } catch (err) {
     return new UnknownLedgerError(err)
   }
@@ -205,7 +211,13 @@ const addSendInternalFee = async ({
       .credit(bankOwnerPath, fee, metadata)
 
     const savedEntry = await entry.commit()
-    return translateToLedgerJournal(savedEntry)
+    const journalEntry = translateToLedgerJournal(savedEntry)
+
+    journalEntry.transactionIds.map((_id) =>
+      TransactionMetadata.create({ _id, hash: metadata.hash }),
+    )
+
+    return journalEntry
   } catch (err) {
     return new UnknownLedgerError(err)
   }

@@ -5,7 +5,7 @@ import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
 import { WalletCurrency } from "@domain/wallets"
 
 import { lndAccountingPath } from "./accounts"
-import { MainBook } from "./books"
+import { MainBook, TransactionMetadata } from "./books"
 import * as caching from "./caching"
 
 import { translateToLedgerJournal } from "."
@@ -142,7 +142,13 @@ const addReceiptNoFee = async ({
       .debit(lndAccountingPath, sats, metadata)
 
     const savedEntry = await entry.commit()
-    return translateToLedgerJournal(savedEntry)
+    const journalEntry = translateToLedgerJournal(savedEntry)
+
+    journalEntry.transactionIds.map((_id) =>
+      TransactionMetadata.create({ _id, hash: metadata.hash }),
+    )
+
+    return journalEntry
   } catch (err) {
     return new UnknownLedgerError(err)
   }
@@ -178,7 +184,13 @@ const addReceiptFee = async ({
       .credit(bankOwnerPath, fee, metadata)
 
     const savedEntry = await entry.commit()
-    return translateToLedgerJournal(savedEntry)
+    const journalEntry = translateToLedgerJournal(savedEntry)
+
+    journalEntry.transactionIds.map((_id) =>
+      TransactionMetadata.create({ _id, hash: metadata.hash }),
+    )
+
+    return journalEntry
   } catch (err) {
     return new UnknownLedgerError(err)
   }
