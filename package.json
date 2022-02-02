@@ -5,7 +5,6 @@
     "eslint-check": "eslint \"{src,test}/**/*.ts\"",
     "eslint-fix": "eslint \"{src,test}/**/*.ts\" --fix",
     "build": "tsc -p tsconfig-build.json --skipLibCheck && cp -R src/services/price/protos lib/services/price/ && cp src/graphql/old-schema.graphql lib/graphql/ && tscpaths -p tsconfig.json -s ./src -o ./lib",
-    "start": "yarn build && source ./scripts/export-local.sh && node lib/servers/graphql-old-server.js | pino-pretty -c -l",
     "trigger": "yarn build && source ./scripts/export-local.sh && node lib/servers/trigger.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x yarn trigger",

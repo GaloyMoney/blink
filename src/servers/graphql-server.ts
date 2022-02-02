@@ -3,15 +3,13 @@ import crypto from "crypto"
 
 import { Accounts, Users } from "@app"
 import { getApolloConfig, getGeetestConfig, isProd, JWT_SECRET } from "@config"
-import { WalletFactory } from "@core/wallet-factory"
+import { CustomError } from "@core/error"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
-import { User } from "@services/mongoose/schema"
-import { toObjectId } from "@services/mongoose/utils"
 import {
+  ACCOUNT_USERNAME,
   addAttributesToCurrentSpan,
   addAttributesToCurrentSpanAndPropagate,
-  ACCOUNT_USERNAME,
   SemanticAttributes,
 } from "@services/tracing"
 import {
@@ -27,7 +25,6 @@ import { execute, GraphQLError, subscribe } from "graphql"
 import { rule } from "graphql-shield"
 import helmet from "helmet"
 import * as jwt from "jsonwebtoken"
-
 import pino from "pino"
 import PinoHttp from "pino-http"
 import {
@@ -36,12 +33,10 @@ import {
   SubscriptionServer,
 } from "subscriptions-transport-ws"
 
-import { CustomError } from "@core/error"
-
 import { playgroundTabs } from "../graphql/playground"
 
-import healthzHandler from "./middlewares/healthz"
 import expressApiKeyAuth from "./middlewares/api-key-auth"
+import healthzHandler from "./middlewares/healthz"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -82,9 +77,6 @@ const sessionContext = ({
     ip = ips as IpAddress
   }
 
-  let wallet, user
-  // FIXME: type issue with let wallet: LightningUserWallet | null, user: UserRecord | null
-
   // TODO move from crypto.randomUUID() to a Jaeger standard
   const logger = graphqlLogger.child({ token, id: crypto.randomUUID(), body })
 
@@ -109,12 +101,6 @@ const sessionContext = ({
         )
         if (loggedInDomainAccount instanceof Error) throw Error
         domainAccount = loggedInDomainAccount
-
-        user = await User.findOne({ _id: toObjectId<UserId>(userId) })
-        wallet =
-          !!user && user.status === "active"
-            ? await WalletFactory({ user, logger })
-            : null
       }
 
       let account: Account | undefined
@@ -132,11 +118,9 @@ const sessionContext = ({
       return {
         logger,
         uid: userId,
-        wallet,
         // FIXME: we should not return this for the admin graphql endpoint
         domainUser,
         domainAccount,
-        user,
         geetest,
         account,
         ip,
