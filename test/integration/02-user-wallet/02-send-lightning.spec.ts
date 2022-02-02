@@ -818,11 +818,11 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnPending).not.toBeInstanceOf(Error)
         if (lnPaymentOnPending instanceof Error) throw lnPaymentOnPending
 
-        expect(lnPaymentOnPay.paymentHash).toBe(id)
-        expect(lnPaymentOnPay.paymentRequest).toBe(request)
-        expect(lnPaymentOnPay.isCompleteRecord).toBeFalsy()
-        expect(lnPaymentOnPay.createdAt).toBeInstanceOf(Date)
-        expect(lnPaymentOnPay.status).toBeUndefined()
+        expect(lnPaymentOnPending.paymentHash).toBe(id)
+        expect(lnPaymentOnPending.paymentRequest).toBe(request)
+        expect(lnPaymentOnPending.isCompleteRecord).toBeFalsy()
+        expect(lnPaymentOnPending.createdAt).toBeInstanceOf(Date)
+        expect(lnPaymentOnPending.status).toBeUndefined()
 
         const lndService = LndService()
         if (lndService instanceof Error) throw lndService
