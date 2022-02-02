@@ -36,10 +36,9 @@ import {
   enable2FA,
   generateTokenHelper,
   getAccountByTestUserRef,
-  getDefaultWalletIdByTestUserRef,
   getHash,
   getInvoice,
-  getUserIdByTestUserRef,
+  getUserByTestUserRef,
   getUserRecordByTestUserRef,
   lndOutside1,
   lndOutside2,
@@ -79,15 +78,15 @@ beforeAll(async () => {
   await createUserWalletFromUserRef("B")
   await createUserWalletFromUserRef("C")
 
-  userIdA = await getUserIdByTestUserRef("A")
+  userIdA = (await getUserByTestUserRef("A")).id
 
   accountA = await getAccountByTestUserRef("A")
   accountB = await getAccountByTestUserRef("B")
   accountC = await getAccountByTestUserRef("C")
 
-  walletIdA = await getDefaultWalletIdByTestUserRef("A")
-  walletIdB = await getDefaultWalletIdByTestUserRef("B")
-  walletIdC = await getDefaultWalletIdByTestUserRef("C")
+  walletIdA = (await getAccountByTestUserRef("A")).defaultWalletId
+  walletIdB = (await getAccountByTestUserRef("B")).defaultWalletId
+  walletIdC = (await getAccountByTestUserRef("C")).defaultWalletId
 
   userTypeA = await getUserRecordByTestUserRef("A")
   usernameA = userTypeA.username as Username

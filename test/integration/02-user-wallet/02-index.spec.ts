@@ -12,9 +12,8 @@ import {
   createUserWalletFromUserRef,
   enable2FA,
   generateTokenHelper,
-  getAccountIdByTestUserRef,
-  getDefaultWalletIdByTestUserRef,
-  getUserIdByTestUserRef,
+  getAccountByTestUserRef,
+  getUserByTestUserRef,
   getUserRecordByTestUserRef,
 } from "test/helpers"
 
@@ -34,13 +33,13 @@ describe("UserWallet", () => {
     userTypeA = await getUserRecordByTestUserRef("A")
     userTypeC = await getUserRecordByTestUserRef("C")
 
-    walletIdA = await getDefaultWalletIdByTestUserRef("A")
+    walletIdA = (await getAccountByTestUserRef("A")).defaultWalletId
 
-    accountIdA = await getAccountIdByTestUserRef("A")
-    accountIdB = await getAccountIdByTestUserRef("B")
-    accountIdC = await getAccountIdByTestUserRef("C")
+    accountIdA = (await getAccountByTestUserRef("A")).id
+    accountIdB = (await getAccountByTestUserRef("B")).id
+    accountIdC = (await getAccountByTestUserRef("C")).id
 
-    userIdA = await getUserIdByTestUserRef("A")
+    userIdA = (await getUserByTestUserRef("A")).id
   })
 
   it("has a role if it was configured", async () => {

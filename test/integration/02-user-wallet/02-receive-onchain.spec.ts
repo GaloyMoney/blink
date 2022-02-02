@@ -19,9 +19,8 @@ import {
   checkIsBalanced,
   createMandatoryUsers,
   createUserWalletFromUserRef,
-  getAccountIdByTestUserRef,
+  getAccountByTestUserRef,
   getDefaultWalletIdByRole,
-  getDefaultWalletIdByTestUserRef,
   getUserRecordByTestUserRef,
   lndonchain,
   RANDOM_ADDRESS,
@@ -49,8 +48,8 @@ beforeAll(async () => {
 
   await bitcoindClient.loadWallet({ filename: "outside" })
 
-  walletIdA = await getDefaultWalletIdByTestUserRef("A")
-  accountIdA = await getAccountIdByTestUserRef("A")
+  walletIdA = (await getAccountByTestUserRef("A")).defaultWalletId
+  accountIdA = (await getAccountByTestUserRef("A")).id
 
   await createUserWalletFromUserRef("C")
 })
@@ -129,14 +128,14 @@ describe("UserWallet - On chain", () => {
     /// TODO? add sendAll tests in which the user has more than the limit?
     const level1WithdrawalLimit = userLimits.withdrawalLimit // sats
     await createUserWalletFromUserRef("E")
-    const walletId = await getDefaultWalletIdByTestUserRef("E")
+    const walletId = (await getAccountByTestUserRef("E")).defaultWalletId
     await sendToWalletTestWrapper({ walletId, amountSats: level1WithdrawalLimit })
   })
 
   it("receives on-chain transaction with max limit for onUs level1", async () => {
     const level1OnUsLimit = userLimits.onUsLimit // sats
     await createUserWalletFromUserRef("F")
-    const walletId = await getDefaultWalletIdByTestUserRef("F")
+    const walletId = (await getAccountByTestUserRef("F")).defaultWalletId
     await sendToWalletTestWrapper({ walletId, amountSats: level1OnUsLimit })
   })
 
@@ -281,7 +280,7 @@ describe("UserWallet - On chain", () => {
     const userTypeC = await getUserRecordByTestUserRef("C")
     userTypeC.depositFeeRatio = 0
     await userTypeC.save()
-    const walletC = await getDefaultWalletIdByTestUserRef("C")
+    const walletC = (await getAccountByTestUserRef("C")).defaultWalletId
 
     const initBalanceUserC = await getBTCBalance(walletC)
     await sendToWalletTestWrapper({

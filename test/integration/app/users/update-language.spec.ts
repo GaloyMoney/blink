@@ -1,13 +1,13 @@
 import { Users } from "@app"
 import { InvalidLanguageError } from "@domain/errors"
 
-import { createUserWalletFromUserRef, getUserIdByTestUserRef } from "test/helpers"
+import { createUserWalletFromUserRef, getUserByTestUserRef } from "test/helpers"
 
 let userIdA: UserId
 
 beforeAll(async () => {
   await createUserWalletFromUserRef("A")
-  userIdA = await getUserIdByTestUserRef("A")
+  userIdA = (await getUserByTestUserRef("A")).id
 })
 
 describe("Users - updateLanguage", () => {

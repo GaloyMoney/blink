@@ -9,8 +9,8 @@ import { baseLogger } from "@services/logger"
 import {
   checkIsBalanced,
   createUserWalletFromUserRef,
+  getAccountByTestUserRef,
   getBTCBalance,
-  getDefaultWalletIdByTestUserRef,
   getHash,
   lndOutside1,
   pay,
@@ -21,7 +21,7 @@ let initBalanceB
 
 beforeAll(async () => {
   await createUserWalletFromUserRef("B")
-  walletIdB = await getDefaultWalletIdByTestUserRef("B")
+  walletIdB = (await getAccountByTestUserRef("B")).defaultWalletId
 })
 
 beforeEach(async () => {

@@ -23,13 +23,13 @@ import {
   createMandatoryUsers,
   createUserWalletFromUserRef,
   fundWalletIdFromLightning,
-  getDefaultWalletIdByTestUserRef,
   lndOutside2,
   createApolloClient,
   defaultTestClientConfig,
   startServer,
   killServer,
   PID,
+  getAccountByTestUserRef,
 } from "test/helpers"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -49,7 +49,7 @@ beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
   await createMandatoryUsers()
   await createUserWalletFromUserRef(userRef)
-  walletId = await getDefaultWalletIdByTestUserRef(userRef)
+  walletId = (await getAccountByTestUserRef(userRef)).defaultWalletId
 
   await fundWalletIdFromLightning({ walletId, amount: toSats(50_000) })
   serverPid = await startServer()

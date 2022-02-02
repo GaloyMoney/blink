@@ -8,17 +8,14 @@ import { WalletInvoicesRepository } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
 import { v4 as uuidv4 } from "uuid"
 
-import {
-  createUserWalletFromUserRef,
-  getDefaultWalletIdByTestUserRef,
-} from "test/helpers"
+import { createUserWalletFromUserRef, getAccountByTestUserRef } from "test/helpers"
 
 let walletB: WalletId
 
 beforeAll(async () => {
   await createUserWalletFromUserRef("B")
 
-  walletB = await getDefaultWalletIdByTestUserRef("B")
+  walletB = (await getAccountByTestUserRef("B")).defaultWalletId
 })
 
 const createTestWalletInvoice = () => {

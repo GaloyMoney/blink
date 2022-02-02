@@ -32,8 +32,7 @@ import {
   enable2FA,
   generateTokenHelper,
   getAccountByTestUserRef,
-  getDefaultWalletIdByTestUserRef,
-  getUserIdByTestUserRef,
+  getUserByTestUserRef,
   getUserRecordByTestUserRef,
   lndonchain,
   lndOutside1,
@@ -77,15 +76,15 @@ beforeAll(async () => {
   await createUserWalletFromUserRef("F")
 
   user0 = await getUserRecordByTestUserRef("A")
-  walletIdA = await getDefaultWalletIdByTestUserRef("A")
-  userIdA = await getUserIdByTestUserRef("A")
+  walletIdA = (await getAccountByTestUserRef("A")).defaultWalletId
+  userIdA = (await getUserByTestUserRef("A")).id
   accountA = await getAccountByTestUserRef("A")
 
-  walletIdB = await getDefaultWalletIdByTestUserRef("B")
+  walletIdB = (await getAccountByTestUserRef("B")).defaultWalletId
   accountB = await getAccountByTestUserRef("B")
-  walletIdD = await getDefaultWalletIdByTestUserRef("D")
-  walletIdE = await getDefaultWalletIdByTestUserRef("E")
-  walletIdF = await getDefaultWalletIdByTestUserRef("F")
+  walletIdD = (await getAccountByTestUserRef("D")).defaultWalletId
+  walletIdE = (await getAccountByTestUserRef("E")).defaultWalletId
+  walletIdF = (await getAccountByTestUserRef("F")).defaultWalletId
 
   await bitcoindClient.loadWallet({ filename: "outside" })
 })

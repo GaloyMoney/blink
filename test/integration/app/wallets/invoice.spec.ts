@@ -15,8 +15,7 @@ import { WalletInvoicesRepository } from "@services/mongoose"
 
 import {
   createUserWalletFromUserRef,
-  getAccountIdByTestUserRef,
-  getDefaultWalletIdByTestUserRef,
+  getAccountByTestUserRef,
   getHash,
 } from "test/helpers"
 import {
@@ -36,8 +35,8 @@ beforeAll(async () => {
   const userRef = "B"
   await createUserWalletFromUserRef(userRef)
 
-  walletIdBtc = await getDefaultWalletIdByTestUserRef(userRef)
-  accountIdB = await getAccountIdByTestUserRef(userRef)
+  walletIdBtc = (await getAccountByTestUserRef(userRef)).defaultWalletId
+  accountIdB = (await getAccountByTestUserRef(userRef)).id
 
   const wallet = await addWallet({
     accountId: accountIdB,

@@ -18,7 +18,6 @@ import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
 import {
   clearAccountLocks,
   clearLimiters,
-  getDefaultWalletIdByTestUserRef,
   createApolloClient,
   getSubscriptionNext,
   defaultTestClientConfig,
@@ -27,6 +26,7 @@ import {
   PID,
   createUserWalletFromUserRef,
   fundWalletIdFromLightning,
+  getAccountByTestUserRef,
 } from "test/helpers"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -43,9 +43,10 @@ const { phone, code } = yamlConfig.test_accounts.find(
 beforeAll(async () => {
   await createUserWalletFromUserRef(sendingUserIndex)
   await createUserWalletFromUserRef(receivingUserRef)
-  const sendingWalletId = await getDefaultWalletIdByTestUserRef(sendingUserIndex)
+  const sendingWalletId = (await getAccountByTestUserRef(sendingUserIndex))
+    .defaultWalletId
   await fundWalletIdFromLightning({ walletId: sendingWalletId, amount: toSats(50_000) })
-  receivingWalletId = await getDefaultWalletIdByTestUserRef(receivingUserRef)
+  receivingWalletId = (await getAccountByTestUserRef(receivingUserRef)).defaultWalletId
 
   serverPid = await startServer()
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))

@@ -11,8 +11,7 @@ import {
   checkIsBalanced,
   createMandatoryUsers,
   createUserWalletFromUserRef,
-  getAccountIdByTestUserRef,
-  getDefaultWalletIdByTestUserRef,
+  getAccountByTestUserRef,
   getUserRecordByTestUserRef,
 } from "test/helpers"
 import { resetSelfAccountIdLimits } from "test/helpers/rate-limit"
@@ -37,8 +36,8 @@ jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf()
 beforeAll(async () => {
   await createUserWalletFromUserRef("B")
 
-  accountIdB = await getAccountIdByTestUserRef("B")
-  walletIdB = await getDefaultWalletIdByTestUserRef("B")
+  accountIdB = (await getAccountByTestUserRef("B")).id
+  walletIdB = (await getAccountByTestUserRef("B")).defaultWalletId
 
   await createMandatoryUsers()
 })

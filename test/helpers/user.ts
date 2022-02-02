@@ -13,7 +13,7 @@ const getPhoneByTestUserIndex = (ref: string) => {
   return phone
 }
 
-const getUserByTestUserRef = async (ref: string) => {
+export const getUserByTestUserRef = async (ref: string) => {
   const phone = getPhoneByTestUserIndex(ref)
   const user = await UsersRepository().findByPhone(phone)
   if (user instanceof Error) throw user
@@ -25,21 +25,6 @@ export const getAccountByTestUserRef = async (ref: string) => {
   const account = await AccountsRepository().findByUserId(user.id)
   if (account instanceof Error) throw account
   return account
-}
-
-export const getUserIdByTestUserRef = async (ref: string) => {
-  const user = await getUserByTestUserRef(ref)
-  return user.id
-}
-
-export const getAccountIdByTestUserRef = async (ref: string) => {
-  const account = await getAccountByTestUserRef(ref)
-  return account.id
-}
-
-export const getDefaultWalletIdByTestUserRef = async (ref: string) => {
-  const account = await getAccountByTestUserRef(ref)
-  return account.defaultWalletId
 }
 
 export const getDefaultWalletIdByRole = async (role: string) => {

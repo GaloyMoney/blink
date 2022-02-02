@@ -9,7 +9,6 @@ import {
   bitcoindOutside,
   createUserWalletFromUserRef,
   getAccountByTestUserRef,
-  getDefaultWalletIdByTestUserRef,
 } from "test/helpers"
 
 const defaultAmount = toSats(6000)
@@ -23,9 +22,9 @@ beforeAll(async () => {
   await createUserWalletFromUserRef("A")
   await createUserWalletFromUserRef("B")
 
-  walletIdA = await getDefaultWalletIdByTestUserRef("A")
+  walletIdA = (await getAccountByTestUserRef("A")).defaultWalletId
   accountA = await getAccountByTestUserRef("A")
-  walletIdB = await getDefaultWalletIdByTestUserRef("B")
+  walletIdB = (await getAccountByTestUserRef("B")).defaultWalletId
 })
 
 afterAll(async () => {

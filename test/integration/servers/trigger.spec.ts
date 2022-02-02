@@ -15,10 +15,10 @@ import {
   bitcoindClient,
   bitcoindOutside,
   createUserWalletFromUserRef,
-  getDefaultWalletIdByTestUserRef,
+  getAccountByTestUserRef,
   getHash,
   getInvoice,
-  getUserIdByTestUserRef,
+  getUserByTestUserRef,
   getUserRecordByTestUserRef,
   lnd1,
   lndOutside1,
@@ -52,11 +52,11 @@ beforeAll(async () => {
   await createUserWalletFromUserRef("D")
   await createUserWalletFromUserRef("F")
 
-  walletIdA = await getDefaultWalletIdByTestUserRef("A")
-  walletIdD = await getDefaultWalletIdByTestUserRef("D")
-  walletIdF = await getDefaultWalletIdByTestUserRef("F")
+  walletIdA = (await getAccountByTestUserRef("A")).defaultWalletId
+  walletIdD = (await getAccountByTestUserRef("D")).defaultWalletId
+  walletIdF = (await getAccountByTestUserRef("F")).defaultWalletId
 
-  userId12 = await getUserIdByTestUserRef("F")
+  userId12 = (await getUserByTestUserRef("F")).id
 
   userTypeA = await getUserRecordByTestUserRef("A")
   userType3 = await getUserRecordByTestUserRef("D")
