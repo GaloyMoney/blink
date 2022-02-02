@@ -55,16 +55,18 @@ type LedgerTransaction = {
 
 type ReceiveOnChainTxArgs = {
   walletId: WalletId
+  walletCurrency: WalletCurrency
   txHash: OnChainTxHash
   sats: Satoshis
   fee: Satoshis
-  usd: number
-  usdFee: number
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
   receivingAddress: OnChainAddress
 }
 
 type TxArgs = {
   walletId: WalletId
+  walletCurrency: WalletCurrency
   description: string
   sats: Satoshis
   amountDisplayCurrency: DisplayCurrencyBaseAmount
@@ -80,7 +82,6 @@ type OnChainTxArgs = TxArgs & {
 }
 
 type AddLnTxReceiveArgs = LnTxArgs & {
-  currency: WalletCurrency
   usd: UsdCents | undefined
   feeInboundLiquidityDisplayCurrency: DisplayCurrencyBaseAmount
   feeInboundLiquidity: Satoshis
@@ -106,8 +107,8 @@ type AddColdStorageTxReceiveArgs = {
   description: string
   sats: Satoshis
   fee: Satoshis
-  usd: number
-  usdFee: number
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
 type AddColdStorageTxSendArgs = {
@@ -116,48 +117,58 @@ type AddColdStorageTxSendArgs = {
   description: string
   sats: Satoshis
   fee: Satoshis
-  usd: number
-  usdFee: number
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
 type IntraledgerTxArgs = {
   senderWalletId: WalletId
+  senderWalletCurrency: WalletCurrency
+  senderUsername: Username | null
   description: string
   sats: Satoshis
   recipientWalletId: WalletId
-  senderUsername: Username | null
+  recipientWalletCurrency: WalletCurrency
   recipientUsername: Username | null
   memoPayer: string | null
 }
 
 type AddIntraLedgerTxSendArgs = IntraledgerTxArgs & {
-  fee: Satoshis
-  usd: number
-  usdFee: number
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
-type AddLnIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
+type SendIntraledgerTxArgs = IntraledgerTxArgs & {
+  recipientUsername: Username | null
+  shareMemoWithPayee: boolean
+  metadata:
+    | AddLnIntraledgerSendLedgerMetadata
+    | AddOnChainIntraledgerSendLedgerMetadata
+    | AddWalletIdIntraledgerSendLedgerMetadata
+}
+
+type AddLnIntraledgerTxTransferArgs = AddIntraLedgerTxSendArgs & {
   paymentHash: PaymentHash
   pubkey: Pubkey
 }
 
-type AddOnChainIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs & {
+type AddOnChainIntraledgerTxTransferArgs = AddIntraLedgerTxSendArgs & {
   payeeAddresses: OnChainAddress[]
   sendAll: boolean
 }
 
-type addWalletIdIntraledgerTxSendArgs = AddIntraLedgerTxSendArgs
+type AddWalletIdIntraledgerTxTransferArgs = AddIntraLedgerTxSendArgs
 
 type AddLnFeeReeimbursementReceiveArgs = {
   walletId: WalletId
+  walletCurrency: WalletCurrency
   paymentHash: PaymentHash
   sats: Satoshis
-  usd: number
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
   journalId: LedgerJournalId
 }
 
 type FeeReimbursement = {
-  getReimbursement({ actualFee }: { actualFee: Satoshis }): Satoshis | FeeDifferenceError
+  getReimbursement(actualFee: Satoshis): Satoshis | FeeDifferenceError
 }
 
 type TxVolume = {
@@ -230,8 +241,8 @@ interface ILedgerService {
 
   addLnTxSend(args: AddLnTxSendArgs): Promise<LedgerJournal | LedgerServiceError>
 
-  addLnIntraledgerTxSend(
-    args: AddLnIntraledgerTxSendArgs,
+  addLnIntraledgerTxTransfer(
+    args: AddLnIntraledgerTxTransferArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
   addOnChainTxSend(
@@ -239,10 +250,10 @@ interface ILedgerService {
   ): Promise<LedgerJournal | LedgerServiceError>
 
   addOnChainIntraledgerTxTransfer(
-    args: AddOnChainIntraledgerTxSendArgs,
+    args: AddOnChainIntraledgerTxTransferArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  addWalletIdIntraledgerTxSend(
+  addWalletIdIntraledgerTxTransfer(
     args: AddIntraLedgerTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 

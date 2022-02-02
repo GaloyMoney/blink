@@ -1,5 +1,9 @@
+import assert from "assert"
+
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
+
+import { WalletCurrency } from "@domain/wallets"
 
 import { MainBook } from "./books"
 
@@ -8,38 +12,36 @@ import { translateToLedgerJournal } from "."
 export const intraledger = {
   addOnChainIntraledgerTxTransfer: async ({
     senderWalletId,
+    senderWalletCurrency,
+    senderUsername,
     description,
     sats,
-    fee,
-    usd,
-    usdFee,
+    amountDisplayCurrency,
     payeeAddresses,
     sendAll,
     recipientWalletId,
-    senderUsername,
+    recipientWalletCurrency,
     recipientUsername,
     memoPayer,
-  }: AddOnChainIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: AddOnChainIntraledgerTxSendMetadata = {
+  }: AddOnChainIntraledgerTxTransferArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: AddOnChainIntraledgerSendLedgerMetadata = {
       type: LedgerTransactionType.OnchainIntraLedger,
       pending: false,
-      fee,
-      feeUsd: usdFee,
-      sats,
-      usd,
+      usd: amountDisplayCurrency,
       memoPayer: null,
       username: null,
       payee_addresses: payeeAddresses,
       sendAll,
-      currency: "BTC",
     }
 
-    return addIntraledgerTxSend({
+    return addIntraledgerTxTransfer({
       senderWalletId,
+      senderWalletCurrency,
+      senderUsername,
       description,
       sats,
       recipientWalletId,
-      senderUsername,
+      recipientWalletCurrency,
       recipientUsername,
       memoPayer,
       shareMemoWithPayee: false,
@@ -47,36 +49,34 @@ export const intraledger = {
     })
   },
 
-  addWalletIdIntraledgerTxSend: async ({
+  addWalletIdIntraledgerTxTransfer: async ({
     senderWalletId,
+    senderWalletCurrency,
+    senderUsername,
     description,
     sats,
-    fee,
-    usd,
-    usdFee,
+    amountDisplayCurrency,
     recipientWalletId,
-    senderUsername,
+    recipientWalletCurrency,
     recipientUsername,
     memoPayer,
-  }: addWalletIdIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: addWalletIdIntraledgerTxSendMetadata = {
+  }: AddWalletIdIntraledgerTxTransferArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: AddWalletIdIntraledgerSendLedgerMetadata = {
       type: LedgerTransactionType.IntraLedger,
       pending: false,
-      fee,
-      feeUsd: usdFee,
-      sats,
-      usd,
+      usd: amountDisplayCurrency,
       memoPayer: null,
       username: null,
-      currency: "BTC",
     }
 
-    return addIntraledgerTxSend({
+    return addIntraledgerTxTransfer({
       senderWalletId,
+      senderWalletCurrency,
+      senderUsername,
       description,
       sats,
       recipientWalletId,
-      senderUsername,
+      recipientWalletCurrency,
       recipientUsername,
       memoPayer,
       shareMemoWithPayee: true,
@@ -84,41 +84,39 @@ export const intraledger = {
     })
   },
 
-  addLnIntraledgerTxSend: async ({
+  addLnIntraledgerTxTransfer: async ({
     senderWalletId,
+    senderWalletCurrency,
+    senderUsername,
     paymentHash,
     description,
     sats,
-    fee,
-    usd,
-    usdFee,
+    amountDisplayCurrency,
     pubkey,
     recipientWalletId,
-    senderUsername,
+    recipientWalletCurrency,
     recipientUsername,
     memoPayer,
-  }: AddLnIntraledgerTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: AddLnIntraledgerTxSendMetadata = {
+  }: AddLnIntraledgerTxTransferArgs): Promise<LedgerJournal | LedgerError> => {
+    const metadata: AddLnIntraledgerSendLedgerMetadata = {
       type: LedgerTransactionType.IntraLedger,
       pending: false,
       hash: paymentHash,
-      fee,
-      feeUsd: usdFee,
-      sats,
-      usd,
+      usd: amountDisplayCurrency,
       pubkey,
       memoPayer: null,
       username: null,
-      currency: "BTC",
     }
 
-    return addIntraledgerTxSend({
+    return addIntraledgerTxTransfer({
       senderWalletId,
+      senderWalletCurrency,
+      senderUsername,
       description,
       sats,
       recipientWalletId,
-      senderUsername,
       recipientUsername,
+      recipientWalletCurrency,
       memoPayer,
       shareMemoWithPayee: false,
       metadata,
@@ -126,13 +124,15 @@ export const intraledger = {
   },
 }
 
-const addIntraledgerTxSend = async ({
+const addIntraledgerTxTransfer = async ({
   senderWalletId,
+  senderWalletCurrency,
+  senderUsername,
   description,
   sats,
   recipientWalletId,
-  senderUsername,
   recipientUsername,
+  recipientWalletCurrency,
   memoPayer,
   shareMemoWithPayee,
   metadata,
@@ -140,13 +140,23 @@ const addIntraledgerTxSend = async ({
   const senderLiabilitiesWalletId = toLiabilitiesWalletId(senderWalletId)
   const recipientLiabilitiesWalletId = toLiabilitiesWalletId(recipientWalletId)
 
+  // TODO: remove assert once dealer has been implemented
+  assert(recipientWalletCurrency === WalletCurrency.Btc)
+  assert(senderWalletCurrency === WalletCurrency.Btc)
+
   try {
     const creditMetadata = {
       ...metadata,
+      currency: WalletCurrency.Btc,
       username: senderUsername,
       memoPayer: shareMemoWithPayee ? memoPayer : null,
     }
-    const debitMetadata = { ...metadata, username: recipientUsername, memoPayer }
+    const debitMetadata = {
+      ...metadata,
+      currency: WalletCurrency.Btc,
+      username: recipientUsername,
+      memoPayer,
+    }
 
     const entry = MainBook.entry(description)
 

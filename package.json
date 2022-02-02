@@ -95,7 +95,6 @@
     "redlock": "^4.2.0",
     "subscriptions-transport-ws": "^0.11.0",
     "twilio": "^3.65.0",
-    "uuid": "^8.3.1",
     "uuid-by-string": "^3.0.4"
   },
   "devDependencies": {
@@ -132,7 +131,6 @@
     "@types/pino-http": "^5.4.2",
     "@types/prettier": "^2.3.2",
     "@types/redlock": "^4.0.2",
-    "@types/uuid": "^8.3.1",
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
     "apollo-server-integration-testing": "^3.0.0",

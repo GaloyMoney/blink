@@ -1,63 +1,68 @@
-type TxMetadata = {
+type LedgerMetadata = {
   type: LedgerTransactionType
   pending: boolean
-  fee: Satoshis
-  feeUsd: number
-  sats: Satoshis
-  usd: number
-  currency: WalletCurrency
+  usd: DisplayCurrencyBaseAmount // to be renamed amountDisplayCurrency
 }
 
-type AddLnTxReceiveMetadata = TxMetadata & {
+type NonIntraledgerLedgerMetadata = LedgerMetadata & {
+  fee: Satoshis
+  feeUsd: DisplayCurrencyBaseAmount // to be renamed feeDisplayCurrency
+}
+
+type LnReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {
   hash: PaymentHash
 }
 
-type AddLnTxSendMetadata = TxMetadata & {
+type OnChainReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {
+  hash: OnChainTxHash
+  payee_addresses: OnChainAddress[]
+}
+
+type AddLnSendLedgerMetadata = NonIntraledgerLedgerMetadata & {
   hash: PaymentHash
   pubkey: Pubkey
   feeKnownInAdvance: boolean
 }
 
-type AddOnchainTxSendMetadata = TxMetadata & {
+type AddOnchainSendLedgerMetadata = NonIntraledgerLedgerMetadata & {
   hash: OnChainTxHash
   payee_addresses: OnChainAddress[]
   sendAll: boolean
 }
 
-type AddColdStorageTxReceiveMetadata = TxMetadata & {
+type AddColdStorageLedgerMetadata = NonIntraledgerLedgerMetadata & {
   hash: OnChainTxHash
   payee_addresses: OnChainAddress[]
+  currency: WalletCurrency
 }
 
-type AddColdStorageTxSendMetadata = TxMetadata & {
-  hash: OnChainTxHash
-  payee_addresses: OnChainAddress[]
-}
+type AddColdStorageReceiveLedgerMetadata = AddColdStorageLedgerMetadata
 
-type IntraledgerTxMetadata = TxMetadata & {
+type AddColdStorageSendLedgerMetadata = AddColdStorageLedgerMetadata
+
+type IntraledgerLedgerMetadata = LedgerMetadata & {
   memoPayer: string | null
   username: Username | null
 }
 
-type AddLnIntraledgerTxSendMetadata = IntraledgerTxMetadata & {
+type AddLnIntraledgerSendLedgerMetadata = IntraledgerLedgerMetadata & {
   hash: PaymentHash
   pubkey: Pubkey
 }
 
-type AddOnChainIntraledgerTxSendMetadata = IntraledgerTxMetadata & {
+type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerLedgerMetadata & {
   payee_addresses: OnChainAddress[]
   sendAll: boolean
 }
 
-type addWalletIdIntraledgerTxSendMetadata = IntraledgerTxMetadata
+type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerLedgerMetadata
 
-type SendIntraledgerTxArgs = IntraledgerTxArgs & {
-  recipientUsername: Username | null
-  shareMemoWithPayee: boolean
-  metadata:
-    | AddLnIntraledgerTxSendMetadata
-    | AddOnChainIntraledgerTxSendMetadata
-    | addWalletIdIntraledgerTxSendMetadata
+type FeeReimbursementLedgerMetadata = {
+  hash: PaymentHash
+  type: LedgerTransactionType
+  pending: boolean
+  usd: DisplayCurrencyBaseAmount
+  related_journal: LedgerJournalId
 }
 
 type LoadLedgerParams = {
@@ -65,3 +70,8 @@ type LoadLedgerParams = {
   dealerWalletResolver: () => Promise<WalletId>
   funderWalletResolver: () => Promise<WalletId>
 }
+
+type ReceiveLedgerMetadata =
+  | FeeReimbursementLedgerMetadata
+  | LnReceiveLedgerMetadata
+  | OnChainReceiveLedgerMetadata
