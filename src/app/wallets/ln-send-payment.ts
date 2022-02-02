@@ -454,12 +454,12 @@ const executePaymentViaLn = async ({
             maxFee,
           })
 
-      // // Fire-and-forget update to 'lnPayments' collection
-      // LnPaymentsRepository().persistNew({
-      //   paymentHash: decodedInvoice.paymentHash,
-      //   paymentRequest: decodedInvoice.paymentRequest,
-      //   sentFromPubkey: rawRoute ? pubkey : lndService.defaultPubkey(),
-      // })
+      // Fire-and-forget update to 'lnPayments' collection
+      LnPaymentsRepository().persistNew({
+        paymentHash: decodedInvoice.paymentHash,
+        paymentRequest: decodedInvoice.paymentRequest,
+        sentFromPubkey: rawRoute ? pubkey : lndService.defaultPubkey(),
+      })
 
       if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending
 
