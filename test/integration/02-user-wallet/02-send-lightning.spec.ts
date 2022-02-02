@@ -790,22 +790,22 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnPay.createdAt).toBeInstanceOf(Date)
         expect(lnPaymentOnPay.status).toBeUndefined()
 
-        // Run update task
+        // Run lnPayments update task
         const lnPaymentUpdateOnPending = await Lightning.updateLnPayments()
         if (lnPaymentUpdateOnPending instanceof Error) throw lnPaymentUpdateOnPending
 
-        // Test 'lnpayment' is pending
+        // Test 'lnpayment' is still pending
         const lnPaymentOnPending = await lnPaymentsRepo.findByPaymentHash(
           id as PaymentHash,
         )
         expect(lnPaymentOnPending).not.toBeInstanceOf(Error)
         if (lnPaymentOnPending instanceof Error) throw lnPaymentOnPending
 
-        expect(lnPaymentOnPay.paymentHash).toBe(id)
-        expect(lnPaymentOnPay.paymentRequest).toBe(request)
-        expect(lnPaymentOnPay.isCompleteRecord).toBeFalsy()
-        expect(lnPaymentOnPay.createdAt).toBeInstanceOf(Date)
-        expect(lnPaymentOnPay.status).toBeUndefined()
+        expect(lnPaymentOnPending.paymentHash).toBe(id)
+        expect(lnPaymentOnPending.paymentRequest).toBe(request)
+        expect(lnPaymentOnPending.isCompleteRecord).toBeFalsy()
+        expect(lnPaymentOnPending.createdAt).toBeInstanceOf(Date)
+        expect(lnPaymentOnPending.status).toBeUndefined()
 
         const lndService = LndService()
         if (lndService instanceof Error) throw lndService
@@ -840,7 +840,7 @@ describe("UserWallet - Lightning Pay", () => {
 
         await waitUntilChannelBalanceSyncAll()
 
-        // Run update task
+        // Run lnPayments update task
         const lnPaymentUpdateOnSettled = await Lightning.updateLnPayments()
         if (lnPaymentUpdateOnSettled instanceof Error) throw lnPaymentUpdateOnSettled
 
