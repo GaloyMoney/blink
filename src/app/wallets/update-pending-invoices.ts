@@ -157,10 +157,9 @@ const updatePendingInvoice = async ({
     } = lnInvoiceLookup
     const feeInboundLiquidity = DepositFeeCalculator().lnDepositFee()
 
-    const amountDisplayCurrency =
-      DisplayCurrencyConversionRate(usdPerSat)(roundedDownReceived)
-    const feeInboundLiquidityDisplayCurrency =
-      DisplayCurrencyConversionRate(usdPerSat)(feeInboundLiquidity)
+    const converter = DisplayCurrencyConversionRate(usdPerSat)
+    const amountDisplayCurrency = converter.fromSats(roundedDownReceived)
+    const feeInboundLiquidityDisplayCurrency = converter.fromSats(feeInboundLiquidity)
 
     const ledgerService = LedgerService()
     const result = await ledgerService.addLnTxReceive({

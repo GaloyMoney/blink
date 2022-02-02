@@ -117,8 +117,10 @@ const processTxForWallet = async (
             amount: sats,
             ratio: account.depositFeeRatio,
           })
-          const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(sats)
-          const feeDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(fee)
+
+          const converter = DisplayCurrencyConversionRate(usdPerSat)
+          const amountDisplayCurrency = converter.fromSats(sats)
+          const feeDisplayCurrency = converter.fromSats(fee)
 
           const result = await ledger.addOnChainTxReceive({
             walletId: wallet.id,
@@ -190,8 +192,9 @@ const processTxForHotWallet = async ({
 
         if (fee instanceof Error) fee = toSats(0)
 
-        const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(sats)
-        const feeDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(fee)
+        const converter = DisplayCurrencyConversionRate(usdPerSat)
+        const amountDisplayCurrency = converter.fromSats(sats)
+        const feeDisplayCurrency = converter.fromSats(fee)
 
         const description = `deposit to hot wallet of ${sats} sats from the cold storage wallet`
 

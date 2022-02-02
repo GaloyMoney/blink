@@ -306,7 +306,7 @@ const executePaymentViaIntraledger = async ({
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(amount)
+  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat).fromSats(amount)
 
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
@@ -408,8 +408,10 @@ const executePaymentViaLn = async ({
   const maxFee = LnFeeCalculator().max(amount)
   const feeRouting = route ? route.roundedUpFee : maxFee
   const sats = toSats(amount + feeRouting)
-  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(sats)
-  const feeRoutingDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(feeRouting)
+
+  const convert = DisplayCurrencyConversionRate(usdPerSat)
+  const amountDisplayCurrency = convert.fromSats(sats)
+  const feeRoutingDisplayCurrency = convert.fromSats(feeRouting)
 
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },

@@ -59,8 +59,9 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
 
   const description = `deposit of ${rebalanceAmount} sats to the cold storage wallet`
 
-  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(rebalanceAmount)
-  const feeDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(fee)
+  const convert = DisplayCurrencyConversionRate(usdPerSat)
+  const amountDisplayCurrency = convert.fromSats(rebalanceAmount)
+  const feeDisplayCurrency = convert.fromSats(fee)
 
   const journal = await ledgerService.addColdStorageTxReceive({
     txHash,

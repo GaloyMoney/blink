@@ -173,7 +173,7 @@ const executePaymentViaIntraledger = async ({
   const usdPerSat = await getCurrentPrice()
   if (usdPerSat instanceof Error) return usdPerSat
 
-  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(amount)
+  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat).fromSats(amount)
 
   const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
   if (recipientAccount instanceof Error) return recipientAccount
@@ -331,8 +331,10 @@ const executePaymentViaOnChain = async ({
         }
 
         const sats = toSats(amountToSend + totalFee)
-        const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(sats)
-        const totalFeeDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(totalFee)
+
+        const converter = DisplayCurrencyConversionRate(usdPerSat)
+        const amountDisplayCurrency = converter.fromSats(sats)
+        const totalFeeDisplayCurrency = converter.fromSats(totalFee)
 
         return ledgerService.addOnChainTxSend({
           walletId: senderWallet.id,

@@ -178,7 +178,7 @@ const executePaymentViaIntraledger = async ({
   const usdPerSat = await getCurrentPrice()
   if (usdPerSat instanceof Error) return usdPerSat
 
-  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(amount)
+  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat).fromSats(amount)
 
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },

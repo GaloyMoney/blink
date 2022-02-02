@@ -44,7 +44,7 @@ export const reimburseFee = async ({
   if (price instanceof Error) {
     amountDisplayCurrency = toDisplayCurrencyBaseAmount(0)
   } else {
-    amountDisplayCurrency = DisplayCurrencyConversionRate(price)(feeDifference)
+    amountDisplayCurrency = DisplayCurrencyConversionRate(price).fromSats(feeDifference)
   }
 
   const ledgerService = LedgerService()
