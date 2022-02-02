@@ -104,19 +104,4 @@ describe("PaymentInputValidator", () => {
     })
     expect(result).toBeInstanceOf(InvalidAccountStatusError)
   })
-
-  it("Returns undefined for recipient when id is undefined", async () => {
-    const validator: PaymentInputValidator = PaymentInputValidator(getWalletFn)
-    const result = await validator.validatePaymentInput({
-      amount: 2,
-      senderWalletId: dummySenderWallet.id,
-      senderAccount: dummyAccount,
-    })
-    if (result instanceof Error) throw result
-
-    const { senderWallet, amount, recipientWallet } = result
-    expect(amount).toBe(2)
-    expect(senderWallet).toEqual(expect.objectContaining(dummySenderWallet))
-    expect(recipientWallet).toBe(undefined)
-  })
 })
