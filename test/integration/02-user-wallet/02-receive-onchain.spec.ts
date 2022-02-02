@@ -18,10 +18,11 @@ import {
   bitcoindOutside,
   checkIsBalanced,
   createMandatoryUsers,
-  createUserWallet,
-  getAccountIdByTestUserIndex,
-  getDefaultWalletIdByTestUserIndex,
-  getUserRecordByTestUserIndex,
+  createUserWalletFromUserRef,
+  getAccountIdByTestUserRef,
+  getDefaultWalletIdByRole,
+  getDefaultWalletIdByTestUserRef,
+  getUserRecordByTestUserRef,
   lndonchain,
   RANDOM_ADDRESS,
   sendToAddressAndConfirm,
@@ -34,8 +35,8 @@ import { getBTCBalance } from "test/helpers/wallet"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
-let walletId0: WalletId
-let accountId0: AccountId
+let walletIdA: WalletId
+let accountIdA: AccountId
 
 const userLimits = getUserLimits({ level: 1 })
 
@@ -48,10 +49,10 @@ beforeAll(async () => {
 
   await bitcoindClient.loadWallet({ filename: "outside" })
 
-  walletId0 = await getDefaultWalletIdByTestUserIndex(0)
-  accountId0 = await getAccountIdByTestUserIndex(0)
+  walletIdA = await getDefaultWalletIdByTestUserRef("A")
+  accountIdA = await getAccountIdByTestUserRef("A")
 
-  await createUserWallet(2)
+  await createUserWalletFromUserRef("C")
 })
 
 beforeEach(() => {
@@ -83,8 +84,8 @@ describe("FunderWallet - On chain", () => {
 
 describe("UserWallet - On chain", () => {
   it("get last on chain address", async () => {
-    const address = await Wallets.createOnChainAddress(walletId0)
-    const lastAddress = await Wallets.getLastOnChainAddress(walletId0)
+    const address = await Wallets.createOnChainAddress(walletIdA)
+    const lastAddress = await Wallets.getLastOnChainAddress(walletIdA)
 
     expect(address).not.toBeInstanceOf(Error)
     expect(lastAddress).not.toBeInstanceOf(Error)
@@ -93,7 +94,7 @@ describe("UserWallet - On chain", () => {
 
   it("fails to create onChain Address past rate limit", async () => {
     // Reset limits before starting
-    let resetOk = await resetOnChainAddressAccountIdLimits(accountId0)
+    let resetOk = await resetOnChainAddressAccountIdLimits(accountIdA)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
@@ -101,7 +102,7 @@ describe("UserWallet - On chain", () => {
     const limitsNum = getOnChainAddressCreateAttemptLimits().points
     const promises: Promise<OnChainAddress | ApplicationError>[] = []
     for (let i = 0; i < limitsNum; i++) {
-      const onChainAddressPromise = Wallets.createOnChainAddress(walletId0)
+      const onChainAddressPromise = Wallets.createOnChainAddress(walletIdA)
       promises.push(onChainAddressPromise)
     }
     const onChainAddresses = await Promise.all(promises)
@@ -109,17 +110,17 @@ describe("UserWallet - On chain", () => {
     expect(onChainAddresses.every(isNotError)).toBe(true)
 
     // Test that first address past the limit fails
-    const onChainAddress = await Wallets.createOnChainAddress(walletId0)
+    const onChainAddress = await Wallets.createOnChainAddress(walletIdA)
     expect(onChainAddress).toBeInstanceOf(OnChainAddressCreateRateLimiterExceededError)
 
     // Reset limits when done for other tests
-    resetOk = await resetOnChainAddressAccountIdLimits(accountId0)
+    resetOk = await resetOnChainAddressAccountIdLimits(accountIdA)
     expect(resetOk).not.toBeInstanceOf(Error)
   })
 
   it("receives on-chain transaction", async () => {
     await sendToWalletTestWrapper({
-      walletId: walletId0,
+      walletId: walletIdA,
       amountSats: getRandomAmountOfSats(),
     })
   })
@@ -127,36 +128,35 @@ describe("UserWallet - On chain", () => {
   it("receives on-chain transaction with max limit for withdrawal level1", async () => {
     /// TODO? add sendAll tests in which the user has more than the limit?
     const level1WithdrawalLimit = userLimits.withdrawalLimit // sats
-    await createUserWallet(11)
-    const walletId = await getDefaultWalletIdByTestUserIndex(11)
+    await createUserWalletFromUserRef("E")
+    const walletId = await getDefaultWalletIdByTestUserRef("E")
     await sendToWalletTestWrapper({ walletId, amountSats: level1WithdrawalLimit })
   })
 
   it("receives on-chain transaction with max limit for onUs level1", async () => {
     const level1OnUsLimit = userLimits.onUsLimit // sats
-    await createUserWallet(12)
-    const walletId = await getDefaultWalletIdByTestUserIndex(12)
+    await createUserWalletFromUserRef("F")
+    const walletId = await getDefaultWalletIdByTestUserRef("F")
     await sendToWalletTestWrapper({ walletId, amountSats: level1OnUsLimit })
   })
 
   it("receives batch on-chain transaction", async () => {
-    const address0 = await Wallets.createOnChainAddress(walletId0)
+    const address0 = await Wallets.createOnChainAddress(walletIdA)
     if (address0 instanceof Error) throw address0
 
-    await createUserWallet(4)
-    const walletId = await getDefaultWalletIdByTestUserIndex(4)
+    const walletId = await getDefaultWalletIdByRole("funder")
 
-    const address4 = await Wallets.createOnChainAddress(walletId)
-    if (address4 instanceof Error) throw address4
+    const addressDealer = await Wallets.createOnChainAddress(walletId)
+    if (addressDealer instanceof Error) throw addressDealer
 
-    const initialBalanceUser0 = await getBTCBalance(walletId0)
-    const initBalanceUser4 = await getBTCBalance(walletId)
+    const initialBalanceUserA = await getBTCBalance(walletIdA)
+    const initBalanceDealer = await getBTCBalance(walletId)
 
     const output0 = {}
     output0[address0] = 1
 
     const output1 = {}
-    output1[address4] = 2
+    output1[addressDealer] = 2
 
     const outputs = [output0, output1]
 
@@ -181,20 +181,20 @@ describe("UserWallet - On chain", () => {
     }
 
     {
-      const balance0 = await getBTCBalance(walletId0)
+      const balanceA = await getBTCBalance(walletIdA)
       const balance4 = await getBTCBalance(walletId)
 
       const depositFeeRatio = getFeeRates().depositFeeVariable as DepositFeeRatio
 
-      expect(balance0).toBe(
-        initialBalanceUser0 +
+      expect(balanceA).toBe(
+        initialBalanceUserA +
           amountAfterFeeDeduction({
             amount: toSats(100_000_000),
             depositFeeRatio,
           }),
       )
       expect(balance4).toBe(
-        initBalanceUser4 +
+        initBalanceDealer +
           amountAfterFeeDeduction({
             amount: toSats(200_000_000),
             depositFeeRatio,
@@ -206,7 +206,7 @@ describe("UserWallet - On chain", () => {
   it("identifies unconfirmed incoming on-chain transactions", async () => {
     const amountSats = getRandomAmountOfSats()
 
-    const address = await Wallets.createOnChainAddress(walletId0)
+    const address = await Wallets.createOnChainAddress(walletIdA)
     if (address instanceof Error) throw address
 
     const sub = subscribeToTransactions({ lnd: lndonchain })
@@ -223,7 +223,7 @@ describe("UserWallet - On chain", () => {
     await sleep(1000)
 
     const { result: txs, error } = await Wallets.getTransactionsForWalletId({
-      walletId: walletId0,
+      walletId: walletIdA,
     })
     if (error instanceof Error || txs === null) {
       throw error
@@ -278,19 +278,19 @@ describe("UserWallet - On chain", () => {
   it("allows fee exemption for specific users", async () => {
     const amountSats = getRandomAmountOfSats()
 
-    const userType2 = await getUserRecordByTestUserIndex(2)
-    userType2.depositFeeRatio = 0
-    await userType2.save()
-    const wallet2 = await getDefaultWalletIdByTestUserIndex(2)
+    const userTypeC = await getUserRecordByTestUserRef("C")
+    userTypeC.depositFeeRatio = 0
+    await userTypeC.save()
+    const walletC = await getDefaultWalletIdByTestUserRef("C")
 
-    const initBalanceUser2 = await getBTCBalance(wallet2)
+    const initBalanceUserC = await getBTCBalance(walletC)
     await sendToWalletTestWrapper({
-      walletId: wallet2,
+      walletId: walletC,
       depositFeeRatio: 0 as DepositFeeRatio,
       amountSats,
     })
-    const finalBalanceUser2 = await getBTCBalance(wallet2)
-    expect(finalBalanceUser2).toBe(initBalanceUser2 + amountSats)
+    const finalBalanceUserC = await getBTCBalance(walletC)
+    expect(finalBalanceUserC).toBe(initBalanceUserC + amountSats)
   })
 })
 

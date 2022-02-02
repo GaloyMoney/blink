@@ -14,9 +14,9 @@ import { WalletCurrency, WalletType } from "@domain/wallets"
 import { WalletInvoicesRepository } from "@services/mongoose"
 
 import {
-  createUserWallet,
-  getAccountIdByTestUserIndex,
-  getDefaultWalletIdByTestUserIndex,
+  createUserWalletFromUserRef,
+  getAccountIdByTestUserRef,
+  getDefaultWalletIdByTestUserRef,
   getHash,
 } from "test/helpers"
 import {
@@ -26,21 +26,21 @@ import {
 
 let walletIdBtc: WalletId
 let walletIdUsd: WalletId
-let accountId1: AccountId
+let accountIdB: AccountId
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
 const walletInvoices = WalletInvoicesRepository()
 
 beforeAll(async () => {
-  const userIndex = 1
-  await createUserWallet(userIndex)
+  const userRef = "B"
+  await createUserWalletFromUserRef(userRef)
 
-  walletIdBtc = await getDefaultWalletIdByTestUserIndex(userIndex)
-  accountId1 = await getAccountIdByTestUserIndex(userIndex)
+  walletIdBtc = await getDefaultWalletIdByTestUserRef(userRef)
+  accountIdB = await getAccountIdByTestUserRef(userRef)
 
   const wallet = await addWallet({
-    accountId: accountId1,
+    accountId: accountIdB,
     type: WalletType.Checking,
     currency: WalletCurrency.Usd,
   })
@@ -225,7 +225,7 @@ describe("Wallet - addInvoice Fiat", () => {
 describe("Wallet - rate limiting test", () => {
   it("fails to add invoice past rate limit", async () => {
     // Reset limits before starting
-    const resetOk = await resetSelfAccountIdLimits(accountId1)
+    const resetOk = await resetSelfAccountIdLimits(accountIdB)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
@@ -244,12 +244,12 @@ describe("Wallet - rate limiting test", () => {
     const isNotError = (item) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
-    return testPastSelfInvoiceLimits({ walletId: walletIdBtc, accountId: accountId1 })
+    return testPastSelfInvoiceLimits({ walletId: walletIdBtc, accountId: accountIdB })
   })
 
   it("fails to add no amount invoice past rate limit", async () => {
     // Reset limits before starting
-    const resetOk = await resetSelfAccountIdLimits(accountId1)
+    const resetOk = await resetSelfAccountIdLimits(accountIdB)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
@@ -266,12 +266,12 @@ describe("Wallet - rate limiting test", () => {
     const isNotError = (item) => !(item instanceof Error)
     expect(lnInvoices.every(isNotError)).toBe(true)
 
-    return testPastSelfInvoiceLimits({ walletId: walletIdBtc, accountId: accountId1 })
+    return testPastSelfInvoiceLimits({ walletId: walletIdBtc, accountId: accountIdB })
   })
 
   it("fails to add public invoice past rate limit", async () => {
     // Reset limits before starting
-    const resetOk = await resetRecipientAccountIdLimits(accountId1)
+    const resetOk = await resetRecipientAccountIdLimits(accountIdB)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
@@ -291,13 +291,13 @@ describe("Wallet - rate limiting test", () => {
 
     return testPastRecipientInvoiceLimits({
       walletId: walletIdBtc,
-      accountId: accountId1,
+      accountId: accountIdB,
     })
   })
 
   it("fails to add no amount public invoice past rate limit", async () => {
     // Reset limits before starting
-    const resetOk = await resetRecipientAccountIdLimits(accountId1)
+    const resetOk = await resetRecipientAccountIdLimits(accountIdB)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
@@ -316,7 +316,7 @@ describe("Wallet - rate limiting test", () => {
 
     return testPastRecipientInvoiceLimits({
       walletId: walletIdBtc,
-      accountId: accountId1,
+      accountId: accountIdB,
     })
   })
 })

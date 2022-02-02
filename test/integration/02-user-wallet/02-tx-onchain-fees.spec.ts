@@ -7,25 +7,25 @@ import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import {
   bitcoindClient,
   bitcoindOutside,
-  createUserWallet,
-  getAccountByTestUserIndex,
-  getDefaultWalletIdByTestUserIndex,
+  createUserWalletFromUserRef,
+  getAccountByTestUserRef,
+  getDefaultWalletIdByTestUserRef,
 } from "test/helpers"
 
 const defaultAmount = toSats(6000)
 const defaultTarget = toTargetConfs(3)
 const { dustThreshold } = getOnChainWalletConfig()
-let walletId0: WalletId, walletId1: WalletId, account0: Account
+let walletIdA: WalletId, walletIdB: WalletId, accountA: Account
 
 beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
 
-  await createUserWallet(0)
-  await createUserWallet(1)
+  await createUserWalletFromUserRef("A")
+  await createUserWalletFromUserRef("B")
 
-  walletId0 = await getDefaultWalletIdByTestUserIndex(0)
-  account0 = await getAccountByTestUserIndex(0)
-  walletId1 = await getDefaultWalletIdByTestUserIndex(1)
+  walletIdA = await getDefaultWalletIdByTestUserRef("A")
+  accountA = await getAccountByTestUserRef("A")
+  walletIdB = await getDefaultWalletIdByTestUserRef("B")
 })
 
 afterAll(async () => {
@@ -36,8 +36,8 @@ describe("UserWallet - getOnchainFee", () => {
   it("returns a fee greater than zero for an external address", async () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
     const fee = await Wallets.getOnChainFee({
-      walletId: walletId0,
-      account: account0,
+      walletId: walletIdA,
+      account: accountA,
       amount: defaultAmount,
       address,
       targetConfirmations: defaultTarget,
@@ -45,7 +45,7 @@ describe("UserWallet - getOnchainFee", () => {
     expect(fee).not.toBeInstanceOf(Error)
     expect(fee).toBeGreaterThan(0)
 
-    const wallet = await WalletsRepository().findById(walletId0)
+    const wallet = await WalletsRepository().findById(walletIdA)
     if (wallet instanceof Error) throw wallet
 
     const account = await AccountsRepository().findById(wallet.accountId)
@@ -55,11 +55,11 @@ describe("UserWallet - getOnchainFee", () => {
   })
 
   it("returns zero for an on us address", async () => {
-    const address = await Wallets.createOnChainAddress(walletId1)
+    const address = await Wallets.createOnChainAddress(walletIdB)
     if (address instanceof Error) throw address
     const fee = await Wallets.getOnChainFee({
-      walletId: walletId0,
-      account: account0,
+      walletId: walletIdA,
+      account: accountA,
       amount: defaultAmount,
       address,
       targetConfirmations: defaultTarget,
@@ -72,8 +72,8 @@ describe("UserWallet - getOnchainFee", () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
     const amount = toSats(dustThreshold - 1)
     const fee = await Wallets.getOnChainFee({
-      walletId: walletId0,
-      account: account0,
+      walletId: walletIdA,
+      account: accountA,
       amount,
       address,
       targetConfirmations: defaultTarget,
@@ -89,8 +89,8 @@ describe("UserWallet - getOnchainFee", () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
     const amount = toSats(1_000_000_000)
     const fee = await Wallets.getOnChainFee({
-      walletId: walletId0,
-      account: account0,
+      walletId: walletIdA,
+      account: accountA,
       amount,
       address,
       targetConfirmations: defaultTarget,
