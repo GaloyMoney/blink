@@ -184,6 +184,14 @@ interface IGetVolumeArgs {
 type VolumeResult = Promise<TxVolume | LedgerServiceError>
 
 interface ILedgerService {
+  updateMetadata({
+    hash,
+    metadata,
+  }: {
+    hash: PaymentHash
+    metadata
+  }): Promise<true | LedgerServiceError>
+
   getTransactionById(
     id: LedgerTransactionId,
   ): Promise<LedgerTransaction | LedgerServiceError>

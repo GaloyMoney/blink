@@ -307,6 +307,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CorruptLndDbError":
     case "NotImplementedError":
     case "NotReachableError":
+    case "NoTransactionToUpdateError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
