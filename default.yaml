@@ -43,48 +43,29 @@ coldStorage:
 lndScbBackupBucketName: "lnd-static-channel-backups"
 
 test_accounts:
-- phone: "+16505554321" # user0
-  code: 321321
-- phone: "+16505554322" # user1
-  code: 321432
+- ref: A
+  phone: "+16505554321"
+  code: "321321"
+- ref: B
+  phone: "+16505554322"
+  code: "321432"
   phoneMetadataCarrierType: "mobile" # TODO: verify mobile is a valid value
-- phone: "+16505554323" # user2
-  code: 321321
+- ref: C
+  phone: "+16505554323"
+  code: "321321"
   title: business
-- phone: "+16505554324" # user3
-  code: 321321
-- phone: "+16505554325" # user4/ funder
-  code: 321321
-  username: "FunderWallet"
-  role: funder
-- phone: "+16505554326"
-  code: 321321
-  currencies: [{id: "USD", ratio: 1}]
-- phone: "+16505554327"
-  code: 321321
-  role: "dealer"
-- phone: "+16505554328"
-  code: 321321
-- phone: "+16505554329" # postman
-  code: 321321
-- phone: "+16505554330"
-  code: 321321
-  currencies: [{id: "USD", ratio: .5}, {id: "BTC", ratio: .5},]
-- phone: "+16505554331" # login fail attempt
-  code: 321321
-  currency: "BTC"
-- phone: "+16505554332" # user11
-  code: 321321
-- phone: "+16505554333" # user12
-  code: 321321
-- phone: "+12223334444" # user13
-  code: "424242"
-  role: "editor"
-- phone: "+16505554334" # user14
-  code: 321321
-  role: "bankowner"
-- phone: "+16505554335" # user15
-  code: 321321
+- ref: D
+  phone: "+16505554324"
+  code: "321321"
+- ref: E
+  phone: "+16505554332"
+  code: "321321"
+- ref: F
+  phone: "+16505554333"
+  code: "321321"
+- ref: "G"
+  phone: "+16505554335"
+  code: "321321"
   username: "user15"
 
 limits:

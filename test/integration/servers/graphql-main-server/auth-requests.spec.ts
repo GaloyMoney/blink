@@ -21,9 +21,9 @@ import {
   clearLimiters,
   createInvoice,
   createMandatoryUsers,
-  createUserWallet,
+  createUserWalletFromUserRef,
   fundWalletIdFromLightning,
-  getDefaultWalletIdByTestUserIndex,
+  getDefaultWalletIdByTestUserRef,
   lndOutside2,
   createApolloClient,
   defaultTestClientConfig,
@@ -36,8 +36,8 @@ let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,
   walletId: WalletId,
   serverPid: PID
-const USER_INDEX = 3
-const { phone, code } = yamlConfig.test_accounts[USER_INDEX]
+const userRef = "D"
+const { phone, code } = yamlConfig.test_accounts.find((item) => item.ref === userRef)
 
 let mongoose
 
@@ -48,13 +48,13 @@ beforeAll(async () => {
 
   await bitcoindClient.loadWallet({ filename: "outside" })
   await createMandatoryUsers()
-  await createUserWallet(USER_INDEX)
-  walletId = await getDefaultWalletIdByTestUserIndex(USER_INDEX)
+  await createUserWalletFromUserRef(userRef)
+  walletId = await getDefaultWalletIdByTestUserRef(userRef)
 
   await fundWalletIdFromLightning({ walletId, amount: toSats(50_000) })
   serverPid = await startServer()
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
-  const input = { phone, code: `${code}` }
+  const input = { phone, code }
   const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
   // Create a new authenticated client
   disposeClient()

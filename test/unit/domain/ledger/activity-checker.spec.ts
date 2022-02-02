@@ -38,7 +38,7 @@ describe("ActivityChecker", () => {
       getVolumeFn,
     })
     expect(
-      checker.aboveThreshold(["walletId" as WalletId, "walletId2" as WalletId]),
+      checker.aboveThreshold(["walletId" as WalletId, "walletIdC" as WalletId]),
     ).resolves.toBe(true)
   })
 })

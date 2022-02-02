@@ -18,14 +18,14 @@ import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
 import {
   clearAccountLocks,
   clearLimiters,
-  getDefaultWalletIdByTestUserIndex,
+  getDefaultWalletIdByTestUserRef,
   createApolloClient,
   getSubscriptionNext,
   defaultTestClientConfig,
   startServer,
   killServer,
   PID,
-  createUserWallet,
+  createUserWalletFromUserRef,
   fundWalletIdFromLightning,
 } from "test/helpers"
 
@@ -34,20 +34,22 @@ let apolloClient: ApolloClient<NormalizedCacheObject>,
   receivingWalletId: WalletId,
   serverPid: PID
 const receivingUsername = "user15"
-const receivingUserIndex = 15
-const sendingUserIndex = 4
-const { phone, code } = yamlConfig.test_accounts[sendingUserIndex]
+const receivingUserRef = "G"
+const sendingUserIndex = "D"
+const { phone, code } = yamlConfig.test_accounts.find(
+  (item) => item.ref === sendingUserIndex,
+)
 
 beforeAll(async () => {
-  await createUserWallet(sendingUserIndex)
-  await createUserWallet(receivingUserIndex)
-  const sendingWalletId = await getDefaultWalletIdByTestUserIndex(sendingUserIndex)
+  await createUserWalletFromUserRef(sendingUserIndex)
+  await createUserWalletFromUserRef(receivingUserRef)
+  const sendingWalletId = await getDefaultWalletIdByTestUserRef(sendingUserIndex)
   await fundWalletIdFromLightning({ walletId: sendingWalletId, amount: toSats(50_000) })
-  receivingWalletId = await getDefaultWalletIdByTestUserIndex(receivingUserIndex)
+  receivingWalletId = await getDefaultWalletIdByTestUserRef(receivingUserRef)
 
   serverPid = await startServer()
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
-  const input = { phone, code: `${code}` }
+  const input = { phone, code }
   const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
   // Create a new authenticated client
   disposeClient()
