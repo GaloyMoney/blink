@@ -1,9 +1,8 @@
 import util from "util"
 
 import { credentials } from "@grpc/grpc-js"
-import { SATS_PER_BTC } from "@domain/bitcoin"
 
-import { MINUTES_PER_YEAR, UnknownDealerPriceServiceError } from "@domain/dealer-price"
+import { UnknownDealerPriceServiceError } from "@domain/dealer-price"
 
 import { baseLogger } from "../logger"
 
@@ -99,13 +98,12 @@ export const DealerPriceService = (): IDealerPriceService => {
     timeToExpiryInMinutes: Minutes,
   ): Promise<Satoshis | DealerPriceServiceError> {
     try {
-      const ttlInYears = timeToExpiryInMinutes / MINUTES_PER_YEAR
       const response = (await clientGetExchangeRateForFutureUsdSell(
         new GetExchangeRateForFutureUsdSellRequest()
           .setAmountInUsd(amountInUsd)
           .setTimeInMinutes(timeToExpiryInMinutes),
       )) as GetExchangeRateForFutureUsdSellResponse
-      return (response.getPriceInSatoshis() / SATS_PER_BTC / ttlInYears) as Satoshis
+      return response.getPriceInSatoshis() as Satoshis
     } catch (error) {
       baseLogger.error(
         { error },
