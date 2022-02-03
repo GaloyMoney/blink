@@ -51,6 +51,7 @@ type User = {
   readonly createdAt: Date
   readonly phone: PhoneNumber
   readonly phoneMetadata: PhoneMetadata | null
+  readonly isEditor: boolean
   language: UserLanguage
   twoFA: TwoFAForUser
 }
