@@ -65,7 +65,13 @@ export const isEditor = rule({ cache: "contextual" })(
 const geeTestConfig = getGeetestConfig()
 const geetest = Geetest(geeTestConfig)
 
-const sessionContext = ({ token, ip, body, apiKey, apiSecret }) => {
+const sessionContext = ({
+  token,
+  ip,
+  body,
+  apiKey,
+  apiSecret,
+}): Promise<GraphQLContext> => {
   const userId = token?.uid ?? null
 
   // TODO move from crypto.randomUUID() to a Jaeger standard
