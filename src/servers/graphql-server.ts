@@ -54,9 +54,11 @@ export const isApiKeyAuthenticated = rule({ cache: "contextual" })(
   },
 )
 
-export const isEditor = rule({ cache: "contextual" })((parent, args, ctx) => {
-  return ctx.user.role === "editor" ? true : "NOT_AUTHORIZED"
-})
+export const isEditor = rule({ cache: "contextual" })(
+  (parent, args, ctx: GraphQLContextForUser) => {
+    return ctx.domainUser.isEditor ? true : "NOT_AUTHORIZED"
+  },
+)
 
 const geeTestConfig = getGeetestConfig()
 const geetest = Geetest(geeTestConfig)

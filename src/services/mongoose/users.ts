@@ -111,6 +111,7 @@ const userFromRaw = (result: UserRecord): User => ({
   deviceTokens: (result.deviceToken || []) as DeviceToken[],
   createdAt: new Date(result.created_at),
   phoneMetadata: result.twilio as PhoneMetadata,
+  isEditor: result.role === "editor",
 })
 
 const projection = {
@@ -121,4 +122,5 @@ const projection = {
   deviceToken: 1,
   created_at: 1,
   twilio: 1,
+  role: 1,
 }
