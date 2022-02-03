@@ -28,4 +28,4 @@ ARG COMMITHASH
 ENV BUILDTIME ${BUILDTIME}
 ENV COMMITHASH ${COMMITHASH}
 
-CMD ["lib/servers/graphql-old-server.js"]
+CMD ["lib/servers/graphql-server.js"]

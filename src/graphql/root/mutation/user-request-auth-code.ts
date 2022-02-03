@@ -19,11 +19,7 @@ const UserRequestAuthCodeMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserRequestAuthCodeInput) },
   },
-  resolve: async (_, args, { user, logger, ip }) => {
-    if (user) {
-      return { errors: [{ message: "Invalid request" }] } // TODO: confirm
-    }
-
+  resolve: async (_, args, { logger, ip }) => {
     const { phone } = args.input
 
     if (phone instanceof Error) {

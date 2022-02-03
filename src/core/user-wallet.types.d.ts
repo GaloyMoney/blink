@@ -4,9 +4,3 @@ type UserWalletConfig = {
   limits: ITransactionLimits
   name: string
 }
-
-type UserWalletConstructorArgs = {
-  user: UserRecord
-  logger: Logger
-  config: UserWalletConfig
-}
