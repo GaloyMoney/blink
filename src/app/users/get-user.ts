@@ -65,7 +65,7 @@ const updateUserIPsInfo = async ({
         return
       }
 
-      const lastIP = userIP.lastIPs?.find((ipObject) => ipObject.ip === ip)
+      const lastIP = userIP.lastIPs.find((ipObject) => ipObject.ip === ip)
 
       if (lastIP) {
         lastIP.lastConnection = lastConnection
@@ -87,7 +87,7 @@ const updateUserIPsInfo = async ({
 
           ipInfo = { ...ipInfo, ...ipFetcherInfo }
         }
-        userIP.lastIPs?.push(ipInfo)
+        userIP.lastIPs.push(ipInfo)
       }
       const result = await usersIp.update(userIP)
 
