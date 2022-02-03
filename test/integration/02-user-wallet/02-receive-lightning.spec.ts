@@ -8,24 +8,24 @@ import { baseLogger } from "@services/logger"
 
 import {
   checkIsBalanced,
-  createUserWallet,
+  createUserWalletFromUserRef,
   getBTCBalance,
-  getDefaultWalletIdByTestUserIndex,
+  getDefaultWalletIdByTestUserRef,
   getHash,
   lndOutside1,
   pay,
 } from "test/helpers"
 
-let walletId1: WalletId
-let initBalance1
+let walletIdB: WalletId
+let initBalanceB: Satoshis
 
 beforeAll(async () => {
-  await createUserWallet(1)
-  walletId1 = await getDefaultWalletIdByTestUserIndex(1)
+  await createUserWalletFromUserRef("B")
+  walletIdB = await getDefaultWalletIdByTestUserRef("B")
 })
 
 beforeEach(async () => {
-  initBalance1 = await getBTCBalance(walletId1)
+  initBalanceB = await getBTCBalance(walletIdB)
 })
 
 afterEach(async () => {
@@ -39,7 +39,7 @@ describe("UserWallet - Lightning", () => {
     const memo = "myMemo"
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
-      walletId: walletId1 as WalletId,
+      walletId: walletIdB as WalletId,
       amount: toSats(sats),
       memo,
     })
@@ -88,7 +88,7 @@ describe("UserWallet - Lightning", () => {
 
     // check that memo is not filtered by spam filter
     const { result: txns, error } = await Wallets.getTransactionsForWalletId({
-      walletId: walletId1,
+      walletId: walletIdB,
     })
     if (error instanceof Error || txns === null) {
       throw error
@@ -100,15 +100,15 @@ describe("UserWallet - Lightning", () => {
     ) as WalletTransaction
     expect(noSpamTxn.deprecated.description).toBe(memo)
 
-    const finalBalance = await getBTCBalance(walletId1)
-    expect(finalBalance).toBe(initBalance1 + sats)
+    const finalBalance = await getBTCBalance(walletIdB)
+    expect(finalBalance).toBe(initBalanceB + sats)
   })
 
   it("receives zero amount invoice", async () => {
     const sats = 1000
 
     const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
-      walletId: walletId1 as WalletId,
+      walletId: walletIdB as WalletId,
     })
     if (lnInvoice instanceof Error) return lnInvoice
     const { paymentRequest: invoice } = lnInvoice
@@ -141,8 +141,8 @@ describe("UserWallet - Lightning", () => {
     expect(ledgerTx.lnMemo).toBe("")
     expect(ledgerTx.pendingConfirmation).toBe(false)
 
-    const finalBalance = await getBTCBalance(walletId1)
-    expect(finalBalance).toBe(initBalance1 + sats)
+    const finalBalance = await getBTCBalance(walletIdB)
+    expect(finalBalance).toBe(initBalanceB + sats)
   })
 
   it("receives spam invoice", async () => {
@@ -155,7 +155,7 @@ describe("UserWallet - Lightning", () => {
 
     // process spam transaction
     const lnInvoice = await Wallets.addInvoiceForSelf({
-      walletId: walletId1 as WalletId,
+      walletId: walletIdB as WalletId,
       amount: toSats(sats),
       memo,
     })
@@ -181,7 +181,7 @@ describe("UserWallet - Lightning", () => {
 
     // check that spam memo is filtered from transaction description
     const { result: txns, error } = await Wallets.getTransactionsForWalletId({
-      walletId: walletId1,
+      walletId: walletIdB,
     })
     if (error instanceof Error || txns === null) {
       throw error
@@ -195,7 +195,7 @@ describe("UserWallet - Lightning", () => {
     expect(spamTxn.deprecated.description).toBe(ledgerTx.type)
 
     // confirm expected final balance
-    const finalBalance = await getBTCBalance(walletId1)
-    expect(finalBalance).toBe(initBalance1 + sats)
+    const finalBalance = await getBTCBalance(walletIdB)
+    expect(finalBalance).toBe(initBalanceB + sats)
   })
 })

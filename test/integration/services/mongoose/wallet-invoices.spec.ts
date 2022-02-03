@@ -2,22 +2,22 @@ import crypto from "crypto"
 
 import { Wallets } from "@app"
 import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
+import { WalletCurrency } from "@domain/wallets"
+import { WalletInvoicesRepository } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
 
-import { WalletInvoicesRepository } from "@services/mongoose"
+import {
+  createUserWalletFromUserRef,
+  getDefaultWalletIdByTestUserRef,
+} from "test/helpers"
 
-import { WalletCurrency } from "@domain/wallets"
-
-import { toCents } from "@domain/fiat"
-
-import { createUserWallet, getDefaultWalletIdByTestUserIndex } from "test/helpers"
-
-let wallet1: WalletId
+let walletB: WalletId
 
 beforeAll(async () => {
-  await createUserWallet(1)
+  await createUserWalletFromUserRef("B")
 
-  wallet1 = await getDefaultWalletIdByTestUserIndex(1)
+  walletB = await getDefaultWalletIdByTestUserRef("B")
 })
 
 const createTestWalletInvoice = () => {
@@ -79,18 +79,18 @@ describe("WalletInvoices", () => {
   it("find pending invoices by wallet id", async () => {
     for (let i = 0; i < 2; i++) {
       await Wallets.addInvoiceForSelf({
-        walletId: wallet1,
+        walletId: walletB,
         amount: toSats(1000),
       })
     }
 
     const invoicesCount = await WalletInvoice.countDocuments({
-      walletId: wallet1,
+      walletId: walletB,
       paid: false,
     })
 
     const repo = WalletInvoicesRepository()
-    const invoices = repo.findPendingByWalletId(wallet1)
+    const invoices = repo.findPendingByWalletId(walletB)
     expect(invoices).not.toBeInstanceOf(Error)
 
     const pendingInvoices = invoices as AsyncGenerator<WalletInvoice>

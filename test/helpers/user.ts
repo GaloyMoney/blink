@@ -1,78 +1,85 @@
 import { createUser } from "@app/users"
 import { yamlConfig } from "@config"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
-import {
-  AccountsRepository,
-  UsersRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 import { toObjectId } from "@services/mongoose/utils"
 
 const users = UsersRepository()
 
-export const getPhoneByTestUserIndex = (index: number) => {
-  const entry = yamlConfig.test_accounts[index]
+const getPhoneByTestUserIndex = (ref: string) => {
+  const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
   const phone = entry.phone as PhoneNumber
   return phone
 }
 
-export const getUserByTestUserIndex = async (index: number) => {
-  const phone = getPhoneByTestUserIndex(index)
+const getUserByTestUserRef = async (ref: string) => {
+  const phone = getPhoneByTestUserIndex(ref)
   const user = await UsersRepository().findByPhone(phone)
   if (user instanceof Error) throw user
   return user
 }
 
-export const getAccountByTestUserIndex = async (index: number) => {
-  const user = await getUserByTestUserIndex(index)
+export const getAccountByTestUserRef = async (ref: string) => {
+  const user = await getUserByTestUserRef(ref)
   const account = await AccountsRepository().findByUserId(user.id)
   if (account instanceof Error) throw account
   return account
 }
 
-export const getUserIdByTestUserIndex = async (index: number) => {
-  const user = await getUserByTestUserIndex(index)
+export const getUserIdByTestUserRef = async (ref: string) => {
+  const user = await getUserByTestUserRef(ref)
   return user.id
 }
 
-export const getAccountIdByTestUserIndex = async (index: number) => {
-  const account = await getAccountByTestUserIndex(index)
+export const getAccountIdByTestUserRef = async (ref: string) => {
+  const account = await getAccountByTestUserRef(ref)
   return account.id
 }
 
-export const getDefaultWalletIdByTestUserIndex = async (index: number) => {
-  const account = await getAccountByTestUserIndex(index)
+export const getDefaultWalletIdByTestUserRef = async (ref: string) => {
+  const account = await getAccountByTestUserRef(ref)
   return account.defaultWalletId
 }
 
-export const getDefaultWalletByTestUserIndex = async (index: number) => {
-  const account = await getAccountByTestUserIndex(index)
-  const user = await WalletsRepository().findById(account.defaultWalletId)
+export const getDefaultWalletIdByRole = async (role: string) => {
+  const entry = adminUsers.find((item) => item.role === role)
+  const user = await UsersRepository().findByPhone(entry?.phone as PhoneNumber)
   if (user instanceof Error) throw user
-  return user
+  const account = await AccountsRepository().findByUserId(user.id)
+  if (account instanceof Error) throw account
+  return account.defaultWalletId
 }
 
-export const getUserRecordByTestUserIndex = async (index: number) => {
-  const entry = yamlConfig.test_accounts[index]
+export const getUserRecordByTestUserRef = async (ref: string) => {
+  const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
   const phone = entry.phone as PhoneNumber
 
   return User.findOne({ phone }) as UserRecord
 }
 
+const adminUsers = [
+  {
+    phone: "+16505554327",
+    role: "dealer",
+    additionalWallets: [{ currency: "USD" }],
+  },
+  { phone: "+16505554325", role: "funder" },
+  { phone: "+16505554334", role: "bankowner" },
+]
+
 export const createMandatoryUsers = async () => {
-  const users = [
-    4, // funder
-    6, // dealer
-    14, // bank owner
-  ]
-  for (const user of users) {
+  for (const user of adminUsers) {
     await createUserWallet(user)
   }
 }
 
-export const createUserWallet = async (index: number) => {
-  const entry = yamlConfig.test_accounts[index]
+export const createUserWalletFromUserRef = async (ref: string) => {
+  const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
+  await createUserWallet(entry)
+}
+
+const createUserWallet = async (entry) => {
   const phone = entry.phone as PhoneNumber
 
   let userRepo = await users.findByPhone(phone)

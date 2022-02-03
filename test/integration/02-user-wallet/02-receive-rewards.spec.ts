@@ -1,26 +1,25 @@
 import { addEarn } from "@app/accounts/add-earn"
 import { getTransactionsForWalletId, intraledgerPaymentSendWalletId } from "@app/wallets"
 import { MEMO_SHARING_SATS_THRESHOLD, MS_PER_DAY, onboardingEarn } from "@config"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import difference from "lodash.difference"
 import find from "lodash.find"
-
-import { getFunderWalletId } from "@services/ledger/caching"
 
 import {
   checkIsBalanced,
   createMandatoryUsers,
-  createUserWallet,
-  getAccountIdByTestUserIndex,
-  getDefaultWalletIdByTestUserIndex,
-  getUserRecordByTestUserIndex,
+  createUserWalletFromUserRef,
+  getAccountIdByTestUserRef,
+  getDefaultWalletIdByTestUserRef,
+  getUserRecordByTestUserRef,
 } from "test/helpers"
 import { resetSelfAccountIdLimits } from "test/helpers/rate-limit"
 import { getBTCBalance } from "test/helpers/wallet"
 
-let accountId1: AccountId
-let walletId1: WalletId
+let accountIdB: AccountId
+let walletIdB: WalletId
 
 const onBoardingEarnIds = [
   "whereBitcoinExist" as QuizQuestionId,
@@ -36,10 +35,10 @@ const date = Date.now() + 2 * MS_PER_DAY
 jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
 
 beforeAll(async () => {
-  await createUserWallet(1)
+  await createUserWalletFromUserRef("B")
 
-  accountId1 = await getAccountIdByTestUserIndex(1)
-  walletId1 = await getDefaultWalletIdByTestUserIndex(1)
+  accountIdB = await getAccountIdByTestUserRef("B")
+  walletIdB = await getDefaultWalletIdByTestUserRef("B")
 
   await createMandatoryUsers()
 })
@@ -50,24 +49,24 @@ afterAll(() => {
 
 describe("UserWallet - addEarn", () => {
   it("adds balance only once", async () => {
-    const resetOk = await resetSelfAccountIdLimits(accountId1)
+    const resetOk = await resetSelfAccountIdLimits(accountIdB)
     expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
-    const initialBalance = await getBTCBalance(walletId1)
+    const initialBalance = await getBTCBalance(walletIdB)
 
-    const userType1BeforeEarn = await getUserRecordByTestUserIndex(1)
+    const userType1BeforeEarn = await getUserRecordByTestUserRef("B")
 
     const getAndVerifyRewards = async () => {
       const promises = onBoardingEarnIds.map((onBoardingEarnId) =>
         addEarn({
           quizQuestionId: onBoardingEarnId as QuizQuestionId,
-          accountId: accountId1,
+          accountId: accountIdB,
           logger: baseLogger,
         }),
       )
       await Promise.all(promises)
-      const finalBalance = await getBTCBalance(walletId1)
+      const finalBalance = await getBTCBalance(walletIdB)
       let rewards = onBoardingEarnAmt
 
       if (difference(onBoardingEarnIds, userType1BeforeEarn.earn).length === 0) {
@@ -90,7 +89,7 @@ describe("UserWallet - addEarn", () => {
     expect(onboardingEarnIds.length).toBeGreaterThanOrEqual(1)
 
     const { result: transactionsBefore } = await getTransactionsForWalletId({
-      walletId: walletId1,
+      walletId: walletIdB,
     })
 
     let onboardingEarnId = ""
@@ -112,7 +111,7 @@ describe("UserWallet - addEarn", () => {
     const payment = await intraledgerPaymentSendWalletId({
       senderWalletId: funderWalletId,
       senderAccount: funderAccount,
-      recipientWalletId: walletId1,
+      recipientWalletId: walletIdB,
       amount,
       memo: onboardingEarnId,
       logger: baseLogger,
@@ -120,7 +119,7 @@ describe("UserWallet - addEarn", () => {
     if (payment instanceof Error) return payment
 
     const { result: transactionsAfter } = await getTransactionsForWalletId({
-      walletId: walletId1,
+      walletId: walletIdB,
     })
     const rewardTx = transactionsAfter?.find((tx) => tx.memo === onboardingEarnId)
     expect(rewardTx).not.toBeUndefined()
