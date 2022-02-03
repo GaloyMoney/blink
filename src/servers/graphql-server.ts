@@ -2,8 +2,8 @@ import { createServer } from "http"
 import crypto from "crypto"
 
 import { Accounts, Users } from "@app"
-import { getApolloConfig, getGeetestConfig, isProd, JWT_SECRET } from "@config"
 import { CustomError } from "@core/error"
+import { getApolloConfig, getGeetestConfig, isDev, isProd, JWT_SECRET } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
 import {
@@ -175,7 +175,9 @@ export const startApolloServer = async ({
 
       const body = context.req?.body ?? null
 
-      const ip = parseIps(context)
+      const ipString = isDev ? context.req?.ip : context.req?.headers["x-real-ip"]
+
+      const ip = parseIps(ipString)
 
       return sessionContext({
         token,
