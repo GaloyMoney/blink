@@ -25,16 +25,16 @@ const client = new PriceServiceClient(
 )
 
 const clientGetExchangeRateForImmediateUsdBuy = util.promisify(
-  client.getExchangeRateForImmediateUsdBuy,
+  client.getExchangeRateForImmediateUsdBuy.bind(client),
 )
 const clientGetExchangeRateForImmediateUsdSell = util.promisify(
-  client.getExchangeRateForImmediateUsdSell,
+  client.getExchangeRateForImmediateUsdSell.bind(client),
 )
 const clientGetExchangeRateForFutureUsdBuy = util.promisify(
-  client.getExchangeRateForFutureUsdBuy,
+  client.getExchangeRateForFutureUsdBuy.bind(client),
 )
 const clientGetExchangeRateForFutureUsdSell = util.promisify(
-  client.getExchangeRateForFutureUsdSell,
+  client.getExchangeRateForFutureUsdSell.bind(client),
 )
 
 export const DealerPriceService = (): IDealerPriceService => {
@@ -68,7 +68,7 @@ export const DealerPriceService = (): IDealerPriceService => {
     } catch (error) {
       baseLogger.error(
         { error },
-        "GetExchangeRateForImmediateUsdBuy unable to fetch price",
+        "GetExchangeRateForImmediateUsdSell unable to fetch price",
       )
       return new UnknownDealerPriceServiceError()
     }
@@ -86,10 +86,7 @@ export const DealerPriceService = (): IDealerPriceService => {
       )) as GetExchangeRateForFutureUsdBuyResponse
       return response.getPriceInUsd() as UsdCents
     } catch (error) {
-      baseLogger.error(
-        { error },
-        "GetExchangeRateForImmediateUsdBuy unable to fetch price",
-      )
+      baseLogger.error({ error }, "GetExchangeRateForFutureUsdBuy unable to fetch price")
       return new UnknownDealerPriceServiceError()
     }
   }
@@ -105,10 +102,7 @@ export const DealerPriceService = (): IDealerPriceService => {
       )) as GetExchangeRateForFutureUsdSellResponse
       return response.getPriceInSatoshis() as Satoshis
     } catch (error) {
-      baseLogger.error(
-        { error },
-        "GetExchangeRateForImmediateUsdBuy unable to fetch price",
-      )
+      baseLogger.error({ error }, "GetExchangeRateForFutureUsdSell unable to fetch price")
       return new UnknownDealerPriceServiceError()
     }
   }
