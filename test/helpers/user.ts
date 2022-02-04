@@ -5,7 +5,8 @@ import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 import { toObjectId } from "@services/mongoose/utils"
 import { addWallet } from "@app/accounts/add-wallet"
-import { WalletType } from "@domain/wallets"
+import { WalletCurrency, WalletType } from "@domain/wallets"
+import { adminUsers } from "@domain/admin-users"
 
 const users = UsersRepository()
 
@@ -60,16 +61,6 @@ export const getUserRecordByTestUserRef = async (ref: string) => {
   return User.findOne({ phone }) as UserRecord
 }
 
-const adminUsers = [
-  {
-    phone: "+16505554327",
-    role: "dealer",
-    additionalWallets: [{ currency: "USD" }],
-  },
-  { phone: "+16505554325", role: "funder" },
-  { phone: "+16505554334", role: "bankowner" },
-]
-
 export const createMandatoryUsers = async () => {
   for (const user of adminUsers) {
     await createUserWallet(user)
@@ -101,14 +92,12 @@ const createUserWallet = async (entry) => {
     userRepo = await createUser({ phone, phoneMetadata })
     if (userRepo instanceof Error) throw userRepo
 
-    if (entry.additionalWallets) {
-      for (const { currency } of entry.additionalWallets) {
-        await addWallet({
-          currency,
-          accountId: userRepo.defaultAccountId,
-          type: WalletType.Checking,
-        })
-      }
+    if (entry.needUsdWallet) {
+      await addWallet({
+        currency: WalletCurrency.Usd,
+        accountId: userRepo.defaultAccountId,
+        type: WalletType.Checking,
+      })
     }
   }
 
