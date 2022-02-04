@@ -566,7 +566,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
     var f,
       obj = {
         amountInSatoshis: jspb.Message.getFloatingPointFieldWithDefault(msg, 1, 0.0),
-        timeInMinutes: jspb.Message.getFloatingPointFieldWithDefault(msg, 2, 0.0),
+        timeInSeconds: jspb.Message.getFloatingPointFieldWithDefault(msg, 2, 0.0),
       }
 
     if (includeInstance) {
@@ -612,7 +612,7 @@ proto.services.price.v1.GetExchangeRateForFutureUsdBuyRequest.deserializeBinaryF
           break
         case 2:
           var value = /** @type {number} */ (reader.readFloat())
-          msg.setTimeInMinutes(value)
+          msg.setTimeInSeconds(value)
           break
         default:
           reader.skipField()
@@ -650,7 +650,7 @@ proto.services.price.v1.GetExchangeRateForFutureUsdBuyRequest.serializeBinaryToW
     if (f !== 0.0) {
       writer.writeFloat(1, f)
     }
-    f = message.getTimeInMinutes()
+    f = message.getTimeInSeconds()
     if (f !== 0.0) {
       writer.writeFloat(2, f)
     }
@@ -677,10 +677,10 @@ proto.services.price.v1.GetExchangeRateForFutureUsdBuyRequest.prototype.setAmoun
   }
 
 /**
- * optional float time_in_minutes = 2;
+ * optional float time_in_seconds = 2;
  * @return {number}
  */
-proto.services.price.v1.GetExchangeRateForFutureUsdBuyRequest.prototype.getTimeInMinutes =
+proto.services.price.v1.GetExchangeRateForFutureUsdBuyRequest.prototype.getTimeInSeconds =
   function () {
     return /** @type {number} */ (
       jspb.Message.getFloatingPointFieldWithDefault(this, 2, 0.0)
@@ -691,7 +691,7 @@ proto.services.price.v1.GetExchangeRateForFutureUsdBuyRequest.prototype.getTimeI
  * @param {number} value
  * @return {!proto.services.price.v1.GetExchangeRateForFutureUsdBuyRequest} returns this
  */
-proto.services.price.v1.GetExchangeRateForFutureUsdBuyRequest.prototype.setTimeInMinutes =
+proto.services.price.v1.GetExchangeRateForFutureUsdBuyRequest.prototype.setTimeInSeconds =
   function (value) {
     return jspb.Message.setProto3FloatField(this, 2, value)
   }
@@ -733,7 +733,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
     var f,
       obj = {
         amountInUsd: jspb.Message.getFloatingPointFieldWithDefault(msg, 1, 0.0),
-        timeInMinutes: jspb.Message.getFloatingPointFieldWithDefault(msg, 2, 0.0),
+        timeInSeconds: jspb.Message.getFloatingPointFieldWithDefault(msg, 2, 0.0),
       }
 
     if (includeInstance) {
@@ -779,7 +779,7 @@ proto.services.price.v1.GetExchangeRateForFutureUsdSellRequest.deserializeBinary
           break
         case 2:
           var value = /** @type {number} */ (reader.readFloat())
-          msg.setTimeInMinutes(value)
+          msg.setTimeInSeconds(value)
           break
         default:
           reader.skipField()
@@ -817,7 +817,7 @@ proto.services.price.v1.GetExchangeRateForFutureUsdSellRequest.serializeBinaryTo
     if (f !== 0.0) {
       writer.writeFloat(1, f)
     }
-    f = message.getTimeInMinutes()
+    f = message.getTimeInSeconds()
     if (f !== 0.0) {
       writer.writeFloat(2, f)
     }
@@ -844,10 +844,10 @@ proto.services.price.v1.GetExchangeRateForFutureUsdSellRequest.prototype.setAmou
   }
 
 /**
- * optional float time_in_minutes = 2;
+ * optional float time_in_seconds = 2;
  * @return {number}
  */
-proto.services.price.v1.GetExchangeRateForFutureUsdSellRequest.prototype.getTimeInMinutes =
+proto.services.price.v1.GetExchangeRateForFutureUsdSellRequest.prototype.getTimeInSeconds =
   function () {
     return /** @type {number} */ (
       jspb.Message.getFloatingPointFieldWithDefault(this, 2, 0.0)
@@ -858,7 +858,7 @@ proto.services.price.v1.GetExchangeRateForFutureUsdSellRequest.prototype.getTime
  * @param {number} value
  * @return {!proto.services.price.v1.GetExchangeRateForFutureUsdSellRequest} returns this
  */
-proto.services.price.v1.GetExchangeRateForFutureUsdSellRequest.prototype.setTimeInMinutes =
+proto.services.price.v1.GetExchangeRateForFutureUsdSellRequest.prototype.setTimeInSeconds =
   function (value) {
     return jspb.Message.setProto3FloatField(this, 2, value)
   }

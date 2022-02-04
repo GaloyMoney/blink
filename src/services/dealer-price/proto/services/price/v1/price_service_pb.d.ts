@@ -67,8 +67,8 @@ export namespace GetExchangeRateForImmediateUsdSellRequest {
 export class GetExchangeRateForFutureUsdBuyRequest extends jspb.Message {
   getAmountInSatoshis(): number
   setAmountInSatoshis(value: number): GetExchangeRateForFutureUsdBuyRequest
-  getTimeInMinutes(): number
-  setTimeInMinutes(value: number): GetExchangeRateForFutureUsdBuyRequest
+  getTimeInSeconds(): number
+  setTimeInSeconds(value: number): GetExchangeRateForFutureUsdBuyRequest
 
   serializeBinary(): Uint8Array
   toObject(includeInstance?: boolean): GetExchangeRateForFutureUsdBuyRequest.AsObject
@@ -92,15 +92,15 @@ export class GetExchangeRateForFutureUsdBuyRequest extends jspb.Message {
 export namespace GetExchangeRateForFutureUsdBuyRequest {
   export type AsObject = {
     amountInSatoshis: number
-    timeInMinutes: number
+    timeInSeconds: number
   }
 }
 
 export class GetExchangeRateForFutureUsdSellRequest extends jspb.Message {
   getAmountInUsd(): number
   setAmountInUsd(value: number): GetExchangeRateForFutureUsdSellRequest
-  getTimeInMinutes(): number
-  setTimeInMinutes(value: number): GetExchangeRateForFutureUsdSellRequest
+  getTimeInSeconds(): number
+  setTimeInSeconds(value: number): GetExchangeRateForFutureUsdSellRequest
 
   serializeBinary(): Uint8Array
   toObject(includeInstance?: boolean): GetExchangeRateForFutureUsdSellRequest.AsObject
@@ -124,7 +124,7 @@ export class GetExchangeRateForFutureUsdSellRequest extends jspb.Message {
 export namespace GetExchangeRateForFutureUsdSellRequest {
   export type AsObject = {
     amountInUsd: number
-    timeInMinutes: number
+    timeInSeconds: number
   }
 }
 

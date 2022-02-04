@@ -9,10 +9,10 @@ interface IDealerPriceService {
   ): Promise<Satoshis | DealerPriceServiceError>
   getExchangeRateForFutureUsdBuy(
     amountInSatoshis: Satoshis,
-    timeToExpiryInMinutes: Minutes,
+    timeToExpiryInSeconds: Seconds,
   ): Promise<UsdCents | DealerPriceServiceError>
   getExchangeRateForFutureUsdSell(
     amountInUsd: UsdCents,
-    timeToExpiryInMinutes: Minutes,
+    timeToExpiryInSeconds: Seconds,
   ): Promise<Satoshis | DealerPriceServiceError>
 }
