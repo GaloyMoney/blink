@@ -310,7 +310,11 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("pay zero amount invoice", async () => {
-    const { request } = await createInvoice({ lnd: lndOutside1 })
+    const { request, secret, id } = await createInvoice({ lnd: lndOutside1 })
+    const paymentHash = id as PaymentHash
+    const revealedPreImage = secret as RevealedPreImage
+
+    // Test payment is successful
     const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
@@ -321,6 +325,30 @@ describe("UserWallet - Lightning Pay", () => {
     })
     if (paymentResult instanceof Error) throw paymentResult
     expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+    // Test metadata is correctly persisted
+    const txns = await LedgerService().getTransactionsByHash(paymentHash)
+    if (txns instanceof Error) throw txns
+    const txns_metadata = await Promise.all(
+      txns.map(async (txn) => LedgerService().getTransactionMetadataById(txn.id)),
+    )
+    expect(txns_metadata).toHaveLength(txns.length)
+
+    const metadataCheck = txns_metadata.every((txn) => !(txn instanceof Error))
+    expect(metadataCheck).toBeTruthy()
+    if (!metadataCheck) throw txns_metadata.find((txn) => txn instanceof Error)
+
+    const revealedPreImages = new Set(
+      txns_metadata.map((txn) => (txn instanceof Error ? txn : txn.revealedPreImage)),
+    )
+    expect(revealedPreImages.size).toEqual(1)
+    expect(revealedPreImages.has(revealedPreImage)).toBeTruthy()
+
+    const paymentHashes = new Set(
+      txns_metadata.map((txn) => (txn instanceof Error ? txn : txn.hash)),
+    )
+    expect(paymentHashes.size).toEqual(1)
+    expect(paymentHashes.has(paymentHash)).toBeTruthy()
 
     const finalBalance = await getBTCBalance(walletIdB)
     expect(finalBalance).toBe(initBalanceB - amountInvoice)

@@ -77,10 +77,14 @@ describe("UserWallet - Lightning", () => {
     if (ledgerTxs instanceof Error) throw ledgerTxs
 
     const ledgerTx = ledgerTxs[0]
+    const ledgerTxMetadata = await ledger.getTransactionMetadataById(ledgerTx.id)
+    if (ledgerTxMetadata instanceof Error) throw ledgerTxMetadata
 
     expect(ledgerTx.credit).toBe(sats)
     expect(ledgerTx.lnMemo).toBe(memo)
     expect(ledgerTx.pendingConfirmation).toBe(false)
+    expect(ledgerTxMetadata.hash).toBe(ledgerTx.paymentHash)
+    expect(ledgerTxMetadata.revealedPreImage).toBeUndefined()
 
     const isPaidAfterPay = await checker.invoiceIsPaid()
     expect(isPaidAfterPay).not.toBeInstanceOf(Error)
@@ -136,10 +140,14 @@ describe("UserWallet - Lightning", () => {
     if (ledgerTxs instanceof Error) throw ledgerTxs
 
     const ledgerTx = ledgerTxs[0]
+    const ledgerTxMetadata = await ledger.getTransactionMetadataById(ledgerTx.id)
+    if (ledgerTxMetadata instanceof Error) throw ledgerTxMetadata
 
     expect(ledgerTx.credit).toBe(sats)
     expect(ledgerTx.lnMemo).toBe("")
     expect(ledgerTx.pendingConfirmation).toBe(false)
+    expect(ledgerTxMetadata.hash).toBe(ledgerTx.paymentHash)
+    expect(ledgerTxMetadata.revealedPreImage).toBeUndefined()
 
     const finalBalance = await getBTCBalance(walletIdB)
     expect(finalBalance).toBe(initBalanceB + sats)
