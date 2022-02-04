@@ -4,7 +4,7 @@ import { WalletCurrency } from "@domain/wallets"
 
 import { NotReachableError } from "@domain/errors"
 
-import { MainBook } from "./books"
+import { MainBook, TransactionMetadata } from "./books"
 import { getDealerBtcWalletId, getDealerUsdWalletId } from "./caching"
 
 import { translateToLedgerJournal } from "."
@@ -171,7 +171,14 @@ const addIntraledgerTxTransfer = async ({
         .debit(senderLiabilitiesWalletId, sats, debitMetadata)
 
       const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
+      const journalEntry = translateToLedgerJournal(savedEntry)
+
+      const baseMetadata = metadata.hash ? { hash: metadata.hash } : {}
+      journalEntry.transactionIds.map((_id) =>
+        TransactionMetadata.create({ _id, ...baseMetadata }),
+      )
+
+      return journalEntry
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -201,7 +208,14 @@ const addIntraledgerTxTransfer = async ({
         .debit(senderLiabilitiesWalletId, cents, debitMetadata)
 
       const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
+      const journalEntry = translateToLedgerJournal(savedEntry)
+
+      const baseMetadata = metadata.hash ? { hash: metadata.hash } : {}
+      journalEntry.transactionIds.map((_id) =>
+        TransactionMetadata.create({ _id, ...baseMetadata }),
+      )
+
+      return journalEntry
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -238,7 +252,14 @@ const addIntraledgerTxTransfer = async ({
         .debit(senderLiabilitiesWalletId, cents, debitMetadata)
 
       const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
+      const journalEntry = translateToLedgerJournal(savedEntry)
+
+      const baseMetadata = metadata.hash ? { hash: metadata.hash } : {}
+      journalEntry.transactionIds.map((_id) =>
+        TransactionMetadata.create({ _id, ...baseMetadata }),
+      )
+
+      return journalEntry
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -276,7 +297,14 @@ const addIntraledgerTxTransfer = async ({
         .debit(senderLiabilitiesWalletId, sats, debitMetadata)
 
       const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
+      const journalEntry = translateToLedgerJournal(savedEntry)
+
+      const baseMetadata = metadata.hash ? { hash: metadata.hash } : {}
+      journalEntry.transactionIds.map((_id) =>
+        TransactionMetadata.create({ _id, ...baseMetadata }),
+      )
+
+      return journalEntry
     } catch (err) {
       return new UnknownLedgerError(err)
     }
