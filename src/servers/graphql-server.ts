@@ -2,8 +2,8 @@ import { createServer } from "http"
 import crypto from "crypto"
 
 import { Accounts, Users } from "@app"
-import { getApolloConfig, getGeetestConfig, isProd, JWT_SECRET } from "@config"
 import { CustomError } from "@core/error"
+import { getApolloConfig, getGeetestConfig, isDev, isProd, JWT_SECRET } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
 import {
@@ -32,6 +32,8 @@ import {
   SubscribeFunction,
   SubscriptionServer,
 } from "subscriptions-transport-ws"
+
+import { parseIps } from "@domain/users-ips"
 
 import { playgroundTabs } from "../graphql/playground"
 
@@ -65,19 +67,12 @@ const geetest = Geetest(geeTestConfig)
 
 const sessionContext = ({
   token,
-  ips,
+  ip,
   body,
   apiKey,
   apiSecret,
 }): Promise<GraphQLContext> => {
   const userId = token?.uid ?? null
-  let ip: IpAddress | undefined
-
-  if (ips && Array.isArray(ips) && ips.length) {
-    ip = ips[0] as IpAddress
-  } else if (typeof ips === "string") {
-    ip = ips as IpAddress
-  }
 
   // TODO move from crypto.randomUUID() to a Jaeger standard
   const logger = graphqlLogger.child({ token, id: crypto.randomUUID(), body })
@@ -178,10 +173,19 @@ export const startApolloServer = async ({
       // @ts-expect-error: TODO
       const apiSecret = context.req?.apiSecret ?? null
 
-      const ips = context.req?.headers["x-real-ip"]
       const body = context.req?.body ?? null
 
-      return sessionContext({ token, apiKey, apiSecret, ips, body })
+      const ipString = isDev ? context.req?.ip : context.req?.headers["x-real-ip"]
+
+      const ip = parseIps(ipString)
+
+      return sessionContext({
+        token,
+        apiKey,
+        apiSecret,
+        ip,
+        body,
+      })
     },
     formatError: (err) => {
       const exception = err.extensions?.exception as unknown as CustomError
@@ -314,7 +318,7 @@ export const startApolloServer = async ({
 
               return sessionContext({
                 token,
-                ips: [request?.socket?.remoteAddress],
+                ip: request?.socket?.remoteAddress,
 
                 // TODO: Resolve what's needed here
                 apiKey: null,
