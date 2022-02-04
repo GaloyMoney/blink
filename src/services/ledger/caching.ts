@@ -1,32 +1,48 @@
-let cacheDealerWalletId: WalletId
+let cacheDealerBtcWalletId: WalletId
+let cacheDealerUsdWalletId: WalletId
 let cacheBankOwnerWalletId: WalletId
 let cacheFunderWalletId: WalletId
 
 const throwError = (wallet) => Promise.reject(`Invalid ${wallet}WalletPath`)
 let bankOwnerResolver = (): Promise<WalletId> => throwError("bankOwner")
-let dealerResolver = (): Promise<WalletId> => throwError("dealer")
+let dealerBtcResolver = (): Promise<WalletId> => throwError("dealerBtc")
+let dealerUsdResolver = (): Promise<WalletId> => throwError("dealerUsd")
 let funderResolver = (): Promise<WalletId> => throwError("funder")
 
 export function setBankOwnerWalletResolver(resolver: () => Promise<WalletId>) {
   bankOwnerResolver = resolver
 }
 
-export function setDealerWalletResolver(resolver: () => Promise<WalletId>) {
-  dealerResolver = resolver
+export function setDealerBtcWalletResolver(resolver: () => Promise<WalletId>) {
+  dealerBtcResolver = resolver
+}
+
+export function setDealerUsdWalletResolver(resolver: () => Promise<WalletId>) {
+  dealerUsdResolver = resolver
 }
 
 export function setFunderWalletResolver(resolver: () => Promise<WalletId>) {
   funderResolver = resolver
 }
 
-export const getDealerWalletId = async () => {
-  if (cacheDealerWalletId) {
-    return cacheDealerWalletId
+export const getDealerBtcWalletId = async () => {
+  if (cacheDealerBtcWalletId) {
+    return cacheDealerBtcWalletId
   }
 
-  const dealerId = await dealerResolver()
-  cacheDealerWalletId = dealerId
-  return cacheDealerWalletId
+  const dealerBtcId = await dealerBtcResolver()
+  cacheDealerBtcWalletId = dealerBtcId
+  return cacheDealerBtcWalletId
+}
+
+export const getDealerUsdWalletId = async () => {
+  if (cacheDealerUsdWalletId) {
+    return cacheDealerUsdWalletId
+  }
+
+  const dealerUsdId = await dealerUsdResolver()
+  cacheDealerUsdWalletId = dealerUsdId
+  return cacheDealerUsdWalletId
 }
 
 export const getBankOwnerWalletId = async () => {
