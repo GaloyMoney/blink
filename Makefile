@@ -4,7 +4,7 @@ start-deps:
 	docker compose up integration-deps -d
 	direnv reload
 
-start:
+start-main:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/graphql-main-server.ts | yarn pino-pretty -c -l
 
@@ -12,12 +12,12 @@ start-admin:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/graphql-admin-server.ts | yarn pino-pretty -c -l
 
-start: start-deps
-	make start & make start-admin & make trigger
-
-trigger: start-deps
+start-trigger: start-deps
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/trigger.ts | yarn pino-pretty -c -l
+
+start: start-deps
+	make start-main & make start-admin & make start-trigger
 
 start-api-ci:
 	node lib/servers/graphql-main-server.js
