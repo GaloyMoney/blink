@@ -26,6 +26,8 @@ const DeviceNotificationTokenCreateMutation = GT.Field<
     try {
       // FIXME: this should be moved to a use case
       const user = await User.findOne({ _id: toObjectId<UserId>(uid) })
+      if (!user) throw Error("find user issue")
+
       user.deviceToken.addToSet(deviceToken)
       await user.save()
     } catch (err) {

@@ -25,7 +25,7 @@ export const AccountsRepository = (): IAccountsRepository => {
 
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
     try {
-      const result: UserRecord /* UserRecord actually not correct with {projection} */ =
+      const result: UserRecord | null /* UserRecord actually not correct with {projection} */ =
         await User.findOne({ _id: toObjectId<AccountId>(accountId) }, projection)
       if (!result) return new CouldNotFindError()
       return translateToAccount(result)
@@ -148,7 +148,7 @@ const translateToAccount = (result: UserRecord): Account => ({
   status: (result.status as AccountStatus) || AccountStatus.Active,
   title: result.title as BusinessMapTitle,
   coordinates: result.coordinates as Coordinates,
-  ownerId: result._id as UserId,
+  ownerId: fromObjectId<UserId>(result._id),
   contacts: result.contacts.reduce(
     (res: AccountContact[], contact: ContactObjectForUser): AccountContact[] => {
       if (contact.id) {

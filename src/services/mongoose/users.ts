@@ -73,7 +73,7 @@ export const UsersRepository = (): IUsersRepository => {
       }
       const result = await User.findOneAndUpdate({ _id: toObjectId<UserId>(id) }, data, {
         projection,
-        new: 1,
+        new: true,
       })
       if (!result) {
         return new RepositoryError("Couldn't update user")

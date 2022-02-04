@@ -14,6 +14,10 @@ export const RewardsRepository = (accountId: AccountId) => {
         // { upsert: true },
       )
 
+      if (!oldState) {
+        return new UnknownRepositoryError("account not found")
+      }
+
       const rewardNotFound =
         oldState.earn.findIndex((item) => item === quizQuestionId) === -1
 

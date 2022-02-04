@@ -6,8 +6,8 @@
 import { Wallets } from "@app"
 import { baseLogger as logger } from "@services/logger"
 import { checkedToScanDepth } from "@domain/bitcoin/onchain"
-import { setupMongoConnectionSecondary } from "@services/mongodb"
 import { redis } from "@services/redis"
+import { setupMongoConnection } from "@services/mongodb"
 
 const updateOnChainReceipt = async () => {
   const scanDepth = checkedToScanDepth(2160) // ~15 days
@@ -15,7 +15,7 @@ const updateOnChainReceipt = async () => {
 
   console.warn(`Updating onchain receipt for ${scanDepth} blocks`)
 
-  const mongoose = await setupMongoConnectionSecondary()
+  const mongoose = await setupMongoConnection()
   const txNumber = await Wallets.updateOnChainReceipt({ scanDepth, logger })
   if (txNumber instanceof Error) {
     throw txNumber
