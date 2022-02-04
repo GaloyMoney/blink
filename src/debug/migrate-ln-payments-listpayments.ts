@@ -54,9 +54,10 @@ const migrateLnPaymentsByFunction = async ({
   // Get next payment and unpack
   const results: ListLnPaymentsResult | LightningServiceError = await listFn({
     pubkey,
-    after: `{"offset":${count},"limit":1}` as PagingContinueToken,
+    after: `{"offset":${offset},"limit":1}` as PagingContinueToken,
   })
   if (results instanceof CorruptLndDbError) {
+    baseLogger.error(`${results.name} at offset ${offset}`)
     count--
     return count
   }
@@ -96,8 +97,13 @@ const migrateLnPaymentsByFunction = async ({
   if (
     persistedPaymentLookup instanceof Error &&
     !(persistedPaymentLookup instanceof CouldNotFindError)
-  )
+  ) {
+    baseLogger.error(
+      { error: persistedPaymentLookup },
+      `Skipping fetched payment at offset ${offset} for payment hash ${payment.paymentHash}`,
+    )
     return count
+  }
 
   // LnPayment: persist new
   if (persistedPaymentLookup instanceof CouldNotFindError) {
@@ -124,17 +130,30 @@ const migrateLnPaymentsByFunction = async ({
     if (updatedPaymentLookup instanceof Error) {
       baseLogger.error(
         { error: updatedPaymentLookup },
-        "Could not update LnPayments repository",
+        `Could not persist new LnPayment at offset ${offset} for payment hash ${payment.paymentHash}`,
       )
     }
+    baseLogger.info(
+      `Success! Persisted new at offset ${offset} for payment hash ${payment.paymentHash}`,
+    )
     return count
   }
 
   // LnPayment: already persisted
-  if (persistedPaymentLookup.isCompleteRecord) return count
+  if (persistedPaymentLookup.isCompleteRecord) {
+    baseLogger.info(
+      `Skipping, record already exists at offset ${offset} for payment hash ${payment.paymentHash}`,
+    )
+    return count
+  }
 
   // LnPayment: exists but payment is still pending
-  if (payment.status === PaymentStatus.Pending) return count
+  if (payment.status === PaymentStatus.Pending) {
+    baseLogger.info(
+      `Skipping, payment still pending at offset ${offset} for payment hash ${payment.paymentHash}`,
+    )
+    return count
+  }
 
   // LnPayment: update completed payment
   persistedPaymentLookup.createdAt = payment.createdAt
@@ -150,9 +169,12 @@ const migrateLnPaymentsByFunction = async ({
   if (updatedPaymentLookup instanceof Error) {
     baseLogger.error(
       { error: updatedPaymentLookup },
-      "Could not update LnPayments repository",
+      `Could not update LnPayments repository at offset ${offset} for payment hash ${payment.paymentHash}`,
     )
   }
+  baseLogger.info(
+    `Success! Updated existing at offset ${offset} for payment hash ${payment.paymentHash}`,
+  )
   return count
 }
 
