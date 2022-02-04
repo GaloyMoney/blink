@@ -53,6 +53,11 @@ type LedgerTransaction = {
   readonly txHash?: OnChainTxHash
 }
 
+type BaseLedgerTransactionMetadata = { hash: PaymentHash | OnChainTxHash }
+type AdditionalLedgerTransactionMetadata = { revealedPreImage?: RevealedPreImage }
+type LedgerTransactionMetadata = BaseLedgerTransactionMetadata &
+  AdditionalLedgerTransactionMetadata
+
 type ReceiveOnChainTxArgs = {
   walletId: WalletId
   walletCurrency: WalletCurrency
@@ -168,6 +173,7 @@ type AddLnFeeReeimbursementReceiveArgs = {
   cents?: UsdCents
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   journalId: LedgerJournalId
+  txMetadata: AdditionalLedgerTransactionMetadata
 }
 
 type FeeReimbursement = {

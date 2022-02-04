@@ -160,6 +160,7 @@ const updatePendingPayment = async ({
           paymentHash,
           maxFee: pendingPayment.fee,
           actualFee: roundedUpFee,
+          txMetadata: { revealedPreImage },
           logger,
         })
       } else if (status === PaymentStatus.Failed) {
