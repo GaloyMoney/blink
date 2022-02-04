@@ -126,21 +126,22 @@ export const send = {
     }
   },
 
-  revertLightningPayment: async (
-    // TODO: manage currency conversion in case of USD wallet
-    journalId: LedgerJournalId,
-  ): Promise<void | LedgerServiceError> => voidLedgerTransactionsByJournalId(journalId),
-}
+  revertLightningPayment: async ({
+    journalId,
+    paymentHash,
+  }: RevertLightningPaymentArgs): Promise<void | LedgerServiceError> => {
+    const reason = "Payment canceled"
+    try {
+      const savedEntry = await MainBook.void(journalId, reason)
+      const journalEntry = translateToLedgerJournal(savedEntry)
 
-const voidLedgerTransactionsByJournalId = async (
-  journalId: LedgerJournalId,
-): Promise<void | LedgerServiceError> => {
-  const reason = "Payment canceled"
-  try {
-    await MainBook.void(journalId, reason)
-  } catch (err) {
-    return new UnknownLedgerError(err)
-  }
+      journalEntry.transactionIds.map((_id) =>
+        TransactionMetadata.create({ _id, paymentHash }),
+      )
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  },
 }
 
 const addSendNoInternalFee = async ({

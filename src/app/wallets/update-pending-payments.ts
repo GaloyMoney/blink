@@ -168,9 +168,10 @@ const updatePendingPayment = async ({
           "payment has failed. reverting transaction",
         )
 
-        const voided = await ledgerService.revertLightningPayment(
-          pendingPayment.journalId,
-        )
+        const voided = await ledgerService.revertLightningPayment({
+          journalId: pendingPayment.journalId,
+          paymentHash,
+        })
         if (voided instanceof Error) {
           const error = `error voiding payment entry`
           logger.fatal({ success: false, result: lnPaymentLookup }, error)

@@ -196,6 +196,11 @@ type VolumeSinceArgs = {
 type VolumeResult = Promise<TxBaseVolume | LedgerServiceError>
 type GetVolumeSinceFn = (args: VolumeSinceArgs) => VolumeResult
 
+type RevertLightningPaymentArgs = {
+  journalId: LedgerJournalId
+  paymentHash: PaymentHash
+}
+
 interface ILedgerService {
   updateMetadata({
     hash,
@@ -284,7 +289,9 @@ interface ILedgerService {
 
   settlePendingOnChainPayment(hash: OnChainTxHash): Promise<true | LedgerServiceError>
 
-  revertLightningPayment(journalId: LedgerJournalId): Promise<void | LedgerServiceError>
+  revertLightningPayment(
+    args: RevertLightningPaymentArgs,
+  ): Promise<void | LedgerServiceError>
 
   getWalletIdByTransactionHash(
     hash: OnChainTxHash,

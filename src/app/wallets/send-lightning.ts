@@ -715,7 +715,10 @@ const executePaymentViaLn = async ({
       if (settled instanceof Error) return settled
 
       if (payResult instanceof Error) {
-        const voided = await ledgerService.revertLightningPayment(journalId)
+        const voided = await ledgerService.revertLightningPayment({
+          journalId,
+          paymentHash,
+        })
         if (voided instanceof Error) return voided
 
         if (payResult instanceof LnAlreadyPaidError) return PaymentSendStatus.AlreadyPaid
