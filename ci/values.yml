@@ -15,6 +15,10 @@ artifacts_bucket_name: ((staging-gcp-creds.bucket_name))
 staging_inception_creds: ((staging-gcp-creds.creds_json))
 staging_ssh_private_key: ((staging-ssh.ssh_private_key))
 staging_ssh_pub_key: ((staging-ssh.ssh_public_key))
+meta_release_git_uri: git@github.com:GaloyMoney/meta-release.git
+meta_release_git_version_branch: versions
+gh_org: GaloyMoney
+gh_repository: galoy
 
 slack_channel: galoy-main-github
 slack_username: concourse
