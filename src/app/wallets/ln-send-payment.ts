@@ -495,6 +495,7 @@ const executePaymentViaLn = async ({
           paymentHash,
           maxFee,
           actualFee: payResult.roundedUpFee,
+          txMetadata: { revealedPreImage: payResult.revealedPreImage },
           logger,
         })
         if (reimbursed instanceof Error) return reimbursed
