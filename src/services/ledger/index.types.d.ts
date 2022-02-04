@@ -41,8 +41,8 @@ type AddColdStorageReceiveLedgerMetadata = AddColdStorageLedgerMetadata
 type AddColdStorageSendLedgerMetadata = AddColdStorageLedgerMetadata
 
 type IntraledgerLedgerMetadata = LedgerMetadata & {
-  memoPayer: string | null
-  username: Username | null
+  memoPayer: string | undefined
+  username: Username | undefined
 }
 
 type AddLnIntraledgerSendLedgerMetadata = IntraledgerLedgerMetadata & {
