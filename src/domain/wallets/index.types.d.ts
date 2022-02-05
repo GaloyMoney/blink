@@ -175,11 +175,6 @@ type WithdrawalFeeCalculator = {
   onChainIntraLedgerFee(): Satoshis
 }
 
-type WithdrawFeeRange = {
-  min: Satoshis
-  max: Satoshis
-}
-
 type PaymentInputValidatorConfig = (
   walletId: WalletId,
 ) => Promise<Wallet | RepositoryError>

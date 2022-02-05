@@ -33,6 +33,11 @@ type Account = {
   readonly contacts: AccountContact[]
 }
 
+type WithdrawFeeRange = {
+  min: Satoshis
+  max: Satoshis
+}
+
 type BusinessMapTitle = string & { readonly brand: unique symbol }
 type Coordinates = {
   longitude: number
