@@ -22,4 +22,5 @@ module.exports = {
     "^@graphql/(.*)$": ["<rootDir>src/graphql/$1"],
     "^test/(.*)$": ["<rootDir>test/$1"],
   },
+  maxWorkers: 1, // https://github.com/facebook/jest/issues/11617
 }

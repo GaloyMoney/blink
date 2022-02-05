@@ -5,7 +5,7 @@ import {
   checkWithdrawalLimits,
 } from "@app/wallets/check-limit-helpers"
 import { reimburseFee } from "@app/wallets/reimburse-fee"
-import { checkedToSats, toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromBigInt, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   LnAlreadyPaidError,
@@ -116,7 +116,7 @@ export const payInvoiceByWalletId = async ({
 
 export const payNoAmountInvoiceByWalletIdWithTwoFAArgs = async ({
   paymentRequest,
-  amount: amountRaw,
+  amount,
   memo,
   senderWalletId,
   senderAccount,
@@ -140,9 +140,6 @@ export const payNoAmountInvoiceByWalletIdWithTwoFAArgs = async ({
   const user = await UsersRepository().findById(senderAccount.ownerId)
   if (user instanceof Error) return user
   const { twoFA } = user
-
-  const amount = checkedToSats(amountRaw)
-  if (amount instanceof Error) return amount
 
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
@@ -206,12 +203,12 @@ const lnSendPayment = async ({
   senderWalletId: WalletId
   senderAccount: Account
   decodedInvoice: LnInvoice
-  amount: number
+  amount: Satoshis
   memo: string
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
-    "payment.amount": amountRaw,
+    "payment.amount": Number(amountRaw),
     "payment.request.destination": decodedInvoice.destination,
     "payment.request.hash": decodedInvoice.paymentHash,
     "payment.request.description": decodedInvoice.description,
@@ -219,7 +216,7 @@ const lnSendPayment = async ({
 
   const validator = PaymentInputValidator(WalletsRepository().findById)
   const validationResult = await validator.validatePaymentInput({
-    amount: amountRaw,
+    amount: Number(amountRaw), // FIXME
     senderAccount,
     senderWalletId,
   })
@@ -390,7 +387,7 @@ const executePaymentViaLn = async ({
 
   const key = CachedRouteLookupKeyFactory().create({
     paymentHash,
-    milliSats: toMilliSatsFromNumber(amount * 1000),
+    milliSats: toMilliSatsFromBigInt(amount * 1000n),
   })
   const routesCache = RoutesCache()
   const cachedRoute = await routesCache.findByKey(key)
@@ -401,7 +398,7 @@ const executePaymentViaLn = async ({
   if (cachedRoute && !(cachedRoute instanceof Error)) {
     ;({ pubkey, route: rawRoute } = cachedRoute)
     route = {
-      roundedUpFee: toSats(rawRoute.safe_fee),
+      roundedUpFee: toSats(BigInt(rawRoute.safe_fee)),
     }
   }
 
@@ -450,7 +447,7 @@ const executePaymentViaLn = async ({
           })
         : await lndService.payInvoiceViaPaymentDetails({
             decodedInvoice,
-            milliSatsAmount: toMilliSatsFromNumber(amount * 1000),
+            milliSatsAmount: toMilliSatsFromBigInt(amount * 1000n),
             maxFee,
           })
 

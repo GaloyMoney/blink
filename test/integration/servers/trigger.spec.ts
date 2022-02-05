@@ -92,8 +92,8 @@ const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
 
 describe("onchainBlockEventhandler", () => {
   it("should process block for incoming transactions", async () => {
-    const amount = toSats(10_000)
-    const amount2 = toSats(20_000)
+    const amount = toSats(10_000n)
+    const amount2 = toSats(20_000n)
     const blocksToMine = ONCHAIN_MIN_CONFIRMATIONS
     const scanDepth = ONCHAIN_MIN_CONFIRMATIONS + 1
 
@@ -200,7 +200,7 @@ describe("onchainBlockEventhandler", () => {
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletIdF,
-      amount: toSats(sats),
+      amount: sats,
     })
     expect(lnInvoice).not.toBeInstanceOf(Error)
 

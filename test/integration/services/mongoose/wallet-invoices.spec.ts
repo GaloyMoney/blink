@@ -1,7 +1,6 @@
 import crypto from "crypto"
 
 import { Wallets } from "@app"
-import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/wallets"
 import { WalletInvoicesRepository } from "@services/mongoose"
@@ -28,7 +27,7 @@ const createTestWalletInvoice = () => {
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
     paid: false,
-    usdCents: toCents(10),
+    usdCents: toCents(10n),
     currency: WalletCurrency.Btc,
   }
 }
@@ -80,7 +79,7 @@ describe("WalletInvoices", () => {
     for (let i = 0; i < 2; i++) {
       await Wallets.addInvoiceForSelf({
         walletId: walletB,
-        amount: toSats(1000),
+        amount: 1_000,
       })
     }
 

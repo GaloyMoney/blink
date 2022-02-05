@@ -16,7 +16,7 @@ describe("decodeOnChainTransaction", () => {
     )
     expect(result.outs[0]).toEqual({
       address: "19H8z5HQ4tuuGZRYJH5xbG2P64KimjnLFx",
-      sats: toSats(700768),
+      sats: toSats(700_768n),
     })
   })
 
@@ -34,11 +34,11 @@ describe("decodeOnChainTransaction", () => {
     )
     expect(result.outs[0]).toEqual({
       address: "1Bf9sZvBHPFGVPX71WX2njhd1NXKv5y7v5",
-      sats: toSats(630995533),
+      sats: toSats(630_995_533n),
     })
     expect(result.outs[1]).toEqual({
       address: null,
-      sats: toSats(0),
+      sats: toSats(0n),
     })
   })
 })

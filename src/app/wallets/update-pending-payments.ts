@@ -111,7 +111,7 @@ const updatePendingPayment = async ({
   let roundedUpFee: Satoshis
   const { status } = lnPaymentLookup
   if (status != PaymentStatus.Failed) {
-    roundedUpFee = lnPaymentLookup.confirmedDetails?.roundedUpFee || toSats(0)
+    roundedUpFee = lnPaymentLookup.confirmedDetails?.roundedUpFee || toSats(0n)
   }
 
   if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {

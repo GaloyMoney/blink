@@ -37,9 +37,9 @@ describe("ColdStorage - rebalanceToColdWallet", () => {
     const getColdStorageConfigMock = appConfig.getColdStorageConfig as jest.Mock
     const config = {
       ...coldStorageConfig,
-      minOnChainHotWalletBalance: toSats(100000),
-      maxHotWalletBalance: toSats(100000),
-      minRebalanceSize: toSats(10000),
+      minOnChainHotWalletBalance: toSats(100_000n),
+      maxHotWalletBalance: toSats(100_000n),
+      minRebalanceSize: toSats(10_000n),
     }
     getColdStorageConfigMock.mockReturnValueOnce(config)
 

@@ -96,26 +96,26 @@ const main = async () => {
     bos_g.set(bosScore)
 
     const { lightning, liabilities, bitcoin } = await getLedgerAccounts()
-    liabilities_g.set(liabilities)
-    lightning_g.set(lightning)
-    bitcoin_g.set(bitcoin)
+    liabilities_g.set(Number(liabilities))
+    lightning_g.set(Number(lightning))
+    bitcoin_g.set(Number(bitcoin))
 
     try {
       const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } =
         await balanceSheetIsBalanced()
-      assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
-      bookingVersusRealWorldAssets_g.set(bookingVersusRealWorldAssets)
+      assetsLiabilitiesDifference_g.set(Number(assetsLiabilitiesDifference))
+      bookingVersusRealWorldAssets_g.set(Number(bookingVersusRealWorldAssets))
     } catch (err) {
       logger.error({ err }, "impossible to calculate balance sheet")
     }
 
     const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } =
       await lndsBalances()
-    lnd_g.set(total)
-    lndOnChain_g.set(onChain)
-    lndOffChain_g.set(offChain)
-    lndOpeningChannelBalance_g.set(opening_channel_balance)
-    lndClosingChannelBalance_g.set(closing_channel_balance)
+    lnd_g.set(Number(total))
+    lndOnChain_g.set(Number(onChain))
+    lndOffChain_g.set(Number(offChain))
+    lndOpeningChannelBalance_g.set(Number(opening_channel_balance))
+    lndClosingChannelBalance_g.set(Number(closing_channel_balance))
 
     const userCount = await User.countDocuments()
     userCount_g.set(userCount)
@@ -127,13 +127,13 @@ const main = async () => {
 
       const balanceSats = await LedgerService().getWalletBalance(walletId)
       if (balanceSats instanceof Error) {
-        baseLogger.warn({ walletId, balanceSats }, "impossible to get balance")
-        balance = toSats(0)
+        baseLogger.warn({ walletId, balanceSats, wallet }, "impossible to get balance")
+        balance = toSats(0n)
       } else {
         balance = balanceSats
       }
 
-      wallet.gauge.set(balance)
+      wallet.gauge.set(Number(balance))
     }
 
     business_g.set(await User.count({ title: { $ne: null } }))
@@ -149,7 +149,7 @@ const main = async () => {
             help: `amount in wallet ${walletName}`,
           })
         }
-        coldWallets[walletSanitized].set(amount)
+        coldWallets[walletSanitized].set(Number(amount))
       }
     } catch (err) {
       logger.error({ err }, "error setting bitcoind/specter balance")

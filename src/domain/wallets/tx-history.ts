@@ -19,14 +19,14 @@ const filterPendingIncoming = (
           id: rawTx.txHash,
           walletId,
           settlementAmount: sats,
-          settlementFee: toSats(0),
+          settlementFee: toSats(0n),
           settlementUsdPerSat: usdPerSat,
           status: TxStatus.Pending,
           memo: null,
           createdAt: createdAt,
           deprecated: {
             description: "pending",
-            usd: usdPerSat * sats,
+            usd: usdPerSat * Number(sats),
             feeUsd: 0,
             type: LedgerTransactionType.OnchainReceipt,
           },
@@ -91,8 +91,8 @@ export const fromLedger = (
         id,
         walletId,
         settlementAmount,
-        settlementFee: toSats(fee || 0),
-        settlementUsdPerSat: Math.abs(usd / settlementAmount),
+        settlementFee: toSats(fee || 0n),
+        settlementUsdPerSat: Math.abs(usd / Number(settlementAmount)),
         status,
         memo,
         createdAt: timestamp,
@@ -230,9 +230,13 @@ const shouldDisplayMemo = ({
   credit,
 }: {
   memo: string | undefined
-  credit: number
+  credit: CurrencyBaseAmount
 }) => {
-  return isAuthorizedMemo(memo) || credit === 0 || credit >= MEMO_SHARING_SATS_THRESHOLD
+  return (
+    isAuthorizedMemo(memo) ||
+    Number(credit) === 0 ||
+    credit >= MEMO_SHARING_SATS_THRESHOLD
+  )
 }
 
 const isAuthorizedMemo = (memo: string | undefined): boolean =>
@@ -249,7 +253,7 @@ export const translateDescription = ({
   lnMemo?: string
   username?: string
   type: LedgerTransactionType
-  credit: number
+  credit: CurrencyBaseAmount
 }): string => {
   if (shouldDisplayMemo({ memo: memoFromPayer, credit })) {
     if (memoFromPayer) {
@@ -260,7 +264,7 @@ export const translateDescription = ({
     }
   }
 
-  let usernameDescription
+  let usernameDescription: string | undefined
   if (username) {
     usernameDescription = `to ${username}`
     if (credit > 0) {
@@ -278,7 +282,7 @@ export const translateMemo = ({
 }: {
   memoFromPayer?: string
   lnMemo?: string
-  credit: number
+  credit: CurrencyBaseAmount
 }): string | null => {
   if (shouldDisplayMemo({ memo: memoFromPayer, credit })) {
     if (memoFromPayer) {

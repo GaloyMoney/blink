@@ -127,7 +127,7 @@ describe("lndUtils", () => {
 
     const endBalance = await ledgerAdmin.getBankOwnerBalance()
 
-    expect((endBalance - initBalance) * 1000).toBeCloseTo(totalFees, 0)
+    expect((endBalance - initBalance) * 1000n).toBeCloseTo(totalFees, 0)
   })
 
   it("deletes expired WalletInvoice without throw an exception", async () => {

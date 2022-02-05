@@ -235,20 +235,20 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     // Add commas to balancesats
     const balanceSatsAsFormattedString = balance.toLocaleString("en")
 
-    let balanceUsdAsFormattedString: string, title: string
+    let balanceDisplayCurrencyFmt: string, title: string
     if (price instanceof Error) {
       logger.warn({ price }, "impossible to fetch price for notification")
 
       // TODO: i18n
       title = `Your balance is ${balanceSatsAsFormattedString} sats)`
     } else {
-      const usdValue = price * balance
-      balanceUsdAsFormattedString = usdValue.toLocaleString("en", {
+      const displayCurrencyValue = price * Number(balance)
+      balanceDisplayCurrencyFmt = displayCurrencyValue.toLocaleString("en", {
         maximumFractionDigits: 2,
       })
 
       // TODO: i18n
-      title = `Your balance is $${balanceUsdAsFormattedString} (${balanceSatsAsFormattedString} sats)`
+      title = `Your balance is $${balanceDisplayCurrencyFmt} (${balanceSatsAsFormattedString} sats)`
     }
 
     logger.info(

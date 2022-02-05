@@ -190,7 +190,7 @@ const processTxForHotWallet = async ({
         let fee =
           tx.fee || (await coldStorageService.lookupTransactionFee(tx.rawTx.txHash))
 
-        if (fee instanceof Error) fee = toSats(0)
+        if (fee instanceof Error) fee = toSats(0n)
 
         const converter = DisplayCurrencyConversionRate(usdPerSat)
         const amountDisplayCurrency = converter.fromSats(sats)

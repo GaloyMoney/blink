@@ -16,7 +16,7 @@ describe("PaymentInputValidator", () => {
     defaultWalletId: "senderWalletId" as WalletId,
     ownerId: "ownerId" as UserId,
     depositFeeRatio: 0 as DepositFeeRatio,
-    withdrawFee: 0 as Satoshis,
+    withdrawFee: 0n as Satoshis,
     level: AccountLevel.One,
     status: AccountStatus.Active,
     title: "" as BusinessMapTitle,
@@ -64,7 +64,7 @@ describe("PaymentInputValidator", () => {
     if (result instanceof Error) throw result
 
     const { amount, senderWallet, recipientWallet } = result
-    expect(amount).toBe(2)
+    expect(amount).toBe(2n)
     expect(senderWallet).toEqual(expect.objectContaining(dummySenderWallet))
     expect(recipientWallet).toEqual(expect.objectContaining(dummyRecipientWallet))
   })

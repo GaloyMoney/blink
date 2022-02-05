@@ -15,7 +15,7 @@ describe("decoreInvoice", () => {
       "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
     )
     expect(invoice.paymentRequest).toEqual(validBolt11Invoice)
-    expect(invoice.amount).toEqual(toSats(2000))
+    expect(invoice.amount).toEqual(toSats(2000n))
     expect(invoice.destination).toEqual(
       "03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad",
     )

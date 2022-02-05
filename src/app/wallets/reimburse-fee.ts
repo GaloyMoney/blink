@@ -30,7 +30,7 @@ export const reimburseFee = async ({
     return
   }
 
-  if (feeDifference === 0) {
+  if (feeDifference === 0n) {
     return
   }
 

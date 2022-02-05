@@ -8,14 +8,7 @@ type Primitive = string | boolean | number
 //       being done
 
 type TwoFALimits = {
-  threshold: number
-}
-
-type FeeRates = {
-  depositFeeVariable: number
-  depositFeeFixed: number
-  withdrawFeeVariable: number
-  withdrawFeeFixed: number
+  threshold: Satoshis
 }
 
 type UserLimitsArgs = { level: number; limitsConfig? }

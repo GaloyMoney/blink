@@ -7,12 +7,12 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       IncomingOnChainTransaction({
         confirmations: 0,
-        fee: toSats(1000),
+        fee: toSats(1000n),
         rawTx: {
           txHash: "txHash1" as OnChainTxHash,
           outs: [
             {
-              sats: toSats(1),
+              sats: toSats(1n),
               address: "address1" as OnChainAddress,
             },
           ],
@@ -21,12 +21,12 @@ describe("TxFilter", () => {
       }),
       IncomingOnChainTransaction({
         confirmations: 2,
-        fee: toSats(1000),
+        fee: toSats(1000n),
         rawTx: {
           txHash: "txHash2" as OnChainTxHash,
           outs: [
             {
-              sats: toSats(1),
+              sats: toSats(1n),
               address: "address2" as OnChainAddress,
             },
           ],
@@ -43,12 +43,12 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       IncomingOnChainTransaction({
         confirmations: 2,
-        fee: toSats(1000),
+        fee: toSats(1000n),
         rawTx: {
           txHash: "txHash1" as OnChainTxHash,
           outs: [
             {
-              sats: toSats(1),
+              sats: toSats(1n),
               address: "address1" as OnChainAddress,
             },
           ],
@@ -57,12 +57,12 @@ describe("TxFilter", () => {
       }),
       IncomingOnChainTransaction({
         confirmations: 3,
-        fee: toSats(1000),
+        fee: toSats(1000n),
         rawTx: {
           txHash: "txHash2" as OnChainTxHash,
           outs: [
             {
-              sats: toSats(1),
+              sats: toSats(1n),
               address: "address2" as OnChainAddress,
             },
           ],
@@ -79,12 +79,12 @@ describe("TxFilter", () => {
     const filteredTxs = filter.apply([
       IncomingOnChainTransaction({
         confirmations: 2,
-        fee: toSats(1000),
+        fee: toSats(1000n),
         rawTx: {
           txHash: "txHash1" as OnChainTxHash,
           outs: [
             {
-              sats: toSats(1),
+              sats: toSats(1n),
               address: "address1" as OnChainAddress,
             },
           ],
@@ -93,12 +93,12 @@ describe("TxFilter", () => {
       }),
       IncomingOnChainTransaction({
         confirmations: 3,
-        fee: toSats(1000),
+        fee: toSats(1000n),
         rawTx: {
           txHash: "txHash2" as OnChainTxHash,
           outs: [
             {
-              sats: toSats(1),
+              sats: toSats(1n),
               address: "address2" as OnChainAddress,
             },
           ],

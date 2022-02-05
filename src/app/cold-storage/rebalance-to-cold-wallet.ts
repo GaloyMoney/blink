@@ -33,9 +33,9 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   })
 
   addAttributesToCurrentSpan({
-    "rebalance.offChainBalance": offChain,
-    "rebalance.onChainBalance": onChain,
-    "rebalance.amount": rebalanceAmount,
+    "rebalance.offChainBalance": Number(offChain),
+    "rebalance.onChainBalance": Number(onChain),
+    "rebalance.amount": Number(rebalanceAmount),
   })
 
   if (rebalanceAmount <= 0) return false
@@ -55,7 +55,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
     scanDepth: ONCHAIN_SCAN_DEPTH_OUTGOING,
   })
 
-  if (fee instanceof Error) fee = toSats(0)
+  if (fee instanceof Error) fee = toSats(0n)
 
   const description = `deposit of ${rebalanceAmount} sats to the cold storage wallet`
 

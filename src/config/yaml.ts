@@ -25,7 +25,9 @@ try {
 
 export const yamlConfig = merge(defaultConfig, customConfig)
 
-export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.limits.memoSharingSatsThreshold
+export const MEMO_SHARING_SATS_THRESHOLD = toSats(
+  BigInt(yamlConfig.limits.memoSharingSatsThreshold),
+)
 
 export const ONCHAIN_MIN_CONFIRMATIONS = yamlConfig.onChainWallet.minConfirmations
 // how many block are we looking back for getChainTransactions
@@ -84,16 +86,16 @@ export const getLndParams = (): LndParams[] => {
 
 export const getFeeRates = (feesConfig = yamlConfig.fees): FeeRates => ({
   depositFeeVariable: feesConfig.deposit,
-  depositFeeFixed: 0,
+  depositFeeFixed: toSats(0n),
   withdrawFeeVariable: 0,
-  withdrawFeeFixed: feesConfig.withdraw,
+  withdrawFeeFixed: toSats(BigInt(feesConfig.withdraw)),
 })
 
 export const getWithdrawFeeRange = (
   withdrawFeeConfig = yamlConfig.withdrawFeeRange,
 ): WithdrawFeeRange => ({
-  min: withdrawFeeConfig.min,
-  max: withdrawFeeConfig.max,
+  min: toSats(BigInt(withdrawFeeConfig.min)),
+  max: toSats(BigInt(withdrawFeeConfig.max)),
 })
 
 export const getUserLimits = ({
@@ -101,13 +103,13 @@ export const getUserLimits = ({
   limitsConfig = yamlConfig.limits,
 }: UserLimitsArgs): IUserLimits => {
   return {
-    onUsLimit: limitsConfig.onUs.level[level] as Satoshis,
-    withdrawalLimit: limitsConfig.withdrawal.level[level] as Satoshis,
+    onUsLimit: toSats(BigInt(limitsConfig.onUs.level[level])),
+    withdrawalLimit: toSats(BigInt(limitsConfig.withdrawal.level[level])),
   }
 }
 
 export const getTwoFALimits = (): TwoFALimits => ({
-  threshold: yamlConfig.twoFA.threshold,
+  threshold: toSats(BigInt(yamlConfig.twoFA.threshold)),
 })
 
 const getRateLimits = (config): RateLimitOptions => {

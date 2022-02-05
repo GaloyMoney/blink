@@ -1,21 +1,25 @@
 import { sendNotification } from "./notification"
 
+type TitleArgs = { usd: DisplayCurrencyBaseAmount; amount: Satoshis }
+
 export const getTitle = {
-  "paid-invoice": ({ usd, amount }) => `+$${usd} | ${amount} sats`,
-  "onchain_receipt": ({ usd, amount }) => `+$${usd} | ${amount} sats`,
-  "onchain_receipt_pending": ({ usd, amount }) => `pending +$${usd} | ${amount} sats`,
+  "paid-invoice": ({ usd, amount }: TitleArgs) => `+$${usd} | ${amount} sats`,
+  "onchain_receipt": ({ usd, amount }: TitleArgs) => `+$${usd} | ${amount} sats`,
+  "onchain_receipt_pending": ({ usd, amount }: TitleArgs) =>
+    `pending +$${usd} | ${amount} sats`,
   "onchain_payment": ({ amount }) => `Sent onchain payment of ${amount} sats confirmed`,
-  "intra_ledger_receipt": ({ usd, amount }) => `+$${usd} | ${amount} sats`,
-  "intra_ledger_payment": ({ usd, amount }) => `Sent payment of $${usd} | ${amount} sats`,
+  "intra_ledger_receipt": ({ usd, amount }: TitleArgs) => `+$${usd} | ${amount} sats`,
+  "intra_ledger_payment": ({ usd, amount }: TitleArgs) =>
+    `Sent payment of $${usd} | ${amount} sats`,
 }
 
 export const getTitleNoUsd = {
-  "paid-invoice": ({ amount }) => `+${amount} sats`,
-  "onchain_receipt": ({ amount }) => `+${amount} sats`,
-  "onchain_receipt_pending": ({ amount }) => `pending +${amount} sats`,
-  "onchain_payment": ({ amount }) => `Sent onchain payment of ${amount} sats confirmed`,
-  "intra_ledger_receipt": ({ amount }) => `+${amount} sats`,
-  "intra_ledger_payment": ({ amount }) => `Sent payment of ${amount} sats`,
+  "paid-invoice": (sats: Satoshis) => `+${sats} sats`,
+  "onchain_receipt": (sats: Satoshis) => `+${sats} sats`,
+  "onchain_receipt_pending": (sats: Satoshis) => `pending +${sats} sats`,
+  "onchain_payment": (sats: Satoshis) => `Sent onchain payment of ${sats} sats confirmed`,
+  "intra_ledger_receipt": (sats: Satoshis) => `+${sats} sats`,
+  "intra_ledger_payment": (sats: Satoshis) => `Sent payment of ${sats} sats`,
 }
 
 export const transactionNotification = async ({
@@ -27,10 +31,10 @@ export const transactionNotification = async ({
   txHash,
   usdPerSat,
 }: IPaymentNotification) => {
-  let title = getTitleNoUsd[type]({ amount })
+  let title = getTitleNoUsd[type](amount)
 
   if (usdPerSat) {
-    const usd = (amount * usdPerSat).toFixed(2)
+    const usd = (Number(amount) * usdPerSat).toFixed(2)
     title = getTitle[type]({ usd, amount })
   }
 

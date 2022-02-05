@@ -164,8 +164,8 @@ const addSendNoInternalFee = async ({
 
   try {
     const entry = MainBook.entry(description)
-      .credit(lndAccountingPath, sats, metadata)
-      .debit(liabilitiesWalletId, sats, metadata)
+      .credit(lndAccountingPath, Number(sats), metadata)
+      .debit(liabilitiesWalletId, Number(sats), metadata)
 
     const savedEntry = await entry.commit()
     return translateToLedgerJournal(savedEntry)
@@ -200,9 +200,9 @@ const addSendInternalFee = async ({
 
   try {
     const entry = MainBook.entry(description)
-      .credit(lndAccountingPath, sats - fee, metadata)
-      .debit(liabilitiesWalletId, sats, metadata)
-      .credit(bankOwnerPath, fee, metadata)
+      .credit(lndAccountingPath, Number(sats - fee), metadata)
+      .debit(liabilitiesWalletId, Number(sats), metadata)
+      .credit(bankOwnerPath, Number(fee), metadata)
 
     const savedEntry = await entry.commit()
     return translateToLedgerJournal(savedEntry)

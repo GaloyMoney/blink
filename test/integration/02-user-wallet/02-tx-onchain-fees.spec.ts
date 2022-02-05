@@ -1,6 +1,6 @@
 import { Wallets } from "@app"
 import { getOnChainWalletConfig } from "@config"
-import { toSats, toTargetConfs } from "@domain/bitcoin"
+import { toTargetConfs } from "@domain/bitcoin"
 import { InsufficientBalanceError, LessThanDustThresholdError } from "@domain/errors"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
@@ -12,7 +12,6 @@ import {
   getDefaultWalletIdByTestUserRef,
 } from "test/helpers"
 
-const defaultAmount = toSats(6000)
 const defaultTarget = toTargetConfs(3)
 const { dustThreshold } = getOnChainWalletConfig()
 let walletIdA: WalletId, walletIdB: WalletId, accountA: Account
@@ -34,11 +33,13 @@ afterAll(async () => {
 
 describe("UserWallet - getOnchainFee", () => {
   it("returns a fee greater than zero for an external address", async () => {
+    const amount = 6000
+
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
     const fee = await Wallets.getOnChainFee({
       walletId: walletIdA,
       account: accountA,
-      amount: defaultAmount,
+      amount,
       address,
       targetConfirmations: defaultTarget,
     })
@@ -55,12 +56,14 @@ describe("UserWallet - getOnchainFee", () => {
   })
 
   it("returns zero for an on us address", async () => {
+    const amount = 6000
+
     const address = await Wallets.createOnChainAddress(walletIdB)
     if (address instanceof Error) throw address
     const fee = await Wallets.getOnChainFee({
       walletId: walletIdA,
       account: accountA,
-      amount: defaultAmount,
+      amount,
       address,
       targetConfirmations: defaultTarget,
     })
@@ -70,7 +73,7 @@ describe("UserWallet - getOnchainFee", () => {
 
   it("returns error for dust amount", async () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-    const amount = toSats(dustThreshold - 1)
+    const amount = Number(dustThreshold) - 1
     const fee = await Wallets.getOnChainFee({
       walletId: walletIdA,
       account: accountA,
@@ -87,7 +90,7 @@ describe("UserWallet - getOnchainFee", () => {
 
   it("returns error for balance too low", async () => {
     const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-    const amount = toSats(1_000_000_000)
+    const amount = 1_000_000_000
     const fee = await Wallets.getOnChainFee({
       walletId: walletIdA,
       account: accountA,

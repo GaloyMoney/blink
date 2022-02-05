@@ -74,5 +74,5 @@ export const checkedToWithdrawFee = (
   if (fee < withdrawFeeRange.min || fee > withdrawFeeRange.max) {
     return new InvalidWithdrawFeeError(fee.toString())
   }
-  return fee as Satoshis
+  return BigInt(fee) as Satoshis
 }

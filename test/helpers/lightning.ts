@@ -26,6 +26,8 @@ import { parsePaymentRequest } from "invoices"
 
 import { sleep } from "@utils"
 
+import { toSats } from "@domain/bitcoin"
+
 import {
   bitcoindClient,
   bitcoindOutside,
@@ -147,12 +149,12 @@ export const openChannelTesting = async ({
 
 // all the following uses of bitcoind client that send/receive coin must be "outside"
 
-export const fundLnd = async (lnd, amount = 1) => {
+export const fundLnd = async (lnd, sats = toSats(100_000_000n)) => {
   const { address } = (await createChainAddress({
     format: "p2wpkh",
     lnd,
   })) as { address: OnChainAddress }
-  await sendToAddressAndConfirm({ walletClient: bitcoindOutside, address, amount })
+  await sendToAddressAndConfirm({ walletClient: bitcoindOutside, address, sats })
   await waitUntilBlockHeight({ lnd })
 }
 

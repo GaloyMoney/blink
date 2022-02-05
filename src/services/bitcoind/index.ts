@@ -1,4 +1,4 @@
-import { btc2sat } from "@domain/bitcoin"
+import { btc2sat, toSats } from "@domain/bitcoin"
 
 import Client from "bitcoin-core"
 import sumBy from "lodash.sumby"
@@ -177,11 +177,11 @@ export class BitcoindWalletClient {
 export const bitcoindDefaultClient = new BitcoindClient()
 
 export const getBalancesDetail = async (): Promise<
-  { wallet: string; balance: number }[]
+  { wallet: string; balance: Satoshis }[]
 > => {
   const wallets = await bitcoindDefaultClient.listWallets()
 
-  const balances: { wallet: string; balance: number }[] = []
+  const balances: { wallet: string; balance: Satoshis }[] = []
 
   for await (const wallet of wallets) {
     // do not consider the "outside" wallet in tests
@@ -197,7 +197,7 @@ export const getBalancesDetail = async (): Promise<
   return balances
 }
 
-export const getBalance = async (): Promise<number> => {
+export const getBalance = async (): Promise<Satoshis> => {
   const balanceObj = await getBalancesDetail()
-  return sumBy(balanceObj, "balance")
+  return toSats(BigInt(sumBy(balanceObj, "balance")))
 }

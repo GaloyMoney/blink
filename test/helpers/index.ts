@@ -1,6 +1,7 @@
 import { Wallets } from "@app"
 import { generate2fa, save2fa } from "@app/users"
 import { balanceSheetIsBalanced } from "@core/balance-sheet"
+import { toSats } from "@domain/bitcoin"
 import { TwoFAAlreadySetError } from "@domain/twoFA"
 import { gqlAdminSchema } from "@graphql/admin"
 import { baseLogger } from "@services/logger"
@@ -27,7 +28,7 @@ export const amountAfterFeeDeduction = ({
 }: {
   amount: Satoshis
   depositFeeRatio: DepositFeeRatio
-}) => Math.round(amount * (1 - depositFeeRatio))
+}): Satoshis => toSats(BigInt(Math.floor(Number(amount) * (1 - depositFeeRatio))))
 
 const logger = baseLogger.child({ module: "test" })
 
@@ -43,10 +44,10 @@ export const checkIsBalanced = async () => {
 
   const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } =
     await balanceSheetIsBalanced()
-  expect(assetsLiabilitiesDifference).toBe(0)
+  expect(assetsLiabilitiesDifference).toBe(0n)
 
   // TODO: need to go from sats to msats to properly account for every msats spent
-  expect(Math.abs(bookingVersusRealWorldAssets)).toBe(0)
+  expect(bookingVersusRealWorldAssets).toBe(0n)
 }
 
 export const resetDatabase = async (mongoose) => {

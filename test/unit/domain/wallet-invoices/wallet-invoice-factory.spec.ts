@@ -1,4 +1,4 @@
-import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromBigInt, toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { WalletCurrency } from "@domain/wallets"
@@ -19,10 +19,10 @@ describe("wallet invoice factory methods", () => {
         paymentSecret: "paymentSecret" as PaymentIdentifyingSecret,
         paymentRequest: "paymentRequest" as EncodedPaymentRequest,
         routeHints: [],
-        cltvDelta: null,
+        cltvDelta: undefined,
         destination: "destination" as Pubkey,
-        amount: toSats(42),
-        milliSatsAmount: toMilliSatsFromNumber(42000),
+        amount: toSats(42n),
+        milliSatsAmount: toMilliSatsFromBigInt(42_000n),
         description: "",
         features: [],
       },
@@ -31,7 +31,7 @@ describe("wallet invoice factory methods", () => {
     }
     const result = walletInvoiceFactory.createForSelf({
       registeredInvoice,
-      usdCents: toCents(12),
+      usdCents: toCents(12n),
     })
     const expected = {
       paymentHash: "paymentHash",
@@ -39,7 +39,7 @@ describe("wallet invoice factory methods", () => {
       selfGenerated: true,
       pubkey: "pubkey",
       paid: false,
-      usdCents: 12,
+      usdCents: 12n,
       currency: WalletCurrency.Btc,
     }
     expect(result).toEqual(expected)
@@ -52,10 +52,10 @@ describe("wallet invoice factory methods", () => {
         paymentSecret: "paymentSecret" as PaymentIdentifyingSecret,
         paymentRequest: "paymentRequest" as EncodedPaymentRequest,
         routeHints: [],
-        cltvDelta: null,
+        cltvDelta: undefined,
         destination: "destination" as Pubkey,
-        amount: toSats(42),
-        milliSatsAmount: toMilliSatsFromNumber(42000),
+        amount: toSats(42n),
+        milliSatsAmount: toMilliSatsFromBigInt(42_000n),
         description: "",
         features: [],
       },
@@ -64,7 +64,7 @@ describe("wallet invoice factory methods", () => {
     }
     const result = walletInvoiceFactory.createForRecipient({
       registeredInvoice,
-      usdCents: toCents(10),
+      usdCents: toCents(10n),
     })
     const expected = {
       paymentHash: "paymentHash",
@@ -72,7 +72,7 @@ describe("wallet invoice factory methods", () => {
       selfGenerated: false,
       pubkey: "pubkey",
       paid: false,
-      usdCents: 10,
+      usdCents: 10n,
       currency: WalletCurrency.Btc,
     }
     expect(result).toEqual(expected)

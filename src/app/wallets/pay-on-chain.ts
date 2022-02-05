@@ -64,7 +64,7 @@ export const payOnChainByWalletIdWithTwoFA = async ({
   return payOnChainByWalletId({
     senderAccount,
     senderWalletId,
-    amount,
+    amount: Number(amount),
     address,
     targetConfirmations,
     memo,
@@ -75,20 +75,20 @@ export const payOnChainByWalletIdWithTwoFA = async ({
 export const payOnChainByWalletId = async ({
   senderAccount,
   senderWalletId,
-  amount: amountRaw,
+  amount: amountRawOpt,
   address,
   targetConfirmations,
   memo,
   sendAll,
 }: PayOnChainByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
-  const checkedAmount = sendAll
+  const amountRaw = sendAll
     ? await LedgerService().getWalletBalance(senderWalletId)
-    : checkedToSats(amountRaw)
-  if (checkedAmount instanceof Error) return checkedAmount
+    : checkedToSats(amountRawOpt)
+  if (amountRaw instanceof Error) return amountRaw
 
   const validator = PaymentInputValidator(WalletsRepository().findById)
   const validationResult = await validator.validatePaymentInput({
-    amount: checkedAmount,
+    amount: Number(amountRaw), // FIXME
     senderAccount,
     senderWalletId,
   })
@@ -267,7 +267,7 @@ const executePaymentViaOnChain = async ({
   const estimatedFee = await getOnChainFee({
     walletId: senderWallet.id,
     account: senderAccount,
-    amount,
+    amount: Number(amount), // FIXME
     address,
     targetConfirmations,
   })

@@ -1,9 +1,10 @@
-import { toSats } from "@domain/bitcoin"
 import { yamlConfig } from "@config"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
 import { setupMongoConnection } from "@services/mongodb"
+
+import { toSats } from "@domain/bitcoin"
 
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
@@ -51,7 +52,7 @@ beforeAll(async () => {
   await createUserWalletFromUserRef(userRef)
   walletId = await getDefaultWalletIdByTestUserRef(userRef)
 
-  await fundWalletIdFromLightning({ walletId, amount: toSats(50_000) })
+  await fundWalletIdFromLightning({ walletId, sats: toSats(50_000n) })
   serverPid = await startServer()
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
   const input = { phone, code }

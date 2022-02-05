@@ -125,7 +125,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         mtokens:
           decodedInvoice.milliSatsAmount > 0
             ? decodedInvoice.milliSatsAmount.toString()
-            : (amount * 1000).toString(),
+            : (Number(amount) * 1000).toString(),
         routes,
         cltv_delta: decodedInvoice.cltvDelta || undefined,
         features: decodedInvoice.features
@@ -135,14 +135,14 @@ export const LndService = (): ILightningService | LightningServiceError => {
               type: f.type,
             }))
           : undefined,
-        max_fee: maxFee,
+        max_fee: Number(maxFee),
         payment: decodedInvoice.paymentSecret || undefined,
         total_mtokens: decodedInvoice.paymentSecret
           ? decodedInvoice.milliSatsAmount > 0
             ? decodedInvoice.milliSatsAmount.toString()
-            : (amount * 1000).toString()
+            : (Number(amount) * 1000).toString()
           : undefined,
-        tokens: amount,
+        tokens: Number(amount),
       }
       const { route } = await lnService.probeForRoute(probeForRouteArgs)
       if (!route) return new RouteNotFoundError()
@@ -168,7 +168,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       lnd: defaultLnd,
       description,
       description_hash: descriptionHash,
-      tokens: sats as number,
+      tokens: Number(sats),
       expires_at: expiresAt.toISOString(),
     }
 
@@ -211,14 +211,14 @@ export const LndService = (): ILightningService | LightningServiceError => {
         createdAt: new Date(invoice.created_at),
         confirmedAt: invoice.confirmed_at ? new Date(invoice.confirmed_at) : undefined,
         isSettled: !!invoice.is_confirmed,
-        roundedDownReceived: toSats(invoice.received),
+        roundedDownReceived: toSats(BigInt(invoice.received)),
         milliSatsReceived: toMilliSatsFromString(invoice.received_mtokens),
         secretPreImage: invoice.secret as SecretPreImage,
         lnInvoice: {
           description: invoice.description,
           paymentRequest: (invoice.request as EncodedPaymentRequest) || undefined,
           expiresAt: new Date(invoice.expires_at),
-          roundedDownAmount: toSats(invoice.tokens),
+          roundedDownAmount: toSats(BigInt(invoice.tokens)),
         },
       }
     } catch (err) {
@@ -349,7 +349,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         timeoutPromise,
       ])) as PayViaRoutesResult
       return {
-        roundedUpFee: toSats(paymentResult.safe_fee),
+        roundedUpFee: toSats(BigInt(paymentResult.safe_fee)),
         sentFromPubkey: pubkey,
       }
     } catch (err) {
@@ -380,7 +380,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       destination: decodedInvoice.destination,
       mtokens: milliSatsAmount.toString(),
       payment: decodedInvoice.paymentSecret as string,
-      max_fee: maxFee,
+      max_fee: Number(maxFee),
       cltv_delta: decodedInvoice.cltvDelta || undefined,
       features: decodedInvoice.features
         ? decodedInvoice.features.map((f) => ({
@@ -416,7 +416,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         timeoutPromise,
       ])) as PayViaPaymentDetailsResult
       return {
-        roundedUpFee: toSats(paymentResult.safe_fee),
+        roundedUpFee: toSats(BigInt(paymentResult.safe_fee)),
         sentFromPubkey: defaultPubkey,
       }
     } catch (err) {
@@ -489,12 +489,12 @@ const lookupPaymentByPubkeyAndHash = async ({
         paymentRequest: (payment.request as EncodedPaymentRequest) || undefined,
         paymentHash: payment.id as PaymentHash,
         milliSatsAmount: toMilliSatsFromString(payment.mtokens),
-        roundedUpAmount: toSats(payment.safe_tokens),
+        roundedUpAmount: toSats(BigInt(payment.safe_tokens)),
         confirmedDetails: {
           confirmedAt: new Date(payment.confirmed_at),
           destination: payment.destination as Pubkey,
           revealedPreImage: payment.secret as RevealedPreImage,
-          roundedUpFee: toSats(payment.safe_fee),
+          roundedUpFee: toSats(BigInt(payment.safe_fee)),
           milliSatsFee: toMilliSatsFromString(payment.fee_mtokens),
           hopPubkeys: undefined,
         },
@@ -507,7 +507,7 @@ const lookupPaymentByPubkeyAndHash = async ({
         paymentRequest: (pending.request as EncodedPaymentRequest) || undefined,
         paymentHash: pending.id as PaymentHash,
         milliSatsAmount: toMilliSatsFromString(pending.mtokens),
-        roundedUpAmount: toSats(pending.safe_tokens),
+        roundedUpAmount: toSats(BigInt(pending.safe_tokens)),
         confirmedDetails: undefined,
         attempts: undefined,
       }

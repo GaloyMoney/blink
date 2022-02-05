@@ -12,8 +12,8 @@ export const ActivityChecker = ({
     const timestamp30DaysAgo = new Date(Date.now() - MS_PER_30_DAYS)
 
     const volumeCum: TxVolume = {
-      outgoingSats: toSats(0),
-      incomingSats: toSats(0),
+      outgoingSats: toSats(0n),
+      incomingSats: toSats(0n),
     }
 
     for (const walletId of walletIds) {

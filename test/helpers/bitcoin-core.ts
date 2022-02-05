@@ -10,6 +10,8 @@ import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 import { pay } from "lightning"
 
+import { sat2btc } from "@domain/bitcoin"
+
 import { descriptors } from "./multisig-wallet"
 
 import { lndOutside1, waitUntilBlockHeight } from "."
@@ -21,13 +23,13 @@ export const bitcoindOutside = new BitcoindWalletClient("outside")
 export async function sendToAddressAndConfirm({
   walletClient,
   address,
-  amount,
+  sats,
 }: {
   walletClient: BitcoindWalletClient
   address: OnChainAddress
-  amount: number
+  sats: Satoshis
 }) {
-  await walletClient.sendToAddress({ address, amount })
+  await walletClient.sendToAddress({ address, amount: sat2btc(sats) })
   await walletClient.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
 }
 
@@ -76,11 +78,11 @@ function getBlockReward(height = 0, halvingBlocks = 150) {
 
 export const fundWalletIdFromOnchain = async ({
   walletId,
-  amountInBitcoin,
+  sats,
   lnd,
 }: {
   walletId: WalletId
-  amountInBitcoin: number
+  sats: Satoshis
   lnd: AuthenticatedLnd
 }) => {
   const address = await createOnChainAddress(walletId)
@@ -89,7 +91,7 @@ export const fundWalletIdFromOnchain = async ({
   await sendToAddressAndConfirm({
     walletClient: bitcoindOutside,
     address,
-    amount: amountInBitcoin,
+    sats,
   })
   await waitUntilBlockHeight({ lnd })
 
@@ -99,12 +101,12 @@ export const fundWalletIdFromOnchain = async ({
 
 export const fundWalletIdFromLightning = async ({
   walletId,
-  amount,
+  sats,
 }: {
   walletId: WalletId
-  amount: Satoshis
+  sats: Satoshis
 }) => {
-  const invoice = await addInvoiceForSelf({ walletId, amount })
+  const invoice = await addInvoiceForSelf({ walletId, amount: Number(sats) })
   if (invoice instanceof Error) return invoice
 
   await pay({ lnd: lndOutside1, request: invoice.paymentRequest })

@@ -40,7 +40,7 @@ export const OnChainService = (
   const getBalance = async (): Promise<Satoshis | OnChainServiceError> => {
     try {
       const { chain_balance } = await getChainBalance({ lnd })
-      return toSats(chain_balance)
+      return toSats(BigInt(chain_balance))
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
       return new UnknownOnChainServiceError(errDetails)
@@ -124,7 +124,7 @@ export const OnChainService = (
     address,
     targetConfirmations,
   }: GetOnChainFeeEstimateArgs): Promise<Satoshis | OnChainServiceError> => {
-    const sendTo = [{ address, tokens: amount }]
+    const sendTo = [{ address, tokens: Number(amount) }]
     try {
       const { fee } = await getChainFeeEstimate({
         lnd,
@@ -132,7 +132,7 @@ export const OnChainService = (
         target_confirmations: targetConfirmations,
       })
 
-      return toSats(fee)
+      return toSats(BigInt(fee))
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
       return new UnknownOnChainServiceError(errDetails)
@@ -148,7 +148,7 @@ export const OnChainService = (
       const { id } = await sendToChainAddress({
         lnd,
         address,
-        tokens: amount,
+        tokens: Number(amount),
         utxo_confirmations: 0,
         target_confirmations: targetConfirmations,
       })
@@ -190,7 +190,7 @@ export const extractIncomingTransactions = ({
         IncomingOnChainTransaction({
           confirmations: tx.confirmation_count || 0,
           rawTx: decoder.decode(tx.transaction as string),
-          fee: toSats(tx.fee || 0),
+          fee: tx.fee ? toSats(BigInt(tx.fee)) : toSats(0n),
           createdAt: new Date(tx.created_at),
         }),
     )
@@ -210,7 +210,7 @@ export const extractOutgoingTransactions = ({
         OutgoingOnChainTransaction({
           confirmations: tx.confirmation_count || 0,
           rawTx: decoder.decode(tx.transaction as string),
-          fee: toSats(tx.fee || 0),
+          fee: tx.fee ? toSats(BigInt(tx.fee)) : toSats(0n),
           createdAt: new Date(tx.created_at),
         }),
     )

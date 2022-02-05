@@ -10,19 +10,16 @@ jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
 
-let price, spy
+let spy
 
 beforeAll(async () => {
-  price = await Prices.getCurrentPrice()
-  if (price instanceof Error) throw price
-
   const ledgerService = serviceLedger.LedgerService()
 
   spy = jest.spyOn(serviceLedger, "LedgerService").mockImplementation(() => ({
     ...ledgerService,
     allTxVolumeSince: async () => ({
-      outgoingSats: toSats(10000),
-      incomingSats: toSats(10000),
+      outgoingSats: toSats(10_000n),
+      incomingSats: toSats(10_000n),
     }),
   }))
 })
@@ -32,7 +29,10 @@ afterAll(() => {
   // jest.restoreAllMocks()
 })
 
-describe("notification", () => {
+describe("notification", async () => {
+  const price = await Prices.getCurrentPrice()
+  if (price instanceof Error) throw price
+
   describe("sendNotification", () => {
     it("sends daily balance to active users", async () => {
       await sendDefaultWalletBalanceToUsers(baseLogger)
@@ -53,11 +53,14 @@ describe("notification", () => {
         const balance = await LedgerService().getWalletBalance(defaultWalletId)
         if (balance instanceof Error) throw balance
 
-        const expectedUsdBalance = (price * balance).toLocaleString("en", localeOpts)
-        const expectedSatsBalance = balance.toLocaleString("en", localeOpts)
+        const displayCurrencyBalance = (price * Number(balance)).toLocaleString(
+          "en",
+          localeOpts,
+        )
+        const satsBalance = balance.toLocaleString("en")
 
         expect(call.title).toBe(
-          `Your balance is $${expectedUsdBalance} (${expectedSatsBalance} sats)`,
+          `Your balance is $${displayCurrencyBalance} (${satsBalance} sats)`,
         )
       }
     })

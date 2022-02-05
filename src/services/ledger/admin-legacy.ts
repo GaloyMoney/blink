@@ -1,3 +1,4 @@
+import { toSats } from "@domain/bitcoin"
 import {
   LedgerTransactionType,
   liabilitiesMainAccount,
@@ -15,10 +16,10 @@ import {
 import { MainBook } from "./books"
 import { getBankOwnerWalletId } from "./caching"
 
-const getWalletBalance = async (account: string, query = {}) => {
+const getWalletBalance = async (account: string, query = {}): Promise<Satoshis> => {
   const params = { account, currency: "BTC", ...query }
   const { balance } = await MainBook.balance(params)
-  return balance
+  return toSats(BigInt(balance))
 }
 
 export const getAssetsBalance = (currency = "BTC") =>
@@ -38,7 +39,7 @@ export const getBankOwnerBalance = async (currency = "BTC") => {
   return getWalletBalance(bankOwnerPath, { currency })
 }
 
-export const updateLndEscrow = async ({ amount }) => {
+export const updateLndEscrow = async (amount: Satoshis) => {
   const ledgerEscrow = await getLndEscrowBalance()
 
   // ledgerEscrow is negative
@@ -47,7 +48,7 @@ export const updateLndEscrow = async ({ amount }) => {
 
   const escrowData = { ledgerPrevAmount: ledgerEscrow, lndAmount: amount, diff }
 
-  if (diff === 0) {
+  if (diff === 0n) {
     return { ...escrowData, updated: false }
   }
 
@@ -77,6 +78,10 @@ export const addLndChannelOpeningOrClosingFee = async ({
   description,
   amount,
   metadata,
+}: {
+  description: string
+  amount: Satoshis
+  metadata
 }) => {
   const txMetadata = {
     currency: WalletCurrency.Btc,
@@ -89,8 +94,8 @@ export const addLndChannelOpeningOrClosingFee = async ({
 
   try {
     await MainBook.entry(description)
-      .debit(bankOwnerPath, amount, txMetadata)
-      .credit(lndAccountingPath, amount, txMetadata)
+      .debit(bankOwnerPath, Number(amount), txMetadata)
+      .credit(lndAccountingPath, Number(amount), txMetadata)
       .commit()
 
     return true
@@ -117,8 +122,8 @@ export const addLndRoutingRevenue = async ({
 
   try {
     await MainBook.entry("routing fee")
-      .credit(bankOwnerPath, amount, metadata)
-      .debit(lndAccountingPath, amount, metadata)
+      .credit(bankOwnerPath, Number(amount), metadata)
+      .debit(lndAccountingPath, Number(amount), metadata)
       .commit()
 
     return true

@@ -161,8 +161,8 @@ const addIntraledgerTxTransfer = async ({
     const entry = MainBook.entry(description)
 
     entry
-      .credit(recipientLiabilitiesWalletId, sats, creditMetadata)
-      .debit(senderLiabilitiesWalletId, sats, debitMetadata)
+      .credit(recipientLiabilitiesWalletId, Number(sats), creditMetadata)
+      .debit(senderLiabilitiesWalletId, Number(sats), debitMetadata)
 
     const savedEntry = await entry.commit()
     return translateToLedgerJournal(savedEntry)

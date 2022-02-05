@@ -14,9 +14,9 @@ describe("WalletTransactionHistory.fromLedger", () => {
   it("translates ledger txs to wallet txs", () => {
     const timestamp = new Date(Date.now())
 
-    const settlementAmount = toSats(100000)
+    const amount = toSats(100000n)
     const usd = 10
-    const settlementUsdPerSat = Math.abs(usd / settlementAmount)
+    const displayUsdPerSat = Math.abs(usd / Number(amount)) as DisplayCurrencyBaseAmount
     const walletId = crypto.randomUUID() as WalletId
 
     const ledgerTransactions: LedgerTransaction[] = [
@@ -26,9 +26,9 @@ describe("WalletTransactionHistory.fromLedger", () => {
         type: LedgerTransactionType.Invoice,
         paymentHash: "paymentHash" as PaymentHash,
         pubkey: "pubkey" as Pubkey,
-        debit: toSats(0),
-        fee: toSats(0),
-        credit: settlementAmount,
+        debit: toSats(0n),
+        fee: toSats(0n),
+        credit: amount,
         usd,
         feeUsd: 0.1,
         currency: "BTC",
@@ -46,9 +46,9 @@ describe("WalletTransactionHistory.fromLedger", () => {
         paymentHash: "paymentHash" as PaymentHash,
         pubkey: "pubkey" as Pubkey,
         username: "username" as Username,
-        debit: toSats(0),
-        fee: toSats(0),
-        credit: settlementAmount,
+        debit: toSats(0n),
+        fee: toSats(0n),
+        credit: amount,
         usd,
         feeUsd: 0.1,
         currency: "BTC",
@@ -65,9 +65,9 @@ describe("WalletTransactionHistory.fromLedger", () => {
         address: "address" as OnChainAddress,
         paymentHash: "paymentHash" as PaymentHash,
         txHash: "txHash" as OnChainTxHash,
-        debit: toSats(0),
-        fee: toSats(0),
-        credit: settlementAmount,
+        debit: toSats(0n),
+        fee: toSats(0n),
+        credit: amount,
         usd,
         feeUsd: 0.1,
         currency: "BTC",
@@ -80,9 +80,9 @@ describe("WalletTransactionHistory.fromLedger", () => {
         id: "id" as LedgerTransactionId,
         walletId,
         type: LedgerTransactionType.OnchainReceipt,
-        debit: toSats(0),
-        fee: toSats(0),
-        credit: settlementAmount,
+        debit: toSats(0n),
+        fee: toSats(0n),
+        credit: amount,
         usd,
         feeUsd: 0.1,
         currency: "BTC",
@@ -109,9 +109,9 @@ describe("WalletTransactionHistory.fromLedger", () => {
           type: SettlementMethod.Lightning,
           revealedPreImage: null,
         },
-        settlementAmount,
-        settlementFee: toSats(0),
-        settlementUsdPerSat,
+        settlementAmount: amount,
+        settlementFee: toSats(0n),
+        settlementUsdPerSat: displayUsdPerSat,
         deprecated: {
           description: "SomeMemo",
           usd,
@@ -135,9 +135,9 @@ describe("WalletTransactionHistory.fromLedger", () => {
           counterPartyUsername: "username",
         },
         memo: null,
-        settlementAmount,
-        settlementFee: toSats(0),
-        settlementUsdPerSat,
+        settlementAmount: amount,
+        settlementFee: toSats(0n),
+        settlementUsdPerSat: displayUsdPerSat,
 
         deprecated: {
           description: "from username",
@@ -161,9 +161,9 @@ describe("WalletTransactionHistory.fromLedger", () => {
           counterPartyUsername: null,
         },
         memo: null,
-        settlementAmount,
-        settlementFee: toSats(0),
-        settlementUsdPerSat,
+        settlementAmount: amount,
+        settlementFee: toSats(0n),
+        settlementUsdPerSat: displayUsdPerSat,
         deprecated: {
           description: "onchain_on_us",
           usd,
@@ -186,9 +186,9 @@ describe("WalletTransactionHistory.fromLedger", () => {
           transactionHash: "txHash",
         },
         memo: null,
-        settlementAmount,
-        settlementFee: toSats(0),
-        settlementUsdPerSat,
+        settlementAmount: amount,
+        settlementFee: toSats(0n),
+        settlementUsdPerSat: displayUsdPerSat,
         deprecated: {
           description: "onchain_receipt",
           usd,
@@ -226,7 +226,7 @@ describe("translateDescription", () => {
   it("returns username description for any amount", () => {
     const result = translateDescription({
       username: "username",
-      credit: MEMO_SHARING_SATS_THRESHOLD - 1,
+      credit: toSats(MEMO_SHARING_SATS_THRESHOLD - 1n),
       type: "invoice",
     })
     expect(result).toEqual("from username")
@@ -235,7 +235,7 @@ describe("translateDescription", () => {
   it("defaults to type under spam threshdeprecated", () => {
     const result = translateDescription({
       memoFromPayer: "some memo",
-      credit: 1,
+      credit: toSats(1n),
       type: "invoice",
     })
     expect(result).toEqual("invoice")
@@ -244,7 +244,7 @@ describe("translateDescription", () => {
   it("returns memo for debit", () => {
     const result = translateDescription({
       memoFromPayer: "some memo",
-      credit: 0,
+      credit: toSats(0n),
       type: "invoice",
     })
     expect(result).toEqual("some memo")
@@ -259,20 +259,20 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const incomingTxs: IncomingOnChainTransaction[] = [
       IncomingOnChainTransaction({
         confirmations: 1,
-        fee: toSats(1000),
+        fee: toSats(1000n),
         rawTx: {
           txHash: "txHash" as OnChainTxHash,
           outs: [
             {
-              sats: toSats(25000),
+              sats: toSats(25000n),
               address: "userAddress1" as OnChainAddress,
             },
             {
-              sats: toSats(50000),
+              sats: toSats(50000n),
               address: "userAddress2" as OnChainAddress,
             },
             {
-              sats: toSats(25000),
+              sats: toSats(25000n),
               address: "address3" as OnChainAddress,
             },
           ],
@@ -301,8 +301,8 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           type: SettlementMethod.OnChain,
           transactionHash: "txHash",
         },
-        settlementAmount: toSats(25000),
-        settlementFee: toSats(0),
+        settlementAmount: toSats(25000n),
+        settlementFee: toSats(0n),
         settlementUsdPerSat: 1,
         deprecated: {
           description: "pending",
@@ -324,9 +324,9 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           type: SettlementMethod.OnChain,
           transactionHash: "txHash",
         },
-        settlementAmount: toSats(50000),
+        settlementAmount: toSats(50000n),
         memo: null,
-        settlementFee: toSats(0),
+        settlementFee: toSats(0n),
         settlementUsdPerSat: 1,
         deprecated: {
           description: "pending",
@@ -349,12 +349,12 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const incomingTxs: IncomingOnChainTransaction[] = [
       IncomingOnChainTransaction({
         confirmations: 1,
-        fee: toSats(1000),
+        fee: toSats(1000n),
         rawTx: {
           txHash: "txHash" as OnChainTxHash,
           outs: [
             {
-              sats: toSats(25000),
+              sats: toSats(25000n),
               address: "userAddress1" as OnChainAddress,
             },
           ],
@@ -383,8 +383,8 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           transactionHash: "txHash",
         },
         memo: null,
-        settlementAmount: toSats(25000),
-        settlementFee: toSats(0),
+        settlementAmount: toSats(25000n),
+        settlementFee: toSats(0n),
         settlementUsdPerSat: NaN,
         deprecated: {
           description: "pending",

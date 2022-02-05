@@ -8,6 +8,6 @@ export const WithdrawalFeeCalculator = (): WithdrawalFeeCalculator => {
 
   return {
     onChainWithdrawalFee,
-    onChainIntraLedgerFee: (): Satoshis => toSats(0),
+    onChainIntraLedgerFee: (): Satoshis => toSats(0n),
   }
 }

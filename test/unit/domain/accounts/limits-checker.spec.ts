@@ -14,7 +14,7 @@ describe("LimitsChecker", () => {
     const userLimits = getUserLimits({ level })
     const twoFALimits = getTwoFALimits()
 
-    paymentAmount = toSats(10_000)
+    paymentAmount = toSats(10_000n)
     limitsChecker = LimitsChecker({
       userLimits,
       twoFALimits,
@@ -22,17 +22,17 @@ describe("LimitsChecker", () => {
 
     walletVolumeIntraledger = {
       outgoingSats: toSats(userLimits.onUsLimit - paymentAmount),
-      incomingSats: toSats(0),
+      incomingSats: toSats(0n),
     }
 
     walletVolumeWithdrawal = {
       outgoingSats: toSats(userLimits.withdrawalLimit - paymentAmount),
-      incomingSats: toSats(0),
+      incomingSats: toSats(0n),
     }
 
     walletVolumeTwoFA = {
       outgoingSats: toSats(twoFALimits.threshold - paymentAmount),
-      incomingSats: toSats(0),
+      incomingSats: toSats(0n),
     }
   })
 
@@ -58,19 +58,19 @@ describe("LimitsChecker", () => {
 
   it("passes for amount below limit", () => {
     const intraledgerLimitCheck = limitsChecker.checkIntraledger({
-      amount: toSats(paymentAmount - 1),
+      amount: toSats(paymentAmount - 1n),
       walletVolume: walletVolumeIntraledger,
     })
     expect(intraledgerLimitCheck).not.toBeInstanceOf(Error)
 
     const withdrawalLimitCheck = limitsChecker.checkWithdrawal({
-      amount: toSats(paymentAmount - 1),
+      amount: toSats(paymentAmount - 1n),
       walletVolume: walletVolumeWithdrawal,
     })
     expect(withdrawalLimitCheck).not.toBeInstanceOf(Error)
 
     const twoFALimitCheck = limitsChecker.checkTwoFA({
-      amount: toSats(paymentAmount - 1),
+      amount: toSats(paymentAmount - 1n),
       walletVolume: walletVolumeTwoFA,
     })
     expect(twoFALimitCheck).not.toBeInstanceOf(Error)
@@ -78,7 +78,7 @@ describe("LimitsChecker", () => {
 
   it("returns an error for exceeded intraledger amount", () => {
     const intraledgerLimitCheck = limitsChecker.checkIntraledger({
-      amount: toSats(paymentAmount + 1),
+      amount: toSats(paymentAmount + 1n),
       walletVolume: walletVolumeIntraledger,
     })
     expect(intraledgerLimitCheck).toBeInstanceOf(LimitsExceededError)
@@ -86,7 +86,7 @@ describe("LimitsChecker", () => {
 
   it("returns an error for exceeded withdrawal amount", () => {
     const withdrawalLimitCheck = limitsChecker.checkWithdrawal({
-      amount: toSats(paymentAmount + 1),
+      amount: toSats(paymentAmount + 1n),
       walletVolume: walletVolumeWithdrawal,
     })
     expect(withdrawalLimitCheck).toBeInstanceOf(LimitsExceededError)
@@ -94,7 +94,7 @@ describe("LimitsChecker", () => {
 
   it("returns an error for exceeded 2FA amount", () => {
     const twoFALimitCheck = limitsChecker.checkTwoFA({
-      amount: toSats(paymentAmount + 1),
+      amount: toSats(paymentAmount + 1n),
       walletVolume: walletVolumeTwoFA,
     })
     expect(twoFALimitCheck).toBeInstanceOf(LimitsExceededError)

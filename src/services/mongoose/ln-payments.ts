@@ -79,7 +79,7 @@ const lnPaymentFromRaw = (result: LnPaymentType): PersistedLnPaymentLookup => ({
   paymentRequest: result.paymentRequest as EncodedPaymentRequest,
   sentFromPubkey: result.sentFromPubkey as Pubkey,
   milliSatsAmount: toMilliSatsFromString(result.milliSatsAmount),
-  roundedUpAmount: toSats(result.roundedUpAmount),
+  roundedUpAmount: toSats(BigInt(result.roundedUpAmount)),
   confirmedDetails: result.confirmedDetails
     ? {
         confirmedAt: result.confirmedDetails.confirmedAt,

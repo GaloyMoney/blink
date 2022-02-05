@@ -44,7 +44,7 @@ beforeAll(async () => {
   await createUserWalletFromUserRef(sendingUserIndex)
   await createUserWalletFromUserRef(receivingUserRef)
   const sendingWalletId = await getDefaultWalletIdByTestUserRef(sendingUserIndex)
-  await fundWalletIdFromLightning({ walletId: sendingWalletId, amount: toSats(50_000) })
+  await fundWalletIdFromLightning({ walletId: sendingWalletId, sats: toSats(50_000n) })
   receivingWalletId = await getDefaultWalletIdByTestUserRef(receivingUserRef)
 
   serverPid = await startServer()

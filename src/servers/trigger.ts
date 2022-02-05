@@ -37,7 +37,7 @@ export async function onchainTransactionEventHandler(
     onUs: false,
   })
 
-  const fee = tx.fee || 0
+  const fee = BigInt(tx.fee || 0)
   const txHash = tx.id as OnChainTxHash
 
   if (tx.is_outgoing) {
@@ -77,7 +77,7 @@ export async function onchainTransactionEventHandler(
 
     await NotificationsService(onchainLogger).onChainTransactionPayment({
       walletId,
-      amount: toSats(Number(tx.tokens) - fee),
+      amount: toSats(BigInt(tx.tokens) - fee),
       txHash,
       usdPerSat,
     })
@@ -105,7 +105,7 @@ export async function onchainTransactionEventHandler(
         NotificationsService(onchainLogger).onChainTransactionReceivedPending({
           walletId: wallet.id,
           // TODO: tx.tokens represent the total sum, need to segregate amount by address
-          amount: toSats(Number(tx.tokens)),
+          amount: toSats(BigInt(tx.tokens)),
           txHash,
           usdPerSat,
         }),

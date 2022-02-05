@@ -29,7 +29,7 @@ export const getRemainingIntraledgerLimit = async ({
 
   const intraledgerLimit = getUserLimits({ level: accountLevel }).onUsLimit
   const remainingLimit = toSats(intraledgerLimit - walletVolume.outgoingSats)
-  return remainingLimit > 0 ? remainingLimit : toSats(0)
+  return remainingLimit > 0 ? remainingLimit : toSats(0n)
 }
 
 export const getRemainingWithdrawalLimit = async ({
@@ -48,7 +48,7 @@ export const getRemainingWithdrawalLimit = async ({
 
   const withdrawalLimit = getUserLimits({ level: accountLevel }).withdrawalLimit
   const remainingLimit = toSats(withdrawalLimit - walletVolume.outgoingSats)
-  return remainingLimit > 0 ? remainingLimit : toSats(0)
+  return remainingLimit > 0 ? remainingLimit : toSats(0n)
 }
 
 export const getRemainingTwoFALimit = async (
@@ -63,5 +63,5 @@ export const getRemainingTwoFALimit = async (
 
   const twoFALimit = getTwoFALimits().threshold
   const remainingLimit = toSats(twoFALimit - walletVolume.outgoingSats)
-  return remainingLimit > 0 ? remainingLimit : toSats(0)
+  return remainingLimit > 0 ? remainingLimit : toSats(0n)
 }

@@ -157,7 +157,7 @@ const executePaymentViaIntraledger = async ({
 }): Promise<PaymentSendStatus | ApplicationError> => {
   const validator = PaymentInputValidator(WalletsRepository().findById)
   const validationResult = await validator.validatePaymentInput({
-    amount: amountRaw,
+    amount: Number(amountRaw), // FIXME
     senderAccount,
     senderWalletId,
     recipientWalletId,

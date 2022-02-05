@@ -66,11 +66,11 @@ export const deleteFailedPaymentsAttemptAllLnds = async () => {
 export const lndsBalances = async () => {
   const data = await Promise.all(getLnds().map(({ lnd }) => lndBalances({ lnd })))
   return {
-    total: toSats(sumBy(data, "total")),
-    onChain: toSats(sumBy(data, "onChain")),
-    offChain: toSats(sumBy(data, "offChain")),
-    opening_channel_balance: toSats(sumBy(data, "opening_channel_balance")),
-    closing_channel_balance: toSats(sumBy(data, "closing_channel_balance")),
+    total: toSats(BigInt(sumBy(data, "total"))),
+    onChain: toSats(BigInt(sumBy(data, "onChain"))),
+    offChain: toSats(BigInt(sumBy(data, "offChain"))),
+    opening_channel_balance: toSats(BigInt(sumBy(data, "opening_channel_balance"))),
+    closing_channel_balance: toSats(BigInt(sumBy(data, "closing_channel_balance"))),
   }
 }
 
@@ -181,7 +181,7 @@ export const getRoutingFees = async ({
 
   // returns revenue for each date by reducing all forwards for each date
   const feePerDate = mapValues(dateGroupedForwards, (e) =>
-    toSats(e.reduce((sum, { fee_mtokens }) => sum + +fee_mtokens, 0) / 1000),
+    toSats(BigInt(e.reduce((sum, { fee_mtokens }) => sum + +fee_mtokens, 0) / 1000)),
   )
 
   // returns an array of objects where each object has key = date and value = fees
@@ -271,7 +271,7 @@ export const updateEscrows = async () => {
   )
   const escrowInLnd = sumBy(selfInitiatedChannels, "commit_transaction_fee")
 
-  const result = await updateLndEscrow({ amount: escrowInLnd })
+  const result = await updateLndEscrow(toSats(BigInt(escrowInLnd)))
 
   baseLogger.info({ ...result, channels }, "escrow recording")
 }
@@ -313,8 +313,12 @@ export const onChannelUpdated = async ({
     baseLogger.error({ transactions }, "fee doesn't exist")
     return
   }
+  if (tx.fee === 0) {
+    baseLogger.error({ transactions }, "fee is 0")
+    return
+  }
 
-  const fee = tx.fee
+  const fee = toSats(BigInt(tx.fee))
 
   // let tx
   // try {
@@ -326,8 +330,6 @@ export const onChannelUpdated = async ({
   // TODO: there is no fee currently given by bitcoind for raw transaction
   // either calculate it from the input, or use an indexer
   // const { fee } = tx.fee
-
-  assert(fee > 0)
 
   const data = {
     description: `channel ${stateChange} onchain fee`,

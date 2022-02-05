@@ -369,10 +369,10 @@ async function sendToWalletTestWrapper({
   await sendToAddressAndConfirm({
     walletClient: bitcoindOutside,
     address,
-    amount: sat2btc(amountSats),
+    sats: amountSats,
   })
   await checkBalance(blockNumber)
 }
 
 const getRandomAmountOfSats = () =>
-  toSats(+100_000_000 + Math.floor(Math.random() * 10 ** 6))
+  toSats(100_000_000n + BigInt(Math.floor(Math.random() * 10 ** 6)))

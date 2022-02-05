@@ -51,9 +51,9 @@ export const admin = {
       const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
 
       const entry = MainBook.entry(description)
-        .credit(lndAccountingPath, sats + fee, metadata)
-        .debit(bankOwnerPath, fee, metadata)
-        .debit(bitcoindAccountingPath, sats, metadata)
+        .credit(lndAccountingPath, Number(sats + fee), metadata)
+        .debit(bankOwnerPath, Number(fee), metadata)
+        .debit(bitcoindAccountingPath, Number(sats), metadata)
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)
@@ -87,9 +87,9 @@ export const admin = {
       const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
 
       const entry = MainBook.entry(description)
-        .credit(bitcoindAccountingPath, sats + fee, metadata)
-        .debit(bankOwnerPath, fee, metadata)
-        .debit(lndAccountingPath, sats, metadata)
+        .credit(bitcoindAccountingPath, Number(sats + fee), metadata)
+        .debit(bankOwnerPath, Number(fee), metadata)
+        .debit(lndAccountingPath, Number(sats), metadata)
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)

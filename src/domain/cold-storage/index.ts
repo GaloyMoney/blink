@@ -17,7 +17,7 @@ export const RebalanceChecker = ({
       }
     }
 
-    return toSats(0)
+    return toSats(0n)
   }
   return {
     getWithdrawFromHotWalletAmount,

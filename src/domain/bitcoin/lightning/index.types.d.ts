@@ -12,6 +12,8 @@ type PaymentIdentifyingSecret = string & { readonly brand: unique symbol }
 type FeatureBit = number & { readonly brand: unique symbol }
 type FeatureType = string & { readonly brand: unique symbol }
 
+type FeeCapPercent = number & { readonly brand: unique symbol }
+
 type PagingStartToken = undefined
 type PagingContinueToken = string & { readonly brand: unique symbol }
 type PagingStopToken = false
@@ -93,10 +95,10 @@ type LnInvoice = {
   readonly paymentRequest: EncodedPaymentRequest
   readonly milliSatsAmount: MilliSatoshis
   readonly description: string
-  readonly cltvDelta: number | null
-  readonly amount: Satoshis | null
+  readonly cltvDelta: number | undefined
+  readonly amount: Satoshis | undefined
   readonly routeHints: Hop[][]
-  readonly paymentSecret: PaymentIdentifyingSecret | null
+  readonly paymentSecret: PaymentIdentifyingSecret | undefined
   readonly features: LnInvoiceFeature[]
 }
 

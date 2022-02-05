@@ -1,5 +1,5 @@
 interface IPaymentNotification {
-  amount: number
+  amount: Satoshis
   type: string
   user: User
   logger: Logger

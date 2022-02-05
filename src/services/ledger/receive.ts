@@ -138,8 +138,8 @@ const addReceiptNoFee = async ({
 
   try {
     const entry = MainBook.entry(description)
-      .credit(liabilitiesWalletId, sats, metadata)
-      .debit(lndAccountingPath, sats, metadata)
+      .credit(liabilitiesWalletId, Number(sats), metadata)
+      .debit(lndAccountingPath, Number(sats), metadata)
 
     const savedEntry = await entry.commit()
     return translateToLedgerJournal(savedEntry)
@@ -173,9 +173,9 @@ const addReceiptFee = async ({
 
   try {
     const entry = MainBook.entry(description)
-      .credit(liabilitiesWalletId, sats - fee, metadata)
-      .debit(lndAccountingPath, sats, metadata)
-      .credit(bankOwnerPath, fee, metadata)
+      .credit(liabilitiesWalletId, Number(sats - fee), metadata)
+      .debit(lndAccountingPath, Number(sats), metadata)
+      .credit(bankOwnerPath, Number(fee), metadata)
 
     const savedEntry = await entry.commit()
     return translateToLedgerJournal(savedEntry)

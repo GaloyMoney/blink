@@ -28,7 +28,7 @@ const decodeOutput = (tx: Transaction, network: Network): TxOut[] => {
       // OP_RETURN outputs don't have a valid address associated with them
     }
     return {
-      sats: toSats(out.value),
+      sats: toSats(BigInt(out.value)),
       address: decodedAddress,
     }
   }

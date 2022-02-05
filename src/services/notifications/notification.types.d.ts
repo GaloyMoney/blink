@@ -1,6 +1,6 @@
 interface IDataNotification {
   type: TransactionType
-  amount: number
+  amount: Satoshis
   hash?: string
   txid?: string // FIXME in mongodb, there is no differentiation between hash and txid?
 }

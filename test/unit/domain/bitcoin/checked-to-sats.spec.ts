@@ -3,7 +3,7 @@ import { checkedToSats } from "@domain/bitcoin"
 describe("sats-amount-check", () => {
   it("Positive amount value for satoshis passes", () => {
     const sats = checkedToSats(100)
-    expect(sats).toEqual(100)
+    expect(sats).toEqual(100n)
   })
 
   it("Zero amount value for satoshis fails", () => {

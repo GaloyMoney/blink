@@ -1,11 +1,11 @@
 import { getCurrentPrice } from "@app/prices"
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
-import { checkedtoCents, satsToCentsOptionPricing } from "@domain/fiat"
+import { checkedtoCents } from "@domain/fiat"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
-import { checkedToWalletId, WalletCurrency } from "@domain/wallets"
+import { AmountConverter, checkedToWalletId, WalletCurrency } from "@domain/wallets"
 import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 import { consumeLimiter } from "@services/rate-limit"
@@ -75,7 +75,7 @@ export const addInvoiceNoAmountForSelf = async ({
   })
 
   return registerAndPersistInvoice({
-    sats: toSats(0),
+    sats: toSats(0n),
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForSelf,
     expiresAt,
@@ -146,7 +146,7 @@ export const addInvoiceNoAmountForRecipient = async ({
   })
 
   return registerAndPersistInvoice({
-    sats: toSats(0),
+    sats: toSats(0n),
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
     expiresAt,
@@ -181,8 +181,8 @@ const addInvoiceFiatDenomiation = async ({
   memo = "",
   descriptionHash,
 }: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
-  const usdCents = checkedtoCents(amount)
-  if (usdCents instanceof Error) return usdCents
+  const cents = checkedtoCents(BigInt(amount)) // FIXME: remove BigInt casting
+  if (cents instanceof Error) return cents
 
   const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Usd, new Date())
 
@@ -190,15 +190,26 @@ const addInvoiceFiatDenomiation = async ({
   const price = await getCurrentPrice()
   if (price instanceof Error) return price
 
-  const sats = satsToCentsOptionPricing({ usdCents, price })
+  // @ts-expect-error TODO: implement dealerFns and displayPriceFns
+  const amountConverter = AmountConverter({ dealerFns, displayPriceFns })
+
+  const amounts = await amountConverter.getAmountsSend({
+    walletCurrency: WalletCurrency.Usd,
+    cents,
+  })
+
+  if (amounts instanceof Error) return amounts
+
+  // TODO: remove
+  if (amounts === undefined) throw Error()
 
   return registerAndPersistInvoice({
-    sats,
+    sats: amounts.sats,
     memo,
     walletInvoiceCreateFn,
     expiresAt,
     descriptionHash,
-    usdCents,
+    usdCents: cents,
   })
 }
 

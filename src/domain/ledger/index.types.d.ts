@@ -25,8 +25,8 @@ type LedgerTransaction = {
   readonly id: LedgerTransactionId
   readonly walletId: WalletId | undefined // FIXME create a subclass so that this field is always set for liabilities wallets
   readonly type: LedgerTransactionType
-  readonly debit: Satoshis
-  readonly credit: Satoshis
+  readonly debit: CurrencyBaseAmount
+  readonly credit: CurrencyBaseAmount
   readonly fee: Satoshis
   readonly currency: WalletCurrency
   readonly timestamp: Date

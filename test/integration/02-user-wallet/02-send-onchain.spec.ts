@@ -103,7 +103,7 @@ afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
-const amount = 10040 // sats
+const amount = 10_040 // sats
 const targetConfirmations = toTargetConfs(1)
 
 describe("UserWallet - onChainPay", () => {
@@ -148,11 +148,13 @@ describe("UserWallet - onChainPay", () => {
       )
       expect(pendingTxs.length).toBe(1)
       const pendingTx = pendingTxs[0]
-      expect(pendingTx.settlementAmount).toBe(-amount - pendingTx.settlementFee)
+      expect(pendingTx.settlementAmount).toBe(-BigInt(amount) - pendingTx.settlementFee)
       pendingTxHash = pendingTx.id as OnChainTxHash
 
       const interimBalance = await getBTCBalance(walletIdA)
-      expect(interimBalance).toBe(initialBalanceUserA - amount - pendingTx.settlementFee)
+      expect(interimBalance).toBe(
+        initialBalanceUserA - BigInt(amount) - pendingTx.settlementFee,
+      )
       await checkIsBalanced()
     }
 
@@ -197,7 +199,7 @@ describe("UserWallet - onChainPay", () => {
       const settledTx = last(settledTxs) as WalletTransaction
 
       const feeRates = getFeeRates()
-      const fee = feeRates.withdrawFeeFixed + 7050
+      const fee = feeRates.withdrawFeeFixed + 7050n
 
       expect(settledTx.settlementFee).toBe(fee)
       expect(settledTx.settlementAmount).toBe(-amount - fee)
@@ -205,7 +207,7 @@ describe("UserWallet - onChainPay", () => {
       expect(settledTx.settlementUsdPerSat).toBeGreaterThan(0)
 
       const finalBalance = await getBTCBalance(walletIdA)
-      expect(finalBalance).toBe(initialBalanceUserA - amount - fee)
+      expect(finalBalance).toBe(initialBalanceUserA - BigInt(amount) - fee)
     }
 
     sub.removeAllListeners()
@@ -562,7 +564,7 @@ describe("UserWallet - onChainPay", () => {
       senderAccount,
       senderWalletId: walletIdE,
       address,
-      amount: initialBalanceUserE + 1,
+      amount: Number(initialBalanceUserE) + 1,
       targetConfirmations,
       memo: null,
       sendAll: false,
@@ -581,7 +583,7 @@ describe("UserWallet - onChainPay", () => {
       senderAccount: accountB,
       senderWalletId: walletIdB,
       address,
-      amount: initialBalanceUserB,
+      amount: Number(initialBalanceUserB),
       targetConfirmations,
       memo: null,
       sendAll: false,
@@ -628,7 +630,7 @@ describe("UserWallet - onChainPay", () => {
     if (!user0.level) throw new Error("Invalid user level")
 
     const userLimits = getUserLimits({ level: user0.level })
-    const amount = userLimits.withdrawalLimit - outgoingSats + 1
+    const amount = Number(userLimits.withdrawalLimit - outgoingSats + 1n)
 
     const status = await Wallets.payOnChainByWalletId({
       senderAccount: accountA,
@@ -670,7 +672,7 @@ describe("UserWallet - onChainPay", () => {
         senderAccount: accountA,
         senderWalletId: walletIdA,
         address: RANDOM_ADDRESS,
-        amount: remainingLimit + 1,
+        amount: Number(remainingLimit) + 1,
         targetConfirmations,
         memo: null,
         sendAll: false,

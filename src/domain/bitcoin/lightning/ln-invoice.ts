@@ -1,4 +1,4 @@
-import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromBigInt, toSats } from "@domain/bitcoin"
 import { parsePaymentRequest } from "invoices"
 
 import { LnInvoiceDecodeError } from "./errors"
@@ -23,12 +23,12 @@ export const decodeInvoice = (
     return new LnInvoiceMissingPaymentSecretError()
   }
   const paymentSecret: PaymentIdentifyingSecret = decodedInvoice.payment
-  const amount: Satoshis | null = decodedInvoice.tokens
-    ? toSats(decodedInvoice.tokens)
-    : null
-  const cltvDelta: number | null = decodedInvoice.cltv_delta
+  const amount: Satoshis | undefined = decodedInvoice.tokens
+    ? toSats(BigInt(decodedInvoice.tokens))
+    : undefined
+  const cltvDelta: number | undefined = decodedInvoice.cltv_delta
     ? decodedInvoice.cltv_delta
-    : null
+    : undefined
 
   let routeHints: Hop[][] = []
   if (decodedInvoice.routes) {
@@ -52,7 +52,7 @@ export const decodeInvoice = (
     description: decodedInvoice.description || "",
     paymentHash: decodedInvoice.id as PaymentHash,
     destination: decodedInvoice.destination as Pubkey,
-    milliSatsAmount: toMilliSatsFromNumber(decodedInvoice.mtokens || 0),
+    milliSatsAmount: toMilliSatsFromBigInt(decodedInvoice.mtokens || 0),
     features: (decodedInvoice.features || []) as LnInvoiceFeature[],
   }
 }

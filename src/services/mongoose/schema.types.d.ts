@@ -65,7 +65,7 @@ interface UserRecord {
 
   twilio?: TwilioObjectForUser
   depositFeeRatio?: number
-  withdrawFee?: number
+  withdrawFee: number
   earn?: string[]
   deviceToken: string[]
   contacts: ContactObjectForUser[]

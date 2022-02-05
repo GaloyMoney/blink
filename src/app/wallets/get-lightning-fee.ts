@@ -1,7 +1,8 @@
-import { checkedToSats, toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
+import { checkedToSats, toMilliSatsFromBigInt, toSats } from "@domain/bitcoin"
 import { decodeInvoice, LnFeeCalculator } from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError,
+  InvalidSatoshiAmount,
   LnPaymentRequestZeroAmountRequiredError,
 } from "@domain/errors"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
@@ -19,7 +20,11 @@ export const getRoutingFee = async ({
 }): Promise<Satoshis | ApplicationError> => {
   const decodedInvoice = decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
-  const paymentAmount = checkedToSats(decodedInvoice.amount || 0)
+
+  if (!decodedInvoice.amount) return new InvalidSatoshiAmount()
+
+  // FIXME: going back to Number is inefficient. add checkToSats from bigint
+  const paymentAmount = checkedToSats(Number(decodedInvoice.amount))
   if (paymentAmount instanceof Error) return paymentAmount
 
   return feeProbe({ walletId, decodedInvoice, paymentAmount })
@@ -32,7 +37,7 @@ export const getNoAmountLightningFee = async ({
 }: {
   walletId: WalletId
   paymentRequest: EncodedPaymentRequest
-  amount: Satoshis
+  amount: number
 }): Promise<Satoshis | ApplicationError> => {
   const decodedInvoice = decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
@@ -73,16 +78,16 @@ const feeProbe = async ({
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
   if (lndService.isLocal(destination)) {
-    return toSats(0)
+    return toSats(0n)
   }
 
   const key = CachedRouteLookupKeyFactory().create({
     paymentHash,
-    milliSats: toMilliSatsFromNumber(paymentAmount * 1000),
+    milliSats: toMilliSatsFromBigInt(paymentAmount * 1000n),
   })
   const routeFromCache = await RoutesCache().findByKey(key)
   const validCachedRoute = !(routeFromCache instanceof Error)
-  if (validCachedRoute) return toSats(routeFromCache.route.fee)
+  if (validCachedRoute) return toSats(BigInt(routeFromCache.route.safe_fee))
 
   const maxFee = LnFeeCalculator().max(paymentAmount)
 
@@ -93,7 +98,7 @@ const feeProbe = async ({
   const cachedRoute = await RoutesCache().store({ key, routeToCache })
   if (cachedRoute instanceof Error) return cachedRoute
 
-  return toSats(rawRoute.fee)
+  return toSats(BigInt(rawRoute.safe_fee))
 }
 
 const noAmountProbeForFee = async ({
@@ -121,16 +126,16 @@ const noAmountProbeForFee = async ({
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
   if (lndService.isLocal(destination)) {
-    return toSats(0)
+    return toSats(0n)
   }
 
   const key = CachedRouteLookupKeyFactory().create({
     paymentHash,
-    milliSats: toMilliSatsFromNumber(paymentAmount * 1000),
+    milliSats: toMilliSatsFromBigInt(paymentAmount * 1000n),
   })
   const routeFromCache = await RoutesCache().findByKey(key)
   const validCachedRoute = !(routeFromCache instanceof Error)
-  if (validCachedRoute) return toSats(routeFromCache.route.fee)
+  if (validCachedRoute) return toSats(BigInt(routeFromCache.route.safe_fee))
 
   const maxFee = LnFeeCalculator().max(paymentAmount)
 
@@ -145,5 +150,5 @@ const noAmountProbeForFee = async ({
   const cachedRoute = await RoutesCache().store({ key, routeToCache })
   if (cachedRoute instanceof Error) return cachedRoute
 
-  return toSats(rawRoute.fee)
+  return toSats(BigInt(rawRoute.safe_fee))
 }

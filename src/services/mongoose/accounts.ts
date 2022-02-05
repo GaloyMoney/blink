@@ -113,7 +113,7 @@ export const AccountsRepository = (): IAccountsRepository => {
             }),
           ),
           defaultWalletId,
-          withdrawFee,
+          withdrawFee: Number(withdrawFee),
         },
         {
           new: true,
@@ -164,7 +164,7 @@ const translateToAccount = (result: UserRecord): Account => ({
     [],
   ),
   depositFeeRatio: result.depositFeeRatio as DepositFeeRatio,
-  withdrawFee: result.withdrawFee as Satoshis,
+  withdrawFee: BigInt(result.withdrawFee) as Satoshis,
 })
 
 const projection = {

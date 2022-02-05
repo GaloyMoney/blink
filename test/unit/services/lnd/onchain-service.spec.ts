@@ -1,4 +1,3 @@
-import { toSats } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import {
   extractIncomingTransactions,
@@ -29,27 +28,27 @@ describe("extractIncomingTransactions", () => {
             id: "outgoing",
             is_outgoing: true,
             transaction: validTxHex,
-            fee: toSats(1),
+            fee: 1,
             created_at,
             is_confirmed: false,
             output_addresses: ["address1"],
-            tokens: toSats(1000),
+            tokens: 1000,
           },
           {
             id: "incoming",
             is_outgoing: false,
             transaction: validTxHex,
-            fee: toSats(10),
+            fee: 10,
             created_at,
             is_confirmed: false,
             output_addresses: ["address1"],
-            tokens: toSats(1000),
+            tokens: 1000,
           },
         ],
       },
     })
     expect(txs.length).toEqual(1)
-    expect(txs[0].fee).toEqual(toSats(10))
+    expect(txs[0].fee).toEqual(10n)
   })
 
   it("filters txs with no valid hex", () => {
@@ -60,11 +59,11 @@ describe("extractIncomingTransactions", () => {
           {
             id: "incoming",
             is_outgoing: false,
-            fee: toSats(1),
+            fee: 1,
             created_at,
             is_confirmed: false,
             output_addresses: ["address1"],
-            tokens: toSats(1000),
+            tokens: 1000,
           },
         ],
       },
@@ -84,13 +83,13 @@ describe("extractIncomingTransactions", () => {
             created_at,
             is_confirmed: false,
             output_addresses: ["address1"],
-            tokens: toSats(1000),
+            tokens: 1000,
           },
         ],
       },
     })
     expect(txs.length).toEqual(1)
-    expect(txs[0].fee).toEqual(toSats(0))
+    expect(txs[0].fee).toEqual(0n)
   })
 })
 
@@ -108,27 +107,27 @@ describe("extractOutgoingTransactions", () => {
             id: "outgoing",
             is_outgoing: false,
             transaction: validTxHex,
-            fee: toSats(1),
+            fee: 1,
             created_at,
             is_confirmed: false,
             output_addresses: ["address1"],
-            tokens: toSats(1000),
+            tokens: 1000,
           },
           {
             id: "outgoing",
             is_outgoing: true,
             transaction: validTxHex,
-            fee: toSats(10),
+            fee: 10,
             created_at,
             is_confirmed: false,
             output_addresses: ["address1"],
-            tokens: toSats(1000),
+            tokens: 1000,
           },
         ],
       },
     })
     expect(txs.length).toEqual(1)
-    expect(txs[0].fee).toEqual(toSats(10))
+    expect(txs[0].fee).toEqual(10n)
   })
 
   it("filters txs with no valid hex", () => {
@@ -139,11 +138,11 @@ describe("extractOutgoingTransactions", () => {
           {
             id: "outgoing",
             is_outgoing: true,
-            fee: toSats(1),
+            fee: 1,
             created_at,
             is_confirmed: false,
             output_addresses: ["address1"],
-            tokens: toSats(1000),
+            tokens: 1000,
           },
         ],
       },
@@ -163,14 +162,14 @@ describe("extractOutgoingTransactions", () => {
             created_at,
             is_confirmed: false,
             output_addresses: ["19H8z5HQ4tuuGZRYJH5xbG2P64KimjnLFx"],
-            tokens: toSats(700768),
+            tokens: 700768,
           },
         ],
       },
     })
     expect(txs.length).toBe(1)
-    expect(txs[0].fee).toBe(toSats(0))
+    expect(txs[0].fee).toBe(0n)
     expect(txs[0].rawTx.outs[0].address).toBe("19H8z5HQ4tuuGZRYJH5xbG2P64KimjnLFx")
-    expect(txs[0].rawTx.outs[0].sats).toBe(700768)
+    expect(txs[0].rawTx.outs[0].sats).toBe(700_768n)
   })
 })
