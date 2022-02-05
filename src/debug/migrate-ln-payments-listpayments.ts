@@ -10,34 +10,51 @@ import { LndService } from "@services/lnd"
 import { getLndFromPubkey } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository } from "@services/mongoose"
+import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"
 
 const indexRegex = /{"offset":(\d+),"limit":\d+}/
 
-export const migrateLnPaymentsFromLnd = async (): Promise<true | ApplicationError> => {
-  const lndService = LndService()
-  if (lndService instanceof Error) return lndService
+export const migrateLnPaymentsFromLnd = async () =>
+  asyncRunInSpan(
+    "debug.migrateLnPaymentsFromLnd",
+    { [SemanticAttributes.CODE_FUNCTION]: "debug.migrateLnPaymentsFromLnd" },
+    async (): Promise<true | ApplicationError> => {
+      const lndService = LndService()
+      if (lndService instanceof Error) return lndService
 
-  const listFns = [
-    lndService.listSettledAndPendingPayments,
-    lndService.listFailedPayments,
-  ]
-  const pubkeys = lndService.listActivePubkeys()
+      const listFns = [
+        lndService.listSettledAndPendingPayments,
+        lndService.listFailedPayments,
+      ]
+      const pubkeys = lndService.listActivePubkeys()
 
-  await listFns.map((listFn): Promise<true>[] =>
-    pubkeys.map(async (pubkey): Promise<true> => {
-      let count = await getFirstIndex(pubkey)
-      if (count instanceof Error) return true
+      await listFns.map((listFn): Promise<true>[] =>
+        pubkeys.map(async (pubkey): Promise<true> => {
+          let count = await getFirstIndex(pubkey)
+          if (count instanceof Error) return true
 
-      while (count !== 0) {
-        count = await migrateLnPaymentsByFunction({ offset: count, pubkey, listFn })
-        if (count instanceof Error) break
-      }
+          while (count !== 0) {
+            count = await asyncRunInSpan(
+              "debug.migrateLnPaymentsByFunction",
+              {
+                [SemanticAttributes.CODE_FUNCTION]: "debug.migrateLnPaymentsByFunction",
+                "migrateLnPaymentsByFunction.iteration": `${listFn.name}:${count}`,
+                "migrateLnPaymentsByFunction.pubkey": pubkey,
+              },
+              async () => {
+                if (count instanceof Error) return count
+                return migrateLnPaymentsByFunction({ offset: count, pubkey, listFn })
+              },
+            )
+            if (count instanceof Error) break
+          }
 
+          return true
+        }),
+      )
       return true
-    }),
+    },
   )
-  return true
-}
 
 const migrateLnPaymentsByFunction = async ({
   offset,
