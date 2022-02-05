@@ -78,7 +78,7 @@ const feeProbe = async ({
 
   const key = CachedRouteLookupKeyFactory().create({
     paymentHash,
-    milliSats: toMilliSatsFromNumber(paymentAmount * 1000),
+    milliSats: toMilliSatsFromNumber(paymentAmount / 1000),
   })
   const routeFromCache = await RoutesCache().findByKey(key)
   const validCachedRoute = !(routeFromCache instanceof Error)
@@ -126,7 +126,7 @@ const noAmountProbeForFee = async ({
 
   const key = CachedRouteLookupKeyFactory().create({
     paymentHash,
-    milliSats: toMilliSatsFromNumber(paymentAmount * 1000),
+    milliSats: toMilliSatsFromNumber(paymentAmount / 1000),
   })
   const routeFromCache = await RoutesCache().findByKey(key)
   const validCachedRoute = !(routeFromCache instanceof Error)
