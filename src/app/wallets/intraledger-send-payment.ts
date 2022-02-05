@@ -1,7 +1,7 @@
 import { addNewContact } from "@app/accounts/add-new-contact"
 import { getCurrentPrice } from "@app/prices"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { InsufficientBalanceError, SelfPaymentError } from "@domain/errors"
+import { InsufficientBalanceError } from "@domain/errors"
 import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
 import { PaymentInputValidator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
@@ -106,7 +106,6 @@ const intraLedgerSendPaymentUsername = async ({
 }) => {
   const recipientAccount = await AccountsRepository().findByUsername(recipientUsername)
   if (recipientAccount instanceof Error) return recipientAccount
-  if (recipientAccount.id === senderAccount.id) return new SelfPaymentError()
 
   const paymentSendStatus = await executePaymentViaIntraledger({
     senderWalletId,
@@ -157,15 +156,15 @@ const executePaymentViaIntraledger = async ({
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
   const validator = PaymentInputValidator(WalletsRepository().findById)
-  const validationSender = await validator.validatePaymentInput({
+  const validationResult = await validator.validatePaymentInput({
     amount: amountRaw,
     senderAccount,
     senderWalletId,
     recipientWalletId,
   })
-  if (validationSender instanceof Error) return validationSender
+  if (validationResult instanceof Error) return validationResult
 
-  const { amount, senderWallet, recipientWallet } = validationSender
+  const { amount, senderWallet, recipientWallet } = validationResult
 
   const intraledgerLimitCheck = await checkIntraledgerLimits({
     amount,
