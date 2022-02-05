@@ -5,7 +5,7 @@ import { SAT_PRICE_PRECISION_OFFSET, SAT_USDCENT_PRICE } from "@config"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import pubsub from "@services/pubsub"
 import { Prices } from "@app"
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid"
 
 const PriceInput = GT.Input({
   name: "PriceInput",
@@ -64,7 +64,9 @@ const PriceSubscription = {
     } else {
       const satUsdPrice = await Prices.getCurrentPrice()
       if (!(satUsdPrice instanceof Error)) {
-        pubsub.publishImmediate(immediateEventName, { satUsdCentPrice: 100 * satUsdPrice })
+        pubsub.publishImmediate(immediateEventName, {
+          satUsdCentPrice: 100 * satUsdPrice,
+        })
       }
       return pubsub.asyncIterator([immediateEventName, eventName])
     }
