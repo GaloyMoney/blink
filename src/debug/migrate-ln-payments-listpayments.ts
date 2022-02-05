@@ -10,7 +10,12 @@ import { LndService } from "@services/lnd"
 import { getLndFromPubkey } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository } from "@services/mongoose"
-import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  addEventToCurrentSpan,
+  asyncRunInSpan,
+  SemanticAttributes,
+} from "@services/tracing"
 
 const indexRegex = /{"offset":(\d+),"limit":\d+}/
 
@@ -43,7 +48,16 @@ export const migrateLnPaymentsFromLnd = async () =>
               },
               async () => {
                 if (count instanceof Error) return count
-                return migrateLnPaymentsByFunction({ offset: count, pubkey, listFn })
+                count = await migrateLnPaymentsByFunction({
+                  offset: count,
+                  pubkey,
+                  listFn,
+                })
+                addAttributesToCurrentSpan({
+                  "migrateLnPaymentsByFunction.nextoffset":
+                    count instanceof Error ? count.name : count,
+                })
+                return count
               },
             )
             if (count instanceof Error) break
@@ -74,12 +88,16 @@ const migrateLnPaymentsByFunction = async ({
     after: `{"offset":${offset},"limit":1}` as PagingContinueToken,
   })
   if (results instanceof CorruptLndDbError) {
-    baseLogger.error(`${results.name} at offset ${offset}`)
+    const errMsg = `${results.name} at offset ${offset}`
+    baseLogger.error(errMsg)
+    addEventToCurrentSpan(errMsg)
     count--
     return count
   }
   if (results instanceof Error) {
-    baseLogger.error({ error: results }, `Could not fetch payments for pubkey ${pubkey}`)
+    const errMsg = `Could not fetch payments for pubkey ${pubkey}`
+    baseLogger.error({ error: results }, errMsg)
+    addEventToCurrentSpan(errMsg)
     return results
   }
   const {
@@ -104,7 +122,15 @@ const migrateLnPaymentsByFunction = async ({
     }
   }
 
-  if (payment === undefined) return count
+  if (payment === undefined) {
+    const errMsg = `Skipping, 'payments' array empty for offset ${offset}`
+    baseLogger.error(errMsg)
+    addEventToCurrentSpan(errMsg)
+    return count
+  }
+  addAttributesToCurrentSpan({
+    "migrateLnPaymentsByFunction.paymentHash": payment.paymentHash,
+  })
 
   // Fetch lnPayment from collection
   const lnPaymentsRepo = LnPaymentsRepository()
@@ -115,10 +141,9 @@ const migrateLnPaymentsByFunction = async ({
     persistedPaymentLookup instanceof Error &&
     !(persistedPaymentLookup instanceof CouldNotFindError)
   ) {
-    baseLogger.error(
-      { error: persistedPaymentLookup },
-      `Skipping fetched payment at offset ${offset} for payment hash ${payment.paymentHash}`,
-    )
+    const errMsg = `Skipping fetched payment at offset ${offset} for payment hash ${payment.paymentHash}`
+    baseLogger.error({ error: persistedPaymentLookup }, errMsg)
+    addEventToCurrentSpan(errMsg)
     return count
   }
 
@@ -145,30 +170,32 @@ const migrateLnPaymentsByFunction = async ({
 
     const updatedPaymentLookup = await LnPaymentsRepository().persistNew(newLnPayment)
     if (updatedPaymentLookup instanceof Error) {
-      baseLogger.error(
-        { error: updatedPaymentLookup },
-        `Could not persist new LnPayment at offset ${offset} for payment hash ${payment.paymentHash}`,
-      )
+      const errMsg = `Could not persist new LnPayment at offset ${offset} for payment hash ${payment.paymentHash}`
+      baseLogger.error({ error: updatedPaymentLookup }, errMsg)
+      addEventToCurrentSpan(errMsg)
     }
     baseLogger.info(
       `Success! Persisted new at offset ${offset} for payment hash ${payment.paymentHash}`,
     )
+    addAttributesToCurrentSpan({
+      "migrateLnPaymentsByFunction.success": `persistedNew:${offset}:${payment.paymentHash}`,
+    })
     return count
   }
 
   // LnPayment: already persisted
   if (persistedPaymentLookup.isCompleteRecord) {
-    baseLogger.info(
-      `Skipping, record already exists at offset ${offset} for payment hash ${payment.paymentHash}`,
-    )
+    const infoMsg = `Skipping, record already exists at offset ${offset} for payment hash ${payment.paymentHash}`
+    baseLogger.info(infoMsg)
+    addEventToCurrentSpan(infoMsg)
     return count
   }
 
   // LnPayment: exists but payment is still pending
   if (payment.status === PaymentStatus.Pending) {
-    baseLogger.info(
-      `Skipping, payment still pending at offset ${offset} for payment hash ${payment.paymentHash}`,
-    )
+    const infoMsg = `Skipping, payment still pending at offset ${offset} for payment hash ${payment.paymentHash}`
+    baseLogger.info(infoMsg)
+    addEventToCurrentSpan(infoMsg)
     return count
   }
 
@@ -184,14 +211,15 @@ const migrateLnPaymentsByFunction = async ({
 
   const updatedPaymentLookup = await LnPaymentsRepository().update(persistedPaymentLookup)
   if (updatedPaymentLookup instanceof Error) {
-    baseLogger.error(
-      { error: updatedPaymentLookup },
-      `Could not update LnPayments repository at offset ${offset} for payment hash ${payment.paymentHash}`,
-    )
+    const errMsg = `Could not update LnPayments repository at offset ${offset} for payment hash ${payment.paymentHash}`
+    baseLogger.error({ error: updatedPaymentLookup }, errMsg)
+    addEventToCurrentSpan(errMsg)
   }
-  baseLogger.info(
-    `Success! Updated existing at offset ${offset} for payment hash ${payment.paymentHash}`,
-  )
+  const infoMsg = `Success! Updated existing at offset ${offset} for payment hash ${payment.paymentHash}`
+  baseLogger.info(infoMsg)
+  addAttributesToCurrentSpan({
+    "migrateLnPaymentsByFunction.success": `updated:${offset}:${payment.paymentHash}`,
+  })
   return count
 }
 
