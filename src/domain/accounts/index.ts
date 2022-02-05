@@ -70,9 +70,9 @@ export const checkedToContactAlias = (alias: string): ContactAlias | ValidationE
 export const checkedToWithdrawFee = (
   fee: number,
   withdrawFeeRange: WithdrawFeeRange,
-): WithdrawFee | ValidationError => {
+): Satoshis | ValidationError => {
   if (fee < withdrawFeeRange.min || fee > withdrawFeeRange.max) {
     return new InvalidWithdrawFeeError(fee.toString())
   }
-  return fee as WithdrawFee
+  return fee as Satoshis
 }
