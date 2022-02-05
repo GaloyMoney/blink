@@ -1,4 +1,6 @@
 import { getPayments } from "lightning"
+import { isUp } from "@services/lnd/health"
+import { params as unauthParams } from "@services/lnd/unauth"
 
 import {
   CorruptLndDbError,
@@ -16,10 +18,11 @@ import {
   asyncRunInSpan,
   SemanticAttributes,
 } from "@services/tracing"
+import { setupMongoConnection } from "@services/mongodb"
 
 const indexRegex = /{"offset":(\d+),"limit":\d+}/
 
-export const migrateLnPaymentsFromLnd = async () =>
+const main = async () =>
   asyncRunInSpan(
     "debug.migrateLnPaymentsFromLnd",
     { [SemanticAttributes.CODE_FUNCTION]: "debug.migrateLnPaymentsFromLnd" },
@@ -240,3 +243,11 @@ const getFirstIndex = async (pubkey: Pubkey): Promise<number | ApplicationError>
     ? new UnknownLightningServiceError()
     : parseInt(indexMatch) + 1
 }
+
+setupMongoConnection(false)
+  .then(async (mongoose) => {
+    await Promise.all(unauthParams.map((lndParams) => isUp(lndParams)))
+    await main()
+    if (mongoose) await mongoose.connection.close()
+  })
+  .catch((err) => console.log(err))
