@@ -1,15 +1,15 @@
 import { addNewContact } from "@app/accounts/add-new-contact"
 import { getCurrentPrice } from "@app/prices"
-import { toSats } from "@domain/bitcoin"
-import { PaymentInputValidator } from "@domain/wallets"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { InsufficientBalanceError, SelfPaymentError } from "@domain/errors"
+import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
+import { PaymentInputValidator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { LockService } from "@services/lock"
 import {
   AccountsRepository,
-  WalletsRepository,
   UsersRepository,
+  WalletsRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 
@@ -157,15 +157,15 @@ const executePaymentViaIntraledger = async ({
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
   const validator = PaymentInputValidator(WalletsRepository().findById)
-  const validationResult = await validator.validatePaymentInput({
+  const validationSender = await validator.validatePaymentInput({
     amount: amountRaw,
     senderAccount,
     senderWalletId,
     recipientWalletId,
   })
-  if (validationResult instanceof Error) return validationResult
+  if (validationSender instanceof Error) return validationSender
 
-  const { amount } = validationResult
+  const { amount, senderWallet, recipientWallet } = validationSender
 
   const intraledgerLimitCheck = await checkIntraledgerLimits({
     amount,
@@ -175,34 +175,32 @@ const executePaymentViaIntraledger = async ({
 
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
-  const price = await getCurrentPrice()
-  if (price instanceof Error) return price
-  const lnFee = toSats(0)
-  const sats = toSats(amount + lnFee)
-  const usd = sats * price
-  const usdFee = lnFee * price
+  const usdPerSat = await getCurrentPrice()
+  if (usdPerSat instanceof Error) return usdPerSat
+
+  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat).fromSats(amount)
 
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
     async (lock) => {
       const balance = await LedgerService().getWalletBalance(senderWalletId)
       if (balance instanceof Error) return balance
-      if (balance < sats) {
+      if (balance < amount) {
         return new InsufficientBalanceError(
-          `Payment amount '${sats}' exceeds balance '${balance}'`,
+          `Payment amount '${amount}' exceeds balance '${balance}'`,
         )
       }
 
       const journal = await LockService().extendLock({ logger, lock }, async () =>
-        LedgerService().addWalletIdIntraledgerTxSend({
+        LedgerService().addWalletIdIntraledgerTxTransfer({
           senderWalletId,
-          description: "",
-          sats,
-          fee: lnFee,
-          usd,
-          usdFee,
-          recipientWalletId,
+          senderWalletCurrency: senderWallet.currency,
           senderUsername: senderAccount.username,
+          description: "",
+          sats: amount,
+          amountDisplayCurrency,
+          recipientWalletId,
+          recipientWalletCurrency: recipientWallet.currency,
           recipientUsername,
           memoPayer,
         }),
@@ -213,8 +211,8 @@ const executePaymentViaIntraledger = async ({
       notificationsService.intraLedgerPaid({
         senderWalletId,
         recipientWalletId,
-        amount: sats,
-        usdPerSat: price,
+        amount,
+        usdPerSat,
       })
 
       return PaymentSendStatus.Success

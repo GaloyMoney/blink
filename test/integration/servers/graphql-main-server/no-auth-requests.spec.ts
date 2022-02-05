@@ -36,7 +36,8 @@ let correctCode: PhoneCode,
   apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,
   serverPid: PID
-const { phone, code } = yamlConfig.test_accounts[9]
+
+const { phone, code } = yamlConfig.test_accounts.find((item) => item.ref === "G")
 
 beforeAll(async () => {
   correctCode = `${code}` as PhoneCode

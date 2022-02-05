@@ -4,6 +4,14 @@ import { Transaction } from "@services/ledger/schema"
 
 import { lazyLoadLedgerAdmin } from "@services/ledger"
 
+import { WalletsRepository } from "@services/mongoose"
+
+import { WalletCurrency } from "@domain/wallets"
+
+import { ConfigError } from "@config"
+
+import { fromObjectId } from "@services/mongoose/utils"
+
 import { baseLogger } from "../logger"
 
 import { User, WalletInvoice } from "../mongoose/schema"
@@ -16,12 +24,25 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
     )
     return defaultWalletId
   },
-  dealerWalletResolver: async () => {
-    const { defaultWalletId } = await User.findOne(
-      { role: "dealer" },
-      { defaultWalletId: 1 },
-    )
-    return defaultWalletId
+  dealerBtcWalletResolver: async () => {
+    const user: UserRecord = await User.findOne({ role: "dealer" }, { id: 1 })
+    // FIXME remove the use of UserRecord when role if part of the AccountRepository
+    const accountId = fromObjectId<AccountId>(user._id)
+    const wallets = await WalletsRepository().listByAccountId(accountId)
+    if (wallets instanceof Error) throw new ConfigError("missing dealer btc wallet")
+    const wallet = wallets.find((wallet) => wallet.currency === WalletCurrency.Btc)
+    if (wallet === undefined) throw new ConfigError("missing dealer btc wallet")
+    return wallet.id
+  },
+  dealerUsdWalletResolver: async () => {
+    const user: UserRecord = await User.findOne({ role: "dealer" }, { id: 1 })
+    // FIXME remove the use of UserRecord when role if part of the AccountRepository
+    const accountId = fromObjectId<AccountId>(user._id)
+    const wallets = await WalletsRepository().listByAccountId(accountId)
+    if (wallets instanceof Error) throw new ConfigError("missing dealer usd wallet")
+    const wallet = wallets.find((wallet) => wallet.currency === WalletCurrency.Usd)
+    if (wallet === undefined) throw new ConfigError("missing dealer usd wallet")
+    return wallet.id
   },
   funderWalletResolver: async () => {
     const { defaultWalletId } = await User.findOne(

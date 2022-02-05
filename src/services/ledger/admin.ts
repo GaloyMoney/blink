@@ -32,28 +32,25 @@ export const admin = {
     description,
     sats,
     fee,
-    usd,
-    usdFee,
+    feeDisplayCurrency,
+    amountDisplayCurrency,
   }: AddColdStorageTxReceiveArgs): Promise<LedgerJournal | LedgerServiceError> => {
-    let metadata: AddColdStorageTxReceiveMetadata
-    try {
-      metadata = {
-        type: LedgerTransactionType.ToColdStorage,
-        pending: false,
-        hash: txHash,
-        payee_addresses: [payeeAddress],
-        fee,
-        feeUsd: usdFee,
-        sats,
-        usd,
-        currency: WalletCurrency.Btc,
-      }
+    const metadata: AddColdStorageReceiveLedgerMetadata = {
+      type: LedgerTransactionType.ToColdStorage,
+      pending: false,
+      hash: txHash,
+      payee_addresses: [payeeAddress],
+      fee,
+      feeUsd: feeDisplayCurrency,
+      usd: amountDisplayCurrency,
+      currency: WalletCurrency.Btc,
+    }
 
+    try {
       const bankOwnerWalletId = await getBankOwnerWalletId()
       const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
 
       const entry = MainBook.entry(description)
-      entry
         .credit(lndAccountingPath, sats + fee, metadata)
         .debit(bankOwnerPath, fee, metadata)
         .debit(bitcoindAccountingPath, sats, metadata)
@@ -71,28 +68,25 @@ export const admin = {
     description,
     sats,
     fee,
-    usd,
-    usdFee,
+    amountDisplayCurrency,
+    feeDisplayCurrency,
   }: AddColdStorageTxSendArgs): Promise<LedgerJournal | LedgerServiceError> => {
-    let metadata: AddColdStorageTxSendMetadata
-    try {
-      metadata = {
-        type: LedgerTransactionType.ToHotWallet,
-        pending: false,
-        hash: txHash,
-        payee_addresses: [payeeAddress],
-        fee,
-        feeUsd: usdFee,
-        sats,
-        usd,
-        currency: WalletCurrency.Btc,
-      }
+    const metadata: AddColdStorageSendLedgerMetadata = {
+      type: LedgerTransactionType.ToHotWallet,
+      pending: false,
+      hash: txHash,
+      payee_addresses: [payeeAddress],
+      fee,
+      feeUsd: feeDisplayCurrency,
+      usd: amountDisplayCurrency,
+      currency: WalletCurrency.Btc,
+    }
 
+    try {
       const bankOwnerWalletId = await getBankOwnerWalletId()
       const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
 
       const entry = MainBook.entry(description)
-      entry
         .credit(bitcoindAccountingPath, sats + fee, metadata)
         .debit(bankOwnerPath, fee, metadata)
         .debit(lndAccountingPath, sats, metadata)

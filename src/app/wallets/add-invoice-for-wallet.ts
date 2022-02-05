@@ -202,8 +202,7 @@ const addInvoiceFiatDenomiation = async ({
   })
 }
 
-// TODO: remove export once core v1 has been deleted.
-export const registerAndPersistInvoice = async ({
+const registerAndPersistInvoice = async ({
   sats,
   memo,
   walletInvoiceCreateFn,

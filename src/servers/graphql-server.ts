@@ -1,16 +1,15 @@
 import { createServer } from "http"
+import crypto from "crypto"
 
 import { Accounts, Users } from "@app"
-import { getApolloConfig, getGeetestConfig, isProd, JWT_SECRET } from "@config"
-import { WalletFactory } from "@core/wallet-factory"
+import { CustomError } from "@core/error"
+import { getApolloConfig, getGeetestConfig, isDev, isProd, JWT_SECRET } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
-import { User } from "@services/mongoose/schema"
-import { toObjectId } from "@services/mongoose/utils"
 import {
+  ACCOUNT_USERNAME,
   addAttributesToCurrentSpan,
   addAttributesToCurrentSpanAndPropagate,
-  ACCOUNT_USERNAME,
   SemanticAttributes,
 } from "@services/tracing"
 import {
@@ -26,7 +25,6 @@ import { execute, GraphQLError, subscribe } from "graphql"
 import { rule } from "graphql-shield"
 import helmet from "helmet"
 import * as jwt from "jsonwebtoken"
-
 import pino from "pino"
 import PinoHttp from "pino-http"
 import {
@@ -34,14 +32,13 @@ import {
   SubscribeFunction,
   SubscriptionServer,
 } from "subscriptions-transport-ws"
-import { v4 as uuidv4 } from "uuid"
 
-import { CustomError } from "@core/error"
+import { parseIps } from "@domain/users-ips"
 
 import { playgroundTabs } from "../graphql/playground"
 
-import healthzHandler from "./middlewares/healthz"
 import expressApiKeyAuth from "./middlewares/api-key-auth"
+import healthzHandler from "./middlewares/healthz"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -59,34 +56,26 @@ export const isApiKeyAuthenticated = rule({ cache: "contextual" })(
   },
 )
 
-export const isEditor = rule({ cache: "contextual" })((parent, args, ctx) => {
-  return ctx.user.role === "editor" ? true : "NOT_AUTHORIZED"
-})
+export const isEditor = rule({ cache: "contextual" })(
+  (parent, args, ctx: GraphQLContextForUser) => {
+    return ctx.domainUser.isEditor ? true : "NOT_AUTHORIZED"
+  },
+)
 
 const geeTestConfig = getGeetestConfig()
 const geetest = Geetest(geeTestConfig)
 
 const sessionContext = ({
   token,
-  ips,
+  ip,
   body,
   apiKey,
   apiSecret,
 }): Promise<GraphQLContext> => {
   const userId = token?.uid ?? null
-  let ip: IpAddress | undefined
 
-  if (ips && Array.isArray(ips) && ips.length) {
-    ip = ips[0] as IpAddress
-  } else if (typeof ips === "string") {
-    ip = ips as IpAddress
-  }
-
-  let wallet, user
-  // FIXME: type issue with let wallet: LightningUserWallet | null, user: UserRecord | null
-
-  // TODO move from id: uuidv4() to a Jaeger standard
-  const logger = graphqlLogger.child({ token, id: uuidv4(), body })
+  // TODO move from crypto.randomUUID() to a Jaeger standard
+  const logger = graphqlLogger.child({ token, id: crypto.randomUUID(), body })
 
   let domainUser: User | null = null
   let domainAccount: Account | undefined
@@ -109,12 +98,6 @@ const sessionContext = ({
         )
         if (loggedInDomainAccount instanceof Error) throw Error
         domainAccount = loggedInDomainAccount
-
-        user = await User.findOne({ _id: toObjectId<UserId>(userId) })
-        wallet =
-          !!user && user.status === "active"
-            ? await WalletFactory({ user, logger })
-            : null
       }
 
       let account: Account | undefined
@@ -132,11 +115,9 @@ const sessionContext = ({
       return {
         logger,
         uid: userId,
-        wallet,
         // FIXME: we should not return this for the admin graphql endpoint
         domainUser,
         domainAccount,
-        user,
         geetest,
         account,
         ip,
@@ -192,10 +173,19 @@ export const startApolloServer = async ({
       // @ts-expect-error: TODO
       const apiSecret = context.req?.apiSecret ?? null
 
-      const ips = context.req?.headers["x-real-ip"]
       const body = context.req?.body ?? null
 
-      return sessionContext({ token, apiKey, apiSecret, ips, body })
+      const ipString = isDev ? context.req?.ip : context.req?.headers["x-real-ip"]
+
+      const ip = parseIps(ipString)
+
+      return sessionContext({
+        token,
+        apiKey,
+        apiSecret,
+        ip,
+        body,
+      })
     },
     formatError: (err) => {
       const exception = err.extensions?.exception as unknown as CustomError
@@ -328,7 +318,7 @@ export const startApolloServer = async ({
 
               return sessionContext({
                 token,
-                ips: [request?.socket?.remoteAddress],
+                ip: request?.socket?.remoteAddress,
 
                 // TODO: Resolve what's needed here
                 apiKey: null,

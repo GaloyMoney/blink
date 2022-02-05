@@ -11,7 +11,7 @@ import { baseLogger } from "@services/logger"
 import { WalletsRepository } from "@services/mongoose"
 import { wrapToRunInSpan } from "@services/tracing"
 
-// FIXME(nicolas): remove only used in api v1 and tests
+// FIXME(nicolas): remove only used in tests
 export const getTransactionsForWalletId = async ({
   walletId,
 }: {

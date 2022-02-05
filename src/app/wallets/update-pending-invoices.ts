@@ -91,7 +91,13 @@ const updatePendingInvoice = async ({
 
   const walletInvoicesRepo = WalletInvoicesRepository()
 
-  const { pubkey, paymentHash, walletId, currency, usdCents } = walletInvoice
+  const {
+    pubkey,
+    paymentHash,
+    walletId,
+    currency: walletCurrency,
+    usdCents,
+  } = walletInvoice
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
     const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
@@ -151,20 +157,19 @@ const updatePendingInvoice = async ({
     } = lnInvoiceLookup
     const feeInboundLiquidity = DepositFeeCalculator().lnDepositFee()
 
-    const amountDisplayCurrency =
-      DisplayCurrencyConversionRate(usdPerSat)(roundedDownReceived)
-    const feeInboundLiquidityDisplayCurrency =
-      DisplayCurrencyConversionRate(usdPerSat)(feeInboundLiquidity)
+    const converter = DisplayCurrencyConversionRate(usdPerSat)
+    const amountDisplayCurrency = converter.fromSats(roundedDownReceived)
+    const feeInboundLiquidityDisplayCurrency = converter.fromSats(feeInboundLiquidity)
 
     const ledgerService = LedgerService()
     const result = await ledgerService.addLnTxReceive({
       walletId,
+      walletCurrency,
       paymentHash,
       description,
       sats: roundedDownReceived,
       usd: usdCents,
       amountDisplayCurrency,
-      currency,
       feeInboundLiquidity,
       feeInboundLiquidityDisplayCurrency,
     })

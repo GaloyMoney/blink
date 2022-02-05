@@ -1,10 +1,7 @@
 import crypto from "crypto"
 
-import { Transaction } from "@services/ledger/schema"
-
-import { getFeeRates, getTwoFAConfig, getUserLimits, levels, MS_PER_DAY } from "@config"
+import { getFeeRates, getTwoFAConfig, levels } from "@config"
 import { UsernameRegex } from "@domain/accounts"
-import { toLiabilitiesWalletId } from "@domain/ledger"
 import { WalletCurrency, WalletIdRegex, WalletType } from "@domain/wallets"
 import * as mongoose from "mongoose"
 
@@ -282,96 +279,6 @@ const UserSchema = new Schema<UserRecord>(
   },
   { id: false },
 )
-
-// Define getter for ratioUsd
-// FIXME: this // An outer value of 'this' is shadowed by this container.
-// https://stackoverflow.com/questions/41944650/this-implicitly-has-type-any-because-it-does-not-have-a-type-annotation
-
-// this is the accounting path in medici for this user
-UserSchema.virtual("walletPath").get(function (this: typeof UserSchema) {
-  return toLiabilitiesWalletId(this.walletId)
-})
-
-const getTimestampYesterday = () => Date.now() - MS_PER_DAY
-
-UserSchema.methods.remainingTwoFALimit = async function () {
-  const threshold = this.twoFA.threshold
-
-  const txnType = [
-    { type: "on_us" },
-    { type: "onchain_on_us" },
-    { type: "onchain_payment" },
-    { type: "payment" },
-  ]
-
-  const { outgoingSats } = await User.getVolume({
-    after: getTimestampYesterday(),
-    txnType,
-    accounts: this.walletPath,
-  })
-
-  return threshold - outgoingSats
-}
-
-UserSchema.methods.remainingWithdrawalLimit = async function () {
-  const userLimits = getUserLimits({ level: this.level })
-  const withdrawalLimit = userLimits.withdrawalLimit
-
-  const { outgoingSats } = await User.getVolume({
-    after: getTimestampYesterday(),
-    txnType: [{ type: "on_us" }, { type: "onchain_on_us" }],
-    accounts: this.walletPath,
-  })
-
-  return withdrawalLimit - outgoingSats
-}
-
-UserSchema.methods.remainingOnUsLimit = async function () {
-  const userLimits = getUserLimits({ level: this.level })
-  const onUsLimit = userLimits.onUsLimit
-
-  const { outgoingSats } = await User.getVolume({
-    after: getTimestampYesterday(),
-    txnType: [{ type: "on_us" }, { type: "onchain_on_us" }],
-    accounts: this.walletPath,
-  })
-
-  return onUsLimit - outgoingSats
-}
-
-UserSchema.statics.getVolume = async function ({
-  before,
-  after,
-  accounts,
-  txnType,
-}: {
-  before?: number
-  after: number
-  accounts: string
-  txnType: [string]
-}) {
-  const timeBounds = before
-    ? [
-        { timestamp: { $gte: new Date(after) } },
-        { timestamp: { $lte: new Date(before) } },
-      ]
-    : [{ timestamp: { $gte: new Date(after) } }]
-  const [result] = await Transaction.aggregate([
-    { $match: { accounts, $or: txnType, $and: timeBounds } },
-    {
-      $group: {
-        _id: null,
-        outgoingSats: { $sum: "$debit" },
-        incomingSats: { $sum: "$credit" },
-      },
-    },
-  ])
-
-  return {
-    outgoingSats: result?.outgoingSats ?? 0,
-    incomingSats: result?.incomingSats ?? 0,
-  }
-}
 
 UserSchema.index({
   title: 1,

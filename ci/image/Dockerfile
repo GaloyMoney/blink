@@ -21,7 +21,8 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins \
 RUN curl -sSL https://sdk.cloud.google.com | bash
 ENV PATH $PATH:/root/google-cloud-sdk/bin
 
+ENV GH_CLI_VERSION 2.5.0
 RUN mkdir ghcli && cd ghcli \
-  && wget https://github.com/cli/cli/releases/download/v2.0.0/gh_2.0.0_linux_386.tar.gz -O ghcli.tar.gz \
+  && wget https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/gh_${GH_CLI_VERSION}_linux_386.tar.gz -O ghcli.tar.gz \
   && tar --strip-components=1 -xf ghcli.tar.gz \
   && mv bin/gh /usr/local/bin && cd ../ && rm -rf ./ghcli

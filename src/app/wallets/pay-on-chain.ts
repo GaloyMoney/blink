@@ -121,7 +121,7 @@ export const payOnChainByWalletId = async ({
   if (isIntraLedger)
     return executePaymentViaIntraledger({
       senderAccount,
-      senderWalletId,
+      senderWallet,
       recipientWallet,
       amount,
       address: checkedAddress,
@@ -144,7 +144,7 @@ export const payOnChainByWalletId = async ({
 
 const executePaymentViaIntraledger = async ({
   senderAccount,
-  senderWalletId,
+  senderWallet,
   recipientWallet,
   amount,
   address,
@@ -153,7 +153,7 @@ const executePaymentViaIntraledger = async ({
   logger,
 }: {
   senderAccount: Account
-  senderWalletId: WalletId
+  senderWallet: Wallet
   recipientWallet: Wallet
   amount: Satoshis
   address: OnChainAddress
@@ -161,11 +161,11 @@ const executePaymentViaIntraledger = async ({
   sendAll: boolean
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
-  if (recipientWallet.id === senderWalletId) return new SelfPaymentError()
+  if (recipientWallet.id === senderWallet.id) return new SelfPaymentError()
 
   const intraledgerLimitCheck = await checkIntraledgerLimits({
     amount,
-    walletId: senderWalletId,
+    walletId: senderWallet.id,
     account: senderAccount,
   })
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
@@ -173,22 +173,19 @@ const executePaymentViaIntraledger = async ({
   const usdPerSat = await getCurrentPrice()
   if (usdPerSat instanceof Error) return usdPerSat
 
-  const fee = toSats(0)
-  const sats = toSats(amount + fee)
-  const usd = sats * usdPerSat
-  const usdFee = fee * usdPerSat
+  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat).fromSats(amount)
 
   const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
   if (recipientAccount instanceof Error) return recipientAccount
 
   return LockService().lockWalletId(
-    { walletId: senderWalletId, logger },
+    { walletId: senderWallet.id, logger },
     async (lock) => {
-      const balance = await LedgerService().getWalletBalance(senderWalletId)
+      const balance = await LedgerService().getWalletBalance(senderWallet.id)
       if (balance instanceof Error) return balance
-      if (balance < sats)
+      if (balance < amount)
         return new InsufficientBalanceError(
-          `Payment amount '${sats}' exceeds balance '${balance}'`,
+          `Payment amount '${amount}' exceeds balance '${balance}'`,
         )
 
       const onchainLoggerOnUs = logger.child({ balance, onUs: true })
@@ -196,16 +193,16 @@ const executePaymentViaIntraledger = async ({
         { logger: onchainLoggerOnUs, lock },
         async () =>
           LedgerService().addOnChainIntraledgerTxTransfer({
-            senderWalletId,
+            senderWalletId: senderWallet.id,
+            senderWalletCurrency: senderWallet.currency,
+            senderUsername: senderAccount.username,
             description: "",
-            sats,
-            fee,
-            usd,
-            usdFee,
+            sats: amount,
+            amountDisplayCurrency,
             payeeAddresses: [address],
             sendAll,
             recipientWalletId: recipientWallet.id,
-            senderUsername: senderAccount.username,
+            recipientWalletCurrency: recipientWallet.currency,
             recipientUsername: recipientAccount.username,
             memoPayer: memo ?? null,
           }),
@@ -214,9 +211,9 @@ const executePaymentViaIntraledger = async ({
 
       const notificationsService = NotificationsService(logger)
       notificationsService.intraLedgerPaid({
-        senderWalletId,
+        senderWalletId: senderWallet.id,
         recipientWalletId: recipientWallet.id,
-        amount: sats,
+        amount,
         usdPerSat,
       })
 
@@ -225,9 +222,7 @@ const executePaymentViaIntraledger = async ({
           success: true,
           type: "onchain_on_us",
           pending: false,
-          fee,
-          usd,
-          usdFee,
+          amountDisplayCurrency,
         },
         "onchain payment succeed",
       )
@@ -336,11 +331,14 @@ const executePaymentViaOnChain = async ({
         }
 
         const sats = toSats(amountToSend + totalFee)
-        const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(sats)
-        const totalFeeDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat)(totalFee)
+
+        const converter = DisplayCurrencyConversionRate(usdPerSat)
+        const amountDisplayCurrency = converter.fromSats(sats)
+        const totalFeeDisplayCurrency = converter.fromSats(totalFee)
 
         return ledgerService.addOnChainTxSend({
           walletId: senderWallet.id,
+          walletCurrency: senderWallet.currency,
           txHash,
           description: memo || "",
           sats,

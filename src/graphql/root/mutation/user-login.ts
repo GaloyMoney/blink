@@ -23,11 +23,7 @@ const UserLoginMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserLoginInput) },
   },
-  resolve: async (_, args, { user, logger, ip }) => {
-    if (user) {
-      return { errors: [{ message: "Invalid request" }] } // TODO: confirm
-    }
-
+  resolve: async (_, args, { logger, ip }) => {
     const { phone, code } = args.input
 
     for (const input of [phone, code]) {

@@ -56,9 +56,12 @@ const transactionSchema = new Schema({
   memoPayer: String,
 
   // not used for accounting but used for usd/sats equivalent
-  usd: Number,
-  sats: Number,
+  usd: Number, // TODO: should be renamed to amountDisplayCurrency
+
+  sats: Number, // TODO: should be removed?
+
   feeUsd: {
+    // TODO: should be renamed feeDisplayCurrency
     type: Number,
     default: 0,
   },

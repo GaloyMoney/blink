@@ -1,6 +1,8 @@
 import { GT } from "@graphql/index"
 
 import SuccessPayload from "@graphql/types/payload/success-payload"
+import { User } from "@services/mongoose/schema"
+import { toObjectId } from "@services/mongoose/utils"
 
 const DeviceNotificationTokenCreateInput = GT.Input({
   name: "DeviceNotificationTokenCreateInput",
@@ -18,14 +20,12 @@ const DeviceNotificationTokenCreateMutation = GT.Field<
   args: {
     input: { type: GT.NonNull(DeviceNotificationTokenCreateInput) },
   },
-  resolve: async (_, args, { user }) => {
+  resolve: async (_, args, { uid }) => {
     const { deviceToken } = args.input
 
     try {
       // FIXME: this should be moved to a use case
-      // deviceToken is casted as a string[], and doesn't have addToSet function
-      // (but this exist from mongoose)
-      // @ts-expect-error: FIXME.
+      const user = await User.findOne({ _id: toObjectId<UserId>(uid) })
       user.deviceToken.addToSet(deviceToken)
       await user.save()
     } catch (err) {

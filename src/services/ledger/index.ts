@@ -28,11 +28,13 @@ import { volume } from "./volume"
 
 export const lazyLoadLedgerAdmin = ({
   bankOwnerWalletResolver,
-  dealerWalletResolver,
+  dealerBtcWalletResolver,
+  dealerUsdWalletResolver,
   funderWalletResolver,
 }: LoadLedgerParams) => {
   caching.setBankOwnerWalletResolver(bankOwnerWalletResolver)
-  caching.setDealerWalletResolver(dealerWalletResolver)
+  caching.setDealerBtcWalletResolver(dealerBtcWalletResolver)
+  caching.setDealerUsdWalletResolver(dealerUsdWalletResolver)
   caching.setFunderWalletResolver(funderWalletResolver)
   return {
     ...adminLegacy,
