@@ -2,7 +2,6 @@ import { Lightning } from "@app"
 import * as Wallets from "@app/wallets"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { toSats } from "@domain/bitcoin"
-import { PaymentInitiationMethod } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
 
@@ -93,12 +92,6 @@ describe("UserWallet - Lightning", () => {
     if (error instanceof Error || txns === null) {
       throw error
     }
-    const noSpamTxn = txns.find(
-      (txn) =>
-        txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
-        txn.initiationVia.paymentHash === hash,
-    ) as WalletTransaction
-    expect(noSpamTxn.deprecated.description).toBe(memo)
 
     const finalBalance = await getBTCBalance(walletIdB)
     expect(finalBalance).toBe(initBalanceB + sats)
@@ -183,16 +176,8 @@ describe("UserWallet - Lightning", () => {
     const { result: txns, error } = await Wallets.getTransactionsForWalletId({
       walletId: walletIdB,
     })
-    if (error instanceof Error || txns === null) {
-      throw error
-    }
-    const spamTxn = txns.find(
-      (txn) =>
-        txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
-        txn.initiationVia.paymentHash === hash,
-    ) as WalletTransaction
+    if (error instanceof Error || txns === null) throw error
     expect(ledgerTx.type).toBe("invoice")
-    expect(spamTxn.deprecated.description).toBe(ledgerTx.type)
 
     // confirm expected final balance
     const finalBalance = await getBTCBalance(walletIdB)

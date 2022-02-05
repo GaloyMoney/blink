@@ -1,12 +1,8 @@
 import crypto from "crypto"
 
-import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { LedgerTransactionType } from "@domain/ledger"
 import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
-import {
-  WalletTransactionHistory,
-  translateDescription,
-} from "@domain/wallets/tx-history"
+import { WalletTransactionHistory } from "@domain/wallets/tx-history"
 import { toSats } from "@domain/bitcoin"
 import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
 
@@ -201,53 +197,6 @@ describe("WalletTransactionHistory.fromLedger", () => {
       },
     ]
     expect(result.transactions).toEqual(expected)
-  })
-})
-
-describe("translateDescription", () => {
-  it("returns the memoFromPayer", () => {
-    const result = translateDescription({
-      memoFromPayer: "some memo",
-      credit: MEMO_SHARING_SATS_THRESHOLD,
-      type: "invoice",
-    })
-    expect(result).toEqual("some memo")
-  })
-
-  it("returns memo if there is no memoFromPayer", () => {
-    const result = translateDescription({
-      lnMemo: "some memo",
-      credit: MEMO_SHARING_SATS_THRESHOLD,
-      type: "invoice",
-    })
-    expect(result).toEqual("some memo")
-  })
-
-  it("returns username description for any amount", () => {
-    const result = translateDescription({
-      username: "username",
-      credit: MEMO_SHARING_SATS_THRESHOLD - 1,
-      type: "invoice",
-    })
-    expect(result).toEqual("from username")
-  })
-
-  it("defaults to type under spam threshdeprecated", () => {
-    const result = translateDescription({
-      memoFromPayer: "some memo",
-      credit: 1,
-      type: "invoice",
-    })
-    expect(result).toEqual("invoice")
-  })
-
-  it("returns memo for debit", () => {
-    const result = translateDescription({
-      memoFromPayer: "some memo",
-      credit: 0,
-      type: "invoice",
-    })
-    expect(result).toEqual("some memo")
   })
 })
 

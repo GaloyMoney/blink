@@ -154,7 +154,6 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const userBTxn = txResult.result
-    expect(userBTxn.filter(matchTx)[0].deprecated.description).toBe(memo)
     expect(userBTxn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
     // expect(userBTxn.filter(matchTx)[0].recipientUsername).toBe("lily")
 
@@ -165,7 +164,6 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const userCTxn = txResult.result
-    expect(userCTxn.filter(matchTx)[0].deprecated.description).toBe(memo)
     expect(userCTxn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
   })
 
@@ -201,7 +199,6 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const userCTxn = txResult.result
-    expect(userCTxn.filter(matchTx)[0].deprecated.description).toBe(memo)
     expect(userCTxn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
 
     txResult = await Wallets.getTransactionsForWalletId({
@@ -211,7 +208,6 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const userBTxn = txResult.result
-    expect(userBTxn.filter(matchTx)[0].deprecated.description).toBe(memoPayer)
     expect(userBTxn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
   })
 
@@ -252,14 +248,10 @@ describe("UserWallet - Lightning Pay", () => {
       "counterPartyUsername",
       usernameB,
     )
-    const oldFields0 = userTransaction0[0].deprecated
-    expect(oldFields0).toHaveProperty("description", `from ${usernameB}`)
     expect(userBTransaction[0].initiationVia).toHaveProperty(
       "counterPartyUsername",
       usernameA,
     )
-    const oldFields1 = userBTransaction[0].deprecated
-    expect(oldFields1).toHaveProperty("description", `to ${usernameA}`)
 
     let userTypeA = await getUserRecordByTestUserRef("A")
     let userType1 = await getUserRecordByTestUserRef("B")
@@ -385,17 +377,9 @@ describe("UserWallet - Lightning Pay", () => {
       "counterPartyUsername",
       usernameB,
     )
-    expect(transaction0Below.deprecated).toHaveProperty(
-      "description",
-      `from ${usernameB}`,
-    )
     expect(transaction1Below.initiationVia).toHaveProperty(
       "counterPartyUsername",
       usernameA,
-    )
-    expect(transaction1Below.deprecated).toHaveProperty(
-      "description",
-      memoSpamBelowThreshold,
     )
 
     // check above-threshold transaction for recipient was NOT filtered
@@ -403,17 +387,9 @@ describe("UserWallet - Lightning Pay", () => {
       "counterPartyUsername",
       usernameB,
     )
-    expect(transaction0Above.deprecated).toHaveProperty(
-      "description",
-      memoSpamAboveThreshold,
-    )
     expect(transaction1Above.initiationVia).toHaveProperty(
       "counterPartyUsername",
       usernameA,
-    )
-    expect(transaction1Above.deprecated).toHaveProperty(
-      "description",
-      memoSpamAboveThreshold,
     )
 
     // check contacts being added
