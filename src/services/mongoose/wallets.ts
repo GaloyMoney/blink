@@ -59,7 +59,9 @@ export const WalletsRepository = (): IWalletsRepository => {
     accountId: AccountId,
   ): Promise<Wallet[] | RepositoryError> => {
     try {
-      const result: WalletRecord[] = await Wallet.find({ _accountId: accountId })
+      const result: WalletRecord[] = await Wallet.find({
+        _accountId: toObjectId<AccountId>(accountId),
+      })
       if (!result || result.length === 0) {
         return new CouldNotListWalletsFromAccountIdError()
       }
