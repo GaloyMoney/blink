@@ -1,4 +1,5 @@
 import { ColdStorage } from "@app"
+import { asyncRunInSpan, addAttributesToCurrentSpan } from "@services/tracing"
 import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
 import { toSats } from "@domain/bitcoin"
 import { LedgerService } from "@services/ledger"
@@ -91,74 +92,86 @@ const wallets = walletsInit.map((wallet) => ({
 const coldWallets: { [key: string]: client.Gauge<string> } = {}
 
 const main = async () => {
-  server.get("/metrics", async (req, res) => {
-    const bosScore = await getBosScore()
-    bos_g.set(bosScore)
+  server.get("/metrics", async (req, res) =>
+    asyncRunInSpan("metrics", {}, async () => {
+      const bosScore = await getBosScore()
+      bos_g.set(bosScore)
 
-    const { lightning, liabilities, bitcoin } = await getLedgerAccounts()
-    liabilities_g.set(liabilities)
-    lightning_g.set(lightning)
-    bitcoin_g.set(bitcoin)
+      const { lightning, liabilities, bitcoin } = await getLedgerAccounts()
+      liabilities_g.set(liabilities)
+      lightning_g.set(lightning)
+      bitcoin_g.set(bitcoin)
 
-    try {
-      const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } =
-        await balanceSheetIsBalanced()
-      assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
-      bookingVersusRealWorldAssets_g.set(bookingVersusRealWorldAssets)
-    } catch (err) {
-      logger.error({ err }, "impossible to calculate balance sheet")
-    }
-
-    const { total, onChain, offChain, opening_channel_balance, closing_channel_balance } =
-      await lndsBalances()
-    lnd_g.set(total)
-    lndOnChain_g.set(onChain)
-    lndOffChain_g.set(offChain)
-    lndOpeningChannelBalance_g.set(opening_channel_balance)
-    lndClosingChannelBalance_g.set(closing_channel_balance)
-
-    const userCount = await User.countDocuments()
-    userCount_g.set(userCount)
-
-    for (const wallet of wallets) {
-      const walletId = await wallet.getId()
-
-      let balance: Satoshis
-
-      const balanceSats = await LedgerService().getWalletBalance(walletId)
-      if (balanceSats instanceof Error) {
-        baseLogger.warn({ walletId, balanceSats }, "impossible to get balance")
-        balance = toSats(0)
-      } else {
-        balance = balanceSats
+      try {
+        const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } =
+          await balanceSheetIsBalanced()
+        assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
+        bookingVersusRealWorldAssets_g.set(bookingVersusRealWorldAssets)
+      } catch (err) {
+        logger.error({ err }, "impossible to calculate balance sheet")
       }
 
-      wallet.gauge.set(balance)
-    }
+      const {
+        total,
+        onChain,
+        offChain,
+        opening_channel_balance,
+        closing_channel_balance,
+      } = await lndsBalances()
+      lnd_g.set(total)
+      lndOnChain_g.set(onChain)
+      lndOffChain_g.set(offChain)
+      lndOpeningChannelBalance_g.set(opening_channel_balance)
+      lndClosingChannelBalance_g.set(closing_channel_balance)
 
-    business_g.set(await User.count({ title: { $ne: null } }))
+      const userCount = await User.countDocuments()
+      userCount_g.set(userCount)
 
-    try {
-      let balances = await ColdStorage.getBalances()
-      if (balances instanceof Error) balances = []
-      for (const { walletName, amount } of balances) {
-        const walletSanitized = walletName.replace("/", "_")
-        if (!coldWallets[walletSanitized]) {
-          coldWallets[walletSanitized] = new client.Gauge({
-            name: `${prefix}_bitcoind_${walletSanitized}`,
-            help: `amount in wallet ${walletName}`,
+      for (const wallet of wallets) {
+        const walletId = await wallet.getId()
+
+        let balance: Satoshis
+
+        const balanceSats = await LedgerService().getWalletBalance(walletId)
+        if (balanceSats instanceof Error) {
+          baseLogger.warn({ walletId, balanceSats }, "impossible to get balance")
+          balance = toSats(0)
+        } else {
+          balance = balanceSats
+          addAttributesToCurrentSpan({
+            [`${wallet.name}_balance`]: balance,
           })
         }
-        coldWallets[walletSanitized].set(amount)
+
+        wallet.gauge.set(balance)
       }
-    } catch (err) {
-      logger.error({ err }, "error setting bitcoind/specter balance")
-    }
 
-    res.set("Content-Type", register.contentType)
-    res.end(await register.metrics())
-  })
+      business_g.set(await User.count({ title: { $ne: null } }))
 
+      try {
+        let balances = await ColdStorage.getBalances()
+        if (balances instanceof Error) balances = []
+        for (const { walletName, amount } of balances) {
+          const walletSanitized = walletName.replace("/", "_")
+          if (!coldWallets[walletSanitized]) {
+            coldWallets[walletSanitized] = new client.Gauge({
+              name: `${prefix}_bitcoind_${walletSanitized}`,
+              help: `amount in wallet ${walletName}`,
+            })
+            addAttributesToCurrentSpan({
+              [`${prefix}_bitcoind_${walletSanitized}`]: amount,
+            })
+          }
+          coldWallets[walletSanitized].set(amount)
+        }
+      } catch (err) {
+        logger.error({ err }, "error setting bitcoind/specter balance")
+      }
+
+      res.set("Content-Type", register.contentType)
+      res.end(await register.metrics())
+    }),
+  )
   server.get(
     "/healthz",
     healthzHandler({
