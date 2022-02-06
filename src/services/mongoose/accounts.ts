@@ -94,6 +94,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     title,
     username,
     defaultWalletId,
+    withdrawFee,
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
@@ -112,6 +113,7 @@ export const AccountsRepository = (): IAccountsRepository => {
             }),
           ),
           defaultWalletId,
+          withdrawFee,
         },
         {
           new: true,

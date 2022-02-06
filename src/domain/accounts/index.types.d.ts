@@ -25,12 +25,17 @@ type Account = {
   defaultWalletId: WalletId
   readonly ownerId: UserId
   readonly depositFeeRatio: DepositFeeRatio
-  readonly withdrawFee: Satoshis
+  withdrawFee: Satoshis
   level: AccountLevel
   status: AccountStatus
   title: BusinessMapTitle
   coordinates: Coordinates
   readonly contacts: AccountContact[]
+}
+
+type WithdrawFeeRange = {
+  min: Satoshis
+  max: Satoshis
 }
 
 type BusinessMapTitle = string & { readonly brand: unique symbol }
