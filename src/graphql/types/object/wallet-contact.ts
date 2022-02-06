@@ -2,7 +2,7 @@ import { Accounts } from "@app"
 import { checkedToUsername } from "@domain/accounts"
 import { GT } from "@graphql/index"
 import dedent from "dedent"
-import { connectionArgs, connectionFromArray } from "graphql-relay"
+import { connectionArgs, connectionFromArray } from "@graphql/connections"
 
 import ContactAlias from "../scalar/contact-alias"
 import Username from "../scalar/username"
@@ -53,7 +53,7 @@ const AccountContact = GT.Object<UserRecord, GraphQLContextForUser>({
           throw transactions
         }
 
-        return connectionFromArray(transactions, args)
+        return connectionFromArray<WalletTransaction>(transactions, args)
       },
       description: "Paginated list of transactions sent to/from this contact.",
     },

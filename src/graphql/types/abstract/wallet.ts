@@ -1,8 +1,7 @@
 import dedent from "dedent"
 
-import { connectionArgs, connectionFromArray } from "graphql-relay"
-
 import { GT } from "@graphql/index"
+import { connectionArgs, connectionFromArray } from "@graphql/connections"
 
 import { TransactionConnection } from "../object/transaction"
 import WalletCurrency from "../scalar/wallet-currency"
@@ -26,7 +25,7 @@ const IWallet = GT.Interface({
       type: TransactionConnection,
       args: connectionArgs,
       resolve: (source, args) => {
-        return connectionFromArray(source.transactions, args)
+        return connectionFromArray<WalletTransaction>(source.transactions, args)
       },
     },
   }),
