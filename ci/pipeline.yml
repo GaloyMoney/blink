@@ -478,9 +478,9 @@ resources:
   source:
     initial_version: 0.0.0
     driver: git
-    file: galoy-src-version
-    uri: #@ data.values.meta_release_git_uri
-    branch: #@ data.values.meta_release_git_version_branch
+    file: version
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_version_branch
     private_key: #@ data.values.github_private_key
 
 - name: gh-release
