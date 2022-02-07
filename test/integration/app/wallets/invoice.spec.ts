@@ -131,17 +131,19 @@ describe("Wallet - addInvoice BTC", () => {
   })
 })
 
-describe("Wallet - addInvoice Fiat", () => {
-  it("add a self generated fiat invoice", async () => {
-    const price = await getCurrentPrice()
-    if (price instanceof Error) return price
+describe("Wallet - addInvoice Usd", () => {
+  it("add a self generated Usd invoice", async () => {
+    const satPerUsd = await getCurrentPrice()
+    if (satPerUsd instanceof Error) return satPerUsd
 
-    const fiatInput = 100
-    const sats = fiatInput / price
+    // const centPerSat = satPerUsd * 100
+
+    const usdInput = 100
+    const sats = usdInput / satPerUsd
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletIdUsd,
-      amount: fiatInput,
+      amount: usdInput,
     })
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
@@ -151,7 +153,7 @@ describe("Wallet - addInvoice Fiat", () => {
     if (result instanceof Error) throw result
     const { walletId, usdCents, currency } = result
     expect(String(walletId)).toBe(String(walletIdUsd))
-    expect(usdCents).toBe(fiatInput)
+    expect(usdCents).toBe(usdInput)
     expect(currency).toBe(WalletCurrency.Usd)
 
     const decodedInvoice = decodeInvoice(request)

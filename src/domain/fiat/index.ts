@@ -19,7 +19,7 @@ export const satsToCentsOptionPricing = ({
   price,
   usdCents,
 }: {
-  price: UsdPerSat
+  price: SatPerUsd
   usdCents: UsdCents
   // TODO: should we have a currency property? or make UsdCents subtype per fiat currency?
 }) => {

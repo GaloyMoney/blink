@@ -28,10 +28,10 @@ export const PriceService = (): IPriceService => {
   const pair = "BTC/USD"
   const exchange = "bitfinex"
 
-  const getRealTimePrice = async (): Promise<UsdPerSat | PriceServiceError> => {
+  const getRealTimePrice = async (): Promise<SatPerUsd | PriceServiceError> => {
     try {
       const { price } = await getPrice({})
-      if (price > 0) return (price / SATS_PER_BTC) as UsdPerSat
+      if (price > 0) return (price / SATS_PER_BTC) as SatPerUsd
       return new PriceNotAvailableError()
     } catch (err) {
       baseLogger.error({ err }, "impossible to fetch most recent price")
@@ -68,7 +68,7 @@ export const PriceService = (): IPriceService => {
 
     try {
       const result = await PriceHistory.aggregate(query)
-      return result.map((t: { _id: Date; o: UsdPerSat }) => ({ date: t._id, price: t.o }))
+      return result.map((t: { _id: Date; o: SatPerUsd }) => ({ date: t._id, price: t.o }))
     } catch (err) {
       return new UnknownPriceServiceError(err)
     }

@@ -16,7 +16,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
 
     const settlementAmount = toSats(100000)
     const usd = 10
-    const settlementUsdPerSat = Math.abs(usd / settlementAmount)
+    const settlementSatPerUsd = Math.abs(usd / settlementAmount)
     const walletId = crypto.randomUUID() as WalletId
 
     const ledgerTransactions: LedgerTransaction[] = [
@@ -111,7 +111,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         },
         settlementAmount,
         settlementFee: toSats(0),
-        settlementUsdPerSat,
+        settlementSatPerUsd,
         deprecated: {
           description: "SomeMemo",
           usd,
@@ -137,7 +137,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         memo: null,
         settlementAmount,
         settlementFee: toSats(0),
-        settlementUsdPerSat,
+        settlementSatPerUsd,
 
         deprecated: {
           description: "from username",
@@ -163,7 +163,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         memo: null,
         settlementAmount,
         settlementFee: toSats(0),
-        settlementUsdPerSat,
+        settlementSatPerUsd,
         deprecated: {
           description: "onchain_on_us",
           usd,
@@ -188,7 +188,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         memo: null,
         settlementAmount,
         settlementFee: toSats(0),
-        settlementUsdPerSat,
+        settlementSatPerUsd,
         deprecated: {
           description: "onchain_receipt",
           usd,
@@ -286,7 +286,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       walletId,
       incomingTxs,
       addresses,
-      1 as UsdPerSat,
+      1 as SatPerUsd,
     )
     const expected = [
       {
@@ -303,7 +303,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         },
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
-        settlementUsdPerSat: 1,
+        settlementSatPerUsd: 1,
         deprecated: {
           description: "pending",
           usd: 25000,
@@ -327,7 +327,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementAmount: toSats(50000),
         memo: null,
         settlementFee: toSats(0),
-        settlementUsdPerSat: 1,
+        settlementSatPerUsd: 1,
         deprecated: {
           description: "pending",
           usd: 50000,
@@ -368,7 +368,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       walletId,
       incomingTxs,
       addresses,
-      NaN as UsdPerSat,
+      NaN as SatPerUsd,
     )
     const expected = [
       {
@@ -385,7 +385,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         memo: null,
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
-        settlementUsdPerSat: NaN,
+        settlementSatPerUsd: NaN,
         deprecated: {
           description: "pending",
           usd: NaN,

@@ -19,7 +19,8 @@ const IntraLedgerUpdate = GT.Object({
   fields: () => ({
     txNotificationType: { type: GT.NonNull(TxNotificationType) },
     amount: { type: GT.NonNull(SatAmount) },
-    usdPerSat: { type: GT.NonNull(GT.Float) },
+    satPerUsd: { type: GT.NonNull(GT.Float) },
+    usdPerSat: { type: GT.NonNull(GT.Float), deprecationReason: "replaced by satPerUsd" },
     walletId: { type: GT.NonNull(WalletId) },
   }),
 })
@@ -39,7 +40,7 @@ const OnChainUpdate = GT.Object({
     txNotificationType: { type: GT.NonNull(TxNotificationType) },
     txHash: { type: GT.NonNull(OnChainTxHash) },
     amount: { type: GT.NonNull(SatAmount) },
-    usdPerSat: { type: GT.NonNull(GT.Float) },
+    satPerUsd: { type: GT.NonNull(GT.Float) },
     walletId: { type: GT.NonNull(WalletId) },
   }),
 })
@@ -97,7 +98,11 @@ const MeSubscription = {
     }
 
     if (source.intraLedger) {
-      return myPayload({ resolveType: "IntraLedgerUpdate", ...source.intraLedger })
+      return myPayload({
+        resolveType: "IntraLedgerUpdate",
+        usdPerSat: source.satPerUsd /* FIXME: remove */,
+        ...source.intraLedger,
+      })
     }
   },
 

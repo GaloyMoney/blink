@@ -5,5 +5,5 @@ interface IPaymentNotification {
   logger: Logger
   paymentHash?: PaymentHash
   txHash?: OnChainTxHash
-  usdPerSat?: UsdPerSat
+  satPerUsd?: SatPerUsd
 }

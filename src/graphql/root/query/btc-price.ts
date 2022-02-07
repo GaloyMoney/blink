@@ -6,17 +6,17 @@ import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 const BtcPriceQuery = GT.Field({
   type: Price,
   resolve: async () => {
-    const satUsdPrice = await Prices.getCurrentPrice()
+    const satPerUsd = await Prices.getCurrentPrice()
 
-    if (satUsdPrice instanceof Error) {
-      throw satUsdPrice
+    if (satPerUsd instanceof Error) {
+      throw satPerUsd
     }
 
-    const price = 100 * satUsdPrice
+    const satPerCents = 100 * satPerUsd
 
     return {
-      formattedAmount: price.toString(),
-      base: Math.round(price * 10 ** SAT_PRICE_PRECISION_OFFSET),
+      formattedAmount: satPerCents.toString(),
+      base: Math.round(satPerCents * 10 ** SAT_PRICE_PRECISION_OFFSET),
       offset: SAT_PRICE_PRECISION_OFFSET,
       currencyUnit: "USDCENT",
     }

@@ -170,10 +170,10 @@ const executePaymentViaIntraledger = async ({
   })
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
-  const usdPerSat = await getCurrentPrice()
-  if (usdPerSat instanceof Error) return usdPerSat
+  const satPerUsd = await getCurrentPrice()
+  if (satPerUsd instanceof Error) return satPerUsd
 
-  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat).fromSats(amount)
+  const amountDisplayCurrency = DisplayCurrencyConversionRate(satPerUsd).fromSats(amount)
 
   const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
   if (recipientAccount instanceof Error) return recipientAccount
@@ -214,7 +214,7 @@ const executePaymentViaIntraledger = async ({
         senderWalletId: senderWallet.id,
         recipientWalletId: recipientWallet.id,
         amount,
-        usdPerSat,
+        satPerUsd,
       })
 
       onchainLoggerOnUs.info(
@@ -285,8 +285,8 @@ const executePaymentViaOnChain = async ({
   if (onChainAvailableBalance < amountToSend + estimatedFee)
     return new RebalanceNeededError()
 
-  const usdPerSat = await getCurrentPrice()
-  if (usdPerSat instanceof Error) return usdPerSat
+  const satPerUsd = await getCurrentPrice()
+  if (satPerUsd instanceof Error) return satPerUsd
 
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
@@ -332,7 +332,7 @@ const executePaymentViaOnChain = async ({
 
         const sats = toSats(amountToSend + totalFee)
 
-        const converter = DisplayCurrencyConversionRate(usdPerSat)
+        const converter = DisplayCurrencyConversionRate(satPerUsd)
         const amountDisplayCurrency = converter.fromSats(sats)
         const totalFeeDisplayCurrency = converter.fromSats(totalFee)
 

@@ -8,7 +8,7 @@ type OnChainTxBaseArgs = {
   walletId: WalletId
   amount: Satoshis
   txHash: OnChainTxHash
-  usdPerSat?: UsdPerSat
+  satPerUsd?: SatPerUsd
 }
 
 type OnChainTxReceivedArgs = OnChainTxBaseArgs
@@ -19,20 +19,20 @@ type LnInvoicePaidArgs = {
   paymentHash: PaymentHash
   recipientWalletId: WalletId
   amount: Satoshis
-  usdPerSat?: UsdPerSat
+  satPerUsd?: SatPerUsd
 }
 
 type IntraLedgerArgs = {
   senderWalletId: WalletId
   recipientWalletId: WalletId
   amount: Satoshis
-  usdPerSat?: UsdPerSat
+  satPerUsd?: SatPerUsd
 }
 
 type SendBalanceArgs = {
   balance: Satoshis
   userId: UserId
-  price: UsdPerSat | ApplicationError
+  price: SatPerUsd | ApplicationError
 }
 
 interface INotificationsService {
@@ -45,7 +45,7 @@ interface INotificationsService {
   onChainTransactionPayment(
     args: OnChainTxPaymentArgs,
   ): Promise<void | NotificationsServiceError>
-  priceUpdate: (UsdPerSat: number) => void
+  priceUpdate: (SatPerUsd: number) => void
   lnInvoicePaid: (args: LnInvoicePaidArgs) => void
   intraLedgerPaid(args: IntraLedgerArgs): Promise<void | NotificationsServiceError>
   sendBalance(args: SendBalanceArgs): Promise<void>

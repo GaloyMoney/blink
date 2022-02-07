@@ -25,12 +25,12 @@ export const transactionNotification = async ({
   logger,
   paymentHash,
   txHash,
-  usdPerSat,
+  satPerUsd,
 }: IPaymentNotification) => {
   let title = getTitleNoUsd[type]({ amount })
 
-  if (usdPerSat) {
-    const usd = (amount * usdPerSat).toFixed(2)
+  if (satPerUsd) {
+    const usd = (amount * satPerUsd).toFixed(2)
     title = getTitle[type]({ usd, amount })
   }
 
