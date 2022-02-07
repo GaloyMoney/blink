@@ -143,6 +143,10 @@ describe("onchainBlockEventhandler", () => {
 
     await Promise.all([waitFor(() => isFinalBlock), waitUntilSyncAll()])
 
+    // this sleep seems necessary on the CI server. otherwise all the events may not have propagated
+    // also some event are being trigger asynchronously without an awaitt, ie the notifications
+    await sleep(500)
+
     subBlocks.removeAllListeners()
 
     const validateWalletState = async ({
@@ -190,9 +194,6 @@ describe("onchainBlockEventhandler", () => {
       amount: amount2,
       address: address2,
     })
-
-    // notification are not been awaited, so explicit sleep is necessary
-    await sleep(250)
   })
 
   it("should process pending invoices on invoice update event", async () => {
