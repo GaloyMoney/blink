@@ -16,6 +16,7 @@ import {
   LedgerServiceError,
   UnknownLedgerError,
 } from "@domain/ledger/errors"
+import { toObjectId } from "@services/mongoose/utils"
 
 import { admin } from "./admin"
 import * as adminLegacy from "./admin-legacy"
@@ -46,9 +47,10 @@ export const LedgerService = (): ILedgerService => {
     id: LedgerTransactionId,
   ): Promise<LedgerTransaction | LedgerServiceError> => {
     try {
+      const _id = toObjectId<LedgerTransactionId>(id)
       const { results } = await MainBook.ledger({
         account_path: liabilitiesMainAccount,
-        _id: id,
+        _id,
       })
       if (results.length === 1) {
         return translateToLedgerTx(results[0])
@@ -67,6 +69,7 @@ export const LedgerService = (): ILedgerService => {
         account_path: liabilitiesMainAccount,
         hash,
       })
+      console.log({ results }, "result123")
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -190,7 +193,7 @@ export const LedgerService = (): ILedgerService => {
     if (!entry) {
       return new CouldNotFindTransactionError()
     }
-    const walletId = toWalletId(entry.accounts)
+    const walletId = toWalletId(entry.accounts as LiabilitiesWalletId)
     if (!walletId) {
       return new UnknownLedgerError("no wallet id associated to transaction")
     }
@@ -205,9 +208,9 @@ export const LedgerService = (): ILedgerService => {
       transactions = Transaction.aggregate([
         {
           $match: {
-            "type": "payment",
-            "pending": true,
-            "account_path.0": liabilitiesMainAccount,
+            type: "payment",
+            pending: true,
+            account_path: liabilitiesMainAccount,
           },
         },
         { $group: { _id: "$accounts" } },

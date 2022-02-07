@@ -1,3 +1,5 @@
+type ObjectId = import("mongoose").Types.ObjectId
+
 type IPType = {
   ip: IpAddress | undefined
   provider?: string
@@ -51,9 +53,8 @@ type OnChainMongooseType = {
   address: string
 }
 
-// ?: improve this
 interface UserRecord {
-  _id: string
+  _id: ObjectId
 
   username: string | null
   phone: string
@@ -63,16 +64,29 @@ interface UserRecord {
   status?: string // ?: enum ["active", "locked"]
   language?: string // ?: enum ["en", "es"]
 
-  twilio?: TwilioObjectForUser
+  twilio: TwilioObjectForUser | null
   depositFeeRatio?: number
   withdrawFee?: number
-  earn?: string[]
+  earn: string[]
   deviceToken: string[]
   contacts: ContactObjectForUser[]
-  created_at: string
+  created_at: Date
+  lastConnection: Date
   onchain: OnChainObjectForUser[]
   twoFA: TwoFAForUser
   defaultWalletId: WalletId
+
+  lastIPs: {
+    ip: string
+    provider: string
+    country: string
+    region: string
+    city: string
+    //using Type instead of type due to its special status in mongoose
+    Type: string
+    firstConnection: Date
+    lastConnection: Date
+  }[]
 
   // business:
   title?: string
@@ -90,11 +104,4 @@ interface UserRecord {
 
   // mongoose in-built functions
   save: () => Promise<UserRecord>
-}
-
-// ?: improve this
-interface UserIPsType {
-  _id: string
-  id: string
-  lastIPs: IPType[]
 }

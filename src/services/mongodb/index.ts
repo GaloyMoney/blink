@@ -1,28 +1,19 @@
+import { ConfigError } from "@config"
+import { WalletCurrency } from "@domain/wallets"
+import { lazyLoadLedgerAdmin } from "@services/ledger"
+import { Transaction } from "@services/ledger/schema"
+import { WalletsRepository } from "@services/mongoose"
+import { fromObjectId } from "@services/mongoose/utils"
 import mongoose from "mongoose"
 
-import { Transaction } from "@services/ledger/schema"
-
-import { lazyLoadLedgerAdmin } from "@services/ledger"
-
-import { WalletsRepository } from "@services/mongoose"
-
-import { WalletCurrency } from "@domain/wallets"
-
-import { ConfigError } from "@config"
-
-import { fromObjectId } from "@services/mongoose/utils"
-
 import { baseLogger } from "../logger"
-
 import { User, WalletInvoice } from "../mongoose/schema"
 
 export const ledgerAdmin = lazyLoadLedgerAdmin({
   bankOwnerWalletResolver: async () => {
-    const { defaultWalletId } = await User.findOne(
-      { role: "bankowner" },
-      { defaultWalletId: 1 },
-    )
-    return defaultWalletId
+    const result = await User.findOne({ role: "bankowner" }, { defaultWalletId: 1 })
+    if (!result) throw new ConfigError("missing bankowner")
+    return result.defaultWalletId
   },
   dealerBtcWalletResolver: async () => {
     const user: UserRecord = await User.findOne({ role: "dealer" }, { id: 1 })
@@ -51,11 +42,9 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
     return wallet.id
   },
   funderWalletResolver: async () => {
-    const { defaultWalletId } = await User.findOne(
-      { role: "funder" },
-      { defaultWalletId: 1 },
-    )
-    return defaultWalletId
+    const result = await User.findOne({ role: "funder" }, { defaultWalletId: 1 })
+    if (!result) throw new ConfigError("missing funder")
+    return result.defaultWalletId
   },
 })
 
@@ -91,19 +80,6 @@ export const setupMongoConnection = async (syncIndexes = false) => {
     }
   } catch (err) {
     baseLogger.fatal({ err, user, address, db }, `error setting the indexes`)
-    throw err
-  }
-
-  return mongoose
-}
-export const setupMongoConnectionSecondary = async () => {
-  try {
-    await mongoose.connect(path, {
-      replset: { readPreference: "secondary" },
-    })
-    mongoose.set("runValidators", true)
-  } catch (err) {
-    baseLogger.fatal({ err, user, address, db }, `error connecting to secondary mongodb`)
     throw err
   }
 
