@@ -56,6 +56,7 @@ groups:
   - build-debug-edge-image
   - build-migrate-edge-image
   - install-deps
+  - release
   - bump-image-in-chart
 - name: image
   jobs: [ build-pipeline-image ]
@@ -306,6 +307,7 @@ jobs:
   - put: version
     params:
       file: version/version
+  on_failure: #@ slack_failure_notification()
 
 - name: bump-image-in-chart
   plan:
