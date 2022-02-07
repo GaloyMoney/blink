@@ -1,14 +1,11 @@
 import crypto from "crypto"
 
-import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { LedgerTransactionType } from "@domain/ledger"
 import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wallets"
-import {
-  WalletTransactionHistory,
-  translateDescription,
-} from "@domain/wallets/tx-history"
+import { translateMemo, WalletTransactionHistory } from "@domain/wallets/tx-history"
 import { toSats } from "@domain/bitcoin"
 import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
+import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
 
 describe("WalletTransactionHistory.fromLedger", () => {
   it("translates ledger txs to wallet txs", () => {
@@ -112,12 +109,6 @@ describe("WalletTransactionHistory.fromLedger", () => {
         settlementAmount,
         settlementFee: toSats(0),
         settlementUsdPerSat,
-        deprecated: {
-          description: "SomeMemo",
-          usd,
-          feeUsd: 0.1,
-          type: LedgerTransactionType.Invoice,
-        },
         status: TxStatus.Success,
         createdAt: timestamp,
       },
@@ -139,12 +130,6 @@ describe("WalletTransactionHistory.fromLedger", () => {
         settlementFee: toSats(0),
         settlementUsdPerSat,
 
-        deprecated: {
-          description: "from username",
-          usd,
-          feeUsd: 0.1,
-          type: LedgerTransactionType.IntraLedger,
-        },
         status: TxStatus.Success,
         createdAt: timestamp,
       },
@@ -164,12 +149,6 @@ describe("WalletTransactionHistory.fromLedger", () => {
         settlementAmount,
         settlementFee: toSats(0),
         settlementUsdPerSat,
-        deprecated: {
-          description: "onchain_on_us",
-          usd,
-          feeUsd: 0.1,
-          type: LedgerTransactionType.OnchainIntraLedger,
-        },
 
         status: TxStatus.Success,
         createdAt: timestamp,
@@ -189,12 +168,6 @@ describe("WalletTransactionHistory.fromLedger", () => {
         settlementAmount,
         settlementFee: toSats(0),
         settlementUsdPerSat,
-        deprecated: {
-          description: "onchain_receipt",
-          usd,
-          feeUsd: 0.1,
-          type: LedgerTransactionType.OnchainReceipt,
-        },
 
         status: TxStatus.Success,
         createdAt: timestamp,
@@ -206,46 +179,33 @@ describe("WalletTransactionHistory.fromLedger", () => {
 
 describe("translateDescription", () => {
   it("returns the memoFromPayer", () => {
-    const result = translateDescription({
+    const result = translateMemo({
       memoFromPayer: "some memo",
       credit: MEMO_SHARING_SATS_THRESHOLD,
-      type: "invoice",
     })
     expect(result).toEqual("some memo")
   })
 
   it("returns memo if there is no memoFromPayer", () => {
-    const result = translateDescription({
+    const result = translateMemo({
       lnMemo: "some memo",
       credit: MEMO_SHARING_SATS_THRESHOLD,
-      type: "invoice",
     })
     expect(result).toEqual("some memo")
   })
 
-  it("returns username description for any amount", () => {
-    const result = translateDescription({
-      username: "username",
-      credit: MEMO_SHARING_SATS_THRESHOLD - 1,
-      type: "invoice",
-    })
-    expect(result).toEqual("from username")
-  })
-
-  it("defaults to type under spam threshdeprecated", () => {
-    const result = translateDescription({
+  it("returns null under spam thresh", () => {
+    const result = translateMemo({
       memoFromPayer: "some memo",
       credit: 1,
-      type: "invoice",
     })
-    expect(result).toEqual("invoice")
+    expect(result).toBeNull()
   })
 
-  it("returns memo for debit", () => {
-    const result = translateDescription({
+  it("returns memo for debit under spam threshold", () => {
+    const result = translateMemo({
       memoFromPayer: "some memo",
       credit: 0,
-      type: "invoice",
     })
     expect(result).toEqual("some memo")
   })
@@ -304,12 +264,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
         settlementUsdPerSat: 1,
-        deprecated: {
-          description: "pending",
-          usd: 25000,
-          feeUsd: 0,
-          type: LedgerTransactionType.OnchainReceipt,
-        },
         status: TxStatus.Pending,
         createdAt: timestamp,
       },
@@ -328,12 +282,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         memo: null,
         settlementFee: toSats(0),
         settlementUsdPerSat: 1,
-        deprecated: {
-          description: "pending",
-          usd: 50000,
-          feeUsd: 0,
-          type: LedgerTransactionType.OnchainReceipt,
-        },
 
         status: TxStatus.Pending,
         createdAt: timestamp,
@@ -386,12 +334,6 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
         settlementUsdPerSat: NaN,
-        deprecated: {
-          description: "pending",
-          usd: NaN,
-          feeUsd: 0,
-          type: LedgerTransactionType.OnchainReceipt,
-        },
         status: TxStatus.Pending,
         createdAt: timestamp,
       },

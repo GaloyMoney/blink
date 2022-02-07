@@ -1,7 +1,6 @@
 import { Prices, Wallets } from "@app"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
-import { LedgerTransactionType } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { TxStatus } from "@domain/wallets"
 import { onchainBlockEventhandler, onInvoiceUpdate } from "@servers/trigger"
@@ -168,7 +167,6 @@ describe("onchainBlockEventhandler", () => {
       const lastTransaction = transactions[0]
 
       expect(transactions.length).toBe(initialState.transactions.length + 1)
-      expect(lastTransaction.deprecated.type).toBe(LedgerTransactionType.OnchainReceipt)
       expect(lastTransaction.status).toBe(TxStatus.Success)
       expect(lastTransaction.settlementFee).toBe(
         Math.round(lastTransaction.settlementFee),

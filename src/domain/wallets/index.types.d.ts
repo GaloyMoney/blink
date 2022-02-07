@@ -8,13 +8,6 @@ type WalletType =
 type WalletCurrency =
   typeof import("./primitives").WalletCurrency[keyof typeof import("./primitives").WalletCurrency]
 
-type Deprecated = {
-  readonly description: string
-  readonly type: LedgerTransactionType
-  readonly usd: number
-  readonly feeUsd: number
-}
-
 type InitiationViaIntraledger = {
   readonly type: PaymentInitiationMethod["IntraLedger"]
   readonly counterPartyWalletId: WalletId
@@ -63,8 +56,6 @@ type BaseWalletTransaction = {
   readonly status: TxStatus
   readonly memo: string | null
   readonly createdAt: Date
-
-  readonly deprecated: Deprecated
 }
 
 type IntraLedgerTransaction = BaseWalletTransaction & {

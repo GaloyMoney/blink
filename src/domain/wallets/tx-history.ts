@@ -1,8 +1,8 @@
+import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
 import { toSats } from "@domain/bitcoin"
 import { ExtendedLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
-import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
 
-import { SettlementMethod, PaymentInitiationMethod } from "./tx-methods"
+import { PaymentInitiationMethod, SettlementMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
 
 const filterPendingIncoming = (
@@ -24,12 +24,6 @@ const filterPendingIncoming = (
           status: TxStatus.Pending,
           memo: null,
           createdAt: createdAt,
-          deprecated: {
-            description: "pending",
-            usd: usdPerSat * sats,
-            feeUsd: 0,
-            type: LedgerTransactionType.OnchainReceipt,
-          },
           initiationVia: {
             type: PaymentInitiationMethod.OnChain,
             address,
@@ -60,7 +54,6 @@ export const fromLedger = (
       debit,
       fee,
       usd,
-      feeUsd,
       paymentHash,
       txHash,
       pubkey,
@@ -70,14 +63,6 @@ export const fromLedger = (
       timestamp,
     }) => {
       const settlementAmount = toSats(credit - debit)
-
-      const description = translateDescription({
-        type,
-        memoFromPayer,
-        lnMemo,
-        credit,
-        username,
-      })
 
       const memo = translateMemo({
         memoFromPayer,
@@ -96,12 +81,6 @@ export const fromLedger = (
         status,
         memo,
         createdAt: timestamp,
-        deprecated: {
-          description,
-          usd,
-          feeUsd,
-          type,
-        },
       }
 
       let txType: ExtendedLedgerTransactionType = type
@@ -237,39 +216,6 @@ const shouldDisplayMemo = ({
 
 const isAuthorizedMemo = (memo: string | undefined): boolean =>
   !!memo && Object.keys(onboardingEarn).includes(memo)
-
-export const translateDescription = ({
-  memoFromPayer,
-  lnMemo,
-  username,
-  type,
-  credit,
-}: {
-  memoFromPayer?: string
-  lnMemo?: string
-  username?: string
-  type: LedgerTransactionType
-  credit: number
-}): string => {
-  if (shouldDisplayMemo({ memo: memoFromPayer, credit })) {
-    if (memoFromPayer) {
-      return memoFromPayer
-    }
-    if (lnMemo) {
-      return lnMemo
-    }
-  }
-
-  let usernameDescription
-  if (username) {
-    usernameDescription = `to ${username}`
-    if (credit > 0) {
-      usernameDescription = `from ${username}`
-    }
-  }
-
-  return usernameDescription || type
-}
 
 export const translateMemo = ({
   memoFromPayer,

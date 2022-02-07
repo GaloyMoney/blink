@@ -11,7 +11,7 @@ import {
   LimitsExceededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
+import { toLiabilitiesWalletId } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
@@ -454,7 +454,6 @@ describe("UserWallet - onChainPay", () => {
 
     const matchTx = (tx: WalletTransaction) =>
       tx.initiationVia.type === PaymentInitiationMethod.OnChain &&
-      tx.deprecated.type === LedgerTransactionType.OnchainIntraLedger &&
       tx.initiationVia.address === address
 
     const { result: txs, error } = await Wallets.getTransactionsForWalletId({
@@ -465,7 +464,7 @@ describe("UserWallet - onChainPay", () => {
     }
     const filteredTxs = txs.filter(matchTx)
     expect(filteredTxs.length).toBe(1)
-    expect(filteredTxs[0].deprecated.description).toBe(memo)
+    expect(filteredTxs[0].memo).toBe(memo)
 
     // receiver should not know memo from sender
     const { result: txsUserD, error: error2 } = await Wallets.getTransactionsForWalletId({
@@ -476,7 +475,7 @@ describe("UserWallet - onChainPay", () => {
     }
     const filteredTxsUserD = txsUserD.filter(matchTx)
     expect(filteredTxsUserD.length).toBe(1)
-    expect(filteredTxsUserD[0].deprecated.description).not.toBe(memo)
+    expect(filteredTxsUserD[0].memo).not.toBe(memo)
   })
 
   it("sends all with an on us transaction", async () => {
