@@ -1,3 +1,5 @@
+import crypto from "crypto"
+
 import { GT } from "@graphql/index"
 import ExchangeCurrencyUnit from "@graphql/types/scalar/exchange-currency-unit"
 import PricePayload from "@graphql/types/payload/price"
@@ -39,34 +41,38 @@ const PriceSubscription = {
     const { amount, amountCurrencyUnit, priceCurrencyUnit } = args.input
 
     const eventName = SAT_USDCENT_PRICE
+    const immediateEventName = `SAT_USDCENT_PRICE_${crypto.randomUUID()}`
 
     for (const input of [amountCurrencyUnit, priceCurrencyUnit]) {
       if (input instanceof Error) {
-        pubsub.publishImmediate(eventName, {
+        pubsub.publishImmediate(immediateEventName, {
           errors: [{ message: input.message }],
         })
-        return pubsub.asyncIterator(eventName)
+        return pubsub.asyncIterator(immediateEventName)
       }
     }
 
     if (amountCurrencyUnit !== "BTCSAT" || priceCurrencyUnit !== "USDCENT") {
       // For now, keep the only supported exchange price as SAT -> USD
-      pubsub.publishImmediate(eventName, {
+      pubsub.publishImmediate(immediateEventName, {
         errors: [{ message: "Unsupported exchange unit" }],
       })
     } else if (amount >= 1000000) {
       // SafeInt limit, reject for now
-      pubsub.publishImmediate(eventName, {
+      pubsub.publishImmediate(immediateEventName, {
         errors: [{ message: "Unsupported exchange amount" }],
       })
     } else {
       const satUsdPrice = await Prices.getCurrentPrice()
       if (!(satUsdPrice instanceof Error)) {
-        pubsub.publishImmediate(eventName, { satUsdCentPrice: 100 * satUsdPrice })
+        pubsub.publishImmediate(immediateEventName, {
+          satUsdCentPrice: 100 * satUsdPrice,
+        })
       }
+      return pubsub.asyncIterator([immediateEventName, eventName])
     }
 
-    return pubsub.asyncIterator(eventName)
+    return pubsub.asyncIterator(immediateEventName)
   },
 }
 

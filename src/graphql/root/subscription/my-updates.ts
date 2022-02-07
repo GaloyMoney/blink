@@ -108,7 +108,7 @@ const MeSubscription = {
 
     const satUsdPrice = await Prices.getCurrentPrice()
     if (!(satUsdPrice instanceof Error)) {
-      pubsub.publishImmediate(USER_PRICE_UPDATE_EVENT, {
+      pubsub.publishImmediate(accountUpdateEvent(ctx.domainAccount.id), {
         price: { satUsdCentPrice: 100 * satUsdPrice },
       })
     }
