@@ -23,7 +23,7 @@ describe("Prices", () => {
         .spyOn(PriceServiceImpl, "PriceService")
         .mockImplementationOnce(() => ({
           listHistory: jest.fn(),
-          getRealTimePrice: () => Promise.resolve(0.0005 as UsdPerSat),
+          getRealTimePrice: () => Promise.resolve(0.0005 as DisplayCurrencyPerSat),
         }))
         .mockImplementationOnce(() => ({
           listHistory: jest.fn(),

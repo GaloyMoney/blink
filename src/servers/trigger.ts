@@ -73,13 +73,13 @@ export async function onchainTransactionEventHandler(
     }
 
     const price = await Prices.getCurrentPrice()
-    const usdPerSat = price instanceof Error ? undefined : price
+    const displayCurrencyPerSat = price instanceof Error ? undefined : price
 
     await NotificationsService(onchainLogger).onChainTransactionPayment({
       walletId,
       amount: toSats(Number(tx.tokens) - fee),
       txHash,
-      usdPerSat,
+      displayCurrencyPerSat,
     })
   } else {
     // incoming transaction
@@ -99,7 +99,7 @@ export async function onchainTransactionEventHandler(
       )
 
       const price = await Prices.getCurrentPrice()
-      const usdPerSat = price instanceof Error ? undefined : price
+      const displayCurrencyPerSat = price instanceof Error ? undefined : price
 
       wallets.forEach((wallet) =>
         NotificationsService(onchainLogger).onChainTransactionReceivedPending({
@@ -107,7 +107,7 @@ export async function onchainTransactionEventHandler(
           // TODO: tx.tokens represent the total sum, need to segregate amount by address
           amount: toSats(Number(tx.tokens)),
           txHash,
-          usdPerSat,
+          displayCurrencyPerSat,
         }),
       )
     }
@@ -144,10 +144,10 @@ const publishCurrentPrice = () => {
   const notificationsService = NotificationsService(logger)
   return setInterval(async () => {
     try {
-      const usdPerSat = await Prices.getCurrentPrice()
-      if (usdPerSat instanceof Error) throw usdPerSat
+      const displayCurrencyPerSat = await Prices.getCurrentPrice()
+      if (displayCurrencyPerSat instanceof Error) throw displayCurrencyPerSat
 
-      notificationsService.priceUpdate(usdPerSat)
+      notificationsService.priceUpdate(displayCurrencyPerSat)
     } catch (err) {
       logger.error({ err }, "can't publish the price")
     }

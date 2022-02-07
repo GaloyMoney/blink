@@ -69,7 +69,6 @@ export const LedgerService = (): ILedgerService => {
         account_path: liabilitiesMainAccount,
         hash,
       })
-      console.log({ results }, "result123")
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)

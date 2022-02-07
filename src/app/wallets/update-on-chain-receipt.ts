@@ -93,8 +93,8 @@ const processTxForWallet = async (
 
   const walletAddresses = wallet.onChainAddresses()
 
-  const usdPerSat = await getCurrentPrice()
-  if (usdPerSat instanceof Error) return usdPerSat
+  const displayCurrencyPerSat = await getCurrentPrice()
+  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   const lockService = LockService()
   return lockService.lockOnChainTxHash({ txHash: tx.rawTx.txHash, logger }, async () => {
@@ -118,7 +118,7 @@ const processTxForWallet = async (
             ratio: account.depositFeeRatio,
           })
 
-          const converter = DisplayCurrencyConversionRate(usdPerSat)
+          const converter = DisplayCurrencyConversionRate(displayCurrencyPerSat)
           const amountDisplayCurrency = converter.fromSats(sats)
           const feeDisplayCurrency = converter.fromSats(fee)
 
@@ -141,7 +141,7 @@ const processTxForWallet = async (
             walletId: wallet.id,
             amount: sats,
             txHash: tx.rawTx.txHash,
-            usdPerSat,
+            displayCurrencyPerSat,
           })
         }
       }
@@ -168,8 +168,8 @@ const processTxForHotWallet = async ({
 
   const ledger = LedgerService()
 
-  const usdPerSat = await getCurrentPrice()
-  if (usdPerSat instanceof Error) return usdPerSat
+  const displayCurrencyPerSat = await getCurrentPrice()
+  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   const lockService = LockService()
   return lockService.lockOnChainTxHash({ txHash: tx.rawTx.txHash, logger }, async () => {
@@ -192,7 +192,7 @@ const processTxForHotWallet = async ({
 
         if (fee instanceof Error) fee = toSats(0)
 
-        const converter = DisplayCurrencyConversionRate(usdPerSat)
+        const converter = DisplayCurrencyConversionRate(displayCurrencyPerSat)
         const amountDisplayCurrency = converter.fromSats(sats)
         const feeDisplayCurrency = converter.fromSats(fee)
 

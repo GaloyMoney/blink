@@ -31,7 +31,7 @@ describe("wallet invoice factory methods", () => {
     }
     const result = walletInvoiceFactory.createForSelf({
       registeredInvoice,
-      usdCents: toCents(12),
+      cents: toCents(12),
     })
     const expected = {
       paymentHash: "paymentHash",
@@ -39,7 +39,7 @@ describe("wallet invoice factory methods", () => {
       selfGenerated: true,
       pubkey: "pubkey",
       paid: false,
-      usdCents: 12,
+      cents: 12,
       currency: WalletCurrency.Btc,
     }
     expect(result).toEqual(expected)
@@ -64,7 +64,7 @@ describe("wallet invoice factory methods", () => {
     }
     const result = walletInvoiceFactory.createForRecipient({
       registeredInvoice,
-      usdCents: toCents(10),
+      cents: toCents(10),
     })
     const expected = {
       paymentHash: "paymentHash",
@@ -72,7 +72,7 @@ describe("wallet invoice factory methods", () => {
       selfGenerated: false,
       pubkey: "pubkey",
       paid: false,
-      usdCents: 10,
+      cents: 10,
       currency: WalletCurrency.Btc,
     }
     expect(result).toEqual(expected)

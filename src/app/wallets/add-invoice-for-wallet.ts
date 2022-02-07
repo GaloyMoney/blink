@@ -1,11 +1,13 @@
 import { getCurrentPrice } from "@app/prices"
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
-import { checkedtoCents, satsToCentsOptionPricing } from "@domain/fiat"
+import { checkedtoCents } from "@domain/fiat"
+import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
-import { checkedToWalletId, WalletCurrency } from "@domain/wallets"
+import { AmountConverter, checkedToWalletId, WalletCurrency } from "@domain/wallets"
+import { Dealer } from "@services/dealer"
 import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 import { consumeLimiter } from "@services/rate-limit"
@@ -79,7 +81,6 @@ export const addInvoiceNoAmountForSelf = async ({
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForSelf,
     expiresAt,
-    usdCents: undefined,
   })
 }
 
@@ -150,7 +151,6 @@ export const addInvoiceNoAmountForRecipient = async ({
     memo,
     walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
     expiresAt,
-    usdCents: undefined,
   })
 }
 
@@ -171,7 +171,6 @@ const addInvoiceSatsDenomiation = async ({
     walletInvoiceCreateFn,
     expiresAt,
     descriptionHash,
-    usdCents: undefined,
   })
 }
 
@@ -181,8 +180,8 @@ const addInvoiceFiatDenomiation = async ({
   memo = "",
   descriptionHash,
 }: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
-  const usdCents = checkedtoCents(amount)
-  if (usdCents instanceof Error) return usdCents
+  const cents = checkedtoCents(amount)
+  if (cents instanceof Error) return cents
 
   const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Usd, new Date())
 
@@ -190,15 +189,27 @@ const addInvoiceFiatDenomiation = async ({
   const price = await getCurrentPrice()
   if (price instanceof Error) return price
 
-  const sats = satsToCentsOptionPricing({ usdCents, price })
+  const displayPriceFns = DisplayCurrencyConversionRate(price)
+
+  const dealer = Dealer()
+
+  const amountConverter = AmountConverter({ dealerFns: dealer, displayPriceFns })
+
+  const amounts = await amountConverter.getAmountsReceive({
+    walletCurrency: WalletCurrency.Usd,
+    cents,
+    order: "quote",
+  })
+
+  if (amounts instanceof Error) return amounts
 
   return registerAndPersistInvoice({
-    sats,
+    sats: amounts.sats,
     memo,
     walletInvoiceCreateFn,
     expiresAt,
     descriptionHash,
-    usdCents,
+    cents,
   })
 }
 
@@ -208,14 +219,14 @@ const registerAndPersistInvoice = async ({
   walletInvoiceCreateFn,
   expiresAt,
   descriptionHash,
-  usdCents,
+  cents,
 }: {
   sats: Satoshis
   memo: string
   walletInvoiceCreateFn: WalletInvoiceFactoryCreateMethod
   expiresAt: InvoiceExpiration
   descriptionHash?: string
-  usdCents: UsdCents | undefined
+  cents?: UsdCents
 }): Promise<LnInvoice | ApplicationError> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
   const lndService = LndService()
@@ -230,7 +241,7 @@ const registerAndPersistInvoice = async ({
   if (registeredInvoice instanceof Error) return registeredInvoice
   const { invoice } = registeredInvoice
 
-  const walletInvoice = walletInvoiceCreateFn({ registeredInvoice, usdCents })
+  const walletInvoice = walletInvoiceCreateFn({ registeredInvoice, cents })
   const persistedWalletInvoice = await walletInvoicesRepo.persistNew(walletInvoice)
   if (persistedWalletInvoice instanceof Error) return persistedWalletInvoice
 

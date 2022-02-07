@@ -187,8 +187,9 @@ input IntraLedgerPaymentSendInput {
 
 type IntraLedgerUpdate {
   amount: SatAmount!
+  displayCurrencyPerSat: Float!
   txNotificationType: TxNotificationType!
-  usdPerSat: Float!
+  usdPerSat: Float! @deprecated(reason: "updated over displayCurrencyPerSat")
   walletId: WalletId!
 }
 
@@ -405,9 +406,10 @@ scalar OnChainTxHash
 
 type OnChainUpdate {
   amount: SatAmount!
+  displayCurrencyPerSat: Float!
   txHash: OnChainTxHash!
   txNotificationType: TxNotificationType!
-  usdPerSat: Float!
+  usdPerSat: Float! @deprecated(reason: "updated over displayCurrencyPerSat")
   walletId: WalletId!
 }
 

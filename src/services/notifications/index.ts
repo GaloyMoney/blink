@@ -21,13 +21,13 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     amount,
     walletId,
     txHash,
-    usdPerSat,
+    displayCurrencyPerSat,
   }: {
     type: NotificationType
     walletId: WalletId
     amount: Satoshis
     txHash: OnChainTxHash
-    usdPerSat?: UsdPerSat
+    displayCurrencyPerSat?: DisplayCurrencyPerSat
   }): Promise<void | NotificationsServiceError> => {
     // FIXME: this try/catch is probably a no-op
     // because the error would not be awaited if they arise
@@ -49,7 +49,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         logger,
         amount,
         txHash,
-        usdPerSat,
+        displayCurrencyPerSat,
       })
 
       // Notify the recipient (via GraphQL subscription if any)
@@ -61,7 +61,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
           txNotificationType: type,
           amount,
           txHash,
-          usdPerSat,
+          displayCurrencyPerSat,
         },
       })
       return
@@ -74,49 +74,49 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     amount,
     walletId,
     txHash,
-    usdPerSat,
+    displayCurrencyPerSat,
   }: OnChainTxReceivedArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainReceipt,
       amount,
       walletId,
       txHash,
-      usdPerSat,
+      displayCurrencyPerSat,
     })
 
   const onChainTransactionReceivedPending = async ({
     amount,
     walletId,
     txHash,
-    usdPerSat,
+    displayCurrencyPerSat,
   }: OnChainTxReceivedPendingArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainReceiptPending,
       amount,
       walletId,
       txHash,
-      usdPerSat,
+      displayCurrencyPerSat,
     })
 
   const onChainTransactionPayment = async ({
     amount,
     walletId,
     txHash,
-    usdPerSat,
+    displayCurrencyPerSat,
   }: OnChainTxPaymentArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainPayment,
       amount,
       walletId,
       txHash,
-      usdPerSat,
+      displayCurrencyPerSat,
     })
 
   const lnInvoicePaid = async ({
     paymentHash,
     recipientWalletId,
     amount,
-    usdPerSat,
+    displayCurrencyPerSat,
   }: LnInvoicePaidArgs) => {
     try {
       const wallet = await WalletsRepository().findById(recipientWalletId)
@@ -135,7 +135,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         logger,
         amount,
         paymentHash,
-        usdPerSat,
+        displayCurrencyPerSat,
       })
 
       // Notify public subscribers (via GraphQL subscription if any)
@@ -157,10 +157,10 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     }
   }
 
-  const priceUpdate = (usdPerSat) => {
-    pubsub.publish(SAT_USDCENT_PRICE, { satUsdCentPrice: 100 * usdPerSat })
+  const priceUpdate = (displayCurrencyPerSat) => {
+    pubsub.publish(SAT_USDCENT_PRICE, { satUsdCentPrice: 100 * displayCurrencyPerSat })
     pubsub.publish(USER_PRICE_UPDATE_EVENT, {
-      price: { satUsdCentPrice: 100 * usdPerSat },
+      price: { satUsdCentPrice: 100 * displayCurrencyPerSat },
     })
   }
 
@@ -168,7 +168,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     senderWalletId,
     recipientWalletId,
     amount,
-    usdPerSat,
+    displayCurrencyPerSat,
   }: IntraLedgerArgs): Promise<void | NotificationsServiceError> => {
     try {
       const publish = async ({
@@ -192,7 +192,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
             walletId,
             txNotificationType: type,
             amount,
-            usdPerSat,
+            displayCurrencyPerSat,
           },
         })
 
@@ -205,7 +205,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
           user,
           logger,
           amount,
-          usdPerSat,
+          displayCurrencyPerSat,
         })
       }
 
@@ -230,7 +230,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   }: {
     balance: Satoshis
     userId: UserId
-    price: UsdPerSat | ApplicationError
+    price: DisplayCurrencyPerSat | ApplicationError
   }): Promise<void> => {
     // Add commas to balancesats
     const balanceSatsAsFormattedString = balance.toLocaleString("en")
