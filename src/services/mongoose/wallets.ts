@@ -17,7 +17,8 @@ export interface WalletRecord {
   _accountId: Types.ObjectId
   type: string
   currency: string
-  onchain: OnChainMongooseType[]
+  // TODO: even though mongoose should set a default this value has been observed to be null in prod
+  onchain: OnChainMongooseType[] | null
 }
 
 export const WalletsRepository = (): IWalletsRepository => {
@@ -117,7 +118,7 @@ const resultToWallet = (result: WalletRecord): Wallet => {
   const accountId = fromObjectId<AccountId>(result._accountId)
   const type = result.type as WalletType
   const currency = result.currency as WalletCurrency
-  const onChainAddressIdentifiers = result.onchain.map(({ pubkey, address }) => {
+  const onChainAddressIdentifiers = (result.onchain || []).map(({ pubkey, address }) => {
     return {
       pubkey: pubkey as Pubkey,
       address: address as OnChainAddress,
