@@ -344,6 +344,7 @@ jobs:
       - name: migrate-edge-image
       - name: pipeline-tasks
       - name: charts-repo
+      - name: version
       outputs:
       - name: charts-repo
       params:
