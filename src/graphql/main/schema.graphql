@@ -652,7 +652,7 @@ type TransactionConnection {
   """
   A list of edges.
   """
-  edges: [TransactionEdge]
+  edges: [TransactionEdge!]
 
   """
   Information to aid in pagination.
@@ -672,7 +672,7 @@ type TransactionEdge {
   """
   The item at the end of the edge
   """
-  node: Transaction
+  node: Transaction!
 }
 
 input TwoFADeleteInput {

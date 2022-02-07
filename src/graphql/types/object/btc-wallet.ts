@@ -1,6 +1,5 @@
-import { connectionArgs, connectionFromArray } from "graphql-relay"
-
 import { GT } from "@graphql/index"
+import { connectionArgs, connectionFromArray } from "@graphql/connections"
 
 import { Wallets } from "@app"
 
@@ -45,7 +44,7 @@ const BTCWallet = GT.Object({
         if (error instanceof Error || transactions === null) {
           throw error
         }
-        return connectionFromArray(transactions, args)
+        return connectionFromArray<WalletTransaction>(transactions, args)
       },
     },
   }),

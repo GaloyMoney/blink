@@ -1,7 +1,7 @@
 import dedent from "dedent"
-import { connectionDefinitions } from "graphql-relay"
 
 import { GT } from "@graphql/index"
+import { connectionDefinitions } from "@graphql/connections"
 
 import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
@@ -16,7 +16,7 @@ import TxStatus from "../scalar/tx-status"
 
 import Price from "./price"
 
-const Transaction = GT.Object({
+const Transaction = GT.Object<WalletTransaction>({
   name: "Transaction",
   description: dedent`Give details about an individual transaction.
   Galoy have a smart routing system which is automatically
