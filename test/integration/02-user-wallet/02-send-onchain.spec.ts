@@ -464,6 +464,7 @@ describe("UserWallet - onChainPay", () => {
     }
     const filteredTxs = txs.filter(matchTx)
     expect(filteredTxs.length).toBe(1)
+    expect(filteredTxs[0].memo).toBe(memo)
 
     // receiver should not know memo from sender
     const { result: txsUserD, error: error2 } = await Wallets.getTransactionsForWalletId({
@@ -474,6 +475,7 @@ describe("UserWallet - onChainPay", () => {
     }
     const filteredTxsUserD = txsUserD.filter(matchTx)
     expect(filteredTxsUserD.length).toBe(1)
+    expect(filteredTxsUserD[0].memo).not.toBe(memo)
   })
 
   it("sends all with an on us transaction", async () => {
