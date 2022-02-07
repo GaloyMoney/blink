@@ -57,6 +57,7 @@ groups:
   - build-migrate-edge-image
   - install-deps
   - bump-image-in-chart
+  - release
 - name: image
   jobs: [ build-pipeline-image ]
 
@@ -270,14 +271,23 @@ jobs:
   - in_parallel:
     - get: repo
       trigger: true
-      passed: [ build-edge-image ]
+      passed:
+      - check-code
+      - test-unit
+      - test-integration
+      - build-debug-edge-image
+      - build-migrate-edge-image
+      - build-edge-image
     - get: pipeline-tasks
     - get: edge-image
       passed: [ build-edge-image ]
       params:
         format: oci
+    - get: migrate-edge-image
+      passed: [ build-migrate-edge-image ]
+      params:
+        format: oci
     - get: version
-    - get: charts-repo
   - task: prep-release
     config:
       platform: linux
@@ -294,40 +304,39 @@ jobs:
         CHART: galoy
       run:
         path: pipeline-tasks/ci/tasks/vendor/prep-release-src.sh
-  - put: versioned-image
-    params:
-      image: edge-image/image.tar
-      additional_tags: artifacts/gh-release-tag
-  - put: gh-release
-    params:
-      name: artifacts/gh-release-name
-      tag: artifacts/gh-release-tag
-      body: artifacts/gh-release-notes.md
-  - put: version
-    params:
-      file: version/version
+  - in_parallel:
+    - put: versioned-image
+      params:
+        image: edge-image/image.tar
+        additional_tags: artifacts/gh-release-tag
+    - put: versioned-migrate-image
+      params:
+        image: migrate-edge-image/image.tar
+        additional_tags: artifacts/gh-release-tag
+    - put: gh-release
+      params:
+        name: artifacts/gh-release-name
+        tag: artifacts/gh-release-tag
+        body: artifacts/gh-release-notes.md
+    - put: version
+      params:
+        file: version/version
+  on_failure: #@ slack_failure_notification()
 
 - name: bump-image-in-chart
   plan:
   - in_parallel:
     - get: edge-image
-      passed: [release]
+      passed: [ release ]
       params: { skip_download: true }
     - get: migrate-edge-image
-      passed: [build-migrate-edge-image]
+      passed: [ release ]
       params: { skip_download: true }
     - get: repo
       trigger: true
       passed:
-      - check-code
-      - test-unit
-      - test-integration
-      - build-debug-edge-image
-      - build-migrate-edge-image
-      - build-edge-image
       - release
     - get: version
-      trigger: true
       passed: [ release ]
     - get: charts-repo
       params: { skip_download: true }
@@ -342,6 +351,7 @@ jobs:
       - name: migrate-edge-image
       - name: pipeline-tasks
       - name: charts-repo
+      - name: version
       outputs:
       - name: charts-repo
       params:
@@ -422,6 +432,13 @@ resources:
     username: #@ data.values.docker_registry_user
     password: #@ data.values.docker_registry_password
     repository: #@ galoy_image()
+
+- name: versioned-migrate-image
+  type: registry-image
+  source:
+    username: #@ data.values.docker_registry_user
+    password: #@ data.values.docker_registry_password
+    repository: #@ migrate_galoy_image()
 
 - name: deps
   type: git
