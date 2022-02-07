@@ -1,3 +1,5 @@
+import crypto from "crypto"
+
 import { GT } from "@graphql/index"
 import ExchangeCurrencyUnit from "@graphql/types/scalar/exchange-currency-unit"
 import PricePayload from "@graphql/types/payload/price"
@@ -5,7 +7,6 @@ import { SAT_PRICE_PRECISION_OFFSET, SAT_USDCENT_PRICE } from "@config"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import pubsub from "@services/pubsub"
 import { Prices } from "@app"
-import { v4 as uuidv4 } from "uuid"
 
 const PriceInput = GT.Input({
   name: "PriceInput",
@@ -40,7 +41,7 @@ const PriceSubscription = {
     const { amount, amountCurrencyUnit, priceCurrencyUnit } = args.input
 
     const eventName = SAT_USDCENT_PRICE
-    const immediateEventName = `SAT_USDCENT_PRICE_${uuidv4()}`
+    const immediateEventName = `SAT_USDCENT_PRICE_${crypto.randomUUID()}`
 
     for (const input of [amountCurrencyUnit, priceCurrencyUnit]) {
       if (input instanceof Error) {
