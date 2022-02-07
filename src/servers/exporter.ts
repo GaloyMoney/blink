@@ -128,7 +128,13 @@ const main = async () => {
       userCount_g.set(userCount)
 
       for (const wallet of wallets) {
-        const walletId = await wallet.getId()
+        let walletId
+        try {
+          walletId = await wallet.getId()
+        } catch (err) {
+          baseLogger.error({ err }, `Could not load wallet id for ${wallet.name}`)
+          continue
+        }
 
         let balance: Satoshis
 

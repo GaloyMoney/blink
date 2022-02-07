@@ -29,7 +29,10 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
     // FIXME remove the use of UserRecord when role if part of the AccountRepository
     const accountId = fromObjectId<AccountId>(user._id)
     const wallets = await WalletsRepository().listByAccountId(accountId)
-    if (wallets instanceof Error) throw new ConfigError("missing dealer btc wallet")
+    if (wallets instanceof Error) {
+      baseLogger.error({ err: wallets }, "Error while listing wallets for dealer")
+      throw new ConfigError("Couldn't load dealer wallets")
+    }
     const wallet = wallets.find((wallet) => wallet.currency === WalletCurrency.Btc)
     if (wallet === undefined) throw new ConfigError("missing dealer btc wallet")
     return wallet.id
@@ -39,7 +42,10 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
     // FIXME remove the use of UserRecord when role if part of the AccountRepository
     const accountId = fromObjectId<AccountId>(user._id)
     const wallets = await WalletsRepository().listByAccountId(accountId)
-    if (wallets instanceof Error) throw new ConfigError("missing dealer usd wallet")
+    if (wallets instanceof Error) {
+      baseLogger.error({ err: wallets }, "Error while listing wallets for dealer")
+      throw new ConfigError("Couldn't load dealer wallets")
+    }
     const wallet = wallets.find((wallet) => wallet.currency === WalletCurrency.Usd)
     if (wallet === undefined) throw new ConfigError("missing dealer usd wallet")
     return wallet.id
