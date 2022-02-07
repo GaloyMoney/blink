@@ -154,6 +154,7 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const userBTxn = txResult.result
+    expect(userBTxn.filter(matchTx)[0].memo).toBe(memo)
     expect(userBTxn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
     // expect(userBTxn.filter(matchTx)[0].recipientUsername).toBe("lily")
 
@@ -164,6 +165,7 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const userCTxn = txResult.result
+    expect(userCTxn.filter(matchTx)[0].memo).toBe(memo)
     expect(userCTxn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
   })
 
@@ -199,6 +201,7 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const userCTxn = txResult.result
+    expect(userCTxn.filter(matchTx)[0].memo).toBe(memo)
     expect(userCTxn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
 
     txResult = await Wallets.getTransactionsForWalletId({
@@ -208,6 +211,7 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const userBTxn = txResult.result
+    expect(userBTxn.filter(matchTx)[0].memo).toBe(memoPayer)
     expect(userBTxn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
   })
 
@@ -377,20 +381,24 @@ describe("UserWallet - Lightning Pay", () => {
       "counterPartyUsername",
       usernameB,
     )
+    expect(transaction0Below.memo).toBeNull()
     expect(transaction1Below.initiationVia).toHaveProperty(
       "counterPartyUsername",
       usernameA,
     )
+    expect(transaction1Below.memo).toBe(memoSpamBelowThreshold)
 
     // check above-threshold transaction for recipient was NOT filtered
     expect(transaction0Above.initiationVia).toHaveProperty(
       "counterPartyUsername",
       usernameB,
     )
+    expect(transaction0Above.memo).toBe(memoSpamAboveThreshold)
     expect(transaction1Above.initiationVia).toHaveProperty(
       "counterPartyUsername",
       usernameA,
     )
+    expect(transaction1Above.memo).toBe(memoSpamAboveThreshold)
 
     // check contacts being added
     const userTypeA = await getUserRecordByTestUserRef("A")
