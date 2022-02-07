@@ -54,7 +54,6 @@ export const fromLedger = (
       debit,
       fee,
       usd,
-      feeUsd,
       paymentHash,
       txHash,
       pubkey,
