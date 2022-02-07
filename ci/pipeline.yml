@@ -271,7 +271,13 @@ jobs:
   - in_parallel:
     - get: repo
       trigger: true
-      passed: [ build-edge-image ]
+      passed:
+      - check-code
+      - test-unit
+      - test-integration
+      - build-debug-edge-image
+      - build-migrate-edge-image
+      - build-edge-image
     - get: pipeline-tasks
     - get: edge-image
       passed: [ build-edge-image ]
