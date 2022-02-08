@@ -10,3 +10,8 @@ export const checkedtoCents = (amount: number): UsdCents | ValidationError => {
     return new NonIntegerError(`${amount} type ${typeof amount} is not an integer`)
   return toCents(amount)
 }
+
+export const OrderType = {
+  Locked: "immediate",
+  Active: "quote",
+} as const

@@ -32,6 +32,8 @@ jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current
 
 const walletInvoices = WalletInvoicesRepository()
 
+const CENTS_PER_USD = 100
+
 beforeAll(async () => {
   const userRef = "B"
   await createUserWalletFromUserRef(userRef)
@@ -138,8 +140,8 @@ describe("Wallet - addInvoice USD", () => {
 
     const centsInput = 10000
 
-    const usdPerCent = displayCurrencyPerSat * 100
-    const sats = (centsInput / usdPerCent) * 0.996 // 40 bps spread
+    const centsPerSat = displayCurrencyPerSat * CENTS_PER_USD
+    const sats = (centsInput / centsPerSat) * 0.996 // 40 bps spread
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletIdUsd,
@@ -183,8 +185,8 @@ describe("Wallet - addInvoice USD", () => {
 
     const centsInput = 10000
 
-    const usdPerCent = displayCurrencyPerSat * 100
-    const sats = (centsInput / usdPerCent) * 0.996 // 40 bps spread
+    const centsPerSat = displayCurrencyPerSat * CENTS_PER_USD
+    const sats = (centsInput / centsPerSat) * 0.996 // 40 bps spread
 
     const lnInvoice = await Wallets.addInvoiceForRecipient({
       recipientWalletId: walletIdUsd,

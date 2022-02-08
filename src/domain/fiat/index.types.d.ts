@@ -30,7 +30,8 @@ type XOR<T1, T2> =
 
 type CentsXORSats = XOR<AmountFromSatoshis, AmountFromCents>
 
-type OrderType = "immediate" | "quote"
+type OrderType =
+  typeof import("./index").OrderType[keyof typeof import("./index").OrderType]
 
 type GetAmountsSendOrReceiveArgs = {
   walletCurrency: WalletCurrency
