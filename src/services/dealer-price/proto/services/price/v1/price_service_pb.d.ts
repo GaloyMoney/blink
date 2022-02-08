@@ -197,8 +197,8 @@ export namespace GetQuoteRateForFutureUsdSellRequest {
 }
 
 export class GetExchangeRateForImmediateUsdBuyResponse extends jspb.Message {
-  getPriceInUsd(): number
-  setPriceInUsd(value: number): GetExchangeRateForImmediateUsdBuyResponse
+  getAmountInUsd(): number
+  setAmountInUsd(value: number): GetExchangeRateForImmediateUsdBuyResponse
 
   serializeBinary(): Uint8Array
   toObject(includeInstance?: boolean): GetExchangeRateForImmediateUsdBuyResponse.AsObject
@@ -221,13 +221,13 @@ export class GetExchangeRateForImmediateUsdBuyResponse extends jspb.Message {
 
 export namespace GetExchangeRateForImmediateUsdBuyResponse {
   export type AsObject = {
-    priceInUsd: number
+    amountInUsd: number
   }
 }
 
 export class GetExchangeRateForImmediateUsdBuyFromCentsResponse extends jspb.Message {
-  getPriceInSatoshis(): number
-  setPriceInSatoshis(value: number): GetExchangeRateForImmediateUsdBuyFromCentsResponse
+  getAmountInSatoshis(): number
+  setAmountInSatoshis(value: number): GetExchangeRateForImmediateUsdBuyFromCentsResponse
 
   serializeBinary(): Uint8Array
   toObject(
@@ -254,13 +254,13 @@ export class GetExchangeRateForImmediateUsdBuyFromCentsResponse extends jspb.Mes
 
 export namespace GetExchangeRateForImmediateUsdBuyFromCentsResponse {
   export type AsObject = {
-    priceInSatoshis: number
+    amountInSatoshis: number
   }
 }
 
 export class GetExchangeRateForImmediateUsdSellResponse extends jspb.Message {
-  getPriceInSatoshis(): number
-  setPriceInSatoshis(value: number): GetExchangeRateForImmediateUsdSellResponse
+  getAmountInSatoshis(): number
+  setAmountInSatoshis(value: number): GetExchangeRateForImmediateUsdSellResponse
 
   serializeBinary(): Uint8Array
   toObject(includeInstance?: boolean): GetExchangeRateForImmediateUsdSellResponse.AsObject
@@ -283,13 +283,13 @@ export class GetExchangeRateForImmediateUsdSellResponse extends jspb.Message {
 
 export namespace GetExchangeRateForImmediateUsdSellResponse {
   export type AsObject = {
-    priceInSatoshis: number
+    amountInSatoshis: number
   }
 }
 
 export class GetExchangeRateForImmediateUsdSellFromSatoshisResponse extends jspb.Message {
-  getPriceInUsd(): number
-  setPriceInUsd(value: number): GetExchangeRateForImmediateUsdSellFromSatoshisResponse
+  getAmountInUsd(): number
+  setAmountInUsd(value: number): GetExchangeRateForImmediateUsdSellFromSatoshisResponse
 
   serializeBinary(): Uint8Array
   toObject(
@@ -316,13 +316,13 @@ export class GetExchangeRateForImmediateUsdSellFromSatoshisResponse extends jspb
 
 export namespace GetExchangeRateForImmediateUsdSellFromSatoshisResponse {
   export type AsObject = {
-    priceInUsd: number
+    amountInUsd: number
   }
 }
 
 export class GetQuoteRateForFutureUsdBuyResponse extends jspb.Message {
-  getPriceInUsd(): number
-  setPriceInUsd(value: number): GetQuoteRateForFutureUsdBuyResponse
+  getAmountInUsd(): number
+  setAmountInUsd(value: number): GetQuoteRateForFutureUsdBuyResponse
 
   serializeBinary(): Uint8Array
   toObject(includeInstance?: boolean): GetQuoteRateForFutureUsdBuyResponse.AsObject
@@ -345,13 +345,13 @@ export class GetQuoteRateForFutureUsdBuyResponse extends jspb.Message {
 
 export namespace GetQuoteRateForFutureUsdBuyResponse {
   export type AsObject = {
-    priceInUsd: number
+    amountInUsd: number
   }
 }
 
 export class GetQuoteRateForFutureUsdSellResponse extends jspb.Message {
-  getPriceInSatoshis(): number
-  setPriceInSatoshis(value: number): GetQuoteRateForFutureUsdSellResponse
+  getAmountInSatoshis(): number
+  setAmountInSatoshis(value: number): GetQuoteRateForFutureUsdSellResponse
 
   serializeBinary(): Uint8Array
   toObject(includeInstance?: boolean): GetQuoteRateForFutureUsdSellResponse.AsObject
@@ -374,6 +374,6 @@ export class GetQuoteRateForFutureUsdSellResponse extends jspb.Message {
 
 export namespace GetQuoteRateForFutureUsdSellResponse {
   export type AsObject = {
-    priceInSatoshis: number
+    amountInSatoshis: number
   }
 }

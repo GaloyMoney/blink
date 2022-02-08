@@ -70,7 +70,7 @@ export const DealerPriceService = (): IDealerPriceService => {
           amountInSatoshis,
         ),
       )
-      return response.getPriceInUsd() as UsdCents
+      return response.getAmountInUsd() as UsdCents
     } catch (error) {
       baseLogger.error(
         { error },
@@ -89,7 +89,7 @@ export const DealerPriceService = (): IDealerPriceService => {
           amountInUsd,
         ),
       )
-      return toSats(response.getPriceInSatoshis())
+      return toSats(response.getAmountInSatoshis())
     } catch (error) {
       baseLogger.error(
         { error },
@@ -106,7 +106,7 @@ export const DealerPriceService = (): IDealerPriceService => {
       const response = await clientGetExchangeRateForImmediateUsdSell(
         new GetExchangeRateForImmediateUsdSellRequest().setAmountInUsd(amountInUsd),
       )
-      return toSats(response.getPriceInSatoshis())
+      return toSats(response.getAmountInSatoshis())
     } catch (error) {
       baseLogger.error(
         { error },
@@ -125,7 +125,7 @@ export const DealerPriceService = (): IDealerPriceService => {
           amountInSatoshis,
         ),
       )
-      return response.getPriceInUsd() as UsdCents
+      return response.getAmountInUsd() as UsdCents
     } catch (error) {
       baseLogger.error(
         { error },
@@ -145,7 +145,7 @@ export const DealerPriceService = (): IDealerPriceService => {
           .setAmountInSatoshis(amountInSatoshis)
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
-      return response.getPriceInUsd() as UsdCents
+      return response.getAmountInUsd() as UsdCents
     } catch (error) {
       baseLogger.error({ error }, "GetQuoteRateForFutureUsdBuy unable to fetch price")
       return new UnknownDealerPriceServiceError(error)
@@ -161,7 +161,7 @@ export const DealerPriceService = (): IDealerPriceService => {
           .setAmountInUsd(amountInUsd)
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
-      return toSats(response.getPriceInSatoshis())
+      return toSats(response.getAmountInSatoshis())
     } catch (error) {
       baseLogger.error({ error }, "GetQuoteRateForFutureUsdSell unable to fetch price")
       return new UnknownDealerPriceServiceError(error)
