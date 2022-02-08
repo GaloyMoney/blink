@@ -33,10 +33,10 @@ export const migrateLnPaymentsFromLnd = async () =>
       ]
       const pubkeys = lndService.listActivePubkeys()
 
-      await listFns.map((listFn): Promise<true>[] =>
-        pubkeys.map(async (pubkey): Promise<true> => {
+      for (const listFn of listFns) {
+        for (const pubkey of pubkeys) {
           let count = await getFirstIndex(pubkey)
-          if (count instanceof Error) return true
+          if (count instanceof Error) continue
 
           while (count !== 0) {
             count = await asyncRunInSpan(
@@ -48,24 +48,24 @@ export const migrateLnPaymentsFromLnd = async () =>
               },
               async () => {
                 if (count instanceof Error) return count
-                count = await migrateLnPaymentsByFunction({
+                const updatedCount = await migrateLnPaymentsByFunction({
                   offset: count,
                   pubkey,
                   listFn,
                 })
                 addAttributesToCurrentSpan({
                   "migrateLnPaymentsByFunction.nextoffset":
-                    count instanceof Error ? count.name : count,
+                    updatedCount instanceof Error
+                      ? updatedCount.name
+                      : updatedCount.toString(),
                 })
-                return count
+                return updatedCount
               },
             )
             if (count instanceof Error) break
           }
-
-          return true
-        }),
-      )
+        }
+      }
       return true
     },
   )
