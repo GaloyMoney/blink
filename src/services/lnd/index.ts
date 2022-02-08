@@ -14,6 +14,7 @@ import {
   UnknownRouteNotFoundError,
   InsufficientBalanceForRoutingError,
   BadPaymentDataError,
+  CorruptLndDbError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
 import {
@@ -273,11 +274,17 @@ export const LndService = (): ILightningService | LightningServiceError => {
         endCursor: (next as PagingContinueToken) || false,
       }
     } catch (err) {
-      return new UnknownLightningServiceError(err)
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.LndDbCorruption:
+          return new CorruptLndDbError()
+        default:
+          return new UnknownRouteNotFoundError(err)
+      }
     }
   }
 
-  const listSettledPayments = async ({
+  const listSettledAndPendingPayments = async ({
     after,
     pubkey,
   }: {
@@ -290,13 +297,45 @@ export const LndService = (): ILightningService | LightningServiceError => {
       const { payments, next } = await getPayments({ lnd, ...pagingArgs })
 
       return {
-        lnPayments: payments
-          .map(translateLnPaymentLookup)
-          .filter((p) => p.status === PaymentStatus.Settled),
+        lnPayments: payments.map(translateLnPaymentLookup),
         endCursor: (next as PagingStartToken) || false,
       }
     } catch (err) {
-      return new UnknownLightningServiceError(err)
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.LndDbCorruption:
+          return new CorruptLndDbError()
+        default:
+          return new UnknownRouteNotFoundError(err)
+      }
+    }
+  }
+
+  const listSettledPayments = async (args: {
+    after: PagingStartToken | PagingContinueToken
+    pubkey: Pubkey
+  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
+    const settledAndPendingPayments = await listSettledAndPendingPayments(args)
+    if (settledAndPendingPayments instanceof Error) return settledAndPendingPayments
+
+    const { lnPayments, endCursor } = settledAndPendingPayments
+    return {
+      lnPayments: lnPayments.filter((p) => p.status === PaymentStatus.Settled),
+      endCursor,
+    }
+  }
+
+  const listPendingPayments = async (args: {
+    after: PagingStartToken | PagingContinueToken
+    pubkey: Pubkey
+  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
+    const settledAndPendingPayments = await listSettledAndPendingPayments(args)
+    if (settledAndPendingPayments instanceof Error) return settledAndPendingPayments
+
+    const { lnPayments, endCursor } = settledAndPendingPayments
+    return {
+      lnPayments: lnPayments.filter((p) => p.status !== PaymentStatus.Settled),
+      endCursor,
     }
   }
 
@@ -444,7 +483,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
     lookupInvoice,
     lookupPayment,
     listSettledPayments,
+    listPendingPayments,
     listFailedPayments,
+    listSettledAndPendingPayments,
     cancelInvoice,
     payInvoiceViaRoutes,
     payInvoiceViaPaymentDetails,
@@ -556,6 +597,7 @@ const KnownLndErrorDetails = {
   InvoiceNotFound: "unable to locate invoice",
   InvoiceAlreadyPaid: "invoice is already paid",
   UnableToFindRoute: "PaymentPathfindingFailedToFindPossibleRoute",
+  LndDbCorruption: "payment isn't initiated",
 } as const
 
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({

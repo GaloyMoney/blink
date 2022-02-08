@@ -183,7 +183,15 @@ interface ILightningService {
 
   listSettledPayments: ListLnPayments
 
+  listPendingPayments(
+    args: ListLnPaymentsArgs,
+  ): Promise<ListLnPaymentsResult | LightningServiceError>
+
   listFailedPayments: ListLnPayments
+
+  listSettledAndPendingPayments(
+    args: ListLnPaymentsArgs,
+  ): Promise<ListLnPaymentsResult | LightningServiceError>
 
   cancelInvoice({
     pubkey,
