@@ -20,6 +20,7 @@ export * from "./redis"
 export * from "./wallet"
 export * from "./price"
 export * from "./rate-limit"
+export * from "./state-setup"
 
 export const amountAfterFeeDeduction = ({
   amount,

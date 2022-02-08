@@ -25,8 +25,9 @@ import {
   startServer,
   killServer,
   PID,
-  createUserWalletFromUserRef,
   fundWalletIdFromLightning,
+  initializeTestingState,
+  defaultStateConfig,
 } from "test/helpers"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -41,8 +42,7 @@ const { phone, code } = yamlConfig.test_accounts.find(
 )
 
 beforeAll(async () => {
-  await createUserWalletFromUserRef(sendingUserIndex)
-  await createUserWalletFromUserRef(receivingUserRef)
+  await initializeTestingState(defaultStateConfig())
   const sendingWalletId = await getDefaultWalletIdByTestUserRef(sendingUserIndex)
   await fundWalletIdFromLightning({ walletId: sendingWalletId, amount: toSats(50_000) })
   receivingWalletId = await getDefaultWalletIdByTestUserRef(receivingUserRef)

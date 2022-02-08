@@ -51,6 +51,15 @@ watch-unit:
 watch-compile:
 	$(BIN_DIR)/tsc --watch  --noEmit --skipLibCheck
 
+e2e:
+	yarn build && \
+	yarn test:e2e
+	
+e2e-in-ci:
+	. ./.envrc && \
+	yarn build && \
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+
 integration:
 	yarn build && \
 	yarn test:integration

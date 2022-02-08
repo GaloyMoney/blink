@@ -1,14 +1,14 @@
 module.exports = {
   moduleFileExtensions: ["js", "json", "ts", "gql"],
   rootDir: "../",
-  roots: ["<rootDir>/test/integration"],
+  roots: ["<rootDir>/test/e2e"],
   transform: {
     "^.+\\.(ts)$": "ts-jest",
     "^.+\\.(gql)$": "@jagi/jest-transform-graphql",
   },
   testRegex: ".*\\.spec\\.ts$",
   testSequencer: "<rootDir>/test/jest-test-sequencer.js",
-  setupFilesAfterEnv: ["<rootDir>/test/jest-integration.setup.js"],
+  setupFilesAfterEnv: ["<rootDir>/test/jest-e2e.setup.js"],
   testEnvironment: "node",
   moduleNameMapper: {
     "^@config$": ["<rootDir>src/config/index"],

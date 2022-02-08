@@ -50,6 +50,7 @@ groups:
 - name: galoy
   jobs:
   - test-integration
+  - test-e2e
   - test-unit
   - check-code
   - build-edge-image
@@ -109,6 +110,35 @@ jobs:
       file: bundled-deps/bundled-deps-*.tgz
   on_failure: #@ slack_failure_notification()
 
+- name: test-e2e
+  serial: true
+  plan:
+  - in_parallel:
+    - { get: repo, trigger: true }
+    - { get: pipeline-tasks }
+    - { get: bundled-deps, tags: ["galoy-staging"], trigger: true}
+  - task: test-e2e
+    timeout: 12m
+    tags: ["galoy-staging"]
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+      - name: bundled-deps
+      - name: pipeline-tasks
+      - name: repo
+        path: galoy-e2e
+      params:
+        REPO_PATH: galoy-e2e
+        DOCKER_HOST_IP: #@ data.values.docker_host_ip
+        GOOGLE_CREDENTIALS: #@ data.values.staging_inception_creds
+        SSH_PRIVATE_KEY: #@ data.values.staging_ssh_private_key
+        SSH_PUB_KEY: #@ data.values.staging_ssh_pub_key
+        JEST_TIMEOUT: 90000
+      run:
+        path: pipeline-tasks/ci/tasks/test-e2e.sh
+  on_failure: #@ slack_failure_notification()
+
 - name: test-integration
   serial: true
   plan:
@@ -126,9 +156,9 @@ jobs:
       - name: bundled-deps
       - name: pipeline-tasks
       - name: repo
-        path: galoy
+        path: galoy-integration
       params:
-        REPO_PATH: galoy
+        REPO_PATH: galoy-integration
         DOCKER_HOST_IP: #@ data.values.docker_host_ip
         GOOGLE_CREDENTIALS: #@ data.values.staging_inception_creds
         SSH_PRIVATE_KEY: #@ data.values.staging_ssh_private_key
@@ -275,6 +305,7 @@ jobs:
       - check-code
       - test-unit
       - test-integration
+      - test-e2e
       - build-debug-edge-image
       - build-migrate-edge-image
       - build-edge-image

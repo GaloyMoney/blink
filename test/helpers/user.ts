@@ -74,7 +74,7 @@ export const createUserWalletFromUserRef = async (ref: string) => {
   await createUserWallet(entry)
 }
 
-const createUserWallet = async (entry) => {
+export const createUserWallet = async (entry) => {
   const phone = entry.phone as PhoneNumber
 
   let userRepo = await users.findByPhone(phone)

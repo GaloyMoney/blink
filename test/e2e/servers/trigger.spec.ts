@@ -13,7 +13,6 @@ import {
   amountAfterFeeDeduction,
   bitcoindClient,
   bitcoindOutside,
-  createUserWalletFromUserRef,
   getDefaultWalletIdByTestUserRef,
   getHash,
   getInvoice,
@@ -27,6 +26,8 @@ import {
   subscribeToBlocks,
   waitFor,
   waitUntilSyncAll,
+  initializeTestingState,
+  defaultStateConfig,
 } from "test/helpers"
 import { getBTCBalance } from "test/helpers/wallet"
 
@@ -39,23 +40,19 @@ let walletIdA: WalletId
 let walletIdD: WalletId
 let walletIdF: WalletId
 
-let userId12: UserId
+let userIdF: UserId
 
 let userTypeA: UserRecord
 let userType3: UserRecord
 
 beforeAll(async () => {
-  await bitcoindClient.loadWallet({ filename: "outside" })
-
-  await createUserWalletFromUserRef("A")
-  await createUserWalletFromUserRef("D")
-  await createUserWalletFromUserRef("F")
+  await initializeTestingState(defaultStateConfig())
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   walletIdD = await getDefaultWalletIdByTestUserRef("D")
   walletIdF = await getDefaultWalletIdByTestUserRef("F")
 
-  userId12 = await getUserIdByTestUserRef("F")
+  userIdF = await getUserIdByTestUserRef("F")
 
   userTypeA = await getUserRecordByTestUserRef("A")
   userType3 = await getUserRecordByTestUserRef("D")
@@ -67,7 +64,6 @@ beforeEach(() => {
 
 afterAll(async () => {
   jest.restoreAllMocks()
-  await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
 type WalletState = {
@@ -228,7 +224,7 @@ describe("onchainBlockEventhandler", () => {
     expect(sendNotification.mock.calls[0][0].title).toBe(
       getTitle[NotificationType.LnInvoicePaid]({ usd, amount: sats }),
     )
-    expect(sendNotification.mock.calls[0][0].user.id).toStrictEqual(userId12)
+    expect(sendNotification.mock.calls[0][0].user.id).toStrictEqual(userIdF)
     expect(sendNotification.mock.calls[0][0].data.type).toBe(
       NotificationType.LnInvoicePaid,
     )
