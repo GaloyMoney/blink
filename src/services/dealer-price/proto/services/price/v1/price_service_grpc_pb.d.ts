@@ -10,9 +10,11 @@ import * as services_price_v1_price_service_pb from "../../../services/price/v1/
 interface IPriceServiceService
   extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
   getExchangeRateForImmediateUsdBuy: IPriceServiceService_IGetExchangeRateForImmediateUsdBuy
+  getExchangeRateForImmediateUsdBuyFromCents: IPriceServiceService_IGetExchangeRateForImmediateUsdBuyFromCents
   getExchangeRateForImmediateUsdSell: IPriceServiceService_IGetExchangeRateForImmediateUsdSell
-  getExchangeRateForFutureUsdBuy: IPriceServiceService_IGetExchangeRateForFutureUsdBuy
-  getExchangeRateForFutureUsdSell: IPriceServiceService_IGetExchangeRateForFutureUsdSell
+  getExchangeRateForImmediateUsdSellFromSatoshis: IPriceServiceService_IGetExchangeRateForImmediateUsdSellFromSatoshis
+  getQuoteRateForFutureUsdBuy: IPriceServiceService_IGetQuoteRateForFutureUsdBuy
+  getQuoteRateForFutureUsdSell: IPriceServiceService_IGetQuoteRateForFutureUsdSell
 }
 
 interface IPriceServiceService_IGetExchangeRateForImmediateUsdBuy
@@ -28,6 +30,19 @@ interface IPriceServiceService_IGetExchangeRateForImmediateUsdBuy
   responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse>
   responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse>
 }
+interface IPriceServiceService_IGetExchangeRateForImmediateUsdBuyFromCents
+  extends grpc.MethodDefinition<
+    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse
+  > {
+  path: "/services.price.v1.PriceService/GetExchangeRateForImmediateUsdBuyFromCents"
+  requestStream: false
+  responseStream: false
+  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest>
+  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest>
+  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse>
+  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse>
+}
 interface IPriceServiceService_IGetExchangeRateForImmediateUsdSell
   extends grpc.MethodDefinition<
     services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest,
@@ -41,31 +56,44 @@ interface IPriceServiceService_IGetExchangeRateForImmediateUsdSell
   responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse>
   responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse>
 }
-interface IPriceServiceService_IGetExchangeRateForFutureUsdBuy
+interface IPriceServiceService_IGetExchangeRateForImmediateUsdSellFromSatoshis
   extends grpc.MethodDefinition<
-    services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyRequest,
-    services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyResponse
+    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
+    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse
   > {
-  path: "/services.price.v1.PriceService/GetExchangeRateForFutureUsdBuy"
+  path: "/services.price.v1.PriceService/GetExchangeRateForImmediateUsdSellFromSatoshis"
   requestStream: false
   responseStream: false
-  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyRequest>
-  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyRequest>
-  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyResponse>
-  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyResponse>
+  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest>
+  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest>
+  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse>
+  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse>
 }
-interface IPriceServiceService_IGetExchangeRateForFutureUsdSell
+interface IPriceServiceService_IGetQuoteRateForFutureUsdBuy
   extends grpc.MethodDefinition<
-    services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellRequest,
-    services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellResponse
+    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
+    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse
   > {
-  path: "/services.price.v1.PriceService/GetExchangeRateForFutureUsdSell"
+  path: "/services.price.v1.PriceService/GetQuoteRateForFutureUsdBuy"
   requestStream: false
   responseStream: false
-  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellRequest>
-  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellRequest>
-  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellResponse>
-  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellResponse>
+  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest>
+  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest>
+  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse>
+  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse>
+}
+interface IPriceServiceService_IGetQuoteRateForFutureUsdSell
+  extends grpc.MethodDefinition<
+    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
+    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse
+  > {
+  path: "/services.price.v1.PriceService/GetQuoteRateForFutureUsdSell"
+  requestStream: false
+  responseStream: false
+  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest>
+  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest>
+  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse>
+  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse>
 }
 
 export const PriceServiceService: IPriceServiceService
@@ -75,17 +103,25 @@ export interface IPriceServiceServer extends grpc.UntypedServiceImplementation {
     services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest,
     services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse
   >
+  getExchangeRateForImmediateUsdBuyFromCents: grpc.handleUnaryCall<
+    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse
+  >
   getExchangeRateForImmediateUsdSell: grpc.handleUnaryCall<
     services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest,
     services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse
   >
-  getExchangeRateForFutureUsdBuy: grpc.handleUnaryCall<
-    services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyRequest,
-    services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyResponse
+  getExchangeRateForImmediateUsdSellFromSatoshis: grpc.handleUnaryCall<
+    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
+    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse
   >
-  getExchangeRateForFutureUsdSell: grpc.handleUnaryCall<
-    services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellRequest,
-    services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellResponse
+  getQuoteRateForFutureUsdBuy: grpc.handleUnaryCall<
+    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
+    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse
+  >
+  getQuoteRateForFutureUsdSell: grpc.handleUnaryCall<
+    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
+    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse
   >
 }
 
@@ -114,6 +150,30 @@ export interface IPriceServiceClient {
       response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse,
     ) => void,
   ): grpc.ClientUnaryCall
+  getExchangeRateForImmediateUsdBuyFromCents(
+    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getExchangeRateForImmediateUsdBuyFromCents(
+    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getExchangeRateForImmediateUsdBuyFromCents(
+    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
   getExchangeRateForImmediateUsdSell(
     request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest,
     callback: (
@@ -138,52 +198,76 @@ export interface IPriceServiceClient {
       response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  getExchangeRateForFutureUsdBuy(
-    request: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyRequest,
+  getExchangeRateForImmediateUsdSellFromSatoshis(
+    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyResponse,
+      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  getExchangeRateForFutureUsdBuy(
-    request: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyRequest,
+  getExchangeRateForImmediateUsdSellFromSatoshis(
+    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
     metadata: grpc.Metadata,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyResponse,
+      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  getExchangeRateForFutureUsdBuy(
-    request: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyRequest,
-    metadata: grpc.Metadata,
-    options: Partial<grpc.CallOptions>,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  getExchangeRateForFutureUsdSell(
-    request: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellRequest,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  getExchangeRateForFutureUsdSell(
-    request: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellRequest,
-    metadata: grpc.Metadata,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  getExchangeRateForFutureUsdSell(
-    request: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellRequest,
+  getExchangeRateForImmediateUsdSellFromSatoshis(
+    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
     metadata: grpc.Metadata,
     options: Partial<grpc.CallOptions>,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellResponse,
+      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getQuoteRateForFutureUsdBuy(
+    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getQuoteRateForFutureUsdBuy(
+    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getQuoteRateForFutureUsdBuy(
+    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getQuoteRateForFutureUsdSell(
+    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getQuoteRateForFutureUsdSell(
+    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getQuoteRateForFutureUsdSell(
+    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse,
     ) => void,
   ): grpc.ClientUnaryCall
 }
@@ -218,6 +302,30 @@ export class PriceServiceClient extends grpc.Client implements IPriceServiceClie
       response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse,
     ) => void,
   ): grpc.ClientUnaryCall
+  public getExchangeRateForImmediateUsdBuyFromCents(
+    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getExchangeRateForImmediateUsdBuyFromCents(
+    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getExchangeRateForImmediateUsdBuyFromCents(
+    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
   public getExchangeRateForImmediateUsdSell(
     request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest,
     callback: (
@@ -242,52 +350,76 @@ export class PriceServiceClient extends grpc.Client implements IPriceServiceClie
       response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  public getExchangeRateForFutureUsdBuy(
-    request: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyRequest,
+  public getExchangeRateForImmediateUsdSellFromSatoshis(
+    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyResponse,
+      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  public getExchangeRateForFutureUsdBuy(
-    request: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyRequest,
+  public getExchangeRateForImmediateUsdSellFromSatoshis(
+    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
     metadata: grpc.Metadata,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyResponse,
+      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  public getExchangeRateForFutureUsdBuy(
-    request: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyRequest,
-    metadata: grpc.Metadata,
-    options: Partial<grpc.CallOptions>,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdBuyResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  public getExchangeRateForFutureUsdSell(
-    request: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellRequest,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  public getExchangeRateForFutureUsdSell(
-    request: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellRequest,
-    metadata: grpc.Metadata,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  public getExchangeRateForFutureUsdSell(
-    request: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellRequest,
+  public getExchangeRateForImmediateUsdSellFromSatoshis(
+    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
     metadata: grpc.Metadata,
     options: Partial<grpc.CallOptions>,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForFutureUsdSellResponse,
+      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getQuoteRateForFutureUsdBuy(
+    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getQuoteRateForFutureUsdBuy(
+    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getQuoteRateForFutureUsdBuy(
+    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getQuoteRateForFutureUsdSell(
+    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getQuoteRateForFutureUsdSell(
+    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getQuoteRateForFutureUsdSell(
+    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse,
     ) => void,
   ): grpc.ClientUnaryCall
 }

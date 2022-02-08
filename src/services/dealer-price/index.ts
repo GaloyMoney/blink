@@ -4,18 +4,24 @@ import { credentials } from "@grpc/grpc-js"
 
 import { UnknownDealerPriceServiceError } from "@domain/dealer-price"
 
+import { toSats } from "@domain/bitcoin"
+
 import { baseLogger } from "../logger"
 
 import { PriceServiceClient } from "./proto/services/price/v1/price_service_grpc_pb"
 import {
   GetExchangeRateForImmediateUsdBuyRequest,
   GetExchangeRateForImmediateUsdBuyResponse,
+  GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+  GetExchangeRateForImmediateUsdBuyFromCentsResponse,
   GetExchangeRateForImmediateUsdSellRequest,
   GetExchangeRateForImmediateUsdSellResponse,
-  GetExchangeRateForFutureUsdBuyRequest,
-  GetExchangeRateForFutureUsdBuyResponse,
-  GetExchangeRateForFutureUsdSellRequest,
-  GetExchangeRateForFutureUsdSellResponse,
+  GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
+  GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
+  GetQuoteRateForFutureUsdBuyRequest,
+  GetQuoteRateForFutureUsdBuyResponse,
+  GetQuoteRateForFutureUsdSellRequest,
+  GetQuoteRateForFutureUsdSellResponse,
 } from "./proto/services/price/v1/price_service_pb"
 
 const serverPort = process.env.PRICE_SERVER_PORT ?? "50055"
@@ -24,36 +30,72 @@ const client = new PriceServiceClient(
   credentials.createInsecure(),
 )
 
-const clientGetExchangeRateForImmediateUsdBuy = util.promisify(
-  client.getExchangeRateForImmediateUsdBuy.bind(client),
-)
-const clientGetExchangeRateForImmediateUsdSell = util.promisify(
-  client.getExchangeRateForImmediateUsdSell.bind(client),
-)
-const clientGetExchangeRateForFutureUsdBuy = util.promisify(
-  client.getExchangeRateForFutureUsdBuy.bind(client),
-)
-const clientGetExchangeRateForFutureUsdSell = util.promisify(
-  client.getExchangeRateForFutureUsdSell.bind(client),
-)
+const clientGetExchangeRateForImmediateUsdBuy = util.promisify<
+  GetExchangeRateForImmediateUsdBuyRequest,
+  GetExchangeRateForImmediateUsdBuyResponse
+>(client.getExchangeRateForImmediateUsdBuy.bind(client))
+
+const clientGetExchangeRateForImmediateUsdBuyFromCents = util.promisify<
+  GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+  GetExchangeRateForImmediateUsdBuyFromCentsResponse
+>(client.getExchangeRateForImmediateUsdBuyFromCents.bind(client))
+
+const clientGetExchangeRateForImmediateUsdSell = util.promisify<
+  GetExchangeRateForImmediateUsdSellRequest,
+  GetExchangeRateForImmediateUsdSellResponse
+>(client.getExchangeRateForImmediateUsdSell.bind(client))
+
+const clientGetExchangeRateForImmediateUsdSellFromSatoshis = util.promisify<
+  GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
+  GetExchangeRateForImmediateUsdSellFromSatoshisResponse
+>(client.getExchangeRateForImmediateUsdSellFromSatoshis.bind(client))
+
+const clientGetQuoteRateForFutureUsdBuy = util.promisify<
+  GetQuoteRateForFutureUsdBuyRequest,
+  GetQuoteRateForFutureUsdBuyResponse
+>(client.getQuoteRateForFutureUsdBuy.bind(client))
+
+const clientGetQuoteRateForFutureUsdSell = util.promisify<
+  GetQuoteRateForFutureUsdSellRequest,
+  GetQuoteRateForFutureUsdSellResponse
+>(client.getQuoteRateForFutureUsdSell.bind(client))
 
 export const DealerPriceService = (): IDealerPriceService => {
   const getExchangeRateForImmediateUsdBuy = async function (
     amountInSatoshis: Satoshis,
   ): Promise<UsdCents | DealerPriceServiceError> {
     try {
-      const response = (await clientGetExchangeRateForImmediateUsdBuy(
+      const response = await clientGetExchangeRateForImmediateUsdBuy(
         new GetExchangeRateForImmediateUsdBuyRequest().setAmountInSatoshis(
           amountInSatoshis,
         ),
-      )) as GetExchangeRateForImmediateUsdBuyResponse
+      )
       return response.getPriceInUsd() as UsdCents
     } catch (error) {
       baseLogger.error(
         { error },
         "GetExchangeRateForImmediateUsdBuy unable to fetch price",
       )
-      return new UnknownDealerPriceServiceError()
+      return new UnknownDealerPriceServiceError(error)
+    }
+  }
+
+  const getExchangeRateForImmediateUsdBuyFromCents = async function (
+    amountInUsd: UsdCents,
+  ): Promise<Satoshis | DealerPriceServiceError> {
+    try {
+      const response = await clientGetExchangeRateForImmediateUsdBuyFromCents(
+        new GetExchangeRateForImmediateUsdBuyFromCentsRequest().setAmountInCents(
+          amountInUsd,
+        ),
+      )
+      return toSats(response.getPriceInSatoshis())
+    } catch (error) {
+      baseLogger.error(
+        { error },
+        "GetExchangeRateForImmediateUsdBuyFromCents unable to fetch price",
+      )
+      return new UnknownDealerPriceServiceError(error)
     }
   }
 
@@ -61,56 +103,77 @@ export const DealerPriceService = (): IDealerPriceService => {
     amountInUsd: UsdCents,
   ): Promise<Satoshis | DealerPriceServiceError> {
     try {
-      const response = (await clientGetExchangeRateForImmediateUsdSell(
+      const response = await clientGetExchangeRateForImmediateUsdSell(
         new GetExchangeRateForImmediateUsdSellRequest().setAmountInUsd(amountInUsd),
-      )) as GetExchangeRateForImmediateUsdSellResponse
-      return response.getPriceInSatoshis() as Satoshis
+      )
+      return toSats(response.getPriceInSatoshis())
     } catch (error) {
       baseLogger.error(
         { error },
         "GetExchangeRateForImmediateUsdSell unable to fetch price",
       )
-      return new UnknownDealerPriceServiceError()
+      return new UnknownDealerPriceServiceError(error)
     }
   }
 
-  const getExchangeRateForFutureUsdBuy = async function (
+  const getExchangeRateForImmediateUsdSellFromSatoshis = async function (
+    amountInSatoshis: Satoshis,
+  ): Promise<UsdCents | DealerPriceServiceError> {
+    try {
+      const response = await clientGetExchangeRateForImmediateUsdSellFromSatoshis(
+        new GetExchangeRateForImmediateUsdSellFromSatoshisRequest().setAmountInSatoshis(
+          amountInSatoshis,
+        ),
+      )
+      return response.getPriceInUsd() as UsdCents
+    } catch (error) {
+      baseLogger.error(
+        { error },
+        "GetExchangeRateForImmediateUsdSellFromSatoshis unable to fetch price",
+      )
+      return new UnknownDealerPriceServiceError(error)
+    }
+  }
+
+  const getQuoteRateForFutureUsdBuy = async function (
     amountInSatoshis: Satoshis,
     timeToExpiryInSeconds: Seconds,
   ): Promise<UsdCents | DealerPriceServiceError> {
     try {
-      const response = (await clientGetExchangeRateForFutureUsdBuy(
-        new GetExchangeRateForFutureUsdBuyRequest()
+      const response = await clientGetQuoteRateForFutureUsdBuy(
+        new GetQuoteRateForFutureUsdBuyRequest()
           .setAmountInSatoshis(amountInSatoshis)
           .setTimeInSeconds(timeToExpiryInSeconds),
-      )) as GetExchangeRateForFutureUsdBuyResponse
+      )
       return response.getPriceInUsd() as UsdCents
     } catch (error) {
-      baseLogger.error({ error }, "GetExchangeRateForFutureUsdBuy unable to fetch price")
-      return new UnknownDealerPriceServiceError()
+      baseLogger.error({ error }, "GetQuoteRateForFutureUsdBuy unable to fetch price")
+      return new UnknownDealerPriceServiceError(error)
     }
   }
-  const getExchangeRateForFutureUsdSell = async function (
+  const getQuoteRateForFutureUsdSell = async function (
     amountInUsd: UsdCents,
     timeToExpiryInSeconds: Seconds,
   ): Promise<Satoshis | DealerPriceServiceError> {
     try {
-      const response = (await clientGetExchangeRateForFutureUsdSell(
-        new GetExchangeRateForFutureUsdSellRequest()
+      const response = await clientGetQuoteRateForFutureUsdSell(
+        new GetQuoteRateForFutureUsdSellRequest()
           .setAmountInUsd(amountInUsd)
           .setTimeInSeconds(timeToExpiryInSeconds),
-      )) as GetExchangeRateForFutureUsdSellResponse
-      return response.getPriceInSatoshis() as Satoshis
+      )
+      return toSats(response.getPriceInSatoshis())
     } catch (error) {
-      baseLogger.error({ error }, "GetExchangeRateForFutureUsdSell unable to fetch price")
-      return new UnknownDealerPriceServiceError()
+      baseLogger.error({ error }, "GetQuoteRateForFutureUsdSell unable to fetch price")
+      return new UnknownDealerPriceServiceError(error)
     }
   }
 
   return {
     getExchangeRateForImmediateUsdBuy,
+    getExchangeRateForImmediateUsdBuyFromCents,
     getExchangeRateForImmediateUsdSell,
-    getExchangeRateForFutureUsdBuy,
-    getExchangeRateForFutureUsdSell,
+    getExchangeRateForImmediateUsdSellFromSatoshis,
+    getQuoteRateForFutureUsdBuy,
+    getQuoteRateForFutureUsdSell,
   }
 }
