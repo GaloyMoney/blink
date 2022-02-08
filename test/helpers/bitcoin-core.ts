@@ -12,7 +12,7 @@ import { pay } from "lightning"
 
 import { descriptors } from "./multisig-wallet"
 
-import { lndOutside1, waitUntilBlockHeight } from "."
+import { checkIsBalanced, lndOutside1, waitUntilBlockHeight } from "."
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
@@ -82,7 +82,7 @@ export const fundWalletIdFromOnchain = async ({
   walletId: WalletId
   amountInBitcoin: number
   lnd: AuthenticatedLnd
-}) => {
+}): Promise<Satoshis> => {
   const address = await createOnChainAddress(walletId)
   if (address instanceof Error) throw address
 
@@ -91,10 +91,13 @@ export const fundWalletIdFromOnchain = async ({
     address,
     amount: amountInBitcoin,
   })
+
   await waitUntilBlockHeight({ lnd })
+  await checkIsBalanced()
 
   const balance = await LedgerService().getWalletBalance(walletId)
   if (balance instanceof Error) throw balance
+  return balance
 }
 
 export const fundWalletIdFromLightning = async ({

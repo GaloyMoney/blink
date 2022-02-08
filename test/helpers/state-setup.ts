@@ -7,7 +7,14 @@ import { PriceHistory } from "@services/price/schema"
 import { toObjectId } from "@services/mongoose/utils"
 import { adminUsers } from "@domain/admin-users"
 
-import { fundLnd, mineBlockAndSyncAll } from "./lightning"
+import {
+  fundLnd,
+  getChainBalance,
+  mineBlockAndSyncAll,
+  waitUntilSyncAll,
+} from "./lightning"
+
+import { clearAccountLocks, clearLimiters } from "./redis"
 
 import {
   chunk,
@@ -23,8 +30,8 @@ import {
   bitcoindOutside,
   resetDatabase,
   resetLnds,
-  setChannelFees,
   openChannelTesting,
+  checkIsBalanced,
 } from "test/helpers"
 
 const populatePriceData = async () => {
@@ -129,65 +136,94 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
   const existingWallets = await bitcoindClient.listWalletDir()
   const loadedWallets = await bitcoindClient.listWallets()
   if (!existingWallets.map((wallet) => wallet.name).includes("outside")) {
-    await bitcoindClient.createWallet({ walletName: "outside" })
+    const createWalletResult = await bitcoindClient.createWallet({
+      walletName: "outside",
+    })
+    if (createWalletResult.warning) {
+      console.warn(createWalletResult.warning)
+    }
   } else if (!loadedWallets.includes("outside")) {
-    await bitcoindClient.loadWallet({ filename: "outside" })
+    const loadWalletResult = await bitcoindClient.loadWallet({ filename: "outside" })
+    if (loadWalletResult.warning) {
+      console.warn(loadWalletResult.warning)
+    }
   }
+  console.log("Loaded outside wallet.")
 
   // Reset state
   if (stateConfig.resetState) {
-    await Promise.all([resetLnds(), resetDatabase(mongoose)])
+    await Promise.all([
+      resetLnds(),
+      resetDatabase(mongoose),
+      clearLimiters(),
+      clearAccountLocks(),
+    ])
+    console.log("Reset state.")
   }
 
   // Fund outside wallet
   if (stateConfig.outsideWalletBlocksToMineAndConfirm > 0) {
     const bitcoindAddress = await bitcoindOutside.getNewAddress()
-    await mineAndConfirm({
+    const bitcoinReward = await mineAndConfirm({
       walletClient: bitcoindOutside,
       numOfBlocks: stateConfig.outsideWalletBlocksToMineAndConfirm,
       address: bitcoindAddress,
     })
+    console.log(
+      `Funded outside wallet by mining ${bitcoinReward} bitcoin to ${bitcoindAddress}`,
+    )
   }
 
   // Create test users and mandatory users
   await Promise.all(
     stateConfig.userAccounts.map((accountEntry) => createUserWallet(accountEntry)),
   )
+  console.log("Created all test users.")
 
   // Fund special wallets
   if (stateConfig.fundFunderWallet) {
     const funderWalletId = await getFunderWalletId()
-    await fundWalletIdFromOnchain({
+    const funderBalance = await fundWalletIdFromOnchain({
       walletId: funderWalletId,
       amountInBitcoin: stateConfig.fundFunderWallet.amountInBitcoin,
       lnd: stateConfig.fundFunderWallet.receivingNode,
     })
+
+    const { chain_balance } = await getChainBalance({
+      lnd: stateConfig.fundFunderWallet.receivingNode,
+    })
+
+    console.log(
+      `Funded Funder Wallet(${funderWalletId}) with current balance of ${funderBalance} sats. Lnd1 chain balance is ${chain_balance}.`,
+    )
   }
 
   // Fund external lnd
   if (stateConfig.lndFunding.length > 0) {
-    const fundingPromises: Promise<void>[] = []
     for (const lndInstance of stateConfig.lndFunding) {
-      fundingPromises.push(fundLnd(lndInstance))
+      await waitUntilSyncAll()
+      await fundLnd(lndInstance)
     }
-    await Promise.all([fundLnd(lndOutside1), fundLnd(lndOutside2)])
     await mineBlockAndSyncAll()
+    console.log("LND's have been funded.")
   }
 
   // Open ln channels
   if (stateConfig.channelOpens.length > 0) {
     for (const channel of stateConfig.channelOpens) {
+      await waitUntilSyncAll()
       await openChannelTesting(channel)
-      await Promise.all([
-        setChannelFees({ lnd: channel.lnd, channel, base: 0, rate: 0 }),
-        setChannelFees({ lnd: channel.lndPartner, channel, base: 0, rate: 0 }),
-      ])
     }
     await mineBlockAndSyncAll()
+    console.log("Channels have been opened.")
   }
 
   // Populate price data
   if (stateConfig.populatePriceData) {
     await populatePriceData()
+    console.log("Price data has been populated.")
   }
+
+  await checkIsBalanced()
+  console.log("Ledger is balanced.")
 }
