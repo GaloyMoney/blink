@@ -71,10 +71,3 @@ check-code:
 	yarn tsc-check
 	yarn eslint-check
 	yarn build
-
-debug:
-	. ./.envrc && yarn ts-node \
-		--files \
-			-r tsconfig-paths/register \
-			-r src/services/tracing.ts \
-		src/debug/migrate-ln-payments-listpayments.ts

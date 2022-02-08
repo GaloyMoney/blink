@@ -1,3 +1,12 @@
+/**
+ * how to run:
+ *	. ./.envrc && yarn ts-node \
+ *		--files \
+ *			-r tsconfig-paths/register \
+ *			-r src/services/tracing.ts \
+ *		src/debug/migrate-ln-payments-listpayments.ts
+ */
+
 import { getPayments } from "lightning"
 import { isUp } from "@services/lnd/health"
 import { params as unauthParams } from "@services/lnd/unauth"
