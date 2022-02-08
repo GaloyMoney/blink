@@ -75,7 +75,7 @@ const updatePendingPayment = async ({
   pendingPayment: LedgerTransaction
   logger: Logger
   lock?: DistributedLock
-}): Promise<void | ApplicationError> => {
+}): Promise<true | ApplicationError> => {
   const paymentLogger = logger.child({
     topic: "payment",
     protocol: "lightning",
@@ -125,7 +125,7 @@ const updatePendingPayment = async ({
 
       if (recorded) {
         paymentLogger.info("payment has already been processed")
-        return
+        return true
       }
 
       const settled = await ledgerService.settlePendingLnPayment(paymentHash)
@@ -142,7 +142,7 @@ const updatePendingPayment = async ({
           { success: true, id: paymentHash, payment: pendingPayment },
           "payment has been confirmed",
         )
-        if (pendingPayment.feeKnownInAdvance) return
+        if (pendingPayment.feeKnownInAdvance) return true
 
         return reimburseFee({
           walletId,
@@ -159,36 +159,23 @@ const updatePendingPayment = async ({
           "payment has failed. reverting transaction",
         )
 
-        return revertTransaction({
-          pendingPayment,
-          lnPaymentLookup,
-          logger: paymentLogger,
-        })
+        const voided = await ledgerService.revertLightningPayment(
+          pendingPayment.journalId,
+        )
+        if (voided instanceof Error) {
+          const error = `error voiding payment entry`
+          logger.fatal(
+            {
+              success: false,
+              result: lnPaymentLookup,
+            },
+            error,
+          )
+          return voided
+        }
       }
+      return true
     })
   }
-}
-
-const revertTransaction = async ({
-  pendingPayment,
-  lnPaymentLookup,
-  logger,
-}: {
-  pendingPayment: LedgerTransaction
-  lnPaymentLookup: LnPaymentLookup | LnFailedPartialPaymentLookup
-  logger: Logger
-}): Promise<void | ApplicationError> => {
-  const ledgerService = LedgerService()
-  const voided = await ledgerService.revertLightningPayment(pendingPayment.journalId)
-  if (voided instanceof Error) {
-    const error = `error voiding payment entry`
-    logger.fatal(
-      {
-        success: false,
-        result: lnPaymentLookup,
-      },
-      error,
-    )
-    return voided
-  }
+  return true
 }

@@ -28,8 +28,8 @@ export const intraledger = {
       type: LedgerTransactionType.OnchainIntraLedger,
       pending: false,
       usd: amountDisplayCurrency,
-      memoPayer: null,
-      username: null,
+      memoPayer: undefined,
+      username: undefined,
       payee_addresses: payeeAddresses,
       sendAll,
     }
@@ -65,8 +65,8 @@ export const intraledger = {
       type: LedgerTransactionType.IntraLedger,
       pending: false,
       usd: amountDisplayCurrency,
-      memoPayer: null,
-      username: null,
+      memoPayer: undefined,
+      username: undefined,
     }
 
     return addIntraledgerTxTransfer({
@@ -104,8 +104,8 @@ export const intraledger = {
       hash: paymentHash,
       usd: amountDisplayCurrency,
       pubkey,
-      memoPayer: null,
-      username: null,
+      memoPayer: undefined,
+      username: undefined,
     }
 
     return addIntraledgerTxTransfer({

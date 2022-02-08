@@ -22,16 +22,16 @@ export const reimburseFee = async ({
   maxFee: Satoshis
   actualFee: Satoshis
   logger: Logger
-}): Promise<void | ApplicationError> => {
+}): Promise<true | ApplicationError> => {
   const feeDifference = FeeReimbursement(maxFee).getReimbursement(actualFee)
 
   if (feeDifference instanceof Error) {
     logger.warn({ maxFee, actualFee }, `Invalid reimbursement fee`)
-    return
+    return true
   }
 
   if (feeDifference === 0) {
-    return
+    return true
   }
 
   logger.info(
@@ -57,4 +57,6 @@ export const reimburseFee = async ({
     journalId,
   })
   if (result instanceof Error) return result
+
+  return true
 }
