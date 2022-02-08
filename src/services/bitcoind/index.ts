@@ -78,6 +78,10 @@ export class BitcoindClient {
     return this.client.listWallets()
   }
 
+  async listWalletDir(): Promise<[{ name: string }]> {
+    return (await this.client.listWalletDir()).wallets
+  }
+
   // load/unload only used in tests, for now
 
   async loadWallet({

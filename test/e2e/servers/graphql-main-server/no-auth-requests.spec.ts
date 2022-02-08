@@ -30,6 +30,8 @@ import {
   defaultTestClientConfig,
   PID,
   localIpAddress,
+  initializeTestingState,
+  defaultStateConfig,
 } from "test/helpers"
 
 let correctCode: PhoneCode,
@@ -40,6 +42,7 @@ let correctCode: PhoneCode,
 const { phone, code } = yamlConfig.test_accounts.find((item) => item.ref === "G")
 
 beforeAll(async () => {
+  await initializeTestingState(defaultStateConfig())
   correctCode = `${code}` as PhoneCode
   serverPid = await startServer()
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))

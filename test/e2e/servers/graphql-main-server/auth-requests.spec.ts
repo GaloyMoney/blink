@@ -3,8 +3,6 @@ import { yamlConfig } from "@config"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
-import { setupMongoConnection } from "@services/mongodb"
-
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
@@ -20,8 +18,6 @@ import {
   clearAccountLocks,
   clearLimiters,
   createInvoice,
-  createMandatoryUsers,
-  createUserWalletFromUserRef,
   fundWalletIdFromLightning,
   getDefaultWalletIdByTestUserRef,
   lndOutside2,
@@ -30,6 +26,8 @@ import {
   startServer,
   killServer,
   PID,
+  initializeTestingState,
+  defaultStateConfig,
 } from "test/helpers"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -39,16 +37,8 @@ let apolloClient: ApolloClient<NormalizedCacheObject>,
 const userRef = "D"
 const { phone, code } = yamlConfig.test_accounts.find((item) => item.ref === userRef)
 
-let mongoose
-
 beforeAll(async () => {
-  mongoose = await setupMongoConnection()
-  await mongoose.connection.db.dropCollection("users")
-  await mongoose.connection.db.dropCollection("wallets")
-
-  await bitcoindClient.loadWallet({ filename: "outside" })
-  await createMandatoryUsers()
-  await createUserWalletFromUserRef(userRef)
+  await initializeTestingState(defaultStateConfig())
   walletId = await getDefaultWalletIdByTestUserRef(userRef)
 
   await fundWalletIdFromLightning({ walletId, amount: toSats(50_000) })
