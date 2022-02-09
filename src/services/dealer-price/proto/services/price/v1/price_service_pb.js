@@ -678,7 +678,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
   ) {
     var f,
       obj = {
-        amountInUsd: jspb.Message.getFieldWithDefault(msg, 1, 0),
+        amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0),
       }
 
     if (includeInstance) {
@@ -720,7 +720,7 @@ proto.services.price.v1.GetExchangeRateForImmediateUsdSellRequest.deserializeBin
       switch (field) {
         case 1:
           var value = /** @type {number} */ (reader.readUint64())
-          msg.setAmountInUsd(value)
+          msg.setAmountInCents(value)
           break
         default:
           reader.skipField()
@@ -754,17 +754,17 @@ proto.services.price.v1.GetExchangeRateForImmediateUsdSellRequest.prototype.seri
 proto.services.price.v1.GetExchangeRateForImmediateUsdSellRequest.serializeBinaryToWriter =
   function (message, writer) {
     var f = undefined
-    f = message.getAmountInUsd()
+    f = message.getAmountInCents()
     if (f !== 0) {
       writer.writeUint64(1, f)
     }
   }
 
 /**
- * optional uint64 amount_in_usd = 1;
+ * optional uint64 amount_in_cents = 1;
  * @return {number}
  */
-proto.services.price.v1.GetExchangeRateForImmediateUsdSellRequest.prototype.getAmountInUsd =
+proto.services.price.v1.GetExchangeRateForImmediateUsdSellRequest.prototype.getAmountInCents =
   function () {
     return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0))
   }
@@ -773,7 +773,7 @@ proto.services.price.v1.GetExchangeRateForImmediateUsdSellRequest.prototype.getA
  * @param {number} value
  * @return {!proto.services.price.v1.GetExchangeRateForImmediateUsdSellRequest} returns this
  */
-proto.services.price.v1.GetExchangeRateForImmediateUsdSellRequest.prototype.setAmountInUsd =
+proto.services.price.v1.GetExchangeRateForImmediateUsdSellRequest.prototype.setAmountInCents =
   function (value) {
     return jspb.Message.setProto3IntField(this, 1, value)
   }
@@ -1113,7 +1113,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
   ) {
     var f,
       obj = {
-        amountInUsd: jspb.Message.getFieldWithDefault(msg, 1, 0),
+        amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0),
         timeInSeconds: jspb.Message.getFieldWithDefault(msg, 2, 0),
       }
 
@@ -1157,7 +1157,7 @@ proto.services.price.v1.GetQuoteRateForFutureUsdSellRequest.deserializeBinaryFro
       switch (field) {
         case 1:
           var value = /** @type {number} */ (reader.readUint64())
-          msg.setAmountInUsd(value)
+          msg.setAmountInCents(value)
           break
         case 2:
           var value = /** @type {number} */ (reader.readUint64())
@@ -1195,7 +1195,7 @@ proto.services.price.v1.GetQuoteRateForFutureUsdSellRequest.prototype.serializeB
 proto.services.price.v1.GetQuoteRateForFutureUsdSellRequest.serializeBinaryToWriter =
   function (message, writer) {
     var f = undefined
-    f = message.getAmountInUsd()
+    f = message.getAmountInCents()
     if (f !== 0) {
       writer.writeUint64(1, f)
     }
@@ -1206,10 +1206,10 @@ proto.services.price.v1.GetQuoteRateForFutureUsdSellRequest.serializeBinaryToWri
   }
 
 /**
- * optional uint64 amount_in_usd = 1;
+ * optional uint64 amount_in_cents = 1;
  * @return {number}
  */
-proto.services.price.v1.GetQuoteRateForFutureUsdSellRequest.prototype.getAmountInUsd =
+proto.services.price.v1.GetQuoteRateForFutureUsdSellRequest.prototype.getAmountInCents =
   function () {
     return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0))
   }
@@ -1218,7 +1218,7 @@ proto.services.price.v1.GetQuoteRateForFutureUsdSellRequest.prototype.getAmountI
  * @param {number} value
  * @return {!proto.services.price.v1.GetQuoteRateForFutureUsdSellRequest} returns this
  */
-proto.services.price.v1.GetQuoteRateForFutureUsdSellRequest.prototype.setAmountInUsd =
+proto.services.price.v1.GetQuoteRateForFutureUsdSellRequest.prototype.setAmountInCents =
   function (value) {
     return jspb.Message.setProto3IntField(this, 1, value)
   }
@@ -1277,7 +1277,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
   ) {
     var f,
       obj = {
-        amountInUsd: jspb.Message.getFieldWithDefault(msg, 1, 0),
+        amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0),
       }
 
     if (includeInstance) {
@@ -1319,7 +1319,7 @@ proto.services.price.v1.GetExchangeRateForImmediateUsdBuyResponse.deserializeBin
       switch (field) {
         case 1:
           var value = /** @type {number} */ (reader.readUint64())
-          msg.setAmountInUsd(value)
+          msg.setAmountInCents(value)
           break
         default:
           reader.skipField()
@@ -1353,17 +1353,17 @@ proto.services.price.v1.GetExchangeRateForImmediateUsdBuyResponse.prototype.seri
 proto.services.price.v1.GetExchangeRateForImmediateUsdBuyResponse.serializeBinaryToWriter =
   function (message, writer) {
     var f = undefined
-    f = message.getAmountInUsd()
+    f = message.getAmountInCents()
     if (f !== 0) {
       writer.writeUint64(1, f)
     }
   }
 
 /**
- * optional uint64 amount_in_usd = 1;
+ * optional uint64 amount_in_cents = 1;
  * @return {number}
  */
-proto.services.price.v1.GetExchangeRateForImmediateUsdBuyResponse.prototype.getAmountInUsd =
+proto.services.price.v1.GetExchangeRateForImmediateUsdBuyResponse.prototype.getAmountInCents =
   function () {
     return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0))
   }
@@ -1372,7 +1372,7 @@ proto.services.price.v1.GetExchangeRateForImmediateUsdBuyResponse.prototype.getA
  * @param {number} value
  * @return {!proto.services.price.v1.GetExchangeRateForImmediateUsdBuyResponse} returns this
  */
-proto.services.price.v1.GetExchangeRateForImmediateUsdBuyResponse.prototype.setAmountInUsd =
+proto.services.price.v1.GetExchangeRateForImmediateUsdBuyResponse.prototype.setAmountInCents =
   function (value) {
     return jspb.Message.setProto3IntField(this, 1, value)
   }
@@ -1682,7 +1682,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
     function (includeInstance, msg) {
       var f,
         obj = {
-          amountInUsd: jspb.Message.getFieldWithDefault(msg, 1, 0),
+          amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0),
         }
 
       if (includeInstance) {
@@ -1725,7 +1725,7 @@ proto.services.price.v1.GetExchangeRateForImmediateUsdSellFromSatoshisResponse.d
       switch (field) {
         case 1:
           var value = /** @type {number} */ (reader.readUint64())
-          msg.setAmountInUsd(value)
+          msg.setAmountInCents(value)
           break
         default:
           reader.skipField()
@@ -1759,17 +1759,17 @@ proto.services.price.v1.GetExchangeRateForImmediateUsdSellFromSatoshisResponse.p
 proto.services.price.v1.GetExchangeRateForImmediateUsdSellFromSatoshisResponse.serializeBinaryToWriter =
   function (message, writer) {
     var f = undefined
-    f = message.getAmountInUsd()
+    f = message.getAmountInCents()
     if (f !== 0) {
       writer.writeUint64(1, f)
     }
   }
 
 /**
- * optional uint64 amount_in_usd = 1;
+ * optional uint64 amount_in_cents = 1;
  * @return {number}
  */
-proto.services.price.v1.GetExchangeRateForImmediateUsdSellFromSatoshisResponse.prototype.getAmountInUsd =
+proto.services.price.v1.GetExchangeRateForImmediateUsdSellFromSatoshisResponse.prototype.getAmountInCents =
   function () {
     return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0))
   }
@@ -1778,7 +1778,7 @@ proto.services.price.v1.GetExchangeRateForImmediateUsdSellFromSatoshisResponse.p
  * @param {number} value
  * @return {!proto.services.price.v1.GetExchangeRateForImmediateUsdSellFromSatoshisResponse} returns this
  */
-proto.services.price.v1.GetExchangeRateForImmediateUsdSellFromSatoshisResponse.prototype.setAmountInUsd =
+proto.services.price.v1.GetExchangeRateForImmediateUsdSellFromSatoshisResponse.prototype.setAmountInCents =
   function (value) {
     return jspb.Message.setProto3IntField(this, 1, value)
   }
@@ -1819,7 +1819,7 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
   ) {
     var f,
       obj = {
-        amountInUsd: jspb.Message.getFieldWithDefault(msg, 1, 0),
+        amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0),
       }
 
     if (includeInstance) {
@@ -1862,7 +1862,7 @@ proto.services.price.v1.GetQuoteRateForFutureUsdBuyResponse.deserializeBinaryFro
       switch (field) {
         case 1:
           var value = /** @type {number} */ (reader.readUint64())
-          msg.setAmountInUsd(value)
+          msg.setAmountInCents(value)
           break
         default:
           reader.skipField()
@@ -1896,17 +1896,17 @@ proto.services.price.v1.GetQuoteRateForFutureUsdBuyResponse.prototype.serializeB
 proto.services.price.v1.GetQuoteRateForFutureUsdBuyResponse.serializeBinaryToWriter =
   function (message, writer) {
     var f = undefined
-    f = message.getAmountInUsd()
+    f = message.getAmountInCents()
     if (f !== 0) {
       writer.writeUint64(1, f)
     }
   }
 
 /**
- * optional uint64 amount_in_usd = 1;
+ * optional uint64 amount_in_cents = 1;
  * @return {number}
  */
-proto.services.price.v1.GetQuoteRateForFutureUsdBuyResponse.prototype.getAmountInUsd =
+proto.services.price.v1.GetQuoteRateForFutureUsdBuyResponse.prototype.getAmountInCents =
   function () {
     return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0))
   }
@@ -1915,7 +1915,7 @@ proto.services.price.v1.GetQuoteRateForFutureUsdBuyResponse.prototype.getAmountI
  * @param {number} value
  * @return {!proto.services.price.v1.GetQuoteRateForFutureUsdBuyResponse} returns this
  */
-proto.services.price.v1.GetQuoteRateForFutureUsdBuyResponse.prototype.setAmountInUsd =
+proto.services.price.v1.GetQuoteRateForFutureUsdBuyResponse.prototype.setAmountInCents =
   function (value) {
     return jspb.Message.setProto3IntField(this, 1, value)
   }

@@ -69,8 +69,8 @@ export namespace GetExchangeRateForImmediateUsdBuyFromCentsRequest {
 }
 
 export class GetExchangeRateForImmediateUsdSellRequest extends jspb.Message {
-  getAmountInUsd(): number
-  setAmountInUsd(value: number): GetExchangeRateForImmediateUsdSellRequest
+  getAmountInCents(): number
+  setAmountInCents(value: number): GetExchangeRateForImmediateUsdSellRequest
 
   serializeBinary(): Uint8Array
   toObject(includeInstance?: boolean): GetExchangeRateForImmediateUsdSellRequest.AsObject
@@ -93,7 +93,7 @@ export class GetExchangeRateForImmediateUsdSellRequest extends jspb.Message {
 
 export namespace GetExchangeRateForImmediateUsdSellRequest {
   export type AsObject = {
-    amountInUsd: number
+    amountInCents: number
   }
 }
 
@@ -165,8 +165,8 @@ export namespace GetQuoteRateForFutureUsdBuyRequest {
 }
 
 export class GetQuoteRateForFutureUsdSellRequest extends jspb.Message {
-  getAmountInUsd(): number
-  setAmountInUsd(value: number): GetQuoteRateForFutureUsdSellRequest
+  getAmountInCents(): number
+  setAmountInCents(value: number): GetQuoteRateForFutureUsdSellRequest
   getTimeInSeconds(): number
   setTimeInSeconds(value: number): GetQuoteRateForFutureUsdSellRequest
 
@@ -191,14 +191,14 @@ export class GetQuoteRateForFutureUsdSellRequest extends jspb.Message {
 
 export namespace GetQuoteRateForFutureUsdSellRequest {
   export type AsObject = {
-    amountInUsd: number
+    amountInCents: number
     timeInSeconds: number
   }
 }
 
 export class GetExchangeRateForImmediateUsdBuyResponse extends jspb.Message {
-  getAmountInUsd(): number
-  setAmountInUsd(value: number): GetExchangeRateForImmediateUsdBuyResponse
+  getAmountInCents(): number
+  setAmountInCents(value: number): GetExchangeRateForImmediateUsdBuyResponse
 
   serializeBinary(): Uint8Array
   toObject(includeInstance?: boolean): GetExchangeRateForImmediateUsdBuyResponse.AsObject
@@ -221,7 +221,7 @@ export class GetExchangeRateForImmediateUsdBuyResponse extends jspb.Message {
 
 export namespace GetExchangeRateForImmediateUsdBuyResponse {
   export type AsObject = {
-    amountInUsd: number
+    amountInCents: number
   }
 }
 
@@ -288,8 +288,8 @@ export namespace GetExchangeRateForImmediateUsdSellResponse {
 }
 
 export class GetExchangeRateForImmediateUsdSellFromSatoshisResponse extends jspb.Message {
-  getAmountInUsd(): number
-  setAmountInUsd(value: number): GetExchangeRateForImmediateUsdSellFromSatoshisResponse
+  getAmountInCents(): number
+  setAmountInCents(value: number): GetExchangeRateForImmediateUsdSellFromSatoshisResponse
 
   serializeBinary(): Uint8Array
   toObject(
@@ -316,13 +316,13 @@ export class GetExchangeRateForImmediateUsdSellFromSatoshisResponse extends jspb
 
 export namespace GetExchangeRateForImmediateUsdSellFromSatoshisResponse {
   export type AsObject = {
-    amountInUsd: number
+    amountInCents: number
   }
 }
 
 export class GetQuoteRateForFutureUsdBuyResponse extends jspb.Message {
-  getAmountInUsd(): number
-  setAmountInUsd(value: number): GetQuoteRateForFutureUsdBuyResponse
+  getAmountInCents(): number
+  setAmountInCents(value: number): GetQuoteRateForFutureUsdBuyResponse
 
   serializeBinary(): Uint8Array
   toObject(includeInstance?: boolean): GetQuoteRateForFutureUsdBuyResponse.AsObject
@@ -345,7 +345,7 @@ export class GetQuoteRateForFutureUsdBuyResponse extends jspb.Message {
 
 export namespace GetQuoteRateForFutureUsdBuyResponse {
   export type AsObject = {
-    amountInUsd: number
+    amountInCents: number
   }
 }
 

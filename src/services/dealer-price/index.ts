@@ -6,6 +6,8 @@ import { UnknownDealerPriceServiceError } from "@domain/dealer-price"
 
 import { toSats } from "@domain/bitcoin"
 
+import { toCents } from "@domain/fiat"
+
 import { baseLogger } from "../logger"
 
 import { PriceServiceClient } from "./proto/services/price/v1/price_service_grpc_pb"
@@ -70,7 +72,7 @@ export const DealerPriceService = (): IDealerPriceService => {
           amountInSatoshis,
         ),
       )
-      return response.getAmountInUsd() as UsdCents
+      return toCents(response.getAmountInCents())
     } catch (error) {
       baseLogger.error(
         { error },
@@ -81,12 +83,12 @@ export const DealerPriceService = (): IDealerPriceService => {
   }
 
   const getExchangeRateForImmediateUsdBuyFromCents = async function (
-    amountInUsd: UsdCents,
+    amountInCents: UsdCents,
   ): Promise<Satoshis | DealerPriceServiceError> {
     try {
       const response = await clientGetExchangeRateForImmediateUsdBuyFromCents(
         new GetExchangeRateForImmediateUsdBuyFromCentsRequest().setAmountInCents(
-          amountInUsd,
+          amountInCents,
         ),
       )
       return toSats(response.getAmountInSatoshis())
@@ -100,11 +102,11 @@ export const DealerPriceService = (): IDealerPriceService => {
   }
 
   const getExchangeRateForImmediateUsdSell = async function (
-    amountInUsd: UsdCents,
+    amountInCents: UsdCents,
   ): Promise<Satoshis | DealerPriceServiceError> {
     try {
       const response = await clientGetExchangeRateForImmediateUsdSell(
-        new GetExchangeRateForImmediateUsdSellRequest().setAmountInUsd(amountInUsd),
+        new GetExchangeRateForImmediateUsdSellRequest().setAmountInCents(amountInCents),
       )
       return toSats(response.getAmountInSatoshis())
     } catch (error) {
@@ -125,7 +127,7 @@ export const DealerPriceService = (): IDealerPriceService => {
           amountInSatoshis,
         ),
       )
-      return response.getAmountInUsd() as UsdCents
+      return toCents(response.getAmountInCents())
     } catch (error) {
       baseLogger.error(
         { error },
@@ -145,20 +147,20 @@ export const DealerPriceService = (): IDealerPriceService => {
           .setAmountInSatoshis(amountInSatoshis)
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
-      return response.getAmountInUsd() as UsdCents
+      return toCents(response.getAmountInCents())
     } catch (error) {
       baseLogger.error({ error }, "GetQuoteRateForFutureUsdBuy unable to fetch price")
       return new UnknownDealerPriceServiceError(error)
     }
   }
   const getQuoteRateForFutureUsdSell = async function (
-    amountInUsd: UsdCents,
+    amountInCents: UsdCents,
     timeToExpiryInSeconds: Seconds,
   ): Promise<Satoshis | DealerPriceServiceError> {
     try {
       const response = await clientGetQuoteRateForFutureUsdSell(
         new GetQuoteRateForFutureUsdSellRequest()
-          .setAmountInUsd(amountInUsd)
+          .setAmountInCents(amountInCents)
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
       return toSats(response.getAmountInSatoshis())
