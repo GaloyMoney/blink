@@ -211,10 +211,6 @@ interface ILedgerService {
     contactUsername: Username,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
-  getTransactionMetadataById(
-    id: LedgerTransactionId,
-  ): Promise<LedgerTransactionMetadata | LedgerServiceError>
-
   listPendingPayments(
     walletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
