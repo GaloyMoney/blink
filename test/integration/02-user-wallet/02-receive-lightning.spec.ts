@@ -8,6 +8,7 @@ import { toCents } from "@domain/fiat"
 import { PaymentInitiationMethod, WalletCurrency } from "@domain/wallets"
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
+import { TransactionsMetadataRepository } from "@services/ledger/services"
 import { baseLogger } from "@services/logger"
 
 import {
@@ -85,11 +86,12 @@ describe("UserWallet - Lightning", () => {
     ).not.toBeInstanceOf(Error)
 
     const ledger = LedgerService()
+    const ledgerMetadata = TransactionsMetadataRepository()
     const ledgerTxs = await ledger.getTransactionsByHash(hash)
     if (ledgerTxs instanceof Error) throw ledgerTxs
 
     const ledgerTx = ledgerTxs[0]
-    const ledgerTxMetadata = await ledger.getTransactionMetadataById(ledgerTx.id)
+    const ledgerTxMetadata = await ledgerMetadata.findById(ledgerTx.id)
     if (ledgerTxMetadata instanceof Error) throw ledgerTxMetadata
 
     expect(ledgerTx.credit).toBe(sats)
@@ -290,11 +292,12 @@ describe("UserWallet - Lightning", () => {
     ).not.toBeInstanceOf(Error)
 
     const ledger = LedgerService()
+    const ledgerMetadata = TransactionsMetadataRepository()
     const ledgerTxs = await ledger.getTransactionsByHash(hash)
     if (ledgerTxs instanceof Error) throw ledgerTxs
 
     const ledgerTx = ledgerTxs[0]
-    const ledgerTxMetadata = await ledger.getTransactionMetadataById(ledgerTx.id)
+    const ledgerTxMetadata = await ledgerMetadata.findById(ledgerTx.id)
     if (ledgerTxMetadata instanceof Error) throw ledgerTxMetadata
 
     expect(ledgerTx.credit).toBe(sats)
