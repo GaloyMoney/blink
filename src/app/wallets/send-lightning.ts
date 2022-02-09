@@ -703,9 +703,9 @@ const executePaymentViaLn = async ({
         })
 
         if (!(payResult instanceof Error))
-          ledgerService.updateMetadata({
+          ledgerService.updateMetadataByHash({
             hash: paymentHash,
-            metadata: { revealedPreImage: payResult.revealedPreImage },
+            revealedPreImage: payResult.revealedPreImage,
           })
       }
 
@@ -734,7 +734,7 @@ const executePaymentViaLn = async ({
           paymentHash,
           maxFee: feeRouting,
           actualFee: payResult.roundedUpFee,
-          txMetadata: { revealedPreImage: payResult.revealedPreImage },
+          revealedPreImage: payResult.revealedPreImage,
           logger,
         })
         if (reimbursed instanceof Error) return reimbursed
