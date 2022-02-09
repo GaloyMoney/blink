@@ -13,7 +13,7 @@ export const reimburseFee = async ({
   paymentHash,
   maxFee,
   actualFee,
-  txMetadata,
+  revealedPreImage,
   logger,
 }: {
   walletId: WalletId
@@ -22,7 +22,7 @@ export const reimburseFee = async ({
   paymentHash: PaymentHash
   maxFee: Satoshis
   actualFee: Satoshis
-  txMetadata: AdditionalLedgerTransactionMetadata
+  revealedPreImage?: RevealedPreImage
   logger: Logger
 }): Promise<true | ApplicationError> => {
   const feeDifference = FeeReimbursement(maxFee).getReimbursement(actualFee)
@@ -57,7 +57,7 @@ export const reimburseFee = async ({
     sats: feeDifference,
     amountDisplayCurrency,
     journalId,
-    txMetadata,
+    revealedPreImage,
   })
   if (result instanceof Error) return result
 

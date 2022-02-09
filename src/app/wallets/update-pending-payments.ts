@@ -145,11 +145,9 @@ const updatePendingPayment = async ({
 
         const revealedPreImage = lnPaymentLookup.confirmedDetails?.revealedPreImage
         if (revealedPreImage)
-          LedgerService().updateMetadata({
+          LedgerService().updateMetadataByHash({
             hash: paymentHash,
-            metadata: {
-              revealedPreImage,
-            },
+            revealedPreImage,
           })
         if (pendingPayment.feeKnownInAdvance) return true
 
@@ -160,7 +158,7 @@ const updatePendingPayment = async ({
           paymentHash,
           maxFee: pendingPayment.fee,
           actualFee: roundedUpFee,
-          txMetadata: { revealedPreImage },
+          revealedPreImage,
           logger,
         })
       } else if (status === PaymentStatus.Failed) {
