@@ -53,11 +53,6 @@ type LedgerTransaction = {
   readonly txHash?: OnChainTxHash
 }
 
-type BaseLedgerTransactionMetadata = { hash: PaymentHash | OnChainTxHash }
-type AdditionalLedgerTransactionMetadata = { revealedPreImage?: RevealedPreImage }
-type LedgerTransactionMetadata = BaseLedgerTransactionMetadata &
-  AdditionalLedgerTransactionMetadata
-
 type ReceiveOnChainTxArgs = {
   walletId: WalletId
   walletCurrency: WalletCurrency
