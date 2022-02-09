@@ -11,6 +11,7 @@ type NonIntraledgerLedgerMetadata = LedgerMetadata & {
 
 type LnReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {
   hash: PaymentHash
+  revealedPremiage?:
 }
 
 type OnChainReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {

@@ -170,7 +170,15 @@ type AddLnFeeReeimbursementReceiveArgs = {
   sats: Satoshis
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   journalId: LedgerJournalId
-  txMetadata: AdditionalLedgerTransactionMetadata
+  revealedPreImage?: RevealedPreImage
+}
+
+type LedgerTxMetadata = {
+  journalId: LedgerJournalId
+  walletCurrency: WalletCurrency
+  paymentHash: PaymentHash
+  revealedPreImage?: RevealedPreImage
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
 type FeeReimbursement = {

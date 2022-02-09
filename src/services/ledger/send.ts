@@ -134,8 +134,13 @@ export const send = {
       const savedEntry = await MainBook.void(journalId, reason)
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      journalEntry.transactionIds.map((_id) =>
-        TransactionMetadata.create({ _id, paymentHash }),
+      journalEntry.transactionIds.map(
+        (_id) =>
+          TransactionMetadataRepository.persistNew({
+            journalId: toObjectId<JournalId>(_id),
+            paymentHash,
+          }),
+        // TransactionMetadata.create({ _id, paymentHash }),
       )
     } catch (err) {
       return new UnknownLedgerError(err)

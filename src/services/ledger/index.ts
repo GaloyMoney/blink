@@ -74,8 +74,12 @@ export const LedgerService = (): ILedgerService => {
         account_path: liabilitiesMainAccount,
         _id,
       })
+
+      const txResults: Record<JournalId, TxMetadata> =
+        TransactionMetadataRepository().findById(results[0].journalId)
+
       if (results.length === 1) {
-        return translateToLedgerTx(results[0])
+        return translateToLedgerTx(results[0], txResults)
       }
       return new CouldNotFindTransactionError()
     } catch (err) {
@@ -284,7 +288,10 @@ export const LedgerService = (): ILedgerService => {
   }
 }
 
-export const translateToLedgerTx = (tx): LedgerTransaction => ({
+export const translateToLedgerTx = (
+  tx: LedgerJournalRecord,
+  TxMetadata,
+): LedgerTransaction => ({
   id: tx.id,
   walletId: toWalletId(tx.accounts),
   type: tx.type,
@@ -316,7 +323,7 @@ const translateToLedgerTxMetadata = (txMetadata): LedgerTransactionMetadata => (
 })
 
 export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
-  journalId: savedEntry._id.toString(),
+  journalId: fromObjectId<JournalId>(savedEntry._id),
   voided: savedEntry.voided,
   transactionIds: savedEntry._transactions.map((id) => id.toString()),
 })
