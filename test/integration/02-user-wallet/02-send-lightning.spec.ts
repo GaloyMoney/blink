@@ -24,6 +24,7 @@ import { getActiveLnd, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository, WalletInvoicesRepository } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
+import { TransactionsMetadataRepository } from "@services/ledger/domain"
 
 import { sleep } from "@utils"
 
@@ -330,7 +331,7 @@ describe("UserWallet - Lightning Pay", () => {
     const txns = await LedgerService().getTransactionsByHash(paymentHash)
     if (txns instanceof Error) throw txns
     const txns_metadata = await Promise.all(
-      txns.map(async (txn) => LedgerService().getTransactionMetadataById(txn.id)),
+      txns.map(async (txn) => TransactionsMetadataRepository().findById(txn.id)),
     )
     expect(txns_metadata).toHaveLength(txns.length)
 
