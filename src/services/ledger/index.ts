@@ -12,7 +12,6 @@ import {
 } from "@domain/ledger"
 import {
   CouldNotFindTransactionError,
-  CouldNotFindTransactionMetadataError,
   LedgerError,
   LedgerServiceError,
   UnknownLedgerError,
@@ -106,20 +105,6 @@ export const LedgerService = (): ILedgerService => {
         username: contactUsername,
       })
       return results.map((tx) => translateToLedgerTx(tx))
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  }
-
-  const getTransactionMetadataById = async (
-    id: LedgerTransactionId,
-  ): Promise<LedgerTransactionMetadata | LedgerServiceError> => {
-    try {
-      const result = await TransactionMetadata.findOne({
-        _id: toObjectId<LedgerTransactionId>(id),
-      })
-      if (!result) return new CouldNotFindTransactionMetadataError()
-      return translateToLedgerTxMetadata(result)
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -287,7 +272,6 @@ export const LedgerService = (): ILedgerService => {
       getTransactionsByHash,
       getTransactionsByWalletId,
       getTransactionsByWalletIdAndContactUsername,
-      getTransactionMetadataById,
       listPendingPayments,
       listAllPaymentHashes,
       getPendingPaymentsCount,
@@ -329,11 +313,6 @@ export const translateToLedgerTx = (tx): LedgerTransaction => ({
       : undefined,
   txHash: tx.hash,
   feeKnownInAdvance: tx.feeKnownInAdvance || false,
-})
-
-const translateToLedgerTxMetadata = (txMetadata): LedgerTransactionMetadata => ({
-  hash: txMetadata.hash as PaymentHash | OnChainTxHash,
-  revealedPreImage: (txMetadata.revealedPreImage as RevealedPreImage) || undefined,
 })
 
 export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
