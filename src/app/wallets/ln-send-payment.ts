@@ -226,8 +226,8 @@ const lnSendPayment = async ({
   if (validationResult instanceof Error) return validationResult
   const { amount, senderWallet } = validationResult
 
-  const usdPerSat = await getCurrentPrice()
-  if (usdPerSat instanceof Error) return usdPerSat
+  const displayCurrencyPerSat = await getCurrentPrice()
+  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
@@ -239,7 +239,7 @@ const lnSendPayment = async ({
       paymentHash: decodedInvoice.paymentHash,
       description: decodedInvoice.description,
       amount,
-      usdPerSat,
+      displayCurrencyPerSat,
       memo,
       senderWallet,
       senderAccount,
@@ -253,7 +253,7 @@ const lnSendPayment = async ({
   return executePaymentViaLn({
     decodedInvoice,
     amount,
-    usdPerSat,
+    displayCurrencyPerSat,
     senderWallet,
     senderAccount,
     lndService,
@@ -265,7 +265,7 @@ const executePaymentViaIntraledger = async ({
   paymentHash,
   description,
   amount,
-  usdPerSat,
+  displayCurrencyPerSat,
   memo,
   senderWallet,
   senderAccount,
@@ -275,7 +275,7 @@ const executePaymentViaIntraledger = async ({
   paymentHash: PaymentHash
   description: string
   amount: Satoshis
-  usdPerSat: UsdPerSat
+  displayCurrencyPerSat: DisplayCurrencyPerSat
   memo: string
   senderWallet: Wallet
   senderAccount: Account
@@ -306,7 +306,8 @@ const executePaymentViaIntraledger = async ({
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat).fromSats(amount)
+  const amountDisplayCurrency =
+    DisplayCurrencyConversionRate(displayCurrencyPerSat).fromSats(amount)
 
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
@@ -351,7 +352,7 @@ const executePaymentViaIntraledger = async ({
         paymentHash,
         recipientWalletId,
         amount,
-        usdPerSat,
+        displayCurrencyPerSat,
       })
 
       return PaymentSendStatus.Success
@@ -362,7 +363,7 @@ const executePaymentViaIntraledger = async ({
 const executePaymentViaLn = async ({
   decodedInvoice,
   amount,
-  usdPerSat,
+  displayCurrencyPerSat,
   senderWallet,
   senderAccount,
   lndService,
@@ -370,7 +371,7 @@ const executePaymentViaLn = async ({
 }: {
   decodedInvoice: LnInvoice
   amount: Satoshis
-  usdPerSat: UsdPerSat
+  displayCurrencyPerSat: DisplayCurrencyPerSat
   senderWallet: Wallet
   senderAccount: Account
   lndService: ILightningService
@@ -409,7 +410,7 @@ const executePaymentViaLn = async ({
   const feeRouting = route ? route.roundedUpFee : maxFee
   const sats = toSats(amount + feeRouting)
 
-  const convert = DisplayCurrencyConversionRate(usdPerSat)
+  const convert = DisplayCurrencyConversionRate(displayCurrencyPerSat)
   const amountDisplayCurrency = convert.fromSats(sats)
   const feeRoutingDisplayCurrency = convert.fromSats(feeRouting)
 

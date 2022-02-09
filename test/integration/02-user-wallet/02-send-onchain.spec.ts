@@ -202,7 +202,7 @@ describe("UserWallet - onChainPay", () => {
       expect(settledTx.settlementFee).toBe(fee)
       expect(settledTx.settlementAmount).toBe(-amount - fee)
 
-      expect(settledTx.settlementUsdPerSat).toBeGreaterThan(0)
+      expect(settledTx.settlementDisplayCurrencyPerSat).toBeGreaterThan(0)
 
       const finalBalance = await getBTCBalance(walletIdA)
       expect(finalBalance).toBe(initialBalanceUserA - amount - fee)
@@ -311,7 +311,7 @@ describe("UserWallet - onChainPay", () => {
 
       expect(settledTx.settlementFee).toBe(fee)
       expect(settledTx.settlementAmount).toBe(-initialBalanceUserE)
-      expect(settledTx.settlementUsdPerSat).toBeGreaterThan(0)
+      expect(settledTx.settlementDisplayCurrencyPerSat).toBeGreaterThan(0)
     }
 
     sub.removeAllListeners()
@@ -427,7 +427,7 @@ describe("UserWallet - onChainPay", () => {
 
       expect(settledTx.settlementFee).toBe(0)
       expect(settledTx.settlementAmount).toBe(-amount)
-      expect(settledTx.settlementUsdPerSat).toBeGreaterThan(0)
+      expect(settledTx.settlementDisplayCurrencyPerSat).toBeGreaterThan(0)
 
       const finalBalance = await getBTCBalance(walletIdA)
       expect(finalBalance).toBe(initialBalanceUserA - amount)
@@ -527,7 +527,7 @@ describe("UserWallet - onChainPay", () => {
 
       expect(settledTx.settlementFee).toBe(0)
       expect(settledTx.settlementAmount).toBe(-initialBalanceUserF)
-      expect(settledTx.settlementUsdPerSat).toBeGreaterThan(0)
+      expect(settledTx.settlementDisplayCurrencyPerSat).toBeGreaterThan(0)
 
       const finalBalance = await getBTCBalance(walletIdF)
       expect(finalBalance).toBe(0)

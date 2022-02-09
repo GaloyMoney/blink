@@ -7,7 +7,7 @@ type PriceInterval =
 
 type Tick = {
   readonly date: Date
-  readonly price: UsdPerSat
+  readonly price: DisplayCurrencyPerSat
 }
 
 type ListHistoryArgs = {
@@ -16,6 +16,6 @@ type ListHistoryArgs = {
 }
 
 interface IPriceService {
-  getRealTimePrice(): Promise<UsdPerSat | PriceServiceError>
+  getRealTimePrice(): Promise<DisplayCurrencyPerSat | PriceServiceError>
   listHistory(args: ListHistoryArgs): Promise<Tick[] | PriceServiceError>
 }

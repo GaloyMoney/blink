@@ -28,10 +28,10 @@ const walletInvoiceSchema = new Schema({
     },
   },
 
-  // fiat equivalent. sats is attached in the invoice directly.
+  // Usd quote. sats is attached in the invoice directly.
   // this is the option price given by the dealer
-  // optional, BTC wallet or USD with no amount doesn't have usdCents
-  usdCents: {
+  // is optional, BTC wallet or invoice on USD with no amount doesn't have cents
+  cents: {
     type: Number,
     validate: {
       validator: Number.isInteger,

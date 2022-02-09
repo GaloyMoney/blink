@@ -174,10 +174,11 @@ const executePaymentViaIntraledger = async ({
 
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
-  const usdPerSat = await getCurrentPrice()
-  if (usdPerSat instanceof Error) return usdPerSat
+  const displayCurrencyPerSat = await getCurrentPrice()
+  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
-  const amountDisplayCurrency = DisplayCurrencyConversionRate(usdPerSat).fromSats(amount)
+  const amountDisplayCurrency =
+    DisplayCurrencyConversionRate(displayCurrencyPerSat).fromSats(amount)
 
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
@@ -211,7 +212,7 @@ const executePaymentViaIntraledger = async ({
         senderWalletId,
         recipientWalletId,
         amount,
-        usdPerSat,
+        displayCurrencyPerSat,
       })
 
       return PaymentSendStatus.Success

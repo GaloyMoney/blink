@@ -20,8 +20,8 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
 
-  const usdPerSat = await getCurrentPrice()
-  if (usdPerSat instanceof Error) return usdPerSat
+  const displayCurrencyPerSat = await getCurrentPrice()
+  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   const { offChain, onChain } = await lndsBalances()
 
@@ -59,9 +59,9 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
 
   const description = `deposit of ${rebalanceAmount} sats to the cold storage wallet`
 
-  const convert = DisplayCurrencyConversionRate(usdPerSat)
-  const amountDisplayCurrency = convert.fromSats(rebalanceAmount)
-  const feeDisplayCurrency = convert.fromSats(fee)
+  const converter = DisplayCurrencyConversionRate(displayCurrencyPerSat)
+  const amountDisplayCurrency = converter.fromSats(rebalanceAmount)
+  const feeDisplayCurrency = converter.fromSats(fee)
 
   const journal = await ledgerService.addColdStorageTxReceive({
     txHash,

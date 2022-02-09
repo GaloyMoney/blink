@@ -35,7 +35,10 @@ describe("Prices", () => {
         listHistory: () =>
           Promise.resolve(
             generateSatoshiPriceHistory(1, 50000)
-              .map((p) => ({ date: new Date(p.date), price: p.price as UsdPerSat }))
+              .map((p) => ({
+                date: new Date(p.date),
+                price: p.price as DisplayCurrencyPerSat,
+              }))
               .slice(-24),
           ),
         getRealTimePrice: jest.fn(),

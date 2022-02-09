@@ -32,6 +32,8 @@ jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current
 
 const walletInvoices = WalletInvoicesRepository()
 
+const CENTS_PER_USD = 100
+
 beforeAll(async () => {
   const userRef = "B"
   await createUserWalletFromUserRef(userRef)
@@ -131,17 +133,19 @@ describe("Wallet - addInvoice BTC", () => {
   })
 })
 
-describe("Wallet - addInvoice Fiat", () => {
-  it("add a self generated fiat invoice", async () => {
-    const price = await getCurrentPrice()
-    if (price instanceof Error) return price
+describe("Wallet - addInvoice USD", () => {
+  it("add a self generated USD invoice", async () => {
+    const displayCurrencyPerSat = await getCurrentPrice()
+    if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
-    const fiatInput = 100
-    const sats = fiatInput / price
+    const centsInput = 10000
+
+    const centsPerSat = displayCurrencyPerSat * CENTS_PER_USD
+    const sats = (centsInput / centsPerSat) * 0.996 // 40 bps spread
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletIdUsd,
-      amount: fiatInput,
+      amount: centsInput,
     })
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
@@ -149,9 +153,9 @@ describe("Wallet - addInvoice Fiat", () => {
     expect(request.startsWith("lnbcrt")).toBeTruthy()
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, usdCents, currency } = result
+    const { walletId, cents, currency } = result
     expect(String(walletId)).toBe(String(walletIdUsd))
-    expect(usdCents).toBe(fiatInput)
+    expect(cents).toBe(centsInput)
     expect(currency).toBe(WalletCurrency.Usd)
 
     const decodedInvoice = decodeInvoice(request)
@@ -170,21 +174,23 @@ describe("Wallet - addInvoice Fiat", () => {
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, usdCents } = result
+    const { walletId, cents } = result
     expect(String(walletId)).toBe(String(walletIdUsd))
-    expect(usdCents).toBe(undefined)
+    expect(cents).toBe(undefined)
   })
 
   it("adds a public with amount invoice", async () => {
-    const price = await getCurrentPrice()
-    if (price instanceof Error) return price
+    const displayCurrencyPerSat = await getCurrentPrice()
+    if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
-    const fiatInput = 15
-    const sats = fiatInput / price
+    const centsInput = 10000
+
+    const centsPerSat = displayCurrencyPerSat * CENTS_PER_USD
+    const sats = (centsInput / centsPerSat) * 0.996 // 40 bps spread
 
     const lnInvoice = await Wallets.addInvoiceForRecipient({
       recipientWalletId: walletIdUsd,
-      amount: fiatInput,
+      amount: centsInput,
     })
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
@@ -192,8 +198,8 @@ describe("Wallet - addInvoice Fiat", () => {
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, selfGenerated, usdCents } = result
-    expect(usdCents).toBe(fiatInput)
+    const { walletId, selfGenerated, cents } = result
+    expect(cents).toBe(centsInput)
 
     expect(String(walletId)).toBe(String(walletIdUsd))
     expect(selfGenerated).toBe(false)
@@ -215,10 +221,10 @@ describe("Wallet - addInvoice Fiat", () => {
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, selfGenerated, usdCents } = result
+    const { walletId, selfGenerated, cents } = result
     expect(String(walletId)).toBe(String(walletIdUsd))
     expect(selfGenerated).toBe(false)
-    expect(usdCents).toBe(undefined)
+    expect(cents).toBe(undefined)
   })
 })
 

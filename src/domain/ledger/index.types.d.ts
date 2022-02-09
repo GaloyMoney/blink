@@ -82,7 +82,7 @@ type OnChainTxArgs = TxArgs & {
 }
 
 type AddLnTxReceiveArgs = LnTxArgs & {
-  usd: UsdCents | undefined
+  cents: UsdCents | undefined
   feeInboundLiquidityDisplayCurrency: DisplayCurrencyBaseAmount
   feeInboundLiquidity: Satoshis
 }

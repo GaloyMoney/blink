@@ -9,7 +9,7 @@ describe("WalletInvoiceValidator", () => {
     walletId: "toWalletId" as WalletId,
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
-    usdCents: toCents(10),
+    cents: toCents(10),
     paid: false,
     currency: WalletCurrency.Btc,
   }

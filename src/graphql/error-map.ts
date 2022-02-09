@@ -296,7 +296,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidLanguageError":
     case "InvalidWithdrawFeeError":
     case "InvalidUsdCents":
-    case "NonIntegerUsdCents":
+    case "NonIntegerError":
     case "ColdStorageError":
     case "ColdStorageServiceError":
     case "InvalidCurrentColdStorageWalletServiceError":
@@ -305,6 +305,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "FeeDifferenceError":
     case "NoTransactionToSettleError":
     case "CorruptLndDbError":
+    case "NotImplementedError":
+    case "NotReachableError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 

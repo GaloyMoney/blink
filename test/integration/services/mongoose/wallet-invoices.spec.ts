@@ -28,7 +28,7 @@ const createTestWalletInvoice = () => {
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
     paid: false,
-    usdCents: toCents(10),
+    cents: toCents(10),
     currency: WalletCurrency.Btc,
   }
 }

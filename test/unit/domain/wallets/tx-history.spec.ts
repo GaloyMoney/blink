@@ -13,7 +13,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
 
     const settlementAmount = toSats(100000)
     const usd = 10
-    const settlementUsdPerSat = Math.abs(usd / settlementAmount)
+    const settlementDisplayCurrencyPerSat = Math.abs(usd / settlementAmount)
     const walletId = crypto.randomUUID() as WalletId
 
     const ledgerTransactions: LedgerTransaction[] = [
@@ -108,7 +108,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         },
         settlementAmount,
         settlementFee: toSats(0),
-        settlementUsdPerSat,
+        settlementDisplayCurrencyPerSat,
         status: TxStatus.Success,
         createdAt: timestamp,
       },
@@ -128,7 +128,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         memo: null,
         settlementAmount,
         settlementFee: toSats(0),
-        settlementUsdPerSat,
+        settlementDisplayCurrencyPerSat,
 
         status: TxStatus.Success,
         createdAt: timestamp,
@@ -148,7 +148,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         memo: null,
         settlementAmount,
         settlementFee: toSats(0),
-        settlementUsdPerSat,
+        settlementDisplayCurrencyPerSat,
 
         status: TxStatus.Success,
         createdAt: timestamp,
@@ -167,7 +167,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         memo: null,
         settlementAmount,
         settlementFee: toSats(0),
-        settlementUsdPerSat,
+        settlementDisplayCurrencyPerSat,
 
         status: TxStatus.Success,
         createdAt: timestamp,
@@ -246,7 +246,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       walletId,
       incomingTxs,
       addresses,
-      1 as UsdPerSat,
+      1 as DisplayCurrencyPerSat,
     )
     const expected = [
       {
@@ -263,7 +263,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         },
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
-        settlementUsdPerSat: 1,
+        settlementDisplayCurrencyPerSat: 1,
         status: TxStatus.Pending,
         createdAt: timestamp,
       },
@@ -281,7 +281,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementAmount: toSats(50000),
         memo: null,
         settlementFee: toSats(0),
-        settlementUsdPerSat: 1,
+        settlementDisplayCurrencyPerSat: 1,
 
         status: TxStatus.Pending,
         createdAt: timestamp,
@@ -316,7 +316,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
       walletId,
       incomingTxs,
       addresses,
-      NaN as UsdPerSat,
+      NaN as DisplayCurrencyPerSat,
     )
     const expected = [
       {
@@ -333,7 +333,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         memo: null,
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
-        settlementUsdPerSat: NaN,
+        settlementDisplayCurrencyPerSat: NaN,
         status: TxStatus.Pending,
         createdAt: timestamp,
       },

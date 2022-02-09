@@ -45,10 +45,13 @@ const Transaction = GT.Object<WalletTransaction>({
     settlementPrice: {
       type: GT.NonNull(Price),
       resolve: (source) => {
-        const settlementUsdPerSatInCents = source.settlementUsdPerSat * 100
+        const settlementDisplayCurrencyPerSatInCents =
+          source.settlementDisplayCurrencyPerSat * 100
         return {
-          formattedAmount: settlementUsdPerSatInCents.toString(),
-          base: Math.round(settlementUsdPerSatInCents * 10 ** SAT_PRICE_PRECISION_OFFSET),
+          formattedAmount: settlementDisplayCurrencyPerSatInCents.toString(),
+          base: Math.round(
+            settlementDisplayCurrencyPerSatInCents * 10 ** SAT_PRICE_PRECISION_OFFSET,
+          ),
           offset: SAT_PRICE_PRECISION_OFFSET,
           currencyUnit: "USDCENT",
         }
