@@ -4,8 +4,9 @@ import { WalletCurrency } from "@domain/wallets"
 
 import { NotReachableError } from "@domain/errors"
 
-import { MainBook, TransactionMetadata } from "./books"
+import { MainBook } from "./books"
 import { getDealerBtcWalletId, getDealerUsdWalletId } from "./caching"
+import { TransactionsMetadataRepository } from "./services"
 
 import { translateToLedgerJournal } from "."
 
@@ -144,7 +145,7 @@ const addIntraledgerTxTransfer = async ({
   const recipientLiabilitiesWalletId = toLiabilitiesWalletId(recipientWalletId)
 
   const entry = MainBook.entry(description)
-
+  const txMetadataRepo = TransactionsMetadataRepository()
   if (
     recipientWalletCurrency === WalletCurrency.Btc &&
     senderWalletCurrency === WalletCurrency.Btc
@@ -175,7 +176,10 @@ const addIntraledgerTxTransfer = async ({
 
       const baseMetadata = metadata.hash ? { hash: metadata.hash } : {}
       journalEntry.transactionIds.map((_id) =>
-        TransactionMetadata.create({ _id, ...baseMetadata }),
+        txMetadataRepo.persistNew({
+          id: _id,
+          ledgerTxMetadata: baseMetadata,
+        }),
       )
 
       return journalEntry
@@ -212,7 +216,10 @@ const addIntraledgerTxTransfer = async ({
 
       const baseMetadata = metadata.hash ? { hash: metadata.hash } : {}
       journalEntry.transactionIds.map((_id) =>
-        TransactionMetadata.create({ _id, ...baseMetadata }),
+        txMetadataRepo.persistNew({
+          id: _id,
+          ledgerTxMetadata: baseMetadata,
+        }),
       )
 
       return journalEntry
@@ -256,7 +263,10 @@ const addIntraledgerTxTransfer = async ({
 
       const baseMetadata = metadata.hash ? { hash: metadata.hash } : {}
       journalEntry.transactionIds.map((_id) =>
-        TransactionMetadata.create({ _id, ...baseMetadata }),
+        txMetadataRepo.persistNew({
+          id: _id,
+          ledgerTxMetadata: baseMetadata,
+        }),
       )
 
       return journalEntry
@@ -301,7 +311,10 @@ const addIntraledgerTxTransfer = async ({
 
       const baseMetadata = metadata.hash ? { hash: metadata.hash } : {}
       journalEntry.transactionIds.map((_id) =>
-        TransactionMetadata.create({ _id, ...baseMetadata }),
+        txMetadataRepo.persistNew({
+          id: _id,
+          ledgerTxMetadata: baseMetadata,
+        }),
       )
 
       return journalEntry

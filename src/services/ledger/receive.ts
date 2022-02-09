@@ -5,10 +5,14 @@ import { WalletCurrency } from "@domain/wallets"
 import { NotImplementedError, NotReachableError } from "@domain/errors"
 
 import { lndAccountingPath } from "./accounts"
-import { MainBook, TransactionMetadata } from "./books"
+import { MainBook } from "./books"
 import * as caching from "./caching"
 
+import { TransactionsMetadataRepository } from "./services"
+
 import { translateToLedgerJournal } from "."
+
+const txMetadataRepo = TransactionsMetadataRepository()
 
 export const receive = {
   addOnChainTxReceive: async ({
@@ -159,7 +163,10 @@ const addReceiptNoFee = async ({
       const journalEntry = translateToLedgerJournal(savedEntry)
 
       journalEntry.transactionIds.map((_id) =>
-        TransactionMetadata.create({ _id, hash: metadata.hash, ...(txMetadata || {}) }),
+        txMetadataRepo.persistNew({
+          id: _id,
+          ledgerTxMetadata: { hash: metadata.hash, ...(txMetadata || {}) },
+        }),
       )
 
       return journalEntry
@@ -195,7 +202,10 @@ const addReceiptNoFee = async ({
       const journalEntry = translateToLedgerJournal(savedEntry)
 
       journalEntry.transactionIds.map((_id) =>
-        TransactionMetadata.create({ _id, hash: metaInput.hash }),
+        txMetadataRepo.persistNew({
+          id: _id,
+          ledgerTxMetadata: { hash: metaInput.hash },
+        }),
       )
 
       return journalEntry
@@ -240,7 +250,10 @@ const addReceiptFee = async ({
     const journalEntry = translateToLedgerJournal(savedEntry)
 
     journalEntry.transactionIds.map((_id) =>
-      TransactionMetadata.create({ _id, hash: metadata.hash }),
+      txMetadataRepo.persistNew({
+        id: _id,
+        ledgerTxMetadata: { hash: metadata.hash },
+      }),
     )
 
     return journalEntry

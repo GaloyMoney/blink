@@ -10,10 +10,14 @@ import {
 import { WalletCurrency } from "@domain/wallets"
 
 import { lndAccountingPath } from "./accounts"
-import { MainBook, Transaction, TransactionMetadata } from "./books"
+import { MainBook, Transaction } from "./books"
 import * as caching from "./caching"
 
+import { TransactionsMetadataRepository } from "./services"
+
 import { translateToLedgerJournal } from "."
+
+const txMetadataRepo = TransactionsMetadataRepository()
 
 export const send = {
   addLnTxSend: async ({
@@ -136,7 +140,10 @@ export const send = {
       const journalEntry = translateToLedgerJournal(savedEntry)
 
       journalEntry.transactionIds.map((_id) =>
-        TransactionMetadata.create({ _id, paymentHash }),
+        txMetadataRepo.persistNew({
+          id: _id,
+          ledgerTxMetadata: { hash: paymentHash },
+        }),
       )
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -173,7 +180,10 @@ const addSendNoInternalFee = async ({
       const journalEntry = translateToLedgerJournal(savedEntry)
 
       journalEntry.transactionIds.map((_id) =>
-        TransactionMetadata.create({ _id, hash: metaInput.hash }),
+        txMetadataRepo.persistNew({
+          id: _id,
+          ledgerTxMetadata: { hash: metaInput.hash },
+        }),
       )
 
       return journalEntry
@@ -208,7 +218,10 @@ const addSendNoInternalFee = async ({
       const journalEntry = translateToLedgerJournal(savedEntry)
 
       journalEntry.transactionIds.map((_id) =>
-        TransactionMetadata.create({ _id, hash: metaInput.hash }),
+        txMetadataRepo.persistNew({
+          id: _id,
+          ledgerTxMetadata: { hash: metaInput.hash },
+        }),
       )
 
       return journalEntry
@@ -254,7 +267,10 @@ const addSendInternalFee = async ({
     const journalEntry = translateToLedgerJournal(savedEntry)
 
     journalEntry.transactionIds.map((_id) =>
-      TransactionMetadata.create({ _id, hash: metadata.hash }),
+      txMetadataRepo.persistNew({
+        id: _id,
+        ledgerTxMetadata: { hash: metadata.hash },
+      }),
     )
 
     return journalEntry
