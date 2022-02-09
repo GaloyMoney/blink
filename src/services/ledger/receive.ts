@@ -109,7 +109,7 @@ export const receive = {
     journalId,
     sats,
     cents,
-    txMetadata,
+    revealedPreImage,
   }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: FeeReimbursementLedgerMetadata = {
       type: LedgerTransactionType.LnFeeReimbursement,
@@ -127,7 +127,7 @@ export const receive = {
       sats,
       walletCurrency,
       cents,
-      txMetadata,
+      revealedPreImage,
     })
   },
 }
@@ -139,7 +139,7 @@ const addReceiptNoFee = async ({
   sats,
   cents,
   description,
-  txMetadata,
+  revealedPreImage,
 }: {
   metadata: ReceiveLedgerMetadata
   walletId: WalletId
@@ -147,7 +147,7 @@ const addReceiptNoFee = async ({
   sats: Satoshis
   cents?: UsdCents
   description: string
-  txMetadata?: AdditionalLedgerTransactionMetadata
+  revealedPreImage?: RevealedPreImage
 }) => {
   const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
 
@@ -165,7 +165,10 @@ const addReceiptNoFee = async ({
       journalEntry.transactionIds.map((_id) =>
         txMetadataRepo.persistNew({
           id: _id,
-          ledgerTxMetadata: { hash: metadata.hash, ...(txMetadata || {}) },
+          ledgerTxMetadata: {
+            hash: metadata.hash,
+            ...(revealedPreImage ? { revealedPreImage } : {}),
+          },
         }),
       )
 

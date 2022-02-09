@@ -168,7 +168,7 @@ type AddLnFeeReeimbursementReceiveArgs = {
   cents?: UsdCents
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   journalId: LedgerJournalId
-  txMetadata: AdditionalLedgerTransactionMetadata
+  revealedPreImage?: RevealedPreImage
 }
 
 type FeeReimbursement = {
