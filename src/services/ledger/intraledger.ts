@@ -5,7 +5,9 @@ import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
 
 import { WalletCurrency } from "@domain/wallets"
 
-import { MainBook, TransactionMetadata } from "./books"
+import { MainBook } from "./books"
+
+import { TransactionsMetadataRepository } from "./domain"
 
 import { translateToLedgerJournal } from "."
 
@@ -169,7 +171,10 @@ const addIntraledgerTxTransfer = async ({
 
     const baseMetadata = metadata.hash ? { hash: metadata.hash } : {}
     journalEntry.transactionIds.map((_id) =>
-      TransactionMetadata.create({ _id, ...baseMetadata }),
+      TransactionsMetadataRepository().persistnew({
+        id: _id,
+        ledgerTxMetadata: baseMetadata,
+      }),
     )
 
     return journalEntry

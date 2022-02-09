@@ -5,10 +5,14 @@ import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
 import { WalletCurrency } from "@domain/wallets"
 
 import { lndAccountingPath } from "./accounts"
-import { MainBook, TransactionMetadata } from "./books"
+import { MainBook } from "./books"
 import * as caching from "./caching"
 
+import { TransactionsMetadataRepository } from "./domain"
+
 import { translateToLedgerJournal } from "."
+
+const txMetadataRepo = TransactionsMetadataRepository()
 
 export const receive = {
   addOnChainTxReceive: async ({
@@ -155,7 +159,10 @@ const addReceiptNoFee = async ({
     const journalEntry = translateToLedgerJournal(savedEntry)
 
     journalEntry.transactionIds.map((_id) =>
-      TransactionMetadata.create({ _id, hash: metadata.hash, ...(txMetadata || {}) }),
+      txMetadataRepo.persistnew({
+        id: _id,
+        ledgerTxMetadata: { hash: metadata.hash, ...(txMetadata || {}) },
+      }),
     )
 
     return journalEntry
@@ -197,7 +204,10 @@ const addReceiptFee = async ({
     const journalEntry = translateToLedgerJournal(savedEntry)
 
     journalEntry.transactionIds.map((_id) =>
-      TransactionMetadata.create({ _id, hash: metadata.hash }),
+      txMetadataRepo.persistnew({
+        id: _id,
+        ledgerTxMetadata: { hash: metadata.hash },
+      }),
     )
 
     return journalEntry

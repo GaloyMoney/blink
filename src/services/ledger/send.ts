@@ -11,10 +11,14 @@ import {
 import { WalletCurrency } from "@domain/wallets"
 
 import { lndAccountingPath } from "./accounts"
-import { MainBook, Transaction, TransactionMetadata } from "./books"
+import { MainBook, Transaction } from "./books"
 import * as caching from "./caching"
 
+import { TransactionsMetadataRepository } from "./domain"
+
 import { translateToLedgerJournal } from "."
+
+const txMetadataRepo = TransactionsMetadataRepository()
 
 export const send = {
   addLnTxSend: async ({
@@ -135,7 +139,10 @@ export const send = {
       const journalEntry = translateToLedgerJournal(savedEntry)
 
       journalEntry.transactionIds.map((_id) =>
-        TransactionMetadata.create({ _id, paymentHash }),
+        txMetadataRepo.persistnew({
+          id: _id,
+          ledgerTxMetadata: { hash: paymentHash },
+        }),
       )
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -172,7 +179,10 @@ const addSendNoInternalFee = async ({
     const journalEntry = translateToLedgerJournal(savedEntry)
 
     journalEntry.transactionIds.map((_id) =>
-      TransactionMetadata.create({ _id, hash: metadata.hash }),
+      txMetadataRepo.persistnew({
+        id: _id,
+        ledgerTxMetadata: { hash: metadata.hash },
+      }),
     )
 
     return journalEntry
@@ -215,7 +225,10 @@ const addSendInternalFee = async ({
     const journalEntry = translateToLedgerJournal(savedEntry)
 
     journalEntry.transactionIds.map((_id) =>
-      TransactionMetadata.create({ _id, hash: metadata.hash }),
+      txMetadataRepo.persistnew({
+        id: _id,
+        ledgerTxMetadata: { hash: metadata.hash },
+      }),
     )
 
     return journalEntry
