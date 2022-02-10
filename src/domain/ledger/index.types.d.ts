@@ -146,6 +146,7 @@ type SendIntraledgerTxArgs = IntraledgerTxArgs & {
     | AddLnIntraledgerSendLedgerMetadata
     | AddOnChainIntraledgerSendLedgerMetadata
     | AddWalletIdIntraledgerSendLedgerMetadata
+  paymentHash?: PaymentHash
 }
 
 type AddLnIntraledgerTxTransferArgs = AddIntraLedgerTxSendArgs & {

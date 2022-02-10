@@ -44,12 +44,11 @@ type AddColdStorageReceiveLedgerMetadata = AddColdStorageLedgerMetadata
 type AddColdStorageSendLedgerMetadata = AddColdStorageLedgerMetadata
 
 type IntraledgerLedgerMetadata = LedgerMetadata & {
-  hash?: undefined
   memoPayer: string | undefined
   username: Username | undefined
 }
 
-type AddLnIntraledgerSendLedgerMetadata = Omit<IntraledgerLedgerMetadata, "hash"> & {
+type AddLnIntraledgerSendLedgerMetadata = IntraledgerLedgerMetadata & {
   hash: PaymentHash
   pubkey: Pubkey
 }
