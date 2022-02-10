@@ -8,7 +8,7 @@ const Schema = mongoose.Schema
 
 const ledgerTransactionTypes = Object.values(LedgerTransactionType)
 
-const transactionSchema = new Schema({
+const transactionSchema = new Schema<TransactionRecord>({
   hash: {
     type: Schema.Types.String,
     ref: "invoiceusers",
