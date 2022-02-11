@@ -164,13 +164,7 @@ const updatePendingPayment = async ({
         )
         if (voided instanceof Error) {
           const error = `error voiding payment entry`
-          logger.fatal(
-            {
-              success: false,
-              result: lnPaymentLookup,
-            },
-            error,
-          )
+          logger.fatal({ success: false, result: lnPaymentLookup }, error)
           return voided
         }
       }

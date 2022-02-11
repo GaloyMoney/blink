@@ -10,9 +10,9 @@ export * from "./update-pending-invoices"
 export * from "./update-pending-payments"
 export * from "./add-invoice-for-wallet"
 export * from "./get-lightning-fee"
-export * from "./ln-send-payment"
-export * from "./pay-on-chain"
-export * from "./intraledger-send-payment"
+export * from "./send-lightning"
+export * from "./send-on-chain"
+export * from "./send-intraledger"
 
 import { WalletsRepository } from "@services/mongoose"
 
