@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 
 // TODO: Update database values and this map
 const languages = {
-  "": "DEFAULT",
+  "": "", // used for the "DEFAULT" setting
   "en": "en-US",
   "es": "es-SV",
 } as const
@@ -28,9 +28,14 @@ const Language = GT.Scalar<InternalLang | InputValidationError, ExternalLang>({
 })
 
 function validLanguageValue(value): InternalLang | InputValidationError {
-  const languageEntry = Object.entries(languages).find(([, v]) => v === value)
-  if (languageEntry) {
-    return languageEntry[0] as InternalLang
+  if (value) {
+    if (value === "DEFAULT") {
+      return ""
+    }
+    const languageEntry = Object.entries(languages).find(([, v]) => v === value)
+    if (languageEntry) {
+      return languageEntry[0] as InternalLang
+    }
   }
   return new InputValidationError({ message: "Invalid value for Language" })
 }
