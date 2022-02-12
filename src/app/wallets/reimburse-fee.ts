@@ -1,6 +1,6 @@
 import { getCurrentPrice } from "@app/prices"
 import {
-  DisplayCurrencyConversionRate,
+  DisplayCurrencyConverter,
   toDisplayCurrencyBaseAmount,
 } from "@domain/fiat/display-currency"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
@@ -44,7 +44,7 @@ export const reimburseFee = async ({
   if (price instanceof Error) {
     amountDisplayCurrency = toDisplayCurrencyBaseAmount(0)
   } else {
-    amountDisplayCurrency = DisplayCurrencyConversionRate(price).fromSats(feeDifference)
+    amountDisplayCurrency = DisplayCurrencyConverter(price).fromSats(feeDifference)
   }
 
   const ledgerService = LedgerService()

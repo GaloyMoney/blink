@@ -1,6 +1,6 @@
 type UserWalletConfig = {
   dustThreshold: number
   onchainMinConfirmations: number
-  limits: ITransactionLimits
+  limits: IAccountLimits
   name: string
 }

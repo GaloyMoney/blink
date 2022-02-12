@@ -15,3 +15,6 @@ export const OrderType = {
   Locked: "immediate",
   Active: "quote",
 } as const
+
+export const add = <T extends number>(arg0: T, arg1: T): T => (arg0 + arg1) as T
+export const sub = <T extends number>(arg0: T, arg1: T): T => (arg0 - arg1) as T

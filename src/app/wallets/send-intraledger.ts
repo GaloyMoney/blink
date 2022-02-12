@@ -2,7 +2,7 @@ import { addNewContact } from "@app/accounts/add-new-contact"
 import { getCurrentPrice } from "@app/prices"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { InsufficientBalanceError } from "@domain/errors"
-import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { PaymentInputValidator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { LockService } from "@services/lock"
@@ -68,12 +68,24 @@ export const intraledgerSendPaymentUsernameWithTwoFA = async ({
   if (user instanceof Error) return user
   const { twoFA } = user
 
+  // FIXME: inefficient. wallet also fetched in lnSendPayment
+  const senderWallet = await WalletsRepository().findById(senderWalletId)
+  if (senderWallet instanceof Error) return senderWallet
+
+  const displayCurrencyPerSat = await getCurrentPrice()
+  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+
+  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+  // End FIXME
+
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
         amount,
+        dCConverter,
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
         walletId: senderWalletId,
+        walletCurrency: senderWallet.currency,
         account: senderAccount,
       })
     : true
@@ -166,19 +178,22 @@ const executePaymentViaIntraledger = async ({
 
   const { amount, senderWallet, recipientWallet } = validationResult
 
+  const displayCurrencyPerSat = await getCurrentPrice()
+  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+
+  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+
   const intraledgerLimitCheck = await checkIntraledgerLimits({
     amount,
-    walletId: senderWalletId,
+    dCConverter,
+    walletId: senderWallet.id,
+    walletCurrency: senderWallet.currency,
     account: senderAccount,
   })
 
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
-  const displayCurrencyPerSat = await getCurrentPrice()
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
-
-  const amountDisplayCurrency =
-    DisplayCurrencyConversionRate(displayCurrencyPerSat).fromSats(amount)
+  const amountDisplayCurrency = dCConverter.fromSats(amount)
 
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },

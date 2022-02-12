@@ -2,7 +2,7 @@ import { getCurrentPrice } from "@app/prices"
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import { checkedtoCents } from "@domain/fiat"
-import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
@@ -189,11 +189,11 @@ const addInvoiceFiatDenomiation = async ({
   const price = await getCurrentPrice()
   if (price instanceof Error) return price
 
-  const displayPriceFns = DisplayCurrencyConversionRate(price)
+  const dCConverter = DisplayCurrencyConverter(price)
 
   const dealer = DealerPriceService()
 
-  const amountConverter = AmountConverter({ dealerFns: dealer, displayPriceFns })
+  const amountConverter = AmountConverter({ dealerFns: dealer, dCConverter })
 
   const amounts = await amountConverter.getAmountsReceive({
     walletCurrency: WalletCurrency.Usd,

@@ -102,7 +102,7 @@ describe("'lightning' library error handling", () => {
     try {
       await payViaRoutes(payArgs)
     } catch (err) {
-      console.log(err[2].failures[0][2].err)
+      // console.log(err[2].failures[0][2].err)
       expect(err).toHaveLength(3)
       expect(err[0]).toEqual(503)
       expect(err[1]).toBe("UnexpectedErrorWhenPayingViaRoute")

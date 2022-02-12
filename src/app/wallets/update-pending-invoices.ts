@@ -1,9 +1,10 @@
 import { getCurrentPrice } from "@app/prices"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { CouldNotFindError } from "@domain/errors"
-import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
-import { DepositFeeCalculator } from "@domain/wallets"
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import { AmountConverter, DepositFeeCalculator, WalletCurrency } from "@domain/wallets"
 import { LockService } from "@services"
+import { Dealer } from "@services/dealer"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository } from "@services/mongoose"
@@ -139,11 +140,12 @@ const updatePendingInvoice = async ({
       return true
     }
 
-    const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
-    if (invoicePaid instanceof Error) return invoicePaid
-
     const displayCurrencyPerSat = await getCurrentPrice()
     if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+
+    // TODO: this should be a in a mongodb transaction session with the ledger transaction below
+    const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
+    if (invoicePaid instanceof Error) return invoicePaid
 
     const {
       lnInvoice: { description },
@@ -151,9 +153,26 @@ const updatePendingInvoice = async ({
     } = lnInvoiceLookup
     const feeInboundLiquidity = DepositFeeCalculator().lnDepositFee()
 
-    const converter = DisplayCurrencyConversionRate(displayCurrencyPerSat)
-    const amountDisplayCurrency = converter.fromSats(roundedDownReceived)
-    const feeInboundLiquidityDisplayCurrency = converter.fromSats(feeInboundLiquidity)
+    const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+    const amountDisplayCurrency = dCConverter.fromSats(roundedDownReceived)
+    const feeInboundLiquidityDisplayCurrency = dCConverter.fromSats(feeInboundLiquidity)
+
+    let centsImmediate: UsdCents | undefined
+    // case of an amountless invoice with Usd Wallet
+    if (walletCurrency === WalletCurrency.Usd && !cents) {
+      const converter = AmountConverter({
+        dCConverter,
+        dealerFns: Dealer(),
+      })
+      const walletCurrency = WalletCurrency.Usd
+      const amounts = await converter.getAmountsReceive({
+        walletCurrency,
+        sats: roundedDownReceived,
+        order: "immediate",
+      })
+      if (amounts instanceof Error) return amounts
+      ;({ cents: centsImmediate } = amounts) // FIXME: not type safe. we should always get cents
+    }
 
     const ledgerService = LedgerService()
     const result = await ledgerService.addLnTxReceive({
@@ -162,7 +181,7 @@ const updatePendingInvoice = async ({
       paymentHash,
       description,
       sats: roundedDownReceived,
-      cents,
+      cents: cents || centsImmediate,
       amountDisplayCurrency,
       feeInboundLiquidity,
       feeInboundLiquidityDisplayCurrency,

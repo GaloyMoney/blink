@@ -8,24 +8,15 @@ type Primitive = string | boolean | number
 //       being done
 
 type TwoFALimits = {
-  threshold: number
+  threshold: UsdCents
 }
 
 type FeeRates = {
   depositFeeVariable: number
-  depositFeeFixed: number
+  depositFeeFixed: CurrencyBaseAmount
   withdrawFeeVariable: number
-  withdrawFeeFixed: number
+  withdrawFeeFixed: CurrencyBaseAmount
 }
-
-type UserLimitsArgs = { level: number; limitsConfig? }
-
-interface IUserLimits {
-  onUsLimit: Satoshis
-  withdrawalLimit: Satoshis
-}
-
-type ITransactionLimits = IUserLimits
 
 type onChainWalletConfig = {
   dustThreshold: number

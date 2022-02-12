@@ -1,7 +1,11 @@
 import { once } from "events"
 
 import { Prices, Wallets } from "@app"
-import { getFeeRates, getOnChainAddressCreateAttemptLimits, getUserLimits } from "@config"
+import {
+  getFeeRates,
+  getOnChainAddressCreateAttemptLimits,
+  getAccountLimits,
+} from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
@@ -12,13 +16,17 @@ import { baseLogger } from "@services/logger"
 import { getTitle } from "@services/notifications/payment"
 import { sleep } from "@utils"
 
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+
+import { getCurrentPrice } from "@app/prices"
+
 import {
   amountAfterFeeDeduction,
   bitcoindClient,
   bitcoindOutside,
   checkIsBalanced,
   createMandatoryUsers,
-  createUserWalletFromUserRef,
+  createUserAndWalletFromUserRef,
   getAccountIdByTestUserRef,
   getDefaultWalletIdByRole,
   getDefaultWalletIdByTestUserRef,
@@ -38,7 +46,7 @@ jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current
 let walletIdA: WalletId
 let accountIdA: AccountId
 
-const userLimits = getUserLimits({ level: 1 })
+const accountLimits = getAccountLimits({ level: 1 })
 
 jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -52,7 +60,7 @@ beforeAll(async () => {
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   accountIdA = await getAccountIdByTestUserRef("A")
 
-  await createUserWalletFromUserRef("C")
+  await createUserAndWalletFromUserRef("C")
 })
 
 beforeEach(() => {
@@ -127,17 +135,30 @@ describe("UserWallet - On chain", () => {
 
   it("receives on-chain transaction with max limit for withdrawal level1", async () => {
     /// TODO? add sendAll tests in which the user has more than the limit?
-    const level1WithdrawalLimit = userLimits.withdrawalLimit // sats
-    await createUserWalletFromUserRef("E")
+    const withdrawlLimitAccountLevel1 = accountLimits.withdrawalLimit // cents
+    await createUserAndWalletFromUserRef("E")
     const walletId = await getDefaultWalletIdByTestUserRef("E")
-    await sendToWalletTestWrapper({ walletId, amountSats: level1WithdrawalLimit })
+
+    const price = await getCurrentPrice()
+    if (price instanceof Error) throw price
+    const dCConverter = DisplayCurrencyConverter(price)
+    const amountSats = dCConverter.fromCentsToSats(withdrawlLimitAccountLevel1)
+
+    await sendToWalletTestWrapper({ walletId, amountSats })
   })
 
   it("receives on-chain transaction with max limit for onUs level1", async () => {
-    const level1OnUsLimit = userLimits.onUsLimit // sats
-    await createUserWalletFromUserRef("F")
+    const intraLedgerLimitAccountLevel1 = accountLimits.intraLedgerLimit // cents
+
+    await createUserAndWalletFromUserRef("F")
     const walletId = await getDefaultWalletIdByTestUserRef("F")
-    await sendToWalletTestWrapper({ walletId, amountSats: level1OnUsLimit })
+
+    const price = await getCurrentPrice()
+    if (price instanceof Error) throw price
+    const dCConverter = DisplayCurrencyConverter(price)
+    const amountSats = dCConverter.fromCentsToSats(intraLedgerLimitAccountLevel1)
+
+    await sendToWalletTestWrapper({ walletId, amountSats })
   })
 
   it("receives batch on-chain transaction", async () => {
@@ -278,9 +299,9 @@ describe("UserWallet - On chain", () => {
   it("allows fee exemption for specific users", async () => {
     const amountSats = getRandomAmountOfSats()
 
-    const userTypeC = await getUserRecordByTestUserRef("C")
-    userTypeC.depositFeeRatio = 0
-    await userTypeC.save()
+    const userRecordC = await getUserRecordByTestUserRef("C")
+    userRecordC.depositFeeRatio = 0
+    await userRecordC.save()
     const walletC = await getDefaultWalletIdByTestUserRef("C")
 
     const initBalanceUserC = await getBTCBalance(walletC)
@@ -299,9 +320,9 @@ async function sendToWalletTestWrapper({
   walletId,
   depositFeeRatio = getFeeRates().depositFeeVariable as DepositFeeRatio,
 }: {
+  amountSats: Satoshis
   walletId: WalletId
   depositFeeRatio?: DepositFeeRatio
-  amountSats: Satoshis
 }) {
   const lnd = lndonchain
 

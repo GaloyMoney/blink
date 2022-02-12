@@ -1,8 +1,13 @@
 import { once } from "events"
 
 import { Wallets } from "@app"
-import { getFeeRates, getOnChainWalletConfig, getUserLimits, MS_PER_DAY } from "@config"
-import { toTargetConfs } from "@domain/bitcoin"
+import {
+  getFeeRates,
+  getOnChainWalletConfig,
+  getAccountLimits,
+  MS_PER_DAY,
+} from "@config"
+import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError,
@@ -22,13 +27,19 @@ import { getTitle } from "@services/notifications/payment"
 import { sleep } from "@utils"
 import last from "lodash.last"
 
+import { getCurrentPrice } from "@app/prices"
+
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+
+import { add, sub, toCents } from "@domain/fiat"
+
 import {
   bitcoindClient,
   bitcoindOutside,
   checkIsBalanced,
   createChainAddress,
   createMandatoryUsers,
-  createUserWalletFromUserRef,
+  createUserAndWalletFromUserRef,
   enable2FA,
   generateTokenHelper,
   getAccountByTestUserRef,
@@ -47,11 +58,12 @@ import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
 jest.mock("@services/notifications/notification")
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
-
 jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
 
+jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
+
 let initialBalanceUserA: Satoshis
-let user0: UserRecord
+let userA: UserRecord
 
 let accountA: Account
 
@@ -71,12 +83,12 @@ const { sendNotification } = require("@services/notifications/notification")
 beforeAll(async () => {
   await createMandatoryUsers()
 
-  await createUserWalletFromUserRef("B")
-  await createUserWalletFromUserRef("D")
-  await createUserWalletFromUserRef("E")
-  await createUserWalletFromUserRef("F")
+  await createUserAndWalletFromUserRef("B")
+  await createUserAndWalletFromUserRef("D")
+  await createUserAndWalletFromUserRef("E")
+  await createUserAndWalletFromUserRef("F")
 
-  user0 = await getUserRecordByTestUserRef("A")
+  userA = await getUserRecordByTestUserRef("A")
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   userIdA = await getUserIdByTestUserRef("A")
   accountA = await getAccountByTestUserRef("A")
@@ -620,14 +632,23 @@ describe("UserWallet - onChainPay", () => {
           timestamp: { $gte: timestampYesterday },
         },
       },
-      { $group: { _id: null, outgoingSats: { $sum: "$debit" } } },
+      { $group: { _id: null, outgoingBaseAmount: { $sum: "$debit" } } },
     ])
-    const { outgoingSats } = result || { outgoingSats: 0 }
 
-    if (!user0.level) throw new Error("Invalid user level")
+    const outgoingBaseAmount = toSats(result?.outgoingBaseAmount || 0)
 
-    const userLimits = getUserLimits({ level: user0.level })
-    const amount = userLimits.withdrawalLimit - outgoingSats + 1
+    if (!userA.level) throw new Error("Invalid or non existant user level")
+
+    const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
+
+    const price = await getCurrentPrice()
+    if (price instanceof Error) throw price
+    const dCConverter = DisplayCurrencyConverter(price)
+
+    const amount = add(
+      sub(dCConverter.fromCentsToSats(withdrawalLimit), outgoingBaseAmount),
+      toSats(100),
+    )
 
     const status = await Wallets.payOnChainByWalletId({
       senderAccount: accountA,
@@ -638,6 +659,7 @@ describe("UserWallet - onChainPay", () => {
       memo: null,
       sendAll: false,
     })
+
     expect(status).toBeInstanceOf(LimitsExceededError)
   })
 
@@ -659,17 +681,24 @@ describe("UserWallet - onChainPay", () => {
 
   describe("2FA", () => {
     it("fails to pay above 2fa limit without 2fa token", async () => {
-      enable2FA(userIdA)
+      await enable2FA(userIdA)
 
-      const remainingLimit = await getRemainingTwoFALimit(walletIdA)
-      expect(remainingLimit).not.toBeInstanceOf(Error)
-      if (remainingLimit instanceof Error) return remainingLimit
+      const price = await getCurrentPrice()
+      if (price instanceof Error) throw price
+      const dCConverter = DisplayCurrencyConverter(price)
+
+      const remainingLimit = await getRemainingTwoFALimit({
+        walletId: walletIdA,
+        dCConverter,
+      })
+
+      const aboveThreshold = add(remainingLimit, toCents(10))
 
       const status = await Wallets.payOnChainByWalletIdWithTwoFA({
         senderAccount: accountA,
         senderWalletId: walletIdA,
         address: RANDOM_ADDRESS,
-        amount: remainingLimit + 1,
+        amount: dCConverter.fromCentsToSats(aboveThreshold),
         targetConfirmations,
         memo: null,
         sendAll: false,
@@ -684,8 +713,8 @@ describe("UserWallet - onChainPay", () => {
 
       const initialBalance = await getBTCBalance(walletIdA)
       const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-      const twoFAToken = generateTokenHelper(user0.twoFA.secret)
-      const amount = user0.twoFA.threshold + 1
+      const twoFAToken = generateTokenHelper(userA.twoFA.secret)
+      const amount = userA.twoFA.threshold + 1
       const paid = await Wallets.payOnChainByWalletIdWithTwoFA({
         senderAccount: accountA,
         senderWalletId: walletIdA,

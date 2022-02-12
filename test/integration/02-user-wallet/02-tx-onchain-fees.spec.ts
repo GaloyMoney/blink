@@ -7,7 +7,7 @@ import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import {
   bitcoindClient,
   bitcoindOutside,
-  createUserWalletFromUserRef,
+  createUserAndWalletFromUserRef,
   getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
 } from "test/helpers"
@@ -20,8 +20,8 @@ let walletIdA: WalletId, walletIdB: WalletId, accountA: Account
 beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
 
-  await createUserWalletFromUserRef("A")
-  await createUserWalletFromUserRef("B")
+  await createUserAndWalletFromUserRef("A")
+  await createUserAndWalletFromUserRef("B")
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   accountA = await getAccountByTestUserRef("A")

@@ -11,6 +11,27 @@ type DepositFeeRatio = number & { readonly brand: unique symbol }
 
 type ContactAlias = string & { readonly brand: unique symbol }
 
+type AccountLimitsArgs = {
+  level: AccountLevel
+  accountLimits?: {
+    intraLedger: {
+      level: {
+        [l: number]: UsdCents
+      }
+    }
+    withdrawal: {
+      level: {
+        [l: number]: UsdCents
+      }
+    }
+  }
+}
+
+interface IAccountLimits {
+  intraLedgerLimit: UsdCents
+  withdrawalLimit: UsdCents
+}
+
 type AccountContact = {
   readonly id: Username
   readonly username: Username
@@ -54,28 +75,17 @@ type BusinessMapMarker = {
   mapInfo: BusinessMapInfo
 }
 
+type LimiterCheckInputs = {
+  amount: UsdCents
+  walletVolume: TxBaseVolume
+}
+
+type LimitsCheckerFn = (args: LimiterCheckInputs) => true | LimitsExceededError
+
 type LimitsChecker = {
-  checkTwoFA({
-    amount,
-    walletVolume,
-  }: {
-    amount: Satoshis
-    walletVolume: TxVolume
-  }): true | LimitsExceededError
-  checkIntraledger({
-    amount,
-    walletVolume,
-  }: {
-    amount: Satoshis
-    walletVolume: TxVolume
-  }): true | LimitsExceededError
-  checkWithdrawal({
-    amount,
-    walletVolume,
-  }: {
-    amount: Satoshis
-    walletVolume: TxVolume
-  }): true | LimitsExceededError
+  checkTwoFA: LimitsCheckerFn
+  checkIntraledger: LimitsCheckerFn
+  checkWithdrawal: LimitsCheckerFn
 }
 
 interface IAccountsRepository {

@@ -1,26 +1,21 @@
-import { Wallets } from "@app"
 import { generate2fa, save2fa } from "@app/users"
-import { balanceSheetIsBalanced } from "@core/balance-sheet"
 import { TwoFAAlreadySetError } from "@domain/twoFA"
 import { gqlAdminSchema } from "@graphql/admin"
-import { baseLogger } from "@services/logger"
 import { ExecutionResult, graphql, Source } from "graphql"
 import { ObjMap } from "graphql/jsutils/ObjMap"
-
 import { generateToken } from "node-2fa"
-
-import { waitUntilChannelBalanceSyncAll } from "./lightning"
 
 export * from "./apollo-client"
 export * from "./bitcoin-core"
 export * from "./integration-server"
 export * from "./lightning"
-export * from "./user"
-export * from "./redis"
-export * from "./wallet"
 export * from "./price"
 export * from "./rate-limit"
+export * from "./redis"
 export * from "./state-setup"
+export * from "./user"
+export * from "./wallet"
+export * from "./check-is-balanced"
 
 export const amountAfterFeeDeduction = ({
   amount,
@@ -29,26 +24,6 @@ export const amountAfterFeeDeduction = ({
   amount: Satoshis
   depositFeeRatio: DepositFeeRatio
 }) => Math.round(amount * (1 - depositFeeRatio))
-
-const logger = baseLogger.child({ module: "test" })
-
-export const checkIsBalanced = async () => {
-  await Promise.all([
-    Wallets.updatePendingInvoices(logger),
-    Wallets.updatePendingPayments(logger),
-    Wallets.updateOnChainReceipt({ logger }),
-  ])
-  // wait for balance updates because invoice event
-  // arrives before wallet balances updates in lnd
-  await waitUntilChannelBalanceSyncAll()
-
-  const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } =
-    await balanceSheetIsBalanced()
-  expect(assetsLiabilitiesDifference).toBe(0)
-
-  // TODO: need to go from sats to msats to properly account for every msats spent
-  expect(Math.abs(bookingVersusRealWorldAssets)).toBe(0)
-}
 
 export const resetDatabase = async (mongoose) => {
   const db = mongoose.connection.db

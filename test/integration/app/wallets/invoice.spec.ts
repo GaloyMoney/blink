@@ -14,7 +14,7 @@ import { WalletCurrency, WalletType } from "@domain/wallets"
 import { WalletInvoicesRepository } from "@services/mongoose"
 
 import {
-  createUserWalletFromUserRef,
+  createUserAndWalletFromUserRef,
   getAccountIdByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getHash,
@@ -23,6 +23,7 @@ import {
   resetRecipientAccountIdLimits,
   resetSelfAccountIdLimits,
 } from "test/helpers/rate-limit"
+import { CENTS_PER_USD } from "test/helpers/static"
 
 let walletIdBtc: WalletId
 let walletIdUsd: WalletId
@@ -33,11 +34,9 @@ jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
 
 const walletInvoices = WalletInvoicesRepository()
 
-const CENTS_PER_USD = 100
-
 beforeAll(async () => {
   const userRef = "B"
-  await createUserWalletFromUserRef(userRef)
+  await createUserAndWalletFromUserRef(userRef)
 
   walletIdBtc = await getDefaultWalletIdByTestUserRef(userRef)
   accountIdB = await getAccountIdByTestUserRef(userRef)

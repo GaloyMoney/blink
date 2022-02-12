@@ -1,4 +1,3 @@
-import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerServiceError, UnknownLedgerError } from "@domain/ledger/errors"
 import { addEventToCurrentSpan } from "@services/tracing"
@@ -39,7 +38,7 @@ export const volume = {
     })
   },
 
-  intraledgerTxVolumeSince: async ({
+  intraledgerTxBaseVolumeSince: async ({
     walletId,
     timestamp,
   }: {
@@ -56,7 +55,7 @@ export const volume = {
     })
   },
 
-  allTxVolumeSince: async ({
+  allTxBaseVolumeSince: async ({
     walletId,
     timestamp,
   }: {
@@ -79,7 +78,7 @@ const txVolumeSince = async ({
   walletId: WalletId
   timestamp: Date
   txnTypes: LedgerTransactionType[]
-}): Promise<TxVolume | LedgerServiceError> => {
+}): Promise<TxBaseVolume | LedgerServiceError> => {
   const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
 
   const txnTypesObj = txnTypes.map((txnType) => ({
@@ -88,7 +87,7 @@ const txVolumeSince = async ({
 
   try {
     addEventToCurrentSpan("volume aggregation starts")
-    const [result]: (TxVolume & { _id: null })[] = await Transaction.aggregate([
+    const [result]: (TxBaseVolume & { _id: null })[] = await Transaction.aggregate([
       {
         $match: {
           accounts: liabilitiesWalletId,
@@ -99,16 +98,16 @@ const txVolumeSince = async ({
       {
         $group: {
           _id: null,
-          outgoingSats: { $sum: "$debit" },
-          incomingSats: { $sum: "$credit" },
+          outgoingBaseAmount: { $sum: "$debit" },
+          incomingBaseAmount: { $sum: "$credit" },
         },
       },
     ])
     addEventToCurrentSpan("volume aggregation ends")
 
     return {
-      outgoingSats: toSats(result?.outgoingSats ?? 0),
-      incomingSats: toSats(result?.incomingSats ?? 0),
+      outgoingBaseAmount: result?.outgoingBaseAmount ?? (0 as CurrencyBaseAmount),
+      incomingBaseAmount: result?.incomingBaseAmount ?? (0 as CurrencyBaseAmount),
     }
   } catch (err) {
     return new UnknownLedgerError(err)

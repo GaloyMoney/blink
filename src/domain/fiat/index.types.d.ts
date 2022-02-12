@@ -3,9 +3,11 @@ type DisplayCurrencyBaseAmount = number & { readonly brand: unique symbol }
 
 type CurrencyBaseAmount = Satoshis | UsdCents
 
-interface DisplayCurrencyConversionRate {
+interface DisplayCurrencyConverter {
   fromSats: (amount: Satoshis) => DisplayCurrencyBaseAmount
   fromCents: (amount: UsdCents) => DisplayCurrencyBaseAmount
+  fromSatsToCents: (amount: Satoshis) => UsdCents
+  fromCentsToSats: (amount: UsdCents) => Satoshis
 }
 
 interface AmountFromSatoshis {

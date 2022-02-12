@@ -65,16 +65,16 @@ export const getUserRecordByTestUserRef = async (ref: string) => {
 
 export const createMandatoryUsers = async () => {
   for (const user of adminUsers) {
-    await createUserWallet(user)
+    await createUserAndWallet(user)
   }
 }
 
-export const createUserWalletFromUserRef = async (ref: string) => {
+export const createUserAndWalletFromUserRef = async (ref: string) => {
   const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
-  await createUserWallet(entry)
+  await createUserAndWallet(entry)
 }
 
-export const createUserWallet = async (entry) => {
+export const createUserAndWallet = async (entry) => {
   const phone = entry.phone as PhoneNumber
 
   let userRepo = await users.findByPhone(phone)

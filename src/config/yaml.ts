@@ -7,6 +7,8 @@ import { baseLogger } from "@services/logger"
 import { checkedToScanDepth } from "@domain/bitcoin/onchain"
 import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
 
+import { toCents } from "@domain/fiat"
+
 import { ConfigError } from "./error"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
@@ -25,7 +27,7 @@ try {
 
 export const yamlConfig = merge(defaultConfig, customConfig)
 
-export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.limits.memoSharingSatsThreshold
+export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.spamLimits.memoSharingSatsThreshold
 
 export const ONCHAIN_MIN_CONFIRMATIONS = yamlConfig.onChainWallet.minConfirmations
 // how many block are we looking back for getChainTransactions
@@ -42,7 +44,7 @@ export const ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE = getOnChainScanDepth(
   yamlConfig.onChainWallet.scanDepthChannelUpdate,
 )
 
-export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toSats(
+export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toCents(
   yamlConfig.userActivenessMonthlyVolumeThreshold,
 )
 
@@ -84,9 +86,9 @@ export const getLndParams = (): LndParams[] => {
 
 export const getFeeRates = (feesConfig = yamlConfig.fees): FeeRates => ({
   depositFeeVariable: feesConfig.deposit,
-  depositFeeFixed: 0,
+  depositFeeFixed: toSats(0),
   withdrawFeeVariable: 0,
-  withdrawFeeFixed: feesConfig.withdraw,
+  withdrawFeeFixed: toSats(feesConfig.withdraw),
 })
 
 export const getWithdrawFeeRange = (
@@ -96,18 +98,18 @@ export const getWithdrawFeeRange = (
   max: withdrawFeeConfig.max,
 })
 
-export const getUserLimits = ({
+export const getAccountLimits = ({
   level,
-  limitsConfig = yamlConfig.limits,
-}: UserLimitsArgs): IUserLimits => {
+  accountLimits = yamlConfig.accountLimits,
+}: AccountLimitsArgs): IAccountLimits => {
   return {
-    onUsLimit: limitsConfig.onUs.level[level] as Satoshis,
-    withdrawalLimit: limitsConfig.withdrawal.level[level] as Satoshis,
+    intraLedgerLimit: accountLimits.intraLedger.level[level],
+    withdrawalLimit: accountLimits.withdrawal.level[level],
   }
 }
 
 export const getTwoFALimits = (): TwoFALimits => ({
-  threshold: yamlConfig.twoFA.threshold,
+  threshold: toCents(yamlConfig.twoFALimits.threshold),
 })
 
 const getRateLimits = (config): RateLimitOptions => {
@@ -123,55 +125,32 @@ const getRateLimits = (config): RateLimitOptions => {
 }
 
 export const getRequestPhoneCodePerPhoneLimits = () =>
-  getRateLimits(yamlConfig.limits.requestPhoneCodePerPhone)
+  getRateLimits(yamlConfig.rateLimits.requestPhoneCodePerPhone)
 
 export const getRequestPhoneCodePerPhoneMinIntervalLimits = () =>
-  getRateLimits(yamlConfig.limits.requestPhoneCodePerPhoneMinInterval)
+  getRateLimits(yamlConfig.rateLimits.requestPhoneCodePerPhoneMinInterval)
 
 export const getRequestPhoneCodePerIpLimits = () =>
-  getRateLimits(yamlConfig.limits.requestPhoneCodePerIp)
+  getRateLimits(yamlConfig.rateLimits.requestPhoneCodePerIp)
 
 export const getFailedLoginAttemptPerPhoneLimits = () =>
-  getRateLimits(yamlConfig.limits.failedLoginAttemptPerPhone)
+  getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerPhone)
 
 export const getFailedLoginAttemptPerIpLimits = () =>
-  getRateLimits(yamlConfig.limits.failedLoginAttemptPerIp)
+  getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerIp)
 
 export const getInvoiceCreateAttemptLimits = () =>
-  getRateLimits(yamlConfig.limits.invoiceCreateAttempt)
+  getRateLimits(yamlConfig.rateLimits.invoiceCreateAttempt)
 
 export const getInvoiceCreateForRecipientAttemptLimits = () =>
-  getRateLimits(yamlConfig.limits.invoiceCreateForRecipientAttempt)
+  getRateLimits(yamlConfig.rateLimits.invoiceCreateForRecipientAttempt)
 
 export const getOnChainAddressCreateAttemptLimits = () =>
-  getRateLimits(yamlConfig.limits.onChainAddressCreateAttempt)
+  getRateLimits(yamlConfig.rateLimits.onChainAddressCreateAttempt)
 
 export const getOnChainWalletConfig = () => ({
   dustThreshold: yamlConfig.onChainWallet.dustThreshold,
 })
-
-export const getTransactionLimits = ({
-  level,
-  limitsConfig = yamlConfig.limits,
-}: UserLimitsArgs): ITransactionLimits => {
-  return {
-    ...getUserLimits({ level, limitsConfig }),
-  }
-}
-
-export const getUserWalletConfig = (
-  user,
-  limitsConfig = yamlConfig.limits,
-): UserWalletConfig => {
-  const transactionLimits = getTransactionLimits({ level: user.level, limitsConfig })
-  const onChainWalletConfig = getOnChainWalletConfig()
-  return {
-    name: yamlConfig.name,
-    dustThreshold: onChainWalletConfig.dustThreshold,
-    onchainMinConfirmations: ONCHAIN_MIN_CONFIRMATIONS,
-    limits: transactionLimits,
-  }
-}
 
 export const getColdStorageConfig = (): ColdStorageConfig => {
   const config = yamlConfig.coldStorage
@@ -214,7 +193,7 @@ export const getIpConfig = (config = yamlConfig): IpConfig => ({
 })
 
 export const getApolloConfig = (config = yamlConfig): ApolloConfig => config.apollo
-export const getTwoFAConfig = (config = yamlConfig): TwoFAConfig => config.twoFA
+export const getTwoFAConfig = (config = yamlConfig): TwoFAConfig => config.twoFALimits
 
 export const LND_SCB_BACKUP_BUCKET_NAME = yamlConfig.lndScbBackupBucketName
 

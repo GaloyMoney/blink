@@ -68,7 +68,7 @@ test_accounts:
   code: "321321"
   username: "user15"
 
-limits:
+rateLimits:
   requestPhoneCodePerPhone:
     points: 4
     duration: 3600 # 60 * 60 s
@@ -101,15 +101,22 @@ limits:
     points: 20
     duration: 3600
     blockDuration: 14400 # 60 * 60 * 4 s  # 4 hours
-  memoSharingSatsThreshold: 1000
+
+accountLimits:
   withdrawal:
     level:
-      1: 2000000
-      2: 100000000
-  onUs:
+      1: 100000 # cents
+      2: 5000000 # cents
+  intraLedger:
     level:
-      1: 5000000
-      2: 100000000
+      1: 2000 # cents
+      2: 50000 # cents
+
+spamLimits:
+  memoSharingSatsThreshold: 1000
+
+twoFALimits:
+  threshold: 10000 # cents
 
 ipRecording:
   enabled: true
@@ -150,7 +157,4 @@ apollo:
   playground: true
   playgroundUrl: "https://api.staging.galoy.io/graphql"
 
-twoFA:
-  threshold: 300000 # sats
-
-userActivenessMonthlyVolumeThreshold: 1000 # sats
+userActivenessMonthlyVolumeThreshold: 100 # cents

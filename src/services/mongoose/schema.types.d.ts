@@ -99,7 +99,7 @@ interface UserRecord {
 
   // methods
   remainingTwoFALimit: () => Promise<number>
-  remainingOnUsLimit: () => Promise<number>
+  remainingintraLedgerLimit: () => Promise<number>
   remainingWithdrawalLimit: () => Promise<number>
 
   // mongoose in-built functions
