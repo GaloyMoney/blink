@@ -70,7 +70,7 @@ integration-in-ci:
 	. ./.envrc && \
 	yarn build && \
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
-	LOGLEVEL=error node lib/servers/cron.js
+	LOGLEVEL=error node lib/src/servers/cron.js
 
 unit-in-ci:
 	. ./.envrc && \

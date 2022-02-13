@@ -135,14 +135,14 @@ describe("UserWallet - On chain", () => {
 
   it("receives on-chain transaction with max limit for withdrawal level1", async () => {
     /// TODO? add sendAll tests in which the user has more than the limit?
-    const withdrawlLimitAccountLevel1 = accountLimits.withdrawalLimit // cents
+    const withdrawalLimitAccountLevel1 = accountLimits.withdrawalLimit // cents
     await createUserAndWalletFromUserRef("E")
     const walletId = await getDefaultWalletIdByTestUserRef("E")
 
     const price = await getCurrentPrice()
     if (price instanceof Error) throw price
     const dCConverter = DisplayCurrencyConverter(price)
-    const amountSats = dCConverter.fromCentsToSats(withdrawlLimitAccountLevel1)
+    const amountSats = dCConverter.fromCentsToSats(withdrawalLimitAccountLevel1)
 
     await sendToWalletTestWrapper({ walletId, amountSats })
   })

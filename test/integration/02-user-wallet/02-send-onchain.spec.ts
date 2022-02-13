@@ -637,7 +637,7 @@ describe("UserWallet - onChainPay", () => {
 
     const outgoingBaseAmount = toSats(result?.outgoingBaseAmount || 0)
 
-    if (!userA.level) throw new Error("Invalid or non existant user level")
+    if (!userA.level) throw new Error("Invalid or non existent user level")
 
     const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
 
