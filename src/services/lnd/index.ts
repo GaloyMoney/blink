@@ -250,7 +250,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       return payment
     }
 
-    return new PaymentNotFoundError("Payment hash not found")
+    return new PaymentNotFoundError(JSON.stringify({ paymentHash, pubkey }))
   }
 
   const listFailedPayments = async ({
@@ -566,6 +566,8 @@ const lookupPaymentByPubkeyAndHash = async ({
   } catch (err) {
     const errDetails = parseLndErrorDetails(err)
     switch (errDetails) {
+      case KnownLndErrorDetails.SentPaymentNotFound:
+        return new PaymentNotFoundError(JSON.stringify({ paymentHash, pubkey }))
       default:
         return new UnknownLightningServiceError(err)
     }
@@ -607,6 +609,7 @@ const KnownLndErrorDetails = {
   PaymentRejectedByDestination: "PaymentRejectedByDestination",
   PaymentAttemptsTimedOut: "PaymentAttemptsTimedOut",
   ProbeForRouteTimedOut: "ProbeForRouteTimedOut",
+  SentPaymentNotFound: "SentPaymentNotFound",
 } as const
 
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({
