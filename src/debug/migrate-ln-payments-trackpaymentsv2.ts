@@ -4,22 +4,40 @@ import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository } from "@services/mongoose"
+import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"
 
 let lndService
 
-export const migrateLnPaymentsFromLndByHash = async (): Promise<true> => {
-  lndService = LndService()
-  if (lndService instanceof Error) return true
+export const migrateLnPaymentsFromLndByHash = async (): Promise<true> =>
+  asyncRunInSpan(
+    "debug.migrateLnPaymentsFromLndByHash",
+    { [SemanticAttributes.CODE_FUNCTION]: "debug.migrateLnPaymentsFromLndByHash" },
+    async (): Promise<true> => {
+      lndService = LndService()
+      if (lndService instanceof Error) return true
 
-  const paymentHashes = await LedgerService().listAllPaymentHashes()
-  for await (const paymentHash of paymentHashes) {
-    if (paymentHash instanceof Error) break
+      const paymentHashes = await LedgerService().listAllPaymentHashes()
+      for await (const paymentHash of paymentHashes) {
+        const res = await asyncRunInSpan(
+          "debug.migrateLnPayment",
+          {
+            [SemanticAttributes.CODE_FUNCTION]: "debug.migrateLnPayment",
+          },
+          async (): Promise<true | LightningServiceError> => {
+            if (paymentHash instanceof Error) return paymentHash
 
-    const res = await migrateLnPayment(paymentHash)
-    if (res instanceof Error) break
-  }
-  return true
-}
+            const migrated = await migrateLnPayment(paymentHash)
+            if (migrated instanceof Error) return migrated
+
+            return true
+          },
+        )
+
+        if (res instanceof Error) break
+      }
+      return true
+    },
+  )
 
 const migrateLnPayment = async (
   paymentHash: PaymentHash,
