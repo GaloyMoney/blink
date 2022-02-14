@@ -114,3 +114,14 @@ type TestAccountsChecker = (testAccounts: TestAccount[]) => {
     phone: PhoneNumber
   }) => boolean
 }
+
+type TwoFALimits = {
+  threshold: UsdCents
+}
+
+type FeeRates = {
+  depositFeeVariable: number
+  depositFeeFixed: CurrencyBaseAmount
+  withdrawFeeVariable: number
+  withdrawFeeFixed: CurrencyBaseAmount
+}
