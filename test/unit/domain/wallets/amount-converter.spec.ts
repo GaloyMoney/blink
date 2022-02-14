@@ -1,9 +1,10 @@
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { AmountConverter, WalletCurrency } from "@domain/wallets"
-import { Dealer } from "@services/dealer"
 
-const dealerFns = Dealer()
+import { DealerPriceService } from "test/mocks/dealer-price"
+
+const dealerFns = DealerPriceService()
 
 describe("AmountConverter", () => {
   const displayPriceFns = {
@@ -141,24 +142,24 @@ describe("AmountConverter", () => {
   it("dealer buys low", async () => {
     {
       const sats = 10_000 as Satoshis
-      const result = await dealerFns.buyUsdImmediate(sats)
+      const result = await dealerFns.getCentsFromSatsForImmediateBuy(sats)
       expect(result).toBeLessThan(Number(sats) / 20)
     }
     {
       const cents = 1_000 as UsdCents
-      const result = await dealerFns.buyUsdImmediateFromCents(cents)
+      const result = await dealerFns.getSatsFromCentsForImmediateBuy(cents)
       expect(result).toBeLessThan(Number(cents) * 20)
     }
   })
   it("dealer sell high", async () => {
     {
       const cents = 1_000 as UsdCents
-      const result = await dealerFns.sellUsdImmediate(cents)
+      const result = await dealerFns.getSatsFromCentsForImmediateSell(cents)
       expect(result).toBeGreaterThan(Number(cents) * 20)
     }
     {
       const sats = 1_000_000 as Satoshis
-      const result = await dealerFns.sellUsdImmediateFromSats(sats)
+      const result = await dealerFns.getCentsFromSatsForImmediateSell(sats)
       expect(result).toBeGreaterThan(Number(sats) / 20)
     }
   })

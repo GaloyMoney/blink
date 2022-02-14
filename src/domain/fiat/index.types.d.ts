@@ -8,14 +8,6 @@ interface DisplayCurrencyConversionRate {
   fromCents: (amount: UsdCents) => DisplayCurrencyBaseAmount
 }
 
-interface DealerFns {
-  buyUsdImmediate: (amount: Satoshis) => Promise<UsdCents>
-  buyUsdImmediateFromCents: (amount: UsdCents) => Promise<Satoshis>
-  sellUsdImmediate: (amount: UsdCents) => Promise<Satoshis>
-  sellUsdImmediateFromSats: (amount: Satoshis) => Promise<UsdCents>
-  getBuyUsdQuoteFromCents: (amount: UsdCents) => Promise<Satoshis>
-}
-
 interface AmountFromSatoshis {
   sats: Satoshis
 }
@@ -41,6 +33,7 @@ type GetAmountsSendOrReceiveArgs = {
 type GetAmountsSendOrReceiveRet =
   | NotReachableError
   | NotImplementedError
+  | DealerPriceServiceError
   | {
       amountDisplayCurrency: DisplayCurrencyBaseAmount
       sats: Satoshis
