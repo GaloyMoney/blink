@@ -9,265 +9,349 @@ import * as services_price_v1_price_service_pb from "../../../services/price/v1/
 
 interface IPriceServiceService
   extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
-  getExchangeRateForImmediateUsdBuy: IPriceServiceService_IGetExchangeRateForImmediateUsdBuy
-  getExchangeRateForImmediateUsdBuyFromCents: IPriceServiceService_IGetExchangeRateForImmediateUsdBuyFromCents
-  getExchangeRateForImmediateUsdSell: IPriceServiceService_IGetExchangeRateForImmediateUsdSell
-  getExchangeRateForImmediateUsdSellFromSatoshis: IPriceServiceService_IGetExchangeRateForImmediateUsdSellFromSatoshis
-  getQuoteRateForFutureUsdBuy: IPriceServiceService_IGetQuoteRateForFutureUsdBuy
-  getQuoteRateForFutureUsdSell: IPriceServiceService_IGetQuoteRateForFutureUsdSell
+  getCentsFromSatsForImmediateBuy: IPriceServiceService_IGetCentsFromSatsForImmediateBuy
+  getCentsFromSatsForImmediateSell: IPriceServiceService_IGetCentsFromSatsForImmediateSell
+  getCentsFromSatsForFutureBuy: IPriceServiceService_IGetCentsFromSatsForFutureBuy
+  getCentsFromSatsForFutureSell: IPriceServiceService_IGetCentsFromSatsForFutureSell
+  getSatsFromCentsForImmediateBuy: IPriceServiceService_IGetSatsFromCentsForImmediateBuy
+  getSatsFromCentsForImmediateSell: IPriceServiceService_IGetSatsFromCentsForImmediateSell
+  getSatsFromCentsForFutureBuy: IPriceServiceService_IGetSatsFromCentsForFutureBuy
+  getSatsFromCentsForFutureSell: IPriceServiceService_IGetSatsFromCentsForFutureSell
 }
 
-interface IPriceServiceService_IGetExchangeRateForImmediateUsdBuy
+interface IPriceServiceService_IGetCentsFromSatsForImmediateBuy
   extends grpc.MethodDefinition<
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest,
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse
+    services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyRequest,
+    services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyResponse
   > {
-  path: "/services.price.v1.PriceService/GetExchangeRateForImmediateUsdBuy"
+  path: "/services.price.v1.PriceService/GetCentsFromSatsForImmediateBuy"
   requestStream: false
   responseStream: false
-  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest>
-  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest>
-  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse>
-  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse>
+  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyRequest>
+  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyRequest>
+  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyResponse>
+  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyResponse>
 }
-interface IPriceServiceService_IGetExchangeRateForImmediateUsdBuyFromCents
+interface IPriceServiceService_IGetCentsFromSatsForImmediateSell
   extends grpc.MethodDefinition<
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse
+    services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellRequest,
+    services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellResponse
   > {
-  path: "/services.price.v1.PriceService/GetExchangeRateForImmediateUsdBuyFromCents"
+  path: "/services.price.v1.PriceService/GetCentsFromSatsForImmediateSell"
   requestStream: false
   responseStream: false
-  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest>
-  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest>
-  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse>
-  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse>
+  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellRequest>
+  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellRequest>
+  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellResponse>
+  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellResponse>
 }
-interface IPriceServiceService_IGetExchangeRateForImmediateUsdSell
+interface IPriceServiceService_IGetCentsFromSatsForFutureBuy
   extends grpc.MethodDefinition<
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest,
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse
+    services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyRequest,
+    services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyResponse
   > {
-  path: "/services.price.v1.PriceService/GetExchangeRateForImmediateUsdSell"
+  path: "/services.price.v1.PriceService/GetCentsFromSatsForFutureBuy"
   requestStream: false
   responseStream: false
-  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest>
-  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest>
-  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse>
-  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse>
+  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyRequest>
+  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyRequest>
+  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyResponse>
+  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyResponse>
 }
-interface IPriceServiceService_IGetExchangeRateForImmediateUsdSellFromSatoshis
+interface IPriceServiceService_IGetCentsFromSatsForFutureSell
   extends grpc.MethodDefinition<
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse
+    services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellRequest,
+    services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellResponse
   > {
-  path: "/services.price.v1.PriceService/GetExchangeRateForImmediateUsdSellFromSatoshis"
+  path: "/services.price.v1.PriceService/GetCentsFromSatsForFutureSell"
   requestStream: false
   responseStream: false
-  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest>
-  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest>
-  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse>
-  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse>
+  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellRequest>
+  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellRequest>
+  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellResponse>
+  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellResponse>
 }
-interface IPriceServiceService_IGetQuoteRateForFutureUsdBuy
+interface IPriceServiceService_IGetSatsFromCentsForImmediateBuy
   extends grpc.MethodDefinition<
-    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
-    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse
+    services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyRequest,
+    services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyResponse
   > {
-  path: "/services.price.v1.PriceService/GetQuoteRateForFutureUsdBuy"
+  path: "/services.price.v1.PriceService/GetSatsFromCentsForImmediateBuy"
   requestStream: false
   responseStream: false
-  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest>
-  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest>
-  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse>
-  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse>
+  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyRequest>
+  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyRequest>
+  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyResponse>
+  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyResponse>
 }
-interface IPriceServiceService_IGetQuoteRateForFutureUsdSell
+interface IPriceServiceService_IGetSatsFromCentsForImmediateSell
   extends grpc.MethodDefinition<
-    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
-    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse
+    services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellRequest,
+    services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellResponse
   > {
-  path: "/services.price.v1.PriceService/GetQuoteRateForFutureUsdSell"
+  path: "/services.price.v1.PriceService/GetSatsFromCentsForImmediateSell"
   requestStream: false
   responseStream: false
-  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest>
-  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest>
-  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse>
-  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse>
+  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellRequest>
+  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellRequest>
+  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellResponse>
+  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellResponse>
+}
+interface IPriceServiceService_IGetSatsFromCentsForFutureBuy
+  extends grpc.MethodDefinition<
+    services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyRequest,
+    services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyResponse
+  > {
+  path: "/services.price.v1.PriceService/GetSatsFromCentsForFutureBuy"
+  requestStream: false
+  responseStream: false
+  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyRequest>
+  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyRequest>
+  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyResponse>
+  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyResponse>
+}
+interface IPriceServiceService_IGetSatsFromCentsForFutureSell
+  extends grpc.MethodDefinition<
+    services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest,
+    services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse
+  > {
+  path: "/services.price.v1.PriceService/GetSatsFromCentsForFutureSell"
+  requestStream: false
+  responseStream: false
+  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest>
+  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest>
+  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse>
+  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse>
 }
 
 export const PriceServiceService: IPriceServiceService
 
 export interface IPriceServiceServer extends grpc.UntypedServiceImplementation {
-  getExchangeRateForImmediateUsdBuy: grpc.handleUnaryCall<
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest,
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse
+  getCentsFromSatsForImmediateBuy: grpc.handleUnaryCall<
+    services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyRequest,
+    services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyResponse
   >
-  getExchangeRateForImmediateUsdBuyFromCents: grpc.handleUnaryCall<
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse
+  getCentsFromSatsForImmediateSell: grpc.handleUnaryCall<
+    services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellRequest,
+    services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellResponse
   >
-  getExchangeRateForImmediateUsdSell: grpc.handleUnaryCall<
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest,
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse
+  getCentsFromSatsForFutureBuy: grpc.handleUnaryCall<
+    services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyRequest,
+    services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyResponse
   >
-  getExchangeRateForImmediateUsdSellFromSatoshis: grpc.handleUnaryCall<
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
-    services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse
+  getCentsFromSatsForFutureSell: grpc.handleUnaryCall<
+    services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellRequest,
+    services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellResponse
   >
-  getQuoteRateForFutureUsdBuy: grpc.handleUnaryCall<
-    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
-    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse
+  getSatsFromCentsForImmediateBuy: grpc.handleUnaryCall<
+    services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyRequest,
+    services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyResponse
   >
-  getQuoteRateForFutureUsdSell: grpc.handleUnaryCall<
-    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
-    services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse
+  getSatsFromCentsForImmediateSell: grpc.handleUnaryCall<
+    services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellRequest,
+    services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellResponse
+  >
+  getSatsFromCentsForFutureBuy: grpc.handleUnaryCall<
+    services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyRequest,
+    services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyResponse
+  >
+  getSatsFromCentsForFutureSell: grpc.handleUnaryCall<
+    services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest,
+    services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse
   >
 }
 
 export interface IPriceServiceClient {
-  getExchangeRateForImmediateUsdBuy(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest,
+  getCentsFromSatsForImmediateBuy(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyRequest,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  getExchangeRateForImmediateUsdBuy(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest,
+  getCentsFromSatsForImmediateBuy(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyRequest,
     metadata: grpc.Metadata,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  getExchangeRateForImmediateUsdBuy(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest,
-    metadata: grpc.Metadata,
-    options: Partial<grpc.CallOptions>,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  getExchangeRateForImmediateUsdBuyFromCents(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  getExchangeRateForImmediateUsdBuyFromCents(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
-    metadata: grpc.Metadata,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  getExchangeRateForImmediateUsdBuyFromCents(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+  getCentsFromSatsForImmediateBuy(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyRequest,
     metadata: grpc.Metadata,
     options: Partial<grpc.CallOptions>,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  getExchangeRateForImmediateUsdSell(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest,
+  getCentsFromSatsForImmediateSell(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellRequest,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  getExchangeRateForImmediateUsdSell(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest,
+  getCentsFromSatsForImmediateSell(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellRequest,
     metadata: grpc.Metadata,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  getExchangeRateForImmediateUsdSell(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest,
-    metadata: grpc.Metadata,
-    options: Partial<grpc.CallOptions>,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  getExchangeRateForImmediateUsdSellFromSatoshis(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  getExchangeRateForImmediateUsdSellFromSatoshis(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
-    metadata: grpc.Metadata,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  getExchangeRateForImmediateUsdSellFromSatoshis(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
+  getCentsFromSatsForImmediateSell(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellRequest,
     metadata: grpc.Metadata,
     options: Partial<grpc.CallOptions>,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  getQuoteRateForFutureUsdBuy(
-    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
+  getCentsFromSatsForFutureBuy(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyRequest,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  getQuoteRateForFutureUsdBuy(
-    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
+  getCentsFromSatsForFutureBuy(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyRequest,
     metadata: grpc.Metadata,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  getQuoteRateForFutureUsdBuy(
-    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
-    metadata: grpc.Metadata,
-    options: Partial<grpc.CallOptions>,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  getQuoteRateForFutureUsdSell(
-    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  getQuoteRateForFutureUsdSell(
-    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
-    metadata: grpc.Metadata,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  getQuoteRateForFutureUsdSell(
-    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
+  getCentsFromSatsForFutureBuy(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyRequest,
     metadata: grpc.Metadata,
     options: Partial<grpc.CallOptions>,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getCentsFromSatsForFutureSell(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getCentsFromSatsForFutureSell(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getCentsFromSatsForFutureSell(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getSatsFromCentsForImmediateBuy(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getSatsFromCentsForImmediateBuy(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getSatsFromCentsForImmediateBuy(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getSatsFromCentsForImmediateSell(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getSatsFromCentsForImmediateSell(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getSatsFromCentsForImmediateSell(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getSatsFromCentsForFutureBuy(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getSatsFromCentsForFutureBuy(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getSatsFromCentsForFutureBuy(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getSatsFromCentsForFutureSell(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getSatsFromCentsForFutureSell(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getSatsFromCentsForFutureSell(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse,
     ) => void,
   ): grpc.ClientUnaryCall
 }
@@ -278,148 +362,196 @@ export class PriceServiceClient extends grpc.Client implements IPriceServiceClie
     credentials: grpc.ChannelCredentials,
     options?: Partial<grpc.ClientOptions>,
   )
-  public getExchangeRateForImmediateUsdBuy(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest,
+  public getCentsFromSatsForImmediateBuy(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyRequest,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  public getExchangeRateForImmediateUsdBuy(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest,
+  public getCentsFromSatsForImmediateBuy(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyRequest,
     metadata: grpc.Metadata,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  public getExchangeRateForImmediateUsdBuy(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest,
-    metadata: grpc.Metadata,
-    options: Partial<grpc.CallOptions>,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  public getExchangeRateForImmediateUsdBuyFromCents(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  public getExchangeRateForImmediateUsdBuyFromCents(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
-    metadata: grpc.Metadata,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  public getExchangeRateForImmediateUsdBuyFromCents(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+  public getCentsFromSatsForImmediateBuy(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyRequest,
     metadata: grpc.Metadata,
     options: Partial<grpc.CallOptions>,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  public getExchangeRateForImmediateUsdSell(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest,
+  public getCentsFromSatsForImmediateSell(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellRequest,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  public getExchangeRateForImmediateUsdSell(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest,
+  public getCentsFromSatsForImmediateSell(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellRequest,
     metadata: grpc.Metadata,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  public getExchangeRateForImmediateUsdSell(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest,
-    metadata: grpc.Metadata,
-    options: Partial<grpc.CallOptions>,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  public getExchangeRateForImmediateUsdSellFromSatoshis(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  public getExchangeRateForImmediateUsdSellFromSatoshis(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
-    metadata: grpc.Metadata,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  public getExchangeRateForImmediateUsdSellFromSatoshis(
-    request: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
+  public getCentsFromSatsForImmediateSell(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellRequest,
     metadata: grpc.Metadata,
     options: Partial<grpc.CallOptions>,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  public getQuoteRateForFutureUsdBuy(
-    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
+  public getCentsFromSatsForFutureBuy(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyRequest,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  public getQuoteRateForFutureUsdBuy(
-    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
+  public getCentsFromSatsForFutureBuy(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyRequest,
     metadata: grpc.Metadata,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyResponse,
     ) => void,
   ): grpc.ClientUnaryCall
-  public getQuoteRateForFutureUsdBuy(
-    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
-    metadata: grpc.Metadata,
-    options: Partial<grpc.CallOptions>,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  public getQuoteRateForFutureUsdSell(
-    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  public getQuoteRateForFutureUsdSell(
-    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
-    metadata: grpc.Metadata,
-    callback: (
-      error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse,
-    ) => void,
-  ): grpc.ClientUnaryCall
-  public getQuoteRateForFutureUsdSell(
-    request: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
+  public getCentsFromSatsForFutureBuy(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyRequest,
     metadata: grpc.Metadata,
     options: Partial<grpc.CallOptions>,
     callback: (
       error: grpc.ServiceError | null,
-      response: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getCentsFromSatsForFutureSell(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getCentsFromSatsForFutureSell(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getCentsFromSatsForFutureSell(
+    request: services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getSatsFromCentsForImmediateBuy(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getSatsFromCentsForImmediateBuy(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getSatsFromCentsForImmediateBuy(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getSatsFromCentsForImmediateSell(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getSatsFromCentsForImmediateSell(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getSatsFromCentsForImmediateSell(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getSatsFromCentsForFutureBuy(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getSatsFromCentsForFutureBuy(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getSatsFromCentsForFutureBuy(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getSatsFromCentsForFutureSell(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getSatsFromCentsForFutureSell(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getSatsFromCentsForFutureSell(
+    request: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse,
     ) => void,
   ): grpc.ClientUnaryCall
 }

@@ -1,24 +1,33 @@
 type DealerPriceServiceError = import("./errors").DealerPriceServiceError
 
 interface IDealerPriceService {
-  getExchangeRateForImmediateUsdBuy(
+  getCentsFromSatsForImmediateBuy(
     amountInSatoshis: Satoshis,
   ): Promise<UsdCents | DealerPriceServiceError>
-  getExchangeRateForImmediateUsdBuyFromCents(
-    amountInCents: UsdCents,
-  ): Promise<Satoshis | DealerPriceServiceError>
-  getExchangeRateForImmediateUsdSell(
-    amountInCents: UsdCents,
-  ): Promise<Satoshis | DealerPriceServiceError>
-  getExchangeRateForImmediateUsdSellFromSatoshis(
+  getCentsFromSatsForImmediateSell(
     amountInSatoshis: Satoshis,
   ): Promise<UsdCents | DealerPriceServiceError>
-  getQuoteRateForFutureUsdBuy(
+  getCentsFromSatsForFutureBuy(
     amountInSatoshis: Satoshis,
     timeToExpiryInSeconds: Seconds,
   ): Promise<UsdCents | DealerPriceServiceError>
-  getQuoteRateForFutureUsdSell(
-    amountInCents: UsdCents,
+  getCentsFromSatsForFutureSell(
+    amountInSatoshis: Satoshis,
+    timeToExpiryInSeconds: Seconds,
+  ): Promise<UsdCents | DealerPriceServiceError>
+
+  getSatsFromCentsForImmediateBuy(
+    amountInUsd: UsdCents,
+  ): Promise<Satoshis | DealerPriceServiceError>
+  getSatsFromCentsForImmediateSell(
+    amountInUsd: UsdCents,
+  ): Promise<Satoshis | DealerPriceServiceError>
+  getSatsFromCentsForFutureBuy(
+    amountInUsd: UsdCents,
+    timeToExpiryInSeconds: Seconds,
+  ): Promise<Satoshis | DealerPriceServiceError>
+  getSatsFromCentsForFutureSell(
+    amountInUsd: UsdCents,
     timeToExpiryInSeconds: Seconds,
   ): Promise<Satoshis | DealerPriceServiceError>
 }

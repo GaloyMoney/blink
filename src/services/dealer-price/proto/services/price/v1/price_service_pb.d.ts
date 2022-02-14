@@ -6,373 +6,477 @@
 
 import * as jspb from "google-protobuf"
 
-export class GetExchangeRateForImmediateUsdBuyRequest extends jspb.Message {
+export class GetCentsFromSatsForImmediateBuyRequest extends jspb.Message {
   getAmountInSatoshis(): number
-  setAmountInSatoshis(value: number): GetExchangeRateForImmediateUsdBuyRequest
+  setAmountInSatoshis(value: number): GetCentsFromSatsForImmediateBuyRequest
 
   serializeBinary(): Uint8Array
-  toObject(includeInstance?: boolean): GetExchangeRateForImmediateUsdBuyRequest.AsObject
+  toObject(includeInstance?: boolean): GetCentsFromSatsForImmediateBuyRequest.AsObject
   static toObject(
     includeInstance: boolean,
-    msg: GetExchangeRateForImmediateUsdBuyRequest,
-  ): GetExchangeRateForImmediateUsdBuyRequest.AsObject
+    msg: GetCentsFromSatsForImmediateBuyRequest,
+  ): GetCentsFromSatsForImmediateBuyRequest.AsObject
   static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
   static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
   static serializeBinaryToWriter(
-    message: GetExchangeRateForImmediateUsdBuyRequest,
+    message: GetCentsFromSatsForImmediateBuyRequest,
     writer: jspb.BinaryWriter,
   ): void
-  static deserializeBinary(bytes: Uint8Array): GetExchangeRateForImmediateUsdBuyRequest
+  static deserializeBinary(bytes: Uint8Array): GetCentsFromSatsForImmediateBuyRequest
   static deserializeBinaryFromReader(
-    message: GetExchangeRateForImmediateUsdBuyRequest,
+    message: GetCentsFromSatsForImmediateBuyRequest,
     reader: jspb.BinaryReader,
-  ): GetExchangeRateForImmediateUsdBuyRequest
+  ): GetCentsFromSatsForImmediateBuyRequest
 }
 
-export namespace GetExchangeRateForImmediateUsdBuyRequest {
+export namespace GetCentsFromSatsForImmediateBuyRequest {
   export type AsObject = {
     amountInSatoshis: number
   }
 }
 
-export class GetExchangeRateForImmediateUsdBuyFromCentsRequest extends jspb.Message {
+export class GetCentsFromSatsForImmediateBuyResponse extends jspb.Message {
   getAmountInCents(): number
-  setAmountInCents(value: number): GetExchangeRateForImmediateUsdBuyFromCentsRequest
+  setAmountInCents(value: number): GetCentsFromSatsForImmediateBuyResponse
 
   serializeBinary(): Uint8Array
-  toObject(
-    includeInstance?: boolean,
-  ): GetExchangeRateForImmediateUsdBuyFromCentsRequest.AsObject
+  toObject(includeInstance?: boolean): GetCentsFromSatsForImmediateBuyResponse.AsObject
   static toObject(
     includeInstance: boolean,
-    msg: GetExchangeRateForImmediateUsdBuyFromCentsRequest,
-  ): GetExchangeRateForImmediateUsdBuyFromCentsRequest.AsObject
+    msg: GetCentsFromSatsForImmediateBuyResponse,
+  ): GetCentsFromSatsForImmediateBuyResponse.AsObject
   static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
   static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
   static serializeBinaryToWriter(
-    message: GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+    message: GetCentsFromSatsForImmediateBuyResponse,
     writer: jspb.BinaryWriter,
   ): void
-  static deserializeBinary(
-    bytes: Uint8Array,
-  ): GetExchangeRateForImmediateUsdBuyFromCentsRequest
+  static deserializeBinary(bytes: Uint8Array): GetCentsFromSatsForImmediateBuyResponse
   static deserializeBinaryFromReader(
-    message: GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+    message: GetCentsFromSatsForImmediateBuyResponse,
     reader: jspb.BinaryReader,
-  ): GetExchangeRateForImmediateUsdBuyFromCentsRequest
+  ): GetCentsFromSatsForImmediateBuyResponse
 }
 
-export namespace GetExchangeRateForImmediateUsdBuyFromCentsRequest {
+export namespace GetCentsFromSatsForImmediateBuyResponse {
   export type AsObject = {
     amountInCents: number
   }
 }
 
-export class GetExchangeRateForImmediateUsdSellRequest extends jspb.Message {
-  getAmountInCents(): number
-  setAmountInCents(value: number): GetExchangeRateForImmediateUsdSellRequest
-
-  serializeBinary(): Uint8Array
-  toObject(includeInstance?: boolean): GetExchangeRateForImmediateUsdSellRequest.AsObject
-  static toObject(
-    includeInstance: boolean,
-    msg: GetExchangeRateForImmediateUsdSellRequest,
-  ): GetExchangeRateForImmediateUsdSellRequest.AsObject
-  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
-  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
-  static serializeBinaryToWriter(
-    message: GetExchangeRateForImmediateUsdSellRequest,
-    writer: jspb.BinaryWriter,
-  ): void
-  static deserializeBinary(bytes: Uint8Array): GetExchangeRateForImmediateUsdSellRequest
-  static deserializeBinaryFromReader(
-    message: GetExchangeRateForImmediateUsdSellRequest,
-    reader: jspb.BinaryReader,
-  ): GetExchangeRateForImmediateUsdSellRequest
-}
-
-export namespace GetExchangeRateForImmediateUsdSellRequest {
-  export type AsObject = {
-    amountInCents: number
-  }
-}
-
-export class GetExchangeRateForImmediateUsdSellFromSatoshisRequest extends jspb.Message {
+export class GetCentsFromSatsForImmediateSellRequest extends jspb.Message {
   getAmountInSatoshis(): number
-  setAmountInSatoshis(
-    value: number,
-  ): GetExchangeRateForImmediateUsdSellFromSatoshisRequest
+  setAmountInSatoshis(value: number): GetCentsFromSatsForImmediateSellRequest
 
   serializeBinary(): Uint8Array
-  toObject(
-    includeInstance?: boolean,
-  ): GetExchangeRateForImmediateUsdSellFromSatoshisRequest.AsObject
+  toObject(includeInstance?: boolean): GetCentsFromSatsForImmediateSellRequest.AsObject
   static toObject(
     includeInstance: boolean,
-    msg: GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
-  ): GetExchangeRateForImmediateUsdSellFromSatoshisRequest.AsObject
+    msg: GetCentsFromSatsForImmediateSellRequest,
+  ): GetCentsFromSatsForImmediateSellRequest.AsObject
   static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
   static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
   static serializeBinaryToWriter(
-    message: GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
+    message: GetCentsFromSatsForImmediateSellRequest,
     writer: jspb.BinaryWriter,
   ): void
-  static deserializeBinary(
-    bytes: Uint8Array,
-  ): GetExchangeRateForImmediateUsdSellFromSatoshisRequest
+  static deserializeBinary(bytes: Uint8Array): GetCentsFromSatsForImmediateSellRequest
   static deserializeBinaryFromReader(
-    message: GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
+    message: GetCentsFromSatsForImmediateSellRequest,
     reader: jspb.BinaryReader,
-  ): GetExchangeRateForImmediateUsdSellFromSatoshisRequest
+  ): GetCentsFromSatsForImmediateSellRequest
 }
 
-export namespace GetExchangeRateForImmediateUsdSellFromSatoshisRequest {
+export namespace GetCentsFromSatsForImmediateSellRequest {
   export type AsObject = {
     amountInSatoshis: number
   }
 }
 
-export class GetQuoteRateForFutureUsdBuyRequest extends jspb.Message {
+export class GetCentsFromSatsForImmediateSellResponse extends jspb.Message {
+  getAmountInCents(): number
+  setAmountInCents(value: number): GetCentsFromSatsForImmediateSellResponse
+
+  serializeBinary(): Uint8Array
+  toObject(includeInstance?: boolean): GetCentsFromSatsForImmediateSellResponse.AsObject
+  static toObject(
+    includeInstance: boolean,
+    msg: GetCentsFromSatsForImmediateSellResponse,
+  ): GetCentsFromSatsForImmediateSellResponse.AsObject
+  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
+  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
+  static serializeBinaryToWriter(
+    message: GetCentsFromSatsForImmediateSellResponse,
+    writer: jspb.BinaryWriter,
+  ): void
+  static deserializeBinary(bytes: Uint8Array): GetCentsFromSatsForImmediateSellResponse
+  static deserializeBinaryFromReader(
+    message: GetCentsFromSatsForImmediateSellResponse,
+    reader: jspb.BinaryReader,
+  ): GetCentsFromSatsForImmediateSellResponse
+}
+
+export namespace GetCentsFromSatsForImmediateSellResponse {
+  export type AsObject = {
+    amountInCents: number
+  }
+}
+
+export class GetCentsFromSatsForFutureBuyRequest extends jspb.Message {
   getAmountInSatoshis(): number
-  setAmountInSatoshis(value: number): GetQuoteRateForFutureUsdBuyRequest
+  setAmountInSatoshis(value: number): GetCentsFromSatsForFutureBuyRequest
   getTimeInSeconds(): number
-  setTimeInSeconds(value: number): GetQuoteRateForFutureUsdBuyRequest
+  setTimeInSeconds(value: number): GetCentsFromSatsForFutureBuyRequest
 
   serializeBinary(): Uint8Array
-  toObject(includeInstance?: boolean): GetQuoteRateForFutureUsdBuyRequest.AsObject
+  toObject(includeInstance?: boolean): GetCentsFromSatsForFutureBuyRequest.AsObject
   static toObject(
     includeInstance: boolean,
-    msg: GetQuoteRateForFutureUsdBuyRequest,
-  ): GetQuoteRateForFutureUsdBuyRequest.AsObject
+    msg: GetCentsFromSatsForFutureBuyRequest,
+  ): GetCentsFromSatsForFutureBuyRequest.AsObject
   static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
   static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
   static serializeBinaryToWriter(
-    message: GetQuoteRateForFutureUsdBuyRequest,
+    message: GetCentsFromSatsForFutureBuyRequest,
     writer: jspb.BinaryWriter,
   ): void
-  static deserializeBinary(bytes: Uint8Array): GetQuoteRateForFutureUsdBuyRequest
+  static deserializeBinary(bytes: Uint8Array): GetCentsFromSatsForFutureBuyRequest
   static deserializeBinaryFromReader(
-    message: GetQuoteRateForFutureUsdBuyRequest,
+    message: GetCentsFromSatsForFutureBuyRequest,
     reader: jspb.BinaryReader,
-  ): GetQuoteRateForFutureUsdBuyRequest
+  ): GetCentsFromSatsForFutureBuyRequest
 }
 
-export namespace GetQuoteRateForFutureUsdBuyRequest {
+export namespace GetCentsFromSatsForFutureBuyRequest {
   export type AsObject = {
     amountInSatoshis: number
     timeInSeconds: number
   }
 }
 
-export class GetQuoteRateForFutureUsdSellRequest extends jspb.Message {
+export class GetCentsFromSatsForFutureBuyResponse extends jspb.Message {
   getAmountInCents(): number
-  setAmountInCents(value: number): GetQuoteRateForFutureUsdSellRequest
-  getTimeInSeconds(): number
-  setTimeInSeconds(value: number): GetQuoteRateForFutureUsdSellRequest
+  setAmountInCents(value: number): GetCentsFromSatsForFutureBuyResponse
 
   serializeBinary(): Uint8Array
-  toObject(includeInstance?: boolean): GetQuoteRateForFutureUsdSellRequest.AsObject
+  toObject(includeInstance?: boolean): GetCentsFromSatsForFutureBuyResponse.AsObject
   static toObject(
     includeInstance: boolean,
-    msg: GetQuoteRateForFutureUsdSellRequest,
-  ): GetQuoteRateForFutureUsdSellRequest.AsObject
+    msg: GetCentsFromSatsForFutureBuyResponse,
+  ): GetCentsFromSatsForFutureBuyResponse.AsObject
   static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
   static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
   static serializeBinaryToWriter(
-    message: GetQuoteRateForFutureUsdSellRequest,
+    message: GetCentsFromSatsForFutureBuyResponse,
     writer: jspb.BinaryWriter,
   ): void
-  static deserializeBinary(bytes: Uint8Array): GetQuoteRateForFutureUsdSellRequest
+  static deserializeBinary(bytes: Uint8Array): GetCentsFromSatsForFutureBuyResponse
   static deserializeBinaryFromReader(
-    message: GetQuoteRateForFutureUsdSellRequest,
+    message: GetCentsFromSatsForFutureBuyResponse,
     reader: jspb.BinaryReader,
-  ): GetQuoteRateForFutureUsdSellRequest
+  ): GetCentsFromSatsForFutureBuyResponse
 }
 
-export namespace GetQuoteRateForFutureUsdSellRequest {
+export namespace GetCentsFromSatsForFutureBuyResponse {
+  export type AsObject = {
+    amountInCents: number
+  }
+}
+
+export class GetCentsFromSatsForFutureSellRequest extends jspb.Message {
+  getAmountInSatoshis(): number
+  setAmountInSatoshis(value: number): GetCentsFromSatsForFutureSellRequest
+  getTimeInSeconds(): number
+  setTimeInSeconds(value: number): GetCentsFromSatsForFutureSellRequest
+
+  serializeBinary(): Uint8Array
+  toObject(includeInstance?: boolean): GetCentsFromSatsForFutureSellRequest.AsObject
+  static toObject(
+    includeInstance: boolean,
+    msg: GetCentsFromSatsForFutureSellRequest,
+  ): GetCentsFromSatsForFutureSellRequest.AsObject
+  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
+  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
+  static serializeBinaryToWriter(
+    message: GetCentsFromSatsForFutureSellRequest,
+    writer: jspb.BinaryWriter,
+  ): void
+  static deserializeBinary(bytes: Uint8Array): GetCentsFromSatsForFutureSellRequest
+  static deserializeBinaryFromReader(
+    message: GetCentsFromSatsForFutureSellRequest,
+    reader: jspb.BinaryReader,
+  ): GetCentsFromSatsForFutureSellRequest
+}
+
+export namespace GetCentsFromSatsForFutureSellRequest {
+  export type AsObject = {
+    amountInSatoshis: number
+    timeInSeconds: number
+  }
+}
+
+export class GetCentsFromSatsForFutureSellResponse extends jspb.Message {
+  getAmountInCents(): number
+  setAmountInCents(value: number): GetCentsFromSatsForFutureSellResponse
+
+  serializeBinary(): Uint8Array
+  toObject(includeInstance?: boolean): GetCentsFromSatsForFutureSellResponse.AsObject
+  static toObject(
+    includeInstance: boolean,
+    msg: GetCentsFromSatsForFutureSellResponse,
+  ): GetCentsFromSatsForFutureSellResponse.AsObject
+  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
+  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
+  static serializeBinaryToWriter(
+    message: GetCentsFromSatsForFutureSellResponse,
+    writer: jspb.BinaryWriter,
+  ): void
+  static deserializeBinary(bytes: Uint8Array): GetCentsFromSatsForFutureSellResponse
+  static deserializeBinaryFromReader(
+    message: GetCentsFromSatsForFutureSellResponse,
+    reader: jspb.BinaryReader,
+  ): GetCentsFromSatsForFutureSellResponse
+}
+
+export namespace GetCentsFromSatsForFutureSellResponse {
+  export type AsObject = {
+    amountInCents: number
+  }
+}
+
+export class GetSatsFromCentsForImmediateBuyRequest extends jspb.Message {
+  getAmountInCents(): number
+  setAmountInCents(value: number): GetSatsFromCentsForImmediateBuyRequest
+
+  serializeBinary(): Uint8Array
+  toObject(includeInstance?: boolean): GetSatsFromCentsForImmediateBuyRequest.AsObject
+  static toObject(
+    includeInstance: boolean,
+    msg: GetSatsFromCentsForImmediateBuyRequest,
+  ): GetSatsFromCentsForImmediateBuyRequest.AsObject
+  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
+  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
+  static serializeBinaryToWriter(
+    message: GetSatsFromCentsForImmediateBuyRequest,
+    writer: jspb.BinaryWriter,
+  ): void
+  static deserializeBinary(bytes: Uint8Array): GetSatsFromCentsForImmediateBuyRequest
+  static deserializeBinaryFromReader(
+    message: GetSatsFromCentsForImmediateBuyRequest,
+    reader: jspb.BinaryReader,
+  ): GetSatsFromCentsForImmediateBuyRequest
+}
+
+export namespace GetSatsFromCentsForImmediateBuyRequest {
+  export type AsObject = {
+    amountInCents: number
+  }
+}
+
+export class GetSatsFromCentsForImmediateBuyResponse extends jspb.Message {
+  getAmountInSatoshis(): number
+  setAmountInSatoshis(value: number): GetSatsFromCentsForImmediateBuyResponse
+
+  serializeBinary(): Uint8Array
+  toObject(includeInstance?: boolean): GetSatsFromCentsForImmediateBuyResponse.AsObject
+  static toObject(
+    includeInstance: boolean,
+    msg: GetSatsFromCentsForImmediateBuyResponse,
+  ): GetSatsFromCentsForImmediateBuyResponse.AsObject
+  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
+  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
+  static serializeBinaryToWriter(
+    message: GetSatsFromCentsForImmediateBuyResponse,
+    writer: jspb.BinaryWriter,
+  ): void
+  static deserializeBinary(bytes: Uint8Array): GetSatsFromCentsForImmediateBuyResponse
+  static deserializeBinaryFromReader(
+    message: GetSatsFromCentsForImmediateBuyResponse,
+    reader: jspb.BinaryReader,
+  ): GetSatsFromCentsForImmediateBuyResponse
+}
+
+export namespace GetSatsFromCentsForImmediateBuyResponse {
+  export type AsObject = {
+    amountInSatoshis: number
+  }
+}
+
+export class GetSatsFromCentsForImmediateSellRequest extends jspb.Message {
+  getAmountInCents(): number
+  setAmountInCents(value: number): GetSatsFromCentsForImmediateSellRequest
+
+  serializeBinary(): Uint8Array
+  toObject(includeInstance?: boolean): GetSatsFromCentsForImmediateSellRequest.AsObject
+  static toObject(
+    includeInstance: boolean,
+    msg: GetSatsFromCentsForImmediateSellRequest,
+  ): GetSatsFromCentsForImmediateSellRequest.AsObject
+  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
+  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
+  static serializeBinaryToWriter(
+    message: GetSatsFromCentsForImmediateSellRequest,
+    writer: jspb.BinaryWriter,
+  ): void
+  static deserializeBinary(bytes: Uint8Array): GetSatsFromCentsForImmediateSellRequest
+  static deserializeBinaryFromReader(
+    message: GetSatsFromCentsForImmediateSellRequest,
+    reader: jspb.BinaryReader,
+  ): GetSatsFromCentsForImmediateSellRequest
+}
+
+export namespace GetSatsFromCentsForImmediateSellRequest {
+  export type AsObject = {
+    amountInCents: number
+  }
+}
+
+export class GetSatsFromCentsForImmediateSellResponse extends jspb.Message {
+  getAmountInSatoshis(): number
+  setAmountInSatoshis(value: number): GetSatsFromCentsForImmediateSellResponse
+
+  serializeBinary(): Uint8Array
+  toObject(includeInstance?: boolean): GetSatsFromCentsForImmediateSellResponse.AsObject
+  static toObject(
+    includeInstance: boolean,
+    msg: GetSatsFromCentsForImmediateSellResponse,
+  ): GetSatsFromCentsForImmediateSellResponse.AsObject
+  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
+  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
+  static serializeBinaryToWriter(
+    message: GetSatsFromCentsForImmediateSellResponse,
+    writer: jspb.BinaryWriter,
+  ): void
+  static deserializeBinary(bytes: Uint8Array): GetSatsFromCentsForImmediateSellResponse
+  static deserializeBinaryFromReader(
+    message: GetSatsFromCentsForImmediateSellResponse,
+    reader: jspb.BinaryReader,
+  ): GetSatsFromCentsForImmediateSellResponse
+}
+
+export namespace GetSatsFromCentsForImmediateSellResponse {
+  export type AsObject = {
+    amountInSatoshis: number
+  }
+}
+
+export class GetSatsFromCentsForFutureBuyRequest extends jspb.Message {
+  getAmountInCents(): number
+  setAmountInCents(value: number): GetSatsFromCentsForFutureBuyRequest
+  getTimeInSeconds(): number
+  setTimeInSeconds(value: number): GetSatsFromCentsForFutureBuyRequest
+
+  serializeBinary(): Uint8Array
+  toObject(includeInstance?: boolean): GetSatsFromCentsForFutureBuyRequest.AsObject
+  static toObject(
+    includeInstance: boolean,
+    msg: GetSatsFromCentsForFutureBuyRequest,
+  ): GetSatsFromCentsForFutureBuyRequest.AsObject
+  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
+  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
+  static serializeBinaryToWriter(
+    message: GetSatsFromCentsForFutureBuyRequest,
+    writer: jspb.BinaryWriter,
+  ): void
+  static deserializeBinary(bytes: Uint8Array): GetSatsFromCentsForFutureBuyRequest
+  static deserializeBinaryFromReader(
+    message: GetSatsFromCentsForFutureBuyRequest,
+    reader: jspb.BinaryReader,
+  ): GetSatsFromCentsForFutureBuyRequest
+}
+
+export namespace GetSatsFromCentsForFutureBuyRequest {
   export type AsObject = {
     amountInCents: number
     timeInSeconds: number
   }
 }
 
-export class GetExchangeRateForImmediateUsdBuyResponse extends jspb.Message {
-  getAmountInCents(): number
-  setAmountInCents(value: number): GetExchangeRateForImmediateUsdBuyResponse
-
-  serializeBinary(): Uint8Array
-  toObject(includeInstance?: boolean): GetExchangeRateForImmediateUsdBuyResponse.AsObject
-  static toObject(
-    includeInstance: boolean,
-    msg: GetExchangeRateForImmediateUsdBuyResponse,
-  ): GetExchangeRateForImmediateUsdBuyResponse.AsObject
-  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
-  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
-  static serializeBinaryToWriter(
-    message: GetExchangeRateForImmediateUsdBuyResponse,
-    writer: jspb.BinaryWriter,
-  ): void
-  static deserializeBinary(bytes: Uint8Array): GetExchangeRateForImmediateUsdBuyResponse
-  static deserializeBinaryFromReader(
-    message: GetExchangeRateForImmediateUsdBuyResponse,
-    reader: jspb.BinaryReader,
-  ): GetExchangeRateForImmediateUsdBuyResponse
-}
-
-export namespace GetExchangeRateForImmediateUsdBuyResponse {
-  export type AsObject = {
-    amountInCents: number
-  }
-}
-
-export class GetExchangeRateForImmediateUsdBuyFromCentsResponse extends jspb.Message {
+export class GetSatsFromCentsForFutureBuyResponse extends jspb.Message {
   getAmountInSatoshis(): number
-  setAmountInSatoshis(value: number): GetExchangeRateForImmediateUsdBuyFromCentsResponse
+  setAmountInSatoshis(value: number): GetSatsFromCentsForFutureBuyResponse
 
   serializeBinary(): Uint8Array
-  toObject(
-    includeInstance?: boolean,
-  ): GetExchangeRateForImmediateUsdBuyFromCentsResponse.AsObject
+  toObject(includeInstance?: boolean): GetSatsFromCentsForFutureBuyResponse.AsObject
   static toObject(
     includeInstance: boolean,
-    msg: GetExchangeRateForImmediateUsdBuyFromCentsResponse,
-  ): GetExchangeRateForImmediateUsdBuyFromCentsResponse.AsObject
+    msg: GetSatsFromCentsForFutureBuyResponse,
+  ): GetSatsFromCentsForFutureBuyResponse.AsObject
   static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
   static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
   static serializeBinaryToWriter(
-    message: GetExchangeRateForImmediateUsdBuyFromCentsResponse,
+    message: GetSatsFromCentsForFutureBuyResponse,
     writer: jspb.BinaryWriter,
   ): void
-  static deserializeBinary(
-    bytes: Uint8Array,
-  ): GetExchangeRateForImmediateUsdBuyFromCentsResponse
+  static deserializeBinary(bytes: Uint8Array): GetSatsFromCentsForFutureBuyResponse
   static deserializeBinaryFromReader(
-    message: GetExchangeRateForImmediateUsdBuyFromCentsResponse,
+    message: GetSatsFromCentsForFutureBuyResponse,
     reader: jspb.BinaryReader,
-  ): GetExchangeRateForImmediateUsdBuyFromCentsResponse
+  ): GetSatsFromCentsForFutureBuyResponse
 }
 
-export namespace GetExchangeRateForImmediateUsdBuyFromCentsResponse {
+export namespace GetSatsFromCentsForFutureBuyResponse {
   export type AsObject = {
     amountInSatoshis: number
   }
 }
 
-export class GetExchangeRateForImmediateUsdSellResponse extends jspb.Message {
-  getAmountInSatoshis(): number
-  setAmountInSatoshis(value: number): GetExchangeRateForImmediateUsdSellResponse
-
-  serializeBinary(): Uint8Array
-  toObject(includeInstance?: boolean): GetExchangeRateForImmediateUsdSellResponse.AsObject
-  static toObject(
-    includeInstance: boolean,
-    msg: GetExchangeRateForImmediateUsdSellResponse,
-  ): GetExchangeRateForImmediateUsdSellResponse.AsObject
-  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
-  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
-  static serializeBinaryToWriter(
-    message: GetExchangeRateForImmediateUsdSellResponse,
-    writer: jspb.BinaryWriter,
-  ): void
-  static deserializeBinary(bytes: Uint8Array): GetExchangeRateForImmediateUsdSellResponse
-  static deserializeBinaryFromReader(
-    message: GetExchangeRateForImmediateUsdSellResponse,
-    reader: jspb.BinaryReader,
-  ): GetExchangeRateForImmediateUsdSellResponse
-}
-
-export namespace GetExchangeRateForImmediateUsdSellResponse {
-  export type AsObject = {
-    amountInSatoshis: number
-  }
-}
-
-export class GetExchangeRateForImmediateUsdSellFromSatoshisResponse extends jspb.Message {
+export class GetSatsFromCentsForFutureSellRequest extends jspb.Message {
   getAmountInCents(): number
-  setAmountInCents(value: number): GetExchangeRateForImmediateUsdSellFromSatoshisResponse
+  setAmountInCents(value: number): GetSatsFromCentsForFutureSellRequest
+  getTimeInSeconds(): number
+  setTimeInSeconds(value: number): GetSatsFromCentsForFutureSellRequest
 
   serializeBinary(): Uint8Array
-  toObject(
-    includeInstance?: boolean,
-  ): GetExchangeRateForImmediateUsdSellFromSatoshisResponse.AsObject
+  toObject(includeInstance?: boolean): GetSatsFromCentsForFutureSellRequest.AsObject
   static toObject(
     includeInstance: boolean,
-    msg: GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
-  ): GetExchangeRateForImmediateUsdSellFromSatoshisResponse.AsObject
+    msg: GetSatsFromCentsForFutureSellRequest,
+  ): GetSatsFromCentsForFutureSellRequest.AsObject
   static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
   static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
   static serializeBinaryToWriter(
-    message: GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
+    message: GetSatsFromCentsForFutureSellRequest,
     writer: jspb.BinaryWriter,
   ): void
-  static deserializeBinary(
-    bytes: Uint8Array,
-  ): GetExchangeRateForImmediateUsdSellFromSatoshisResponse
+  static deserializeBinary(bytes: Uint8Array): GetSatsFromCentsForFutureSellRequest
   static deserializeBinaryFromReader(
-    message: GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
+    message: GetSatsFromCentsForFutureSellRequest,
     reader: jspb.BinaryReader,
-  ): GetExchangeRateForImmediateUsdSellFromSatoshisResponse
+  ): GetSatsFromCentsForFutureSellRequest
 }
 
-export namespace GetExchangeRateForImmediateUsdSellFromSatoshisResponse {
+export namespace GetSatsFromCentsForFutureSellRequest {
   export type AsObject = {
     amountInCents: number
+    timeInSeconds: number
   }
 }
 
-export class GetQuoteRateForFutureUsdBuyResponse extends jspb.Message {
-  getAmountInCents(): number
-  setAmountInCents(value: number): GetQuoteRateForFutureUsdBuyResponse
-
-  serializeBinary(): Uint8Array
-  toObject(includeInstance?: boolean): GetQuoteRateForFutureUsdBuyResponse.AsObject
-  static toObject(
-    includeInstance: boolean,
-    msg: GetQuoteRateForFutureUsdBuyResponse,
-  ): GetQuoteRateForFutureUsdBuyResponse.AsObject
-  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
-  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
-  static serializeBinaryToWriter(
-    message: GetQuoteRateForFutureUsdBuyResponse,
-    writer: jspb.BinaryWriter,
-  ): void
-  static deserializeBinary(bytes: Uint8Array): GetQuoteRateForFutureUsdBuyResponse
-  static deserializeBinaryFromReader(
-    message: GetQuoteRateForFutureUsdBuyResponse,
-    reader: jspb.BinaryReader,
-  ): GetQuoteRateForFutureUsdBuyResponse
-}
-
-export namespace GetQuoteRateForFutureUsdBuyResponse {
-  export type AsObject = {
-    amountInCents: number
-  }
-}
-
-export class GetQuoteRateForFutureUsdSellResponse extends jspb.Message {
+export class GetSatsFromCentsForFutureSellResponse extends jspb.Message {
   getAmountInSatoshis(): number
-  setAmountInSatoshis(value: number): GetQuoteRateForFutureUsdSellResponse
+  setAmountInSatoshis(value: number): GetSatsFromCentsForFutureSellResponse
 
   serializeBinary(): Uint8Array
-  toObject(includeInstance?: boolean): GetQuoteRateForFutureUsdSellResponse.AsObject
+  toObject(includeInstance?: boolean): GetSatsFromCentsForFutureSellResponse.AsObject
   static toObject(
     includeInstance: boolean,
-    msg: GetQuoteRateForFutureUsdSellResponse,
-  ): GetQuoteRateForFutureUsdSellResponse.AsObject
+    msg: GetSatsFromCentsForFutureSellResponse,
+  ): GetSatsFromCentsForFutureSellResponse.AsObject
   static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
   static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
   static serializeBinaryToWriter(
-    message: GetQuoteRateForFutureUsdSellResponse,
+    message: GetSatsFromCentsForFutureSellResponse,
     writer: jspb.BinaryWriter,
   ): void
-  static deserializeBinary(bytes: Uint8Array): GetQuoteRateForFutureUsdSellResponse
+  static deserializeBinary(bytes: Uint8Array): GetSatsFromCentsForFutureSellResponse
   static deserializeBinaryFromReader(
-    message: GetQuoteRateForFutureUsdSellResponse,
+    message: GetSatsFromCentsForFutureSellResponse,
     reader: jspb.BinaryReader,
-  ): GetQuoteRateForFutureUsdSellResponse
+  ): GetSatsFromCentsForFutureSellResponse
 }
 
-export namespace GetQuoteRateForFutureUsdSellResponse {
+export namespace GetSatsFromCentsForFutureSellResponse {
   export type AsObject = {
     amountInSatoshis: number
   }

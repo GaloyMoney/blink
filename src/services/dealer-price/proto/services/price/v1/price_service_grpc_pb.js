@@ -4,361 +4,458 @@
 var grpc = require("@grpc/grpc-js")
 var services_price_v1_price_service_pb = require("../../../services/price/v1/price_service_pb.js")
 
-function serialize_services_price_v1_GetExchangeRateForImmediateUsdBuyFromCentsRequest(
-  arg,
-) {
+function serialize_services_price_v1_GetCentsFromSatsForFutureBuyRequest(arg) {
   if (
     !(
       arg instanceof
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest
+      services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyRequest
     )
   ) {
     throw new Error(
-      "Expected argument of type services.price.v1.GetExchangeRateForImmediateUsdBuyFromCentsRequest",
+      "Expected argument of type services.price.v1.GetCentsFromSatsForFutureBuyRequest",
     )
   }
   return Buffer.from(arg.serializeBinary())
 }
 
-function deserialize_services_price_v1_GetExchangeRateForImmediateUsdBuyFromCentsRequest(
+function deserialize_services_price_v1_GetCentsFromSatsForFutureBuyRequest(buffer_arg) {
+  return services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyRequest.deserializeBinary(
+    new Uint8Array(buffer_arg),
+  )
+}
+
+function serialize_services_price_v1_GetCentsFromSatsForFutureBuyResponse(arg) {
+  if (
+    !(
+      arg instanceof
+      services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyResponse
+    )
+  ) {
+    throw new Error(
+      "Expected argument of type services.price.v1.GetCentsFromSatsForFutureBuyResponse",
+    )
+  }
+  return Buffer.from(arg.serializeBinary())
+}
+
+function deserialize_services_price_v1_GetCentsFromSatsForFutureBuyResponse(buffer_arg) {
+  return services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyResponse.deserializeBinary(
+    new Uint8Array(buffer_arg),
+  )
+}
+
+function serialize_services_price_v1_GetCentsFromSatsForFutureSellRequest(arg) {
+  if (
+    !(
+      arg instanceof
+      services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellRequest
+    )
+  ) {
+    throw new Error(
+      "Expected argument of type services.price.v1.GetCentsFromSatsForFutureSellRequest",
+    )
+  }
+  return Buffer.from(arg.serializeBinary())
+}
+
+function deserialize_services_price_v1_GetCentsFromSatsForFutureSellRequest(buffer_arg) {
+  return services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellRequest.deserializeBinary(
+    new Uint8Array(buffer_arg),
+  )
+}
+
+function serialize_services_price_v1_GetCentsFromSatsForFutureSellResponse(arg) {
+  if (
+    !(
+      arg instanceof
+      services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellResponse
+    )
+  ) {
+    throw new Error(
+      "Expected argument of type services.price.v1.GetCentsFromSatsForFutureSellResponse",
+    )
+  }
+  return Buffer.from(arg.serializeBinary())
+}
+
+function deserialize_services_price_v1_GetCentsFromSatsForFutureSellResponse(buffer_arg) {
+  return services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellResponse.deserializeBinary(
+    new Uint8Array(buffer_arg),
+  )
+}
+
+function serialize_services_price_v1_GetCentsFromSatsForImmediateBuyRequest(arg) {
+  if (
+    !(
+      arg instanceof
+      services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyRequest
+    )
+  ) {
+    throw new Error(
+      "Expected argument of type services.price.v1.GetCentsFromSatsForImmediateBuyRequest",
+    )
+  }
+  return Buffer.from(arg.serializeBinary())
+}
+
+function deserialize_services_price_v1_GetCentsFromSatsForImmediateBuyRequest(
   buffer_arg,
 ) {
-  return services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest.deserializeBinary(
+  return services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyRequest.deserializeBinary(
     new Uint8Array(buffer_arg),
   )
 }
 
-function serialize_services_price_v1_GetExchangeRateForImmediateUsdBuyFromCentsResponse(
-  arg,
-) {
+function serialize_services_price_v1_GetCentsFromSatsForImmediateBuyResponse(arg) {
   if (
     !(
       arg instanceof
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse
+      services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyResponse
     )
   ) {
     throw new Error(
-      "Expected argument of type services.price.v1.GetExchangeRateForImmediateUsdBuyFromCentsResponse",
+      "Expected argument of type services.price.v1.GetCentsFromSatsForImmediateBuyResponse",
     )
   }
   return Buffer.from(arg.serializeBinary())
 }
 
-function deserialize_services_price_v1_GetExchangeRateForImmediateUsdBuyFromCentsResponse(
+function deserialize_services_price_v1_GetCentsFromSatsForImmediateBuyResponse(
   buffer_arg,
 ) {
-  return services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse.deserializeBinary(
+  return services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyResponse.deserializeBinary(
     new Uint8Array(buffer_arg),
   )
 }
 
-function serialize_services_price_v1_GetExchangeRateForImmediateUsdBuyRequest(arg) {
+function serialize_services_price_v1_GetCentsFromSatsForImmediateSellRequest(arg) {
   if (
     !(
       arg instanceof
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest
+      services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellRequest
     )
   ) {
     throw new Error(
-      "Expected argument of type services.price.v1.GetExchangeRateForImmediateUsdBuyRequest",
+      "Expected argument of type services.price.v1.GetCentsFromSatsForImmediateSellRequest",
     )
   }
   return Buffer.from(arg.serializeBinary())
 }
 
-function deserialize_services_price_v1_GetExchangeRateForImmediateUsdBuyRequest(
+function deserialize_services_price_v1_GetCentsFromSatsForImmediateSellRequest(
   buffer_arg,
 ) {
-  return services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest.deserializeBinary(
+  return services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellRequest.deserializeBinary(
     new Uint8Array(buffer_arg),
   )
 }
 
-function serialize_services_price_v1_GetExchangeRateForImmediateUsdBuyResponse(arg) {
+function serialize_services_price_v1_GetCentsFromSatsForImmediateSellResponse(arg) {
   if (
     !(
       arg instanceof
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse
+      services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellResponse
     )
   ) {
     throw new Error(
-      "Expected argument of type services.price.v1.GetExchangeRateForImmediateUsdBuyResponse",
+      "Expected argument of type services.price.v1.GetCentsFromSatsForImmediateSellResponse",
     )
   }
   return Buffer.from(arg.serializeBinary())
 }
 
-function deserialize_services_price_v1_GetExchangeRateForImmediateUsdBuyResponse(
+function deserialize_services_price_v1_GetCentsFromSatsForImmediateSellResponse(
   buffer_arg,
 ) {
-  return services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse.deserializeBinary(
+  return services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellResponse.deserializeBinary(
     new Uint8Array(buffer_arg),
   )
 }
 
-function serialize_services_price_v1_GetExchangeRateForImmediateUsdSellFromSatoshisRequest(
-  arg,
-) {
+function serialize_services_price_v1_GetSatsFromCentsForFutureBuyRequest(arg) {
   if (
     !(
       arg instanceof
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest
+      services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyRequest
     )
   ) {
     throw new Error(
-      "Expected argument of type services.price.v1.GetExchangeRateForImmediateUsdSellFromSatoshisRequest",
+      "Expected argument of type services.price.v1.GetSatsFromCentsForFutureBuyRequest",
     )
   }
   return Buffer.from(arg.serializeBinary())
 }
 
-function deserialize_services_price_v1_GetExchangeRateForImmediateUsdSellFromSatoshisRequest(
+function deserialize_services_price_v1_GetSatsFromCentsForFutureBuyRequest(buffer_arg) {
+  return services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyRequest.deserializeBinary(
+    new Uint8Array(buffer_arg),
+  )
+}
+
+function serialize_services_price_v1_GetSatsFromCentsForFutureBuyResponse(arg) {
+  if (
+    !(
+      arg instanceof
+      services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyResponse
+    )
+  ) {
+    throw new Error(
+      "Expected argument of type services.price.v1.GetSatsFromCentsForFutureBuyResponse",
+    )
+  }
+  return Buffer.from(arg.serializeBinary())
+}
+
+function deserialize_services_price_v1_GetSatsFromCentsForFutureBuyResponse(buffer_arg) {
+  return services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyResponse.deserializeBinary(
+    new Uint8Array(buffer_arg),
+  )
+}
+
+function serialize_services_price_v1_GetSatsFromCentsForFutureSellRequest(arg) {
+  if (
+    !(
+      arg instanceof
+      services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest
+    )
+  ) {
+    throw new Error(
+      "Expected argument of type services.price.v1.GetSatsFromCentsForFutureSellRequest",
+    )
+  }
+  return Buffer.from(arg.serializeBinary())
+}
+
+function deserialize_services_price_v1_GetSatsFromCentsForFutureSellRequest(buffer_arg) {
+  return services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest.deserializeBinary(
+    new Uint8Array(buffer_arg),
+  )
+}
+
+function serialize_services_price_v1_GetSatsFromCentsForFutureSellResponse(arg) {
+  if (
+    !(
+      arg instanceof
+      services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse
+    )
+  ) {
+    throw new Error(
+      "Expected argument of type services.price.v1.GetSatsFromCentsForFutureSellResponse",
+    )
+  }
+  return Buffer.from(arg.serializeBinary())
+}
+
+function deserialize_services_price_v1_GetSatsFromCentsForFutureSellResponse(buffer_arg) {
+  return services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse.deserializeBinary(
+    new Uint8Array(buffer_arg),
+  )
+}
+
+function serialize_services_price_v1_GetSatsFromCentsForImmediateBuyRequest(arg) {
+  if (
+    !(
+      arg instanceof
+      services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyRequest
+    )
+  ) {
+    throw new Error(
+      "Expected argument of type services.price.v1.GetSatsFromCentsForImmediateBuyRequest",
+    )
+  }
+  return Buffer.from(arg.serializeBinary())
+}
+
+function deserialize_services_price_v1_GetSatsFromCentsForImmediateBuyRequest(
   buffer_arg,
 ) {
-  return services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest.deserializeBinary(
+  return services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyRequest.deserializeBinary(
     new Uint8Array(buffer_arg),
   )
 }
 
-function serialize_services_price_v1_GetExchangeRateForImmediateUsdSellFromSatoshisResponse(
-  arg,
-) {
+function serialize_services_price_v1_GetSatsFromCentsForImmediateBuyResponse(arg) {
   if (
     !(
       arg instanceof
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse
+      services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyResponse
     )
   ) {
     throw new Error(
-      "Expected argument of type services.price.v1.GetExchangeRateForImmediateUsdSellFromSatoshisResponse",
+      "Expected argument of type services.price.v1.GetSatsFromCentsForImmediateBuyResponse",
     )
   }
   return Buffer.from(arg.serializeBinary())
 }
 
-function deserialize_services_price_v1_GetExchangeRateForImmediateUsdSellFromSatoshisResponse(
+function deserialize_services_price_v1_GetSatsFromCentsForImmediateBuyResponse(
   buffer_arg,
 ) {
-  return services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse.deserializeBinary(
+  return services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyResponse.deserializeBinary(
     new Uint8Array(buffer_arg),
   )
 }
 
-function serialize_services_price_v1_GetExchangeRateForImmediateUsdSellRequest(arg) {
+function serialize_services_price_v1_GetSatsFromCentsForImmediateSellRequest(arg) {
   if (
     !(
       arg instanceof
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest
+      services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellRequest
     )
   ) {
     throw new Error(
-      "Expected argument of type services.price.v1.GetExchangeRateForImmediateUsdSellRequest",
+      "Expected argument of type services.price.v1.GetSatsFromCentsForImmediateSellRequest",
     )
   }
   return Buffer.from(arg.serializeBinary())
 }
 
-function deserialize_services_price_v1_GetExchangeRateForImmediateUsdSellRequest(
+function deserialize_services_price_v1_GetSatsFromCentsForImmediateSellRequest(
   buffer_arg,
 ) {
-  return services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest.deserializeBinary(
+  return services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellRequest.deserializeBinary(
     new Uint8Array(buffer_arg),
   )
 }
 
-function serialize_services_price_v1_GetExchangeRateForImmediateUsdSellResponse(arg) {
+function serialize_services_price_v1_GetSatsFromCentsForImmediateSellResponse(arg) {
   if (
     !(
       arg instanceof
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse
+      services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellResponse
     )
   ) {
     throw new Error(
-      "Expected argument of type services.price.v1.GetExchangeRateForImmediateUsdSellResponse",
+      "Expected argument of type services.price.v1.GetSatsFromCentsForImmediateSellResponse",
     )
   }
   return Buffer.from(arg.serializeBinary())
 }
 
-function deserialize_services_price_v1_GetExchangeRateForImmediateUsdSellResponse(
+function deserialize_services_price_v1_GetSatsFromCentsForImmediateSellResponse(
   buffer_arg,
 ) {
-  return services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse.deserializeBinary(
-    new Uint8Array(buffer_arg),
-  )
-}
-
-function serialize_services_price_v1_GetQuoteRateForFutureUsdBuyRequest(arg) {
-  if (
-    !(
-      arg instanceof services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest
-    )
-  ) {
-    throw new Error(
-      "Expected argument of type services.price.v1.GetQuoteRateForFutureUsdBuyRequest",
-    )
-  }
-  return Buffer.from(arg.serializeBinary())
-}
-
-function deserialize_services_price_v1_GetQuoteRateForFutureUsdBuyRequest(buffer_arg) {
-  return services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest.deserializeBinary(
-    new Uint8Array(buffer_arg),
-  )
-}
-
-function serialize_services_price_v1_GetQuoteRateForFutureUsdBuyResponse(arg) {
-  if (
-    !(
-      arg instanceof
-      services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse
-    )
-  ) {
-    throw new Error(
-      "Expected argument of type services.price.v1.GetQuoteRateForFutureUsdBuyResponse",
-    )
-  }
-  return Buffer.from(arg.serializeBinary())
-}
-
-function deserialize_services_price_v1_GetQuoteRateForFutureUsdBuyResponse(buffer_arg) {
-  return services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse.deserializeBinary(
-    new Uint8Array(buffer_arg),
-  )
-}
-
-function serialize_services_price_v1_GetQuoteRateForFutureUsdSellRequest(arg) {
-  if (
-    !(
-      arg instanceof
-      services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest
-    )
-  ) {
-    throw new Error(
-      "Expected argument of type services.price.v1.GetQuoteRateForFutureUsdSellRequest",
-    )
-  }
-  return Buffer.from(arg.serializeBinary())
-}
-
-function deserialize_services_price_v1_GetQuoteRateForFutureUsdSellRequest(buffer_arg) {
-  return services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest.deserializeBinary(
-    new Uint8Array(buffer_arg),
-  )
-}
-
-function serialize_services_price_v1_GetQuoteRateForFutureUsdSellResponse(arg) {
-  if (
-    !(
-      arg instanceof
-      services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse
-    )
-  ) {
-    throw new Error(
-      "Expected argument of type services.price.v1.GetQuoteRateForFutureUsdSellResponse",
-    )
-  }
-  return Buffer.from(arg.serializeBinary())
-}
-
-function deserialize_services_price_v1_GetQuoteRateForFutureUsdSellResponse(buffer_arg) {
-  return services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse.deserializeBinary(
+  return services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellResponse.deserializeBinary(
     new Uint8Array(buffer_arg),
   )
 }
 
 var PriceServiceService = (exports.PriceServiceService = {
-  getExchangeRateForImmediateUsdBuy: {
-    path: "/services.price.v1.PriceService/GetExchangeRateForImmediateUsdBuy",
+  getCentsFromSatsForImmediateBuy: {
+    path: "/services.price.v1.PriceService/GetCentsFromSatsForImmediateBuy",
     requestStream: false,
     responseStream: false,
     requestType:
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyRequest,
+      services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyRequest,
     responseType:
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyResponse,
-    requestSerialize:
-      serialize_services_price_v1_GetExchangeRateForImmediateUsdBuyRequest,
+      services_price_v1_price_service_pb.GetCentsFromSatsForImmediateBuyResponse,
+    requestSerialize: serialize_services_price_v1_GetCentsFromSatsForImmediateBuyRequest,
     requestDeserialize:
-      deserialize_services_price_v1_GetExchangeRateForImmediateUsdBuyRequest,
+      deserialize_services_price_v1_GetCentsFromSatsForImmediateBuyRequest,
     responseSerialize:
-      serialize_services_price_v1_GetExchangeRateForImmediateUsdBuyResponse,
+      serialize_services_price_v1_GetCentsFromSatsForImmediateBuyResponse,
     responseDeserialize:
-      deserialize_services_price_v1_GetExchangeRateForImmediateUsdBuyResponse,
+      deserialize_services_price_v1_GetCentsFromSatsForImmediateBuyResponse,
   },
-  getExchangeRateForImmediateUsdBuyFromCents: {
-    path: "/services.price.v1.PriceService/GetExchangeRateForImmediateUsdBuyFromCents",
+  getCentsFromSatsForImmediateSell: {
+    path: "/services.price.v1.PriceService/GetCentsFromSatsForImmediateSell",
     requestStream: false,
     responseStream: false,
     requestType:
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+      services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellRequest,
     responseType:
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdBuyFromCentsResponse,
-    requestSerialize:
-      serialize_services_price_v1_GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+      services_price_v1_price_service_pb.GetCentsFromSatsForImmediateSellResponse,
+    requestSerialize: serialize_services_price_v1_GetCentsFromSatsForImmediateSellRequest,
     requestDeserialize:
-      deserialize_services_price_v1_GetExchangeRateForImmediateUsdBuyFromCentsRequest,
+      deserialize_services_price_v1_GetCentsFromSatsForImmediateSellRequest,
     responseSerialize:
-      serialize_services_price_v1_GetExchangeRateForImmediateUsdBuyFromCentsResponse,
+      serialize_services_price_v1_GetCentsFromSatsForImmediateSellResponse,
     responseDeserialize:
-      deserialize_services_price_v1_GetExchangeRateForImmediateUsdBuyFromCentsResponse,
+      deserialize_services_price_v1_GetCentsFromSatsForImmediateSellResponse,
   },
-  getExchangeRateForImmediateUsdSell: {
-    path: "/services.price.v1.PriceService/GetExchangeRateForImmediateUsdSell",
+  getCentsFromSatsForFutureBuy: {
+    path: "/services.price.v1.PriceService/GetCentsFromSatsForFutureBuy",
+    requestStream: false,
+    responseStream: false,
+    requestType: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyRequest,
+    responseType: services_price_v1_price_service_pb.GetCentsFromSatsForFutureBuyResponse,
+    requestSerialize: serialize_services_price_v1_GetCentsFromSatsForFutureBuyRequest,
+    requestDeserialize: deserialize_services_price_v1_GetCentsFromSatsForFutureBuyRequest,
+    responseSerialize: serialize_services_price_v1_GetCentsFromSatsForFutureBuyResponse,
+    responseDeserialize:
+      deserialize_services_price_v1_GetCentsFromSatsForFutureBuyResponse,
+  },
+  getCentsFromSatsForFutureSell: {
+    path: "/services.price.v1.PriceService/GetCentsFromSatsForFutureSell",
+    requestStream: false,
+    responseStream: false,
+    requestType: services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellRequest,
+    responseType:
+      services_price_v1_price_service_pb.GetCentsFromSatsForFutureSellResponse,
+    requestSerialize: serialize_services_price_v1_GetCentsFromSatsForFutureSellRequest,
+    requestDeserialize:
+      deserialize_services_price_v1_GetCentsFromSatsForFutureSellRequest,
+    responseSerialize: serialize_services_price_v1_GetCentsFromSatsForFutureSellResponse,
+    responseDeserialize:
+      deserialize_services_price_v1_GetCentsFromSatsForFutureSellResponse,
+  },
+  getSatsFromCentsForImmediateBuy: {
+    path: "/services.price.v1.PriceService/GetSatsFromCentsForImmediateBuy",
     requestStream: false,
     responseStream: false,
     requestType:
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellRequest,
+      services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyRequest,
     responseType:
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellResponse,
-    requestSerialize:
-      serialize_services_price_v1_GetExchangeRateForImmediateUsdSellRequest,
+      services_price_v1_price_service_pb.GetSatsFromCentsForImmediateBuyResponse,
+    requestSerialize: serialize_services_price_v1_GetSatsFromCentsForImmediateBuyRequest,
     requestDeserialize:
-      deserialize_services_price_v1_GetExchangeRateForImmediateUsdSellRequest,
+      deserialize_services_price_v1_GetSatsFromCentsForImmediateBuyRequest,
     responseSerialize:
-      serialize_services_price_v1_GetExchangeRateForImmediateUsdSellResponse,
+      serialize_services_price_v1_GetSatsFromCentsForImmediateBuyResponse,
     responseDeserialize:
-      deserialize_services_price_v1_GetExchangeRateForImmediateUsdSellResponse,
+      deserialize_services_price_v1_GetSatsFromCentsForImmediateBuyResponse,
   },
-  getExchangeRateForImmediateUsdSellFromSatoshis: {
-    path: "/services.price.v1.PriceService/GetExchangeRateForImmediateUsdSellFromSatoshis",
+  getSatsFromCentsForImmediateSell: {
+    path: "/services.price.v1.PriceService/GetSatsFromCentsForImmediateSell",
     requestStream: false,
     responseStream: false,
     requestType:
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
+      services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellRequest,
     responseType:
-      services_price_v1_price_service_pb.GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
-    requestSerialize:
-      serialize_services_price_v1_GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
+      services_price_v1_price_service_pb.GetSatsFromCentsForImmediateSellResponse,
+    requestSerialize: serialize_services_price_v1_GetSatsFromCentsForImmediateSellRequest,
     requestDeserialize:
-      deserialize_services_price_v1_GetExchangeRateForImmediateUsdSellFromSatoshisRequest,
+      deserialize_services_price_v1_GetSatsFromCentsForImmediateSellRequest,
     responseSerialize:
-      serialize_services_price_v1_GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
+      serialize_services_price_v1_GetSatsFromCentsForImmediateSellResponse,
     responseDeserialize:
-      deserialize_services_price_v1_GetExchangeRateForImmediateUsdSellFromSatoshisResponse,
+      deserialize_services_price_v1_GetSatsFromCentsForImmediateSellResponse,
   },
-  getQuoteRateForFutureUsdBuy: {
-    path: "/services.price.v1.PriceService/GetQuoteRateForFutureUsdBuy",
+  getSatsFromCentsForFutureBuy: {
+    path: "/services.price.v1.PriceService/GetSatsFromCentsForFutureBuy",
     requestStream: false,
     responseStream: false,
-    requestType: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyRequest,
-    responseType: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdBuyResponse,
-    requestSerialize: serialize_services_price_v1_GetQuoteRateForFutureUsdBuyRequest,
-    requestDeserialize: deserialize_services_price_v1_GetQuoteRateForFutureUsdBuyRequest,
-    responseSerialize: serialize_services_price_v1_GetQuoteRateForFutureUsdBuyResponse,
+    requestType: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyRequest,
+    responseType: services_price_v1_price_service_pb.GetSatsFromCentsForFutureBuyResponse,
+    requestSerialize: serialize_services_price_v1_GetSatsFromCentsForFutureBuyRequest,
+    requestDeserialize: deserialize_services_price_v1_GetSatsFromCentsForFutureBuyRequest,
+    responseSerialize: serialize_services_price_v1_GetSatsFromCentsForFutureBuyResponse,
     responseDeserialize:
-      deserialize_services_price_v1_GetQuoteRateForFutureUsdBuyResponse,
+      deserialize_services_price_v1_GetSatsFromCentsForFutureBuyResponse,
   },
-  getQuoteRateForFutureUsdSell: {
-    path: "/services.price.v1.PriceService/GetQuoteRateForFutureUsdSell",
+  getSatsFromCentsForFutureSell: {
+    path: "/services.price.v1.PriceService/GetSatsFromCentsForFutureSell",
     requestStream: false,
     responseStream: false,
-    requestType: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellRequest,
-    responseType: services_price_v1_price_service_pb.GetQuoteRateForFutureUsdSellResponse,
-    requestSerialize: serialize_services_price_v1_GetQuoteRateForFutureUsdSellRequest,
-    requestDeserialize: deserialize_services_price_v1_GetQuoteRateForFutureUsdSellRequest,
-    responseSerialize: serialize_services_price_v1_GetQuoteRateForFutureUsdSellResponse,
+    requestType: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest,
+    responseType:
+      services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse,
+    requestSerialize: serialize_services_price_v1_GetSatsFromCentsForFutureSellRequest,
+    requestDeserialize:
+      deserialize_services_price_v1_GetSatsFromCentsForFutureSellRequest,
+    responseSerialize: serialize_services_price_v1_GetSatsFromCentsForFutureSellResponse,
     responseDeserialize:
-      deserialize_services_price_v1_GetQuoteRateForFutureUsdSellResponse,
+      deserialize_services_price_v1_GetSatsFromCentsForFutureSellResponse,
   },
 })
 
