@@ -179,7 +179,7 @@ const addIntraledgerTxTransfer = async ({
       journalEntry.transactionIds.map((_id) =>
         txMetadataRepo.persistNew({
           id: _id,
-          ledgerTxMetadata: { hash: paymentHash },
+          hash: paymentHash,
         }),
       )
 
@@ -218,7 +218,7 @@ const addIntraledgerTxTransfer = async ({
       journalEntry.transactionIds.map((_id) =>
         txMetadataRepo.persistNew({
           id: _id,
-          ledgerTxMetadata: { hash: paymentHash },
+          hash: paymentHash,
         }),
       )
 
@@ -264,7 +264,7 @@ const addIntraledgerTxTransfer = async ({
       journalEntry.transactionIds.map((_id) =>
         txMetadataRepo.persistNew({
           id: _id,
-          ledgerTxMetadata: { hash: paymentHash },
+          hash: paymentHash,
         }),
       )
 
@@ -311,7 +311,7 @@ const addIntraledgerTxTransfer = async ({
       journalEntry.transactionIds.map((_id) =>
         txMetadataRepo.persistNew({
           id: _id,
-          ledgerTxMetadata: { hash: paymentHash },
+          hash: paymentHash,
         }),
       )
 

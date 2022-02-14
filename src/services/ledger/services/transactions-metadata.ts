@@ -22,14 +22,12 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       return new UnknownRepositoryError(err)
     }
   }
-  const persistNew = async ({
-    id,
-    ledgerTxMetadata,
-  }: PersistNewLedgerTransactionMetadataArgs): Promise<
-    LedgerTransactionMetadata | RepositoryError
-  > => {
+  const persistNew = async (
+    ledgerTxMetadata: LedgerTransactionMetadata,
+  ): Promise<LedgerTransactionMetadata | RepositoryError> => {
     try {
-      return TransactionMetadata.create({ _id: id, ...ledgerTxMetadata })
+      const { id, ...metadata } = ledgerTxMetadata
+      return TransactionMetadata.create({ _id: id, ...metadata })
     } catch (err) {
       return new UnknownRepositoryError(err)
     }

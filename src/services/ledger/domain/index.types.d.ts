@@ -22,11 +22,6 @@ type LedgerTransactionMetadata = BaseLedgerTransactionMetadata &
     | IntraledgerLedgerTransactionMetadataUpdate
   )
 
-type PersistNewLedgerTransactionMetadataArgs = {
-  id: LedgerTransactionId
-  ledgerTxMetadata: LedgerTransactionMetadata
-}
-
 interface ITransactionsMetadataRepository {
   updateByHash(
     ledgerTxMetadata:
@@ -34,7 +29,7 @@ interface ITransactionsMetadataRepository {
       | LnLedgerTransactionMetadataUpdate,
   ): Promise<true | RepositoryError>
   persistNew(
-    args: PersistNewLedgerTransactionMetadataArgs,
+    ledgerTxMetadata: LedgerTransactionMetadata,
   ): Promise<LedgerTransactionMetadata | RepositoryError>
   findById(id: LedgerTransactionId): Promise<LedgerTransactionMetadata | RepositoryError>
 }

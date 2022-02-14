@@ -165,10 +165,8 @@ const addReceiptNoFee = async ({
       journalEntry.transactionIds.map((_id) =>
         txMetadataRepo.persistNew({
           id: _id,
-          ledgerTxMetadata: {
-            hash: metadata.hash,
-            ...(revealedPreImage ? { revealedPreImage } : {}),
-          },
+          hash: metadata.hash,
+          revealedPreImage,
         }),
       )
 
@@ -207,7 +205,7 @@ const addReceiptNoFee = async ({
       journalEntry.transactionIds.map((_id) =>
         txMetadataRepo.persistNew({
           id: _id,
-          ledgerTxMetadata: { hash: metaInput.hash },
+          hash: metaInput.hash,
         }),
       )
 
@@ -255,7 +253,7 @@ const addReceiptFee = async ({
     journalEntry.transactionIds.map((_id) =>
       txMetadataRepo.persistNew({
         id: _id,
-        ledgerTxMetadata: { hash: metadata.hash },
+        hash: metadata.hash,
       }),
     )
 

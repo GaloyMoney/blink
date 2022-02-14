@@ -142,7 +142,7 @@ export const send = {
       journalEntry.transactionIds.map((_id) =>
         txMetadataRepo.persistNew({
           id: _id,
-          ledgerTxMetadata: { hash: paymentHash },
+          hash: paymentHash,
         }),
       )
     } catch (err) {
@@ -182,7 +182,7 @@ const addSendNoInternalFee = async ({
       journalEntry.transactionIds.map((_id) =>
         txMetadataRepo.persistNew({
           id: _id,
-          ledgerTxMetadata: { hash: metaInput.hash },
+          hash: metadata.hash,
         }),
       )
 
@@ -220,7 +220,7 @@ const addSendNoInternalFee = async ({
       journalEntry.transactionIds.map((_id) =>
         txMetadataRepo.persistNew({
           id: _id,
-          ledgerTxMetadata: { hash: metaInput.hash },
+          hash: metaInput.hash,
         }),
       )
 
@@ -269,7 +269,7 @@ const addSendInternalFee = async ({
     journalEntry.transactionIds.map((_id) =>
       txMetadataRepo.persistNew({
         id: _id,
-        ledgerTxMetadata: { hash: metadata.hash },
+        hash: metadata.hash,
       }),
     )
 
