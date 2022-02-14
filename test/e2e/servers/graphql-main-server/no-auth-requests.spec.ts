@@ -1,7 +1,7 @@
 import { yamlConfig, JWT_SECRET } from "@config"
 import * as jwt from "jsonwebtoken"
 
-import { RateLimitConfig } from "@domain/rate-limit"
+import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import {
   UserLoginIpRateLimiterExceededError,
   UserLoginPhoneRateLimiterExceededError,
@@ -18,20 +18,15 @@ import MAIN from "./queries/main.gql"
 
 import {
   clearAccountLocks,
-  clearLimiters,
-  resetUserPhoneCodeAttemptIp,
-  resetUserPhoneCodeAttemptPhone,
-  resetUserLoginIpRateLimits,
-  resetUserLoginPhoneRateLimits,
-  resetUserPhoneCodeAttemptPhoneMinIntervalLimits,
+  clearLimitersWithExclusions,
   startServer,
   killServer,
   createApolloClient,
   defaultTestClientConfig,
   PID,
-  localIpAddress,
   initializeTestingState,
   defaultStateConfig,
+  clearLimiters,
 } from "test/helpers"
 
 let correctCode: PhoneCode,
@@ -247,22 +242,14 @@ const testPhoneCodeAttemptPerPhoneMinInterval = async (mutation) => {
   } = RateLimitConfig.requestPhoneCodeAttemptPerPhoneMinInterval
 
   // Reset limiter
-  const reset = await resetUserPhoneCodeAttemptPhoneMinIntervalLimits(phone)
-  if (reset instanceof Error) throw reset
+  await clearLimiters()
 
   // Exhaust limiter
   const input = { phone }
   for (let i = 0; i < points; i++) {
-    {
-      const reset = await resetUserPhoneCodeAttemptPhone(phone)
-
-      if (reset instanceof Error) throw reset
-    }
-    {
-      const reset = await resetUserPhoneCodeAttemptIp(localIpAddress)
-
-      if (reset instanceof Error) throw reset
-    }
+    await clearLimitersWithExclusions([
+      RateLimitPrefix.requestPhoneCodeAttemptPerPhoneMinInterval,
+    ])
 
     const {
       data: {
@@ -288,20 +275,12 @@ const testPhoneCodeAttemptPerPhone = async (mutation) => {
   } = RateLimitConfig.requestPhoneCodeAttemptPerPhone
 
   // Reset limiter
-  const reset = await resetUserPhoneCodeAttemptPhone(phone)
-  if (reset instanceof Error) throw reset
+  await clearLimiters()
 
   // Exhaust limiter
   const input = { phone }
   for (let i = 0; i < points; i++) {
-    {
-      const reset = await resetUserPhoneCodeAttemptPhoneMinIntervalLimits(phone)
-      if (reset instanceof Error) throw reset
-    }
-    {
-      const reset = await resetUserPhoneCodeAttemptIp(localIpAddress)
-      if (reset instanceof Error) throw reset
-    }
+    await clearLimitersWithExclusions([RateLimitPrefix.requestPhoneCodeAttemptPerPhone])
 
     const {
       data: {
@@ -327,26 +306,19 @@ const testPhoneCodeAttemptPerIp = async (mutation) => {
   } = RateLimitConfig.requestPhoneCodeAttemptPerIp
 
   // Reset limiter
-  const reset = await resetUserPhoneCodeAttemptIp(localIpAddress)
-  if (reset instanceof Error) throw reset
+  await clearLimiters()
 
   // Exhaust limiter
   const input = { phone }
   for (let i = 0; i < points; i++) {
-    {
-      const reset = await resetUserPhoneCodeAttemptPhoneMinIntervalLimits(phone)
-      if (reset instanceof Error) throw reset
-    }
-    {
-      const reset = await resetUserPhoneCodeAttemptPhone(phone)
-      if (reset instanceof Error) throw reset
-    }
+    await clearLimitersWithExclusions([RateLimitPrefix.requestPhoneCodeAttemptPerIp])
 
+    const response = await apolloClient.mutate({ mutation, variables: { input } })
     const {
       data: {
         userRequestAuthCode: { success },
       },
-    } = await apolloClient.mutate({ mutation, variables: { input } })
+    } = response
     expect(success).toBeTruthy()
   }
 
@@ -368,8 +340,6 @@ const testRateLimitLoginByPhone = async ({
   expectedMessage: string
   mutation: DocumentNode
 }) => {
-  const { phone } = input
-
   // Fetch limiter config
   const {
     limits: { points },
@@ -377,11 +347,12 @@ const testRateLimitLoginByPhone = async ({
   } = RateLimitConfig.failedLoginAttemptPerPhone
 
   // Reset limiter
-  const reset = await resetUserLoginPhoneRateLimits(phone)
-  if (reset instanceof Error) throw reset
+  await clearLimiters()
 
   // Exhaust limiter
   for (let i = 0; i < points; i++) {
+    await clearLimitersWithExclusions([RateLimitPrefix.failedLoginAttemptPerPhone])
+
     const result = await apolloClient.mutate({ mutation, variables: { input } })
     expect(result.data.userLogin.errors).toEqual(
       expect.arrayContaining([expect.objectContaining({ message: expectedMessage })]),
@@ -407,8 +378,6 @@ const testRateLimitLoginByIp = async ({
   expectedMessage: string
   mutation: DocumentNode
 }) => {
-  const { phone } = input
-
   // Fetch limiter config
   const {
     limits: { points },
@@ -416,23 +385,17 @@ const testRateLimitLoginByIp = async ({
   } = RateLimitConfig.failedLoginAttemptPerIp
 
   // Reset limiter
-  const resetIp = await resetUserLoginIpRateLimits(localIpAddress)
-  if (resetIp instanceof Error) throw resetIp
+  await clearLimiters()
 
   // Exhaust limiter
   for (let i = 0; i < points; i++) {
-    const resetPhone = await resetUserLoginPhoneRateLimits(phone)
-    if (resetPhone instanceof Error) throw resetPhone
+    await clearLimitersWithExclusions([RateLimitPrefix.failedLoginAttemptPerIp])
 
     const result = await apolloClient.mutate({ mutation, variables: { input } })
     expect(result.data.userLogin.errors).toEqual(
       expect.arrayContaining([expect.objectContaining({ message: expectedMessage })]),
     )
   }
-
-  // Check limiter is exhausted
-  const resetPhone = await resetUserLoginPhoneRateLimits(phone)
-  if (resetPhone instanceof Error) throw resetPhone
 
   const expectedErrorMessage =
     "Too many login attempts on same network, please wait for a while and try again."

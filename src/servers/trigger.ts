@@ -139,18 +139,21 @@ export const onInvoiceUpdate = async (invoice: GetInvoiceResult) => {
   await Wallets.updatePendingInvoiceByPaymentHash({ paymentHash, logger })
 }
 
+export const publishSingleCurrentPrice = async () => {
+  try {
+    const displayCurrencyPerSat = await Prices.getCurrentPrice()
+    if (displayCurrencyPerSat instanceof Error) throw displayCurrencyPerSat
+
+    NotificationsService(logger).priceUpdate(displayCurrencyPerSat)
+  } catch (err) {
+    logger.error({ err }, "can't publish the price")
+  }
+}
+
 const publishCurrentPrice = () => {
   const interval = 1000 * 30
-  const notificationsService = NotificationsService(logger)
   return setInterval(async () => {
-    try {
-      const displayCurrencyPerSat = await Prices.getCurrentPrice()
-      if (displayCurrencyPerSat instanceof Error) throw displayCurrencyPerSat
-
-      notificationsService.priceUpdate(displayCurrencyPerSat)
-    } catch (err) {
-      logger.error({ err }, "can't publish the price")
-    }
+    await publishSingleCurrentPrice()
   }, interval)
 }
 
