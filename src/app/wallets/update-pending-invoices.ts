@@ -4,7 +4,7 @@ import { CouldNotFindError } from "@domain/errors"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { AmountConverter, DepositFeeCalculator, WalletCurrency } from "@domain/wallets"
 import { LockService } from "@services"
-import { Dealer } from "@services/dealer"
+import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository } from "@services/mongoose"
@@ -162,7 +162,7 @@ const updatePendingInvoice = async ({
     if (walletCurrency === WalletCurrency.Usd && !cents) {
       const converter = AmountConverter({
         dCConverter,
-        dealerFns: Dealer(),
+        dealerFns: DealerPriceService(),
       })
       const walletCurrency = WalletCurrency.Usd
       const amounts = await converter.getAmountsReceive({

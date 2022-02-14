@@ -6,6 +6,7 @@ import {
   getInvoiceCreateForRecipientAttemptLimits,
 } from "@config"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
+import { CENTS_PER_USD } from "@domain/fiat"
 import {
   InvoiceCreateForRecipientRateLimiterExceededError,
   InvoiceCreateRateLimiterExceededError,
@@ -23,7 +24,6 @@ import {
   resetRecipientAccountIdLimits,
   resetSelfAccountIdLimits,
 } from "test/helpers/rate-limit"
-import { CENTS_PER_USD } from "test/helpers/static"
 
 let walletIdBtc: WalletId
 let walletIdUsd: WalletId

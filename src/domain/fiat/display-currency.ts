@@ -1,4 +1,4 @@
-import { CENTS_PER_USD } from "test/helpers/static"
+import { CENTS_PER_USD } from "."
 
 export const toDisplayCurrencyBaseAmount = (amount: number) =>
   amount as DisplayCurrencyBaseAmount

@@ -16,5 +16,7 @@ export const OrderType = {
   Active: "quote",
 } as const
 
+export const CENTS_PER_USD = 100
+
 export const add = <T extends number>(arg0: T, arg1: T): T => (arg0 + arg1) as T
 export const sub = <T extends number>(arg0: T, arg1: T): T => (arg0 - arg1) as T
