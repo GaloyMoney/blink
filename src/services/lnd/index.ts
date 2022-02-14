@@ -290,7 +290,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const listSettledAndPendingPayments = async ({
+  const listSettledPayments = async ({
     after,
     pubkey,
   }: {
@@ -316,20 +316,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
         default:
           return new UnknownRouteNotFoundError(err)
       }
-    }
-  }
-
-  const listSettledPayments = async (args: {
-    after: PagingStartToken | PagingContinueToken
-    pubkey: Pubkey
-  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
-    const settledAndPendingPayments = await listSettledAndPendingPayments(args)
-    if (settledAndPendingPayments instanceof Error) return settledAndPendingPayments
-
-    const { lnPayments, endCursor } = settledAndPendingPayments
-    return {
-      lnPayments: lnPayments.filter((p) => p.status === PaymentStatus.Settled),
-      endCursor,
     }
   }
 
@@ -503,7 +489,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
       listSettledPayments,
       listPendingPayments,
       listFailedPayments,
-      listSettledAndPendingPayments,
       cancelInvoice,
       payInvoiceViaRoutes,
       payInvoiceViaPaymentDetails,
