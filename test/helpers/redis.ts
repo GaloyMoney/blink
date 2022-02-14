@@ -13,12 +13,9 @@ export const clearAccountLocks = () => clearKeys("locks:account")
 export const clearLimitersWithExclusions = async (exclusions: string[]) => {
   for (const limiter in RateLimitPrefix) {
     const limiterValue = RateLimitPrefix[limiter]
-    if (!exclusions.includes(limiterValue)) {
-      await clearKeys(limiterValue)
-    }
+    if (exclusions.includes(limiterValue)) continue
+    await clearKeys(limiterValue)
   }
 }
 
-export const clearLimiters = async () => {
-  await clearLimitersWithExclusions([])
-}
+export const clearLimiters = () => clearLimitersWithExclusions([])

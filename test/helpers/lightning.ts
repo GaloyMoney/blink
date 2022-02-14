@@ -273,12 +273,3 @@ export const waitFor = async (f) => {
   while (!(res = await f())) await sleep(500)
   return res
 }
-
-export const printChannelInfo = async ({ lnd, name }) => {
-  const { channels } = await getChannels({ lnd })
-  let summary = `${name} stats:`
-  channels.forEach((channel) => {
-    summary += `\n${channel.transaction_id}:active=${channel.is_active},local_balance=${channel.local_balance}`
-  })
-  console.log(summary)
-}

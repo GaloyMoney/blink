@@ -7,6 +7,8 @@ import { PriceHistory } from "@services/price/schema"
 import { toObjectId } from "@services/mongoose/utils"
 import { adminUsers } from "@domain/admin-users"
 
+import { baseLogger } from "@services/logger"
+
 import {
   fundLnd,
   getChainBalance,
@@ -136,19 +138,13 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
   const existingWallets = await bitcoindClient.listWalletDir()
   const loadedWallets = await bitcoindClient.listWallets()
   if (!existingWallets.map((wallet) => wallet.name).includes("outside")) {
-    const createWalletResult = await bitcoindClient.createWallet({
+    await bitcoindClient.createWallet({
       walletName: "outside",
     })
-    if (createWalletResult.warning) {
-      console.warn(createWalletResult.warning)
-    }
   } else if (!loadedWallets.includes("outside")) {
-    const loadWalletResult = await bitcoindClient.loadWallet({ filename: "outside" })
-    if (loadWalletResult.warning) {
-      console.warn(loadWalletResult.warning)
-    }
+    await bitcoindClient.loadWallet({ filename: "outside" })
   }
-  console.log("Loaded outside wallet.")
+  baseLogger.info("Loaded outside wallet.")
 
   // Reset state
   if (stateConfig.resetState) {
@@ -158,7 +154,7 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
       clearLimiters(),
       clearAccountLocks(),
     ])
-    console.log("Reset state.")
+    baseLogger.info("Reset state.")
   }
 
   // Fund outside wallet
@@ -169,7 +165,7 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
       numOfBlocks: stateConfig.outsideWalletBlocksToMineAndConfirm,
       address: bitcoindAddress,
     })
-    console.log(
+    baseLogger.info(
       `Funded outside wallet by mining ${bitcoinReward} bitcoin to ${bitcoindAddress}`,
     )
   }
@@ -178,7 +174,7 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
   await Promise.all(
     stateConfig.userAccounts.map((accountEntry) => createUserWallet(accountEntry)),
   )
-  console.log("Created all test users.")
+  baseLogger.info("Created all test users.")
 
   // Fund special wallets
   if (stateConfig.fundFunderWallet) {
@@ -193,7 +189,7 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
       lnd: stateConfig.fundFunderWallet.receivingNode,
     })
 
-    console.log(
+    baseLogger.info(
       `Funded Funder Wallet(${funderWalletId}) with current balance of ${funderBalance} sats. Lnd1 chain balance is ${chain_balance}.`,
     )
   }
@@ -205,7 +201,7 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
       await fundLnd(lndInstance)
     }
     await mineBlockAndSyncAll()
-    console.log("LND's have been funded.")
+    baseLogger.info("LND's have been funded.")
   }
 
   // Open ln channels
@@ -215,15 +211,14 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
       await openChannelTesting(channel)
     }
     await mineBlockAndSyncAll()
-    console.log("Channels have been opened.")
+    baseLogger.info("Channels have been opened.")
   }
 
   // Populate price data
   if (stateConfig.populatePriceData) {
     await populatePriceData()
-    console.log("Price data has been populated.")
+    baseLogger.info("Price data has been populated.")
   }
 
   await checkIsBalanced()
-  console.log("Ledger is balanced.")
 }

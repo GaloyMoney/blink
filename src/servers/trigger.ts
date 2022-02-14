@@ -140,14 +140,11 @@ export const onInvoiceUpdate = async (invoice: GetInvoiceResult) => {
 }
 
 export const publishSingleCurrentPrice = async () => {
-  try {
-    const displayCurrencyPerSat = await Prices.getCurrentPrice()
-    if (displayCurrencyPerSat instanceof Error) throw displayCurrencyPerSat
-
-    NotificationsService(logger).priceUpdate(displayCurrencyPerSat)
-  } catch (err) {
-    logger.error({ err }, "can't publish the price")
+  const displayCurrencyPerSat = await Prices.getCurrentPrice()
+  if (displayCurrencyPerSat instanceof Error) {
+    return logger.error({ err: displayCurrencyPerSat }, "can't publish the price")
   }
+  NotificationsService(logger).priceUpdate(displayCurrencyPerSat)
 }
 
 const publishCurrentPrice = () => {
