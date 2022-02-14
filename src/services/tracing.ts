@@ -124,6 +124,18 @@ registerInstrumentations({
           requestHeaders: ["apollographql-client-name", "apollographql-client-version"],
         },
       },
+      applyCustomAttributesOnSpan: (span, _request, response) => {
+        if (response.statusCode && response.statusCode >= 400) {
+          const parent = trace.getSpan(context.active())
+          if (parent && parent["attributes"]) {
+            const attributes = {}
+            for (const key in parent["attributes"]) {
+              attributes[`parent.${key}`] = parent["attributes"][key]
+            }
+            span.setAttributes(attributes)
+          }
+        }
+      },
     }),
     new GraphQLInstrumentation({
       mergeItems: true,
@@ -315,6 +327,23 @@ export const wrapAsyncToRunInSpan = <
     })
     return ret
   }
+}
+
+export const wrapAsyncFunctionsToRunInSpan = <F>({
+  namespace,
+  fns,
+}: {
+  namespace: string
+  fns: F
+}): F => {
+  const functions = { ...fns }
+  for (const fn of Object.keys(functions)) {
+    functions[fn] = wrapAsyncToRunInSpan({
+      namespace,
+      fn: fns[fn],
+    })
+  }
+  return functions
 }
 
 export const addAttributesToCurrentSpanAndPropagate = <F extends () => ReturnType<F>>(
