@@ -1,5 +1,5 @@
 import {
-  updatePendingInvoices,
+  declineHeldInvoices,
   updatePendingPayments,
   updateOnChainReceipt,
 } from "@app/wallets"
@@ -12,7 +12,7 @@ const logger = baseLogger.child({ module: "test" })
 
 export const checkIsBalanced = async () => {
   await Promise.all([
-    updatePendingInvoices(logger),
+    declineHeldInvoices(logger),
     updatePendingPayments(logger),
     updateOnChainReceipt({ logger }),
   ])

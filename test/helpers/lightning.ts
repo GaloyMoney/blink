@@ -47,6 +47,10 @@ export const getAmount = (request: EncodedPaymentRequest) => {
   return parsePaymentRequest({ request }).tokens as Satoshis
 }
 
+export const getPubKey = (request: EncodedPaymentRequest) => {
+  return parsePaymentRequest({ request }).destination as Pubkey
+}
+
 // TODO: this could be refactored with lndAuth
 export const lndOutside1 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE1,

@@ -25,7 +25,7 @@ const main = async () => {
     if (result instanceof Error) throw result
   }
 
-  const updatePendingLightningInvoices = () => Wallets.updatePendingInvoices(logger)
+  const updatePendingLightningInvoices = () => Wallets.declineHeldInvoices(logger)
 
   const updatePendingLightningPayments = () => Wallets.updatePendingPayments(logger)
 

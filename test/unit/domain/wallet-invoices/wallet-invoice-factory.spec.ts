@@ -1,5 +1,6 @@
 import { MS_PER_DAY } from "@config"
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
+import { getSecretAndPaymentHash } from "@domain/bitcoin/lightning"
 import { toCents } from "@domain/fiat"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { WalletCurrency } from "@domain/shared"
@@ -12,11 +13,13 @@ beforeAll(async () => {
   walletInvoiceFactory = WalletInvoiceFactory({ walletId, currency })
 })
 
+const { secret, paymentHash } = getSecretAndPaymentHash()
+
 describe("wallet invoice factory methods", () => {
   it("translates a registered invoice to wallet invoice", () => {
     const registeredInvoice: RegisteredInvoice = {
       invoice: {
-        paymentHash: "paymentHash" as PaymentHash,
+        paymentHash,
         paymentSecret: "paymentSecret" as PaymentIdentifyingSecret,
         paymentRequest: "paymentRequest" as EncodedPaymentRequest,
         routeHints: [],
@@ -35,9 +38,11 @@ describe("wallet invoice factory methods", () => {
     const result = walletInvoiceFactory.createForSelf({
       registeredInvoice,
       cents: toCents(12),
+      secret,
     })
     const expected = {
-      paymentHash: "paymentHash",
+      paymentHash,
+      secret,
       walletId: "id",
       selfGenerated: true,
       pubkey: "pubkey",
@@ -51,7 +56,7 @@ describe("wallet invoice factory methods", () => {
   it("translates a registered invoice to wallet invoice for a recipient", () => {
     const registeredInvoice: RegisteredInvoice = {
       invoice: {
-        paymentHash: "paymentHash" as PaymentHash,
+        paymentHash,
         paymentSecret: "paymentSecret" as PaymentIdentifyingSecret,
         paymentRequest: "paymentRequest" as EncodedPaymentRequest,
         routeHints: [],
@@ -69,9 +74,11 @@ describe("wallet invoice factory methods", () => {
     const result = walletInvoiceFactory.createForRecipient({
       registeredInvoice,
       cents: toCents(10),
+      secret,
     })
     const expected = {
-      paymentHash: "paymentHash",
+      paymentHash,
+      secret,
       walletId: "id",
       selfGenerated: false,
       pubkey: "pubkey",

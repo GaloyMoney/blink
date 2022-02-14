@@ -1,5 +1,8 @@
 import { checkedToSats, toSats } from "@domain/bitcoin"
-import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
+import {
+  getSecretAndPaymentHash,
+  invoiceExpirationForCurrency,
+} from "@domain/bitcoin/lightning"
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning/invoice-expiration"
 import { DealerPriceServiceError } from "@domain/dealer-price"
 import { checkedtoCents } from "@domain/fiat"
@@ -223,16 +226,19 @@ const registerAndPersistInvoice = async ({
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
+  const { secret, paymentHash } = getSecretAndPaymentHash()
+
   const registeredInvoice = await lndService.registerInvoice({
     description: memo,
     descriptionHash,
     sats,
     expiresAt,
+    paymentHash,
   })
   if (registeredInvoice instanceof Error) return registeredInvoice
   const { invoice } = registeredInvoice
 
-  const walletInvoice = walletInvoiceCreateFn({ registeredInvoice, cents })
+  const walletInvoice = walletInvoiceCreateFn({ registeredInvoice, cents, secret })
   const persistedWalletInvoice = await walletInvoicesRepo.persistNew(walletInvoice)
   if (persistedWalletInvoice instanceof Error) return persistedWalletInvoice
 
