@@ -35,6 +35,7 @@ import {
   getFailedPayments,
   getClosedChannels,
   getWalletInfo,
+  getPendingPayments,
 } from "lightning"
 
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -319,17 +320,32 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const listPendingPayments = async (args: {
+  const listPendingPayments = async ({
+    after,
+    pubkey,
+  }: {
     after: PagingStartToken | PagingContinueToken
     pubkey: Pubkey
   }): Promise<ListLnPaymentsResult | LightningServiceError> => {
-    const settledAndPendingPayments = await listSettledAndPendingPayments(args)
-    if (settledAndPendingPayments instanceof Error) return settledAndPendingPayments
+    try {
+      const lnd = getLndFromPubkey({ pubkey })
+      if (lnd instanceof Error) return lnd
 
-    const { lnPayments, endCursor } = settledAndPendingPayments
-    return {
-      lnPayments: lnPayments.filter((p) => p.status !== PaymentStatus.Settled),
-      endCursor,
+      const pagingArgs = after ? { token: after } : {}
+      const { payments, next } = await getPendingPayments({ lnd, ...pagingArgs })
+
+      return {
+        lnPayments: payments.map(translateLnPaymentLookup),
+        endCursor: (next as PagingStartToken) || false,
+      }
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.LndDbCorruption:
+          return new CorruptLndDbError()
+        default:
+          return new UnknownRouteNotFoundError(err)
+      }
     }
   }
 
