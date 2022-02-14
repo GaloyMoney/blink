@@ -13,8 +13,8 @@ services:
     - lnd-outside-2
     - otel-agent
   otel-agent:
-    image: otel/opentelemetry-collector-contrib:0.37.1
-    command: ["--config=/etc/otel-agent-config.yaml", "--log-level=debug"]
+    image: otel/opentelemetry-collector-contrib:0.43.0
+    command: ["--config=/etc/otel-agent-config.yaml"]
     environment:
     - HONEYCOMB_DATASET=${HONEYCOMB_DATASET}
     - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
