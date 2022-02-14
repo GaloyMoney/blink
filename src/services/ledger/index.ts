@@ -46,7 +46,9 @@ export const lazyLoadLedgerAdmin = ({
 
 export const LedgerService = (): ILedgerService => {
   const updateMetadataByHash = async (
-    ledgerTxMetadata: LedgerTransactionMetadataWithHash,
+    ledgerTxMetadata:
+      | OnChainLedgerTransactionMetadataUpdate
+      | LnLedgerTransactionMetadataUpdate,
   ): Promise<true | LedgerServiceError | RepositoryError> =>
     TransactionsMetadataRepository().updateByHash(ledgerTxMetadata)
 

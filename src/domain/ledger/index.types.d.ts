@@ -205,7 +205,9 @@ type RevertLightningPaymentArgs = {
 
 interface ILedgerService {
   updateMetadataByHash(
-    ledgerTxMetadata: LedgerTransactionMetadataWithHash,
+    ledgerTxMetadata:
+      | OnChainLedgerTransactionMetadataUpdate
+      | LnLedgerTransactionMetadataUpdate,
   ): Promise<true | LedgerServiceError>
 
   getTransactionById(

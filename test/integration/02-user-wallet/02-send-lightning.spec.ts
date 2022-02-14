@@ -433,13 +433,21 @@ describe("UserWallet - Lightning Pay", () => {
     if (!metadataCheck) throw txns_metadata.find((txn) => txn instanceof Error)
 
     const revealedPreImages = new Set(
-      txns_metadata.map((txn) => (txn instanceof Error ? txn : txn.revealedPreImage)),
+      txns_metadata.map((txn) =>
+        txn instanceof Error
+          ? txn
+          : "revealedPreImage" in txn
+          ? txn.revealedPreImage
+          : undefined,
+      ),
     )
     expect(revealedPreImages.size).toEqual(1)
     expect(revealedPreImages.has(revealedPreImage)).toBeTruthy()
 
     const paymentHashes = new Set(
-      txns_metadata.map((txn) => (txn instanceof Error ? txn : txn.hash)),
+      txns_metadata.map((txn) =>
+        txn instanceof Error ? txn : "hash" in txn ? txn.hash : undefined,
+      ),
     )
     expect(paymentHashes.size).toEqual(1)
     expect(paymentHashes.has(paymentHash)).toBeTruthy()

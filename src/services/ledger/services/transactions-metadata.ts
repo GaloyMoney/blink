@@ -6,7 +6,9 @@ import { TransactionMetadata } from "../schema"
 
 export const TransactionsMetadataRepository = (): ITransactionsMetadataRepository => {
   const updateByHash = async (
-    ledgerTxMetadata: LedgerTransactionMetadata,
+    ledgerTxMetadata:
+      | OnChainLedgerTransactionMetadataUpdate
+      | LnLedgerTransactionMetadataUpdate,
   ): Promise<true | RepositoryError> => {
     const { hash, ...metadata } = ledgerTxMetadata
     try {
@@ -54,6 +56,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
 const translateToLedgerTxMetadata = (
   txMetadata: TransactionMetadataRecord,
 ): LedgerTransactionMetadata => ({
+  id: txMetadata.id as LedgerTransactionId,
   hash: (txMetadata.hash as PaymentHash | OnChainTxHash) || undefined,
   revealedPreImage: (txMetadata.revealedPreImage as RevealedPreImage) || undefined,
 })

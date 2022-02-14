@@ -1,10 +1,26 @@
-type LedgerTransactionMetadata = {
-  hash?: PaymentHash | OnChainTxHash
+type BaseLedgerTransactionMetadata = {
+  id: LedgerTransactionId
+}
+
+type OnChainLedgerTransactionMetadataUpdate = {
+  hash: OnChainTxHash
+}
+
+type LnLedgerTransactionMetadataUpdate = {
+  hash: PaymentHash
   revealedPreImage?: RevealedPreImage
 }
-type LedgerTransactionMetadataWithHash = Omit<LedgerTransactionMetadata, "hash"> & {
-  hash: PaymentHash | OnChainTxHash
-}
+
+// Repeating 'id' key because can't figure out how to type an empty object
+// and have it still work with the '&' below.
+type IntraledgerLedgerTransactionMetadataUpdate = { id: LedgerTransactionId }
+
+type LedgerTransactionMetadata = BaseLedgerTransactionMetadata &
+  (
+    | OnChainLedgerTransactionMetadataUpdate
+    | LnLedgerTransactionMetadataUpdate
+    | IntraledgerLedgerTransactionMetadataUpdate
+  )
 
 type PersistNewLedgerTransactionMetadataArgs = {
   id: LedgerTransactionId
@@ -13,7 +29,9 @@ type PersistNewLedgerTransactionMetadataArgs = {
 
 interface ITransactionsMetadataRepository {
   updateByHash(
-    ledgerTxMetadata: LedgerTransactionMetadataWithHash,
+    ledgerTxMetadata:
+      | OnChainLedgerTransactionMetadataUpdate
+      | LnLedgerTransactionMetadataUpdate,
   ): Promise<true | RepositoryError>
   persistNew(
     args: PersistNewLedgerTransactionMetadataArgs,
