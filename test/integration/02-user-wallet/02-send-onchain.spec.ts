@@ -645,10 +645,13 @@ describe("UserWallet - onChainPay", () => {
     if (price instanceof Error) throw price
     const dCConverter = DisplayCurrencyConverter(price)
 
-    const amount = add(
-      sub(dCConverter.fromCentsToSats(withdrawalLimit), outgoingBaseAmount),
-      toSats(100),
+    const subResult = sub(
+      dCConverter.fromCentsToSats(withdrawalLimit),
+      outgoingBaseAmount,
     )
+    if (subResult instanceof Error) return subResult
+
+    const amount = add(subResult, toSats(100))
 
     const status = await Wallets.payOnChainByWalletId({
       senderAccount: accountA,

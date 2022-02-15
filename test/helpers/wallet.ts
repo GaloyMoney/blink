@@ -34,5 +34,6 @@ export const getRemainingTwoFALimit = async ({
   const outgoing = toSats(walletVolume.outgoingBaseAmount)
 
   const remainingLimit = sub(twoFALimit, dCConverter.fromSatsToCents(outgoing))
+  if (remainingLimit instanceof Error) throw remainingLimit
   return remainingLimit > 0 ? remainingLimit : toCents(0)
 }

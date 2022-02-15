@@ -144,6 +144,10 @@ const updatePendingInvoice = async ({
     if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
     // TODO: this should be a in a mongodb transaction session with the ledger transaction below
+    // markAsPaid could be done after the transaction, but we should in that case not only look
+    // for walletInvoicesRepo, but also in the ledger to make sure in case the process crash in this
+    // loop that an eventual consistency doesn't lead to a double credit
+
     const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
     if (invoicePaid instanceof Error) return invoicePaid
 
