@@ -54,7 +54,7 @@ watch-compile:
 e2e:
 	yarn build && \
 	yarn test:e2e
-	
+
 e2e-in-ci:
 	. ./.envrc && \
 	yarn build && \
@@ -65,6 +65,7 @@ integration:
 	yarn test:integration
 
 reset-integration: reset-deps integration
+reset-e2e: reset-deps e2e
 
 integration-in-ci:
 	. ./.envrc && \

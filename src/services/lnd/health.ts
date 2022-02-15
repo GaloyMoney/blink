@@ -15,11 +15,14 @@ const EventEmitter = require("events")
 
 const refreshTime = 10000 // ms
 
+const intervals: NodeJS.Timer[] = []
+
 const isUpLoop = async (param) => {
   await isUp(param)
-  setInterval(async () => {
+  const interval = setInterval(async () => {
     await isUp(param)
   }, refreshTime)
+  intervals.push(interval)
 }
 
 export const isUp = async (param): Promise<void> => {
@@ -54,6 +57,8 @@ export const isUp = async (param): Promise<void> => {
 
 // launching a loop to update whether lnd are active or not
 export const activateLndHealthCheck = () => unauthParams.forEach(isUpLoop)
+
+export const stopLndHealthCheck = () => intervals.forEach(clearInterval)
 
 class LndStatusEventEmitter extends EventEmitter {}
 export const lndStatusEvent = new LndStatusEventEmitter()

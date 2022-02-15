@@ -1,4 +1,7 @@
-import { bip32, networks, Psbt } from "bitcoinjs-lib"
+import { networks, Psbt } from "bitcoinjs-lib"
+import BIP32Factory from "bip32"
+import * as ecc from "tiny-secp256k1"
+
 import { ColdStorage, Wallets } from "@app"
 import { BTC_NETWORK, getColdStorageConfig } from "@config"
 import { InsufficientBalanceForRebalanceError } from "@domain/cold-storage/errors"
@@ -17,6 +20,8 @@ import {
   mineBlockAndSyncAll,
 } from "test/helpers"
 import { signer1Base58, signer2Base58 } from "test/helpers/multisig-wallet"
+
+const bip32 = BIP32Factory(ecc)
 
 let coldStorageWalletClient: BitcoindWalletClient
 let walletName: string
