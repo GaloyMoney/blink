@@ -1,6 +1,8 @@
 type UsdCents = number & { readonly brand: unique symbol }
 type DisplayCurrencyBaseAmount = number & { readonly brand: unique symbol }
 
+// TODO: a better way to type it can be:
+// <T extends Satoshis | UsdCents> someFunction({amount}: {amount: T})
 type CurrencyBaseAmount = Satoshis | UsdCents
 
 interface DisplayCurrencyConverter {
