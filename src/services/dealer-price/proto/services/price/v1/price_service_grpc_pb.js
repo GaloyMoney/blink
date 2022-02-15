@@ -172,6 +172,46 @@ function deserialize_services_price_v1_GetCentsFromSatsForImmediateSellResponse(
   )
 }
 
+function serialize_services_price_v1_GetCentsPerBtcExchangeMidRateRequest(arg) {
+  if (
+    !(
+      arg instanceof
+      services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest
+    )
+  ) {
+    throw new Error(
+      "Expected argument of type services.price.v1.GetCentsPerBtcExchangeMidRateRequest",
+    )
+  }
+  return Buffer.from(arg.serializeBinary())
+}
+
+function deserialize_services_price_v1_GetCentsPerBtcExchangeMidRateRequest(buffer_arg) {
+  return services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest.deserializeBinary(
+    new Uint8Array(buffer_arg),
+  )
+}
+
+function serialize_services_price_v1_GetCentsPerBtcExchangeMidRateResponse(arg) {
+  if (
+    !(
+      arg instanceof
+      services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse
+    )
+  ) {
+    throw new Error(
+      "Expected argument of type services.price.v1.GetCentsPerBtcExchangeMidRateResponse",
+    )
+  }
+  return Buffer.from(arg.serializeBinary())
+}
+
+function deserialize_services_price_v1_GetCentsPerBtcExchangeMidRateResponse(buffer_arg) {
+  return services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse.deserializeBinary(
+    new Uint8Array(buffer_arg),
+  )
+}
+
 function serialize_services_price_v1_GetSatsFromCentsForFutureBuyRequest(arg) {
   if (
     !(
@@ -456,6 +496,20 @@ var PriceServiceService = (exports.PriceServiceService = {
     responseSerialize: serialize_services_price_v1_GetSatsFromCentsForFutureSellResponse,
     responseDeserialize:
       deserialize_services_price_v1_GetSatsFromCentsForFutureSellResponse,
+  },
+  getCentsPerBtcExchangeMidRate: {
+    path: "/services.price.v1.PriceService/GetCentsPerBtcExchangeMidRate",
+    requestStream: false,
+    responseStream: false,
+    requestType: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest,
+    responseType:
+      services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse,
+    requestSerialize: serialize_services_price_v1_GetCentsPerBtcExchangeMidRateRequest,
+    requestDeserialize:
+      deserialize_services_price_v1_GetCentsPerBtcExchangeMidRateRequest,
+    responseSerialize: serialize_services_price_v1_GetCentsPerBtcExchangeMidRateResponse,
+    responseDeserialize:
+      deserialize_services_price_v1_GetCentsPerBtcExchangeMidRateResponse,
   },
 })
 

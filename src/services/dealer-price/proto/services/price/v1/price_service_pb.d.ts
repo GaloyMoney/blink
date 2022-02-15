@@ -481,3 +481,56 @@ export namespace GetSatsFromCentsForFutureSellResponse {
     amountInSatoshis: number
   }
 }
+
+export class GetCentsPerBtcExchangeMidRateRequest extends jspb.Message {
+  serializeBinary(): Uint8Array
+  toObject(includeInstance?: boolean): GetCentsPerBtcExchangeMidRateRequest.AsObject
+  static toObject(
+    includeInstance: boolean,
+    msg: GetCentsPerBtcExchangeMidRateRequest,
+  ): GetCentsPerBtcExchangeMidRateRequest.AsObject
+  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
+  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
+  static serializeBinaryToWriter(
+    message: GetCentsPerBtcExchangeMidRateRequest,
+    writer: jspb.BinaryWriter,
+  ): void
+  static deserializeBinary(bytes: Uint8Array): GetCentsPerBtcExchangeMidRateRequest
+  static deserializeBinaryFromReader(
+    message: GetCentsPerBtcExchangeMidRateRequest,
+    reader: jspb.BinaryReader,
+  ): GetCentsPerBtcExchangeMidRateRequest
+}
+
+export namespace GetCentsPerBtcExchangeMidRateRequest {
+  export type AsObject = {}
+}
+
+export class GetCentsPerBtcExchangeMidRateResponse extends jspb.Message {
+  getAmountInCents(): number
+  setAmountInCents(value: number): GetCentsPerBtcExchangeMidRateResponse
+
+  serializeBinary(): Uint8Array
+  toObject(includeInstance?: boolean): GetCentsPerBtcExchangeMidRateResponse.AsObject
+  static toObject(
+    includeInstance: boolean,
+    msg: GetCentsPerBtcExchangeMidRateResponse,
+  ): GetCentsPerBtcExchangeMidRateResponse.AsObject
+  static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
+  static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
+  static serializeBinaryToWriter(
+    message: GetCentsPerBtcExchangeMidRateResponse,
+    writer: jspb.BinaryWriter,
+  ): void
+  static deserializeBinary(bytes: Uint8Array): GetCentsPerBtcExchangeMidRateResponse
+  static deserializeBinaryFromReader(
+    message: GetCentsPerBtcExchangeMidRateResponse,
+    reader: jspb.BinaryReader,
+  ): GetCentsPerBtcExchangeMidRateResponse
+}
+
+export namespace GetCentsPerBtcExchangeMidRateResponse {
+  export type AsObject = {
+    amountInCents: number
+  }
+}

@@ -17,6 +17,7 @@ interface IPriceServiceService
   getSatsFromCentsForImmediateSell: IPriceServiceService_IGetSatsFromCentsForImmediateSell
   getSatsFromCentsForFutureBuy: IPriceServiceService_IGetSatsFromCentsForFutureBuy
   getSatsFromCentsForFutureSell: IPriceServiceService_IGetSatsFromCentsForFutureSell
+  getCentsPerBtcExchangeMidRate: IPriceServiceService_IGetCentsPerBtcExchangeMidRate
 }
 
 interface IPriceServiceService_IGetCentsFromSatsForImmediateBuy
@@ -123,6 +124,19 @@ interface IPriceServiceService_IGetSatsFromCentsForFutureSell
   responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse>
   responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse>
 }
+interface IPriceServiceService_IGetCentsPerBtcExchangeMidRate
+  extends grpc.MethodDefinition<
+    services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest,
+    services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse
+  > {
+  path: "/services.price.v1.PriceService/GetCentsPerBtcExchangeMidRate"
+  requestStream: false
+  responseStream: false
+  requestSerialize: grpc.serialize<services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest>
+  requestDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest>
+  responseSerialize: grpc.serialize<services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse>
+  responseDeserialize: grpc.deserialize<services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse>
+}
 
 export const PriceServiceService: IPriceServiceService
 
@@ -158,6 +172,10 @@ export interface IPriceServiceServer extends grpc.UntypedServiceImplementation {
   getSatsFromCentsForFutureSell: grpc.handleUnaryCall<
     services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellRequest,
     services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse
+  >
+  getCentsPerBtcExchangeMidRate: grpc.handleUnaryCall<
+    services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest,
+    services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse
   >
 }
 
@@ -352,6 +370,30 @@ export interface IPriceServiceClient {
     callback: (
       error: grpc.ServiceError | null,
       response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getCentsPerBtcExchangeMidRate(
+    request: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getCentsPerBtcExchangeMidRate(
+    request: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  getCentsPerBtcExchangeMidRate(
+    request: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse,
     ) => void,
   ): grpc.ClientUnaryCall
 }
@@ -552,6 +594,30 @@ export class PriceServiceClient extends grpc.Client implements IPriceServiceClie
     callback: (
       error: grpc.ServiceError | null,
       response: services_price_v1_price_service_pb.GetSatsFromCentsForFutureSellResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getCentsPerBtcExchangeMidRate(
+    request: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getCentsPerBtcExchangeMidRate(
+    request: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest,
+    metadata: grpc.Metadata,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse,
+    ) => void,
+  ): grpc.ClientUnaryCall
+  public getCentsPerBtcExchangeMidRate(
+    request: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest,
+    metadata: grpc.Metadata,
+    options: Partial<grpc.CallOptions>,
+    callback: (
+      error: grpc.ServiceError | null,
+      response: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse,
     ) => void,
   ): grpc.ClientUnaryCall
 }
