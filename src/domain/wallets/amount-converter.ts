@@ -47,7 +47,7 @@ export const AmountConverter = ({
 
       if (walletCurrency === WalletCurrency.Btc) {
         return new NotImplementedError(
-          "unsupported use cas: walletCurrency = Btc, receive from cents",
+          "unsupported use case: walletCurrency = Btc, receive from cents",
         )
       } else {
         const amountDisplayCurrency = displayPriceFns.fromCents(cents)
@@ -100,7 +100,7 @@ export const AmountConverter = ({
 
       if (walletCurrency === WalletCurrency.Btc) {
         return new NotImplementedError(
-          "unsupported use cas: walletCurrency = Btc, send with cents",
+          "unsupported use case: walletCurrency = Btc, send with cents",
         )
       } else {
         const amountDisplayCurrency = displayPriceFns.fromCents(cents)
