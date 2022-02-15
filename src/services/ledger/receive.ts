@@ -162,8 +162,8 @@ const addReceiptNoFee = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
-        id: _id,
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
         hash: metadata.hash,
         revealedPreImage,
       }))
@@ -201,8 +201,8 @@ const addReceiptNoFee = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
-        id: _id,
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
         hash: metaInput.hash,
       }))
       txMetadataRepo.persistAll(txsMetadataToPersist)
@@ -248,8 +248,8 @@ const addReceiptFee = async ({
     const savedEntry = await entry.commit()
     const journalEntry = translateToLedgerJournal(savedEntry)
 
-    const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
-      id: _id,
+    const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+      id,
       hash: metadata.hash,
     }))
     txMetadataRepo.persistAll(txsMetadataToPersist)

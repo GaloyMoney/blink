@@ -139,8 +139,8 @@ export const send = {
       const savedEntry = await MainBook.void(journalId, reason)
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
-        id: _id,
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
         hash: paymentHash,
       }))
       txMetadataRepo.persistAll(txsMetadataToPersist)
@@ -178,8 +178,8 @@ const addSendNoInternalFee = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
-        id: _id,
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
         hash: metadata.hash,
       }))
       txMetadataRepo.persistAll(txsMetadataToPersist)
@@ -215,8 +215,8 @@ const addSendNoInternalFee = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
-        id: _id,
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
         hash: metaInput.hash,
       }))
       txMetadataRepo.persistAll(txsMetadataToPersist)
@@ -263,8 +263,8 @@ const addSendInternalFee = async ({
     const savedEntry = await entry.commit()
     const journalEntry = translateToLedgerJournal(savedEntry)
 
-    const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
-      id: _id,
+    const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+      id,
       hash: metadata.hash,
     }))
     txMetadataRepo.persistAll(txsMetadataToPersist)

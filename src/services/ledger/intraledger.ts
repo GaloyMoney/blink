@@ -176,8 +176,8 @@ const addIntraledgerTxTransfer = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
-        id: _id,
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
         hash: paymentHash,
       }))
       txMetadataRepo.persistAll(txsMetadataToPersist)
@@ -214,8 +214,8 @@ const addIntraledgerTxTransfer = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
-        id: _id,
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
         hash: paymentHash,
       }))
       txMetadataRepo.persistAll(txsMetadataToPersist)
@@ -259,8 +259,8 @@ const addIntraledgerTxTransfer = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
-        id: _id,
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
         hash: paymentHash,
       }))
       txMetadataRepo.persistAll(txsMetadataToPersist)
@@ -305,8 +305,8 @@ const addIntraledgerTxTransfer = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
-        id: _id,
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
         hash: paymentHash,
       }))
       txMetadataRepo.persistAll(txsMetadataToPersist)
