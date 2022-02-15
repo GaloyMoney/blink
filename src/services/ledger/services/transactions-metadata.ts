@@ -22,19 +22,26 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       return new UnknownRepositoryError(err)
     }
   }
-  const persistNew = async (
-    ledgerTxMetadata: LedgerTransactionMetadata,
-  ): Promise<LedgerTransactionMetadata | RepositoryError> => {
+
+  const persistAll = async (
+    ledgerTxsMetadata: LedgerTransactionMetadata[],
+  ): Promise<LedgerTransactionMetadata[] | RepositoryError> => {
+    if (ledgerTxsMetadata.length === 0) return []
+
     try {
-      const { id, ...metadata } = ledgerTxMetadata
-      return TransactionMetadata.create({
-        _id: toObjectId<LedgerTransactionId>(id),
-        ...metadata,
+      const ledgerTxsMetadataPersist = ledgerTxsMetadata.map((txMetadata) => {
+        const { id, ...metadata } = txMetadata
+        return { _id: toObjectId<LedgerTransactionId>(id), ...metadata }
       })
+      const result: TransactionMetadataRecord[] = await TransactionMetadata.insertMany(
+        ledgerTxsMetadataPersist,
+      )
+      return result.map((txRecord) => translateToLedgerTxMetadata(txRecord))
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
   }
+
   const findById = async (id: LedgerTransactionId) => {
     try {
       const result = await TransactionMetadata.findOne({
@@ -49,7 +56,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
 
   return {
     updateByHash,
-    persistNew,
+    persistAll,
     findById,
   }
 }

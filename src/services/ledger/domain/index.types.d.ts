@@ -28,8 +28,10 @@ interface ITransactionsMetadataRepository {
       | OnChainLedgerTransactionMetadataUpdate
       | LnLedgerTransactionMetadataUpdate,
   ): Promise<true | RepositoryError>
-  persistNew(
-    ledgerTxMetadata: LedgerTransactionMetadata,
-  ): Promise<LedgerTransactionMetadata | RepositoryError>
+
+  persistAll(
+    ledgerTxsMetadata: LedgerTransactionMetadata[],
+  ): Promise<LedgerTransactionMetadata[] | RepositoryError>
+
   findById(id: LedgerTransactionId): Promise<LedgerTransactionMetadata | RepositoryError>
 }

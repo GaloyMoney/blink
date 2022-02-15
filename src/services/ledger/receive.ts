@@ -162,13 +162,12 @@ const addReceiptNoFee = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      journalEntry.transactionIds.map((_id) =>
-        txMetadataRepo.persistNew({
-          id: _id,
-          hash: metadata.hash,
-          revealedPreImage,
-        }),
-      )
+      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
+        id: _id,
+        hash: metadata.hash,
+        revealedPreImage,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
 
       return journalEntry
     } catch (err) {
@@ -202,12 +201,11 @@ const addReceiptNoFee = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      journalEntry.transactionIds.map((_id) =>
-        txMetadataRepo.persistNew({
-          id: _id,
-          hash: metaInput.hash,
-        }),
-      )
+      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
+        id: _id,
+        hash: metaInput.hash,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
 
       return journalEntry
     } catch (err) {
@@ -250,12 +248,11 @@ const addReceiptFee = async ({
     const savedEntry = await entry.commit()
     const journalEntry = translateToLedgerJournal(savedEntry)
 
-    journalEntry.transactionIds.map((_id) =>
-      txMetadataRepo.persistNew({
-        id: _id,
-        hash: metadata.hash,
-      }),
-    )
+    const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
+      id: _id,
+      hash: metadata.hash,
+    }))
+    txMetadataRepo.persistAll(txsMetadataToPersist)
 
     return journalEntry
   } catch (err) {

@@ -176,12 +176,11 @@ const addIntraledgerTxTransfer = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      journalEntry.transactionIds.map((_id) =>
-        txMetadataRepo.persistNew({
-          id: _id,
-          hash: paymentHash,
-        }),
-      )
+      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
+        id: _id,
+        hash: paymentHash,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
 
       return journalEntry
     } catch (err) {
@@ -215,12 +214,11 @@ const addIntraledgerTxTransfer = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      journalEntry.transactionIds.map((_id) =>
-        txMetadataRepo.persistNew({
-          id: _id,
-          hash: paymentHash,
-        }),
-      )
+      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
+        id: _id,
+        hash: paymentHash,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
 
       return journalEntry
     } catch (err) {
@@ -261,12 +259,11 @@ const addIntraledgerTxTransfer = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      journalEntry.transactionIds.map((_id) =>
-        txMetadataRepo.persistNew({
-          id: _id,
-          hash: paymentHash,
-        }),
-      )
+      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
+        id: _id,
+        hash: paymentHash,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
 
       return journalEntry
     } catch (err) {
@@ -308,12 +305,11 @@ const addIntraledgerTxTransfer = async ({
       const savedEntry = await entry.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
-      journalEntry.transactionIds.map((_id) =>
-        txMetadataRepo.persistNew({
-          id: _id,
-          hash: paymentHash,
-        }),
-      )
+      const txsMetadataToPersist = journalEntry.transactionIds.map((_id) => ({
+        id: _id,
+        hash: paymentHash,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
 
       return journalEntry
     } catch (err) {
