@@ -1,12 +1,12 @@
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 
-const spreadImmediate = 0.04
-const spreadQuote = 0.08
-const baseRatio = 20
-
 // simulated price at 20k btc/usd
 // or 50 sats per cents. 0.05 sat per cents
+const baseRate = 20_000
+const baseRatio = baseRate / 1000
+const spreadImmediate = 0.04
+const spreadQuote = 0.08
 
 const buyImmediate = baseRatio + spreadImmediate
 const sellUsdImmediateFromSats = baseRatio - spreadImmediate
@@ -18,10 +18,7 @@ const buyUsdImmediateFromCents = baseRatio - spreadImmediate
 const getBuyUsdQuoteFromCents = baseRatio - spreadQuote
 const getSellUsdQuoteFromCents = baseRatio + spreadQuote
 
-export const DealerPriceService = () => ({
-  // TODO: replace with real implementation
-  // + mock for test
-
+export const DealerPriceService = (): IDealerPriceService => ({
   getCentsFromSatsForImmediateBuy: async (amount: Satoshis): Promise<UsdCents> =>
     toCents(Math.floor(Number(amount) / buyImmediate)),
   getCentsFromSatsForImmediateSell: async (amount: Satoshis): Promise<UsdCents> =>
@@ -63,4 +60,5 @@ export const DealerPriceService = () => ({
       (Math.floor(Number(amount) * getSellUsdQuoteFromCents) * timeToExpiryInSeconds) /
         timeToExpiryInSeconds,
     ),
+  getCentsPerBtcExchangeMidRate: async (): Promise<UsdCents> => toCents(baseRate),
 })
