@@ -164,13 +164,16 @@ transactionSchema.index({
 
 export const Transaction = mongoose.model("Medici_Transaction", transactionSchema)
 
-const transactionMetadataSchema = new Schema({
-  hash: String,
-  revealedPreImage: {
-    type: String,
-    index: true,
+const transactionMetadataSchema = new Schema<TransactionMetadataRecord>(
+  {
+    hash: String,
+    revealedPreImage: {
+      type: String,
+      index: true,
+    },
   },
-})
+  { id: false },
+)
 
 transactionMetadataSchema.index({
   hash: 1,

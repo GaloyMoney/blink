@@ -1,5 +1,6 @@
 interface TransactionMetadataRecord {
-  id: string
+  _id: ObjectId
+
   hash?: string
   revealedPreImage?: string
 }

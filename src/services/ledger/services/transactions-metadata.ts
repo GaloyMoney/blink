@@ -1,6 +1,6 @@
 import { NoTransactionToUpdateError, UnknownRepositoryError } from "@domain/errors"
 import { CouldNotFindTransactionMetadataError } from "@domain/ledger"
-import { toObjectId } from "@services/mongoose/utils"
+import { fromObjectId, toObjectId } from "@services/mongoose/utils"
 
 import { TransactionMetadata } from "../schema"
 
@@ -27,12 +27,15 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
   ): Promise<LedgerTransactionMetadata | RepositoryError> => {
     try {
       const { id, ...metadata } = ledgerTxMetadata
-      return TransactionMetadata.create({ _id: id, ...metadata })
+      return TransactionMetadata.create({
+        _id: toObjectId<LedgerTransactionId>(id),
+        ...metadata,
+      })
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
   }
-  const findById = async (id) => {
+  const findById = async (id: LedgerTransactionId) => {
     try {
       const result = await TransactionMetadata.findOne({
         _id: toObjectId<LedgerTransactionId>(id),
@@ -54,7 +57,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
 const translateToLedgerTxMetadata = (
   txMetadata: TransactionMetadataRecord,
 ): LedgerTransactionMetadata => ({
-  id: txMetadata.id as LedgerTransactionId,
+  id: fromObjectId<LedgerTransactionId>(txMetadata._id),
   hash: (txMetadata.hash as PaymentHash | OnChainTxHash) || undefined,
   revealedPreImage: (txMetadata.revealedPreImage as RevealedPreImage) || undefined,
 })
