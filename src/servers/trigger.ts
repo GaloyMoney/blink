@@ -148,14 +148,14 @@ export const publishSingleCurrentPrice = async () => {
 }
 
 const publishCurrentPrice = () => {
-  const interval = 1000 * 30
+  const interval: Seconds = (1000 * 30) as Seconds
   return setInterval(async () => {
     await publishSingleCurrentPrice()
   }, interval)
 }
 
 const updatePriceForChart = () => {
-  const interval = 1000 * SECS_PER_5_MINS
+  const interval: Seconds = (1000 * SECS_PER_5_MINS) as Seconds
   return setInterval(async () => {
     try {
       await updatePriceHistory()

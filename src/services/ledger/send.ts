@@ -28,6 +28,7 @@ export const send = {
     pubkey,
     amountDisplayCurrency,
     feeKnownInAdvance,
+    cents,
   }: AddLnTxSendArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: AddLnSendLedgerMetadata = {
       type: LedgerTransactionType.Payment,
@@ -45,6 +46,7 @@ export const send = {
       metadata,
       description,
       sats,
+      cents,
     })
   },
 
@@ -147,30 +149,62 @@ const addSendNoInternalFee = async ({
   walletId,
   walletCurrency,
   sats,
+  cents,
   description,
 }: {
   metadata: AddLnSendLedgerMetadata | AddOnchainSendLedgerMetadata
   walletId: WalletId
   walletCurrency: WalletCurrency
   sats: Satoshis
+  cents?: UsdCents
   description: string
 }) => {
   const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
 
-  // TODO: remove once implemented
-  assert(walletCurrency === WalletCurrency.Btc)
+  if (walletCurrency === WalletCurrency.Btc) {
+    const metadata = { ...metaInput, currency: WalletCurrency.Btc }
 
-  const metadata = { ...metaInput, currency: WalletCurrency.Btc }
+    try {
+      const entry = MainBook.entry(description)
+        .credit(lndAccountingPath, sats, metadata)
+        .debit(liabilitiesWalletId, sats, metadata)
 
-  try {
-    const entry = MainBook.entry(description)
-      .credit(lndAccountingPath, sats, metadata)
-      .debit(liabilitiesWalletId, sats, metadata)
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  } else {
+    const dealerBtcWalletId = await caching.getDealerBtcWalletId()
+    const dealerUsdWalletId = await caching.getDealerUsdWalletId()
+    const liabilitiesDealerBtcWalletId = toLiabilitiesWalletId(dealerBtcWalletId)
+    const liabilitiesDealerUsdWalletId = toLiabilitiesWalletId(dealerUsdWalletId)
 
-    const savedEntry = await entry.commit()
-    return translateToLedgerJournal(savedEntry)
-  } catch (err) {
-    return new UnknownLedgerError(err)
+    try {
+      const entry = MainBook.entry(description)
+      entry
+        .credit(lndAccountingPath, sats, {
+          ...metaInput,
+          currency: WalletCurrency.Btc,
+        })
+        .debit(liabilitiesDealerBtcWalletId, sats, {
+          ...metaInput,
+          currency: WalletCurrency.Btc,
+        })
+        .credit(liabilitiesWalletId, cents, {
+          ...metaInput,
+          currency: WalletCurrency.Usd,
+        })
+        .debit(liabilitiesDealerUsdWalletId, cents, {
+          ...metaInput,
+          currency: WalletCurrency.Usd,
+        })
+
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
   }
 }
 

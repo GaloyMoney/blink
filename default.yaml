@@ -50,6 +50,7 @@ test_accounts:
   phone: "+16505554322"
   code: "321432"
   phoneMetadataCarrierType: "mobile" # TODO: verify mobile is a valid value
+  needUsdWallet: true
 - ref: C
   phone: "+16505554323"
   code: "321321"

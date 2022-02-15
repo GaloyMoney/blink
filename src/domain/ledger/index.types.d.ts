@@ -88,6 +88,7 @@ type AddLnTxReceiveArgs = LnTxArgs & {
 }
 
 type AddLnTxSendArgs = LnTxArgs & {
+  cents?: UsdCents // move in upper property?
   pubkey: Pubkey
   feeKnownInAdvance: boolean
   feeRouting: Satoshis

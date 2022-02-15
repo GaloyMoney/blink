@@ -8,6 +8,21 @@ export const liabilitiesMainAccount = "Liabilities"
 export const toLiabilitiesWalletId = (walletId: WalletId): LiabilitiesWalletId =>
   `${liabilitiesMainAccount}:${walletId}` as LiabilitiesWalletId
 
+export const toWalletId = (walletIdPath: LiabilitiesWalletId): WalletId | undefined => {
+  const path = walletIdPath.split(":")
+
+  if (
+    Array.isArray(path) &&
+    path.length === 2 &&
+    path[0] === liabilitiesMainAccount &&
+    path[1]
+  ) {
+    return path[1] as WalletId
+  }
+
+  return undefined
+}
+
 export const LedgerTransactionType = {
   Invoice: "invoice",
   Payment: "payment",
@@ -33,21 +48,6 @@ export const ExtendedLedgerTransactionType = {
   ...LedgerTransactionType,
   LnIntraLedger: "ln_on_us",
 } as const
-
-export const toWalletId = (walletIdPath: LiabilitiesWalletId): WalletId | undefined => {
-  const path = walletIdPath.split(":")
-
-  if (
-    Array.isArray(path) &&
-    path.length === 2 &&
-    path[0] === liabilitiesMainAccount &&
-    path[1]
-  ) {
-    return path[1] as WalletId
-  }
-
-  return undefined
-}
 
 export const isOnChainTransaction = (type: LedgerTransactionType): boolean =>
   type === LedgerTransactionType.OnchainIntraLedger ||

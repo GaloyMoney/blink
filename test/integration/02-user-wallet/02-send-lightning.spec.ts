@@ -404,7 +404,26 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalance).toBe(initBalanceB - amountInvoice)
   })
 
+  it("pay invoice from usd wallet", async () => {
+    const { request } = await createInvoice({ lnd: lndOutside1 })
+    const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
+      amount: amountInvoice,
+      senderWalletId: walletIdB,
+      senderAccount: accountB,
+      logger: baseLogger,
+    })
+    if (paymentResult instanceof Error) throw paymentResult
+    expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+    const finalBalance = await getBTCBalance(walletIdB)
+    expect(finalBalance).toBe(initBalanceB - amountInvoice)
+  })
+
   it("filters spam from send to another Galoy user as push payment", async () => {
+    // TODO: good candidate for a unit test?
+
     const satsBelow = 100
     const memoSpamBelowThreshold = "Spam BELOW threshold"
     const resBelowThreshold = await Wallets.intraledgerPaymentSendUsername({

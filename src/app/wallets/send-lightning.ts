@@ -13,6 +13,7 @@ import {
   LnPaymentPendingError,
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
+import { DealerPriceServiceError } from "@domain/dealer-price"
 import {
   AlreadyPaidError,
   InsufficientBalanceError,
@@ -26,8 +27,10 @@ import {
   PaymentInitiationMethod,
   PaymentInputValidator,
   SettlementMethod,
+  WalletCurrency,
 } from "@domain/wallets"
 import { LockService } from "@services"
+import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import {
@@ -408,6 +411,8 @@ const executePaymentViaLn = async ({
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.Lightning,
   })
+  let cents: UsdCents | undefined
+
   const { paymentHash } = decodedInvoice
 
   const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
@@ -445,6 +450,12 @@ const executePaymentViaLn = async ({
   const amountDisplayCurrency = dCConverter.fromSats(sats)
   const feeRoutingDisplayCurrency = dCConverter.fromSats(feeRouting)
 
+  if (senderWallet.currency === WalletCurrency.Usd) {
+    const dealerPriceService = DealerPriceService()
+    const cents = await dealerPriceService.getCentsFromSatsForImmediateSell(sats)
+    if (cents instanceof DealerPriceServiceError) return cents
+  }
+
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
     async (lock) => {
@@ -464,6 +475,7 @@ const executePaymentViaLn = async ({
           paymentHash,
           description: decodedInvoice.description,
           sats,
+          cents,
           feeRouting,
           amountDisplayCurrency,
           feeRoutingDisplayCurrency,
