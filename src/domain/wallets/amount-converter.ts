@@ -1,12 +1,15 @@
+import { DealerPriceServiceError } from "@domain/dealer-price"
 import { NotImplementedError, NotReachableError } from "@domain/errors"
 import { WalletCurrency } from "@domain/wallets"
+
+const defaultTimeToExpiryInSeconds = (60 * 2) as Seconds
 
 export const AmountConverter = ({
   displayPriceFns,
   dealerFns,
 }: {
   displayPriceFns: DisplayCurrencyConversionRate
-  dealerFns: DealerFns
+  dealerFns: IDealerPriceService
 }) => {
   const getAmountsReceive = async ({
     walletCurrency,
@@ -27,7 +30,8 @@ export const AmountConverter = ({
           cents: undefined,
         }
       } else {
-        const cents = await dealerFns.buyUsdImmediate(sats)
+        const cents = await dealerFns.getCentsFromSatsForImmediateBuy(sats)
+        if (cents instanceof DealerPriceServiceError) return cents
         return {
           sats,
           amountDisplayCurrency,
@@ -43,11 +47,15 @@ export const AmountConverter = ({
 
       if (walletCurrency === WalletCurrency.Btc) {
         return new NotImplementedError(
-          "unsupposed use cas: walletCurrency = Btc, receive from cents",
+          "unsupported use case: walletCurrency = Btc, receive from cents",
         )
       } else {
         const amountDisplayCurrency = displayPriceFns.fromCents(cents)
-        const sats = await dealerFns.getBuyUsdQuoteFromCents(cents)
+        const sats = await dealerFns.getSatsFromCentsForFutureBuy(
+          cents,
+          defaultTimeToExpiryInSeconds,
+        )
+        if (sats instanceof DealerPriceServiceError) return sats
         return {
           sats,
           amountDisplayCurrency,
@@ -79,7 +87,8 @@ export const AmountConverter = ({
           amountDisplayCurrency,
         }
       } else {
-        const cents = await dealerFns.sellUsdImmediateFromSats(sats)
+        const cents = await dealerFns.getCentsFromSatsForImmediateSell(sats)
+        if (cents instanceof DealerPriceServiceError) return cents
         return {
           sats,
           amountDisplayCurrency,
@@ -91,11 +100,12 @@ export const AmountConverter = ({
 
       if (walletCurrency === WalletCurrency.Btc) {
         return new NotImplementedError(
-          "unsupposed use cas: walletCurrency = Btc, send with cents",
+          "unsupported use case: walletCurrency = Btc, send with cents",
         )
       } else {
         const amountDisplayCurrency = displayPriceFns.fromCents(cents)
-        const sats = await dealerFns.sellUsdImmediate(cents)
+        const sats = await dealerFns.getSatsFromCentsForImmediateSell(cents)
+        if (sats instanceof DealerPriceServiceError) return sats
         return {
           sats,
           amountDisplayCurrency,

@@ -7,7 +7,7 @@ import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { AmountConverter, checkedToWalletId, WalletCurrency } from "@domain/wallets"
-import { Dealer } from "@services/dealer"
+import { DealerPriceService } from "@services/dealer-price"
 import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 import { consumeLimiter } from "@services/rate-limit"
@@ -191,7 +191,7 @@ const addInvoiceFiatDenomiation = async ({
 
   const displayPriceFns = DisplayCurrencyConversionRate(price)
 
-  const dealer = Dealer()
+  const dealer = DealerPriceService()
 
   const amountConverter = AmountConverter({ dealerFns: dealer, displayPriceFns })
 

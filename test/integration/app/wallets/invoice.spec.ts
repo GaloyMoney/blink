@@ -29,6 +29,7 @@ let walletIdUsd: WalletId
 let accountIdB: AccountId
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
+jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
 
 const walletInvoices = WalletInvoicesRepository()
 
