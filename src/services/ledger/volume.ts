@@ -1,86 +1,49 @@
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerServiceError, UnknownLedgerError } from "@domain/ledger/errors"
-import { addEventToCurrentSpan } from "@services/tracing"
+import { addAttributesToCurrentSpan, addEventToCurrentSpan } from "@services/tracing"
 
 import { Transaction } from "./books"
 
-export const volume = {
-  allPaymentVolumeSince: async ({
-    walletId,
-    timestamp,
-  }: {
-    walletId: WalletId
-    timestamp: Date
-  }) => {
-    return txVolumeSince({
-      walletId,
-      timestamp,
-      txnTypes: [
-        LedgerTransactionType.IntraLedger,
-        LedgerTransactionType.OnchainIntraLedger,
-        LedgerTransactionType.Payment,
-        LedgerTransactionType.OnchainPayment,
-      ],
-    })
-  },
+export const TxnGroups = {
+  allPaymentVolumeSince: [
+    LedgerTransactionType.IntraLedger,
+    LedgerTransactionType.OnchainIntraLedger,
+    LedgerTransactionType.Payment,
+    LedgerTransactionType.OnchainPayment,
+  ],
+  externalPaymentVolumeSince: [
+    LedgerTransactionType.Payment,
+    LedgerTransactionType.OnchainPayment,
+  ],
+  intraledgerTxBaseVolumeSince: [
+    LedgerTransactionType.IntraLedger,
+    LedgerTransactionType.OnchainIntraLedger,
+  ],
+  allTxBaseVolumeSince: Object.values(LedgerTransactionType),
+} as const
 
-  externalPaymentVolumeSince: async ({
-    walletId,
-    timestamp,
-  }: {
-    walletId: WalletId
-    timestamp: Date
-  }) => {
+const volumeFn =
+  (txnGroup: TxnGroup) =>
+  async ({ walletId, timestamp }: { walletId: WalletId; timestamp: Date }) => {
     return txVolumeSince({
       walletId,
       timestamp,
-      txnTypes: [LedgerTransactionType.Payment, LedgerTransactionType.OnchainPayment],
+      txnGroup,
     })
-  },
-
-  intraledgerTxBaseVolumeSince: async ({
-    walletId,
-    timestamp,
-  }: {
-    walletId: WalletId
-    timestamp: Date
-  }) => {
-    return txVolumeSince({
-      walletId,
-      timestamp,
-      txnTypes: [
-        LedgerTransactionType.IntraLedger,
-        LedgerTransactionType.OnchainIntraLedger,
-      ],
-    })
-  },
-
-  allTxBaseVolumeSince: async ({
-    walletId,
-    timestamp,
-  }: {
-    walletId: WalletId
-    timestamp: Date
-  }) => {
-    return txVolumeSince({
-      walletId,
-      timestamp,
-      txnTypes: Object.values(LedgerTransactionType),
-    })
-  },
-}
+  }
 
 const txVolumeSince = async ({
   walletId,
   timestamp,
-  txnTypes,
+  txnGroup,
 }: {
   walletId: WalletId
   timestamp: Date
-  txnTypes: LedgerTransactionType[]
+  txnGroup: TxnGroup
 }): Promise<TxBaseVolume | LedgerServiceError> => {
   const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
 
+  const txnTypes: TxnTypes = TxnGroups[txnGroup]
   const txnTypesObj = txnTypes.map((txnType) => ({
     type: txnType,
   }))
@@ -105,11 +68,22 @@ const txVolumeSince = async ({
     ])
     addEventToCurrentSpan("volume aggregation ends")
 
-    return {
-      outgoingBaseAmount: result?.outgoingBaseAmount ?? (0 as CurrencyBaseAmount),
-      incomingBaseAmount: result?.incomingBaseAmount ?? (0 as CurrencyBaseAmount),
-    }
+    const outgoingBaseAmount = result?.outgoingBaseAmount ?? (0 as CurrencyBaseAmount)
+    const incomingBaseAmount = result?.incomingBaseAmount ?? (0 as CurrencyBaseAmount)
+    addAttributesToCurrentSpan({
+      "txVolume.function": txnGroup,
+      "txVolume.outgoing": outgoingBaseAmount.toString(),
+      "txVolume.incoming": incomingBaseAmount.toString(),
+    })
+    return { outgoingBaseAmount, incomingBaseAmount }
   } catch (err) {
     return new UnknownLedgerError(err)
   }
+}
+
+export const volume = {
+  allPaymentVolumeSince: volumeFn("allPaymentVolumeSince"),
+  externalPaymentVolumeSince: volumeFn("externalPaymentVolumeSince"),
+  intraledgerTxBaseVolumeSince: volumeFn("intraledgerTxBaseVolumeSince"),
+  allTxBaseVolumeSince: volumeFn("allTxBaseVolumeSince"),
 }

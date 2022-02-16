@@ -1,3 +1,6 @@
+type TxnGroup = keyof typeof import("./volume").TxnGroups
+type TxnTypes = typeof import("./volume").TxnGroups[TxnGroup]
+
 type LedgerMetadata = {
   type: LedgerTransactionType
   pending: boolean

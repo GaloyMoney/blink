@@ -3,6 +3,7 @@ import {
   TwoFALimitsExceededError,
   WithdrawalLimitsExceededError,
 } from "@domain/errors"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 export const LimitsChecker = ({
   accountLimits,
@@ -15,7 +16,13 @@ export const LimitsChecker = ({
     amount,
     walletVolume,
   }: LimiterCheckInputs): true | LimitsExceededError => {
-    const remainingTwoFALimit = twoFALimits.threshold - walletVolume.outgoingBaseAmount
+    const limit = twoFALimits.threshold
+    const remainingTwoFALimit = limit - walletVolume.outgoingBaseAmount
+    addAttributesToCurrentSpan({
+      "txVolume.threshold": limit,
+      "txVolume.limitCheck": "checkTwoFA",
+    })
+
     if (remainingTwoFALimit < amount) {
       return new TwoFALimitsExceededError()
     }
@@ -26,8 +33,13 @@ export const LimitsChecker = ({
     amount,
     walletVolume,
   }: LimiterCheckInputs): true | LimitsExceededError => {
-    const remainingLimit =
-      accountLimits.intraLedgerLimit - walletVolume.outgoingBaseAmount
+    const limit = accountLimits.intraLedgerLimit
+    const remainingLimit = limit - walletVolume.outgoingBaseAmount
+    addAttributesToCurrentSpan({
+      "txVolume.threshold": limit,
+      "txVolume.limitCheck": "checkIntraledger",
+    })
+
     if (remainingLimit < amount) {
       return new IntraledgerLimitsExceededError(
         `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`,
@@ -40,7 +52,12 @@ export const LimitsChecker = ({
     amount,
     walletVolume,
   }: LimiterCheckInputs): true | LimitsExceededError => {
-    const remainingLimit = accountLimits.withdrawalLimit - walletVolume.outgoingBaseAmount
+    const limit = accountLimits.withdrawalLimit
+    const remainingLimit = limit - walletVolume.outgoingBaseAmount
+    addAttributesToCurrentSpan({
+      "txVolume.threshold": limit,
+      "txVolume.limitCheck": "checkWithdrawal",
+    })
     if (remainingLimit < amount) {
       return new WithdrawalLimitsExceededError(
         `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`,
