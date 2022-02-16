@@ -4,7 +4,7 @@ import { addEventToCurrentSpan } from "@services/tracing"
 
 import { Transaction } from "./books"
 
-const txnTypes = {
+export const TxnGroups = {
   allPaymentVolumeSince: [
     LedgerTransactionType.IntraLedger,
     LedgerTransactionType.OnchainIntraLedger,
@@ -23,26 +23,27 @@ const txnTypes = {
 } as const
 
 const volumeFn =
-  (txnTypes) =>
+  (txnGroup: TxnGroup) =>
   async ({ walletId, timestamp }: { walletId: WalletId; timestamp: Date }) => {
     return txVolumeSince({
       walletId,
       timestamp,
-      txnTypes,
+      txnGroup,
     })
   }
 
 const txVolumeSince = async ({
   walletId,
   timestamp,
-  txnTypes,
+  txnGroup,
 }: {
   walletId: WalletId
   timestamp: Date
-  txnTypes: LedgerTransactionType[]
+  txnGroup: TxnGroup
 }): Promise<TxBaseVolume | LedgerServiceError> => {
   const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
 
+  const txnTypes: TxnTypes = TxnGroups[txnGroup]
   const txnTypesObj = txnTypes.map((txnType) => ({
     type: txnType,
   }))
@@ -77,8 +78,8 @@ const txVolumeSince = async ({
 }
 
 export const volume = {
-  allPaymentVolumeSince: volumeFn(txnTypes.allPaymentVolumeSince),
-  externalPaymentVolumeSince: volumeFn(txnTypes.externalPaymentVolumeSince),
-  intraledgerTxBaseVolumeSince: volumeFn(txnTypes.intraledgerTxBaseVolumeSince),
-  allTxBaseVolumeSince: volumeFn(txnTypes.allTxBaseVolumeSince),
+  allPaymentVolumeSince: volumeFn("allPaymentVolumeSince"),
+  externalPaymentVolumeSince: volumeFn("externalPaymentVolumeSince"),
+  intraledgerTxBaseVolumeSince: volumeFn("intraledgerTxBaseVolumeSince"),
+  allTxBaseVolumeSince: volumeFn("allTxBaseVolumeSince"),
 }
