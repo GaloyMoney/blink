@@ -6,6 +6,8 @@ import * as serviceLedger from "@services/ledger"
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 
+jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
+
 jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")

@@ -180,25 +180,23 @@ const addSendNoInternalFee = async ({
     const liabilitiesDealerBtcWalletId = toLiabilitiesWalletId(dealerBtcWalletId)
     const liabilitiesDealerUsdWalletId = toLiabilitiesWalletId(dealerUsdWalletId)
 
+    const metaBtc = {
+      ...metaInput,
+      currency: WalletCurrency.Btc,
+    }
+
+    const metaUsd = {
+      ...metaInput,
+      currency: WalletCurrency.Btc,
+    }
+
     try {
       const entry = MainBook.entry(description)
       entry
-        .credit(lndAccountingPath, sats, {
-          ...metaInput,
-          currency: WalletCurrency.Btc,
-        })
-        .debit(liabilitiesDealerBtcWalletId, sats, {
-          ...metaInput,
-          currency: WalletCurrency.Btc,
-        })
-        .credit(liabilitiesWalletId, cents, {
-          ...metaInput,
-          currency: WalletCurrency.Usd,
-        })
-        .debit(liabilitiesDealerUsdWalletId, cents, {
-          ...metaInput,
-          currency: WalletCurrency.Usd,
-        })
+        .credit(lndAccountingPath, sats, metaBtc)
+        .debit(liabilitiesDealerBtcWalletId, sats, metaBtc)
+        .credit(liabilitiesWalletId, cents, metaUsd)
+        .debit(liabilitiesDealerUsdWalletId, cents, metaUsd)
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)

@@ -1,8 +1,9 @@
 import { getCurrentPrice } from "@app/prices"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
+import { DealerPriceServiceError } from "@domain/dealer-price"
 import { CouldNotFindError } from "@domain/errors"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
-import { AmountConverter, DepositFeeCalculator, WalletCurrency } from "@domain/wallets"
+import { DepositFeeCalculator, WalletCurrency } from "@domain/wallets"
 import { LockService } from "@services"
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
@@ -92,7 +93,9 @@ const updatePendingInvoice = async ({
 
   const walletInvoicesRepo = WalletInvoicesRepository()
 
-  const { pubkey, paymentHash, walletId, currency: walletCurrency, cents } = walletInvoice
+  const { pubkey, paymentHash, walletId, currency: walletCurrency } = walletInvoice
+  let { cents } = walletInvoice
+
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
     const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
@@ -112,6 +115,11 @@ const updatePendingInvoice = async ({
     return false
   }
 
+  const {
+    lnInvoice: { description },
+    roundedDownReceived,
+  } = lnInvoiceLookup
+
   const pendingInvoiceLogger = logger.child({
     hash: paymentHash,
     walletId,
@@ -124,6 +132,13 @@ const updatePendingInvoice = async ({
   if (walletInvoice.paid) {
     pendingInvoiceLogger.info("invoice has already been processed")
     return true
+  }
+
+  if (walletCurrency === WalletCurrency.Usd && !cents) {
+    const dealerPrice = DealerPriceService()
+    const cents_ = await dealerPrice.getCentsFromSatsForImmediateBuy(roundedDownReceived)
+    if (cents_ instanceof DealerPriceServiceError) return cents_
+    cents = cents_
   }
 
   const lockService = LockService()
@@ -151,32 +166,11 @@ const updatePendingInvoice = async ({
     const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
     if (invoicePaid instanceof Error) return invoicePaid
 
-    const {
-      lnInvoice: { description },
-      roundedDownReceived,
-    } = lnInvoiceLookup
     const feeInboundLiquidity = DepositFeeCalculator().lnDepositFee()
 
     const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
     const amountDisplayCurrency = dCConverter.fromSats(roundedDownReceived)
     const feeInboundLiquidityDisplayCurrency = dCConverter.fromSats(feeInboundLiquidity)
-
-    let centsImmediate: UsdCents | undefined
-    // case of an amountless invoice with Usd Wallet
-    if (walletCurrency === WalletCurrency.Usd && !cents) {
-      const converter = AmountConverter({
-        dCConverter,
-        dealerFns: DealerPriceService(),
-      })
-      const walletCurrency = WalletCurrency.Usd
-      const amounts = await converter.getAmountsReceive({
-        walletCurrency,
-        sats: roundedDownReceived,
-        order: "immediate",
-      })
-      if (amounts instanceof Error) return amounts
-      ;({ cents: centsImmediate } = amounts) // FIXME: not type safe. we should always get cents
-    }
 
     const ledgerService = LedgerService()
     const result = await ledgerService.addLnTxReceive({
@@ -185,7 +179,7 @@ const updatePendingInvoice = async ({
       paymentHash,
       description,
       sats: roundedDownReceived,
-      cents: cents || centsImmediate,
+      cents,
       amountDisplayCurrency,
       feeInboundLiquidity,
       feeInboundLiquidityDisplayCurrency,

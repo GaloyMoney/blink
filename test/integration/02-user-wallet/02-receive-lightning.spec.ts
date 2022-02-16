@@ -2,7 +2,7 @@ import { Lightning } from "@app"
 import * as Wallets from "@app/wallets"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { toSats } from "@domain/bitcoin"
-import { PaymentInitiationMethod } from "@domain/wallets"
+import { PaymentInitiationMethod, WalletCurrency } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
 
@@ -12,16 +12,19 @@ import {
   getBTCBalance,
   getDefaultWalletIdByTestUserRef,
   getHash,
+  getUsdWalletIdByTestUserRef,
   lndOutside1,
   pay,
 } from "test/helpers"
 
 let walletIdB: WalletId
+let walletIdUsdB: WalletId
 let initBalanceB: Satoshis
 
 beforeAll(async () => {
   await createUserAndWalletFromUserRef("B")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
+  walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
 })
 
 beforeEach(async () => {
@@ -102,6 +105,65 @@ describe("UserWallet - Lightning", () => {
 
     const finalBalance = await getBTCBalance(walletIdB)
     expect(finalBalance).toBe(initBalanceB + sats)
+  })
+
+  it("receives payment from outside to USD wallet", async () => {
+    const cents = 100
+    const memo = "myMemo"
+
+    const lnInvoice = await Wallets.addInvoiceForSelf({
+      walletId: walletIdUsdB as WalletId,
+      amount: cents,
+      memo,
+    })
+    if (lnInvoice instanceof Error) return lnInvoice
+    const { paymentRequest: invoice } = lnInvoice
+
+    const hash = getHash(invoice)
+
+    await pay({ lnd: lndOutside1, request: invoice })
+
+    expect(
+      await Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash as PaymentHash,
+        logger: baseLogger,
+      }),
+    ).not.toBeInstanceOf(Error)
+    // should be idempotent (not return error when called again)
+    expect(
+      await Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash as PaymentHash,
+        logger: baseLogger,
+      }),
+    ).not.toBeInstanceOf(Error)
+
+    const ledger = LedgerService()
+    const ledgerTxs = await ledger.getTransactionsByHash(hash)
+    if (ledgerTxs instanceof Error) throw ledgerTxs
+
+    const ledgerTx = ledgerTxs[0]
+
+    expect(ledgerTx.credit).toBe(cents)
+    expect(ledgerTx.currency).toBe(WalletCurrency.Usd)
+    expect(ledgerTx.lnMemo).toBe(memo)
+    expect(ledgerTx.pendingConfirmation).toBe(false)
+
+    // check that memo is not filtered by spam filter
+    const { result: txns, error } = await Wallets.getTransactionsForWalletId({
+      walletId: walletIdUsdB,
+    })
+    if (error instanceof Error || txns === null) {
+      throw error
+    }
+    const noSpamTxn = txns.find(
+      (txn) =>
+        txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
+        txn.initiationVia.paymentHash === hash,
+    ) as WalletTransaction
+    expect(noSpamTxn.memo).toBe(memo)
+
+    const finalBalance = await getBTCBalance(walletIdUsdB)
+    expect(finalBalance).toBe(initBalanceB + cents)
   })
 
   it("receives zero amount invoice", async () => {
