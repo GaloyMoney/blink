@@ -1,7 +1,7 @@
 #@ load("@ytt:data", "data")
 
 #@ def pipeline_image():
-#@   return data.values.docker_registry + "/galoy-app-pipeline"
+#@   return data.values.docker_registry + "/galoy-app-pipeline-dind"
 #@ end
 
 #@ def galoy_image():
@@ -118,11 +118,15 @@ jobs:
     - { get: pipeline-tasks }
     - { get: bundled-deps, tags: ["galoy-staging"], trigger: true}
   - task: test-e2e
+    privileged: true
     timeout: 12m
     tags: ["galoy-staging"]
     config:
       platform: linux
-      image_resource: #@ task_image_config()
+      image_resource:
+        type: docker-image
+        source:
+          repository: amidos/dcind
       inputs:
       - name: bundled-deps
       - name: pipeline-tasks
@@ -148,10 +152,14 @@ jobs:
     - { get: bundled-deps, tags: ["galoy-staging"], trigger: true}
   - task: test-integration
     timeout: 12m
+    privileged: true
     tags: ["galoy-staging"]
     config:
       platform: linux
-      image_resource: #@ task_image_config()
+      image_resource:
+        type: docker-image
+        source:
+          repository: amidos/dcind
       inputs:
       - name: bundled-deps
       - name: pipeline-tasks
@@ -300,7 +308,6 @@ jobs:
   plan:
   - in_parallel:
     - get: repo
-      trigger: true
       passed:
       - check-code
       - test-unit
