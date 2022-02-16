@@ -48,11 +48,9 @@ if (process.env.LOCAL === "docker-compose") {
 }
 
 export const redis = new Redis(connectionObj)
-
 redis.on("error", (err) => baseLogger.error({ err }, "Redis error"))
 
 export const redisSub = new Redis(connectionObj)
-
 redisSub.on("error", (err) => baseLogger.error({ err }, "redisSub error"))
 
 export const redisPubSub = new RedisPubSub({

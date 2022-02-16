@@ -1,3 +1,5 @@
+// TODO: use redlock v5 when refactoring out of core
+
 import Redlock, { Lock } from "redlock"
 import bluebird from "bluebird"
 

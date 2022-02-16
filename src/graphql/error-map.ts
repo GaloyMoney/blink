@@ -310,6 +310,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "DealerPriceError":
     case "DealerPriceServiceError":
     case "UnknownDealerPriceServiceError":
+    case "InvalidNegativeAmountError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 

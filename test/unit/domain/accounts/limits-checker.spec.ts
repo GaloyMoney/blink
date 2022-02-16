@@ -1,38 +1,38 @@
-import { getTwoFALimits, getUserLimits } from "@config"
+import { getTwoFALimits, getAccountLimits } from "@config"
 import { LimitsChecker } from "@domain/accounts"
-import { toSats } from "@domain/bitcoin"
 import { LimitsExceededError } from "@domain/errors"
+import { toCents } from "@domain/fiat"
 
 describe("LimitsChecker", () => {
-  let paymentAmount: Satoshis
+  let paymentAmount: UsdCents
   let limitsChecker: LimitsChecker
-  let walletVolumeIntraledger: TxVolume
-  let walletVolumeWithdrawal: TxVolume
-  let walletVolumeTwoFA: TxVolume
+  let walletVolumeIntraledger: TxBaseVolume
+  let walletVolumeWithdrawal: TxBaseVolume
+  let walletVolumeTwoFA: TxBaseVolume
   beforeAll(() => {
     const level: AccountLevel = 1
-    const userLimits = getUserLimits({ level })
+    const accountLimits = getAccountLimits({ level })
     const twoFALimits = getTwoFALimits()
 
-    paymentAmount = toSats(10_000)
+    paymentAmount = toCents(10_000)
     limitsChecker = LimitsChecker({
-      userLimits,
+      accountLimits,
       twoFALimits,
     })
 
     walletVolumeIntraledger = {
-      outgoingSats: toSats(userLimits.onUsLimit - paymentAmount),
-      incomingSats: toSats(0),
+      outgoingBaseAmount: toCents(accountLimits.intraLedgerLimit - paymentAmount),
+      incomingBaseAmount: toCents(0),
     }
 
     walletVolumeWithdrawal = {
-      outgoingSats: toSats(userLimits.withdrawalLimit - paymentAmount),
-      incomingSats: toSats(0),
+      outgoingBaseAmount: toCents(accountLimits.withdrawalLimit - paymentAmount),
+      incomingBaseAmount: toCents(0),
     }
 
     walletVolumeTwoFA = {
-      outgoingSats: toSats(twoFALimits.threshold - paymentAmount),
-      incomingSats: toSats(0),
+      outgoingBaseAmount: toCents(twoFALimits.threshold - paymentAmount),
+      incomingBaseAmount: toCents(0),
     }
   })
 
@@ -58,19 +58,19 @@ describe("LimitsChecker", () => {
 
   it("passes for amount below limit", () => {
     const intraledgerLimitCheck = limitsChecker.checkIntraledger({
-      amount: toSats(paymentAmount - 1),
+      amount: toCents(paymentAmount - 1),
       walletVolume: walletVolumeIntraledger,
     })
     expect(intraledgerLimitCheck).not.toBeInstanceOf(Error)
 
     const withdrawalLimitCheck = limitsChecker.checkWithdrawal({
-      amount: toSats(paymentAmount - 1),
+      amount: toCents(paymentAmount - 1),
       walletVolume: walletVolumeWithdrawal,
     })
     expect(withdrawalLimitCheck).not.toBeInstanceOf(Error)
 
     const twoFALimitCheck = limitsChecker.checkTwoFA({
-      amount: toSats(paymentAmount - 1),
+      amount: toCents(paymentAmount - 1),
       walletVolume: walletVolumeTwoFA,
     })
     expect(twoFALimitCheck).not.toBeInstanceOf(Error)
@@ -78,7 +78,7 @@ describe("LimitsChecker", () => {
 
   it("returns an error for exceeded intraledger amount", () => {
     const intraledgerLimitCheck = limitsChecker.checkIntraledger({
-      amount: toSats(paymentAmount + 1),
+      amount: toCents(paymentAmount + 1),
       walletVolume: walletVolumeIntraledger,
     })
     expect(intraledgerLimitCheck).toBeInstanceOf(LimitsExceededError)
@@ -86,7 +86,7 @@ describe("LimitsChecker", () => {
 
   it("returns an error for exceeded withdrawal amount", () => {
     const withdrawalLimitCheck = limitsChecker.checkWithdrawal({
-      amount: toSats(paymentAmount + 1),
+      amount: toCents(paymentAmount + 1),
       walletVolume: walletVolumeWithdrawal,
     })
     expect(withdrawalLimitCheck).toBeInstanceOf(LimitsExceededError)
@@ -94,7 +94,7 @@ describe("LimitsChecker", () => {
 
   it("returns an error for exceeded 2FA amount", () => {
     const twoFALimitCheck = limitsChecker.checkTwoFA({
-      amount: toSats(paymentAmount + 1),
+      amount: toCents(paymentAmount + 1),
       walletVolume: walletVolumeTwoFA,
     })
     expect(twoFALimitCheck).toBeInstanceOf(LimitsExceededError)

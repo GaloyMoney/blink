@@ -171,9 +171,14 @@ type FeeReimbursement = {
   getReimbursement(actualFee: Satoshis): Satoshis | FeeDifferenceError
 }
 
-type TxVolume = {
-  outgoingSats: Satoshis
-  incomingSats: Satoshis
+type TxBaseVolume = {
+  outgoingBaseAmount: CurrencyBaseAmount
+  incomingBaseAmount: CurrencyBaseAmount
+}
+
+type TxCentsVolume = {
+  outgoingCents: UsdCents
+  incomingCents: UsdCents
 }
 
 interface IGetVolumeArgs {
@@ -181,7 +186,7 @@ interface IGetVolumeArgs {
   timestamp: Date
 }
 
-type VolumeResult = Promise<TxVolume | LedgerServiceError>
+type VolumeResult = Promise<TxBaseVolume | LedgerServiceError>
 
 interface ILedgerService {
   getTransactionById(
@@ -209,13 +214,13 @@ interface ILedgerService {
 
   getWalletBalance(walletId: WalletId): Promise<Satoshis | LedgerServiceError>
 
-  allPaymentVolumeSince({ walletId, timestamp }: IGetVolumeArgs): VolumeResult
+  allPaymentVolumeSince(args: IGetVolumeArgs): VolumeResult
 
-  externalPaymentVolumeSince({ walletId, timestamp }: IGetVolumeArgs): VolumeResult
+  externalPaymentVolumeSince(args: IGetVolumeArgs): VolumeResult
 
-  allTxVolumeSince({ walletId, timestamp }: IGetVolumeArgs): VolumeResult
+  allTxBaseVolumeSince(args: IGetVolumeArgs): VolumeResult
 
-  intraledgerTxVolumeSince({ walletId, timestamp }: IGetVolumeArgs): VolumeResult
+  intraledgerTxBaseVolumeSince(args: IGetVolumeArgs): VolumeResult
 
   isOnChainTxRecorded({
     walletId,
@@ -279,10 +284,11 @@ interface ILedgerService {
 }
 
 type ActivityCheckerConfig = {
-  monthlyVolumeThreshold: Satoshis
+  monthlyVolumeThreshold: UsdCents
+  dCConverter: DisplayCurrencyConverter
   getVolumeFn: (args: IGetVolumeArgs) => VolumeResult
 }
 
 type ActivityChecker = {
-  aboveThreshold: (walletIds: WalletId[]) => Promise<boolean | LedgerServiceError>
+  aboveThreshold: (wallets: Wallet[]) => Promise<boolean | LedgerServiceError>
 }

@@ -3,7 +3,7 @@ import { BTC_NETWORK, getColdStorageConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "
 import { toSats } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { RebalanceChecker } from "@domain/cold-storage"
-import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { ColdStorageService } from "@services/cold-storage"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
@@ -59,7 +59,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
 
   const description = `deposit of ${rebalanceAmount} sats to the cold storage wallet`
 
-  const converter = DisplayCurrencyConversionRate(displayCurrencyPerSat)
+  const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
   const amountDisplayCurrency = converter.fromSats(rebalanceAmount)
   const feeDisplayCurrency = converter.fromSats(fee)
 

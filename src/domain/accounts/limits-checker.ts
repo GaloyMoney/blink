@@ -5,20 +5,17 @@ import {
 } from "@domain/errors"
 
 export const LimitsChecker = ({
-  userLimits,
+  accountLimits,
   twoFALimits,
 }: {
-  userLimits: IUserLimits
+  accountLimits: IAccountLimits
   twoFALimits: TwoFALimits
 }): LimitsChecker => {
   const checkTwoFA = ({
     amount,
     walletVolume,
-  }: {
-    amount: Satoshis
-    walletVolume: TxVolume
-  }): true | LimitsExceededError => {
-    const remainingTwoFALimit = twoFALimits.threshold - walletVolume.outgoingSats
+  }: LimiterCheckInputs): true | LimitsExceededError => {
+    const remainingTwoFALimit = twoFALimits.threshold - walletVolume.outgoingBaseAmount
     if (remainingTwoFALimit < amount) {
       return new TwoFALimitsExceededError()
     }
@@ -28,14 +25,12 @@ export const LimitsChecker = ({
   const checkIntraledger = ({
     amount,
     walletVolume,
-  }: {
-    amount: Satoshis
-    walletVolume: TxVolume
-  }): true | LimitsExceededError => {
-    const remainingLimit = userLimits.onUsLimit - walletVolume.outgoingSats
+  }: LimiterCheckInputs): true | LimitsExceededError => {
+    const remainingLimit =
+      accountLimits.intraLedgerLimit - walletVolume.outgoingBaseAmount
     if (remainingLimit < amount) {
       return new IntraledgerLimitsExceededError(
-        `Cannot transfer more than ${userLimits.onUsLimit} sats in 24 hours`,
+        `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`,
       )
     }
     return true
@@ -44,14 +39,11 @@ export const LimitsChecker = ({
   const checkWithdrawal = ({
     amount,
     walletVolume,
-  }: {
-    amount: Satoshis
-    walletVolume: TxVolume
-  }): true | LimitsExceededError => {
-    const remainingLimit = userLimits.withdrawalLimit - walletVolume.outgoingSats
+  }: LimiterCheckInputs): true | LimitsExceededError => {
+    const remainingLimit = accountLimits.withdrawalLimit - walletVolume.outgoingBaseAmount
     if (remainingLimit < amount) {
       return new WithdrawalLimitsExceededError(
-        `Cannot transfer more than ${userLimits.withdrawalLimit} sats in 24 hours`,
+        `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`,
       )
     }
     return true

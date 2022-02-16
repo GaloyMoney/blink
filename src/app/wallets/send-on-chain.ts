@@ -9,7 +9,7 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
 import { LockService } from "@services"
 import { LedgerService } from "@services/ledger"
@@ -50,9 +50,21 @@ export const payOnChainByWalletIdWithTwoFA = async ({
   if (user instanceof Error) return user
   const { twoFA } = user
 
+  // FIXME: inefficient. wallet also fetched in lnSendPayment
+  const senderWallet = await WalletsRepository().findById(senderWalletId)
+  if (senderWallet instanceof Error) return senderWallet
+
+  const displayCurrencyPerSat = await getCurrentPrice()
+  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+
+  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+  // End FIXME
+
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
         walletId: senderWalletId,
+        walletCurrency: senderWallet.currency,
+        dCConverter,
         amount,
         twoFASecret: twoFA.secret,
         twoFAToken,
@@ -163,18 +175,21 @@ const executePaymentViaIntraledger = async ({
 }): Promise<PaymentSendStatus | ApplicationError> => {
   if (recipientWallet.id === senderWallet.id) return new SelfPaymentError()
 
+  const displayCurrencyPerSat = await getCurrentPrice()
+  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+
+  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+
   const intraledgerLimitCheck = await checkIntraledgerLimits({
     amount,
+    dCConverter,
     walletId: senderWallet.id,
+    walletCurrency: senderWallet.currency,
     account: senderAccount,
   })
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
-  const displayCurrencyPerSat = await getCurrentPrice()
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
-
-  const amountDisplayCurrency =
-    DisplayCurrencyConversionRate(displayCurrencyPerSat).fromSats(amount)
+  const amountDisplayCurrency = dCConverter.fromSats(amount)
 
   const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
   if (recipientAccount instanceof Error) return recipientAccount
@@ -258,9 +273,16 @@ const executePaymentViaOnChain = async ({
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
 
+  const displayCurrencyPerSat = await getCurrentPrice()
+  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+
+  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+
   const withdrawalLimitCheck = await checkWithdrawalLimits({
     amount,
+    dCConverter,
     walletId: senderWallet.id,
+    walletCurrency: senderWallet.currency,
     account: senderAccount,
   })
   if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
@@ -285,9 +307,6 @@ const executePaymentViaOnChain = async ({
   if (onChainAvailableBalance instanceof Error) return onChainAvailableBalance
   if (onChainAvailableBalance < amountToSend + estimatedFee)
     return new RebalanceNeededError()
-
-  const displayCurrencyPerSat = await getCurrentPrice()
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
@@ -333,9 +352,8 @@ const executePaymentViaOnChain = async ({
 
         const sats = toSats(amountToSend + totalFee)
 
-        const converter = DisplayCurrencyConversionRate(displayCurrencyPerSat)
-        const amountDisplayCurrency = converter.fromSats(sats)
-        const totalFeeDisplayCurrency = converter.fromSats(totalFee)
+        const amountDisplayCurrency = dCConverter.fromSats(sats)
+        const totalFeeDisplayCurrency = dCConverter.fromSats(totalFee)
 
         return ledgerService.addOnChainTxSend({
           walletId: senderWallet.id,

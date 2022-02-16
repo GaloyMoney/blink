@@ -1,6 +1,9 @@
 import * as mongoose from "mongoose"
 import { LedgerTransactionType } from "@domain/ledger"
 
+// TODO migration:
+// rename type: on_us to intraledger
+
 const Schema = mongoose.Schema
 
 const ledgerTransactionTypes = Object.values(LedgerTransactionType)

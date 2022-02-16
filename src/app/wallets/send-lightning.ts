@@ -19,7 +19,7 @@ import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
 } from "@domain/errors"
-import { DisplayCurrencyConversionRate } from "@domain/fiat/display-currency"
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
 import {
@@ -64,12 +64,24 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
   if (user instanceof Error) return user
   const { twoFA } = user
 
+  // FIXME: inefficient. wallet also fetched in lnSendPayment
+  const senderWallet = await WalletsRepository().findById(senderWalletId)
+  if (senderWallet instanceof Error) return senderWallet
+
+  const displayCurrencyPerSat = await getCurrentPrice()
+  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+
+  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+  // End FIXME
+
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
         amount: lnInvoiceAmount,
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
         walletId: senderWalletId,
+        walletCurrency: senderWallet.currency,
+        dCConverter,
         account: senderAccount,
       })
     : true
@@ -144,12 +156,24 @@ export const payNoAmountInvoiceByWalletIdWithTwoFAArgs = async ({
   const amount = checkedToSats(amountRaw)
   if (amount instanceof Error) return amount
 
+  // FIXME: inefficient. wallet also fetched in lnSendPayment
+  const senderWallet = await WalletsRepository().findById(senderWalletId)
+  if (senderWallet instanceof Error) return senderWallet
+
+  const displayCurrencyPerSat = await getCurrentPrice()
+  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+
+  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+  // End FIXME
+
   const twoFACheck = twoFA?.secret
     ? await checkAndVerifyTwoFA({
         amount,
+        dCConverter,
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
         walletId: senderWalletId,
+        walletCurrency: senderWallet.currency,
         account: senderAccount,
       })
     : true
@@ -285,9 +309,14 @@ const executePaymentViaIntraledger = async ({
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.IntraLedger,
   })
+
+  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+
   const intraledgerLimitCheck = await checkIntraledgerLimits({
     amount,
+    dCConverter,
     walletId: senderWallet.id,
+    walletCurrency: senderWallet.currency,
     account: senderAccount,
   })
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
@@ -306,8 +335,7 @@ const executePaymentViaIntraledger = async ({
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  const amountDisplayCurrency =
-    DisplayCurrencyConversionRate(displayCurrencyPerSat).fromSats(amount)
+  const amountDisplayCurrency = dCConverter.fromSats(amount)
 
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
@@ -382,9 +410,13 @@ const executePaymentViaLn = async ({
   })
   const { paymentHash } = decodedInvoice
 
+  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+
   const withdrawalLimitCheck = await checkWithdrawalLimits({
     amount,
+    dCConverter,
     walletId: senderWallet.id,
+    walletCurrency: senderWallet.currency,
     account: senderAccount,
   })
   if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
@@ -410,9 +442,8 @@ const executePaymentViaLn = async ({
   const feeRouting = route ? route.roundedUpFee : maxFee
   const sats = toSats(amount + feeRouting)
 
-  const convert = DisplayCurrencyConversionRate(displayCurrencyPerSat)
-  const amountDisplayCurrency = convert.fromSats(sats)
-  const feeRoutingDisplayCurrency = convert.fromSats(feeRouting)
+  const amountDisplayCurrency = dCConverter.fromSats(sats)
+  const feeRoutingDisplayCurrency = dCConverter.fromSats(feeRouting)
 
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },

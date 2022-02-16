@@ -8,7 +8,7 @@ import { baseLogger } from "@services/logger"
 
 import {
   checkIsBalanced,
-  createUserWalletFromUserRef,
+  createUserAndWalletFromUserRef,
   getBTCBalance,
   getDefaultWalletIdByTestUserRef,
   getHash,
@@ -20,7 +20,7 @@ let walletIdB: WalletId
 let initBalanceB: Satoshis
 
 beforeAll(async () => {
-  await createUserWalletFromUserRef("B")
+  await createUserAndWalletFromUserRef("B")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
 })
 

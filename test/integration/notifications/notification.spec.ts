@@ -20,9 +20,9 @@ beforeAll(async () => {
 
   spy = jest.spyOn(serviceLedger, "LedgerService").mockImplementation(() => ({
     ...ledgerService,
-    allTxVolumeSince: async () => ({
-      outgoingSats: toSats(10000),
-      incomingSats: toSats(10000),
+    allTxBaseVolumeSince: async () => ({
+      outgoingBaseAmount: toSats(10_000),
+      incomingBaseAmount: toSats(10_000),
     }),
   }))
 })

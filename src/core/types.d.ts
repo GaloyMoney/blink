@@ -7,26 +7,6 @@ type Primitive = string | boolean | number
 // TODO: clean up this section when "constructor typing" work is
 //       being done
 
-type TwoFALimits = {
-  threshold: number
-}
-
-type FeeRates = {
-  depositFeeVariable: number
-  depositFeeFixed: number
-  withdrawFeeVariable: number
-  withdrawFeeFixed: number
-}
-
-type UserLimitsArgs = { level: number; limitsConfig? }
-
-interface IUserLimits {
-  onUsLimit: Satoshis
-  withdrawalLimit: Satoshis
-}
-
-type ITransactionLimits = IUserLimits
-
 type onChainWalletConfig = {
   dustThreshold: number
 }

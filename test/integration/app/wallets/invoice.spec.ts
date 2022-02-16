@@ -6,6 +6,7 @@ import {
   getInvoiceCreateForRecipientAttemptLimits,
 } from "@config"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
+import { CENTS_PER_USD } from "@domain/fiat"
 import {
   InvoiceCreateForRecipientRateLimiterExceededError,
   InvoiceCreateRateLimiterExceededError,
@@ -14,7 +15,7 @@ import { WalletCurrency, WalletType } from "@domain/wallets"
 import { WalletInvoicesRepository } from "@services/mongoose"
 
 import {
-  createUserWalletFromUserRef,
+  createUserAndWalletFromUserRef,
   getAccountIdByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getHash,
@@ -33,11 +34,9 @@ jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
 
 const walletInvoices = WalletInvoicesRepository()
 
-const CENTS_PER_USD = 100
-
 beforeAll(async () => {
   const userRef = "B"
-  await createUserWalletFromUserRef(userRef)
+  await createUserAndWalletFromUserRef(userRef)
 
   walletIdBtc = await getDefaultWalletIdByTestUserRef(userRef)
   accountIdB = await getAccountIdByTestUserRef(userRef)

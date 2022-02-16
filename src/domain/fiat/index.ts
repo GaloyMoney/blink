@@ -1,4 +1,8 @@
-import { InvalidUsdCents, NonIntegerError } from "@domain/errors"
+import {
+  InvalidNegativeAmountError,
+  InvalidUsdCents,
+  NonIntegerError,
+} from "@domain/errors"
 
 export const toCents = (amount: number): UsdCents => {
   return amount as UsdCents
@@ -15,3 +19,15 @@ export const OrderType = {
   Locked: "immediate",
   Active: "quote",
 } as const
+
+export const CENTS_PER_USD = 100
+
+export const add = <T extends number>(arg0: T, arg1: T): T => (arg0 + arg1) as T
+export const sub = <T extends number>(
+  arg0: T,
+  arg1: T,
+): T | InvalidNegativeAmountError => {
+  const result = arg0 - arg1
+  if (result < 0) return new InvalidNegativeAmountError()
+  return result as T
+}

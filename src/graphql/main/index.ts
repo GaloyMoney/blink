@@ -2,13 +2,13 @@ import { GraphQLSchema, lexicographicSortSchema, printSchema } from "graphql"
 
 import { ALL_INTERFACE_TYPES } from "@graphql/types"
 
-import { isDev } from "@config"
+import { isDev, isRunningJest } from "@config"
 
 import QueryType from "./queries"
 import MutationType from "./mutations"
 import SubscriptionType from "./subscriptions"
 
-if (isDev) {
+if (isDev && !isRunningJest) {
   import("@services/fs").then(({ writeSDLFile }) => {
     writeSDLFile(
       __dirname + "/schema.graphql",

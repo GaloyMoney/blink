@@ -9,7 +9,7 @@ import { User } from "@services/mongoose/schema"
 
 import {
   createMandatoryUsers,
-  createUserWalletFromUserRef,
+  createUserAndWalletFromUserRef,
   enable2FA,
   generateTokenHelper,
   getAccountIdByTestUserRef,
@@ -18,7 +18,7 @@ import {
   getUserRecordByTestUserRef,
 } from "test/helpers"
 
-let userTypeA: UserRecord, userTypeC: UserRecord
+let userRecordA: UserRecord, userRecordC: UserRecord
 let walletIdA: WalletId
 let accountIdA: AccountId, accountIdB: AccountId, accountIdC: AccountId
 let userIdA: UserId
@@ -27,12 +27,12 @@ describe("UserWallet", () => {
   beforeAll(async () => {
     await createMandatoryUsers()
 
-    await createUserWalletFromUserRef("A")
-    await createUserWalletFromUserRef("B")
-    await createUserWalletFromUserRef("C")
+    await createUserAndWalletFromUserRef("A")
+    await createUserAndWalletFromUserRef("B")
+    await createUserAndWalletFromUserRef("C")
 
-    userTypeA = await getUserRecordByTestUserRef("A")
-    userTypeC = await getUserRecordByTestUserRef("C")
+    userRecordA = await getUserRecordByTestUserRef("A")
+    userRecordC = await getUserRecordByTestUserRef("C")
 
     walletIdA = await getDefaultWalletIdByTestUserRef("A")
 
@@ -49,7 +49,7 @@ describe("UserWallet", () => {
   })
 
   it("has a title if it was configured", () => {
-    expect(userTypeC.title).toBeTruthy()
+    expect(userRecordC.title).toBeTruthy()
   })
 
   describe("setUsername", () => {
@@ -185,8 +185,8 @@ describe("UserWallet", () => {
       const secret = await enable2FA(userIdA)
       if (secret instanceof Error) return secret
 
-      userTypeA = await getUserRecordByTestUserRef("A")
-      expect(userTypeA.twoFA.secret).toBe(secret)
+      userRecordA = await getUserRecordByTestUserRef("A")
+      expect(userRecordA.twoFA.secret).toBe(secret)
     })
   })
 
@@ -196,11 +196,11 @@ describe("UserWallet", () => {
       const user = await usersRepo.findById(userIdA)
       if (user instanceof Error) throw user
 
-      const token = generateTokenHelper(userTypeA.twoFA.secret)
+      const token = generateTokenHelper(userRecordA.twoFA.secret)
       const result = await delete2fa({ token, userId: userIdA })
       expect(result).toBeTruthy()
-      userTypeA = await getUserRecordByTestUserRef("A")
-      expect(userTypeA.twoFA.secret).toBeNull()
+      userRecordA = await getUserRecordByTestUserRef("A")
+      expect(userRecordA.twoFA.secret).toBeNull()
     })
   })
 })

@@ -1,11 +1,15 @@
 type UsdCents = number & { readonly brand: unique symbol }
 type DisplayCurrencyBaseAmount = number & { readonly brand: unique symbol }
 
+// TODO: a better way to type it can be:
+// <T extends Satoshis | UsdCents> someFunction({amount}: {amount: T})
 type CurrencyBaseAmount = Satoshis | UsdCents
 
-interface DisplayCurrencyConversionRate {
+interface DisplayCurrencyConverter {
   fromSats: (amount: Satoshis) => DisplayCurrencyBaseAmount
   fromCents: (amount: UsdCents) => DisplayCurrencyBaseAmount
+  fromSatsToCents: (amount: Satoshis) => UsdCents
+  fromCentsToSats: (amount: UsdCents) => Satoshis
 }
 
 interface AmountFromSatoshis {
@@ -31,11 +35,11 @@ type GetAmountsSendOrReceiveArgs = {
 } & CentsXORSats
 
 type GetAmountsSendOrReceiveRet =
-  | NotReachableError
-  | NotImplementedError
-  | DealerPriceServiceError
   | {
       amountDisplayCurrency: DisplayCurrencyBaseAmount
       sats: Satoshis
       cents?: UsdCents
     }
+  | NotReachableError
+  | NotImplementedError
+  | DealerPriceServiceError

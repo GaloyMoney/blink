@@ -7,6 +7,9 @@ import * as mongoose from "mongoose"
 
 import { WalletRecord } from "./wallets"
 
+// TODO migration:
+// rename InvoiceUser collection to walletInvoice
+
 // mongoose.set("debug", true)
 
 const Schema = mongoose.Schema

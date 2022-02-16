@@ -1,6 +1,6 @@
 import { addEarn } from "@app/accounts/add-earn"
 import { getTransactionsForWalletId, intraledgerPaymentSendWalletId } from "@app/wallets"
-import { MEMO_SHARING_SATS_THRESHOLD, MS_PER_DAY, onboardingEarn } from "@config"
+import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
@@ -10,7 +10,7 @@ import find from "lodash.find"
 import {
   checkIsBalanced,
   createMandatoryUsers,
-  createUserWalletFromUserRef,
+  createUserAndWalletFromUserRef,
   getAccountIdByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getUserRecordByTestUserRef,
@@ -30,12 +30,8 @@ const onBoardingEarnAmt: number = Object.keys(onboardingEarn)
   .filter((k) => find(onBoardingEarnIds, (o) => o === k))
   .reduce((p, k) => p + onboardingEarn[k], 0)
 
-// required to avoid withdrawalLimit validation
-const date = Date.now() + 2 * MS_PER_DAY
-jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
-
 beforeAll(async () => {
-  await createUserWalletFromUserRef("B")
+  await createUserAndWalletFromUserRef("B")
 
   accountIdB = await getAccountIdByTestUserRef("B")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
@@ -43,19 +39,14 @@ beforeAll(async () => {
   await createMandatoryUsers()
 })
 
-afterAll(() => {
-  jest.restoreAllMocks()
-})
-
 describe("UserWallet - addEarn", () => {
   it("adds balance only once", async () => {
     const resetOk = await resetSelfAccountIdLimits(accountIdB)
-    expect(resetOk).not.toBeInstanceOf(Error)
     if (resetOk instanceof Error) throw resetOk
 
     const initialBalance = await getBTCBalance(walletIdB)
 
-    const userType1BeforeEarn = await getUserRecordByTestUserRef("B")
+    const userRecordBBeforeEarn = await getUserRecordByTestUserRef("B")
 
     const getAndVerifyRewards = async () => {
       const promises = onBoardingEarnIds.map((onBoardingEarnId) =>
@@ -69,7 +60,7 @@ describe("UserWallet - addEarn", () => {
       const finalBalance = await getBTCBalance(walletIdB)
       let rewards = onBoardingEarnAmt
 
-      if (difference(onBoardingEarnIds, userType1BeforeEarn.earn).length === 0) {
+      if (difference(onBoardingEarnIds, userRecordBBeforeEarn.earn).length === 0) {
         rewards = 0
       }
 

@@ -42,8 +42,8 @@ let walletIdF: WalletId
 
 let userIdF: UserId
 
-let userTypeA: UserRecord
-let userType3: UserRecord
+let userRecordA: UserRecord
+let userRecordD: UserRecord
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
@@ -54,8 +54,8 @@ beforeAll(async () => {
 
   userIdF = await getUserIdByTestUserRef("F")
 
-  userTypeA = await getUserRecordByTestUserRef("A")
-  userType3 = await getUserRecordByTestUserRef("D")
+  userRecordA = await getUserRecordByTestUserRef("A")
+  userRecordD = await getUserRecordByTestUserRef("D")
 })
 
 beforeEach(() => {
@@ -146,19 +146,19 @@ describe("onchainBlockEventhandler", () => {
 
     const validateWalletState = async ({
       walletId,
-      userType,
+      userRecord,
       initialState,
       amount,
       address,
     }: {
       walletId: WalletId
-      userType: UserRecord
+      userRecord: UserRecord
       initialState: WalletState
       amount: Satoshis
       address: string
     }) => {
       const { balance, transactions } = await getWalletState(walletId)
-      const depositFeeRatio = userType.depositFeeRatio as DepositFeeRatio
+      const depositFeeRatio = userRecord.depositFeeRatio as DepositFeeRatio
       const finalAmount = amountAfterFeeDeduction({ amount, depositFeeRatio })
       const lastTransaction = transactions[0]
 
@@ -176,14 +176,14 @@ describe("onchainBlockEventhandler", () => {
 
     await validateWalletState({
       walletId: walletIdA,
-      userType: userTypeA,
+      userRecord: userRecordA,
       initialState: initWalletAState,
       amount: amount,
       address: address,
     })
     await validateWalletState({
       walletId: walletIdD,
-      userType: userType3,
+      userRecord: userRecordD,
       initialState: initWalletDState,
       amount: amount2,
       address: address2,
