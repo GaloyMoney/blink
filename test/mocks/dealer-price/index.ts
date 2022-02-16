@@ -60,5 +60,5 @@ export const DealerPriceService = (): IDealerPriceService => ({
       (Math.floor(Number(amount) * getSellUsdQuoteFromCents) * timeToExpiryInSeconds) /
         timeToExpiryInSeconds,
     ),
-  getCentsPerBtcExchangeMidRate: async (): Promise<UsdCents> => toCents(baseRate),
+  getCentsPerSatsExchangeMidRate: async (): Promise<UsdCents> => toCents(baseRate),
 })

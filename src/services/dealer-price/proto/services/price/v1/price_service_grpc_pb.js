@@ -172,42 +172,44 @@ function deserialize_services_price_v1_GetCentsFromSatsForImmediateSellResponse(
   )
 }
 
-function serialize_services_price_v1_GetCentsPerBtcExchangeMidRateRequest(arg) {
+function serialize_services_price_v1_GetCentsPerSatsExchangeMidRateRequest(arg) {
   if (
     !(
       arg instanceof
-      services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest
+      services_price_v1_price_service_pb.GetCentsPerSatsExchangeMidRateRequest
     )
   ) {
     throw new Error(
-      "Expected argument of type services.price.v1.GetCentsPerBtcExchangeMidRateRequest",
+      "Expected argument of type services.price.v1.GetCentsPerSatsExchangeMidRateRequest",
     )
   }
   return Buffer.from(arg.serializeBinary())
 }
 
-function deserialize_services_price_v1_GetCentsPerBtcExchangeMidRateRequest(buffer_arg) {
-  return services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest.deserializeBinary(
+function deserialize_services_price_v1_GetCentsPerSatsExchangeMidRateRequest(buffer_arg) {
+  return services_price_v1_price_service_pb.GetCentsPerSatsExchangeMidRateRequest.deserializeBinary(
     new Uint8Array(buffer_arg),
   )
 }
 
-function serialize_services_price_v1_GetCentsPerBtcExchangeMidRateResponse(arg) {
+function serialize_services_price_v1_GetCentsPerSatsExchangeMidRateResponse(arg) {
   if (
     !(
       arg instanceof
-      services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse
+      services_price_v1_price_service_pb.GetCentsPerSatsExchangeMidRateResponse
     )
   ) {
     throw new Error(
-      "Expected argument of type services.price.v1.GetCentsPerBtcExchangeMidRateResponse",
+      "Expected argument of type services.price.v1.GetCentsPerSatsExchangeMidRateResponse",
     )
   }
   return Buffer.from(arg.serializeBinary())
 }
 
-function deserialize_services_price_v1_GetCentsPerBtcExchangeMidRateResponse(buffer_arg) {
-  return services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse.deserializeBinary(
+function deserialize_services_price_v1_GetCentsPerSatsExchangeMidRateResponse(
+  buffer_arg,
+) {
+  return services_price_v1_price_service_pb.GetCentsPerSatsExchangeMidRateResponse.deserializeBinary(
     new Uint8Array(buffer_arg),
   )
 }
@@ -497,19 +499,19 @@ var PriceServiceService = (exports.PriceServiceService = {
     responseDeserialize:
       deserialize_services_price_v1_GetSatsFromCentsForFutureSellResponse,
   },
-  getCentsPerBtcExchangeMidRate: {
-    path: "/services.price.v1.PriceService/GetCentsPerBtcExchangeMidRate",
+  getCentsPerSatsExchangeMidRate: {
+    path: "/services.price.v1.PriceService/GetCentsPerSatsExchangeMidRate",
     requestStream: false,
     responseStream: false,
-    requestType: services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateRequest,
+    requestType: services_price_v1_price_service_pb.GetCentsPerSatsExchangeMidRateRequest,
     responseType:
-      services_price_v1_price_service_pb.GetCentsPerBtcExchangeMidRateResponse,
-    requestSerialize: serialize_services_price_v1_GetCentsPerBtcExchangeMidRateRequest,
+      services_price_v1_price_service_pb.GetCentsPerSatsExchangeMidRateResponse,
+    requestSerialize: serialize_services_price_v1_GetCentsPerSatsExchangeMidRateRequest,
     requestDeserialize:
-      deserialize_services_price_v1_GetCentsPerBtcExchangeMidRateRequest,
-    responseSerialize: serialize_services_price_v1_GetCentsPerBtcExchangeMidRateResponse,
+      deserialize_services_price_v1_GetCentsPerSatsExchangeMidRateRequest,
+    responseSerialize: serialize_services_price_v1_GetCentsPerSatsExchangeMidRateResponse,
     responseDeserialize:
-      deserialize_services_price_v1_GetCentsPerBtcExchangeMidRateResponse,
+      deserialize_services_price_v1_GetCentsPerSatsExchangeMidRateResponse,
   },
 })
 
