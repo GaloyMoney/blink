@@ -1,6 +1,6 @@
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerServiceError, UnknownLedgerError } from "@domain/ledger/errors"
-import { addEventToCurrentSpan } from "@services/tracing"
+import { addAttributesToCurrentSpan, addEventToCurrentSpan } from "@services/tracing"
 
 import { Transaction } from "./books"
 
@@ -68,10 +68,14 @@ const txVolumeSince = async ({
     ])
     addEventToCurrentSpan("volume aggregation ends")
 
-    return {
-      outgoingBaseAmount: result?.outgoingBaseAmount ?? (0 as CurrencyBaseAmount),
-      incomingBaseAmount: result?.incomingBaseAmount ?? (0 as CurrencyBaseAmount),
-    }
+    const outgoingBaseAmount = result?.outgoingBaseAmount ?? (0 as CurrencyBaseAmount)
+    const incomingBaseAmount = result?.incomingBaseAmount ?? (0 as CurrencyBaseAmount)
+    addAttributesToCurrentSpan({
+      "txVolume.function": txnGroup,
+      "txVolume.outgoing": outgoingBaseAmount.toString(),
+      "txVolume.incoming": incomingBaseAmount.toString(),
+    })
+    return { outgoingBaseAmount, incomingBaseAmount }
   } catch (err) {
     return new UnknownLedgerError(err)
   }
