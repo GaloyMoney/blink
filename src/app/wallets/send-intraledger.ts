@@ -1,9 +1,11 @@
+import assert from "assert"
+
 import { addNewContact } from "@app/accounts/add-new-contact"
 import { getCurrentPrice } from "@app/prices"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { InsufficientBalanceError } from "@domain/errors"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
-import { PaymentInputValidator } from "@domain/wallets"
+import { PaymentInputValidator, WalletCurrency } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { LockService } from "@services/lock"
 import {
@@ -12,6 +14,8 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
+
+import { toSats } from "@domain/bitcoin"
 
 import { checkAndVerifyTwoFA, checkIntraledgerLimits } from "./check-limit-helpers"
 
@@ -178,6 +182,11 @@ const executePaymentViaIntraledger = async ({
 
   const { amount, senderWallet, recipientWallet } = validationResult
 
+  // TODO Usd use case
+  assert(recipientWallet.currency === WalletCurrency.Btc)
+  assert(senderWallet.currency === WalletCurrency.Btc)
+  const amountSats = toSats(amount)
+
   const displayCurrencyPerSat = await getCurrentPrice()
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
@@ -193,7 +202,7 @@ const executePaymentViaIntraledger = async ({
 
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
-  const amountDisplayCurrency = dCConverter.fromSats(amount)
+  const amountDisplayCurrency = dCConverter.fromSats(amountSats)
 
   return LockService().lockWalletId(
     { walletId: senderWalletId, logger },
@@ -212,7 +221,7 @@ const executePaymentViaIntraledger = async ({
           senderWalletCurrency: senderWallet.currency,
           senderUsername: senderAccount.username,
           description: "",
-          sats: amount,
+          sats: amountSats,
           amountDisplayCurrency,
           recipientWalletId,
           recipientWalletCurrency: recipientWallet.currency,
@@ -226,7 +235,7 @@ const executePaymentViaIntraledger = async ({
       notificationsService.intraLedgerPaid({
         senderWalletId,
         recipientWalletId,
-        amount,
+        amount: amountSats,
         displayCurrencyPerSat,
       })
 

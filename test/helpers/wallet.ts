@@ -5,13 +5,15 @@ import { sub, toCents } from "@domain/fiat"
 import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
 
-export const getBTCBalance = async (walletId: WalletId): Promise<Satoshis> => {
-  const balanceSats = await getBalanceForWallet({
+export const getBalanceHelper = async (
+  walletId: WalletId,
+): Promise<CurrencyBaseAmount> => {
+  const balance = await getBalanceForWallet({
     walletId,
     logger: baseLogger,
   })
-  if (balanceSats instanceof Error) throw balanceSats
-  return balanceSats
+  if (balance instanceof Error) throw balance
+  return balance
 }
 
 // TODO: currently assuming a bitcoin wallet

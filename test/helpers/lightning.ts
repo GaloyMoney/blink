@@ -43,6 +43,10 @@ export const getHash = (request: EncodedPaymentRequest) => {
   return parsePaymentRequest({ request }).id as PaymentHash
 }
 
+export const getAmount = (request: EncodedPaymentRequest) => {
+  return parsePaymentRequest({ request }).tokens as Satoshis
+}
+
 // TODO: this could be refactored with lndAuth
 export const lndOutside1 = authenticatedLndGrpc({
   cert: process.env.TLSOUTSIDE1,

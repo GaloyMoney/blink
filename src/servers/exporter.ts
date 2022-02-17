@@ -136,14 +136,14 @@ const main = async () => {
           continue
         }
 
-        let balance: Satoshis
+        let balance: CurrencyBaseAmount
 
-        const balanceSats = await LedgerService().getWalletBalance(walletId)
-        if (balanceSats instanceof Error) {
-          baseLogger.warn({ walletId, balanceSats }, "impossible to get balance")
+        const walletBalance = await LedgerService().getWalletBalance(walletId)
+        if (walletBalance instanceof Error) {
+          baseLogger.warn({ walletId, walletBalance }, "impossible to get balance")
           balance = toSats(0)
         } else {
-          balance = balanceSats
+          balance = walletBalance
           addAttributesToCurrentSpan({
             [`${wallet.name}_balance`]: balance,
           })

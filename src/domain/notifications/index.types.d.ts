@@ -30,7 +30,8 @@ type IntraLedgerArgs = {
 }
 
 type SendBalanceArgs = {
-  balance: Satoshis
+  balance: CurrencyBaseAmount
+  walletCurrency: WalletCurrency
   userId: UserId
   price: DisplayCurrencyPerSat | ApplicationError
 }
@@ -48,5 +49,5 @@ interface INotificationsService {
   priceUpdate: (DisplayCurrencyPerSat: number) => void
   lnInvoicePaid: (args: LnInvoicePaidArgs) => void
   intraLedgerPaid(args: IntraLedgerArgs): Promise<void | NotificationsServiceError>
-  sendBalance(args: SendBalanceArgs): Promise<void>
+  sendBalance(args: SendBalanceArgs): Promise<void | NotImplementedError>
 }

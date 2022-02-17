@@ -16,7 +16,7 @@ import {
   getUserRecordByTestUserRef,
 } from "test/helpers"
 import { resetSelfAccountIdLimits } from "test/helpers/rate-limit"
-import { getBTCBalance } from "test/helpers/wallet"
+import { getBalanceHelper } from "test/helpers/wallet"
 
 let accountIdB: AccountId
 let walletIdB: WalletId
@@ -44,7 +44,7 @@ describe("UserWallet - addEarn", () => {
     const resetOk = await resetSelfAccountIdLimits(accountIdB)
     if (resetOk instanceof Error) throw resetOk
 
-    const initialBalance = await getBTCBalance(walletIdB)
+    const initialBalance = await getBalanceHelper(walletIdB)
 
     const userRecordBBeforeEarn = await getUserRecordByTestUserRef("B")
 
@@ -57,7 +57,7 @@ describe("UserWallet - addEarn", () => {
         }),
       )
       await Promise.all(promises)
-      const finalBalance = await getBTCBalance(walletIdB)
+      const finalBalance = await getBalanceHelper(walletIdB)
       let rewards = onBoardingEarnAmt
 
       if (difference(onBoardingEarnIds, userRecordBBeforeEarn.earn).length === 0) {

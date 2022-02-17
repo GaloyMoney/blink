@@ -11,7 +11,7 @@ export const getBalanceForWallet = async ({
   walletId: WalletId
   lock?: DistributedLock
   logger: Logger
-}): Promise<Satoshis | ApplicationError> => {
+}): Promise<CurrencyBaseAmount | ApplicationError> => {
   const [, updatePaymentsResult] = await Promise.all([
     updatePendingInvoicesByWalletId({
       walletId,

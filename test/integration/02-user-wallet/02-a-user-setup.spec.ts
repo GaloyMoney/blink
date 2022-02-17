@@ -87,14 +87,14 @@ describe("UserWallet", () => {
     })
 
     it("allows set username", async () => {
-      let result = await setUsername({ username: "user0", id: accountIdA })
+      let result = await setUsername({ username: "userA", id: accountIdA })
       expect(result).not.toBeInstanceOf(Error)
-      result = await setUsername({ username: "user1", id: accountIdB })
+      result = await setUsername({ username: "userB", id: accountIdB })
       expect(result).not.toBeInstanceOf(Error)
     })
 
     it("does not allow set username if already taken", async () => {
-      const username = "user0"
+      const username = "userA"
       await expect(setUsername({ username, id: accountIdC })).resolves.toBeInstanceOf(
         UsernameNotAvailableError,
       )
@@ -102,7 +102,7 @@ describe("UserWallet", () => {
 
     it("does not allow set username with only case difference", async () => {
       await expect(
-        setUsername({ username: "User1", id: accountIdC }),
+        setUsername({ username: "UserA", id: accountIdC }),
       ).resolves.toBeInstanceOf(UsernameNotAvailableError)
 
       // set username for accountC
@@ -119,7 +119,7 @@ describe("UserWallet", () => {
 
   describe("usernameExists", () => {
     it("return true if username already exists", async () => {
-      const username = "user0" as Username
+      const username = "userA" as Username
 
       const accountsRepo = AccountsRepository()
       const account = await accountsRepo.findByUsername(username)
@@ -128,7 +128,7 @@ describe("UserWallet", () => {
     })
 
     it("return true for other capitalization", async () => {
-      const username = "user0" as Username
+      const username = "userA" as Username
 
       const accountsRepo = AccountsRepository()
       const account = await accountsRepo.findByUsername(
@@ -177,7 +177,7 @@ describe("UserWallet", () => {
   })
 
   describe("save2fa", () => {
-    it("saves 2fa for user0", async () => {
+    it("saves 2fa for userA", async () => {
       const usersRepo = UsersRepository()
       const user = await usersRepo.findById(userIdA)
       if (user instanceof Error) throw user
@@ -191,7 +191,7 @@ describe("UserWallet", () => {
   })
 
   describe("delete2fa", () => {
-    it("delete 2fa for user0", async () => {
+    it("delete 2fa for userA", async () => {
       const usersRepo = UsersRepository()
       const user = await usersRepo.findById(userIdA)
       if (user instanceof Error) throw user

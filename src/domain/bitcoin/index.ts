@@ -1,4 +1,8 @@
-import { InvalidSatoshiAmount, InvalidTargetConfirmations } from "@domain/errors"
+import {
+  InvalidCurrencyBaseAmountError,
+  InvalidSatoshiAmountError,
+  InvalidTargetConfirmations,
+} from "@domain/errors"
 
 export const SATS_PER_BTC = 10 ** 8
 
@@ -26,8 +30,15 @@ export const toMilliSatsFromString = (amount: string): MilliSatoshis => {
   return parseInt(amount, 10) as MilliSatoshis
 }
 
+export const checkedToCurrencyBaseAmount = (
+  amount: number,
+): CurrencyBaseAmount | ValidationError => {
+  if (!(amount && amount > 0)) return new InvalidCurrencyBaseAmountError()
+  return amount as CurrencyBaseAmount
+}
+
 export const checkedToSats = (amount: number): Satoshis | ValidationError => {
-  if (!(amount && amount > 0)) return new InvalidSatoshiAmount()
+  if (!(amount && amount > 0)) return new InvalidSatoshiAmountError()
   return toSats(amount)
 }
 

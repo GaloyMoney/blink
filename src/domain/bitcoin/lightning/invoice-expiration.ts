@@ -1,8 +1,11 @@
-import { SECS_PER_2_MINS, SECS_PER_DAY } from "@config"
+const SECS_PER_2_MINS = (60 * 2) as Seconds
+const SECS_PER_DAY = (60 * 60 * 24) as Seconds
+
+export const defaultTimeToExpiryInSeconds = SECS_PER_2_MINS
 
 const DEFAULT_EXPIRATIONS = {
   BTC: { delay: SECS_PER_DAY },
-  USD: { delay: SECS_PER_2_MINS },
+  USD: { delay: defaultTimeToExpiryInSeconds },
 }
 
 export const invoiceExpirationForCurrency = (

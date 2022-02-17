@@ -187,7 +187,7 @@ const addSendNoInternalFee = async ({
 
     const metaUsd = {
       ...metaInput,
-      currency: WalletCurrency.Btc,
+      currency: WalletCurrency.Usd,
     }
 
     try {

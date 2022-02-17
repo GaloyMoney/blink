@@ -53,7 +53,8 @@ export class InvalidNegativeAmountError extends DomainError {}
 export class ValidationError extends DomainError {}
 export class ContactNotExistentError extends DomainError {}
 export class InvalidWithdrawFeeError extends ValidationError {}
-export class InvalidSatoshiAmount extends ValidationError {}
+export class InvalidCurrencyBaseAmountError extends ValidationError {}
+export class InvalidSatoshiAmountError extends ValidationError {}
 export class InvalidUsdCents extends ValidationError {}
 export class NonIntegerError extends ValidationError {}
 export class InvalidOnChainAddress extends ValidationError {}

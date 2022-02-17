@@ -13,9 +13,13 @@ type CachedRoute = { pubkey: Pubkey; route: RawRoute }
 
 type CachedRouteLookupKey = string & { readonly brand: unique symbol }
 type CachedRouteLookupKeyFactory = {
-  create(args: {
+  createFromMilliSats(args: {
     paymentHash: PaymentHash
     milliSats: MilliSatoshis
+  }): CachedRouteLookupKey
+  createFromCents(args: {
+    paymentHash: PaymentHash
+    cents: UsdCents
   }): CachedRouteLookupKey
 }
 

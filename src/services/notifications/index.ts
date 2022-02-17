@@ -1,10 +1,13 @@
 import { SAT_USDCENT_PRICE, USER_PRICE_UPDATE_EVENT } from "@config"
+import { toSats } from "@domain/bitcoin"
 import { lnPaymentStatusEvent } from "@domain/bitcoin/lightning"
+import { NotImplementedError } from "@domain/errors"
 import {
   accountUpdateEvent,
   NotificationsServiceError,
   NotificationType,
 } from "@domain/notifications"
+import { WalletCurrency } from "@domain/wallets"
 import {
   AccountsRepository,
   UsersRepository,
@@ -225,15 +228,23 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
 
   const sendBalance = async ({
     balance,
+    walletCurrency,
     userId,
     price,
   }: {
-    balance: Satoshis
+    balance: CurrencyBaseAmount
+    walletCurrency: WalletCurrency
     userId: UserId
     price: DisplayCurrencyPerSat | ApplicationError
-  }): Promise<void> => {
+  }): Promise<void | NotImplementedError> => {
+    if (walletCurrency === WalletCurrency.Usd) {
+      return new NotImplementedError("sendBalance works with sats")
+    }
+
+    const balanceSats = toSats(balance)
+
     // Add commas to balancesats
-    const balanceSatsAsFormattedString = balance.toLocaleString("en")
+    const balanceSatsAsFormattedString = balanceSats.toLocaleString("en")
 
     let balanceUsdAsFormattedString: string, title: string
     if (price instanceof Error) {
@@ -242,7 +253,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       // TODO: i18n
       title = `Your balance is ${balanceSatsAsFormattedString} sats)`
     } else {
-      const usdValue = price * balance
+      const usdValue = price * balanceSats
       balanceUsdAsFormattedString = usdValue.toLocaleString("en", {
         maximumFractionDigits: 2,
       })

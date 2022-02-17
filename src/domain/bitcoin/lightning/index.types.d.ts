@@ -114,7 +114,8 @@ type RegisteredInvoice = {
 }
 
 type LnFeeCalculator = {
-  max(amount: Satoshis): Satoshis
+  max<T extends UsdCents | Satoshis>(amount: T): T
+  inverseMax<T extends UsdCents | Satoshis>(amount: T): T
 }
 
 type PayInvoiceResult = {

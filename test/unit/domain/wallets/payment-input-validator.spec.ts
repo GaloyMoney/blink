@@ -1,12 +1,12 @@
 import crypto from "crypto"
 
+import { AccountLevel, AccountStatus } from "@domain/accounts"
 import {
-  InvalidSatoshiAmount,
   InvalidAccountStatusError,
+  InvalidCurrencyBaseAmountError,
   SelfPaymentError,
 } from "@domain/errors"
-import { WalletCurrency, WalletType, PaymentInputValidator } from "@domain/wallets"
-import { AccountLevel, AccountStatus } from "@domain/accounts"
+import { PaymentInputValidator, WalletCurrency, WalletType } from "@domain/wallets"
 
 describe("PaymentInputValidator", () => {
   const dummyAccount: Account = {
@@ -77,7 +77,7 @@ describe("PaymentInputValidator", () => {
       senderAccount: dummyAccount,
       recipientWalletId: dummyRecipientWallet.id,
     })
-    expect(result).toBeInstanceOf(InvalidSatoshiAmount)
+    expect(result).toBeInstanceOf(InvalidCurrencyBaseAmountError)
   })
 
   it("Fails when sender === recipient", async () => {

@@ -4,6 +4,8 @@ import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
 import { WalletCurrency } from "@domain/wallets"
 
+import { NotReachableError } from "@domain/errors"
+
 import { lndAccountingPath } from "./accounts"
 import { MainBook } from "./books"
 import * as caching from "./caching"
@@ -104,6 +106,7 @@ export const receive = {
     amountDisplayCurrency,
     journalId,
     sats,
+    cents,
   }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: FeeReimbursementLedgerMetadata = {
       type: LedgerTransactionType.LnFeeReimbursement,
@@ -114,7 +117,14 @@ export const receive = {
     }
 
     const description = "fee reimbursement"
-    return addReceiptNoFee({ metadata, description, walletId, sats, walletCurrency })
+    return addReceiptNoFee({
+      metadata,
+      description,
+      walletId,
+      sats,
+      walletCurrency,
+      cents,
+    })
   },
 }
 
@@ -149,6 +159,8 @@ const addReceiptNoFee = async ({
       return new UnknownLedgerError(err)
     }
   } else {
+    if (cents === undefined) return new NotReachableError("cents should be defined here")
+
     const dealerBtcWalletId = await caching.getDealerBtcWalletId()
     const dealerUsdWalletId = await caching.getDealerUsdWalletId()
     const liabilitiesDealerBtcWalletId = toLiabilitiesWalletId(dealerBtcWalletId)
@@ -161,7 +173,7 @@ const addReceiptNoFee = async ({
 
     const metaUsd = {
       ...metaInput,
-      currency: WalletCurrency.Btc,
+      currency: WalletCurrency.Usd,
     }
 
     try {

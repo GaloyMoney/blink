@@ -177,7 +177,7 @@ type ValidatePaymentInputArgs<T extends undefined | string> = {
   recipientWalletId?: T
 }
 type ValidatePaymentInputRetBase = {
-  amount: Satoshis
+  amount: CurrencyBaseAmount
   senderWallet: Wallet
 }
 type ValidatePaymentInputRet<T extends undefined | string> = T extends undefined
