@@ -482,55 +482,55 @@ export namespace GetSatsFromCentsForFutureSellResponse {
   }
 }
 
-export class GetCentsPerBtcExchangeMidRateRequest extends jspb.Message {
+export class GetCentsPerSatsExchangeMidRateRequest extends jspb.Message {
   serializeBinary(): Uint8Array
-  toObject(includeInstance?: boolean): GetCentsPerBtcExchangeMidRateRequest.AsObject
+  toObject(includeInstance?: boolean): GetCentsPerSatsExchangeMidRateRequest.AsObject
   static toObject(
     includeInstance: boolean,
-    msg: GetCentsPerBtcExchangeMidRateRequest,
-  ): GetCentsPerBtcExchangeMidRateRequest.AsObject
+    msg: GetCentsPerSatsExchangeMidRateRequest,
+  ): GetCentsPerSatsExchangeMidRateRequest.AsObject
   static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
   static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
   static serializeBinaryToWriter(
-    message: GetCentsPerBtcExchangeMidRateRequest,
+    message: GetCentsPerSatsExchangeMidRateRequest,
     writer: jspb.BinaryWriter,
   ): void
-  static deserializeBinary(bytes: Uint8Array): GetCentsPerBtcExchangeMidRateRequest
+  static deserializeBinary(bytes: Uint8Array): GetCentsPerSatsExchangeMidRateRequest
   static deserializeBinaryFromReader(
-    message: GetCentsPerBtcExchangeMidRateRequest,
+    message: GetCentsPerSatsExchangeMidRateRequest,
     reader: jspb.BinaryReader,
-  ): GetCentsPerBtcExchangeMidRateRequest
+  ): GetCentsPerSatsExchangeMidRateRequest
 }
 
-export namespace GetCentsPerBtcExchangeMidRateRequest {
+export namespace GetCentsPerSatsExchangeMidRateRequest {
   export type AsObject = {}
 }
 
-export class GetCentsPerBtcExchangeMidRateResponse extends jspb.Message {
-  getAmountInCents(): number
-  setAmountInCents(value: number): GetCentsPerBtcExchangeMidRateResponse
+export class GetCentsPerSatsExchangeMidRateResponse extends jspb.Message {
+  getRatioInCentsPerSatoshis(): number
+  setRatioInCentsPerSatoshis(value: number): GetCentsPerSatsExchangeMidRateResponse
 
   serializeBinary(): Uint8Array
-  toObject(includeInstance?: boolean): GetCentsPerBtcExchangeMidRateResponse.AsObject
+  toObject(includeInstance?: boolean): GetCentsPerSatsExchangeMidRateResponse.AsObject
   static toObject(
     includeInstance: boolean,
-    msg: GetCentsPerBtcExchangeMidRateResponse,
-  ): GetCentsPerBtcExchangeMidRateResponse.AsObject
+    msg: GetCentsPerSatsExchangeMidRateResponse,
+  ): GetCentsPerSatsExchangeMidRateResponse.AsObject
   static extensions: { [key: number]: jspb.ExtensionFieldInfo<jspb.Message> }
   static extensionsBinary: { [key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message> }
   static serializeBinaryToWriter(
-    message: GetCentsPerBtcExchangeMidRateResponse,
+    message: GetCentsPerSatsExchangeMidRateResponse,
     writer: jspb.BinaryWriter,
   ): void
-  static deserializeBinary(bytes: Uint8Array): GetCentsPerBtcExchangeMidRateResponse
+  static deserializeBinary(bytes: Uint8Array): GetCentsPerSatsExchangeMidRateResponse
   static deserializeBinaryFromReader(
-    message: GetCentsPerBtcExchangeMidRateResponse,
+    message: GetCentsPerSatsExchangeMidRateResponse,
     reader: jspb.BinaryReader,
-  ): GetCentsPerBtcExchangeMidRateResponse
+  ): GetCentsPerSatsExchangeMidRateResponse
 }
 
-export namespace GetCentsPerBtcExchangeMidRateResponse {
+export namespace GetCentsPerSatsExchangeMidRateResponse {
   export type AsObject = {
-    amountInCents: number
+    ratioInCentsPerSatoshis: number
   }
 }

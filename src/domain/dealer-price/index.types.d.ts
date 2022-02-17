@@ -30,5 +30,5 @@ interface IDealerPriceService {
     amountInUsd: UsdCents,
     timeToExpiryInSeconds: Seconds,
   ): Promise<Satoshis | DealerPriceServiceError>
-  getCentsPerBtcExchangeMidRate(): Promise<UsdCents | DealerPriceServiceError>
+  getCentsPerSatsExchangeMidRate(): Promise<CentsPerSatsRatio | DealerPriceServiceError>
 }

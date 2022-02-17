@@ -1,5 +1,5 @@
-import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
+import { SATS_PER_BTC, toSats } from "@domain/bitcoin"
+import { CENTS_PER_USD, toCents, toCentsPerSatsRatio } from "@domain/fiat"
 
 // simulated price at 20k btc/usd
 // or 50 sats per cents. 0.05 sat per cents
@@ -60,5 +60,6 @@ export const DealerPriceService = (): IDealerPriceService => ({
       (Math.floor(Number(amount) * getSellUsdQuoteFromCents) * timeToExpiryInSeconds) /
         timeToExpiryInSeconds,
     ),
-  getCentsPerBtcExchangeMidRate: async (): Promise<UsdCents> => toCents(baseRate),
+  getCentsPerSatsExchangeMidRate: async (): Promise<CentsPerSatsRatio> =>
+    toCentsPerSatsRatio((baseRate * CENTS_PER_USD) / SATS_PER_BTC),
 })

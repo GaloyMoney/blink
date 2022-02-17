@@ -6,7 +6,7 @@ import { UnknownDealerPriceServiceError } from "@domain/dealer-price"
 
 import { toSats } from "@domain/bitcoin"
 
-import { toCents } from "@domain/fiat"
+import { toCents, toCentsPerSatsRatio } from "@domain/fiat"
 
 import { baseLogger } from "../logger"
 
@@ -28,8 +28,8 @@ import {
   GetSatsFromCentsForFutureBuyResponse,
   GetSatsFromCentsForFutureSellRequest,
   GetSatsFromCentsForFutureSellResponse,
-  GetCentsPerBtcExchangeMidRateRequest,
-  GetCentsPerBtcExchangeMidRateResponse,
+  GetCentsPerSatsExchangeMidRateRequest,
+  GetCentsPerSatsExchangeMidRateResponse,
 } from "./proto/services/price/v1/price_service_pb"
 
 const serverPort = process.env.PRICE_SERVER_PORT ?? "50055"
@@ -78,10 +78,10 @@ const clientGetSatsFromCentsForFutureSell = util.promisify<
   GetSatsFromCentsForFutureSellResponse
 >(client.getSatsFromCentsForFutureSell.bind(client))
 
-const clientGetCentsPerBtcExchangeMidRate = util.promisify<
-  GetCentsPerBtcExchangeMidRateRequest,
-  GetCentsPerBtcExchangeMidRateResponse
->(client.getCentsPerBtcExchangeMidRate.bind(client))
+const clientGetCentsPerSatsExchangeMidRate = util.promisify<
+  GetCentsPerSatsExchangeMidRateRequest,
+  GetCentsPerSatsExchangeMidRateResponse
+>(client.getCentsPerSatsExchangeMidRate.bind(client))
 
 export const DealerPriceService = (): IDealerPriceService => {
   const getCentsFromSatsForImmediateBuy = async function (
@@ -218,16 +218,16 @@ export const DealerPriceService = (): IDealerPriceService => {
     }
   }
 
-  const getCentsPerBtcExchangeMidRate = async function (): Promise<
-    UsdCents | DealerPriceServiceError
+  const getCentsPerSatsExchangeMidRate = async function (): Promise<
+    CentsPerSatsRatio | DealerPriceServiceError
   > {
     try {
-      const response = await clientGetCentsPerBtcExchangeMidRate(
-        new GetCentsPerBtcExchangeMidRateRequest(),
+      const response = await clientGetCentsPerSatsExchangeMidRate(
+        new GetCentsPerSatsExchangeMidRateRequest(),
       )
-      return toCents(response.getAmountInCents())
+      return toCentsPerSatsRatio(response.getRatioInCentsPerSatoshis())
     } catch (error) {
-      baseLogger.error({ error }, "GetCentsPerBtcExchangeMidRate unable to fetch price")
+      baseLogger.error({ error }, "GetCentsPerSatsExchangeMidRate unable to fetch price")
       return new UnknownDealerPriceServiceError(error.message)
     }
   }
@@ -245,6 +245,6 @@ export const DealerPriceService = (): IDealerPriceService => {
     getSatsFromCentsForFutureBuy,
     getSatsFromCentsForFutureSell,
 
-    getCentsPerBtcExchangeMidRate,
+    getCentsPerSatsExchangeMidRate,
   }
 }
