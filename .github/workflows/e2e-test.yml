@@ -14,4 +14,4 @@ jobs:
     - uses: actions/setup-node@v2
     - run: yarn install
     - name: Run e2e tests
-      run: docker compose up integration-deps -d && make e2e-in-ci
+      run: make e2e-in-ci
