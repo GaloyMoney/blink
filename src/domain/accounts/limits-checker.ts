@@ -17,13 +17,15 @@ export const LimitsChecker = ({
     walletVolume,
   }: LimiterCheckInputs): true | LimitsExceededError => {
     const limit = twoFALimits.threshold
-    const remainingTwoFALimit = limit - walletVolume.outgoingBaseAmount
+    const volume = walletVolume.outgoingBaseAmount
     addAttributesToCurrentSpan({
-      "txVolume.threshold": limit.toString(),
-      "txVolume.amountInBase": amount.toString(),
+      "txVolume.volume": `${volume}`,
+      "txVolume.threshold": `${limit}`,
+      "txVolume.amountInBase": `${amount}`,
       "txVolume.limitCheck": "checkTwoFA",
     })
 
+    const remainingTwoFALimit = limit - volume
     if (remainingTwoFALimit < amount) {
       return new TwoFALimitsExceededError()
     }
@@ -35,13 +37,15 @@ export const LimitsChecker = ({
     walletVolume,
   }: LimiterCheckInputs): true | LimitsExceededError => {
     const limit = accountLimits.intraLedgerLimit
-    const remainingLimit = limit - walletVolume.outgoingBaseAmount
+    const volume = walletVolume.outgoingBaseAmount
     addAttributesToCurrentSpan({
-      "txVolume.threshold": limit.toString(),
-      "txVolume.amountInBase": amount.toString(),
+      "txVolume.volume": `${volume}`,
+      "txVolume.threshold": `${limit}`,
+      "txVolume.amountInBase": `${amount}`,
       "txVolume.limitCheck": "checkIntraledger",
     })
 
+    const remainingLimit = limit - volume
     if (remainingLimit < amount) {
       return new IntraledgerLimitsExceededError(
         `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`,
@@ -55,12 +59,15 @@ export const LimitsChecker = ({
     walletVolume,
   }: LimiterCheckInputs): true | LimitsExceededError => {
     const limit = accountLimits.withdrawalLimit
-    const remainingLimit = limit - walletVolume.outgoingBaseAmount
+    const volume = walletVolume.outgoingBaseAmount
     addAttributesToCurrentSpan({
-      "txVolume.threshold": limit.toString(),
-      "txVolume.amountInBase": amount.toString(),
+      "txVolume.volume": `${volume}`,
+      "txVolume.threshold": `${limit}`,
+      "txVolume.amountInBase": `${amount}`,
       "txVolume.limitCheck": "checkWithdrawal",
     })
+
+    const remainingLimit = limit - volume
     if (remainingLimit < amount) {
       return new WithdrawalLimitsExceededError(
         `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`,
