@@ -1,6 +1,5 @@
 import { getGaloyInstanceName, getTestAccounts } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
-import { UnknownPhoneProviderServiceError } from "@domain/phone-provider"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToPhoneNumber } from "@domain/users"
@@ -55,7 +54,7 @@ export const requestPhoneCode = async ({
   phone: string
   logger: Logger
   ip: IpAddress
-}): Promise<true | UnknownPhoneProviderServiceError> => {
+}): Promise<true | PhoneProviderServiceError> => {
   logger.info({ phone, ip }, "RequestPhoneCode called")
 
   const phoneNumberValid = checkedToPhoneNumber(phone)

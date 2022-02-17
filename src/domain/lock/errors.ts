@@ -1,6 +1,8 @@
-export class LockError extends Error {
-  name = this.constructor.name
-}
+import { DomainError, ErrorLevel } from "@domain/errors"
+
+export class LockError extends DomainError {}
 
 export class LockServiceError extends LockError {}
-export class UnknownLockServiceError extends LockServiceError {}
+export class UnknownLockServiceError extends LockServiceError {
+  level = ErrorLevel.Critical
+}

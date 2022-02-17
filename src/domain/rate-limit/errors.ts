@@ -1,9 +1,11 @@
-export class RateLimitError extends Error {
-  name = this.constructor.name
-}
+import { DomainError, ErrorLevel } from "@domain/errors"
+
+export class RateLimitError extends DomainError {}
 
 export class RateLimitServiceError extends RateLimitError {}
-export class UnknownRateLimitServiceError extends RateLimitServiceError {}
+export class UnknownRateLimitServiceError extends RateLimitServiceError {
+  level = ErrorLevel.Critical
+}
 
 export class RateLimiterExceededError extends RateLimitServiceError {}
 export class UserPhoneCodeAttemptPhoneRateLimiterExceededError extends RateLimiterExceededError {}

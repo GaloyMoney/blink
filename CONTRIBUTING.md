@@ -36,7 +36,7 @@ These are types mostly used in function signature type definitions. They derive 
 
 For example, an error may be defined in a module's `error.ts` file like this:
 ```
-export class LightningError extends Error {
+export class LightningError extends DomainError {
   name = this.constructor.name
 }
 ```

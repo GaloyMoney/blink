@@ -1,5 +1,5 @@
-export class NotificationsError extends Error {
-  name = this.constructor.name
-}
+import { DomainError } from "@domain/errors"
+
+export class NotificationsError extends DomainError {}
 
 export class NotificationsServiceError extends NotificationsError {}

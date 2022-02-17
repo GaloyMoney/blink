@@ -22,6 +22,7 @@ import {
   SpanStatusCode,
   SpanOptions,
   TimeInput,
+  Exception,
 } from "@opentelemetry/api"
 import { tracingConfig } from "@config"
 
@@ -50,13 +51,14 @@ const gqlResponseHook = (span: Span, data) => {
 const recordGqlErrors = ({ errors, span, subPathName }) => {
   const subPath = subPathName ? `${subPathName}.` : ""
 
-  span.recordException({
-    name: `graphql.${subPath}execution.error`,
-    message: JSON.stringify(errors),
-  })
-  span.setStatus({
-    code: SpanStatusCode.ERROR,
-  })
+  recordException(
+    span,
+    {
+      name: `graphql.${subPath}execution.error`,
+      message: JSON.stringify(errors),
+    },
+    "critical",
+  )
   const firstErr = errors[0]
   if (firstErr.message != "") {
     span.setAttribute(`graphql.${subPath}error.message`, firstErr.message)
@@ -194,18 +196,31 @@ export const addEventToCurrentSpan = (
   }
 }
 
+export const recordException = (span: Span, exception: Exception, level?: ErrorLevel) => {
+  const errorLevel = level || exception["level"] || "warn"
+  span.setAttribute("error.level", errorLevel)
+  span.recordException(exception)
+  if (errorLevel === "critical") span.setStatus({ code: SpanStatusCode.ERROR })
+}
+
 export const asyncRunInSpan = <F extends () => ReturnType<F>>(
   spanName: string,
   attributes: SpanAttributes,
   fn: F,
 ) => {
   const ret = tracer.startActiveSpan(spanName, { attributes }, async (span) => {
-    const ret = await Promise.resolve(fn())
-    if ((ret as unknown) instanceof Error) {
-      span.recordException(ret)
+    try {
+      const ret = await Promise.resolve(fn())
+      if ((ret as unknown) instanceof Error) {
+        recordException(span, ret)
+      }
+      span.end()
+      return ret
+    } catch (error) {
+      recordException(span, error, "critical")
+      span.end()
+      throw error
     }
-    span.end()
-    return ret
   })
   return ret
 }
@@ -260,14 +275,14 @@ export const wrapToRunInSpan = <
     const ret = tracer.startActiveSpan(spanName, spanOptions, (span) => {
       try {
         const ret = fn(...args)
-        if (ret instanceof Error) span.recordException(ret)
+        if (ret instanceof Error) recordException(span, ret)
         const partialRet = ret as PartialResult<unknown>
         if (partialRet?.partialResult && partialRet?.error)
-          span.recordException(partialRet.error)
+          recordException(span, partialRet.error)
         span.end()
         return ret
       } catch (error) {
-        span.recordException(error)
+        recordException(span, error, "critical")
         span.end()
         throw error
       }
@@ -300,14 +315,14 @@ export const wrapAsyncToRunInSpan = <
     const ret = tracer.startActiveSpan(spanName, spanOptions, async (span) => {
       try {
         const ret = await fn(...args)
-        if (ret instanceof Error) span.recordException(ret)
+        if (ret instanceof Error) recordException(span, ret)
         const partialRet = ret as PartialResult<unknown>
         if (partialRet?.partialResult && partialRet?.error)
-          span.recordException(partialRet.error)
+          recordException(span, partialRet.error)
         span.end()
         return ret
       } catch (error) {
-        span.recordException(error)
+        recordException(span, error, "critical")
         span.end()
         throw error
       }
