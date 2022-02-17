@@ -33,3 +33,14 @@ export const runInParallel = ({ iterator, processor, logger, workers = 5 }) => {
   const jobWorkers = new Array(workers).fill(iterator).map(runWorkerInParallel)
   return Promise.allSettled(jobWorkers)
 }
+
+export const mapObj = <T, R>(
+  obj: T,
+  fn: (arg: T[keyof T]) => R,
+): { [P in keyof T]: R } => {
+  const mappedObj: { [P in keyof T]: R } = {} as { [P in keyof T]: R }
+  for (const key in obj) {
+    mappedObj[key] = fn(obj[key])
+  }
+  return mappedObj
+}
