@@ -109,8 +109,8 @@ accountLimits:
       2: 5000000 # cents
   intraLedger:
     level:
-      1: 2000 # cents
-      2: 50000 # cents
+      1: 200000 # cents
+      2: 5000000 # cents
 
 spamLimits:
   memoSharingSatsThreshold: 1000
