@@ -1,6 +1,8 @@
-export class PhoneProviderServiceError extends Error {
-  name = this.constructor.name
-}
+import { DomainError, ErrorLevel } from "@domain/errors"
+
+export class PhoneProviderServiceError extends DomainError {}
 
 export class InvalidPhoneNumberPhoneProviderError extends PhoneProviderServiceError {}
-export class UnknownPhoneProviderServiceError extends PhoneProviderServiceError {}
+export class UnknownPhoneProviderServiceError extends PhoneProviderServiceError {
+  level = ErrorLevel.Critical
+}

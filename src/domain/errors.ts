@@ -1,13 +1,27 @@
-export class InconsistentDataError extends Error {}
+export const ErrorLevel = {
+  Info: "info",
+  Warn: "warn",
+  Critical: "critical",
+} as const
 
-class DomainError extends Error {
-  name = this.constructor.name
+export class DomainError extends Error {
+  name: string
+  level?: ErrorLevel
+  constructor(message?: string) {
+    super(message)
+    this.name = this.constructor.name
+    this.level = ErrorLevel.Info
+  }
 }
+
+export class InconsistentDataError extends DomainError {}
 
 export class AuthorizationError extends DomainError {}
 
 export class RepositoryError extends DomainError {}
-export class UnknownRepositoryError extends RepositoryError {}
+export class UnknownRepositoryError extends RepositoryError {
+  level = ErrorLevel.Critical
+}
 export class PersistError extends RepositoryError {}
 export class DuplicateError extends RepositoryError {}
 

@@ -9,12 +9,10 @@ type SendTextArguments = {
 }
 
 interface IPhoneProviderService {
-  getCarrier(
-    phone: PhoneNumber,
-  ): Promise<PhoneMetadata | UnknownPhoneProviderServiceError>
+  getCarrier(phone: PhoneNumber): Promise<PhoneMetadata | PhoneProviderServiceError>
   sendText({
     body,
     to,
     logger,
-  }: SendTextArguments): Promise<true | UnknownPhoneProviderServiceError>
+  }: SendTextArguments): Promise<true | PhoneProviderServiceError>
 }

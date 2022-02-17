@@ -4,9 +4,11 @@ import { BTC_NETWORK, getBitcoinCoreRPCConfig, getColdStorageConfig } from "@con
 import {
   InsufficientBalanceForRebalanceError,
   InvalidCurrentColdStorageWalletServiceError,
+  InvalidOrNonWalletTransactionError,
   UnknownColdStorageServiceError,
 } from "@domain/cold-storage/errors"
 import { checkedToOnChainAddress } from "@domain/bitcoin/onchain"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 const { onChainWallet, walletPattern } = getColdStorageConfig()
 
@@ -104,6 +106,8 @@ export const ColdStorageService = async (): Promise<
       const { amount } = await bitcoindCurrentWalletClient.getTransaction(txHash)
       return amount < 0
     } catch (err) {
+      if (err?.message === "Invalid or non-wallet transaction id")
+        return new InvalidOrNonWalletTransactionError(err)
       return new UnknownColdStorageServiceError(err)
     }
   }
@@ -119,14 +123,17 @@ export const ColdStorageService = async (): Promise<
     }
   }
 
-  return {
-    getBalances,
-    createPsbt,
-    createOnChainAddress,
-    isDerivedAddress,
-    isWithdrawalTransaction,
-    lookupTransactionFee,
-  }
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "service.coldstorage",
+    fns: {
+      getBalances,
+      createPsbt,
+      createOnChainAddress,
+      isDerivedAddress,
+      isWithdrawalTransaction,
+      lookupTransactionFee,
+    },
+  })
 }
 
 const getBitcoindClient = (wallet?: string) => {

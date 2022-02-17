@@ -24,7 +24,7 @@ const assertUnreachable = (x: never): never => {
 }
 
 export const mapError = (error: ApplicationError): CustomApolloError => {
-  const errorName = error.constructor.name as ApplicationErrorKey
+  const errorName = error.name as ApplicationErrorKey
   let message = error.message || errorName || ""
   switch (errorName) {
     case "WithdrawalLimitsExceededError":
@@ -301,6 +301,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "ColdStorageServiceError":
     case "InvalidCurrentColdStorageWalletServiceError":
     case "InsufficientBalanceForRebalanceError":
+    case "InvalidOrNonWalletTransactionError":
     case "UnknownColdStorageServiceError":
     case "FeeDifferenceError":
     case "NoTransactionToSettleError":
@@ -311,6 +312,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "DealerPriceServiceError":
     case "UnknownDealerPriceServiceError":
     case "InvalidNegativeAmountError":
+    case "DomainError":
+    case "ErrorLevel":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
