@@ -23,14 +23,9 @@ export const TxnGroups = {
 } as const
 
 const volumeFn =
-  (txnGroup: TxnGroup) =>
-  async ({ walletId, timestamp }: { walletId: WalletId; timestamp: Date }) => {
-    return txVolumeSince({
-      walletId,
-      timestamp,
-      txnGroup,
-    })
-  }
+  (txnGroup: TxnGroup): GetVolumeSinceFn =>
+  async (args) =>
+    txVolumeSince({ ...args, txnGroup })
 
 const txVolumeSince = async ({
   walletId,

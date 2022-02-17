@@ -186,7 +186,12 @@ interface IGetVolumeArgs {
   timestamp: Date
 }
 
+type VolumeSinceArgs = {
+  walletId: WalletId
+  timestamp: Date
+}
 type VolumeResult = Promise<TxBaseVolume | LedgerServiceError>
+type GetVolumeSinceFn = (args: VolumeSinceArgs) => VolumeResult
 
 interface ILedgerService {
   getTransactionById(
