@@ -25,6 +25,7 @@ import {
   Exception,
 } from "@opentelemetry/api"
 import { tracingConfig } from "@config"
+import { ErrorLevel } from "@domain/errors"
 
 propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 
@@ -197,10 +198,10 @@ export const addEventToCurrentSpan = (
 }
 
 export const recordException = (span: Span, exception: Exception, level?: ErrorLevel) => {
-  const errorLevel = level || exception["level"] || "warn"
+  const errorLevel = level || exception["level"] || ErrorLevel.Info
   span.setAttribute("error.level", errorLevel)
   span.recordException(exception)
-  if (errorLevel === "critical") span.setStatus({ code: SpanStatusCode.ERROR })
+  span.setStatus({ code: SpanStatusCode.ERROR })
 }
 
 export const asyncRunInSpan = <F extends () => ReturnType<F>>(
