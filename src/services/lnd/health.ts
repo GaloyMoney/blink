@@ -1,5 +1,6 @@
 import { getWalletStatus } from "lightning"
 import { baseLogger } from "@services/logger"
+import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { params as unauthParams } from "./unauth"
 import { params as authParams } from "./auth"
@@ -25,7 +26,7 @@ const isUpLoop = async (param) => {
   intervals.push(interval)
 }
 
-export const isUp = async (param): Promise<void> => {
+const isLndUp = async (param): Promise<void> => {
   let active = false
   const { lnd, socket, active: isParamActive } = param
 
@@ -54,6 +55,8 @@ export const isUp = async (param): Promise<void> => {
 
   baseLogger.debug({ socket, active }, "lnd pulse")
 }
+
+export const isUp = wrapAsyncToRunInSpan({ namespace: "services.lnd", fn: isLndUp })
 
 // launching a loop to update whether lnd are active or not
 export const activateLndHealthCheck = () => unauthParams.forEach(isUpLoop)
