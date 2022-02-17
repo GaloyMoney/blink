@@ -301,6 +301,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "ColdStorageServiceError":
     case "InvalidCurrentColdStorageWalletServiceError":
     case "InsufficientBalanceForRebalanceError":
+    case "InvalidOrNonWalletTransactionError":
     case "UnknownColdStorageServiceError":
     case "FeeDifferenceError":
     case "NoTransactionToSettleError":

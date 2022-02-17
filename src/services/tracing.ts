@@ -58,7 +58,7 @@ const recordGqlErrors = ({ errors, span, subPathName }) => {
       name: `graphql.${subPath}execution.error`,
       message: JSON.stringify(errors),
     },
-    "critical",
+    ErrorLevel.Warn,
   )
   const firstErr = errors[0]
   if (firstErr.message != "") {
@@ -198,7 +198,7 @@ export const addEventToCurrentSpan = (
 }
 
 export const recordException = (span: Span, exception: Exception, level?: ErrorLevel) => {
-  const errorLevel = level || exception["level"] || ErrorLevel.Info
+  const errorLevel = level || exception["level"] || ErrorLevel.Warn
   span.setAttribute("error.level", errorLevel)
   span.recordException(exception)
   span.setStatus({ code: SpanStatusCode.ERROR })
@@ -218,7 +218,7 @@ export const asyncRunInSpan = <F extends () => ReturnType<F>>(
       span.end()
       return ret
     } catch (error) {
-      recordException(span, error, "critical")
+      recordException(span, error, ErrorLevel.Critical)
       span.end()
       throw error
     }
@@ -283,7 +283,7 @@ export const wrapToRunInSpan = <
         span.end()
         return ret
       } catch (error) {
-        recordException(span, error, "critical")
+        recordException(span, error, ErrorLevel.Critical)
         span.end()
         throw error
       }
@@ -323,13 +323,30 @@ export const wrapAsyncToRunInSpan = <
         span.end()
         return ret
       } catch (error) {
-        recordException(span, error, "critical")
+        recordException(span, error, ErrorLevel.Critical)
         span.end()
         throw error
       }
     })
     return ret
   }
+}
+
+export const wrapAsyncFunctionsToRunInSpan = <F>({
+  namespace,
+  fns,
+}: {
+  namespace: string
+  fns: F
+}): F => {
+  const functions = { ...fns }
+  for (const fn of Object.keys(functions)) {
+    functions[fn] = wrapAsyncToRunInSpan({
+      namespace,
+      fn: fns[fn],
+    })
+  }
+  return functions
 }
 
 export const addAttributesToCurrentSpanAndPropagate = <F extends () => ReturnType<F>>(
