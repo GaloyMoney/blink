@@ -19,8 +19,8 @@ export const LimitsChecker = ({
     const limit = twoFALimits.threshold
     const remainingTwoFALimit = limit - walletVolume.outgoingBaseAmount
     addAttributesToCurrentSpan({
-      "txVolume.threshold": limit,
-      "txVolume.amountInBase": amount,
+      "txVolume.threshold": limit.toString(),
+      "txVolume.amountInBase": amount.toString(),
       "txVolume.limitCheck": "checkTwoFA",
     })
 
@@ -37,8 +37,8 @@ export const LimitsChecker = ({
     const limit = accountLimits.intraLedgerLimit
     const remainingLimit = limit - walletVolume.outgoingBaseAmount
     addAttributesToCurrentSpan({
-      "txVolume.threshold": limit,
-      "txVolume.amountInBase": amount,
+      "txVolume.threshold": limit.toString(),
+      "txVolume.amountInBase": amount.toString(),
       "txVolume.limitCheck": "checkIntraledger",
     })
 
@@ -57,8 +57,8 @@ export const LimitsChecker = ({
     const limit = accountLimits.withdrawalLimit
     const remainingLimit = limit - walletVolume.outgoingBaseAmount
     addAttributesToCurrentSpan({
-      "txVolume.threshold": limit,
-      "txVolume.amountInBase": amount,
+      "txVolume.threshold": limit.toString(),
+      "txVolume.amountInBase": amount.toString(),
       "txVolume.limitCheck": "checkWithdrawal",
     })
     if (remainingLimit < amount) {
