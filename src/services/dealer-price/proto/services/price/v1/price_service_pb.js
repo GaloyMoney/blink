@@ -2959,7 +2959,11 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
   ) {
     var f,
       obj = {
-        amountInCents: jspb.Message.getFieldWithDefault(msg, 1, 0),
+        ratioInCentsPerSatoshis: jspb.Message.getFloatingPointFieldWithDefault(
+          msg,
+          1,
+          0.0,
+        ),
       }
 
     if (includeInstance) {
@@ -3000,8 +3004,8 @@ proto.services.price.v1.GetCentsPerSatsExchangeMidRateResponse.deserializeBinary
       var field = reader.getFieldNumber()
       switch (field) {
         case 1:
-          var value = /** @type {number} */ (reader.readUint64())
-          msg.setAmountInCents(value)
+          var value = /** @type {number} */ (reader.readDouble())
+          msg.setRatioInCentsPerSatoshis(value)
           break
         default:
           reader.skipField()
@@ -3035,28 +3039,30 @@ proto.services.price.v1.GetCentsPerSatsExchangeMidRateResponse.prototype.seriali
 proto.services.price.v1.GetCentsPerSatsExchangeMidRateResponse.serializeBinaryToWriter =
   function (message, writer) {
     var f = undefined
-    f = message.getAmountInCents()
-    if (f !== 0) {
-      writer.writeUint64(1, f)
+    f = message.getRatioInCentsPerSatoshis()
+    if (f !== 0.0) {
+      writer.writeDouble(1, f)
     }
   }
 
 /**
- * optional uint64 amount_in_cents = 1;
+ * optional double ratio_in_cents_per_satoshis = 1;
  * @return {number}
  */
-proto.services.price.v1.GetCentsPerSatsExchangeMidRateResponse.prototype.getAmountInCents =
+proto.services.price.v1.GetCentsPerSatsExchangeMidRateResponse.prototype.getRatioInCentsPerSatoshis =
   function () {
-    return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0))
+    return /** @type {number} */ (
+      jspb.Message.getFloatingPointFieldWithDefault(this, 1, 0.0)
+    )
   }
 
 /**
  * @param {number} value
  * @return {!proto.services.price.v1.GetCentsPerSatsExchangeMidRateResponse} returns this
  */
-proto.services.price.v1.GetCentsPerSatsExchangeMidRateResponse.prototype.setAmountInCents =
+proto.services.price.v1.GetCentsPerSatsExchangeMidRateResponse.prototype.setRatioInCentsPerSatoshis =
   function (value) {
-    return jspb.Message.setProto3IntField(this, 1, value)
+    return jspb.Message.setProto3FloatField(this, 1, value)
   }
 
 goog.object.extend(exports, proto.services.price.v1)

@@ -6,7 +6,7 @@ import { UnknownDealerPriceServiceError } from "@domain/dealer-price"
 
 import { toSats } from "@domain/bitcoin"
 
-import { toCents } from "@domain/fiat"
+import { toCents, toCentsPerSatsRatio } from "@domain/fiat"
 
 import { baseLogger } from "../logger"
 
@@ -219,13 +219,13 @@ export const DealerPriceService = (): IDealerPriceService => {
   }
 
   const getCentsPerSatsExchangeMidRate = async function (): Promise<
-    UsdCents | DealerPriceServiceError
+    CentsPerSatsRatio | DealerPriceServiceError
   > {
     try {
       const response = await clientGetCentsPerSatsExchangeMidRate(
         new GetCentsPerSatsExchangeMidRateRequest(),
       )
-      return toCents(response.getAmountInCents())
+      return toCentsPerSatsRatio(response.getRatioInCentsPerSatoshis())
     } catch (error) {
       baseLogger.error({ error }, "GetCentsPerSatsExchangeMidRate unable to fetch price")
       return new UnknownDealerPriceServiceError(error.message)

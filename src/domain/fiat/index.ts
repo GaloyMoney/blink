@@ -8,6 +8,10 @@ export const toCents = (amount: number): UsdCents => {
   return amount as UsdCents
 }
 
+export const toCentsPerSatsRatio = (amount: number): CentsPerSatsRatio => {
+  return amount as CentsPerSatsRatio
+}
+
 export const checkedtoCents = (amount: number): UsdCents | ValidationError => {
   if (!(amount && amount > 0)) return new InvalidUsdCents()
   if (!Number.isInteger(amount))

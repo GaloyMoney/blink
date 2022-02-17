@@ -507,8 +507,8 @@ export namespace GetCentsPerSatsExchangeMidRateRequest {
 }
 
 export class GetCentsPerSatsExchangeMidRateResponse extends jspb.Message {
-  getAmountInCents(): number
-  setAmountInCents(value: number): GetCentsPerSatsExchangeMidRateResponse
+  getRatioInCentsPerSatoshis(): number
+  setRatioInCentsPerSatoshis(value: number): GetCentsPerSatsExchangeMidRateResponse
 
   serializeBinary(): Uint8Array
   toObject(includeInstance?: boolean): GetCentsPerSatsExchangeMidRateResponse.AsObject
@@ -531,6 +531,6 @@ export class GetCentsPerSatsExchangeMidRateResponse extends jspb.Message {
 
 export namespace GetCentsPerSatsExchangeMidRateResponse {
   export type AsObject = {
-    amountInCents: number
+    ratioInCentsPerSatoshis: number
   }
 }
