@@ -5,6 +5,8 @@ import { toCents } from "@domain/fiat"
 import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
 import { WalletCurrency } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
+import { addAttributesToCurrentSpan } from "@services/tracing"
+import { mapObj } from "@utils"
 
 export const checkIntraledgerLimits = async ({
   amount,
@@ -121,15 +123,18 @@ const limitCheckWithCurrencyConversion = ({
   dCConverter: DisplayCurrencyConverter
   limitsCheckerFn: LimitsCheckerFn
 }) => {
+  const dCSatstoCents = (amount) => dCConverter.fromSatsToCents(toSats(amount))
+
+  addAttributesToCurrentSpan({ "txVolume.fromWalletCurrency": walletCurrency })
   if (walletCurrency === WalletCurrency.Usd) {
     return limitsCheckerFn({
       amount: toCents(amount),
-      walletVolume,
+      walletVolume: mapObj<TxBaseVolume, UsdCents>(walletVolume, toCents),
     })
   } else {
     return limitsCheckerFn({
-      amount: dCConverter.fromSatsToCents(toSats(amount)),
-      walletVolume,
+      amount: dCSatstoCents(amount),
+      walletVolume: mapObj<TxBaseVolume, UsdCents>(walletVolume, dCSatstoCents),
     })
   }
 }
