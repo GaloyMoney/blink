@@ -195,8 +195,8 @@ const addSendNoInternalFee = async ({
       entry
         .credit(lndAccountingPath, sats, metaBtc)
         .debit(liabilitiesDealerBtcWalletId, sats, metaBtc)
-        .credit(liabilitiesWalletId, cents, metaUsd)
-        .debit(liabilitiesDealerUsdWalletId, cents, metaUsd)
+        .credit(liabilitiesDealerUsdWalletId, cents, metaUsd)
+        .debit(liabilitiesWalletId, cents, metaUsd)
 
       const savedEntry = await entry.commit()
       return translateToLedgerJournal(savedEntry)

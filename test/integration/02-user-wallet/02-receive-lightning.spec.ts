@@ -116,7 +116,7 @@ describe("UserWallet - Lightning", () => {
   it("receives payment from outside to USD wallet with amount", async () => {
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 
-    const cents = toCents(100)
+    const cents = toCents(250)
     const memo = "myMemo"
 
     const lnInvoice = await Wallets.addInvoiceForSelf({

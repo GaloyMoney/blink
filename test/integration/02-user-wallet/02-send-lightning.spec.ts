@@ -412,9 +412,8 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalance).toBe(initBalanceB - amountInvoice)
   })
 
-  // TODO: add amount-full invoice scenario
-  // TODO: add probing
-  it.skip("pay amountless invoice from usd wallet", async () => {
+  // TODO: add probing scenarios
+  it("pay amountless invoice from usd wallet", async () => {
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 
     const { request } = await createInvoice({ lnd: lndOutside1 })
@@ -437,11 +436,10 @@ describe("UserWallet - Lightning Pay", () => {
     if (sats instanceof Error) throw sats
 
     const finalBalance = await getBalanceHelper(walletIdUsdB)
-    console.log({ sats, initBalanceUsdB, finalBalance, amountPayment })
     expect(finalBalance).toBe(initBalanceUsdB - amountPayment)
   })
 
-  it.skip("pay amountfull invoice from usd wallet", async () => {
+  it("pay amountfull invoice from usd wallet", async () => {
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 
     const amountPayment = toSats(100)
@@ -463,7 +461,6 @@ describe("UserWallet - Lightning Pay", () => {
     if (cents instanceof Error) throw cents
 
     const finalBalance = await getBalanceHelper(walletIdUsdB)
-    console.log({ cents, initBalanceUsdB, finalBalance, amountPayment })
     expect(finalBalance).toBe(initBalanceUsdB - cents)
   })
 

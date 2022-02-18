@@ -15,7 +15,6 @@ import {
   LnPaymentPendingError,
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
-import { DealerPriceServiceError } from "@domain/dealer-price"
 import {
   AlreadyPaidError,
   InsufficientBalanceError,
@@ -23,6 +22,7 @@ import {
   LnPaymentRequestZeroAmountRequiredError,
   NotReachableError,
 } from "@domain/errors"
+import { toCents } from "@domain/fiat"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
@@ -45,7 +45,8 @@ import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 import { NotificationsService } from "@services/notifications"
 import { RoutesCache } from "@services/redis/routes"
 import { addAttributesToCurrentSpan } from "@services/tracing"
-import { toCents } from "@domain/fiat"
+
+import { getNoAmountLightningFee, getRoutingFee } from "./get-lightning-fee"
 
 export const payInvoiceByWalletIdWithTwoFA = async ({
   paymentRequest,
@@ -123,6 +124,15 @@ export const payInvoiceByWalletId = async ({
   if (!(lnInvoiceAmount && lnInvoiceAmount > 0)) {
     return new LnPaymentRequestNonZeroAmountRequiredError()
   }
+
+  // FIXME: temp workaround. force probe for USD wallet to simplify flow.
+  const senderWallet = await WalletsRepository().findById(senderWalletId)
+  if (senderWallet instanceof Error) return senderWallet
+
+  if (senderWallet.currency === WalletCurrency.Usd) {
+    await getRoutingFee({ paymentRequest, walletId: senderWalletId })
+  }
+  // END FIXME
 
   return lnSendPayment({
     senderWalletId,
@@ -218,6 +228,15 @@ export const payNoAmountInvoiceByWalletId = async ({
   if (lnInvoiceAmount && lnInvoiceAmount > 0) {
     return new LnPaymentRequestZeroAmountRequiredError()
   }
+
+  // FIXME: temp workaround. force probe for USD wallet to simplify flow.
+  const senderWallet = await WalletsRepository().findById(senderWalletId)
+  if (senderWallet instanceof Error) return senderWallet
+
+  if (senderWallet.currency === WalletCurrency.Usd) {
+    await getNoAmountLightningFee({ walletId: senderWalletId, amount, paymentRequest })
+  }
+  // END FIXME
 
   return lnSendPayment({
     senderWalletId,
@@ -472,15 +491,7 @@ const executePaymentViaLn = async ({
     feeRouting = toSats(rawRoute.safe_fee)
 
     if (senderWallet.currency === WalletCurrency.Usd) {
-      if (!invoiceWithAmount) {
-        // the dealer already gave a price during the probe
-        // TODO: test properly. move this to domain
-        const baseCentsWithoutFee = toCents(amount)
-        const satsWithoutFee = toSats(rawRoute.tokens - rawRoute.safe_fee)
-        const ratio = satsWithoutFee / baseCentsWithoutFee
-        sats = toSats(rawRoute.tokens)
-        cents = toCents(sats * ratio)
-      } else {
+      if (invoiceWithAmount) {
         // the invoice comes with an amount, so we start from Sats
         const baseSats = toSats(amount)
         assert(baseSats === rawRoute.tokens)
@@ -489,6 +500,14 @@ const executePaymentViaLn = async ({
         const cents_ = await dealerPriceService.getCentsFromSatsForImmediateSell(sats)
         if (cents_ instanceof Error) return cents_
         cents = cents_
+      } else {
+        // the dealer already gave a price during the probe
+        // TODO: test properly. move this to domain
+        const baseCentsWithoutFee = toCents(amount)
+        const satsWithoutFee = toSats(rawRoute.tokens - rawRoute.safe_fee)
+        const ratio = satsWithoutFee / baseCentsWithoutFee
+        sats = toSats(rawRoute.tokens)
+        cents = toCents(sats / ratio)
       }
     } else {
       sats = toSats(amount + feeRouting)
@@ -499,14 +518,19 @@ const executePaymentViaLn = async ({
     pubkey = lndService.defaultPubkey()
 
     if (senderWallet.currency === WalletCurrency.Usd) {
-      const centsBase = toCents(amount)
-      const feeRoutingCents = LnFeeCalculator().max(centsBase)
-      cents = toCents(centsBase + feeRoutingCents)
-      const totalSats = await dealerPriceService.getSatsFromCentsForImmediateSell(cents)
-      if (totalSats instanceof DealerPriceServiceError) return totalSats
-      sats = totalSats
+      // we are forcing the probe. if probe fails, then exit (for now)
+      assert(false)
 
-      feeRouting = LnFeeCalculator().inverseMax(sats)
+      // const centsBase = toCents(amount)
+      // const feeRoutingCents = LnFeeCalculator().max(centsBase)
+      // cents = toCents(centsBase + feeRoutingCents)
+      // const totalSats = await dealerPriceService.getSatsFromCentsForImmediateSell(cents)
+      // if (totalSats instanceof DealerPriceServiceError) return totalSats
+      // sats = totalSats
+
+      // feeRouting = LnFeeCalculator().inverseMax(sats)
+
+      // console.log({ centsBase, cents, sats })
     } else {
       const satsBase = toSats(amount)
       feeRouting = LnFeeCalculator().max(satsBase)

@@ -47,7 +47,7 @@ export const getNoAmountLightningFee = async ({
 }: {
   walletId: string
   paymentRequest: EncodedPaymentRequest
-  amount: CurrencyBaseAmount
+  amount: number
 }): Promise<Satoshis | ApplicationError> => {
   const decodedInvoice = decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
