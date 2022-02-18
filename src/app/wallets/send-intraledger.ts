@@ -186,8 +186,9 @@ const executePaymentViaIntraledger = async ({
       recipientWallet.currency === WalletCurrency.Btc &&
       senderWallet.currency === WalletCurrency.Btc
     )
-  )
+  ) {
     return new NotImplementedError("USD intraledger")
+  }
   const amountSats = toSats(amount)
 
   const displayCurrencyPerSat = await getCurrentPrice()

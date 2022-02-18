@@ -225,8 +225,9 @@ const addSendInternalFee = async ({
   const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
 
   // TODO: remove once implemented
-  if (walletCurrency !== WalletCurrency.Btc)
+  if (walletCurrency !== WalletCurrency.Btc) {
     return new NotImplementedError("USD Intraledger")
+  }
 
   const metadata = { ...metaInput, currency: WalletCurrency.Btc }
 

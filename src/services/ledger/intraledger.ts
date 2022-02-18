@@ -145,8 +145,9 @@ const addIntraledgerTxTransfer = async ({
       recipientWalletCurrency === WalletCurrency.Btc &&
       senderWalletCurrency === WalletCurrency.Btc
     )
-  )
+  ) {
     return new NotImplementedError("USD intraledger")
+  }
 
   try {
     const creditMetadata = {

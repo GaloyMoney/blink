@@ -208,8 +208,9 @@ const addReceiptFee = async ({
   const bankOwnerPath = toLiabilitiesWalletId(await caching.getBankOwnerWalletId())
 
   // TODO: remove once implemented
-  if (walletCurrency !== WalletCurrency.Btc)
+  if (walletCurrency !== WalletCurrency.Btc) {
     return new NotImplementedError("USD Intraledger")
+  }
 
   const metadata = { ...metaInput, currency: WalletCurrency.Btc }
 

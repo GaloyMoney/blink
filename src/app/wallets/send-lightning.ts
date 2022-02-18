@@ -356,8 +356,9 @@ const executePaymentViaIntraledger = async ({
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
   // TODO: manage Usd use case
-  if (senderWallet.currency !== WalletCurrency.Btc)
+  if (senderWallet.currency !== WalletCurrency.Btc) {
     return new NotImplementedError("USD Intraledger")
+  }
   const amountSats = toSats(amount)
 
   const invoicesRepo = WalletInvoicesRepository()
