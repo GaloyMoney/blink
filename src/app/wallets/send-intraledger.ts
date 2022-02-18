@@ -1,9 +1,7 @@
-import assert from "assert"
-
 import { addNewContact } from "@app/accounts/add-new-contact"
 import { getCurrentPrice } from "@app/prices"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { InsufficientBalanceError } from "@domain/errors"
+import { InsufficientBalanceError, NotImplementedError } from "@domain/errors"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { PaymentInputValidator, WalletCurrency } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
@@ -183,8 +181,13 @@ const executePaymentViaIntraledger = async ({
   const { amount, senderWallet, recipientWallet } = validationResult
 
   // TODO Usd use case
-  assert(recipientWallet.currency === WalletCurrency.Btc)
-  assert(senderWallet.currency === WalletCurrency.Btc)
+  if (
+    !(
+      recipientWallet.currency === WalletCurrency.Btc &&
+      senderWallet.currency === WalletCurrency.Btc
+    )
+  )
+    return new NotImplementedError("USD intraledger")
   const amountSats = toSats(amount)
 
   const displayCurrencyPerSat = await getCurrentPrice()

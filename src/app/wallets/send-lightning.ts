@@ -1,5 +1,3 @@
-import assert from "assert"
-
 import { getCurrentPrice } from "@app/prices"
 import {
   checkAndVerifyTwoFA,
@@ -22,6 +20,7 @@ import {
   InsufficientBalanceError,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
+  NotImplementedError,
   NotReachableError,
 } from "@domain/errors"
 import { toCents } from "@domain/fiat"
@@ -357,7 +356,8 @@ const executePaymentViaIntraledger = async ({
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
   // TODO: manage Usd use case
-  assert(senderWallet.currency === WalletCurrency.Btc)
+  if (senderWallet.currency !== WalletCurrency.Btc)
+    return new NotImplementedError("USD Intraledger")
   const amountSats = toSats(amount)
 
   const invoicesRepo = WalletInvoicesRepository()
@@ -522,7 +522,7 @@ const executePaymentViaLn = async ({
 
     if (senderWallet.currency === WalletCurrency.Usd) {
       // we are forcing the probe. if probe fails, then exit (for now)
-      assert(false)
+      return new NotImplementedError("Routeless USD payments")
 
       // const centsBase = toCents(amount)
       // const feeRoutingCents = LnFeeCalculator().max(centsBase)

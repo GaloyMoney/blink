@@ -1,5 +1,3 @@
-import { assert } from "console"
-
 import { getCurrentPrice } from "@app/prices"
 import { BTC_NETWORK, getOnChainWalletConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
@@ -8,6 +6,7 @@ import { checkedToOnChainAddress, TxDecoder } from "@domain/bitcoin/onchain"
 import {
   InsufficientBalanceError,
   LessThanDustThresholdError,
+  NotImplementedError,
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
@@ -182,8 +181,13 @@ const executePaymentViaIntraledger = async ({
   if (recipientWallet.id === senderWallet.id) return new SelfPaymentError()
 
   // TODO Usd use case
-  assert(recipientWallet.currency === WalletCurrency.Btc)
-  assert(senderWallet.currency === WalletCurrency.Btc)
+  if (
+    !(
+      recipientWallet.currency === WalletCurrency.Btc &&
+      senderWallet.currency === WalletCurrency.Btc
+    )
+  )
+    return new NotImplementedError("USD intraledger")
   const amountSats = toSats(amount)
 
   const displayCurrencyPerSat = await getCurrentPrice()
@@ -279,7 +283,9 @@ const executePaymentViaOnChain = async ({
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
   // TODO Usd use case
-  assert(senderWallet.currency === WalletCurrency.Btc)
+  if (senderWallet.currency !== WalletCurrency.Btc)
+    return new NotImplementedError("USD Intraledger")
+
   const amountSats = toSats(amount)
 
   const ledgerService = LedgerService()

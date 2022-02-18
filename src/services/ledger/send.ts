@@ -1,6 +1,5 @@
-import assert from "assert"
-
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
+import { NotImplementedError } from "@domain/errors"
 import {
   LedgerError,
   LedgerServiceError,
@@ -226,7 +225,8 @@ const addSendInternalFee = async ({
   const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
 
   // TODO: remove once implemented
-  assert(walletCurrency === WalletCurrency.Btc)
+  if (walletCurrency !== WalletCurrency.Btc)
+    return new NotImplementedError("USD Intraledger")
 
   const metadata = { ...metaInput, currency: WalletCurrency.Btc }
 

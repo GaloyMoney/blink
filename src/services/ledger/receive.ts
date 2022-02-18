@@ -1,10 +1,8 @@
-import assert from "assert"
-
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
 import { WalletCurrency } from "@domain/wallets"
 
-import { NotReachableError } from "@domain/errors"
+import { NotImplementedError, NotReachableError } from "@domain/errors"
 
 import { lndAccountingPath } from "./accounts"
 import { MainBook } from "./books"
@@ -210,7 +208,8 @@ const addReceiptFee = async ({
   const bankOwnerPath = toLiabilitiesWalletId(await caching.getBankOwnerWalletId())
 
   // TODO: remove once implemented
-  assert(walletCurrency === WalletCurrency.Btc)
+  if (walletCurrency !== WalletCurrency.Btc)
+    return new NotImplementedError("USD Intraledger")
 
   const metadata = { ...metaInput, currency: WalletCurrency.Btc }
 
