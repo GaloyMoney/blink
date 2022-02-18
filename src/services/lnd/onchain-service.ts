@@ -16,7 +16,7 @@ import {
   sendToChainAddress,
 } from "lightning"
 
-import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 import { LocalCacheService } from "@services/cache"
 import { CacheKeys } from "@domain/cache"
 import { SECS_PER_5_MINS } from "@config"
@@ -160,17 +160,17 @@ export const OnChainService = (
     }
   }
 
-  return {
-    getBalance,
-    listIncomingTransactions: wrapAsyncToRunInSpan({
-      namespace: `service.lnd`,
-      fn: listIncomingTransactions,
-    }),
-    lookupOnChainFee,
-    createOnChainAddress,
-    getOnChainFeeEstimate,
-    payToAddress,
-  }
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.lnd.onchain",
+    fns: {
+      getBalance,
+      listIncomingTransactions,
+      lookupOnChainFee,
+      createOnChainAddress,
+      getOnChainFeeEstimate,
+      payToAddress,
+    },
+  })
 }
 
 const parseLndErrorDetails = (err) =>

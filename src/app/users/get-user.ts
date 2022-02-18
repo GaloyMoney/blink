@@ -40,8 +40,11 @@ const updateUserIPsInfo = async ({
   logger: Logger
 }): Promise<void | RepositoryError> =>
   asyncRunInSpan(
-    "app.updateUserIPsInfo",
-    { [SemanticAttributes.CODE_FUNCTION]: "app.updateUserIPsInfo" },
+    "app.users.updateUserIPsInfo",
+    {
+      [SemanticAttributes.CODE_FUNCTION]: "updateUserIPsInfo",
+      [SemanticAttributes.CODE_NAMESPACE]: "app.users",
+    },
     async () => {
       const ipConfig = getIpConfig()
 

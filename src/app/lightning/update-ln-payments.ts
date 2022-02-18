@@ -58,14 +58,17 @@ const updateLnPaymentsByFunction = async ({
   let updatedProcessedHashes = processedLnPaymentsHashes
   while (updatedProcessedHashes.length < incompleteLnPayments.length && after !== false) {
     const results = await asyncRunInSpan(
-      "app.updateLnPaymentsPaginated",
+      "app.lightning.updateLnPaymentsPaginated",
       {
-        [SemanticAttributes.CODE_FUNCTION]: "app.updateLnPaymentsPaginated",
-        "updateLnPaymentsByFunction.cursor": String(after),
-        "updateLnPaymentsByFunction.listPaymentsMethod": listFn.name,
-        "updateLnPaymentsByFunction.pubkey": pubkey,
-        "updateLnPaymentsByFunction.totalIncomplete": incompleteLnPayments.length,
-        "updateLnPaymentsByFunction.processedCount": updatedProcessedHashes.length,
+        [SemanticAttributes.CODE_FUNCTION]: "updateLnPaymentsPaginated",
+        [SemanticAttributes.CODE_NAMESPACE]: "app.lightning",
+        [`${SemanticAttributes.CODE_FUNCTION}.params.cursor`]: String(after),
+        [`${SemanticAttributes.CODE_FUNCTION}.params.listPaymentsMethod`]: listFn.name,
+        [`${SemanticAttributes.CODE_FUNCTION}.params.pubkey`]: pubkey,
+        [`${SemanticAttributes.CODE_FUNCTION}.params.totalIncomplete`]:
+          incompleteLnPayments.length,
+        [`${SemanticAttributes.CODE_FUNCTION}.params.processedCount`]:
+          updatedProcessedHashes.length,
       },
       async () => {
         if (after === false) return new UnknownLightningServiceError()

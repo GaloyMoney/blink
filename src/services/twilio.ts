@@ -1,10 +1,12 @@
+import twilio from "twilio"
+
 import { getTwilioConfig } from "@config"
 import {
   InvalidPhoneNumberPhoneProviderError,
   UnknownPhoneProviderServiceError,
 } from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
-import twilio from "twilio"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 export const TwilioClient = (): IPhoneProviderService => {
   const client = twilio(getTwilioConfig().accountSid, getTwilioConfig().authToken)
@@ -53,5 +55,8 @@ export const TwilioClient = (): IPhoneProviderService => {
     }
   }
 
-  return { getCarrier, sendText }
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.twilio",
+    fns: { getCarrier, sendText },
+  })
 }

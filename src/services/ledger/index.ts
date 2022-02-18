@@ -17,6 +17,7 @@ import {
   UnknownLedgerError,
 } from "@domain/ledger/errors"
 import { toObjectId } from "@services/mongoose/utils"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { admin } from "./admin"
 import * as adminLegacy from "./admin-legacy"
@@ -225,24 +226,27 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  return {
-    getTransactionById,
-    getTransactionsByHash,
-    getTransactionsByWalletId,
-    getTransactionsByWalletIdAndContactUsername,
-    listPendingPayments,
-    getPendingPaymentsCount,
-    getWalletBalance,
-    isOnChainTxRecorded,
-    isLnTxRecorded,
-    getWalletIdByTransactionHash,
-    listWalletIdsWithPendingPayments,
-    ...admin,
-    ...intraledger,
-    ...volume,
-    ...send,
-    ...receive,
-  }
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.ledger",
+    fns: {
+      getTransactionById,
+      getTransactionsByHash,
+      getTransactionsByWalletId,
+      getTransactionsByWalletIdAndContactUsername,
+      listPendingPayments,
+      getPendingPaymentsCount,
+      getWalletBalance,
+      isOnChainTxRecorded,
+      isLnTxRecorded,
+      getWalletIdByTransactionHash,
+      listWalletIdsWithPendingPayments,
+      ...admin,
+      ...intraledger,
+      ...volume,
+      ...send,
+      ...receive,
+    },
+  })
 }
 
 export const translateToLedgerTx = (tx): LedgerTransaction => ({

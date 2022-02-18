@@ -35,6 +35,7 @@ import {
 
 import { LndOfflineError } from "@core/error"
 
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 import { timeout } from "@utils"
 
 import { TIMEOUT_PAYMENT } from "./auth"
@@ -473,23 +474,26 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  return {
-    isLocal,
-    defaultPubkey: (): Pubkey => defaultPubkey,
-    listActivePubkeys,
-    findRouteForInvoice,
-    findRouteForNoAmountInvoice,
-    registerInvoice,
-    lookupInvoice,
-    lookupPayment,
-    listSettledPayments,
-    listPendingPayments,
-    listFailedPayments,
-    listSettledAndPendingPayments,
-    cancelInvoice,
-    payInvoiceViaRoutes,
-    payInvoiceViaPaymentDetails,
-  }
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.lnd.offchain",
+    fns: {
+      isLocal,
+      defaultPubkey: (): Pubkey => defaultPubkey,
+      listActivePubkeys,
+      findRouteForInvoice,
+      findRouteForNoAmountInvoice,
+      registerInvoice,
+      lookupInvoice,
+      lookupPayment,
+      listSettledPayments,
+      listPendingPayments,
+      listFailedPayments,
+      listSettledAndPendingPayments,
+      cancelInvoice,
+      payInvoiceViaRoutes,
+      payInvoiceViaPaymentDetails,
+    },
+  })
 }
 
 const lookupPaymentByPubkeyAndHash = async ({
