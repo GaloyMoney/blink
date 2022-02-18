@@ -7,6 +7,8 @@ import {
   checkWithdrawalLimits,
 } from "@app/wallets/check-limit-helpers"
 import { reimburseFee } from "@app/wallets/reimburse-fee"
+import { RouteValidator } from "@app/lightning/route-validator"
+
 import { checkedToSats, toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
@@ -494,7 +496,8 @@ const executePaymentViaLn = async ({
       if (invoiceWithAmount) {
         // the invoice comes with an amount, so we start from Sats
         const baseSats = toSats(amount)
-        assert(baseSats === rawRoute.tokens)
+        const validateRoute = RouteValidator(rawRoute).validate(baseSats)
+        if (validateRoute instanceof Error) return validateRoute
 
         sats = toSats(baseSats + feeRouting)
         const cents_ = await dealerPriceService.getCentsFromSatsForImmediateSell(sats)

@@ -88,3 +88,6 @@ export class LimitsExceededError extends ValidationError {}
 export class WithdrawalLimitsExceededError extends LimitsExceededError {}
 export class IntraledgerLimitsExceededError extends LimitsExceededError {}
 export class TwoFALimitsExceededError extends LimitsExceededError {}
+
+export class LnRouteValidationError extends ValidationError {}
+export class BadAmountForRouteError extends LnRouteValidationError {}
