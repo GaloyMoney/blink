@@ -94,7 +94,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "An amount is required to complete payment"
       return new ValidationInternalError({ message, logger: baseLogger })
 
-    case "InvalidSatoshiAmount":
+    case "InvalidSatoshiAmountError":
       message = "A valid satoshi amount is required"
       return new ValidationInternalError({ message, logger: baseLogger })
 
@@ -239,6 +239,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "DuplicateError":
     case "CouldNotFindError":
     case "ValidationError":
+    case "LnRouteValidationError":
+    case "BadAmountForRouteError":
     case "InvalidUsername":
     case "InvalidPhoneNumber":
     case "InvalidWalletId":
@@ -314,6 +316,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidNegativeAmountError":
     case "DomainError":
     case "ErrorLevel":
+    case "InvalidCurrencyBaseAmountError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 

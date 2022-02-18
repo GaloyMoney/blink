@@ -128,7 +128,7 @@ export async function onchainBlockEventhandler({ height }) {
 }
 
 export const onInvoiceUpdate = async (invoice: GetInvoiceResult) => {
-  logger.debug({ invoice }, "onInvoiceUpdate")
+  logger.info({ invoice }, "onInvoiceUpdate")
 
   if (!invoice.is_confirmed) {
     return
@@ -148,14 +148,14 @@ export const publishSingleCurrentPrice = async () => {
 }
 
 const publishCurrentPrice = () => {
-  const interval = 1000 * 30
+  const interval: Seconds = (1000 * 30) as Seconds
   return setInterval(async () => {
     await publishSingleCurrentPrice()
   }, interval)
 }
 
 const updatePriceForChart = () => {
-  const interval = 1000 * SECS_PER_5_MINS
+  const interval: Seconds = (1000 * SECS_PER_5_MINS) as Seconds
   return setInterval(async () => {
     try {
       await updatePriceHistory()

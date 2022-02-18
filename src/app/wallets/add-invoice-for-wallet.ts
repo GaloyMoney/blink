@@ -1,12 +1,12 @@
-import { getCurrentPrice } from "@app/prices"
 import { checkedToSats, toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
+import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning/invoice-expiration"
+import { DealerPriceServiceError } from "@domain/dealer-price"
 import { checkedtoCents } from "@domain/fiat"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
-import { AmountConverter, checkedToWalletId, WalletCurrency } from "@domain/wallets"
+import { checkedToWalletId, WalletCurrency } from "@domain/wallets"
 import { DealerPriceService } from "@services/dealer-price"
 import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
@@ -185,26 +185,16 @@ const addInvoiceFiatDenomiation = async ({
 
   const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Usd, new Date())
 
-  // TODO: ensure we don't get a stalled price // fail otherwise
-  const price = await getCurrentPrice()
-  if (price instanceof Error) return price
-
-  const dCConverter = DisplayCurrencyConverter(price)
-
   const dealer = DealerPriceService()
 
-  const amountConverter = AmountConverter({ dealerFns: dealer, dCConverter })
-
-  const amounts = await amountConverter.getAmountsReceive({
-    walletCurrency: WalletCurrency.Usd,
+  const sats = await dealer.getSatsFromCentsForFutureBuy(
     cents,
-    order: "quote",
-  })
-
-  if (amounts instanceof Error) return amounts
+    defaultTimeToExpiryInSeconds,
+  )
+  if (sats instanceof DealerPriceServiceError) return sats
 
   return registerAndPersistInvoice({
-    sats: amounts.sats,
+    sats,
     memo,
     walletInvoiceCreateFn,
     expiresAt,

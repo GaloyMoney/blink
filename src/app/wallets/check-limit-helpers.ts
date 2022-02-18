@@ -148,7 +148,7 @@ export const checkAndVerifyTwoFA = async ({
   account,
   dCConverter,
 }: {
-  amount: Satoshis
+  amount: CurrencyBaseAmount
   twoFAToken: TwoFAToken | null
   twoFASecret: TwoFASecret
   walletId: WalletId

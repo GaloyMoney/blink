@@ -1,14 +1,23 @@
-import { checkedToSats, toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
+import {
+  checkedToCurrencyBaseAmount,
+  checkedToSats,
+  toMilliSatsFromNumber,
+  toSats,
+} from "@domain/bitcoin"
 import { decodeInvoice, LnFeeCalculator } from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError,
+  InvalidSatoshiAmountError,
   LnPaymentRequestZeroAmountRequiredError,
 } from "@domain/errors"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
-import { checkedToWalletId } from "@domain/wallets"
+import { checkedToWalletId, WalletCurrency } from "@domain/wallets"
 import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
 import { RoutesCache } from "@services/redis/routes"
+import { WalletsRepository } from "@services/mongoose"
+import { DealerPriceService } from "@services/dealer-price"
+import { toCents } from "@domain/fiat"
 
 export const getRoutingFee = async ({
   walletId,
@@ -19,7 +28,13 @@ export const getRoutingFee = async ({
 }): Promise<Satoshis | ApplicationError> => {
   const decodedInvoice = decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
-  const paymentAmount = checkedToSats(decodedInvoice.amount || 0)
+
+  const amount = decodedInvoice.amount
+  if (amount === null) {
+    return new InvalidSatoshiAmountError()
+  }
+
+  const paymentAmount = checkedToSats(amount)
   if (paymentAmount instanceof Error) return paymentAmount
 
   return feeProbe({ walletId, decodedInvoice, paymentAmount })
@@ -30,9 +45,9 @@ export const getNoAmountLightningFee = async ({
   paymentRequest,
   amount,
 }: {
-  walletId: WalletId
+  walletId: string
   paymentRequest: EncodedPaymentRequest
-  amount: Satoshis
+  amount: number
 }): Promise<Satoshis | ApplicationError> => {
   const decodedInvoice = decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
@@ -42,10 +57,22 @@ export const getNoAmountLightningFee = async ({
     return new LnPaymentRequestZeroAmountRequiredError()
   }
 
-  const paymentAmount = checkedToSats(amount)
+  const paymentAmount = checkedToCurrencyBaseAmount(amount)
   if (paymentAmount instanceof Error) return paymentAmount
 
-  return noAmountProbeForFee({ walletId, decodedInvoice, paymentAmount })
+  const walletIdChecked = checkedToWalletId(walletId)
+  if (walletIdChecked instanceof Error) return walletIdChecked
+
+  // FIXME inefficient to pass WalletId and walletCurrency when Wallet is loaded
+  const wallet = await WalletsRepository().findById(walletIdChecked)
+  if (wallet instanceof Error) return wallet
+
+  return noAmountProbeForFee({
+    walletId: walletIdChecked,
+    walletCurrency: wallet.currency,
+    decodedInvoice,
+    paymentAmount,
+  })
 }
 
 const feeProbe = async ({
@@ -76,7 +103,7 @@ const feeProbe = async ({
     return toSats(0)
   }
 
-  const key = CachedRouteLookupKeyFactory().create({
+  const key = CachedRouteLookupKeyFactory().createFromMilliSats({
     paymentHash,
     milliSats: toMilliSatsFromNumber(paymentAmount * 1000),
   })
@@ -98,17 +125,16 @@ const feeProbe = async ({
 
 const noAmountProbeForFee = async ({
   walletId,
+  walletCurrency,
   decodedInvoice,
   paymentAmount,
 }: {
   walletId: WalletId
+  walletCurrency: WalletCurrency
   decodedInvoice: LnInvoice
-  paymentAmount: Satoshis
+  paymentAmount: CurrencyBaseAmount
 }): Promise<Satoshis | ApplicationError> => {
   const { destination, paymentHash } = decodedInvoice
-
-  const walletIdChecked = checkedToWalletId(walletId)
-  if (walletIdChecked instanceof Error) return walletIdChecked
 
   const balance = await LedgerService().getWalletBalance(walletId)
   if (balance instanceof Error) return balance
@@ -124,20 +150,39 @@ const noAmountProbeForFee = async ({
     return toSats(0)
   }
 
-  const key = CachedRouteLookupKeyFactory().create({
-    paymentHash,
-    milliSats: toMilliSatsFromNumber(paymentAmount * 1000),
-  })
+  let sats: Satoshis
+  let key: CachedRouteLookupKey
+
+  if (walletCurrency === WalletCurrency.Usd) {
+    const dealer = DealerPriceService()
+    // TODO: maybe this should be Future sell here
+    const sats_ = await dealer.getSatsFromCentsForImmediateSell(toCents(paymentAmount))
+    if (sats_ instanceof Error) return sats_
+    sats = sats_
+
+    key = CachedRouteLookupKeyFactory().createFromCents({
+      paymentHash,
+      cents: toCents(paymentAmount),
+    })
+  } else {
+    sats = toSats(paymentAmount)
+
+    key = CachedRouteLookupKeyFactory().createFromMilliSats({
+      paymentHash,
+      milliSats: toMilliSatsFromNumber(sats * 1000),
+    })
+  }
+
   const routeFromCache = await RoutesCache().findByKey(key)
   const validCachedRoute = !(routeFromCache instanceof Error)
   if (validCachedRoute) return toSats(routeFromCache.route.fee)
 
-  const maxFee = LnFeeCalculator().max(paymentAmount)
+  const maxFee = LnFeeCalculator().max(sats)
 
   const rawRoute = await lndService.findRouteForNoAmountInvoice({
     decodedInvoice,
     maxFee,
-    amount: paymentAmount,
+    amount: sats,
   })
   if (rawRoute instanceof Error) return rawRoute
 
@@ -145,5 +190,5 @@ const noAmountProbeForFee = async ({
   const cachedRoute = await RoutesCache().store({ key, routeToCache })
   if (cachedRoute instanceof Error) return cachedRoute
 
-  return toSats(rawRoute.fee)
+  return toSats(rawRoute.fee) // TODO: should return UsdCents for UsdWallet
 }

@@ -1,7 +1,11 @@
 import { createUser } from "@app/users"
 import { yamlConfig } from "@config"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
-import { AccountsRepository, UsersRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 import { toObjectId } from "@services/mongoose/utils"
 import { addWallet } from "@app/accounts/add-wallet"
@@ -43,6 +47,18 @@ export const getAccountIdByTestUserRef = async (ref: string) => {
 export const getDefaultWalletIdByTestUserRef = async (ref: string) => {
   const account = await getAccountByTestUserRef(ref)
   return account.defaultWalletId
+}
+
+export const getUsdWalletIdByTestUserRef = async (ref: string) => {
+  const account = await getAccountByTestUserRef(ref)
+
+  const walletsRepo = WalletsRepository()
+  const wallets = await walletsRepo.listByAccountId(account.id)
+  if (wallets instanceof Error) throw wallets
+
+  const wallet = wallets.find((w) => w.currency === WalletCurrency.Usd)
+  if (wallet === undefined) throw Error("no USD wallet")
+  return wallet.id
 }
 
 export const getDefaultWalletIdByRole = async (role: string) => {

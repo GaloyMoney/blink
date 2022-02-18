@@ -17,7 +17,15 @@ describe("LnFeeCalculator", () => {
     const amount = toSats(minAmount - 100)
     const maxFee = LnFeeCalculator().max(amount)
     const expectedMaxFee = toSats(Math.floor(FEECAP_PERCENT * amount))
-    expect(maxFee).not.toEqual(expectedMaxFee)
-    expect(maxFee).toEqual(FEEMIN)
+    expect(maxFee).toEqual(expectedMaxFee)
+    // FIXME: condition below is when the FEEMIN is taking into consideration
+    // expect(maxFee).not.toEqual(expectedMaxFee)
+    // expect(maxFee).toEqual(FEEMIN)
+  })
+  it("returns inverse properly", () => {
+    const amount = toSats(minAmount + 100)
+    const maxFee = LnFeeCalculator().max(amount)
+    const amountRevert = LnFeeCalculator().inverseMax(maxFee)
+    expect(amountRevert).toEqual(amount)
   })
 })

@@ -1,5 +1,5 @@
 export const CachedRouteLookupKeyFactory = (): CachedRouteLookupKeyFactory => {
-  const create = ({
+  const createFromMilliSats = ({
     paymentHash,
     milliSats,
   }: {
@@ -8,10 +8,24 @@ export const CachedRouteLookupKeyFactory = (): CachedRouteLookupKeyFactory => {
   }): CachedRouteLookupKey =>
     JSON.stringify({
       id: paymentHash,
+      // TODO: we should not use 'mtokens' as a variable name in our domain layer
       mtokens: milliSats.toString(),
     }) as CachedRouteLookupKey
 
+  const createFromCents = ({
+    paymentHash,
+    cents,
+  }: {
+    paymentHash: PaymentHash
+    cents: UsdCents
+  }): CachedRouteLookupKey =>
+    JSON.stringify({
+      id: paymentHash,
+      cents: cents.toString(),
+    }) as CachedRouteLookupKey
+
   return {
-    create,
+    createFromMilliSats,
+    createFromCents,
   }
 }

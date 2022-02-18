@@ -5,6 +5,8 @@ import {
   checkWithdrawalLimits,
 } from "@app/wallets/check-limit-helpers"
 import { reimburseFee } from "@app/wallets/reimburse-fee"
+import { RouteValidator } from "@app/lightning/route-validator"
+
 import { checkedToSats, toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
@@ -18,7 +20,10 @@ import {
   InsufficientBalanceError,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
+  NotImplementedError,
+  NotReachableError,
 } from "@domain/errors"
+import { toCents } from "@domain/fiat"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
@@ -26,8 +31,10 @@ import {
   PaymentInitiationMethod,
   PaymentInputValidator,
   SettlementMethod,
+  WalletCurrency,
 } from "@domain/wallets"
 import { LockService } from "@services"
+import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import {
@@ -39,6 +46,8 @@ import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 import { NotificationsService } from "@services/notifications"
 import { RoutesCache } from "@services/redis/routes"
 import { addAttributesToCurrentSpan } from "@services/tracing"
+
+import { getNoAmountLightningFee, getRoutingFee } from "./get-lightning-fee"
 
 export const payInvoiceByWalletIdWithTwoFA = async ({
   paymentRequest,
@@ -92,6 +101,7 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
     senderAccount,
     decodedInvoice,
     amount: lnInvoiceAmount,
+    invoiceWithAmount: true,
     memo: memo || "",
     logger,
   })
@@ -116,11 +126,21 @@ export const payInvoiceByWalletId = async ({
     return new LnPaymentRequestNonZeroAmountRequiredError()
   }
 
+  // FIXME: temp workaround. force probe for USD wallet to simplify flow.
+  const senderWallet = await WalletsRepository().findById(senderWalletId)
+  if (senderWallet instanceof Error) return senderWallet
+
+  if (senderWallet.currency === WalletCurrency.Usd) {
+    await getRoutingFee({ paymentRequest, walletId: senderWalletId })
+  }
+  // END FIXME
+
   return lnSendPayment({
     senderWalletId,
     senderAccount,
     decodedInvoice,
     amount: lnInvoiceAmount,
+    invoiceWithAmount: true,
     memo: memo || "",
     logger,
   })
@@ -184,6 +204,7 @@ export const payNoAmountInvoiceByWalletIdWithTwoFAArgs = async ({
     senderAccount,
     decodedInvoice,
     amount,
+    invoiceWithAmount: false,
     memo: memo || "",
     logger,
   })
@@ -209,11 +230,21 @@ export const payNoAmountInvoiceByWalletId = async ({
     return new LnPaymentRequestZeroAmountRequiredError()
   }
 
+  // FIXME: temp workaround. force probe for USD wallet to simplify flow.
+  const senderWallet = await WalletsRepository().findById(senderWalletId)
+  if (senderWallet instanceof Error) return senderWallet
+
+  if (senderWallet.currency === WalletCurrency.Usd) {
+    await getNoAmountLightningFee({ walletId: senderWalletId, amount, paymentRequest })
+  }
+  // END FIXME
+
   return lnSendPayment({
     senderWalletId,
     senderAccount,
     decodedInvoice,
     amount,
+    invoiceWithAmount: false,
     memo: memo || "",
     logger,
   })
@@ -224,6 +255,7 @@ const lnSendPayment = async ({
   senderAccount,
   decodedInvoice,
   amount: amountRaw,
+  invoiceWithAmount,
   memo,
   logger,
 }: {
@@ -231,6 +263,7 @@ const lnSendPayment = async ({
   senderAccount: Account
   decodedInvoice: LnInvoice
   amount: number
+  invoiceWithAmount: boolean
   memo: string
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
@@ -277,6 +310,7 @@ const lnSendPayment = async ({
   return executePaymentViaLn({
     decodedInvoice,
     amount,
+    invoiceWithAmount,
     displayCurrencyPerSat,
     senderWallet,
     senderAccount,
@@ -298,7 +332,7 @@ const executePaymentViaIntraledger = async ({
 }: {
   paymentHash: PaymentHash
   description: string
-  amount: Satoshis
+  amount: CurrencyBaseAmount
   displayCurrencyPerSat: DisplayCurrencyPerSat
   memo: string
   senderWallet: Wallet
@@ -321,6 +355,12 @@ const executePaymentViaIntraledger = async ({
   })
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
+  // TODO: manage Usd use case
+  if (senderWallet.currency !== WalletCurrency.Btc) {
+    return new NotImplementedError("USD Intraledger")
+  }
+  const amountSats = toSats(amount)
+
   const invoicesRepo = WalletInvoicesRepository()
   const walletInvoice = await invoicesRepo.findByPaymentHash(paymentHash)
   if (walletInvoice instanceof Error) return walletInvoice
@@ -335,7 +375,7 @@ const executePaymentViaIntraledger = async ({
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  const amountDisplayCurrency = dCConverter.fromSats(amount)
+  const amountDisplayCurrency = dCConverter.fromSats(amountSats)
 
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
@@ -355,7 +395,7 @@ const executePaymentViaIntraledger = async ({
           senderUsername: senderAccount.username,
           paymentHash,
           description,
-          sats: amount,
+          sats: amountSats,
           amountDisplayCurrency,
           recipientWalletId,
           recipientWalletCurrency: recipientWallet.currency,
@@ -379,7 +419,7 @@ const executePaymentViaIntraledger = async ({
       notificationsService.lnInvoicePaid({
         paymentHash,
         recipientWalletId,
-        amount,
+        amount: amountSats,
         displayCurrencyPerSat,
       })
 
@@ -391,6 +431,7 @@ const executePaymentViaIntraledger = async ({
 const executePaymentViaLn = async ({
   decodedInvoice,
   amount,
+  invoiceWithAmount,
   displayCurrencyPerSat,
   senderWallet,
   senderAccount,
@@ -398,7 +439,8 @@ const executePaymentViaLn = async ({
   logger,
 }: {
   decodedInvoice: LnInvoice
-  amount: Satoshis
+  amount: CurrencyBaseAmount
+  invoiceWithAmount: boolean
   displayCurrencyPerSat: DisplayCurrencyPerSat
   senderWallet: Wallet
   senderAccount: Account
@@ -408,9 +450,13 @@ const executePaymentViaLn = async ({
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.Lightning,
   })
-  const { paymentHash } = decodedInvoice
+  let cents: UsdCents | undefined
+  let sats: Satoshis
+  let feeRouting: Satoshis
+  let key: CachedRouteLookupKey
 
   const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+  const dealerPriceService = DealerPriceService()
 
   const withdrawalLimitCheck = await checkWithdrawalLimits({
     amount,
@@ -421,26 +467,80 @@ const executePaymentViaLn = async ({
   })
   if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
 
-  const key = CachedRouteLookupKeyFactory().create({
-    paymentHash,
-    milliSats: toMilliSatsFromNumber(amount * 1000),
-  })
+  const { paymentHash } = decodedInvoice
+
+  // the only case where amount can be Cents is for Usd Wallet
+  // where no sats where included in the invoice
+  if (senderWallet.currency === WalletCurrency.Usd && !invoiceWithAmount) {
+    key = CachedRouteLookupKeyFactory().createFromCents({
+      paymentHash,
+      cents: toCents(amount),
+    })
+  } else {
+    key = CachedRouteLookupKeyFactory().createFromMilliSats({
+      paymentHash,
+      milliSats: toMilliSatsFromNumber(amount * 1000),
+    })
+  }
   const routesCache = RoutesCache()
   const cachedRoute = await routesCache.findByKey(key)
 
-  let pubkey = lndService.defaultPubkey()
+  let pubkey: Pubkey
   let rawRoute: RawRoute | null = null
-  let route: Route | null = null
-  if (cachedRoute && !(cachedRoute instanceof Error)) {
+  if (!(cachedRoute instanceof Error)) {
+    // route has been cached
+
     ;({ pubkey, route: rawRoute } = cachedRoute)
-    route = {
-      roundedUpFee: toSats(rawRoute.safe_fee),
+    feeRouting = toSats(rawRoute.safe_fee)
+
+    if (senderWallet.currency === WalletCurrency.Usd) {
+      if (invoiceWithAmount) {
+        // the invoice comes with an amount, so we start from Sats
+        const baseSats = toSats(amount)
+        const validateRoute = RouteValidator(rawRoute).validate(baseSats)
+        if (validateRoute instanceof Error) return validateRoute
+
+        sats = toSats(baseSats + feeRouting)
+        const cents_ = await dealerPriceService.getCentsFromSatsForImmediateSell(sats)
+        if (cents_ instanceof Error) return cents_
+        cents = cents_
+      } else {
+        // the dealer already gave a price during the probe
+        // TODO: test properly. move this to domain
+        const baseCentsWithoutFee = toCents(amount)
+        const satsWithoutFee = toSats(rawRoute.tokens - rawRoute.safe_fee)
+        const ratio = satsWithoutFee / baseCentsWithoutFee
+        sats = toSats(rawRoute.tokens)
+        cents = toCents(sats / ratio)
+      }
+    } else {
+      sats = toSats(amount + feeRouting)
+    }
+  } else {
+    // route is not cached
+
+    pubkey = lndService.defaultPubkey()
+
+    if (senderWallet.currency === WalletCurrency.Usd) {
+      // we are forcing the probe. if probe fails, then exit (for now)
+      return new NotImplementedError("Routeless USD payments")
+
+      // const centsBase = toCents(amount)
+      // const feeRoutingCents = LnFeeCalculator().max(centsBase)
+      // cents = toCents(centsBase + feeRoutingCents)
+      // const totalSats = await dealerPriceService.getSatsFromCentsForImmediateSell(cents)
+      // if (totalSats instanceof DealerPriceServiceError) return totalSats
+      // sats = totalSats
+
+      // feeRouting = LnFeeCalculator().inverseMax(sats)
+
+      // console.log({ centsBase, cents, sats })
+    } else {
+      const satsBase = toSats(amount)
+      feeRouting = LnFeeCalculator().max(satsBase)
+      sats = toSats(satsBase + feeRouting)
     }
   }
-
-  const maxFee = LnFeeCalculator().max(amount)
-  const feeRouting = route ? route.roundedUpFee : maxFee
-  const sats = toSats(amount + feeRouting)
 
   const amountDisplayCurrency = dCConverter.fromSats(sats)
   const feeRoutingDisplayCurrency = dCConverter.fromSats(feeRouting)
@@ -450,9 +550,18 @@ const executePaymentViaLn = async ({
     async (lock) => {
       const balance = await LedgerService().getWalletBalance(senderWallet.id)
       if (balance instanceof Error) return balance
-      if (balance < sats) {
+
+      if (senderWallet.currency === WalletCurrency.Usd) {
+        if (cents === undefined) return new NotReachableError("cents is set here")
+        if (balance < cents)
+          return new InsufficientBalanceError(
+            `Payment amount '${cents}' cents exceeds balance '${balance}'`,
+          )
+      }
+
+      if (senderWallet.currency === WalletCurrency.Btc && balance < sats) {
         return new InsufficientBalanceError(
-          `Payment amount '${sats}' exceeds balance '${balance}'`,
+          `Payment amount '${sats}' sats exceeds balance '${balance}'`,
         )
       }
 
@@ -464,6 +573,7 @@ const executePaymentViaLn = async ({
           paymentHash,
           description: decodedInvoice.description,
           sats,
+          cents,
           feeRouting,
           amountDisplayCurrency,
           feeRoutingDisplayCurrency,
@@ -483,7 +593,7 @@ const executePaymentViaLn = async ({
         : await lndService.payInvoiceViaPaymentDetails({
             decodedInvoice,
             milliSatsAmount: toMilliSatsFromNumber(amount * 1000),
-            maxFee,
+            maxFee: feeRouting,
           })
 
       // Fire-and-forget update to 'lnPayments' collection
@@ -513,7 +623,7 @@ const executePaymentViaLn = async ({
           walletCurrency: senderWallet.currency,
           journalId,
           paymentHash,
-          maxFee,
+          maxFee: feeRouting,
           actualFee: payResult.roundedUpFee,
           logger,
         })

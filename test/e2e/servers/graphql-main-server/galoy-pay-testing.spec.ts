@@ -223,7 +223,7 @@ describe("galoy-pay", () => {
     const subscriptionQuery = LN_INVOICE_PAYMENT_STATUS
 
     it("returns payment status when paid", async () => {
-      // Create an invoice on behalf of user0
+      // Create an invoice on behalf of userA
       const metadata = JSON.stringify([["text/plain", `Payment to ${receivingUsername}`]])
       const descriptionHash = crypto.createHash("sha256").update(metadata).digest("hex")
       const createPaymentRequestInput = {

@@ -1,8 +1,7 @@
+import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning/invoice-expiration"
 import { DealerPriceServiceError } from "@domain/dealer-price"
 import { NotImplementedError, NotReachableError } from "@domain/errors"
 import { WalletCurrency } from "@domain/wallets"
-
-const defaultTimeToExpiryInSeconds = (60 * 2) as Seconds
 
 export const AmountConverter = ({
   dCConverter,

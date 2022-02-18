@@ -1,8 +1,8 @@
-import assert from "assert"
-
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
 import { WalletCurrency } from "@domain/wallets"
+
+import { NotImplementedError, NotReachableError } from "@domain/errors"
 
 import { lndAccountingPath } from "./accounts"
 import { MainBook } from "./books"
@@ -62,6 +62,7 @@ export const receive = {
     feeInboundLiquidityDisplayCurrency,
     amountDisplayCurrency,
     feeInboundLiquidity,
+    cents,
   }: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: LnReceiveLedgerMetadata = {
       type: LedgerTransactionType.Invoice,
@@ -87,6 +88,7 @@ export const receive = {
         walletId,
         walletCurrency,
         sats,
+        cents,
         description,
       })
     }
@@ -102,6 +104,7 @@ export const receive = {
     amountDisplayCurrency,
     journalId,
     sats,
+    cents,
   }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: FeeReimbursementLedgerMetadata = {
       type: LedgerTransactionType.LnFeeReimbursement,
@@ -112,7 +115,14 @@ export const receive = {
     }
 
     const description = "fee reimbursement"
-    return addReceiptNoFee({ metadata, description, walletId, sats, walletCurrency })
+    return addReceiptNoFee({
+      metadata,
+      description,
+      walletId,
+      sats,
+      walletCurrency,
+      cents,
+    })
   },
 }
 
@@ -121,30 +131,61 @@ const addReceiptNoFee = async ({
   walletId,
   walletCurrency,
   sats,
+  cents,
   description,
 }: {
   metadata: ReceiveLedgerMetadata
   walletId: WalletId
   walletCurrency: WalletCurrency
   sats: Satoshis
+  cents?: UsdCents
   description: string
 }) => {
   const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
 
-  // TODO: remove once implemented
-  assert(walletCurrency === WalletCurrency.Btc)
+  if (walletCurrency === WalletCurrency.Btc) {
+    const metadata = { ...metaInput, currency: WalletCurrency.Btc }
 
-  const metadata = { ...metaInput, currency: WalletCurrency.Btc }
+    try {
+      const entry = MainBook.entry(description)
+        .credit(liabilitiesWalletId, sats, metadata)
+        .debit(lndAccountingPath, sats, metadata)
 
-  try {
-    const entry = MainBook.entry(description)
-      .credit(liabilitiesWalletId, sats, metadata)
-      .debit(lndAccountingPath, sats, metadata)
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  } else {
+    if (cents === undefined) return new NotReachableError("cents should be defined here")
 
-    const savedEntry = await entry.commit()
-    return translateToLedgerJournal(savedEntry)
-  } catch (err) {
-    return new UnknownLedgerError(err)
+    const dealerBtcWalletId = await caching.getDealerBtcWalletId()
+    const dealerUsdWalletId = await caching.getDealerUsdWalletId()
+    const liabilitiesDealerBtcWalletId = toLiabilitiesWalletId(dealerBtcWalletId)
+    const liabilitiesDealerUsdWalletId = toLiabilitiesWalletId(dealerUsdWalletId)
+
+    const metaBtc = {
+      ...metaInput,
+      currency: WalletCurrency.Btc,
+    }
+
+    const metaUsd = {
+      ...metaInput,
+      currency: WalletCurrency.Usd,
+    }
+
+    try {
+      const entry = MainBook.entry(description)
+        .credit(liabilitiesDealerBtcWalletId, sats, metaBtc)
+        .debit(lndAccountingPath, sats, metaBtc)
+        .credit(liabilitiesWalletId, cents, metaUsd)
+        .debit(liabilitiesDealerUsdWalletId, cents, metaUsd)
+
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
   }
 }
 
@@ -167,7 +208,9 @@ const addReceiptFee = async ({
   const bankOwnerPath = toLiabilitiesWalletId(await caching.getBankOwnerWalletId())
 
   // TODO: remove once implemented
-  assert(walletCurrency === WalletCurrency.Btc)
+  if (walletCurrency !== WalletCurrency.Btc) {
+    return new NotImplementedError("USD Intraledger")
+  }
 
   const metadata = { ...metaInput, currency: WalletCurrency.Btc }
 

@@ -39,7 +39,7 @@ import {
   waitUntilBlockHeight,
 } from "test/helpers"
 import { resetOnChainAddressAccountIdLimits } from "test/helpers/rate-limit"
-import { getBTCBalance } from "test/helpers/wallet"
+import { getBalanceHelper } from "test/helpers/wallet"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
@@ -170,8 +170,8 @@ describe("UserWallet - On chain", () => {
     const addressDealer = await Wallets.createOnChainAddress(walletId)
     if (addressDealer instanceof Error) throw addressDealer
 
-    const initialBalanceUserA = await getBTCBalance(walletIdA)
-    const initBalanceDealer = await getBTCBalance(walletId)
+    const initialBalanceUserA = await getBalanceHelper(walletIdA)
+    const initBalanceDealer = await getBalanceHelper(walletId)
 
     const output0 = {}
     output0[address0] = 1
@@ -202,8 +202,8 @@ describe("UserWallet - On chain", () => {
     }
 
     {
-      const balanceA = await getBTCBalance(walletIdA)
-      const balance4 = await getBTCBalance(walletId)
+      const balanceA = await getBalanceHelper(walletIdA)
+      const balance4 = await getBalanceHelper(walletId)
 
       const depositFeeRatio = getFeeRates().depositFeeVariable as DepositFeeRatio
 
@@ -304,13 +304,13 @@ describe("UserWallet - On chain", () => {
     await userRecordC.save()
     const walletC = await getDefaultWalletIdByTestUserRef("C")
 
-    const initBalanceUserC = await getBTCBalance(walletC)
+    const initBalanceUserC = await getBalanceHelper(walletC)
     await sendToWalletTestWrapper({
       walletId: walletC,
       depositFeeRatio: 0 as DepositFeeRatio,
       amountSats,
     })
-    const finalBalanceUserC = await getBTCBalance(walletC)
+    const finalBalanceUserC = await getBalanceHelper(walletC)
     expect(finalBalanceUserC).toBe(initBalanceUserC + amountSats)
   })
 })
@@ -326,7 +326,7 @@ async function sendToWalletTestWrapper({
 }) {
   const lnd = lndonchain
 
-  const initialBalance = await getBTCBalance(walletId)
+  const initialBalance = await getBalanceHelper(walletId)
   const { result: initTransactions, error } = await Wallets.getTransactionsForWalletId({
     walletId,
   })
@@ -355,7 +355,7 @@ async function sendToWalletTestWrapper({
       throw result
     }
 
-    const balance = await getBTCBalance(walletId)
+    const balance = await getBalanceHelper(walletId)
     expect(balance).toBe(
       initialBalance +
         amountAfterFeeDeduction({

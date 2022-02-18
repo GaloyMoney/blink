@@ -1,6 +1,5 @@
-import assert from "assert"
-
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
+import { NotImplementedError } from "@domain/errors"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
 
 import { WalletCurrency } from "@domain/wallets"
@@ -141,8 +140,14 @@ const addIntraledgerTxTransfer = async ({
   const recipientLiabilitiesWalletId = toLiabilitiesWalletId(recipientWalletId)
 
   // TODO: remove assert once dealer has been implemented
-  assert(recipientWalletCurrency === WalletCurrency.Btc)
-  assert(senderWalletCurrency === WalletCurrency.Btc)
+  if (
+    !(
+      recipientWalletCurrency === WalletCurrency.Btc &&
+      senderWalletCurrency === WalletCurrency.Btc
+    )
+  ) {
+    return new NotImplementedError("USD intraledger")
+  }
 
   try {
     const creditMetadata = {

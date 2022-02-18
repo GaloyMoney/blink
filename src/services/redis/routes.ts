@@ -1,4 +1,4 @@
-import { SECS_PER_5_MINS } from "@config"
+import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning/invoice-expiration"
 import { CouldNotFindError, UnknownRepositoryError } from "@domain/errors"
 
 import { redis } from "./index"
@@ -13,7 +13,7 @@ export const RoutesCache = (): IRoutesCache => {
   }): Promise<CachedRoute | RepositoryError> => {
     try {
       const value = JSON.stringify(routeToCache)
-      await redis.set(key, value, "EX", SECS_PER_5_MINS)
+      await redis.set(key, value, "EX", defaultTimeToExpiryInSeconds)
       return routeToCache
     } catch (err) {
       return new UnknownRepositoryError(err)

@@ -1,11 +1,11 @@
-import { checkedToSats } from "@domain/bitcoin"
-import { checkedToWalletId } from "@domain/wallets"
-import {
-  SelfPaymentError,
-  InvalidWalletId,
-  InvalidAccountStatusError,
-} from "@domain/errors"
 import { AccountStatus } from "@domain/accounts"
+import { checkedToCurrencyBaseAmount } from "@domain/bitcoin"
+import {
+  InvalidAccountStatusError,
+  InvalidWalletId,
+  SelfPaymentError,
+} from "@domain/errors"
+import { checkedToWalletId } from "@domain/wallets"
 
 export const PaymentInputValidator = (
   getWalletFn: PaymentInputValidatorConfig,
@@ -16,7 +16,7 @@ export const PaymentInputValidator = (
     senderAccount,
     recipientWalletId: uncheckedRecipientWalletId,
   }: ValidatePaymentInputArgs<T>) => {
-    const validAmount = checkedToSats(amount)
+    const validAmount = checkedToCurrencyBaseAmount(amount)
     if (validAmount instanceof Error) return validAmount
 
     if (senderAccount.status !== AccountStatus.Active) {

@@ -29,7 +29,7 @@ import {
   initializeTestingState,
   defaultStateConfig,
 } from "test/helpers"
-import { getBTCBalance } from "test/helpers/wallet"
+import { getBalanceHelper } from "test/helpers/wallet"
 
 jest.mock("@services/notifications/notification")
 
@@ -67,12 +67,12 @@ afterAll(async () => {
 })
 
 type WalletState = {
-  balance: Satoshis
+  balance: CurrencyBaseAmount
   transactions: WalletTransaction[]
 }
 
 const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
-  const balance = await getBTCBalance(walletId)
+  const balance = await getBalanceHelper(walletId)
   const { result: transactions, error } = await Wallets.getTransactionsForWalletId({
     walletId,
   })

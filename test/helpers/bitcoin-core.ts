@@ -10,6 +10,8 @@ import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 import { pay } from "lightning"
 
+import { toSats } from "@domain/bitcoin"
+
 import { descriptors } from "./multisig-wallet"
 
 import { checkIsBalanced, lndOutside1, waitUntilBlockHeight } from "."
@@ -97,7 +99,7 @@ export const fundWalletIdFromOnchain = async ({
 
   const balance = await LedgerService().getWalletBalance(walletId)
   if (balance instanceof Error) throw balance
-  return balance
+  return toSats(balance)
 }
 
 export const fundWalletIdFromLightning = async ({

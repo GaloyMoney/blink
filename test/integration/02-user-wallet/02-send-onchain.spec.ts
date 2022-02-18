@@ -11,7 +11,7 @@ import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError,
-  InvalidSatoshiAmount,
+  InvalidSatoshiAmountError,
   LessThanDustThresholdError,
   LimitsExceededError,
   SelfPaymentError,
@@ -53,7 +53,7 @@ import {
   RANDOM_ADDRESS,
   subscribeToTransactions,
 } from "test/helpers"
-import { getBTCBalance, getRemainingTwoFALimit } from "test/helpers/wallet"
+import { getBalanceHelper, getRemainingTwoFALimit } from "test/helpers/wallet"
 
 jest.mock("@services/notifications/notification")
 
@@ -103,7 +103,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  initialBalanceUserA = await getBTCBalance(walletIdA)
+  initialBalanceUserA = toSats(await getBalanceHelper(walletIdA))
 })
 
 afterEach(async () => {
@@ -163,7 +163,7 @@ describe("UserWallet - onChainPay", () => {
       expect(pendingTx.settlementAmount).toBe(-amount - pendingTx.settlementFee)
       pendingTxHash = pendingTx.id as OnChainTxHash
 
-      const interimBalance = await getBTCBalance(walletIdA)
+      const interimBalance = await getBalanceHelper(walletIdA)
       expect(interimBalance).toBe(initialBalanceUserA - amount - pendingTx.settlementFee)
       await checkIsBalanced()
     }
@@ -216,7 +216,7 @@ describe("UserWallet - onChainPay", () => {
 
       expect(settledTx.settlementDisplayCurrencyPerSat).toBeGreaterThan(0)
 
-      const finalBalance = await getBTCBalance(walletIdA)
+      const finalBalance = await getBalanceHelper(walletIdA)
       expect(finalBalance).toBe(initialBalanceUserA - amount - fee)
     }
 
@@ -229,7 +229,7 @@ describe("UserWallet - onChainPay", () => {
     const sub = subscribeToTransactions({ lnd: lndonchain })
     sub.on("chain_transaction", onchainTransactionEventHandler)
 
-    const initialBalanceUserE = await getBTCBalance(walletIdE)
+    const initialBalanceUserE = await getBalanceHelper(walletIdE)
     const senderAccount = await getAccountByTestUserRef("E")
 
     const results = await Promise.all([
@@ -270,7 +270,7 @@ describe("UserWallet - onChainPay", () => {
       expect(pendingTx.settlementAmount).toBe(-initialBalanceUserE)
       pendingTxHash = pendingTx.id as OnChainTxHash
 
-      const interimBalance = await getBTCBalance(walletIdE)
+      const interimBalance = await getBalanceHelper(walletIdE)
       expect(interimBalance).toBe(0)
       await checkIsBalanced()
     }
@@ -318,7 +318,7 @@ describe("UserWallet - onChainPay", () => {
       const feeRates = getFeeRates()
       const fee = feeRates.withdrawFeeFixed + 7050
 
-      const finalBalance = await getBTCBalance(walletIdE)
+      const finalBalance = await getBalanceHelper(walletIdE)
       expect(finalBalance).toBe(0)
 
       expect(settledTx.settlementFee).toBe(fee)
@@ -397,7 +397,7 @@ describe("UserWallet - onChainPay", () => {
     const address = await Wallets.createOnChainAddress(walletIdD)
     if (address instanceof Error) throw address
 
-    const initialBalanceUserD = await getBTCBalance(walletIdD)
+    const initialBalanceUserD = await getBalanceHelper(walletIdD)
 
     const paid = await Wallets.payOnChainByWalletId({
       senderAccount: accountA,
@@ -409,8 +409,8 @@ describe("UserWallet - onChainPay", () => {
       sendAll: false,
     })
 
-    const finalBalanceUserA = await getBTCBalance(walletIdA)
-    const finalBalanceUserD = await getBTCBalance(walletIdD)
+    const finalBalanceUserA = await getBalanceHelper(walletIdA)
+    const finalBalanceUserD = await getBalanceHelper(walletIdD)
 
     expect(paid).toBe(PaymentSendStatus.Success)
     expect(finalBalanceUserA).toBe(initialBalanceUserA - amount)
@@ -441,7 +441,7 @@ describe("UserWallet - onChainPay", () => {
       expect(settledTx.settlementAmount).toBe(-amount)
       expect(settledTx.settlementDisplayCurrencyPerSat).toBeGreaterThan(0)
 
-      const finalBalance = await getBTCBalance(walletIdA)
+      const finalBalance = await getBalanceHelper(walletIdA)
       expect(finalBalance).toBe(initialBalanceUserA - amount)
     }
   })
@@ -491,12 +491,12 @@ describe("UserWallet - onChainPay", () => {
   })
 
   it("sends all with an on us transaction", async () => {
-    const initialBalanceUserF = await getBTCBalance(walletIdF)
+    const initialBalanceUserF = await getBalanceHelper(walletIdF)
 
     const address = await Wallets.createOnChainAddress(walletIdD)
     if (address instanceof Error) throw address
 
-    const initialBalanceUserD = await getBTCBalance(walletIdD)
+    const initialBalanceUserD = await getBalanceHelper(walletIdD)
     const senderAccount = await getAccountByTestUserRef("F")
 
     const paid = await Wallets.payOnChainByWalletId({
@@ -509,8 +509,8 @@ describe("UserWallet - onChainPay", () => {
       sendAll: true,
     })
 
-    const finalBalanceUserF = await getBTCBalance(walletIdF)
-    const finalBalanceUserD = await getBTCBalance(walletIdD)
+    const finalBalanceUserF = await getBalanceHelper(walletIdF)
+    const finalBalanceUserD = await getBalanceHelper(walletIdD)
 
     expect(paid).toBe(PaymentSendStatus.Success)
     expect(finalBalanceUserF).toBe(0)
@@ -541,7 +541,7 @@ describe("UserWallet - onChainPay", () => {
       expect(settledTx.settlementAmount).toBe(-initialBalanceUserF)
       expect(settledTx.settlementDisplayCurrencyPerSat).toBeGreaterThan(0)
 
-      const finalBalance = await getBTCBalance(walletIdF)
+      const finalBalance = await getBalanceHelper(walletIdF)
       expect(finalBalance).toBe(0)
     }
   })
@@ -566,7 +566,7 @@ describe("UserWallet - onChainPay", () => {
     const address = await Wallets.createOnChainAddress(walletIdD)
     if (address instanceof Error) throw address
 
-    const initialBalanceUserE = await getBTCBalance(walletIdE)
+    const initialBalanceUserE = await getBalanceHelper(walletIdE)
     const senderAccount = await getAccountByTestUserRef("E")
 
     const status = await Wallets.payOnChainByWalletId({
@@ -586,7 +586,7 @@ describe("UserWallet - onChainPay", () => {
       lnd: lndOutside1,
       format: "p2wpkh",
     })
-    const initialBalanceUserB = await getBTCBalance(walletIdB)
+    const initialBalanceUserB = await getBalanceHelper(walletIdB)
 
     const status = await Wallets.payOnChainByWalletId({
       senderAccount: accountB,
@@ -614,7 +614,7 @@ describe("UserWallet - onChainPay", () => {
       memo: null,
       sendAll: false,
     })
-    expect(status).toBeInstanceOf(InvalidSatoshiAmount)
+    expect(status).toBeInstanceOf(InvalidSatoshiAmountError)
   })
 
   it("fails if withdrawal limit hit", async () => {
@@ -714,7 +714,7 @@ describe("UserWallet - onChainPay", () => {
     it("sends a successful large payment with a 2fa code", async () => {
       await enable2FA(userIdA)
 
-      const initialBalance = await getBTCBalance(walletIdA)
+      const initialBalance = await getBalanceHelper(walletIdA)
       const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
       const twoFAToken = generateTokenHelper(userA.twoFA.secret)
       const amount = userA.twoFA.threshold + 1
@@ -747,7 +747,7 @@ describe("UserWallet - onChainPay", () => {
 
       // settlementAmount is negative
       const expectedBalance = initialBalance + txs[0].settlementAmount
-      const finalBalance = await getBTCBalance(walletIdA)
+      const finalBalance = await getBalanceHelper(walletIdA)
       expect(expectedBalance).toBe(finalBalance)
     })
   })

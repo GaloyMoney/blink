@@ -6,11 +6,16 @@ import { checkedToOnChainAddress, TxDecoder } from "@domain/bitcoin/onchain"
 import {
   InsufficientBalanceError,
   LessThanDustThresholdError,
+  NotImplementedError,
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
-import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
+import {
+  PaymentInputValidator,
+  WalletCurrency,
+  WithdrawalFeeCalculator,
+} from "@domain/wallets"
 import { LockService } from "@services"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
@@ -167,13 +172,24 @@ const executePaymentViaIntraledger = async ({
   senderAccount: Account
   senderWallet: Wallet
   recipientWallet: Wallet
-  amount: Satoshis
+  amount: CurrencyBaseAmount
   address: OnChainAddress
   memo: string | null
   sendAll: boolean
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
   if (recipientWallet.id === senderWallet.id) return new SelfPaymentError()
+
+  // TODO Usd use case
+  if (
+    !(
+      recipientWallet.currency === WalletCurrency.Btc &&
+      senderWallet.currency === WalletCurrency.Btc
+    )
+  ) {
+    return new NotImplementedError("USD intraledger")
+  }
+  const amountSats = toSats(amount)
 
   const displayCurrencyPerSat = await getCurrentPrice()
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
@@ -189,7 +205,7 @@ const executePaymentViaIntraledger = async ({
   })
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
-  const amountDisplayCurrency = dCConverter.fromSats(amount)
+  const amountDisplayCurrency = dCConverter.fromSats(amountSats)
 
   const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
   if (recipientAccount instanceof Error) return recipientAccount
@@ -213,7 +229,7 @@ const executePaymentViaIntraledger = async ({
             senderWalletCurrency: senderWallet.currency,
             senderUsername: senderAccount.username,
             description: "",
-            sats: amount,
+            sats: amountSats,
             amountDisplayCurrency,
             payeeAddresses: [address],
             sendAll,
@@ -229,7 +245,7 @@ const executePaymentViaIntraledger = async ({
       notificationsService.intraLedgerPaid({
         senderWalletId: senderWallet.id,
         recipientWalletId: recipientWallet.id,
-        amount,
+        amount: amountSats,
         displayCurrencyPerSat,
       })
 
@@ -260,13 +276,20 @@ const executePaymentViaOnChain = async ({
 }: {
   senderWallet: Wallet
   senderAccount: Account
-  amount: Satoshis
+  amount: CurrencyBaseAmount
   address: OnChainAddress
   targetConfirmations: TargetConfirmations
   memo: string | null
   sendAll: boolean
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
+  // TODO Usd use case
+  if (senderWallet.currency !== WalletCurrency.Btc) {
+    return new NotImplementedError("USD Intraledger")
+  }
+
+  const amountSats = toSats(amount)
+
   const ledgerService = LedgerService()
   const withdrawFeeCalculator = WithdrawalFeeCalculator()
 
@@ -296,7 +319,7 @@ const executePaymentViaOnChain = async ({
   })
   if (estimatedFee instanceof Error) return estimatedFee
 
-  const amountToSend = sendAll ? toSats(amount - estimatedFee) : amount
+  const amountToSend = sendAll ? toSats(amount - estimatedFee) : amountSats
 
   if (amountToSend < dustThreshold)
     return new LessThanDustThresholdError(

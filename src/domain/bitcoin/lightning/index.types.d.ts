@@ -16,6 +16,10 @@ type PagingStartToken = undefined
 type PagingContinueToken = string & { readonly brand: unique symbol }
 type PagingStopToken = false
 
+type RouteValidator = {
+  validate(amount: Satoshis): true | ValidationError
+}
+
 type PaymentStatus =
   typeof import("./index").PaymentStatus[keyof typeof import("./index").PaymentStatus]
 
@@ -114,7 +118,8 @@ type RegisteredInvoice = {
 }
 
 type LnFeeCalculator = {
-  max(amount: Satoshis): Satoshis
+  max<T extends UsdCents | Satoshis>(amount: T): T
+  inverseMax<T extends UsdCents | Satoshis>(amount: T): T
 }
 
 type PayInvoiceResult = {

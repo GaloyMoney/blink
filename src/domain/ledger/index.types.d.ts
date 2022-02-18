@@ -88,6 +88,7 @@ type AddLnTxReceiveArgs = LnTxArgs & {
 }
 
 type AddLnTxSendArgs = LnTxArgs & {
+  cents?: UsdCents // move in upper property?
   pubkey: Pubkey
   feeKnownInAdvance: boolean
   feeRouting: Satoshis
@@ -163,6 +164,7 @@ type AddLnFeeReeimbursementReceiveArgs = {
   walletCurrency: WalletCurrency
   paymentHash: PaymentHash
   sats: Satoshis
+  cents?: UsdCents
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   journalId: LedgerJournalId
 }
@@ -217,7 +219,7 @@ interface ILedgerService {
 
   getPendingPaymentsCount(walletId: WalletId): Promise<number | LedgerServiceError>
 
-  getWalletBalance(walletId: WalletId): Promise<Satoshis | LedgerServiceError>
+  getWalletBalance(walletId: WalletId): Promise<CurrencyBaseAmount | LedgerServiceError>
 
   allPaymentVolumeSince(args: IGetVolumeArgs): VolumeResult
 
