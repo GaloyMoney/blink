@@ -124,7 +124,7 @@ export const ColdStorageService = async (): Promise<
   }
 
   return wrapAsyncFunctionsToRunInSpan({
-    namespace: "service.coldstorage",
+    namespace: "services.coldstorage",
     fns: {
       getBalances,
       createPsbt,

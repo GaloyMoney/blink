@@ -259,13 +259,15 @@ export const wrapToRunInSpan = <
   R extends PartialResult<unknown> | unknown,
 >({
   fn,
+  fnName,
   namespace,
 }: {
   fn: (...args: A) => R
+  fnName?: string
   namespace: string
 }) => {
   return (...args: A): R => {
-    const functionName = fn.name
+    const functionName = fn.name || fnName || "unknown"
     const spanName = `${namespace}.${functionName}`
     const spanOptions = resolveFunctionSpanOptions({
       namespace,
@@ -299,13 +301,15 @@ export const wrapAsyncToRunInSpan = <
   R extends PartialResult<unknown> | unknown,
 >({
   fn,
+  fnName,
   namespace,
 }: {
   fn: (...args: A) => Promise<PromiseReturnType<R>>
+  fnName?: string
   namespace: string
 }) => {
   return (...args: A): Promise<PromiseReturnType<R>> => {
-    const functionName = fn.name
+    const functionName = fn.name || fnName || "unknown"
     const spanName = `${namespace}.${functionName}`
     const spanOptions = resolveFunctionSpanOptions({
       namespace,
@@ -341,10 +345,26 @@ export const wrapAsyncFunctionsToRunInSpan = <F>({
 }): F => {
   const functions = { ...fns }
   for (const fn of Object.keys(functions)) {
-    functions[fn] = wrapAsyncToRunInSpan({
-      namespace,
-      fn: fns[fn],
-    })
+    const fnType = fns[fn].constructor.name
+    if (fnType === "Function") {
+      functions[fn] = wrapToRunInSpan({
+        namespace,
+        fn: fns[fn],
+        fnName: fn,
+      })
+      continue
+    }
+
+    if (fnType === "AsyncFunction") {
+      functions[fn] = wrapAsyncToRunInSpan({
+        namespace,
+        fn: fns[fn],
+        fnName: fn,
+      })
+      continue
+    }
+
+    functions[fn] = fns[fn]
   }
   return functions
 }
