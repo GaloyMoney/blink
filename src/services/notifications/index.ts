@@ -16,19 +16,19 @@ import {
 import pubsub from "@services/pubsub"
 
 import { sendNotification } from "./notification"
-import { transactionNotification } from "./payment"
+import { transactionBitcoinNotification, transactionUsdNotification } from "./payment"
 
 export const NotificationsService = (logger: Logger): INotificationsService => {
   const sendOnChainNotification = async ({
     type,
-    amount,
+    sats,
     walletId,
     txHash,
     displayCurrencyPerSat,
   }: {
     type: NotificationType
     walletId: WalletId
-    amount: Satoshis
+    sats: Satoshis
     txHash: OnChainTxHash
     displayCurrencyPerSat?: DisplayCurrencyPerSat
   }): Promise<void | NotificationsServiceError> => {
@@ -46,11 +46,11 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       if (user instanceof Error) return user
 
       // Do not await this call for quicker processing
-      transactionNotification({
+      transactionBitcoinNotification({
         type,
         user,
         logger,
-        amount,
+        sats,
         txHash,
         displayCurrencyPerSat,
       })
@@ -62,7 +62,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         transaction: {
           walletId,
           txNotificationType: type,
-          amount,
+          amount: sats,
           txHash,
           displayCurrencyPerSat,
         },
@@ -81,7 +81,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   }: OnChainTxReceivedArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainReceipt,
-      amount,
+      sats: amount,
       walletId,
       txHash,
       displayCurrencyPerSat,
@@ -95,7 +95,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   }: OnChainTxReceivedPendingArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainReceiptPending,
-      amount,
+      sats: amount,
       walletId,
       txHash,
       displayCurrencyPerSat,
@@ -109,18 +109,18 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   }: OnChainTxPaymentArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainPayment,
-      amount,
+      sats: amount,
       walletId,
       txHash,
       displayCurrencyPerSat,
     })
 
-  const lnInvoicePaid = async ({
+  const lnInvoiceBitcoinWalletPaid = async ({
     paymentHash,
     recipientWalletId,
-    amount,
+    sats,
     displayCurrencyPerSat,
-  }: LnInvoicePaidArgs) => {
+  }: LnInvoicePaidBitcoinWalletArgs) => {
     try {
       const wallet = await WalletsRepository().findById(recipientWalletId)
       if (wallet instanceof Error) throw wallet
@@ -132,11 +132,56 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       if (user instanceof Error) return user
 
       // Do not await this call for quicker processing
-      transactionNotification({
+      transactionBitcoinNotification({
         type: NotificationType.LnInvoicePaid,
         user,
         logger,
-        amount,
+        sats,
+        paymentHash,
+        displayCurrencyPerSat,
+      })
+
+      // Notify public subscribers (via GraphQL subscription if any)
+      const eventName = lnPaymentStatusEvent(paymentHash)
+      pubsub.publish(eventName, { status: "PAID" })
+
+      // Notify the recipient (via GraphQL subscription if any)
+      const accountUpdatedEventName = accountUpdateEvent(account.id)
+      pubsub.publish(accountUpdatedEventName, {
+        invoice: {
+          walletId: recipientWalletId,
+          paymentHash,
+          status: "PAID",
+        },
+      })
+      return
+    } catch (err) {
+      return new NotificationsServiceError(err)
+    }
+  }
+
+  const lnInvoiceUsdWalletPaid = async ({
+    paymentHash,
+    recipientWalletId,
+    cents,
+    displayCurrencyPerSat,
+  }: LnInvoicePaidUsdWalletArgs) => {
+    try {
+      const wallet = await WalletsRepository().findById(recipientWalletId)
+      if (wallet instanceof Error) throw wallet
+
+      const account = await AccountsRepository().findById(wallet.accountId)
+      if (account instanceof Error) return account
+
+      const user = await UsersRepository().findById(account.ownerId)
+      if (user instanceof Error) return user
+
+      // Do not await this call for quicker processing
+      transactionUsdNotification({
+        type: NotificationType.LnInvoicePaid,
+        user,
+        logger,
+        cents,
         paymentHash,
         displayCurrencyPerSat,
       })
@@ -203,11 +248,11 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         if (user instanceof Error) return user
 
         // Do not await this call for quicker processing
-        transactionNotification({
+        transactionBitcoinNotification({
           type: NotificationType.IntraLedgerPayment,
           user,
           logger,
-          amount,
+          sats: amount,
           displayCurrencyPerSat,
         })
       }
@@ -285,7 +330,8 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     onChainTransactionReceivedPending,
     onChainTransactionPayment,
     priceUpdate,
-    lnInvoicePaid,
+    lnInvoiceBitcoinWalletPaid,
+    lnInvoiceUsdWalletPaid,
     intraLedgerPaid,
     sendBalance,
   }

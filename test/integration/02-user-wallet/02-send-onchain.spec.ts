@@ -23,7 +23,6 @@ import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wal
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import { Transaction } from "@services/ledger/schema"
 import { baseLogger } from "@services/logger"
-import { getTitle } from "@services/notifications/payment"
 import { sleep } from "@utils"
 import last from "lodash.last"
 
@@ -32,6 +31,8 @@ import { getCurrentPrice } from "@app/prices"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
 import { add, sub, toCents } from "@domain/fiat"
+
+import { getTitleBitcoin } from "@services/notifications/payment"
 
 import {
   bitcoindClient,
@@ -115,11 +116,11 @@ afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
 })
 
-const amount = 10040 // sats
+const amount = toSats(10040)
 const targetConfirmations = toTargetConfs(1)
 
 describe("UserWallet - onChainPay", () => {
-  it("sends a successful payment", async () => {
+  it.only("sends a successful payment", async () => {
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
     const sub = subscribeToTransactions({ lnd: lndonchain })
@@ -180,7 +181,7 @@ describe("UserWallet - onChainPay", () => {
     // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
 
     expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitle[NotificationType.OnchainPayment]({ amount }),
+      getTitleBitcoin[NotificationType.OnchainPayment]({ sats: amount }),
     )
     expect(sendNotification.mock.calls[0][0].user.id.toString()).toStrictEqual(userIdA)
     expect(sendNotification.mock.calls[0][0].data.type).toBe(

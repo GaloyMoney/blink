@@ -47,6 +47,8 @@ import { NotificationsService } from "@services/notifications"
 import { RoutesCache } from "@services/redis/routes"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
+import { DealerPriceServiceError } from "@domain/dealer-price"
+
 import { getNoAmountLightningFee, getRoutingFee } from "./get-lightning-fee"
 
 export const payInvoiceByWalletIdWithTwoFA = async ({
@@ -296,6 +298,7 @@ const lnSendPayment = async ({
       paymentHash: decodedInvoice.paymentHash,
       description: decodedInvoice.description,
       amount,
+      invoiceWithAmount,
       displayCurrencyPerSat,
       memo,
       senderWallet,
@@ -323,6 +326,7 @@ const executePaymentViaIntraledger = async ({
   paymentHash,
   description,
   amount,
+  invoiceWithAmount,
   displayCurrencyPerSat,
   memo,
   senderWallet,
@@ -333,6 +337,7 @@ const executePaymentViaIntraledger = async ({
   paymentHash: PaymentHash
   description: string
   amount: CurrencyBaseAmount
+  invoiceWithAmount: boolean
   displayCurrencyPerSat: DisplayCurrencyPerSat
   memo: string
   senderWallet: Wallet
@@ -343,6 +348,8 @@ const executePaymentViaIntraledger = async ({
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.IntraLedger,
   })
+  let cents: UsdCents | undefined
+  let sats: Satoshis | undefined
 
   const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
 
@@ -355,12 +362,6 @@ const executePaymentViaIntraledger = async ({
   })
   if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
 
-  // TODO: manage Usd use case
-  if (senderWallet.currency !== WalletCurrency.Btc) {
-    return new NotImplementedError("USD Intraledger")
-  }
-  const amountSats = toSats(amount)
-
   const invoicesRepo = WalletInvoicesRepository()
   const walletInvoice = await invoicesRepo.findByPaymentHash(paymentHash)
   if (walletInvoice instanceof Error) return walletInvoice
@@ -370,22 +371,95 @@ const executePaymentViaIntraledger = async ({
   )
   if (validatedResult instanceof AlreadyPaidError) return PaymentSendStatus.AlreadyPaid
   if (validatedResult instanceof Error) return validatedResult
-  const { pubkey: recipientPubkey, walletId: recipientWalletId } = walletInvoice
+  const {
+    pubkey: recipientPubkey,
+    walletId: recipientWalletId,
+    cents: centsInvoice,
+  } = walletInvoice
 
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  const amountDisplayCurrency = dCConverter.fromSats(amountSats)
+  const dealerPriceService = DealerPriceService()
+
+  if (
+    senderWallet.currency === WalletCurrency.Usd &&
+    recipientWallet.currency === WalletCurrency.Btc &&
+    !invoiceWithAmount
+  ) {
+    // side effect: spread is paid by the recipient
+    cents = toCents(amount)
+    const sats_ = await dealerPriceService.getSatsFromCentsForImmediateSell(cents)
+    if (sats_ instanceof DealerPriceServiceError) return sats_
+    sats = sats_
+  } else if (
+    senderWallet.currency === WalletCurrency.Usd &&
+    recipientWallet.currency === WalletCurrency.Btc &&
+    invoiceWithAmount
+  ) {
+    // TODO: need to get an API for a quote
+    // so that a USD wallet can get a price, in USD, from a "probe", on a lightning invoice
+    sats = toSats(amount)
+    const cents_ = await dealerPriceService.getCentsFromSatsForImmediateSell(sats)
+    if (cents_ instanceof DealerPriceServiceError) return cents_
+    cents = cents_
+  } else if (
+    senderWallet.currency === WalletCurrency.Usd &&
+    recipientWallet.currency === WalletCurrency.Usd &&
+    !invoiceWithAmount
+  ) {
+    cents = toCents(amount)
+  } else if (
+    senderWallet.currency === WalletCurrency.Usd &&
+    recipientWallet.currency === WalletCurrency.Usd &&
+    invoiceWithAmount
+  ) {
+    cents = centsInvoice
+  } else if (
+    senderWallet.currency === WalletCurrency.Btc &&
+    recipientWallet.currency === WalletCurrency.Usd &&
+    !invoiceWithAmount
+  ) {
+    sats = toSats(amount)
+    const cents_ = await dealerPriceService.getCentsFromSatsForImmediateSell(sats)
+    if (cents_ instanceof DealerPriceServiceError) return cents_
+    cents = cents_
+  } else if (
+    senderWallet.currency === WalletCurrency.Btc &&
+    recipientWallet.currency === WalletCurrency.Usd &&
+    invoiceWithAmount
+  ) {
+    // side effect: spread is paid by the sender
+    cents = centsInvoice
+    sats = toSats(amount)
+  } else {
+    sats = toSats(amount)
+  }
+
+  const amountDisplayCurrency = sats
+    ? dCConverter.fromSats(sats)
+    : dCConverter.fromCents(cents!)
 
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
     async (lock) => {
       const balance = await LedgerService().getWalletBalance(senderWallet.id)
       if (balance instanceof Error) return balance
-      if (balance < amount) {
-        return new InsufficientBalanceError(
-          `Payment amount '${amount}' exceeds balance '${balance}'`,
-        )
+
+      if (senderWallet.currency === WalletCurrency.Usd) {
+        if (cents === undefined) return new NotReachableError("cents is set here")
+        if (balance < cents)
+          return new InsufficientBalanceError(
+            `Payment amount '${cents}' cents exceeds balance '${balance}'`,
+          )
+      }
+
+      if (senderWallet.currency === WalletCurrency.Btc) {
+        if (sats === undefined) return new NotReachableError("sats is set here")
+        if (balance < sats)
+          return new InsufficientBalanceError(
+            `Payment amount '${sats}' sats exceeds balance '${balance}'`,
+          )
       }
 
       const journal = await LockService().extendLock({ logger, lock }, async () =>
@@ -395,7 +469,8 @@ const executePaymentViaIntraledger = async ({
           senderUsername: senderAccount.username,
           paymentHash,
           description,
-          sats: amountSats,
+          sats,
+          cents,
           amountDisplayCurrency,
           recipientWalletId,
           recipientWalletCurrency: recipientWallet.currency,
@@ -416,12 +491,22 @@ const executePaymentViaIntraledger = async ({
       if (newWalletInvoice instanceof Error) return newWalletInvoice
 
       const notificationsService = NotificationsService(logger)
-      notificationsService.lnInvoicePaid({
-        paymentHash,
-        recipientWalletId,
-        amount: amountSats,
-        displayCurrencyPerSat,
-      })
+
+      if (recipientWallet.currency === WalletCurrency.Btc) {
+        notificationsService.lnInvoiceBitcoinWalletPaid({
+          paymentHash,
+          recipientWalletId,
+          sats: sats!,
+          displayCurrencyPerSat,
+        })
+      } else {
+        notificationsService.lnInvoiceUsdWalletPaid({
+          paymentHash,
+          recipientWalletId,
+          cents: cents!,
+          displayCurrencyPerSat,
+        })
+      }
 
       return PaymentSendStatus.Success
     },

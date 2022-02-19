@@ -187,12 +187,22 @@ const updatePendingInvoice = async ({
     if (result instanceof Error) return result
 
     const notificationsService = NotificationsService(logger)
-    notificationsService.lnInvoicePaid({
-      paymentHash,
-      recipientWalletId: walletId,
-      amount: roundedDownReceived,
-      displayCurrencyPerSat,
-    })
+
+    if (walletCurrency === WalletCurrency.Btc) {
+      notificationsService.lnInvoiceBitcoinWalletPaid({
+        paymentHash,
+        recipientWalletId: walletId,
+        sats: roundedDownReceived,
+        displayCurrencyPerSat,
+      })
+    } else {
+      notificationsService.lnInvoiceUsdWalletPaid({
+        paymentHash,
+        recipientWalletId: walletId,
+        cents: cents!,
+        displayCurrencyPerSat,
+      })
+    }
 
     return true
   })
