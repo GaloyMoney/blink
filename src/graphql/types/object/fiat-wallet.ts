@@ -13,16 +13,25 @@ import { TransactionConnection } from "./transaction"
 const FiatWallet = GT.Object({
   name: "FiatWallet",
   interfaces: () => [IWallet],
-  isTypeOf: (source) => source.type === "fiat", // TODO: make this work
+  isTypeOf: (source) => source.currency !== "BTC",
   fields: () => ({
     id: {
       type: GT.NonNullID,
     },
     walletCurrency: {
       type: GT.NonNull(WalletCurrency),
+      resolve: (source: Wallet) => source.currency,
     },
     balance: {
       type: GT.NonNull(SignedAmount),
+      resolve: async (source: Wallet, __, { logger }) => {
+        const balanceSats = await Wallets.getBalanceForWallet({
+          walletId: source.id,
+          logger,
+        })
+        if (balanceSats instanceof Error) throw balanceSats
+        return balanceSats
+      },
     },
     transactions: {
       type: TransactionConnection,

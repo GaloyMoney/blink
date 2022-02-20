@@ -4,6 +4,7 @@ const WalletCurrency = GT.Enum({
   name: "WalletCurrency",
   values: {
     BTC: {},
+    USD: {},
   },
 })
 

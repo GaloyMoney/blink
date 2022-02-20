@@ -13,14 +13,14 @@ import { TransactionConnection } from "./transaction"
 const BTCWallet = GT.Object({
   name: "BTCWallet",
   interfaces: () => [IWallet],
-  isTypeOf: (source) => true || source.type === "btc", // TODO: make this work
+  isTypeOf: (source) => source.currency === "BTC",
   fields: () => ({
     id: {
       type: GT.NonNullID,
     },
     walletCurrency: {
       type: GT.NonNull(WalletCurrency),
-      resolve: () => "BTC",
+      resolve: (source: Wallet) => source.currency,
     },
     balance: {
       type: GT.NonNull(SignedAmount),
