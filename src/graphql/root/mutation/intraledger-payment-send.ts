@@ -1,11 +1,12 @@
 import { Wallets, Accounts } from "@app"
-import { checkedToWalletId } from "@domain/wallets"
+import { checkedToWalletId, WalletCurrency } from "@domain/wallets"
 import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import Memo from "@graphql/types/scalar/memo"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
+import { WalletsRepository } from "@services/mongoose"
 
 const IntraLedgerPaymentSendInput = GT.Input({
   name: "IntraLedgerPaymentSendInput",
@@ -40,6 +41,24 @@ const IntraLedgerPaymentSendMutation = GT.Field({
     if (recipientWalletIdChecked instanceof Error) {
       const appErr = mapError(recipientWalletIdChecked)
       return { errors: [{ message: appErr.message }] }
+    }
+
+    const senderWallet = await WalletsRepository().findById(senderWalletId)
+    if (senderWallet instanceof Error)
+      return { errors: [{ message: mapError(senderWallet).message }] }
+
+    const MutationDoesNotMatchWalletCurrencyError =
+      "MutationDoesNotMatchWalletCurrencyError"
+    if (senderWallet.currency === WalletCurrency.Usd) {
+      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
+    }
+
+    const recipientWallet = await WalletsRepository().findById(recipientWalletId)
+    if (recipientWallet instanceof Error)
+      return { errors: [{ message: mapError(recipientWallet).message }] }
+
+    if (recipientWallet.currency === WalletCurrency.Usd) {
+      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
     }
 
     const recipientUsername = await Accounts.getUsernameFromWalletId(
