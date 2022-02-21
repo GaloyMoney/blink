@@ -102,6 +102,8 @@ type LnInvoice = {
   readonly routeHints: Hop[][]
   readonly paymentSecret: PaymentIdentifyingSecret | null
   readonly features: LnInvoiceFeature[]
+  readonly expiresAt: Date
+  readonly isExpired: boolean
 }
 
 type RegisterInvoiceArgs = {

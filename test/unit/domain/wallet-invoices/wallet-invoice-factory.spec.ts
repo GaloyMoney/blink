@@ -1,3 +1,4 @@
+import { MS_PER_DAY } from "@config"
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
@@ -25,6 +26,8 @@ describe("wallet invoice factory methods", () => {
         milliSatsAmount: toMilliSatsFromNumber(42000),
         description: "",
         features: [],
+        expiresAt: new Date(Date.now() + MS_PER_DAY),
+        isExpired: false,
       },
       pubkey: "pubkey" as Pubkey,
       descriptionHash: "descriptionHash" as string, // FIXME
@@ -46,7 +49,7 @@ describe("wallet invoice factory methods", () => {
   })
 
   it("translates a registered invoice to wallet invoice for a recipient", () => {
-    const registeredInvoice = {
+    const registeredInvoice: RegisteredInvoice = {
       invoice: {
         paymentHash: "paymentHash" as PaymentHash,
         paymentSecret: "paymentSecret" as PaymentIdentifyingSecret,
@@ -58,9 +61,10 @@ describe("wallet invoice factory methods", () => {
         milliSatsAmount: toMilliSatsFromNumber(42000),
         description: "",
         features: [],
+        expiresAt: new Date(Date.now() + MS_PER_DAY),
+        isExpired: false,
       },
       pubkey: "pubkey" as Pubkey,
-      currency: WalletCurrency.Btc,
     }
     const result = walletInvoiceFactory.createForRecipient({
       registeredInvoice,

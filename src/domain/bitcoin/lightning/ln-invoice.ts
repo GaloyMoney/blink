@@ -29,6 +29,8 @@ export const decodeInvoice = (
   const cltvDelta: number | null = decodedInvoice.cltv_delta
     ? decodedInvoice.cltv_delta
     : null
+  const expiresAt = new Date(decodedInvoice.expires_at)
+  const isExpired = !!decodedInvoice.is_expired
 
   let routeHints: Hop[][] = []
   if (decodedInvoice.routes) {
@@ -46,6 +48,8 @@ export const decodeInvoice = (
   return {
     amount,
     paymentSecret,
+    expiresAt,
+    isExpired,
     routeHints,
     cltvDelta,
     paymentRequest: bolt11EncodedInvoice as EncodedPaymentRequest,
