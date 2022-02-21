@@ -3,6 +3,8 @@ import { DealerPriceServiceError } from "@domain/dealer-price"
 import { NotImplementedError, NotReachableError } from "@domain/errors"
 import { WalletCurrency } from "@domain/wallets"
 
+// TODO: delete, only used in tests.
+// refactor test to make sure the mock of the dealer is working as expected
 export const AmountConverter = ({
   dCConverter,
   dealerFns,

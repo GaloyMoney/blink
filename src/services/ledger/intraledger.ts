@@ -2,6 +2,8 @@ import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
 import { WalletCurrency } from "@domain/wallets"
 
+import { NotReachableError } from "@domain/errors"
+
 import { MainBook } from "./books"
 import { getDealerBtcWalletId, getDealerUsdWalletId } from "./caching"
 
@@ -160,7 +162,7 @@ const addIntraledgerTxTransfer = async ({
       memoPayer,
     }
     if (sats === undefined) {
-      return new Error("sats undefined implementation error")
+      return new NotReachableError("sats undefined implementation error")
     }
 
     try {
