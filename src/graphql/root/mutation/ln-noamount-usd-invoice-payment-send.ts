@@ -2,25 +2,25 @@ import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
 import Memo from "@graphql/types/scalar/memo"
 import WalletId from "@graphql/types/scalar/wallet-id"
-import SatAmount from "@graphql/types/scalar/sat-amount"
 import { Wallets } from "@app"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnIPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { InputValidationError } from "@graphql/error"
-import { WalletsRepository } from "@services/mongoose"
+import CentAmount from "@graphql/types/scalar/cent-amount"
 import { WalletCurrency } from "@domain/wallets"
+import { WalletsRepository } from "@services/mongoose"
 
-const LnNoAmountInvoicePaymentInput = GT.Input({
-  name: "LnNoAmountInvoicePaymentInput",
+const LnNoAmountUsdInvoicePaymentInput = GT.Input({
+  name: "LnNoAmountUsdInvoicePaymentInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) },
     paymentRequest: { type: GT.NonNull(LnIPaymentRequest) },
-    amount: { type: GT.NonNull(SatAmount) },
+    amount: { type: GT.NonNull(CentAmount) },
     memo: { type: Memo },
   }),
 })
 
-const LnNoAmountInvoicePaymentSendMutation = GT.Field<
+const LnNoAmountUsdInvoicePaymentSendMutation = GT.Field<
   {
     input: {
       walletId: WalletId | InputValidationError
@@ -34,7 +34,7 @@ const LnNoAmountInvoicePaymentSendMutation = GT.Field<
 >({
   type: GT.NonNull(PaymentSendPayload),
   args: {
-    input: { type: GT.NonNull(LnNoAmountInvoicePaymentInput) },
+    input: { type: GT.NonNull(LnNoAmountUsdInvoicePaymentInput) },
   },
   resolve: async (_, args, { domainAccount, logger }) => {
     const { walletId, paymentRequest, amount, memo } = args.input
@@ -58,7 +58,7 @@ const LnNoAmountInvoicePaymentSendMutation = GT.Field<
 
     const MutationDoesNotMatchWalletCurrencyError =
       "MutationDoesNotMatchWalletCurrencyError"
-    if (wallet.currency === WalletCurrency.Usd) {
+    if (wallet.currency === WalletCurrency.Btc) {
       return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
     }
 
@@ -83,4 +83,4 @@ const LnNoAmountInvoicePaymentSendMutation = GT.Field<
   },
 })
 
-export default LnNoAmountInvoicePaymentSendMutation
+export default LnNoAmountUsdInvoicePaymentSendMutation

@@ -5,6 +5,8 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
 import { Wallets } from "@app"
+import { WalletsRepository } from "@services/mongoose"
+import { WalletCurrency } from "@domain/wallets"
 
 const LnInvoiceCreateInput = GT.Input({
   name: "LnInvoiceCreateInput",
@@ -27,6 +29,16 @@ const LnInvoiceCreateMutation = GT.Field({
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
+    }
+
+    const wallet = await WalletsRepository().findById(walletId)
+    if (wallet instanceof Error)
+      return { errors: [{ message: mapError(wallet).message }] }
+
+    const MutationDoesNotMatchWalletCurrencyError =
+      "MutationDoesNotMatchWalletCurrencyError"
+    if (wallet.currency === WalletCurrency.Usd) {
+      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
     }
 
     const lnInvoice = await Wallets.addInvoiceForSelf({

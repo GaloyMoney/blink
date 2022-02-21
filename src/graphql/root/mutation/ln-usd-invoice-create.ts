@@ -1,29 +1,31 @@
 import { GT } from "@graphql/index"
-import WalletId from "@graphql/types/scalar/wallet-id"
-import SatAmountPayload from "@graphql/types/payload/sat-amount"
-import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
-import { Wallets } from "@app"
 import { mapError } from "@graphql/error-map"
+import Memo from "@graphql/types/scalar/memo"
+import WalletId from "@graphql/types/scalar/wallet-id"
+import CentAmount from "@graphql/types/scalar/cent-amount"
+import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
+import { Wallets } from "@app"
 import { WalletsRepository } from "@services/mongoose"
 import { WalletCurrency } from "@domain/wallets"
 
-const LnInvoiceFeeProbeInput = GT.Input({
-  name: "LnInvoiceFeeProbeInput",
+const LnUsdInvoiceCreateInput = GT.Input({
+  name: "LnUsdInvoiceCreateInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) },
-    paymentRequest: { type: GT.NonNull(LnPaymentRequest) },
+    amount: { type: GT.NonNull(CentAmount) },
+    memo: { type: Memo },
   }),
 })
 
-const LnInvoiceFeeProbeMutation = GT.Field({
-  type: GT.NonNull(SatAmountPayload),
+const LnUsdInvoiceCreateMutation = GT.Field({
+  type: GT.NonNull(LnInvoicePayload),
   args: {
-    input: { type: GT.NonNull(LnInvoiceFeeProbeInput) },
+    input: { type: GT.NonNull(LnUsdInvoiceCreateInput) },
   },
   resolve: async (_, args) => {
-    const { walletId, paymentRequest } = args.input
+    const { walletId, memo, amount } = args.input
 
-    for (const input of [walletId, paymentRequest]) {
+    for (const input of [walletId, memo, amount]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -35,24 +37,26 @@ const LnInvoiceFeeProbeMutation = GT.Field({
 
     const MutationDoesNotMatchWalletCurrencyError =
       "MutationDoesNotMatchWalletCurrencyError"
-    if (wallet.currency === WalletCurrency.Usd) {
+    if (wallet.currency === WalletCurrency.Btc) {
       return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
     }
 
-    const feeSatAmount = await Wallets.getRoutingFee({
+    const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId,
-      paymentRequest,
+      amount,
+      memo,
     })
-    if (feeSatAmount instanceof Error) {
-      const appErr = mapError(feeSatAmount)
+
+    if (lnInvoice instanceof Error) {
+      const appErr = mapError(lnInvoice)
       return { errors: [{ message: appErr.message }] }
     }
 
     return {
       errors: [],
-      amount: feeSatAmount,
+      invoice: lnInvoice,
     }
   },
 })
 
-export default LnInvoiceFeeProbeMutation
+export default LnUsdInvoiceCreateMutation

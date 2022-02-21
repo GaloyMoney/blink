@@ -3,6 +3,8 @@ import { connectionArgs, connectionFromArray } from "@graphql/connections"
 
 import { Wallets } from "@app"
 
+import { WalletCurrency as WalletCurrencyDomain } from "@domain/wallets"
+
 import IWallet from "../abstract/wallet"
 
 import SignedAmount from "../scalar/signed-amount"
@@ -10,21 +12,21 @@ import WalletCurrency from "../scalar/wallet-currency"
 
 import { TransactionConnection } from "./transaction"
 
-const BTCWallet = GT.Object({
+const BtcWallet = GT.Object<Wallet>({
   name: "BTCWallet",
   interfaces: () => [IWallet],
-  isTypeOf: (source) => true || source.type === "btc", // TODO: make this work
+  isTypeOf: (source) => source.currency === WalletCurrencyDomain.Btc,
   fields: () => ({
     id: {
       type: GT.NonNullID,
     },
     walletCurrency: {
       type: GT.NonNull(WalletCurrency),
-      resolve: () => "BTC",
+      resolve: (source) => source.currency,
     },
     balance: {
       type: GT.NonNull(SignedAmount),
-      resolve: async (source: Wallet, __, { logger }) => {
+      resolve: async (source, args, { logger }) => {
         const balanceSats = await Wallets.getBalanceForWallet({
           walletId: source.id,
           logger,
@@ -33,11 +35,10 @@ const BTCWallet = GT.Object({
         return balanceSats
       },
     },
-
     transactions: {
       type: TransactionConnection,
       args: connectionArgs,
-      resolve: async (source: Wallet, args) => {
+      resolve: async (source, args) => {
         const { result: transactions, error } = await Wallets.getTransactionsForWallet(
           source,
         )
@@ -50,4 +51,4 @@ const BTCWallet = GT.Object({
   }),
 })
 
-export default BTCWallet
+export default BtcWallet

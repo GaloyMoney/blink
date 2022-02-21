@@ -1,16 +1,16 @@
-import { GT } from "@graphql/index"
-import Memo from "@graphql/types/scalar/memo"
-import { mapError } from "@graphql/error-map"
-import WalletId from "@graphql/types/scalar/wallet-id"
 import { Wallets } from "@app"
+import { InputValidationError } from "@graphql/error"
+import { mapError } from "@graphql/error-map"
+import { GT } from "@graphql/index"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
+import Memo from "@graphql/types/scalar/memo"
+import WalletId from "@graphql/types/scalar/wallet-id"
 import {
+  ACCOUNT_USERNAME,
   addAttributesToCurrentSpanAndPropagate,
   SemanticAttributes,
-  ACCOUNT_USERNAME,
 } from "@services/tracing"
-import { InputValidationError } from "@graphql/error"
 
 const LnInvoicePaymentInput = GT.Input({
   name: "LnInvoicePaymentInput",

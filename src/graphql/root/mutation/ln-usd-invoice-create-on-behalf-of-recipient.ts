@@ -1,30 +1,33 @@
 import { Wallets } from "@app"
-import { WalletCurrency } from "@domain/wallets"
 import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
-import LnNoAmountInvoicePayload from "@graphql/types/payload/ln-noamount-invoice"
+import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
 import Memo from "@graphql/types/scalar/memo"
+import Hex32Bytes from "@graphql/types/scalar/hex32bytes"
+import CentAmount from "@graphql/types/scalar/cent-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import { WalletsRepository } from "@services/mongoose"
+import { WalletCurrency } from "@domain/wallets"
 
-const LnNoAmountInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
-  name: "LnNoAmountInvoiceCreateOnBehalfOfRecipientInput",
+const LnUsdInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
+  name: "LnUsdInvoiceCreateOnBehalfOfRecipientInput",
   fields: () => ({
     recipientWalletId: { type: GT.NonNull(WalletId) },
+    amount: { type: GT.NonNull(CentAmount) },
     memo: { type: Memo },
+    descriptionHash: { type: Hex32Bytes },
   }),
 })
 
-const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
-  type: GT.NonNull(LnNoAmountInvoicePayload),
+const LnUsdInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
+  type: GT.NonNull(LnInvoicePayload),
   args: {
-    input: { type: GT.NonNull(LnNoAmountInvoiceCreateOnBehalfOfRecipientInput) },
+    input: { type: GT.NonNull(LnUsdInvoiceCreateOnBehalfOfRecipientInput) },
   },
   resolve: async (_, args) => {
-    const { recipientWalletId, memo } = args.input
-
-    for (const input of [recipientWalletId, memo]) {
+    const { recipientWalletId, amount, memo, descriptionHash } = args.input
+    for (const input of [recipientWalletId, amount, memo, descriptionHash]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -36,31 +39,27 @@ const LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
 
     const MutationDoesNotMatchWalletCurrencyError =
       "MutationDoesNotMatchWalletCurrencyError"
-    if (wallet.currency === WalletCurrency.Usd) {
+    if (wallet.currency === WalletCurrency.Btc) {
       return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
     }
 
-    const result = await Wallets.addInvoiceNoAmountForRecipient({
+    const invoice = await Wallets.addInvoiceForRecipient({
       recipientWalletId,
+      amount,
       memo,
+      descriptionHash,
     })
 
-    if (result instanceof Error) {
-      const appErr = mapError(result)
+    if (invoice instanceof Error) {
+      const appErr = mapError(invoice)
       return { errors: [{ message: appErr.message || appErr.name }] } // TODO: refine error
     }
 
-    const { paymentRequest, paymentHash, paymentSecret } = result
-
     return {
       errors: [],
-      invoice: {
-        paymentRequest,
-        paymentHash,
-        paymentSecret,
-      },
+      invoice,
     }
   },
 })
 
-export default LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation
+export default LnUsdInvoiceCreateOnBehalfOfRecipientMutation

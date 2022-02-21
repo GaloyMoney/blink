@@ -215,7 +215,7 @@ Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1
 scalar SafeInt
 
 """
-(Positive) Satoshi amount (i.g. quiz earning)
+(Positive) Satoshi amount
 """
 scalar SatAmount
 

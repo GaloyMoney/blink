@@ -7,6 +7,8 @@ import Memo from "@graphql/types/scalar/memo"
 import Hex32Bytes from "@graphql/types/scalar/hex32bytes"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
+import { WalletsRepository } from "@services/mongoose"
+import { WalletCurrency } from "@domain/wallets"
 
 const LnInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
   name: "LnInvoiceCreateOnBehalfOfRecipientInput",
@@ -29,6 +31,16 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
+    }
+
+    const wallet = await WalletsRepository().findById(recipientWalletId)
+    if (wallet instanceof Error)
+      return { errors: [{ message: mapError(wallet).message }] }
+
+    const MutationDoesNotMatchWalletCurrencyError =
+      "MutationDoesNotMatchWalletCurrencyError"
+    if (wallet.currency === WalletCurrency.Usd) {
+      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
     }
 
     const invoice = await Wallets.addInvoiceForRecipient({

@@ -98,6 +98,11 @@ input CaptchaRequestAuthCodeInput {
   validationCode: String!
 }
 
+"""
+(Positive) Cent amount (1/100 of a dollar)
+"""
+scalar CentAmount
+
 type ConsumerAccount implements Account {
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
@@ -279,6 +284,13 @@ input LnNoAmountInvoicePaymentInput {
   walletId: WalletId!
 }
 
+input LnNoAmountUsdInvoicePaymentInput {
+  amount: CentAmount!
+  memo: Memo
+  paymentRequest: LnPaymentRequest!
+  walletId: WalletId!
+}
+
 scalar LnPaymentPreImage
 
 """
@@ -292,6 +304,19 @@ type LnUpdate {
   paymentHash: PaymentHash!
   status: InvoicePaymentStatus!
   walletId: WalletId!
+}
+
+input LnUsdInvoiceCreateInput {
+  amount: CentAmount!
+  memo: Memo
+  walletId: WalletId!
+}
+
+input LnUsdInvoiceCreateOnBehalfOfRecipientInput {
+  amount: CentAmount!
+  descriptionHash: Hex32Bytes
+  memo: Memo
+  recipientWalletId: WalletId!
 }
 
 type MapInfo {
@@ -336,6 +361,13 @@ type Mutation {
   ): LnNoAmountInvoicePayload!
   lnNoAmountInvoiceFeeProbe(input: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload!
   lnNoAmountInvoicePaymentSend(input: LnNoAmountInvoicePaymentInput!): PaymentSendPayload!
+  lnNoAmountUsdInvoicePaymentSend(
+    input: LnNoAmountUsdInvoicePaymentInput!
+  ): PaymentSendPayload!
+  lnUsdInvoiceCreate(input: LnUsdInvoiceCreateInput!): LnInvoicePayload!
+  lnUsdInvoiceCreateOnBehalfOfRecipient(
+    input: LnUsdInvoiceCreateOnBehalfOfRecipientInput!
+  ): LnInvoicePayload!
   onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload!
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
@@ -552,7 +584,7 @@ Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1
 scalar SafeInt
 
 """
-(Positive) Satoshi amount (i.g. quiz earning)
+(Positive) Satoshi amount
 """
 scalar SatAmount
 
@@ -716,12 +748,40 @@ enum TxStatus {
   SUCCESS
 }
 
+type UsdWallet implements Wallet {
+  balance: SignedAmount!
+  id: ID!
+  transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
+  walletCurrency: WalletCurrency!
+}
+
 type User {
   """
   Get single contact details.
   Can include the transactions associated with the contact.
   """
   contactByUsername(username: Username!): UserContact!
+    @deprecated(reason: "will be moved to Accounts")
 
   """
   Get full list of contacts.
@@ -746,7 +806,7 @@ type User {
   """
   List the quiz questions the user may have completed.
   """
-  quizQuestions: [UserQuizQuestion!]!
+  quizQuestions: [UserQuizQuestion!]! @deprecated(reason: "will be moved to Accounts")
   twoFAEnabled: Boolean
 
   """
@@ -887,6 +947,7 @@ interface Wallet {
 
 enum WalletCurrency {
   BTC
+  USD
 }
 
 """
