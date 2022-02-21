@@ -47,6 +47,7 @@ const GraphQLUser = GT.Object({
     },
 
     quizQuestions: {
+      deprecationReason: `will be moved to Accounts`,
       type: GT.NonNullList(UserQuizQuestion),
       description: "List the quiz questions the user may have completed.",
     },
@@ -63,6 +64,7 @@ const GraphQLUser = GT.Object({
       type: GT.NonNull(AccountContact),
       description: dedent`Get single contact details.
         Can include the transactions associated with the contact.`,
+      deprecationReason: `will be moved to Accounts`,
       args: {
         username: { type: GT.NonNull(Username) },
       },
