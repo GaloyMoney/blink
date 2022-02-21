@@ -274,6 +274,9 @@ const lnSendPayment = async ({
     "payment.request.destination": decodedInvoice.destination,
     "payment.request.hash": decodedInvoice.paymentHash,
     "payment.request.description": decodedInvoice.description,
+    "payment.request.expiresAt": decodedInvoice.expiresAt
+      ? decodedInvoice.expiresAt.toISOString()
+      : "undefined",
   })
 
   const validator = PaymentInputValidator(WalletsRepository().findById)
