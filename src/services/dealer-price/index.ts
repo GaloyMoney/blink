@@ -33,8 +33,9 @@ import {
 } from "./proto/services/price/v1/price_service_pb"
 
 const serverPort = process.env.PRICE_SERVER_PORT ?? "50055"
+const dealerUri = process.env.DEALER_URI
 const client = new PriceServiceClient(
-  `localhost:${serverPort}`,
+  `${dealerUri}:${serverPort}`,
   credentials.createInsecure(),
 )
 
