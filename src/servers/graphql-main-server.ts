@@ -48,10 +48,12 @@ export async function startApolloServerForCoreSchema() {
         lnNoAmountInvoiceFeeProbe: or(isAuthenticated, isApiKeyAuthenticated),
 
         lnInvoiceCreate: or(isAuthenticated, isApiKeyAuthenticated),
+        lnUsdInvoiceCreate: or(isAuthenticated, isApiKeyAuthenticated),
         lnNoAmountInvoiceCreate: or(isAuthenticated, isApiKeyAuthenticated),
 
         lnInvoicePaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
         lnNoAmountInvoicePaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
+        lnNoAmountUsdInvoicePaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
 
         intraLedgerPaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
 
