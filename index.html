@@ -107,6 +107,15 @@
                 <a href="#operation-lnnoamountinvoicepaymentsend-Mutations"> lnNoAmountInvoicePaymentSend </a>
               </li>
               <li>
+                <a href="#operation-lnnoamountusdinvoicepaymentsend-Mutations"> lnNoAmountUsdInvoicePaymentSend </a>
+              </li>
+              <li>
+                <a href="#operation-lnusdinvoicecreate-Mutations"> lnUsdInvoiceCreate </a>
+              </li>
+              <li>
+                <a href="#operation-lnusdinvoicecreateonbehalfofrecipient-Mutations"> lnUsdInvoiceCreateOnBehalfOfRecipient </a>
+              </li>
+              <li>
                 <a href="#operation-onchainaddresscreate-Mutations"> onChainAddressCreate </a>
               </li>
               <li>
@@ -163,6 +172,7 @@
           <a href="#definition-CaptchaCreateChallengePayload"> CaptchaCreateChallengePayload </a>
           <a href="#definition-CaptchaCreateChallengeResult"> CaptchaCreateChallengeResult </a>
           <a href="#definition-CaptchaRequestAuthCodeInput"> CaptchaRequestAuthCodeInput </a>
+          <a href="#definition-CentAmount"> CentAmount </a>
           <a href="#definition-ConsumerAccount"> ConsumerAccount </a>
           <a href="#definition-ContactAlias"> ContactAlias </a>
           <a href="#definition-Coordinates"> Coordinates </a>
@@ -198,10 +208,13 @@
           <a href="#definition-LnNoAmountInvoiceFeeProbeInput"> LnNoAmountInvoiceFeeProbeInput </a>
           <a href="#definition-LnNoAmountInvoicePayload"> LnNoAmountInvoicePayload </a>
           <a href="#definition-LnNoAmountInvoicePaymentInput"> LnNoAmountInvoicePaymentInput </a>
+          <a href="#definition-LnNoAmountUsdInvoicePaymentInput"> LnNoAmountUsdInvoicePaymentInput </a>
           <a href="#definition-LnPaymentPreImage"> LnPaymentPreImage </a>
           <a href="#definition-LnPaymentRequest"> LnPaymentRequest </a>
           <a href="#definition-LnPaymentSecret"> LnPaymentSecret </a>
           <a href="#definition-LnUpdate"> LnUpdate </a>
+          <a href="#definition-LnUsdInvoiceCreateInput"> LnUsdInvoiceCreateInput </a>
+          <a href="#definition-LnUsdInvoiceCreateOnBehalfOfRecipientInput"> LnUsdInvoiceCreateOnBehalfOfRecipientInput </a>
           <a href="#definition-MapInfo"> MapInfo </a>
           <a href="#definition-MapMarker"> MapMarker </a>
           <a href="#definition-Memo"> Memo </a>
@@ -253,6 +266,7 @@
           <a href="#definition-TxDirection"> TxDirection </a>
           <a href="#definition-TxNotificationType"> TxNotificationType </a>
           <a href="#definition-TxStatus"> TxStatus </a>
+          <a href="#definition-UsdWallet"> UsdWallet </a>
           <a href="#definition-User"> User </a>
           <a href="#definition-UserContact"> UserContact </a>
           <a href="#definition-UserContactUpdateAliasInput"> UserContactUpdateAliasInput </a>
@@ -693,7 +707,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"globals"</span>: {
       <span class="hljs-attr">"buildInformation"</span>: <span class="hljs-string">BuildInformation</span>,
-      <span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"xyz789"</span>]
+      <span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"abc123"</span>]
     }
   }
 }
@@ -827,7 +841,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"mobileVersions"</span>: [
-      {<span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>}
+      {<span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"platform"</span>: <span class="hljs-string">"abc123"</span>}
     ]
   }
 }
@@ -1123,7 +1137,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Response </h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"data"</span>: {<span class="hljs-attr">"usernameAvailable"</span>: <span class="hljs-literal">true</span>}}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"data"</span>: {<span class="hljs-attr">"usernameAvailable"</span>: <span class="hljs-literal">false</span>}}
 </code></pre> </body>
                   </html>
                 </section>
@@ -1408,7 +1422,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"captchaRequestAuthCode"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
     }
   }
 }
@@ -1486,7 +1500,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"deviceNotificationTokenCreate"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
     }
   }
 }
@@ -2206,6 +2220,244 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
               </div>
             </div>
           </div>
+          <div id="operation-lnnoamountusdinvoicepaymentsend-Mutations" class="operation panel" data-traverse-target="operation-lnnoamountusdinvoicepaymentsend-Mutations">
+            <!-- <section class="operation-tags row"> -->
+            <!-- <div class="doc-copy"> -->
+            <div class="operation-tags">
+              <a class="label" href="#tag-Mutations">Mutations</a>
+              <!---->
+            </div>
+            <!-- </div> -->
+            <!-- </section> -->
+            <h2 class="operation-name "> <code>lnNoAmountUsdInvoicePaymentSend</code> </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-request-body"> </section>
+                <section class="swagger-responses"> Returns a
+                  <a href="#definition-PaymentSendPayload"><code>PaymentSendPayload!</code></a>
+                </section>
+                <br>
+                <section class="swagger-request-params">
+                  <table>
+                    <tr>
+                      <th>Name</th>
+                      <th>Description</th>
+                    </tr>
+                    <tr>
+                      <td><code>input</code> -
+                        <a href="#definition-LnNoAmountUsdInvoicePaymentInput"><code>LnNoAmountUsdInvoicePaymentInput!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h4>Example</h4>
+                  <h5>Query</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-keyword">mutation</span> lnNoAmountUsdInvoicePaymentSend<span class="hljs-tag">(<span class="hljs-code">$input</span>:<span class="hljs-type"> LnNoAmountUsdInvoicePaymentInput!</span>)</span> <span class="hljs-tag">{
+  <span class="hljs-symbol">lnNoAmountUsdInvoicePaymentSend<span class="hljs-tag">(input: <span class="hljs-code">$input</span>)</span> <span class="hljs-tag">{
+    <span class="hljs-symbol">errors <span class="hljs-tag">{
+      <span class="hljs-type">...ErrorFragment</span>
+    }</span></span>
+    <span class="hljs-symbol">status</span>
+  }</span></span>
+}</span></span>
+</code></pre> </body>
+                  </html>
+                  <h5>Variables</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"input"</span>: <span class="hljs-string">LnNoAmountUsdInvoicePaymentInput</span>}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy"> </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response </h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{
+  <span class="hljs-attr">"data"</span>: {
+    <span class="hljs-attr">"lnNoAmountUsdInvoicePaymentSend"</span>: {
+      <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
+      <span class="hljs-attr">"status"</span>: <span class="hljs-string">PaymentSendResult</span>
+    }
+  }
+}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="operation-lnusdinvoicecreate-Mutations" class="operation panel" data-traverse-target="operation-lnusdinvoicecreate-Mutations">
+            <!-- <section class="operation-tags row"> -->
+            <!-- <div class="doc-copy"> -->
+            <div class="operation-tags">
+              <a class="label" href="#tag-Mutations">Mutations</a>
+              <!---->
+            </div>
+            <!-- </div> -->
+            <!-- </section> -->
+            <h2 class="operation-name "> <code>lnUsdInvoiceCreate</code> </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-request-body"> </section>
+                <section class="swagger-responses"> Returns a
+                  <a href="#definition-LnInvoicePayload"><code>LnInvoicePayload!</code></a>
+                </section>
+                <br>
+                <section class="swagger-request-params">
+                  <table>
+                    <tr>
+                      <th>Name</th>
+                      <th>Description</th>
+                    </tr>
+                    <tr>
+                      <td><code>input</code> -
+                        <a href="#definition-LnUsdInvoiceCreateInput"><code>LnUsdInvoiceCreateInput!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h4>Example</h4>
+                  <h5>Query</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-keyword">mutation</span> lnUsdInvoiceCreate<span class="hljs-tag">(<span class="hljs-code">$input</span>:<span class="hljs-type"> LnUsdInvoiceCreateInput!</span>)</span> <span class="hljs-tag">{
+  <span class="hljs-symbol">lnUsdInvoiceCreate<span class="hljs-tag">(input: <span class="hljs-code">$input</span>)</span> <span class="hljs-tag">{
+    <span class="hljs-symbol">errors <span class="hljs-tag">{
+      <span class="hljs-type">...ErrorFragment</span>
+    }</span></span>
+    <span class="hljs-symbol">invoice <span class="hljs-tag">{
+      <span class="hljs-type">...LnInvoiceFragment</span>
+    }</span></span>
+  }</span></span>
+}</span></span>
+</code></pre> </body>
+                  </html>
+                  <h5>Variables</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"input"</span>: <span class="hljs-string">LnUsdInvoiceCreateInput</span>}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy"> </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response </h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{
+  <span class="hljs-attr">"data"</span>: {
+    <span class="hljs-attr">"lnUsdInvoiceCreate"</span>: {
+      <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
+      <span class="hljs-attr">"invoice"</span>: <span class="hljs-string">LnInvoice</span>
+    }
+  }
+}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="operation-lnusdinvoicecreateonbehalfofrecipient-Mutations" class="operation panel" data-traverse-target="operation-lnusdinvoicecreateonbehalfofrecipient-Mutations">
+            <!-- <section class="operation-tags row"> -->
+            <!-- <div class="doc-copy"> -->
+            <div class="operation-tags">
+              <a class="label" href="#tag-Mutations">Mutations</a>
+              <!---->
+            </div>
+            <!-- </div> -->
+            <!-- </section> -->
+            <h2 class="operation-name "> <code>lnUsdInvoiceCreateOnBehalfOfRecipient</code> </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-request-body"> </section>
+                <section class="swagger-responses"> Returns a
+                  <a href="#definition-LnInvoicePayload"><code>LnInvoicePayload!</code></a>
+                </section>
+                <br>
+                <section class="swagger-request-params">
+                  <table>
+                    <tr>
+                      <th>Name</th>
+                      <th>Description</th>
+                    </tr>
+                    <tr>
+                      <td><code>input</code> -
+                        <a href="#definition-LnUsdInvoiceCreateOnBehalfOfRecipientInput"><code>LnUsdInvoiceCreateOnBehalfOfRecipientInput!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h4>Example</h4>
+                  <h5>Query</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-keyword">mutation</span> lnUsdInvoiceCreateOnBehalfOfRecipient<span class="hljs-tag">(<span class="hljs-code">$input</span>:<span class="hljs-type"> LnUsdInvoiceCreateOnBehalfOfRecipientInput!</span>)</span> <span class="hljs-tag">{
+  <span class="hljs-symbol">lnUsdInvoiceCreateOnBehalfOfRecipient<span class="hljs-tag">(input: <span class="hljs-code">$input</span>)</span> <span class="hljs-tag">{
+    <span class="hljs-symbol">errors <span class="hljs-tag">{
+      <span class="hljs-type">...ErrorFragment</span>
+    }</span></span>
+    <span class="hljs-symbol">invoice <span class="hljs-tag">{
+      <span class="hljs-type">...LnInvoiceFragment</span>
+    }</span></span>
+  }</span></span>
+}</span></span>
+</code></pre> </body>
+                  </html>
+                  <h5>Variables</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"input"</span>: <span class="hljs-string">LnUsdInvoiceCreateOnBehalfOfRecipientInput</span>}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy"> </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response </h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{
+  <span class="hljs-attr">"data"</span>: {
+    <span class="hljs-attr">"lnUsdInvoiceCreateOnBehalfOfRecipient"</span>: {
+      <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
+      <span class="hljs-attr">"invoice"</span>: <span class="hljs-string">LnInvoice</span>
+    }
+  }
+}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+          </div>
           <div id="operation-onchainaddresscreate-Mutations" class="operation panel" data-traverse-target="operation-onchainaddresscreate-Mutations">
             <!-- <section class="operation-tags row"> -->
             <!-- <div class="doc-copy"> -->
@@ -2584,7 +2836,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
-    <span class="hljs-attr">"twoFADelete"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>}
+    <span class="hljs-attr">"twoFADelete"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>}
   }
 }
 </code></pre> </body>
@@ -2718,7 +2970,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
-    <span class="hljs-attr">"twoFASave"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>}
+    <span class="hljs-attr">"twoFASave"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>}
   }
 }
 </code></pre> </body>
@@ -3038,7 +3290,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"userRequestAuthCode"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
     }
   }
 }
@@ -3273,7 +3525,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"csvTransactions"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"csvTransactions"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"defaultWalletId"</span>: <span class="hljs-string">WalletId</span>,
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">ID</span>,
   <span class="hljs-attr">"wallets"</span>: [<span class="hljs-string">Wallet</span>]
@@ -3334,7 +3586,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"expireAt"</span>: <span class="hljs-string">Timestamp</span>,
-  <span class="hljs-attr">"key"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"key"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"label"</span>: <span class="hljs-string">AccountApiKeyLabel</span>,
   <span class="hljs-attr">"secret"</span>: <span class="hljs-string">"xyz789"</span>
 }
@@ -3735,7 +3987,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-literal">true</span></span>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-literal">false</span></span>
 </code></pre> </body>
                   </html>
                 </section>
@@ -3787,7 +4039,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"buildTime"</span>: <span class="hljs-string">Timestamp</span>,
   <span class="hljs-attr">"commitHash"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"helmRevision"</span>: <span class="hljs-number">123</span>
+  <span class="hljs-attr">"helmRevision"</span>: <span class="hljs-number">987</span>
 }
 </code></pre> </body>
                   </html>
@@ -3950,11 +4202,37 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"phone"</span>: <span class="hljs-string">Phone</span>,
-  <span class="hljs-attr">"secCode"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"secCode"</span>: <span class="hljs-string">"abc123"</span>,
   <span class="hljs-attr">"validationCode"</span>: <span class="hljs-string">"xyz789"</span>
 }
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-CentAmount" class="definition panel" data-traverse-target="definition-CentAmount">
+            <div class="definition-tags">
+              <a class="label" href="#tag-types">Types</a>
+            </div>
+            <h2 class="panel-title">
+              <a name="/definitions/CentAmount"></a>
+              <p><code>CentAmount</code></p>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-description">
+                  <p>(Positive) Cent amount (1/100 of a dollar)</p>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">object</span>
 </code></pre> </body>
                   </html>
                 </section>
@@ -4022,7 +4300,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"csvTransactions"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"csvTransactions"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"defaultWalletId"</span>: <span class="hljs-string">WalletId</span>,
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">ID</span>,
   <span class="hljs-attr">"wallets"</span>: [<span class="hljs-string">Wallet</span>]
@@ -4095,7 +4373,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"latitude"</span>: <span class="hljs-number">987.65</span>, <span class="hljs-attr">"longitude"</span>: <span class="hljs-number">987.65</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"latitude"</span>: <span class="hljs-number">123.45</span>, <span class="hljs-attr">"longitude"</span>: <span class="hljs-number">987.65</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -4132,7 +4410,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"deviceToken"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"deviceToken"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -4175,7 +4453,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>]}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>]}
 </code></pre> </body>
                   </html>
                 </section>
@@ -4235,7 +4513,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">123.45</span>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">987.65</span>
 </code></pre> </body>
                   </html>
                 </section>
@@ -4283,7 +4561,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"buildInformation"</span>: <span class="hljs-string">BuildInformation</span>,
-  <span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"abc123"</span>]
+  <span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"xyz789"</span>]
 }
 </code></pre> </body>
                   </html>
@@ -4548,7 +4826,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">InputErrorCode</span>,
-  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>,
   <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>]
 }
 </code></pre> </body>
@@ -4621,7 +4899,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">123</span>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">987</span>
 </code></pre> </body>
                   </html>
                 </section>
@@ -5514,6 +5792,66 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
               </div>
             </div>
           </div>
+          <div id="definition-LnNoAmountUsdInvoicePaymentInput" class="definition panel" data-traverse-target="definition-LnNoAmountUsdInvoicePaymentInput">
+            <div class="definition-tags">
+              <a class="label" href="#tag-types">Types</a>
+            </div>
+            <h2 class="panel-title">
+              <a name="/definitions/LnNoAmountUsdInvoicePaymentInput"></a>
+              <p><code>LnNoAmountUsdInvoicePaymentInput</code></p>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-properties-blank">
+                  <table>
+                    <tr>
+                      <th>Input Field</th>
+                      <th>Description</th>
+                    </tr>
+                    <tr>
+                      <td><code>amount</code> -
+                        <a href="#definition-CentAmount"><code>CentAmount!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                    <tr>
+                      <td><code>memo</code> -
+                        <a href="#definition-Memo"><code>Memo</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                    <tr>
+                      <td><code>paymentRequest</code> -
+                        <a href="#definition-LnPaymentRequest"><code>LnPaymentRequest!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                    <tr>
+                      <td><code>walletId</code> -
+                        <a href="#definition-WalletId"><code>WalletId!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{
+  <span class="hljs-attr">"amount"</span>: <span class="hljs-string">CentAmount</span>,
+  <span class="hljs-attr">"memo"</span>: <span class="hljs-string">Memo</span>,
+  <span class="hljs-attr">"paymentRequest"</span>: <span class="hljs-string">LnPaymentRequest</span>,
+  <span class="hljs-attr">"walletId"</span>: <span class="hljs-string">WalletId</span>
+}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+          </div>
           <div id="definition-LnPaymentPreImage" class="definition panel" data-traverse-target="definition-LnPaymentPreImage">
             <div class="definition-tags">
               <a class="label" href="#tag-types">Types</a>
@@ -5630,6 +5968,119 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"paymentHash"</span>: <span class="hljs-string">PaymentHash</span>,
   <span class="hljs-attr">"status"</span>: <span class="hljs-string">InvoicePaymentStatus</span>,
   <span class="hljs-attr">"walletId"</span>: <span class="hljs-string">WalletId</span>
+}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-LnUsdInvoiceCreateInput" class="definition panel" data-traverse-target="definition-LnUsdInvoiceCreateInput">
+            <div class="definition-tags">
+              <a class="label" href="#tag-types">Types</a>
+            </div>
+            <h2 class="panel-title">
+              <a name="/definitions/LnUsdInvoiceCreateInput"></a>
+              <p><code>LnUsdInvoiceCreateInput</code></p>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-properties-blank">
+                  <table>
+                    <tr>
+                      <th>Input Field</th>
+                      <th>Description</th>
+                    </tr>
+                    <tr>
+                      <td><code>amount</code> -
+                        <a href="#definition-CentAmount"><code>CentAmount!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                    <tr>
+                      <td><code>memo</code> -
+                        <a href="#definition-Memo"><code>Memo</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                    <tr>
+                      <td><code>walletId</code> -
+                        <a href="#definition-WalletId"><code>WalletId!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{
+  <span class="hljs-attr">"amount"</span>: <span class="hljs-string">CentAmount</span>,
+  <span class="hljs-attr">"memo"</span>: <span class="hljs-string">Memo</span>,
+  <span class="hljs-attr">"walletId"</span>: <span class="hljs-string">WalletId</span>
+}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div id="definition-LnUsdInvoiceCreateOnBehalfOfRecipientInput" class="definition panel" data-traverse-target="definition-LnUsdInvoiceCreateOnBehalfOfRecipientInput">
+            <div class="definition-tags">
+              <a class="label" href="#tag-types">Types</a>
+            </div>
+            <h2 class="panel-title">
+              <a name="/definitions/LnUsdInvoiceCreateOnBehalfOfRecipientInput"></a>
+              <p><code>LnUsdInvoiceCreateOnBehalfOfRecipientInput</code></p>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-properties-blank">
+                  <table>
+                    <tr>
+                      <th>Input Field</th>
+                      <th>Description</th>
+                    </tr>
+                    <tr>
+                      <td><code>amount</code> -
+                        <a href="#definition-CentAmount"><code>CentAmount!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                    <tr>
+                      <td><code>descriptionHash</code> -
+                        <a href="#definition-Hex32Bytes"><code>Hex32Bytes</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                    <tr>
+                      <td><code>memo</code> -
+                        <a href="#definition-Memo"><code>Memo</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                    <tr>
+                      <td><code>recipientWalletId</code> -
+                        <a href="#definition-WalletId"><code>WalletId!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{
+  <span class="hljs-attr">"amount"</span>: <span class="hljs-string">CentAmount</span>,
+  <span class="hljs-attr">"descriptionHash"</span>: <span class="hljs-string">Hex32Bytes</span>,
+  <span class="hljs-attr">"memo"</span>: <span class="hljs-string">Memo</span>,
+  <span class="hljs-attr">"recipientWalletId"</span>: <span class="hljs-string">WalletId</span>
 }
 </code></pre> </body>
                   </html>
@@ -5794,7 +6245,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"platform"</span>: <span class="hljs-string">"abc123"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -6347,10 +6798,10 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"endCursor"</span>: <span class="hljs-string">"abc123"</span>,
-  <span class="hljs-attr">"hasNextPage"</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">"endCursor"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"hasNextPage"</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">"hasPreviousPage"</span>: <span class="hljs-literal">true</span>,
-  <span class="hljs-attr">"startCursor"</span>: <span class="hljs-string">"xyz789"</span>
+  <span class="hljs-attr">"startCursor"</span>: <span class="hljs-string">"abc123"</span>
 }
 </code></pre> </body>
                   </html>
@@ -6403,7 +6854,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">PaymentErrorCode</span>,
   <span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>,
-  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>]
+  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>]
 }
 </code></pre> </body>
                   </html>
@@ -6661,8 +7112,8 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"base"</span>: <span class="hljs-string">SafeInt</span>,
   <span class="hljs-attr">"currencyUnit"</span>: <span class="hljs-string">ExchangeCurrencyUnit</span>,
-  <span class="hljs-attr">"formattedAmount"</span>: <span class="hljs-string">"abc123"</span>,
-  <span class="hljs-attr">"offset"</span>: <span class="hljs-number">987</span>
+  <span class="hljs-attr">"formattedAmount"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"offset"</span>: <span class="hljs-number">123</span>
 }
 </code></pre> </body>
                   </html>
@@ -6946,7 +7397,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="json-schema-description">
-                  <p>(Positive) Satoshi amount (i.g. quiz earning)</p>
+                  <p>(Positive) Satoshi amount</p>
                 </section>
               </div>
               <div class="doc-examples">
@@ -7586,7 +8037,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"cursor"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"node"</span>: <span class="hljs-string">Transaction</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"cursor"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"node"</span>: <span class="hljs-string">Transaction</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7755,7 +8206,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"uri"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"uri"</span>: <span class="hljs-string">"abc123"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7891,6 +8342,105 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
               </div>
             </div>
           </div>
+          <div id="definition-UsdWallet" class="definition panel" data-traverse-target="definition-UsdWallet">
+            <div class="definition-tags">
+              <a class="label" href="#tag-types">Types</a>
+            </div>
+            <h2 class="panel-title">
+              <a name="/definitions/UsdWallet"></a>
+              <p><code>UsdWallet</code></p>
+            </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="json-schema-properties-blank">
+                  <table>
+                    <tr>
+                      <th>Field Name</th>
+                      <th>Description</th>
+                    </tr>
+                    <tr>
+                      <td data-property-name="balance"> <code>balance</code> -
+                        <a href="#definition-SignedAmount"><code>SignedAmount!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                    <tr>
+                      <td data-property-name="id"> <code>id</code> -
+                        <a href="#definition-ID"><code>ID!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                    <tr>
+                      <td data-property-name="transactions"> <code>transactions</code> -
+                        <a href="#definition-TransactionConnection"><code>TransactionConnection</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2" class="no-top-border">
+                        <div class="field-arguments">
+                          <p class="field-arguments-header"> Arguments </p>
+                          <div class="field-argument">
+                            <p class="field-argument-name"><code>after</code> -
+                              <a href="#definition-String"><code>String</code></a>
+                            </p>
+                            <p>
+                              <p>Returns the items in the list that come after the specified cursor.</p>
+                            </p>
+                          </div>
+                          <div class="field-argument">
+                            <p class="field-argument-name"><code>before</code> -
+                              <a href="#definition-String"><code>String</code></a>
+                            </p>
+                            <p>
+                              <p>Returns the items in the list that come before the specified cursor.</p>
+                            </p>
+                          </div>
+                          <div class="field-argument">
+                            <p class="field-argument-name"><code>first</code> -
+                              <a href="#definition-Int"><code>Int</code></a>
+                            </p>
+                            <p>
+                              <p>Returns the first n items from the list.</p>
+                            </p>
+                          </div>
+                          <div class="field-argument">
+                            <p class="field-argument-name"><code>last</code> -
+                              <a href="#definition-Int"><code>Int</code></a>
+                            </p>
+                            <p>
+                              <p>Returns the last n items from the list.</p>
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td data-property-name="walletCurrency"> <code>walletCurrency</code> -
+                        <a href="#definition-WalletCurrency"><code>WalletCurrency!</code></a>
+                      </td>
+                      <td> </td>
+                    </tr>
+                  </table>
+                </section>
+              </div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Example</h5>
+                  <html>
+                  <head></head>
+                  <body><pre><code class="hljs language-json">{
+  <span class="hljs-attr">"balance"</span>: <span class="hljs-string">SignedAmount</span>,
+  <span class="hljs-attr">"id"</span>: <span class="hljs-string">ID</span>,
+  <span class="hljs-attr">"transactions"</span>: <span class="hljs-string">TransactionConnection</span>,
+  <span class="hljs-attr">"walletCurrency"</span>: <span class="hljs-string">WalletCurrency</span>
+}
+</code></pre> </body>
+                  </html>
+                </section>
+              </div>
+            </div>
+          </div>
           <div id="definition-User" class="definition panel" data-traverse-target="definition-User">
             <div class="definition-tags">
               <a class="label" href="#tag-types">Types</a>
@@ -7908,10 +8458,12 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <th>Description</th>
                     </tr>
                     <tr>
-                      <td data-property-name="contactByUsername"> <code>contactByUsername</code> -
+                      <td data-property-name="contactByUsername" class="swagger-operation-deprecated"> <code>contactByUsername</code> -
                         <a href="#definition-UserContact"><code>UserContact!</code></a>
                       </td>
-                      <td> Get single contact details. Can include the transactions associated with the contact. </td>
+                      <td> Get single contact details. Can include the transactions associated with the contact.
+                        <span class="properties-deprecation-reason">will be moved to Accounts</span>
+                      </td>
                     </tr>
                     <tr>
                       <td colspan="2" class="no-top-border">
@@ -7964,10 +8516,12 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td> Phone number with international calling code. </td>
                     </tr>
                     <tr>
-                      <td data-property-name="quizQuestions"> <code>quizQuestions</code> -
+                      <td data-property-name="quizQuestions" class="swagger-operation-deprecated"> <code>quizQuestions</code> -
                         <a href="#definition-UserQuizQuestion"><code>[UserQuizQuestion!]!</code></a>
                       </td>
-                      <td> List the quiz questions the user may have completed. </td>
+                      <td> List the quiz questions the user may have completed.
+                        <span class="properties-deprecation-reason">will be moved to Accounts</span>
+                      </td>
                     </tr>
                     <tr>
                       <td data-property-name="twoFAEnabled"> <code>twoFAEnabled</code> -
@@ -8000,7 +8554,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"language"</span>: <span class="hljs-string">Language</span>,
   <span class="hljs-attr">"phone"</span>: <span class="hljs-string">Phone</span>,
   <span class="hljs-attr">"quizQuestions"</span>: [<span class="hljs-string">UserQuizQuestion</span>],
-  <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">"username"</span>: <span class="hljs-string">Username</span>
 }
 </code></pre> </body>
@@ -8106,7 +8660,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"alias"</span>: <span class="hljs-string">ContactAlias</span>,
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">Username</span>,
   <span class="hljs-attr">"transactions"</span>: <span class="hljs-string">TransactionConnection</span>,
-  <span class="hljs-attr">"transactionsCount"</span>: <span class="hljs-number">123</span>,
+  <span class="hljs-attr">"transactionsCount"</span>: <span class="hljs-number">987</span>,
   <span class="hljs-attr">"username"</span>: <span class="hljs-string">Username</span>
 }
 </code></pre> </body>
@@ -8289,7 +8843,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"completed"</span>: <span class="hljs-literal">false</span>, <span class="hljs-attr">"question"</span>: <span class="hljs-string">QuizQuestion</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"completed"</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">"question"</span>: <span class="hljs-string">QuizQuestion</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -8768,6 +9322,12 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                     <tr>
                       <td>
                         <p><code>BTC</code></p>
+                      </td>
+                      <td> </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <p><code>USD</code></p>
                       </td>
                       <td> </td>
                     </tr>
