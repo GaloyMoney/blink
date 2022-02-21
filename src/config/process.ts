@@ -66,6 +66,13 @@ export const getTwilioConfig = (): TwilioConfig => {
   }
 }
 
+export const getDealerPriceConfig = () => {
+  return {
+    port: process.env.PRICE_SERVER_PORT ?? "50055",
+    host: process.env.DEALER_URI,
+  }
+}
+
 // FIXME: we have process.env.NODE_ENV === "production" | "development" | "test"
 // "test" might not be needed
 
