@@ -3,6 +3,8 @@ import { Wallets } from "@app"
 import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import { mapError } from "@graphql/error-map"
+import { WalletCurrency } from "@domain/wallets"
+import { WalletsRepository } from "@services/mongoose"
 
 const OnChainAddressCreateInput = GT.Input({
   name: "OnChainAddressCreateInput",
@@ -20,6 +22,16 @@ const OnChainAddressCreateMutation = GT.Field({
     const { walletId } = args.input
     if (walletId instanceof Error) {
       return { errors: [{ message: walletId.message }] }
+    }
+
+    const wallet = await WalletsRepository().findById(walletId)
+    if (wallet instanceof Error)
+      return { errors: [{ message: mapError(wallet).message }] }
+
+    const MutationDoesNotMatchWalletCurrencyError =
+      "MutationDoesNotMatchWalletCurrencyError"
+    if (wallet.currency === WalletCurrency.Usd) {
+      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
     }
 
     const address = await Wallets.createOnChainAddress(walletId)

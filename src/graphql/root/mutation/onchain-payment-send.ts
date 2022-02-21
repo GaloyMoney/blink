@@ -7,6 +7,8 @@ import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 import { Wallets } from "@app"
+import { WalletsRepository } from "@services/mongoose"
+import { WalletCurrency } from "@domain/wallets"
 
 const OnChainPaymentSendInput = GT.Input({
   name: "OnChainPaymentSendInput",
@@ -33,9 +35,15 @@ const OnChainPaymentSendMutation = GT.Field<{ input }, null, GraphQLContextForUs
       }
     }
 
-    // FIXME: if we have the right domainAccount type, Account has to be defined here
-    // and should never be undefined, which would make the check below unecessay
-    if (!domainAccount) return { errors: [{ message: "account issue" }] }
+    const wallet = await WalletsRepository().findById(walletId)
+    if (wallet instanceof Error)
+      return { errors: [{ message: mapError(wallet).message }] }
+
+    const MutationDoesNotMatchWalletCurrencyError =
+      "MutationDoesNotMatchWalletCurrencyError"
+    if (wallet.currency === WalletCurrency.Usd) {
+      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
+    }
 
     const status = await Wallets.payOnChainByWalletId({
       senderAccount: domainAccount,

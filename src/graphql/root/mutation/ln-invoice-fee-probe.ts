@@ -4,6 +4,8 @@ import SatAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { Wallets } from "@app"
 import { mapError } from "@graphql/error-map"
+import { WalletsRepository } from "@services/mongoose"
+import { WalletCurrency } from "@domain/wallets"
 
 const LnInvoiceFeeProbeInput = GT.Input({
   name: "LnInvoiceFeeProbeInput",
@@ -25,6 +27,16 @@ const LnInvoiceFeeProbeMutation = GT.Field({
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
+    }
+
+    const wallet = await WalletsRepository().findById(walletId)
+    if (wallet instanceof Error)
+      return { errors: [{ message: mapError(wallet).message }] }
+
+    const MutationDoesNotMatchWalletCurrencyError =
+      "MutationDoesNotMatchWalletCurrencyError"
+    if (wallet.currency === WalletCurrency.Usd) {
+      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
     }
 
     const feeSatAmount = await Wallets.getRoutingFee({
