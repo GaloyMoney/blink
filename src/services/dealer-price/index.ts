@@ -1,5 +1,7 @@
 import util from "util"
 
+import { getDealerPriceConfig } from "@config"
+
 import { credentials } from "@grpc/grpc-js"
 
 import { UnknownDealerPriceServiceError } from "@domain/dealer-price"
@@ -32,9 +34,9 @@ import {
   GetCentsPerSatsExchangeMidRateResponse,
 } from "./proto/services/price/v1/price_service_pb"
 
-const serverPort = process.env.PRICE_SERVER_PORT ?? "50055"
+const config = getDealerPriceConfig()
 const client = new PriceServiceClient(
-  `localhost:${serverPort}`,
+  `${config.host}:${config.port}`,
   credentials.createInsecure(),
 )
 
