@@ -204,7 +204,7 @@ interface ILightningService {
   }: {
     pubkey: Pubkey
     paymentHash: PaymentHash
-  }): Promise<void | LightningServiceError>
+  }): Promise<true | LightningServiceError>
 
   payInvoiceViaRoutes({
     paymentHash,

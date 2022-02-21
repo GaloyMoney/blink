@@ -346,13 +346,16 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }: {
     pubkey: Pubkey
     paymentHash: PaymentHash
-  }): Promise<void | LightningServiceError> => {
+  }): Promise<true | LightningServiceError> => {
     try {
       const { lnd } = getLndFromPubkey({ pubkey })
       await cancelHodlInvoice({ lnd, id: paymentHash })
+      return true
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
       switch (errDetails) {
+        case KnownLndErrorDetails.InvoiceNotFound:
+          return true
         default:
           return new UnknownLightningServiceError(err)
       }
