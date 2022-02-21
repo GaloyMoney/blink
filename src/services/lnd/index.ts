@@ -15,6 +15,7 @@ import {
   InsufficientBalanceForRoutingError,
   BadPaymentDataError,
   CorruptLndDbError,
+  InvoiceExpiredOrBadPaymentHashError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
 import {
@@ -346,13 +347,16 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }: {
     pubkey: Pubkey
     paymentHash: PaymentHash
-  }): Promise<void | LightningServiceError> => {
+  }): Promise<true | LightningServiceError> => {
     try {
       const { lnd } = getLndFromPubkey({ pubkey })
       await cancelHodlInvoice({ lnd, id: paymentHash })
+      return true
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
       switch (errDetails) {
+        case KnownLndErrorDetails.InvoiceNotFound:
+          return true
         default:
           return new UnknownLightningServiceError(err)
       }
@@ -399,6 +403,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
       switch (errDetails) {
         case KnownLndErrorDetails.InvoiceAlreadyPaid:
           return new LnAlreadyPaidError()
+        case KnownLndErrorDetails.PaymentRejectedByDestination:
+          return new InvoiceExpiredOrBadPaymentHashError(paymentHash)
         default:
           return new UnknownLightningServiceError(err)
       }
@@ -468,6 +474,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
           return new LnAlreadyPaidError()
         case KnownLndErrorDetails.UnableToFindRoute:
           return new RouteNotFoundError()
+        case KnownLndErrorDetails.PaymentRejectedByDestination:
+          return new InvoiceExpiredOrBadPaymentHashError(decodedInvoice.paymentHash)
         default:
           return new UnknownLightningServiceError(err)
       }
@@ -602,6 +610,7 @@ const KnownLndErrorDetails = {
   InvoiceAlreadyPaid: "invoice is already paid",
   UnableToFindRoute: "PaymentPathfindingFailedToFindPossibleRoute",
   LndDbCorruption: "payment isn't initiated",
+  PaymentRejectedByDestination: "PaymentRejectedByDestination",
 } as const
 
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({

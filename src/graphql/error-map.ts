@@ -59,6 +59,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `Temporary failure when trying to pay, please retry payment`
       return new LightningPaymentError({ message, logger: baseLogger })
 
+    case "InvoiceExpiredOrBadPaymentHashError":
+      message = `Invoice already expired, or has bad payment hash`
+      return new LightningPaymentError({ message, logger: baseLogger })
+
     case "CouldNotFindUserFromIdError":
       message = `User does not exist for id ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
