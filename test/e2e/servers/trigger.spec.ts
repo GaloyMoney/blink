@@ -1,12 +1,13 @@
 import { Prices, Wallets } from "@app"
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
+import { toDisplayCurrencyBaseAmount } from "@domain/fiat/display-currency"
 import { NotificationType } from "@domain/notifications"
 import { TxStatus } from "@domain/wallets"
 import { onchainBlockEventhandler, onInvoiceUpdate } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
-import { getTitle } from "@services/notifications/payment"
+import { getTitleBitcoin } from "@services/notifications/payment"
 import { sleep } from "@utils"
 
 import {
@@ -191,7 +192,7 @@ describe("onchainBlockEventhandler", () => {
   })
 
   it("should process pending invoices on invoice update event", async () => {
-    const sats = 500
+    const sats = toSats(500)
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletIdF,
@@ -220,9 +221,9 @@ describe("onchainBlockEventhandler", () => {
 
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
-    const usd = (sats * satsPrice).toFixed(2)
+    const displayCurrency = toDisplayCurrencyBaseAmount(sats * satsPrice)
     expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitle[NotificationType.LnInvoicePaid]({ usd, amount: sats }),
+      getTitleBitcoin[NotificationType.LnInvoicePaid]({ displayCurrency, sats }),
     )
     expect(sendNotification.mock.calls[0][0].user.id).toStrictEqual(userIdF)
     expect(sendNotification.mock.calls[0][0].data.type).toBe(

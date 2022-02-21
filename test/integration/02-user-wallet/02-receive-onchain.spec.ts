@@ -13,10 +13,13 @@ import { TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
-import { getTitle } from "@services/notifications/payment"
+import { getTitleBitcoin } from "@services/notifications/payment"
 import { sleep } from "@utils"
 
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import {
+  DisplayCurrencyConverter,
+  toDisplayCurrencyBaseAmount,
+} from "@domain/fiat/display-currency"
 
 import { getCurrentPrice } from "@app/prices"
 
@@ -266,12 +269,12 @@ describe("UserWallet - On chain", () => {
 
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
-    const usd = (amountSats * satsPrice).toFixed(2)
+    const displayCurrency = toDisplayCurrencyBaseAmount(amountSats * satsPrice)
 
     expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitle[NotificationType.OnchainReceiptPending]({
-        usd,
-        amount: amountSats,
+      getTitleBitcoin[NotificationType.OnchainReceiptPending]({
+        displayCurrency,
+        sats: amountSats,
       }),
     )
 

@@ -27,6 +27,8 @@ let initBalanceB: Satoshis
 
 jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
 
+jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
+
 beforeAll(async () => {
   await createUserAndWalletFromUserRef("B")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")

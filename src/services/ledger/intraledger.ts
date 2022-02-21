@@ -1,10 +1,11 @@
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
-import { NotImplementedError } from "@domain/errors"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
-
 import { WalletCurrency } from "@domain/wallets"
 
+import { NotReachableError } from "@domain/errors"
+
 import { MainBook } from "./books"
+import { getDealerBtcWalletId, getDealerUsdWalletId } from "./caching"
 
 import { translateToLedgerJournal } from "."
 
@@ -90,6 +91,7 @@ export const intraledger = {
     paymentHash,
     description,
     sats,
+    cents,
     amountDisplayCurrency,
     pubkey,
     recipientWalletId,
@@ -113,6 +115,7 @@ export const intraledger = {
       senderUsername,
       description,
       sats,
+      cents,
       recipientWalletId,
       recipientUsername,
       recipientWalletCurrency,
@@ -129,6 +132,7 @@ const addIntraledgerTxTransfer = async ({
   senderUsername,
   description,
   sats,
+  cents,
   recipientWalletId,
   recipientUsername,
   recipientWalletCurrency,
@@ -139,17 +143,12 @@ const addIntraledgerTxTransfer = async ({
   const senderLiabilitiesWalletId = toLiabilitiesWalletId(senderWalletId)
   const recipientLiabilitiesWalletId = toLiabilitiesWalletId(recipientWalletId)
 
-  // TODO: remove assert once dealer has been implemented
-  if (
-    !(
-      recipientWalletCurrency === WalletCurrency.Btc &&
-      senderWalletCurrency === WalletCurrency.Btc
-    )
-  ) {
-    return new NotImplementedError("USD intraledger")
-  }
+  const entry = MainBook.entry(description)
 
-  try {
+  if (
+    recipientWalletCurrency === WalletCurrency.Btc &&
+    senderWalletCurrency === WalletCurrency.Btc
+  ) {
     const creditMetadata = {
       ...metadata,
       currency: WalletCurrency.Btc,
@@ -162,16 +161,124 @@ const addIntraledgerTxTransfer = async ({
       username: recipientUsername,
       memoPayer,
     }
+    if (sats === undefined) {
+      return new NotReachableError("sats undefined implementation error")
+    }
 
-    const entry = MainBook.entry(description)
+    try {
+      entry
+        .credit(recipientLiabilitiesWalletId, sats, creditMetadata)
+        .debit(senderLiabilitiesWalletId, sats, debitMetadata)
 
-    entry
-      .credit(recipientLiabilitiesWalletId, sats, creditMetadata)
-      .debit(senderLiabilitiesWalletId, sats, debitMetadata)
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  } else if (
+    recipientWalletCurrency === WalletCurrency.Usd &&
+    senderWalletCurrency === WalletCurrency.Usd
+  ) {
+    const creditMetadata = {
+      ...metadata,
+      currency: WalletCurrency.Usd,
+      username: senderUsername,
+      memoPayer: shareMemoWithPayee ? memoPayer : null,
+    }
+    const debitMetadata = {
+      ...metadata,
+      currency: WalletCurrency.Usd,
+      username: recipientUsername,
+      memoPayer,
+    }
+    if (cents === undefined) {
+      return new Error("cents undefined implementation error")
+    }
 
-    const savedEntry = await entry.commit()
-    return translateToLedgerJournal(savedEntry)
-  } catch (err) {
-    return new UnknownLedgerError(err)
+    try {
+      entry
+        .credit(recipientLiabilitiesWalletId, cents, creditMetadata)
+        .debit(senderLiabilitiesWalletId, cents, debitMetadata)
+
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  } else if (
+    recipientWalletCurrency === WalletCurrency.Btc &&
+    senderWalletCurrency === WalletCurrency.Usd
+  ) {
+    const creditMetadata = {
+      ...metadata,
+      currency: WalletCurrency.Btc,
+      username: senderUsername,
+      memoPayer: shareMemoWithPayee ? memoPayer : null,
+    }
+    const debitMetadata = {
+      ...metadata,
+      currency: WalletCurrency.Usd,
+      username: recipientUsername,
+      memoPayer,
+    }
+    if (cents === undefined && sats === undefined) {
+      return new Error("cents or sats undefined implementation error")
+    }
+
+    const dealerBtcWalletId = await getDealerBtcWalletId()
+    const dealerUsdWalletId = await getDealerUsdWalletId()
+    const liabilitiesDealerBtcWalletId = toLiabilitiesWalletId(dealerBtcWalletId)
+    const liabilitiesDealerUsdWalletId = toLiabilitiesWalletId(dealerUsdWalletId)
+
+    try {
+      entry
+        .credit(recipientLiabilitiesWalletId, sats, creditMetadata)
+        .debit(liabilitiesDealerBtcWalletId, sats, creditMetadata)
+        .credit(liabilitiesDealerUsdWalletId, cents, debitMetadata)
+        .debit(senderLiabilitiesWalletId, cents, debitMetadata)
+
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  } else {
+    // if (
+    //   recipientWalletCurrency === WalletCurrency.Usd &&
+    //   senderWalletCurrency === WalletCurrency.Btc
+    // )
+    const creditMetadata = {
+      ...metadata,
+      currency: WalletCurrency.Usd,
+      username: senderUsername,
+      memoPayer: shareMemoWithPayee ? memoPayer : null,
+    }
+    const debitMetadata = {
+      ...metadata,
+      currency: WalletCurrency.Btc,
+      username: recipientUsername,
+      memoPayer,
+    }
+    if (cents === undefined && sats === undefined) {
+      return new Error("cents or sats undefined implementation error")
+    }
+
+    const dealerBtcWalletId = await getDealerBtcWalletId()
+    const dealerUsdWalletId = await getDealerUsdWalletId()
+    const liabilitiesDealerBtcWalletId = toLiabilitiesWalletId(dealerBtcWalletId)
+    const liabilitiesDealerUsdWalletId = toLiabilitiesWalletId(dealerUsdWalletId)
+
+    try {
+      entry
+        .credit(recipientLiabilitiesWalletId, cents, creditMetadata)
+        .debit(liabilitiesDealerBtcWalletId, cents, creditMetadata)
+        .credit(liabilitiesDealerUsdWalletId, sats, debitMetadata)
+        .debit(senderLiabilitiesWalletId, sats, debitMetadata)
+
+      const savedEntry = await entry.commit()
+      return translateToLedgerJournal(savedEntry)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
   }
 }

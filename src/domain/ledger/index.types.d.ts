@@ -127,7 +127,8 @@ type IntraledgerTxArgs = {
   senderWalletCurrency: WalletCurrency
   senderUsername: Username | null
   description: string
-  sats: Satoshis
+  sats?: Satoshis
+  cents?: UsdCents
   recipientWalletId: WalletId
   recipientWalletCurrency: WalletCurrency
   recipientUsername: Username | null
