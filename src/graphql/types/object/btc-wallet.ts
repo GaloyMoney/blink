@@ -22,7 +22,7 @@ const BtcWallet = GT.Object<Wallet>({
     },
     walletCurrency: {
       type: GT.NonNull(WalletCurrency),
-      resolve: () => "Btc",
+      resolve: (source) => source.currency,
     },
     balance: {
       type: GT.NonNull(SignedAmount),
