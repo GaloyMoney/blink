@@ -33,13 +33,19 @@ import {
   GetInvoiceResult,
   getPayments,
   getFailedPayments,
+  getClosedChannels,
+  getWalletInfo,
 } from "lightning"
 
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 import { timeout } from "@utils"
 
-import { TIMEOUT_PAYMENT } from "./auth"
+import { LocalCacheService } from "@services/cache"
+import { SECS_PER_5_MINS } from "@config"
+import { CacheKeys } from "@domain/cache"
+
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
+import { TIMEOUT_PAYMENT } from "./auth"
 
 export const LndService = (): ILightningService | LightningServiceError => {
   const activeNode = getActiveLnd()
@@ -523,13 +529,9 @@ const lookupPaymentByPubkeyAndHash = async ({
       lnd,
       id: paymentHash,
     })
-    const { is_confirmed, is_failed, payment, pending } = result
+    const { payment, pending } = result
 
-    const status = is_confirmed
-      ? PaymentStatus.Settled
-      : is_failed
-      ? PaymentStatus.Failed
-      : PaymentStatus.Pending
+    const status = await resolvePaymentStatus({ lnd, result })
 
     if (payment) {
       return {
@@ -633,3 +635,51 @@ const translateLnPaymentLookup = (p): LnPaymentLookup => ({
     : undefined,
   attempts: p.attempts,
 })
+
+const resolvePaymentStatus = async ({
+  lnd,
+  result,
+}: {
+  lnd: AuthenticatedLnd
+  result: GetPaymentResult
+}): Promise<PaymentStatus> => {
+  const { is_confirmed, is_failed, payment, pending } = result
+
+  if (is_confirmed) return PaymentStatus.Settled
+  if (is_failed) return PaymentStatus.Failed
+
+  const cache = LocalCacheService()
+  const currentBlockHeight = await cache.getOrSet({
+    key: CacheKeys.BlockHeight,
+    ttlSecs: SECS_PER_5_MINS,
+    fn: async () => {
+      const { current_block_height } = await getWalletInfo({ lnd })
+      return current_block_height
+    },
+  })
+
+  const timeout = pending?.timeout || payment?.timeout
+  // This is a hack to handle lnd issue with pending HTLCs after channel close
+  // https://github.com/lightningnetwork/lnd/issues/6249
+  if (timeout && pending && currentBlockHeight > timeout) {
+    const closedChannels = await cache.getOrSet({
+      key: CacheKeys.ClosedChannels,
+      ttlSecs: SECS_PER_5_MINS,
+      fn: async () => {
+        const { channels } = await getClosedChannels({ lnd })
+        return channels
+      },
+    })
+
+    const failed = pending.paths
+      .map((p) => {
+        const [first] = p.hops
+        return closedChannels.find((c) => c.id === first.channel)
+      })
+      .every((s) => !!s)
+
+    if (failed) return PaymentStatus.Failed
+  }
+
+  return PaymentStatus.Pending
+}

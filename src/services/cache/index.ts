@@ -32,6 +32,19 @@ export const LocalCacheService = (): ILocalCacheService => {
     }
   }
 
+  const getOrSet = async <F extends () => ReturnType<F>>({
+    key,
+    fn,
+    ttlSecs,
+  }: LocalCacheGetOrSetArgs<F>): Promise<ReturnType<F>> => {
+    const cachedData = await get<ReturnType<F>>(key)
+    if (!(cachedData instanceof Error)) return cachedData
+
+    const data = await fn()
+    set<ReturnType<F>>({ key, value: data, ttlSecs })
+    return data
+  }
+
   const clear = (key: CacheKeys | string): Promise<true | LocalCacheServiceError> => {
     try {
       localCache.del(key)
@@ -41,5 +54,5 @@ export const LocalCacheService = (): ILocalCacheService => {
     }
   }
 
-  return { set, get, clear }
+  return { set, get, getOrSet, clear }
 }
