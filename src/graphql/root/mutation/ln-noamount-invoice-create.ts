@@ -4,17 +4,25 @@ import { GT } from "@graphql/index"
 import LnNoAmountInvoicePayload from "@graphql/types/payload/ln-noamount-invoice"
 import Memo from "@graphql/types/scalar/memo"
 import WalletId from "@graphql/types/scalar/wallet-id"
+import dedent from "dedent"
 
 const LnNoAmountInvoiceCreateInput = GT.Input({
   name: "LnNoAmountInvoiceCreateInput",
   fields: () => ({
-    walletId: { type: GT.NonNull(WalletId) },
-    memo: { type: Memo },
+    walletId: {
+      type: GT.NonNull(WalletId),
+      description:
+        "ID for either a USD or BTC wallet belonging to the account of the current user.",
+    },
+    memo: { type: Memo, description: "Optional memo for the lightning invoice." },
   }),
 })
 
 const LnNoAmountInvoiceCreateMutation = GT.Field({
   type: GT.NonNull(LnNoAmountInvoicePayload),
+  description: dedent`Returns a lightning invoice for an associated wallet.
+  Can be used to receive any supported currency value (currently USD or BTC).
+  Expires after 24 hours.`,
   args: {
     input: { type: GT.NonNull(LnNoAmountInvoiceCreateInput) },
   },

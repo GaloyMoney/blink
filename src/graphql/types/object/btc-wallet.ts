@@ -14,6 +14,8 @@ import { TransactionConnection } from "./transaction"
 
 const BtcWallet = GT.Object<Wallet>({
   name: "BTCWallet",
+  description:
+    "A wallet belonging to an account which contains a BTC balance and a list of transactions.",
   interfaces: () => [IWallet],
   isTypeOf: (source) => source.currency === WalletCurrencyDomain.Btc,
   fields: () => ({
@@ -26,6 +28,7 @@ const BtcWallet = GT.Object<Wallet>({
     },
     balance: {
       type: GT.NonNull(SignedAmount),
+      description: "A balance stored in BTC.",
       resolve: async (source, args, { logger }) => {
         const balanceSats = await Wallets.getBalanceForWallet({
           walletId: source.id,
@@ -47,6 +50,7 @@ const BtcWallet = GT.Object<Wallet>({
         }
         return connectionFromArray<WalletTransaction>(transactions, args)
       },
+      description: "A list of BTC transactions associated with this wallet.",
     },
   }),
 })

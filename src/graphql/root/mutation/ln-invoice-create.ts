@@ -7,18 +7,25 @@ import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
 import { Wallets } from "@app"
 import { WalletsRepository } from "@services/mongoose"
 import { WalletCurrency } from "@domain/wallets"
+import dedent from "dedent"
 
 const LnInvoiceCreateInput = GT.Input({
   name: "LnInvoiceCreateInput",
   fields: () => ({
-    walletId: { type: GT.NonNull(WalletId) },
-    amount: { type: GT.NonNull(SatAmount) },
-    memo: { type: Memo },
+    walletId: {
+      type: GT.NonNull(WalletId),
+      description: "Wallet ID for a BTC wallet belonging to the current account.",
+    },
+    amount: { type: GT.NonNull(SatAmount), description: "Amount in satoshis." },
+    memo: { type: Memo, description: "Optional memo for the lightning invoice." },
   }),
 })
 
 const LnInvoiceCreateMutation = GT.Field({
   type: GT.NonNull(LnInvoicePayload),
+  description: dedent`Returns a lightning invoice for an associated wallet.
+  When invoice is paid the value will be credited to a BTC wallet.
+  Expires after 24 hours.`,
   args: {
     input: { type: GT.NonNull(LnInvoiceCreateInput) },
   },

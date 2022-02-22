@@ -7,19 +7,23 @@ import Memo from "@graphql/types/scalar/memo"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import { WalletsRepository } from "@services/mongoose"
+import dedent from "dedent"
 
 const IntraLedgerPaymentSendInput = GT.Input({
   name: "IntraLedgerPaymentSendInput",
   fields: () => ({
-    walletId: { type: GT.NonNull(WalletId) }, // TODO: rename senderWalletId
+    walletId: { type: GT.NonNull(WalletId), description: "The wallet ID of the sender." }, // TODO: rename senderWalletId
     recipientWalletId: { type: GT.NonNull(WalletId) },
-    amount: { type: GT.NonNull(SatAmount) },
-    memo: { type: Memo },
+    amount: { type: GT.NonNull(SatAmount), description: "Amount in satoshis." },
+    memo: { type: Memo, description: "Optional memo to be attached to the payment." },
   }),
 })
 
 const IntraLedgerPaymentSendMutation = GT.Field({
   type: GT.NonNull(PaymentSendPayload),
+  description: dedent`Actions a payment which is internal to the ledger e.g. it does
+  not use onchain/lightning.  Does not currently support payments to or from USD wallets.
+  Returns payment status (success, failed, pending, already_paid).`,
   args: {
     input: { type: GT.NonNull(IntraLedgerPaymentSendInput) },
   },

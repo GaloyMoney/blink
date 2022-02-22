@@ -14,6 +14,8 @@ import { TransactionConnection } from "./transaction"
 
 const UsdWallet = GT.Object<Wallet>({
   name: "UsdWallet",
+  description:
+    "A wallet belonging to an account which contains a USD balance and a list of transactions.",
   interfaces: () => [IWallet],
   isTypeOf: (source) => source.currency === WalletCurrencyDomain.Usd,
   fields: () => ({

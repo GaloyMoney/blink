@@ -7,18 +7,26 @@ import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
 import { Wallets } from "@app"
 import { WalletsRepository } from "@services/mongoose"
 import { WalletCurrency } from "@domain/wallets"
+import dedent from "dedent"
 
 const LnUsdInvoiceCreateInput = GT.Input({
   name: "LnUsdInvoiceCreateInput",
   fields: () => ({
-    walletId: { type: GT.NonNull(WalletId) },
-    amount: { type: GT.NonNull(CentAmount) },
-    memo: { type: Memo },
+    walletId: {
+      type: GT.NonNull(WalletId),
+      description: "Wallet ID for a USD wallet belonging to the current user.",
+    },
+    amount: { type: GT.NonNull(CentAmount), description: "Amount in USD cents." },
+    memo: { type: Memo, description: "Optional memo for the lightning invoice." },
   }),
 })
 
 const LnUsdInvoiceCreateMutation = GT.Field({
   type: GT.NonNull(LnInvoicePayload),
+  description: dedent`Returns a lightning invoice denominated in satoshis for an associated wallet.
+  When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.
+  Expires after 2 minutes (short expiry time because there is a USD/BTC exchange rate
+  associated with the amount).`,
   args: {
     input: { type: GT.NonNull(LnUsdInvoiceCreateInput) },
   },
