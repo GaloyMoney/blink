@@ -20,8 +20,6 @@ const LnInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
     },
     amount: { type: GT.NonNull(SatAmount), description: "Amount in satoshis." },
     memo: { type: Memo, description: "Optional memo for the lightning invoice." },
-
-    //TODO @vindard
     descriptionHash: { type: Hex32Bytes },
   }),
 })

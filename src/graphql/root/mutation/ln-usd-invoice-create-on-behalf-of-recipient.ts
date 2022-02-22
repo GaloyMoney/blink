@@ -24,7 +24,6 @@ const LnUsdInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
       description:
         "Optional memo for the lightning invoice. Acts as a note to the recipient.",
     },
-    //TODO @vindard
     descriptionHash: { type: Hex32Bytes },
   }),
 })
