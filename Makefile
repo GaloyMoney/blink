@@ -56,7 +56,12 @@ e2e:
 	yarn test:e2e
 
 e2e-in-ci:
-	. ./.envrc && \
+	docker compose -f docker-compose.yml up integration-deps -d && \
+	make create-tmp-env-ci && \
+	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up e2e-tests
+
+execute-e2e-from-within-container:
+	yarn install && \
 	yarn build && \
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
@@ -65,13 +70,17 @@ integration:
 	yarn test:integration
 
 reset-integration: reset-deps integration
+
 reset-e2e: reset-deps e2e
 
 integration-in-ci:
-	. ./.envrc && \
-	yarn build && \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit && \
-	LOGLEVEL=error node lib/servers/cron.js
+	docker compose -f docker-compose.yml up integration-deps -d && \
+	make create-tmp-env-ci && \
+	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests
+
+execute-integration-from-within-container:
+	yarn install && \
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 unit-in-ci:
 	. ./.envrc && \
@@ -81,3 +90,7 @@ check-code:
 	yarn tsc-check
 	yarn eslint-check
 	yarn build
+
+create-tmp-env-ci:
+	. ./.envrc && \
+	envsubst < .env.ci > tmp.env.ci

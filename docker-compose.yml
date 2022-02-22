@@ -20,18 +20,10 @@ services:
     - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
     volumes:
       - ./dev/otel-agent-config.yaml:/etc/otel-agent-config.yaml
-    ports:
-      - "6831:6831/udp" # Jaeger receiver
-      - "6832:6832/udp" # Jaeger receiver
   price:
     image: us.gcr.io/galoy-org/price:edge
-    ports:
-    - "50051:50051"
-    - "9464:9464"
   redis:
     image: bitnami/redis:6.2
-    ports:
-    - "6379:6379"
     environment:
     - ALLOW_EMPTY_PASSWORD=yes
     - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
@@ -44,8 +36,6 @@ services:
     - MONGODB_ADDRESS=mongodb
   mongodb:
     image: bitnami/mongodb:4.4.6-debian-10-r0
-    ports:
-    - "27017:27017"
     environment:
     - MONGODB_PASSWORD=password
     - MONGODB_USERNAME=testGaloy
@@ -53,17 +43,12 @@ services:
     - MONGODB_REPLICA_SET_MODE=primary
     - MONGODB_ROOT_PASSWORD=password
     - MONGODB_REPLICA_SET_KEY=replicasetkey
-    - MONGODB_ADVERTISED_HOSTNAME=${DOCKER_HOST_IP:-127.0.0.1}
   bitcoind:
     image: lncm/bitcoind:v22.0
-    ports:
-      - "18443:18443"
     volumes:
     - ${PWD}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   lnd1:
     image: lightninglabs/lnd:v0.14.2-beta
-    ports:
-      - "10009:10009"
     volumes:
     - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
     - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
@@ -71,8 +56,6 @@ services:
     depends_on: [bitcoind]
   lnd2:
     image: lightninglabs/lnd:v0.14.2-beta
-    ports:
-      - "10010:10009"
     volumes:
     - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
     - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
@@ -80,8 +63,6 @@ services:
     depends_on: [bitcoind]
   lnd-outside-1:
     image: lightninglabs/lnd:v0.14.2-beta
-    ports:
-      - "10012:10009"
     volumes:
     - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
     - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
@@ -89,10 +70,28 @@ services:
     depends_on: [bitcoind]
   lnd-outside-2:
     image: lightninglabs/lnd:v0.14.2-beta
-    ports:
-      - "10013:10009"
     volumes:
     - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
     - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
     - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
     depends_on: [bitcoind]
+  e2e-tests:
+    image: us.gcr.io/galoy-org/galoy-app-pipeline
+    depends_on:
+    - integration-deps
+    command: ["make","execute-e2e-from-within-container"]
+    working_dir: /repo
+    env_file:
+      - ${TMP_ENV_CI:-.env.ci}
+    volumes:
+      - ./:/repo
+  integration-tests:
+    image: us.gcr.io/galoy-org/galoy-app-pipeline
+    depends_on:
+    - integration-deps
+    command: ["make","execute-integration-from-within-container"]
+    working_dir: /repo
+    env_file:
+      - ${TMP_ENV_CI:-.env.ci}
+    volumes:
+      - ./:/repo

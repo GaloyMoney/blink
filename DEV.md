@@ -54,6 +54,10 @@ Alernatively, to start the GraphQL server in watch mode (with automatic restart 
 $ make watch
 ```
 
+### Docker compose
+
+The docker compose file is split into  `docker-compose.yml` and `docker-compose.override.yml`. By default the override file is merged in and exposes ports on your host machine to various containers. During CI testing we ignore the override file in order to contain tests within a docker network. This is achieved by specifically calling out the docker compose file to use ex: `docker compose -f docker-compose.yml ...`.
+
 ### Using GraphiQL
 
 You can load GraphiQL, a web GUI for GraphQL. Start the server and open the following url:
