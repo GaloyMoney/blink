@@ -54,10 +54,6 @@ Alernatively, to start the GraphQL server in watch mode (with automatic restart 
 $ make watch
 ```
 
-### Docker compose
-
-The docker compose file is split into  `docker-compose.yml` and `docker-compose.override.yml`. By default the override file is merged in and exposes ports on your host machine to various containers. During CI testing we ignore the override file in order to contain tests within a docker network. This is achieved by specifically calling out the docker compose file to use ex: `docker compose -f docker-compose.yml ...`.
-
 ### Using GraphiQL
 
 You can load GraphiQL, a web GUI for GraphQL. Start the server and open the following url:
@@ -66,6 +62,9 @@ You can load GraphiQL, a web GUI for GraphQL. Start the server and open the foll
 - http://localhost:4001/graphql (admin API)
 - http://localhost:4002/graphql (new API)
 
+### Docker compose
+
+The docker compose file is split into  `docker-compose.yml` and `docker-compose.override.yml`. By default the override file is merged in and exposes ports on your host machine to various containers. During CI testing we ignore the override file in order to contain tests within a docker network. This is achieved by specifically calling out the docker compose file to use ex: `docker compose -f docker-compose.yml ...`.
 
 ## Testing
 
@@ -99,6 +98,21 @@ $ make integration
 The  integration tests are *not* fully idempotent (yet) so currently to re-run the tests, run:
 ```
 $ make reset-integration
+```
+
+### Run e2e tests
+
+To execute the e2e tests [runtime dependencies](#runtime-dependencies) must be running.
+
+```bash
+$ yarn test:e2e
+# or
+$ make e2e
+```
+
+The e2e tests should be able to run multiple times without resetting dependencies, however they are *not* fully idempotent so if you are having issues you can reset the dependencies and run again with:
+```
+$ make reset-e2e
 ```
 
 ### Run specific test file
