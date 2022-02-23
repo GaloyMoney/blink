@@ -18,7 +18,6 @@
       "@app": ["src/app/index"],
       "@domain/*": ["src/domain/*"],
       "@services/*": ["src/services/*"],
-      "@services": ["src/services/index"],
       "@utils": ["src/utils/index"],
       "@graphql/*": ["src/graphql/*"],
       "@servers/*": ["src/servers/*"]

@@ -33,7 +33,7 @@ import {
   SettlementMethod,
   WalletCurrency,
 } from "@domain/wallets"
-import { LockService } from "@services"
+import { LockService } from "@services/lock"
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
