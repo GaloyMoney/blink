@@ -35,7 +35,7 @@ const GraphQLUser = GT.Object({
       type: Username,
       description: "Optional immutable user friendly identifier.",
       resolve: async (source, args, { domainAccount }) => {
-        return domainAccount?.username
+        return domainAccount?.username || source.username
       },
       deprecationReason: "will be moved to @Handle in Account and Wallet",
     },
