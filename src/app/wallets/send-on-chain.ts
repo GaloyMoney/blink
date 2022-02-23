@@ -16,7 +16,7 @@ import {
   WalletCurrency,
   WithdrawalFeeCalculator,
 } from "@domain/wallets"
-import { LockService } from "@services"
+import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { baseLogger } from "@services/logger"

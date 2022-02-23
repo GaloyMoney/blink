@@ -1,5 +1,8 @@
-import { UnknownLockServiceError } from "@domain/lock"
+import Redlock from "redlock"
+
+import { ResourceAttemptsLockServiceError, UnknownLockServiceError } from "@domain/lock"
 import { lockExtendOrThrow, redlock } from "@core/lock"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 export const LockService = (): ILockService => {
   const lockWalletId = async <Res>(
@@ -11,8 +14,11 @@ export const LockService = (): ILockService => {
     f: () => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     try {
-      return redlock({ path: walletId, logger, lock }, f)
+      return await redlock({ path: walletId, logger, lock }, f)
     } catch (err) {
+      if (err instanceof Redlock.LockError && err.attempts > 0) {
+        return new ResourceAttemptsLockServiceError(err.message)
+      }
       return new UnknownLockServiceError(err)
     }
   }
@@ -26,8 +32,11 @@ export const LockService = (): ILockService => {
     f: () => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     try {
-      return redlock({ path: paymentHash, logger, lock }, f)
+      return await redlock({ path: paymentHash, logger, lock }, f)
     } catch (err) {
+      if (err instanceof Redlock.LockError && err.attempts > 0) {
+        return new ResourceAttemptsLockServiceError(err.message)
+      }
       return new UnknownLockServiceError(err)
     }
   }
@@ -41,8 +50,11 @@ export const LockService = (): ILockService => {
     f: (lock?: DistributedLock) => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     try {
-      return redlock({ path: txHash, logger, lock }, f)
+      return await redlock({ path: txHash, logger, lock }, f)
     } catch (err) {
+      if (err instanceof Redlock.LockError && err.attempts > 0) {
+        return new ResourceAttemptsLockServiceError(err.message)
+      }
       return new UnknownLockServiceError(err)
     }
   }
@@ -52,16 +64,22 @@ export const LockService = (): ILockService => {
     f: () => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     try {
-      return lockExtendOrThrow({ lock, logger }, f) as Promise<Res>
+      return (await lockExtendOrThrow({ lock, logger }, f)) as Promise<Res>
     } catch (err) {
+      if (err instanceof Redlock.LockError && err.attempts > 0) {
+        return new ResourceAttemptsLockServiceError(err.message)
+      }
       return new UnknownLockServiceError(err)
     }
   }
 
-  return {
-    lockWalletId,
-    lockPaymentHash,
-    lockOnChainTxHash,
-    extendLock,
-  }
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.lock",
+    fns: {
+      lockWalletId,
+      lockPaymentHash,
+      lockOnChainTxHash,
+      extendLock,
+    },
+  })
 }
