@@ -14,7 +14,7 @@
 
 import { Accounts } from "@app"
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
-import { BTC_NETWORK, JWT_SECRET } from "@config"
+import { BTC_NETWORK } from "@config"
 import { checkedToSats } from "@domain/bitcoin"
 import { checkedToAccountLevel } from "@domain/users"
 import { checkedToWalletId, WalletCurrency, WalletType } from "@domain/wallets"
@@ -28,12 +28,6 @@ import { createObjectCsvWriter } from "csv-writer"
 const headers_field = ["accountId", "jwtToken", "usdWalletId", "btcWalletId", "level"]
 
 const header = headers_field.map((item) => ({ id: item, title: item }))
-
-type reimbursement = {
-  recipientWalletId: string
-  amount: number
-  memo: string
-}
 
 const getRandomInvalidPhone = () => {
   return `+abc${Math.floor(Math.random() * 999_999_999_999_999)}`
