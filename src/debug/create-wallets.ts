@@ -19,9 +19,15 @@ import { checkedToSats } from "@domain/bitcoin"
 import { checkedToAccountLevel } from "@domain/users"
 import { checkedToWalletId, WalletCurrency, WalletType } from "@domain/wallets"
 import { createToken } from "@services/jwt"
+import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
+import { createObjectCsvWriter } from "csv-writer"
+
+const headers_field = ["accountId", "jwtToken", "usdWalletId", "btcWalletId", "level"]
+
+const header = headers_field.map((item) => ({ id: item, title: item }))
 
 type reimbursement = {
   recipientWalletId: string
@@ -38,6 +44,7 @@ type generatedWallets = {
   btcWalletId: WalletId
   usdWalletId: WalletId
   jwtToken: JwtToken
+  level: AccountLevel
 }
 
 const generateWallets = async (count: number, level: AccountLevel) => {
@@ -76,10 +83,40 @@ const generateWallets = async (count: number, level: AccountLevel) => {
       btcWalletId: btcWallet.id,
       usdWalletId: usdWallet.id,
       jwtToken,
+      level,
     })
   }
 
   return wallets
+}
+
+const saveToCsv = async (wallets: Array<generatedWallets>) => {
+  const csvWriter = createObjectCsvWriter({
+    path: "generatedWallets.csv",
+    header,
+  })
+
+  return csvWriter.writeRecords(wallets)
+}
+
+const disburseFunds = async (
+  wallets: Array<generatedWallets>,
+  disburserAccount: Account,
+  disburserWalletId: WalletId,
+  amount: Satoshis,
+) => {
+  for (const wallet of wallets) {
+    const disbursementResult = await intraledgerPaymentSendWalletId({
+      recipientWalletId: wallet.btcWalletId,
+      amount,
+      logger: baseLogger,
+      senderWalletId: disburserWalletId,
+      senderAccount: disburserAccount,
+      memo: null,
+    })
+
+    console.log({ disbursementResult })
+  }
 }
 
 const main = async () => {
@@ -90,6 +127,14 @@ const main = async () => {
     const disburserWalletId = checkedToWalletId(args[3])
     if (disburserWalletId instanceof Error) return disburserWalletId
 
+    const disburserWallet = await WalletsRepository().findById(disburserWalletId)
+    if (disburserWallet instanceof Error) throw disburserWallet
+
+    const disburserAccount = await AccountsRepository().findById(
+      disburserWallet.accountId,
+    )
+    if (disburserAccount instanceof Error) throw disburserAccount
+
     const disbursementAmount = checkedToSats(parseInt(args[4]))
     if (disbursementAmount instanceof Error) return disbursementAmount
 
@@ -97,7 +142,11 @@ const main = async () => {
     if (accountLevel instanceof Error) return accountLevel
 
     const wallets = await generateWallets(numWallets, accountLevel)
-    console.log({ wallets })
+    if (wallets instanceof Error) return wallets
+
+    await disburseFunds(wallets, disburserAccount, disburserWalletId, disbursementAmount)
+
+    return saveToCsv(wallets)
   } else {
     console.error("Invalid number of arguments")
   }
@@ -106,6 +155,6 @@ const main = async () => {
 setupMongoConnection()
   .then(async (mongoose) => {
     await main()
-    console.log(mongoose.connection.status)
+    return mongoose.connection.close()
   })
   .catch((err) => console.log(err))
