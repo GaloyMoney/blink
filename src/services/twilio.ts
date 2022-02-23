@@ -21,7 +21,8 @@ export const TwilioClient = (): IPhoneProviderService => {
       })
     } catch (err) {
       logger.error({ err }, "impossible to send text")
-      if (err.message.includes("not a valid phone number")) {
+      const invalidNumberMessages = ["not a valid phone number", "not a mobile number"]
+      if (invalidNumberMessages.some((m) => err.message.includes(m))) {
         return new InvalidPhoneNumberPhoneProviderError(err)
       }
       return new UnknownPhoneProviderServiceError(err)
