@@ -510,7 +510,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
     <span class="hljs-attr">"btcPrice"</span>: {
       <span class="hljs-attr">"base"</span>: <span class="hljs-string">SafeInt</span>,
       <span class="hljs-attr">"currencyUnit"</span>: <span class="hljs-string">ExchangeCurrencyUnit</span>,
-      <span class="hljs-attr">"formattedAmount"</span>: <span class="hljs-string">"xyz789"</span>,
+      <span class="hljs-attr">"formattedAmount"</span>: <span class="hljs-string">"abc123"</span>,
       <span class="hljs-attr">"offset"</span>: <span class="hljs-number">987</span>
     }
   }
@@ -785,7 +785,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
       <span class="hljs-attr">"language"</span>: <span class="hljs-string">Language</span>,
       <span class="hljs-attr">"phone"</span>: <span class="hljs-string">Phone</span>,
       <span class="hljs-attr">"quizQuestions"</span>: [<span class="hljs-string">UserQuizQuestion</span>],
-      <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">false</span>,
       <span class="hljs-attr">"username"</span>: <span class="hljs-string">Username</span>
     }
   }
@@ -1422,7 +1422,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"captchaRequestAuthCode"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
     }
   }
 }
@@ -1522,6 +1522,11 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             <h2 class="operation-name "> <code>intraLedgerPaymentSend</code> </h2>
             <div class="doc-row">
               <div class="doc-copy">
+                <section class="swagger-operation-description operation-description"> Actions a payment which is internal to the ledger e.g. it does not use onchain/lightning. Does not currently support payments to or from USD wallets. Returns payment status (success, failed, pending, already_paid). </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
                 <section class="swagger-request-body"> </section>
                 <section class="swagger-responses"> Returns a
                   <a href="#definition-PaymentSendPayload"><code>PaymentSendPayload!</code></a>
@@ -1598,6 +1603,11 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             <!-- </div> -->
             <!-- </section> -->
             <h2 class="operation-name "> <code>lnInvoiceCreate</code> </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description operation-description"> Returns a lightning invoice for an associated wallet. When invoice is paid the value will be credited to a BTC wallet. Expires after 24 hours. </section>
+              </div>
+            </div>
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="swagger-request-body"> </section>
@@ -1678,6 +1688,11 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             <!-- </div> -->
             <!-- </section> -->
             <h2 class="operation-name "> <code>lnInvoiceCreateOnBehalfOfRecipient</code> </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description operation-description"> Returns a lightning invoice for an associated wallet. When invoice is paid the value will be credited to a BTC wallet. Expires after 24 hours. </section>
+              </div>
+            </div>
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="swagger-request-body"> </section>
@@ -1838,6 +1853,11 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             <h2 class="operation-name "> <code>lnInvoicePaymentSend</code> </h2>
             <div class="doc-row">
               <div class="doc-copy">
+                <section class="swagger-operation-description operation-description"> Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user. Provided wallet can be USD or BTC and must have sufficient balance to cover amount in lightning invoice. Returns payment status (success, failed, pending, already_paid). </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
                 <section class="swagger-request-body"> </section>
                 <section class="swagger-responses"> Returns a
                   <a href="#definition-PaymentSendPayload"><code>PaymentSendPayload!</code></a>
@@ -1914,6 +1934,11 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             <!-- </div> -->
             <!-- </section> -->
             <h2 class="operation-name "> <code>lnNoAmountInvoiceCreate</code> </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description operation-description"> Returns a lightning invoice for an associated wallet. Can be used to receive any supported currency value (currently USD or BTC). Expires after 24 hours. </section>
+              </div>
+            </div>
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="swagger-request-body"> </section>
@@ -1994,6 +2019,11 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             <!-- </div> -->
             <!-- </section> -->
             <h2 class="operation-name "> <code>lnNoAmountInvoiceCreateOnBehalfOfRecipient</code> </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description operation-description"> Returns a lightning invoice for an associated wallet. Can be used to receive any supported currency value (currently USD or BTC). Expires after 24 hours. </section>
+              </div>
+            </div>
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="swagger-request-body"> </section>
@@ -2154,6 +2184,11 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             <h2 class="operation-name "> <code>lnNoAmountInvoicePaymentSend</code> </h2>
             <div class="doc-row">
               <div class="doc-copy">
+                <section class="swagger-operation-description operation-description"> Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user. Provided wallet must be BTC and must have sufficient balance to cover amount specified in mutation request. Returns payment status (success, failed, pending, already_paid). </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
                 <section class="swagger-request-body"> </section>
                 <section class="swagger-responses"> Returns a
                   <a href="#definition-PaymentSendPayload"><code>PaymentSendPayload!</code></a>
@@ -2230,6 +2265,11 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             <!-- </div> -->
             <!-- </section> -->
             <h2 class="operation-name "> <code>lnNoAmountUsdInvoicePaymentSend</code> </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description operation-description"> Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user. Provided wallet must be USD and have sufficient balance to cover amount specified in mutation request. Returns payment status (success, failed, pending, already_paid). </section>
+              </div>
+            </div>
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="swagger-request-body"> </section>
@@ -2310,6 +2350,11 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             <h2 class="operation-name "> <code>lnUsdInvoiceCreate</code> </h2>
             <div class="doc-row">
               <div class="doc-copy">
+                <section class="swagger-operation-description operation-description"> Returns a lightning invoice denominated in satoshis for an associated wallet. When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet. Expires after 2 minutes (short expiry time because there is a USD/BTC exchange rate associated with the amount). </section>
+              </div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-copy">
                 <section class="swagger-request-body"> </section>
                 <section class="swagger-responses"> Returns a
                   <a href="#definition-LnInvoicePayload"><code>LnInvoicePayload!</code></a>
@@ -2388,6 +2433,11 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             <!-- </div> -->
             <!-- </section> -->
             <h2 class="operation-name "> <code>lnUsdInvoiceCreateOnBehalfOfRecipient</code> </h2>
+            <div class="doc-row">
+              <div class="doc-copy">
+                <section class="swagger-operation-description operation-description"> Returns a lightning invoice denominated in satoshis for an associated wallet. When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet. Expires after 2 minutes (short expiry time because there is a USD/BTC exchange rate associated with the amount). </section>
+              </div>
+            </div>
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="swagger-request-body"> </section>
@@ -3586,9 +3636,9 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"expireAt"</span>: <span class="hljs-string">Timestamp</span>,
-  <span class="hljs-attr">"key"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"key"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"label"</span>: <span class="hljs-string">AccountApiKeyLabel</span>,
-  <span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>
+  <span class="hljs-attr">"secret"</span>: <span class="hljs-string">"xyz789"</span>
 }
 </code></pre> </body>
                   </html>
@@ -3879,6 +3929,9 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             </h2>
             <div class="doc-row">
               <div class="doc-copy">
+                <section class="json-schema-description">
+                  <p>A wallet belonging to an account which contains a BTC balance and a list of transactions.</p>
+                </section>
                 <section class="json-schema-properties-blank">
                   <table>
                     <tr>
@@ -3889,7 +3942,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td data-property-name="balance"> <code>balance</code> -
                         <a href="#definition-SignedAmount"><code>SignedAmount!</code></a>
                       </td>
-                      <td> </td>
+                      <td> A balance stored in BTC. </td>
                     </tr>
                     <tr>
                       <td data-property-name="id"> <code>id</code> -
@@ -3901,7 +3954,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td data-property-name="transactions"> <code>transactions</code> -
                         <a href="#definition-TransactionConnection"><code>TransactionConnection</code></a>
                       </td>
-                      <td> </td>
+                      <td> A list of BTC transactions associated with this wallet. </td>
                     </tr>
                     <tr>
                       <td colspan="2" class="no-top-border">
@@ -4038,7 +4091,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"buildTime"</span>: <span class="hljs-string">Timestamp</span>,
-  <span class="hljs-attr">"commitHash"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"commitHash"</span>: <span class="hljs-string">"abc123"</span>,
   <span class="hljs-attr">"helmRevision"</span>: <span class="hljs-number">987</span>
 }
 </code></pre> </body>
@@ -4143,9 +4196,9 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"failbackMode"</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">"failbackMode"</span>: <span class="hljs-literal">false</span>,
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"abc123"</span>,
-  <span class="hljs-attr">"newCaptcha"</span>: <span class="hljs-literal">true</span>
+  <span class="hljs-attr">"newCaptcha"</span>: <span class="hljs-literal">false</span>
 }
 </code></pre> </body>
                   </html>
@@ -4202,10 +4255,10 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"phone"</span>: <span class="hljs-string">Phone</span>,
-  <span class="hljs-attr">"secCode"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"validationCode"</span>: <span class="hljs-string">"xyz789"</span>
+  <span class="hljs-attr">"secCode"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"validationCode"</span>: <span class="hljs-string">"abc123"</span>
 }
 </code></pre> </body>
                   </html>
@@ -4453,7 +4506,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>]}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>]}
 </code></pre> </body>
                   </html>
                 </section>
@@ -4513,7 +4566,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">987.65</span>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">123.45</span>
 </code></pre> </body>
                   </html>
                 </section>
@@ -4827,7 +4880,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">InputErrorCode</span>,
   <span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>]
+  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>]
 }
 </code></pre> </body>
                   </html>
@@ -4926,13 +4979,17 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td><code>amount</code> -
                         <a href="#definition-SatAmount"><code>SatAmount!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Amount in satoshis.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>memo</code> -
                         <a href="#definition-Memo"><code>Memo</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Optional memo to be attached to the payment.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>recipientWalletId</code> -
@@ -4944,7 +5001,9 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td><code>walletId</code> -
                         <a href="#definition-WalletId"><code>WalletId!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>The wallet ID of the sender.</p>
+                      </td>
                     </tr>
                   </table>
                 </section>
@@ -5170,19 +5229,25 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td><code>amount</code> -
                         <a href="#definition-SatAmount"><code>SatAmount!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Amount in satoshis.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>memo</code> -
                         <a href="#definition-Memo"><code>Memo</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Optional memo for the lightning invoice.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>walletId</code> -
                         <a href="#definition-WalletId"><code>WalletId!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Wallet ID for a BTC wallet belonging to the current account.</p>
+                      </td>
                     </tr>
                   </table>
                 </section>
@@ -5223,7 +5288,9 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td><code>amount</code> -
                         <a href="#definition-SatAmount"><code>SatAmount!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Amount in satoshis.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>descriptionHash</code> -
@@ -5235,13 +5302,17 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td><code>memo</code> -
                         <a href="#definition-Memo"><code>Memo</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Optional memo for the lightning invoice.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>recipientWalletId</code> -
                         <a href="#definition-WalletId"><code>WalletId!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Wallet ID for a BTC wallet which belongs to any account.</p>
+                      </td>
                     </tr>
                   </table>
                 </section>
@@ -5375,19 +5446,25 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td><code>memo</code> -
                         <a href="#definition-Memo"><code>Memo</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Optional memo to associate with the lightning invoice.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>paymentRequest</code> -
                         <a href="#definition-LnPaymentRequest"><code>LnPaymentRequest!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Payment request representing the invoice which is being paid.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>walletId</code> -
                         <a href="#definition-WalletId"><code>WalletId!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Wallet ID with sufficient balance to cover amount of invoice. Must belong to the account of the current user.</p>
+                      </td>
                     </tr>
                   </table>
                 </section>
@@ -5564,13 +5641,17 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td><code>memo</code> -
                         <a href="#definition-Memo"><code>Memo</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Optional memo for the lightning invoice.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>walletId</code> -
                         <a href="#definition-WalletId"><code>WalletId!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>ID for either a USD or BTC wallet belonging to the account of the current user.</p>
+                      </td>
                     </tr>
                   </table>
                 </section>
@@ -5607,13 +5688,17 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td><code>memo</code> -
                         <a href="#definition-Memo"><code>Memo</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Optional memo for the lightning invoice.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>recipientWalletId</code> -
                         <a href="#definition-WalletId"><code>WalletId!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>ID for either a USD or BTC wallet which belongs to the account of any user.</p>
+                      </td>
                     </tr>
                   </table>
                 </section>
@@ -5752,25 +5837,33 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td><code>amount</code> -
                         <a href="#definition-SatAmount"><code>SatAmount!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Amount to pay in satoshis.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>memo</code> -
                         <a href="#definition-Memo"><code>Memo</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Optional memo to associate with the lightning invoice.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>paymentRequest</code> -
                         <a href="#definition-LnPaymentRequest"><code>LnPaymentRequest!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Payment request representing the invoice which is being paid.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>walletId</code> -
                         <a href="#definition-WalletId"><code>WalletId!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Wallet ID with sufficient balance to cover amount defined in mutation request. Must belong to the account of the current user.</p>
+                      </td>
                     </tr>
                   </table>
                 </section>
@@ -5812,25 +5905,33 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td><code>amount</code> -
                         <a href="#definition-CentAmount"><code>CentAmount!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Amount to pay in USD cents.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>memo</code> -
                         <a href="#definition-Memo"><code>Memo</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Optional memo to associate with the lightning invoice.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>paymentRequest</code> -
                         <a href="#definition-LnPaymentRequest"><code>LnPaymentRequest!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Payment request representing the invoice which is being paid.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>walletId</code> -
                         <a href="#definition-WalletId"><code>WalletId!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Wallet ID with sufficient balance to cover amount defined in mutation request. Must belong to the account of the current user.</p>
+                      </td>
                     </tr>
                   </table>
                 </section>
@@ -5995,19 +6096,25 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td><code>amount</code> -
                         <a href="#definition-CentAmount"><code>CentAmount!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Amount in USD cents.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>memo</code> -
                         <a href="#definition-Memo"><code>Memo</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Optional memo for the lightning invoice.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>walletId</code> -
                         <a href="#definition-WalletId"><code>WalletId!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Wallet ID for a USD wallet belonging to the current user.</p>
+                      </td>
                     </tr>
                   </table>
                 </section>
@@ -6048,7 +6155,9 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td><code>amount</code> -
                         <a href="#definition-CentAmount"><code>CentAmount!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Amount in USD cents.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>descriptionHash</code> -
@@ -6060,13 +6169,17 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td><code>memo</code> -
                         <a href="#definition-Memo"><code>Memo</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Optional memo for the lightning invoice. Acts as a note to the recipient.</p>
+                      </td>
                     </tr>
                     <tr>
                       <td><code>recipientWalletId</code> -
                         <a href="#definition-WalletId"><code>WalletId!</code></a>
                       </td>
-                      <td> </td>
+                      <td>
+                        <p>Wallet ID for a USD wallet which belongs to the account of any user.</p>
+                      </td>
                     </tr>
                   </table>
                 </section>
@@ -6245,7 +6358,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"platform"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -6711,7 +6824,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"displayCurrencyPerSat"</span>: <span class="hljs-number">987.65</span>,
   <span class="hljs-attr">"txHash"</span>: <span class="hljs-string">OnChainTxHash</span>,
   <span class="hljs-attr">"txNotificationType"</span>: <span class="hljs-string">TxNotificationType</span>,
-  <span class="hljs-attr">"usdPerSat"</span>: <span class="hljs-number">987.65</span>,
+  <span class="hljs-attr">"usdPerSat"</span>: <span class="hljs-number">123.45</span>,
   <span class="hljs-attr">"walletId"</span>: <span class="hljs-string">WalletId</span>
 }
 </code></pre> </body>
@@ -6799,7 +6912,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"endCursor"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"hasNextPage"</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">"hasNextPage"</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">"hasPreviousPage"</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">"startCursor"</span>: <span class="hljs-string">"abc123"</span>
 }
@@ -6854,7 +6967,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">PaymentErrorCode</span>,
   <span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>]
+  <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>]
 }
 </code></pre> </body>
                   </html>
@@ -7297,7 +7410,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td data-property-name="timestamp"> <code>timestamp</code> -
                         <a href="#definition-Timestamp"><code>Timestamp!</code></a>
                       </td>
-                      <td> Unix timesamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC) </td>
+                      <td> Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC) </td>
                     </tr>
                   </table>
                 </section>
@@ -7641,7 +7754,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="json-schema-description">
-                  <p>An amount (of a currency) that can be negative (i.g. in a transaction)</p>
+                  <p>An amount (of a currency) that can be negative (e.g. in a transaction)</p>
                 </section>
               </div>
               <div class="doc-examples">
@@ -8163,7 +8276,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"token"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"token"</span>: <span class="hljs-string">"abc123"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -8352,6 +8465,9 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             </h2>
             <div class="doc-row">
               <div class="doc-copy">
+                <section class="json-schema-description">
+                  <p>A wallet belonging to an account which contains a USD balance and a list of transactions.</p>
+                </section>
                 <section class="json-schema-properties-blank">
                   <table>
                     <tr>
@@ -8554,7 +8670,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"language"</span>: <span class="hljs-string">Language</span>,
   <span class="hljs-attr">"phone"</span>: <span class="hljs-string">Phone</span>,
   <span class="hljs-attr">"quizQuestions"</span>: [<span class="hljs-string">UserQuizQuestion</span>],
-  <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">false</span>,
   <span class="hljs-attr">"username"</span>: <span class="hljs-string">Username</span>
 }
 </code></pre> </body>
@@ -9214,6 +9330,9 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             </h2>
             <div class="doc-row">
               <div class="doc-copy">
+                <section class="json-schema-description">
+                  <p>A generic wallet which stores value in one of our supported currencies.</p>
+                </section>
                 <section class="json-schema-properties-blank">
                   <table>
                     <tr>
@@ -9236,7 +9355,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                       <td data-property-name="transactions"> <code>transactions</code> -
                         <a href="#definition-TransactionConnection"><code>TransactionConnection</code></a>
                       </td>
-                      <td> Transactions are ordered anti-chronogically, ie: the newest transaction will be first </td>
+                      <td> Transactions are ordered anti-chronologically, ie: the newest transaction will be first </td>
                     </tr>
                     <tr>
                       <td colspan="2" class="no-top-border">
