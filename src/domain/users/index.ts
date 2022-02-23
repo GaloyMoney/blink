@@ -4,7 +4,12 @@ export const UserLanguage = {
   ES_SV: "es",
 } as const
 
-import { InvalidLanguageError, InvalidPhoneNumber } from "@domain/errors"
+import { AccountLevel } from "@domain/accounts"
+import {
+  InvalidAccountLevelError,
+  InvalidLanguageError,
+  InvalidPhoneNumber,
+} from "@domain/errors"
 
 // TODO: we could be using https://gitlab.com/catamphetamine/libphonenumber-js#readme
 // for a more precise "regex"
@@ -23,4 +28,9 @@ export const checkedToLanguage = (language: string): UserLanguage | ValidationEr
   if (Object.values<string>(UserLanguage).includes(language))
     return language as UserLanguage
   return new InvalidLanguageError()
+}
+
+export const checkedToAccountLevel = (level: number): AccountLevel | ValidationError => {
+  if (Object.values<number>(AccountLevel).includes(level)) return level as AccountLevel
+  return new InvalidAccountLevelError()
 }
