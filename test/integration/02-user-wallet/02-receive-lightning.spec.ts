@@ -1,4 +1,5 @@
 import { Lightning } from "@app"
+import { getDealerUsdWalletId } from "@services/ledger/caching"
 import * as Wallets from "@app/wallets"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { toSats } from "@domain/bitcoin"
@@ -168,6 +169,9 @@ describe("UserWallet - Lightning", () => {
     expect(ledgerTx.currency).toBe(WalletCurrency.Usd)
     expect(ledgerTx.lnMemo).toBe(memo)
     expect(ledgerTx.pendingConfirmation).toBe(false)
+    const dealerUsdWalletId = await getDealerUsdWalletId()
+    const dealerBalance = await getBalanceHelper(dealerUsdWalletId)
+    expect(dealerBalance).toBe(cents * -1)
 
     // check that memo is not filtered by spam filter
     const { result: txns } = await Wallets.getTransactionsForWalletId({
