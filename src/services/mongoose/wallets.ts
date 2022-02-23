@@ -117,7 +117,8 @@ const resultToWallet = (result: WalletRecord): Wallet => {
   const accountId = fromObjectId<AccountId>(result._accountId)
   const type = result.type as WalletType
   const currency = result.currency as WalletCurrency
-  const onChainAddressIdentifiers = result.onchain.map(({ pubkey, address }) => {
+  const onChain = result.onchain || []
+  const onChainAddressIdentifiers = onChain.map(({ pubkey, address }) => {
     return {
       pubkey: pubkey as Pubkey,
       address: address as OnChainAddress,
