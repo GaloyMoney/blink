@@ -16,6 +16,7 @@ import {
   BadPaymentDataError,
   CorruptLndDbError,
   InvoiceExpiredOrBadPaymentHashError,
+  PaymentAttemptsTimedOutError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
 import {
@@ -403,8 +404,12 @@ export const LndService = (): ILightningService | LightningServiceError => {
       switch (errDetails) {
         case KnownLndErrorDetails.InvoiceAlreadyPaid:
           return new LnAlreadyPaidError()
+        case KnownLndErrorDetails.UnableToFindRoute:
+          return new RouteNotFoundError()
         case KnownLndErrorDetails.PaymentRejectedByDestination:
           return new InvoiceExpiredOrBadPaymentHashError(paymentHash)
+        case KnownLndErrorDetails.PaymentAttemptsTimedOut:
+          return new PaymentAttemptsTimedOutError()
         default:
           return new UnknownLightningServiceError(err)
       }
@@ -476,6 +481,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
           return new RouteNotFoundError()
         case KnownLndErrorDetails.PaymentRejectedByDestination:
           return new InvoiceExpiredOrBadPaymentHashError(decodedInvoice.paymentHash)
+        case KnownLndErrorDetails.PaymentAttemptsTimedOut:
+          return new PaymentAttemptsTimedOutError()
         default:
           return new UnknownLightningServiceError(err)
       }
@@ -611,6 +618,7 @@ const KnownLndErrorDetails = {
   UnableToFindRoute: "PaymentPathfindingFailedToFindPossibleRoute",
   LndDbCorruption: "payment isn't initiated",
   PaymentRejectedByDestination: "PaymentRejectedByDestination",
+  PaymentAttemptsTimedOut: "PaymentAttemptsTimedOut",
 } as const
 
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({
