@@ -12,18 +12,16 @@
  * yarn ts-node --files -r tsconfig-paths/register src/debug/reimburse.ts
  */
 
+import { Accounts } from "@app"
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { BTC_NETWORK, JWT_SECRET } from "@config"
 import { checkedToSats } from "@domain/bitcoin"
 import { checkedToWalletId, WalletCurrency, WalletType } from "@domain/wallets"
 import { createToken } from "@services/jwt"
-import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 import * as jwt from "jsonwebtoken"
-
-import { reimbursements } from "./reimbursements.json"
 
 type reimbursement = {
   recipientWalletId: string
@@ -68,14 +66,17 @@ const generateWallets = async (count: number) => {
 
     const jwtToken = createToken({ uid: account._id, network })
 
+    await Accounts.updateDefaultWalletId({
+      accountId: account._id,
+      walletId: usdWallet.id,
+    })
+
     wallets.push({
       accountId: account._id,
       btcWalletId: btcWallet.id,
       usdWalletId: usdWallet.id,
       jwtToken,
     })
-
-    console.log("verify", jwt.verify(jwtToken, JWT_SECRET))
   }
 
   return wallets
