@@ -9,14 +9,25 @@ import { InputValidationError } from "@graphql/error"
 import CentAmount from "@graphql/types/scalar/cent-amount"
 import { WalletCurrency } from "@domain/wallets"
 import { WalletsRepository } from "@services/mongoose"
+import dedent from "dedent"
 
 const LnNoAmountUsdInvoicePaymentInput = GT.Input({
   name: "LnNoAmountUsdInvoicePaymentInput",
   fields: () => ({
-    walletId: { type: GT.NonNull(WalletId) },
-    paymentRequest: { type: GT.NonNull(LnIPaymentRequest) },
-    amount: { type: GT.NonNull(CentAmount) },
-    memo: { type: Memo },
+    walletId: {
+      type: GT.NonNull(WalletId),
+      description:
+        "Wallet ID with sufficient balance to cover amount defined in mutation request.  Must belong to the account of the current user.",
+    },
+    paymentRequest: {
+      type: GT.NonNull(LnIPaymentRequest),
+      description: "Payment request representing the invoice which is being paid.",
+    },
+    amount: { type: GT.NonNull(CentAmount), description: "Amount to pay in USD cents." },
+    memo: {
+      type: Memo,
+      description: "Optional memo to associate with the lightning invoice.",
+    },
   }),
 })
 
@@ -33,6 +44,9 @@ const LnNoAmountUsdInvoicePaymentSendMutation = GT.Field<
   GraphQLContextForUser
 >({
   type: GT.NonNull(PaymentSendPayload),
+  description: dedent`Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
+  Provided wallet must be USD and have sufficient balance to cover amount specified in mutation request.
+  Returns payment status (success, failed, pending, already_paid).`,
   args: {
     input: { type: GT.NonNull(LnNoAmountUsdInvoicePaymentInput) },
   },

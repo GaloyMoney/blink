@@ -9,6 +9,7 @@ import SignedAmount from "../scalar/signed-amount"
 
 const IWallet = GT.Interface({
   name: "Wallet",
+  description: "A generic wallet which stores value in one of our supported currencies.",
   fields: () => ({
     id: {
       type: GT.NonNullID,
@@ -20,7 +21,7 @@ const IWallet = GT.Interface({
       type: GT.NonNull(SignedAmount),
     },
     transactions: {
-      description: dedent`Transactions are ordered anti-chronogically,
+      description: dedent`Transactions are ordered anti-chronologically,
       ie: the newest transaction will be first`,
       type: TransactionConnection,
       args: connectionArgs,

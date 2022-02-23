@@ -46,9 +46,19 @@ type AuthTokenPayload {
   errors: [Error!]!
 }
 
+"""
+A wallet belonging to an account which contains a BTC balance and a list of transactions.
+"""
 type BTCWallet implements Wallet {
+  """
+  A balance stored in BTC.
+  """
   balance: SignedAmount!
   id: ID!
+
+  """
+  A list of BTC transactions associated with this wallet.
+  """
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -184,9 +194,20 @@ enum InputErrorCode {
 }
 
 input IntraLedgerPaymentSendInput {
+  """
+  Amount in satoshis.
+  """
   amount: SatAmount!
+
+  """
+  Optional memo to be attached to the payment.
+  """
   memo: Memo
   recipientWalletId: WalletId!
+
+  """
+  The wallet ID of the sender.
+  """
   walletId: WalletId!
 }
 
@@ -213,15 +234,37 @@ type LnInvoice {
 }
 
 input LnInvoiceCreateInput {
+  """
+  Amount in satoshis.
+  """
   amount: SatAmount!
+
+  """
+  Optional memo for the lightning invoice.
+  """
   memo: Memo
+
+  """
+  Wallet ID for a BTC wallet belonging to the current account.
+  """
   walletId: WalletId!
 }
 
 input LnInvoiceCreateOnBehalfOfRecipientInput {
+  """
+  Amount in satoshis.
+  """
   amount: SatAmount!
   descriptionHash: Hex32Bytes
+
+  """
+  Optional memo for the lightning invoice.
+  """
   memo: Memo
+
+  """
+  Wallet ID for a BTC wallet which belongs to any account.
+  """
   recipientWalletId: WalletId!
 }
 
@@ -236,8 +279,19 @@ type LnInvoicePayload {
 }
 
 input LnInvoicePaymentInput {
+  """
+  Optional memo to associate with the lightning invoice.
+  """
   memo: Memo
+
+  """
+  Payment request representing the invoice which is being paid.
+  """
   paymentRequest: LnPaymentRequest!
+
+  """
+  Wallet ID with sufficient balance to cover amount of invoice.  Must belong to the account of the current user.
+  """
   walletId: WalletId!
 }
 
@@ -257,12 +311,26 @@ type LnNoAmountInvoice {
 }
 
 input LnNoAmountInvoiceCreateInput {
+  """
+  Optional memo for the lightning invoice.
+  """
   memo: Memo
+
+  """
+  ID for either a USD or BTC wallet belonging to the account of the current user.
+  """
   walletId: WalletId!
 }
 
 input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
+  """
+  Optional memo for the lightning invoice.
+  """
   memo: Memo
+
+  """
+  ID for either a USD or BTC wallet which belongs to the account of any user.
+  """
   recipientWalletId: WalletId!
 }
 
@@ -278,16 +346,46 @@ type LnNoAmountInvoicePayload {
 }
 
 input LnNoAmountInvoicePaymentInput {
+  """
+  Amount to pay in satoshis.
+  """
   amount: SatAmount!
+
+  """
+  Optional memo to associate with the lightning invoice.
+  """
   memo: Memo
+
+  """
+  Payment request representing the invoice which is being paid.
+  """
   paymentRequest: LnPaymentRequest!
+
+  """
+  Wallet ID with sufficient balance to cover amount defined in mutation request.  Must belong to the account of the current user.
+  """
   walletId: WalletId!
 }
 
 input LnNoAmountUsdInvoicePaymentInput {
+  """
+  Amount to pay in USD cents.
+  """
   amount: CentAmount!
+
+  """
+  Optional memo to associate with the lightning invoice.
+  """
   memo: Memo
+
+  """
+  Payment request representing the invoice which is being paid.
+  """
   paymentRequest: LnPaymentRequest!
+
+  """
+  Wallet ID with sufficient balance to cover amount defined in mutation request.  Must belong to the account of the current user.
+  """
   walletId: WalletId!
 }
 
@@ -307,15 +405,37 @@ type LnUpdate {
 }
 
 input LnUsdInvoiceCreateInput {
+  """
+  Amount in USD cents.
+  """
   amount: CentAmount!
+
+  """
+  Optional memo for the lightning invoice.
+  """
   memo: Memo
+
+  """
+  Wallet ID for a USD wallet belonging to the current user.
+  """
   walletId: WalletId!
 }
 
 input LnUsdInvoiceCreateOnBehalfOfRecipientInput {
+  """
+  Amount in USD cents.
+  """
   amount: CentAmount!
   descriptionHash: Hex32Bytes
+
+  """
+  Optional memo for the lightning invoice. Acts as a note to the recipient.
+  """
   memo: Memo
+
+  """
+  Wallet ID for a USD wallet which belongs to the account of any user.
+  """
   recipientWalletId: WalletId!
 }
 
@@ -348,23 +468,85 @@ type Mutation {
   deviceNotificationTokenCreate(
     input: DeviceNotificationTokenCreateInput!
   ): SuccessPayload!
+
+  """
+  Actions a payment which is internal to the ledger e.g. it does
+  not use onchain/lightning.  Does not currently support payments to or from USD wallets.
+  Returns payment status (success, failed, pending, already_paid).
+  """
   intraLedgerPaymentSend(input: IntraLedgerPaymentSendInput!): PaymentSendPayload!
+
+  """
+  Returns a lightning invoice for an associated wallet.
+  When invoice is paid the value will be credited to a BTC wallet.
+  Expires after 24 hours.
+  """
   lnInvoiceCreate(input: LnInvoiceCreateInput!): LnInvoicePayload!
+
+  """
+  Returns a lightning invoice for an associated wallet.
+  When invoice is paid the value will be credited to a BTC wallet.
+  Expires after 24 hours.
+  """
   lnInvoiceCreateOnBehalfOfRecipient(
     input: LnInvoiceCreateOnBehalfOfRecipientInput!
   ): LnInvoicePayload!
   lnInvoiceFeeProbe(input: LnInvoiceFeeProbeInput!): SatAmountPayload!
+
+  """
+  Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
+  Provided wallet can be USD or BTC and must have sufficient balance to cover amount in lightning invoice.
+  Returns payment status (success, failed, pending, already_paid).
+  """
   lnInvoicePaymentSend(input: LnInvoicePaymentInput!): PaymentSendPayload!
+
+  """
+  Returns a lightning invoice for an associated wallet.
+  Can be used to receive any supported currency value (currently USD or BTC).
+  Expires after 24 hours.
+  """
   lnNoAmountInvoiceCreate(input: LnNoAmountInvoiceCreateInput!): LnNoAmountInvoicePayload!
+
+  """
+  Returns a lightning invoice for an associated wallet.
+  Can be used to receive any supported currency value (currently USD or BTC).
+  Expires after 24 hours.
+  """
   lnNoAmountInvoiceCreateOnBehalfOfRecipient(
     input: LnNoAmountInvoiceCreateOnBehalfOfRecipientInput!
   ): LnNoAmountInvoicePayload!
   lnNoAmountInvoiceFeeProbe(input: LnNoAmountInvoiceFeeProbeInput!): SatAmountPayload!
+
+  """
+  Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
+  Provided wallet must be BTC and must have sufficient balance to cover amount specified in mutation request.
+  Returns payment status (success, failed, pending, already_paid).
+  """
   lnNoAmountInvoicePaymentSend(input: LnNoAmountInvoicePaymentInput!): PaymentSendPayload!
+
+  """
+  Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
+  Provided wallet must be USD and have sufficient balance to cover amount specified in mutation request.
+  Returns payment status (success, failed, pending, already_paid).
+  """
   lnNoAmountUsdInvoicePaymentSend(
     input: LnNoAmountUsdInvoicePaymentInput!
   ): PaymentSendPayload!
+
+  """
+  Returns a lightning invoice denominated in satoshis for an associated wallet.
+  When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.
+  Expires after 2 minutes (short expiry time because there is a USD/BTC exchange rate
+  associated with the amount).
+  """
   lnUsdInvoiceCreate(input: LnUsdInvoiceCreateInput!): LnInvoicePayload!
+
+  """
+  Returns a lightning invoice denominated in satoshis for an associated wallet.
+  When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.
+  Expires after 2 minutes (short expiry time because there is a USD/BTC exchange rate
+    associated with the amount).
+  """
   lnUsdInvoiceCreateOnBehalfOfRecipient(
     input: LnUsdInvoiceCreateOnBehalfOfRecipientInput!
   ): LnInvoicePayload!
@@ -545,7 +727,7 @@ type PricePoint {
   price: Price!
 
   """
-  Unix timesamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC)
+  Unix timestamp (number of seconds elapsed since January 1, 1970 00:00:00 UTC)
   """
   timestamp: Timestamp!
 }
@@ -616,7 +798,7 @@ type SettlementViaOnChain {
 }
 
 """
-An amount (of a currency) that can be negative (i.g. in a transaction)
+An amount (of a currency) that can be negative (e.g. in a transaction)
 """
 scalar SignedAmount
 
@@ -748,6 +930,9 @@ enum TxStatus {
   SUCCESS
 }
 
+"""
+A wallet belonging to an account which contains a USD balance and a list of transactions.
+"""
 type UsdWallet implements Wallet {
   balance: SignedAmount!
   id: ID!
@@ -913,12 +1098,15 @@ Unique identifier of a user
 """
 scalar Username
 
+"""
+A generic wallet which stores value in one of our supported currencies.
+"""
 interface Wallet {
   balance: SignedAmount!
   id: ID!
 
   """
-  Transactions are ordered anti-chronogically,
+  Transactions are ordered anti-chronologically,
   ie: the newest transaction will be first
   """
   transactions(
