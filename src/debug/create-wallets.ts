@@ -16,12 +16,12 @@ import { Accounts } from "@app"
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { BTC_NETWORK, JWT_SECRET } from "@config"
 import { checkedToSats } from "@domain/bitcoin"
+import { checkedToAccountLevel } from "@domain/users"
 import { checkedToWalletId, WalletCurrency, WalletType } from "@domain/wallets"
 import { createToken } from "@services/jwt"
 import { setupMongoConnection } from "@services/mongodb"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
-import * as jwt from "jsonwebtoken"
 
 type reimbursement = {
   recipientWalletId: string
@@ -40,12 +40,12 @@ type generatedWallets = {
   jwtToken: JwtToken
 }
 
-const generateWallets = async (count: number) => {
+const generateWallets = async (count: number, level: AccountLevel) => {
   await setupMongoConnection()
   const wallets: Array<generatedWallets> = []
   for (let i = 0; i < count; i++) {
     const phone = getRandomInvalidPhone() as PhoneNumber
-    const account = await User.create({ phone })
+    const account = await User.create({ phone, level })
 
     const btcWallet = await WalletsRepository().persistNew({
       accountId: account._id,
@@ -84,16 +84,19 @@ const generateWallets = async (count: number) => {
 
 const main = async () => {
   const args = process.argv
-  if (args.length === 5) {
+  if (args.length === 6) {
     const numWallets = parseInt(args[2])
-
-    const disbursementAmount = checkedToSats(parseInt(args[4]))
-    if (disbursementAmount instanceof Error) return disbursementAmount
 
     const disburserWalletId = checkedToWalletId(args[3])
     if (disburserWalletId instanceof Error) return disburserWalletId
 
-    const wallets = await generateWallets(numWallets)
+    const disbursementAmount = checkedToSats(parseInt(args[4]))
+    if (disbursementAmount instanceof Error) return disbursementAmount
+
+    const accountLevel = checkedToAccountLevel(parseInt(args[5]))
+    if (accountLevel instanceof Error) return accountLevel
+
+    const wallets = await generateWallets(numWallets, accountLevel)
     console.log({ wallets })
   } else {
     console.error("Invalid number of arguments")
