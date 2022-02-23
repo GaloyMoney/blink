@@ -36,6 +36,15 @@ type AccountApiKeyPayload {
   errors: [Error!]!
 }
 
+input AccountUpdateDefaultWalletIdInput {
+  walletId: WalletId!
+}
+
+type AccountUpdateDefaultWalletIdPayload {
+  account: ConsumerAccount
+  errors: [Error!]!
+}
+
 """
 An authentication code valid for a single use
 """
@@ -463,6 +472,9 @@ type MobileVersions {
 type Mutation {
   accountApiKeyCreate(input: AccountApiKeyCreateInput!): AccountApiKeyPayload!
   accountApiKeyDisable(input: AccountApiKeyDisableInput!): SuccessPayload!
+  accountUpdateDefaultWalletId(
+    input: AccountUpdateDefaultWalletIdInput!
+  ): AccountUpdateDefaultWalletIdPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
   deviceNotificationTokenCreate(
