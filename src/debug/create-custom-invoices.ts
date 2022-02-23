@@ -12,9 +12,12 @@ import lnService from "ln-service"
 
 import { getActiveLnd } from "@services/lnd/utils"
 
-const { lnd } = getActiveLnd()
-
 const createCustomInvoice = async () => {
+  const activeNode = getActiveLnd()
+  if (activeNode instanceof Error) throw activeNode
+
+  const lnd = activeNode.lnd
+
   const username = "abcdef"
   const requestOrg = (await createInvoice({ lnd, description: "abc" })).request
   const decoded = parsePaymentRequest({ request: requestOrg })

@@ -1,6 +1,5 @@
 import {
   UnknownOnChainServiceError,
-  OnChainServiceUnavailableError,
   IncomingOnChainTransaction,
   CouldNotFindOnChainTransactionError,
   OutgoingOnChainTransaction,
@@ -26,16 +25,11 @@ import { getActiveOnchainLnd } from "./utils"
 export const OnChainService = (
   decoder: TxDecoder,
 ): IOnChainService | OnChainServiceError => {
-  let lnd: AuthenticatedLnd
-  let pubkey: Pubkey
+  const activeNode = getActiveOnchainLnd()
+  if (activeNode instanceof Error) return activeNode
 
-  try {
-    const activeNode = getActiveOnchainLnd()
-    lnd = activeNode.lnd
-    pubkey = activeNode.pubkey as Pubkey
-  } catch (err) {
-    return new OnChainServiceUnavailableError(err)
-  }
+  const lnd = activeNode.lnd
+  const pubkey = activeNode.pubkey as Pubkey
 
   const getBalance = async (): Promise<Satoshis | OnChainServiceError> => {
     try {

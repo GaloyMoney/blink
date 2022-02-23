@@ -1,7 +1,6 @@
 import assert from "assert"
 
 import { MS_PER_DAY, ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE } from "@config"
-import { LndOfflineError } from "@core/error"
 import { toSats } from "@domain/bitcoin"
 import {
   addLndChannelOpeningOrClosingFee,
@@ -30,6 +29,12 @@ import groupBy from "lodash.groupby"
 import map from "lodash.map"
 import mapValues from "lodash.mapvalues"
 import sumBy from "lodash.sumby"
+
+import {
+  NoValidNodeForPubkeyError,
+  OffChainServiceUnavailableError,
+} from "@domain/bitcoin/lightning"
+import { OnChainServiceUnavailableError } from "@domain/bitcoin/onchain"
 
 import { params } from "./auth"
 
@@ -134,9 +139,10 @@ export async function getBosScore() {
     const { data } = await axios.get("https://bos.lightning.jorijn.com/data/export.json")
 
     // FIXME: manage multiple nodes
-    const { lnd } = getActiveLnd()
-    const pubKey = (await getWalletInfo({ lnd })).public_key
-    const bosScore = data.data.find(({ publicKey }) => publicKey === pubKey)
+    const activeNode = getActiveLnd()
+    if (activeNode instanceof Error) return 0
+
+    const bosScore = data.data.find(({ publicKey }) => publicKey === activeNode.pubkey)
     if (!bosScore) {
       baseLogger.info("key is not in bos list")
     }
@@ -232,7 +238,10 @@ export const updateRoutingRevenues = async () => {
   }
 
   // get fee collected day wise
-  const { lnd } = getActiveLnd()
+  const activeNode = getActiveLnd()
+  if (activeNode instanceof Error) throw activeNode
+
+  const lnd = activeNode.lnd
   const forwards = await getRoutingFees({ lnd, before, after })
 
   for (const forward of forwards) {
@@ -263,7 +272,10 @@ export const updateRoutingRevenues = async () => {
 
 export const updateEscrows = async () => {
   // FIXME: update escrow of all the node
-  const { lnd } = getActiveLnd()
+  const activeNode = getActiveLnd()
+  if (activeNode instanceof Error) throw activeNode
+
+  const lnd = activeNode.lnd
   const { channels } = await getChannels({ lnd })
 
   const selfInitiatedChannels = channels.filter(
@@ -363,10 +375,10 @@ export const getLnds = ({
 export const offchainLnds = getLnds({ type: "offchain" })
 
 // only returning the first one for now
-export const getActiveLnd = () => {
+export const getActiveLnd = (): LndParamsAuthed | LightningServiceError => {
   const lnds = getLnds({ active: true, type: "offchain" })
   if (lnds.length === 0) {
-    throw new LndOfflineError("no active lightning node (for offchain)")
+    return new OffChainServiceUnavailableError("no active lightning node (for offchain)")
   }
   return lnds[0]
 
@@ -375,10 +387,10 @@ export const getActiveLnd = () => {
   // return lnds[index]
 }
 
-export const getActiveOnchainLnd = () => {
+export const getActiveOnchainLnd = (): LndParamsAuthed | OnChainServiceError => {
   const lnds = getLnds({ active: true, type: "onchain" })
   if (lnds.length === 0) {
-    throw new LndOfflineError("no active lightning node (for onchain)")
+    return new OnChainServiceUnavailableError("no active lightning node (for onchain)")
   }
   return lnds[0]
 }
@@ -387,12 +399,15 @@ export const onchainLnds = getLnds({ type: "onchain" })
 
 export const nodesPubKey = offchainLnds.map((item) => item.pubkey)
 
-export const getLndFromPubkey = ({ pubkey }: { pubkey: string }) => {
+export const getLndFromPubkey = ({
+  pubkey,
+}: {
+  pubkey: string
+}): AuthenticatedLnd | LightningServiceError => {
   const lnds = getLnds({ active: true })
-  const lnd = lnds.filter(({ pubkey: nodePubKey }) => nodePubKey === pubkey)
-  if (!lnd) {
-    throw new LndOfflineError(`lnd with pubkey:${pubkey} is offline`)
-  } else {
-    return lnd[0]
-  }
+  const lndParams = lnds.find(({ pubkey: nodePubKey }) => nodePubKey === pubkey)
+  return (
+    lndParams?.lnd ||
+    new NoValidNodeForPubkeyError(`lnd with pubkey:${pubkey} is offline`)
+  )
 }

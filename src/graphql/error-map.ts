@@ -235,6 +235,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "BadPaymentDataError":
     case "LnInvoiceDecodeError":
     case "LightningServiceError":
+    case "OffChainServiceUnavailableError":
     case "CouldNotDecodeReturnedPaymentRequest":
     case "InvoiceNotFoundError":
     case "LnPaymentPendingError":
