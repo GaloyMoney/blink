@@ -120,7 +120,7 @@ const amount = toSats(10040)
 const targetConfirmations = toTargetConfs(1)
 
 describe("UserWallet - onChainPay", () => {
-  it.only("sends a successful payment", async () => {
+  it("sends a successful payment", async () => {
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
     const sub = subscribeToTransactions({ lnd: lndonchain })
