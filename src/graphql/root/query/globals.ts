@@ -1,14 +1,13 @@
 import { getGaloyBuildInformation } from "@config"
 import { GT } from "@graphql/index"
 import Globals from "@graphql/types/object/globals"
-import { getActiveOnchainLnd } from "@services/lnd/utils"
+import { nodesPubKey } from "@services/lnd/utils"
 
 const GlobalsQuery = GT.Field({
   type: Globals,
   resolve: async () => {
-    const { pubkey } = getActiveOnchainLnd()
     return {
-      nodesIds: [pubkey],
+      nodesIds: nodesPubKey,
       buildInformation: getGaloyBuildInformation(),
     }
   },

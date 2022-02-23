@@ -8,7 +8,6 @@ import {
   PaymentStatus,
   LnPaymentPendingError,
   LnAlreadyPaidError,
-  NoValidNodeForPubkeyError,
   PaymentNotFoundError,
   RouteNotFoundError,
   UnknownRouteNotFoundError,
@@ -34,8 +33,6 @@ import {
   getFailedPayments,
 } from "lightning"
 
-import { LndOfflineError } from "@core/error"
-
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 import { timeout } from "@utils"
 
@@ -43,18 +40,11 @@ import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
 
 export const LndService = (): ILightningService | LightningServiceError => {
-  let defaultLnd: AuthenticatedLnd, defaultPubkey: Pubkey
-  try {
-    const { lnd, pubkey } = getActiveLnd()
-    defaultLnd = lnd
-    defaultPubkey = pubkey as Pubkey
-  } catch (err) {
-    const errDetails = parseLndErrorDetails(err)
-    switch (errDetails) {
-      default:
-        return new UnknownLightningServiceError(err)
-    }
-  }
+  const activeNode = getActiveLnd()
+  if (activeNode instanceof Error) return activeNode
+
+  const defaultLnd = activeNode.lnd
+  const defaultPubkey = activeNode.pubkey as Pubkey
 
   const isLocal = (pubkey: Pubkey): boolean | LightningServiceError =>
     getLnds({ type: "offchain" }).some((item) => item.pubkey === pubkey)
@@ -204,7 +194,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
     paymentHash: PaymentHash
   }): Promise<LnInvoiceLookup | LightningServiceError> => {
     try {
-      const { lnd } = getLndFromPubkey({ pubkey })
+      const lnd = getLndFromPubkey({ pubkey })
+      if (lnd instanceof Error) return lnd
+
       const invoice: GetInvoiceResult = await getInvoice({
         lnd,
         id: paymentHash,
@@ -264,7 +256,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
     after: PagingStartToken | PagingContinueToken
     pubkey: Pubkey
   }): Promise<ListLnPaymentsResult | LightningServiceError> => {
-    const { lnd } = getLndFromPubkey({ pubkey })
+    const lnd = getLndFromPubkey({ pubkey })
+    if (lnd instanceof Error) return lnd
+
     const pagingArgs = after ? { token: after } : {}
 
     try {
@@ -294,7 +288,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
     pubkey: Pubkey
   }): Promise<ListLnPaymentsResult | LightningServiceError> => {
     try {
-      const { lnd } = getLndFromPubkey({ pubkey })
+      const lnd = getLndFromPubkey({ pubkey })
+      if (lnd instanceof Error) return lnd
+
       const pagingArgs = after ? { token: after } : {}
       const { payments, next } = await getPayments({ lnd, ...pagingArgs })
 
@@ -349,7 +345,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
     paymentHash: PaymentHash
   }): Promise<true | LightningServiceError> => {
     try {
-      const { lnd } = getLndFromPubkey({ pubkey })
+      const lnd = getLndFromPubkey({ pubkey })
+      if (lnd instanceof Error) return lnd
+
       await cancelHodlInvoice({ lnd, id: paymentHash })
       return true
     } catch (err) {
@@ -372,18 +370,12 @@ export const LndService = (): ILightningService | LightningServiceError => {
     rawRoute: RawRoute
     pubkey: Pubkey
   }): Promise<PayInvoiceResult | LightningServiceError> => {
-    let lndAuthForRoute: AuthenticatedLnd | LightningServiceError
     try {
-      ;({ lnd: lndAuthForRoute } = getLndFromPubkey({ pubkey }))
-      if (lndAuthForRoute instanceof LndOfflineError)
-        return new NoValidNodeForPubkeyError()
-    } catch (err) {
-      return new NoValidNodeForPubkeyError(err)
-    }
+      const lnd = getLndFromPubkey({ pubkey })
+      if (lnd instanceof Error) return lnd
 
-    try {
       const paymentPromise = payViaRoutes({
-        lnd: lndAuthForRoute,
+        lnd,
         routes: [rawRoute],
         id: paymentHash,
       })
@@ -511,18 +503,10 @@ const lookupPaymentByPubkeyAndHash = async ({
   pubkey: Pubkey
   paymentHash: PaymentHash
 }): Promise<LnPaymentLookup | LnFailedPartialPaymentLookup | LightningServiceError> => {
-  let lnd: AuthenticatedLnd
   try {
-    ;({ lnd } = getLndFromPubkey({ pubkey }))
-  } catch (err) {
-    const errDetails = parseLndErrorDetails(err)
-    switch (errDetails) {
-      default:
-        return new UnknownLightningServiceError(err)
-    }
-  }
+    const lnd = getLndFromPubkey({ pubkey })
+    if (lnd instanceof Error) return lnd
 
-  try {
     const result: GetPaymentResult = await getPayment({
       lnd,
       id: paymentHash,

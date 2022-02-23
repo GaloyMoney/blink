@@ -7,7 +7,10 @@ import { createInvoice, payViaPaymentDetails, payViaRoutes } from "lightning"
 import { lndOutside1 } from "test/helpers"
 
 describe("'lightning' library error handling", () => {
-  const { lnd } = getActiveLnd()
+  const activeNode = getActiveLnd()
+  if (activeNode instanceof Error) throw activeNode
+
+  const lnd = activeNode.lnd
 
   // Test construction taken from:
   // https://github.com/alexbosworth/lightning/blob/edcaf671e6a0bd2d8f8aa39b51ef816b2a633560/test/lnd_methods/offchain/test_pay_via_routes.js#L28

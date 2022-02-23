@@ -236,7 +236,9 @@ const migrateLnPaymentsByFunction = async ({
 }
 
 const getFirstIndex = async (pubkey: Pubkey): Promise<number | ApplicationError> => {
-  const { lnd } = getLndFromPubkey({ pubkey })
+  const lnd = getLndFromPubkey({ pubkey })
+  if (lnd instanceof Error) return lnd
+
   let paymentsResults: GetPaymentsResults
   try {
     paymentsResults = await getPayments({ lnd, limit: 1 })

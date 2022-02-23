@@ -16,7 +16,12 @@ export class UnknownLightningServiceError extends LightningServiceError {
 export class InvoiceNotFoundError extends LightningServiceError {}
 export class LnPaymentPendingError extends LightningServiceError {}
 export class LnAlreadyPaidError extends LightningServiceError {}
-export class NoValidNodeForPubkeyError extends LightningServiceError {}
+export class OffChainServiceUnavailableError extends LightningServiceError {
+  level = ErrorLevel.Critical
+}
+export class NoValidNodeForPubkeyError extends LightningServiceError {
+  level = ErrorLevel.Critical
+}
 export class PaymentNotFoundError extends LightningServiceError {}
 export class RouteNotFoundError extends LightningServiceError {}
 export class InsufficientBalanceForRoutingError extends LightningServiceError {}

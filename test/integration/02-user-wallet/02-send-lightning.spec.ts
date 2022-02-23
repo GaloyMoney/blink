@@ -1295,7 +1295,10 @@ it.skip("expired payment", async () => {
     additional_delay_value: 0,
   }))
 
-  const { lnd } = getActiveLnd()
+  const activeNode = getActiveLnd()
+  if (activeNode instanceof Error) throw activeNode
+
+  const lnd = activeNode.lnd
 
   const lnInvoice = await Wallets.addInvoiceForSelf({
     walletId: walletIdB as WalletId,
