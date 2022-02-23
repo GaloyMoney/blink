@@ -114,6 +114,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Phone number is not a valid phone number"
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "RestrictedRegionPhoneProviderError":
+      message = "Phone number is not from a valid region"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "InvalidContactAlias":
       message = "ContactAlias has incorrect characters or length"
       return new ValidationInternalError({ message, logger: baseLogger })

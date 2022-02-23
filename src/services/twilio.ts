@@ -3,6 +3,7 @@ import twilio from "twilio"
 import { getTwilioConfig } from "@config"
 import {
   InvalidPhoneNumberPhoneProviderError,
+  RestrictedRegionPhoneProviderError,
   UnknownPhoneProviderServiceError,
 } from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
@@ -21,9 +22,16 @@ export const TwilioClient = (): IPhoneProviderService => {
       })
     } catch (err) {
       logger.error({ err }, "impossible to send text")
-      if (err.message.includes("not a valid phone number")) {
+
+      const invalidNumberMessages = ["not a valid phone number", "not a mobile number"]
+      if (invalidNumberMessages.some((m) => err.message.includes(m))) {
         return new InvalidPhoneNumberPhoneProviderError(err)
       }
+
+      if (err.message.includes("has not been enabled for the region")) {
+        return new RestrictedRegionPhoneProviderError(err)
+      }
+
       return new UnknownPhoneProviderServiceError(err)
     }
 
