@@ -1,4 +1,3 @@
-import { AccountLevel } from "@domain/accounts"
 import { InvalidAccountLevelError } from "@domain/errors"
 import { checkedToAccountLevel } from "@domain/users"
 
