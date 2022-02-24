@@ -12,13 +12,16 @@
  * yarn ts-node --files -r tsconfig-paths/register src/debug/reimburse.ts
  */
 
-import { Accounts, Wallets } from "@app"
+import { Wallets } from "@app"
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { BTC_NETWORK } from "@config"
 import { checkedToSats } from "@domain/bitcoin"
+import { checkedtoCents } from "@domain/fiat"
 import { checkedToAccountLevel } from "@domain/users"
 import { checkedToWalletId, WalletCurrency, WalletType } from "@domain/wallets"
 import { createToken } from "@services/jwt"
+import { isUp } from "@services/lnd/health"
+import { params as unauthParams } from "@services/lnd/unauth"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import {
@@ -26,7 +29,6 @@ import {
   UsersRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { User } from "@services/mongoose/schema"
 import { createObjectCsvWriter } from "csv-writer"
 
 const headers_field = ["accountId", "jwtToken", "usdWalletId", "btcWalletId", "level"]
@@ -106,12 +108,13 @@ const disburseFunds = async (
   wallets: Array<generatedWallets>,
   disburserAccount: Account,
   disburserWalletId: WalletId,
-  amount: Satoshis,
+  sats: Satoshis,
+  cents: UsdCents,
 ) => {
   for (const wallet of wallets) {
     await intraledgerPaymentSendWalletId({
       recipientWalletId: wallet.btcWalletId,
-      amount,
+      amount: sats,
       logger: baseLogger,
       senderWalletId: disburserWalletId,
       senderAccount: disburserAccount,
@@ -120,9 +123,8 @@ const disburseFunds = async (
 
     const invoice = await Wallets.addInvoiceForRecipient({
       recipientWalletId: wallet.usdWalletId,
-      amount,
+      amount: cents,
     })
-
     if (invoice instanceof Error) return invoice
 
     await Wallets.payInvoiceByWalletId({
@@ -137,7 +139,7 @@ const disburseFunds = async (
 
 const main = async () => {
   const args = process.argv
-  if (args.length === 6) {
+  if (args.length === 7) {
     const numWallets = parseInt(args[2])
 
     const disburserWalletId = checkedToWalletId(args[3])
@@ -151,16 +153,25 @@ const main = async () => {
     )
     if (disburserAccount instanceof Error) throw disburserAccount
 
-    const disbursementAmount = checkedToSats(parseInt(args[4]))
-    if (disbursementAmount instanceof Error) return disbursementAmount
+    const disbursementAmountSats = checkedToSats(parseInt(args[4]))
+    if (disbursementAmountSats instanceof Error) return disbursementAmountSats
 
-    const accountLevel = checkedToAccountLevel(parseInt(args[5]))
+    const disbursementAmountCents = checkedtoCents(parseInt(args[5]))
+    if (disbursementAmountCents instanceof Error) return disbursementAmountCents
+
+    const accountLevel = checkedToAccountLevel(parseInt(args[6]))
     if (accountLevel instanceof Error) return accountLevel
 
     const wallets = await generateWallets(numWallets, accountLevel)
     if (wallets instanceof Error) return wallets
 
-    await disburseFunds(wallets, disburserAccount, disburserWalletId, disbursementAmount)
+    await disburseFunds(
+      wallets,
+      disburserAccount,
+      disburserWalletId,
+      disbursementAmountSats,
+      disbursementAmountCents,
+    )
 
     return saveToCsv(wallets)
   } else {
@@ -170,6 +181,7 @@ const main = async () => {
 
 setupMongoConnection()
   .then(async (mongoose) => {
+    await Promise.all(unauthParams.map((lndParams) => isUp(lndParams)))
     await main()
     return mongoose.connection.close()
   })
