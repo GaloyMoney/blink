@@ -21,7 +21,11 @@ import { checkedToWalletId, WalletCurrency, WalletType } from "@domain/wallets"
 import { createToken } from "@services/jwt"
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 import { createObjectCsvWriter } from "csv-writer"
 
@@ -46,34 +50,39 @@ const generateWallets = async (count: number, level: AccountLevel) => {
   const wallets: Array<generatedWallets> = []
   for (let i = 0; i < count; i++) {
     const phone = getRandomInvalidPhone() as PhoneNumber
-    const account = await User.create({ phone, level })
+
+    const user = await UsersRepository().persistNew({ phone, phoneMetadata: null })
+    if (user instanceof Error) return user
+
+    const account = await AccountsRepository().findByUserId(user.id)
+    if (account instanceof Error) return account
 
     const btcWallet = await WalletsRepository().persistNew({
-      accountId: account._id,
+      accountId: account.id,
       type: WalletType.Checking,
       currency: WalletCurrency.Btc,
     })
     if (btcWallet instanceof Error) return btcWallet
 
     const usdWallet = await WalletsRepository().persistNew({
-      accountId: account._id,
+      accountId: account.id,
       type: WalletType.Checking,
       currency: WalletCurrency.Usd,
     })
-
     if (usdWallet instanceof Error) return usdWallet
+
+    account.defaultWalletId = usdWallet.id
+    account.level = level
+
+    const result = await AccountsRepository().update(account)
+    if (result instanceof Error) return result
 
     const network = BTC_NETWORK
 
-    const jwtToken = createToken({ uid: account._id, network })
-
-    await Accounts.updateDefaultWalletId({
-      accountId: account._id,
-      walletId: usdWallet.id,
-    })
+    const jwtToken = createToken({ uid: user.id, network })
 
     wallets.push({
-      accountId: account._id,
+      accountId: account.id,
       btcWalletId: btcWallet.id,
       usdWalletId: usdWallet.id,
       jwtToken,
