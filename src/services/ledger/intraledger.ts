@@ -271,8 +271,8 @@ const addIntraledgerTxTransfer = async ({
     try {
       entry
         .credit(recipientLiabilitiesWalletId, cents, creditMetadata)
-        .debit(liabilitiesDealerBtcWalletId, cents, creditMetadata)
-        .credit(liabilitiesDealerUsdWalletId, sats, debitMetadata)
+        .debit(liabilitiesDealerUsdWalletId, cents, creditMetadata)
+        .credit(liabilitiesDealerBtcWalletId, sats, debitMetadata)
         .debit(senderLiabilitiesWalletId, sats, debitMetadata)
 
       const savedEntry = await entry.commit()
