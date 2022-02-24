@@ -18,6 +18,7 @@ import {
 import { TwoFAError } from "@domain/twoFA"
 import { PaymentInitiationMethod } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
+import { getDealerUsdWalletId } from "@services/ledger/caching"
 import { LndService } from "@services/lnd"
 import { getActiveLnd, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
@@ -416,6 +417,8 @@ describe("UserWallet - Lightning Pay", () => {
 
   // TODO: add probing scenarios
   it("pay amountless invoice from usd wallet", async () => {
+    const dealerUsdWalletId = await getDealerUsdWalletId()
+    const dealerInitialUsdB = await getBalanceHelper(dealerUsdWalletId)
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 
     const { request } = await createInvoice({ lnd: lndOutside1 })
@@ -439,6 +442,8 @@ describe("UserWallet - Lightning Pay", () => {
 
     const finalBalance = await getBalanceHelper(walletIdUsdB)
     expect(finalBalance).toBe(initBalanceUsdB - amountPayment)
+    const dealerFinalBalance = await getBalanceHelper(dealerUsdWalletId)
+    expect(dealerFinalBalance).toBe(dealerInitialUsdB + amountPayment)
   })
 
   it("pay amountfull invoice from usd wallet", async () => {
