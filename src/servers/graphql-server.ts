@@ -130,6 +130,7 @@ export const startApolloServer = async ({
   schema,
   port,
   startSubscriptionServer = false,
+  enableApolloUsageReporting = false,
 }): Promise<Record<string, unknown>> => {
   const app = express()
   const httpServer = createServer(app)
@@ -149,7 +150,7 @@ export const startApolloServer = async ({
       : ApolloServerPluginLandingPageDisabled(),
   ]
 
-  if (isProd) {
+  if (isProd && enableApolloUsageReporting) {
     apolloPulgins.push(
       ApolloServerPluginUsageReporting({
         rewriteError(err) {
