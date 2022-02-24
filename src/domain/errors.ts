@@ -37,6 +37,7 @@ export class CouldNotFindPhoneCodeError extends CouldNotFindError {}
 export class CouldNotFindWalletFromIdError extends CouldNotFindError {}
 export class CouldNotListWalletsFromAccountIdError extends CouldNotFindError {}
 export class CouldNotFindWalletFromUsernameError extends CouldNotFindError {}
+export class CouldNotFindWalletFromUsernameAndCurrencyError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressesError extends CouldNotFindError {}
 export class CouldNotFindLnPaymentFromHashError extends CouldNotFindError {}
