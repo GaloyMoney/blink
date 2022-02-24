@@ -5,6 +5,7 @@ import {
   InvalidPhoneNumberPhoneProviderError,
   RestrictedRegionPhoneProviderError,
   UnknownPhoneProviderServiceError,
+  UnsubscribedRecipientPhoneProviderError,
 } from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -30,6 +31,10 @@ export const TwilioClient = (): IPhoneProviderService => {
 
       if (err.message.includes("has not been enabled for the region")) {
         return new RestrictedRegionPhoneProviderError(err)
+      }
+
+      if (err.message.includes("unsubscribed recipient")) {
+        return new UnsubscribedRecipientPhoneProviderError(err)
       }
 
       return new UnknownPhoneProviderServiceError(err)
