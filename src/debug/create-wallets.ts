@@ -12,7 +12,7 @@
  * yarn ts-node --files -r tsconfig-paths/register src/debug/reimburse.ts
  */
 
-import { Accounts } from "@app"
+import { Accounts, Wallets } from "@app"
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { BTC_NETWORK } from "@config"
 import { checkedToSats } from "@domain/bitcoin"
@@ -100,7 +100,7 @@ const disburseFunds = async (
   amount: Satoshis,
 ) => {
   for (const wallet of wallets) {
-    const disbursementResult = await intraledgerPaymentSendWalletId({
+    await intraledgerPaymentSendWalletId({
       recipientWalletId: wallet.btcWalletId,
       amount,
       logger: baseLogger,
@@ -109,7 +109,20 @@ const disburseFunds = async (
       memo: null,
     })
 
-    console.log({ disbursementResult })
+    const invoice = await Wallets.addInvoiceForRecipient({
+      recipientWalletId: wallet.usdWalletId,
+      amount,
+    })
+
+    if (invoice instanceof Error) return invoice
+
+    await Wallets.payInvoiceByWalletId({
+      paymentRequest: invoice.paymentRequest,
+      memo: null,
+      senderWalletId: disburserWalletId,
+      senderAccount: disburserAccount,
+      logger: baseLogger,
+    })
   }
 }
 
