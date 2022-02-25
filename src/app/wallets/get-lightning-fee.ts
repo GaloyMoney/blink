@@ -21,11 +21,9 @@ import { toCents } from "@domain/fiat"
 
 export const getRoutingFee = async ({
   walletId,
-  walletCurrency,
   paymentRequest,
 }: {
   walletId: WalletId
-  walletCurrency: WalletCurrency
   paymentRequest: EncodedPaymentRequest
 }): Promise<Satoshis | ApplicationError> => {
   const decodedInvoice = decodeInvoice(paymentRequest)
@@ -39,7 +37,7 @@ export const getRoutingFee = async ({
   const paymentAmount = checkedToSats(amount)
   if (paymentAmount instanceof Error) return paymentAmount
 
-  return feeProbe({ walletId, decodedInvoice, paymentAmount, walletCurrency })
+  return feeProbe({ walletId, decodedInvoice, paymentAmount })
 }
 
 export const getNoAmountLightningFee = async ({
@@ -81,12 +79,10 @@ const feeProbe = async ({
   walletId,
   decodedInvoice,
   paymentAmount,
-  walletCurrency,
 }: {
   walletId: WalletId
   decodedInvoice: LnInvoice
   paymentAmount: Satoshis
-  walletCurrency: WalletCurrency
 }): Promise<Satoshis | ApplicationError> => {
   const { destination, paymentHash } = decodedInvoice
 
@@ -107,29 +103,10 @@ const feeProbe = async ({
     return toSats(0)
   }
 
-  let sats: Satoshis
-  let key: CachedRouteLookupKey
-
-  if (walletCurrency === WalletCurrency.Usd) {
-    const dealer = DealerPriceService()
-    // TODO: maybe this should be Future sell here
-    const sats_ = await dealer.getSatsFromCentsForImmediateSell(toCents(paymentAmount))
-    if (sats_ instanceof Error) return sats_
-    sats = sats_
-
-    key = CachedRouteLookupKeyFactory().createFromCents({
-      paymentHash,
-      cents: toCents(paymentAmount),
-    })
-  } else {
-    sats = toSats(paymentAmount)
-
-    key = CachedRouteLookupKeyFactory().createFromMilliSats({
-      paymentHash,
-      milliSats: toMilliSatsFromNumber(sats * 1000),
-    })
-  }
-
+  const key = CachedRouteLookupKeyFactory().createFromMilliSats({
+    paymentHash,
+    milliSats: toMilliSatsFromNumber(paymentAmount * 1000),
+  })
   const routeFromCache = await RoutesCache().findByKey(key)
   const validCachedRoute = !(routeFromCache instanceof Error)
   if (validCachedRoute) return toSats(routeFromCache.route.fee)
