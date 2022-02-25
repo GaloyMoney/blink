@@ -1,15 +1,11 @@
 /**
  * how to run:
- *
- * Make sure there's a file named reimbursements.json in src/debug
- * following the structure:
- * {
- *  "feeUpdateOperations" = [
- *    { "walletId": "first-wallet-id", fee: 13, memo: "your memo" },
- *    { "walletId": "second-wallet-id", fee: 10, memo: "refund" },
- *  ]
- * }
- * yarn ts-node --files -r tsconfig-paths/register src/debug/reimburse.ts
+ * yarn ts-node --files -r tsconfig-paths/register src/debug/create-wallets.ts 1 f72fbdc1-505e-43d8-aece-c9ab723c6038 21000 2100 2
+ * The first argument is the number of accounts to generate
+ * The second argument is the walletId of the wallet that holds funds to be disbursed
+ * The third argument is the amount of sats to be sent to each generated account's btc wallet
+ * The fourth argument is the amount of cents to to be sent to each generated account's usd wallet
+ * The fifth and final argument is the account level that will be set for each generated account
  */
 
 import { Wallets } from "@app"
