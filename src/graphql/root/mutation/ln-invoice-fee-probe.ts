@@ -41,6 +41,7 @@ const LnInvoiceFeeProbeMutation = GT.Field({
 
     const feeSatAmount = await Wallets.getRoutingFee({
       walletId,
+      walletCurrency: WalletCurrency.Btc,
       paymentRequest,
     })
     if (feeSatAmount instanceof Error) {

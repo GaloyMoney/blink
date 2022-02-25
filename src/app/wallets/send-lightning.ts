@@ -133,7 +133,12 @@ export const payInvoiceByWalletId = async ({
   if (senderWallet instanceof Error) return senderWallet
 
   if (senderWallet.currency === WalletCurrency.Usd) {
-    await getRoutingFee({ paymentRequest, walletId: senderWalletId })
+    const getRouteResult = await getRoutingFee({
+      paymentRequest,
+      walletId: senderWalletId,
+      walletCurrency: senderWallet.currency,
+    })
+    if (getRouteResult instanceof Error) return getRouteResult
   }
   // END FIXME
 
@@ -237,7 +242,12 @@ export const payNoAmountInvoiceByWalletId = async ({
   if (senderWallet instanceof Error) return senderWallet
 
   if (senderWallet.currency === WalletCurrency.Usd) {
-    await getNoAmountLightningFee({ walletId: senderWalletId, amount, paymentRequest })
+    const getRouteResult = await getNoAmountLightningFee({
+      walletId: senderWalletId,
+      amount,
+      paymentRequest,
+    })
+    if (getRouteResult instanceof Error) return getRouteResult
   }
   // END FIXME
 
