@@ -16,7 +16,7 @@ import {
   ValidationError,
 } from "@domain/errors"
 import { TwoFAError } from "@domain/twoFA"
-import { PaymentInitiationMethod } from "@domain/wallets"
+import { PaymentInitiationMethod, WalletCurrency } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { getDealerUsdWalletId } from "@services/ledger/caching"
 import { LndService } from "@services/lnd"
@@ -842,6 +842,7 @@ describe("UserWallet - Lightning Pay", () => {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           const feeFromProbe = await Wallets.getRoutingFee({
             walletId: walletId,
+            walletCurrency: WalletCurrency.Btc,
             paymentRequest: input.invoice,
           })
           if (feeFromProbe instanceof Error) throw feeFromProbe
