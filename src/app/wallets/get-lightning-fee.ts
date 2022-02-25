@@ -99,7 +99,11 @@ const feeProbe = async ({
   let balanceInSats: Satoshis
   if (walletCurrency === WalletCurrency.Usd) {
     const dealer = DealerPriceService()
-    const sats_ = await dealer.getSatsFromCentsForImmediateSell(toCents(balance))
+
+    // FIXME: this is to get around a serialization problem for long floats and the grpc interface
+    const roundedBalance = Math.floor(balance)
+    const sats_ = await dealer.getSatsFromCentsForImmediateSell(toCents(roundedBalance))
+
     if (sats_ instanceof Error) return sats_
     balanceInSats = sats_
   } else {
