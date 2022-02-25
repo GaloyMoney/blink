@@ -22,9 +22,11 @@ import { toCents } from "@domain/fiat"
 export const getRoutingFee = async ({
   walletId,
   paymentRequest,
+  walletCurrency,
 }: {
   walletId: WalletId
   paymentRequest: EncodedPaymentRequest
+  walletCurrency: WalletCurrency
 }): Promise<Satoshis | ApplicationError> => {
   const decodedInvoice = decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
@@ -37,7 +39,7 @@ export const getRoutingFee = async ({
   const paymentAmount = checkedToSats(amount)
   if (paymentAmount instanceof Error) return paymentAmount
 
-  return feeProbe({ walletId, decodedInvoice, paymentAmount })
+  return feeProbe({ walletId, decodedInvoice, paymentAmount, walletCurrency })
 }
 
 export const getNoAmountLightningFee = async ({
@@ -79,10 +81,12 @@ const feeProbe = async ({
   walletId,
   decodedInvoice,
   paymentAmount,
+  walletCurrency,
 }: {
   walletId: WalletId
   decodedInvoice: LnInvoice
   paymentAmount: Satoshis
+  walletCurrency: WalletCurrency
 }): Promise<Satoshis | ApplicationError> => {
   const { destination, paymentHash } = decodedInvoice
 
@@ -91,7 +95,18 @@ const feeProbe = async ({
 
   const balance = await LedgerService().getWalletBalance(walletId)
   if (balance instanceof Error) return balance
-  if (balance < paymentAmount) {
+
+  let balanceInSats: Satoshis
+  if (walletCurrency === WalletCurrency.Usd) {
+    const dealer = DealerPriceService()
+    const sats_ = await dealer.getSatsFromCentsForImmediateSell(toCents(balance))
+    if (sats_ instanceof Error) return sats_
+    balanceInSats = sats_
+  } else {
+    balanceInSats = balance as Satoshis
+  }
+
+  if (balanceInSats < paymentAmount) {
     return new InsufficientBalanceError(
       `Payment amount '${paymentAmount}' exceeds balance '${balance}'`,
     )
