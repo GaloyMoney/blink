@@ -22,7 +22,11 @@ import { getDealerUsdWalletId } from "@services/ledger/caching"
 import { LndService } from "@services/lnd"
 import { getActiveLnd, getInvoiceAttempt } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
-import { LnPaymentsRepository, WalletInvoicesRepository } from "@services/mongoose"
+import {
+  LnPaymentsRepository,
+  WalletInvoicesRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
 
 import { sleep } from "@utils"
@@ -840,9 +844,13 @@ describe("UserWallet - Lightning Pay", () => {
       initialFee: 0,
       fn: function fn({ walletId, account }: { walletId: WalletId; account: Account }) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
+          const wallet = await WalletsRepository().findById(walletId)
+          if (wallet instanceof Error) throw wallet
+
           const feeFromProbe = await Wallets.getRoutingFee({
             walletId: walletId,
             paymentRequest: input.invoice,
+            walletCurrency: wallet.currency,
           })
           if (feeFromProbe instanceof Error) throw feeFromProbe
           const paymentResult = await Wallets.payInvoiceByWalletIdWithTwoFA({

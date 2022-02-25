@@ -42,6 +42,7 @@ const LnInvoiceFeeProbeMutation = GT.Field({
     const feeSatAmount = await Wallets.getRoutingFee({
       walletId,
       paymentRequest,
+      walletCurrency: wallet.currency,
     })
     if (feeSatAmount instanceof Error) {
       const appErr = mapError(feeSatAmount)
