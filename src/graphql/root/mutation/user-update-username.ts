@@ -1,4 +1,5 @@
 import { Accounts } from "@app"
+import { UsernameIsImmutableError } from "@domain/accounts"
 import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
@@ -19,7 +20,7 @@ const UserUpdateUsernameMutation = GT.Field({
   },
   deprecationReason:
     "Username will be moved to @Handle in Accounts. Also SetUsername should be used instead of UpdateUsername to reflect the idempotency of Handles",
-  resolve: async (_, args, { domainAccount }: { domainAccount: Account }) => {
+  resolve: async (_, args, { domainAccount, domainUser }: GraphQLContextForUser) => {
     const { username } = args.input
 
     if (username instanceof Error) {
@@ -30,7 +31,9 @@ const UserUpdateUsernameMutation = GT.Field({
 
     if (result instanceof Error) {
       const appErr = mapError(result)
-      return { errors: [{ message: appErr.message || appErr.name }] }
+      return result instanceof UsernameIsImmutableError
+        ? { errors: [{ message: appErr.message || appErr.name }], user: domainUser }
+        : { errors: [{ message: appErr.message || appErr.name }] }
     }
 
     return {
