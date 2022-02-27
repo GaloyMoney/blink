@@ -27,6 +27,7 @@ export class RouteNotFoundError extends LightningServiceError {}
 export class InsufficientBalanceForRoutingError extends LightningServiceError {}
 export class InvoiceExpiredOrBadPaymentHashError extends LightningServiceError {}
 export class PaymentAttemptsTimedOutError extends LightningServiceError {}
+export class ProbeForRouteTimedOutError extends LightningServiceError {}
 export class UnknownRouteNotFoundError extends LightningServiceError {
   level = ErrorLevel.Critical
 }

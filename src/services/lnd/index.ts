@@ -16,6 +16,7 @@ import {
   CorruptLndDbError,
   InvoiceExpiredOrBadPaymentHashError,
   PaymentAttemptsTimedOutError,
+  ProbeForRouteTimedOutError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
 import {
@@ -146,6 +147,8 @@ export const LndService = (): ILightningService | LightningServiceError => {
       switch (errDetails) {
         case KnownLndErrorDetails.InsufficientBalance:
           return new InsufficientBalanceForRoutingError()
+        case KnownLndErrorDetails.ProbeForRouteTimedOut:
+          return new ProbeForRouteTimedOutError()
         default:
           return new UnknownRouteNotFoundError(err)
       }
@@ -603,6 +606,7 @@ const KnownLndErrorDetails = {
   LndDbCorruption: "payment isn't initiated",
   PaymentRejectedByDestination: "PaymentRejectedByDestination",
   PaymentAttemptsTimedOut: "PaymentAttemptsTimedOut",
+  ProbeForRouteTimedOut: "ProbeForRouteTimedOut",
 } as const
 
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({

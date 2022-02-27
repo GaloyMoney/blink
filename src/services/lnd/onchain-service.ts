@@ -3,6 +3,7 @@ import {
   IncomingOnChainTransaction,
   CouldNotFindOnChainTransactionError,
   OutgoingOnChainTransaction,
+  InsufficientOnChainFundsError,
 } from "@domain/bitcoin/onchain"
 import { toSats } from "@domain/bitcoin"
 import {
@@ -129,7 +130,12 @@ export const OnChainService = (
       return toSats(fee)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      return new UnknownOnChainServiceError(errDetails)
+      switch (errDetails) {
+        case KnownLndErrorDetails.InsufficientFunds:
+          return new InsufficientOnChainFundsError()
+        default:
+          return new UnknownOnChainServiceError(err)
+      }
     }
   }
 
@@ -169,6 +175,10 @@ export const OnChainService = (
 
 const parseLndErrorDetails = (err) =>
   err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details || err[1]
+
+const KnownLndErrorDetails = {
+  InsufficientFunds: "insufficient funds available to construct transaction",
+} as const
 
 export const extractIncomingTransactions = ({
   decoder,
