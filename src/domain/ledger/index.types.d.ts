@@ -218,6 +218,8 @@ interface ILedgerService {
     walletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
+  listAllPaymentHashes(): AsyncGenerator<PaymentHash | LedgerError>
+
   getPendingPaymentsCount(walletId: WalletId): Promise<number | LedgerServiceError>
 
   getWalletBalance(walletId: WalletId): Promise<CurrencyBaseAmount | LedgerServiceError>
