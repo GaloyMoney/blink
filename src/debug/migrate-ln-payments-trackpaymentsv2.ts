@@ -55,10 +55,17 @@ const migrateLnPayment = async (
       const lnPaymentsRepo = LnPaymentsRepository()
       const lnPaymentExists = await lnPaymentsRepo.findByPaymentHash(paymentHash)
       if (!(lnPaymentExists instanceof CouldNotFindError)) {
-        const msg = `Skipping, payment already exists: ${paymentHash}`
-        baseLogger.info(msg)
-        addAttributesToCurrentSpan({ "migrateLnPayment.skip": true })
-        addEventToCurrentSpan(msg)
+        if (lnPaymentExists instanceof Error) {
+          const errMsg = `Could not query LnPayments repository (${lnPaymentExists.name})`
+          baseLogger.error(errMsg)
+          addAttributesToCurrentSpan({ error: true })
+          addEventToCurrentSpan(errMsg)
+        } else {
+          const msg = `Skipping, payment already exists: ${paymentHash}`
+          baseLogger.info(msg)
+          addAttributesToCurrentSpan({ "migrateLnPayment.skip": true })
+          addEventToCurrentSpan(msg)
+        }
         return true
       }
 
