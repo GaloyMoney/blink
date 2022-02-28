@@ -35,7 +35,10 @@ const voidPayment = async (paymentHash: PaymentHash) => {
   const settled = await ledgerService.settlePendingLnPayment(paymentHash)
   if (settled instanceof Error) return settled
 
-  const reverted = await ledgerService.revertLightningPayment(payment.journalId)
+  const reverted = await ledgerService.revertLightningPayment({
+    journalId: payment.journalId,
+    paymentHash,
+  })
   if (reverted instanceof Error) return reverted
 
   return true
