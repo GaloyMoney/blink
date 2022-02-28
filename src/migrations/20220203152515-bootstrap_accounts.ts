@@ -6,6 +6,7 @@ const adminUsers = [
   {
     role: "dealer",
     needUsdWallet: true,
+    phone: "+1928282918",
   },
   { role: "funder" },
   { role: "bankowner" },
@@ -25,7 +26,7 @@ module.exports = {
 
       let userId
       if (!user) {
-        const phone = getRandomInvalidPhone()
+        const phone = userMeta.phone ?? getRandomInvalidPhone()
         const created_at = new Date()
         const result = await db.collection("users").insertOne({ role, phone, created_at })
         userId = result.insertedId
