@@ -44,7 +44,8 @@ const migrateLnPayment = async (
   asyncRunInSpan(
     "debug.migrateLnPayment",
     {
-      [SemanticAttributes.CODE_FUNCTION]: "debug.migrateLnPayment",
+      [SemanticAttributes.CODE_FUNCTION]: "migrateLnPayment",
+      [SemanticAttributes.CODE_NAMESPACE]: "debug",
       "migrateLnPayment.paymentHash":
         paymentHash instanceof Error ? paymentHash.name : paymentHash,
     },
