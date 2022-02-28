@@ -4,7 +4,8 @@
  *		--files \
  *			-r tsconfig-paths/register \
  *			-r src/services/tracing.ts \
- *		src/debug/migrate-ln-payments-trackpaymentsv2.ts
+ *		src/debug/migrate-ln-payments-trackpaymentsv2.ts \
+ *      2>&1 | tee migration.logs
  */
 
 import { isUp } from "@services/lnd/health"
