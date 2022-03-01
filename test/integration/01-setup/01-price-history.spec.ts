@@ -13,8 +13,9 @@ describe("Price history", () => {
       "pair.exchange.name": exchange,
     })
 
+    const HOURS_IN_YEAR = 8772
     if (doc) {
-      expect(doc.pair.exchange.price.length).toBeGreaterThanOrEqual(8780)
+      expect(doc.pair.exchange.price.length).toBeGreaterThanOrEqual(HOURS_IN_YEAR)
       return
     }
 

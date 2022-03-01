@@ -6,7 +6,7 @@ describe("Price", () => {
     const rangesIntervalsToTest = [
       { range: PriceRange.OneDay, interval: PriceInterval.OneHour, ticks: 23 },
       { range: PriceRange.OneWeek, interval: PriceInterval.FourHours, ticks: 42 },
-      { range: PriceRange.OneMonth, interval: PriceInterval.OneDay, ticks: 30 },
+      { range: PriceRange.OneMonth, interval: PriceInterval.OneDay, ticks: 29 }, // 29 to accommodate for February
       { range: PriceRange.OneYear, interval: PriceInterval.OneWeek, ticks: 52 },
     ]
     rangesIntervalsToTest.forEach(({ range, interval, ticks }) => {
