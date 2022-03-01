@@ -11,10 +11,12 @@ import { setupMongoConnection } from "@services/mongodb"
 
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { ColdStorage, Lightning, Wallets } from "@app"
+import { getCronConfig } from "@config"
 
 const logger = baseLogger.child({ module: "cron" })
 
 const main = async () => {
+  const cronConfig = getCronConfig()
   const results: Array<boolean> = []
   const mongoose = await setupMongoConnection()
 
@@ -49,7 +51,7 @@ const main = async () => {
     deleteFailedPaymentsAttemptAllLnds,
     updateRoutingRevenues,
     updateOnChainReceipt,
-    rebalance,
+    ...(cronConfig.rebalanceEnabled ? [rebalance] : []),
     updateLnPaymentsCollection,
   ]
 
