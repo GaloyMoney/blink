@@ -136,7 +136,6 @@ export const payInvoiceByWalletId = async ({
     const getRouteResult = await getRoutingFee({
       paymentRequest,
       walletId: senderWalletId,
-      walletCurrency: senderWallet.currency,
     })
     if (getRouteResult instanceof Error) return getRouteResult
   }
