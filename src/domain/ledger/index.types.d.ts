@@ -146,6 +146,7 @@ type SendIntraledgerTxArgs = IntraledgerTxArgs & {
     | AddLnIntraledgerSendLedgerMetadata
     | AddOnChainIntraledgerSendLedgerMetadata
     | AddWalletIdIntraledgerSendLedgerMetadata
+  paymentHash?: PaymentHash
 }
 
 type AddLnIntraledgerTxTransferArgs = AddIntraLedgerTxSendArgs & {
@@ -168,6 +169,7 @@ type AddLnFeeReeimbursementReceiveArgs = {
   cents?: UsdCents
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   journalId: LedgerJournalId
+  revealedPreImage?: RevealedPreImage
 }
 
 type FeeReimbursement = {
@@ -196,7 +198,18 @@ type VolumeSinceArgs = {
 type VolumeResult = Promise<TxBaseVolume | LedgerServiceError>
 type GetVolumeSinceFn = (args: VolumeSinceArgs) => VolumeResult
 
+type RevertLightningPaymentArgs = {
+  journalId: LedgerJournalId
+  paymentHash: PaymentHash
+}
+
 interface ILedgerService {
+  updateMetadataByHash(
+    ledgerTxMetadata:
+      | OnChainLedgerTransactionMetadataUpdate
+      | LnLedgerTransactionMetadataUpdate,
+  ): Promise<true | LedgerServiceError>
+
   getTransactionById(
     id: LedgerTransactionId,
   ): Promise<LedgerTransaction | LedgerServiceError>
@@ -276,7 +289,9 @@ interface ILedgerService {
 
   settlePendingOnChainPayment(hash: OnChainTxHash): Promise<true | LedgerServiceError>
 
-  revertLightningPayment(journalId: LedgerJournalId): Promise<void | LedgerServiceError>
+  revertLightningPayment(
+    args: RevertLightningPaymentArgs,
+  ): Promise<void | LedgerServiceError>
 
   getWalletIdByTransactionHash(
     hash: OnChainTxHash,

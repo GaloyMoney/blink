@@ -304,6 +304,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "IpFetcherServiceError":
     case "UnknownIpFetcherServiceError":
     case "CouldNotFindTransactionError":
+    case "CouldNotFindTransactionMetadataError":
     case "InvalidLedgerTransactionId":
     case "CacheError":
     case "LocalCacheNotAvailableError":
@@ -342,6 +343,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "DomainError":
     case "ErrorLevel":
     case "InvalidCurrencyBaseAmountError":
+    case "NoTransactionToUpdateError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 

@@ -8,6 +8,7 @@ import { toCents } from "@domain/fiat"
 import { PaymentInitiationMethod, WalletCurrency } from "@domain/wallets"
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
+import { TransactionsMetadataRepository } from "@services/ledger/services"
 import { baseLogger } from "@services/logger"
 
 import {
@@ -85,14 +86,24 @@ describe("UserWallet - Lightning", () => {
     ).not.toBeInstanceOf(Error)
 
     const ledger = LedgerService()
+    const ledgerMetadata = TransactionsMetadataRepository()
     const ledgerTxs = await ledger.getTransactionsByHash(hash)
     if (ledgerTxs instanceof Error) throw ledgerTxs
 
     const ledgerTx = ledgerTxs[0]
+    const ledgerTxMetadata = await ledgerMetadata.findById(ledgerTx.id)
+    if (ledgerTxMetadata instanceof Error) throw ledgerTxMetadata
 
     expect(ledgerTx.credit).toBe(sats)
     expect(ledgerTx.lnMemo).toBe(memo)
     expect(ledgerTx.pendingConfirmation).toBe(false)
+
+    expect(ledgerTxMetadata).toHaveProperty("hash")
+    if (!("hash" in ledgerTxMetadata)) return
+    expect(ledgerTxMetadata.hash).toBe(ledgerTx.paymentHash)
+
+    if ("revealedPreImage" in ledgerTxMetadata)
+      expect(ledgerTxMetadata.revealedPreImage).toBeUndefined()
 
     const isPaidAfterPay = await checker.invoiceIsPaid()
     expect(isPaidAfterPay).not.toBeInstanceOf(Error)
@@ -286,14 +297,24 @@ describe("UserWallet - Lightning", () => {
     ).not.toBeInstanceOf(Error)
 
     const ledger = LedgerService()
+    const ledgerMetadata = TransactionsMetadataRepository()
     const ledgerTxs = await ledger.getTransactionsByHash(hash)
     if (ledgerTxs instanceof Error) throw ledgerTxs
 
     const ledgerTx = ledgerTxs[0]
+    const ledgerTxMetadata = await ledgerMetadata.findById(ledgerTx.id)
+    if (ledgerTxMetadata instanceof Error) throw ledgerTxMetadata
 
     expect(ledgerTx.credit).toBe(sats)
     expect(ledgerTx.lnMemo).toBe("")
     expect(ledgerTx.pendingConfirmation).toBe(false)
+
+    expect(ledgerTxMetadata).toHaveProperty("hash")
+    if (!("hash" in ledgerTxMetadata)) return
+    expect(ledgerTxMetadata.hash).toBe(ledgerTx.paymentHash)
+
+    if ("revealedPreImage" in ledgerTxMetadata)
+      expect(ledgerTxMetadata.revealedPreImage).toBeUndefined()
 
     const finalBalance = await getBalanceHelper(walletIdB)
     expect(finalBalance).toBe(initBalanceB + sats)

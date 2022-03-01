@@ -6,6 +6,7 @@ import { NotReachableError } from "@domain/errors"
 
 import { MainBook } from "./books"
 import { getDealerBtcWalletId, getDealerUsdWalletId } from "./caching"
+import { TransactionsMetadataRepository } from "./services"
 
 import { translateToLedgerJournal } from "."
 
@@ -122,6 +123,7 @@ export const intraledger = {
       memoPayer,
       shareMemoWithPayee: false,
       metadata,
+      paymentHash,
     })
   },
 }
@@ -139,12 +141,13 @@ const addIntraledgerTxTransfer = async ({
   memoPayer,
   shareMemoWithPayee,
   metadata,
+  paymentHash,
 }: SendIntraledgerTxArgs): Promise<LedgerJournal | LedgerError> => {
   const senderLiabilitiesWalletId = toLiabilitiesWalletId(senderWalletId)
   const recipientLiabilitiesWalletId = toLiabilitiesWalletId(recipientWalletId)
 
   const entry = MainBook.entry(description)
-
+  const txMetadataRepo = TransactionsMetadataRepository()
   if (
     recipientWalletCurrency === WalletCurrency.Btc &&
     senderWalletCurrency === WalletCurrency.Btc
@@ -171,7 +174,15 @@ const addIntraledgerTxTransfer = async ({
         .debit(senderLiabilitiesWalletId, sats, debitMetadata)
 
       const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
+      const journalEntry = translateToLedgerJournal(savedEntry)
+
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
+        hash: paymentHash,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
+
+      return journalEntry
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -201,7 +212,15 @@ const addIntraledgerTxTransfer = async ({
         .debit(senderLiabilitiesWalletId, cents, debitMetadata)
 
       const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
+      const journalEntry = translateToLedgerJournal(savedEntry)
+
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
+        hash: paymentHash,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
+
+      return journalEntry
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -238,7 +257,15 @@ const addIntraledgerTxTransfer = async ({
         .debit(senderLiabilitiesWalletId, cents, debitMetadata)
 
       const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
+      const journalEntry = translateToLedgerJournal(savedEntry)
+
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
+        hash: paymentHash,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
+
+      return journalEntry
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -276,7 +303,15 @@ const addIntraledgerTxTransfer = async ({
         .debit(senderLiabilitiesWalletId, sats, debitMetadata)
 
       const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
+      const journalEntry = translateToLedgerJournal(savedEntry)
+
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
+        hash: paymentHash,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
+
+      return journalEntry
     } catch (err) {
       return new UnknownLedgerError(err)
     }

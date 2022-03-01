@@ -142,6 +142,13 @@ const updatePendingPayment = async ({
           { success: true, id: paymentHash, payment: pendingPayment },
           "payment has been confirmed",
         )
+
+        const revealedPreImage = lnPaymentLookup.confirmedDetails?.revealedPreImage
+        if (revealedPreImage)
+          LedgerService().updateMetadataByHash({
+            hash: paymentHash,
+            revealedPreImage,
+          })
         if (pendingPayment.feeKnownInAdvance) return true
 
         return reimburseFee({
@@ -151,6 +158,7 @@ const updatePendingPayment = async ({
           paymentHash,
           maxFee: pendingPayment.fee,
           actualFee: roundedUpFee,
+          revealedPreImage,
           logger,
         })
       } else if (status === PaymentStatus.Failed) {
@@ -159,9 +167,10 @@ const updatePendingPayment = async ({
           "payment has failed. reverting transaction",
         )
 
-        const voided = await ledgerService.revertLightningPayment(
-          pendingPayment.journalId,
-        )
+        const voided = await ledgerService.revertLightningPayment({
+          journalId: pendingPayment.journalId,
+          paymentHash,
+        })
         if (voided instanceof Error) {
           const error = `error voiding payment entry`
           logger.fatal({ success: false, result: lnPaymentLookup }, error)

@@ -13,7 +13,11 @@ import { lndAccountingPath } from "./accounts"
 import { MainBook, Transaction } from "./books"
 import * as caching from "./caching"
 
+import { TransactionsMetadataRepository } from "./services"
+
 import { translateToLedgerJournal } from "."
+
+const txMetadataRepo = TransactionsMetadataRepository()
 
 export const send = {
   addLnTxSend: async ({
@@ -126,21 +130,24 @@ export const send = {
     }
   },
 
-  revertLightningPayment: async (
-    // TODO: manage currency conversion in case of USD wallet
-    journalId: LedgerJournalId,
-  ): Promise<void | LedgerServiceError> => voidLedgerTransactionsByJournalId(journalId),
-}
+  revertLightningPayment: async ({
+    journalId,
+    paymentHash,
+  }: RevertLightningPaymentArgs): Promise<void | LedgerServiceError> => {
+    const reason = "Payment canceled"
+    try {
+      const savedEntry = await MainBook.void(journalId, reason)
+      const journalEntry = translateToLedgerJournal(savedEntry)
 
-const voidLedgerTransactionsByJournalId = async (
-  journalId: LedgerJournalId,
-): Promise<void | LedgerServiceError> => {
-  const reason = "Payment canceled"
-  try {
-    await MainBook.void(journalId, reason)
-  } catch (err) {
-    return new UnknownLedgerError(err)
-  }
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
+        hash: paymentHash,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  },
 }
 
 const addSendNoInternalFee = async ({
@@ -169,7 +176,15 @@ const addSendNoInternalFee = async ({
         .debit(liabilitiesWalletId, sats, metadata)
 
       const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
+      const journalEntry = translateToLedgerJournal(savedEntry)
+
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
+        hash: metadata.hash,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
+
+      return journalEntry
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -198,7 +213,15 @@ const addSendNoInternalFee = async ({
         .debit(liabilitiesWalletId, cents, metaUsd)
 
       const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
+      const journalEntry = translateToLedgerJournal(savedEntry)
+
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
+        hash: metaInput.hash,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
+
+      return journalEntry
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -238,7 +261,15 @@ const addSendInternalFee = async ({
       .credit(bankOwnerPath, fee, metadata)
 
     const savedEntry = await entry.commit()
-    return translateToLedgerJournal(savedEntry)
+    const journalEntry = translateToLedgerJournal(savedEntry)
+
+    const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+      id,
+      hash: metadata.hash,
+    }))
+    txMetadataRepo.persistAll(txsMetadataToPersist)
+
+    return journalEntry
   } catch (err) {
     return new UnknownLedgerError(err)
   }

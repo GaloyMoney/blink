@@ -28,6 +28,7 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
+import { TransactionsMetadataRepository } from "@services/ledger/services"
 
 import { sleep } from "@utils"
 
@@ -403,7 +404,11 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("pay zero amount invoice", async () => {
-    const { request } = await createInvoice({ lnd: lndOutside1 })
+    const { request, secret, id } = await createInvoice({ lnd: lndOutside1 })
+    const paymentHash = id as PaymentHash
+    const revealedPreImage = secret as RevealedPreImage
+
+    // Test payment is successful
     const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
@@ -414,6 +419,38 @@ describe("UserWallet - Lightning Pay", () => {
     })
     if (paymentResult instanceof Error) throw paymentResult
     expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+    // Test metadata is correctly persisted
+    const txns = await LedgerService().getTransactionsByHash(paymentHash)
+    if (txns instanceof Error) throw txns
+    const txns_metadata = await Promise.all(
+      txns.map(async (txn) => TransactionsMetadataRepository().findById(txn.id)),
+    )
+    expect(txns_metadata).toHaveLength(txns.length)
+
+    const metadataCheck = txns_metadata.every((txn) => !(txn instanceof Error))
+    expect(metadataCheck).toBeTruthy()
+    if (!metadataCheck) throw txns_metadata.find((txn) => txn instanceof Error)
+
+    const revealedPreImages = new Set(
+      txns_metadata.map((txn) =>
+        txn instanceof Error
+          ? txn
+          : "revealedPreImage" in txn
+          ? txn.revealedPreImage
+          : undefined,
+      ),
+    )
+    expect(revealedPreImages.size).toEqual(1)
+    expect(revealedPreImages.has(revealedPreImage)).toBeTruthy()
+
+    const paymentHashes = new Set(
+      txns_metadata.map((txn) =>
+        txn instanceof Error ? txn : "hash" in txn ? txn.hash : undefined,
+      ),
+    )
+    expect(paymentHashes.size).toEqual(1)
+    expect(paymentHashes.has(paymentHash)).toBeTruthy()
 
     const finalBalance = await getBalanceHelper(walletIdB)
     expect(finalBalance).toBe(initBalanceB - amountInvoice)
@@ -1177,9 +1214,13 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnSettled.status).toBe(PaymentStatus.Settled)
         expect(lnPaymentOnSettled.milliSatsAmount).toBe(payment.milliSatsAmount)
         expect(lnPaymentOnSettled.roundedUpAmount).toBe(payment.roundedUpAmount)
-        expect(lnPaymentOnSettled.confirmedDetails?.revealedPreImage).not.toBeUndefined()
+        expect(lnPaymentOnSettled.confirmedDetails).not.toBeUndefined()
         expect(lnPaymentOnSettled.attempts).not.toBeUndefined()
         expect(lnPaymentOnSettled.attempts?.length).toBeGreaterThanOrEqual(1)
+
+        const preImage = payment.confirmedDetails?.revealedPreImage
+        expect(preImage).toHaveLength(64)
+        expect(lnPaymentOnSettled.confirmedDetails?.revealedPreImage).toBe(preImage)
 
         expect(lnPaymentOnSettled.paymentRequest).toBe(request)
         expect(lnPaymentOnSettled.sentFromPubkey).toBe(lnPaymentOnPay.sentFromPubkey)

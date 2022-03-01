@@ -38,11 +38,11 @@ import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import {
+  LnPaymentsRepository,
   UsersRepository,
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { LnPaymentsRepository } from "@services/mongoose/ln-payments"
 import { NotificationsService } from "@services/notifications"
 import { RoutesCache } from "@services/redis/routes"
 import { addAttributesToCurrentSpan } from "@services/tracing"
@@ -695,11 +695,19 @@ const executePaymentViaLn = async ({
           })
 
       // Fire-and-forget update to 'lnPayments' collection
-      LnPaymentsRepository().persistNew({
-        paymentHash: decodedInvoice.paymentHash,
-        paymentRequest: decodedInvoice.paymentRequest,
-        sentFromPubkey: rawRoute ? pubkey : lndService.defaultPubkey(),
-      })
+      if (!(payResult instanceof LnAlreadyPaidError)) {
+        LnPaymentsRepository().persistNew({
+          paymentHash: decodedInvoice.paymentHash,
+          paymentRequest: decodedInvoice.paymentRequest,
+          sentFromPubkey: rawRoute ? pubkey : lndService.defaultPubkey(),
+        })
+
+        if (!(payResult instanceof Error))
+          ledgerService.updateMetadataByHash({
+            hash: paymentHash,
+            revealedPreImage: payResult.revealedPreImage,
+          })
+      }
 
       if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending
 
@@ -707,7 +715,10 @@ const executePaymentViaLn = async ({
       if (settled instanceof Error) return settled
 
       if (payResult instanceof Error) {
-        const voided = await ledgerService.revertLightningPayment(journalId)
+        const voided = await ledgerService.revertLightningPayment({
+          journalId,
+          paymentHash,
+        })
         if (voided instanceof Error) return voided
 
         if (payResult instanceof LnAlreadyPaidError) return PaymentSendStatus.AlreadyPaid
@@ -723,6 +734,7 @@ const executePaymentViaLn = async ({
           paymentHash,
           maxFee: feeRouting,
           actualFee: payResult.roundedUpFee,
+          revealedPreImage: payResult.revealedPreImage,
           logger,
         })
         if (reimbursed instanceof Error) return reimbursed

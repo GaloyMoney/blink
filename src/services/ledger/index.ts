@@ -23,6 +23,7 @@ import { admin } from "./admin"
 import * as adminLegacy from "./admin-legacy"
 import { MainBook, Transaction } from "./books"
 import * as caching from "./caching"
+import { TransactionsMetadataRepository } from "./services"
 import { intraledger } from "./intraledger"
 import { receive } from "./receive"
 import { send } from "./send"
@@ -44,6 +45,13 @@ export const lazyLoadLedgerAdmin = ({
 }
 
 export const LedgerService = (): ILedgerService => {
+  const updateMetadataByHash = async (
+    ledgerTxMetadata:
+      | OnChainLedgerTransactionMetadataUpdate
+      | LnLedgerTransactionMetadataUpdate,
+  ): Promise<true | LedgerServiceError | RepositoryError> =>
+    TransactionsMetadataRepository().updateByHash(ledgerTxMetadata)
+
   const getTransactionById = async (
     id: LedgerTransactionId,
   ): Promise<LedgerTransaction | LedgerServiceError> => {
@@ -261,6 +269,7 @@ export const LedgerService = (): ILedgerService => {
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.ledger",
     fns: {
+      updateMetadataByHash,
       getTransactionById,
       getTransactionsByHash,
       getTransactionsByWalletId,

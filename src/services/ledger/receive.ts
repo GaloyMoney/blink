@@ -8,7 +8,11 @@ import { lndAccountingPath } from "./accounts"
 import { MainBook } from "./books"
 import * as caching from "./caching"
 
+import { TransactionsMetadataRepository } from "./services"
+
 import { translateToLedgerJournal } from "."
+
+const txMetadataRepo = TransactionsMetadataRepository()
 
 export const receive = {
   addOnChainTxReceive: async ({
@@ -105,6 +109,7 @@ export const receive = {
     journalId,
     sats,
     cents,
+    revealedPreImage,
   }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: FeeReimbursementLedgerMetadata = {
       type: LedgerTransactionType.LnFeeReimbursement,
@@ -122,6 +127,7 @@ export const receive = {
       sats,
       walletCurrency,
       cents,
+      revealedPreImage,
     })
   },
 }
@@ -133,6 +139,7 @@ const addReceiptNoFee = async ({
   sats,
   cents,
   description,
+  revealedPreImage,
 }: {
   metadata: ReceiveLedgerMetadata
   walletId: WalletId
@@ -140,6 +147,7 @@ const addReceiptNoFee = async ({
   sats: Satoshis
   cents?: UsdCents
   description: string
+  revealedPreImage?: RevealedPreImage
 }) => {
   const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
 
@@ -152,7 +160,16 @@ const addReceiptNoFee = async ({
         .debit(lndAccountingPath, sats, metadata)
 
       const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
+      const journalEntry = translateToLedgerJournal(savedEntry)
+
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
+        hash: metadata.hash,
+        revealedPreImage,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
+
+      return journalEntry
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -182,7 +199,15 @@ const addReceiptNoFee = async ({
         .debit(liabilitiesDealerUsdWalletId, cents, metaUsd)
 
       const savedEntry = await entry.commit()
-      return translateToLedgerJournal(savedEntry)
+      const journalEntry = translateToLedgerJournal(savedEntry)
+
+      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+        id,
+        hash: metaInput.hash,
+      }))
+      txMetadataRepo.persistAll(txsMetadataToPersist)
+
+      return journalEntry
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -221,7 +246,15 @@ const addReceiptFee = async ({
       .credit(bankOwnerPath, fee, metadata)
 
     const savedEntry = await entry.commit()
-    return translateToLedgerJournal(savedEntry)
+    const journalEntry = translateToLedgerJournal(savedEntry)
+
+    const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+      id,
+      hash: metadata.hash,
+    }))
+    txMetadataRepo.persistAll(txsMetadataToPersist)
+
+    return journalEntry
   } catch (err) {
     return new UnknownLedgerError(err)
   }
