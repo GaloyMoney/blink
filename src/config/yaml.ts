@@ -199,3 +199,5 @@ export const LND_SCB_BACKUP_BUCKET_NAME = yamlConfig.lndScbBackupBucketName
 
 export const getTestAccounts = (config = yamlConfig): TestAccount[] =>
   config.test_accounts
+
+export const getCronConfig = (config = yamlConfig): CronConfig => config.cronConfig

@@ -160,3 +160,6 @@ apollo:
   playgroundUrl: "https://api.staging.galoy.io/graphql"
 
 userActivenessMonthlyVolumeThreshold: 100 # cents
+
+cronConfig:
+  rebalanceEnabled: true

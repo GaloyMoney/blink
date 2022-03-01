@@ -69,3 +69,7 @@ type TransactionType =
   | "deposit_fee"
   | "routing_fee"
   | "onchain_receipt_pending" // only for notification, not persistent in mongodb
+
+type CronConfig = {
+  rebalanceEnabled: boolean
+}
