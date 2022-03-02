@@ -9,9 +9,15 @@ interface MediciEntry {
 
 type TxMetadata = any
 
+type StaticAccountIds = {
+  bankOwnerAccountId: LedgerAccountId
+  dealerBtcAccountId: LedgerAccountId
+  dealerUsdAccountId: LedgerAccountId
+}
+
 type EntryBuilderConfig = {
   entry: MediciEntry
-  bankOwnerAccountId: LedgerAccountId
+  staticAccountIds: StaticAccountIds
   metadata: TxMetadata
 }
 

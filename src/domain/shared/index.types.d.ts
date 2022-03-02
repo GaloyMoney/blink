@@ -5,3 +5,6 @@ type PaymentAmount<T extends WalletCurrency> = {
   currency: T
   amount: bigint
 }
+
+type BtcPaymentAmount = PaymentAmount<"BTC">
+type UsdPaymentAmount = PaymentAmount<"USD">
