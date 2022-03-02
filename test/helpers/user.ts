@@ -9,7 +9,8 @@ import {
 import { User } from "@services/mongoose/schema"
 import { toObjectId } from "@services/mongoose/utils"
 import { addWallet } from "@app/accounts/add-wallet"
-import { WalletCurrency, WalletType } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
+import { WalletType } from "@domain/wallets"
 import { adminUsers } from "@domain/admin-users"
 
 const users = UsersRepository()

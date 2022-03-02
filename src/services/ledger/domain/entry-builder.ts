@@ -1,4 +1,7 @@
 import { lndLedgerAccountId } from "./accounts"
+import { AmountCalculator } from "@domain/shared"
+
+const calc = AmountCalculator()
 
 export const EntryBuilder = ({
   bankOwnerAccountId,
@@ -27,7 +30,7 @@ type EntryBuilderDebitState = {
 }
 
 const EntryBuilderDebit = ({ entry, metadata, btcFee }: EntryBuilderDebitState) => {
-  const debit = ({
+  const debitAccount = ({
     accountId,
     amount,
   }: {
@@ -39,7 +42,7 @@ const EntryBuilderDebit = ({ entry, metadata, btcFee }: EntryBuilderDebitState) 
   }
 
   return {
-    debit,
+    debitAccount,
   }
 }
 
@@ -57,9 +60,8 @@ const EntryBuilderCredit = ({
   debitAmount,
 }: EntryBuilderCreditState) => {
   const creditLnd = () => {
-    const creditAmount =
-      btcFee === "NO_FEE" ? debitAmount.amount : debitAmount.amount - btcFee.amount
-    entry.credit(lndLedgerAccountId, Number(creditAmount), metadata)
+    const creditAmount = btcFee === "NO_FEE" ? debitAmount : calc.sub(debitAmount, btcFee)
+    entry.credit(lndLedgerAccountId, Number(creditAmount.amount), metadata)
     return entry
   }
 

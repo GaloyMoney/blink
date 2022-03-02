@@ -1,7 +1,7 @@
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { ActivityChecker } from "@domain/ledger/activity-checker"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 import { dCConverter } from "test/unit/helpers"
 

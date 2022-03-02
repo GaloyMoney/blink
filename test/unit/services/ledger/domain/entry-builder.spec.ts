@@ -28,7 +28,7 @@ describe("EntryBuilder", () => {
     })
     const result = builder
       .withoutFee()
-      .debit({
+      .debitAccount({
         accountId: debitorAccountId,
         amount: {
           currency: "BTC",
@@ -56,7 +56,7 @@ describe("EntryBuilder", () => {
           amount: feeAmount,
         },
       })
-      .debit({
+      .debitAccount({
         accountId: debitorAccountId,
         amount: {
           currency: "BTC",

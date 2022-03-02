@@ -8,7 +8,7 @@ import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 import { Wallets } from "@app"
 import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 const OnChainPaymentSendInput = GT.Input({
   name: "OnChainPaymentSendInput",

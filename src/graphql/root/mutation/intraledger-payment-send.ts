@@ -1,5 +1,6 @@
 import { Wallets, Accounts } from "@app"
-import { checkedToWalletId, WalletCurrency } from "@domain/wallets"
+import { checkedToWalletId } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"

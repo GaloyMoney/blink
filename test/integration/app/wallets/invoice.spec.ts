@@ -11,7 +11,8 @@ import {
   InvoiceCreateForRecipientRateLimiterExceededError,
   InvoiceCreateRateLimiterExceededError,
 } from "@domain/rate-limit/errors"
-import { WalletCurrency, WalletType } from "@domain/wallets"
+import { WalletType } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 import { WalletInvoicesRepository } from "@services/mongoose"
 
 import {

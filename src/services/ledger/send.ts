@@ -7,7 +7,7 @@ import {
   UnknownLedgerError,
 } from "@domain/ledger/errors"
 
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 import { lndAccountingPath } from "./accounts"
 import { MainBook, Transaction } from "./books"

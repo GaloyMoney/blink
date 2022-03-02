@@ -1,6 +1,7 @@
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
-import { AmountConverter, WalletCurrency } from "@domain/wallets"
+import { AmountConverter } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 import { dCConverter } from "test/unit/helpers"
 import { DealerPriceService } from "test/mocks/dealer-price"

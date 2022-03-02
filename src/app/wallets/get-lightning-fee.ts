@@ -11,7 +11,8 @@ import {
   LnPaymentRequestZeroAmountRequiredError,
 } from "@domain/errors"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
-import { checkedToWalletId, WalletCurrency } from "@domain/wallets"
+import { checkedToWalletId } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
 import { RoutesCache } from "@services/redis/routes"

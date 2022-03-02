@@ -4,7 +4,7 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
 import { Wallets } from "@app"
 import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 const OnChainAddressCurrentInput = GT.Input({
   name: "OnChainAddressCurrentInput",

@@ -6,7 +6,8 @@ import {
   InvalidCurrencyBaseAmountError,
   SelfPaymentError,
 } from "@domain/errors"
-import { PaymentInputValidator, WalletCurrency, WalletType } from "@domain/wallets"
+import { PaymentInputValidator, WalletType } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 describe("PaymentInputValidator", () => {
   const dummyAccount: Account = {

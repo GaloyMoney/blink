@@ -2,7 +2,7 @@ import { MS_PER_DAY } from "@config"
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 let walletInvoiceFactory: WalletInvoiceFactory
 

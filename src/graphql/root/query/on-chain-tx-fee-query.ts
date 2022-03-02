@@ -7,7 +7,7 @@ import OnChainTxFee from "@graphql/types/object/onchain-tx-fee"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 const OnChainTxFeeQuery = GT.Field({
   type: GT.NonNull(OnChainTxFee),
