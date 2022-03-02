@@ -5,37 +5,6 @@ interface Account {
   wallets: [Wallet!]!
 }
 
-type AccountApiKey {
-  expireAt: Timestamp!
-  key: String!
-  label: AccountApiKeyLabel!
-  secret: String!
-}
-
-input AccountApiKeyCreateInput {
-  expireAt: Timestamp!
-  label: AccountApiKeyLabel
-}
-
-input AccountApiKeyDisableInput {
-  label: AccountApiKeyLabel!
-}
-
-type AccountApiKeyHashed {
-  expireAt: Timestamp!
-  label: AccountApiKeyLabel!
-}
-
-"""
-Identifier of an account api key
-"""
-scalar AccountApiKeyLabel
-
-type AccountApiKeyPayload {
-  accountApiKey: AccountApiKey
-  errors: [Error!]!
-}
-
 input AccountUpdateDefaultWalletIdInput {
   walletId: WalletId!
 }
@@ -470,8 +439,6 @@ type MobileVersions {
 }
 
 type Mutation {
-  accountApiKeyCreate(input: AccountApiKeyCreateInput!): AccountApiKeyPayload!
-  accountApiKeyDisable(input: AccountApiKeyDisableInput!): SuccessPayload!
   accountUpdateDefaultWalletId(
     input: AccountUpdateDefaultWalletIdInput!
   ): AccountUpdateDefaultWalletIdPayload!
@@ -753,7 +720,6 @@ type PublicWallet {
 }
 
 type Query {
-  accountApiKeys: [AccountApiKeyHashed]
   accountDefaultWallet(username: Username!, walletCurrency: WalletCurrency): PublicWallet!
   btcPrice: Price
   btcPriceList(range: PriceGraphRange!): [PricePoint]
