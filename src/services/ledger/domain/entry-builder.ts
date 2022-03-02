@@ -1,4 +1,5 @@
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
+import { Payment } from "bitcoinjs-lib"
 
 import { lndLedgerAccountId } from "./accounts"
 
@@ -17,17 +18,27 @@ type EntryBuilderDebit = {
     accountId: LedgerAccountId
     amount: PaymentAmount<D>
   }) => EntryBuilderCredit<D>
+  debitLnd: <D extends "BTC">(amount: PaymentAmount<D>) => EntryBuilderCredit<D>
 }
 
 type EntryBuilderCreditWithUsdDebit = {
   creditLnd: (amount: BtcPaymentAmount) => MediciEntry
+  creditAccount: <D extends WalletCurrency>({
+    accountId,
+    amount,
+  }: {
+    accountId: LedgerAccountId
+    amount: PaymentAmount<D>
+  }) => MediciEntry
+}
+type EntryBuilderCreditWithBtcDebit = {
+  creditLnd: () => MediciEntry
+  creditAccount: ({ accountId }: { accountId: LedgerAccountId }) => MediciEntry
 }
 
 type EntryBuilderCredit<D extends WalletCurrency> = D extends "USD"
   ? EntryBuilderCreditWithUsdDebit
-  : {
-      creditLnd: () => MediciEntry
-    }
+  : EntryBuilderCreditWithBtcDebit
 
 const calc = AmountCalculator()
 
@@ -90,8 +101,35 @@ const EntryBuilderDebit = ({
     }) as EntryBuilderCredit<T>
   }
 
+  const debitLnd = <T extends WalletCurrency>(
+    amount: PaymentAmount<T>,
+  ): EntryBuilderCredit<T> => {
+    entry.debit(lndLedgerAccountId, Number(amount.amount), {
+      currency: amount.currency,
+      ...metadata,
+    })
+    if (amount.currency === WalletCurrency.Btc) {
+      return EntryBuilderCreditWithBtcDebit({
+        entry,
+        metadata,
+        btcFee,
+        debitAmount: amount as BtcPaymentAmount,
+        staticAccountIds,
+      }) as EntryBuilderCredit<T>
+    } else {
+      return EntryBuilderCreditWithUsdDebit({
+        entry,
+        metadata,
+        btcFee,
+        debitAmount: amount as UsdPaymentAmount,
+        staticAccountIds,
+      }) as EntryBuilderCredit<T>
+    }
+  }
+
   return {
     debitAccount,
+    debitLnd,
   }
 }
 
@@ -128,8 +166,31 @@ const EntryBuilderCreditWithUsdDebit = ({
     return entry
   }
 
+  const creditAccount = <D extends WalletCurrency>({
+    accountId,
+    amount,
+  }: {
+    accountId: LedgerAccountId
+    amount: PaymentAmount<D>
+  }) => {
+    entry.debit(dealerBtcAccountId, Number(amount.amount), {
+      currency: WalletCurrency.Btc,
+      ...metadata,
+    })
+    entry.credit(dealerUsdAccountId, Number(debitAmount.amount), {
+      currency: WalletCurrency.Usd,
+      ...metadata,
+    })
+    entry.credit(accountId, Number(amount.amount), {
+      currency: amount.currency,
+      ...metadata,
+    })
+    return entry
+  }
+
   return {
     creditLnd,
+    creditAccount,
   }
 }
 
@@ -149,8 +210,19 @@ const EntryBuilderCreditWithBtcDebit = ({
     entry.credit(lndLedgerAccountId, Number(creditAmount.amount), metadata)
     return entry
   }
+  const creditAccount = ({ accountId }: { accountId: LedgerAccountId }) => {
+    const creditAmount =
+      btcFee === "NO_FEE"
+        ? debitAmount
+        : debitAmount.currency === WalletCurrency.Btc
+        ? calc.sub(debitAmount, btcFee)
+        : debitAmount
+    entry.credit(accountId, Number(creditAmount.amount), metadata)
+    return entry
+  }
 
   return {
     creditLnd,
+    creditAccount,
   }
 }

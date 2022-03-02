@@ -26,6 +26,7 @@ describe("EntryBuilder", () => {
     dealerUsdAccountId: "dealerUsdAccountId" as LedgerAccountId,
   }
   const debitorAccountId = "debitorAccountId" as LedgerAccountId
+  const creditorAccountId = "creditorAccountId" as LedgerAccountId
   const btcAmount = {
     currency: WalletCurrency.Btc,
     amount: 2000n,
@@ -52,6 +53,22 @@ describe("EntryBuilder", () => {
 
     expect(result.credit[lndLedgerAccountId].amount).toEqual(Number(btcAmount.amount))
     expect(result.debit[debitorAccountId].amount).toEqual(Number(btcAmount.amount))
+  })
+
+  it("Can debit lnd", () => {
+    const entry = new TestMediciEntry()
+    const builder = EntryBuilder({
+      staticAccountIds,
+      entry,
+      metadata: {},
+    })
+    const result = builder
+      .withoutFee()
+      .debitLnd(btcAmount)
+      .creditAccount({ accountId: creditorAccountId })
+
+    expect(result.debit[lndLedgerAccountId].amount).toEqual(Number(btcAmount.amount))
+    expect(result.credit[creditorAccountId].amount).toEqual(Number(btcAmount.amount))
   })
 
   it("Can apply a fee", () => {
