@@ -1,8 +1,10 @@
-type LedgerAccountId = string & { [liabilitiesWalletId]: never }
+declare const ledgerAccountId: unique symbol
+type LedgerAccountId = string & { [ledgerAccountId]: never }
 
 interface MediciEntry {
   credit: (LedgerAccountId, amount: number, extra?: any) => MediciEntry
   debit: (LedgerAccountId, amount: number, extra?: any) => MediciEntry
+  commit: () => any
 }
 
 type TxMetadata = any
@@ -11,11 +13,6 @@ type EntryBuilderConfig = {
   entry: MediciEntry
   bankOwnerAccountId: LedgerAccountId
   metadata: TxMetadata
-}
-
-type PaymentAmount<T extends WalletCurrency> = {
-  currency: T
-  amount: BigInt
 }
 
 type BaseLedgerTransactionMetadata = {

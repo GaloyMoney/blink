@@ -12,6 +12,10 @@ class TestMediciEntry {
     this.debit[accountPath] = { amount, extra }
     return this
   }
+
+  commit() {
+    return this
+  }
 }
 
 describe("EntryBuilder", () => {

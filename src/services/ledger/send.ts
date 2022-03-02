@@ -6,6 +6,7 @@ import {
   NoTransactionToSettleError,
   UnknownLedgerError,
 } from "@domain/ledger/errors"
+import { EntryBuilder, toLedgerAccountId, paymentAmountFromSats } from "./domain"
 
 import { WalletCurrency } from "@domain/shared"
 
@@ -165,17 +166,27 @@ const addSendNoInternalFee = async ({
   cents?: UsdCents
   description: string
 }) => {
-  const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+  const accountId = toLedgerAccountId(walletId)
 
   if (walletCurrency === WalletCurrency.Btc) {
     const metadata = { ...metaInput, currency: WalletCurrency.Btc }
 
-    try {
-      const entry = MainBook.entry(description)
-        .credit(lndAccountingPath, sats, metadata)
-        .debit(liabilitiesWalletId, sats, metadata)
+    const bankOwnerWalletId = await caching.getBankOwnerWalletId()
 
-      const savedEntry = await entry.commit()
+    try {
+      const result = EntryBuilder({
+        bankOwnerAccountId: toLedgerAccountId(bankOwnerWalletId),
+        entry: MainBook.entry(description),
+        metadata,
+      })
+        .withoutFee()
+        .debitAccount({
+          accountId,
+          amount: paymentAmountFromSats(sats),
+        })
+        .creditLnd()
+
+      const savedEntry = await result.commit()
       const journalEntry = translateToLedgerJournal(savedEntry)
 
       const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
