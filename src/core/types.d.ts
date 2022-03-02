@@ -9,6 +9,7 @@ type Primitive = string | boolean | number
 
 type onChainWalletConfig = {
   dustThreshold: number
+  feeBuffer: number
 }
 
 type IpConfig = {

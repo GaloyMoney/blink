@@ -159,6 +159,7 @@ export const getOnChainAddressCreateAttemptLimits = () =>
 
 export const getOnChainWalletConfig = () => ({
   dustThreshold: yamlConfig.onChainWallet.dustThreshold,
+  feeBuffer: yamlConfig.onChainWallet.feeBuffer,
 })
 
 export const getColdStorageConfig = (): ColdStorageConfig => {
