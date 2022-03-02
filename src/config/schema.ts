@@ -203,6 +203,7 @@ export const configSchema = {
         scanDepth: { type: "number" },
         scanDepthOutgoing: { type: "number" },
         scanDepthChannelUpdate: { type: "number" },
+        feeBuffer: { type: "number" },
       },
       required: [
         "dustThreshold",
@@ -210,6 +211,7 @@ export const configSchema = {
         "scanDepth",
         "scanDepthOutgoing",
         "scanDepthChannelUpdate",
+        "feeBuffer",
       ],
       additionalProperties: false,
     },
