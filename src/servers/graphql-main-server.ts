@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 import { applyMiddleware } from "graphql-middleware"
-import { or, shield } from "graphql-shield"
+import { shield } from "graphql-shield"
 
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
@@ -10,11 +10,7 @@ import { GALOY_API_PORT } from "@config"
 
 import { gqlMainSchema } from "../graphql"
 
-import {
-  isApiKeyAuthenticated,
-  isAuthenticated,
-  startApolloServer,
-} from "./graphql-server"
+import { isAuthenticated, startApolloServer } from "./graphql-server"
 import { walletIdMiddleware } from "./middlewares/wallet-id"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
@@ -27,7 +23,6 @@ export async function startApolloServerForCoreSchema() {
       Query: {
         me: isAuthenticated,
         onChainTxFee: isAuthenticated,
-        accountApiKeys: isAuthenticated,
       },
       Mutation: {
         twoFAGenerate: isAuthenticated,
@@ -37,31 +32,28 @@ export async function startApolloServerForCoreSchema() {
         userQuizQuestionUpdateCompleted: isAuthenticated,
         deviceNotificationTokenCreate: isAuthenticated,
 
-        accountApiKeyCreate: isAuthenticated,
-        accountApiKeyDisable: isAuthenticated,
-
         userUpdateUsername: isAuthenticated,
         userUpdateLanguage: isAuthenticated,
         accountUpdateDefaultWalletId: isAuthenticated,
         userContactUpdateAlias: isAuthenticated,
 
-        lnInvoiceFeeProbe: or(isAuthenticated, isApiKeyAuthenticated),
-        lnNoAmountInvoiceFeeProbe: or(isAuthenticated, isApiKeyAuthenticated),
+        lnInvoiceFeeProbe: isAuthenticated,
+        lnNoAmountInvoiceFeeProbe: isAuthenticated,
 
-        lnInvoiceCreate: or(isAuthenticated, isApiKeyAuthenticated),
-        lnUsdInvoiceCreate: or(isAuthenticated, isApiKeyAuthenticated),
-        lnNoAmountInvoiceCreate: or(isAuthenticated, isApiKeyAuthenticated),
+        lnInvoiceCreate: isAuthenticated,
+        lnUsdInvoiceCreate: isAuthenticated,
+        lnNoAmountInvoiceCreate: isAuthenticated,
 
-        lnInvoicePaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
-        lnNoAmountInvoicePaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
-        lnNoAmountUsdInvoicePaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
+        lnInvoicePaymentSend: isAuthenticated,
+        lnNoAmountInvoicePaymentSend: isAuthenticated,
+        lnNoAmountUsdInvoicePaymentSend: isAuthenticated,
 
-        intraLedgerPaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
+        intraLedgerPaymentSend: isAuthenticated,
 
-        onChainAddressCreate: or(isAuthenticated, isApiKeyAuthenticated),
-        onChainAddressCurrent: or(isAuthenticated, isApiKeyAuthenticated),
-        onChainPaymentSend: or(isAuthenticated, isApiKeyAuthenticated),
-        onChainPaymentSendAll: or(isAuthenticated, isApiKeyAuthenticated),
+        onChainAddressCreate: isAuthenticated,
+        onChainAddressCurrent: isAuthenticated,
+        onChainPaymentSend: isAuthenticated,
+        onChainPaymentSendAll: isAuthenticated,
       },
     },
     { allowExternalErrors: true },

@@ -296,10 +296,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "NotificationsError":
     case "NotificationsServiceError":
     case "AccountError":
-    case "ApiKeyError":
-    case "ApiKeyHashError":
-    case "InvalidApiKeyError":
-    case "InvalidExpirationError":
     case "IpFetcherError":
     case "IpFetcherServiceError":
     case "UnknownIpFetcherServiceError":

@@ -37,7 +37,6 @@ import { parseIps } from "@domain/users-ips"
 
 import { playgroundTabs } from "../graphql/playground"
 
-import expressApiKeyAuth from "./middlewares/api-key-auth"
 import healthzHandler from "./middlewares/healthz"
 
 const graphqlLogger = baseLogger.child({
@@ -50,12 +49,6 @@ export const isAuthenticated = rule({ cache: "contextual" })((parent, args, ctx)
   return ctx.uid !== null ? true : "NOT_AUTHENTICATED"
 })
 
-export const isApiKeyAuthenticated = rule({ cache: "contextual" })(
-  (_parent, _args, ctx) => {
-    return ctx.account !== null ? true : "NOT_APIKEY_AUTHENTICATED"
-  },
-)
-
 export const isEditor = rule({ cache: "contextual" })(
   (parent, args, ctx: GraphQLContextForUser) => {
     return ctx.domainUser.isEditor ? true : "NOT_AUTHORIZED"
@@ -65,13 +58,7 @@ export const isEditor = rule({ cache: "contextual" })(
 const geeTestConfig = getGeetestConfig()
 const geetest = Geetest(geeTestConfig)
 
-const sessionContext = ({
-  token,
-  ip,
-  body,
-  apiKey,
-  apiSecret,
-}): Promise<GraphQLContext> => {
+const sessionContext = ({ token, ip, body }): Promise<GraphQLContext> => {
   const userId = token?.uid ?? null
 
   // TODO move from crypto.randomUUID() to a Jaeger standard
@@ -100,16 +87,6 @@ const sessionContext = ({
         domainAccount = loggedInDomainAccount
       }
 
-      let account: Account | undefined
-      if (apiKey && apiSecret) {
-        const loggedInAccount = await Accounts.getAccountByApiKey(apiKey, apiSecret)
-        if (loggedInAccount instanceof Error)
-          throw new ApolloError("Invalid API authentication", "INVALID_AUTHENTICATION", {
-            reason: loggedInAccount,
-          })
-        account = loggedInAccount
-      }
-
       addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
 
       return {
@@ -119,7 +96,6 @@ const sessionContext = ({
         domainUser,
         domainAccount,
         geetest,
-        account,
         ip,
       }
     },
@@ -169,11 +145,6 @@ export const startApolloServer = async ({
       // @ts-expect-error: TODO
       const token = context.req?.token ?? null
 
-      // @ts-expect-error: TODO
-      const apiKey = context.req?.apiKey ?? null
-      // @ts-expect-error: TODO
-      const apiSecret = context.req?.apiSecret ?? null
-
       const body = context.req?.body ?? null
 
       const ipString = isDev ? context.req?.ip : context.req?.headers["x-real-ip"]
@@ -182,8 +153,6 @@ export const startApolloServer = async ({
 
       return sessionContext({
         token,
-        apiKey,
-        apiSecret,
         ip,
         body,
       })
@@ -211,11 +180,7 @@ export const startApolloServer = async ({
 
       // GraphQL shield seems to have a bug around throwing a custom ApolloError
       // This is a workaround for now
-      const isShieldError = [
-        "NOT_AUTHENTICATED",
-        "NOT_APIKEY_AUTHENTICATED",
-        "NOT_AUTHORIZED",
-      ].includes(err.message)
+      const isShieldError = ["NOT_AUTHENTICATED", "NOT_AUTHORIZED"].includes(err.message)
 
       const reportErrorToClient =
         ["GRAPHQL_PARSE_FAILED", "GRAPHQL_VALIDATION_FAILED", "BAD_USER_INPUT"].includes(
@@ -282,8 +247,6 @@ export const startApolloServer = async ({
     }),
   )
 
-  app.use(expressApiKeyAuth)
-
   // Health check
   app.get(
     "/healthz",
@@ -322,8 +285,6 @@ export const startApolloServer = async ({
                 ip: request?.socket?.remoteAddress,
 
                 // TODO: Resolve what's needed here
-                apiKey: null,
-                apiSecret: null,
                 body: null,
               })
             },

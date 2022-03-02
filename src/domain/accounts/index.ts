@@ -8,7 +8,6 @@ import {
 } from "@domain/errors"
 
 export * from "./errors"
-export * from "./api-keys"
 export * from "./limits-checker"
 
 export const AccountLevel = {
