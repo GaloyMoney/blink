@@ -1,3 +1,23 @@
+type LedgerAccountId = string & { [liabilitiesWalletId]: never }
+
+interface MediciEntry {
+  credit: (LedgerAccountId, amount: number, extra?: any) => MediciEntry
+  debit: (LedgerAccountId, amount: number, extra?: any) => MediciEntry
+}
+
+type TxMetadata = any
+
+type EntryBuilderConfig = {
+  entry: MediciEntry
+  bankOwnerAccountId: LedgerAccountId
+  metadata: TxMetadata
+}
+
+type PaymentAmount<T extends WalletCurrency> = {
+  currency: T
+  amount: BigInt
+}
+
 type BaseLedgerTransactionMetadata = {
   id: LedgerTransactionId
 }

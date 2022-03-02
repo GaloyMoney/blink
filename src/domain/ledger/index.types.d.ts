@@ -7,7 +7,6 @@ type LiabilitiesWalletId = string & { [liabilitiesWalletId]: never }
 
 type LedgerTransactionId = string & { readonly brand: unique symbol }
 type LedgerJournalId = string & { readonly brand: unique symbol }
-type LedgerAccountId = string & { readonly brand: unique symbol }
 type LedgerTransactionType =
   typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
 
