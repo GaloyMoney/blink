@@ -310,32 +310,37 @@ const executePaymentViaOnChain = async ({
   })
   if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
 
-  const estimatedFee = await getOnChainFee({
-    walletId: senderWallet.id,
-    account: senderAccount,
-    amount,
-    address,
-    targetConfirmations,
-  })
+  const getFeeEstimate = () =>
+    getOnChainFee({
+      walletId: senderWallet.id,
+      account: senderAccount,
+      amount,
+      address,
+      targetConfirmations,
+    })
+
+  const onChainAvailableBalance = await onChainService.getBalance()
+  if (onChainAvailableBalance instanceof Error) return onChainAvailableBalance
+
+  const estimatedFee = await getFeeEstimate()
   if (estimatedFee instanceof Error) return estimatedFee
 
   const amountToSend = sendAll ? toSats(amount - estimatedFee) : amountSats
+  if (onChainAvailableBalance < amountToSend + estimatedFee)
+    return new RebalanceNeededError()
 
   if (amountToSend < dustThreshold)
     return new LessThanDustThresholdError(
       `Use lightning to send amounts less than ${dustThreshold}`,
     )
 
-  const onChainAvailableBalance = await onChainService.getBalance()
-  if (onChainAvailableBalance instanceof Error) return onChainAvailableBalance
-  if (onChainAvailableBalance < amountToSend + estimatedFee)
-    return new RebalanceNeededError()
-
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
     async (lock) => {
       const balance = await LedgerService().getWalletBalance(senderWallet.id)
       if (balance instanceof Error) return balance
+      const estimatedFee = await getFeeEstimate()
+      if (estimatedFee instanceof Error) return estimatedFee
       if (balance < amountToSend + estimatedFee) {
         return new InsufficientBalanceError(
           `${amountToSend + estimatedFee} exceeds balance ${balance}`,
