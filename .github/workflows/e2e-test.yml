@@ -14,4 +14,7 @@ jobs:
     - uses: actions/setup-node@v2
     - run: yarn install
     - name: Run e2e tests
-      run: make e2e-in-ci
+      run: |
+        make e2e-in-ci
+        container_id=$(docker ps -q -f status=exited -f name="${PWD##*/}-e2e-tests-")
+        exit $(docker inspect $container_id --format='{{.State.ExitCode}}')
