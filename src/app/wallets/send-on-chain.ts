@@ -325,7 +325,7 @@ const executePaymentViaOnChain = async ({
   const estimatedFee = await getFeeEstimate()
   if (estimatedFee instanceof Error) return estimatedFee
 
-  const amountToSend = sendAll ? toSats(amount - estimatedFee) : amountSats
+  const amountToSend = sendAll ? toSats(amount - estimatedFee - feeBuffer) : amountSats
   if (onChainAvailableBalance < amountToSend + estimatedFee)
     return new RebalanceNeededError()
 
