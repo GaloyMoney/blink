@@ -164,4 +164,33 @@ describe("EntryBuilder", () => {
       WalletCurrency.Usd,
     )
   })
+
+  it("can credit a USD account", () => {
+    const entry = new TestMediciEntry()
+    const builder = EntryBuilder({
+      staticAccountIds,
+      entry,
+      metadata: {},
+    })
+    const result = builder.withoutFee().debitLndWithUsd(btcAmount).creditAccount({
+      accountId: creditorAccountId,
+      amount: usdAmount,
+    })
+    expect(result.debit[lndLedgerAccountId].amount).toEqual(Number(btcAmount.amount))
+    expect(result.debit[lndLedgerAccountId].metadata.currency).toEqual(WalletCurrency.Btc)
+    expect(result.credit[creditorAccountId].amount).toEqual(Number(usdAmount.amount))
+    expect(result.credit[creditorAccountId].metadata.currency).toEqual(WalletCurrency.Usd)
+    expect(result.credit[staticAccountIds.dealerBtcAccountId].amount).toEqual(
+      Number(btcAmount.amount),
+    )
+    expect(result.credit[staticAccountIds.dealerBtcAccountId].metadata.currency).toEqual(
+      WalletCurrency.Btc,
+    )
+    expect(result.debit[staticAccountIds.dealerUsdAccountId].amount).toEqual(
+      Number(usdAmount.amount),
+    )
+    expect(result.debit[staticAccountIds.dealerUsdAccountId].metadata.currency).toEqual(
+      WalletCurrency.Usd,
+    )
+  })
 })
