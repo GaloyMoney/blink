@@ -1,5 +1,5 @@
 import { ConfigError } from "@config"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 import { lazyLoadLedgerAdmin } from "@services/ledger"
 import { Transaction } from "@services/ledger/schema"
 import { WalletsRepository } from "@services/mongoose"

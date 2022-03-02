@@ -6,7 +6,7 @@ import SatAmount from "@graphql/types/scalar/sat-amount"
 import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
 import { Wallets } from "@app"
 import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 import dedent from "dedent"
 
 const LnInvoiceCreateInput = GT.Input({

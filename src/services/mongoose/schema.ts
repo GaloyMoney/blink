@@ -2,7 +2,8 @@ import crypto from "crypto"
 
 import { getFeeRates, getTwoFAConfig, levels } from "@config"
 import { UsernameRegex } from "@domain/accounts"
-import { WalletCurrency, WalletIdRegex, WalletType } from "@domain/wallets"
+import { WalletIdRegex, WalletType } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 import * as mongoose from "mongoose"
 
 import { WalletRecord } from "./wallets"

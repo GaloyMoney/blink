@@ -7,7 +7,7 @@ import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnIPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { InputValidationError } from "@graphql/error"
 import CentAmount from "@graphql/types/scalar/cent-amount"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 import { WalletsRepository } from "@services/mongoose"
 import dedent from "dedent"
 

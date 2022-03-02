@@ -5,9 +5,6 @@ type TxStatus =
 type WalletType =
   typeof import("./primitives").WalletType[keyof typeof import("./primitives").WalletType]
 
-type WalletCurrency =
-  typeof import("./primitives").WalletCurrency[keyof typeof import("./primitives").WalletCurrency]
-
 type InitiationViaIntraledger = {
   readonly type: PaymentInitiationMethod["IntraLedger"]
   readonly counterPartyWalletId: WalletId

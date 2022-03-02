@@ -1,3 +1,26 @@
+declare const ledgerAccountId: unique symbol
+type LedgerAccountId = string & { [ledgerAccountId]: never }
+
+interface MediciEntry {
+  credit: (LedgerAccountId, amount: number, extra?: any) => MediciEntry
+  debit: (LedgerAccountId, amount: number, extra?: any) => MediciEntry
+  commit: () => any
+}
+
+type TxMetadata = any
+
+type StaticAccountIds = {
+  bankOwnerAccountId: LedgerAccountId
+  dealerBtcAccountId: LedgerAccountId
+  dealerUsdAccountId: LedgerAccountId
+}
+
+type EntryBuilderConfig = {
+  entry: MediciEntry
+  staticAccountIds: StaticAccountIds
+  metadata: TxMetadata
+}
+
 type BaseLedgerTransactionMetadata = {
   id: LedgerTransactionId
 }

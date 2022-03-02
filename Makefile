@@ -45,7 +45,7 @@ unit:
 	yarn test:unit
 
 watch-unit:
-	$(BIN_DIR)/jest --clearCache
+	$(BIN_DIR)/jest --config ./test/jest-unit.config.js --clearCache
 	NODE_ENV=test LOGLEVEL=warn $(BIN_DIR)/jest --watch --config ./test/jest-unit.config.js
 
 watch-compile:

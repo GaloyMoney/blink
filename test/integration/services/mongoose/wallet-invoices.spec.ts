@@ -3,7 +3,7 @@ import crypto from "crypto"
 import { Wallets } from "@app"
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
 

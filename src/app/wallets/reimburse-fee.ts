@@ -5,7 +5,7 @@ import {
   toDisplayCurrencyBaseAmount,
 } from "@domain/fiat/display-currency"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 

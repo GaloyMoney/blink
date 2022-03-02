@@ -4,7 +4,7 @@ import {
   toLiabilitiesWalletId,
   UnknownLedgerError,
 } from "@domain/ledger"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 import {
   assetsMainAccount,

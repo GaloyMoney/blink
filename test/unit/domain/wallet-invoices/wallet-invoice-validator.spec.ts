@@ -1,7 +1,7 @@
 import { AlreadyPaidError, SelfPaymentError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 describe("WalletInvoiceValidator", () => {
   const walletInvoice: WalletInvoice = {

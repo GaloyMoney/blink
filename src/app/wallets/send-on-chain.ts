@@ -11,11 +11,8 @@ import {
   SelfPaymentError,
 } from "@domain/errors"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
-import {
-  PaymentInputValidator,
-  WalletCurrency,
-  WithdrawalFeeCalculator,
-} from "@domain/wallets"
+import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"

@@ -8,7 +8,7 @@ import Hex32Bytes from "@graphql/types/scalar/hex32bytes"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 import dedent from "dedent"
 
 const LnInvoiceCreateOnBehalfOfRecipientInput = GT.Input({

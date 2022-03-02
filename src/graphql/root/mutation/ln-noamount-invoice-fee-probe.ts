@@ -6,7 +6,7 @@ import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { Wallets } from "@app"
 import { mapError } from "@graphql/error-map"
 import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 const LnNoAmountInvoiceFeeProbeInput = GT.Input({
   name: "LnNoAmountInvoiceFeeProbeInput",

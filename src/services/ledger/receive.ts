@@ -1,6 +1,6 @@
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 import { NotImplementedError, NotReachableError } from "@domain/errors"
 

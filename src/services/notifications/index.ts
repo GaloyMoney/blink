@@ -7,7 +7,7 @@ import {
   NotificationsServiceError,
   NotificationType,
 } from "@domain/notifications"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 import {
   AccountsRepository,
   UsersRepository,

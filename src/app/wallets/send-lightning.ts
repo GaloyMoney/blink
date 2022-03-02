@@ -27,11 +27,11 @@ import { toCents } from "@domain/fiat"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
+import { WalletCurrency } from "@domain/shared"
 import {
   PaymentInitiationMethod,
   PaymentInputValidator,
   SettlementMethod,
-  WalletCurrency,
 } from "@domain/wallets"
 import { LockService } from "@services/lock"
 import { DealerPriceService } from "@services/dealer-price"

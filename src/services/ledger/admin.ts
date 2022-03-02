@@ -3,7 +3,7 @@ import {
   toLiabilitiesWalletId,
   UnknownLedgerError,
 } from "@domain/ledger"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 import { bitcoindAccountingPath, lndAccountingPath } from "./accounts"
 import { MainBook, Transaction } from "./books"

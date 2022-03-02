@@ -3,7 +3,7 @@ import { connectionArgs, connectionFromArray } from "@graphql/connections"
 
 import { Wallets } from "@app"
 
-import { WalletCurrency as WalletCurrencyDomain } from "@domain/wallets"
+import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
 
 import IWallet from "../abstract/wallet"
 

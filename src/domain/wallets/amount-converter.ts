@@ -1,7 +1,7 @@
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning/invoice-expiration"
 import { DealerPriceServiceError } from "@domain/dealer-price"
 import { NotImplementedError, NotReachableError } from "@domain/errors"
-import { WalletCurrency } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 // TODO: delete, only used in tests.
 // refactor test to make sure the mock of the dealer is working as expected
