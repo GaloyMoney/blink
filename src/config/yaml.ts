@@ -6,9 +6,10 @@ import merge from "lodash.merge"
 import { baseLogger } from "@services/logger"
 import { checkedToScanDepth } from "@domain/bitcoin/onchain"
 import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
-
+import Ajv from "ajv"
 import { toCents } from "@domain/fiat"
 
+import { ConfigSchema, configSchema } from "./schema"
 import { ConfigError } from "./error"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
@@ -26,6 +27,14 @@ try {
 }
 
 export const yamlConfig = merge(defaultConfig, customConfig)
+
+const ajv = new Ajv()
+const validate = ajv.compile<ConfigSchema>(configSchema)
+const valid = validate(yamlConfig)
+if (!valid) {
+  baseLogger.error({ validationErrors: validate.errors }, "Invalid yaml configuration")
+  throw new ConfigError("Invalid yaml configuration", validate.errors)
+}
 
 export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.spamLimits.memoSharingSatsThreshold
 

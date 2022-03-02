@@ -1,6 +1,7 @@
 export * from "./error"
 export * from "./process"
 export * from "./yaml"
+export * from "./schema"
 
 export const MS_PER_HOUR = (60 * 60 * 1000) as MilliSeconds
 export const MS_PER_DAY = (24 * MS_PER_HOUR) as MilliSeconds
