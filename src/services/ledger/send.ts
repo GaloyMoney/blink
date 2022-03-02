@@ -259,29 +259,35 @@ const addSendInternalFee = async ({
   fee: Satoshis
   description: string
 }) => {
-  const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-  const bankOwnerWalletId = await caching.getBankOwnerWalletId()
-  const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
+  const accountId = toLedgerAccountId(walletId)
+  const staticAccountIds = {
+    bankOwnerAccountId: toLedgerAccountId(await caching.getBankOwnerWalletId()),
+    dealerBtcAccountId: toLedgerAccountId(await caching.getDealerBtcWalletId()),
+    dealerUsdAccountId: toLedgerAccountId(await caching.getDealerUsdWalletId()),
+  }
 
   // TODO: remove once implemented
   if (walletCurrency !== WalletCurrency.Btc) {
     return new NotImplementedError("USD Intraledger")
   }
 
-  const metadata = { ...metaInput, currency: WalletCurrency.Btc }
-
   try {
     const entry = MainBook.entry(description)
-      .credit(lndAccountingPath, sats - fee, metadata)
-      .debit(liabilitiesWalletId, sats, metadata)
-      .credit(bankOwnerPath, fee, metadata)
+    const result = EntryBuilder({
+      staticAccountIds,
+      entry,
+      metadata: metaInput,
+    })
+      .withFee({ btc: paymentAmountFromSats(fee) })
+      .debitAccount({ accountId, amount: paymentAmountFromSats(sats) })
+      .creditLnd()
 
-    const savedEntry = await entry.commit()
+    const savedEntry = await result.commit()
     const journalEntry = translateToLedgerJournal(savedEntry)
 
     const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
       id,
-      hash: metadata.hash,
+      hash: metaInput.hash,
     }))
     txMetadataRepo.persistAll(txsMetadataToPersist)
 
