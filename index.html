@@ -27,9 +27,6 @@
             <a href="#tag-Queries">Queries</a>
             <ul>
               <li>
-                <a href="#operation-accountapikeys-Queries"> accountApiKeys </a>
-              </li>
-              <li>
                 <a href="#operation-accountdefaultwallet-Queries"> accountDefaultWallet </a>
               </li>
               <li>
@@ -67,12 +64,6 @@
           <section>
             <a href="#tag-Mutations">Mutations</a>
             <ul>
-              <li>
-                <a href="#operation-accountapikeycreate-Mutations"> accountApiKeyCreate </a>
-              </li>
-              <li>
-                <a href="#operation-accountapikeydisable-Mutations"> accountApiKeyDisable </a>
-              </li>
               <li>
                 <a href="#operation-accountupdatedefaultwalletid-Mutations"> accountUpdateDefaultWalletId </a>
               </li>
@@ -164,12 +155,6 @@
           </section>
           <h5>Types</h5>
           <a href="#definition-Account"> Account </a>
-          <a href="#definition-AccountApiKey"> AccountApiKey </a>
-          <a href="#definition-AccountApiKeyCreateInput"> AccountApiKeyCreateInput </a>
-          <a href="#definition-AccountApiKeyDisableInput"> AccountApiKeyDisableInput </a>
-          <a href="#definition-AccountApiKeyHashed"> AccountApiKeyHashed </a>
-          <a href="#definition-AccountApiKeyLabel"> AccountApiKeyLabel </a>
-          <a href="#definition-AccountApiKeyPayload"> AccountApiKeyPayload </a>
           <a href="#definition-AccountUpdateDefaultWalletIdInput"> AccountUpdateDefaultWalletIdInput </a>
           <a href="#definition-AccountUpdateDefaultWalletIdPayload"> AccountUpdateDefaultWalletIdPayload </a>
           <a href="#definition-AuthToken"> AuthToken </a>
@@ -422,64 +407,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             </div>
           </div>
           <h1 id="tag-Queries" class="swagger-summary-tag tag-name" data-traverse-target="tag-Queries">Queries</h1>
-          <div id="operation-accountapikeys-Queries" class="operation panel" data-traverse-target="operation-accountapikeys-Queries">
-            <h2 class="operation-name "> <code>accountApiKeys</code> </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="swagger-request-body"> </section>
-                <section class="swagger-responses"> Returns
-                  <a href="#definition-AccountApiKeyHashed"><code>[AccountApiKeyHashed]</code></a>
-                </section>
-                <br> </div>
-              <div class="doc-examples">
-                <section>
-                  <h4>Example</h4>
-                  <h5>Query</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-keyword">query</span> accountApiKeys <span class="hljs-tag">{
-  <span class="hljs-symbol">accountApiKeys <span class="hljs-tag">{
-    <span class="hljs-symbol">expireAt</span>
-    <span class="hljs-symbol">label</span>
-  }</span></span>
-}</span></span>
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-            <div class="doc-row">
-              <div class="doc-copy"> </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Response </h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"data"</span>: {
-    <span class="hljs-attr">"accountApiKeys"</span>: [
-      {
-        <span class="hljs-attr">"expireAt"</span>: <span class="hljs-string">Timestamp</span>,
-        <span class="hljs-attr">"label"</span>: <span class="hljs-string">AccountApiKeyLabel</span>
-      }
-    ]
-  }
-}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
           <div id="operation-accountdefaultwallet-Queries" class="operation panel" data-traverse-target="operation-accountdefaultwallet-Queries">
-            <!-- <section class="operation-tags row"> -->
-            <!-- <div class="doc-copy"> -->
-            <div class="operation-tags">
-              <a class="label" href="#tag-Queries">Queries</a>
-              <!---->
-            </div>
-            <!-- </div> -->
-            <!-- </section> -->
             <h2 class="operation-name "> <code>accountDefaultWallet</code> </h2>
             <div class="doc-row">
               <div class="doc-copy">
@@ -801,7 +729,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"globals"</span>: {
       <span class="hljs-attr">"buildInformation"</span>: <span class="hljs-string">BuildInformation</span>,
-      <span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"abc123"</span>]
+      <span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"xyz789"</span>]
     }
   }
 }
@@ -879,7 +807,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
       <span class="hljs-attr">"language"</span>: <span class="hljs-string">Language</span>,
       <span class="hljs-attr">"phone"</span>: <span class="hljs-string">Phone</span>,
       <span class="hljs-attr">"quizQuestions"</span>: [<span class="hljs-string">UserQuizQuestion</span>],
-      <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-attr">"twoFAEnabled"</span>: <span class="hljs-literal">false</span>,
       <span class="hljs-attr">"username"</span>: <span class="hljs-string">Username</span>
     }
   }
@@ -935,7 +863,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"mobileVersions"</span>: [
-      {<span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"platform"</span>: <span class="hljs-string">"abc123"</span>}
+      {<span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>}
     ]
   }
 }
@@ -1239,165 +1167,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
             </div>
           </div>
           <h1 id="tag-Mutations" class="swagger-summary-tag tag-name" data-traverse-target="tag-Mutations">Mutations</h1>
-          <div id="operation-accountapikeycreate-Mutations" class="operation panel" data-traverse-target="operation-accountapikeycreate-Mutations">
-            <h2 class="operation-name "> <code>accountApiKeyCreate</code> </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="swagger-request-body"> </section>
-                <section class="swagger-responses"> Returns an
-                  <a href="#definition-AccountApiKeyPayload"><code>AccountApiKeyPayload!</code></a>
-                </section>
-                <br>
-                <section class="swagger-request-params">
-                  <table>
-                    <tr>
-                      <th>Name</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td><code>input</code> -
-                        <a href="#definition-AccountApiKeyCreateInput"><code>AccountApiKeyCreateInput!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                  </table>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h4>Example</h4>
-                  <h5>Query</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-keyword">mutation</span> accountApiKeyCreate<span class="hljs-tag">(<span class="hljs-code">$input</span>:<span class="hljs-type"> AccountApiKeyCreateInput!</span>)</span> <span class="hljs-tag">{
-  <span class="hljs-symbol">accountApiKeyCreate<span class="hljs-tag">(input: <span class="hljs-code">$input</span>)</span> <span class="hljs-tag">{
-    <span class="hljs-symbol">accountApiKey <span class="hljs-tag">{
-      <span class="hljs-type">...AccountApiKeyFragment</span>
-    }</span></span>
-    <span class="hljs-symbol">errors <span class="hljs-tag">{
-      <span class="hljs-type">...ErrorFragment</span>
-    }</span></span>
-  }</span></span>
-}</span></span>
-</code></pre> </body>
-                  </html>
-                  <h5>Variables</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"input"</span>: <span class="hljs-string">AccountApiKeyCreateInput</span>}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-            <div class="doc-row">
-              <div class="doc-copy"> </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Response </h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"data"</span>: {
-    <span class="hljs-attr">"accountApiKeyCreate"</span>: {
-      <span class="hljs-attr">"accountApiKey"</span>: <span class="hljs-string">AccountApiKey</span>,
-      <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>]
-    }
-  }
-}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
-          <div id="operation-accountapikeydisable-Mutations" class="operation panel" data-traverse-target="operation-accountapikeydisable-Mutations">
-            <!-- <section class="operation-tags row"> -->
-            <!-- <div class="doc-copy"> -->
-            <div class="operation-tags">
-              <a class="label" href="#tag-Mutations">Mutations</a>
-              <!---->
-            </div>
-            <!-- </div> -->
-            <!-- </section> -->
-            <h2 class="operation-name "> <code>accountApiKeyDisable</code> </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="swagger-request-body"> </section>
-                <section class="swagger-responses"> Returns a
-                  <a href="#definition-SuccessPayload"><code>SuccessPayload!</code></a>
-                </section>
-                <br>
-                <section class="swagger-request-params">
-                  <table>
-                    <tr>
-                      <th>Name</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td><code>input</code> -
-                        <a href="#definition-AccountApiKeyDisableInput"><code>AccountApiKeyDisableInput!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                  </table>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h4>Example</h4>
-                  <h5>Query</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-keyword">mutation</span> accountApiKeyDisable<span class="hljs-tag">(<span class="hljs-code">$input</span>:<span class="hljs-type"> AccountApiKeyDisableInput!</span>)</span> <span class="hljs-tag">{
-  <span class="hljs-symbol">accountApiKeyDisable<span class="hljs-tag">(input: <span class="hljs-code">$input</span>)</span> <span class="hljs-tag">{
-    <span class="hljs-symbol">errors <span class="hljs-tag">{
-      <span class="hljs-type">...ErrorFragment</span>
-    }</span></span>
-    <span class="hljs-symbol">success</span>
-  }</span></span>
-}</span></span>
-</code></pre> </body>
-                  </html>
-                  <h5>Variables</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"input"</span>: <span class="hljs-string">AccountApiKeyDisableInput</span>}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-            <div class="doc-row">
-              <div class="doc-copy"> </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Response </h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"data"</span>: {
-    <span class="hljs-attr">"accountApiKeyDisable"</span>: {
-      <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
-    }
-  }
-}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
           <div id="operation-accountupdatedefaultwalletid-Mutations" class="operation panel" data-traverse-target="operation-accountupdatedefaultwalletid-Mutations">
-            <!-- <section class="operation-tags row"> -->
-            <!-- <div class="doc-copy"> -->
-            <div class="operation-tags">
-              <a class="label" href="#tag-Mutations">Mutations</a>
-              <!---->
-            </div>
-            <!-- </div> -->
-            <!-- </section> -->
             <h2 class="operation-name "> <code>accountUpdateDefaultWalletId</code> </h2>
             <div class="doc-row">
               <div class="doc-copy">
@@ -1596,7 +1366,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"captchaRequestAuthCode"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
     }
   }
 }
@@ -1674,7 +1444,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"deviceNotificationTokenCreate"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
     }
   }
 }
@@ -3060,7 +2830,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"data"</span>: {
-    <span class="hljs-attr">"twoFADelete"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>}
+    <span class="hljs-attr">"twoFADelete"</span>: {<span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>], <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>}
   }
 }
 </code></pre> </body>
@@ -3514,7 +3284,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"data"</span>: {
     <span class="hljs-attr">"userRequestAuthCode"</span>: {
       <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>],
-      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">true</span>
+      <span class="hljs-attr">"success"</span>: <span class="hljs-literal">false</span>
     }
   }
 }
@@ -3753,267 +3523,6 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"defaultWalletId"</span>: <span class="hljs-string">WalletId</span>,
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">ID</span>,
   <span class="hljs-attr">"wallets"</span>: [<span class="hljs-string">Wallet</span>]
-}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
-          <div id="definition-AccountApiKey" class="definition panel" data-traverse-target="definition-AccountApiKey">
-            <div class="definition-tags">
-              <a class="label" href="#tag-types">Types</a>
-            </div>
-            <h2 class="panel-title">
-              <a name="/definitions/AccountApiKey"></a>
-              <p><code>AccountApiKey</code></p>
-            </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="json-schema-properties-blank">
-                  <table>
-                    <tr>
-                      <th>Field Name</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td data-property-name="expireAt"> <code>expireAt</code> -
-                        <a href="#definition-Timestamp"><code>Timestamp!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="key"> <code>key</code> -
-                        <a href="#definition-String"><code>String!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="label"> <code>label</code> -
-                        <a href="#definition-AccountApiKeyLabel"><code>AccountApiKeyLabel!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="secret"> <code>secret</code> -
-                        <a href="#definition-String"><code>String!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                  </table>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"expireAt"</span>: <span class="hljs-string">Timestamp</span>,
-  <span class="hljs-attr">"key"</span>: <span class="hljs-string">"abc123"</span>,
-  <span class="hljs-attr">"label"</span>: <span class="hljs-string">AccountApiKeyLabel</span>,
-  <span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>
-}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
-          <div id="definition-AccountApiKeyCreateInput" class="definition panel" data-traverse-target="definition-AccountApiKeyCreateInput">
-            <div class="definition-tags">
-              <a class="label" href="#tag-types">Types</a>
-            </div>
-            <h2 class="panel-title">
-              <a name="/definitions/AccountApiKeyCreateInput"></a>
-              <p><code>AccountApiKeyCreateInput</code></p>
-            </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="json-schema-properties-blank">
-                  <table>
-                    <tr>
-                      <th>Input Field</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td><code>expireAt</code> -
-                        <a href="#definition-Timestamp"><code>Timestamp!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td><code>label</code> -
-                        <a href="#definition-AccountApiKeyLabel"><code>AccountApiKeyLabel</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                  </table>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"expireAt"</span>: <span class="hljs-string">Timestamp</span>,
-  <span class="hljs-attr">"label"</span>: <span class="hljs-string">AccountApiKeyLabel</span>
-}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
-          <div id="definition-AccountApiKeyDisableInput" class="definition panel" data-traverse-target="definition-AccountApiKeyDisableInput">
-            <div class="definition-tags">
-              <a class="label" href="#tag-types">Types</a>
-            </div>
-            <h2 class="panel-title">
-              <a name="/definitions/AccountApiKeyDisableInput"></a>
-              <p><code>AccountApiKeyDisableInput</code></p>
-            </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="json-schema-properties-blank">
-                  <table>
-                    <tr>
-                      <th>Input Field</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td><code>label</code> -
-                        <a href="#definition-AccountApiKeyLabel"><code>AccountApiKeyLabel!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                  </table>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"label"</span>: <span class="hljs-string">AccountApiKeyLabel</span>}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
-          <div id="definition-AccountApiKeyHashed" class="definition panel" data-traverse-target="definition-AccountApiKeyHashed">
-            <div class="definition-tags">
-              <a class="label" href="#tag-types">Types</a>
-            </div>
-            <h2 class="panel-title">
-              <a name="/definitions/AccountApiKeyHashed"></a>
-              <p><code>AccountApiKeyHashed</code></p>
-            </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="json-schema-properties-blank">
-                  <table>
-                    <tr>
-                      <th>Field Name</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td data-property-name="expireAt"> <code>expireAt</code> -
-                        <a href="#definition-Timestamp"><code>Timestamp!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="label"> <code>label</code> -
-                        <a href="#definition-AccountApiKeyLabel"><code>AccountApiKeyLabel!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                  </table>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"expireAt"</span>: <span class="hljs-string">Timestamp</span>,
-  <span class="hljs-attr">"label"</span>: <span class="hljs-string">AccountApiKeyLabel</span>
-}
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
-          <div id="definition-AccountApiKeyLabel" class="definition panel" data-traverse-target="definition-AccountApiKeyLabel">
-            <div class="definition-tags">
-              <a class="label" href="#tag-types">Types</a>
-            </div>
-            <h2 class="panel-title">
-              <a name="/definitions/AccountApiKeyLabel"></a>
-              <p><code>AccountApiKeyLabel</code></p>
-            </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="json-schema-description">
-                  <p>Identifier of an account api key</p>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">object</span>
-</code></pre> </body>
-                  </html>
-                </section>
-              </div>
-            </div>
-          </div>
-          <div id="definition-AccountApiKeyPayload" class="definition panel" data-traverse-target="definition-AccountApiKeyPayload">
-            <div class="definition-tags">
-              <a class="label" href="#tag-types">Types</a>
-            </div>
-            <h2 class="panel-title">
-              <a name="/definitions/AccountApiKeyPayload"></a>
-              <p><code>AccountApiKeyPayload</code></p>
-            </h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <section class="json-schema-properties-blank">
-                  <table>
-                    <tr>
-                      <th>Field Name</th>
-                      <th>Description</th>
-                    </tr>
-                    <tr>
-                      <td data-property-name="accountApiKey"> <code>accountApiKey</code> -
-                        <a href="#definition-AccountApiKey"><code>AccountApiKey</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td data-property-name="errors"> <code>errors</code> -
-                        <a href="#definition-Error"><code>[Error!]!</code></a>
-                      </td>
-                      <td> </td>
-                    </tr>
-                  </table>
-                </section>
-              </div>
-              <div class="doc-examples">
-                <section>
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"accountApiKey"</span>: <span class="hljs-string">AccountApiKey</span>,
-  <span class="hljs-attr">"errors"</span>: [<span class="hljs-string">Error</span>]
 }
 </code></pre> </body>
                   </html>
@@ -4297,7 +3806,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-literal">false</span></span>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol"><span class="hljs-literal">true</span></span>
 </code></pre> </body>
                   </html>
                 </section>
@@ -4348,8 +3857,8 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"buildTime"</span>: <span class="hljs-string">Timestamp</span>,
-  <span class="hljs-attr">"commitHash"</span>: <span class="hljs-string">"abc123"</span>,
-  <span class="hljs-attr">"helmRevision"</span>: <span class="hljs-number">123</span>
+  <span class="hljs-attr">"commitHash"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"helmRevision"</span>: <span class="hljs-number">987</span>
 }
 </code></pre> </body>
                   </html>
@@ -4452,8 +3961,8 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"failbackMode"</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">"challengeCode"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"failbackMode"</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">"id"</span>: <span class="hljs-string">"abc123"</span>,
   <span class="hljs-attr">"newCaptcha"</span>: <span class="hljs-literal">true</span>
 }
@@ -4683,7 +4192,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"latitude"</span>: <span class="hljs-number">123.45</span>, <span class="hljs-attr">"longitude"</span>: <span class="hljs-number">123.45</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"latitude"</span>: <span class="hljs-number">987.65</span>, <span class="hljs-attr">"longitude"</span>: <span class="hljs-number">987.65</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -4763,7 +4272,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"xyz789"</span>]}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>]}
 </code></pre> </body>
                   </html>
                 </section>
@@ -4871,7 +4380,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"buildInformation"</span>: <span class="hljs-string">BuildInformation</span>,
-  <span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"xyz789"</span>]
+  <span class="hljs-attr">"nodesIds"</span>: [<span class="hljs-string">"abc123"</span>]
 }
 </code></pre> </body>
                   </html>
@@ -5136,7 +4645,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">InputErrorCode</span>,
-  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>,
+  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>,
   <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>]
 }
 </code></pre> </body>
@@ -5209,7 +4718,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">123</span>
+                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">987</span>
 </code></pre> </body>
                   </html>
                 </section>
@@ -6494,7 +6003,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"coordinates"</span>: <span class="hljs-string">Coordinates</span>, <span class="hljs-attr">"title"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"coordinates"</span>: <span class="hljs-string">Coordinates</span>, <span class="hljs-attr">"title"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -6615,7 +6124,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"platform"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"currentSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"minSupported"</span>: <span class="hljs-number">987</span>, <span class="hljs-attr">"platform"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -7081,7 +6590,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"displayCurrencyPerSat"</span>: <span class="hljs-number">987.65</span>,
   <span class="hljs-attr">"txHash"</span>: <span class="hljs-string">OnChainTxHash</span>,
   <span class="hljs-attr">"txNotificationType"</span>: <span class="hljs-string">TxNotificationType</span>,
-  <span class="hljs-attr">"usdPerSat"</span>: <span class="hljs-number">123.45</span>,
+  <span class="hljs-attr">"usdPerSat"</span>: <span class="hljs-number">987.65</span>,
   <span class="hljs-attr">"walletId"</span>: <span class="hljs-string">WalletId</span>
 }
 </code></pre> </body>
@@ -7168,10 +6677,10 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json">{
-  <span class="hljs-attr">"endCursor"</span>: <span class="hljs-string">"abc123"</span>,
-  <span class="hljs-attr">"hasNextPage"</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-attr">"endCursor"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"hasNextPage"</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">"hasPreviousPage"</span>: <span class="hljs-literal">false</span>,
-  <span class="hljs-attr">"startCursor"</span>: <span class="hljs-string">"xyz789"</span>
+  <span class="hljs-attr">"startCursor"</span>: <span class="hljs-string">"abc123"</span>
 }
 </code></pre> </body>
                   </html>
@@ -7223,7 +6732,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json">{
   <span class="hljs-attr">"code"</span>: <span class="hljs-string">PaymentErrorCode</span>,
-  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"xyz789"</span>,
+  <span class="hljs-attr">"message"</span>: <span class="hljs-string">"abc123"</span>,
   <span class="hljs-attr">"path"</span>: [<span class="hljs-string">"abc123"</span>]
 }
 </code></pre> </body>
@@ -7483,7 +6992,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"base"</span>: <span class="hljs-string">SafeInt</span>,
   <span class="hljs-attr">"currencyUnit"</span>: <span class="hljs-string">ExchangeCurrencyUnit</span>,
   <span class="hljs-attr">"formattedAmount"</span>: <span class="hljs-string">"xyz789"</span>,
-  <span class="hljs-attr">"offset"</span>: <span class="hljs-number">123</span>
+  <span class="hljs-attr">"offset"</span>: <span class="hljs-number">987</span>
 }
 </code></pre> </body>
                   </html>
@@ -8493,7 +8002,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"token"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"token"</span>: <span class="hljs-string">"abc123"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -8582,7 +8091,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"xyz789"</span>, <span class="hljs-attr">"token"</span>: <span class="hljs-string">"xyz789"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"token"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
@@ -8625,7 +8134,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"uri"</span>: <span class="hljs-string">"abc123"</span>}
+                  <body><pre><code class="hljs language-json">{<span class="hljs-attr">"secret"</span>: <span class="hljs-string">"abc123"</span>, <span class="hljs-attr">"uri"</span>: <span class="hljs-string">"xyz789"</span>}
 </code></pre> </body>
                   </html>
                 </section>
