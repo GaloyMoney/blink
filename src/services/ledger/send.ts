@@ -1,4 +1,4 @@
-import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
+import { LedgerTransactionType } from "@domain/ledger"
 import { NotImplementedError } from "@domain/errors"
 import {
   LedgerError,
@@ -16,7 +16,6 @@ import {
   paymentAmountFromCents,
 } from "./domain"
 
-import { lndAccountingPath } from "./accounts"
 import { MainBook, Transaction } from "./books"
 import * as caching from "./caching"
 
