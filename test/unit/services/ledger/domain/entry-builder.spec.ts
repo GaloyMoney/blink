@@ -49,6 +49,8 @@ describe("EntryBuilder", () => {
   }
   const metadata = {
     currency: "BAD CURRENCY",
+    some: "some",
+    more: "more",
   }
 
   describe("Btc account", () => {
@@ -324,6 +326,37 @@ describe("EntryBuilder", () => {
         expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
         expectEntryToEqual(result.debits[debitorAccountId], usdAmount)
       })
+    })
+  })
+
+  describe("metadata", () => {
+    it("debitor can take additional metadata", () => {
+      const entry = new TestMediciEntry()
+      const builder = EntryBuilder({
+        staticAccountIds,
+        entry,
+        metadata,
+      })
+      const result = builder
+        .withFee(btcFee)
+        .debitAccount({
+          accountId: debitorAccountId,
+          amount: btcAmount,
+          additionalMetadata: {
+            more: "yes",
+            muchMore: "muchMore",
+          },
+        })
+        .creditLnd()
+
+      expect(result.debits[debitorAccountId].metadata).toEqual(
+        expect.objectContaining({
+          some: "some",
+          more: "yes",
+          muchMore: "muchMore",
+          currency: WalletCurrency.Btc,
+        }),
+      )
     })
   })
 })

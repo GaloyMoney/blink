@@ -18,9 +18,11 @@ type EntryBuilderDebit<M extends MediciEntry> = {
   debitAccount: <D extends WalletCurrency>({
     accountId,
     amount,
+    additionalMetadata,
   }: {
     accountId: LedgerAccountId
     amount: PaymentAmount<D>
+    additionalMetadata?: TxMetadata
   }) => EntryBuilderCredit<M, D>
   debitLnd: (amount: BtcPaymentAmount) => EntryBuilderCreditWithBtcDebit<M>
 }
@@ -87,12 +89,17 @@ const EntryBuilderDebit = <M extends MediciEntry>({
   const debitAccount = <T extends WalletCurrency>({
     accountId,
     amount,
+    additionalMetadata,
   }: {
     accountId: LedgerAccountId
     amount: PaymentAmount<T>
+    additionalMetadata?: TxMetadata
   }): EntryBuilderCredit<M, T> => {
+    const debitMetadata = additionalMetadata
+      ? { ...metadata, ...additionalMetadata }
+      : metadata
     entry.debit(accountId, Number(amount.amount), {
-      ...metadata,
+      ...debitMetadata,
       currency: amount.currency,
     })
     if (amount.currency === WalletCurrency.Btc) {
