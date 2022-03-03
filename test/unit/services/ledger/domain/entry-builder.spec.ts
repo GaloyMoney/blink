@@ -16,10 +16,6 @@ class TestMediciEntry {
     this.debits[accountPath] = { amount, metadata }
     return this
   }
-
-  commit() {
-    return this
-  }
 }
 
 describe("EntryBuilder", () => {
