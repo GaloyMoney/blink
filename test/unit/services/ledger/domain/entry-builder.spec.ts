@@ -53,6 +53,7 @@ describe("EntryBuilder", () => {
 
     expect(result.credit[lndLedgerAccountId].amount).toEqual(Number(btcAmount.amount))
     expect(result.debit[debitorAccountId].amount).toEqual(Number(btcAmount.amount))
+    expect(result.debit[staticAccountIds.bankOwnerAccountId]).toEqual(undefined)
   })
 
   it("Can debit lnd", () => {
@@ -83,9 +84,7 @@ describe("EntryBuilder", () => {
       metadata: {},
     })
     const result = builder
-      .withFee({
-        btc: btcFee,
-      })
+      .withFee(btcFee)
       .debitAccount({
         accountId: debitorAccountId,
         amount: btcAmount,
@@ -112,14 +111,9 @@ describe("EntryBuilder", () => {
       entry,
       metadata: {},
     })
-    const result = builder
-      .withFee({
-        btc: btcFee,
-      })
-      .debitLnd(btcAmount)
-      .creditAccount({
-        accountId: creditorAccountId,
-      })
+    const result = builder.withFee(btcFee).debitLnd(btcAmount).creditAccount({
+      accountId: creditorAccountId,
+    })
 
     expect(result.credit[staticAccountIds.bankOwnerAccountId].amount).toEqual(
       Number(btcFee.amount),

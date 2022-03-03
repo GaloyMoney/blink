@@ -257,7 +257,7 @@ const addSendInternalFee = async ({
       entry,
       metadata,
     })
-      .withFee({ btc: paymentAmountFromSats(fee) })
+      .withFee(paymentAmountFromSats(fee))
       .debitAccount({ accountId, amount: paymentAmountFromSats(sats) })
       .creditLnd()
 
