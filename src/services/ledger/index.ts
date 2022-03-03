@@ -10,6 +10,7 @@ import {
   toLiabilitiesWalletId,
   toWalletId,
 } from "@domain/ledger"
+import { ErrorLevel } from "@domain/errors"
 import {
   CouldNotFindTransactionError,
   LedgerError,
@@ -17,7 +18,11 @@ import {
   UnknownLedgerError,
 } from "@domain/ledger/errors"
 import { toObjectId } from "@services/mongoose/utils"
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  addEventToCurrentSpan,
+  wrapAsyncFunctionsToRunInSpan,
+} from "@services/tracing"
 
 import { admin } from "./admin"
 import * as adminLegacy from "./admin-legacy"
@@ -179,6 +184,16 @@ export const LedgerService = (): ILedgerService => {
       const { balance } = await MainBook.balance({
         account: liabilitiesWalletId,
       })
+      if (balance < 0) {
+        addAttributesToCurrentSpan({
+          "getWalletBalance.error.invalidBalance": `${balance}`,
+          "error": true,
+          "error.level": ErrorLevel.Warn,
+        })
+        addEventToCurrentSpan("exception", {
+          "exception.message": `Balance '${balance}' is negative.`,
+        })
+      }
       return toSats(balance)
     } catch (err) {
       return new UnknownLedgerError(err)
