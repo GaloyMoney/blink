@@ -97,7 +97,7 @@ export const configSchema = {
         properties: {
           ref: { type: "string" },
           phone: { type: "string" },
-          code: { type: "string" },
+          code: { type: "number" },
           needUsdWallet: { type: "boolean" },
           username: { type: "string" },
           phoneMetadataCarrierType: { type: "string" },
