@@ -1,5 +1,3 @@
-type ErrorLevel =
-  typeof import("./errors").ErrorLevel[keyof typeof import("./errors").ErrorLevel]
 type AuthorizationError = import("./errors").AuthorizationError
 type RepositoryError = import("./errors").RepositoryError
 type ValidationError = import("./errors").ValidationError

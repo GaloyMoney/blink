@@ -1,4 +1,4 @@
-import { DomainError, ErrorLevel } from "@domain/errors"
+import { DomainError, ErrorLevel } from "@domain/shared"
 
 export class RateLimitError extends DomainError {}
 
