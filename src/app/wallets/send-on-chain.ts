@@ -23,6 +23,7 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import {
   checkAndVerifyTwoFA,
@@ -364,7 +365,6 @@ const executePaymentViaOnChain = async ({
           txHash,
           scanDepth: ONCHAIN_SCAN_DEPTH_OUTGOING,
         })
-
         if (minerFee instanceof Error) {
           logger.error({ err: minerFee }, "impossible to get fee for onchain payment")
           totalFee = estimatedFee
@@ -374,6 +374,9 @@ const executePaymentViaOnChain = async ({
             bankFee: toSats(senderAccount.withdrawFee),
           })
         }
+        addAttributesToCurrentSpan({
+          "payOnChainByWalletId.actualMinerFee": `${minerFee}`,
+        })
 
         const sats = toSats(amountToSend + totalFee)
 

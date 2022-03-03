@@ -10,6 +10,7 @@ import { checkedToWalletId, WithdrawalFeeCalculator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { WalletsRepository } from "@services/mongoose"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 const { dustThreshold } = getOnChainWalletConfig()
 
@@ -63,6 +64,7 @@ export const getOnChainFee = async ({
     targetConfirmations: targetConfsChecked,
   })
   if (minerFee instanceof Error) return minerFee
+  addAttributesToCurrentSpan({ "payOnChainByWalletId.estimatedMinerFee": `${minerFee}` })
 
   const bankFee = toSats(account.withdrawFee)
 
