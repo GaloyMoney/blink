@@ -225,6 +225,7 @@ describe("UserWallet - onChainPay", () => {
   })
 
   it("sends all in a successful payment", async () => {
+    const { feeBuffer } = getOnChainWalletConfig()
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
     const sub = subscribeToTransactions({ lnd: lndonchain })
@@ -268,11 +269,12 @@ describe("UserWallet - onChainPay", () => {
       )
       expect(pendingTxs.length).toBe(1)
       const pendingTx = pendingTxs[0]
-      expect(pendingTx.settlementAmount).toBe(-initialBalanceUserE)
+      expect(pendingTx.settlementAmount).toBe(-initialBalanceUserE + feeBuffer)
+
       pendingTxHash = pendingTx.id as OnChainTxHash
 
       const interimBalance = await getBalanceHelper(walletIdE)
-      expect(interimBalance).toBe(0)
+      expect(interimBalance).toBe(feeBuffer)
       await checkIsBalanced()
     }
 
@@ -320,10 +322,10 @@ describe("UserWallet - onChainPay", () => {
       const fee = feeRates.withdrawFeeFixed + 7050
 
       const finalBalance = await getBalanceHelper(walletIdE)
-      expect(finalBalance).toBe(0)
+      expect(finalBalance).toBe(feeBuffer)
 
       expect(settledTx.settlementFee).toBe(fee)
-      expect(settledTx.settlementAmount).toBe(-initialBalanceUserE)
+      expect(settledTx.settlementAmount).toBe(-initialBalanceUserE + feeBuffer)
       expect(settledTx.settlementDisplayCurrencyPerSat).toBeGreaterThan(0)
     }
 

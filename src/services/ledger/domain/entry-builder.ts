@@ -38,8 +38,8 @@ export const EntryBuilder = ({
 }: EntryBuilderConfig) => {
   const withFee = ({ btc }: { btc: BtcPaymentAmount }) => {
     entry.credit(staticAccountIds.bankOwnerAccountId, Number(btc.amount), {
-      currency: btc.currency,
       ...metadata,
+      currency: btc.currency,
     })
     return EntryBuilderDebit({ metadata, entry, btcFee: btc, staticAccountIds })
   }
@@ -68,8 +68,8 @@ const EntryBuilderDebit = ({
     amount: PaymentAmount<T>
   }): EntryBuilderCredit<T> => {
     entry.debit(accountId, Number(amount.amount), {
-      currency: amount.currency,
       ...metadata,
+      currency: amount.currency,
     })
     if (amount.currency === WalletCurrency.Btc) {
       return EntryBuilderCreditWithBtcDebit({
@@ -79,15 +79,15 @@ const EntryBuilderDebit = ({
         debitAmount: amount as BtcPaymentAmount,
         staticAccountIds,
       }) as EntryBuilderCredit<T>
-    } else {
-      return EntryBuilderCreditWithUsdDebit({
-        entry,
-        metadata,
-        btcFee,
-        debitAmount: amount as UsdPaymentAmount,
-        staticAccountIds,
-      }) as EntryBuilderCredit<T>
     }
+
+    return EntryBuilderCreditWithUsdDebit({
+      entry,
+      metadata,
+      btcFee,
+      debitAmount: amount as UsdPaymentAmount,
+      staticAccountIds,
+    }) as EntryBuilderCredit<T>
   }
 
   return {
@@ -114,16 +114,16 @@ const EntryBuilderCreditWithUsdDebit = ({
 }: EntryBuilderCreditState<"USD">): EntryBuilderCreditWithUsdDebit => {
   const creditLnd = (btcCreditAmount: BtcPaymentAmount) => {
     entry.debit(dealerBtcAccountId, Number(btcCreditAmount.amount), {
-      currency: WalletCurrency.Btc,
       ...metadata,
+      currency: WalletCurrency.Btc,
     })
     entry.credit(dealerUsdAccountId, Number(debitAmount.amount), {
-      currency: WalletCurrency.Usd,
       ...metadata,
+      currency: WalletCurrency.Usd,
     })
     entry.credit(lndLedgerAccountId, Number(btcCreditAmount.amount), {
-      currency: btcCreditAmount.currency,
       ...metadata,
+      currency: btcCreditAmount.currency,
     })
     return entry
   }
