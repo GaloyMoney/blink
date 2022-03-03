@@ -31,29 +31,29 @@ lndScbBackupBucketName: "lnd-static-channel-backups"
 test_accounts:
 - ref: A
   phone: "+16505554321"
-  code: 321321
+  code: "321321"
   needUsdWallet: true
 - ref: B
   phone: "+16505554322"
-  code: 321432
+  code: "321432"
   phoneMetadataCarrierType: "mobile" # TODO: verify mobile is a valid value
   needUsdWallet: true
 - ref: C
   phone: "+16505554323"
-  code: 321321
+  code: "321321"
   title: business
 - ref: D
   phone: "+16505554324"
-  code: 321321
+  code: "321321"
 - ref: E
   phone: "+16505554332"
-  code: 321321
+  code: "321321"
 - ref: F
   phone: "+16505554333"
-  code: 321321
+  code: "321321"
 - ref: "G"
   phone: "+16505554335"
-  code: 321321
+  code: "321321"
   username: "user15"
 
 rateLimits:
