@@ -166,7 +166,7 @@ describe("EntryBuilder", () => {
       entry,
       metadata: {},
     })
-    const result = builder.withoutFee().debitLndWithUsd(btcAmount).creditAccount({
+    const result = builder.withoutFee().debitLnd(btcAmount).creditAccount({
       accountId: creditorAccountId,
       amount: usdAmount,
     })
