@@ -8,4 +8,6 @@ message PriceResponse {
   float price = 1;
 }
 
-message PriceQuery {}
+message PriceQuery {
+  string currency = 1;
+}

@@ -1,7 +1,7 @@
 import { Prices } from "@app"
 import { uploadBackup } from "@app/admin/backup"
 import * as Wallets from "@app/wallets"
-import { ONCHAIN_MIN_CONFIRMATIONS, SECS_PER_5_MINS } from "@config"
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 import { toSats } from "@domain/bitcoin"
 import { LedgerService } from "@services/ledger"
 import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
@@ -10,7 +10,6 @@ import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { WalletsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
-import { updatePriceHistory } from "@services/price/update-price-history"
 import express from "express"
 import {
   GetInvoiceResult,
@@ -155,17 +154,6 @@ const publishCurrentPrice = () => {
   }, interval)
 }
 
-const updatePriceForChart = () => {
-  const interval: Seconds = (1000 * SECS_PER_5_MINS) as Seconds
-  return setInterval(async () => {
-    try {
-      await updatePriceHistory()
-    } catch (err) {
-      logger.error({ err }, "can't update the price")
-    }
-  }, interval)
-}
-
 const listenerOnchain = ({ lnd }) => {
   const subTransactions = subscribeToTransactions({ lnd })
   subTransactions.on("chain_transaction", onchainTransactionEventHandler)
@@ -243,7 +231,6 @@ const main = () => {
   })
 
   activateLndHealthCheck()
-  updatePriceForChart()
   publishCurrentPrice()
 }
 

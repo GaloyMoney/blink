@@ -2,9 +2,6 @@ import { yamlConfig } from "@config"
 import { setupMongoConnection } from "@services/mongodb"
 
 import { getFunderWalletId } from "@services/ledger/caching"
-import { SATS_PER_BTC } from "@domain/bitcoin"
-import { PriceHistory } from "@services/price/schema"
-import { toObjectId } from "@services/mongoose/utils"
 import { adminUsers } from "@domain/admin-users"
 
 import { baseLogger } from "@services/logger"
@@ -19,8 +16,6 @@ import {
 import { clearAccountLocks, clearLimiters } from "./redis"
 
 import {
-  chunk,
-  generateSatoshiPriceHistory,
   bitcoindClient,
   createUserAndWallet,
   fundWalletIdFromOnchain,
@@ -35,37 +30,6 @@ import {
   openChannelTesting,
   checkIsBalanced,
 } from "test/helpers"
-
-const populatePriceData = async () => {
-  const pair = "BTC/USD"
-  const exchange = "bitfinex"
-  let doc = await PriceHistory.findOne({
-    "pair.name": pair,
-    "pair.exchange.name": exchange,
-  })
-
-  if (doc) {
-    return
-  }
-
-  doc = new PriceHistory({ pair: { name: pair, exchange: { name: exchange } } })
-  await doc.save()
-
-  const bulkOps = chunk(generateSatoshiPriceHistory(1 * 12, 50000), 500).map((c) => ({
-    updateOne: {
-      filter: { _id: toObjectId<UserId>(doc.id) },
-      update: {
-        $push: {
-          "pair.exchange.price": {
-            $each: c.map((d) => ({ _id: d.date, o: d.price / SATS_PER_BTC })),
-          },
-        },
-      },
-    },
-  }))
-
-  await PriceHistory.bulkWrite(bulkOps, { ordered: true })
-}
 
 export type TestingStateConfig = {
   resetState: boolean
@@ -88,7 +52,6 @@ export type TestingStateConfig = {
     socket: string
     is_private?: boolean
   }[]
-  populatePriceData: boolean
 }
 
 const testAccounts = yamlConfig.test_accounts.map((account) => ({
@@ -133,7 +96,6 @@ export const defaultStateConfig = (): TestingStateConfig => ({
       is_private: true,
     },
   ],
-  populatePriceData: true,
 })
 
 export const initializeTestingState = async (stateConfig: TestingStateConfig) => {
@@ -217,12 +179,6 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
     }
     await mineBlockAndSyncAll()
     baseLogger.info("Channels have been opened.")
-  }
-
-  // Populate price data
-  if (stateConfig.populatePriceData) {
-    await populatePriceData()
-    baseLogger.info("Price data has been populated.")
   }
 
   await checkIsBalanced()
