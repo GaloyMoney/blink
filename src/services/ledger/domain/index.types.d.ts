@@ -1,13 +1,12 @@
 declare const ledgerAccountId: unique symbol
 type LedgerAccountId = string & { [ledgerAccountId]: never }
 
-interface MediciEntry {
-  credit: (LedgerAccountId, amount: number, extra?: any) => MediciEntry
-  debit: (LedgerAccountId, amount: number, extra?: any) => MediciEntry
-  commit: () => any
-}
-
 type TxMetadata = any
+
+interface MediciEntry {
+  credit: (LedgerAccountId, amount: number, extra?: TxMetadata) => MediciEntry
+  debit: (LedgerAccountId, amount: number, extra?: TxMetadata) => MediciEntry
+}
 
 type StaticAccountIds = {
   bankOwnerAccountId: LedgerAccountId
@@ -15,8 +14,8 @@ type StaticAccountIds = {
   dealerUsdAccountId: LedgerAccountId
 }
 
-type EntryBuilderConfig = {
-  entry: MediciEntry
+type EntryBuilderConfig<M extends MediciEntry> = {
+  entry: M
   staticAccountIds: StaticAccountIds
   metadata: TxMetadata
 }

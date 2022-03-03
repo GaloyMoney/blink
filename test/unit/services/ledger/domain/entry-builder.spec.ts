@@ -2,15 +2,18 @@ import { EntryBuilder, lndLedgerAccountId } from "@services/ledger/domain"
 import { WalletCurrency, AmountCalculator } from "@domain/shared"
 
 class TestMediciEntry {
+  credits: any
+  debits: any
+
   credit(accountPath, amount, metadata = null) {
-    this.credit = this.credit || {}
-    this.credit[accountPath] = { amount, metadata }
+    this.credits = this.credits || {}
+    this.credits[accountPath] = { amount, metadata }
     return this
   }
 
   debit(accountPath, amount, metadata = null) {
-    this.debit = this.debit || {}
-    this.debit[accountPath] = { amount, metadata }
+    this.debits = this.debits || {}
+    this.debits[accountPath] = { amount, metadata }
     return this
   }
 
@@ -65,9 +68,9 @@ describe("EntryBuilder", () => {
           })
           .creditLnd()
 
-        expectEntryToEqual(result.credit[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.debit[debitorAccountId], btcAmount)
-        expect(result.debit[staticAccountIds.bankOwnerAccountId]).toEqual(undefined)
+        expectEntryToEqual(result.credits[lndLedgerAccountId], btcAmount)
+        expectEntryToEqual(result.debits[debitorAccountId], btcAmount)
+        expect(result.debits[staticAccountIds.bankOwnerAccountId]).toBeUndefined()
       })
 
       it("with fee", () => {
@@ -85,9 +88,12 @@ describe("EntryBuilder", () => {
           })
           .creditLnd()
 
-        expectEntryToEqual(result.credit[staticAccountIds.bankOwnerAccountId], btcFee)
-        expectEntryToEqual(result.credit[lndLedgerAccountId], calc.sub(btcAmount, btcFee))
-        expectEntryToEqual(result.debit[debitorAccountId], btcAmount)
+        expectEntryToEqual(result.credits[staticAccountIds.bankOwnerAccountId], btcFee)
+        expectEntryToEqual(
+          result.credits[lndLedgerAccountId],
+          calc.sub(btcAmount, btcFee),
+        )
+        expectEntryToEqual(result.debits[debitorAccountId], btcAmount)
       })
     })
 
@@ -104,8 +110,8 @@ describe("EntryBuilder", () => {
           .debitLnd(btcAmount)
           .creditAccount({ accountId: creditorAccountId })
 
-        expectEntryToEqual(result.debit[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.credit[creditorAccountId], btcAmount)
+        expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
+        expectEntryToEqual(result.credits[creditorAccountId], btcAmount)
       })
 
       it("with fee", () => {
@@ -119,11 +125,11 @@ describe("EntryBuilder", () => {
           accountId: creditorAccountId,
         })
 
-        expect(result.credit[staticAccountIds.bankOwnerAccountId].amount).toEqual(
+        expect(result.credits[staticAccountIds.bankOwnerAccountId].amount).toEqual(
           Number(btcFee.amount),
         )
-        expectEntryToEqual(result.debit[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.credit[creditorAccountId], calc.sub(btcAmount, btcFee))
+        expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
+        expectEntryToEqual(result.credits[creditorAccountId], calc.sub(btcAmount, btcFee))
       })
     })
   })
@@ -145,10 +151,12 @@ describe("EntryBuilder", () => {
           })
           .creditLnd(btcAmount)
 
-        expectEntryToEqual(result.credit[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.debit[debitorAccountId], usdAmount)
-        expectEntryToEqual(result.debit[staticAccountIds.dealerBtcAccountId], btcAmount)
-        expectEntryToEqual(result.credit[staticAccountIds.dealerUsdAccountId], usdAmount)
+        expectEntryToEqual(result.credits[lndLedgerAccountId], btcAmount)
+        expectEntryToEqual(result.debits[debitorAccountId], usdAmount)
+        expectEntryToEqual(result.debits[staticAccountIds.dealerBtcAccountId], btcAmount)
+        expect(result.credits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
+        expectEntryToEqual(result.credits[staticAccountIds.dealerUsdAccountId], usdAmount)
+        expect(result.debits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
       })
 
       it("with fee", () => {
@@ -166,11 +174,16 @@ describe("EntryBuilder", () => {
           })
           .creditLnd(btcAmount)
 
-        expectEntryToEqual(result.credit[lndLedgerAccountId], calc.sub(btcAmount, btcFee))
-        expectEntryToEqual(result.credit[staticAccountIds.bankOwnerAccountId], btcFee)
-        expectEntryToEqual(result.debit[debitorAccountId], usdAmount)
-        expectEntryToEqual(result.debit[staticAccountIds.dealerBtcAccountId], btcAmount)
-        expectEntryToEqual(result.credit[staticAccountIds.dealerUsdAccountId], usdAmount)
+        expectEntryToEqual(
+          result.credits[lndLedgerAccountId],
+          calc.sub(btcAmount, btcFee),
+        )
+        expectEntryToEqual(result.credits[staticAccountIds.bankOwnerAccountId], btcFee)
+        expectEntryToEqual(result.debits[debitorAccountId], usdAmount)
+        expectEntryToEqual(result.debits[staticAccountIds.dealerBtcAccountId], btcAmount)
+        expect(result.credits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
+        expectEntryToEqual(result.credits[staticAccountIds.dealerUsdAccountId], usdAmount)
+        expect(result.debits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
       })
     })
 
@@ -186,10 +199,12 @@ describe("EntryBuilder", () => {
           accountId: creditorAccountId,
           amount: usdAmount,
         })
-        expectEntryToEqual(result.debit[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.credit[creditorAccountId], usdAmount)
-        expectEntryToEqual(result.credit[staticAccountIds.dealerBtcAccountId], btcAmount)
-        expectEntryToEqual(result.debit[staticAccountIds.dealerUsdAccountId], usdAmount)
+        expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
+        expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
+        expectEntryToEqual(result.credits[staticAccountIds.dealerBtcAccountId], btcAmount)
+        expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
+        expectEntryToEqual(result.debits[staticAccountIds.dealerUsdAccountId], usdAmount)
+        expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
       })
 
       it("with fee", () => {
@@ -203,10 +218,111 @@ describe("EntryBuilder", () => {
           accountId: creditorAccountId,
           amount: usdAmount,
         })
-        expectEntryToEqual(result.debit[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.credit[creditorAccountId], usdAmount)
-        expectEntryToEqual(result.credit[staticAccountIds.dealerBtcAccountId], btcAmount)
-        expectEntryToEqual(result.debit[staticAccountIds.dealerUsdAccountId], usdAmount)
+        expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
+        expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
+        expectEntryToEqual(result.credits[staticAccountIds.dealerBtcAccountId], btcAmount)
+        expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
+        expectEntryToEqual(result.debits[staticAccountIds.dealerUsdAccountId], usdAmount)
+        expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+      })
+    })
+  })
+
+  describe("intra ledger", () => {
+    describe("from btc", () => {
+      it("to btc", () => {
+        const entry = new TestMediciEntry()
+        const builder = EntryBuilder({
+          staticAccountIds,
+          entry,
+          metadata,
+        })
+        const result = builder
+          .withoutFee()
+          .debitAccount({
+            accountId: debitorAccountId,
+            amount: btcAmount,
+          })
+          .creditAccount({
+            accountId: creditorAccountId,
+          })
+
+        expectEntryToEqual(result.credits[creditorAccountId], btcAmount)
+        expectEntryToEqual(result.debits[debitorAccountId], btcAmount)
+      })
+
+      it("to usd", () => {
+        const entry = new TestMediciEntry()
+        const builder = EntryBuilder({
+          staticAccountIds,
+          entry,
+          metadata,
+        })
+        const result = builder
+          .withoutFee()
+          .debitAccount({
+            accountId: debitorAccountId,
+            amount: btcAmount,
+          })
+          .creditAccount({
+            accountId: creditorAccountId,
+            amount: usdAmount,
+          })
+
+        expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
+        expectEntryToEqual(result.debits[debitorAccountId], btcAmount)
+        expectEntryToEqual(result.credits[staticAccountIds.dealerBtcAccountId], btcAmount)
+        expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
+        expectEntryToEqual(result.debits[staticAccountIds.dealerUsdAccountId], usdAmount)
+        expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+      })
+    })
+    describe("from usd", () => {
+      it("to btc", () => {
+        const entry = new TestMediciEntry()
+        const builder = EntryBuilder({
+          staticAccountIds,
+          entry,
+          metadata,
+        })
+        const result = builder
+          .withoutFee()
+          .debitAccount({
+            accountId: debitorAccountId,
+            amount: usdAmount,
+          })
+          .creditAccount({
+            accountId: creditorAccountId,
+            amount: btcAmount,
+          })
+
+        expectEntryToEqual(result.credits[creditorAccountId], btcAmount)
+        expectEntryToEqual(result.debits[debitorAccountId], usdAmount)
+        expectEntryToEqual(result.debits[staticAccountIds.dealerBtcAccountId], btcAmount)
+        expect(result.credits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
+        expectEntryToEqual(result.credits[staticAccountIds.dealerUsdAccountId], usdAmount)
+        expect(result.debits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+      })
+
+      it("to usd", () => {
+        const entry = new TestMediciEntry()
+        const builder = EntryBuilder({
+          staticAccountIds,
+          entry,
+          metadata,
+        })
+        const result = builder
+          .withoutFee()
+          .debitAccount({
+            accountId: debitorAccountId,
+            amount: usdAmount,
+          })
+          .creditAccount({
+            accountId: creditorAccountId,
+          })
+
+        expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
+        expectEntryToEqual(result.debits[debitorAccountId], usdAmount)
       })
     })
   })
