@@ -58,6 +58,7 @@ const lndConfig = {
 export const configSchema = {
   type: "object",
   properties: {
+    PROXY_CHECK_APIKEY: { type: "string" },
     name: { type: "string" },
     funder: { type: "string" },
     buildVersion: {
@@ -101,6 +102,8 @@ export const configSchema = {
           username: { type: "string" },
           phoneMetadataCarrierType: { type: "string" },
           title: { type: "string" },
+          role: { type: "string" },
+          currency: { type: "string" },
         },
         required: ["ref", "phone", "code"],
         additionalProperties: false,
