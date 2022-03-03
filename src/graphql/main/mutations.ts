@@ -30,52 +30,78 @@ import OnChainPaymentSendAllMutation from "@graphql/root/mutation/onchain-paymen
 import CaptchaRequestAuthCodeMutation from "@graphql/root/mutation/captcha-request-auth-code"
 import CaptchaCreateChallengeMutation from "@graphql/root/mutation/captcha-create-challenge"
 
+import {
+  addAttributesToCurrentSpanAndPropagate,
+  SemanticAttributes,
+  ACCOUNT_USERNAME,
+} from "@services/tracing"
+
+const fields = {
+  // unauthed
+  userRequestAuthCode: UserRequestAuthCodeMutation,
+  userLogin: UserLoginMutation,
+
+  captchaCreateChallenge: CaptchaCreateChallengeMutation,
+  captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
+
+  // authed
+  twoFAGenerate: TwoFAGenerateMutation,
+  twoFASave: TwoFASaveMutation,
+  twoFADelete: TwoFADeleteMutation,
+
+  userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
+  deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
+
+  userUpdateLanguage: UserUpdateLanguageMutation,
+  userUpdateUsername: UserUpdateUsernameMutation,
+  accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdMutation,
+  userContactUpdateAlias: UserContactUpdateAliasMutation,
+
+  lnInvoiceFeeProbe: LnInvoiceFeeProbeMutation,
+  lnNoAmountInvoiceFeeProbe: LnNoAmountInvoiceFeeProbeMutation,
+
+  lnInvoiceCreate: LnInvoiceCreateMutation,
+  lnUsdInvoiceCreate: LnUsdInvoiceCreateMutation,
+  lnNoAmountInvoiceCreate: LnNoAmountInvoiceCreateMutation,
+
+  lnInvoiceCreateOnBehalfOfRecipient: LnInvoiceCreateOnBehalfOfRecipientMutation,
+  lnUsdInvoiceCreateOnBehalfOfRecipient: LnUsdInvoiceCreateOnBehalfOfRecipientMutation,
+  lnNoAmountInvoiceCreateOnBehalfOfRecipient:
+    LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation,
+
+  lnInvoicePaymentSend: LnInvoicePaymentSendMutation,
+  lnNoAmountInvoicePaymentSend: LnNoAmountInvoicePaymentSendMutation,
+  lnNoAmountUsdInvoicePaymentSend: LnNoAmountUsdInvoicePaymentSendMutation,
+
+  intraLedgerPaymentSend: IntraLedgerPaymentSendMutation,
+
+  onChainAddressCreate: OnChainAddressCreateMutation,
+  onChainAddressCurrent: OnChainAddressCurrentMutation,
+  onChainPaymentSend: OnChainPaymentSendMutation,
+  onChainPaymentSendAll: OnChainPaymentSendAllMutation,
+}
+
+const addTracing = (fields) => {
+  for (const key in fields) {
+    const original = fields[key].resolve
+    fields[key].resolve = (_, args, context) => {
+      const { ip, domainAccount, domainUser } = context
+      return addAttributesToCurrentSpanAndPropagate(
+        {
+          [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
+          [ACCOUNT_USERNAME]: domainAccount?.username,
+          [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+        },
+        () => original(_, args, context),
+      )
+    }
+  }
+  return fields
+}
+
 const MutationType = GT.Object({
   name: "Mutation",
-  fields: () => ({
-    // unauthed
-    userRequestAuthCode: UserRequestAuthCodeMutation,
-    userLogin: UserLoginMutation,
-
-    captchaCreateChallenge: CaptchaCreateChallengeMutation,
-    captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
-
-    // authed
-    twoFAGenerate: TwoFAGenerateMutation,
-    twoFASave: TwoFASaveMutation,
-    twoFADelete: TwoFADeleteMutation,
-
-    userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
-    deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
-
-    userUpdateLanguage: UserUpdateLanguageMutation,
-    userUpdateUsername: UserUpdateUsernameMutation,
-    accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdMutation,
-    userContactUpdateAlias: UserContactUpdateAliasMutation,
-
-    lnInvoiceFeeProbe: LnInvoiceFeeProbeMutation,
-    lnNoAmountInvoiceFeeProbe: LnNoAmountInvoiceFeeProbeMutation,
-
-    lnInvoiceCreate: LnInvoiceCreateMutation,
-    lnUsdInvoiceCreate: LnUsdInvoiceCreateMutation,
-    lnNoAmountInvoiceCreate: LnNoAmountInvoiceCreateMutation,
-
-    lnInvoiceCreateOnBehalfOfRecipient: LnInvoiceCreateOnBehalfOfRecipientMutation,
-    lnUsdInvoiceCreateOnBehalfOfRecipient: LnUsdInvoiceCreateOnBehalfOfRecipientMutation,
-    lnNoAmountInvoiceCreateOnBehalfOfRecipient:
-      LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation,
-
-    lnInvoicePaymentSend: LnInvoicePaymentSendMutation,
-    lnNoAmountInvoicePaymentSend: LnNoAmountInvoicePaymentSendMutation,
-    lnNoAmountUsdInvoicePaymentSend: LnNoAmountUsdInvoicePaymentSendMutation,
-
-    intraLedgerPaymentSend: IntraLedgerPaymentSendMutation,
-
-    onChainAddressCreate: OnChainAddressCreateMutation,
-    onChainAddressCurrent: OnChainAddressCurrentMutation,
-    onChainPaymentSend: OnChainPaymentSendMutation,
-    onChainPaymentSendAll: OnChainPaymentSendAllMutation,
-  }),
+  fields: () => addTracing(fields),
 })
 
 export default MutationType
