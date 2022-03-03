@@ -1,12 +1,17 @@
-import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
+import { LedgerTransactionType } from "@domain/ledger"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
 import { WalletCurrency } from "@domain/shared"
 
 import { NotImplementedError, NotReachableError } from "@domain/errors"
 
-import { lndAccountingPath } from "./accounts"
 import { MainBook } from "./books"
 import * as caching from "./caching"
+import {
+  EntryBuilder,
+  toLedgerAccountId,
+  paymentAmountFromSats,
+  paymentAmountFromCents,
+} from "./domain"
 
 import { TransactionsMetadataRepository } from "./services"
 
@@ -149,68 +154,41 @@ const addReceiptNoFee = async ({
   description: string
   revealedPreImage?: RevealedPreImage
 }) => {
-  const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+  const accountId = toLedgerAccountId(walletId)
+  const staticAccountIds = {
+    bankOwnerAccountId: toLedgerAccountId(await caching.getBankOwnerWalletId()),
+    dealerBtcAccountId: toLedgerAccountId(await caching.getDealerBtcWalletId()),
+    dealerUsdAccountId: toLedgerAccountId(await caching.getDealerUsdWalletId()),
+  }
+  let entry = MainBook.entry(description)
+  const builder = EntryBuilder({
+    staticAccountIds,
+    entry,
+    metadata: metaInput,
+  })
+    .withoutFee()
+    .debitLnd(paymentAmountFromSats(sats))
 
   if (walletCurrency === WalletCurrency.Btc) {
-    const metadata = { ...metaInput, currency: WalletCurrency.Btc }
-
-    try {
-      const entry = MainBook.entry(description)
-        .credit(liabilitiesWalletId, sats, metadata)
-        .debit(lndAccountingPath, sats, metadata)
-
-      const savedEntry = await entry.commit()
-      const journalEntry = translateToLedgerJournal(savedEntry)
-
-      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
-        id,
-        hash: metadata.hash,
-        revealedPreImage,
-      }))
-      txMetadataRepo.persistAll(txsMetadataToPersist)
-
-      return journalEntry
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
+    entry = builder.creditAccount({ accountId })
   } else {
     if (cents === undefined) return new NotReachableError("cents should be defined here")
+    entry = builder.creditAccount({ accountId, amount: paymentAmountFromCents(cents) })
+  }
+  try {
+    const savedEntry = await entry.commit()
+    const journalEntry = translateToLedgerJournal(savedEntry)
 
-    const dealerBtcWalletId = await caching.getDealerBtcWalletId()
-    const dealerUsdWalletId = await caching.getDealerUsdWalletId()
-    const liabilitiesDealerBtcWalletId = toLiabilitiesWalletId(dealerBtcWalletId)
-    const liabilitiesDealerUsdWalletId = toLiabilitiesWalletId(dealerUsdWalletId)
+    const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+      id,
+      hash: metaInput.hash,
+      revealedPreImage,
+    }))
+    txMetadataRepo.persistAll(txsMetadataToPersist)
 
-    const metaBtc = {
-      ...metaInput,
-      currency: WalletCurrency.Btc,
-    }
-
-    const metaUsd = {
-      ...metaInput,
-      currency: WalletCurrency.Usd,
-    }
-
-    try {
-      const entry = MainBook.entry(description)
-        .credit(liabilitiesDealerBtcWalletId, sats, metaBtc)
-        .debit(lndAccountingPath, sats, metaBtc)
-        .credit(liabilitiesWalletId, cents, metaUsd)
-        .debit(liabilitiesDealerUsdWalletId, cents, metaUsd)
-
-      const savedEntry = await entry.commit()
-      const journalEntry = translateToLedgerJournal(savedEntry)
-
-      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
-        id,
-        hash: metaInput.hash,
-      }))
-      txMetadataRepo.persistAll(txsMetadataToPersist)
-
-      return journalEntry
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
+    return journalEntry
+  } catch (err) {
+    return new UnknownLedgerError(err)
   }
 }
 
@@ -229,28 +207,35 @@ const addReceiptFee = async ({
   sats: Satoshis
   description: string
 }) => {
-  const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-  const bankOwnerPath = toLiabilitiesWalletId(await caching.getBankOwnerWalletId())
+  const accountId = toLedgerAccountId(walletId)
+  const staticAccountIds = {
+    bankOwnerAccountId: toLedgerAccountId(await caching.getBankOwnerWalletId()),
+    dealerBtcAccountId: toLedgerAccountId(await caching.getDealerBtcWalletId()),
+    dealerUsdAccountId: toLedgerAccountId(await caching.getDealerUsdWalletId()),
+  }
 
   // TODO: remove once implemented
   if (walletCurrency !== WalletCurrency.Btc) {
     return new NotImplementedError("USD Intraledger")
   }
 
-  const metadata = { ...metaInput, currency: WalletCurrency.Btc }
+  const entry = MainBook.entry(description)
+  const builder = EntryBuilder({
+    staticAccountIds,
+    entry,
+    metadata: metaInput,
+  })
+    .withFee(paymentAmountFromSats(fee))
+    .debitLnd(paymentAmountFromSats(sats))
+    .creditAccount({ accountId })
 
   try {
-    const entry = MainBook.entry(description)
-      .credit(liabilitiesWalletId, sats - fee, metadata)
-      .debit(lndAccountingPath, sats, metadata)
-      .credit(bankOwnerPath, fee, metadata)
-
-    const savedEntry = await entry.commit()
+    const savedEntry = await builder.commit()
     const journalEntry = translateToLedgerJournal(savedEntry)
 
     const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
       id,
-      hash: metadata.hash,
+      hash: metaInput.hash,
     }))
     txMetadataRepo.persistAll(txsMetadataToPersist)
 
