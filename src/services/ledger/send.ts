@@ -180,14 +180,14 @@ const addSendNoInternalFee = async ({
 
   const metadata = { ...metaInput, currency: walletCurrency }
   let entry = MainBook.entry(description)
-  const result = EntryBuilder({
+  const builder = EntryBuilder({
     staticAccountIds,
     entry,
     metadata,
   }).withoutFee()
 
   if (walletCurrency === WalletCurrency.Btc) {
-    entry = result
+    entry = builder
       .debitAccount({
         accountId,
         amount: paymentAmountFromSats(sats),
@@ -198,7 +198,7 @@ const addSendNoInternalFee = async ({
   if (walletCurrency === WalletCurrency.Usd) {
     if (!cents) return new UnknownLedgerError("Cents are required")
 
-    entry = result
+    entry = builder
       .debitAccount({
         accountId,
         amount: paymentAmountFromCents(cents),
@@ -250,18 +250,17 @@ const addSendInternalFee = async ({
   }
 
   try {
-    const metadata = { ...metaInput, currency: walletCurrency }
     const entry = MainBook.entry(description)
-    const result = EntryBuilder({
+    const builder = EntryBuilder({
       staticAccountIds,
       entry,
-      metadata,
+      metadata: metaInput,
     })
-      .withFee({ btc: paymentAmountFromSats(fee) })
+      .withFee(paymentAmountFromSats(fee))
       .debitAccount({ accountId, amount: paymentAmountFromSats(sats) })
       .creditLnd()
 
-    const savedEntry = await result.commit()
+    const savedEntry = await builder.commit()
     const journalEntry = translateToLedgerJournal(savedEntry)
 
     const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
