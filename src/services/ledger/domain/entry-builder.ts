@@ -109,8 +109,8 @@ const EntryBuilderDebit = ({
 
   const debitLnd = (amount: BtcPaymentAmount): EntryBuilderCreditWithBtcDebit => {
     entry.debit(lndLedgerAccountId, Number(amount.amount), {
-      currency: amount.currency,
       ...metadata,
+      currency: amount.currency,
     })
     return EntryBuilderCreditWithBtcDebit({
       entry,
@@ -143,6 +143,7 @@ const EntryBuilderCreditWithUsdDebit = ({
   metadata,
   debitAmount,
   staticAccountIds,
+  fee,
 }: EntryBuilderCreditState<"USD">): EntryBuilderCreditWithUsdDebit => {
   const creditLnd = (btcCreditAmount: BtcPaymentAmount) => {
     withdrawUsdFromDealer({
@@ -152,7 +153,8 @@ const EntryBuilderCreditWithUsdDebit = ({
       btcAmount: btcCreditAmount,
       usdAmount: debitAmount,
     })
-    entry.credit(lndLedgerAccountId, Number(btcCreditAmount.amount), {
+    const creditAmount = calc.sub(btcCreditAmount, fee)
+    entry.credit(lndLedgerAccountId, Number(creditAmount.amount), {
       ...metadata,
       currency: btcCreditAmount.currency,
     })
@@ -173,7 +175,10 @@ const EntryBuilderCreditWithBtcDebit = ({
 }: EntryBuilderCreditState<"BTC">): EntryBuilderCreditWithBtcDebit => {
   const creditLnd = () => {
     const creditAmount = calc.sub(debitAmount, fee)
-    entry.credit(lndLedgerAccountId, Number(creditAmount.amount), metadata)
+    entry.credit(lndLedgerAccountId, Number(creditAmount.amount), {
+      ...metadata,
+      currency: creditAmount.currency,
+    })
     return entry
   }
   const creditAccount = ({
