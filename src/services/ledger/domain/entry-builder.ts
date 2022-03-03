@@ -6,53 +6,6 @@ const ZERO_SATS = {
   currency: WalletCurrency.Btc,
   amount: 0n,
 } as const
-
-type EntryBuilderDebitState<M extends MediciEntry> = {
-  entry: M
-  metadata: TxMetadata
-  fee: BtcPaymentAmount
-  staticAccountIds: StaticAccountIds
-}
-
-type EntryBuilderDebit<M extends MediciEntry> = {
-  debitAccount: <D extends WalletCurrency>({
-    accountId,
-    amount,
-    additionalMetadata,
-  }: {
-    accountId: LedgerAccountId
-    amount: PaymentAmount<D>
-    additionalMetadata?: TxMetadata
-  }) => EntryBuilderCredit<M, D>
-  debitLnd: (amount: BtcPaymentAmount) => EntryBuilderCreditWithBtcDebit<M>
-}
-
-type EntryBuilderCreditWithUsdDebit<M extends MediciEntry> = {
-  creditLnd: (amount: BtcPaymentAmount) => M
-  creditAccount: ({
-    accountId,
-    amount,
-  }: {
-    accountId: LedgerAccountId
-    amount?: BtcPaymentAmount
-  }) => M
-}
-
-type EntryBuilderCreditWithBtcDebit<M extends MediciEntry> = {
-  creditLnd: () => M
-  creditAccount: ({
-    accountId,
-    amount,
-  }: {
-    accountId: LedgerAccountId
-    amount?: UsdPaymentAmount
-  }) => M
-}
-
-type EntryBuilderCredit<M extends MediciEntry, D extends WalletCurrency> = D extends "USD"
-  ? EntryBuilderCreditWithUsdDebit<M>
-  : EntryBuilderCreditWithBtcDebit<M>
-
 const calc = AmountCalculator()
 
 export const EntryBuilder = <M extends MediciEntry>({
