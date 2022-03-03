@@ -92,15 +92,15 @@ export const send = {
         sats,
         fee: bankFee,
       })
-    } else {
-      return addSendNoInternalFee({
-        walletId,
-        walletCurrency,
-        metadata,
-        description,
-        sats,
-      })
     }
+
+    return addSendNoInternalFee({
+      walletId,
+      walletCurrency,
+      metadata,
+      description,
+      sats,
+    })
   },
 
   settlePendingLnPayment: async (
@@ -178,68 +178,47 @@ const addSendNoInternalFee = async ({
     dealerUsdAccountId: toLedgerAccountId(await caching.getDealerUsdWalletId()),
   }
 
+  const metadata = { ...metaInput, currency: walletCurrency }
+  let entry = MainBook.entry(description)
+  const result = EntryBuilder({
+    staticAccountIds,
+    entry,
+    metadata,
+  }).withoutFee()
+
   if (walletCurrency === WalletCurrency.Btc) {
-    const metadata = { ...metaInput, currency: WalletCurrency.Btc }
-
-    try {
-      const result = EntryBuilder({
-        staticAccountIds,
-        entry: MainBook.entry(description),
-        metadata,
+    entry = result
+      .debitAccount({
+        accountId,
+        amount: paymentAmountFromSats(sats),
       })
-        .withoutFee()
-        .debitAccount({
-          accountId,
-          amount: paymentAmountFromSats(sats),
-        })
-        .creditLnd()
+      .creditLnd()
+  }
 
-      const savedEntry = await result.commit()
-      const journalEntry = translateToLedgerJournal(savedEntry)
+  if (walletCurrency === WalletCurrency.Usd) {
+    if (!cents) return new UnknownLedgerError("Cents are required")
 
-      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
-        id,
-        hash: metadata.hash,
-      }))
-      txMetadataRepo.persistAll(txsMetadataToPersist)
-
-      return journalEntry
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
-  } else {
-    try {
-      if (cents === undefined) {
-        return new UnknownLedgerError("Cents are required")
-      }
-
-      const entry = MainBook.entry(description)
-      const result = EntryBuilder({
-        staticAccountIds,
-        entry,
-        metadata: metaInput,
+    entry = result
+      .debitAccount({
+        accountId,
+        amount: paymentAmountFromCents(cents),
       })
-        .withoutFee()
+      .creditLnd(paymentAmountFromSats(sats))
+  }
 
-        .debitAccount({
-          accountId,
-          amount: paymentAmountFromCents(cents),
-        })
-        .creditLnd(paymentAmountFromSats(sats))
+  try {
+    const savedEntry = await entry.commit()
+    const journalEntry = translateToLedgerJournal(savedEntry)
 
-      const savedEntry = await result.commit()
-      const journalEntry = translateToLedgerJournal(savedEntry)
+    const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+      id,
+      hash: metadata.hash,
+    }))
+    txMetadataRepo.persistAll(txsMetadataToPersist)
 
-      const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
-        id,
-        hash: metaInput.hash,
-      }))
-      txMetadataRepo.persistAll(txsMetadataToPersist)
-
-      return journalEntry
-    } catch (err) {
-      return new UnknownLedgerError(err)
-    }
+    return journalEntry
+  } catch (err) {
+    return new UnknownLedgerError(err)
   }
 }
 
@@ -258,6 +237,11 @@ const addSendInternalFee = async ({
   fee: Satoshis
   description: string
 }) => {
+  // TODO: remove once implemented
+  if (walletCurrency !== WalletCurrency.Btc) {
+    return new NotImplementedError("USD Intraledger")
+  }
+
   const accountId = toLedgerAccountId(walletId)
   const staticAccountIds = {
     bankOwnerAccountId: toLedgerAccountId(await caching.getBankOwnerWalletId()),
@@ -265,17 +249,13 @@ const addSendInternalFee = async ({
     dealerUsdAccountId: toLedgerAccountId(await caching.getDealerUsdWalletId()),
   }
 
-  // TODO: remove once implemented
-  if (walletCurrency !== WalletCurrency.Btc) {
-    return new NotImplementedError("USD Intraledger")
-  }
-
   try {
+    const metadata = { ...metaInput, currency: walletCurrency }
     const entry = MainBook.entry(description)
     const result = EntryBuilder({
       staticAccountIds,
       entry,
-      metadata: metaInput,
+      metadata,
     })
       .withFee({ btc: paymentAmountFromSats(fee) })
       .debitAccount({ accountId, amount: paymentAmountFromSats(sats) })

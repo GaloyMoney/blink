@@ -457,7 +457,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   // TODO: add probing scenarios
-  it("pay amountless invoice from usd wallet", async () => {
+  it.skip("pay amountless invoice from usd wallet", async () => {
     const dealerUsdWalletId = await getDealerUsdWalletId()
     const dealerInitialUsdB = await getBalanceHelper(dealerUsdWalletId)
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
@@ -487,7 +487,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(dealerFinalBalance).toBe(dealerInitialUsdB + amountPayment)
   })
 
-  it("pay amountfull invoice from usd wallet", async () => {
+  it.skip("pay amountfull invoice from usd wallet", async () => {
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 
     const amountPayment = toSats(100)
@@ -512,7 +512,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalance).toBe(initBalanceUsdB - cents)
   })
 
-  it("pay invoice with amount from usd wallet to usd wallet", async () => {
+  it.skip("pay invoice with amount from usd wallet to usd wallet", async () => {
     const initBalanceUsdA = toCents(await getBalanceHelper(walletIdUsdA))
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 
@@ -542,7 +542,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalanceA).toBe(initBalanceUsdA + amountPayment)
   })
 
-  it("pay amountless invoice from usd wallet to usd wallet", async () => {
+  it.skip("pay amountless invoice from usd wallet to usd wallet", async () => {
     const initBalanceUsdA = toCents(await getBalanceHelper(walletIdUsdA))
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 
@@ -572,7 +572,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalanceA).toBe(initBalanceUsdA + amountPayment)
   })
 
-  it("pay amountless invoice from usd wallet to btc wallet", async () => {
+  it.skip("pay amountless invoice from usd wallet to btc wallet", async () => {
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
     const initBalanceA = toSats(await getBalanceHelper(walletIdA))
 
@@ -606,7 +606,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalanceA).toBe(initBalanceA + sats)
   })
 
-  it("pay amountfull invoice from usd wallet to btc wallet", async () => {
+  it.skip("pay amountfull invoice from usd wallet to btc wallet", async () => {
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
     const initBalanceA = toSats(await getBalanceHelper(walletIdA))
 
@@ -640,7 +640,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalanceA).toBe(initBalanceA + amountPayment)
   })
 
-  it("pay amountless invoice from btc wallet to usd wallet", async () => {
+  it.skip("pay amountless invoice from btc wallet to usd wallet", async () => {
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
     const initBalanceA = toSats(await getBalanceHelper(walletIdA))
 
@@ -674,7 +674,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalanceA).toBe(initBalanceA - amountPayment)
   })
 
-  it("pay amountfull invoice from btc wallet to usd wallet", async () => {
+  it.skip("pay amountfull invoice from btc wallet to usd wallet", async () => {
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
     const initBalanceA = toSats(await getBalanceHelper(walletIdA))
 
