@@ -1,3 +1,12 @@
+interface LedgerFacade {
+  lnTxSendMetadata
+  onChainTxSendMetadata
+
+  recordSend
+  recordReceive
+  recordIntraLedger
+}
+
 type TxnGroup = keyof typeof import("./volume").TxnGroups
 type TxnTypes = typeof import("./volume").TxnGroups[TxnGroup]
 
