@@ -10,7 +10,7 @@ import {
   toLiabilitiesWalletId,
   toWalletId,
 } from "@domain/ledger"
-import { ErrorLevel } from "@domain/errors"
+import { BalanceLessThanZeroError } from "@domain/errors"
 import {
   CouldNotFindTransactionError,
   LedgerError,
@@ -19,8 +19,7 @@ import {
 } from "@domain/ledger/errors"
 import { toObjectId } from "@services/mongoose/utils"
 import {
-  addAttributesToCurrentSpan,
-  addEventToCurrentSpan,
+  recordExceptionInCurrentSpan,
   wrapAsyncFunctionsToRunInSpan,
 } from "@services/tracing"
 
@@ -185,13 +184,11 @@ export const LedgerService = (): ILedgerService => {
         account: liabilitiesWalletId,
       })
       if (balance < 0) {
-        addAttributesToCurrentSpan({
-          "getWalletBalance.error.invalidBalance": `${balance}`,
-          "error": true,
-          "error.level": ErrorLevel.Warn,
-        })
-        addEventToCurrentSpan("exception", {
-          "exception.message": `Balance '${balance}' is negative.`,
+        recordExceptionInCurrentSpan({
+          error: new BalanceLessThanZeroError(balance),
+          attributes: {
+            "getWalletBalance.error.invalidBalance": `${balance}`,
+          },
         })
       }
       return toSats(balance)
