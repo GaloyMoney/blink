@@ -4,8 +4,10 @@ services:
     image: busybox
     depends_on:
     - price
+    - price-history
     - redis
     - mongodb
+    - postgres-price-history
     - bitcoind
     - lnd1
     - lnd2
@@ -22,6 +24,18 @@ services:
       - ./dev/otel-agent-config.yaml:/etc/otel-agent-config.yaml
   price:
     image: us.gcr.io/galoy-org/price:edge
+  price-history:
+    image: galoy-price-history:latest
+    environment:
+      - DB_HOST=postgres-price-history
+      - DB_PORT=5432
+      - DB_USER=galoy-price-usr
+      - DB_PWD=galoy-price-pwd
+      - DB_DB=galoy-price-history
+      - DB_POOL_MIN=1
+      - DB_POOL_MAX=5
+      - DB_DEBUG=false
+    depends_on: [postgres-price-history]
   redis:
     image: bitnami/redis:6.2
     environment:
@@ -43,6 +57,12 @@ services:
     - MONGODB_REPLICA_SET_MODE=primary
     - MONGODB_ROOT_PASSWORD=password
     - MONGODB_REPLICA_SET_KEY=replicasetkey
+  postgres-price-history:
+    image: postgres:14.1
+    environment:
+      - POSTGRES_USER=galoy-price-usr
+      - POSTGRES_PASSWORD=galoy-price-pwd
+      - POSTGRES_DB=galoy-price-history
   bitcoind:
     image: lncm/bitcoind:v22.0
     volumes:
