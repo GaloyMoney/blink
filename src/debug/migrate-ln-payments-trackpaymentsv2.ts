@@ -48,6 +48,7 @@ const migrateLnPayment = async (
       [SemanticAttributes.CODE_NAMESPACE]: "debug",
       "migrateLnPayment.paymentHash":
         paymentHash instanceof Error ? paymentHash.name : paymentHash,
+      "migrateLnPayment.pubkey": lndService.defaultPubkey(),
     },
     async (): Promise<true | LightningServiceError> => {
       if (paymentHash instanceof Error) return paymentHash
