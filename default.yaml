@@ -137,7 +137,6 @@ onChainWallet:
   scanDepth: 360
   scanDepthOutgoing: 2
   scanDepthChannelUpdate: 8
-  feeBuffer: 5000
 
 # TODO
 # carrierRegexFilter: ""
