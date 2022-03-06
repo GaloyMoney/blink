@@ -31,7 +31,7 @@ import {
 } from "./check-limit-helpers"
 import { getOnChainFee } from "./get-on-chain-fee"
 
-const { dustThreshold, feeBuffer } = getOnChainWalletConfig()
+const { dustThreshold } = getOnChainWalletConfig()
 
 export const payOnChainByWalletIdWithTwoFA = async ({
   senderAccount,
@@ -322,7 +322,7 @@ const executePaymentViaOnChain = async ({
   const estimatedFee = await getFeeEstimate()
   if (estimatedFee instanceof Error) return estimatedFee
 
-  const amountToSend = sendAll ? toSats(amount - estimatedFee - feeBuffer) : amountSats
+  const amountToSend = sendAll ? toSats(amount - estimatedFee) : amountSats
   if (onChainAvailableBalance < amountToSend + estimatedFee)
     return new RebalanceNeededError()
 
@@ -338,11 +338,9 @@ const executePaymentViaOnChain = async ({
       if (balance instanceof Error) return balance
       const estimatedFee = await getFeeEstimate()
       if (estimatedFee instanceof Error) return estimatedFee
-      if (balance < amountToSend + estimatedFee + feeBuffer) {
+      if (balance < amountToSend + estimatedFee) {
         return new InsufficientBalanceError(
-          `${
-            amountToSend + estimatedFee
-          } exceeds balance ${balance} (with ${feeBuffer} sats buffer)`,
+          `${amountToSend + estimatedFee} exceeds balance ${balance}`,
         )
       }
 
