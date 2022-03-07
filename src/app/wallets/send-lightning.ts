@@ -605,11 +605,11 @@ const executePaymentViaLn = async ({
       } else {
         // the dealer already gave a price during the probe
         // TODO: test properly. move this to domain
-        const baseCentsWithoutFee = toCents(amount)
-        const satsWithoutFee = toSats(rawRoute.tokens - rawRoute.safe_fee)
-        const ratio = satsWithoutFee / baseCentsWithoutFee
+        const baseCentsWithoutFee = amount
+        const satsWithoutFee = rawRoute.tokens - rawRoute.safe_fee
+        const centsPerSat = baseCentsWithoutFee / satsWithoutFee
         sats = toSats(rawRoute.tokens)
-        cents = toCents(sats / ratio)
+        cents = toCents(Math.ceil(sats * centsPerSat))
       }
     } else {
       sats = toSats(amount + feeRouting)

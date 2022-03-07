@@ -5,17 +5,17 @@ const CentAmount = GT.Scalar({
   name: "CentAmount",
   description: "(Positive) Cent amount (1/100 of a dollar)",
   parseValue(value) {
-    return validSatAmount(value)
+    return validCentAmount(value)
   },
   parseLiteral(ast) {
     if (ast.kind === GT.Kind.INT) {
-      return validSatAmount(ast.value)
+      return validCentAmount(ast.value)
     }
     return new InputValidationError({ message: "Invalid type for CentAmount" })
   },
 })
 
-function validSatAmount(value) {
+function validCentAmount(value) {
   const intValue = Number.parseInt(value, 10)
   if (Number.isInteger(intValue) && intValue >= 0) {
     return intValue
