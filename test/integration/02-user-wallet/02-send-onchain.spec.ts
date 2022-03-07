@@ -392,6 +392,8 @@ describe("UserWallet - onChainPay", () => {
       expect(settledTx.memo).toBe(memo)
     }
 
+    // Delay as workaround for occasional core-dump error
+    await new Promise((resolve) => setImmediate(resolve))
     sub.removeAllListeners()
   })
 
