@@ -55,6 +55,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
           paymentHash: "paymentHash" as PaymentHash,
           pubkey: "pubkey" as Pubkey,
           memoFromPayer: "SomeMemo",
+          revealedPreImage: "revealedPreImage" as RevealedPreImage,
         },
         {
           ...currencyBaseLedgerTxns,
@@ -131,7 +132,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
           },
           settlementVia: {
             type: SettlementMethod.Lightning,
-            revealedPreImage: null,
+            revealedPreImage: "revealedPreImage" as RevealedPreImage,
           },
           memo: "SomeMemo",
         },
@@ -159,7 +160,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
           settlementVia: {
             type: SettlementMethod.IntraLedger,
             counterPartyWalletId: "walletIdRecipient" as WalletId,
-            counterPartyUsername: null,
+            counterPartyUsername: undefined,
           },
           memo: null,
         },
