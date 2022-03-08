@@ -27,7 +27,12 @@ import { toCents } from "@domain/fiat"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
-import { WalletCurrency } from "@domain/shared"
+import {
+  AmountMathWrapper,
+  paymentAmountFromCents,
+  paymentAmountFromSats,
+  WalletCurrency,
+} from "@domain/shared"
 import {
   PaymentInitiationMethod,
   PaymentInputValidator,
@@ -48,6 +53,9 @@ import { RoutesCache } from "@services/redis/routes"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { DealerPriceServiceError } from "@domain/dealer-price"
+
+import * as LedgerFacade from "@services/ledger/facade"
+import { UnknownLedgerError } from "@domain/ledger"
 
 import { getNoAmountLightningFee, getRoutingFee } from "./get-lightning-fee"
 
@@ -646,39 +654,70 @@ const executePaymentViaLn = async ({
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
     async (lock) => {
-      const balance = await LedgerService().getWalletBalance(senderWallet.id)
+      const ledgerService = LedgerService()
+      const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId({
+        id: senderWallet.id,
+        currency: senderWallet.currency,
+      })
+
       if (balance instanceof Error) return balance
+
+      const lnTxSendMetadata = LedgerFacade.LnSendLedgerMetadata({
+        paymentHash,
+        fee: paymentAmountFromSats(feeRouting),
+        feeDisplayUsd: feeRoutingDisplayCurrency,
+        amountDisplayUsd: amountDisplayCurrency,
+        pubkey,
+        feeKnownInAdvance: !!rawRoute,
+      })
+
+      let journal: LockServiceError | LedgerJournal | UnknownLedgerError
 
       if (senderWallet.currency === WalletCurrency.Usd) {
         if (cents === undefined) return new NotReachableError("cents is set here")
-        if (balance < cents)
+
+        if (AmountMathWrapper(balance).lessThan(paymentAmountFromCents(cents)))
           return new InsufficientBalanceError(
             `Payment amount '${cents}' cents exceeds balance '${balance}'`,
           )
-      }
 
-      if (senderWallet.currency === WalletCurrency.Btc && balance < sats) {
-        return new InsufficientBalanceError(
-          `Payment amount '${sats}' sats exceeds balance '${balance}'`,
+        journal = await LockService().extendLock({ logger, lock }, async () =>
+          LedgerFacade.recordSend({
+            description: decodedInvoice.description,
+            senderWalletDescriptor: {
+              id: senderWallet.id,
+              currency: senderWallet.currency,
+            },
+            amount: {
+              usd: paymentAmountFromCents(cents as UsdCents),
+              btc: paymentAmountFromSats(sats),
+            },
+            fee: paymentAmountFromSats(feeRouting),
+            metadata: lnTxSendMetadata,
+          }),
+        )
+      }
+      // Wallet curreny = BTC
+      else {
+        if (AmountMathWrapper(balance).lessThan(paymentAmountFromSats(sats)))
+          return new InsufficientBalanceError(
+            `Payment amount '${sats}' sats exceeds balance '${balance}'`,
+          )
+
+        journal = await LockService().extendLock({ logger, lock }, async () =>
+          LedgerFacade.recordSend({
+            description: decodedInvoice.description,
+            senderWalletDescriptor: {
+              id: senderWallet.id,
+              currency: senderWallet.currency,
+            },
+            amount: paymentAmountFromSats(sats),
+            fee: paymentAmountFromSats(feeRouting),
+            metadata: lnTxSendMetadata,
+          }),
         )
       }
 
-      const ledgerService = LedgerService()
-      const journal = await LockService().extendLock({ logger, lock }, async () =>
-        ledgerService.addLnTxSend({
-          walletId: senderWallet.id,
-          walletCurrency: senderWallet.currency,
-          paymentHash,
-          description: decodedInvoice.description,
-          sats,
-          cents,
-          feeRouting,
-          amountDisplayCurrency,
-          feeRoutingDisplayCurrency,
-          pubkey,
-          feeKnownInAdvance: !!rawRoute,
-        }),
-      )
       if (journal instanceof Error) return journal
       const { journalId } = journal
 

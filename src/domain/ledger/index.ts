@@ -37,7 +37,7 @@ export const LedgerTransactionType = {
   Escrow: "escrow",
 
   // TODO: rename. should be routing_revenue
-  RoutingFee: "routing_fee", // channel-related
+  RoutingRevenue: "routing_fee", // channel-related
   ExchangeRebalance: "exchange_rebalance", // send/receive btc from the exchange
   UserRebalance: "user_rebalance", // buy/sell btc in the user wallet
   ToColdStorage: "to_cold_storage",

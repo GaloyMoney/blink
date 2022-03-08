@@ -172,7 +172,10 @@ const addReceiptNoFee = async ({
     entry = builder.creditAccount({ accountId })
   } else {
     if (cents === undefined) return new NotReachableError("cents should be defined here")
-    entry = builder.creditAccount({ accountId, amount: paymentAmountFromCents(cents) })
+    entry = builder.creditAccount({
+      accountId,
+      usdAmountForBtcDebit: paymentAmountFromCents(cents),
+    })
   }
   try {
     const savedEntry = await entry.commit()

@@ -229,7 +229,7 @@ const addIntraledgerTxTransfer = async ({
       })
       .creditAccount({
         accountId: recipientAccountId,
-        amount: paymentAmountFromSats(sats),
+        btcAmountForUsdDebit: paymentAmountFromSats(sats),
       })
   } else {
     // if (
@@ -251,7 +251,7 @@ const addIntraledgerTxTransfer = async ({
       })
       .creditAccount({
         accountId: recipientAccountId,
-        amount: paymentAmountFromCents(cents),
+        usdAmountForBtcDebit: paymentAmountFromCents(cents),
       })
   }
 
