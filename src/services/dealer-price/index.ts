@@ -95,7 +95,7 @@ export const DealerPriceService = (): IDealerPriceService => {
           amountInSatoshis,
         ),
       )
-      return toCents(Math.floor(response.getAmountInCents()))
+      return toCents(response.getAmountInCents())
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForImmediateBuy unable to fetch price")
       return new UnknownDealerPriceServiceError(error.message)
@@ -111,7 +111,7 @@ export const DealerPriceService = (): IDealerPriceService => {
           amountInSatoshis,
         ),
       )
-      return toCents(Math.ceil(response.getAmountInCents()))
+      return toCents(response.getAmountInCents())
     } catch (error) {
       baseLogger.error(
         { error },
@@ -131,7 +131,7 @@ export const DealerPriceService = (): IDealerPriceService => {
           .setAmountInSatoshis(amountInSatoshis)
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
-      return toCents(Math.floor(response.getAmountInCents()))
+      return toCents(response.getAmountInCents())
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForFutureBuy unable to fetch price")
       return new UnknownDealerPriceServiceError(error.message)
@@ -148,7 +148,7 @@ export const DealerPriceService = (): IDealerPriceService => {
           .setAmountInSatoshis(amountInSatoshis)
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
-      return toCents(Math.ceil(response.getAmountInCents()))
+      return toCents(response.getAmountInCents())
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForFutureSell unable to fetch price")
       return new UnknownDealerPriceServiceError(error.message)
