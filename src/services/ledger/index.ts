@@ -17,6 +17,7 @@ import {
   LedgerServiceError,
   UnknownLedgerError,
 } from "@domain/ledger/errors"
+import { ErrorLevel } from "@domain/shared"
 import { toObjectId } from "@services/mongoose/utils"
 import {
   recordExceptionInCurrentSpan,
@@ -189,6 +190,7 @@ export const LedgerService = (): ILedgerService => {
           attributes: {
             "getWalletBalance.error.invalidBalance": `${balance}`,
           },
+          level: ErrorLevel.Critical,
         })
       }
       return toSats(balance)
