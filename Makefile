@@ -4,6 +4,9 @@ start-deps:
 	docker compose up integration-deps -d
 	direnv reload
 
+update-price-history:
+	docker compose run price-history node servers/history/cron.js
+
 start-main:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/graphql-main-server.ts | yarn pino-pretty -c -l
@@ -69,7 +72,7 @@ execute-e2e-from-within-container:
 	yarn build && \
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
-integration:
+integration: update-price-history
 	yarn build && \
 	yarn test:integration
 
