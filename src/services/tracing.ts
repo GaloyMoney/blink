@@ -25,7 +25,7 @@ import {
   Exception,
 } from "@opentelemetry/api"
 import { tracingConfig } from "@config"
-import { ErrorLevel } from "@domain/errors"
+import { ErrorLevel } from "@domain/shared"
 
 propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 

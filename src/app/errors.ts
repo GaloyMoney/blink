@@ -1,3 +1,4 @@
+import * as SharedErrors from "@domain/shared/errors"
 import * as DomainErrors from "@domain/errors"
 import * as LedgerErrors from "@domain/ledger/errors"
 import * as OnChainErrors from "@domain/bitcoin/onchain/errors"
@@ -15,6 +16,7 @@ import * as ColdStorageServiceErrors from "@domain/cold-storage/errors"
 import * as DealerPriceErrors from "@domain/dealer-price/errors"
 
 export const ApplicationErrors = {
+  ...SharedErrors,
   ...DomainErrors,
   ...LedgerErrors,
   ...OnChainErrors,
