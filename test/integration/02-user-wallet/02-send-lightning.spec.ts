@@ -601,6 +601,19 @@ describe("UserWallet - Lightning Pay", () => {
       }),
     )
 
+    // Test metadata is added back to ledger transactions correctly
+    const revealedPreImages = new Set(
+      txns.map((txn) =>
+        txn instanceof Error
+          ? txn
+          : "revealedPreImage" in txn
+          ? txn.revealedPreImage
+          : undefined,
+      ),
+    )
+    expect(revealedPreImages.size).toEqual(1)
+    expect(revealedPreImages.has(revealedPreImage)).toBeTruthy()
+
     // Test metadata is correctly persisted
     const txns_metadata = await Promise.all(
       txns.map(async (txn) => TransactionsMetadataRepository().findById(txn.id)),
@@ -611,7 +624,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(metadataCheck).toBeTruthy()
     if (!metadataCheck) throw txns_metadata.find((txn) => txn instanceof Error)
 
-    const revealedPreImages = new Set(
+    const revealedPreImagesInMetadata = new Set(
       txns_metadata.map((txn) =>
         txn instanceof Error
           ? txn
@@ -620,8 +633,8 @@ describe("UserWallet - Lightning Pay", () => {
           : undefined,
       ),
     )
-    expect(revealedPreImages.size).toEqual(1)
-    expect(revealedPreImages.has(revealedPreImage)).toBeTruthy()
+    expect(revealedPreImagesInMetadata.size).toEqual(1)
+    expect(revealedPreImagesInMetadata.has(revealedPreImage)).toBeTruthy()
 
     const paymentHashes = new Set(
       txns_metadata.map((txn) =>
