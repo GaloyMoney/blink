@@ -6,7 +6,7 @@ export const IpFetcher = (): IIpFetcherService => {
   const fetchIPInfo = async (ip: string): Promise<IPInfo | IpFetcherServiceError> => {
     try {
       const { data } = await axios.get(
-        `http://proxycheck.io/v2/${ip}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`,
+        `https://proxycheck.io/v2/${ip}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`,
       )
       return { ...data[ip], status: data.status }
     } catch (err) {
