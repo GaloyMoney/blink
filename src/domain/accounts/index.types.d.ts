@@ -83,7 +83,6 @@ type LimiterCheckInputs = {
 type LimitsCheckerFn = (args: LimiterCheckInputs) => true | LimitsExceededError
 
 type LimitsChecker = {
-  checkTwoFA: LimitsCheckerFn
   checkIntraledger: LimitsCheckerFn
   checkWithdrawal: LimitsCheckerFn
 }
@@ -113,10 +112,6 @@ type TestAccountsChecker = (testAccounts: TestAccount[]) => {
     code: PhoneCode
     phone: PhoneNumber
   }) => boolean
-}
-
-type TwoFALimits = {
-  threshold: UsdCents
 }
 
 type FeeRates = {

@@ -21,10 +21,6 @@ type ApolloConfig = {
   playgroundUrl: string
 }
 
-type TwoFAConfig = {
-  threshold: number
-}
-
 // Currently unused types
 
 interface IAddBTCInvoiceRequest {

@@ -7,16 +7,12 @@ import { PaymentInputValidator } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import { LedgerService } from "@services/ledger"
 import { LockService } from "@services/lock"
-import {
-  AccountsRepository,
-  UsersRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 
 import { toSats } from "@domain/bitcoin"
 
-import { checkAndVerifyTwoFA, checkIntraledgerLimits } from "./check-limit-helpers"
+import { checkIntraledgerLimits } from "./check-limit-helpers"
 
 export const intraledgerPaymentSendUsername = async ({
   recipientUsername,
@@ -51,55 +47,6 @@ export const intraledgerPaymentSendWalletId = async ({
     recipientWalletId,
     amount,
     memoPayer: memo || "",
-    logger,
-  })
-}
-
-// FIXME: unused currently
-export const intraledgerSendPaymentUsernameWithTwoFA = async ({
-  twoFAToken,
-  recipientUsername,
-  senderAccount,
-  amount,
-  memo,
-  senderWalletId,
-  logger,
-}: IntraLedgerPaymentSendWithTwoFAArgs): Promise<
-  PaymentSendStatus | ApplicationError
-> => {
-  const user = await UsersRepository().findById(senderAccount.ownerId)
-  if (user instanceof Error) return user
-  const { twoFA } = user
-
-  // FIXME: inefficient. wallet also fetched in lnSendPayment
-  const senderWallet = await WalletsRepository().findById(senderWalletId)
-  if (senderWallet instanceof Error) return senderWallet
-
-  const displayCurrencyPerSat = await getCurrentPrice()
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
-
-  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
-  // End FIXME
-
-  const twoFACheck = twoFA?.secret
-    ? await checkAndVerifyTwoFA({
-        amount,
-        dCConverter,
-        twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
-        twoFASecret: twoFA.secret,
-        walletId: senderWalletId,
-        walletCurrency: senderWallet.currency,
-        account: senderAccount,
-      })
-    : true
-  if (twoFACheck instanceof Error) return twoFACheck
-
-  return intraLedgerSendPaymentUsername({
-    senderAccount,
-    senderWalletId,
-    recipientUsername,
-    amount,
-    memo: memo || "",
     logger,
   })
 }

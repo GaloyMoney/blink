@@ -47,17 +47,11 @@ type PayInvoiceByWalletIdArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
   senderAccount: Account
 }
-type PayInvoiceByWalletIdWithTwoFAArgs = PayInvoiceByWalletIdArgs & {
-  twoFAToken: TwoFAToken
-}
 
 type PayNoAmountInvoiceByWalletIdArgs = PaymentSendArgs & {
   paymentRequest: EncodedPaymentRequest
   amount: number
   senderAccount: Account
-}
-type PayNoAmountInvoiceByWalletIdWithTwoFAArgs = PayNoAmountInvoiceByWalletIdArgs & {
-  twoFAToken: TwoFAToken
 }
 
 type IntraLedgerPaymentSendUsernameArgs = PaymentSendArgs & {
@@ -70,10 +64,6 @@ type IntraLedgerPaymentSendWalletIdArgs = PaymentSendArgs & {
   amount: Satoshis
 }
 
-type IntraLedgerPaymentSendWithTwoFAArgs = IntraLedgerPaymentSendUsernameArgs & {
-  twoFAToken: TwoFAToken
-}
-
 type PayOnChainByWalletIdArgs = {
   senderWalletId: WalletId
   senderAccount: Account
@@ -82,8 +72,4 @@ type PayOnChainByWalletIdArgs = {
   targetConfirmations: number
   memo: string | null
   sendAll: boolean
-}
-
-type PayOnChainByWalletIdWithTwoFAArgs = PayOnChainByWalletIdArgs & {
-  twoFAToken: TwoFAToken
 }

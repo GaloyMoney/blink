@@ -1,13 +1,12 @@
 import { getCurrentPrice } from "@app/prices"
 import {
-  checkAndVerifyTwoFA,
   checkIntraledgerLimits,
   checkWithdrawalLimits,
 } from "@app/wallets/check-limit-helpers"
 import { reimburseFee } from "@app/wallets/reimburse-fee"
 import { RouteValidator } from "@app/lightning/route-validator"
 
-import { checkedToSats, toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import {
   decodeInvoice,
   LnAlreadyPaidError,
@@ -39,7 +38,6 @@ import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import {
   LnPaymentsRepository,
-  UsersRepository,
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
@@ -50,64 +48,6 @@ import { addAttributesToCurrentSpan } from "@services/tracing"
 import { DealerPriceServiceError } from "@domain/dealer-price"
 
 import { getNoAmountLightningFee, getRoutingFee } from "./get-lightning-fee"
-
-export const payInvoiceByWalletIdWithTwoFA = async ({
-  paymentRequest,
-  memo,
-  senderWalletId,
-  senderAccount,
-  twoFAToken,
-  logger,
-}: PayInvoiceByWalletIdWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
-  addAttributesToCurrentSpan({
-    "payment.initiation_method": PaymentInitiationMethod.Lightning,
-  })
-
-  const decodedInvoice = decodeInvoice(paymentRequest)
-  if (decodedInvoice instanceof Error) return decodedInvoice
-
-  const { amount: lnInvoiceAmount } = decodedInvoice
-  if (!(lnInvoiceAmount && lnInvoiceAmount > 0)) {
-    return new LnPaymentRequestNonZeroAmountRequiredError()
-  }
-
-  const user = await UsersRepository().findById(senderAccount.ownerId)
-  if (user instanceof Error) return user
-  const { twoFA } = user
-
-  // FIXME: inefficient. wallet also fetched in lnSendPayment
-  const senderWallet = await WalletsRepository().findById(senderWalletId)
-  if (senderWallet instanceof Error) return senderWallet
-
-  const displayCurrencyPerSat = await getCurrentPrice()
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
-
-  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
-  // End FIXME
-
-  const twoFACheck = twoFA?.secret
-    ? await checkAndVerifyTwoFA({
-        amount: lnInvoiceAmount,
-        twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
-        twoFASecret: twoFA.secret,
-        walletId: senderWalletId,
-        walletCurrency: senderWallet.currency,
-        dCConverter,
-        account: senderAccount,
-      })
-    : true
-  if (twoFACheck instanceof Error) return twoFACheck
-
-  return lnSendPayment({
-    senderWalletId,
-    senderAccount,
-    decodedInvoice,
-    amount: lnInvoiceAmount,
-    invoiceWithAmount: true,
-    memo: memo || "",
-    logger,
-  })
-}
 
 export const payInvoiceByWalletId = async ({
   paymentRequest,
@@ -148,70 +88,6 @@ export const payInvoiceByWalletId = async ({
     decodedInvoice,
     amount: lnInvoiceAmount,
     invoiceWithAmount: true,
-    memo: memo || "",
-    logger,
-  })
-}
-
-export const payNoAmountInvoiceByWalletIdWithTwoFAArgs = async ({
-  paymentRequest,
-  amount: amountRaw,
-  memo,
-  senderWalletId,
-  senderAccount,
-  twoFAToken,
-  logger,
-}: PayNoAmountInvoiceByWalletIdWithTwoFAArgs): Promise<
-  PaymentSendStatus | ApplicationError
-> => {
-  addAttributesToCurrentSpan({
-    "payment.initiation_method": PaymentInitiationMethod.Lightning,
-  })
-
-  const decodedInvoice = decodeInvoice(paymentRequest)
-  if (decodedInvoice instanceof Error) return decodedInvoice
-
-  const { amount: lnInvoiceAmount } = decodedInvoice
-  if (lnInvoiceAmount && lnInvoiceAmount > 0) {
-    return new LnPaymentRequestZeroAmountRequiredError()
-  }
-
-  const user = await UsersRepository().findById(senderAccount.ownerId)
-  if (user instanceof Error) return user
-  const { twoFA } = user
-
-  const amount = checkedToSats(amountRaw)
-  if (amount instanceof Error) return amount
-
-  // FIXME: inefficient. wallet also fetched in lnSendPayment
-  const senderWallet = await WalletsRepository().findById(senderWalletId)
-  if (senderWallet instanceof Error) return senderWallet
-
-  const displayCurrencyPerSat = await getCurrentPrice()
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
-
-  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
-  // End FIXME
-
-  const twoFACheck = twoFA?.secret
-    ? await checkAndVerifyTwoFA({
-        amount,
-        dCConverter,
-        twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
-        twoFASecret: twoFA.secret,
-        walletId: senderWalletId,
-        walletCurrency: senderWallet.currency,
-        account: senderAccount,
-      })
-    : true
-  if (twoFACheck instanceof Error) return twoFACheck
-
-  return lnSendPayment({
-    senderWalletId,
-    senderAccount,
-    decodedInvoice,
-    amount,
-    invoiceWithAmount: false,
     memo: memo || "",
     logger,
   })

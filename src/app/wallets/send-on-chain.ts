@@ -17,74 +17,13 @@ import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { baseLogger } from "@services/logger"
-import {
-  AccountsRepository,
-  UsersRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 
-import {
-  checkAndVerifyTwoFA,
-  checkIntraledgerLimits,
-  checkWithdrawalLimits,
-} from "./check-limit-helpers"
+import { checkIntraledgerLimits, checkWithdrawalLimits } from "./check-limit-helpers"
 import { getOnChainFee } from "./get-on-chain-fee"
 
 const { dustThreshold } = getOnChainWalletConfig()
-
-export const payOnChainByWalletIdWithTwoFA = async ({
-  senderAccount,
-  senderWalletId,
-  amount: amountRaw,
-  address,
-  targetConfirmations,
-  memo,
-  sendAll,
-  twoFAToken,
-}: PayOnChainByWalletIdWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
-  const amount = sendAll
-    ? await LedgerService().getWalletBalance(senderWalletId)
-    : checkedToSats(amountRaw)
-  if (amount instanceof Error) return amount
-
-  const user = await UsersRepository().findById(senderAccount.ownerId)
-  if (user instanceof Error) return user
-  const { twoFA } = user
-
-  // FIXME: inefficient. wallet also fetched in lnSendPayment
-  const senderWallet = await WalletsRepository().findById(senderWalletId)
-  if (senderWallet instanceof Error) return senderWallet
-
-  const displayCurrencyPerSat = await getCurrentPrice()
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
-
-  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
-  // End FIXME
-
-  const twoFACheck = twoFA?.secret
-    ? await checkAndVerifyTwoFA({
-        walletId: senderWalletId,
-        walletCurrency: senderWallet.currency,
-        dCConverter,
-        amount,
-        twoFASecret: twoFA.secret,
-        twoFAToken,
-        account: senderAccount,
-      })
-    : true
-  if (twoFACheck instanceof Error) return twoFACheck
-
-  return payOnChainByWalletId({
-    senderAccount,
-    senderWalletId,
-    amount,
-    address,
-    targetConfirmations,
-    memo,
-    sendAll,
-  })
-}
 
 export const payOnChainByWalletId = async ({
   senderAccount,

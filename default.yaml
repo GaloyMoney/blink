@@ -103,9 +103,6 @@ accountLimits:
 spamLimits:
   memoSharingSatsThreshold: 1000
 
-twoFALimits:
-  threshold: 10000 # cents
-
 ipRecording:
   enabled: true
   proxyChecking:

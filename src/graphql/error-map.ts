@@ -1,7 +1,6 @@
 import {
   TransactionRestrictedError,
   LightningPaymentError,
-  TwoFAError,
   NotFoundError,
   SelfPaymentError,
   InsufficientBalanceError,
@@ -34,18 +33,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "IntraledgerLimitsExceededError":
       message = error.message
       return new TransactionRestrictedError({ message, logger: baseLogger })
-
-    case "TwoFANewCodeNeededError":
-      message = "Need a 2FA code to proceed with the payment"
-      return new TwoFAError({ message, logger: baseLogger })
-
-    case "TwoFALimitsExceededError":
-      message = "Need a 2FA code to proceed with the payment"
-      return new TwoFAError({ message, logger: baseLogger })
-
-    case "TwoFAValidationError":
-      message = "Invalid 2FA token passed"
-      return new TwoFAError({ message, logger: baseLogger })
 
     case "AlreadyPaidError":
       message = "Invoice is already paid"
@@ -204,9 +191,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownLightningServiceError":
       return new LightningPaymentError({ message, logger: baseLogger })
 
-    case "UnknownTwoFAError":
-      return new TwoFAError({ message, logger: baseLogger })
-
     case "InvalidCoordinatesError":
       return new InvalidCoordinatesError({ logger: baseLogger })
 
@@ -221,14 +205,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "username is immutable"
       return new UsernameError({ logger: baseLogger, message })
 
-    case "TwoFANeedToBeSetBeforeDeletionError":
-      message = "TwoFA need to be set before removal"
-      return new TwoFAError({ logger: baseLogger, message })
-
-    case "TwoFAAlreadySetError":
-      message = "TwoFA is already set"
-      return new TwoFAError({ logger: baseLogger, message })
-
     case "RebalanceNeededError":
       return new RebalanceNeededError({ logger: baseLogger })
 
@@ -240,7 +216,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "RateLimitServiceError":
     case "UnknownRateLimitServiceError":
     case "CouldNotFindUserError":
-    case "TwoFAError":
     case "LedgerError":
     case "LedgerServiceError":
     case "LightningError":

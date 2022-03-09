@@ -151,14 +151,6 @@ export const configSchema = {
       required: ["memoSharingSatsThreshold"],
       additionalProperties: false,
     },
-    twoFALimits: {
-      type: "object",
-      properties: {
-        threshold: { type: "number" },
-      },
-      required: ["threshold"],
-      additionalProperties: false,
-    },
     ipRecording: {
       type: "object",
       properties: {
@@ -247,7 +239,6 @@ export const configSchema = {
     "rateLimits",
     "accountLimits",
     "spamLimits",
-    "twoFALimits",
     "ipRecording",
     "fees",
     "withdrawFeeRange",

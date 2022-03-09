@@ -62,14 +62,12 @@ export const UsersRepository = (): IUsersRepository => {
     phone,
     language,
     deviceTokens,
-    twoFA,
   }: User): Promise<User | RepositoryError> => {
     try {
       const data = {
         phone,
         language,
         deviceToken: deviceTokens,
-        twoFA,
       }
       const result = await User.findOneAndUpdate({ _id: toObjectId<UserId>(id) }, data, {
         projection,
@@ -96,7 +94,6 @@ const userFromRaw = (result: UserRecord): User => ({
   id: fromObjectId<UserId>(result._id),
   phone: result.phone as PhoneNumber,
   language: result.language as UserLanguage,
-  twoFA: result.twoFA as TwoFAForUser,
   quizQuestions:
     result.earn?.map(
       (questionId: string): UserQuizQuestion => ({
@@ -117,7 +114,6 @@ const userFromRaw = (result: UserRecord): User => ({
 const projection = {
   phone: 1,
   language: 1,
-  twoFA: 1,
   earn: 1,
   deviceToken: 1,
   created_at: 1,

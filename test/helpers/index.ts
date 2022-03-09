@@ -1,9 +1,6 @@
-import { generate2fa, save2fa } from "@app/users"
-import { TwoFAAlreadySetError } from "@domain/twoFA"
 import { gqlAdminSchema } from "@graphql/admin"
 import { ExecutionResult, graphql, Source } from "graphql"
 import { ObjMap } from "graphql/jsutils/ObjMap"
-import { generateToken } from "node-2fa"
 
 export * from "./apollo-client"
 export * from "./bitcoin-core"
@@ -35,31 +32,6 @@ export const resetDatabase = async (mongoose) => {
     .forEach(async (collectionName) => {
       await db.dropCollection(collectionName)
     })
-}
-
-export const generateTokenHelper = (secret) => {
-  const generateTokenResult = generateToken(secret)
-  if (generateTokenResult && generateTokenResult.token) {
-    return generateTokenResult.token as TwoFAToken
-  }
-
-  fail("generateToken returned null")
-}
-
-export const enable2FA = async (userId: UserId) => {
-  const generateResult = await generate2fa(userId)
-  if (generateResult instanceof Error) return generateResult
-
-  const { secret } = generateResult
-
-  const token = generateTokenHelper(secret)
-
-  const user = await save2fa({ secret, token, userId })
-  if (user instanceof Error && !(user instanceof TwoFAAlreadySetError)) {
-    throw user
-  }
-
-  return secret
 }
 
 export const chunk = (a, n) =>

@@ -117,10 +117,6 @@ export const getAccountLimits = ({
   }
 }
 
-export const getTwoFALimits = (): TwoFALimits => ({
-  threshold: toCents(yamlConfig.twoFALimits.threshold),
-})
-
 const getRateLimits = (config): RateLimitOptions => {
   /**
    * Returns a subset of the required parameters for the
@@ -202,7 +198,6 @@ export const getIpConfig = (config = yamlConfig): IpConfig => ({
 })
 
 export const getApolloConfig = (config = yamlConfig): ApolloConfig => config.apollo
-export const getTwoFAConfig = (config = yamlConfig): TwoFAConfig => config.twoFALimits
 
 export const LND_SCB_BACKUP_BUCKET_NAME = yamlConfig.lndScbBackupBucketName
 

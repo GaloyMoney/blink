@@ -15,9 +15,6 @@ import LnNoAmountInvoicePaymentSendMutation from "@graphql/root/mutation/ln-noam
 import LnNoAmountUsdInvoicePaymentSendMutation from "@graphql/root/mutation/ln-noamount-usd-invoice-payment-send"
 import OnChainAddressCreateMutation from "@graphql/root/mutation/on-chain-address-create"
 import OnChainAddressCurrentMutation from "@graphql/root/mutation/on-chain-address-current"
-import TwoFADeleteMutation from "@graphql/root/mutation/twofa-delete"
-import TwoFAGenerateMutation from "@graphql/root/mutation/twofa-generate"
-import TwoFASaveMutation from "@graphql/root/mutation/twofa-save"
 import UserLoginMutation from "@graphql/root/mutation/user-login"
 import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-auth-code"
 import UserUpdateLanguageMutation from "@graphql/root/mutation/user-update-language"
@@ -43,11 +40,6 @@ const fields = {
 
   captchaCreateChallenge: CaptchaCreateChallengeMutation,
   captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
-
-  // authed
-  twoFAGenerate: TwoFAGenerateMutation,
-  twoFASave: TwoFASaveMutation,
-  twoFADelete: TwoFADeleteMutation,
 
   userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
   deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,

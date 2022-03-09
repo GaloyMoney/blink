@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { getFeeRates, getTwoFAConfig, levels } from "@config"
+import { getFeeRates, levels } from "@config"
 import { UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
@@ -75,8 +75,6 @@ walletInvoiceSchema.index({ walletId: 1, paid: 1 })
 export const WalletInvoice = mongoose.model("InvoiceUser", walletInvoiceSchema)
 
 const feeRates = getFeeRates()
-
-const twoFAConfig = getTwoFAConfig()
 
 const WalletSchema = new Schema<WalletRecord>({
   id: {
@@ -264,16 +262,6 @@ const UserSchema = new Schema<UserRecord>(
       type: String,
       enum: ["active", "locked"],
       default: "active",
-    },
-
-    twoFA: {
-      secret: {
-        type: String,
-      },
-      threshold: {
-        type: Number,
-        default: twoFAConfig.threshold,
-      },
     },
 
     defaultWalletId: {

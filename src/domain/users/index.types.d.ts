@@ -53,7 +53,6 @@ type User = {
   readonly phoneMetadata: PhoneMetadata | null
   readonly isEditor: boolean
   language: UserLanguage
-  twoFA: TwoFAForUser
 }
 
 type NewUserInfo = {
