@@ -1,17 +1,21 @@
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { checkedToWalletId } from "@domain/wallets"
 import { LndService } from "@services/lnd"
-import { WalletCurrency, ZERO_SATS } from "@domain/shared"
-import { WalletsRepository } from "@services/mongoose"
+import { WalletsRepository, PaymentsRepository } from "@services/mongoose"
 import {
-  checkedToBtcPaymentAmount,
-  checkedToUsdPaymentAmount,
+  PaymentBuilder,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
 } from "@domain/payments"
+import { LedgerService } from "@services/ledger"
+import {
+  paymentAmountFromCents,
+  paymentAmountFromSats,
+  WalletCurrency,
+} from "@domain/shared"
 
 export const getLightningFeeEstimation = async ({
-  walletId: uncheckedSenderWalletId,
+  walletId,
   paymentRequest,
 }: {
   walletId: string
@@ -23,27 +27,19 @@ export const getLightningFeeEstimation = async ({
     return new LnPaymentRequestNonZeroAmountRequiredError()
   }
 
-  const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
-  if (senderWalletId instanceof Error) return senderWalletId
-
-  const senderWallet = await WalletsRepository().findById(senderWalletId)
-  if (senderWallet instanceof Error) return senderWallet
-
-  const payment = {
-    senderWalletId,
-    senderWalletCurrency: senderWallet.currency,
-    btcPaymentAmount: decodedInvoice.paymentAmount,
-  }
+  const paymentBuilder = PaymentBuilder().withBtcPaymentAmount(
+    decodedInvoice.paymentAmount,
+  )
 
   return estimateLightningFee({
-    senderWallet,
+    uncheckedSenderWalletId: walletId,
     decodedInvoice,
-    payment,
+    paymentBuilder,
   })
 }
 
 export const getNoAmountLightningFeeEstimation = async ({
-  walletId: uncheckedSenderWalletId,
+  walletId,
   paymentRequest,
   amount,
 }: {
@@ -57,57 +53,43 @@ export const getNoAmountLightningFeeEstimation = async ({
     return new LnPaymentRequestZeroAmountRequiredError()
   }
 
+  const paymentBuilder = PaymentBuilder().withUncheckedAmount(amount)
+
+  return estimateLightningFee({
+    uncheckedSenderWalletId: walletId,
+    decodedInvoice,
+    paymentBuilder,
+  })
+}
+
+const estimateLightningFee = async ({
+  uncheckedSenderWalletId,
+  decodedInvoice,
+  paymentBuilder: initialPaymentBuilder,
+}: {
+  uncheckedSenderWalletId: string
+  decodedInvoice: LnInvoice
+  paymentBuilder
+}): Promise<PaymentAmount<WalletCurrency> | ApplicationError> => {
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
   if (senderWalletId instanceof Error) return senderWalletId
 
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
 
-  let payment: Payment = {
-    senderWalletId,
-    senderWalletCurrency: senderWallet.currency,
-  }
-
-  if (payment.senderWalletCurrency === WalletCurrency.Btc) {
-    const paymentAmount = checkedToBtcPaymentAmount(amount)
-    if (paymentAmount instanceof Error) return paymentAmount
-    payment = {
-      ...payment,
-      btcPaymentAmount: paymentAmount,
-    }
-  } else {
-    const paymentAmount = checkedToUsdPaymentAmount(amount)
-    if (paymentAmount instanceof Error) return paymentAmount
-    payment = {
-      ...payment,
-      usdPaymentAmount: paymentAmount,
-    }
-  }
-
-  return estimateLightningFee({
-    senderWallet,
-    decodedInvoice,
-    payment,
-  })
-}
-
-const estimateLightningFee = async ({
-  senderWallet,
-  decodedInvoice,
-  payment,
-}: {
-  senderWallet: Wallet
-  decodedInvoice: LnInvoice
-  payment: Payment
-}) => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
-  if (lndService.isLocal(decodedInvoice.destination)) {
-    return ZERO_SATS
-  }
+
+  const isLocal = lndService.isLocal(decodedInvoice.destination)
+  if (isLocal instanceof Error) return isLocal
+
+  const paymentBuilder = initialPaymentBuilder
+    .withSenderWallet(senderWallet)
+    .withPaymentRequest(decodedInvoice.paymentRequest)
+    .withIsLocal(isLocal)
 
   return {
-    currency: WalletCurrency.Btc,
     amount: 0n,
+    currency: WalletCurrency.Btc,
   }
 }

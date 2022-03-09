@@ -1,27 +1,26 @@
 type Payment = {
   senderWalletId: WalletId
   senderWalletCurrency: WalletCurrency
+  settlementMethod: SettlementMethod
+  paymentInitiationMethod: PaymentInitiationMethod
+
+  btcFeeAmount?: BtcPaymentAmount
   btcPaymentAmount?: BtcPaymentAmount
   usdPaymentAmount?: UsdPaymentAmount
-  unknownCurrencyPaymentAmount?: number
-  hasInvalidBtcPaymentAmount?: boolean
-  hasInvalidUsdPaymentAmount?: boolean
   paymentRequest?: EncodedPaymentRequest
-  isIntraledger: boolean
-  feeAmount: PaymentAmount<WalletCurrency>
-  balanceAmount: PaymentAmount<WalletCurrency>
-  hasEnoughBalance: boolean
 }
 
 type PaymentBuilder = {
+  withSenderWallet(senderWallet: Wallet): PaymentBuilder
   withPaymentRequest(paymentRequest: EncodedPaymentRequest): PaymentBuilder
   withBtcPaymentAmount(amount: BtcPaymentAmount): PaymentBuilder
-  withAmountFromUnknownCurrencyAmount(amount: number): PaymentBuilder
-  withSenderWallet(senderWallet: Wallet): PaymentBuilder
-  withCheckedIfLocal(isLocal: boolean): PaymentBuilder
-  withCheckedHasBalance(balance: CurrencyBaseAmount): PaymentBuilder
-  payment(): Payment | ApplicationError
+  withUncheckedAmount(amount: number): PaymentBuilder
+  withSettlementMethod(SettlementMethod): PaymentBuilder
+  withPaymentInitiationMethod(PaymentInitiationMethod): PaymentBuilder
+  withIsLocal(boolean): PaymentBuilder
+  payment(): Payment | ValidationError
 }
-interface PaymentsRepository {
+
+interface IPaymentsRepository {
   persistNew(Payment): Promise<Payment | RepositoryError>
 }
