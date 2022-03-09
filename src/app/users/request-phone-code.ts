@@ -1,3 +1,5 @@
+import { randomInt } from "crypto"
+
 import { getGaloyInstanceName, getTestAccounts } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { RateLimitConfig } from "@domain/rate-limit"
@@ -6,9 +8,6 @@ import { checkedToPhoneNumber } from "@domain/users"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { consumeLimiter } from "@services/rate-limit"
 import { TwilioClient } from "@services/twilio"
-
-const randomIntFromInterval = (min, max) =>
-  Math.floor(Math.random() * (max - min + 1) + min)
 
 export const requestPhoneCodeWithCaptcha = async ({
   phone,
@@ -80,7 +79,7 @@ export const requestPhoneCode = async ({
     return true
   }
 
-  const code = String(randomIntFromInterval(100000, 999999)) as PhoneCode
+  const code = String(randomInt(100000, 999999)) as PhoneCode
   const galoyInstanceName = getGaloyInstanceName()
   const body = `${code} is your verification code for ${galoyInstanceName}`
 
