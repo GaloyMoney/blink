@@ -26,7 +26,8 @@ services:
   price:
     image: us.gcr.io/galoy-org/price:edge
   price-history:
-    image: galoy-price-history:latest
+    image: us.gcr.io/galoy-org/price-history:edge
+    command: ./scripts/run-servers-dev.sh
     environment:
       - DB_HOST=postgres-price-history
       - DB_PORT=5432
@@ -36,9 +37,11 @@ services:
       - DB_POOL_MIN=1
       - DB_POOL_MAX=5
       - DB_DEBUG=false
-    depends_on: [postgres-price-history]
+    depends_on:
+      - postgres-price-history
+      - price-history-migrate
   price-history-migrate:
-    image: galoy-price-history-migrate:latest
+    image: us.gcr.io/galoy-org/price-history-migrate:edge
     environment:
       - DB_HOST=postgres-price-history
       - DB_PORT=5432

@@ -72,7 +72,7 @@ execute-e2e-from-within-container:
 	yarn build && \
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
-integration: update-price-history
+integration:
 	yarn build && \
 	yarn test:integration
 
