@@ -1,4 +1,4 @@
-import { DomainError, ErrorLevel } from "./shared"
+import { ValidationError, DomainError, ErrorLevel } from "./shared"
 
 export class InconsistentDataError extends DomainError {}
 
@@ -38,7 +38,6 @@ export class NotImplementedError extends DomainError {}
 export class NotReachableError extends DomainError {}
 export class InvalidNegativeAmountError extends DomainError {}
 
-export class ValidationError extends DomainError {}
 export class ContactNotExistentError extends DomainError {}
 export class InvalidWithdrawFeeError extends ValidationError {}
 export class InvalidCurrencyBaseAmountError extends ValidationError {}

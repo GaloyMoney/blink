@@ -1,8 +1,9 @@
+import { ValidationError } from "@domain/shared"
+
 import {
   CouldNotFindError,
   RepositoryError,
   UnknownRepositoryError,
-  ValidationError,
   InvalidSatoshiAmountError,
   InvalidWalletId,
 } from "@domain/errors"
