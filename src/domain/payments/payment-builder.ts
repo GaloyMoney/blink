@@ -1,119 +1,150 @@
-import {
-  paymentAmountFromCents,
-  paymentAmountFromSats,
-  WalletCurrency,
-  ZERO_SATS,
-} from "@domain/shared"
+import { ValidationError, WalletCurrency } from "@domain/shared"
+import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
-import { InsufficientBalanceError } from "@domain/errors"
 
-import {
-  InvalidBtcPaymentAmountError,
-  InvalidUsdPaymentAmountError,
-  PaymentBuilderNotCompleteError,
-} from "./errors"
+type PaymentBuilderState = {
+  validationError?: ValidationError
+  senderWalletId?: WalletId
+  senderWalletCurrency?: WalletCurrency
+  settlementMethod?: SettlementMethod
+  paymentInitiationMethod?: PaymentInitiationMethod
+  btcFeeAmount?: BtcPaymentAmount
+  btcPaymentAmount?: BtcPaymentAmount
+  usdPaymentAmount?: UsdPaymentAmount
+  paymentRequest?: EncodedPaymentRequest
+  uncheckedAmount?: number
+}
 
-export const PaymentBuilder = (builderState: Payment = {} as Payment): PaymentBuilder => {
+export const PaymentBuilder = (
+  builderState: PaymentBuilderState = {} as PaymentBuilderState,
+): PaymentBuilder => {
+  const withSenderWallet = (senderWallet: Wallet) => {
+    if (builderState.validationError) {
+      return PaymentBuilder(builderState)
+    }
+
+    if (builderState.uncheckedAmount) {
+      if (senderWallet.currency === WalletCurrency.Btc) {
+        const paymentAmount = checkedToBtcPaymentAmount(builderState.uncheckedAmount)
+        if (paymentAmount instanceof ValidationError) {
+          return PaymentBuilder({
+            validationError: paymentAmount,
+          })
+        }
+        return PaymentBuilder({
+          ...builderState,
+          uncheckedAmount: undefined,
+          senderWalletId: senderWallet.id,
+          senderWalletCurrency: senderWallet.currency,
+          btcPaymentAmount: paymentAmount,
+        })
+      } else {
+        const paymentAmount = checkedToUsdPaymentAmount(builderState.uncheckedAmount)
+        if (paymentAmount instanceof ValidationError) {
+          return PaymentBuilder({
+            validationError: paymentAmount,
+          })
+        }
+        return PaymentBuilder({
+          ...builderState,
+          uncheckedAmount: undefined,
+          senderWalletId: senderWallet.id,
+          senderWalletCurrency: senderWallet.currency,
+          usdPaymentAmount: paymentAmount,
+        })
+      }
+    }
+
+    return PaymentBuilder({
+      ...builderState,
+      senderWalletId: senderWallet.id,
+      senderWalletCurrency: senderWallet.currency,
+    })
+  }
+
   const withPaymentRequest = (paymentRequest: EncodedPaymentRequest) => {
-    return PaymentBuilder({ ...builderState, paymentRequest })
+    return PaymentBuilder({
+      ...builderState,
+      paymentRequest,
+    }).withPaymentInitiationMethod(PaymentInitiationMethod.Lightning)
   }
 
   const withBtcPaymentAmount = (amount: BtcPaymentAmount) => {
     return PaymentBuilder({ ...builderState, btcPaymentAmount: amount })
   }
 
-  const withAmountFromUnknownCurrencyAmount = (amount: number) => {
-    return PaymentBuilder({ ...builderState, unknownCurrencyPaymentAmount: amount })
+  const withUncheckedAmount = (amount: number) => {
+    return PaymentBuilder({ ...builderState, uncheckedAmount: amount })
   }
 
-  const withSenderWallet = (senderWallet: Wallet) => {
-    let currencyProps: Partial<Payment> = {}
+  const withSettlementMethod = (settlementMethod: SettlementMethod) => {
+    return PaymentBuilder({ ...builderState, settlementMethod })
+  }
 
-    if (builderState.unknownCurrencyPaymentAmount) {
-      if (senderWallet.currency === WalletCurrency.Btc) {
-        const paymentAmount = checkedToBtcPaymentAmount(
-          builderState.unknownCurrencyPaymentAmount,
-        )
-        currencyProps =
-          paymentAmount instanceof Error
-            ? { hasInvalidBtcPaymentAmount: true }
-            : { btcPaymentAmount: paymentAmount }
-      } else {
-        const paymentAmount = checkedToUsdPaymentAmount(
-          builderState.unknownCurrencyPaymentAmount,
-        )
-        currencyProps =
-          paymentAmount instanceof Error
-            ? { hasInvalidUsdPaymentAmount: true }
-            : { usdPaymentAmount: paymentAmount }
+  const withPaymentInitiationMethod = (
+    paymentInitiationMethod: PaymentInitiationMethod,
+  ) => {
+    return PaymentBuilder({ ...builderState, paymentInitiationMethod })
+  }
+
+  const withIsLocal = (isLocal: boolean) => {
+    if (isLocal) {
+      return PaymentBuilder(builderState).withSettlementMethod(
+        SettlementMethod.IntraLedger,
+      )
+    } else if (builderState.paymentRequest) {
+      return PaymentBuilder(builderState).withSettlementMethod(SettlementMethod.Lightning)
+    } else {
+      return PaymentBuilder(builderState).withSettlementMethod(SettlementMethod.OnChain)
+    }
+  }
+
+  const payment = (): Payment | ValidationError => {
+    if (builderState.validationError) {
+      return builderState.validationError
+    }
+
+    const {
+      senderWalletId,
+      senderWalletCurrency,
+      settlementMethod,
+      paymentInitiationMethod,
+      btcFeeAmount,
+      usdPaymentAmount,
+      btcPaymentAmount,
+      paymentRequest,
+    } = builderState
+
+    if (
+      senderWalletId &&
+      senderWalletCurrency &&
+      settlementMethod &&
+      paymentInitiationMethod &&
+      btcFeeAmount
+    ) {
+      return {
+        senderWalletId,
+        senderWalletCurrency,
+        settlementMethod,
+        paymentInitiationMethod,
+        btcFeeAmount,
+        usdPaymentAmount,
+        btcPaymentAmount,
+        paymentRequest,
       }
     }
 
-    return PaymentBuilder({
-      ...builderState,
-      ...currencyProps,
-      senderWalletId: senderWallet.id,
-      senderWalletCurrency: senderWallet.currency,
-    })
-  }
-
-  const withCheckedIfLocal = (isLocal: boolean) => {
-    const newProps = isLocal
-      ? {
-          isIntraledger: true,
-          feeAmount: ZERO_SATS,
-        }
-      : {}
-    return PaymentBuilder({ ...builderState, ...newProps })
-  }
-
-  const withCheckedHasBalance = (balanceAmount: PaymentAmount<WalletCurrency>) => {
-    const paymentAmount =
-      builderState.senderWalletCurrency === WalletCurrency.Btc
-        ? builderState.btcPaymentAmount
-        : builderState.usdPaymentAmount
-    if (paymentAmount === undefined) return PaymentBuilder(builderState)
-
-    const newProps = {
-      balanceAmount,
-      hasEnoughBalance: balanceAmount.amount >= paymentAmount.amount,
-    }
-    return PaymentBuilder({ ...builderState, ...newProps })
-  }
-
-  const payment = (): Payment | ApplicationError => {
-    if (builderState.hasInvalidBtcPaymentAmount) {
-      return new InvalidBtcPaymentAmountError()
-    }
-
-    if (builderState.hasInvalidUsdPaymentAmount) {
-      return new InvalidUsdPaymentAmountError()
-    }
-
-    if (builderState.hasEnoughBalance === false) {
-      const paymentAmount =
-        builderState.senderWalletCurrency === WalletCurrency.Btc
-          ? builderState.btcPaymentAmount
-          : builderState.usdPaymentAmount
-      return new InsufficientBalanceError(
-        `Payment amount '${paymentAmount?.amount}' exceeds balance '${builderState.balanceAmount.amount}'`,
-      )
-    }
-
-    if (builderState.feeAmount === undefined) {
-      return new PaymentBuilderNotCompleteError()
-    }
-
-    return builderState
+    throw new Error("PaymentBuilder not complete")
   }
 
   return {
+    withSenderWallet,
     withPaymentRequest,
     withBtcPaymentAmount,
-    withAmountFromUnknownCurrencyAmount,
-    withSenderWallet,
-    withCheckedIfLocal,
-    withCheckedHasBalance,
+    withUncheckedAmount,
+    withSettlementMethod,
+    withPaymentInitiationMethod,
+    withIsLocal,
     payment,
   }
 }
