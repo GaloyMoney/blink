@@ -5,11 +5,9 @@ import {
   toSats,
 } from "@domain/bitcoin"
 import { decodeInvoice, LnFeeCalculator } from "@domain/bitcoin/lightning"
-import {
-  InsufficientBalanceError,
-  InvalidSatoshiAmountError,
-  LnPaymentRequestZeroAmountRequiredError,
-} from "@domain/errors"
+import { InsufficientBalanceError, InvalidSatoshiAmountError } from "@domain/errors"
+import { LnPaymentRequestZeroAmountRequiredError } from "@domain/payments"
+
 import { CachedRouteLookupKeyFactory } from "@domain/routes/key-factory"
 import { checkedToWalletId } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"

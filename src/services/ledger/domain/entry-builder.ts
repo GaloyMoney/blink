@@ -1,11 +1,6 @@
-import { AmountCalculator, WalletCurrency } from "@domain/shared"
+import { AmountCalculator, WalletCurrency, ZERO_SATS } from "@domain/shared"
 
 import { lndLedgerAccountId } from "./accounts"
-
-const ZERO_SATS = {
-  currency: WalletCurrency.Btc,
-  amount: 0n,
-} as const
 const calc = AmountCalculator()
 
 export const EntryBuilder = <M extends MediciEntry>({

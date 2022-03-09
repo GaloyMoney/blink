@@ -1,8 +1,8 @@
+import { paymentAmountFromSats, WalletCurrency } from "@domain/shared"
 import { MS_PER_DAY } from "@config"
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
-import { WalletCurrency } from "@domain/shared"
 
 let walletInvoiceFactory: WalletInvoiceFactory
 
@@ -14,6 +14,7 @@ beforeAll(async () => {
 
 describe("wallet invoice factory methods", () => {
   it("translates a registered invoice to wallet invoice", () => {
+    const amountInSats = toSats(42)
     const registeredInvoice: RegisteredInvoice = {
       invoice: {
         paymentHash: "paymentHash" as PaymentHash,
@@ -22,7 +23,8 @@ describe("wallet invoice factory methods", () => {
         routeHints: [],
         cltvDelta: null,
         destination: "destination" as Pubkey,
-        amount: toSats(42),
+        amount: amountInSats,
+        paymentAmount: paymentAmountFromSats(amountInSats),
         milliSatsAmount: toMilliSatsFromNumber(42000),
         description: "",
         features: [],
@@ -49,6 +51,7 @@ describe("wallet invoice factory methods", () => {
   })
 
   it("translates a registered invoice to wallet invoice for a recipient", () => {
+    const amountInSats = toSats(42)
     const registeredInvoice: RegisteredInvoice = {
       invoice: {
         paymentHash: "paymentHash" as PaymentHash,
@@ -57,7 +60,8 @@ describe("wallet invoice factory methods", () => {
         routeHints: [],
         cltvDelta: null,
         destination: "destination" as Pubkey,
-        amount: toSats(42),
+        amount: amountInSats,
+        paymentAmount: paymentAmountFromSats(amountInSats),
         milliSatsAmount: toMilliSatsFromNumber(42000),
         description: "",
         features: [],
