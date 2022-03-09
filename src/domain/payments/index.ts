@@ -1,7 +1,8 @@
 export * from "./errors"
 
-import { InvalidBtcPaymentAmountError } from "./errors"
-import { ValidationError } from "@domain/shared"
+import { ValidationError, WalletCurrency } from "@domain/shared"
+
+import { InvalidBtcPaymentAmountError, InvalidUsdPaymentAmountError } from "./errors"
 
 export const checkedToBtcPaymentAmount = (
   amount: number | null,
@@ -15,6 +16,22 @@ export const checkedToBtcPaymentAmount = (
   if (!(amount && amount > 0)) return new InvalidBtcPaymentAmountError()
   return {
     amount: BigInt(amount),
-    currency: "BTC",
+    currency: WalletCurrency.Btc,
+  }
+}
+
+export const checkedToUsdPaymentAmount = (
+  amount: number | null,
+): UsdPaymentAmount | ValidationError => {
+  if (amount === null) {
+    return new InvalidUsdPaymentAmountError()
+  }
+  if (Math.floor(amount) != amount) {
+    return new InvalidUsdPaymentAmountError()
+  }
+  if (!(amount && amount > 0)) return new InvalidUsdPaymentAmountError()
+  return {
+    amount: BigInt(amount),
+    currency: WalletCurrency.Usd,
   }
 }
