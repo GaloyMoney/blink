@@ -1,17 +1,18 @@
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { checkedToWalletId } from "@domain/wallets"
 import { LndService } from "@services/lnd"
-import { WalletCurrency, ZERO_SATS } from "@domain/shared"
 import { WalletsRepository } from "@services/mongoose"
 import {
-  checkedToBtcPaymentAmount,
-  checkedToUsdPaymentAmount,
+  PaymentBuilder,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
+  PaymentBuilderNotCompleteError,
 } from "@domain/payments"
+import { LedgerService } from "@services/ledger"
+import { WalletCurrency } from "@domain/shared"
 
 export const getLightningFeeEstimation = async ({
-  walletId: uncheckedSenderWalletId,
+  walletId,
   paymentRequest,
 }: {
   walletId: string
@@ -23,27 +24,19 @@ export const getLightningFeeEstimation = async ({
     return new LnPaymentRequestNonZeroAmountRequiredError()
   }
 
-  const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
-  if (senderWalletId instanceof Error) return senderWalletId
-
-  const senderWallet = await WalletsRepository().findById(senderWalletId)
-  if (senderWallet instanceof Error) return senderWallet
-
-  const payment = {
-    senderWalletId,
-    senderWalletCurrency: senderWallet.currency,
-    btcPaymentAmount: decodedInvoice.paymentAmount,
-  }
+  const paymentBuilder = PaymentBuilder()
+    .withPaymentRequest(paymentRequest)
+    .withBtcPaymentAmount(decodedInvoice.paymentAmount)
 
   return estimateLightningFee({
-    senderWallet,
+    uncheckedSenderWalletId: walletId,
     decodedInvoice,
-    payment,
+    paymentBuilder,
   })
 }
 
 export const getNoAmountLightningFeeEstimation = async ({
-  walletId: uncheckedSenderWalletId,
+  walletId,
   paymentRequest,
   amount,
 }: {
@@ -57,57 +50,69 @@ export const getNoAmountLightningFeeEstimation = async ({
     return new LnPaymentRequestZeroAmountRequiredError()
   }
 
+  const paymentBuilder = PaymentBuilder().withAmountFromUnknownCurrencyAmount(amount)
+
+  return estimateLightningFee({
+    uncheckedSenderWalletId: walletId,
+    decodedInvoice,
+    paymentBuilder,
+  })
+}
+
+const estimateLightningFee = async ({
+  uncheckedSenderWalletId,
+  decodedInvoice,
+  paymentBuilder,
+}: {
+  uncheckedSenderWalletId: string
+  decodedInvoice: LnInvoice
+  paymentBuilder
+}): Promise<PaymentAmount<WalletCurrency> | ApplicationError> => {
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
   if (senderWalletId instanceof Error) return senderWalletId
 
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
 
-  let payment: Payment = {
-    senderWalletId,
-    senderWalletCurrency: senderWallet.currency,
-  }
+  let updatedPaymentBuilder = paymentBuilder.withSenderWallet(senderWallet)
 
-  if (payment.senderWalletCurrency === WalletCurrency.Btc) {
-    const paymentAmount = checkedToBtcPaymentAmount(amount)
-    if (paymentAmount instanceof Error) return paymentAmount
-    payment = {
-      ...payment,
-      btcPaymentAmount: paymentAmount,
-    }
-  } else {
-    const paymentAmount = checkedToUsdPaymentAmount(amount)
-    if (paymentAmount instanceof Error) return paymentAmount
-    payment = {
-      ...payment,
-      usdPaymentAmount: paymentAmount,
-    }
-  }
-
-  return estimateLightningFee({
-    senderWallet,
-    decodedInvoice,
-    payment,
-  })
-}
-
-const estimateLightningFee = async ({
-  senderWallet,
-  decodedInvoice,
-  payment,
-}: {
-  senderWallet: Wallet
-  decodedInvoice: LnInvoice
-  payment: Payment
-}) => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
-  if (lndService.isLocal(decodedInvoice.destination)) {
-    return ZERO_SATS
+
+  const isLocal = lndService.isLocal(decodedInvoice.destination)
+  updatedPaymentBuilder = updatedPaymentBuilder.withCheckedIfLocal(isLocal)
+
+  const payment = updatedPaymentBuilder.payment()
+  if (!(payment instanceof Error)) {
+    PaymentsRepository().persistNew(payment)
+    return payment.feeAmount
+  }
+
+  return feeProbe({ decodedInvoice, paymentBuilder })
+}
+
+const feeProbe = async ({
+  decodedInvoice,
+  paymentBuilder,
+}: {
+  decodedInvoice: LnInvoice
+  paymentBuilder
+}): Promise<PaymentAmount<WalletCurrency> | ApplicationError> => {
+  let payment = paymentBuilder.payment()
+  if (payment instanceof Error) return payment
+
+  const balance = await LedgerService().getWalletBalance(payment.senderWalletId)
+  if (balance instanceof Error) return balance
+
+  let updatedPaymentBuilder = paymentBuilder.withCheckedHasBalance(balance)
+  payment = updatedPaymentBuilder.payment()
+  if (payment instanceof Error && !(payment instanceof PaymentBuilderNotCompleteError)) {
+    PaymentsRepository().persistNew(payment)
+    return payment
   }
 
   return {
+    amount: 1n,
     currency: WalletCurrency.Btc,
-    amount: 0n,
   }
 }
