@@ -7,6 +7,7 @@ import * as LightningMod from "./lightning"
 import * as PricesMod from "./prices"
 import * as UsersMod from "./users"
 import * as WalletsMod from "./wallets"
+import * as PaymentsMod from "./payments"
 
 const allFunctions = {
   Accounts: { ...AccountsMod },
@@ -16,6 +17,7 @@ const allFunctions = {
   Prices: { ...PricesMod },
   Users: { ...UsersMod },
   Wallets: { ...WalletsMod },
+  Payments: { ...PaymentsMod },
 }
 
 for (const subModule in allFunctions) {
@@ -27,5 +29,13 @@ for (const subModule in allFunctions) {
   }
 }
 
-export const { Accounts, Admin, ColdStorage, Lightning, Prices, Users, Wallets } =
-  allFunctions
+export const {
+  Accounts,
+  Admin,
+  ColdStorage,
+  Lightning,
+  Prices,
+  Users,
+  Wallets,
+  Payments,
+} = allFunctions

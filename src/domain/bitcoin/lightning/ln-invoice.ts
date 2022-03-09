@@ -1,3 +1,4 @@
+import { paymentAmountFromSats } from "@domain/shared"
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { parsePaymentRequest } from "invoices"
 
@@ -26,6 +27,9 @@ export const decodeInvoice = (
   const amount: Satoshis | null = decodedInvoice.tokens
     ? toSats(decodedInvoice.tokens)
     : null
+  const paymentAmount: BtcPaymentAmount | null = amount
+    ? paymentAmountFromSats(amount)
+    : null
   const cltvDelta: number | null = decodedInvoice.cltv_delta
     ? decodedInvoice.cltv_delta
     : null
@@ -47,6 +51,7 @@ export const decodeInvoice = (
 
   return {
     amount,
+    paymentAmount,
     paymentSecret,
     expiresAt,
     isExpired,
