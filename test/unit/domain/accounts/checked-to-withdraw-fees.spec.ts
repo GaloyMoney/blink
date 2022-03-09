@@ -1,6 +1,6 @@
 import { getWithdrawFeeRange } from "@config"
 import { checkedToWithdrawFee } from "@domain/accounts"
-import { ValidationError } from "@domain/errors"
+import { ValidationError } from "@domain/shared"
 
 describe("fee-amount-check", () => {
   const { min, max } = getWithdrawFeeRange()

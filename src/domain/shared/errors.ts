@@ -13,3 +13,5 @@ export class DomainError extends Error {
     this.level = ErrorLevel.Info
   }
 }
+
+export class ValidationError extends DomainError {}

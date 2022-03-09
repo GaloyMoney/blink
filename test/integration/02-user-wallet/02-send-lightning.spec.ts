@@ -13,8 +13,8 @@ import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   LimitsExceededError,
   SelfPaymentError as DomainSelfPaymentError,
-  ValidationError,
 } from "@domain/errors"
+import { ValidationError } from "@domain/shared"
 import { TwoFAError } from "@domain/twoFA"
 import { PaymentInitiationMethod } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
