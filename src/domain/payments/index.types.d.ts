@@ -64,9 +64,11 @@ interface IPaymentFlowRepository {
   ): Promise<PaymentFlow<S> | RepositoryError>
 }
 
-type AmountConverterConfig = {}
+type AmountConverterConfig = {
+  dealerFns: IDealerPriceServiceNew
+}
 type AmountConverter = {
-  addMissingAmounts<S extends WalletCurrency>(
+  addAmountsForFutureBuy<S extends WalletCurrency>(
     builder: LightningPaymentFlowBuilder<S>,
-  ): LightningPaymentFlowBuilderWithAmounts<S>
+  ): Promise<LightningPaymentFlowBuilderWithAmounts<S> | DealerPriceServiceError>
 }
