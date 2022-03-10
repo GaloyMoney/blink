@@ -8,12 +8,8 @@ import {
   LnPaymentRequestZeroAmountRequiredError,
   AmountConverter,
 } from "@domain/payments"
-import { LedgerService } from "@services/ledger"
-import {
-  paymentAmountFromCents,
-  paymentAmountFromSats,
-  WalletCurrency,
-} from "@domain/shared"
+import { WalletCurrency } from "@domain/shared"
+import { NewDealerPriceService } from "@services/dealer-price"
 
 export const getLightningFeeEstimation = async ({
   walletId,
@@ -135,7 +131,10 @@ const estimateLightningFeeForUsdWallet = async ({
   decodedInvoice: LnInvoice
   paymentBuilder: LightningPaymentFlowBuilder<"USD">
 }): Promise<PaymentAmount<"USD"> | ApplicationError> => {
-  const builder = AmountConverter({}).addMissingAmounts(paymentBuilder)
+  const builder = await AmountConverter({
+    dealerFns: NewDealerPriceService(),
+  }).addAmountsForFutureBuy(paymentBuilder)
+  if (builder instanceof Error) return builder
 
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
