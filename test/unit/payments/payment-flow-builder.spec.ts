@@ -1,7 +1,7 @@
 import { SettlementMethod, PaymentInitiationMethod } from "@domain/wallets"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { LightningPaymentFlowBuilder } from "@domain/payments"
-import { ValidationError, WalletCurrency, ZERO_SATS } from "@domain/shared"
+import { ValidationError, WalletCurrency } from "@domain/shared"
 
 describe("PaymentFlowBuilder", () => {
   const paymentRequestWithAmount =
