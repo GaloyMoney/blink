@@ -1,46 +1,48 @@
-type PaymentInitiationMethod = typeof import("./tx-methods").PaymentInitiationMethod
-type SettlementMethod = typeof import("./tx-methods").SettlementMethod
+type PaymentInitiationMethod =
+  typeof import("./tx-methods").PaymentInitiationMethod[keyof typeof import("./tx-methods").PaymentInitiationMethod]
+type SettlementMethod =
+  typeof import("./tx-methods").SettlementMethod[keyof typeof import("./tx-methods").SettlementMethod]
 type TxStatus =
   typeof import("./tx-status").TxStatus[keyof typeof import("./tx-status").TxStatus]
 type WalletType =
   typeof import("./primitives").WalletType[keyof typeof import("./primitives").WalletType]
 
 type InitiationViaIntraledger = {
-  readonly type: PaymentInitiationMethod["IntraLedger"]
+  readonly type: "intraledger"
   readonly counterPartyWalletId: WalletId
   readonly counterPartyUsername: Username
 }
 
 type InitiationViaLn = {
-  readonly type: PaymentInitiationMethod["Lightning"]
+  readonly type: "lightning"
   readonly paymentHash: PaymentHash
   readonly pubkey: Pubkey
 }
 
 type InitiationViaOnChain = {
-  readonly type: PaymentInitiationMethod["OnChain"]
+  readonly type: "onchain"
   readonly address: OnChainAddress
 }
 
 // FIXME: create a migration to add OnChainAddress associated with old transaction to remove this legacy type
 type InitiationViaOnChainLegacy = {
-  readonly type: PaymentInitiationMethod["OnChain"]
+  readonly type: "onchain"
   readonly address?: OnChainAddress
 }
 
 type SettlementViaIntraledger = {
-  readonly type: SettlementMethod["IntraLedger"]
+  readonly type: "intraledger"
   readonly counterPartyWalletId: WalletId
   readonly counterPartyUsername: Username | null
 }
 
 type SettlementViaLn = {
-  readonly type: SettlementMethod["Lightning"]
+  readonly type: "lightning"
   revealedPreImage: RevealedPreImage | null
 }
 
 type SettlementViaOnChain = {
-  readonly type: SettlementMethod["OnChain"]
+  readonly type: "onchain"
   transactionHash: OnChainTxHash
 }
 
