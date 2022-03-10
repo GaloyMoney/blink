@@ -33,8 +33,8 @@ describe("PaymentBuilder", () => {
       }
       const builder = LightningPaymentBuilder({ localNodeIds: [] })
       const payment = builder
-        .withSenderWallet(btcWallet)
         .withUncheckedAmount(Number(paymentAmount.amount))
+        .withSenderWallet(btcWallet)
         .withInvoice(invoiceWithNoAmount)
         .payment()
       if (payment instanceof Error) throw payment
@@ -49,9 +49,9 @@ describe("PaymentBuilder", () => {
       }
       const builder = LightningPaymentBuilder({ localNodeIds: [] })
       const payment = builder
-        .withUncheckedAmount(Number(paymentAmount.amount))
         .withSenderWallet(usdWallet)
         .withInvoice(invoiceWithNoAmount)
+        .withUncheckedAmount(Number(paymentAmount.amount))
         .payment()
       if (payment instanceof Error) throw payment
 
