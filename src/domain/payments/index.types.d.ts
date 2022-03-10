@@ -10,15 +10,26 @@ type Payment = {
   paymentRequest?: EncodedPaymentRequest
 }
 
-type PaymentBuilder = {
-  withSenderWallet<T extends WalletCurrency>(senderWallet: WalletDescriptor<T>): PaymentBuilder
-  withPaymentRequest(paymentRequest: EncodedPaymentRequest): PaymentBuilder
-  withBtcPaymentAmount(amount: BtcPaymentAmount): PaymentBuilder
-  withUncheckedAmount(amount: number): PaymentBuilder
-  withSettlementMethod(SettlementMethod): PaymentBuilder
-  withPaymentInitiationMethod(PaymentInitiationMethod): PaymentBuilder
-  withIsLocal(boolean): PaymentBuilder
+type LightningPaymentBuilder = {
+  withSenderWallet<T extends WalletCurrency>(
+    senderWallet: WalletDescriptor<T>,
+  ): LightningPaymentBuilder
+  withInvoice(invoice: LnInvoice): LightningPaymentBuilder
+  withUncheckedAmount(amount: number): LightningPaymentBuilder
   payment(): Payment | ValidationError
+}
+
+type LightningPaymentBuilderState = {
+  localNodeIds: Pubkey[]
+  validationError?: ValidationError
+  senderWalletId?: WalletId
+  senderWalletCurrency?: WalletCurrency
+  settlementMethod?: SettlementMethod
+  btcFeeAmount?: BtcPaymentAmount
+  btcPaymentAmount?: BtcPaymentAmount
+  usdPaymentAmount?: UsdPaymentAmount
+  invoice?: LnInvoice
+  uncheckedAmount?: number
 }
 
 interface IPaymentsRepository {

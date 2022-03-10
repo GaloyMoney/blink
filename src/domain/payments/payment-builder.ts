@@ -2,38 +2,26 @@ import { ValidationError, WalletCurrency } from "@domain/shared"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 
-type PaymentBuilderState = {
-  validationError?: ValidationError
-  senderWalletId?: WalletId
-  senderWalletCurrency?: WalletCurrency
-  settlementMethod?: SettlementMethod
-  paymentInitiationMethod?: PaymentInitiationMethod
-  btcFeeAmount?: BtcPaymentAmount
-  btcPaymentAmount?: BtcPaymentAmount
-  usdPaymentAmount?: UsdPaymentAmount
-  paymentRequest?: EncodedPaymentRequest
-  uncheckedAmount?: number
-}
-
-export const PaymentBuilder = (
-  builderState: PaymentBuilderState = {} as PaymentBuilderState,
-): PaymentBuilder => {
+export const LightningPaymentBuilder = (
+  builderState: LightningPaymentBuilderState,
+): LightningPaymentBuilder => {
   const withSenderWallet = <T extends WalletCurrency>(
     senderWallet: WalletDescriptor<T>,
   ) => {
     if (builderState.validationError) {
-      return PaymentBuilder(builderState)
+      return LightningPaymentBuilder(builderState)
     }
 
     if (builderState.uncheckedAmount) {
       if (senderWallet.currency === WalletCurrency.Btc) {
         const paymentAmount = checkedToBtcPaymentAmount(builderState.uncheckedAmount)
         if (paymentAmount instanceof ValidationError) {
-          return PaymentBuilder({
+          return LightningPaymentBuilder({
+            ...builderState,
             validationError: paymentAmount,
           })
         }
-        return PaymentBuilder({
+        return LightningPaymentBuilder({
           ...builderState,
           uncheckedAmount: undefined,
           senderWalletId: senderWallet.id,
@@ -43,11 +31,12 @@ export const PaymentBuilder = (
       } else {
         const paymentAmount = checkedToUsdPaymentAmount(builderState.uncheckedAmount)
         if (paymentAmount instanceof ValidationError) {
-          return PaymentBuilder({
+          return LightningPaymentBuilder({
+            ...builderState,
             validationError: paymentAmount,
           })
         }
-        return PaymentBuilder({
+        return LightningPaymentBuilder({
           ...builderState,
           uncheckedAmount: undefined,
           senderWalletId: senderWallet.id,
@@ -57,26 +46,35 @@ export const PaymentBuilder = (
       }
     }
 
-    return PaymentBuilder({
+    return LightningPaymentBuilder({
       ...builderState,
       senderWalletId: senderWallet.id,
       senderWalletCurrency: senderWallet.currency,
     })
   }
 
-  const withPaymentRequest = (paymentRequest: EncodedPaymentRequest) => {
-    return PaymentBuilder({
+  const withInvoice = (invoice: LnInvoice) => {
+    const newState = {
+      btcPaymentAmount: invoice.paymentAmount || undefined,
       ...builderState,
-      paymentRequest,
-    }).withPaymentInitiationMethod(PaymentInitiationMethod.Lightning)
-  }
+      invoice,
+    }
 
-  const withBtcPaymentAmount = (amount: BtcPaymentAmount) => {
-    return PaymentBuilder({ ...builderState, btcPaymentAmount: amount })
+    if (builderState.localNodeIds.includes(invoice.destination)) {
+      return LightningPaymentBuilder({
+        ...newState,
+        settlementMethod: SettlementMethod.IntraLedger,
+      })
+    } else {
+      return LightningPaymentBuilder({
+        ...newState,
+        settlementMethod: SettlementMethod.Lightning,
+      })
+    }
   }
 
   const withUncheckedAmount = (amount: number) => {
-    const builder = PaymentBuilder({ ...builderState, uncheckedAmount: amount })
+    const builder = LightningPaymentBuilder({ ...builderState, uncheckedAmount: amount })
     const { senderWalletId, senderWalletCurrency } = builderState
     if (senderWalletCurrency && senderWalletId) {
       return builder.withSenderWallet({
@@ -85,28 +83,6 @@ export const PaymentBuilder = (
       })
     }
     return builder
-  }
-
-  const withSettlementMethod = (settlementMethod: SettlementMethod) => {
-    return PaymentBuilder({ ...builderState, settlementMethod })
-  }
-
-  const withPaymentInitiationMethod = (
-    paymentInitiationMethod: PaymentInitiationMethod,
-  ) => {
-    return PaymentBuilder({ ...builderState, paymentInitiationMethod })
-  }
-
-  const withIsLocal = (isLocal: boolean) => {
-    if (isLocal) {
-      return PaymentBuilder(builderState).withSettlementMethod(
-        SettlementMethod.IntraLedger,
-      )
-    } else if (builderState.paymentRequest) {
-      return PaymentBuilder(builderState).withSettlementMethod(SettlementMethod.Lightning)
-    } else {
-      return PaymentBuilder(builderState).withSettlementMethod(SettlementMethod.OnChain)
-    }
   }
 
   const payment = (): Payment | ValidationError => {
@@ -118,28 +94,22 @@ export const PaymentBuilder = (
       senderWalletId,
       senderWalletCurrency,
       settlementMethod,
-      paymentInitiationMethod,
       btcFeeAmount,
       usdPaymentAmount,
       btcPaymentAmount,
-      paymentRequest,
+      invoice,
     } = builderState
 
-    if (
-      senderWalletId &&
-      senderWalletCurrency &&
-      settlementMethod &&
-      paymentInitiationMethod
-    ) {
+    if (senderWalletId && senderWalletCurrency && settlementMethod) {
       return {
         senderWalletId,
         senderWalletCurrency,
         settlementMethod,
-        paymentInitiationMethod,
+        paymentInitiationMethod: PaymentInitiationMethod.Lightning,
         btcFeeAmount,
         usdPaymentAmount,
         btcPaymentAmount,
-        paymentRequest,
+        paymentRequest: invoice?.paymentRequest,
       }
     }
 
@@ -148,12 +118,8 @@ export const PaymentBuilder = (
 
   return {
     withSenderWallet,
-    withPaymentRequest,
-    withBtcPaymentAmount,
+    withInvoice,
     withUncheckedAmount,
-    withSettlementMethod,
-    withPaymentInitiationMethod,
-    withIsLocal,
     payment,
   }
 }

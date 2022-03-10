@@ -3,7 +3,7 @@ import { checkedToWalletId } from "@domain/wallets"
 import { LndService } from "@services/lnd"
 import { WalletsRepository, PaymentsRepository } from "@services/mongoose"
 import {
-  PaymentBuilder,
+  LightningPaymentBuilder,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
 } from "@domain/payments"
@@ -27,9 +27,7 @@ export const getLightningFeeEstimation = async ({
     return new LnPaymentRequestNonZeroAmountRequiredError()
   }
 
-  const paymentBuilder = PaymentBuilder().withBtcPaymentAmount(
-    decodedInvoice.paymentAmount,
-  )
+  const paymentBuilder = LightningPaymentBuilder().withInvoice(decodedInvoice)
 
   return estimateLightningFee({
     uncheckedSenderWalletId: walletId,
@@ -53,7 +51,9 @@ export const getNoAmountLightningFeeEstimation = async ({
     return new LnPaymentRequestZeroAmountRequiredError()
   }
 
-  const paymentBuilder = PaymentBuilder().withUncheckedAmount(amount)
+  const paymentBuilder = LightningPaymentBuilder()
+    .withInvoice(decodedInvoice)
+    .withUncheckedAmount(amount)
 
   return estimateLightningFee({
     uncheckedSenderWalletId: walletId,
