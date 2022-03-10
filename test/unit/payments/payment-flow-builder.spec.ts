@@ -18,6 +18,9 @@ describe("PaymentFlowBuilder", () => {
     id: "walletId" as WalletId,
     currency: WalletCurrency.Usd,
   }
+  const pubkey = "pubkey" as Pubkey
+  const rawRoute = { fee: 100 } as RawRoute
+
   describe("withSenderWallet", () => {
     it("lazy validates uncheckedAmount", () => {
       const builder = LightningPaymentFlowBuilder({ localNodeIds: [] })
@@ -36,6 +39,7 @@ describe("PaymentFlowBuilder", () => {
         .withUncheckedAmount(Number(paymentAmount.amount))
         .withSenderWallet(btcWallet)
         .withInvoice(invoiceWithNoAmount)
+        .withRouteResult({ pubkey, rawRoute })
         .payment()
       if (payment instanceof Error) throw payment
 
@@ -52,6 +56,7 @@ describe("PaymentFlowBuilder", () => {
         .withSenderWallet(usdWallet)
         .withInvoice(invoiceWithNoAmount)
         .withUncheckedAmount(Number(paymentAmount.amount))
+        .withRouteResult({ pubkey, rawRoute })
         .payment()
       if (payment instanceof Error) throw payment
 
@@ -64,6 +69,7 @@ describe("PaymentFlowBuilder", () => {
       const payment = builder
         .withSenderWallet(btcWallet)
         .withInvoice(invoiceWithAmount)
+        .withRouteResult({ pubkey, rawRoute })
         .payment()
       if (payment instanceof Error) throw payment
 
@@ -75,6 +81,7 @@ describe("PaymentFlowBuilder", () => {
       const payment = builder
         .withSenderWallet(btcWallet)
         .withInvoice(invoiceWithAmount)
+        .withRouteResult({ pubkey, rawRoute })
         .payment()
       if (payment instanceof Error) throw payment
       const expectedAmount = {
@@ -92,6 +99,7 @@ describe("PaymentFlowBuilder", () => {
       const payment = builder
         .withSenderWallet(btcWallet)
         .withInvoice(invoiceWithAmount)
+        .withRouteResult({ pubkey, rawRoute })
         .payment()
       if (payment instanceof Error) throw payment
 
@@ -102,7 +110,7 @@ describe("PaymentFlowBuilder", () => {
   describe("needsFeeCalculation", () => {
     it("returns false if settlement is IntraLedger", () => {
       const builder = LightningPaymentFlowBuilder({
-        localNodeIds: [invoiceWithAmount.destination],
+        localNodeIds: [invoiceWithNoAmount.destination],
       })
         .withSenderWallet(btcWallet)
         .withInvoice(invoiceWithNoAmount)
