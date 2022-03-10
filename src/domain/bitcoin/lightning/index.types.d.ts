@@ -145,6 +145,10 @@ type ListLnPayments = (
   args: ListLnPaymentsArgs,
 ) => Promise<ListLnPaymentsResult | LightningError>
 
+type LightningServiceConfig = {
+  feeCapPercent: number
+}
+
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
 
@@ -161,6 +165,12 @@ interface ILightningService {
     decodedInvoice: LnInvoice
     maxFee: Satoshis
   }): Promise<RawRoute | LightningServiceError>
+
+  findRouteForInvoiceNew({
+    decodedInvoice,
+  }: {
+    decodedInvoice: LnInvoice
+  }): Promise<{ pubkey: Pubkey; rawRoute: RawRoute } | LightningServiceError>
 
   findRouteForNoAmountInvoice({
     decodedInvoice,

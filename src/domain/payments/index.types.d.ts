@@ -8,30 +8,25 @@ type PaymentState<S extends WalletCurrency> = {
   btcProtocolFee: BtcPaymentAmount
   usdProtocolFee?: UsdPaymentAmount
 
+  outgoingNodePubkey?: Pubkey
+  cachedRoute?: RawRoute
+
   btcPaymentAmount?: BtcPaymentAmount
   usdPaymentAmount?: UsdPaymentAmount
 }
 
-type Payment<S extends WalletCurrency> = {
-  senderWalletId: WalletId
-  senderWalletCurrency: S
-  settlementMethod: SettlementMethod
-  paymentInitiationMethod: PaymentInitiationMethod
-
-  btcProtocolFee?: BtcPaymentAmount
-  usdProtocolFee?: UsdPaymentAmount
-
+type Payment<S extends WalletCurrency> = PaymentState<S> & {
   protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
-
-  btcPaymentAmount?: BtcPaymentAmount
-  usdPaymentAmount?: UsdPaymentAmount
-  paymentRequest?: EncodedPaymentRequest
 }
 
 type LightningPaymentBuilder<S extends WalletCurrency> = {
   withSenderWallet(senderWallet: WalletDescriptor<S>): LightningPaymentBuilder<S>
   withInvoice(invoice: LnInvoice): LightningPaymentBuilder<S>
   withUncheckedAmount(amount: number): LightningPaymentBuilder<S>
+  withRouteResult(routeResult: {
+    pubkey: Pubkey
+    rawRoute: RawRoute
+  }): LightningPaymentBuilder<S>
   needsProtocolFee(): boolean
   payment(): Payment<S> | ValidationError
 }
@@ -44,7 +39,10 @@ type LightningPaymentBuilderState<S extends WalletCurrency> = {
   settlementMethod?: SettlementMethod
   btcProtocolFee?: BtcPaymentAmount
   usdProtocolFee?: UsdPaymentAmount
-  protocolFeeInSenderWalletCurrency?: PaymentAmount<S>
+
+  outgoingNodePubkey?: Pubkey
+  cachedRoute?: RawRoute
+
   btcPaymentAmount?: BtcPaymentAmount
   usdPaymentAmount?: UsdPaymentAmount
   invoice?: LnInvoice

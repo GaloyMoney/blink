@@ -89,8 +89,53 @@ const estimateLightningFee = async ({
     .withSenderWallet(senderWallet)
     .withInvoice(decodedInvoice)
 
+  if (!paymentBuilder.needsFeeCalculation()) {
+    const payment = paymentBuilder.payment()
+    if (payment instanceof Error) return payment
+
+    const persistedPayment = await PaymentsRepository().persistNew(payment)
+    if (persistedPayment instanceof Error) return persistedPayment
+
+    return persistedPayment.protocolFeeInSenderWalletCurrency()
+  }
+
+  if (senderWallet.currency == WalletCurrency.Btc) {
+    return estimateLightningFeeForBtcWallet({ decodedInvoice, paymentBuilder })
+  }
+
+  return estimateLightningFeeForUsdWallet({ decodedInvoice, paymentBuilder })
+}
+
+const estimateLightningFeeForBtcWallet = async ({
+  decodedInvoice,
+  paymentBuilder,
+}: {
+  decodedInvoice: LnInvoice
+  paymentBuilder: LightningPaymentBuilder<"BTC">
+}): Promise<PaymentAmount<"BTC"> | ApplicationError> => {
+  const lndService = LndService()
+  if (lndService instanceof Error) return lndService
+  const routeResult = await lndService.findRouteForInvoiceNew({ decodedInvoice })
+  if (routeResult instanceof Error) return routeResult
+
+  const payment = paymentBuilder.withRouteResult(routeResult).payment()
+  if (payment instanceof Error) return payment
+
+  const persistedPayment = await PaymentsRepository().persistNew(payment)
+  if (persistedPayment instanceof Error) return persistedPayment
+
+  return persistedPayment.protocolFeeInSenderWalletCurrency()
+}
+
+const estimateLightningFeeForUsdWallet = async ({
+  decodedInvoice,
+  paymentBuilder,
+}: {
+  decodedInvoice: LnInvoice
+  paymentBuilder: LightningPaymentBuilder<"USD">
+}): Promise<PaymentAmount<"USD"> | ApplicationError> => {
   return {
+    currency: WalletCurrency.Usd,
     amount: 0n,
-    currency: WalletCurrency.Btc,
   }
 }

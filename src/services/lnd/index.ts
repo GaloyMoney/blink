@@ -1,4 +1,4 @@
-import { toMilliSatsFromString, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromString, toSats, FEECAP_PERCENT } from "@domain/bitcoin"
 import {
   decodeInvoice,
   CouldNotDecodeReturnedPaymentRequest,
@@ -47,7 +47,9 @@ import { CacheKeys } from "@domain/cache"
 import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
 import { TIMEOUT_PAYMENT } from "./auth"
 
-export const LndService = (): ILightningService | LightningServiceError => {
+export const LndService = (
+  { feeCapPercent }: LightningServiceConfig = { feeCapPercent: FEECAP_PERCENT },
+): ILightningService | LightningServiceError => {
   const activeNode = getActiveLnd()
   if (activeNode instanceof Error) return activeNode
 
@@ -79,6 +81,28 @@ export const LndService = (): ILightningService | LightningServiceError => {
       maxFee,
       amount: decodedInvoice.amount,
     })
+  }
+
+  const findRouteForInvoiceNew = async ({
+    decodedInvoice,
+  }: {
+    decodedInvoice: LnInvoice
+  }): Promise<{ pubkey: Pubkey; rawRoute: RawRoute } | LightningServiceError> => {
+    if (!(decodedInvoice.amount && decodedInvoice.amount > 0))
+      return new LightningServiceError(
+        "No amount invoice passed to method. Expected a valid amount to be present.",
+      )
+    const maxFee = toSats(Math.floor(decodedInvoice.amount * feeCapPercent))
+    const rawRoute = await probeForRoute({
+      decodedInvoice,
+      maxFee,
+      amount: decodedInvoice.amount,
+    })
+    if (rawRoute instanceof Error) return rawRoute
+    return {
+      pubkey: defaultPubkey,
+      rawRoute,
+    }
   }
 
   const findRouteForNoAmountInvoice = async ({
@@ -500,6 +524,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       listActivePubkeys,
       listAllPubkeys,
       findRouteForInvoice,
+      findRouteForInvoiceNew,
       findRouteForNoAmountInvoice,
       registerInvoice,
       lookupInvoice,
