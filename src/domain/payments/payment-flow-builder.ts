@@ -1,4 +1,4 @@
-import { ValidationError, WalletCurrency } from "@domain/shared"
+import { ValidationError, WalletCurrency, ZERO_SATS, ZERO_CENTS } from "@domain/shared"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 
@@ -66,6 +66,8 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
       return LightningPaymentFlowBuilder({
         ...newState,
         settlementMethod: SettlementMethod.IntraLedger,
+        btcProtocolFee: ZERO_SATS,
+        usdProtocolFee: ZERO_CENTS,
       })
     } else {
       return LightningPaymentFlowBuilder({

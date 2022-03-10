@@ -92,14 +92,13 @@ describe("PaymentFlowBuilder", () => {
       expect(payment.btcPaymentAmount).toEqual(expectedAmount)
     })
 
-    it("sets the SettlementMethod based on local node ids", () => {
+    it("sets the SettlementMethod and fee for intra ledger", () => {
       const builder = LightningPaymentFlowBuilder({
         localNodeIds: [invoiceWithAmount.destination],
       })
       const payment = builder
         .withSenderWallet(btcWallet)
         .withInvoice(invoiceWithAmount)
-        .withRouteResult({ pubkey, rawRoute })
         .payment()
       if (payment instanceof Error) throw payment
 
