@@ -18,7 +18,9 @@ type PaymentBuilderState = {
 export const PaymentBuilder = (
   builderState: PaymentBuilderState = {} as PaymentBuilderState,
 ): PaymentBuilder => {
-  const withSenderWallet = (senderWallet: Wallet) => {
+  const withSenderWallet = <T extends WalletCurrency>(
+    senderWallet: WalletDescriptor<T>,
+  ) => {
     if (builderState.validationError) {
       return PaymentBuilder(builderState)
     }
@@ -74,7 +76,15 @@ export const PaymentBuilder = (
   }
 
   const withUncheckedAmount = (amount: number) => {
-    return PaymentBuilder({ ...builderState, uncheckedAmount: amount })
+    const builder = PaymentBuilder({ ...builderState, uncheckedAmount: amount })
+    const { senderWalletId, senderWalletCurrency } = builderState
+    if (senderWalletCurrency && senderWalletId) {
+      return builder.withSenderWallet({
+        id: senderWalletId,
+        currency: senderWalletCurrency,
+      })
+    }
+    return builder
   }
 
   const withSettlementMethod = (settlementMethod: SettlementMethod) => {
@@ -119,8 +129,7 @@ export const PaymentBuilder = (
       senderWalletId &&
       senderWalletCurrency &&
       settlementMethod &&
-      paymentInitiationMethod &&
-      btcFeeAmount
+      paymentInitiationMethod
     ) {
       return {
         senderWalletId,

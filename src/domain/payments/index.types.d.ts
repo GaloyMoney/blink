@@ -11,7 +11,7 @@ type Payment = {
 }
 
 type PaymentBuilder = {
-  withSenderWallet(senderWallet: Wallet): PaymentBuilder
+  withSenderWallet<T extends WalletCurrency>(senderWallet: WalletDescriptor<T>): PaymentBuilder
   withPaymentRequest(paymentRequest: EncodedPaymentRequest): PaymentBuilder
   withBtcPaymentAmount(amount: BtcPaymentAmount): PaymentBuilder
   withUncheckedAmount(amount: number): PaymentBuilder
