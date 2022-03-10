@@ -3,7 +3,7 @@ import { checkedToWalletId } from "@domain/wallets"
 import { LndService } from "@services/lnd"
 import { WalletsRepository, PaymentsRepository } from "@services/mongoose"
 import {
-  LightningPaymentBuilder,
+  LightningPaymentFlowBuilder,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
 } from "@domain/payments"
@@ -30,7 +30,7 @@ export const getLightningFeeEstimation = async ({
     return new LnPaymentRequestNonZeroAmountRequiredError()
   }
 
-  const paymentBuilder = LightningPaymentBuilder({
+  const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: lndService.listAllPubkeys(),
   })
 
@@ -59,7 +59,7 @@ export const getNoAmountLightningFeeEstimation = async ({
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
-  const paymentBuilder = LightningPaymentBuilder({
+  const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: lndService.listAllPubkeys(),
   }).withUncheckedAmount(amount)
 
@@ -111,7 +111,7 @@ const estimateLightningFeeForBtcWallet = async ({
   paymentBuilder,
 }: {
   decodedInvoice: LnInvoice
-  paymentBuilder: LightningPaymentBuilder<"BTC">
+  paymentBuilder: LightningPaymentFlowBuilder<"BTC">
 }): Promise<PaymentAmount<"BTC"> | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
@@ -132,7 +132,7 @@ const estimateLightningFeeForUsdWallet = async ({
   paymentBuilder,
 }: {
   decodedInvoice: LnInvoice
-  paymentBuilder: LightningPaymentBuilder<"USD">
+  paymentBuilder: LightningPaymentFlowBuilder<"USD">
 }): Promise<PaymentAmount<"USD"> | ApplicationError> => {
   return {
     currency: WalletCurrency.Usd,

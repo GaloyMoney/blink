@@ -2,28 +2,28 @@ import { ValidationError, WalletCurrency } from "@domain/shared"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 
-import { Payment } from "./payment"
+import { PaymentFlow } from "./payment-flow"
 
-export const LightningPaymentBuilder = <S extends WalletCurrency>(
+export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
   builderState: LightningPaymentBuilderState<S>,
-): LightningPaymentBuilder<S> => {
+): LightningPaymentFlowBuilder<S> => {
   const withSenderWallet = (
     senderWallet: WalletDescriptor<S>,
-  ): LightningPaymentBuilder<S> => {
+  ): LightningPaymentFlowBuilder<S> => {
     if (builderState.validationError) {
-      return LightningPaymentBuilder(builderState)
+      return LightningPaymentFlowBuilder(builderState)
     }
 
     if (builderState.uncheckedAmount) {
       if (senderWallet.currency === WalletCurrency.Btc) {
         const paymentAmount = checkedToBtcPaymentAmount(builderState.uncheckedAmount)
         if (paymentAmount instanceof ValidationError) {
-          return LightningPaymentBuilder({
+          return LightningPaymentFlowBuilder({
             ...builderState,
             validationError: paymentAmount,
           })
         }
-        return LightningPaymentBuilder({
+        return LightningPaymentFlowBuilder({
           ...builderState,
           uncheckedAmount: undefined,
           senderWalletId: senderWallet.id,
@@ -33,12 +33,12 @@ export const LightningPaymentBuilder = <S extends WalletCurrency>(
       } else {
         const paymentAmount = checkedToUsdPaymentAmount(builderState.uncheckedAmount)
         if (paymentAmount instanceof ValidationError) {
-          return LightningPaymentBuilder({
+          return LightningPaymentFlowBuilder({
             ...builderState,
             validationError: paymentAmount,
           })
         }
-        return LightningPaymentBuilder({
+        return LightningPaymentFlowBuilder({
           ...builderState,
           uncheckedAmount: undefined,
           senderWalletId: senderWallet.id,
@@ -48,14 +48,14 @@ export const LightningPaymentBuilder = <S extends WalletCurrency>(
       }
     }
 
-    return LightningPaymentBuilder({
+    return LightningPaymentFlowBuilder({
       ...builderState,
       senderWalletId: senderWallet.id,
       senderWalletCurrency: senderWallet.currency,
     })
   }
 
-  const withInvoice = (invoice: LnInvoice): LightningPaymentBuilder<S> => {
+  const withInvoice = (invoice: LnInvoice): LightningPaymentFlowBuilder<S> => {
     const newState = {
       btcPaymentAmount: invoice.paymentAmount || undefined,
       ...builderState,
@@ -63,20 +63,23 @@ export const LightningPaymentBuilder = <S extends WalletCurrency>(
     }
 
     if (builderState.localNodeIds.includes(invoice.destination)) {
-      return LightningPaymentBuilder({
+      return LightningPaymentFlowBuilder({
         ...newState,
         settlementMethod: SettlementMethod.IntraLedger,
       })
     } else {
-      return LightningPaymentBuilder({
+      return LightningPaymentFlowBuilder({
         ...newState,
         settlementMethod: SettlementMethod.Lightning,
       })
     }
   }
 
-  const withUncheckedAmount = (amount: number): LightningPaymentBuilder<S> => {
-    const builder = LightningPaymentBuilder({ ...builderState, uncheckedAmount: amount })
+  const withUncheckedAmount = (amount: number): LightningPaymentFlowBuilder<S> => {
+    const builder = LightningPaymentFlowBuilder({
+      ...builderState,
+      uncheckedAmount: amount,
+    })
     const { senderWalletId, senderWalletCurrency } = builderState
     if (senderWalletCurrency && senderWalletId) {
       return builder.withSenderWallet({
@@ -93,12 +96,12 @@ export const LightningPaymentBuilder = <S extends WalletCurrency>(
   }: {
     pubkey: Pubkey
     rawRoute: RawRoute
-  }): LightningPaymentBuilder<S> => {
+  }): LightningPaymentFlowBuilder<S> => {
     const btcProtocolFee = {
       currency: WalletCurrency.Btc,
       amount: BigInt(Math.ceil(rawRoute.fee)),
     }
-    return LightningPaymentBuilder({
+    return LightningPaymentFlowBuilder({
       ...builderState,
       outgoingNodePubkey: pubkey,
       cachedRoute: rawRoute,
@@ -110,7 +113,7 @@ export const LightningPaymentBuilder = <S extends WalletCurrency>(
     return builderState.settlementMethod !== SettlementMethod.IntraLedger
   }
 
-  const payment = (): Payment<S> | ValidationError => {
+  const payment = (): PaymentFlow<S> | ValidationError => {
     if (builderState.validationError) {
       return builderState.validationError
     }
@@ -133,7 +136,7 @@ export const LightningPaymentBuilder = <S extends WalletCurrency>(
       settlementMethod &&
       invoice
     ) {
-      return Payment({
+      return PaymentFlow({
         senderWalletId,
         senderWalletCurrency,
         settlementMethod,

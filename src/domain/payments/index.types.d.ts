@@ -1,4 +1,4 @@
-type PaymentState<S extends WalletCurrency> = {
+type PaymentFlowState<S extends WalletCurrency> = {
   senderWalletId: WalletId
   senderWalletCurrency: S
   settlementMethod: SettlementMethod
@@ -15,20 +15,20 @@ type PaymentState<S extends WalletCurrency> = {
   usdPaymentAmount?: UsdPaymentAmount
 }
 
-type Payment<S extends WalletCurrency> = PaymentState<S> & {
+type PaymentFlow<S extends WalletCurrency> = PaymentFlowState<S> & {
   protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
 }
 
-type LightningPaymentBuilder<S extends WalletCurrency> = {
-  withSenderWallet(senderWallet: WalletDescriptor<S>): LightningPaymentBuilder<S>
-  withInvoice(invoice: LnInvoice): LightningPaymentBuilder<S>
-  withUncheckedAmount(amount: number): LightningPaymentBuilder<S>
+type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
+  withSenderWallet(senderWallet: WalletDescriptor<S>): LightningPaymentFlowBuilder<S>
+  withInvoice(invoice: LnInvoice): LightningPaymentFlowBuilder<S>
+  withUncheckedAmount(amount: number): LightningPaymentFlowBuilder<S>
   withRouteResult(routeResult: {
     pubkey: Pubkey
     rawRoute: RawRoute
-  }): LightningPaymentBuilder<S>
+  }): LightningPaymentFlowBuilder<S>
   needsProtocolFee(): boolean
-  payment(): Payment<S> | ValidationError
+  payment(): PaymentFlow<S> | ValidationError
 }
 
 type LightningPaymentBuilderState<S extends WalletCurrency> = {
@@ -49,8 +49,8 @@ type LightningPaymentBuilderState<S extends WalletCurrency> = {
   uncheckedAmount?: number
 }
 
-interface IPaymentsRepository {
+interface IPaymentFlowRepository {
   persistNew<S extends WalletCurrency>(
-    payment: Payment<S>,
-  ): Promise<Payment<S> | RepositoryError>
+    payment: PaymentFlow<S>,
+  ): Promise<PaymentFlow<S> | RepositoryError>
 }
