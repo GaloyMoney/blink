@@ -1,8 +1,8 @@
-import { Payment } from "./payment"
-
 import { ValidationError, WalletCurrency } from "@domain/shared"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
+
+import { Payment } from "./payment"
 
 export const LightningPaymentBuilder = <S extends WalletCurrency>(
   builderState: LightningPaymentBuilderState<S>,
@@ -87,6 +87,25 @@ export const LightningPaymentBuilder = <S extends WalletCurrency>(
     return builder
   }
 
+  const withRouteResult = ({
+    pubkey,
+    rawRoute,
+  }: {
+    pubkey: Pubkey
+    rawRoute: RawRoute
+  }): LightningPaymentBuilder<S> => {
+    const btcProtocolFee = {
+      currency: WalletCurrency.Btc,
+      amount: BigInt(Math.ceil(rawRoute.fee)),
+    }
+    return LightningPaymentBuilder({
+      ...builderState,
+      outgoingNodePubkey: pubkey,
+      cachedRoute: rawRoute,
+      btcProtocolFee,
+    })
+  }
+
   const needsProtocolFee = () => {
     return builderState.settlementMethod !== SettlementMethod.IntraLedger
   }
@@ -137,6 +156,7 @@ export const LightningPaymentBuilder = <S extends WalletCurrency>(
     withSenderWallet,
     withInvoice,
     withUncheckedAmount,
+    withRouteResult,
     payment,
   }
 }
