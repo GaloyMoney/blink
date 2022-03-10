@@ -31,6 +31,11 @@ type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
   payment(): PaymentFlow<S> | ValidationError
 }
 
+type LightningPaymentFlowBuilderWithAmounts<S extends WalletCurrency> =
+  LightningPaymentFlowBuilder<S> & {
+    btcPaymentAmount(): BtcPaymentAmount
+  }
+
 type LightningPaymentBuilderState<S extends WalletCurrency> = {
   localNodeIds: Pubkey[]
   validationError?: ValidationError
@@ -53,4 +58,11 @@ interface IPaymentFlowRepository {
   persistNew<S extends WalletCurrency>(
     payment: PaymentFlow<S>,
   ): Promise<PaymentFlow<S> | RepositoryError>
+}
+
+type AmountConverterConfig = {}
+type AmountConverter = {
+  addMissingAmounts<S extends WalletCurrency>(
+    builder: LightningPaymentFlowBuilder<S>,
+  ): LightningPaymentFlowBuilderWithAmounts<S>
 }

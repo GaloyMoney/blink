@@ -6,6 +6,7 @@ import {
   LightningPaymentFlowBuilder,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
+  AmountConverter,
 } from "@domain/payments"
 import { LedgerService } from "@services/ledger"
 import {
@@ -134,8 +135,21 @@ const estimateLightningFeeForUsdWallet = async ({
   decodedInvoice: LnInvoice
   paymentBuilder: LightningPaymentFlowBuilder<"USD">
 }): Promise<PaymentAmount<"USD"> | ApplicationError> => {
-  return {
-    currency: WalletCurrency.Usd,
-    amount: 0n,
-  }
+  const builder = AmountConverter({}).addMissingAmounts(paymentBuilder)
+
+  const lndService = LndService()
+  if (lndService instanceof Error) return lndService
+  const routeResult = await lndService.findRouteForInvoiceNew({
+    decodedInvoice,
+    amount: builder.btcPaymentAmount(),
+  })
+  if (routeResult instanceof Error) return routeResult
+
+  const payment = paymentBuilder.withRouteResult(routeResult).payment()
+  if (payment instanceof Error) return payment
+
+  const persistedPayment = await PaymentsRepository().persistNew(payment)
+  if (persistedPayment instanceof Error) return persistedPayment
+
+  return persistedPayment.protocolFeeInSenderWalletCurrency()
 }
