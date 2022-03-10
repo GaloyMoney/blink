@@ -1,15 +1,29 @@
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning/invoice-expiration"
-import { DealerPriceServiceError } from "@domain/dealer-price"
-import { NotImplementedError, NotReachableError } from "@domain/errors"
-import { WalletCurrency } from "@domain/shared"
 
-export const AmountConverter = ({}: AmountConverterConfig): AmountConverter => {
-  const addMissingAmounts = <S extends WalletCurrency>(
+export const AmountConverter = ({
+  dealerFns,
+}: AmountConverterConfig): AmountConverter => {
+  const addAmountsForFutureBuy = async <S extends WalletCurrency>(
     builder: LightningPaymentFlowBuilder<S>,
-  ) => {
-    return builder as LightningPaymentFlowBuilderWithAmounts<S>
+  ): Promise<LightningPaymentFlowBuilderWithAmounts<S> | DealerPriceServiceError> => {
+    const btcAmount = builder.btcPaymentAmount()
+    if (btcAmount === undefined) {
+      const usdAmount = builder.usdPaymentAmount()
+      if (usdAmount === undefined) {
+        throw Error("No amount specified")
+      }
+      const updatedBtcAmount = await dealerFns.getSatsFromCentsForFutureBuy(
+        usdAmount,
+        defaultTimeToExpiryInSeconds,
+      )
+      if (updatedBtcAmount instanceof Error) return updatedBtcAmount
+
+      return builder.withBtcAmount(updatedBtcAmount)
+    }
+
+    return builder.withBtcAmount(btcAmount)
   }
   return {
-    addMissingAmounts,
+    addAmountsForFutureBuy,
   }
 }
