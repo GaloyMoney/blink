@@ -47,12 +47,12 @@ const main = async () => {
     updateEscrows,
     updatePendingLightningInvoices,
     updatePendingLightningPayments,
+    updateLnPaymentsCollection,
     deleteExpiredInvoices,
     deleteFailedPaymentsAttemptAllLnds,
     updateRoutingRevenues,
     updateOnChainReceipt,
     ...(cronConfig.rebalanceEnabled ? [rebalance] : []),
-    updateLnPaymentsCollection,
   ]
 
   for (const task of tasks) {
