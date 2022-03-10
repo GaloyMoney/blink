@@ -23,19 +23,23 @@ type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
   withSenderWallet(senderWallet: WalletDescriptor<S>): LightningPaymentFlowBuilder<S>
   withInvoice(invoice: LnInvoice): LightningPaymentFlowBuilder<S>
   withUncheckedAmount(amount: number): LightningPaymentFlowBuilder<S>
+  withBtcAmount(amount: BtcPaymentAmount): LightningPaymentFlowBuilderWithAmounts<S>
   withRouteResult(routeResult: {
     pubkey: Pubkey
     rawRoute: RawRoute
   }): LightningPaymentFlowBuilder<S>
   needsProtocolFee(): boolean
+  btcPaymentAmount(): BtcPaymentAmount | undefined
+  usdPaymentAmount(): UsdPaymentAmount | undefined
   payment(): PaymentFlow<S> | ValidationError
 }
 
-type LightningPaymentFlowBuilderWithAmounts<S extends WalletCurrency> =
-  LightningPaymentFlowBuilder<S> & {
-    btcPaymentAmount(): BtcPaymentAmount
-  }
+type RequireField<T, K extends keyof T> = T & Required<Pick<T, K>>
 
+type LightningPaymentFlowBuilderWithAmounts<S extends WalletCurrency> = RequireField<
+  LightningPaymentFlowBuilder<S>,
+  "btcPaymentAmount"
+>
 type LightningPaymentBuilderState<S extends WalletCurrency> = {
   localNodeIds: Pubkey[]
   validationError?: ValidationError

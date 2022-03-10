@@ -90,6 +90,19 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     return builder
   }
 
+  const withBtcAmount = (
+    amount: BtcPaymentAmount,
+  ): LightningPaymentFlowBuilderWithAmounts<S> => {
+    const btcPaymentAmountState: Partial<LightningPaymentBuilderState<S>> = {}
+    if (builderState.btcPaymentAmount === undefined) {
+      btcPaymentAmountState.btcPaymentAmount = amount
+    }
+    return LightningPaymentFlowBuilder({
+      ...builderState,
+      ...btcPaymentAmountState,
+    })
+  }
+
   const withRouteResult = ({
     pubkey,
     rawRoute,
@@ -159,7 +172,10 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     withSenderWallet,
     withInvoice,
     withUncheckedAmount,
+    withBtcAmount,
     withRouteResult,
+    btcPaymentAmount: () => builderState.btcPaymentAmount,
+    usdPaymentAmount: () => builderState.usdPaymentAmount,
     payment,
   }
 }
