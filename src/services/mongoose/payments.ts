@@ -1,9 +1,9 @@
 import { UnknownRepositoryError } from "@domain/errors"
 
-export const PaymentsRepository = (): IPaymentsRepository => {
+export const PaymentsRepository = (): IPaymentFlowRepository => {
   const persistNew = async <S extends WalletCurrency>(
-    payment: Payment<S>,
-  ): Promise<Payment<S> | RepositoryError> => {
+    payment: PaymentFlow<S>,
+  ): Promise<PaymentFlow<S> | RepositoryError> => {
     return payment
   }
 
