@@ -168,8 +168,10 @@ interface ILightningService {
 
   findRouteForInvoiceNew({
     decodedInvoice,
+    amount,
   }: {
     decodedInvoice: LnInvoice
+    amount?: BtcPaymentAmount
   }): Promise<{ pubkey: Pubkey; rawRoute: RawRoute } | LightningServiceError>
 
   findRouteForNoAmountInvoice({
