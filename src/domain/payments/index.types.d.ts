@@ -1,31 +1,50 @@
-type Payment = {
+type PaymentState<S extends WalletCurrency> = {
   senderWalletId: WalletId
-  senderWalletCurrency: WalletCurrency
+  senderWalletCurrency: S
+  settlementMethod: SettlementMethod
+  paymentInitiationMethod: PaymentInitiationMethod
+  paymentRequest: EncodedPaymentRequest
+
+  btcProtocolFee: BtcPaymentAmount
+  usdProtocolFee?: UsdPaymentAmount
+
+  btcPaymentAmount?: BtcPaymentAmount
+  usdPaymentAmount?: UsdPaymentAmount
+}
+
+type Payment<S extends WalletCurrency> = {
+  senderWalletId: WalletId
+  senderWalletCurrency: S
   settlementMethod: SettlementMethod
   paymentInitiationMethod: PaymentInitiationMethod
 
-  btcFeeAmount?: BtcPaymentAmount
+  btcProtocolFee?: BtcPaymentAmount
+  usdProtocolFee?: UsdPaymentAmount
+
+  protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
+
   btcPaymentAmount?: BtcPaymentAmount
   usdPaymentAmount?: UsdPaymentAmount
   paymentRequest?: EncodedPaymentRequest
 }
 
-type LightningPaymentBuilder = {
-  withSenderWallet<T extends WalletCurrency>(
-    senderWallet: WalletDescriptor<T>,
-  ): LightningPaymentBuilder
-  withInvoice(invoice: LnInvoice): LightningPaymentBuilder
-  withUncheckedAmount(amount: number): LightningPaymentBuilder
-  payment(): Payment | ValidationError
+type LightningPaymentBuilder<S extends WalletCurrency> = {
+  withSenderWallet(senderWallet: WalletDescriptor<S>): LightningPaymentBuilder<S>
+  withInvoice(invoice: LnInvoice): LightningPaymentBuilder<S>
+  withUncheckedAmount(amount: number): LightningPaymentBuilder<S>
+  needsProtocolFee(): boolean
+  payment(): Payment<S> | ValidationError
 }
 
-type LightningPaymentBuilderState = {
+type LightningPaymentBuilderState<S extends WalletCurrency> = {
   localNodeIds: Pubkey[]
   validationError?: ValidationError
   senderWalletId?: WalletId
-  senderWalletCurrency?: WalletCurrency
+  senderWalletCurrency?: S
   settlementMethod?: SettlementMethod
-  btcFeeAmount?: BtcPaymentAmount
+  btcProtocolFee?: BtcPaymentAmount
+  usdProtocolFee?: UsdPaymentAmount
+  protocolFeeInSenderWalletCurrency?: PaymentAmount<S>
   btcPaymentAmount?: BtcPaymentAmount
   usdPaymentAmount?: UsdPaymentAmount
   invoice?: LnInvoice
@@ -33,5 +52,7 @@ type LightningPaymentBuilderState = {
 }
 
 interface IPaymentsRepository {
-  persistNew(Payment): Promise<Payment | RepositoryError>
+  persistNew<S extends WalletCurrency>(
+    payment: Payment<S>,
+  ): Promise<Payment<S> | RepositoryError>
 }

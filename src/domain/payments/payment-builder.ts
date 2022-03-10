@@ -1,13 +1,15 @@
+import { Payment } from "./payment"
+
 import { ValidationError, WalletCurrency } from "@domain/shared"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 
-export const LightningPaymentBuilder = (
-  builderState: LightningPaymentBuilderState,
-): LightningPaymentBuilder => {
-  const withSenderWallet = <T extends WalletCurrency>(
-    senderWallet: WalletDescriptor<T>,
-  ) => {
+export const LightningPaymentBuilder = <S extends WalletCurrency>(
+  builderState: LightningPaymentBuilderState<S>,
+): LightningPaymentBuilder<S> => {
+  const withSenderWallet = (
+    senderWallet: WalletDescriptor<S>,
+  ): LightningPaymentBuilder<S> => {
     if (builderState.validationError) {
       return LightningPaymentBuilder(builderState)
     }
@@ -53,7 +55,7 @@ export const LightningPaymentBuilder = (
     })
   }
 
-  const withInvoice = (invoice: LnInvoice) => {
+  const withInvoice = (invoice: LnInvoice): LightningPaymentBuilder<S> => {
     const newState = {
       btcPaymentAmount: invoice.paymentAmount || undefined,
       ...builderState,
@@ -73,7 +75,7 @@ export const LightningPaymentBuilder = (
     }
   }
 
-  const withUncheckedAmount = (amount: number) => {
+  const withUncheckedAmount = (amount: number): LightningPaymentBuilder<S> => {
     const builder = LightningPaymentBuilder({ ...builderState, uncheckedAmount: amount })
     const { senderWalletId, senderWalletCurrency } = builderState
     if (senderWalletCurrency && senderWalletId) {
@@ -85,7 +87,11 @@ export const LightningPaymentBuilder = (
     return builder
   }
 
-  const payment = (): Payment | ValidationError => {
+  const needsProtocolFee = () => {
+    return builderState.settlementMethod !== SettlementMethod.IntraLedger
+  }
+
+  const payment = (): Payment<S> | ValidationError => {
     if (builderState.validationError) {
       return builderState.validationError
     }
@@ -94,29 +100,40 @@ export const LightningPaymentBuilder = (
       senderWalletId,
       senderWalletCurrency,
       settlementMethod,
-      btcFeeAmount,
       usdPaymentAmount,
       btcPaymentAmount,
+      btcProtocolFee,
+      usdProtocolFee,
       invoice,
     } = builderState
 
-    if (senderWalletId && senderWalletCurrency && settlementMethod) {
-      return {
+    if (
+      btcProtocolFee &&
+      senderWalletId &&
+      senderWalletCurrency &&
+      settlementMethod &&
+      invoice
+    ) {
+      return Payment({
         senderWalletId,
         senderWalletCurrency,
         settlementMethod,
         paymentInitiationMethod: PaymentInitiationMethod.Lightning,
-        btcFeeAmount,
+        paymentRequest: invoice.paymentRequest,
+
+        btcProtocolFee,
+        usdProtocolFee,
+
         usdPaymentAmount,
         btcPaymentAmount,
-        paymentRequest: invoice?.paymentRequest,
-      }
+      })
     }
 
     throw new Error("PaymentBuilder not complete")
   }
 
   return {
+    needsProtocolFee,
     withSenderWallet,
     withInvoice,
     withUncheckedAmount,
