@@ -1,7 +1,7 @@
 import { SettlementMethod, PaymentInitiationMethod } from "@domain/wallets"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { LightningPaymentBuilder } from "@domain/payments"
-import { ValidationError, WalletCurrency } from "@domain/shared"
+import { ValidationError, WalletCurrency, ZERO_SATS } from "@domain/shared"
 
 describe("PaymentBuilder", () => {
   const paymentRequestWithAmount =
@@ -96,6 +96,18 @@ describe("PaymentBuilder", () => {
       if (payment instanceof Error) throw payment
 
       expect(payment.settlementMethod).toEqual(SettlementMethod.IntraLedger)
+    })
+  })
+
+  describe("needsFeeCalculation", () => {
+    it("returns false if settlement is IntraLedger", () => {
+      const builder = LightningPaymentBuilder({
+        localNodeIds: [invoiceWithAmount.destination],
+      })
+        .withSenderWallet(btcWallet)
+        .withInvoice(invoiceWithNoAmount)
+
+      expect(builder.needsProtocolFee()).toEqual(false)
     })
   })
 })
