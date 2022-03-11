@@ -142,7 +142,7 @@ export const LightningPaymentFlowBuilderOld = <S extends WalletCurrency>(
     return builderState.settlementMethod !== SettlementMethod.IntraLedger
   }
 
-  const payment = (): PaymentFlow<S> | ValidationError => {
+  const payment = (): PaymentFlowOld<S> | ValidationError => {
     if (builderState.validationError) {
       return builderState.validationError
     }
