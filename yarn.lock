@@ -7609,7 +7609,7 @@ liftup@~3.0.1:
     rechoir "^0.7.0"
     resolve "^1.19.0"
 
-lightning@5.14.0, lightning@^5.8.3:
+lightning@5.14.0, lightning@^5.14.0:
   version "5.14.0"
   resolved "https://registry.yarnpkg.com/lightning/-/lightning-5.14.0.tgz#dbcbda80bb443704d7404e349f4a48fd86bdc59f"
   integrity sha512-T8NGH6F+t4sajEbC3CT2MbjqGyzTu0fH/X/UnnO8YlKoSUlU3Y9LFkmQDjMyDkxWN+peJmUQt8Em+OZu5XHLaw==

@@ -1029,6 +1029,30 @@ describe("UserWallet - Lightning Pay", () => {
           return count === 0
         })
 
+        // Test 'lnpayment' is failed
+        const lnPaymentUpdateOnSettled = await Lightning.updateLnPayments()
+        if (lnPaymentUpdateOnSettled instanceof Error) throw lnPaymentUpdateOnSettled
+
+        const lnPaymentOnSettled = await LnPaymentsRepository().findByPaymentHash(
+          id as PaymentHash,
+        )
+        expect(lnPaymentOnSettled).not.toBeInstanceOf(Error)
+        if (lnPaymentOnSettled instanceof Error) throw lnPaymentOnSettled
+
+        const lndService = LndService()
+        if (lndService instanceof Error) throw lndService
+        const payments = await lndService.listFailedPayments({
+          pubkey: lnPaymentOnSettled.sentFromPubkey,
+          after: undefined,
+        })
+        if (payments instanceof Error) throw payments
+        const payment = payments.lnPayments.find((p) => p.paymentHash === id)
+        expect(payment).not.toBeUndefined()
+        if (payment === undefined) throw new Error("Could not find payment in lnd")
+
+        expect(lnPaymentOnSettled.status).toBe(PaymentStatus.Failed)
+
+        // Check for invoice
         const invoice = await getInvoiceAttempt({ lnd: lndOutside1, id })
         expect(invoice).toBeNull()
 
