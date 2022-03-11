@@ -168,7 +168,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
         senderWalletCurrency,
         settlementMethod,
         paymentInitiationMethod: PaymentInitiationMethod.Lightning,
-        paymentRequest: invoice.paymentRequest,
+        paymentHash: invoice.paymentHash,
 
         btcProtocolFee,
         usdProtocolFee,
