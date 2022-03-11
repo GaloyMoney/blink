@@ -2,8 +2,8 @@ import { UnknownRepositoryError } from "@domain/errors"
 
 export const PaymentsRepository = (): IPaymentFlowRepository => {
   const persistNew = async <S extends WalletCurrency>(
-    payment: PaymentFlow<S>,
-  ): Promise<PaymentFlow<S> | RepositoryError> => {
+    payment: PaymentFlowOld<S>,
+  ): Promise<PaymentFlowOld<S> | RepositoryError> => {
     return payment
   }
 
@@ -15,7 +15,7 @@ export const PaymentsRepository = (): IPaymentFlowRepository => {
     walletId: WalletId
     paymentHash: PaymentHash
     inputAmount: BigInt
-  }): Promise<PaymentFlow<S> | RepositoryError> => {
+  }): Promise<PaymentFlowOld<S> | RepositoryError> => {
     return new UnknownRepositoryError()
   }
 

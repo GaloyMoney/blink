@@ -4,6 +4,7 @@ type PaymentFlowState<S extends WalletCurrency> = {
   settlementMethod: SettlementMethod
   paymentInitiationMethod: PaymentInitiationMethod
   paymentHash: PaymentHash
+  btcPaymentAmount?: BtcPaymentAmount
 
   btcProtocolFee: BtcPaymentAmount
   usdProtocolFee?: UsdPaymentAmount
@@ -11,13 +12,35 @@ type PaymentFlowState<S extends WalletCurrency> = {
   outgoingNodePubkey?: Pubkey
   cachedRoute?: RawRoute
 
-  btcPaymentAmount?: BtcPaymentAmount
   usdPaymentAmount?: UsdPaymentAmount
 
   inputAmount: BigInt
 }
 
-type PaymentFlow<S extends WalletCurrency> = PaymentFlowState<S> & {
+type PaymentFlow<S extends WalletCurrency> = PaymentFlowStateOld<S> & {
+  protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
+}
+
+type PaymentFlowStateOld<S extends WalletCurrency> = {
+  senderWalletId: WalletId
+  senderWalletCurrency: S
+  settlementMethod: SettlementMethod
+  paymentInitiationMethod: PaymentInitiationMethod
+  paymentHash: PaymentHash
+  btcPaymentAmount?: BtcPaymentAmount
+
+  btcProtocolFee: BtcPaymentAmount
+  usdProtocolFee?: UsdPaymentAmount
+
+  outgoingNodePubkey?: Pubkey
+  cachedRoute?: RawRoute
+
+  usdPaymentAmount?: UsdPaymentAmount
+
+  inputAmount: BigInt
+}
+
+type PaymentFlowOld<S extends WalletCurrency> = PaymentFlowStateOld<S> & {
   protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
 }
 
@@ -33,7 +56,7 @@ type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
   needsProtocolFee(): boolean
   btcPaymentAmount(): BtcPaymentAmount | undefined
   usdPaymentAmount(): UsdPaymentAmount | undefined
-  payment(): PaymentFlow<S> | ValidationError
+  payment(): PaymentFlowOld<S> | ValidationError
 }
 
 type LightningPaymentBuilderState<S extends WalletCurrency> = {
@@ -57,8 +80,8 @@ type LightningPaymentBuilderState<S extends WalletCurrency> = {
 
 interface IPaymentFlowRepository {
   persistNew<S extends WalletCurrency>(
-    payment: PaymentFlow<S>,
-  ): Promise<PaymentFlow<S> | RepositoryError>
+    payment: PaymentFlowOld<S>,
+  ): Promise<PaymentFlowOld<S> | RepositoryError>
   findLightningPaymentFlow<S extends WalletCurrency>({
     walletId,
     paymentHash,
@@ -67,7 +90,7 @@ interface IPaymentFlowRepository {
     walletId: WalletId
     paymentHash: PaymentHash
     inputAmount: BigInt
-  }): Promise<PaymentFlow<S> | RepositoryError>
+  }): Promise<PaymentFlowOld<S> | RepositoryError>
 }
 
 type AmountConverterConfig = {
@@ -86,17 +109,30 @@ type LightningPaymentFlowBuilderConfig = {
   ): Promise<UsdPaymentAmount | DealerPriceServiceError>
 }
 
-type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig
+type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig & {
+  paymentHash: PaymentHash
+  settlementMethod: SettlementMethod
+  btcPaymentAmount?: BtcPaymentAmount
+  inputAmount?: BigInt
+  uncheckedAmount?: number
+  btcProtocolFee?: BtcPaymentAmount
+  usdProtocolFee?: UsdPaymentAmount
+}
 
-type LPFBWithSenderWalletState<S extends WalletCurrency> =
-  LightningPaymentFlowBuilderConfig
+type LPFBWithSenderWalletState<S extends WalletCurrency> = RequireField<
+  LPFBWithInvoiceState,
+  "inputAmount"
+> & {
+  senderWalletId: WalletId
+  senderWalletCurrency: S
+}
 
 type LPFBWithRecipientWalletState<
   S extends WalletCurrency,
   R extends WalletCurrency,
-> = LightningPaymentFlowBuilderConfig
+> = LPFBWithSenderWalletState<S>
 
 type LPFBWithConversionState<
   S extends WalletCurrency,
   R extends WalletCurrency,
-> = LightningPaymentFlowBuilderConfig
+> = RequireField<LPFBWithRecipientWalletState<S, R>, "btcPaymentAmount" | "btcProtocolFee">
