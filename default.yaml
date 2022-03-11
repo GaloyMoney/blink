@@ -1,5 +1,11 @@
 name: "Galoy Banking"
 
+locale: "en"
+
+displayCurrency:
+  code: "USD"
+  symbol: "$"
+
 # username of the account that will be used to fund rewards
 funder: "FunderWallet"
 

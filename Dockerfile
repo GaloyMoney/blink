@@ -16,6 +16,7 @@ RUN yarn install --frozen-lockfile --production
 
 FROM gcr.io/distroless/nodejs:16
 COPY --from=BUILD_IMAGE /app/lib /app/lib
+COPY --from=BUILD_IMAGE /app/src/config/locales /app/lib/config/locales
 COPY --from=BUILD_IMAGE /app/node_modules /app/node_modules
 
 WORKDIR /app

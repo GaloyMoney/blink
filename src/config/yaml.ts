@@ -1,9 +1,11 @@
 import fs from "fs"
 
-import Ajv from "ajv"
+import path from "path"
 
+import Ajv from "ajv"
 import yaml from "js-yaml"
 import merge from "lodash.merge"
+import { I18n } from "i18n"
 
 import { baseLogger } from "@services/logger"
 import { checkedToScanDepth } from "@domain/bitcoin/onchain"
@@ -12,7 +14,12 @@ import { toCents } from "@domain/fiat"
 
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
-import { ConfigSchema, configSchema, RewardsConfigSchema } from "./schema"
+import {
+  ConfigSchema,
+  configSchema,
+  DisplayCurrencyConfigSchema,
+  RewardsConfigSchema,
+} from "./schema"
 import { ConfigError } from "./error"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
@@ -62,6 +69,22 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toCents(
 )
 
 export const getGaloyInstanceName = (): string => yamlConfig.name
+export const getLocale = (): string => yamlConfig.locale || "en"
+
+const i18n = new I18n()
+i18n.configure({
+  objectNotation: true,
+  updateFiles: false,
+  locales: ["en", "es"],
+  directory: path.join(__dirname, "locales"),
+})
+
+export const getI18nInstance = (): I18n => i18n
+
+export const getDisplayCurrency = (): DisplayCurrencyConfigSchema => ({
+  code: yamlConfig.displayCurrency.code,
+  symbol: yamlConfig.displayCurrency.symbol,
+})
 
 export const getLndParams = (): LndParams[] => {
   const lnds = yamlConfig.lnds

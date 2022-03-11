@@ -1,0 +1,34 @@
+{
+  "notification": {
+    "balance": {
+      "fiat": "Su balance es %s%s (%s sats)",
+      "sats": "Su balance es %s sats"
+    },
+    "btcPayments": {
+      "intra_ledger_payment": {
+        "fiat": "Pago enviado por %s%s | %s sats",
+        "sats": "Pago enviado por %s sats"
+      },
+      "intra_ledger_receipt": {
+        "fiat": "+%s%s | %s sats",
+        "sats": "+%s sats"
+      },
+      "onchain_payment": {
+        "fiat": "Pago onchain por +%s%s | %s sats confirmado",
+        "sats": "Pago onchain por %s sats confirmado"
+      },
+      "onchain_receipt": {
+        "fiat": "+%s%s | %s sats",
+        "sats": "+%s sats"
+      },
+      "onchain_receipt_pending": {
+        "fiat": "pendiente +%s%s | %s sats",
+        "sats": "pendiente +%s sats"
+      },
+      "paid-invoice": {
+        "fiat": "+%s%s | %s sats",
+        "sats": "+%s sats"
+      }
+    }
+  }
+}
