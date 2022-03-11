@@ -117,6 +117,7 @@ export const configSchema = {
         requestPhoneCodePerPhoneMinInterval: rateLimitConfigSchema,
         requestPhoneCodePerIp: rateLimitConfigSchema,
         failedLoginAttemptPerPhone: rateLimitConfigSchema,
+        failedLoginAttemptPerEmailAddress: rateLimitConfigSchema,
         failedLoginAttemptPerIp: rateLimitConfigSchema,
         invoiceCreateAttempt: rateLimitConfigSchema,
         invoiceCreateForRecipientAttempt: rateLimitConfigSchema,
@@ -127,6 +128,7 @@ export const configSchema = {
         "requestPhoneCodePerPhoneMinInterval",
         "requestPhoneCodePerIp",
         "failedLoginAttemptPerPhone",
+        "failedLoginAttemptPerEmailAddress",
         "failedLoginAttemptPerIp",
         "invoiceCreateAttempt",
         "invoiceCreateForRecipientAttempt",
@@ -238,6 +240,19 @@ export const configSchema = {
       required: ["rebalanceEnabled"],
       additionalProperties: false,
     },
+    kratosConfig: {
+      type: "object",
+      properties: {
+        serverURL: { type: "string" },
+        corsAllowedOrigins: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+        },
+      },
+      required: ["serverURL", "corsAllowedOrigins"],
+      additionalProperties: false,
+    },
   },
   required: [
     "name",
@@ -255,6 +270,7 @@ export const configSchema = {
     "onChainWallet",
     "userActivenessMonthlyVolumeThreshold",
     "cronConfig",
+    "kratosConfig",
   ],
   additionalProperties: false,
 } as const

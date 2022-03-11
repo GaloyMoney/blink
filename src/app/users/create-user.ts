@@ -1,4 +1,4 @@
-import { checkedToPhoneNumber } from "@domain/users"
+import { checkedToKratosUserId, checkedToPhoneNumber } from "@domain/users"
 import { baseLogger } from "@services/logger"
 import {
   WalletsRepository,
@@ -9,12 +9,31 @@ import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { TwilioClient } from "@services/twilio"
 
+const setupAccount = async (userId: UserId): Promise<Account | ApplicationError> => {
+  const account = await AccountsRepository().findByUserId(userId)
+  if (account instanceof Error) return account
+
+  const wallet = await WalletsRepository().persistNew({
+    accountId: account.id,
+    type: WalletType.Checking,
+    currency: WalletCurrency.Btc,
+  })
+  if (wallet instanceof Error) return wallet
+
+  account.defaultWalletId = wallet.id
+
+  const updatedAccount = await AccountsRepository().update(account)
+  if (updatedAccount instanceof Error) return updatedAccount
+
+  return updatedAccount
+}
+
 export const createUser = async ({
   phone,
   phoneMetadata,
 }: {
   phone: string
-  phoneMetadata: PhoneMetadata | null
+  phoneMetadata?: PhoneMetadata
 }) => {
   const phoneNumberValid = checkedToPhoneNumber(phone)
   if (phoneNumberValid instanceof Error) return phoneNumberValid
@@ -35,20 +54,23 @@ export const createUser = async ({
   const user = await UsersRepository().persistNew(userRaw)
   if (user instanceof Error) return user
 
-  const account = await AccountsRepository().findByUserId(user.id)
+  const account = await setupAccount(user.id)
   if (account instanceof Error) return account
 
-  const wallet = await WalletsRepository().persistNew({
-    accountId: account.id,
-    type: WalletType.Checking,
-    currency: WalletCurrency.Btc,
+  return user
+}
+
+export const createKratosUser = async ({ kratosUserId }: { kratosUserId: string }) => {
+  const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
+  if (kratosUserIdValid instanceof Error) return kratosUserIdValid
+
+  const user = await UsersRepository().persistNewKratosUser({
+    kratosUserId: kratosUserIdValid,
   })
-  if (wallet instanceof Error) return wallet
+  if (user instanceof Error) return user
 
-  account.defaultWalletId = wallet.id
-
-  const result = await AccountsRepository().update(account)
-  if (result instanceof Error) return result
+  const account = await setupAccount(user.id)
+  if (account instanceof Error) return account
 
   return user
 }

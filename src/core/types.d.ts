@@ -73,3 +73,8 @@ type TransactionType =
 type CronConfig = {
   rebalanceEnabled: boolean
 }
+
+type KratosConfig = {
+  serverURL: string
+  corsAllowedOrigins: string[]
+}

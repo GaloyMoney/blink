@@ -17,6 +17,7 @@ export class CouldNotFindWalletInvoiceError extends CouldNotFindError {}
 
 export class CouldNotFindUserError extends CouldNotFindError {}
 export class CouldNotFindUserFromIdError extends CouldNotFindError {}
+export class CouldNotFindUserFromKratosIdError extends CouldNotFindError {}
 export class CouldNotFindUserFromPhoneError extends CouldNotFindError {}
 export class CouldNotFindUserFromWalletIdError extends CouldNotFindError {}
 export class CouldNotFindPhoneCodeError extends CouldNotFindError {}
@@ -37,6 +38,7 @@ export class RewardAlreadyPresentError extends DomainError {}
 export class NotImplementedError extends DomainError {}
 export class NotReachableError extends DomainError {}
 export class InvalidNegativeAmountError extends DomainError {}
+export class MissingPhoneError extends DomainError {}
 
 export class ContactNotExistentError extends DomainError {}
 export class InvalidWithdrawFeeError extends ValidationError {}
@@ -53,6 +55,8 @@ export class InvalidCoordinatesError extends ValidationError {}
 export class InvalidBusinessTitleLengthError extends ValidationError {}
 export class InvalidAccountStatusError extends ValidationError {}
 export class InvalidPhoneNumber extends ValidationError {}
+export class InvalidKratosUserId extends ValidationError {}
+export class InvalidEmailAddress extends ValidationError {}
 export class InvalidWalletId extends ValidationError {}
 export class InvalidLedgerTransactionId extends ValidationError {}
 export class AlreadyPaidError extends ValidationError {}

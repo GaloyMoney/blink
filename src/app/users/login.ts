@@ -5,16 +5,23 @@ import {
   MAX_AGE_TIME_CODE,
 } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
-import { CouldNotFindUserFromPhoneError } from "@domain/errors"
+import {
+  CouldNotFindUserFromKratosIdError,
+  CouldNotFindUserFromPhoneError,
+} from "@domain/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import { checkedToPhoneNumber } from "@domain/users"
+import {
+  checkedToEmailAddress,
+  checkedToKratosUserId,
+  checkedToPhoneNumber,
+} from "@domain/users"
 import { createToken } from "@services/jwt"
 import { UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
 
-import { createUser } from "."
+import { createKratosUser, createUser } from "./create-user"
 
 export const login = async ({
   phone,
@@ -57,7 +64,7 @@ export const login = async ({
 
   if (user instanceof CouldNotFindUserFromPhoneError) {
     subLogger.info({ phone }, "new user signup")
-    const userRaw: NewUserInfo = { phone: phoneNumberValid, phoneMetadata: null }
+    const userRaw: NewUserInfo = { phone: phoneNumberValid }
     user = await createUser(userRaw)
     if (user instanceof Error) return user
   } else if (user instanceof Error) {
@@ -68,6 +75,52 @@ export const login = async ({
 
   const network = BTC_NETWORK
   return createToken({ uid: user.id, network })
+}
+
+export const loginWithKratos = async ({
+  kratosUserId,
+  emailAddress,
+  logger,
+  ip,
+}: {
+  kratosUserId: string
+  emailAddress: string
+  logger: Logger
+  ip: IpAddress
+}): Promise<JwtToken | ApplicationError> => {
+  const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
+  if (kratosUserIdValid instanceof Error) return kratosUserIdValid
+
+  const emailAddressValid = checkedToEmailAddress(emailAddress)
+  if (emailAddressValid instanceof Error) return emailAddressValid
+
+  const subLogger = logger.child({ topic: "login" })
+
+  {
+    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  {
+    const limitOk = await checkfailedLoginAttemptPerEmailAddressLimits(emailAddressValid)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  const userRepo = UsersRepository()
+  let user = await userRepo.findByKratosUserId(kratosUserIdValid)
+
+  if (user instanceof CouldNotFindUserFromKratosIdError) {
+    subLogger.info({ kratosUserId }, "New Kratos user signup")
+    user = await createKratosUser({ kratosUserId })
+    if (user instanceof Error) return user
+  } else if (user instanceof Error) {
+    return user
+  } else {
+    subLogger.info({ kratosUserId }, "Kratos user login")
+  }
+
+  const network = BTC_NETWORK
+  return createToken({ uid: user.id, network, kratosUserId: kratosUserIdValid })
 }
 
 const checkFailedLoginAttemptPerIpLimits = async (
@@ -94,6 +147,14 @@ const checkFailedLoginAttemptPerPhoneLimits = async (
   consumeLimiter({
     rateLimitConfig: RateLimitConfig.failedLoginAttemptPerPhone,
     keyToConsume: phone,
+  })
+
+const checkfailedLoginAttemptPerEmailAddressLimits = async (
+  emailAddress: EmailAddress,
+): Promise<true | RateLimiterExceededError> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerEmailAddress,
+    keyToConsume: emailAddress,
   })
 
 const isCodeValid = async ({

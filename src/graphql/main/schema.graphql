@@ -973,7 +973,7 @@ type User {
   """
   Phone number with international calling code.
   """
-  phone: Phone!
+  phone: Phone
 
   """
   List the quiz questions the user may have completed.

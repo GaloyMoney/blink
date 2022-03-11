@@ -50,7 +50,7 @@ const generateWallets = async (count: number, level: AccountLevel) => {
   for (let i = 0; i < count; i++) {
     const phone = getRandomInvalidPhone() as PhoneNumber
 
-    const user = await UsersRepository().persistNew({ phone, phoneMetadata: null })
+    const user = await UsersRepository().persistNew({ phone, phoneMetadata: undefined })
     if (user instanceof Error) return user
 
     const account = await AccountsRepository().findByUserId(user.id)
