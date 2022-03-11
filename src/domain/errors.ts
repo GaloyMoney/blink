@@ -59,6 +59,7 @@ export class AlreadyPaidError extends ValidationError {}
 export class SelfPaymentError extends ValidationError {}
 export class LessThanDustThresholdError extends ValidationError {}
 export class InsufficientBalanceError extends ValidationError {}
+export class BalanceLessThanZeroError extends ValidationError {}
 export class InvalidTargetConfirmations extends ValidationError {}
 export class NoContactForUsernameError extends ValidationError {}
 export class LnPaymentRequestNonZeroAmountRequiredError extends ValidationError {}

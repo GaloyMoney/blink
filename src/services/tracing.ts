@@ -197,7 +197,28 @@ export const addEventToCurrentSpan = (
   }
 }
 
-export const recordException = (span: Span, exception: Exception, level?: ErrorLevel) => {
+export const recordExceptionInCurrentSpan = ({
+  error,
+  level,
+  attributes,
+}: {
+  error: Exception
+  level?: ErrorLevel
+  attributes?: SpanAttributes
+}) => {
+  const span = trace.getSpan(context.active())
+  if (!span) return
+
+  if (attributes) {
+    for (const [key, value] of Object.entries(attributes)) {
+      if (value) span.setAttribute(key, value)
+    }
+  }
+
+  recordException(span, error, level)
+}
+
+const recordException = (span: Span, exception: Exception, level?: ErrorLevel) => {
   const errorLevel = level || exception["level"] || ErrorLevel.Warn
   span.setAttribute("error.level", errorLevel)
   span.recordException(exception)
