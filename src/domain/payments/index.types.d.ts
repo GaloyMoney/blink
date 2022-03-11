@@ -78,3 +78,25 @@ type AmountConverter = {
     builder: LightningPaymentFlowBuilder<S>,
   ): Promise<LightningPaymentFlowBuilder<S> | DealerPriceServiceError>
 }
+
+type LightningPaymentFlowBuilderConfig = {
+  localNodeIds: Pubkey[]
+  usdFromBtcMidPriceFn(
+    amount: BtcPaymentAmount,
+  ): Promise<UsdPaymentAmount | DealerPriceServiceError>
+}
+
+type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig
+
+type LPFBWithSenderWalletState<S extends WalletCurrency> =
+  LightningPaymentFlowBuilderConfig
+
+type LPFBWithRecipientWalletState<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = LightningPaymentFlowBuilderConfig
+
+type LPFBWithConversionState<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = LightningPaymentFlowBuilderConfig
