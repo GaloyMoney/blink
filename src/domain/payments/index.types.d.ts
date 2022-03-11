@@ -23,7 +23,7 @@ type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
   withSenderWallet(senderWallet: WalletDescriptor<S>): LightningPaymentFlowBuilder<S>
   withInvoice(invoice: LnInvoice): LightningPaymentFlowBuilder<S>
   withUncheckedAmount(amount: number): LightningPaymentFlowBuilder<S>
-  withBtcAmount(amount: BtcPaymentAmount): LightningPaymentFlowBuilderWithAmounts<S>
+  withBtcAmount(amount: BtcPaymentAmount): LightningPaymentFlowBuilder<S>
   withRouteResult(routeResult: {
     pubkey: Pubkey
     rawRoute: RawRoute
@@ -34,12 +34,6 @@ type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
   payment(): PaymentFlow<S> | ValidationError
 }
 
-type RequireField<T, K extends keyof T> = T & Required<Pick<T, K>>
-
-type LightningPaymentFlowBuilderWithAmounts<S extends WalletCurrency> = RequireField<
-  LightningPaymentFlowBuilder<S>,
-  "btcPaymentAmount"
->
 type LightningPaymentBuilderState<S extends WalletCurrency> = {
   localNodeIds: Pubkey[]
   validationError?: ValidationError
@@ -70,5 +64,5 @@ type AmountConverterConfig = {
 type AmountConverter = {
   addAmountsForFutureBuy<S extends WalletCurrency>(
     builder: LightningPaymentFlowBuilder<S>,
-  ): Promise<LightningPaymentFlowBuilderWithAmounts<S> | DealerPriceServiceError>
+  ): Promise<LightningPaymentFlowBuilder<S> | DealerPriceServiceError>
 }

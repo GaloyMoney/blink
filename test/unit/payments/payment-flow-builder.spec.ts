@@ -106,6 +106,33 @@ describe("PaymentFlowBuilder", () => {
     })
   })
 
+  describe("withRouteResult", () => {
+    it("it sets the fee in both currencies", () => {
+      const builder = LightningPaymentFlowBuilder({ localNodeIds: [] })
+      const usdAmount = {
+        amount: 100n,
+        currency: WalletCurrency.Usd,
+      }
+      const btcAmount = {
+        amount: 1000n,
+        currency: WalletCurrency.Btc,
+      }
+      const payment = builder
+        .withUncheckedAmount(Number(usdAmount.amount))
+        .withSenderWallet(usdWallet)
+        .withInvoice(invoiceWithNoAmount)
+        .withBtcAmount(btcAmount)
+        .withRouteResult({ pubkey, rawRoute })
+        .payment()
+      if (payment instanceof Error) throw payment
+
+      expect(payment.usdProtocolFee).toEqual({
+        amount: 10n,
+        currency: WalletCurrency.Usd,
+      })
+    })
+  })
+
   describe("needsFeeCalculation", () => {
     it("returns false if settlement is IntraLedger", () => {
       const builder = LightningPaymentFlowBuilder({
