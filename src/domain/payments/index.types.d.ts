@@ -3,7 +3,7 @@ type PaymentFlowState<S extends WalletCurrency> = {
   senderWalletCurrency: S
   settlementMethod: SettlementMethod
   paymentInitiationMethod: PaymentInitiationMethod
-  paymentRequest: EncodedPaymentRequest
+  paymentHash: PaymentHash
 
   btcProtocolFee: BtcPaymentAmount
   usdProtocolFee?: UsdPaymentAmount
