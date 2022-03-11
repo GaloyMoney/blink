@@ -2,6 +2,7 @@ export * from "./errors"
 export * from "./payment-flow-builder"
 export * from "./payment-flow"
 export * from "./price-ratio"
+export * from "./ln-fees"
 export * from "./amount-converter"
 
 import { ValidationError, WalletCurrency } from "@domain/shared"
