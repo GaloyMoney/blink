@@ -51,10 +51,11 @@ export const checkedAccountStatus = (status: string) => {
 export const UsernameRegex = /(?!^(1|3|bc1|lnbc1))^[0-9a-z_]{3,50}$/i
 
 export const checkedToUsername = (username: string): Username | ValidationError => {
-  if (!username.match(UsernameRegex)) {
+  const lowerCaseUsername = username.toLowerCase()
+  if (!lowerCaseUsername.match(UsernameRegex)) {
     return new InvalidUsername(username)
   }
-  return username as Username
+  return lowerCaseUsername as Username
 }
 
 export const ContactAliasRegex = /^[0-9A-Za-z_]{3,50}$/i
