@@ -37,5 +37,6 @@ export const LnFees = (
   return {
     intraLedgerFees,
     maxProtocolFee,
+    feeFromRawRoute,
   }
 }

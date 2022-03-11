@@ -1,5 +1,5 @@
 import { decodeInvoice } from "@domain/bitcoin/lightning"
-import { AmountConverter, LightningPaymentFlowBuilder } from "@domain/payments"
+import { AmountConverter, LightningPaymentFlowBuilderOld } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 
 import { NewDealerPriceService } from "test/mocks/dealer-price"
@@ -24,7 +24,7 @@ describe("AmountConverter", () => {
       }
 
       it("adds the missing btc amount", async () => {
-        const builder = LightningPaymentFlowBuilder({ localNodeIds: [] })
+        const builder = LightningPaymentFlowBuilderOld({ localNodeIds: [] })
           .withSenderWallet(usdWallet)
           .withInvoice(invoiceWithNoAmount)
           .withUncheckedAmount(Number(usdAmount.amount))
