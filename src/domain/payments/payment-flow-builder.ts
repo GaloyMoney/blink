@@ -2,6 +2,7 @@ import { ValidationError, WalletCurrency, ZERO_SATS, ZERO_CENTS } from "@domain/
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 
+import { PriceRatio } from "./price-ratio"
 import { PaymentFlow } from "./payment-flow"
 
 export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
@@ -92,9 +93,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     return builder
   }
 
-  const withBtcAmount = (
-    amount: BtcPaymentAmount,
-  ): LightningPaymentFlowBuilderWithAmounts<S> => {
+  const withBtcAmount = (amount: BtcPaymentAmount): LightningPaymentFlowBuilder<S> => {
     const btcPaymentAmountState: Partial<LightningPaymentBuilderState<S>> = {}
     if (builderState.btcPaymentAmount === undefined) {
       btcPaymentAmountState.btcPaymentAmount = amount
@@ -116,11 +115,19 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
       currency: WalletCurrency.Btc,
       amount: BigInt(Math.ceil(rawRoute.fee)),
     }
+    let usdProtocolFee: UsdPaymentAmount | undefined = undefined
+    if (builderState.btcPaymentAmount && builderState.usdPaymentAmount) {
+      usdProtocolFee = PriceRatio({
+        btc: builderState.btcPaymentAmount,
+        usd: builderState.usdPaymentAmount,
+      }).convertFromBtc(btcProtocolFee)
+    }
     return LightningPaymentFlowBuilder({
       ...builderState,
       outgoingNodePubkey: pubkey,
       cachedRoute: rawRoute,
       btcProtocolFee,
+      usdProtocolFee,
     })
   }
 
