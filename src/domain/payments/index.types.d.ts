@@ -13,6 +13,8 @@ type PaymentFlowState<S extends WalletCurrency> = {
 
   btcPaymentAmount?: BtcPaymentAmount
   usdPaymentAmount?: UsdPaymentAmount
+
+  inputAmount: BigInt
 }
 
 type PaymentFlow<S extends WalletCurrency> = PaymentFlowState<S> & {
@@ -50,6 +52,7 @@ type LightningPaymentBuilderState<S extends WalletCurrency> = {
   usdPaymentAmount?: UsdPaymentAmount
   invoice?: LnInvoice
   uncheckedAmount?: number
+  inputAmount?: BigInt
 }
 
 interface IPaymentFlowRepository {

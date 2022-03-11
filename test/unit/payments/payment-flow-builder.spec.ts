@@ -104,6 +104,32 @@ describe("PaymentFlowBuilder", () => {
 
       expect(payment.settlementMethod).toEqual(SettlementMethod.IntraLedger)
     })
+
+    it("sets the input amount for invoice with amount", () => {
+      const builder = LightningPaymentFlowBuilder({ localNodeIds: [] })
+      const payment = builder
+        .withSenderWallet(btcWallet)
+        .withInvoice(invoiceWithAmount)
+        .withRouteResult({ pubkey, rawRoute })
+        .payment()
+      if (payment instanceof Error) throw payment
+
+      expect(payment.inputAmount).toEqual(invoiceWithAmount.paymentAmount?.amount)
+    })
+
+    it("sets the input amount to the unchecked amount", () => {
+      const builder = LightningPaymentFlowBuilder({ localNodeIds: [] })
+      const inputAmount = 100n
+      const payment = builder
+        .withUncheckedAmount(Number(inputAmount))
+        .withSenderWallet(btcWallet)
+        .withInvoice(invoiceWithNoAmount)
+        .withRouteResult({ pubkey, rawRoute })
+        .payment()
+      if (payment instanceof Error) throw payment
+
+      expect(payment.inputAmount).toEqual(inputAmount)
+    })
   })
 
   describe("withRouteResult", () => {

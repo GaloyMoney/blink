@@ -30,6 +30,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
           senderWalletId: senderWallet.id,
           senderWalletCurrency: senderWallet.currency,
           btcPaymentAmount: paymentAmount,
+          inputAmount: paymentAmount.amount,
         })
       } else {
         const paymentAmount = checkedToUsdPaymentAmount(builderState.uncheckedAmount)
@@ -45,6 +46,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
           senderWalletId: senderWallet.id,
           senderWalletCurrency: senderWallet.currency,
           usdPaymentAmount: paymentAmount,
+          inputAmount: paymentAmount.amount,
         })
       }
     }
@@ -59,6 +61,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
   const withInvoice = (invoice: LnInvoice): LightningPaymentFlowBuilder<S> => {
     const newState = {
       btcPaymentAmount: invoice.paymentAmount || undefined,
+      inputAmount: invoice.paymentAmount?.amount || undefined,
       ...builderState,
       invoice,
     }
@@ -149,6 +152,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
       btcProtocolFee,
       usdProtocolFee,
       invoice,
+      inputAmount,
     } = builderState
 
     if (
@@ -156,7 +160,8 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
       senderWalletId &&
       senderWalletCurrency &&
       settlementMethod &&
-      invoice
+      invoice &&
+      inputAmount
     ) {
       return PaymentFlow({
         senderWalletId,
@@ -170,6 +175,8 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
 
         usdPaymentAmount,
         btcPaymentAmount,
+
+        inputAmount,
       })
     }
 
