@@ -1,57 +1,63 @@
-import { ValidationError, WalletCurrency, ZERO_SATS, ZERO_CENTS } from "@domain/shared"
+import { ValidationError, WalletCurrency } from "@domain/shared"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 
+import { LnFees } from "./ln-fees"
 import { PriceRatio } from "./price-ratio"
 import { PaymentFlow } from "./payment-flow"
 
-export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
+export const LightningPaymentFlowBuilderOld = <S extends WalletCurrency>(
   builderState: LightningPaymentBuilderState<S>,
 ): LightningPaymentFlowBuilder<S> => {
   const withSenderWallet = (
     senderWallet: WalletDescriptor<S>,
   ): LightningPaymentFlowBuilder<S> => {
     if (builderState.validationError) {
-      return LightningPaymentFlowBuilder(builderState)
+      return LightningPaymentFlowBuilderOld(builderState)
     }
 
     if (builderState.uncheckedAmount) {
       if (senderWallet.currency === WalletCurrency.Btc) {
         const paymentAmount = checkedToBtcPaymentAmount(builderState.uncheckedAmount)
         if (paymentAmount instanceof ValidationError) {
-          return LightningPaymentFlowBuilder({
+          return LightningPaymentFlowBuilderOld({
             ...builderState,
             validationError: paymentAmount,
           })
         }
-        return LightningPaymentFlowBuilder({
+        const btcProtocolFee = LnFees().maxProtocolFee(paymentAmount)
+        return LightningPaymentFlowBuilderOld({
           ...builderState,
           uncheckedAmount: undefined,
           senderWalletId: senderWallet.id,
           senderWalletCurrency: senderWallet.currency,
           btcPaymentAmount: paymentAmount,
           inputAmount: paymentAmount.amount,
+          btcProtocolFee,
         })
       } else {
         const paymentAmount = checkedToUsdPaymentAmount(builderState.uncheckedAmount)
         if (paymentAmount instanceof ValidationError) {
-          return LightningPaymentFlowBuilder({
+          return LightningPaymentFlowBuilderOld({
             ...builderState,
             validationError: paymentAmount,
           })
         }
-        return LightningPaymentFlowBuilder({
+
+        const usdProtocolFee = LnFees().maxProtocolFee(paymentAmount)
+        return LightningPaymentFlowBuilderOld({
           ...builderState,
           uncheckedAmount: undefined,
           senderWalletId: senderWallet.id,
           senderWalletCurrency: senderWallet.currency,
           usdPaymentAmount: paymentAmount,
+          usdProtocolFee,
           inputAmount: paymentAmount.amount,
         })
       }
     }
 
-    return LightningPaymentFlowBuilder({
+    return LightningPaymentFlowBuilderOld({
       ...builderState,
       senderWalletId: senderWallet.id,
       senderWalletCurrency: senderWallet.currency,
@@ -67,14 +73,15 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     }
 
     if (builderState.localNodeIds.includes(invoice.destination)) {
-      return LightningPaymentFlowBuilder({
+      const { btc: btcProtocolFee, usd: usdProtocolFee } = LnFees().intraLedgerFees()
+      return LightningPaymentFlowBuilderOld({
         ...newState,
         settlementMethod: SettlementMethod.IntraLedger,
-        btcProtocolFee: ZERO_SATS,
-        usdProtocolFee: ZERO_CENTS,
+        btcProtocolFee,
+        usdProtocolFee,
       })
     } else {
-      return LightningPaymentFlowBuilder({
+      return LightningPaymentFlowBuilderOld({
         ...newState,
         settlementMethod: SettlementMethod.Lightning,
       })
@@ -82,7 +89,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
   }
 
   const withUncheckedAmount = (amount: number): LightningPaymentFlowBuilder<S> => {
-    const builder = LightningPaymentFlowBuilder({
+    const builder = LightningPaymentFlowBuilderOld({
       ...builderState,
       uncheckedAmount: amount,
     })
@@ -101,7 +108,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     if (builderState.btcPaymentAmount === undefined) {
       btcPaymentAmountState.btcPaymentAmount = amount
     }
-    return LightningPaymentFlowBuilder({
+    return LightningPaymentFlowBuilderOld({
       ...builderState,
       ...btcPaymentAmountState,
     })
@@ -114,10 +121,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     pubkey: Pubkey
     rawRoute: RawRoute
   }): LightningPaymentFlowBuilder<S> => {
-    const btcProtocolFee = {
-      currency: WalletCurrency.Btc,
-      amount: BigInt(Math.ceil(rawRoute.fee)),
-    }
+    const btcProtocolFee = LnFees().feeFromRawRoute(rawRoute)
     let usdProtocolFee: UsdPaymentAmount | undefined = undefined
     if (builderState.btcPaymentAmount && builderState.usdPaymentAmount) {
       usdProtocolFee = PriceRatio({
@@ -125,7 +129,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
         usd: builderState.usdPaymentAmount,
       }).convertFromBtc(btcProtocolFee)
     }
-    return LightningPaymentFlowBuilder({
+    return LightningPaymentFlowBuilderOld({
       ...builderState,
       outgoingNodePubkey: pubkey,
       cachedRoute: rawRoute,

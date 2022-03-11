@@ -59,6 +59,15 @@ interface IPaymentFlowRepository {
   persistNew<S extends WalletCurrency>(
     payment: PaymentFlow<S>,
   ): Promise<PaymentFlow<S> | RepositoryError>
+  findLightningPaymentFlow<S extends WalletCurrency>({
+    walletId,
+    paymentHash,
+    inputAmount,
+  }: {
+    walletId: WalletId
+    paymentHash: PaymentHash
+    inputAmount: BigInt
+  }): Promise<PaymentFlow<S> | RepositoryError>
 }
 
 type AmountConverterConfig = {

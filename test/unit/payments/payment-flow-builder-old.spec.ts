@@ -1,7 +1,9 @@
 import { SettlementMethod, PaymentInitiationMethod } from "@domain/wallets"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
-import { LightningPaymentFlowBuilder } from "@domain/payments"
+import { LightningPaymentFlowBuilderOld } from "@domain/payments"
 import { ValidationError, WalletCurrency } from "@domain/shared"
+
+// builder.withInvoice.uncheckedAmount?.withSenderWallet.withRoute?.withAmounts
 
 describe("PaymentFlowBuilder", () => {
   const paymentRequestWithAmount =
@@ -23,7 +25,7 @@ describe("PaymentFlowBuilder", () => {
 
   describe("withSenderWallet", () => {
     it("lazy validates uncheckedAmount", () => {
-      const builder = LightningPaymentFlowBuilder({ localNodeIds: [] })
+      const builder = LightningPaymentFlowBuilderOld({ localNodeIds: [] })
       expect(
         builder.withUncheckedAmount(1.1).withSenderWallet(btcWallet).payment(),
       ).toBeInstanceOf(ValidationError)
@@ -34,12 +36,11 @@ describe("PaymentFlowBuilder", () => {
         amount: 1n,
         currency: WalletCurrency.Btc,
       }
-      const builder = LightningPaymentFlowBuilder({ localNodeIds: [] })
+      const builder = LightningPaymentFlowBuilderOld({ localNodeIds: [] })
       const payment = builder
         .withUncheckedAmount(Number(paymentAmount.amount))
         .withSenderWallet(btcWallet)
         .withInvoice(invoiceWithNoAmount)
-        .withRouteResult({ pubkey, rawRoute })
         .payment()
       if (payment instanceof Error) throw payment
 
@@ -51,12 +52,11 @@ describe("PaymentFlowBuilder", () => {
         amount: 1n,
         currency: WalletCurrency.Usd,
       }
-      const builder = LightningPaymentFlowBuilder({ localNodeIds: [] })
+      const builder = LightningPaymentFlowBuilderOld({ localNodeIds: [] })
       const payment = builder
         .withSenderWallet(usdWallet)
         .withInvoice(invoiceWithNoAmount)
         .withUncheckedAmount(Number(paymentAmount.amount))
-        .withRouteResult({ pubkey, rawRoute })
         .payment()
       if (payment instanceof Error) throw payment
 
@@ -65,11 +65,10 @@ describe("PaymentFlowBuilder", () => {
   })
   describe("withInvoice", () => {
     it("sets the PaymentInitiationMethod", () => {
-      const builder = LightningPaymentFlowBuilder({ localNodeIds: [] })
+      const builder = LightningPaymentFlowBuilderOld({ localNodeIds: [] })
       const payment = builder
         .withSenderWallet(btcWallet)
         .withInvoice(invoiceWithAmount)
-        .withRouteResult({ pubkey, rawRoute })
         .payment()
       if (payment instanceof Error) throw payment
 
@@ -77,11 +76,10 @@ describe("PaymentFlowBuilder", () => {
     })
 
     it("sets the btcPaymentAmount", () => {
-      const builder = LightningPaymentFlowBuilder({ localNodeIds: [] })
+      const builder = LightningPaymentFlowBuilderOld({ localNodeIds: [] })
       const payment = builder
         .withSenderWallet(btcWallet)
         .withInvoice(invoiceWithAmount)
-        .withRouteResult({ pubkey, rawRoute })
         .payment()
       if (payment instanceof Error) throw payment
       const expectedAmount = {
@@ -93,7 +91,7 @@ describe("PaymentFlowBuilder", () => {
     })
 
     it("sets the SettlementMethod and fee for intra ledger", () => {
-      const builder = LightningPaymentFlowBuilder({
+      const builder = LightningPaymentFlowBuilderOld({
         localNodeIds: [invoiceWithAmount.destination],
       })
       const payment = builder
@@ -106,11 +104,10 @@ describe("PaymentFlowBuilder", () => {
     })
 
     it("sets the input amount for invoice with amount", () => {
-      const builder = LightningPaymentFlowBuilder({ localNodeIds: [] })
+      const builder = LightningPaymentFlowBuilderOld({ localNodeIds: [] })
       const payment = builder
         .withSenderWallet(btcWallet)
         .withInvoice(invoiceWithAmount)
-        .withRouteResult({ pubkey, rawRoute })
         .payment()
       if (payment instanceof Error) throw payment
 
@@ -118,13 +115,12 @@ describe("PaymentFlowBuilder", () => {
     })
 
     it("sets the input amount to the unchecked amount", () => {
-      const builder = LightningPaymentFlowBuilder({ localNodeIds: [] })
+      const builder = LightningPaymentFlowBuilderOld({ localNodeIds: [] })
       const inputAmount = 100n
       const payment = builder
         .withUncheckedAmount(Number(inputAmount))
         .withSenderWallet(btcWallet)
         .withInvoice(invoiceWithNoAmount)
-        .withRouteResult({ pubkey, rawRoute })
         .payment()
       if (payment instanceof Error) throw payment
 
@@ -134,7 +130,7 @@ describe("PaymentFlowBuilder", () => {
 
   describe("withRouteResult", () => {
     it("it sets the fee in both currencies", () => {
-      const builder = LightningPaymentFlowBuilder({ localNodeIds: [] })
+      const builder = LightningPaymentFlowBuilderOld({ localNodeIds: [] })
       const usdAmount = {
         amount: 100n,
         currency: WalletCurrency.Usd,
@@ -161,7 +157,7 @@ describe("PaymentFlowBuilder", () => {
 
   describe("needsFeeCalculation", () => {
     it("returns false if settlement is IntraLedger", () => {
-      const builder = LightningPaymentFlowBuilder({
+      const builder = LightningPaymentFlowBuilderOld({
         localNodeIds: [invoiceWithNoAmount.destination],
       })
         .withSenderWallet(btcWallet)

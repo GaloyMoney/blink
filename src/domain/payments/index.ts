@@ -1,5 +1,5 @@
 export * from "./errors"
-export * from "./payment-flow-builder"
+export * from "./payment-flow-builder-old"
 export * from "./payment-flow"
 export * from "./price-ratio"
 export * from "./ln-fees"

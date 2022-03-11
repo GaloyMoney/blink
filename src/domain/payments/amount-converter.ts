@@ -18,6 +18,7 @@ export const AmountConverter = ({
       )
       if (updatedBtcAmount instanceof Error) return updatedBtcAmount
 
+      // TODO don't forget to set expiry time
       return builder.withBtcAmount(updatedBtcAmount)
     }
 
