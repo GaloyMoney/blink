@@ -25,11 +25,11 @@ export const checkIntraledgerLimits = async ({
   if (limitsChecker instanceof Error) return limitsChecker
 
   const ledgerService = LedgerService()
-  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
 
   const walletVolume = await ledgerService.intraledgerTxBaseVolumeSince({
     walletId,
-    timestamp: timestamp1Day,
+    timestamp: timestamp1DayAgo,
   })
   if (walletVolume instanceof Error) return walletVolume
 
@@ -59,11 +59,11 @@ export const checkWithdrawalLimits = async ({
   if (limitsChecker instanceof Error) return limitsChecker
 
   const ledgerService = LedgerService()
-  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
 
   const walletVolume = await ledgerService.externalPaymentVolumeSince({
     walletId,
-    timestamp: timestamp1Day,
+    timestamp: timestamp1DayAgo,
   })
   if (walletVolume instanceof Error) return walletVolume
 
@@ -93,11 +93,11 @@ export const checkTwoFALimits = async ({
   if (limitsChecker instanceof Error) return limitsChecker
 
   const ledgerService = LedgerService()
-  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
 
   const walletVolume = await ledgerService.allPaymentVolumeSince({
     walletId,
-    timestamp: timestamp1Day,
+    timestamp: timestamp1DayAgo,
   })
   if (walletVolume instanceof Error) return walletVolume
 
