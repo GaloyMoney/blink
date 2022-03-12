@@ -5,17 +5,10 @@ import { WalletCurrency } from "@domain/shared"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
 
-import {
-  createUserAndWalletFromUserRef,
-  // getDefaultWalletIdByTestUserRef,
-} from "test/helpers"
-
-// let walletB: WalletId
+import { createUserAndWalletFromUserRef } from "test/helpers"
 
 beforeAll(async () => {
   await createUserAndWalletFromUserRef("B")
-
-  // walletB = await getDefaultWalletIdByTestUserRef("B")
 })
 
 const createTestWalletInvoice = () => {
