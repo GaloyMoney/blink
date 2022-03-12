@@ -361,10 +361,13 @@ export const LndService = (): ILightningService | LightningServiceError => {
       await settleHodlInvoice({ lnd, secret })
       return true
     } catch (err) {
-      if (err[1] === "SecretDoesNotMatchAnyExistingHodlInvoice") {
-        return new SecretDoesNotMatchAnyExistingHodlInvoiceError(err)
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.SecretDoesNotMatchAnyExistingHodlInvoice:
+          return new SecretDoesNotMatchAnyExistingHodlInvoiceError(err)
+        default:
+          return new UnknownLightningServiceError(err)
       }
-      return new UnknownLightningServiceError(err)
     }
   }
 
@@ -640,6 +643,7 @@ const KnownLndErrorDetails = {
   PaymentAttemptsTimedOut: "PaymentAttemptsTimedOut",
   ProbeForRouteTimedOut: "ProbeForRouteTimedOut",
   SentPaymentNotFound: "SentPaymentNotFound",
+  SecretDoesNotMatchAnyExistingHodlInvoice: "SecretDoesNotMatchAnyExistingHodlInvoice",
 } as const
 
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({
