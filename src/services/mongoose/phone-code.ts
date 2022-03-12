@@ -16,7 +16,7 @@ export const PhoneCodesRepository = (): IPhoneCodesRepository => {
     code: PhoneCode
     age: Seconds
   }): Promise<true | RepositoryError> => {
-    const timestamp = Date.now() / 1000 - age
+    const timestamp = (Date.now() - age * 1000) as MilliSeconds
     try {
       const phoneCode = await PhoneCode.findOne({
         phone,

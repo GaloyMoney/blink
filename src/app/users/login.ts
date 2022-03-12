@@ -2,7 +2,7 @@ import {
   BTC_NETWORK,
   getFailedLoginAttemptPerIpLimits,
   getTestAccounts,
-  VALIDITY_TIME_CODE,
+  MAX_AGE_TIME_CODE,
 } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
@@ -46,7 +46,7 @@ export const login = async ({
   // add fibonachi on failed login
   // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
 
-  const age = VALIDITY_TIME_CODE
+  const age = MAX_AGE_TIME_CODE
   const validCode = await isCodeValid({ phone: phoneNumberValid, code, age })
   if (validCode instanceof Error) return validCode
 
