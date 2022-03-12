@@ -12,6 +12,8 @@ import { LedgerService } from "@services/ledger"
 import { TransactionsMetadataRepository } from "@services/ledger/services"
 import { baseLogger } from "@services/logger"
 
+import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+
 import {
   checkIsBalanced,
   createUserAndWalletFromUserRef,
@@ -126,6 +128,17 @@ describe("UserWallet - Lightning", () => {
 
     const finalBalance = await getBalanceHelper(walletIdB)
     expect(finalBalance).toBe(initBalanceB + sats)
+
+    const imbalanceCalc = ImbalanceCalculator({
+      sinceDaysAgo: 1 as Days,
+      volumeLightningFn: ledger.lightningTxBaseVolumeSince,
+      volumeOnChainFn: ledger.onChainTxBaseVolumeSince,
+    })
+
+    const imbalance = await imbalanceCalc.getSwapOutImbalance(walletIdB)
+    if (imbalance instanceof Error) throw imbalance
+
+    expect(imbalance).toBe(sats)
   })
 
   it("receives payment from outside to USD wallet with amount", async () => {

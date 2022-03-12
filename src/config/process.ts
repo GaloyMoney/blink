@@ -82,3 +82,14 @@ export const isRunningJest = typeof jest !== "undefined"
 
 export const DropboxAccessToken = process.env.DROPBOX_ACCESS_TOKEN
 export const GcsApplicationCredentials = process.env.GCS_APPLICATION_CREDENTIALS
+
+export const getBitcoinCoreRPCConfig = () => {
+  return {
+    network: process.env.NETWORK,
+    username: process.env.BITCOINDRPCUSER || "rpcuser",
+    password: process.env.BITCOINDRPCPASS,
+    host: process.env.BITCOINDADDR,
+    port: process.env.BITCOINDPORT,
+    version: "0.22.0",
+  }
+}

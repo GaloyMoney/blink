@@ -153,14 +153,37 @@ type DepositFeeCalculator = {
   lnDepositFee(): Satoshis
 }
 
-type OnChainWithdrawalFeeArgs = {
+type OnchainWithdrawalConfig = {
+  thresholdImbalance: Satoshis
+  feeRatio: number
+}
+
+type OnChainWithdrawalFlatFeeArgs = {
   minerFee: Satoshis
+  minBankFee: Satoshis
+}
+
+type OnChainWithdrawalProportionalOnImbalanceFeeArgs = OnChainWithdrawalFlatFeeArgs & {
+  imbalanceCalculatorFn: () => Promise<LedgerServiceError | Imbalance>
+}
+
+type OnChainWithdrawalFeeArgs = OnChainWithdrawalProportionalOnImbalanceFeeArgs & {
+  method: WithdrawalFeePriceMethod
+}
+
+type WithdrawalFeePriceMethod =
+  typeof import("./index").WithdrawalFeePriceMethod[keyof typeof import("./index").WithdrawalFeePriceMethod]
+
+type WithdrawalFeeCalculatorRes = {
+  totalFee: Satoshis
   bankFee: Satoshis
 }
 
 type WithdrawalFeeCalculator = {
-  onChainWithdrawalFee({ minerFee, bankFee }: OnChainWithdrawalFeeArgs): Satoshis
-  onChainIntraLedgerFee(): Satoshis
+  onChainWithdrawalFee(
+    args: OnChainWithdrawalFeeArgs,
+  ): Promise<WithdrawalFeeCalculatorRes | LedgerServiceError>
+  onChainIntraLedgerFee(): Promise<Satoshis>
 }
 
 type PaymentInputValidatorConfig = (

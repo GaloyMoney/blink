@@ -1,6 +1,5 @@
-import { checkedToWithdrawFee } from "@domain/accounts"
+import { sanityCheckedDefaultAccountWithdrawFee } from "@domain/accounts"
 import { AccountsRepository } from "@services/mongoose"
-import { getWithdrawFeeRange } from "@config"
 
 export const updateAccountWithdrawFee = async ({
   id,
@@ -9,7 +8,7 @@ export const updateAccountWithdrawFee = async ({
   id: AccountId
   fee: number
 }): Promise<Account | ApplicationError> => {
-  const checkedFee = checkedToWithdrawFee(fee, getWithdrawFeeRange())
+  const checkedFee = sanityCheckedDefaultAccountWithdrawFee(fee)
   if (checkedFee instanceof Error) return checkedFee
 
   const accountsRepo = AccountsRepository()

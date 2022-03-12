@@ -6,4 +6,5 @@ type WalletId = string & { readonly brand: unique symbol }
 type AccountId = string & { readonly brand: unique symbol }
 type Seconds = number & { readonly brand: unique symbol }
 type MilliSeconds = number & { readonly brand: unique symbol }
+type Days = number & { readonly brand: unique symbol }
 type JwtToken = string & { readonly brand: unique symbol }

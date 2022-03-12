@@ -54,11 +54,6 @@ type Account = {
   readonly contacts: AccountContact[]
 }
 
-type WithdrawFeeRange = {
-  min: Satoshis
-  max: Satoshis
-}
-
 type BusinessMapTitle = string & { readonly brand: unique symbol }
 type Coordinates = {
   longitude: number
@@ -119,9 +114,12 @@ type TwoFALimits = {
   threshold: UsdCents
 }
 
-type FeeRates = {
+type FeesConfig = {
   depositFeeVariable: number
   depositFeeFixed: CurrencyBaseAmount
-  withdrawFeeVariable: number
+  withdrawMethod: WithdrawalFeePriceMethod
+  withdrawRatio: number
+  withdrawThreshold: Satoshis
+  withdrawDaysLookback: Days
   withdrawFeeFixed: CurrencyBaseAmount
 }

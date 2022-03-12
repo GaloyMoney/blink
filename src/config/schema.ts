@@ -178,19 +178,24 @@ export const configSchema = {
     fees: {
       type: "object",
       properties: {
-        withdraw: { type: "number" },
         deposit: { type: "number" },
-        withdrawFeeRange: {
+        withdraw: {
           type: "object",
           properties: {
-            min: { type: "number" },
-            max: { type: "number" },
+            method: {
+              type: "string",
+              pattern: "^flat$|^proportionalOnImbalance$",
+            },
+            ratio: { type: "number" },
+            threshold: { type: "number" },
+            daysLookback: { type: "number" },
+            defaultMin: { type: "number" },
           },
-          required: ["min", "max"],
+          required: ["method", "ratio", "threshold", "daysLookback", "defaultMin"],
           additionalProperties: false,
         },
       },
-      required: ["withdraw", "deposit", "withdrawFeeRange"],
+      required: ["withdraw", "deposit"],
       additionalProperties: false,
     },
     lnds: {

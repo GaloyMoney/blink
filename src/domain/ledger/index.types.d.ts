@@ -238,6 +238,10 @@ interface ILedgerService {
 
   allPaymentVolumeSince(args: IGetVolumeArgs): VolumeResult
 
+  lightningTxBaseVolumeSince(args: IGetVolumeArgs): VolumeResult
+
+  onChainTxBaseVolumeSince(args: IGetVolumeArgs): VolumeResult
+
   externalPaymentVolumeSince(args: IGetVolumeArgs): VolumeResult
 
   allTxBaseVolumeSince(args: IGetVolumeArgs): VolumeResult
@@ -315,4 +319,14 @@ type ActivityCheckerConfig = {
 
 type ActivityChecker = {
   aboveThreshold: (wallets: Wallet[]) => Promise<boolean | LedgerServiceError>
+}
+
+type ImbalanceCalculatorConfig = {
+  volumeLightningFn: GetVolumeSinceFn
+  volumeOnChainFn: GetVolumeSinceFn
+  sinceDaysAgo: Days
+}
+
+type ImbalanceCalculator = {
+  getSwapOutImbalance: (walletId: WalletId) => Promise<Imbalance | LedgerServiceError>
 }

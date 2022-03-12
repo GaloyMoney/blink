@@ -1,12 +1,19 @@
-import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
+import { BTC_NETWORK, getFeesConfig, getOnChainWalletConfig } from "@config"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import {
   CouldNotFindError,
+  CouldNotFindWalletFromOnChainAddressError,
   InsufficientBalanceError,
   LessThanDustThresholdError,
+  UnknownRepositoryError,
 } from "@domain/errors"
-import { checkedToWalletId, WithdrawalFeeCalculator } from "@domain/wallets"
+import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+import {
+  checkedToWalletId,
+  WithdrawalFeeCalculator,
+  WithdrawalFeePriceMethod,
+} from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { WalletsRepository } from "@services/mongoose"
@@ -34,10 +41,19 @@ export const getOnChainFee = async ({
   const wallet = await walletsRepo.findById(walletIdChecked)
   if (wallet instanceof Error) return wallet
 
-  const withdrawFeeCalculator = WithdrawalFeeCalculator()
-  const payeeWallet = await walletsRepo.findByAddress(address)
+  const minBankFee = toSats(account.withdrawFee)
 
-  const isIntraLedger = !(payeeWallet instanceof Error)
+  const withdrawFeeCalculator = WithdrawalFeeCalculator({
+    feeRatio: getFeesConfig().withdrawRatio,
+    thresholdImbalance: getFeesConfig().withdrawThreshold,
+  })
+
+  const payeeWallet = await walletsRepo.findByAddress(address)
+  if (payeeWallet instanceof UnknownRepositoryError) return payeeWallet
+
+  const isIntraLedger = !(
+    payeeWallet instanceof CouldNotFindWalletFromOnChainAddressError
+  )
   if (isIntraLedger) return withdrawFeeCalculator.onChainIntraLedgerFee()
 
   const isError = !(payeeWallet instanceof CouldNotFindError)
@@ -66,10 +82,18 @@ export const getOnChainFee = async ({
   if (minerFee instanceof Error) return minerFee
   addAttributesToCurrentSpan({ "payOnChainByWalletId.estimatedMinerFee": `${minerFee}` })
 
-  const bankFee = toSats(account.withdrawFee)
-
-  return withdrawFeeCalculator.onChainWithdrawalFee({
-    minerFee,
-    bankFee,
+  const imbalanceCalculator = ImbalanceCalculator({
+    volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
+    volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
+    sinceDaysAgo: getFeesConfig().withdrawDaysLookback,
   })
+
+  const fees = await withdrawFeeCalculator.onChainWithdrawalFee({
+    minerFee,
+    minBankFee,
+    method: WithdrawalFeePriceMethod.flat,
+    imbalanceCalculatorFn: () => imbalanceCalculator.getSwapOutImbalance(walletId),
+  })
+  if (fees instanceof Error) return fees
+  return fees.totalFee
 }

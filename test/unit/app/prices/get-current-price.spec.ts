@@ -8,7 +8,7 @@ jest.mock("@services/redis", () => ({}))
 
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")
-  config.yamlConfig.lnds = []
+  config.getLndParams = () => []
   return config
 })
 
