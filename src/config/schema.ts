@@ -180,17 +180,17 @@ export const configSchema = {
       properties: {
         withdraw: { type: "number" },
         deposit: { type: "number" },
+        withdrawFeeRange: {
+          type: "object",
+          properties: {
+            min: { type: "number" },
+            max: { type: "number" },
+          },
+          required: ["min", "max"],
+          additionalProperties: false,
+        },
       },
-      required: ["withdraw", "deposit"],
-      additionalProperties: false,
-    },
-    withdrawFeeRange: {
-      type: "object",
-      properties: {
-        min: { type: "number" },
-        max: { type: "number" },
-      },
-      required: ["min", "max"],
+      required: ["withdraw", "deposit", "withdrawFeeRange"],
       additionalProperties: false,
     },
     lnds: {
@@ -250,7 +250,6 @@ export const configSchema = {
     "twoFALimits",
     "ipRecording",
     "fees",
-    "withdrawFeeRange",
     "lnds",
     "onChainWallet",
     "userActivenessMonthlyVolumeThreshold",

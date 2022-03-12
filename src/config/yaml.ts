@@ -101,10 +101,10 @@ export const getFeeRates = (feesConfig = yamlConfig.fees): FeeRates => ({
 })
 
 export const getWithdrawFeeRange = (
-  withdrawFeeConfig = yamlConfig.withdrawFeeRange,
+  withdrawFeeRangeConfig = yamlConfig.fees.withdrawFeeRange,
 ): WithdrawFeeRange => ({
-  min: withdrawFeeConfig.min,
-  max: withdrawFeeConfig.max,
+  min: withdrawFeeRangeConfig.min,
+  max: withdrawFeeRangeConfig.max,
 })
 
 export const getAccountLimits = ({

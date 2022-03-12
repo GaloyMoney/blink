@@ -117,11 +117,10 @@ ipRecording:
 
 fees:
   withdraw: 2000 # 2000 sats flat per tx
+  withdrawFeeRange:
+    min: 0 # sats
+    max: 50000 # sats
   deposit: 0.003 # 0.3 percent
-
-withdrawFeeRange:
-  min: 0 # sats
-  max: 50000 # sats
 
 lnds:
   - name: LND1
