@@ -41,7 +41,7 @@ export const WithdrawalFeeCalculator = ({
     method: WithdrawalFeePriceMethod
     minerFee: Satoshis
     minBankFee: Satoshis
-    imbalanceCalculatorFn: () => Promise<LedgerServiceError | Imbalance>
+    imbalanceCalculatorFn: () => Promise<SwapOutImbalance | LedgerServiceError>
   }) => {
     if (method === WithdrawalFeePriceMethod.flat) {
       return onChainWithdrawalFlatFee({ minerFee, minBankFee })

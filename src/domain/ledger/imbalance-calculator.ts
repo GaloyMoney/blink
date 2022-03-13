@@ -8,7 +8,7 @@ export const ImbalanceCalculator = ({
 }: ImbalanceCalculatorConfig): ImbalanceCalculator => {
   const since = new Date(new Date().getTime() - sinceDaysAgo * MS_PER_DAY)
 
-  const getImbalance = async ({
+  const getNetInboundFlow = async ({
     volumeFn,
     walletId,
     since,
@@ -23,25 +23,25 @@ export const ImbalanceCalculator = ({
     })
     if (volume_ instanceof Error) return volume_
 
-    return (volume_.incomingBaseAmount - volume_.outgoingBaseAmount) as Imbalance
+    return (volume_.incomingBaseAmount - volume_.outgoingBaseAmount) as NetInboundFlow
   }
 
   const getSwapOutImbalance = async (walletId: WalletId) => {
-    const lnImbalance = await getImbalance({
+    const lnNetInbound = await getNetInboundFlow({
       since,
       walletId,
       volumeFn: volumeLightningFn,
     })
-    if (lnImbalance instanceof Error) return lnImbalance
+    if (lnNetInbound instanceof Error) return lnNetInbound
 
-    const onChainImbalance = await getImbalance({
+    const onChainNetInbound = await getNetInboundFlow({
       since,
       walletId,
       volumeFn: volumeOnChainFn,
     })
-    if (onChainImbalance instanceof Error) return onChainImbalance
+    if (onChainNetInbound instanceof Error) return onChainNetInbound
 
-    return (lnImbalance - onChainImbalance) as Imbalance
+    return (lnNetInbound - onChainNetInbound) as SwapOutImbalance
   }
 
   return {

@@ -14,7 +14,7 @@ describe("WithdrawalFeeCalculator", () => {
     it("returns the sum of onchain fee and wallet fee", async () => {
       const minerFee = toSats(7200)
       const minBankFee = toSats(2000)
-      const imbalanceCalculatorFn = async () => 0 as Imbalance
+      const imbalanceCalculatorFn = async () => 0 as SwapOutImbalance
       const fee = await calculator.onChainWithdrawalFee({
         method: WithdrawalFeePriceMethod.flat,
         minerFee,
@@ -29,7 +29,7 @@ describe("WithdrawalFeeCalculator", () => {
     it("returns flat fee for no tx", async () => {
       const minerFee = toSats(7200)
       const minBankFee = toSats(2000)
-      const imbalanceCalculatorFn = async () => 0 as Imbalance
+      const imbalanceCalculatorFn = async () => 0 as SwapOutImbalance
       const fee = await calculator.onChainWithdrawalFee({
         method: WithdrawalFeePriceMethod.proportionalOnImbalance,
         minerFee,
@@ -42,7 +42,7 @@ describe("WithdrawalFeeCalculator", () => {
     it("returns flat fee for loop in imbalance", async () => {
       const minerFee = toSats(7200)
       const minBankFee = toSats(2000)
-      const imbalanceCalculatorFn = async () => -2_000_000 as Imbalance
+      const imbalanceCalculatorFn = async () => -2_000_000 as SwapOutImbalance
       const fee = await calculator.onChainWithdrawalFee({
         method: WithdrawalFeePriceMethod.proportionalOnImbalance,
         minerFee,
@@ -55,7 +55,7 @@ describe("WithdrawalFeeCalculator", () => {
     it("returns proportional fee for loop out imbalance above threshold", async () => {
       const minerFee = toSats(7200)
       const minBankFee = toSats(2000)
-      const imbalanceCalculatorFn = async () => 2_000_000 as Imbalance
+      const imbalanceCalculatorFn = async () => 2_000_000 as SwapOutImbalance
       const fee = await calculator.onChainWithdrawalFee({
         method: WithdrawalFeePriceMethod.proportionalOnImbalance,
         minerFee,

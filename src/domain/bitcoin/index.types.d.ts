@@ -5,4 +5,7 @@ type BtcNetwork =
   typeof import("./index").BtcNetwork[keyof typeof import("./index").BtcNetwork]
 
 // inbound minus outbound
-type Imbalance = number & { readonly brand: unique symbol }
+type NetInboundFlow = number & { readonly brand: unique symbol }
+
+// positive means swap out imbalance
+type SwapOutImbalance = number & { readonly brand: unique symbol }

@@ -164,7 +164,7 @@ type OnChainWithdrawalFlatFeeArgs = {
 }
 
 type OnChainWithdrawalProportionalOnImbalanceFeeArgs = OnChainWithdrawalFlatFeeArgs & {
-  imbalanceCalculatorFn: () => Promise<LedgerServiceError | Imbalance>
+  imbalanceCalculatorFn: () => Promise<SwapOutImbalance | LedgerServiceError>
 }
 
 type OnChainWithdrawalFeeArgs = OnChainWithdrawalProportionalOnImbalanceFeeArgs & {
