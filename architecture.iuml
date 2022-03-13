@@ -1,0 +1,69 @@
+@startuml
+!theme bluegray
+skinparam componentStyle rectangle
+
+'-----------components----------
+rectangle "<size:20><&browser></size> Admin Frontend" as AF
+rectangle "<size:20><&phone></size> Mobile App" as MA
+rectangle "<size:20><&browser></size> Web Wallet" as WW
+rectangle "<size:20><&laptop></size> Other App" as OA
+
+package "Galoy Server"{
+[Admin GQL API] as AA
+[Client GQL API] as GA
+[Ledger ❹] as LG
+[Server Backend] as SB
+}
+
+together {
+[Ride the Lightning] as RTL
+component LND [
+<b>LND
+
+- Hot Wallet
+- Lightning Node ]
+  }
+  component Specter[
+  <b>Specter
+- Cold Storage
+- Multisig Coordinator ]
+
+component bitcoind[
+**bitcoind** ]
+
+cloud "lightning network" as lightning
+cloud "Bitcoin network" as btcnet
+
+'-----------connections----------
+'Galoy Server Connections
+AF -u-> AA
+MA --> GA
+WW --> GA
+OA --> GA
+'For better formatting
+GA -[hidden]r- AA
+
+SB - GA
+LG <- SB : updates
+
+LG ...> LND
+LG ...> Specter
+
+SB --> LND : <size:22>❶</size>\npayments\nrebalance
+SB --> Specter : <size:22>❷</size> rebalance
+LND -- lightning
+RTL -r-> LND : manages
+Specter --> bitcoind : depends on
+LND --> bitcoind : <size:22>❸</size>\ndepends on
+bitcoind -- btcnet
+
+legend
+<size:22>❶</size> Galoy gets payment information from LND. On-chain as well as Lightning.
+
+<size:22>❷</size> Backend rebalances between LND and Specter.
+
+<size:22>❸</size> LND connected to bitcoind RPC & zeromq.
+
+<size:22>❹</size> Ledger keeps track of user wallets. Audits BTC hot & cold wallet.
+endlegend
+@enduml

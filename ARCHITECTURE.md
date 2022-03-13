@@ -14,6 +14,9 @@ Kubernetes comes with some overhead, and while we have not tried to run on low-c
 
 https://twitter.com/memenetes/status/1366826625531342856?s=20
 
+![Overall diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/GaloyMoney/galoy/architecture.iuml)
+
+
 ### Deps
 
 Galoy relies on lnd to process transactions. The dependency of lnd, and bitcoind as the backend, can be installed conveniently from the following [helm chart](https://github.com/GaloyMoney/charts)
