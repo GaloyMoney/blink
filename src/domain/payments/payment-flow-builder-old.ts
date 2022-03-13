@@ -1,4 +1,4 @@
-import { ValidationError, WalletCurrency } from "@domain/shared"
+import { ValidationError, WalletCurrency, ZERO_SATS, ZERO_CENTS } from "@domain/shared"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 
@@ -142,7 +142,7 @@ export const LightningPaymentFlowBuilderOld = <S extends WalletCurrency>(
     return builderState.settlementMethod !== SettlementMethod.IntraLedger
   }
 
-  const payment = (): PaymentFlowOld<S> | ValidationError => {
+  const payment = (): PaymentFlow<S, WalletCurrency> | ValidationError => {
     if (builderState.validationError) {
       return builderState.validationError
     }
@@ -175,10 +175,10 @@ export const LightningPaymentFlowBuilderOld = <S extends WalletCurrency>(
         paymentHash: invoice.paymentHash,
 
         btcProtocolFee,
-        usdProtocolFee,
+        usdProtocolFee: usdProtocolFee || ZERO_CENTS,
 
-        usdPaymentAmount,
-        btcPaymentAmount,
+        usdPaymentAmount: usdPaymentAmount || ZERO_CENTS,
+        btcPaymentAmount: btcPaymentAmount || ZERO_SATS,
 
         inputAmount,
       })

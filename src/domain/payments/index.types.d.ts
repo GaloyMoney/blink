@@ -1,46 +1,28 @@
-type PaymentFlowState<S extends WalletCurrency> = {
+type PaymentFlowState<S extends WalletCurrency, R extends WalletCurrency> = {
   senderWalletId: WalletId
   senderWalletCurrency: S
   settlementMethod: SettlementMethod
   paymentInitiationMethod: PaymentInitiationMethod
   paymentHash: PaymentHash
-  btcPaymentAmount?: BtcPaymentAmount
+
+  btcPaymentAmount: BtcPaymentAmount
+  usdPaymentAmount: UsdPaymentAmount
+  inputAmount: BigInt
 
   btcProtocolFee: BtcPaymentAmount
-  usdProtocolFee?: UsdPaymentAmount
+  usdProtocolFee: UsdPaymentAmount
+
+  recipientWalletId?: WalletId
+  recipientWalletCurrency?: R
 
   outgoingNodePubkey?: Pubkey
   cachedRoute?: RawRoute
-
-  usdPaymentAmount?: UsdPaymentAmount
-
-  inputAmount: BigInt
 }
 
-type PaymentFlow<S extends WalletCurrency> = PaymentFlowStateOld<S> & {
-  protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
-}
-
-type PaymentFlowStateOld<S extends WalletCurrency> = {
-  senderWalletId: WalletId
-  senderWalletCurrency: S
-  settlementMethod: SettlementMethod
-  paymentInitiationMethod: PaymentInitiationMethod
-  paymentHash: PaymentHash
-  btcPaymentAmount?: BtcPaymentAmount
-
-  btcProtocolFee: BtcPaymentAmount
-  usdProtocolFee?: UsdPaymentAmount
-
-  outgoingNodePubkey?: Pubkey
-  cachedRoute?: RawRoute
-
-  usdPaymentAmount?: UsdPaymentAmount
-
-  inputAmount: BigInt
-}
-
-type PaymentFlowOld<S extends WalletCurrency> = PaymentFlowStateOld<S> & {
+type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFlowState<
+  S,
+  R
+> & {
   protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
 }
 
@@ -125,14 +107,21 @@ type LPFBWithSenderWalletState<S extends WalletCurrency> = RequireField<
 > & {
   senderWalletId: WalletId
   senderWalletCurrency: S
+  usdPaymentAmount?: UsdPaymentAmount
 }
 
 type LPFBWithRecipientWalletState<
   S extends WalletCurrency,
   R extends WalletCurrency,
-> = LPFBWithSenderWalletState<S>
+> = LPFBWithSenderWalletState<S> & {
+  recipientWalletId?: WalletId
+  recipientWalletCurrency?: R
+}
 
 type LPFBWithConversionState<
   S extends WalletCurrency,
   R extends WalletCurrency,
-> = RequireField<LPFBWithRecipientWalletState<S, R>, "btcPaymentAmount" | "btcProtocolFee">
+> = RequireField<
+  LPFBWithRecipientWalletState<S, R>,
+  "btcPaymentAmount" | "btcProtocolFee" | "usdProtocolFee" | "usdPaymentAmount"
+>

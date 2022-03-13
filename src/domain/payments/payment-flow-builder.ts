@@ -1,6 +1,8 @@
 import { ValidationError, WalletCurrency } from "@domain/shared"
+import { SelfPaymentError } from "@domain/errors"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
+import { InvalidLightningPaymentFlowBuilderStateError } from "./errors"
 
 import { LnFees } from "./ln-fees"
 import { PriceRatio } from "./price-ratio"
@@ -75,7 +77,7 @@ const LPFBWithInvoice = (state: LPFBWithInvoiceState) => {
       if (senderWalletCurrency === WalletCurrency.Btc) {
         const paymentAmount = checkedToBtcPaymentAmount(state.uncheckedAmount)
         if (paymentAmount instanceof ValidationError) {
-          return LPFBWithValidationError(paymentAmount)
+          return LPFBWithError(paymentAmount)
         }
         return LPFBWithSenderWallet({
           ...state,
@@ -95,7 +97,7 @@ const LPFBWithInvoice = (state: LPFBWithInvoiceState) => {
         senderWalletId,
         senderWalletCurrency,
         btcPaymentAmount,
-          btcProtocolFee: state.btcProtocolFee || LnFees().maxProtocolFee(btcPaymentAmount),
+        btcProtocolFee: state.btcProtocolFee || LnFees().maxProtocolFee(btcPaymentAmount),
         inputAmount,
       })
     }
@@ -112,11 +114,48 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
   state: LPFBWithSenderWalletState<S>,
 ) => {
   const withoutRecipientWallet = () => {
+    if (state.settlementMethod === SettlementMethod.IntraLedger) {
+      return LPFBWithError(
+        new InvalidLightningPaymentFlowBuilderStateError(
+          "withoutRecipientWallet called but settlementMethod is IntraLedger",
+        ),
+      )
+    }
     return LPFBWithRecipientWallet({ ...state })
+  }
+
+  const withRecipientWallet = <R extends WalletCurrency>({
+    id: recipientWalletId,
+    currency: recipientWalletCurrency,
+    usdPaymentAmount,
+  }: WalletDescriptor<R> & {
+    usdPaymentAmount?: UsdPaymentAmount
+  }) => {
+    if (recipientWalletId === state.senderWalletId) {
+      return LPFBWithError(new SelfPaymentError())
+    }
+    if (
+      recipientWalletCurrency === WalletCurrency.Usd &&
+      usdPaymentAmount === undefined &&
+      state.uncheckedAmount === undefined
+    ) {
+      return LPFBWithError(
+        new InvalidLightningPaymentFlowBuilderStateError(
+          "withRecipientWallet called with recipient wallet currency USDC but no usdPaymentAmount",
+        ),
+      )
+    }
+    return LPFBWithRecipientWallet({
+      ...state,
+      recipientWalletId,
+      recipientWalletCurrency,
+      usdPaymentAmount: usdPaymentAmount || state.usdPaymentAmount,
+    })
   }
 
   return {
     withoutRecipientWallet,
+    withRecipientWallet,
   }
 }
 
@@ -134,13 +173,51 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
       amount: UsdPaymentAmount,
     ): Promise<BtcPaymentAmount | DealerPriceServiceError>
   }) => {
-    const { btcPaymentAmount, btcProtocolFee } = state
-    if (btcPaymentAmount && btcProtocolFee) {
-      return LPFBWithConversion({
-        ...state,
-        btcPaymentAmount,
-        btcProtocolFee,
-      })
+    const { btcPaymentAmount, usdPaymentAmount, btcProtocolFee, usdProtocolFee } = state
+    // Use mid price when no buy / sell required
+    if (
+      state.senderWalletCurrency === WalletCurrency.Btc &&
+      (state.settlementMethod === SettlementMethod.Lightning ||
+        state.recipientWalletCurrency === WalletCurrency.Btc)
+    ) {
+      if (btcPaymentAmount && btcProtocolFee) {
+        return LPFBWithConversion(
+          state.usdFromBtcMidPriceFn(btcPaymentAmount).then((convertedAmount) => {
+            if (convertedAmount instanceof Error) {
+              return convertedAmount
+            }
+            const usdProtocolFee = PriceRatio({
+              usd: convertedAmount,
+              btc: btcPaymentAmount,
+            }).convertFromBtc(btcProtocolFee)
+            return {
+              ...state,
+              btcPaymentAmount,
+              usdPaymentAmount: convertedAmount,
+              btcProtocolFee,
+              usdProtocolFee,
+            }
+          }),
+        )
+      } else {
+        return LPFBWithError(
+          new InvalidLightningPaymentFlowBuilderStateError(
+            "withConversion - btcPaymentAmount || btcProtocolFee not set",
+          ),
+        )
+      }
+    }
+
+    if (btcPaymentAmount && btcProtocolFee && usdPaymentAmount && usdProtocolFee) {
+      return LPFBWithConversion(
+        Promise.resolve({
+          ...state,
+          btcPaymentAmount,
+          usdPaymentAmount,
+          btcProtocolFee,
+          usdProtocolFee,
+        }),
+      )
     }
     throw new Error("unimplemented")
   }
@@ -151,25 +228,30 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
 }
 
 const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
-  state: LPFBWithConversionState<S, R>,
+  statePromise: Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError>,
 ) => {
-  const withoutRoute = () => {
-    return Promise.resolve(
-      PaymentFlow({
-        senderWalletId: state.senderWalletId,
-        senderWalletCurrency: state.senderWalletCurrency,
+  const withoutRoute = async () => {
+    const state = await statePromise
+    if (state instanceof Error) {
+      return state
+    }
+    return PaymentFlow({
+      senderWalletId: state.senderWalletId,
+      senderWalletCurrency: state.senderWalletCurrency,
+      recipientWalletId: state.recipientWalletId,
+      recipientWalletCurrency: state.recipientWalletCurrency,
 
-        paymentHash: state.paymentHash,
-        btcPaymentAmount: state.btcPaymentAmount,
-        inputAmount: state.inputAmount,
+      paymentHash: state.paymentHash,
+      btcPaymentAmount: state.btcPaymentAmount,
+      usdPaymentAmount: state.usdPaymentAmount,
+      inputAmount: state.inputAmount,
 
-        settlementMethod: state.settlementMethod,
-        paymentInitiationMethod: PaymentInitiationMethod.Lightning,
+      settlementMethod: state.settlementMethod,
+      paymentInitiationMethod: PaymentInitiationMethod.Lightning,
 
-        btcProtocolFee: state.btcProtocolFee,
-        usdProtocolFee: state.usdProtocolFee,
-      }),
-    )
+      btcProtocolFee: state.btcProtocolFee,
+      usdProtocolFee: state.usdProtocolFee,
+    })
   }
   const withRoute = async ({
     pubkey,
@@ -177,7 +259,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   }: {
     pubkey: Pubkey
     rawRoute: RawRoute
-  }): Promise<PaymentFlow<S> | ValidationError | DealerPriceServiceError> => {
+  }): Promise<PaymentFlow<S, R> | ValidationError | DealerPriceServiceError> => {
     throw new Error("unimplemented")
   }
 
@@ -187,12 +269,21 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   }
 }
 
-const LPFBWithValidationError = (error: ValidationError) => {
+const LPFBWithError = (
+  error:
+    | ValidationError
+    | SelfPaymentError
+    | DealerPriceServiceError
+    | InvalidLightningPaymentFlowBuilderStateError,
+) => {
   const withoutRecipientWallet = () => {
-    return LPFBWithValidationError(error)
+    return LPFBWithError(error)
+  }
+  const withRecipientWallet = () => {
+    return LPFBWithError(error)
   }
   const withConversion = () => {
-    return LPFBWithValidationError(error)
+    return LPFBWithError(error)
   }
   const withRoute = async () => {
     return Promise.resolve(error)
@@ -203,6 +294,7 @@ const LPFBWithValidationError = (error: ValidationError) => {
 
   return {
     withoutRecipientWallet,
+    withRecipientWallet,
     withConversion,
     withRoute,
     withoutRoute,
