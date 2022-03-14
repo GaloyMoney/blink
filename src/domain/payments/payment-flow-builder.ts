@@ -388,6 +388,14 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
 
     return state.btcPaymentAmount
   }
+
+  const usdPaymentAmount = async () => {
+    const state = await Promise.resolve(statePromise)
+    if (state instanceof Error) return state
+
+    return state.usdPaymentAmount
+  }
+
   const needsRoute = async () => {
     const state = await Promise.resolve(statePromise)
     if (state instanceof Error) return state
@@ -399,6 +407,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     withRoute,
     withoutRoute,
     btcPaymentAmount,
+    usdPaymentAmount,
     needsRoute,
   }
 }
@@ -438,6 +447,10 @@ const LPFBWithError = (
     return Promise.resolve(error)
   }
 
+  const usdPaymentAmount = async () => {
+    return Promise.resolve(error)
+  }
+
   return {
     withSenderWallet,
     withoutRecipientWallet,
@@ -448,5 +461,6 @@ const LPFBWithError = (
     withoutRoute,
     needsRoute,
     btcPaymentAmount,
+    usdPaymentAmount,
   }
 }
