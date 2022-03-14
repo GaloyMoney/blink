@@ -1,6 +1,7 @@
 type WalletInvoiceFactoryArgs = {
   registeredInvoice: RegisteredInvoice
   cents: UsdCents | undefined
+  secret: SecretPreImage
 }
 
 type WalletInvoiceFactory = {
