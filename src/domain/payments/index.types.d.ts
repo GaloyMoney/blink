@@ -44,7 +44,7 @@ type LPFBWithInvoice<S extends WalletCurrency> = {
 }
 
 type LPFBWithSenderWallet<S extends WalletCurrency> = {
-  isIntraledger(): boolean
+  isIntraLedger(): boolean
   withoutRecipientWallet<R extends WalletCurrency>():
     | LPFBWithRecipientWallet<S, R>
     | LPFBWithError
@@ -95,7 +95,7 @@ type LPFBWithError = {
   withConversion(): LPFBWithError
   withRoute(): Promise<ValidationError | DealerPriceServiceError>
   withoutRoute(): Promise<ValidationError | DealerPriceServiceError>
-  isIntraledger(): Promise<ValidationError | DealerPriceServiceError>
+  isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
   btcPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
 }
 

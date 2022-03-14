@@ -253,7 +253,9 @@ export const DealerPriceService = (): IDealerPriceService => {
   }
 }
 
-export const NewDealerPriceService = (): IDealerPriceServiceNew => {
+export const NewDealerPriceService = (
+  timeToExpiryInSeconds: Seconds,
+): IDealerPriceServiceNew => {
   const getCentsFromSatsForImmediateBuy = async function (
     btcAmount: BtcPaymentAmount,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError> {
@@ -297,7 +299,6 @@ export const NewDealerPriceService = (): IDealerPriceServiceNew => {
 
   const getCentsFromSatsForFutureBuy = async function (
     btcAmount: BtcPaymentAmount,
-    timeToExpiryInSeconds: Seconds,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError> {
     try {
       const response = await clientGetCentsFromSatsForFutureBuy(
@@ -317,7 +318,6 @@ export const NewDealerPriceService = (): IDealerPriceServiceNew => {
 
   const getCentsFromSatsForFutureSell = async function (
     btcAmount: BtcPaymentAmount,
-    timeToExpiryInSeconds: Seconds,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError> {
     try {
       const response = await clientGetCentsFromSatsForFutureSell(
@@ -378,7 +378,6 @@ export const NewDealerPriceService = (): IDealerPriceServiceNew => {
 
   const getSatsFromCentsForFutureBuy = async function (
     usdAmount: UsdPaymentAmount,
-    timeToExpiryInSeconds: Seconds,
   ): Promise<BtcPaymentAmount | DealerPriceServiceError> {
     try {
       const response = await clientGetSatsFromCentsForFutureBuy(
@@ -398,7 +397,6 @@ export const NewDealerPriceService = (): IDealerPriceServiceNew => {
 
   const getSatsFromCentsForFutureSell = async function (
     usdAmount: UsdPaymentAmount,
-    timeToExpiryInSeconds: Seconds,
   ): Promise<BtcPaymentAmount | DealerPriceServiceError> {
     try {
       const response = await clientGetSatsFromCentsForFutureSell(

@@ -65,7 +65,9 @@ export const DealerPriceService = (): IDealerPriceService => ({
     toCentsPerSatsRatio((baseRate * CENTS_PER_USD) / SATS_PER_BTC),
 })
 
-export const NewDealerPriceService = (): IDealerPriceServiceNew => ({
+export const NewDealerPriceService = (
+  timeToExpiryInSeconds: Seconds,
+): IDealerPriceServiceNew => ({
   getCentsFromSatsForImmediateBuy: async (
     amount: BtcPaymentAmount,
   ): Promise<UsdPaymentAmount> =>
@@ -78,7 +80,6 @@ export const NewDealerPriceService = (): IDealerPriceServiceNew => ({
     ),
   getCentsFromSatsForFutureBuy: async (
     amount: BtcPaymentAmount,
-    timeToExpiryInSeconds: Seconds,
   ): Promise<UsdPaymentAmount> =>
     paymentAmountFromCents(
       toCents(
@@ -89,7 +90,6 @@ export const NewDealerPriceService = (): IDealerPriceServiceNew => ({
     ),
   getCentsFromSatsForFutureSell: async (
     amount: BtcPaymentAmount,
-    timeToExpiryInSeconds: Seconds,
   ): Promise<UsdPaymentAmount> =>
     paymentAmountFromCents(
       toCents(
@@ -111,7 +111,6 @@ export const NewDealerPriceService = (): IDealerPriceServiceNew => ({
     paymentAmountFromSats(toSats(Math.floor(Number(amount.amount) * sellUsdImmediate))),
   getSatsFromCentsForFutureBuy: async (
     amount: UsdPaymentAmount,
-    timeToExpiryInSeconds: Seconds,
   ): Promise<BtcPaymentAmount> =>
     paymentAmountFromSats(
       toSats(
@@ -122,7 +121,6 @@ export const NewDealerPriceService = (): IDealerPriceServiceNew => ({
     ),
   getSatsFromCentsForFutureSell: async (
     amount: UsdPaymentAmount,
-    timeToExpiryInSeconds: Seconds,
   ): Promise<BtcPaymentAmount> =>
     paymentAmountFromSats(
       toSats(
