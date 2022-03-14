@@ -1,5 +1,5 @@
 import { WalletCurrency } from "@domain/shared"
-import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
+import { WalletInvoicesRepository } from "@services/mongoose"
 import { LightningPaymentFlowBuilder } from "@domain/payments"
 import { NewDealerPriceService } from "@services/dealer-price"
 import { LndService } from "@services/lnd"
