@@ -83,6 +83,22 @@ type LimitsChecker = {
   checkWithdrawal: LimitsCheckerFn
 }
 
+type NewLimiterCheckInputs = {
+  amount: UsdPaymentAmount
+  volumeInWalletCurrency: bigint
+}
+
+type NewLimitsCheckerFn = (args: NewLimiterCheckInputs) => true | LimitsExceededError
+
+type AccountLimitsChecker = {
+  checkIntraledger: NewLimitsCheckerFn
+  checkWithdrawal: NewLimitsCheckerFn
+}
+
+type TwoFALimitsChecker = {
+  checkTwoFA: NewLimitsCheckerFn
+}
+
 interface IAccountsRepository {
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
