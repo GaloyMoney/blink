@@ -1,4 +1,4 @@
-import { decodeInvoice } from "@domain/bitcoin/lightning"
+import { decodeInvoice, defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 import { checkedToWalletId } from "@domain/wallets"
 import { LndService } from "@services/lnd"
 import { PaymentsRepository } from "@services/redis"
@@ -11,7 +11,7 @@ import {
 import { WalletCurrency } from "@domain/shared"
 import { NewDealerPriceService } from "@services/dealer-price"
 
-const dealer = NewDealerPriceService()
+const dealer = NewDealerPriceService(defaultTimeToExpiryInSeconds)
 
 const usdFromBtcMidPriceFn = async (
   amount: BtcPaymentAmount,
@@ -114,17 +114,27 @@ const estimateLightningFee = async ({
 
   const withSenderPaymentBuilder = paymentBuilder.withSenderWallet(senderWallet)
 
-  if (!withSenderPaymentBuilder.isIntraledger()) {
+  if (withSenderPaymentBuilder.isIntraLedger()) {
     const invoicesRepo = WalletInvoicesRepository()
     const walletInvoice = await invoicesRepo.findByPaymentHash(decodedInvoice.paymentHash)
     if (walletInvoice instanceof Error) return walletInvoice
 
-    const { walletId: recipientWalletId } = walletInvoice
-    const recipientWallet = await WalletsRepository().findById(recipientWalletId)
-    if (recipientWallet instanceof Error) return recipientWallet
+    const {
+      walletId: recipientWalletId,
+      currency: recipientsWalletCurrency,
+      cents,
+    } = walletInvoice
+    const usdPaymentAmount =
+      cents !== undefined
+        ? { amount: BigInt(cents), currency: WalletCurrency.Usd }
+        : undefined
 
     const payment = await withSenderPaymentBuilder
-      .withRecipientWallet(recipientWallet)
+      .withRecipientWallet({
+        id: recipientWalletId,
+        currency: recipientsWalletCurrency,
+        usdPaymentAmount,
+      })
       .withConversion({
         usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
         btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
@@ -155,12 +165,8 @@ const estimateLightningFee = async ({
     amount: btcPaymentAmount,
   })
   if (routeResult instanceof Error) return routeResult
-  const { rawRoute } = routeResult
 
-  const payment = await afterConversionPaymentBuilder.withRoute({
-    pubkey: lndService.defaultPubkey(),
-    rawRoute,
-  })
+  const payment = await afterConversionPaymentBuilder.withRoute(routeResult)
   if (payment instanceof Error) return payment
 
   const persistedPayment = await PaymentsRepository().persistNew(payment)

@@ -174,12 +174,12 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
     })
   }
 
-  const isIntraledger = () => state.settlementMethod === SettlementMethod.IntraLedger
+  const isIntraLedger = () => state.settlementMethod === SettlementMethod.IntraLedger
 
   return {
     withoutRecipientWallet,
     withRecipientWallet,
-    isIntraledger,
+    isIntraLedger,
   }
 }
 
@@ -422,7 +422,7 @@ const LPFBWithError = (
     return Promise.resolve(error)
   }
 
-  const isIntraledger = async () => {
+  const isIntraLedger = async () => {
     return Promise.resolve(error)
   }
 
@@ -437,7 +437,7 @@ const LPFBWithError = (
     withConversion,
     withRoute,
     withoutRoute,
-    isIntraledger,
+    isIntraLedger,
     btcPaymentAmount,
   }
 }

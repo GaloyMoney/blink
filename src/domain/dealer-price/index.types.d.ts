@@ -52,11 +52,9 @@ interface IDealerPriceServiceNew {
   ): Promise<UsdPaymentAmount | DealerPriceServiceError>
   getCentsFromSatsForFutureBuy(
     amount: BtcPaymentAmount,
-    timeToExpiryInSeconds: Seconds,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError>
   getCentsFromSatsForFutureSell(
     amount: BtcPaymentAmount,
-    timeToExpiryInSeconds: Seconds,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError>
 
   getSatsFromCentsForImmediateBuy(
@@ -67,11 +65,10 @@ interface IDealerPriceServiceNew {
   ): Promise<BtcPaymentAmount | DealerPriceServiceError>
   getSatsFromCentsForFutureBuy(
     amount: UsdPaymentAmount,
-    timeToExpiryInSeconds: Seconds,
   ): Promise<BtcPaymentAmount | DealerPriceServiceError>
   getSatsFromCentsForFutureSell(
     amount: UsdPaymentAmount,
-    timeToExpiryInSeconds: Seconds,
   ): Promise<BtcPaymentAmount | DealerPriceServiceError>
+
   getCentsPerSatsExchangeMidRate(): Promise<CentsPerSatsRatio | DealerPriceServiceError>
 }
