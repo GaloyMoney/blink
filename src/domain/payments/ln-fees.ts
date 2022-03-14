@@ -1,5 +1,4 @@
-import { WalletCurrency } from "@domain/shared"
-import { ZERO_SATS, ZERO_CENTS } from "@domain/shared"
+import { WalletCurrency, ZERO_SATS, ZERO_CENTS } from "@domain/shared"
 
 export const FEECAP_PERCENT = 2n
 

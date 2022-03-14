@@ -4,8 +4,8 @@ export const AmountConverter = ({
   dealerFns,
 }: AmountConverterConfig): AmountConverter => {
   const addAmountsForFutureBuy = async <S extends WalletCurrency>(
-    builder: LightningPaymentFlowBuilder<S>,
-  ): Promise<LightningPaymentFlowBuilder<S> | DealerPriceServiceError> => {
+    builder: LightningPaymentFlowBuilderOld<S>,
+  ): Promise<LightningPaymentFlowBuilderOld<S> | DealerPriceServiceError> => {
     const btcAmount = builder.btcPaymentAmount()
     if (btcAmount === undefined) {
       const usdAmount = builder.usdPaymentAmount()
