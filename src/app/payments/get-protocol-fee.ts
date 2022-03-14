@@ -13,6 +13,30 @@ import { NewDealerPriceService } from "@services/dealer-price"
 
 const dealer = NewDealerPriceService()
 
+const usdFromBtcMidPriceFn = async (
+  amount: BtcPaymentAmount,
+): Promise<UsdPaymentAmount | DealerPriceServiceError> => {
+  const midPriceRatio = await dealer.getCentsPerSatsExchangeMidRate()
+  if (midPriceRatio instanceof Error) return midPriceRatio
+
+  return {
+    amount: BigInt(Math.ceil(Number(amount.amount) * midPriceRatio)),
+    currency: WalletCurrency.Usd,
+  }
+}
+
+const btcFromUsdMidPriceFn = async (
+  amount: UsdPaymentAmount,
+): Promise<BtcPaymentAmount | DealerPriceServiceError> => {
+  const midPriceRatio = await dealer.getCentsPerSatsExchangeMidRate()
+  if (midPriceRatio instanceof Error) return midPriceRatio
+
+  return {
+    amount: BigInt(Math.ceil(Number(amount.amount) / midPriceRatio)),
+    currency: WalletCurrency.Btc,
+  }
+}
+
 export const getLightningFeeEstimation = async ({
   walletId,
   paymentRequest,
@@ -102,8 +126,8 @@ const estimateLightningFee = async ({
     const payment = await withSenderPaymentBuilder
       .withRecipientWallet(recipientWallet)
       .withConversion({
-        usdFromBtc,
-        btcFromUsd,
+        usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+        btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
       })
       .withoutRoute()
     if (payment instanceof Error) return payment
