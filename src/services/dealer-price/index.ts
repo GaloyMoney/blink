@@ -9,6 +9,7 @@ import { WalletCurrency } from "@domain/shared"
 import { UnknownDealerPriceServiceError } from "@domain/dealer-price"
 
 import { toSats } from "@domain/bitcoin"
+import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 
 import { toCents, toCentsPerSatsRatio } from "@domain/fiat"
 
@@ -254,7 +255,7 @@ export const DealerPriceService = (): IDealerPriceService => {
 }
 
 export const NewDealerPriceService = (
-  timeToExpiryInSeconds: Seconds,
+  timeToExpiryInSeconds: Seconds = defaultTimeToExpiryInSeconds,
 ): IDealerPriceServiceNew => {
   const getCentsFromSatsForImmediateBuy = async function (
     btcAmount: BtcPaymentAmount,

@@ -1,6 +1,9 @@
+import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 import { UnknownRepositoryError } from "@domain/errors"
 
-export const PaymentsRepository = (): IPaymentFlowRepository => {
+export const PaymentsRepository = (
+  expiryTimeInSeconds: Seconds = defaultTimeToExpiryInSeconds,
+): IPaymentFlowRepository => {
   const persistNew = async <S extends WalletCurrency, R extends WalletCurrency>(
     payment: PaymentFlow<S, R>,
   ): Promise<PaymentFlow<S, R> | RepositoryError> => {

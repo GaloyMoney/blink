@@ -1,8 +1,9 @@
+import { WalletCurrency } from "@domain/shared"
 import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
   CouldNotFindLightningPaymentFlowError,
-  LightningPaymentFlowBuilderOld,
+  LightningPaymentFlowBuilder,
 } from "@domain/payments"
 import { checkedToWalletId } from "@domain/wallets"
 import {
@@ -16,6 +17,8 @@ import {
 import { LndService } from "@services/lnd"
 import { WalletsRepository } from "@services/mongoose"
 import { PaymentsRepository } from "@services/redis"
+
+import { constructPaymentFlowBuilder } from "./helpers"
 
 export const payInvoiceByWalletId = async ({
   paymentRequest,
@@ -41,7 +44,10 @@ export const payInvoiceByWalletId = async ({
     return new LnPaymentRequestNonZeroAmountRequiredError()
   }
 
-  const paymentFlow = await PaymentsRepository().findLightningPaymentFlow({
+  const senderWallet = await WalletsRepository().findById(senderWalletId)
+  if (senderWallet instanceof Error) return senderWallet
+
+  let paymentFlow = await PaymentsRepository().findLightningPaymentFlow({
     walletId: senderWalletId,
     paymentHash: decodedInvoice.paymentHash,
     inputAmount: lnInvoiceAmount.amount,
@@ -50,22 +56,15 @@ export const payInvoiceByWalletId = async ({
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
-  let builder: LightningPaymentFlowBuilderOld<WalletCurrency> | undefined
   if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
-    const senderWallet = await WalletsRepository().findById(senderWalletId)
-    if (senderWallet instanceof Error) return senderWallet
-
-    builder = LightningPaymentFlowBuilderOld({
-      localNodeIds: lndService.listAllPubkeys(),
+    const builder = await constructPaymentFlowBuilder({
+      senderWallet,
+      invoice: decodedInvoice,
     })
-      .withSenderWallet(senderWallet)
-      .withInvoice(decodedInvoice)
-  } else {
-    builder = LightningPaymentFlowBuilderOld({
-      localNodeIds: lndService.listAllPubkeys(),
-      ...paymentFlow,
-    })
+    if (builder instanceof Error) return builder
+    paymentFlow = await builder.withoutRoute()
   }
+  if (paymentFlow instanceof Error) return paymentFlow
 
   // look up if payment flow exists
   // if not use builder

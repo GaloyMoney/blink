@@ -167,10 +167,10 @@ interface ILightningService {
   }): Promise<RawRoute | LightningServiceError>
 
   findRouteForInvoiceNew({
-    decodedInvoice,
+    invoice,
     amount,
   }: {
-    decodedInvoice: LnInvoice
+    invoice: LnInvoice
     amount?: BtcPaymentAmount
   }): Promise<{ pubkey: Pubkey; rawRoute: RawRoute } | LightningServiceError>
 

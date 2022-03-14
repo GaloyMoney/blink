@@ -1,8 +1,8 @@
-import { decodeInvoice, defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
+import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { checkedToWalletId } from "@domain/wallets"
 import { LndService } from "@services/lnd"
 import { PaymentsRepository } from "@services/redis"
-import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
+import { WalletsRepository } from "@services/mongoose"
 import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
@@ -11,31 +11,7 @@ import {
 import { WalletCurrency } from "@domain/shared"
 import { NewDealerPriceService } from "@services/dealer-price"
 
-const dealer = NewDealerPriceService(defaultTimeToExpiryInSeconds)
-
-const usdFromBtcMidPriceFn = async (
-  amount: BtcPaymentAmount,
-): Promise<UsdPaymentAmount | DealerPriceServiceError> => {
-  const midPriceRatio = await dealer.getCentsPerSatsExchangeMidRate()
-  if (midPriceRatio instanceof Error) return midPriceRatio
-
-  return {
-    amount: BigInt(Math.ceil(Number(amount.amount) * midPriceRatio)),
-    currency: WalletCurrency.Usd,
-  }
-}
-
-const btcFromUsdMidPriceFn = async (
-  amount: UsdPaymentAmount,
-): Promise<BtcPaymentAmount | DealerPriceServiceError> => {
-  const midPriceRatio = await dealer.getCentsPerSatsExchangeMidRate()
-  if (midPriceRatio instanceof Error) return midPriceRatio
-
-  return {
-    amount: BigInt(Math.ceil(Number(amount.amount) / midPriceRatio)),
-    currency: WalletCurrency.Btc,
-  }
-}
+import { constructPaymentFlowBuilder } from "./helpers"
 
 export const getLightningFeeEstimation = async ({
   walletId,
@@ -50,19 +26,9 @@ export const getLightningFeeEstimation = async ({
     return new LnPaymentRequestNonZeroAmountRequiredError()
   }
 
-  const lndService = LndService()
-  if (lndService instanceof Error) return lndService
-
-  const paymentBuilder = LightningPaymentFlowBuilder({
-    localNodeIds: lndService.listAllPubkeys(),
-    usdFromBtcMidPriceFn,
-    btcFromUsdMidPriceFn,
-  }).withInvoice(decodedInvoice)
-
   return estimateLightningFee({
     uncheckedSenderWalletId: walletId,
-    decodedInvoice,
-    paymentBuilder,
+    invoice: decodedInvoice,
   })
 }
 
@@ -81,30 +47,21 @@ export const getNoAmountLightningFeeEstimation = async ({
     return new LnPaymentRequestZeroAmountRequiredError()
   }
 
-  const lndService = LndService()
-  if (lndService instanceof Error) return lndService
-
-  const paymentBuilder: LPFBWithInvoice<WalletCurrency> = LightningPaymentFlowBuilder({
-    localNodeIds: lndService.listAllPubkeys(),
-    usdFromBtcMidPriceFn,
-    btcFromUsdMidPriceFn,
-  }).withNoAmountInvoice({ invoice: decodedInvoice, uncheckedAmount: amount })
-
   return estimateLightningFee({
     uncheckedSenderWalletId: walletId,
-    decodedInvoice,
-    paymentBuilder,
+    invoice: decodedInvoice,
+    uncheckedAmount: amount,
   })
 }
 
 const estimateLightningFee = async ({
   uncheckedSenderWalletId,
-  decodedInvoice,
-  paymentBuilder,
+  invoice,
+  uncheckedAmount,
 }: {
   uncheckedSenderWalletId: string
-  decodedInvoice: LnInvoice
-  paymentBuilder: LPFBWithInvoice<WalletCurrency>
+  invoice: LnInvoice
+  uncheckedAmount?: number
 }): Promise<PaymentAmount<WalletCurrency> | ApplicationError> => {
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
   if (senderWalletId instanceof Error) return senderWalletId
@@ -112,64 +69,34 @@ const estimateLightningFee = async ({
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
 
-  const withSenderPaymentBuilder = paymentBuilder.withSenderWallet(senderWallet)
-
-  if (withSenderPaymentBuilder.isIntraLedger()) {
-    const invoicesRepo = WalletInvoicesRepository()
-    const walletInvoice = await invoicesRepo.findByPaymentHash(decodedInvoice.paymentHash)
-    if (walletInvoice instanceof Error) return walletInvoice
-
-    const {
-      walletId: recipientWalletId,
-      currency: recipientsWalletCurrency,
-      cents,
-    } = walletInvoice
-    const usdPaymentAmount =
-      cents !== undefined
-        ? { amount: BigInt(cents), currency: WalletCurrency.Usd }
-        : undefined
-
-    const payment = await withSenderPaymentBuilder
-      .withRecipientWallet({
-        id: recipientWalletId,
-        currency: recipientsWalletCurrency,
-        usdPaymentAmount,
-      })
-      .withConversion({
-        usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
-        btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
-      })
-      .withoutRoute()
-    if (payment instanceof Error) return payment
-
-    const persistedPayment = await PaymentsRepository().persistNew(payment)
-    if (persistedPayment instanceof Error) return persistedPayment
-
-    return persistedPayment.protocolFeeInSenderWalletCurrency()
-  }
-
-  const afterConversionPaymentBuilder = withSenderPaymentBuilder
-    .withoutRecipientWallet()
-    .withConversion({
-      usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
-      btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
-    })
-
-  const btcPaymentAmount = await afterConversionPaymentBuilder.btcPaymentAmount()
-  if (btcPaymentAmount instanceof Error) return btcPaymentAmount
-
-  const lndService = LndService()
-  if (lndService instanceof Error) return lndService
-  const routeResult = await lndService.findRouteForInvoiceNew({
-    decodedInvoice,
-    amount: btcPaymentAmount,
+  const builder = await constructPaymentFlowBuilder({
+    senderWallet,
+    invoice,
+    uncheckedAmount,
   })
-  if (routeResult instanceof Error) return routeResult
+  if (builder instanceof Error) return builder
+  builder.btcPaymentAmount()
 
-  const payment = await afterConversionPaymentBuilder.withRoute(routeResult)
-  if (payment instanceof Error) return payment
+  let paymentFlow
+  if (await builder.needsRoute()) {
+    paymentFlow = await builder.withoutRoute()
+  } else {
+    const btcPaymentAmount = await builder.btcPaymentAmount()
+    if (btcPaymentAmount instanceof Error) return btcPaymentAmount
 
-  const persistedPayment = await PaymentsRepository().persistNew(payment)
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
+    const routeResult = await lndService.findRouteForInvoiceNew({
+      invoice,
+      amount: btcPaymentAmount,
+    })
+    if (routeResult instanceof Error) return routeResult
+
+    paymentFlow = await builder.withRoute(routeResult)
+  }
+  if (paymentFlow instanceof Error) return paymentFlow
+
+  const persistedPayment = await PaymentsRepository().persistNew(paymentFlow)
   if (persistedPayment instanceof Error) return persistedPayment
 
   return persistedPayment.protocolFeeInSenderWalletCurrency()
