@@ -2,18 +2,14 @@ import { toSats } from "@domain/bitcoin"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { WalletCurrency } from "@domain/shared"
 
-let btcWallet: Wallet
-
-beforeAll(() => {
-  btcWallet = {
-    id: "walletId" as WalletId,
-    type: "checking",
-    currency: WalletCurrency.Btc,
-    accountId: "a1" as AccountId,
-    onChainAddressIdentifiers: [],
-    onChainAddresses: () => [],
-  }
-})
+const btcWallet: Wallet = {
+  id: "walletId" as WalletId,
+  type: "checking",
+  currency: WalletCurrency.Btc,
+  accountId: "a1" as AccountId,
+  onChainAddressIdentifiers: [],
+  onChainAddresses: () => [],
+}
 
 const VolumeAfterLightningReceiptFn = () =>
   Promise.resolve({ outgoingBaseAmount: toSats(0), incomingBaseAmount: toSats(500) })
