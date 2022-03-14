@@ -8,10 +8,10 @@ import { PaymentFlow } from "./payment-flow"
 
 export const LightningPaymentFlowBuilderOld = <S extends WalletCurrency>(
   builderState: LightningPaymentBuilderState<S>,
-): LightningPaymentFlowBuilder<S> => {
+): LightningPaymentFlowBuilderOld<S> => {
   const withSenderWallet = (
     senderWallet: WalletDescriptor<S>,
-  ): LightningPaymentFlowBuilder<S> => {
+  ): LightningPaymentFlowBuilderOld<S> => {
     if (builderState.validationError) {
       return LightningPaymentFlowBuilderOld(builderState)
     }
@@ -64,7 +64,7 @@ export const LightningPaymentFlowBuilderOld = <S extends WalletCurrency>(
     })
   }
 
-  const withInvoice = (invoice: LnInvoice): LightningPaymentFlowBuilder<S> => {
+  const withInvoice = (invoice: LnInvoice): LightningPaymentFlowBuilderOld<S> => {
     const newState = {
       btcPaymentAmount: invoice.paymentAmount || undefined,
       inputAmount: invoice.paymentAmount?.amount || undefined,
@@ -88,7 +88,7 @@ export const LightningPaymentFlowBuilderOld = <S extends WalletCurrency>(
     }
   }
 
-  const withUncheckedAmount = (amount: number): LightningPaymentFlowBuilder<S> => {
+  const withUncheckedAmount = (amount: number): LightningPaymentFlowBuilderOld<S> => {
     const builder = LightningPaymentFlowBuilderOld({
       ...builderState,
       uncheckedAmount: amount,
@@ -103,7 +103,7 @@ export const LightningPaymentFlowBuilderOld = <S extends WalletCurrency>(
     return builder
   }
 
-  const withBtcAmount = (amount: BtcPaymentAmount): LightningPaymentFlowBuilder<S> => {
+  const withBtcAmount = (amount: BtcPaymentAmount): LightningPaymentFlowBuilderOld<S> => {
     const btcPaymentAmountState: Partial<LightningPaymentBuilderState<S>> = {}
     if (builderState.btcPaymentAmount === undefined) {
       btcPaymentAmountState.btcPaymentAmount = amount
@@ -120,7 +120,7 @@ export const LightningPaymentFlowBuilderOld = <S extends WalletCurrency>(
   }: {
     pubkey: Pubkey
     rawRoute: RawRoute
-  }): LightningPaymentFlowBuilder<S> => {
+  }): LightningPaymentFlowBuilderOld<S> => {
     const btcProtocolFee = LnFees().feeFromRawRoute(rawRoute)
     let usdProtocolFee: UsdPaymentAmount | undefined = undefined
     if (builderState.btcPaymentAmount && builderState.usdPaymentAmount) {

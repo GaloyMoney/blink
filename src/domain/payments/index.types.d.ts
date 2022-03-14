@@ -153,8 +153,8 @@ type AmountConverterConfig = {
 }
 type AmountConverter = {
   addAmountsForFutureBuy<S extends WalletCurrency>(
-    builder: LightningPaymentFlowBuilder<S>,
-  ): Promise<LightningPaymentFlowBuilder<S> | DealerPriceServiceError>
+    builder: LightningPaymentFlowBuilderOld<S>,
+  ): Promise<LightningPaymentFlowBuilderOld<S> | DealerPriceServiceError>
 }
 
 type LightningPaymentFlowBuilderConfig = {

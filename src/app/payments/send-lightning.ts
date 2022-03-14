@@ -50,7 +50,7 @@ export const payInvoiceByWalletId = async ({
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
-  let builder: LightningPaymentFlowBuilder<WalletCurrency> | undefined
+  let builder: LightningPaymentFlowBuilderOld<WalletCurrency> | undefined
   if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
     const senderWallet = await WalletsRepository().findById(senderWalletId)
     if (senderWallet instanceof Error) return senderWallet
