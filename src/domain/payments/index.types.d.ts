@@ -27,18 +27,91 @@ type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFl
 }
 
 type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
-  withSenderWallet(senderWallet: WalletDescriptor<S>): LightningPaymentFlowBuilder<S>
-  withInvoice(invoice: LnInvoice): LightningPaymentFlowBuilder<S>
-  withUncheckedAmount(amount: number): LightningPaymentFlowBuilder<S>
-  withBtcAmount(amount: BtcPaymentAmount): LightningPaymentFlowBuilder<S>
+  withInvoice(invoice: LnInvoice): LPFBWithInvoice<S> | LPFBWithError
+  withNoAmountInvoice({
+    invoice,
+    uncheckedAmount,
+  }: {
+    invoice: LnInvoice
+    uncheckedAmount: number
+  }): LPFBWithInvoice<S> | LPFBWithError
+}
+
+type LPFBWithInvoice<S extends WalletCurrency> = {
+  withSenderWallet(
+    senderWallet: WalletDescriptor<S>,
+  ): LPFBWithSenderWallet<S> | LPFBWithError
+}
+
+type LPFBWithSenderWallet<S extends WalletCurrency> = {
+  isIntraledger(): boolean
+  withoutRecipientWallet<R extends WalletCurrency>():
+    | LPFBWithRecipientWallet<S, R>
+    | LPFBWithError
+  withRecipientWallet<R extends WalletCurrency>({
+    id: recipientWalletId,
+    currency: recipientWalletCurrency,
+    usdPaymentAmount,
+  }: WalletDescriptor<R> & {
+    usdPaymentAmount?: UsdPaymentAmount
+  }): LPFBWithRecipientWallet<S, R> | LPFBWithError
+}
+
+type LPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {
+  withConversion({
+    usdFromBtc,
+    btcFromUsd,
+  }: {
+    usdFromBtc(
+      amount: BtcPaymentAmount,
+    ): Promise<UsdPaymentAmount | DealerPriceServiceError>
+    btcFromUsd(
+      amount: UsdPaymentAmount,
+    ): Promise<BtcPaymentAmount | DealerPriceServiceError>
+  }): LPFBWithConversion<S, R> | LPFBWithError
+}
+
+type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
+  withRoute({
+    pubkey,
+    rawRoute,
+  }: {
+    pubkey: Pubkey
+    rawRoute: RawRoute
+  }): Promise<PaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
+  withoutRoute(): Promise<PaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
+
+  btcPaymentAmount(): Promise<BtcPaymentAmount | DealerPriceServiceError>
+}
+
+type LPFBTest = {
+  withSenderWallet(): LPFBTest
+}
+
+type LPFBWithError = {
+  withSenderWallet(): LPFBWithError
+  withoutRecipientWallet(): LPFBWithError
+  withRecipientWallet(): LPFBWithError
+  withConversion(): LPFBWithError
+  withRoute(): Promise<ValidationError | DealerPriceServiceError>
+  withoutRoute(): Promise<ValidationError | DealerPriceServiceError>
+  isIntraledger(): Promise<ValidationError | DealerPriceServiceError>
+  btcPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
+}
+
+type LightningPaymentFlowBuilderOld<S extends WalletCurrency> = {
+  withSenderWallet(senderWallet: WalletDescriptor<S>): LightningPaymentFlowBuilderOld<S>
+  withInvoice(invoice: LnInvoice): LightningPaymentFlowBuilderOld<S>
+  withUncheckedAmount(amount: number): LightningPaymentFlowBuilderOld<S>
+  withBtcAmount(amount: BtcPaymentAmount): LightningPaymentFlowBuilderOld<S>
   withRouteResult(routeResult: {
     pubkey: Pubkey
     rawRoute: RawRoute
-  }): LightningPaymentFlowBuilder<S>
+  }): LightningPaymentFlowBuilderOld<S>
   needsProtocolFee(): boolean
   btcPaymentAmount(): BtcPaymentAmount | undefined
   usdPaymentAmount(): UsdPaymentAmount | undefined
-  payment(): PaymentFlowOld<S> | ValidationError
+  payment(): PaymentFlow<S, WalletCurrency> | ValidationError
 }
 
 type LightningPaymentBuilderState<S extends WalletCurrency> = {
@@ -62,8 +135,8 @@ type LightningPaymentBuilderState<S extends WalletCurrency> = {
 
 interface IPaymentFlowRepository {
   persistNew<S extends WalletCurrency>(
-    payment: PaymentFlowOld<S>,
-  ): Promise<PaymentFlowOld<S> | RepositoryError>
+    payment: PaymentFlow<S, WalletCurrency>,
+  ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
   findLightningPaymentFlow<S extends WalletCurrency>({
     walletId,
     paymentHash,
@@ -72,7 +145,7 @@ interface IPaymentFlowRepository {
     walletId: WalletId
     paymentHash: PaymentHash
     inputAmount: BigInt
-  }): Promise<PaymentFlowOld<S> | RepositoryError>
+  }): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
 }
 
 type AmountConverterConfig = {
