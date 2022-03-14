@@ -1,6 +1,6 @@
 import { SettlementMethod, PaymentInitiationMethod } from "@domain/wallets"
-import { SelfPaymentError } from "@domain/errors"
 import { decodeInvoice } from "@domain/bitcoin/lightning"
+import { SelfPaymentError } from "@domain/errors"
 import {
   LightningPaymentFlowBuilder,
   LnFees,
@@ -23,8 +23,12 @@ describe("LightningPaymentFlowBuilder", () => {
     id: "recipientWalletId" as WalletId,
     currency: WalletCurrency.Btc,
   }
-  const usdWallet = {
+  const senderUsdWallet = {
     id: "walletId" as WalletId,
+    currency: WalletCurrency.Usd,
+  }
+  const recipientUsdWallet = {
+    id: "recipientWalletId" as WalletId,
     currency: WalletCurrency.Usd,
   }
   const pubkey = "pubkey" as Pubkey
@@ -35,6 +39,12 @@ describe("LightningPaymentFlowBuilder", () => {
     return Promise.resolve({
       amount: amount.amount * midPriceRatio,
       currency: WalletCurrency.Usd,
+    })
+  }
+  const btcFromUsdMidPriceFn = async (amount: UsdPaymentAmount) => {
+    return Promise.resolve({
+      amount: amount.amount / midPriceRatio,
+      currency: WalletCurrency.Btc,
     })
   }
   const usdFromBtc = async (amount: BtcPaymentAmount) => {
@@ -50,17 +60,48 @@ describe("LightningPaymentFlowBuilder", () => {
     })
   }
 
-  describe("invoice with amount", () => {
-    describe("with btc wallet", () => {
-      describe("not intraledger", () => {
-        it("can build a PaymentFlow", async () => {
-          const payment = await LightningPaymentFlowBuilder({
-            localNodeIds: [],
-            usdFromBtcMidPriceFn,
-          })
-            .withInvoice(invoiceWithAmount)
-            .withSenderWallet(senderBtcWallet)
-            .withoutRecipientWallet()
+  describe("not intraledger", () => {
+    const lightningBuilder = LightningPaymentFlowBuilder({
+      localNodeIds: [],
+      usdFromBtcMidPriceFn,
+      btcFromUsdMidPriceFn,
+    })
+    const checkSettlementMethod = (payment) => {
+      expect(payment).toEqual(
+        expect.objectContaining({
+          settlementMethod: SettlementMethod.Lightning,
+          paymentInitiationMethod: PaymentInitiationMethod.Lightning,
+        }),
+      )
+    }
+
+    describe("invoice with amount", () => {
+      const withAmountBuilder = lightningBuilder.withInvoice(invoiceWithAmount)
+      const checkInvoice = (payment) => {
+        expect(payment).toEqual(
+          expect.objectContaining({
+            btcPaymentAmount: invoiceWithAmount.paymentAmount,
+            inputAmount: invoiceWithAmount.paymentAmount?.amount,
+          }),
+        )
+      }
+
+      describe("with btc wallet", () => {
+        const withBtcWalletBuilder = withAmountBuilder
+          .withSenderWallet(senderBtcWallet)
+          .withoutRecipientWallet()
+
+        const checkSenderWallet = (payment) => {
+          expect(payment).toEqual(
+            expect.objectContaining({
+              senderWalletId: senderBtcWallet.id,
+              senderWalletCurrency: senderBtcWallet.currency,
+            }),
+          )
+        }
+
+        it("uses mid price and max fees", async () => {
+          const payment = await withBtcWalletBuilder
             .withConversion({
               usdFromBtc,
               btcFromUsd,
@@ -74,19 +115,13 @@ describe("LightningPaymentFlowBuilder", () => {
               midPriceRatio,
             currency: WalletCurrency.Usd,
           }
+
+          checkSettlementMethod(payment)
+          checkInvoice(payment)
+          checkSenderWallet(payment)
           expect(payment).toEqual(
             expect.objectContaining({
-              senderWalletId: senderBtcWallet.id,
-              senderWalletCurrency: senderBtcWallet.currency,
-
-              paymentHash: invoiceWithAmount.paymentHash,
-              btcPaymentAmount: invoiceWithAmount.paymentAmount,
               usdPaymentAmount,
-              inputAmount: invoiceWithAmount.paymentAmount?.amount,
-
-              settlementMethod: SettlementMethod.Lightning,
-              paymentInitiationMethod: PaymentInitiationMethod.Lightning,
-
               btcProtocolFee: LnFees().maxProtocolFee(
                 invoiceWithAmount.paymentAmount as BtcPaymentAmount,
               ),
@@ -94,17 +129,239 @@ describe("LightningPaymentFlowBuilder", () => {
             }),
           )
         })
-      })
-      describe("intraledger", () => {
-        describe("with btc recipient", () => {
-          it("can build a PaymentFlow", async () => {
-            const payment = await LightningPaymentFlowBuilder({
-              localNodeIds: [invoiceWithAmount.destination],
-              usdFromBtcMidPriceFn,
+
+        it("can take fees from a route", async () => {
+          const payment = await withBtcWalletBuilder
+            .withConversion({
+              usdFromBtc,
+              btcFromUsd,
             })
-              .withInvoice(invoiceWithAmount)
-              .withSenderWallet(senderBtcWallet)
-              .withRecipientWallet(recipientBtcWallet)
+            .withRoute({
+              pubkey,
+              rawRoute,
+            })
+          if (payment instanceof Error) throw payment
+
+          checkSettlementMethod(payment)
+          checkInvoice(payment)
+          checkSenderWallet(payment)
+
+          const btcProtocolFee = LnFees().feeFromRawRoute(rawRoute)
+          expect(payment).toEqual(
+            expect.objectContaining({
+              btcProtocolFee,
+              usdProtocolFee: {
+                amount: btcProtocolFee.amount * midPriceRatio,
+                currency: WalletCurrency.Usd,
+              },
+              outgoingNodePubkey: pubkey,
+              cachedRoute: rawRoute,
+            }),
+          )
+        })
+      })
+
+      describe("with usd wallet", () => {
+        const withUsdWalletBuilder = withAmountBuilder
+          .withSenderWallet(senderUsdWallet)
+          .withoutRecipientWallet()
+
+        const checkSenderWallet = (payment) => {
+          expect(payment).toEqual(
+            expect.objectContaining({
+              senderWalletId: senderUsdWallet.id,
+              senderWalletCurrency: senderUsdWallet.currency,
+            }),
+          )
+        }
+
+        it("uses dealer price", async () => {
+          const payment = await withUsdWalletBuilder
+            .withConversion({
+              usdFromBtc,
+              btcFromUsd,
+            })
+            .withoutRoute()
+          if (payment instanceof Error) throw payment
+
+          const usdPaymentAmount = {
+            amount:
+              (invoiceWithAmount.paymentAmount as BtcPaymentAmount).amount *
+              dealerPriceRatio,
+            currency: WalletCurrency.Usd,
+          }
+
+          checkSettlementMethod(payment)
+          checkInvoice(payment)
+          checkSenderWallet(payment)
+          expect(payment).toEqual(
+            expect.objectContaining({
+              usdPaymentAmount,
+            }),
+          )
+        })
+      })
+    })
+
+    describe("invoice with no amount", () => {
+      const uncheckedAmount = 10000n
+      const withAmountBuilder = lightningBuilder.withNoAmountInvoice({
+        invoice: invoiceWithNoAmount,
+        uncheckedAmount: Number(uncheckedAmount),
+      })
+      const checkInvoice = (payment) => {
+        expect(payment).toEqual(
+          expect.objectContaining({
+            inputAmount: uncheckedAmount,
+          }),
+        )
+      }
+
+      describe("with btc wallet", () => {
+        const withBtcWalletBuilder = withAmountBuilder
+          .withSenderWallet(senderBtcWallet)
+          .withoutRecipientWallet()
+
+        const checkSenderWallet = (payment) => {
+          expect(payment).toEqual(
+            expect.objectContaining({
+              senderWalletId: senderBtcWallet.id,
+              senderWalletCurrency: senderBtcWallet.currency,
+              btcPaymentAmount: {
+                amount: uncheckedAmount,
+                currency: WalletCurrency.Btc,
+              },
+            }),
+          )
+        }
+
+        it("uses mid price and max fees", async () => {
+          const payment = await withBtcWalletBuilder
+            .withConversion({
+              usdFromBtc,
+              btcFromUsd,
+            })
+            .withoutRoute()
+          if (payment instanceof Error) throw payment
+
+          const usdPaymentAmount = {
+            amount: uncheckedAmount * midPriceRatio,
+            currency: WalletCurrency.Usd,
+          }
+
+          checkSettlementMethod(payment)
+          checkInvoice(payment)
+          checkSenderWallet(payment)
+          expect(payment).toEqual(
+            expect.objectContaining({
+              usdPaymentAmount,
+              btcProtocolFee: LnFees().maxProtocolFee({
+                amount: uncheckedAmount,
+                currency: WalletCurrency.Btc,
+              }),
+              usdProtocolFee: LnFees().maxProtocolFee(usdPaymentAmount),
+            }),
+          )
+        })
+      })
+
+      describe("with usd wallet", () => {
+        const withUsdWalletBuilder = withAmountBuilder
+          .withSenderWallet(senderUsdWallet)
+          .withoutRecipientWallet()
+
+        const checkSenderWallet = (payment) => {
+          expect(payment).toEqual(
+            expect.objectContaining({
+              senderWalletId: senderUsdWallet.id,
+              senderWalletCurrency: senderUsdWallet.currency,
+              usdPaymentAmount: {
+                amount: uncheckedAmount,
+                currency: WalletCurrency.Usd,
+              },
+            }),
+          )
+        }
+
+        it("uses dealer price", async () => {
+          const payment = await withUsdWalletBuilder
+            .withConversion({
+              usdFromBtc,
+              btcFromUsd,
+            })
+            .withoutRoute()
+          if (payment instanceof Error) throw payment
+
+          const btcPaymentAmount = {
+            amount: uncheckedAmount / dealerPriceRatio,
+            currency: WalletCurrency.Btc,
+          }
+
+          checkSettlementMethod(payment)
+          checkInvoice(payment)
+          checkSenderWallet(payment)
+          expect(payment).toEqual(
+            expect.objectContaining({
+              btcPaymentAmount,
+              btcProtocolFee: LnFees().maxProtocolFee(btcPaymentAmount),
+            }),
+          )
+        })
+      })
+    })
+  })
+
+  describe("intraledger", () => {
+    const intraledgerBuilder = LightningPaymentFlowBuilder({
+      localNodeIds: [invoiceWithAmount.destination, invoiceWithNoAmount.destination],
+      usdFromBtcMidPriceFn,
+      btcFromUsdMidPriceFn,
+    })
+    const checkSettlementMethod = (payment) => {
+      expect(payment).toEqual(
+        expect.objectContaining({
+          settlementMethod: SettlementMethod.IntraLedger,
+          paymentInitiationMethod: PaymentInitiationMethod.Lightning,
+          btcProtocolFee: LnFees().intraLedgerFees().btc,
+          usdProtocolFee: LnFees().intraLedgerFees().usd,
+        }),
+      )
+    }
+    describe("invoice with amount", () => {
+      const withAmountBuilder = intraledgerBuilder.withInvoice(invoiceWithAmount)
+      const checkInvoice = (payment) => {
+        expect(payment).toEqual(
+          expect.objectContaining({
+            btcPaymentAmount: invoiceWithAmount.paymentAmount,
+            inputAmount: invoiceWithAmount.paymentAmount?.amount,
+          }),
+        )
+      }
+      describe("with btc wallet", () => {
+        const withBtcWalletBuilder = withAmountBuilder.withSenderWallet(senderBtcWallet)
+
+        const checkSenderWallet = (payment) => {
+          expect(payment).toEqual(
+            expect.objectContaining({
+              senderWalletId: senderBtcWallet.id,
+              senderWalletCurrency: senderBtcWallet.currency,
+            }),
+          )
+        }
+
+        describe("with btc recipient", () => {
+          const withBtcRecipientBuilder =
+            withBtcWalletBuilder.withRecipientWallet(recipientBtcWallet)
+          const checkRecipientWallet = (payment) => {
+            expect(payment).toEqual(
+              expect.objectContaining({
+                recipientWalletId: recipientBtcWallet.id,
+                recipientWalletCurrency: recipientBtcWallet.currency,
+              }),
+            )
+          }
+          it("uses mid price and intraledeger fees", async () => {
+            const payment = await withBtcRecipientBuilder
               .withConversion({
                 usdFromBtc,
                 btcFromUsd,
@@ -112,15 +369,251 @@ describe("LightningPaymentFlowBuilder", () => {
               .withoutRoute()
             if (payment instanceof Error) throw payment
 
+            const usdPaymentAmount = {
+              amount:
+                (invoiceWithAmount.paymentAmount as BtcPaymentAmount).amount *
+                midPriceRatio,
+              currency: WalletCurrency.Usd,
+            }
+
+            checkSettlementMethod(payment)
+            checkInvoice(payment)
+            checkSenderWallet(payment)
+            checkRecipientWallet(payment)
             expect(payment).toEqual(
               expect.objectContaining({
-                settlementMethod: SettlementMethod.IntraLedger,
-                paymentInitiationMethod: PaymentInitiationMethod.Lightning,
+                usdPaymentAmount,
+              }),
+            )
+          })
+        })
+        describe("with usd recipient", () => {
+          const usdPaymentAmount = {
+            amount: 111111n,
+            currency: WalletCurrency.Usd,
+          }
+          const withUsdRecipientBuilder = withBtcWalletBuilder.withRecipientWallet({
+            ...recipientUsdWallet,
+            usdPaymentAmount,
+          })
+          const checkRecipientWallet = (payment) => {
+            expect(payment).toEqual(
+              expect.objectContaining({
+                recipientWalletId: recipientUsdWallet.id,
+                recipientWalletCurrency: recipientUsdWallet.currency,
+                usdPaymentAmount,
+              }),
+            )
+          }
 
-                btcProtocolFee: LnFees().intraLedgerFees().btc,
-                usdProtocolFee: LnFees().intraLedgerFees().usd,
+          it("uses amount specified by recipient invoice", async () => {
+            const payment = await withUsdRecipientBuilder
+              .withConversion({
+                usdFromBtc,
+                btcFromUsd,
+              })
+              .withoutRoute()
+            if (payment instanceof Error) throw payment
+
+            checkSettlementMethod(payment)
+            checkInvoice(payment)
+            checkSenderWallet(payment)
+            checkRecipientWallet(payment)
+          })
+        })
+      })
+    })
+    describe("invoice with no amount", () => {
+      const uncheckedAmount = 10000n
+      const withAmountBuilder = intraledgerBuilder.withNoAmountInvoice({
+        invoice: invoiceWithNoAmount,
+        uncheckedAmount: Number(uncheckedAmount),
+      })
+      const checkInvoice = (payment) => {
+        expect(payment).toEqual(
+          expect.objectContaining({
+            inputAmount: uncheckedAmount,
+          }),
+        )
+      }
+      describe("with btc wallet", () => {
+        const withBtcWalletBuilder = withAmountBuilder.withSenderWallet(senderBtcWallet)
+
+        const checkSenderWallet = (payment) => {
+          expect(payment).toEqual(
+            expect.objectContaining({
+              senderWalletId: senderBtcWallet.id,
+              senderWalletCurrency: senderBtcWallet.currency,
+              btcPaymentAmount: {
+                amount: uncheckedAmount,
+                currency: WalletCurrency.Btc,
+              },
+            }),
+          )
+        }
+
+        describe("with btc recipient", () => {
+          const withBtcRecipientBuilder =
+            withBtcWalletBuilder.withRecipientWallet(recipientBtcWallet)
+          const checkRecipientWallet = (payment) => {
+            expect(payment).toEqual(
+              expect.objectContaining({
                 recipientWalletId: recipientBtcWallet.id,
                 recipientWalletCurrency: recipientBtcWallet.currency,
+              }),
+            )
+          }
+
+          it("uses mid price", async () => {
+            const payment = await withBtcRecipientBuilder
+              .withConversion({
+                usdFromBtc,
+                btcFromUsd,
+              })
+              .withoutRoute()
+            if (payment instanceof Error) throw payment
+
+            const usdPaymentAmount = {
+              amount: uncheckedAmount * midPriceRatio,
+              currency: WalletCurrency.Usd,
+            }
+
+            checkSettlementMethod(payment)
+            checkInvoice(payment)
+            checkSenderWallet(payment)
+            checkRecipientWallet(payment)
+            expect(payment).toEqual(
+              expect.objectContaining({
+                usdPaymentAmount,
+              }),
+            )
+          })
+        })
+
+        describe("with usd recipient", () => {
+          const withUsdRecipientBuilder =
+            withBtcWalletBuilder.withRecipientWallet(recipientUsdWallet)
+          const checkRecipientWallet = (payment) => {
+            expect(payment).toEqual(
+              expect.objectContaining({
+                recipientWalletId: recipientUsdWallet.id,
+                recipientWalletCurrency: recipientUsdWallet.currency,
+              }),
+            )
+          }
+
+          it("uses dealer price", async () => {
+            const payment = await withUsdRecipientBuilder
+              .withConversion({
+                usdFromBtc,
+                btcFromUsd,
+              })
+              .withoutRoute()
+            if (payment instanceof Error) throw payment
+
+            const usdPaymentAmount = {
+              amount: uncheckedAmount * dealerPriceRatio,
+              currency: WalletCurrency.Usd,
+            }
+
+            checkSettlementMethod(payment)
+            checkInvoice(payment)
+            checkSenderWallet(payment)
+            checkRecipientWallet(payment)
+            expect(payment).toEqual(
+              expect.objectContaining({
+                usdPaymentAmount,
+              }),
+            )
+          })
+        })
+      })
+
+      describe("with usd wallet", () => {
+        const withUsdWalletBuilder = withAmountBuilder.withSenderWallet(senderUsdWallet)
+
+        const checkSenderWallet = (payment) => {
+          expect(payment).toEqual(
+            expect.objectContaining({
+              senderWalletId: senderUsdWallet.id,
+              senderWalletCurrency: senderUsdWallet.currency,
+              usdPaymentAmount: {
+                amount: uncheckedAmount,
+                currency: WalletCurrency.Usd,
+              },
+            }),
+          )
+        }
+
+        describe("with btc recipient", () => {
+          const withBtcRecipientBuilder =
+            withUsdWalletBuilder.withRecipientWallet(recipientBtcWallet)
+          const checkRecipientWallet = (payment) => {
+            expect(payment).toEqual(
+              expect.objectContaining({
+                recipientWalletId: recipientBtcWallet.id,
+                recipientWalletCurrency: recipientBtcWallet.currency,
+              }),
+            )
+          }
+          it("uses dealer price", async () => {
+            const payment = await withBtcRecipientBuilder
+              .withConversion({
+                usdFromBtc,
+                btcFromUsd,
+              })
+              .withoutRoute()
+            if (payment instanceof Error) throw payment
+
+            const btcPaymentAmount = {
+              amount: uncheckedAmount / dealerPriceRatio,
+              currency: WalletCurrency.Btc,
+            }
+
+            checkSettlementMethod(payment)
+            checkInvoice(payment)
+            checkSenderWallet(payment)
+            checkRecipientWallet(payment)
+            expect(payment).toEqual(
+              expect.objectContaining({
+                btcPaymentAmount,
+              }),
+            )
+          })
+        })
+        describe("with usd recipient", () => {
+          const withUsdRecipientBuilder =
+            withUsdWalletBuilder.withRecipientWallet(recipientUsdWallet)
+          const checkRecipientWallet = (payment) => {
+            expect(payment).toEqual(
+              expect.objectContaining({
+                recipientWalletId: recipientUsdWallet.id,
+                recipientWalletCurrency: recipientUsdWallet.currency,
+              }),
+            )
+          }
+
+          it("uses mid price", async () => {
+            const payment = await withUsdRecipientBuilder
+              .withConversion({
+                usdFromBtc,
+                btcFromUsd,
+              })
+              .withoutRoute()
+            if (payment instanceof Error) throw payment
+
+            const btcPaymentAmount = {
+              amount: uncheckedAmount / midPriceRatio,
+              currency: WalletCurrency.Btc,
+            }
+
+            checkSettlementMethod(payment)
+            checkInvoice(payment)
+            checkSenderWallet(payment)
+            checkRecipientWallet(payment)
+            expect(payment).toEqual(
+              expect.objectContaining({
+                btcPaymentAmount,
               }),
             )
           })
@@ -129,49 +622,32 @@ describe("LightningPaymentFlowBuilder", () => {
     })
   })
 
-  describe("invoice with no amount", () => {
-    describe("with btc wallet", () => {
-      describe("not intraledger", () => {
-        it("can build a PaymentFlow", async () => {
-          const payment = await LightningPaymentFlowBuilder({
-            localNodeIds: [],
-            usdFromBtcMidPriceFn,
-          })
-            .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 1000 })
-            .withSenderWallet(senderBtcWallet)
-            .withoutRecipientWallet()
-            .withConversion({
-              usdFromBtc,
-              btcFromUsd,
-            })
-            .withoutRoute()
-          if (payment instanceof Error) throw payment
-
-          expect(payment).toEqual(
-            expect.objectContaining({
-              settlementMethod: SettlementMethod.Lightning,
-              btcPaymentAmount: {
-                amount: 1000n,
-                currency: WalletCurrency.Btc,
-              },
-              usdPaymentAmount: {
-                amount: 1000n * midPriceRatio,
-                currency: WalletCurrency.Usd,
-              },
-              inputAmount: 1000n,
-            }),
-          )
+  describe("error states", () => {
+    describe("pass a NoAmount invoice to withInvoice", () => {
+      it("returns a ValidationError", async () => {
+        const payment = await LightningPaymentFlowBuilder({
+          localNodeIds: [],
+          usdFromBtcMidPriceFn,
+          btcFromUsdMidPriceFn,
         })
+          .withInvoice(invoiceWithNoAmount)
+          .withSenderWallet(senderBtcWallet)
+          .withoutRecipientWallet()
+          .withConversion({
+            usdFromBtc,
+            btcFromUsd,
+          })
+          .withoutRoute()
+
+        expect(payment).toBeInstanceOf(InvalidLightningPaymentFlowBuilderStateError)
       })
     })
-  })
-
-  describe("error states", () => {
     describe("non-integer uncheckedAmount", () => {
       it("returns a ValidationError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
           usdFromBtcMidPriceFn,
+          btcFromUsdMidPriceFn,
         })
           .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 0.4 })
           .withSenderWallet(senderBtcWallet)
@@ -190,6 +666,7 @@ describe("LightningPaymentFlowBuilder", () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
           usdFromBtcMidPriceFn,
+          btcFromUsdMidPriceFn,
         })
           .withInvoice(invoiceWithAmount)
           .withSenderWallet(senderBtcWallet)
@@ -209,10 +686,34 @@ describe("LightningPaymentFlowBuilder", () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
           usdFromBtcMidPriceFn,
+          btcFromUsdMidPriceFn,
         })
           .withInvoice(invoiceWithAmount)
           .withSenderWallet(senderBtcWallet)
-          .withRecipientWallet(usdWallet)
+          .withRecipientWallet(senderUsdWallet)
+          .withConversion({
+            usdFromBtc,
+            btcFromUsd,
+          })
+          .withoutRoute()
+
+        expect(payment).toBeInstanceOf(InvalidLightningPaymentFlowBuilderStateError)
+      })
+    })
+
+    describe("recipient is usd wallet and amount is specifies (for no amount invoice)", () => {
+      it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
+        const payment = await LightningPaymentFlowBuilder({
+          localNodeIds: [invoiceWithNoAmount.destination],
+          usdFromBtcMidPriceFn,
+          btcFromUsdMidPriceFn,
+        })
+          .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 1000 })
+          .withSenderWallet(senderBtcWallet)
+          .withRecipientWallet({
+            ...senderUsdWallet,
+            usdPaymentAmount: { amount: 1000n, currency: WalletCurrency.Usd },
+          })
           .withConversion({
             usdFromBtc,
             btcFromUsd,
@@ -228,6 +729,7 @@ describe("LightningPaymentFlowBuilder", () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
           usdFromBtcMidPriceFn,
+          btcFromUsdMidPriceFn,
         })
           .withInvoice(invoiceWithAmount)
           .withSenderWallet(senderBtcWallet)

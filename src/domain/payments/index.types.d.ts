@@ -89,6 +89,9 @@ type LightningPaymentFlowBuilderConfig = {
   usdFromBtcMidPriceFn(
     amount: BtcPaymentAmount,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError>
+  btcFromUsdMidPriceFn(
+    amount: UsdPaymentAmount,
+  ): Promise<BtcPaymentAmount | DealerPriceServiceError>
 }
 
 type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig & {
