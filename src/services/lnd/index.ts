@@ -84,25 +84,25 @@ export const LndService = (
   }
 
   const findRouteForInvoiceNew = async ({
-    decodedInvoice,
+    invoice,
     amount,
   }: {
-    decodedInvoice: LnInvoice
+    invoice: LnInvoice
     amount?: BtcPaymentAmount
   }): Promise<{ pubkey: Pubkey; rawRoute: RawRoute } | LightningServiceError> => {
     let sats = toSats(0)
     if (amount) {
       sats = toSats(Number(amount.amount))
     } else {
-      if (!(decodedInvoice.amount && decodedInvoice.amount > 0))
+      if (!(invoice.amount && invoice.amount > 0))
         return new LightningServiceError(
           "No amount invoice passed to method. Expected a valid amount to be present.",
         )
-      sats = decodedInvoice.amount
+      sats = invoice.amount
     }
     const maxFee = toSats(Math.floor(sats * feeCapPercent))
     const rawRoute = await probeForRoute({
-      decodedInvoice,
+      decodedInvoice: invoice,
       maxFee,
       amount: sats,
     })
