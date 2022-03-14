@@ -9,11 +9,7 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
-import {
-  checkedToWalletId,
-  WithdrawalFeeCalculator,
-  WithdrawalFeePriceMethod,
-} from "@domain/wallets"
+import { checkedToWalletId, WithdrawalFeeCalculator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { WalletsRepository } from "@services/mongoose"
@@ -83,17 +79,19 @@ export const getOnChainFee = async ({
   addAttributesToCurrentSpan({ "payOnChainByWalletId.estimatedMinerFee": `${minerFee}` })
 
   const imbalanceCalculator = ImbalanceCalculator({
+    method: getFeesConfig().withdrawMethod,
     volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
     volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
     sinceDaysAgo: getFeesConfig().withdrawDaysLookback,
   })
 
-  const fees = await withdrawFeeCalculator.onChainWithdrawalFee({
+  const imbalance = await imbalanceCalculator.getSwapOutImbalance(walletId)
+  if (imbalance instanceof Error) return imbalance
+
+  const fees = withdrawFeeCalculator.onChainWithdrawalFee({
     minerFee,
     minBankFee,
-    method: WithdrawalFeePriceMethod.flat,
-    imbalanceCalculatorFn: () => imbalanceCalculator.getSwapOutImbalance(walletId),
+    imbalance,
   })
-  if (fees instanceof Error) return fees
   return fees.totalFee
 }

@@ -5,7 +5,7 @@ import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { toSats } from "@domain/bitcoin"
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning/invoice-expiration"
 import { toCents } from "@domain/fiat"
-import { PaymentInitiationMethod } from "@domain/wallets"
+import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
@@ -130,6 +130,7 @@ describe("UserWallet - Lightning", () => {
     expect(finalBalance).toBe(initBalanceB + sats)
 
     const imbalanceCalc = ImbalanceCalculator({
+      method: WithdrawalFeePriceMethod.proportionalOnImbalance,
       sinceDaysAgo: 1 as Days,
       volumeLightningFn: ledger.lightningTxBaseVolumeSince,
       volumeOnChainFn: ledger.onChainTxBaseVolumeSince,

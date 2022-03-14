@@ -1,7 +1,10 @@
+import { WithdrawalFeePriceMethod } from "@domain/wallets"
+
 const MS_PER_HOUR = (60 * 60 * 1000) as MilliSeconds
 const MS_PER_DAY = (24 * MS_PER_HOUR) as MilliSeconds
 
 export const ImbalanceCalculator = ({
+  method,
   volumeLightningFn,
   volumeOnChainFn,
   sinceDaysAgo,
@@ -27,6 +30,8 @@ export const ImbalanceCalculator = ({
   }
 
   const getSwapOutImbalance = async (walletId: WalletId) => {
+    if (method === WithdrawalFeePriceMethod.flat) return 0 as SwapOutImbalance
+
     const lnNetInbound = await getNetInboundFlow({
       since,
       walletId,

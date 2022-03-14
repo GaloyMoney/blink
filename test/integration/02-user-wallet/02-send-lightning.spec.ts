@@ -16,7 +16,7 @@ import {
 } from "@domain/errors"
 import { ValidationError } from "@domain/shared"
 import { TwoFAError } from "@domain/twoFA"
-import { PaymentInitiationMethod } from "@domain/wallets"
+import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { getDealerUsdWalletId } from "@services/ledger/caching"
 import { LndService } from "@services/lnd"
@@ -407,6 +407,7 @@ describe("UserWallet - Lightning Pay", () => {
 
   it("pay zero amount invoice", async () => {
     const imbalanceCalc = ImbalanceCalculator({
+      method: WithdrawalFeePriceMethod.proportionalOnImbalance,
       sinceDaysAgo: 1 as Days,
       volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
       volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,

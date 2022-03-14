@@ -387,19 +387,20 @@ const executePaymentViaOnChain = async ({
         }
 
         const imbalanceCalculator = ImbalanceCalculator({
+          method: getFeesConfig().withdrawMethod,
           volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
           volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
           sinceDaysAgo: getFeesConfig().withdrawDaysLookback,
         })
 
-        const fees = await withdrawFeeCalculator.onChainWithdrawalFee({
-          method: getFeesConfig().withdrawMethod,
+        const imbalance = await imbalanceCalculator.getSwapOutImbalance(senderWallet.id)
+        if (imbalance instanceof Error) return imbalance
+
+        const fees = withdrawFeeCalculator.onChainWithdrawalFee({
           minerFee,
           minBankFee: toSats(senderAccount.withdrawFee),
-          imbalanceCalculatorFn: () =>
-            imbalanceCalculator.getSwapOutImbalance(senderWallet.id),
+          imbalance,
         })
-        if (fees instanceof Error) return fees
 
         const totalFee = fees.totalFee
         const bankFee = fees.bankFee

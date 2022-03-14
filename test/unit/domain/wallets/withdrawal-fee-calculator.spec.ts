@@ -1,4 +1,4 @@
-import { WithdrawalFeeCalculator, WithdrawalFeePriceMethod } from "@domain/wallets"
+import { WithdrawalFeeCalculator } from "@domain/wallets"
 import { toSats } from "@domain/bitcoin"
 
 const thresholdImbalance = toSats(1_000_000)
@@ -14,14 +14,12 @@ describe("WithdrawalFeeCalculator", () => {
     it("returns the sum of onchain fee and wallet fee", async () => {
       const minerFee = toSats(7200)
       const minBankFee = toSats(2000)
-      const imbalanceCalculatorFn = async () => 0 as SwapOutImbalance
-      const fee = await calculator.onChainWithdrawalFee({
-        method: WithdrawalFeePriceMethod.flat,
+      const imbalance = 0 as SwapOutImbalance
+      const fee = calculator.onChainWithdrawalFee({
         minerFee,
         minBankFee,
-        imbalanceCalculatorFn,
+        imbalance,
       })
-      if (fee instanceof Error) throw fee
       expect(fee.totalFee).toEqual(9200)
     })
   })
@@ -29,38 +27,33 @@ describe("WithdrawalFeeCalculator", () => {
     it("returns flat fee for no tx", async () => {
       const minerFee = toSats(7200)
       const minBankFee = toSats(2000)
-      const imbalanceCalculatorFn = async () => 0 as SwapOutImbalance
-      const fee = await calculator.onChainWithdrawalFee({
-        method: WithdrawalFeePriceMethod.proportionalOnImbalance,
+      const imbalance = 0 as SwapOutImbalance
+      const fee = calculator.onChainWithdrawalFee({
         minerFee,
         minBankFee,
-        imbalanceCalculatorFn,
+        imbalance,
       })
-      if (fee instanceof Error) throw fee
       expect(fee.totalFee).toEqual(9200)
     })
     it("returns flat fee for loop in imbalance", async () => {
       const minerFee = toSats(7200)
       const minBankFee = toSats(2000)
-      const imbalanceCalculatorFn = async () => -2_000_000 as SwapOutImbalance
-      const fee = await calculator.onChainWithdrawalFee({
-        method: WithdrawalFeePriceMethod.proportionalOnImbalance,
+      const imbalance = -2_000_000 as SwapOutImbalance
+      const fee = calculator.onChainWithdrawalFee({
         minerFee,
         minBankFee,
-        imbalanceCalculatorFn,
+        imbalance,
       })
-      if (fee instanceof Error) throw fee
       expect(fee.totalFee).toEqual(9200)
     })
     it("returns proportional fee for loop out imbalance above threshold", async () => {
       const minerFee = toSats(7200)
       const minBankFee = toSats(2000)
-      const imbalanceCalculatorFn = async () => 2_000_000 as SwapOutImbalance
-      const fee = await calculator.onChainWithdrawalFee({
-        method: WithdrawalFeePriceMethod.proportionalOnImbalance,
+      const imbalance = 2_000_000 as SwapOutImbalance
+      const fee = calculator.onChainWithdrawalFee({
         minerFee,
         minBankFee,
-        imbalanceCalculatorFn,
+        imbalance,
       })
       if (fee instanceof Error) throw fee
       expect(fee.totalFee).toEqual(7200 + 1_000_000 * feeRatio)

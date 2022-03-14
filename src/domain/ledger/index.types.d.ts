@@ -325,6 +325,7 @@ type ImbalanceCalculatorConfig = {
   volumeLightningFn: GetVolumeSinceFn
   volumeOnChainFn: GetVolumeSinceFn
   sinceDaysAgo: Days
+  method: WithdrawalFeePriceMethod
 }
 
 type ImbalanceCalculator = {
