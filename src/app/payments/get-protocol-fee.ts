@@ -6,10 +6,11 @@ import { WalletsRepository } from "@services/mongoose"
 import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
-  LightningPaymentFlowBuilder,
 } from "@domain/payments"
-import { WalletCurrency } from "@domain/shared"
-import { NewDealerPriceService } from "@services/dealer-price"
+import {
+  newCheckIntraledgerLimits,
+  newCheckWithdrawalLimits,
+} from "@app/wallets/new-check-limit-helpers"
 
 import { constructPaymentFlowBuilder } from "./helpers"
 
@@ -75,12 +76,26 @@ const estimateLightningFee = async ({
     uncheckedAmount,
   })
   if (builder instanceof Error) return builder
-  builder.btcPaymentAmount()
+
+  const usdPaymentAmount = await builder.usdPaymentAmount()
+  if (usdPaymentAmount instanceof Error) return usdPaymentAmount
 
   let paymentFlow
   if (await builder.needsRoute()) {
+    const limitCheck = await newCheckIntraledgerLimits({
+      amount: usdPaymentAmount,
+      wallet: senderWallet,
+    })
+    if (limitCheck instanceof Error) return limitCheck
+
     paymentFlow = await builder.withoutRoute()
   } else {
+    const limitCheck = await newCheckWithdrawalLimits({
+      amount: usdPaymentAmount,
+      wallet: senderWallet,
+    })
+    if (limitCheck instanceof Error) return limitCheck
+
     const btcPaymentAmount = await builder.btcPaymentAmount()
     if (btcPaymentAmount instanceof Error) return btcPaymentAmount
 
