@@ -1,3 +1,4 @@
+import { toSats } from "@domain/bitcoin"
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
 const MS_PER_HOUR = (60 * 60 * 1000) as MilliSeconds
@@ -26,7 +27,7 @@ export const ImbalanceCalculator = ({
     })
     if (volume_ instanceof Error) return volume_
 
-    return (volume_.incomingBaseAmount - volume_.outgoingBaseAmount) as NetInboundFlow
+    return toSats(volume_.incomingBaseAmount - volume_.outgoingBaseAmount)
   }
 
   const getSwapOutImbalance = async (walletId: WalletId) => {
