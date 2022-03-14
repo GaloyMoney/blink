@@ -2,15 +2,15 @@ import { ValidationError, WalletCurrency } from "@domain/shared"
 import { SelfPaymentError } from "@domain/errors"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
-import { InvalidLightningPaymentFlowBuilderStateError } from "./errors"
 
+import { InvalidLightningPaymentFlowBuilderStateError } from "./errors"
 import { LnFees } from "./ln-fees"
 import { PriceRatio } from "./price-ratio"
 import { PaymentFlow } from "./payment-flow"
 
-export const LightningPaymentFlowBuilder = (
+export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
   config: LightningPaymentFlowBuilderConfig,
-) => {
+): LightningPaymentFlowBuilder<S> => {
   const settlementMethodFromInvoice = (
     invoice: LnInvoice,
   ): {
@@ -34,7 +34,7 @@ export const LightningPaymentFlowBuilder = (
     }
   }
 
-  const withInvoice = (invoice: LnInvoice) => {
+  const withInvoice = (invoice: LnInvoice): LPFBWithInvoice<S> | LPFBWithError => {
     if (invoice.paymentAmount === null) {
       return LPFBWithError(
         new InvalidLightningPaymentFlowBuilderStateError(
@@ -57,7 +57,7 @@ export const LightningPaymentFlowBuilder = (
   }: {
     invoice: LnInvoice
     uncheckedAmount: number
-  }) => {
+  }): LPFBWithInvoice<S> | LPFBWithError => {
     return LPFBWithInvoice({
       ...config,
       ...settlementMethodFromInvoice(invoice),
@@ -72,10 +72,10 @@ export const LightningPaymentFlowBuilder = (
   }
 }
 
-const LPFBWithInvoice = (state: LPFBWithInvoiceState) => {
-  const withSenderWallet = <S extends WalletCurrency>(
-    senderWallet: WalletDescriptor<S>,
-  ) => {
+const LPFBWithInvoice = <S extends WalletCurrency>(
+  state: LPFBWithInvoiceState,
+): LPFBWithInvoice<S> | LPFBWithError => {
+  const withSenderWallet = (senderWallet: WalletDescriptor<S>) => {
     const { id: senderWalletId, currency: senderWalletCurrency } = senderWallet
     if (state.uncheckedAmount) {
       if (senderWalletCurrency === WalletCurrency.Btc) {
@@ -130,8 +130,10 @@ const LPFBWithInvoice = (state: LPFBWithInvoiceState) => {
 
 const LPFBWithSenderWallet = <S extends WalletCurrency>(
   state: LPFBWithSenderWalletState<S>,
-) => {
-  const withoutRecipientWallet = () => {
+): LPFBWithSenderWallet<S> | LPFBWithError => {
+  const withoutRecipientWallet = <R extends WalletCurrency>():
+    | LPFBWithRecipientWallet<S, R>
+    | LPFBWithError => {
     if (state.settlementMethod === SettlementMethod.IntraLedger) {
       return LPFBWithError(
         new InvalidLightningPaymentFlowBuilderStateError(
@@ -148,7 +150,7 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
     usdPaymentAmount,
   }: WalletDescriptor<R> & {
     usdPaymentAmount?: UsdPaymentAmount
-  }) => {
+  }): LPFBWithRecipientWallet<S, R> | LPFBWithError => {
     if (recipientWalletId === state.senderWalletId) {
       return LPFBWithError(new SelfPaymentError())
     }
@@ -172,15 +174,18 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
     })
   }
 
+  const isIntraledger = () => state.settlementMethod === SettlementMethod.IntraLedger
+
   return {
     withoutRecipientWallet,
     withRecipientWallet,
+    isIntraledger,
   }
 }
 
 const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurrency>(
   state: LPFBWithRecipientWalletState<S, R>,
-) => {
+): LPFBWithRecipientWallet<S, R> | LPFBWithError => {
   const withConversion = ({
     usdFromBtc,
     btcFromUsd,
@@ -191,7 +196,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
     btcFromUsd(
       amount: UsdPaymentAmount,
     ): Promise<BtcPaymentAmount | DealerPriceServiceError>
-  }) => {
+  }): LPFBWithConversion<S, R> | LPFBWithError => {
     const { btcPaymentAmount, usdPaymentAmount, btcProtocolFee, usdProtocolFee } = state
     // Use mid price when no buy / sell required
     if (
@@ -320,7 +325,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
 
 const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   statePromise: Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError>,
-) => {
+): LPFBWithConversion<S, R> | LPFBWithError => {
   const paymentFromState = (state) => {
     if (state instanceof Error) {
       return state
@@ -377,9 +382,17 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     })
   }
 
+  const btcPaymentAmount = async () => {
+    const state = await Promise.resolve(statePromise)
+    if (state instanceof Error) return state
+
+    return state.btcPaymentAmount
+  }
+
   return {
     withRoute,
     withoutRoute,
+    btcPaymentAmount,
   }
 }
 
@@ -389,7 +402,7 @@ const LPFBWithError = (
     | SelfPaymentError
     | DealerPriceServiceError
     | InvalidLightningPaymentFlowBuilderStateError,
-) => {
+): LPFBWithError => {
   const withSenderWallet = () => {
     return LPFBWithError(error)
   }
@@ -409,6 +422,14 @@ const LPFBWithError = (
     return Promise.resolve(error)
   }
 
+  const isIntraledger = async () => {
+    return Promise.resolve(error)
+  }
+
+  const btcPaymentAmount = async () => {
+    return Promise.resolve(error)
+  }
+
   return {
     withSenderWallet,
     withoutRecipientWallet,
@@ -416,5 +437,7 @@ const LPFBWithError = (
     withConversion,
     withRoute,
     withoutRoute,
+    isIntraledger,
+    btcPaymentAmount,
   }
 }
