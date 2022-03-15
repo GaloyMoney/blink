@@ -11,7 +11,7 @@ import { toCents } from "@domain/fiat"
 
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
-import { ConfigSchema, configSchema } from "./schema"
+import { ConfigSchema, configSchema, RewardsConfigSchema } from "./schema"
 import { ConfigError } from "./error"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
@@ -211,3 +211,10 @@ export const getCronConfig = (config = yamlConfig): CronConfig => config.cronCon
 export const getKratosConfig = (config = yamlConfig): KratosConfig => config.kratosConfig
 
 export const getCaptcha = (config = yamlConfig): CaptchaConfig => config.captcha
+
+export const getRewardsConfig = (): RewardsConfigSchema => {
+  const whitelistedCountries = yamlConfig.rewards.whitelistedCountries || []
+  return {
+    whitelistedCountries: whitelistedCountries.map((c) => c.toUpperCase()),
+  }
+}

@@ -1,6 +1,9 @@
 import { JTDDataType } from "ajv/dist/types/jtd-schema"
 
 export type ConfigSchema = JTDDataType<typeof configSchema>
+export type RewardsConfigSchema = {
+  whitelistedCountries: string[]
+}
 
 const buildNumberConfigSchema = {
   type: "object",
@@ -9,6 +12,19 @@ const buildNumberConfigSchema = {
     lastBuildNumber: { type: "number" },
   },
   required: ["minBuildNumber", "lastBuildNumber"],
+  additionalProperties: false,
+}
+
+const rewardsConfigSchema = {
+  type: "object",
+  properties: {
+    whitelistedCountries: {
+      type: "array",
+      items: { type: "string" },
+      uniqueItems: true,
+    },
+  },
+  required: ["whitelistedCountries"],
   additionalProperties: false,
 }
 
@@ -69,6 +85,7 @@ export const configSchema = {
       },
       required: ["ios", "android"],
     },
+    rewards: rewardsConfigSchema,
     quotes: { type: "array", items: { type: "string" }, uniqueItems: true },
     coldStorage: {
       type: "object",

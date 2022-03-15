@@ -37,7 +37,9 @@ export const addEarn = async ({
   const user = await UsersRepository().findById(recipientAccount.ownerId)
   if (user instanceof Error) return user
 
-  const validatedPhoneMetadata = PhoneMetadataValidator().validate(user.phoneMetadata)
+  const validatedPhoneMetadata = PhoneMetadataValidator().validateForReward(
+    user.phoneMetadata,
+  )
   if (validatedPhoneMetadata instanceof Error)
     return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
 
