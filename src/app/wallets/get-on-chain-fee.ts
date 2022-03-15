@@ -52,9 +52,6 @@ export const getOnChainFee = async ({
   )
   if (isIntraLedger) return withdrawFeeCalculator.onChainIntraLedgerFee()
 
-  const isError = !(payeeWallet instanceof CouldNotFindError)
-  if (isError) return payeeWallet
-
   if (amountChecked < dustThreshold) {
     return new LessThanDustThresholdError(
       `Use lightning to send amounts less than ${dustThreshold}`,
