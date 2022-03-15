@@ -1,5 +1,6 @@
 import { LedgerService } from "@services/ledger"
 
+import { updatePendingInvoicesByWalletId } from "./update-pending-invoices"
 import { updatePendingPaymentsByWalletId } from "./update-pending-payments"
 
 export const getBalanceForWallet = async ({
@@ -11,11 +12,18 @@ export const getBalanceForWallet = async ({
   lock?: DistributedLock
   logger: Logger
 }): Promise<CurrencyBaseAmount | ApplicationError> => {
-  const updatePaymentsResult = await updatePendingPaymentsByWalletId({
-    walletId,
-    lock,
-    logger,
-  })
+  const [, updatePaymentsResult] = await Promise.all([
+    updatePendingInvoicesByWalletId({
+      walletId,
+      lock,
+      logger,
+    }),
+    updatePendingPaymentsByWalletId({
+      walletId,
+      lock,
+      logger,
+    }),
+  ])
   if (updatePaymentsResult instanceof Error) return updatePaymentsResult
 
   return LedgerService().getWalletBalance(walletId)

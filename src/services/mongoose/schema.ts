@@ -43,12 +43,6 @@ const walletInvoiceSchema = new Schema({
     },
   },
 
-  secret: {
-    required: true,
-    type: String,
-    length: 64,
-  },
-
   currency: {
     required: true,
     type: String,

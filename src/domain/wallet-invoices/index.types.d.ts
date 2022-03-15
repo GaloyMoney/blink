@@ -1,6 +1,5 @@
 type WalletInvoice = {
   readonly paymentHash: PaymentHash
-  readonly secret: SecretPreImage
   readonly walletId: WalletId
   readonly selfGenerated: boolean
   readonly pubkey: Pubkey
@@ -27,7 +26,11 @@ interface IWalletInvoicesRepository {
     paymentHash: PaymentHash,
   ) => Promise<WalletInvoice | RepositoryError>
 
-  yieldPending: () => AsyncGenerator<WalletInvoice> | RepositoryError
+  findPendingByWalletId: (
+    walletId: WalletId,
+  ) => AsyncGenerator<WalletInvoice> | RepositoryError
+
+  listWalletIdsWithPendingInvoices: () => AsyncGenerator<WalletId> | RepositoryError
 
   deleteByPaymentHash: (paymentHash: PaymentHash) => Promise<boolean | RepositoryError>
 
