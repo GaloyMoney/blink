@@ -379,12 +379,12 @@ const executePaymentViaOnChain = async ({
           scanDepth: ONCHAIN_SCAN_DEPTH_OUTGOING,
         })
         if (minerFee_ instanceof Error) {
-          const defaultMinersFee = toSats(5000) // TODO: improve. we could fail also.
+          const defaultMinersFee = toSats(5000)
           logger.error({ err: minerFee_ }, "impossible to get fee for onchain payment")
           addAttributesToCurrentSpan({
             "payOnChainByWalletId.errorGettingMinerFee": true,
           })
-          minerFee = defaultMinersFee
+          minerFee = estimatedFee > defaultMinersFee ? estimatedFee : defaultMinersFee
         } else {
           minerFee = minerFee_
         }
