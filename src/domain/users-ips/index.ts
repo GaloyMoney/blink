@@ -1,13 +1,23 @@
 export const parseIps = (ips: undefined | string | string[]): IpAddress | undefined => {
   if (!ips) return undefined
 
-  let ip: IpAddress | undefined = undefined
-
-  if (ips && Array.isArray(ips) && ips.length) {
-    ip = ips[0] as IpAddress
-  } else if (typeof ips === "string") {
-    ip = ips as IpAddress
+  if (Array.isArray(ips) && ips.length) {
+    return toIpAddress(ips[0])
   }
 
-  return ip
+  if (typeof ips === "string") {
+    if (ips.includes(",")) return toIpAddress(ips.split(",")[0])
+    return toIpAddress(ips)
+  }
+
+  return undefined
+}
+
+const toIpAddress = (ip: string): IpAddress | undefined => {
+  if (!ip) return undefined
+
+  const trimmedIp = ip.trim()
+  if (!trimmedIp) return undefined
+
+  return trimmedIp as IpAddress
 }
