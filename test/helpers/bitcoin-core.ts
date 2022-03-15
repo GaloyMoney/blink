@@ -1,13 +1,20 @@
-import { createOnChainAddress } from "@app/wallets"
-import { getBitcoinCoreRPCConfig } from "@config"
-import { toSats } from "@domain/bitcoin"
-import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
-import { LedgerService } from "@services/ledger"
 import BitcoindClient from "bitcoin-core"
+import {
+  addInvoiceForSelf,
+  createOnChainAddress,
+  getBalanceForWallet,
+} from "@app/wallets"
+import { getBitcoinCoreRPCConfig } from "@config"
+import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
+import { baseLogger } from "@services/logger"
+import { LedgerService } from "@services/ledger"
+import { pay } from "lightning"
+
+import { toSats } from "@domain/bitcoin"
 
 import { descriptors } from "./multisig-wallet"
 
-import { checkIsBalanced, waitUntilBlockHeight } from "."
+import { checkIsBalanced, lndOutside1, waitUntilBlockHeight } from "."
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
@@ -93,6 +100,22 @@ export const fundWalletIdFromOnchain = async ({
   const balance = await LedgerService().getWalletBalance(walletId)
   if (balance instanceof Error) throw balance
   return toSats(balance)
+}
+
+export const fundWalletIdFromLightning = async ({
+  walletId,
+  amount,
+}: {
+  walletId: WalletId
+  amount: Satoshis
+}) => {
+  const invoice = await addInvoiceForSelf({ walletId, amount })
+  if (invoice instanceof Error) return invoice
+
+  await pay({ lnd: lndOutside1, request: invoice.paymentRequest })
+
+  const balance = await getBalanceForWallet({ walletId, logger: baseLogger })
+  if (balance instanceof Error) throw balance
 }
 
 export const createColdStorageWallet = async (walletName: string) => {

@@ -5,10 +5,8 @@ export const WalletInvoiceFactory = ({
   const createForSelf = ({
     registeredInvoice,
     cents,
-    secret,
   }: WalletInvoiceFactoryArgs): WalletInvoice => ({
     paymentHash: registeredInvoice.invoice.paymentHash,
-    secret,
     walletId,
     selfGenerated: true,
     pubkey: registeredInvoice.pubkey,
@@ -20,10 +18,8 @@ export const WalletInvoiceFactory = ({
   const createForRecipient = ({
     registeredInvoice,
     cents,
-    secret,
   }: WalletInvoiceFactoryArgs): WalletInvoice => ({
     paymentHash: registeredInvoice.invoice.paymentHash,
-    secret,
     walletId,
     selfGenerated: false,
     pubkey: registeredInvoice.pubkey,

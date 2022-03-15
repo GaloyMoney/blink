@@ -6,7 +6,6 @@ import { WalletCurrency } from "@domain/shared"
 describe("WalletInvoiceValidator", () => {
   const walletInvoice: WalletInvoice = {
     paymentHash: "paymentHash" as PaymentHash,
-    secret: "secret" as SecretPreImage,
     walletId: "toWalletId" as WalletId,
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,

@@ -201,9 +201,7 @@ describe("onchainBlockEventhandler", () => {
     expect(lnInvoice).not.toBeInstanceOf(Error)
 
     const { paymentRequest: request } = lnInvoice as LnInvoice
-    pay({ lnd: lndOutside1, request })
-
-    await sleep(250)
+    await pay({ lnd: lndOutside1, request })
 
     const hash = getHash(request)
     const invoice = await getInvoice({ id: hash, lnd: lnd1 })

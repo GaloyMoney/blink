@@ -1,21 +1,29 @@
 import crypto from "crypto"
 
+import { Wallets } from "@app"
+import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
 
-import { createUserAndWalletFromUserRef } from "test/helpers"
+import {
+  createUserAndWalletFromUserRef,
+  getDefaultWalletIdByTestUserRef,
+} from "test/helpers"
+
+let walletB: WalletId
 
 beforeAll(async () => {
   await createUserAndWalletFromUserRef("B")
+
+  walletB = await getDefaultWalletIdByTestUserRef("B")
 })
 
 const createTestWalletInvoice = () => {
   const randomPaymentHash = crypto.randomBytes(32).toString("hex") as PaymentHash
-  const walletInvoice: WalletInvoice = {
+  return {
     paymentHash: randomPaymentHash,
-    secret: "secret" as SecretPreImage,
     walletId: crypto.randomUUID() as WalletId,
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
@@ -23,7 +31,6 @@ const createTestWalletInvoice = () => {
     cents: toCents(10),
     currency: WalletCurrency.Btc,
   }
-  return walletInvoice
 }
 
 describe("WalletInvoices", () => {
@@ -67,5 +74,37 @@ describe("WalletInvoices", () => {
     const isDeleted = await repo.deleteByPaymentHash(paymentHash)
     expect(isDeleted).not.toBeInstanceOf(Error)
     expect(isDeleted).toEqual(true)
+  })
+
+  it("find pending invoices by wallet id", async () => {
+    for (let i = 0; i < 2; i++) {
+      await Wallets.addInvoiceForSelf({
+        walletId: walletB,
+        amount: toSats(1000),
+      })
+    }
+
+    const invoicesCount = await WalletInvoice.countDocuments({
+      walletId: walletB,
+      paid: false,
+    })
+
+    const repo = WalletInvoicesRepository()
+    const invoices = repo.findPendingByWalletId(walletB)
+    expect(invoices).not.toBeInstanceOf(Error)
+
+    const pendingInvoices = invoices as AsyncGenerator<WalletInvoice>
+
+    let count = 0
+    for await (const invoice of pendingInvoices) {
+      count++
+      expect(invoice).toBeDefined()
+      expect(invoice).toHaveProperty("paymentHash")
+      expect(invoice).toHaveProperty("pubkey")
+      expect(invoice.paid).toBe(false)
+    }
+
+    expect(count).toBeGreaterThan(0)
+    expect(count).toBe(invoicesCount)
   })
 })
