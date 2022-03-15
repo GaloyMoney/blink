@@ -118,14 +118,18 @@ interface IPaymentFlowRepository {
   }): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
 }
 
+type UsdFromBtcMidPriceFn = (
+  amount: BtcPaymentAmount,
+) => Promise<UsdPaymentAmount | DealerPriceServiceError>
+
+type BtcFromUsdMidPriceFn = (
+  amount: UsdPaymentAmount,
+) => Promise<BtcPaymentAmount | DealerPriceServiceError>
+
 type LightningPaymentFlowBuilderConfig = {
   localNodeIds: Pubkey[]
-  usdFromBtcMidPriceFn(
-    amount: BtcPaymentAmount,
-  ): Promise<UsdPaymentAmount | DealerPriceServiceError>
-  btcFromUsdMidPriceFn(
-    amount: UsdPaymentAmount,
-  ): Promise<BtcPaymentAmount | DealerPriceServiceError>
+  usdFromBtcMidPriceFn: UsdFromBtcMidPriceFn
+  btcFromUsdMidPriceFn: BtcFromUsdMidPriceFn
 }
 
 type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig & {
