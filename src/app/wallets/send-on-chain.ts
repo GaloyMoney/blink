@@ -296,9 +296,12 @@ const executePaymentViaOnChain = async ({
   const amountSats = toSats(amount)
 
   const ledgerService = LedgerService()
+
+  const feeConfig = getFeesConfig()
+
   const withdrawFeeCalculator = WithdrawalFeeCalculator({
-    feeRatio: getFeesConfig().withdrawRatio,
-    thresholdImbalance: getFeesConfig().withdrawThreshold,
+    feeRatio: feeConfig.withdrawRatio,
+    thresholdImbalance: feeConfig.withdrawThreshold,
   })
 
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
@@ -376,7 +379,7 @@ const executePaymentViaOnChain = async ({
           scanDepth: ONCHAIN_SCAN_DEPTH_OUTGOING,
         })
         if (minerFee_ instanceof Error) {
-          const defaultMinersFee = toSats(5000) // TODO: improve
+          const defaultMinersFee = toSats(5000) // TODO: improve. we could fail also.
           logger.error({ err: minerFee_ }, "impossible to get fee for onchain payment")
           addAttributesToCurrentSpan({
             "payOnChainByWalletId.errorGettingMinerFee": true,
@@ -387,10 +390,10 @@ const executePaymentViaOnChain = async ({
         }
 
         const imbalanceCalculator = ImbalanceCalculator({
-          method: getFeesConfig().withdrawMethod,
+          method: feeConfig.withdrawMethod,
           volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
           volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
-          sinceDaysAgo: getFeesConfig().withdrawDaysLookback,
+          sinceDaysAgo: feeConfig.withdrawDaysLookback,
         })
 
         const imbalance = await imbalanceCalculator.getSwapOutImbalance(senderWallet.id)
@@ -398,7 +401,7 @@ const executePaymentViaOnChain = async ({
 
         const fees = withdrawFeeCalculator.onChainWithdrawalFee({
           minerFee,
-          minBankFee: toSats(senderAccount.withdrawFee),
+          minBankFee: toSats(senderAccount.withdrawFee || feeConfig.withdrawDefaultMin),
           imbalance,
         })
 

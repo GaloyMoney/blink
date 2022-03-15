@@ -129,7 +129,7 @@ const UserSchema = new Schema<UserRecord>(
     },
     withdrawFee: {
       type: Number,
-      default: feesConfig.withdrawFeeFixed,
+      default: feesConfig.withdrawDefaultMin,
       min: 0,
     },
     lastConnection: Date,

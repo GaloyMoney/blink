@@ -89,7 +89,7 @@ export const getFeesConfig = (feesConfig = yamlConfig.fees): FeesConfig => ({
   withdrawRatio: feesConfig.withdraw.ratio,
   withdrawThreshold: feesConfig.withdraw.threshold,
   withdrawDaysLookback: feesConfig.withdraw.daysLookback,
-  withdrawFeeFixed: toSats(feesConfig.withdraw.defaultMin),
+  withdrawDefaultMin: toSats(feesConfig.withdraw.defaultMin),
 })
 
 export const getAccountLimits = ({

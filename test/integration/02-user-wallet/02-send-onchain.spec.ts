@@ -210,7 +210,7 @@ describe("UserWallet - onChainPay", () => {
       const settledTx = last(settledTxs) as WalletTransaction
 
       const feeRates = getFeesConfig()
-      const fee = feeRates.withdrawFeeFixed + 7050
+      const fee = feeRates.withdrawDefaultMin + 7050
 
       expect(settledTx.settlementFee).toBe(fee)
       expect(settledTx.settlementAmount).toBe(-amount - fee)
@@ -318,7 +318,7 @@ describe("UserWallet - onChainPay", () => {
       const settledTx = last(settledTxs) as WalletTransaction
 
       const feeRates = getFeesConfig()
-      const fee = feeRates.withdrawFeeFixed + 7050
+      const fee = feeRates.withdrawDefaultMin + 7050
 
       const finalBalance = await getBalanceHelper(walletIdE)
       expect(finalBalance).toBe(0)

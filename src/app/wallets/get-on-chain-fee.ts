@@ -2,7 +2,6 @@ import { BTC_NETWORK, getFeesConfig, getOnChainWalletConfig } from "@config"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import {
-  CouldNotFindError,
   CouldNotFindWalletFromOnChainAddressError,
   InsufficientBalanceError,
   LessThanDustThresholdError,
@@ -39,9 +38,11 @@ export const getOnChainFee = async ({
 
   const minBankFee = toSats(account.withdrawFee)
 
+  const feeConfig = getFeesConfig()
+
   const withdrawFeeCalculator = WithdrawalFeeCalculator({
-    feeRatio: getFeesConfig().withdrawRatio,
-    thresholdImbalance: getFeesConfig().withdrawThreshold,
+    feeRatio: feeConfig.withdrawRatio,
+    thresholdImbalance: feeConfig.withdrawThreshold,
   })
 
   const payeeWallet = await walletsRepo.findByAddress(address)
@@ -76,10 +77,10 @@ export const getOnChainFee = async ({
   addAttributesToCurrentSpan({ "payOnChainByWalletId.estimatedMinerFee": `${minerFee}` })
 
   const imbalanceCalculator = ImbalanceCalculator({
-    method: getFeesConfig().withdrawMethod,
+    method: feeConfig.withdrawMethod,
     volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
     volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
-    sinceDaysAgo: getFeesConfig().withdrawDaysLookback,
+    sinceDaysAgo: feeConfig.withdrawDaysLookback,
   })
 
   const imbalance = await imbalanceCalculator.getSwapOutImbalance(walletId)

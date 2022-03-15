@@ -46,7 +46,7 @@ type Account = {
   defaultWalletId: WalletId
   readonly ownerId: UserId
   readonly depositFeeRatio: DepositFeeRatio
-  withdrawFee: Satoshis
+  withdrawFee: Satoshis // TODO: make it optional. only save when not default value from yaml
   level: AccountLevel
   status: AccountStatus
   title: BusinessMapTitle
@@ -121,5 +121,5 @@ type FeesConfig = {
   withdrawRatio: number
   withdrawThreshold: Satoshis
   withdrawDaysLookback: Days
-  withdrawFeeFixed: CurrencyBaseAmount
+  withdrawDefaultMin: Satoshis
 }
