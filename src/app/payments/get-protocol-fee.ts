@@ -1,18 +1,18 @@
 import { decodeInvoice } from "@domain/bitcoin/lightning"
 import { checkedToWalletId } from "@domain/wallets"
-import { LndService } from "@services/lnd"
-import { PaymentsRepository } from "@services/redis"
-import { WalletsRepository } from "@services/mongoose"
 import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
 } from "@domain/payments"
+import { LndService } from "@services/lnd"
+import { PaymentsRepository } from "@services/redis"
+import { WalletsRepository } from "@services/mongoose"
+
 import {
+  constructPaymentFlowBuilder,
   newCheckIntraledgerLimits,
   newCheckWithdrawalLimits,
-} from "@app/wallets/new-check-limit-helpers"
-
-import { constructPaymentFlowBuilder } from "./helpers"
+} from "./helpers"
 
 export const getLightningFeeEstimation = async ({
   walletId,

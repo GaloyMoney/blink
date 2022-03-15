@@ -1,10 +1,14 @@
-import { WalletCurrency } from "@domain/shared"
-import { WalletInvoicesRepository } from "@services/mongoose"
+import { getTwoFALimits, getAccountLimits, MS_PER_DAY } from "@config"
+import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
 import { LightningPaymentFlowBuilder } from "@domain/payments"
+import { WalletCurrency } from "@domain/shared"
 import { NewDealerPriceService } from "@services/dealer-price"
+import { AccountsRepository, WalletInvoicesRepository } from "@services/mongoose"
 import { LndService } from "@services/lnd"
+import { LedgerService } from "@services/ledger"
 
 const dealer = NewDealerPriceService()
+const ledger = LedgerService()
 
 export const usdFromBtcMidPriceFn = async (
   amount: BtcPaymentAmount,
@@ -84,4 +88,86 @@ export const constructPaymentFlowBuilder = async ({
       btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
     })
   }
+}
+
+export const newCheckIntraledgerLimits = async ({
+  amount,
+  wallet,
+}: {
+  amount: UsdPaymentAmount
+  wallet: Wallet
+}) => {
+  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const walletVolume = await ledger.intraledgerTxBaseVolumeSince({
+    walletId: wallet.id,
+    timestamp: timestamp1Day,
+  })
+  if (walletVolume instanceof Error) return walletVolume
+
+  const account = await AccountsRepository().findById(wallet.accountId)
+  if (account instanceof Error) return account
+
+  const accountLimits = getAccountLimits({ level: account.level })
+  const { checkIntraledger } = AccountLimitsChecker({
+    accountLimits,
+    usdFromBtcMidPriceFn,
+  })
+
+  return checkIntraledger({
+    amount,
+    walletVolume,
+    walletCurrency: wallet.currency,
+  })
+}
+
+export const newCheckWithdrawalLimits = async ({
+  amount,
+  wallet,
+}: {
+  amount: UsdPaymentAmount
+  wallet: Wallet
+}) => {
+  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const walletVolume = await ledger.externalPaymentVolumeSince({
+    walletId: wallet.id,
+    timestamp: timestamp1Day,
+  })
+  if (walletVolume instanceof Error) return walletVolume
+
+  const account = await AccountsRepository().findById(wallet.accountId)
+  if (account instanceof Error) return account
+  const accountLimits = getAccountLimits({ level: account.level })
+  const { checkWithdrawal } = AccountLimitsChecker({
+    accountLimits,
+    usdFromBtcMidPriceFn,
+  })
+
+  return checkWithdrawal({
+    amount,
+    walletVolume,
+    walletCurrency: wallet.currency,
+  })
+}
+
+export const newCheckTwoFALimits = async ({
+  amount,
+  wallet,
+}: {
+  amount: UsdPaymentAmount
+  wallet: Wallet
+}) => {
+  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const walletVolume = await ledger.allTxBaseVolumeSince({
+    walletId: wallet.id,
+    timestamp: timestamp1Day,
+  })
+  if (walletVolume instanceof Error) return walletVolume
+  const twoFALimits = getTwoFALimits()
+  const { checkTwoFA } = TwoFALimitsChecker({ twoFALimits, usdFromBtcMidPriceFn })
+
+  return checkTwoFA({
+    amount,
+    walletVolume,
+    walletCurrency: wallet.currency,
+  })
 }
