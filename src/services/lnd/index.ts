@@ -1,48 +1,50 @@
 import {
-  createInvoice,
-  getInvoice,
-  getPayment,
   cancelHodlInvoice,
-  payViaRoutes,
-  payViaPaymentDetails,
-  GetPaymentResult,
-  PayViaPaymentDetailsArgs,
-  PayViaRoutesResult,
-  PayViaPaymentDetailsResult,
-  GetInvoiceResult,
-  getPayments,
-  getFailedPayments,
-  getClosedChannels,
-  getWalletInfo,
-  getPendingPayments,
+  createHodlInvoice,
   getChannelBalance,
+  getClosedChannels,
+  getFailedPayments,
+  getInvoice,
+  GetInvoiceResult,
+  getPayment,
+  GetPaymentResult,
+  getPayments,
+  getPendingPayments,
+  getWalletInfo,
+  payViaPaymentDetails,
+  PayViaPaymentDetailsArgs,
+  PayViaPaymentDetailsResult,
+  payViaRoutes,
+  PayViaRoutesResult,
+  settleHodlInvoice,
 } from "lightning"
 import lnService from "ln-service"
 
 import { SECS_PER_5_MINS } from "@config"
 
-import { CacheKeys } from "@domain/cache"
-import { toMilliSatsFromString, toSats, FEECAP_PERCENT } from "@domain/bitcoin"
+import { FEECAP_PERCENT, toMilliSatsFromString, toSats } from "@domain/bitcoin"
 import {
-  decodeInvoice,
-  CouldNotDecodeReturnedPaymentRequest,
-  UnknownLightningServiceError,
-  LightningServiceError,
-  InvoiceNotFoundError,
-  PaymentStatus,
-  LnPaymentPendingError,
-  LnAlreadyPaidError,
-  PaymentNotFoundError,
-  RouteNotFoundError,
-  UnknownRouteNotFoundError,
-  InsufficientBalanceForRoutingError,
   BadPaymentDataError,
   CorruptLndDbError,
+  CouldNotDecodeReturnedPaymentRequest,
+  decodeInvoice,
+  InsufficientBalanceForRoutingError,
   InvoiceExpiredOrBadPaymentHashError,
+  InvoiceNotFoundError,
+  LightningServiceError,
+  LnAlreadyPaidError,
+  LnPaymentPendingError,
   PaymentAttemptsTimedOutError,
-  ProbeForRouteTimedOutError,
   PaymentInTransitionError,
+  PaymentNotFoundError,
+  PaymentStatus,
+  ProbeForRouteTimedOutError,
+  RouteNotFoundError,
+  SecretDoesNotMatchAnyExistingHodlInvoiceError,
+  UnknownLightningServiceError,
+  UnknownRouteNotFoundError,
 } from "@domain/bitcoin/lightning"
+import { CacheKeys } from "@domain/cache"
 
 import { LocalCacheService } from "@services/cache"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -233,6 +235,7 @@ export const LndService = (
     description,
     descriptionHash,
     expiresAt,
+    paymentHash,
   }: RegisterInvoiceArgs): Promise<RegisteredInvoice | LightningServiceError> => {
     const input = {
       lnd: defaultLnd,
@@ -240,10 +243,11 @@ export const LndService = (
       description_hash: descriptionHash,
       tokens: sats as number,
       expires_at: expiresAt.toISOString(),
+      id: paymentHash,
     }
 
     try {
-      const result = await createInvoice(input)
+      const result = await createHodlInvoice(input)
       const request = result.request as EncodedPaymentRequest
       const returnedInvoice = decodeInvoice(request)
       if (returnedInvoice instanceof Error) {
@@ -283,6 +287,7 @@ export const LndService = (
         createdAt: new Date(invoice.created_at),
         confirmedAt: invoice.confirmed_at ? new Date(invoice.confirmed_at) : undefined,
         isSettled: !!invoice.is_confirmed,
+        isHeld: !!invoice.is_held,
         roundedDownReceived: toSats(invoice.received),
         milliSatsReceived: toMilliSatsFromString(invoice.received_mtokens),
         secretPreImage: invoice.secret as SecretPreImage,
@@ -365,6 +370,31 @@ export const LndService = (
     return {
       lnPayments: lnPayments.map((p) => ({ ...p, status: PaymentStatus.Failed })),
       endCursor,
+    }
+  }
+
+  const settleInvoice = async ({
+    pubkey,
+    secret,
+  }: {
+    pubkey: Pubkey
+    secret: SecretPreImage
+  }): Promise<true | LightningServiceError> => {
+    try {
+      const lnd = getLndFromPubkey({ pubkey })
+      if (lnd instanceof Error) return lnd
+
+      // Use the secret to claim the funds
+      await settleHodlInvoice({ lnd, secret })
+      return true
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.SecretDoesNotMatchAnyExistingHodlInvoice:
+          return new SecretDoesNotMatchAnyExistingHodlInvoiceError(err)
+        default:
+          return new UnknownLightningServiceError(err)
+      }
     }
   }
 
@@ -505,6 +535,7 @@ export const LndService = (
       lookupPayment,
       listSettledPayments: listPaymentsFactory(getPayments),
       listPendingPayments: listPaymentsFactory(getPendingPayments),
+      settleInvoice,
       listFailedPayments,
       cancelInvoice,
       payInvoiceViaRoutes,
@@ -614,6 +645,7 @@ const KnownLndErrorDetails = {
   ProbeForRouteTimedOut: "ProbeForRouteTimedOut",
   SentPaymentNotFound: "SentPaymentNotFound",
   PaymentInTransition: "payment is in transition",
+  SecretDoesNotMatchAnyExistingHodlInvoice: "SecretDoesNotMatchAnyExistingHodlInvoice",
 } as const
 
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({

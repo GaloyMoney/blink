@@ -1,10 +1,10 @@
 import { updatePendingPayments } from "@app/payments"
-import { updatePendingInvoices, updateOnChainReceipt } from "@app/wallets"
-import { baseLogger } from "@services/logger"
+import { declineHeldInvoices, updateOnChainReceipt } from "@app/wallets"
 import { getBalance as getBitcoindBalance } from "@services/bitcoind"
+import { baseLogger } from "@services/logger"
 
-import { ledgerAdmin } from "@services/mongodb"
 import { lndsBalances } from "@services/lnd/utils"
+import { ledgerAdmin } from "@services/mongodb"
 
 import { waitUntilChannelBalanceSyncAll } from "./lightning"
 
@@ -12,7 +12,7 @@ const logger = baseLogger.child({ module: "test" })
 
 export const checkIsBalanced = async () => {
   await Promise.all([
-    updatePendingInvoices(logger),
+    declineHeldInvoices(logger),
     updatePendingPayments(logger),
     updateOnChainReceipt({ logger }),
   ])

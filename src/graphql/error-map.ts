@@ -271,6 +271,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invalid walletId for account."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "SecretDoesNotMatchAnyExistingHodlInvoiceError":
+      message = `Unknown error occurred (code: ${error.name})`
+      return new UnknownClientError({ message, logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
