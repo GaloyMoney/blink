@@ -98,8 +98,9 @@ export const newCheckIntraledgerLimits = async ({
   wallet: Wallet
 }) => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
-  const walletVolume = await ledger.intraledgerTxBaseVolumeSince({
+  const walletVolume = await ledger.intraledgerTxBaseVolumeAmountSince({
     walletId: wallet.id,
+    walletCurrency: wallet.currency,
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
@@ -116,7 +117,6 @@ export const newCheckIntraledgerLimits = async ({
   return checkIntraledger({
     amount,
     walletVolume,
-    walletCurrency: wallet.currency,
   })
 }
 
@@ -128,8 +128,9 @@ export const newCheckWithdrawalLimits = async ({
   wallet: Wallet
 }) => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
-  const walletVolume = await ledger.externalPaymentVolumeSince({
+  const walletVolume = await ledger.externalPaymentVolumeAmountSince({
     walletId: wallet.id,
+    walletCurrency: wallet.currency,
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
@@ -145,7 +146,6 @@ export const newCheckWithdrawalLimits = async ({
   return checkWithdrawal({
     amount,
     walletVolume,
-    walletCurrency: wallet.currency,
   })
 }
 
@@ -157,8 +157,9 @@ export const newCheckTwoFALimits = async ({
   wallet: Wallet
 }) => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
-  const walletVolume = await ledger.allPaymentVolumeSince({
+  const walletVolume = await ledger.allPaymentVolumeAmountSince({
     walletId: wallet.id,
+    walletCurrency: wallet.currency,
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
@@ -168,6 +169,5 @@ export const newCheckTwoFALimits = async ({
   return checkTwoFA({
     amount,
     walletVolume,
-    walletCurrency: wallet.currency,
   })
 }
