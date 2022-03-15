@@ -1,3 +1,4 @@
+import { usdFromBtcMidPriceFn } from "@app/payments/helpers"
 import { getTwoFALimits, getAccountLimits, MS_PER_DAY } from "@config"
 import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
 import { LedgerService } from "@services/ledger"
@@ -18,16 +19,20 @@ export const newCheckIntraledgerLimits = async ({
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
-  const volumeInWalletCurrency = BigInt(walletVolume.outgoingBaseAmount)
 
   const account = await AccountsRepository().findById(wallet.accountId)
   if (account instanceof Error) return account
+
   const accountLimits = getAccountLimits({ level: account.level })
-  const { checkIntraledger } = AccountLimitsChecker(accountLimits)
+  const { checkIntraledger } = AccountLimitsChecker({
+    accountLimits,
+    usdFromBtcMidPriceFn,
+  })
 
   return checkIntraledger({
     amount,
-    volumeInWalletCurrency,
+    walletVolume,
+    walletCurrency: wallet.currency,
   })
 }
 
@@ -44,16 +49,19 @@ export const newCheckWithdrawalLimits = async ({
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
-  const volumeInWalletCurrency = BigInt(walletVolume.outgoingBaseAmount)
 
   const account = await AccountsRepository().findById(wallet.accountId)
   if (account instanceof Error) return account
   const accountLimits = getAccountLimits({ level: account.level })
-  const { checkWithdrawal } = AccountLimitsChecker(accountLimits)
+  const { checkWithdrawal } = AccountLimitsChecker({
+    accountLimits,
+    usdFromBtcMidPriceFn,
+  })
 
   return checkWithdrawal({
     amount,
-    volumeInWalletCurrency,
+    walletVolume,
+    walletCurrency: wallet.currency,
   })
 }
 
@@ -70,13 +78,12 @@ export const newCheckTwoFALimits = async ({
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
-  const volumeInWalletCurrency = BigInt(walletVolume.outgoingBaseAmount)
-
   const twoFALimits = getTwoFALimits()
-  const { checkTwoFA } = TwoFALimitsChecker(twoFALimits)
+  const { checkTwoFA } = TwoFALimitsChecker({ twoFALimits, usdFromBtcMidPriceFn })
 
   return checkTwoFA({
     amount,
-    volumeInWalletCurrency,
+    walletVolume,
+    walletCurrency: wallet.currency,
   })
 }
