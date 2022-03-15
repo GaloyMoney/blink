@@ -1,49 +1,26 @@
-import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
 import {
   IntraledgerLimitsExceededError,
   TwoFALimitsExceededError,
   WithdrawalLimitsExceededError,
 } from "@domain/errors"
-import {
-  paymentAmountFromCents,
-  paymentAmountFromSats,
-  WalletCurrency,
-} from "@domain/shared"
+import { paymentAmountFromCents, WalletCurrency } from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
-
-const convertVolume = async ({
-  walletVolume,
-  walletCurrency,
-  usdFromBtcMidPriceFn,
-}): Promise<UsdPaymentAmount | DealerPriceServiceError> => {
-  const volumeAmountInWalletCurrency =
-    walletCurrency === WalletCurrency.Btc
-      ? paymentAmountFromSats(toSats(walletVolume.outgoingBaseAmount))
-      : paymentAmountFromCents(toCents(walletVolume.outgoingBaseAmount))
-
-  return volumeAmountInWalletCurrency.currency === WalletCurrency.Btc
-    ? usdFromBtcMidPriceFn(volumeAmountInWalletCurrency)
-    : volumeAmountInWalletCurrency
-}
 
 export const AccountLimitsChecker = ({
   accountLimits,
   usdFromBtcMidPriceFn,
 }: {
   accountLimits: IAccountLimits
-  usdFromBtcMidPriceFn
+  usdFromBtcMidPriceFn: UsdFromBtcMidPriceFn
 }): AccountLimitsChecker => {
   const checkIntraledger = async ({
     amount,
     walletVolume,
-    walletCurrency,
   }: NewLimiterCheckInputs): Promise<true | LimitsExceededError> => {
-    const volumeInUsdAmount = await convertVolume({
-      walletCurrency,
-      walletVolume,
-      usdFromBtcMidPriceFn,
-    })
+    const volumeInUsdAmount =
+      walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
+        ? await usdFromBtcMidPriceFn(walletVolume.outgoingBaseAmount as BtcPaymentAmount)
+        : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
     if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
     const limit = paymentAmountFromCents(accountLimits.intraLedgerLimit)
@@ -66,13 +43,11 @@ export const AccountLimitsChecker = ({
   const checkWithdrawal = async ({
     amount,
     walletVolume,
-    walletCurrency,
   }: NewLimiterCheckInputs): Promise<true | LimitsExceededError> => {
-    const volumeInUsdAmount = await convertVolume({
-      walletCurrency,
-      walletVolume,
-      usdFromBtcMidPriceFn,
-    })
+    const volumeInUsdAmount =
+      walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
+        ? await usdFromBtcMidPriceFn(walletVolume.outgoingBaseAmount as BtcPaymentAmount)
+        : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
     if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
     const limit = paymentAmountFromCents(accountLimits.withdrawalLimit)
@@ -103,18 +78,16 @@ export const TwoFALimitsChecker = ({
   usdFromBtcMidPriceFn,
 }: {
   twoFALimits: TwoFALimits
-  usdFromBtcMidPriceFn
+  usdFromBtcMidPriceFn: UsdFromBtcMidPriceFn
 }): TwoFALimitsChecker => {
   const checkTwoFA = async ({
     amount,
     walletVolume,
-    walletCurrency,
   }: NewLimiterCheckInputs): Promise<true | LimitsExceededError> => {
-    const volumeInUsdAmount = await convertVolume({
-      walletCurrency,
-      walletVolume,
-      usdFromBtcMidPriceFn,
-    })
+    const volumeInUsdAmount =
+      walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
+        ? await usdFromBtcMidPriceFn(walletVolume.outgoingBaseAmount as BtcPaymentAmount)
+        : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
     if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
     const limit = paymentAmountFromCents(twoFALimits.threshold)
