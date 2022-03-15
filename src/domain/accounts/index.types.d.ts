@@ -85,10 +85,13 @@ type LimitsChecker = {
 
 type NewLimiterCheckInputs = {
   amount: UsdPaymentAmount
-  volumeInWalletCurrency: bigint
+  walletVolume: TxBaseVolume
+  walletCurrency: WalletCurrency
 }
 
-type NewLimitsCheckerFn = (args: NewLimiterCheckInputs) => true | LimitsExceededError
+type NewLimitsCheckerFn = (
+  args: NewLimiterCheckInputs,
+) => Promise<true | LimitsExceededError>
 
 type AccountLimitsChecker = {
   checkIntraledger: NewLimitsCheckerFn
