@@ -157,7 +157,7 @@ export const newCheckTwoFALimits = async ({
   wallet: Wallet
 }) => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
-  const walletVolume = await ledger.allTxBaseVolumeSince({
+  const walletVolume = await ledger.allPaymentVolumeSince({
     walletId: wallet.id,
     timestamp: timestamp1Day,
   })
