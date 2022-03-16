@@ -199,6 +199,24 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const getWalletBalanceAmount = async <S extends WalletCurrency>({
+    walletId,
+    walletCurrency,
+  }: {
+    walletId: WalletId
+    walletCurrency: S
+  }): Promise<PaymentAmount<S> | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    try {
+      const { balance } = await MainBook.balance({
+        account: liabilitiesWalletId,
+      })
+      return { amount: BigInt(balance), currency: walletCurrency }
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const isOnChainTxRecorded = async ({
     walletId,
     txHash,
@@ -292,6 +310,7 @@ export const LedgerService = (): ILedgerService => {
       listAllPaymentHashes,
       getPendingPaymentsCount,
       getWalletBalance,
+      getWalletBalanceAmount,
       isOnChainTxRecorded,
       isLnTxRecorded,
       getWalletIdByTransactionHash,
