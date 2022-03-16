@@ -79,16 +79,6 @@ export const payInvoiceByWalletId = async ({
 
   // Note: probe for USD fee not necessary since we can get the fee otherwise
 
-  // Validation checks
-  // - [x] checkedToAmount
-  // - [x] sender account active
-  // - [x] checked to sender walletId
-  // - [x] check sender wallet exists
-  // - [x] match sender wallet `accountId` to `account.id`
-  // - [x] optional, checkedToRecipientWalletId
-  // - [x] optional, check recipient wallet exists (validate via walletInvoice)
-  // - [x] optional, check not self payment
-
   // Get display currency price?
 
   // ===
