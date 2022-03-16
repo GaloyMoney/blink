@@ -17,7 +17,7 @@ export const WithdrawalFeeCalculator = ({
   }) => {
     const imbalanceMinusThreshold = imbalance - thresholdImbalance
     const aboveThreshold =
-      imbalance > 0 && imbalanceMinusThreshold < 0 ? imbalanceMinusThreshold : imbalance
+      imbalanceMinusThreshold < 0 ? imbalanceMinusThreshold : imbalance
     const baseAmount = Math.max(Math.min(aboveThreshold + amount, amount), 0)
     const bankFee = toSats(Math.max(minBankFee, Math.ceil(baseAmount * feeRatio)))
     return {

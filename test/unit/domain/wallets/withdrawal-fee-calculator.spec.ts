@@ -82,7 +82,7 @@ describe("WithdrawalFeeCalculator", () => {
         minBankFee,
         imbalance,
       })
-      expect(fee.bankFee).toEqual((amount + imbalance) * feeRatio)
+      expect(fee.bankFee).toEqual((amount + imbalance - thresholdImbalance) * feeRatio)
     })
     it("returns proportional fee for small loop out imbalance and large amount", async () => {
       const minerFee = toSats(7200)
@@ -97,7 +97,7 @@ describe("WithdrawalFeeCalculator", () => {
       })
       expect(fee.bankFee).toEqual(9_500_000 * feeRatio)
     })
-    it("returns proportional fee for loop out imbalance below threshold", async () => {
+    it("returns flat fee for loop out imbalance below threshold", async () => {
       const minerFee = toSats(7200)
       const minBankFee = toSats(2000)
       const imbalance = 500_000 as SwapOutImbalance
