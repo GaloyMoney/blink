@@ -250,6 +250,14 @@ interface ILedgerService {
 
   getWalletBalance(walletId: WalletId): Promise<CurrencyBaseAmount | LedgerServiceError>
 
+  getWalletBalanceAmount<S extends WalletCurrency>({
+    walletId,
+    walletCurrency,
+  }: {
+    walletId: WalletId
+    walletCurrency: S
+  }): Promise<PaymentAmount<S> | LedgerServiceError>
+
   allPaymentVolumeSince: GetVolumeSinceFn
 
   externalPaymentVolumeSince: GetVolumeSinceFn
