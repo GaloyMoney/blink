@@ -5,6 +5,7 @@ import {
   CouldNotFindLightningPaymentFlowError,
   PriceRatio,
 } from "@domain/payments"
+import { AccountValidator } from "@domain/accounts"
 import { checkedToWalletId } from "@domain/wallets"
 import {
   decodeInvoice,
@@ -51,6 +52,12 @@ export const payInvoiceByWalletId = async ({
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
 
+  const accountValidated = AccountValidator().validateAccount({
+    account: senderAccount,
+    accountIdFromWallet: senderWallet.accountId,
+  })
+  if (accountValidated instanceof Error) return accountValidated
+
   let paymentFlow = await PaymentsRepository().findLightningPaymentFlow({
     walletId: senderWalletId,
     paymentHash: decodedInvoice.paymentHash,
@@ -74,13 +81,13 @@ export const payInvoiceByWalletId = async ({
 
   // Validation checks
   // - [x] checkedToAmount
-  // - [ ] sender account active
+  // - [x] sender account active
   // - [x] checked to sender walletId
   // - [x] check sender wallet exists
-  // - [ ] match sender wallet `accountId` to `account.id`
+  // - [x] match sender wallet `accountId` to `account.id`
   // - [x] optional, checkedToRecipientWalletId
-  // - [ ] optional, check recipient wallet exists
-  // - [ ] optional, check not self payment
+  // - [x] optional, check recipient wallet exists (validate via walletInvoice)
+  // - [x] optional, check not self payment
 
   // Get display currency price?
 
