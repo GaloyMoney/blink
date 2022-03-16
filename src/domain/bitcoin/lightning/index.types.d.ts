@@ -230,8 +230,8 @@ interface ILightningService {
     pubkey,
   }: {
     paymentHash: PaymentHash
-    rawRoute: RawRoute | null
-    pubkey: Pubkey | null
+    rawRoute: RawRoute | undefined
+    pubkey: Pubkey | undefined
   }): Promise<PayInvoiceResult | LightningServiceError>
 
   payInvoiceViaPaymentDetails({
@@ -240,7 +240,17 @@ interface ILightningService {
     maxFee,
   }: {
     decodedInvoice: LnInvoice
-    milliSatsAmount: MilliSatoshis
-    maxFee: Satoshis
+    milliSatsAmount: MilliSatoshis | bigint
+    maxFee: Satoshis | bigint
+  }): Promise<PayInvoiceResult | LightningServiceError>
+
+  newPayInvoiceViaPaymentDetails({
+    decodedInvoice,
+    btcPaymentAmount,
+    maxFeeAmount,
+  }: {
+    decodedInvoice: LnInvoice
+    btcPaymentAmount: BtcPaymentAmount
+    maxFeeAmount: BtcPaymentAmount
   }): Promise<PayInvoiceResult | LightningServiceError>
 }
