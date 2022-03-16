@@ -24,6 +24,14 @@ type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFl
   R
 > & {
   protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
+  protocolFeeInBtc(): BtcPaymentAmount
+  paymentAmountInSenderWalletCurrency(): PaymentAmount<S>
+  paymentAmountInBtc(): BtcPaymentAmount
+  paymentAmountInUsd(): UsdPaymentAmount
+  routeFromCachedRoute(): {
+    rawRoute?: RawRoute
+    outgoingNodePubkey?: Pubkey
+  }
 }
 
 type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
