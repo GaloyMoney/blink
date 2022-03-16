@@ -15,10 +15,10 @@ export const WithdrawalFeeCalculator = ({
     minBankFee: Satoshis
     imbalance: SwapOutImbalance
   }) => {
-    const imbalanceMinusThreshold = imbalance - thresholdImbalance
-    const aboveThreshold =
-      imbalanceMinusThreshold < 0 ? imbalanceMinusThreshold : imbalance
-    const baseAmount = Math.max(Math.min(aboveThreshold + amount, amount), 0)
+    const baseAmount = Math.max(
+      Math.min(imbalance - thresholdImbalance + amount, amount),
+      0,
+    )
     const bankFee = toSats(Math.max(minBankFee, Math.ceil(baseAmount * feeRatio)))
     return {
       totalFee: toSats(bankFee + minerFee),

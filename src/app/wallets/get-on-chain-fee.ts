@@ -87,6 +87,7 @@ export const getOnChainFee = async ({
   if (imbalance instanceof Error) return imbalance
 
   const fees = withdrawFeeCalculator.onChainWithdrawalFee({
+    amount: amountChecked,
     minerFee,
     minBankFee,
     imbalance,

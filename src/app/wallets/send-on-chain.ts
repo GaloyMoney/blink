@@ -400,6 +400,7 @@ const executePaymentViaOnChain = async ({
         if (imbalance instanceof Error) return imbalance
 
         const fees = withdrawFeeCalculator.onChainWithdrawalFee({
+          amount: amountToSend,
           minerFee,
           minBankFee: toSats(senderAccount.withdrawFee || feeConfig.withdrawDefaultMin),
           imbalance,
