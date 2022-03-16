@@ -2,6 +2,7 @@ import { onboardingEarn } from "@config"
 import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindUserFromIdError,
+  CouldNotFindUserFromKratosIdError,
   CouldNotFindUserFromPhoneError,
   RepositoryError,
   UnknownRepositoryError,
@@ -42,6 +43,22 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
+  const findByKratosUserId = async (
+    kratosUserId: KratosUserId,
+  ): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOne({ kratosUserId }, projection)
+
+      if (!result) {
+        return new CouldNotFindUserFromKratosIdError(kratosUserId)
+      }
+
+      return userFromRaw(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const persistNew = async ({
     phone,
     phoneMetadata,
@@ -50,6 +67,21 @@ export const UsersRepository = (): IUsersRepository => {
       const user = new User()
       user.phone = phone
       user.twilio = phoneMetadata
+      await user.save()
+      return userFromRaw(user)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
+  const persistNewKratosUser = async ({
+    kratosUserId,
+  }: {
+    kratosUserId: KratosUserId
+  }): Promise<User | RepositoryError> => {
+    try {
+      const user = new User()
+      user.kratosUserId = kratosUserId
       await user.save()
       return userFromRaw(user)
     } catch (err) {
@@ -87,7 +119,9 @@ export const UsersRepository = (): IUsersRepository => {
   return {
     findById,
     findByPhone,
+    findByKratosUserId,
     persistNew,
+    persistNewKratosUser,
     update,
   }
 }

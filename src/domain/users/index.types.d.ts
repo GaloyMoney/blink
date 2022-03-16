@@ -1,5 +1,9 @@
 type PhoneNumber = string & { readonly brand: unique symbol }
 type PhoneCode = string & { readonly brand: unique symbol }
+
+type KratosUserId = string & { readonly brand: unique symbol }
+type EmailAddress = string & { readonly brand: unique symbol }
+
 type UserLanguage =
   typeof import("./index").UserLanguage[keyof typeof import("./index").UserLanguage]
 
@@ -49,8 +53,8 @@ type User = {
   readonly defaultAccountId: AccountId
   readonly deviceTokens: DeviceToken[]
   readonly createdAt: Date
-  readonly phone: PhoneNumber
-  readonly phoneMetadata: PhoneMetadata | null
+  readonly phone?: PhoneNumber
+  readonly phoneMetadata?: PhoneMetadata
   readonly isEditor: boolean
   language: UserLanguage
   twoFA: TwoFAForUser
@@ -58,16 +62,22 @@ type User = {
 
 type NewUserInfo = {
   phone: PhoneNumber
-  phoneMetadata: PhoneMetadata | null
+  phoneMetadata?: PhoneMetadata
 }
 
 type PhoneMetadataValidator = {
-  validate(phoneMetadata: PhoneMetadata | null): true | ApplicationError
+  validate(phoneMetadata?: PhoneMetadata): true | ApplicationError
 }
 
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
+  findByKratosUserId(kratosUserId: KratosUserId): Promise<User | RepositoryError>
+  persistNewKratosUser({
+    kratosUserId,
+  }: {
+    kratosUserId: KratosUserId
+  }): Promise<User | RepositoryError>
   persistNew({ phone, phoneMetadata }: NewUserInfo): Promise<User | RepositoryError>
   update(user: User): Promise<User | RepositoryError>
 }

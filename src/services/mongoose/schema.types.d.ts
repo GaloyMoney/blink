@@ -55,6 +55,7 @@ type OnChainMongooseType = {
 
 interface UserRecord {
   _id: ObjectId
+  kratosUserId: string
 
   username: string | null
   phone: string

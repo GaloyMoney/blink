@@ -107,7 +107,7 @@ export const createUserAndWallet = async (entry) => {
           },
           countryCode: "US",
         }
-      : null
+      : undefined
     userRepo = await createUser({ phone, phoneMetadata })
     if (userRepo instanceof Error) throw userRepo
 

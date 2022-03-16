@@ -27,7 +27,7 @@ const GraphQLUser = GT.Object({
     },
 
     phone: {
-      type: GT.NonNull(Phone),
+      type: Phone,
       description: "Phone number with international calling code.",
     },
 

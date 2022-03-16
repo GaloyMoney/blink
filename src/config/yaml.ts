@@ -145,6 +145,9 @@ export const getRequestPhoneCodePerIpLimits = () =>
 export const getFailedLoginAttemptPerPhoneLimits = () =>
   getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerPhone)
 
+export const getfailedLoginAttemptPerEmailAddressLimits = () =>
+  getRateLimits(yamlConfig.rateLimits.failedLoginAttemptEmailAddress)
+
 export const getFailedLoginAttemptPerIpLimits = () =>
   getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerIp)
 
@@ -210,3 +213,4 @@ export const getTestAccounts = (config = yamlConfig): TestAccount[] =>
   config.test_accounts
 
 export const getCronConfig = (config = yamlConfig): CronConfig => config.cronConfig
+export const getKratosConfig = (config = yamlConfig): KratosConfig => config.kratosConfig

@@ -26,6 +26,7 @@ export const RateLimitPrefix = {
     "phone_code_attempt_phone_code_min_interval",
   requestPhoneCodeAttemptPerIp: "phone_code_attempt_ip",
   failedLoginAttemptPerPhone: "login_attempt_phone",
+  failedLoginAttemptPerEmailAddress: "login_attempt_email",
   failedLoginAttemptPerIp: "login_attempt_ip",
   invoiceCreate: "invoice_create",
   invoiceCreateForRecipient: "invoice_create_for_recipient",
@@ -50,6 +51,11 @@ export const RateLimitConfig: { [key: string]: RateLimitConfig } = {
   },
   failedLoginAttemptPerPhone: {
     key: RateLimitPrefix.failedLoginAttemptPerPhone,
+    limits: getFailedLoginAttemptPerPhoneLimits(),
+    error: UserLoginPhoneRateLimiterExceededError,
+  },
+  failedLoginAttemptPerEmailAddress: {
+    key: RateLimitPrefix.failedLoginAttemptPerEmailAddress,
     limits: getFailedLoginAttemptPerPhoneLimits(),
     error: UserLoginPhoneRateLimiterExceededError,
   },

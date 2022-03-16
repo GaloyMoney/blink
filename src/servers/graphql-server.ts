@@ -38,6 +38,7 @@ import { parseIps } from "@domain/users-ips"
 import { playgroundTabs } from "../graphql/playground"
 
 import healthzHandler from "./middlewares/healthz"
+import authRouter from "./auth-router"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -207,6 +208,8 @@ export const startApolloServer = async ({
           }
     },
   })
+
+  app.use("/auth", authRouter)
 
   app.use(
     helmet({

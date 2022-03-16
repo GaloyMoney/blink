@@ -73,6 +73,10 @@ rateLimits:
     points: 8
     duration: 1200 # 60 * 20 s
     blockDuration: 3600 # 60 * 60 s
+  failedLoginAttemptPerEmailAddress:
+    points: 8
+    duration: 1200 # 60 * 20 s
+    blockDuration: 3600 # 60 * 60 s
   failedLoginAttemptPerIp:
     points: 20
     duration: 21600 # 60 * 60 * 6 s
@@ -149,3 +153,7 @@ userActivenessMonthlyVolumeThreshold: 100 # cents
 
 cronConfig:
   rebalanceEnabled: true
+
+kratosConfig:
+  serverURL: "http://localhost:4433"
+  corsAllowedOrigins: ["http://localhost:3000"]

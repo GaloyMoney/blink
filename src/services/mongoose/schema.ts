@@ -180,10 +180,10 @@ const UserSchema = new Schema<UserRecord>(
 
     // TODO: refactor, have phone and twilio metadata in the same sub-object.
     phone: {
-      // TODO we should store country as a separate string
       type: String,
-      required: true,
+      index: true,
       unique: true,
+      sparse: true,
     },
     twilio: {
       // TODO: rename to PhoneMetadata
@@ -198,6 +198,13 @@ const UserSchema = new Schema<UserRecord>(
         },
       },
       countryCode: String,
+    },
+
+    kratosUserId: {
+      type: String,
+      index: true,
+      unique: true,
+      sparse: true,
     },
 
     username: {

@@ -264,6 +264,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "BadAmountForRouteError":
     case "InvalidUsername":
     case "InvalidPhoneNumber":
+    case "InvalidEmailAddress":
     case "InvalidWalletId":
     case "LessThanDustThresholdError":
     case "InvalidTargetConfirmations":
@@ -341,6 +342,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidCurrencyBaseAmountError":
     case "NoTransactionToUpdateError":
     case "BalanceLessThanZeroError":
+    case "CouldNotFindUserFromKratosIdError":
+    case "MissingPhoneError":
+    case "InvalidKratosUserId":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
