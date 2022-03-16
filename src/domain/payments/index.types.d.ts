@@ -1,3 +1,8 @@
+type PriceRatio = {
+  convertFromUsd(convert: UsdPaymentAmount): BtcPaymentAmount
+  convertFromBtc(convert: BtcPaymentAmount): UsdPaymentAmount
+}
+
 type PaymentFlowState<S extends WalletCurrency, R extends WalletCurrency> = {
   senderWalletId: WalletId
   senderWalletCurrency: S

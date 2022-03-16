@@ -3,6 +3,7 @@ import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
   CouldNotFindLightningPaymentFlowError,
+  PriceRatio,
 } from "@domain/payments"
 import { checkedToWalletId } from "@domain/wallets"
 import {
@@ -91,6 +92,10 @@ export const payInvoiceByWalletId = async ({
   const limitCheck = await newCheckWithdrawalLimits({
     amount: paymentFlow.paymentAmountInUsd(),
     wallet: senderWallet,
+    priceRatio: PriceRatio({
+      usd: paymentFlow.paymentAmountInUsd(),
+      btc: paymentFlow.paymentAmountInBtc(),
+    }),
   })
   if (limitCheck instanceof Error) return limitCheck
 

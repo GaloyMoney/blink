@@ -3,6 +3,7 @@ import { checkedToWalletId } from "@domain/wallets"
 import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
+  PriceRatio,
 } from "@domain/payments"
 import { LndService } from "@services/lnd"
 import { PaymentsRepository } from "@services/redis"
@@ -79,12 +80,17 @@ const estimateLightningFee = async ({
 
   const usdPaymentAmount = await builder.usdPaymentAmount()
   if (usdPaymentAmount instanceof Error) return usdPaymentAmount
+  const btcPaymentAmount = await builder.btcPaymentAmount()
+  if (btcPaymentAmount instanceof Error) return btcPaymentAmount
+
+  const priceRatio = PriceRatio({ usd: usdPaymentAmount, btc: btcPaymentAmount })
 
   let paymentFlow
   if (!(await builder.needsRoute())) {
     const limitCheck = await newCheckIntraledgerLimits({
       amount: usdPaymentAmount,
       wallet: senderWallet,
+      priceRatio,
     })
     if (limitCheck instanceof Error) return limitCheck
 
@@ -93,11 +99,9 @@ const estimateLightningFee = async ({
     const limitCheck = await newCheckWithdrawalLimits({
       amount: usdPaymentAmount,
       wallet: senderWallet,
+      priceRatio,
     })
     if (limitCheck instanceof Error) return limitCheck
-
-    const btcPaymentAmount = await builder.btcPaymentAmount()
-    if (btcPaymentAmount instanceof Error) return btcPaymentAmount
 
     const lndService = LndService()
     if (lndService instanceof Error) return lndService

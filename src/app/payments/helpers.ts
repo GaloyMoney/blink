@@ -10,7 +10,7 @@ import { LedgerService } from "@services/ledger"
 const dealer = NewDealerPriceService()
 const ledger = LedgerService()
 
-export const usdFromBtcMidPriceFn = async (
+const usdFromBtcMidPriceFn = async (
   amount: BtcPaymentAmount,
 ): Promise<UsdPaymentAmount | DealerPriceServiceError> => {
   const midPriceRatio = await dealer.getCentsPerSatsExchangeMidRate()
@@ -22,7 +22,7 @@ export const usdFromBtcMidPriceFn = async (
   }
 }
 
-export const btcFromUsdMidPriceFn = async (
+const btcFromUsdMidPriceFn = async (
   amount: UsdPaymentAmount,
 ): Promise<BtcPaymentAmount | DealerPriceServiceError> => {
   const midPriceRatio = await dealer.getCentsPerSatsExchangeMidRate()
@@ -93,9 +93,11 @@ export const constructPaymentFlowBuilder = async ({
 export const newCheckIntraledgerLimits = async ({
   amount,
   wallet,
+  priceRatio,
 }: {
   amount: UsdPaymentAmount
   wallet: Wallet
+  priceRatio: PriceRatio
 }) => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await ledger.intraledgerTxBaseVolumeAmountSince({
@@ -111,7 +113,7 @@ export const newCheckIntraledgerLimits = async ({
   const accountLimits = getAccountLimits({ level: account.level })
   const { checkIntraledger } = AccountLimitsChecker({
     accountLimits,
-    usdFromBtcMidPriceFn,
+    priceRatio,
   })
 
   return checkIntraledger({
@@ -123,9 +125,11 @@ export const newCheckIntraledgerLimits = async ({
 export const newCheckWithdrawalLimits = async ({
   amount,
   wallet,
+  priceRatio,
 }: {
   amount: UsdPaymentAmount
   wallet: Wallet
+  priceRatio: PriceRatio
 }) => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await ledger.externalPaymentVolumeAmountSince({
@@ -140,7 +144,7 @@ export const newCheckWithdrawalLimits = async ({
   const accountLimits = getAccountLimits({ level: account.level })
   const { checkWithdrawal } = AccountLimitsChecker({
     accountLimits,
-    usdFromBtcMidPriceFn,
+    priceRatio,
   })
 
   return checkWithdrawal({
@@ -152,9 +156,11 @@ export const newCheckWithdrawalLimits = async ({
 export const newCheckTwoFALimits = async ({
   amount,
   wallet,
+  priceRatio,
 }: {
   amount: UsdPaymentAmount
   wallet: Wallet
+  priceRatio: PriceRatio
 }) => {
   const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await ledger.allPaymentVolumeAmountSince({
@@ -164,7 +170,7 @@ export const newCheckTwoFALimits = async ({
   })
   if (walletVolume instanceof Error) return walletVolume
   const twoFALimits = getTwoFALimits()
-  const { checkTwoFA } = TwoFALimitsChecker({ twoFALimits, usdFromBtcMidPriceFn })
+  const { checkTwoFA } = TwoFALimitsChecker({ twoFALimits, priceRatio })
 
   return checkTwoFA({
     amount,

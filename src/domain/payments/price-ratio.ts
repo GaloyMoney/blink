@@ -6,7 +6,7 @@ export const PriceRatio = ({
 }: {
   usd: UsdPaymentAmount
   btc: BtcPaymentAmount
-}) => {
+}): PriceRatio => {
   const convertFromUsd = (convert: UsdPaymentAmount): BtcPaymentAmount => {
     return {
       amount: (convert.amount * btc.amount) / usd.amount,

@@ -8,10 +8,10 @@ import { addAttributesToCurrentSpan } from "@services/tracing"
 
 export const AccountLimitsChecker = ({
   accountLimits,
-  usdFromBtcMidPriceFn,
+  priceRatio,
 }: {
   accountLimits: IAccountLimits
-  usdFromBtcMidPriceFn: UsdFromBtcMidPriceFn
+  priceRatio: PriceRatio
 }): AccountLimitsChecker => {
   const checkIntraledger = async ({
     amount,
@@ -19,7 +19,9 @@ export const AccountLimitsChecker = ({
   }: NewLimiterCheckInputs): Promise<true | LimitsExceededError> => {
     const volumeInUsdAmount =
       walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
-        ? await usdFromBtcMidPriceFn(walletVolume.outgoingBaseAmount as BtcPaymentAmount)
+        ? await priceRatio.convertFromBtc(
+            walletVolume.outgoingBaseAmount as BtcPaymentAmount,
+          )
         : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
     if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
@@ -46,7 +48,9 @@ export const AccountLimitsChecker = ({
   }: NewLimiterCheckInputs): Promise<true | LimitsExceededError> => {
     const volumeInUsdAmount =
       walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
-        ? await usdFromBtcMidPriceFn(walletVolume.outgoingBaseAmount as BtcPaymentAmount)
+        ? await priceRatio.convertFromBtc(
+            walletVolume.outgoingBaseAmount as BtcPaymentAmount,
+          )
         : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
     if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
@@ -75,10 +79,10 @@ export const AccountLimitsChecker = ({
 
 export const TwoFALimitsChecker = ({
   twoFALimits,
-  usdFromBtcMidPriceFn,
+  priceRatio,
 }: {
   twoFALimits: TwoFALimits
-  usdFromBtcMidPriceFn: UsdFromBtcMidPriceFn
+  priceRatio: PriceRatio
 }): TwoFALimitsChecker => {
   const checkTwoFA = async ({
     amount,
@@ -86,7 +90,9 @@ export const TwoFALimitsChecker = ({
   }: NewLimiterCheckInputs): Promise<true | LimitsExceededError> => {
     const volumeInUsdAmount =
       walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
-        ? await usdFromBtcMidPriceFn(walletVolume.outgoingBaseAmount as BtcPaymentAmount)
+        ? await priceRatio.convertFromBtc(
+            walletVolume.outgoingBaseAmount as BtcPaymentAmount,
+          )
         : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
     if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
