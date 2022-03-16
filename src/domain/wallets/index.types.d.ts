@@ -162,6 +162,7 @@ type OnChainWithdrawalFeeArgs = {
   minerFee: Satoshis
   minBankFee: Satoshis
   imbalance: SwapOutImbalance
+  amount: Satoshis
 }
 
 type WithdrawalFeePriceMethod =
