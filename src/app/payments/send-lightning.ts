@@ -84,69 +84,81 @@ export const payInvoiceByWalletId = async ({
   // ===
   // LN
   // ===
+  const executePaymentViaLn = async ({
+    decodedInvoice,
+    paymentFlow,
+    logger,
+  }: {
+    decodedInvoice: LnInvoice
+    paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
+    logger: Logger
+  }): Promise<PaymentSendStatus | ApplicationError> => {
+    // - limits check
+    const limitCheck = await newCheckWithdrawalLimits({
+      amount: paymentFlow.paymentAmountInUsd(),
+      wallet: senderWallet,
+      priceRatio: PriceRatio({
+        usd: paymentFlow.paymentAmountInUsd(),
+        btc: paymentFlow.paymentAmountInBtc(),
+      }),
+    })
+    if (limitCheck instanceof Error) return limitCheck
 
-  // - limits check
-  const limitCheck = await newCheckWithdrawalLimits({
-    amount: paymentFlow.paymentAmountInUsd(),
-    wallet: senderWallet,
-    priceRatio: PriceRatio({
-      usd: paymentFlow.paymentAmountInUsd(),
-      btc: paymentFlow.paymentAmountInBtc(),
-    }),
-  })
-  if (limitCheck instanceof Error) return limitCheck
+    // - get cached route if exists
+    const { rawRoute, outgoingNodePubkey } = paymentFlow.routeFromCachedRoute()
 
-  // - get cached route if exists
-  const { rawRoute, outgoingNodePubkey } = paymentFlow.routeFromCachedRoute()
+    // - validate route amount?
 
-  // - validate route amount?
+    // - amount + fee in display currency?
 
-  // - amount + fee in display currency?
-
-  // - ENTER LOCK
-  return LockService().lockWalletId(
-    { walletId: senderWallet.id, logger },
-    async (lock) => {
-      if (paymentFlow instanceof Error) return paymentFlow
-
-      // - get balance
-      const balance = await LedgerService().getWalletBalanceAmount({
-        walletId: senderWallet.id,
-        walletCurrency: senderWallet.currency,
-      })
-      if (balance instanceof Error) return balance
-
-      const paymentAmountInSenderWalletCurrency =
-        paymentFlow.paymentAmountInSenderWalletCurrency()
-
-      if (balance.amount < paymentAmountInSenderWalletCurrency.amount) {
-        const unitForMsg = senderWallet.currency === WalletCurrency.Btc ? "sats" : "cents"
-        return new InsufficientBalanceError(
-          `Payment amount '${paymentAmountInSenderWalletCurrency.amount}' ${unitForMsg} exceeds balance '${balance.amount}'`,
-        )
-      }
-
-      const journal = await LockService().extendLock({ logger, lock }, async () => {
+    // - ENTER LOCK
+    return LockService().lockWalletId(
+      { walletId: senderWallet.id, logger },
+      async (lock) => {
         if (paymentFlow instanceof Error) return paymentFlow
 
-        // - TODO: record initial transaction
+        // - get balance
+        const balance = await LedgerService().getWalletBalanceAmount({
+          walletId: senderWallet.id,
+          walletCurrency: senderWallet.currency,
+        })
+        if (balance instanceof Error) return balance
 
-        const payResult = rawRoute
-          ? await lndService.payInvoiceViaRoutes({
-              paymentHash,
-              rawRoute,
-              pubkey: outgoingNodePubkey,
-            })
-          : await lndService.newPayInvoiceViaPaymentDetails({
-              decodedInvoice,
-              btcPaymentAmount: paymentFlow.paymentAmountInBtc(),
-              maxFeeAmount: paymentFlow.protocolFeeInBtc(),
-            })
-      })
+        const paymentAmount = paymentFlow.paymentAmountInSenderWalletCurrency()
 
-      return PaymentSendStatus.Success
-    },
-  )
+        if (balance.amount < paymentAmount.amount) {
+          const unitForMsg =
+            senderWallet.currency === WalletCurrency.Btc ? "sats" : "cents"
+          return new InsufficientBalanceError(
+            `Payment amount '${paymentAmount.amount}' ${unitForMsg} exceeds balance '${balance.amount}'`,
+          )
+        }
+
+        const journal = await LockService().extendLock({ logger, lock }, async () => {
+          if (paymentFlow instanceof Error) return paymentFlow
+
+          // - TODO: record initial transaction
+
+          const lndService = LndService()
+          if (lndService instanceof Error) return lndService
+
+          const payResult = rawRoute
+            ? await lndService.payInvoiceViaRoutes({
+                paymentHash,
+                rawRoute,
+                pubkey: outgoingNodePubkey,
+              })
+            : await lndService.newPayInvoiceViaPaymentDetails({
+                decodedInvoice,
+                btcPaymentAmount: paymentFlow.paymentAmountInBtc(),
+                maxFeeAmount: paymentFlow.protocolFeeInBtc(),
+              })
+        })
+
+        return PaymentSendStatus.Success
+      },
+    )
+  }
 
   // ===
   // Intraledger
