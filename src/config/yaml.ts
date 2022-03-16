@@ -146,7 +146,7 @@ export const getFailedLoginAttemptPerPhoneLimits = () =>
   getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerPhone)
 
 export const getfailedLoginAttemptPerEmailAddressLimits = () =>
-  getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerPhone)
+  getRateLimits(yamlConfig.rateLimits.failedLoginAttemptEmailAddress)
 
 export const getFailedLoginAttemptPerIpLimits = () =>
   getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerIp)
