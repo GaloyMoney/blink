@@ -68,6 +68,7 @@ export const constructPaymentFlowBuilder = async ({
     const {
       walletId: recipientWalletId,
       currency: recipientsWalletCurrency,
+      pubkey: recipientPubkey,
       cents,
     } = walletInvoice
     const usdPaymentAmount =
@@ -79,6 +80,7 @@ export const constructPaymentFlowBuilder = async ({
       .withRecipientWallet({
         id: recipientWalletId,
         currency: recipientsWalletCurrency,
+        pubkey: recipientPubkey,
         usdPaymentAmount,
       })
       .withConversion({
