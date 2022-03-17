@@ -1,4 +1,3 @@
-import { TWO_WEEKS_IN_MS } from "@config"
 import { UnknownLightningServiceError } from "@domain/bitcoin/lightning"
 import { LndService } from "@services/lnd"
 import { LnPaymentsRepository } from "@services/mongoose"
@@ -8,12 +7,7 @@ import {
   SemanticAttributes,
 } from "@services/tracing"
 
-export const deleteLndPaymentsBefore2Weeks = async () => {
-  const timestamp2Weeks = new Date(Date.now() - TWO_WEEKS_IN_MS)
-  return deleteLnPaymentsBefore(timestamp2Weeks)
-}
-
-const deleteLnPaymentsBefore = async (
+export const deleteLnPaymentsBefore = async (
   timestamp: Date,
 ): Promise<true | ApplicationError> => {
   const paymentHashesBefore = await listAllPaymentsBefore(timestamp)

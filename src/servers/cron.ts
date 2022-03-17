@@ -12,7 +12,7 @@ import { setupMongoConnection } from "@services/mongodb"
 
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { ColdStorage, Lightning, Wallets, Payments } from "@app"
-import { getCronConfig } from "@config"
+import { getCronConfig, TWO_WEEKS_IN_MS } from "@config"
 
 const logger = baseLogger.child({ module: "cron" })
 
@@ -48,12 +48,19 @@ const main = async () => {
     if (result instanceof Error) throw result
   }
 
+  const deleteLndPaymentsBefore2Weeks = async () => {
+    const timestamp2Weeks = new Date(Date.now() - TWO_WEEKS_IN_MS)
+    const result = Lightning.deleteLnPaymentsBefore(timestamp2Weeks)
+    if (result instanceof Error) throw result
+  }
+
   const tasks = [
     updateEscrows,
     updatePendingLightningInvoices,
     updatePendingLightningPayments,
     updateLnPaymentsCollection,
     deleteExpiredInvoices,
+    deleteLndPaymentsBefore2Weeks,
     deleteFailedPaymentsAttemptAllLnds,
     updateRoutingRevenues,
     updateOnChainReceipt,
