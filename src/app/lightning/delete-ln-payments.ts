@@ -2,8 +2,13 @@ import { TWO_WEEKS_IN_MS } from "@config"
 import { UnknownLightningServiceError } from "@domain/bitcoin/lightning"
 import { LndService } from "@services/lnd"
 import { LnPaymentsRepository } from "@services/mongoose"
+import {
+  addAttributesToCurrentSpan,
+  asyncRunInSpan,
+  SemanticAttributes,
+} from "@services/tracing"
 
-export const deleteLnPaymentsBefore2Weeks = async () => {
+export const deleteLndPaymentsBefore2Weeks = async () => {
   const timestamp2Weeks = new Date(Date.now() - TWO_WEEKS_IN_MS)
   return deleteLnPaymentsBefore(timestamp2Weeks)
 }
@@ -27,20 +32,35 @@ const checkAndDeletePaymentForHash = async ({
 }: {
   paymentHash: PaymentHash
   pubkey: Pubkey
-}): Promise<boolean | ApplicationError> => {
-  const lnPayment = await LnPaymentsRepository().findByPaymentHash(paymentHash)
-  if (lnPayment instanceof Error) return lnPayment
+}): Promise<boolean | ApplicationError> =>
+  asyncRunInSpan(
+    "app.lightning.checkAndDeletePaymentForHash",
+    {
+      attributes: {
+        [SemanticAttributes.CODE_FUNCTION]: "checkAndDeletePaymentForHash",
+        [SemanticAttributes.CODE_NAMESPACE]: "lightning",
+        paymentHash,
+        pubkey,
+        deleted: false,
+      },
+    },
+    async () => {
+      const lnPayment = await LnPaymentsRepository().findByPaymentHash(paymentHash)
+      if (lnPayment instanceof Error) return lnPayment
 
-  if (!lnPayment.isCompleteRecord) return false
+      addAttributesToCurrentSpan({ isCompleteRecord: lnPayment.isCompleteRecord })
+      if (!lnPayment.isCompleteRecord) return false
 
-  const lndService = LndService()
-  if (lndService instanceof Error) return lndService
+      const lndService = LndService()
+      if (lndService instanceof Error) return lndService
 
-  const deleted = lndService.deletePaymentByHash({ paymentHash, pubkey })
-  if (deleted instanceof Error) return deleted
+      const deleted = lndService.deletePaymentByHash({ paymentHash, pubkey })
+      if (deleted instanceof Error) return deleted
+      addAttributesToCurrentSpan({ deleted: true })
 
-  return true
-}
+      return true
+    },
+  )
 
 const listAllPaymentsBefore = async function* (
   timestamp: Date,
