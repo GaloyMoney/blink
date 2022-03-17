@@ -16,6 +16,7 @@ import {
   PayViaPaymentDetailsResult,
   payViaRoutes,
   PayViaRoutesResult,
+  deletePayment,
 } from "lightning"
 import lnService from "ln-service"
 
@@ -386,6 +387,51 @@ export const LndService = (
     }
   }
 
+  const deletePaymentByHash = async ({
+    paymentHash,
+    pubkey,
+  }: {
+    paymentHash: PaymentHash
+    pubkey?: Pubkey
+  }): Promise<true | LightningServiceError> => {
+    const offchainLnds = pubkey ? [{ pubkey }] : getLnds({ type: "offchain" })
+    for (const { pubkey } of offchainLnds) {
+      const payment = await deletePaymentByPubkeyAndHash({
+        pubkey: pubkey as Pubkey,
+        paymentHash,
+      })
+      if (payment instanceof Error) return payment
+      if (!payment) continue
+      return payment
+    }
+
+    return true
+  }
+
+  const deletePaymentByPubkeyAndHash = async ({
+    paymentHash,
+    pubkey,
+  }: {
+    paymentHash: PaymentHash
+    pubkey: Pubkey
+  }): Promise<boolean | LightningServiceError> => {
+    const lnd = getLndFromPubkey({ pubkey })
+    if (lnd instanceof Error) return lnd
+
+    try {
+      await deletePayment({ id: paymentHash, lnd })
+      return true
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.PaymentForDeleteNotFound:
+          return false
+        default:
+          return new UnknownRouteNotFoundError(err)
+      }
+    }
+  }
+
   const cancelInvoice = async ({
     pubkey,
     paymentHash,
@@ -524,6 +570,7 @@ export const LndService = (
       listSettledPayments: listPaymentsFactory(getPayments),
       listPendingPayments: listPaymentsFactory(getPendingPayments),
       listFailedPayments,
+      deletePaymentByHash,
       cancelInvoice,
       payInvoiceViaRoutes,
       payInvoiceViaPaymentDetails,
@@ -607,6 +654,7 @@ const KnownLndErrorDetails = {
   ProbeForRouteTimedOut: "ProbeForRouteTimedOut",
   SentPaymentNotFound: "SentPaymentNotFound",
   PaymentInTransition: "payment is in transition",
+  PaymentForDeleteNotFound: "non bucket element in payments bucket",
 } as const
 
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({
