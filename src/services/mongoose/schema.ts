@@ -143,6 +143,8 @@ const UserSchema = new Schema<UserRecord>(
           city: String,
           //using Type instead of type due to its special status in mongoose
           Type: String,
+          asn: String,
+          proxy: Boolean,
           firstConnection: {
             type: Date,
             default: Date.now,

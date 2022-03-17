@@ -7,6 +7,8 @@ type IPType = {
   region?: string
   city?: string
   Type?: string
+  asn?: string
+  proxy?: boolean
   firstConnection: Date
   lastConnection: Date
 }
@@ -85,6 +87,8 @@ interface UserRecord {
     city: string
     //using Type instead of type due to its special status in mongoose
     Type: string
+    asn?: string
+    proxy?: boolean
     firstConnection: Date
     lastConnection: Date
   }[]
