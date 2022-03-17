@@ -32,9 +32,7 @@ type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFl
   protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
   protocolFeeInBtc(): BtcPaymentAmount
   paymentAmountInSenderWalletCurrency(): PaymentAmount<S>
-  paymentAmountInBtc(): BtcPaymentAmount
-  paymentAmountInUsd(): UsdPaymentAmount
-  routeFromCachedRoute(): {
+  routeDetails(): {
     rawRoute?: RawRoute
     outgoingNodePubkey?: Pubkey
   }
