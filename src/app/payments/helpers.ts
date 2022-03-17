@@ -6,6 +6,7 @@ import { NewDealerPriceService } from "@services/dealer-price"
 import { AccountsRepository, WalletInvoicesRepository } from "@services/mongoose"
 import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
+import { AlreadyPaidError } from "@domain/errors"
 
 const dealer = NewDealerPriceService()
 const ledger = LedgerService()
@@ -61,6 +62,8 @@ export const constructPaymentFlowBuilder = async ({
     const invoicesRepo = WalletInvoicesRepository()
     const walletInvoice = await invoicesRepo.findByPaymentHash(invoice.paymentHash)
     if (walletInvoice instanceof Error) return walletInvoice
+
+    if (walletInvoice.paid) return new AlreadyPaidError(walletInvoice.paymentHash)
 
     const {
       walletId: recipientWalletId,
