@@ -54,6 +54,25 @@ input BusinessUpdateMapInfoInput {
   username: Username!
 }
 
+type CaptchaCreateChallengePayload {
+  errors: [Error!]!
+  result: CaptchaCreateChallengeResult
+}
+
+type CaptchaCreateChallengeResult {
+  challengeCode: String!
+  failbackMode: Boolean!
+  id: String!
+  newCaptcha: Boolean!
+}
+
+input CaptchaRequestAuthCodeInput {
+  challengeCode: String!
+  phone: Phone!
+  secCode: String!
+  validationCode: String!
+}
+
 input ColdStorageRebalanceToHotWalletInput {
   amount: SatAmount!
   targetConfirmations: TargetConfirmations = 1
@@ -153,6 +172,8 @@ type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
   businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
+  captchaCreateChallenge: CaptchaCreateChallengePayload!
+  captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
   coldStorageRebalanceToHotWallet(
     input: ColdStorageRebalanceToHotWalletInput!
   ): PsbtDetailPayload!
