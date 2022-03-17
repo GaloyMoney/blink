@@ -82,15 +82,21 @@ export const getLndParams = (): LndParams[] => {
   }))
 }
 
-export const getFeesConfig = (feesConfig = yamlConfig.fees): FeesConfig => ({
-  depositFeeVariable: feesConfig.deposit,
-  depositFeeFixed: toSats(0),
-  withdrawMethod: WithdrawalFeePriceMethod[feesConfig.withdraw.method],
-  withdrawRatio: feesConfig.withdraw.ratio,
-  withdrawThreshold: feesConfig.withdraw.threshold,
-  withdrawDaysLookback: feesConfig.withdraw.daysLookback,
-  withdrawDefaultMin: toSats(feesConfig.withdraw.defaultMin),
-})
+export const getFeesConfig = (feesConfig = yamlConfig.fees): FeesConfig => {
+  const withdrawMethod = WithdrawalFeePriceMethod[feesConfig.withdraw.method]
+  const withdrawRatio =
+    withdrawMethod === WithdrawalFeePriceMethod.flat ? 0 : feesConfig.withdraw.ratio
+
+  return {
+    depositFeeVariable: feesConfig.deposit,
+    depositFeeFixed: toSats(0),
+    withdrawMethod,
+    withdrawRatio,
+    withdrawThreshold: feesConfig.withdraw.threshold,
+    withdrawDaysLookback: feesConfig.withdraw.daysLookback,
+    withdrawDefaultMin: toSats(feesConfig.withdraw.defaultMin),
+  }
+}
 
 export const getAccountLimits = ({
   level,
