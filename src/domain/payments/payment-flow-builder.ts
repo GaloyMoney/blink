@@ -147,8 +147,10 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
   const withRecipientWallet = <R extends WalletCurrency>({
     id: recipientWalletId,
     currency: recipientWalletCurrency,
+    pubkey: recipientPubkey,
     usdPaymentAmount,
   }: WalletDescriptor<R> & {
+    pubkey: Pubkey
     usdPaymentAmount?: UsdPaymentAmount
   }): LPFBWithRecipientWallet<S, R> | LPFBWithError => {
     if (recipientWalletId === state.senderWalletId) {
@@ -170,6 +172,7 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
       ...state,
       recipientWalletId,
       recipientWalletCurrency,
+      recipientPubkey,
       usdPaymentAmount: usdPaymentAmount || state.usdPaymentAmount,
     })
   }
