@@ -27,6 +27,7 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { createObjectCsvWriter } from "csv-writer"
+import QRCode from "qrcode"
 
 const headers_field = ["accountId", "jwtToken", "usdWalletId", "btcWalletId", "level"]
 
@@ -42,6 +43,10 @@ type generatedWallets = {
   usdWalletId: WalletId
   jwtToken: JwtToken
   level: AccountLevel
+}
+
+const generateAndWriteQRCode = async (content: string, filename: string) => {
+  await QRCode.toFile(`./${filename}.png`, content)
 }
 
 const generateWallets = async (count: number, level: AccountLevel) => {
@@ -87,6 +92,8 @@ const generateWallets = async (count: number, level: AccountLevel) => {
       jwtToken,
       level,
     })
+
+    await generateAndWriteQRCode(jwtToken, account.id)
   }
 
   return wallets
