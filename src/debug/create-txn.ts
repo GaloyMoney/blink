@@ -21,14 +21,10 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 
-const getRandomInvalidPhone = () => {
-  return `+abc${Math.floor(Math.random() * 999_999_999_999_999)}`
-}
-
 const consolidateFunds = async (sats: Satoshis) => {
   await setupMongoConnection()
 
-  const phone = getRandomInvalidPhone() as PhoneNumber
+  const phone = "+1928282928" as PhoneNumber
 
   const user = await UsersRepository().persistNew({ phone, phoneMetadata: undefined })
   if (user instanceof Error) return user
