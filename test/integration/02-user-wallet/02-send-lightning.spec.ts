@@ -474,258 +474,6 @@ describe("UserWallet - Lightning Pay", () => {
     expect(imbalanceFinal).toBe(imbalanceInit - amountInvoice)
   })
 
-  // TODO: add probing scenarios
-  it("pay amountless invoice from usd wallet", async () => {
-    const dealerUsdWalletId = await getDealerUsdWalletId()
-    const dealerInitialUsdB = await getBalanceHelper(dealerUsdWalletId)
-    const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
-
-    const { request } = await createInvoice({ lnd: lndOutside1 })
-
-    const amountPayment = toCents(100)
-
-    const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
-      paymentRequest: request as EncodedPaymentRequest,
-      memo: null,
-      amount: amountPayment,
-      senderWalletId: walletIdUsdB,
-      senderAccount: accountB,
-      logger: baseLogger,
-    })
-    if (paymentResult instanceof Error) throw paymentResult
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-
-    const dealerFns = DealerPriceService()
-    const sats = await dealerFns.getSatsFromCentsForImmediateSell(amountPayment)
-    if (sats instanceof Error) throw sats
-
-    const finalBalance = await getBalanceHelper(walletIdUsdB)
-    expect(finalBalance).toBe(initBalanceUsdB - amountPayment)
-    const dealerFinalBalance = await getBalanceHelper(dealerUsdWalletId)
-    expect(dealerFinalBalance).toBe(dealerInitialUsdB + amountPayment)
-  })
-
-  it("pay amountfull invoice from usd wallet", async () => {
-    const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
-
-    const amountPayment = toSats(100)
-
-    const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountPayment })
-
-    const paymentResult = await Wallets.payInvoiceByWalletId({
-      paymentRequest: request as EncodedPaymentRequest,
-      memo: null,
-      senderWalletId: walletIdUsdB,
-      senderAccount: accountB,
-      logger: baseLogger,
-    })
-    if (paymentResult instanceof Error) throw paymentResult
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-
-    const dealerFns = DealerPriceService()
-    const cents = await dealerFns.getCentsFromSatsForImmediateSell(amountPayment)
-    if (cents instanceof Error) throw cents
-
-    const finalBalance = await getBalanceHelper(walletIdUsdB)
-    expect(finalBalance).toBe(initBalanceUsdB - cents)
-  })
-
-  it("pay invoice with amount from usd wallet to usd wallet", async () => {
-    const initBalanceUsdA = toCents(await getBalanceHelper(walletIdUsdA))
-    const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
-
-    const amountPayment = toCents(6)
-
-    const request = await Wallets.addInvoiceForSelf({
-      walletId: walletIdUsdA,
-      amount: amountPayment,
-    })
-    if (request instanceof Error) throw request
-    const { paymentRequest } = request
-
-    const paymentResult = await Wallets.payInvoiceByWalletId({
-      paymentRequest,
-      memo: null,
-      senderWalletId: walletIdUsdB,
-      senderAccount: accountB,
-      logger: baseLogger,
-    })
-    if (paymentResult instanceof Error) throw paymentResult
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-
-    const finalBalanceB = await getBalanceHelper(walletIdUsdB)
-    const finalBalanceA = await getBalanceHelper(walletIdUsdA)
-
-    expect(finalBalanceB).toBe(initBalanceUsdB - amountPayment)
-    expect(finalBalanceA).toBe(initBalanceUsdA + amountPayment)
-  })
-
-  it("pay amountless invoice from usd wallet to usd wallet", async () => {
-    const initBalanceUsdA = toCents(await getBalanceHelper(walletIdUsdA))
-    const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
-
-    const amountPayment = toCents(7)
-
-    const request = await Wallets.addInvoiceNoAmountForSelf({
-      walletId: walletIdUsdA,
-    })
-    if (request instanceof Error) throw request
-    const { paymentRequest } = request
-
-    const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
-      paymentRequest,
-      memo: null,
-      senderWalletId: walletIdUsdB,
-      senderAccount: accountB,
-      logger: baseLogger,
-      amount: amountPayment,
-    })
-    if (paymentResult instanceof Error) throw paymentResult
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-
-    const finalBalanceB = await getBalanceHelper(walletIdUsdB)
-    const finalBalanceA = await getBalanceHelper(walletIdUsdA)
-
-    expect(finalBalanceB).toBe(initBalanceUsdB - amountPayment)
-    expect(finalBalanceA).toBe(initBalanceUsdA + amountPayment)
-  })
-
-  it("pay amountless invoice from usd wallet to btc wallet", async () => {
-    const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
-    const initBalanceA = toSats(await getBalanceHelper(walletIdA))
-
-    const amountPayment = toCents(4)
-
-    const request = await Wallets.addInvoiceNoAmountForSelf({
-      walletId: walletIdA,
-    })
-    if (request instanceof Error) throw request
-    const { paymentRequest } = request
-
-    const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
-      paymentRequest,
-      memo: null,
-      senderWalletId: walletIdUsdB,
-      senderAccount: accountB,
-      logger: baseLogger,
-      amount: amountPayment,
-    })
-    if (paymentResult instanceof Error) throw paymentResult
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-
-    const dealerFns = DealerPriceService()
-    const sats = await dealerFns.getSatsFromCentsForImmediateSell(amountPayment)
-    if (sats instanceof Error) throw sats
-
-    const finalBalanceB = await getBalanceHelper(walletIdUsdB)
-    const finalBalanceA = await getBalanceHelper(walletIdA)
-
-    expect(finalBalanceB).toBe(initBalanceUsdB - amountPayment)
-    expect(finalBalanceA).toBe(initBalanceA + sats)
-  })
-
-  it("pay amountfull invoice from usd wallet to btc wallet", async () => {
-    const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
-    const initBalanceA = toSats(await getBalanceHelper(walletIdA))
-
-    const amountPayment = toSats(60)
-
-    const request = await Wallets.addInvoiceForSelf({
-      walletId: walletIdA,
-      amount: amountPayment,
-    })
-    if (request instanceof Error) throw request
-    const { paymentRequest } = request
-
-    const paymentResult = await Wallets.payInvoiceByWalletId({
-      paymentRequest,
-      memo: null,
-      senderWalletId: walletIdUsdB,
-      senderAccount: accountB,
-      logger: baseLogger,
-    })
-    if (paymentResult instanceof Error) throw paymentResult
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-
-    const dealerFns = DealerPriceService()
-    const cents = await dealerFns.getCentsFromSatsForImmediateSell(amountPayment)
-    if (cents instanceof Error) throw cents
-
-    const finalBalanceB = await getBalanceHelper(walletIdUsdB)
-    const finalBalanceA = await getBalanceHelper(walletIdA)
-
-    expect(finalBalanceB).toBe(initBalanceUsdB - cents)
-    expect(finalBalanceA).toBe(initBalanceA + amountPayment)
-  })
-
-  it("pay amountless invoice from btc wallet to usd wallet", async () => {
-    const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
-    const initBalanceA = toSats(await getBalanceHelper(walletIdA))
-
-    const amountPayment = toSats(50)
-
-    const request = await Wallets.addInvoiceNoAmountForSelf({
-      walletId: walletIdUsdB,
-    })
-    if (request instanceof Error) throw request
-    const { paymentRequest } = request
-
-    const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
-      paymentRequest,
-      memo: null,
-      senderWalletId: walletIdA,
-      senderAccount: accountA,
-      logger: baseLogger,
-      amount: amountPayment,
-    })
-    if (paymentResult instanceof Error) throw paymentResult
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-
-    const dealerFns = DealerPriceService()
-    const cents = await dealerFns.getCentsFromSatsForImmediateBuy(amountPayment)
-    if (cents instanceof Error) throw cents
-
-    const finalBalanceB = await getBalanceHelper(walletIdUsdB)
-    const finalBalanceA = await getBalanceHelper(walletIdA)
-
-    expect(finalBalanceB).toBe(initBalanceUsdB + cents)
-    expect(finalBalanceA).toBe(initBalanceA - amountPayment)
-  })
-
-  it("pay amountfull invoice from btc wallet to usd wallet", async () => {
-    const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
-    const initBalanceA = toSats(await getBalanceHelper(walletIdA))
-
-    const amountPayment = toCents(3)
-
-    const request = await Wallets.addInvoiceForSelf({
-      walletId: walletIdUsdB,
-      amount: amountPayment,
-    })
-    if (request instanceof Error) throw request
-    const { paymentRequest } = request
-
-    const paymentResult = await Wallets.payInvoiceByWalletId({
-      paymentRequest,
-      memo: null,
-      senderWalletId: walletIdA,
-      senderAccount: accountA,
-      logger: baseLogger,
-    })
-    if (paymentResult instanceof Error) throw paymentResult
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-
-    const dealerFns = DealerPriceService()
-    const sats = await dealerFns.getSatsFromCentsForImmediateBuy(amountPayment)
-    if (sats instanceof Error) throw sats
-
-    const finalBalanceB = await getBalanceHelper(walletIdUsdB)
-    const finalBalanceA = await getBalanceHelper(walletIdA)
-
-    expect(finalBalanceB).toBe(initBalanceUsdB + amountPayment)
-    expect(finalBalanceA).toBe(initBalanceA - sats)
-  })
-
   it("filters spam from send to another Galoy user as push payment", async () => {
     // TODO: good candidate for a unit test?
 
@@ -1348,6 +1096,263 @@ describe("UserWallet - Lightning Pay", () => {
         if (result instanceof Error) throw result
         expect(result).toBe(PaymentSendStatus.Success)
       })
+    })
+  })
+})
+
+describe("USD Wallets - Lightning Pay", () => {
+  // TODO: add probing scenarios
+  describe("Lightning invoices with amounts", () => {
+    it("pay external invoice from usd wallet", async () => {
+      const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
+
+      const amountPayment = toSats(100)
+
+      const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountPayment })
+
+      const paymentResult = await Wallets.payInvoiceByWalletId({
+        paymentRequest: request as EncodedPaymentRequest,
+        memo: null,
+        senderWalletId: walletIdUsdB,
+        senderAccount: accountB,
+        logger: baseLogger,
+      })
+      if (paymentResult instanceof Error) throw paymentResult
+      expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+      const dealerFns = DealerPriceService()
+      const cents = await dealerFns.getCentsFromSatsForImmediateSell(amountPayment)
+      if (cents instanceof Error) throw cents
+
+      const finalBalance = await getBalanceHelper(walletIdUsdB)
+      expect(finalBalance).toBe(initBalanceUsdB - cents)
+    })
+
+    it("pay internal invoice from usd wallet to usd wallet", async () => {
+      const initBalanceUsdA = toCents(await getBalanceHelper(walletIdUsdA))
+      const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
+
+      const amountPayment = toCents(6)
+
+      const request = await Wallets.addInvoiceForSelf({
+        walletId: walletIdUsdA,
+        amount: amountPayment,
+      })
+      if (request instanceof Error) throw request
+      const { paymentRequest } = request
+
+      const paymentResult = await Wallets.payInvoiceByWalletId({
+        paymentRequest,
+        memo: null,
+        senderWalletId: walletIdUsdB,
+        senderAccount: accountB,
+        logger: baseLogger,
+      })
+      if (paymentResult instanceof Error) throw paymentResult
+      expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+      const finalBalanceB = await getBalanceHelper(walletIdUsdB)
+      const finalBalanceA = await getBalanceHelper(walletIdUsdA)
+
+      expect(finalBalanceB).toBe(initBalanceUsdB - amountPayment)
+      expect(finalBalanceA).toBe(initBalanceUsdA + amountPayment)
+    })
+
+    it("pay internal invoice from usd wallet to btc wallet", async () => {
+      const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
+      const initBalanceA = toSats(await getBalanceHelper(walletIdA))
+
+      const amountPayment = toSats(60)
+
+      const request = await Wallets.addInvoiceForSelf({
+        walletId: walletIdA,
+        amount: amountPayment,
+      })
+      if (request instanceof Error) throw request
+      const { paymentRequest } = request
+
+      const paymentResult = await Wallets.payInvoiceByWalletId({
+        paymentRequest,
+        memo: null,
+        senderWalletId: walletIdUsdB,
+        senderAccount: accountB,
+        logger: baseLogger,
+      })
+      if (paymentResult instanceof Error) throw paymentResult
+      expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+      const dealerFns = DealerPriceService()
+      const cents = await dealerFns.getCentsFromSatsForImmediateSell(amountPayment)
+      if (cents instanceof Error) throw cents
+
+      const finalBalanceB = await getBalanceHelper(walletIdUsdB)
+      const finalBalanceA = await getBalanceHelper(walletIdA)
+
+      expect(finalBalanceB).toBe(initBalanceUsdB - cents)
+      expect(finalBalanceA).toBe(initBalanceA + amountPayment)
+    })
+
+    it("pay internal invoice from btc wallet to usd wallet", async () => {
+      const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
+      const initBalanceA = toSats(await getBalanceHelper(walletIdA))
+
+      const amountPayment = toCents(3)
+
+      const request = await Wallets.addInvoiceForSelf({
+        walletId: walletIdUsdB,
+        amount: amountPayment,
+      })
+      if (request instanceof Error) throw request
+      const { paymentRequest } = request
+
+      const paymentResult = await Wallets.payInvoiceByWalletId({
+        paymentRequest,
+        memo: null,
+        senderWalletId: walletIdA,
+        senderAccount: accountA,
+        logger: baseLogger,
+      })
+      if (paymentResult instanceof Error) throw paymentResult
+      expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+      const dealerFns = DealerPriceService()
+      const sats = await dealerFns.getSatsFromCentsForImmediateBuy(amountPayment)
+      if (sats instanceof Error) throw sats
+
+      const finalBalanceB = await getBalanceHelper(walletIdUsdB)
+      const finalBalanceA = await getBalanceHelper(walletIdA)
+
+      expect(finalBalanceB).toBe(initBalanceUsdB + amountPayment)
+      expect(finalBalanceA).toBe(initBalanceA - sats)
+    })
+  })
+  describe("No amount lightning invoices", () => {
+    it("pay external amountless invoice from usd wallet", async () => {
+      const dealerUsdWalletId = await getDealerUsdWalletId()
+      const dealerInitialUsdB = await getBalanceHelper(dealerUsdWalletId)
+      const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
+
+      const { request } = await createInvoice({ lnd: lndOutside1 })
+
+      const amountPayment = toCents(100)
+
+      const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
+        paymentRequest: request as EncodedPaymentRequest,
+        memo: null,
+        amount: amountPayment,
+        senderWalletId: walletIdUsdB,
+        senderAccount: accountB,
+        logger: baseLogger,
+      })
+      if (paymentResult instanceof Error) throw paymentResult
+      expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+      const dealerFns = DealerPriceService()
+      const sats = await dealerFns.getSatsFromCentsForImmediateSell(amountPayment)
+      if (sats instanceof Error) throw sats
+
+      const finalBalance = await getBalanceHelper(walletIdUsdB)
+      expect(finalBalance).toBe(initBalanceUsdB - amountPayment)
+      const dealerFinalBalance = await getBalanceHelper(dealerUsdWalletId)
+      expect(dealerFinalBalance).toBe(dealerInitialUsdB + amountPayment)
+    })
+
+    it("pay internal amountless invoice from usd wallet to usd wallet", async () => {
+      const initBalanceUsdA = toCents(await getBalanceHelper(walletIdUsdA))
+      const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
+
+      const amountPayment = toCents(7)
+
+      const request = await Wallets.addInvoiceNoAmountForSelf({
+        walletId: walletIdUsdA,
+      })
+      if (request instanceof Error) throw request
+      const { paymentRequest } = request
+
+      const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
+        paymentRequest,
+        memo: null,
+        senderWalletId: walletIdUsdB,
+        senderAccount: accountB,
+        logger: baseLogger,
+        amount: amountPayment,
+      })
+      if (paymentResult instanceof Error) throw paymentResult
+      expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+      const finalBalanceB = await getBalanceHelper(walletIdUsdB)
+      const finalBalanceA = await getBalanceHelper(walletIdUsdA)
+
+      expect(finalBalanceB).toBe(initBalanceUsdB - amountPayment)
+      expect(finalBalanceA).toBe(initBalanceUsdA + amountPayment)
+    })
+
+    it("pay internal amountless invoice from usd wallet to btc wallet", async () => {
+      const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
+      const initBalanceA = toSats(await getBalanceHelper(walletIdA))
+
+      const amountPayment = toCents(4)
+
+      const request = await Wallets.addInvoiceNoAmountForSelf({
+        walletId: walletIdA,
+      })
+      if (request instanceof Error) throw request
+      const { paymentRequest } = request
+
+      const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
+        paymentRequest,
+        memo: null,
+        senderWalletId: walletIdUsdB,
+        senderAccount: accountB,
+        logger: baseLogger,
+        amount: amountPayment,
+      })
+      if (paymentResult instanceof Error) throw paymentResult
+      expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+      const dealerFns = DealerPriceService()
+      const sats = await dealerFns.getSatsFromCentsForImmediateSell(amountPayment)
+      if (sats instanceof Error) throw sats
+
+      const finalBalanceB = await getBalanceHelper(walletIdUsdB)
+      const finalBalanceA = await getBalanceHelper(walletIdA)
+
+      expect(finalBalanceB).toBe(initBalanceUsdB - amountPayment)
+      expect(finalBalanceA).toBe(initBalanceA + sats)
+    })
+
+    it("pay internal amountless invoice from btc wallet to usd wallet", async () => {
+      const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
+      const initBalanceA = toSats(await getBalanceHelper(walletIdA))
+
+      const amountPayment = toSats(50)
+
+      const request = await Wallets.addInvoiceNoAmountForSelf({
+        walletId: walletIdUsdB,
+      })
+      if (request instanceof Error) throw request
+      const { paymentRequest } = request
+
+      const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
+        paymentRequest,
+        memo: null,
+        senderWalletId: walletIdA,
+        senderAccount: accountA,
+        logger: baseLogger,
+        amount: amountPayment,
+      })
+      if (paymentResult instanceof Error) throw paymentResult
+      expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+      const dealerFns = DealerPriceService()
+      const cents = await dealerFns.getCentsFromSatsForImmediateBuy(amountPayment)
+      if (cents instanceof Error) throw cents
+
+      const finalBalanceB = await getBalanceHelper(walletIdUsdB)
+      const finalBalanceA = await getBalanceHelper(walletIdA)
+
+      expect(finalBalanceB).toBe(initBalanceUsdB + cents)
+      expect(finalBalanceA).toBe(initBalanceA - amountPayment)
     })
   })
 })
