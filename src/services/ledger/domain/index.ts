@@ -1,3 +1,4 @@
+export * from "./legacy-entry-builder"
 export * from "./entry-builder"
 export * from "./accounts"
 

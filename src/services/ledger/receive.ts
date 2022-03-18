@@ -10,7 +10,7 @@ import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
 
 import { MainBook } from "./books"
 import * as caching from "./caching"
-import { EntryBuilder, toLedgerAccountId } from "./domain"
+import { LegacyEntryBuilder, toLedgerAccountId } from "./domain"
 
 import { TransactionsMetadataRepository } from "./services"
 
@@ -160,7 +160,7 @@ const addReceiptNoFee = async ({
     dealerUsdAccountId: toLedgerAccountId(await caching.getDealerUsdWalletId()),
   }
   let entry = MainBook.entry(description)
-  const builder = EntryBuilder({
+  const builder = LegacyEntryBuilder({
     staticAccountIds,
     entry,
     metadata: metaInput,
@@ -174,7 +174,7 @@ const addReceiptNoFee = async ({
     if (cents === undefined) return new NotReachableError("cents should be defined here")
     entry = builder.creditAccount({
       accountId,
-      usdAmountForBtcDebit: paymentAmountFromCents(cents),
+      amount: paymentAmountFromCents(cents),
     })
   }
   try {
@@ -222,7 +222,7 @@ const addReceiptFee = async ({
   }
 
   const entry = MainBook.entry(description)
-  const builder = EntryBuilder({
+  const builder = LegacyEntryBuilder({
     staticAccountIds,
     entry,
     metadata: metaInput,

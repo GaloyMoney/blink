@@ -2,15 +2,6 @@ import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import { coldStorageAccountDescriptor, lndLedgerAccountDescriptor } from "./accounts"
 
-export const ZERO_SATS = {
-  currency: WalletCurrency.Btc,
-  amount: 0n,
-} as const
-
-export const ZERO_CENTS = {
-  currency: WalletCurrency.Usd,
-  amount: 0n,
-}
 const calc = AmountCalculator()
 
 export const EntryBuilder = <M extends MediciEntry>({
@@ -161,24 +152,6 @@ const EntryBuilderDebit = <M extends MediciEntry>({
     debitAccount,
     debitLnd,
     debitColdStorage,
-  }
-}
-
-type EntryBuilderCreditState<M extends MediciEntry> = {
-  entry: M
-  metadata: TxMetadata
-  debitCurrency: WalletCurrency
-  amountWithOutFee: {
-    usdWithOutFee: UsdPaymentAmount
-    btcWithOutFee: BtcPaymentAmount
-  }
-  amountWithFee: {
-    usdWithFee: UsdPaymentAmount
-    btcWithFee: BtcPaymentAmount
-  }
-  staticAccountIds: {
-    dealerBtcAccountId: LedgerAccountId
-    dealerUsdAccountId: LedgerAccountId
   }
 }
 

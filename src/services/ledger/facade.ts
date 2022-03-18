@@ -1,23 +1,12 @@
 import { UnknownLedgerError } from "@domain/ledger"
 
-import { WalletCurrency } from "@domain/shared"
+import { ZERO_FEE } from "@domain/shared"
 
 import { MainBook } from "./books"
-import { EntryBuilder, toLedgerAccountDescriptor, toLedgerAccountId } from "./domain"
+import { toLedgerAccountDescriptor, toLedgerAccountId, EntryBuilder } from "./domain"
 import { persistAndReturnEntry } from "./helpers"
 import * as caching from "./caching"
 export * from "./tx-metadata"
-
-const ZERO_FEE = {
-  usdProtocolFee: {
-    currency: WalletCurrency.Usd,
-    amount: 0n,
-  },
-  btcProtocolFee: {
-    currency: WalletCurrency.Btc,
-    amount: 0n,
-  },
-} as const
 
 const staticAccountIds = async () => {
   return {
@@ -64,7 +53,7 @@ type RecordIntraledgerArgs<T extends WalletCurrency, V extends WalletCurrency> =
     btcWithFee: BtcPaymentAmount
   }
   metadata: IntraledgerLedgerMetadata
-  additionalDebitMetadata: any
+  additionalDebitMetadata: TxMetadata
 }
 
 export const recordSend = async <T extends WalletCurrency>({

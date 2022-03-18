@@ -78,16 +78,22 @@ type EntryBuilderDebit<M extends MediciEntry> = {
   debitColdStorage: () => EntryBuilderCredit<M>
 }
 
-type EntryBuilderCreditWithUsdDebit<M extends MediciEntry> = {
-  creditLnd: (amount: BtcPaymentAmount) => M
-  creditColdStorage: (amount: BtcPaymentAmount) => M
-  creditAccount: ({
-    accountId,
-    btcAmountForUsdDebit,
-  }: {
-    accountId: LedgerAccountId
-    btcAmountForUsdDebit?: BtcPaymentAmount
-  }) => M
+type EntryBuilderCreditState<M extends MediciEntry> = {
+  entry: M
+  metadata: TxMetadata
+  debitCurrency: WalletCurrency
+  amountWithOutFee: {
+    usdWithOutFee: UsdPaymentAmount
+    btcWithOutFee: BtcPaymentAmount
+  }
+  amountWithFee: {
+    usdWithFee: UsdPaymentAmount
+    btcWithFee: BtcPaymentAmount
+  }
+  staticAccountIds: {
+    dealerBtcAccountId: LedgerAccountId
+    dealerUsdAccountId: LedgerAccountId
+  }
 }
 
 type EntryBuilderCredit<M extends MediciEntry> = {
@@ -97,6 +103,61 @@ type EntryBuilderCredit<M extends MediciEntry> = {
     accountDescriptor: LedgerAccountDescriptor<C>,
   ) => M
 }
+
+type LegacyEntryBuilderConfig<M extends MediciEntry> = {
+  entry: M
+  staticAccountIds: StaticAccountIds
+  metadata: TxMetadata
+}
+
+type LegacyEntryBuilderDebitState<M extends MediciEntry> = {
+  entry: M
+  metadata: TxMetadata
+  fee: BtcPaymentAmount
+  staticAccountIds: StaticAccountIds
+}
+
+type LegacyEntryBuilderDebit<M extends MediciEntry> = {
+  debitAccount: <D extends WalletCurrency>({
+    accountId,
+    amount,
+    additionalMetadata,
+  }: {
+    accountId: LedgerAccountId
+    amount: PaymentAmount<D>
+    additionalMetadata?: TxMetadata
+  }) => LegacyEntryBuilderCredit<M, D>
+  debitLnd: (amount: BtcPaymentAmount) => LegacyEntryBuilderCreditWithBtcDebit<M>
+}
+
+type LegacyEntryBuilderCreditWithUsdDebit<M extends MediciEntry> = {
+  creditLnd: (amount: BtcPaymentAmount) => M
+  creditAccount: ({
+    accountId,
+    amount,
+  }: {
+    accountId: LedgerAccountId
+    amount?: BtcPaymentAmount
+  }) => M
+}
+
+type LegacyEntryBuilderCreditWithBtcDebit<M extends MediciEntry> = {
+  creditLnd: () => M
+  creditAccount: ({
+    accountId,
+    amount,
+  }: {
+    accountId: LedgerAccountId
+    amount?: UsdPaymentAmount
+  }) => M
+}
+
+type LegacyEntryBuilderCredit<
+  M extends MediciEntry,
+  D extends WalletCurrency,
+> = D extends "USD"
+  ? LegacyEntryBuilderCreditWithUsdDebit<M>
+  : LegacyEntryBuilderCreditWithBtcDebit<M>
 
 type BaseLedgerTransactionMetadata = {
   id: LedgerTransactionId

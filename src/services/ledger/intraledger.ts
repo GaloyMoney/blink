@@ -8,7 +8,7 @@ import {
 
 import { NotReachableError } from "@domain/errors"
 
-import { EntryBuilder, toLedgerAccountId } from "./domain"
+import { LegacyEntryBuilder, toLedgerAccountId } from "./domain"
 
 import { MainBook } from "./books"
 import * as caching from "./caching"
@@ -166,7 +166,7 @@ const addIntraledgerTxTransfer = async ({
   }
 
   let entry = MainBook.entry(description)
-  const builder = EntryBuilder({
+  const builder = LegacyEntryBuilder({
     staticAccountIds,
     entry,
     metadata: sharedMetadata,
@@ -229,7 +229,7 @@ const addIntraledgerTxTransfer = async ({
       })
       .creditAccount({
         accountId: recipientAccountId,
-        btcAmountForUsdDebit: paymentAmountFromSats(sats),
+        amount: paymentAmountFromSats(sats),
       })
   } else {
     // if (
@@ -251,7 +251,7 @@ const addIntraledgerTxTransfer = async ({
       })
       .creditAccount({
         accountId: recipientAccountId,
-        usdAmountForBtcDebit: paymentAmountFromCents(cents),
+        amount: paymentAmountFromCents(cents),
       })
   }
 

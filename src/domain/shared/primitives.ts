@@ -4,10 +4,20 @@ export const WalletCurrency = {
   Btc: "BTC",
 } as const
 
-export const FeeDirection = {
-  ToBank: "TO_BANK",
-  FromBank: "FROM_BANK",
+export const ZERO_SATS = {
+  currency: WalletCurrency.Btc,
+  amount: 0n,
 } as const
+
+export const ZERO_CENTS = {
+  currency: WalletCurrency.Usd,
+  amount: 0n,
+}
+
+export const ZERO_FEE = {
+  usdProtocolFee: ZERO_CENTS,
+  btcProtocolFee: ZERO_SATS,
+}
 
 export const BtcPaymentAmount = (sats: bigint): BtcPaymentAmount => {
   return {
