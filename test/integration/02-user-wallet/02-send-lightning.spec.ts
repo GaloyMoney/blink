@@ -4,6 +4,9 @@ import { Lightning, Payments, Prices, Wallets } from "@app"
 import { getMidPriceRatio } from "@app/shared"
 
 import { delete2fa } from "@app/users"
+
+import { getDisplayCurrencyConfig, getLocale, TWO_WEEKS_IN_MS } from "@config"
+
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
 import {
   defaultTimeToExpiryInSeconds,
@@ -32,6 +35,9 @@ import {
 } from "@domain/shared"
 import { TwoFAError } from "@domain/twoFA"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
+import { toCents } from "@domain/fiat"
+import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+
 import { LedgerService } from "@services/ledger"
 import { getDealerUsdWalletId } from "@services/ledger/caching"
 import { TransactionsMetadataRepository } from "@services/ledger/services"
@@ -47,13 +53,8 @@ import { WalletInvoice } from "@services/mongoose/schema"
 
 import { sleep } from "@utils"
 
-import { toCents } from "@domain/fiat"
-
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
-
 import { PaymentFlowStateRepository } from "@services/payment-flow"
 
-import { getDisplayCurrencyConfig, getLocale } from "@config"
 import { NotificationType } from "@domain/notifications"
 
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
@@ -641,47 +642,6 @@ describe("UserWallet - Lightning Pay", () => {
     })
     if (paymentResult instanceof Error) throw paymentResult
     expect(paymentResult).toBe(PaymentSendStatus.Success)
-  })
-
-  it("deletes payment", async () => {
-    const { request, secret, id } = await createInvoice({ lnd: lndOutside1 })
-    const paymentHash = id as PaymentHash
-    const revealedPreImage = secret as RevealedPreImage
-
-    // Test payment is successful
-    const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
-      paymentRequest: request as EncodedPaymentRequest,
-      memo: null,
-      amount: amountInvoice,
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-      logger: baseLogger,
-    })
-    if (paymentResult instanceof Error) throw paymentResult
-    expect(paymentResult).toBe(PaymentSendStatus.Success)
-
-    const lndService = LndService()
-    if (lndService instanceof Error) return lndService
-
-    // Confirm payment exists in lnd
-    const retrievedPayment = await lndService.lookupPayment({ paymentHash })
-    expect(retrievedPayment).not.toBeInstanceOf(Error)
-    if (retrievedPayment instanceof Error) return retrievedPayment
-    expect(retrievedPayment.status).toBe(PaymentStatus.Settled)
-    if (retrievedPayment.status !== PaymentStatus.Settled) return
-    expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
-
-    // Delete payment
-    const deleted = await lndService.deletePaymentByHash({ paymentHash })
-    expect(deleted).not.toBeInstanceOf(Error)
-
-    // Check that payment no longer exists
-    const retrievedDeletedPayment = await lndService.lookupPayment({ paymentHash })
-    expect(retrievedDeletedPayment).toBeInstanceOf(PaymentNotFoundError)
-
-    // Check that deleting missing payment doesn't return error
-    const deletedAttempt = await lndService.deletePaymentByHash({ paymentHash })
-    expect(deletedAttempt).not.toBeInstanceOf(Error)
   })
 
   it("filters spam from send to another Galoy user as push payment", async () => {
@@ -1620,6 +1580,7 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(finalBalanceA).toBe(initBalanceA)
     })
   })
+
   describe("No amount lightning invoices", () => {
     it("pay external amountless invoice from usd wallet", async () => {
       const dealerUsdWalletId = await getDealerUsdWalletId()
@@ -1898,6 +1859,118 @@ describe("USD Wallets - Lightning Pay", () => {
       })
       expect(res).toBeInstanceOf(ZeroAmountForUsdRecipientError)
     })
+  })
+})
+
+describe("Delete payments from Lnd - Lightning Pay", () => {
+  it("deletes payment", async () => {
+    const { request, secret, id } = await createInvoice({ lnd: lndOutside1 })
+    const paymentHash = id as PaymentHash
+    const revealedPreImage = secret as RevealedPreImage
+
+    // Test payment is successful
+    const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
+      amount: amountInvoice,
+      senderWalletId: walletIdB,
+      senderAccount: accountB,
+    })
+    if (paymentResult instanceof Error) throw paymentResult
+    expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
+
+    // Confirm payment exists in lnd
+    const retrievedPayment = await lndService.lookupPayment({ paymentHash })
+    expect(retrievedPayment).not.toBeInstanceOf(Error)
+    if (retrievedPayment instanceof Error) return retrievedPayment
+    expect(retrievedPayment.status).toBe(PaymentStatus.Settled)
+    if (retrievedPayment.status !== PaymentStatus.Settled) return
+    expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
+
+    // Delete payment
+    const deleted = await lndService.deletePaymentByHash({ paymentHash })
+    expect(deleted).not.toBeInstanceOf(Error)
+
+    // Check that payment no longer exists
+    const retrievedDeletedPayment = await lndService.lookupPayment({ paymentHash })
+    expect(retrievedDeletedPayment).toBeInstanceOf(PaymentNotFoundError)
+
+    // Check that deleting missing payment doesn't return error
+    const deletedAttempt = await lndService.deletePaymentByHash({ paymentHash })
+    expect(deletedAttempt).not.toBeInstanceOf(Error)
+  })
+
+  it("runs delete-payment cronjob", async () => {
+    // Create payment
+    const { request, secret, id } = await createInvoice({ lnd: lndOutside1 })
+    const paymentHash = id as PaymentHash
+    const revealedPreImage = secret as RevealedPreImage
+
+    const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
+      amount: amountInvoice,
+      senderWalletId: walletIdB,
+      senderAccount: accountB,
+    })
+    if (paymentResult instanceof Error) throw paymentResult
+    expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
+
+    // Confirm payment exists in lnd
+    let retrievedPayment = await lndService.lookupPayment({ paymentHash })
+    expect(retrievedPayment).not.toBeInstanceOf(Error)
+    if (retrievedPayment instanceof Error) return retrievedPayment
+    expect(retrievedPayment.status).toBe(PaymentStatus.Settled)
+    if (retrievedPayment.status !== PaymentStatus.Settled) return
+    expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
+
+    // Run delete-payments cronjob
+    const timestamp2Weeks = new Date(Date.now() - TWO_WEEKS_IN_MS)
+    expect(Number(timestamp2Weeks)).toBeLessThan(Number(retrievedPayment.createdAt))
+    const deleteLnPayments1Hour = await Lightning.deleteLnPaymentsBefore(timestamp2Weeks)
+    if (deleteLnPayments1Hour instanceof Error) throw deleteLnPayments1Hour
+
+    // Confirm payment still exists
+    retrievedPayment = await lndService.lookupPayment({ paymentHash })
+    expect(retrievedPayment).not.toBeInstanceOf(Error)
+    if (retrievedPayment instanceof Error) return retrievedPayment
+    expect(retrievedPayment.status).toBe(PaymentStatus.Settled)
+    if (retrievedPayment.status !== PaymentStatus.Settled) return
+    expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
+
+    // Run updateLnPayments task
+    const lnPaymentUpdateOnPending = await Lightning.updateLnPayments()
+    if (lnPaymentUpdateOnPending instanceof Error) throw lnPaymentUpdateOnPending
+
+    // Run delete-payments cronjob again for payments before 2 weeks ago
+    const deleteLnPayments1HourRetry = await Lightning.deleteLnPaymentsBefore(
+      timestamp2Weeks,
+    )
+    if (deleteLnPayments1HourRetry instanceof Error) throw deleteLnPayments1HourRetry
+
+    // Confirm payment still exists
+    retrievedPayment = await lndService.lookupPayment({ paymentHash })
+    expect(retrievedPayment).not.toBeInstanceOf(Error)
+    if (retrievedPayment instanceof Error) return retrievedPayment
+    expect(retrievedPayment.status).toBe(PaymentStatus.Settled)
+    if (retrievedPayment.status !== PaymentStatus.Settled) return
+    expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
+
+    // Run delete-payments cronjob again for all payments
+    const timestampNow = new Date(Date.now())
+    expect(Number(timestampNow)).toBeGreaterThan(Number(retrievedPayment.createdAt))
+    const deleteLnPayments = await Lightning.deleteLnPaymentsBefore(timestampNow)
+    if (deleteLnPayments instanceof Error) throw deleteLnPayments
+
+    // Confirm payment was deleted
+    const retrievedDeletedPayment = await lndService.lookupPayment({ paymentHash })
+    expect(retrievedDeletedPayment).toBeInstanceOf(PaymentNotFoundError)
   })
 })
 
