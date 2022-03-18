@@ -1,5 +1,5 @@
-import { JWT_SECRET } from "@config"
-import * as jwt from "jsonwebtoken"
+import { JWT_SECRET, JWT_TOKEN_EXPIRES_IN } from "@config"
+import jwt from "jsonwebtoken"
 
 // TODO: replace network by uri of the server
 // the uri will embed the network, ie: graphql.mainnet.server.io
@@ -25,5 +25,6 @@ export const createToken = ({
     //
     // see: https://www.theregister.com/2018/04/24/myetherwallet_dns_hijack/
     algorithm: "HS256",
+    expiresIn: JWT_TOKEN_EXPIRES_IN,
   }) as JwtToken
 }

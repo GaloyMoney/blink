@@ -1,5 +1,5 @@
 import { yamlConfig, JWT_SECRET } from "@config"
-import * as jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import {
@@ -136,6 +136,18 @@ describe("graphql", () => {
       expect(token).toHaveProperty("uid")
       expect(token).toHaveProperty("network")
       expect(token).toHaveProperty("iat")
+    })
+
+    it("jwt tokens expire after one week", async () => {
+      const input = { phone, code: correctCode }
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
+      expect(result.data.userLogin).toHaveProperty("authToken")
+      const oneWeekFromNow = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7
+      const verify = () =>
+        jwt.verify(result.data.userLogin.authToken, `${JWT_SECRET}`, {
+          clockTimestamp: oneWeekFromNow + 1,
+        })
+      expect(verify).toThrow(jwt.TokenExpiredError)
     })
 
     it("returns error for invalid phone", async () => {

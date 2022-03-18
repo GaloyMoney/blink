@@ -14,7 +14,13 @@ if (!jwtSecret) {
   throw new ConfigError("missing JWT_SECRET")
 }
 
+const jwtTokenExpiresIn = process.env.JWT_TOKEN_EXPIRES_IN
+if (!jwtTokenExpiresIn) {
+  throw new ConfigError("missing JWT_TOKEN_EXPIRES_IN")
+}
+
 export const JWT_SECRET = jwtSecret
+export const JWT_TOKEN_EXPIRES_IN = jwtTokenExpiresIn
 
 const btcNetwork = process.env.NETWORK
 const networks = ["mainnet", "testnet", "regtest"]
