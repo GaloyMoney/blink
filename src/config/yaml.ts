@@ -9,11 +9,13 @@ import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import Ajv from "ajv"
 import { toCents } from "@domain/fiat"
 
+import { WithdrawalFeePriceMethod } from "@domain/wallets"
+
 import { ConfigSchema, configSchema } from "./schema"
 import { ConfigError } from "./error"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
-export const defaultConfig = yaml.load(defaultContent)
+const defaultConfig = yaml.load(defaultContent)
 
 let customContent, customConfig
 
@@ -21,9 +23,7 @@ try {
   customContent = fs.readFileSync("/var/yaml/custom.yaml", "utf8")
   customConfig = yaml.load(customContent)
 } catch (err) {
-  if (process.env.NETWORK !== "regtest") {
-    baseLogger.info({ err }, "no custom.yaml available. using default values")
-  }
+  baseLogger.info({ err }, "no custom.yaml available. using default values")
 }
 
 export const yamlConfig = merge(defaultConfig, customConfig)
@@ -59,21 +59,10 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toCents(
 
 export const getGaloyInstanceName = (): string => yamlConfig.name
 
-export const getBitcoinCoreRPCConfig = () => {
-  return {
-    network: process.env.NETWORK,
-    username: process.env.BITCOINDRPCUSER || "rpcuser",
-    password: process.env.BITCOINDRPCPASS,
-    host: process.env.BITCOINDADDR,
-    port: process.env.BITCOINDPORT,
-    version: "0.22.0",
-  }
-}
-
 export const getLndParams = (): LndParams[] => {
-  const config = yamlConfig.lnds
+  const lnds = yamlConfig.lnds
 
-  config.forEach((input) => {
+  lnds.forEach((input) => {
     const keys = ["_TLS", "_MACAROON", "_DNS", "_PUBKEY"]
     keys.forEach((key) => {
       if (!process.env[`${input.name}${key}`]) {
@@ -82,7 +71,7 @@ export const getLndParams = (): LndParams[] => {
     })
   })
 
-  return config.map((input) => ({
+  return lnds.map((input) => ({
     cert: process.env[`${input.name}_TLS`],
     macaroon: process.env[`${input.name}_MACAROON`],
     node: process.env[`${input.name}_DNS`],
@@ -93,19 +82,21 @@ export const getLndParams = (): LndParams[] => {
   }))
 }
 
-export const getFeeRates = (feesConfig = yamlConfig.fees): FeeRates => ({
-  depositFeeVariable: feesConfig.deposit,
-  depositFeeFixed: toSats(0),
-  withdrawFeeVariable: 0,
-  withdrawFeeFixed: toSats(feesConfig.withdraw),
-})
+export const getFeesConfig = (feesConfig = yamlConfig.fees): FeesConfig => {
+  const withdrawMethod = WithdrawalFeePriceMethod[feesConfig.withdraw.method]
+  const withdrawRatio =
+    withdrawMethod === WithdrawalFeePriceMethod.flat ? 0 : feesConfig.withdraw.ratio
 
-export const getWithdrawFeeRange = (
-  withdrawFeeConfig = yamlConfig.withdrawFeeRange,
-): WithdrawFeeRange => ({
-  min: withdrawFeeConfig.min,
-  max: withdrawFeeConfig.max,
-})
+  return {
+    depositFeeVariable: feesConfig.deposit,
+    depositFeeFixed: toSats(0),
+    withdrawMethod,
+    withdrawRatio,
+    withdrawThreshold: feesConfig.withdraw.threshold,
+    withdrawDaysLookback: feesConfig.withdraw.daysLookback,
+    withdrawDefaultMin: toSats(feesConfig.withdraw.defaultMin),
+  }
+}
 
 export const getAccountLimits = ({
   level,

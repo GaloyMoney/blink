@@ -25,10 +25,10 @@ export const getRemainingTwoFALimit = async ({
   walletId: WalletId
   dCConverter: DisplayCurrencyConverter
 }): Promise<UsdCents> => {
-  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await LedgerService().allPaymentVolumeSince({
     walletId,
-    timestamp: timestamp1Day,
+    timestamp: timestamp1DayAgo,
   })
   if (walletVolume instanceof Error) throw walletVolume
 

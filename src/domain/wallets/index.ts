@@ -18,3 +18,8 @@ export const checkedToWalletId = (walletId: string): WalletId | ValidationError 
   }
   return walletId as WalletId
 }
+
+export const WithdrawalFeePriceMethod = {
+  flat: "flat",
+  proportionalOnImbalance: "proportionalOnImbalance",
+} as const

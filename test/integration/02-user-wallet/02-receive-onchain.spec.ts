@@ -2,7 +2,7 @@ import { once } from "events"
 
 import { Prices, Wallets } from "@app"
 import {
-  getFeeRates,
+  getFeesConfig,
   getOnChainAddressCreateAttemptLimits,
   getAccountLimits,
 } from "@config"
@@ -208,7 +208,7 @@ describe("UserWallet - On chain", () => {
       const balanceA = await getBalanceHelper(walletIdA)
       const balance4 = await getBalanceHelper(walletId)
 
-      const depositFeeRatio = getFeeRates().depositFeeVariable as DepositFeeRatio
+      const depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio
 
       expect(balanceA).toBe(
         initialBalanceUserA +
@@ -321,7 +321,7 @@ describe("UserWallet - On chain", () => {
 async function sendToWalletTestWrapper({
   amountSats,
   walletId,
-  depositFeeRatio = getFeeRates().depositFeeVariable as DepositFeeRatio,
+  depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio,
 }: {
   amountSats: Satoshis
   walletId: WalletId

@@ -1,11 +1,13 @@
-import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
+import { BTC_NETWORK, getFeesConfig, getOnChainWalletConfig } from "@config"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import {
-  CouldNotFindError,
+  CouldNotFindWalletFromOnChainAddressError,
   InsufficientBalanceError,
   LessThanDustThresholdError,
+  UnknownRepositoryError,
 } from "@domain/errors"
+import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { checkedToWalletId, WithdrawalFeeCalculator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
@@ -34,14 +36,22 @@ export const getOnChainFee = async ({
   const wallet = await walletsRepo.findById(walletIdChecked)
   if (wallet instanceof Error) return wallet
 
-  const withdrawFeeCalculator = WithdrawalFeeCalculator()
+  const minBankFee = toSats(account.withdrawFee)
+
+  const feeConfig = getFeesConfig()
+
+  const withdrawFeeCalculator = WithdrawalFeeCalculator({
+    feeRatio: feeConfig.withdrawRatio,
+    thresholdImbalance: feeConfig.withdrawThreshold,
+  })
+
   const payeeWallet = await walletsRepo.findByAddress(address)
+  if (payeeWallet instanceof UnknownRepositoryError) return payeeWallet
 
-  const isIntraLedger = !(payeeWallet instanceof Error)
+  const isIntraLedger = !(
+    payeeWallet instanceof CouldNotFindWalletFromOnChainAddressError
+  )
   if (isIntraLedger) return withdrawFeeCalculator.onChainIntraLedgerFee()
-
-  const isError = !(payeeWallet instanceof CouldNotFindError)
-  if (isError) return payeeWallet
 
   if (amountChecked < dustThreshold) {
     return new LessThanDustThresholdError(
@@ -66,10 +76,21 @@ export const getOnChainFee = async ({
   if (minerFee instanceof Error) return minerFee
   addAttributesToCurrentSpan({ "payOnChainByWalletId.estimatedMinerFee": `${minerFee}` })
 
-  const bankFee = toSats(account.withdrawFee)
-
-  return withdrawFeeCalculator.onChainWithdrawalFee({
-    minerFee,
-    bankFee,
+  const imbalanceCalculator = ImbalanceCalculator({
+    method: feeConfig.withdrawMethod,
+    volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
+    volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
+    sinceDaysAgo: feeConfig.withdrawDaysLookback,
   })
+
+  const imbalance = await imbalanceCalculator.getSwapOutImbalance(walletId)
+  if (imbalance instanceof Error) return imbalance
+
+  const fees = withdrawFeeCalculator.onChainWithdrawalFee({
+    amount: amountChecked,
+    minerFee,
+    minBankFee,
+    imbalance,
+  })
+  return fees.totalFee
 }

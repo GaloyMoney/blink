@@ -16,7 +16,7 @@ import {
 } from "@domain/errors"
 import { ValidationError } from "@domain/shared"
 import { TwoFAError } from "@domain/twoFA"
-import { PaymentInitiationMethod } from "@domain/wallets"
+import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { getDealerUsdWalletId } from "@services/ledger/caching"
 import { LndService } from "@services/lnd"
@@ -37,6 +37,8 @@ import { getCurrentPrice } from "@app/prices"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
 import { add, toCents } from "@domain/fiat"
+
+import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
 import {
   cancelHodlInvoice,
@@ -404,6 +406,16 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("pay zero amount invoice", async () => {
+    const imbalanceCalc = ImbalanceCalculator({
+      method: WithdrawalFeePriceMethod.proportionalOnImbalance,
+      sinceDaysAgo: 1 as Days,
+      volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
+      volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
+    })
+
+    const imbalanceInit = await imbalanceCalc.getSwapOutImbalance(walletIdB)
+    if (imbalanceInit instanceof Error) throw imbalanceInit
+
     const { request, secret, id } = await createInvoice({ lnd: lndOutside1 })
     const paymentHash = id as PaymentHash
     const revealedPreImage = secret as RevealedPreImage
@@ -454,6 +466,12 @@ describe("UserWallet - Lightning Pay", () => {
 
     const finalBalance = await getBalanceHelper(walletIdB)
     expect(finalBalance).toBe(initBalanceB - amountInvoice)
+
+    const imbalanceFinal = await imbalanceCalc.getSwapOutImbalance(walletIdB)
+    if (imbalanceFinal instanceof Error) throw imbalanceFinal
+
+    // imbalance is reduced with lightning payment
+    expect(imbalanceFinal).toBe(imbalanceInit - amountInvoice)
   })
 
   // TODO: add probing scenarios

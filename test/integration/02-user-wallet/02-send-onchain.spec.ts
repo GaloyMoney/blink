@@ -2,7 +2,7 @@ import { once } from "events"
 
 import { Wallets } from "@app"
 import {
-  getFeeRates,
+  getFeesConfig,
   getOnChainWalletConfig,
   getAccountLimits,
   MS_PER_DAY,
@@ -209,8 +209,8 @@ describe("UserWallet - onChainPay", () => {
       expect(settledTxs.length).toBe(1)
       const settledTx = last(settledTxs) as WalletTransaction
 
-      const feeRates = getFeeRates()
-      const fee = feeRates.withdrawFeeFixed + 7050
+      const feeRates = getFeesConfig()
+      const fee = feeRates.withdrawDefaultMin + 7050
 
       expect(settledTx.settlementFee).toBe(fee)
       expect(settledTx.settlementAmount).toBe(-amount - fee)
@@ -317,8 +317,8 @@ describe("UserWallet - onChainPay", () => {
       expect(settledTxs.length).toBe(1)
       const settledTx = last(settledTxs) as WalletTransaction
 
-      const feeRates = getFeeRates()
-      const fee = feeRates.withdrawFeeFixed + 7050
+      const feeRates = getFeesConfig()
+      const fee = feeRates.withdrawDefaultMin + 7050
 
       const finalBalance = await getBalanceHelper(walletIdE)
       expect(finalBalance).toBe(0)

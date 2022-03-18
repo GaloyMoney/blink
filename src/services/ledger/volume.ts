@@ -8,6 +8,7 @@ export const TxnGroups = {
   allPaymentVolumeSince: [
     LedgerTransactionType.IntraLedger,
     LedgerTransactionType.OnchainIntraLedger,
+    LedgerTransactionType.LnIntraLedger,
     LedgerTransactionType.Payment,
     LedgerTransactionType.OnchainPayment,
   ],
@@ -18,6 +19,16 @@ export const TxnGroups = {
   intraledgerTxBaseVolumeSince: [
     LedgerTransactionType.IntraLedger,
     LedgerTransactionType.OnchainIntraLedger,
+    LedgerTransactionType.LnIntraLedger,
+  ],
+  lightningTxBaseVolumeSince: [
+    LedgerTransactionType.Payment,
+    LedgerTransactionType.Invoice,
+    LedgerTransactionType.LnFeeReimbursement,
+  ],
+  onChainTxBaseVolumeSince: [
+    LedgerTransactionType.OnchainPayment,
+    LedgerTransactionType.OnchainReceipt,
   ],
   allTxBaseVolumeSince: Object.values(LedgerTransactionType),
 } as const
@@ -81,4 +92,6 @@ export const volume = {
   externalPaymentVolumeSince: volumeFn("externalPaymentVolumeSince"),
   intraledgerTxBaseVolumeSince: volumeFn("intraledgerTxBaseVolumeSince"),
   allTxBaseVolumeSince: volumeFn("allTxBaseVolumeSince"),
+  onChainTxBaseVolumeSince: volumeFn("onChainTxBaseVolumeSince"),
+  lightningTxBaseVolumeSince: volumeFn("lightningTxBaseVolumeSince"),
 }

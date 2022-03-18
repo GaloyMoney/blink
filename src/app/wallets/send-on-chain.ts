@@ -1,5 +1,10 @@
 import { getCurrentPrice } from "@app/prices"
-import { BTC_NETWORK, getOnChainWalletConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
+import {
+  BTC_NETWORK,
+  getFeesConfig,
+  getOnChainWalletConfig,
+  ONCHAIN_SCAN_DEPTH_OUTGOING,
+} from "@config"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { checkedToOnChainAddress, TxDecoder } from "@domain/bitcoin/onchain"
@@ -24,6 +29,8 @@ import {
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { addAttributesToCurrentSpan } from "@services/tracing"
+
+import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
 import {
   checkAndVerifyTwoFA,
@@ -289,7 +296,13 @@ const executePaymentViaOnChain = async ({
   const amountSats = toSats(amount)
 
   const ledgerService = LedgerService()
-  const withdrawFeeCalculator = WithdrawalFeeCalculator()
+
+  const feeConfig = getFeesConfig()
+
+  const withdrawFeeCalculator = WithdrawalFeeCalculator({
+    feeRatio: feeConfig.withdrawRatio,
+    thresholdImbalance: feeConfig.withdrawThreshold,
+  })
 
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
@@ -359,23 +372,46 @@ const executePaymentViaOnChain = async ({
           return txHash
         }
 
-        let totalFee: Satoshis
+        let minerFee: Satoshis
 
-        const minerFee = await onChainService.lookupOnChainFee({
+        const minerFee_ = await onChainService.lookupOnChainFee({
           txHash,
           scanDepth: ONCHAIN_SCAN_DEPTH_OUTGOING,
         })
-        if (minerFee instanceof Error) {
-          logger.error({ err: minerFee }, "impossible to get fee for onchain payment")
-          totalFee = estimatedFee
-        } else {
-          totalFee = withdrawFeeCalculator.onChainWithdrawalFee({
-            minerFee,
-            bankFee: toSats(senderAccount.withdrawFee),
+        if (minerFee_ instanceof Error) {
+          logger.error({ err: minerFee_ }, "impossible to get fee for onchain payment")
+          addAttributesToCurrentSpan({
+            "payOnChainByWalletId.errorGettingMinerFee": true,
           })
+          minerFee = estimatedFee
+        } else {
+          minerFee = minerFee_
         }
+
+        const imbalanceCalculator = ImbalanceCalculator({
+          method: feeConfig.withdrawMethod,
+          volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
+          volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
+          sinceDaysAgo: feeConfig.withdrawDaysLookback,
+        })
+
+        const imbalance = await imbalanceCalculator.getSwapOutImbalance(senderWallet.id)
+        if (imbalance instanceof Error) return imbalance
+
+        const fees = withdrawFeeCalculator.onChainWithdrawalFee({
+          amount: amountToSend,
+          minerFee,
+          minBankFee: toSats(senderAccount.withdrawFee || feeConfig.withdrawDefaultMin),
+          imbalance,
+        })
+
+        const totalFee = fees.totalFee
+        const bankFee = fees.bankFee
+
         addAttributesToCurrentSpan({
           "payOnChainByWalletId.actualMinerFee": `${minerFee}`,
+          "payOnChainByWalletId.totalFee": `${totalFee}`,
+          "payOnChainByWalletId.bankFee": `${bankFee}`,
         })
 
         const sats = toSats(amountToSend + totalFee)
@@ -390,7 +426,7 @@ const executePaymentViaOnChain = async ({
           description: memo || "",
           sats,
           totalFee,
-          bankFee: senderAccount.withdrawFee,
+          bankFee,
           amountDisplayCurrency,
           payeeAddress: address,
           sendAll,

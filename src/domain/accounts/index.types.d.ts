@@ -46,17 +46,12 @@ type Account = {
   defaultWalletId: WalletId
   readonly ownerId: UserId
   readonly depositFeeRatio: DepositFeeRatio
-  withdrawFee: Satoshis
+  withdrawFee: Satoshis // TODO: make it optional. only save when not default value from yaml
   level: AccountLevel
   status: AccountStatus
   title: BusinessMapTitle
   coordinates: Coordinates
   readonly contacts: AccountContact[]
-}
-
-type WithdrawFeeRange = {
-  min: Satoshis
-  max: Satoshis
 }
 
 type BusinessMapTitle = string & { readonly brand: unique symbol }
@@ -119,9 +114,12 @@ type TwoFALimits = {
   threshold: UsdCents
 }
 
-type FeeRates = {
+type FeesConfig = {
   depositFeeVariable: number
   depositFeeFixed: CurrencyBaseAmount
-  withdrawFeeVariable: number
-  withdrawFeeFixed: CurrencyBaseAmount
+  withdrawMethod: WithdrawalFeePriceMethod
+  withdrawRatio: number
+  withdrawThreshold: Satoshis
+  withdrawDaysLookback: Days
+  withdrawDefaultMin: Satoshis
 }

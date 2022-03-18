@@ -1,3 +1,4 @@
+import { toSats } from "@domain/bitcoin"
 import {
   InvalidCoordinatesError,
   InvalidBusinessTitleLengthError,
@@ -66,12 +67,14 @@ export const checkedToContactAlias = (alias: string): ContactAlias | ValidationE
   return alias as ContactAlias
 }
 
-export const checkedToWithdrawFee = (
+const minWithdrawalFeeAccount = toSats(0)
+const maxWithdrawalFeeAccount = toSats(100_000)
+
+export const sanityCheckedDefaultAccountWithdrawFee = (
   fee: number,
-  withdrawFeeRange: WithdrawFeeRange,
 ): Satoshis | ValidationError => {
-  if (fee < withdrawFeeRange.min || fee > withdrawFeeRange.max) {
+  if (fee < minWithdrawalFeeAccount || fee > maxWithdrawalFeeAccount) {
     return new InvalidWithdrawFeeError(fee.toString())
   }
-  return fee as Satoshis
+  return toSats(fee)
 }
