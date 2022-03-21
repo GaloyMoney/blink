@@ -78,3 +78,7 @@ type KratosConfig = {
   serverURL: string
   corsAllowedOrigins: string[]
 }
+
+type CaptchaConfig = {
+  mandatory: boolean
+}

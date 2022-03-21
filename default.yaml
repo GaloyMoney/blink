@@ -158,3 +158,6 @@ cronConfig:
 kratosConfig:
   serverURL: "http://localhost:4433"
   corsAllowedOrigins: ["http://localhost:3000"]
+
+captcha:
+  mandatory: false

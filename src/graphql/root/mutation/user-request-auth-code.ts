@@ -4,6 +4,7 @@ import Phone from "@graphql/types/scalar/phone"
 import SuccessPayload from "@graphql/types/payload/success-payload"
 import { Users } from "@app"
 import { mapError } from "@graphql/error-map"
+import { getCaptcha } from "@config"
 
 const UserRequestAuthCodeInput = GT.Input({
   name: "UserRequestAuthCodeInput",
@@ -20,6 +21,11 @@ const UserRequestAuthCodeMutation = GT.Field({
     input: { type: GT.NonNull(UserRequestAuthCodeInput) },
   },
   resolve: async (_, args, { logger, ip }) => {
+    const isCaptchaMandatory = getCaptcha().mandatory
+    if (isCaptchaMandatory) {
+      return { errors: [{ message: "use captcha endpoint to request auth code" }] }
+    }
+
     const { phone } = args.input
 
     if (phone instanceof Error) {

@@ -29,6 +29,10 @@ try {
 export const yamlConfig = merge(defaultConfig, customConfig)
 
 const ajv = new Ajv()
+
+// TODO: fix errors
+// const ajv = new Ajv({ allErrors: true, strict: "log" })
+
 const validate = ajv.compile<ConfigSchema>(configSchema)
 const valid = validate(yamlConfig)
 if (!valid) {
@@ -205,3 +209,5 @@ export const getTestAccounts = (config = yamlConfig): TestAccount[] =>
 
 export const getCronConfig = (config = yamlConfig): CronConfig => config.cronConfig
 export const getKratosConfig = (config = yamlConfig): KratosConfig => config.kratosConfig
+
+export const getCaptcha = (config = yamlConfig): CaptchaConfig => config.captcha

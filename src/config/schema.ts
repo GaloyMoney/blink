@@ -258,6 +258,14 @@ export const configSchema = {
       required: ["serverURL", "corsAllowedOrigins"],
       additionalProperties: false,
     },
+    captcha: {
+      type: "object",
+      properties: {
+        mandatory: { type: "boolean" },
+      },
+      required: ["mandatory"],
+      additionalProperties: false,
+    },
   },
   required: [
     "name",
@@ -275,6 +283,7 @@ export const configSchema = {
     "userActivenessMonthlyVolumeThreshold",
     "cronConfig",
     "kratosConfig",
+    "captcha",
   ],
   additionalProperties: false,
 } as const
