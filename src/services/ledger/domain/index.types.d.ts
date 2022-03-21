@@ -43,13 +43,6 @@ type EntryBuilderFee<M extends MediciEntry> = {
     btcProtocolFee: BtcPaymentAmount
     usdProtocolFee: UsdPaymentAmount
   }) => EntryBuilderDebit<M>
-  withFeeFromBank: ({
-    btcProtocolFee,
-    usdProtocolFee,
-  }: {
-    btcProtocolFee: BtcPaymentAmount
-    usdProtocolFee: UsdPaymentAmount
-  }) => EntryBuilderDebit<M>
 }
 
 type EntryBuilderDebitState<M extends MediciEntry> = {

@@ -3,15 +3,15 @@ import { LedgerTransactionType } from "@domain/ledger"
 export const LnSendLedgerMetadata = ({
   paymentHash,
   fee,
-  feeDisplayUsd,
-  amountDisplayUsd,
+  feeDisplayCurrency,
+  amountDisplayCurrency,
   pubkey,
   feeKnownInAdvance,
 }: {
   paymentHash: PaymentHash
   fee: BtcPaymentAmount
-  feeDisplayUsd: DisplayCurrencyBaseAmount
-  amountDisplayUsd: DisplayCurrencyBaseAmount
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
   pubkey: Pubkey
   feeKnownInAdvance: boolean
 }) => {
@@ -20,8 +20,8 @@ export const LnSendLedgerMetadata = ({
     pending: true,
     hash: paymentHash,
     fee: Number(fee.amount) as Satoshis,
-    feeUsd: feeDisplayUsd,
-    usd: amountDisplayUsd,
+    feeUsd: feeDisplayCurrency,
+    usd: amountDisplayCurrency,
     pubkey,
     feeKnownInAdvance,
   }
@@ -31,15 +31,15 @@ export const LnSendLedgerMetadata = ({
 export const OnChainSendLedgerMetadata = ({
   onChainTxHash,
   fee,
-  feeDisplayUsd,
-  amountDisplayUsd,
+  feeDisplayCurrency,
+  amountDisplayCurrency,
   payeeAddresses,
   sendAll,
 }: {
   onChainTxHash: OnChainTxHash
   fee: BtcPaymentAmount
-  feeDisplayUsd: DisplayCurrencyBaseAmount
-  amountDisplayUsd: DisplayCurrencyBaseAmount
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
   payeeAddresses: OnChainAddress[]
   sendAll: boolean
 }) => {
@@ -49,8 +49,8 @@ export const OnChainSendLedgerMetadata = ({
     hash: onChainTxHash,
     payee_addresses: payeeAddresses,
     fee: Number(fee.amount) as Satoshis,
-    feeUsd: feeDisplayUsd,
-    usd: amountDisplayUsd,
+    feeUsd: feeDisplayCurrency,
+    usd: amountDisplayCurrency,
     sendAll,
   }
 
@@ -60,14 +60,14 @@ export const OnChainSendLedgerMetadata = ({
 export const OnChainReceiveLedgerMetadata = ({
   onChainTxHash,
   fee,
-  feeDisplayUsd,
-  amountDisplayUsd,
+  feeDisplayCurrency,
+  amountDisplayCurrency,
   payeeAddresses,
 }: {
   onChainTxHash: OnChainTxHash
   fee: BtcPaymentAmount
-  feeDisplayUsd: DisplayCurrencyBaseAmount
-  amountDisplayUsd: DisplayCurrencyBaseAmount
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
   payeeAddresses: OnChainAddress[]
 }) => {
   const metadata: OnChainReceiveLedgerMetadata = {
@@ -75,8 +75,8 @@ export const OnChainReceiveLedgerMetadata = ({
     pending: false,
     hash: onChainTxHash,
     fee: Number(fee.amount) as Satoshis,
-    feeUsd: feeDisplayUsd,
-    usd: amountDisplayUsd,
+    feeUsd: feeDisplayCurrency,
+    usd: amountDisplayCurrency,
     payee_addresses: payeeAddresses,
   }
   return metadata
@@ -85,13 +85,13 @@ export const OnChainReceiveLedgerMetadata = ({
 export const LnReceiveLedgerMetadata = ({
   paymentHash,
   fee,
-  feeDisplayUsd,
-  amountDisplayUsd,
+  feeDisplayCurrency,
+  amountDisplayCurrency,
 }: {
   paymentHash: PaymentHash
   fee: BtcPaymentAmount
-  feeDisplayUsd: DisplayCurrencyBaseAmount
-  amountDisplayUsd: DisplayCurrencyBaseAmount
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
   pubkey: Pubkey
 }) => {
   const metadata: LnReceiveLedgerMetadata = {
@@ -99,8 +99,8 @@ export const LnReceiveLedgerMetadata = ({
     pending: false,
     hash: paymentHash,
     fee: Number(fee.amount) as Satoshis,
-    feeUsd: feeDisplayUsd,
-    usd: amountDisplayUsd,
+    feeUsd: feeDisplayCurrency,
+    usd: amountDisplayCurrency,
   }
   return metadata
 }
@@ -108,42 +108,42 @@ export const LnReceiveLedgerMetadata = ({
 export const LnFeeReimbursementReceiveLedgerMetadata = ({
   paymentHash,
   journalId,
-  amountDisplayUsd,
+  amountDisplayCurrency,
 }: {
   paymentHash: PaymentHash
   journalId: LedgerJournalId
-  amountDisplayUsd: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
 }) => {
   const metadata: FeeReimbursementLedgerMetadata = {
     type: LedgerTransactionType.LnFeeReimbursement,
     hash: paymentHash,
     related_journal: journalId,
     pending: false,
-    usd: amountDisplayUsd,
+    usd: amountDisplayCurrency,
   }
   return metadata
 }
 
 export const OnChainIntraledgerLedgerMetadata = ({
-  amountDisplayUsd,
+  amountDisplayCurrency,
   payeeAddresses,
   sendAll,
   memoOfPayer,
   senderUsername,
   recipientUsername,
 }: {
-  amountDisplayUsd: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
   payeeAddresses: OnChainAddress[]
   sendAll: boolean
-  memoOfPayer: string | null
-  senderUsername: Username | null
-  recipientUsername: Username | null
+  memoOfPayer?: string
+  senderUsername?: Username
+  recipientUsername?: Username
 }) => {
   const metadata: AddOnChainIntraledgerSendLedgerMetadata = {
     type: LedgerTransactionType.OnchainIntraLedger,
     pending: false,
-    usd: amountDisplayUsd,
-    memoPayer: null,
+    usd: amountDisplayCurrency,
+    memoPayer: undefined,
     username: senderUsername,
     payee_addresses: payeeAddresses,
     sendAll,
@@ -156,20 +156,20 @@ export const OnChainIntraledgerLedgerMetadata = ({
 }
 
 export const WalletIdIntraledgerLedgerMetadata = ({
-  amountDisplayUsd,
+  amountDisplayCurrency,
   memoOfPayer,
   senderUsername,
   recipientUsername,
 }: {
-  amountDisplayUsd: DisplayCurrencyBaseAmount
-  memoOfPayer: string | null
-  senderUsername: Username | null
-  recipientUsername: Username | null
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  memoOfPayer?: string
+  senderUsername?: Username
+  recipientUsername?: Username
 }) => {
   const metadata: AddWalletIdIntraledgerSendLedgerMetadata = {
     type: LedgerTransactionType.IntraLedger,
     pending: false,
-    usd: amountDisplayUsd,
+    usd: amountDisplayCurrency,
     memoPayer: memoOfPayer,
     username: senderUsername,
   }
@@ -181,26 +181,25 @@ export const WalletIdIntraledgerLedgerMetadata = ({
 }
 
 export const LnIntraledgerLedgerMetadata = ({
-  amountDisplayUsd,
+  amountDisplayCurrency,
   memoOfPayer,
   senderUsername,
   recipientUsername,
   pubkey,
   paymentHash,
 }: {
-  amountDisplayUsd: DisplayCurrencyBaseAmount
-  payeeAddresses: OnChainAddress[]
-  memoOfPayer: string | null
-  senderUsername: Username | null
-  recipientUsername: Username | null
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  memoOfPayer?: string
+  senderUsername?: Username
+  recipientUsername?: Username
   pubkey: Pubkey
   paymentHash: PaymentHash
 }) => {
   const metadata: AddLnIntraledgerSendLedgerMetadata = {
     type: LedgerTransactionType.LnIntraLedger,
     pending: false,
-    usd: amountDisplayUsd,
-    memoPayer: null,
+    usd: amountDisplayCurrency,
+    memoPayer: undefined,
     username: senderUsername,
     hash: paymentHash,
     pubkey,
@@ -244,14 +243,14 @@ export const LnRoutingRevenue = (collectedOn: Date) => {
 export const ColdStorageReceiveLedgerMetada = ({
   onChainTxHash,
   fee,
-  feeDisplayUsd,
-  amountDisplayUsd,
+  feeDisplayCurrency,
+  amountDisplayCurrency,
   payeeAddresses,
 }: {
   onChainTxHash: OnChainTxHash
   fee: BtcPaymentAmount
-  feeDisplayUsd: DisplayCurrencyBaseAmount
-  amountDisplayUsd: DisplayCurrencyBaseAmount
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
   payeeAddresses: OnChainAddress[]
 }) => {
   const metadata: AddColdStorageReceiveLedgerMetadata = {
@@ -260,8 +259,8 @@ export const ColdStorageReceiveLedgerMetada = ({
     hash: onChainTxHash,
     payee_addresses: payeeAddresses,
     fee: Number(fee.amount) as Satoshis,
-    feeUsd: feeDisplayUsd,
-    usd: amountDisplayUsd,
+    feeUsd: feeDisplayCurrency,
+    usd: amountDisplayCurrency,
   }
 
   return metadata
@@ -270,14 +269,14 @@ export const ColdStorageReceiveLedgerMetada = ({
 export const ColdStorageSendLedgerMetada = ({
   onChainTxHash,
   fee,
-  feeDisplayUsd,
-  amountDisplayUsd,
+  feeDisplayCurrency,
+  amountDisplayCurrency,
   payeeAddress,
 }: {
   onChainTxHash: OnChainTxHash
   fee: BtcPaymentAmount
-  feeDisplayUsd: DisplayCurrencyBaseAmount
-  amountDisplayUsd: DisplayCurrencyBaseAmount
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
   payeeAddress: OnChainAddress
 }) => {
   const metadata: AddColdStorageSendLedgerMetadata = {
@@ -286,8 +285,8 @@ export const ColdStorageSendLedgerMetada = ({
     hash: onChainTxHash,
     payee_addresses: [payeeAddress],
     fee: Number(fee.amount) as Satoshis,
-    feeUsd: feeDisplayUsd,
-    usd: amountDisplayUsd,
+    feeUsd: feeDisplayCurrency,
+    usd: amountDisplayCurrency,
   }
 
   return metadata

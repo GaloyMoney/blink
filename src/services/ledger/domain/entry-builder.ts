@@ -63,34 +63,8 @@ const EntryBuilderFee = <M extends MediciEntry>({
     })
   }
 
-  const withFeeFromBank = ({
-    btcProtocolFee,
-    usdProtocolFee,
-  }: {
-    btcProtocolFee: BtcPaymentAmount
-    usdProtocolFee: UsdPaymentAmount
-  }) => {
-    if (btcProtocolFee.amount > 0n) {
-      entry.debit(staticAccountIds.bankOwnerAccountId, Number(btcProtocolFee.amount), {
-        ...metadata,
-        currency: btcProtocolFee.currency,
-      })
-    }
-
-    const usdWithOutFee = calc.add(usdWithFee, usdProtocolFee)
-    const btcWithOutFee = calc.add(btcWithFee, btcProtocolFee)
-    return EntryBuilderDebit({
-      metadata,
-      entry,
-      amountWithFee: { usdWithFee, btcWithFee },
-      amountWithOutFee: { usdWithOutFee, btcWithOutFee },
-      staticAccountIds,
-    })
-  }
-
   return {
     withFee,
-    withFeeFromBank,
   }
 }
 
