@@ -19,6 +19,20 @@ export const ZERO_FEE = {
   btcProtocolFee: ZERO_SATS,
 }
 
+export const BtcWalletDescriptor = (walletId: WalletId) => {
+  return {
+    id: walletId,
+    currency: WalletCurrency.Btc,
+  } as WalletDescriptor<"BTC">
+}
+
+export const UsdWalletDescriptor = (walletId: WalletId) => {
+  return {
+    id: walletId,
+    currency: WalletCurrency.Usd,
+  } as WalletDescriptor<"USD">
+}
+
 export const BtcPaymentAmount = (sats: bigint): BtcPaymentAmount => {
   return {
     currency: WalletCurrency.Btc,

@@ -26,11 +26,19 @@ describe("Tx metadata", () => {
           recipientUsername,
         })
 
-      expect(metadata.username).toEqual(senderUsername)
-      expect(debitAccountAdditionalMetadata.username).toEqual(recipientUsername)
-      expect(metadata.memoPayer).toBeUndefined()
-      expect(debitAccountAdditionalMetadata.memoPayer).toEqual(memoOfPayer)
-      expect(metadata.type).toEqual(LedgerTransactionType.OnchainIntraLedger)
+      expect(metadata).toEqual(
+        expect.objectContaining({
+          username: senderUsername,
+          memoPayer: undefined,
+          type: LedgerTransactionType.OnchainIntraLedger,
+        }),
+      )
+      expect(debitAccountAdditionalMetadata).toEqual(
+        expect.objectContaining({
+          username: recipientUsername,
+          memoPayer: memoOfPayer,
+        }),
+      )
     })
 
     it("ln", () => {
@@ -43,11 +51,19 @@ describe("Tx metadata", () => {
         paymentHash,
       })
 
-      expect(metadata.username).toEqual(senderUsername)
-      expect(debitAccountAdditionalMetadata.username).toEqual(recipientUsername)
-      expect(metadata.memoPayer).toBeUndefined()
-      expect(debitAccountAdditionalMetadata.memoPayer).toEqual(memoOfPayer)
-      expect(metadata.type).toEqual(LedgerTransactionType.LnIntraLedger)
+      expect(metadata).toEqual(
+        expect.objectContaining({
+          username: senderUsername,
+          memoPayer: undefined,
+          type: LedgerTransactionType.LnIntraLedger,
+        }),
+      )
+      expect(debitAccountAdditionalMetadata).toEqual(
+        expect.objectContaining({
+          username: recipientUsername,
+          memoPayer: memoOfPayer,
+        }),
+      )
     })
 
     it("wallet id", () => {
@@ -59,9 +75,18 @@ describe("Tx metadata", () => {
           recipientUsername,
         })
 
-      expect(metadata.username).toEqual(senderUsername)
-      expect(debitAccountAdditionalMetadata.username).toEqual(recipientUsername)
-      expect(metadata.memoPayer).toEqual(memoOfPayer)
+      expect(metadata).toEqual(
+        expect.objectContaining({
+          username: senderUsername,
+          memoPayer: memoOfPayer,
+          type: LedgerTransactionType.IntraLedger,
+        }),
+      )
+      expect(debitAccountAdditionalMetadata).toEqual(
+        expect.objectContaining({
+          username: recipientUsername,
+        }),
+      )
     })
   })
 })

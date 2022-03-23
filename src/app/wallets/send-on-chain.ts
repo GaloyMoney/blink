@@ -241,7 +241,7 @@ const executePaymentViaIntraledger = async ({
             recipientWalletId: recipientWallet.id,
             recipientWalletCurrency: recipientWallet.currency,
             recipientUsername: recipientAccount.username,
-            memoPayer: memo ?? null,
+            memoPayer: memo || undefined,
           }),
       )
       if (journal instanceof Error) return journal

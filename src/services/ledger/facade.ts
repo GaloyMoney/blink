@@ -16,53 +16,13 @@ const staticAccountIds = async () => {
   }
 }
 
-type RecordSendArgs<T extends WalletCurrency> = {
-  description: string
-  senderWalletDescriptor: WalletDescriptor<T>
-  amount: {
-    usdWithFee: UsdPaymentAmount
-    btcWithFee: BtcPaymentAmount
-  }
-  metadata: SendLedgerMetadata
-  fee?: {
-    usdProtocolFee: UsdPaymentAmount
-    btcProtocolFee: BtcPaymentAmount
-  }
-}
-
-type RecordReceiveArgs<T extends WalletCurrency> = {
-  description: string
-  receiverWalletDescriptor: WalletDescriptor<T>
-  amount: {
-    usdWithFee: UsdPaymentAmount
-    btcWithFee: BtcPaymentAmount
-  }
-  metadata: ReceiveLedgerMetadata
-  fee?: {
-    usdProtocolFee: UsdPaymentAmount
-    btcProtocolFee: BtcPaymentAmount
-  }
-}
-
-type RecordIntraledgerArgs<T extends WalletCurrency, V extends WalletCurrency> = {
-  description: string
-  senderWalletDescriptor: WalletDescriptor<T>
-  receiverWalletDescriptor: WalletDescriptor<V>
-  amount: {
-    usdWithFee: UsdPaymentAmount
-    btcWithFee: BtcPaymentAmount
-  }
-  metadata: IntraledgerLedgerMetadata
-  additionalDebitMetadata: TxMetadata
-}
-
-export const recordSend = async <T extends WalletCurrency>({
+export const recordSend = async ({
   description,
   senderWalletDescriptor,
   amount,
   fee,
   metadata,
-}: RecordSendArgs<T>) => {
+}: RecordSendArgs) => {
   const actualFee = fee || ZERO_FEE
 
   let entry = MainBook.entry(description)
@@ -83,13 +43,13 @@ export const recordSend = async <T extends WalletCurrency>({
   return persistAndReturnEntry({ entry, hash: metadata.hash })
 }
 
-export const recordReceive = async <T extends WalletCurrency>({
+export const recordReceive = async ({
   description,
   receiverWalletDescriptor,
   amount,
   fee,
   metadata,
-}: RecordReceiveArgs<T>) => {
+}: RecordReceiveArgs) => {
   const actualFee = fee || ZERO_FEE
 
   let entry = MainBook.entry(description)
@@ -122,17 +82,14 @@ export const getLedgerAccountBalanceForWalletId = async <T extends WalletCurrenc
   }
 }
 
-export const recordIntraledger = async <
-  T extends WalletCurrency,
-  V extends WalletCurrency,
->({
+export const recordIntraledger = async ({
   description,
   senderWalletDescriptor,
   receiverWalletDescriptor,
   amount,
   metadata,
   additionalDebitMetadata: additionalMetadata,
-}: RecordIntraledgerArgs<T, V>) => {
+}: RecordIntraledgerArgs) => {
   let entry = MainBook.entry(description)
   const builder = EntryBuilder({
     staticAccountIds: await staticAccountIds(),

@@ -2,8 +2,8 @@ import { LegacyEntryBuilder, lndLedgerAccountId } from "@services/ledger/domain"
 import { WalletCurrency, AmountCalculator } from "@domain/shared"
 
 class TestMediciEntry {
-  credits: any
-  debits: any
+  credits: any // eslint-disable-line
+  debits: any // eslint-disable-line
 
   credit(accountPath, amount, metadata = null) {
     this.credits = this.credits || {}

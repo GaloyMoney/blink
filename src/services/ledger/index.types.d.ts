@@ -1,6 +1,46 @@
 type TxnGroup = keyof typeof import("./volume").TxnGroups
 type TxnTypes = typeof import("./volume").TxnGroups[TxnGroup]
 
+type RecordSendArgs = {
+  description: string
+  senderWalletDescriptor: WalletDescriptor<WalletCurrency>
+  amount: {
+    usdWithFee: UsdPaymentAmount
+    btcWithFee: BtcPaymentAmount
+  }
+  metadata: SendLedgerMetadata
+  fee?: {
+    usdProtocolFee: UsdPaymentAmount
+    btcProtocolFee: BtcPaymentAmount
+  }
+}
+
+type RecordReceiveArgs = {
+  description: string
+  receiverWalletDescriptor: WalletDescriptor<WalletCurrency>
+  amount: {
+    usdWithFee: UsdPaymentAmount
+    btcWithFee: BtcPaymentAmount
+  }
+  metadata: ReceiveLedgerMetadata
+  fee?: {
+    usdProtocolFee: UsdPaymentAmount
+    btcProtocolFee: BtcPaymentAmount
+  }
+}
+
+type RecordIntraledgerArgs = {
+  description: string
+  senderWalletDescriptor: WalletDescriptor<WalletCurrency>
+  receiverWalletDescriptor: WalletDescriptor<WalletCurrency>
+  amount: {
+    usdWithFee: UsdPaymentAmount
+    btcWithFee: BtcPaymentAmount
+  }
+  metadata: IntraledgerLedgerMetadata
+  additionalDebitMetadata: TxMetadata
+}
+
 type LedgerMetadata = {
   type: LedgerTransactionType
   pending: boolean
@@ -36,7 +76,7 @@ type AddOnchainSendLedgerMetadata = NonIntraledgerLedgerMetadata & {
 type AddColdStorageLedgerMetadata = NonIntraledgerLedgerMetadata & {
   hash: OnChainTxHash
   payee_addresses: OnChainAddress[]
-  currency?: WalletCurrency
+  currency: WalletCurrency
 }
 
 type AddColdStorageReceiveLedgerMetadata = AddColdStorageLedgerMetadata
@@ -45,8 +85,8 @@ type AddColdStorageSendLedgerMetadata = AddColdStorageLedgerMetadata
 
 type IntraledgerBaseMetadata = LedgerMetadata & {
   usd: DisplayCurrencyBaseAmount // to be renamed amountDisplayCurrency
-  memoPayer: string | undefined | null
-  username: Username | undefined | null
+  memoPayer?: string
+  username?: Username
 }
 
 type AddLnIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata & {

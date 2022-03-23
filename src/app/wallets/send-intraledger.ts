@@ -230,7 +230,7 @@ const executePaymentViaIntraledger = async ({
           amountDisplayCurrency,
           recipientWalletId,
           recipientWalletCurrency: recipientWallet.currency,
-          recipientUsername,
+          recipientUsername: recipientUsername || undefined,
           memoPayer,
         }),
       )

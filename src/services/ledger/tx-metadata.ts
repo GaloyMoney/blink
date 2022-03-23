@@ -246,15 +246,18 @@ export const ColdStorageReceiveLedgerMetada = ({
   feeDisplayCurrency,
   amountDisplayCurrency,
   payeeAddresses,
+  currency,
 }: {
   onChainTxHash: OnChainTxHash
   fee: BtcPaymentAmount
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   payeeAddresses: OnChainAddress[]
+  currency: WalletCurrency
 }) => {
   const metadata: AddColdStorageReceiveLedgerMetadata = {
     type: LedgerTransactionType.ToColdStorage,
+    currency,
     pending: false,
     hash: onChainTxHash,
     payee_addresses: payeeAddresses,
@@ -272,15 +275,18 @@ export const ColdStorageSendLedgerMetada = ({
   feeDisplayCurrency,
   amountDisplayCurrency,
   payeeAddress,
+  currency,
 }: {
   onChainTxHash: OnChainTxHash
   fee: BtcPaymentAmount
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   payeeAddress: OnChainAddress
+  currency: WalletCurrency
 }) => {
   const metadata: AddColdStorageSendLedgerMetadata = {
     type: LedgerTransactionType.ToHotWallet,
+    currency,
     pending: false,
     hash: onChainTxHash,
     payee_addresses: [payeeAddress],

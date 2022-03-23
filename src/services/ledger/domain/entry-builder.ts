@@ -52,13 +52,11 @@ const EntryBuilderFee = <M extends MediciEntry>({
       })
     }
 
-    const usdWithOutFee = calc.sub(usdWithFee, usdProtocolFee)
-    const btcWithOutFee = calc.sub(btcWithFee, btcProtocolFee)
     return EntryBuilderDebit({
       metadata,
       entry,
       amountWithFee: { usdWithFee, btcWithFee },
-      amountWithOutFee: { usdWithOutFee, btcWithOutFee },
+      fee: { btcProtocolFee, usdProtocolFee },
       staticAccountIds,
     })
   }
@@ -73,7 +71,7 @@ const EntryBuilderDebit = <M extends MediciEntry>({
   metadata,
   staticAccountIds,
   amountWithFee: { usdWithFee, btcWithFee },
-  amountWithOutFee: { usdWithOutFee, btcWithOutFee },
+  fee: { usdProtocolFee, btcProtocolFee },
 }: EntryBuilderDebitState<M>): EntryBuilderDebit<M> => {
   const debitAccount = <T extends WalletCurrency>({
     accountDescriptor,
@@ -102,9 +100,9 @@ const EntryBuilderDebit = <M extends MediciEntry>({
       entry,
       metadata,
       debitCurrency: accountDescriptor.currency,
-      amountWithOutFee: {
-        usdWithOutFee,
-        btcWithOutFee,
+      fee: {
+        usdProtocolFee,
+        btcProtocolFee,
       },
       amountWithFee: {
         usdWithFee,
@@ -132,7 +130,7 @@ const EntryBuilderDebit = <M extends MediciEntry>({
 const EntryBuilderCredit = <M extends MediciEntry>({
   entry,
   metadata,
-  amountWithOutFee: { usdWithOutFee, btcWithOutFee },
+  fee: { usdProtocolFee, btcProtocolFee },
   amountWithFee: { usdWithFee, btcWithFee },
   debitCurrency,
   staticAccountIds,
@@ -143,57 +141,58 @@ const EntryBuilderCredit = <M extends MediciEntry>({
   const creditAccount = <T extends WalletCurrency>(
     accountDescriptor: LedgerAccountDescriptor<T>,
   ) => {
+    let entryToReturn = entry
+    const usdWithOutFee = calc.sub(usdWithFee, usdProtocolFee)
+    const btcWithOutFee = calc.sub(btcWithFee, btcProtocolFee)
+
     if (
       debitCurrency === WalletCurrency.Usd &&
       accountDescriptor.currency === WalletCurrency.Usd &&
-      usdWithFee.amount != usdWithOutFee.amount
+      usdProtocolFee.amount > 0
     ) {
-      const dealerData = {
+      entryToReturn = addUsdToBtcConversionToEntry({
         entry,
         metadata,
         staticAccountIds,
-        btcAmount: calc.sub(btcWithFee, btcWithOutFee),
-        usdAmount: calc.sub(usdWithFee, usdWithOutFee),
-      }
-      withdrawUsdFromDealer(dealerData)
+        btcAmount: btcProtocolFee,
+        usdAmount: usdProtocolFee,
+      })
     }
 
     if (
       debitCurrency === WalletCurrency.Usd &&
       accountDescriptor.currency === WalletCurrency.Btc
     ) {
-      const dealerData = {
+      entryToReturn = addUsdToBtcConversionToEntry({
         entry,
         metadata,
         staticAccountIds,
         btcAmount: btcWithFee,
         usdAmount: usdWithFee,
-      }
-      withdrawUsdFromDealer(dealerData)
+      })
     }
 
     if (
       debitCurrency === WalletCurrency.Btc &&
       accountDescriptor.currency === WalletCurrency.Usd
     ) {
-      const dealerData = {
+      entryToReturn = addBtcToUsdConversionToDealer({
         entry,
         metadata,
         staticAccountIds,
         btcAmount: btcWithOutFee,
         usdAmount: usdWithOutFee,
-      }
-      addUsdToDealer(dealerData)
+      })
     }
 
     const creditAmount =
       accountDescriptor.currency === WalletCurrency.Usd ? usdWithOutFee : btcWithOutFee
 
-    entry.credit(accountDescriptor.id, Number(creditAmount.amount), {
+    entryToReturn.credit(accountDescriptor.id, Number(creditAmount.amount), {
       ...metadata,
       currency: creditAmount.currency,
     })
-    return entry
+    return entryToReturn
   }
 
   return {
@@ -203,7 +202,7 @@ const EntryBuilderCredit = <M extends MediciEntry>({
   }
 }
 
-const addUsdToDealer = ({
+const addBtcToUsdConversionToDealer = <M extends MediciEntry>({
   staticAccountIds: { dealerBtcAccountId, dealerUsdAccountId },
   entry,
   btcAmount,
@@ -214,7 +213,7 @@ const addUsdToDealer = ({
     dealerBtcAccountId: LedgerAccountId
     dealerUsdAccountId: LedgerAccountId
   }
-  entry: MediciEntry
+  entry: M
   btcAmount: BtcPaymentAmount
   usdAmount: UsdPaymentAmount
   metadata: TxMetadata
@@ -230,7 +229,7 @@ const addUsdToDealer = ({
   return entry
 }
 
-const withdrawUsdFromDealer = ({
+const addUsdToBtcConversionToEntry = <M extends MediciEntry>({
   staticAccountIds: { dealerBtcAccountId, dealerUsdAccountId },
   entry,
   btcAmount,
@@ -241,7 +240,7 @@ const withdrawUsdFromDealer = ({
     dealerBtcAccountId: LedgerAccountId
     dealerUsdAccountId: LedgerAccountId
   }
-  entry: MediciEntry
+  entry: M
   btcAmount: BtcPaymentAmount
   usdAmount: UsdPaymentAmount
   metadata: TxMetadata

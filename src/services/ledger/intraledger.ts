@@ -162,7 +162,7 @@ const addIntraledgerTxTransfer = async ({
   const sharedMetadata = {
     ...metadata,
     username: senderUsername,
-    memoPayer: shareMemoWithPayee ? memoPayer : null,
+    memoPayer: shareMemoWithPayee ? memoPayer : undefined,
   }
 
   let entry = MainBook.entry(description)

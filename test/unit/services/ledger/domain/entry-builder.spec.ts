@@ -3,8 +3,8 @@ import { lndLedgerAccountId, EntryBuilder } from "@services/ledger/domain"
 import { WalletCurrency, AmountCalculator, ZERO_FEE } from "@domain/shared"
 
 class TestMediciEntry {
-  credits: any
-  debits: any
+  credits: any  // eslint-disable-line
+  debits: any // eslint-disable-line
 
   credit(accountPath, amount, metadata = null) {
     this.credits = this.credits || {}
@@ -31,11 +31,13 @@ describe("EntryBuilder", () => {
     let usdDebits = 0
     let btcDebits = 0
 
+    // eslint-disable-next-line
     Object.values<any>(journal.debits).forEach((entry) =>
       entry.metadata.currency === WalletCurrency.Usd
         ? (usdDebits += entry.amount)
         : (btcDebits += entry.amount),
     )
+    // eslint-disable-next-line
     Object.values<any>(journal.credits).forEach((entry) =>
       entry.metadata.currency === WalletCurrency.Usd
         ? (usdCredits += entry.amount)
@@ -44,8 +46,6 @@ describe("EntryBuilder", () => {
 
     expect(usdCredits).toEqual(usdDebits)
     expect(btcCredits).toEqual(btcDebits)
-    console.log(usdCredits)
-    console.log(btcCredits)
   }
 
   const calc = AmountCalculator()
@@ -339,7 +339,7 @@ describe("EntryBuilder", () => {
             accountDescriptor: btcDebitorAccountDescriptor,
           })
           .creditAccount(usdCreditorAccountDescriptor)
-        console.log("Btc to usd")
+
         expectJournalToBeBalanced(result)
         expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
         expectEntryToEqual(result.debits[debitorAccountId], btcAmount)

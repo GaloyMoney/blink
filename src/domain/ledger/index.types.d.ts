@@ -124,14 +124,14 @@ type AddColdStorageTxSendArgs = {
 type IntraledgerTxArgs = {
   senderWalletId: WalletId
   senderWalletCurrency: WalletCurrency
-  senderUsername: Username | null
+  senderUsername?: Username
   description: string
   sats?: Satoshis
   cents?: UsdCents
   recipientWalletId: WalletId
   recipientWalletCurrency: WalletCurrency
-  recipientUsername: Username | null
-  memoPayer: string | null
+  recipientUsername?: Username
+  memoPayer?: string
 }
 
 type AddIntraLedgerTxSendArgs = IntraledgerTxArgs & {
@@ -139,7 +139,7 @@ type AddIntraLedgerTxSendArgs = IntraledgerTxArgs & {
 }
 
 type SendIntraledgerTxArgs = IntraledgerTxArgs & {
-  recipientUsername: Username | null
+  recipientUsername?: Username
   shareMemoWithPayee: boolean
   metadata:
     | AddLnIntraledgerSendLedgerMetadata

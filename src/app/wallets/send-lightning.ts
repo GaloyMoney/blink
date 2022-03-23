@@ -487,7 +487,7 @@ const executePaymentViaIntraledger = async ({
           amountDisplayCurrency,
           recipientWalletId,
           recipientWalletCurrency: recipientWallet.currency,
-          recipientUsername: null,
+          recipientUsername: undefined,
           pubkey: lndService.defaultPubkey(),
           memoPayer: memo,
         }),

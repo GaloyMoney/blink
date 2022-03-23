@@ -96,17 +96,6 @@ const LegacyEntryBuilderDebit = <M extends MediciEntry>({
   }
 }
 
-type LegacyEntryBuilderCreditState<M extends MediciEntry, D extends WalletCurrency> = {
-  entry: M
-  metadata: TxMetadata
-  fee: BtcPaymentAmount
-  debitAmount: PaymentAmount<D>
-  staticAccountIds: {
-    dealerBtcAccountId: LedgerAccountId
-    dealerUsdAccountId: LedgerAccountId
-  }
-}
-
 const LegacyEntryBuilderCreditWithUsdDebit = <M extends MediciEntry>({
   entry,
   metadata,
