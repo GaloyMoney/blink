@@ -41,6 +41,7 @@ type TxFilterArgs = {
   confirmationsLessThan?: number
   confirmationsGreaterThanOrEqual?: number
   addresses?: OnChainAddress[]
+  hash?: OnChainTxHash
 }
 
 type TxFilter = {

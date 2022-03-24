@@ -2,9 +2,10 @@ export const TxFilter = ({
   confirmationsLessThan,
   confirmationsGreaterThanOrEqual,
   addresses,
+  hash,
 }: TxFilterArgs): TxFilter => {
   const apply = (txs: IncomingOnChainTransaction[]): IncomingOnChainTransaction[] => {
-    return txs.filter(({ confirmations, rawTx: { outs } }) => {
+    return txs.filter(({ confirmations, rawTx: { outs, txHash } }) => {
       if (
         !!confirmationsGreaterThanOrEqual &&
         confirmations < confirmationsGreaterThanOrEqual
@@ -12,6 +13,9 @@ export const TxFilter = ({
         return false
       }
       if (!!confirmationsLessThan && confirmations >= confirmationsLessThan) {
+        return false
+      }
+      if (!!hash && hash !== txHash) {
         return false
       }
       if (
