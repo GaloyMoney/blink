@@ -117,6 +117,25 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
+  const getTransactionsByWalletIdAndHash = async ({
+    walletId,
+    hash,
+  }: {
+    walletId: WalletId
+    hash: PaymentHash | OnChainTxHash
+  }): Promise<LedgerTransaction[] | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    try {
+      const { results } = await MainBook.ledger({
+        account: liabilitiesWalletId,
+        hash,
+      })
+      return results.map((tx) => translateToLedgerTx(tx))
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  }
+
   const listPendingPayments = async (
     walletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerError> => {
@@ -288,6 +307,7 @@ export const LedgerService = (): ILedgerService => {
       getTransactionsByHash,
       getTransactionsByWalletId,
       getTransactionsByWalletIdAndContactUsername,
+      getTransactionsByWalletIdAndHash,
       listPendingPayments,
       listAllPaymentHashes,
       getPendingPaymentsCount,

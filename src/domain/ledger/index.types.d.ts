@@ -221,6 +221,14 @@ interface ILedgerService {
     walletId: WalletId,
   ): Promise<LedgerTransaction[] | LedgerServiceError>
 
+  getTransactionsByWalletIdAndHash({
+    walletId,
+    hash,
+  }: {
+    walletId: WalletId
+    hash: PaymentHash | OnChainTxHash
+  }): Promise<LedgerTransaction[] | LedgerServiceError>
+
   getTransactionsByWalletIdAndContactUsername(
     walletId: WalletId,
     contactUsername: Username,
