@@ -39,10 +39,14 @@ export const constructPaymentFlowBuilder = async ({
   senderWallet,
   invoice,
   uncheckedAmount,
+  usdFromBtc,
+  btcFromUsd,
 }: {
   senderWallet: Wallet
   invoice: LnInvoice
   uncheckedAmount?: number
+  usdFromBtc
+  btcFromUsd
 }): Promise<LPFBWithConversion<WalletCurrency, WalletCurrency> | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
@@ -84,13 +88,13 @@ export const constructPaymentFlowBuilder = async ({
         usdPaymentAmount,
       })
       .withConversion({
-        usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
-        btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
+        usdFromBtc,
+        btcFromUsd,
       })
   } else {
     return builderWithSenderWallet.withoutRecipientWallet().withConversion({
-      usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
-      btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
+      usdFromBtc,
+      btcFromUsd,
     })
   }
 }
