@@ -27,12 +27,15 @@ import { PaymentsRepository } from "@services/redis"
 import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
 import { NotificationsService } from "@services/notifications"
+import { NewDealerPriceService } from "@services/dealer-price"
 
 import {
   constructPaymentFlowBuilder,
   newCheckWithdrawalLimits,
   newCheckIntraledgerLimits,
 } from "./helpers"
+
+const dealer = NewDealerPriceService()
 
 export const payInvoiceByWalletId = async ({
   paymentRequest,
@@ -80,14 +83,14 @@ export const payInvoiceByWalletId = async ({
     const builder = await constructPaymentFlowBuilder({
       senderWallet,
       invoice: decodedInvoice,
+      usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+      btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
     })
     if (builder instanceof AlreadyPaidError) return PaymentSendStatus.AlreadyPaid
     if (builder instanceof Error) return builder
     paymentFlow = await builder.withoutRoute()
   }
   if (paymentFlow instanceof Error) return paymentFlow
-
-  // Note: probe for USD fee not necessary since we can get the fee otherwise
 
   // Get display currency price... add to payment flow builder?
 
