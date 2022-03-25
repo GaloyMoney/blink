@@ -11,21 +11,29 @@ import { filterTxs } from "./get-transactions-helpers"
 // FIXME(nicolas): remove only used in tests
 export const getTransactionsForWalletId = async ({
   walletId,
+  hash,
 }: {
   walletId: WalletId
+  hash?: PaymentHash | OnChainTxHash
 }): Promise<PartialResult<WalletTransaction[]>> => {
   const wallets = WalletsRepository()
   const wallet = await wallets.findById(walletId)
   if (wallet instanceof RepositoryError) return PartialResult.err(wallet)
 
-  return getTransactionsForWallet(wallet)
+  return getTransactionsForWallet({ wallet, hash })
 }
 
-export const getTransactionsForWallet = async (
-  wallet: Wallet,
-): Promise<PartialResult<WalletTransaction[]>> => {
+export const getTransactionsForWallet = async ({
+  wallet,
+  hash,
+}: {
+  wallet: Wallet
+  hash?: PaymentHash | OnChainTxHash
+}): Promise<PartialResult<WalletTransaction[]>> => {
   const ledger = LedgerService()
-  const ledgerTransactions = await ledger.getTransactionsByWalletId(wallet.id)
+  const ledgerTransactions = hash
+    ? await ledger.getTransactionsByWalletIdAndHash({ walletId: wallet.id, hash })
+    : await ledger.getTransactionsByWalletId(wallet.id)
   if (ledgerTransactions instanceof LedgerError)
     return PartialResult.err(ledgerTransactions)
 

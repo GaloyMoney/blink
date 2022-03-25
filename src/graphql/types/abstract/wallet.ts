@@ -3,9 +3,10 @@ import dedent from "dedent"
 import { GT } from "@graphql/index"
 import { connectionArgs, connectionFromArray } from "@graphql/connections"
 
-import { TransactionConnection } from "../object/transaction"
-import WalletCurrency from "../scalar/wallet-currency"
-import SignedAmount from "../scalar/signed-amount"
+import { TransactionConnection } from "@graphql/types/object/transaction"
+import WalletCurrency from "@graphql/types/scalar/wallet-currency"
+import PaymentHash from "@graphql/types/scalar/payment-hash"
+import SignedAmount from "@graphql/types/scalar/signed-amount"
 
 const IWallet = GT.Interface({
   name: "Wallet",
@@ -24,7 +25,7 @@ const IWallet = GT.Interface({
       description: dedent`Transactions are ordered anti-chronologically,
       ie: the newest transaction will be first`,
       type: TransactionConnection,
-      args: connectionArgs,
+      args: { ...connectionArgs, hash: { type: PaymentHash } },
       resolve: (source, args) => {
         return connectionFromArray<WalletTransaction>(source.transactions, args)
       },

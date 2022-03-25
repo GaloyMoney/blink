@@ -1,16 +1,16 @@
-import { GT } from "@graphql/index"
-import { connectionArgs, connectionFromArray } from "@graphql/connections"
-
 import { Wallets } from "@app"
 
 import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
 
-import IWallet from "../abstract/wallet"
+import { GT } from "@graphql/index"
+import { connectionArgs, connectionFromArray } from "@graphql/connections"
+import { InputValidationError } from "@graphql/error"
 
-import SignedAmount from "../scalar/signed-amount"
-import WalletCurrency from "../scalar/wallet-currency"
-
-import { TransactionConnection } from "./transaction"
+import IWallet from "@graphql/types/abstract/wallet"
+import SignedAmount from "@graphql/types/scalar/signed-amount"
+import WalletCurrency from "@graphql/types/scalar/wallet-currency"
+import PaymentHash from "@graphql/types/scalar/payment-hash"
+import { TransactionConnection } from "@graphql/types/object/transaction"
 
 const BtcWallet = GT.Object<Wallet>({
   name: "BTCWallet",
@@ -40,11 +40,17 @@ const BtcWallet = GT.Object<Wallet>({
     },
     transactions: {
       type: TransactionConnection,
-      args: connectionArgs,
+      args: { ...connectionArgs, hash: { type: PaymentHash } },
       resolve: async (source, args) => {
-        const { result: transactions, error } = await Wallets.getTransactionsForWallet(
-          source,
-        )
+        const { hash } = args
+        if (hash instanceof InputValidationError) {
+          return { errors: [{ message: hash.message }] }
+        }
+
+        const { result: transactions, error } = await Wallets.getTransactionsForWallet({
+          wallet: source,
+          hash,
+        })
         if (error instanceof Error || transactions === null) {
           throw error
         }

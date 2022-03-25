@@ -52,6 +52,7 @@ type BTCWallet implements Wallet {
     Returns the first n items from the list.
     """
     first: Int
+    hash: PaymentHash
 
     """
     Returns the last n items from the list.
@@ -938,6 +939,7 @@ type UsdWallet implements Wallet {
     Returns the first n items from the list.
     """
     first: Int
+    hash: PaymentHash
 
     """
     Returns the last n items from the list.
@@ -1111,6 +1113,7 @@ interface Wallet {
     Returns the first n items from the list.
     """
     first: Int
+    hash: PaymentHash
 
     """
     Returns the last n items from the list.
