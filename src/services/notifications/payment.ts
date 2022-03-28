@@ -66,7 +66,7 @@ export const transactionBitcoinNotification = async ({
   }
 
   const data: IDataNotification = {
-    type: type as TransactionType,
+    type: type as LedgerTransactionType,
     hash: paymentHash, // offchain
     amount: sats,
     txid: txHash, // onchain ... use the same property? txid have an index as well
@@ -92,7 +92,7 @@ export const transactionUsdNotification = async ({
   }
 
   const data: IDataNotification = {
-    type: type as TransactionType,
+    type: type as LedgerTransactionType,
     hash: paymentHash, // offchain
     cents,
     txid: txHash, // onchain ... use the same property? txid have an index as well

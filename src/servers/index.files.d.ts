@@ -15,3 +15,6 @@ type GraphQLContextForUser = {
   geetest: GeetestType
   ip: IpAddress
 }
+
+// globally used types
+type Logger = import("pino").Logger
