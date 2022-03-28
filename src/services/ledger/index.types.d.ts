@@ -1,13 +1,53 @@
 type TxnGroup = keyof typeof import("./volume").TxnGroups
 type TxnTypes = typeof import("./volume").TxnGroups[TxnGroup]
 
+type RecordSendArgs = {
+  description: string
+  senderWalletDescriptor: WalletDescriptor<WalletCurrency>
+  amount: {
+    usdWithFee: UsdPaymentAmount
+    btcWithFee: BtcPaymentAmount
+  }
+  metadata: SendLedgerMetadata
+  fee?: {
+    usdProtocolFee: UsdPaymentAmount
+    btcProtocolFee: BtcPaymentAmount
+  }
+}
+
+type RecordReceiveArgs = {
+  description: string
+  receiverWalletDescriptor: WalletDescriptor<WalletCurrency>
+  amount: {
+    usdWithFee: UsdPaymentAmount
+    btcWithFee: BtcPaymentAmount
+  }
+  metadata: ReceiveLedgerMetadata
+  fee?: {
+    usdProtocolFee: UsdPaymentAmount
+    btcProtocolFee: BtcPaymentAmount
+  }
+}
+
+type RecordIntraledgerArgs = {
+  description: string
+  senderWalletDescriptor: WalletDescriptor<WalletCurrency>
+  receiverWalletDescriptor: WalletDescriptor<WalletCurrency>
+  amount: {
+    usdWithFee: UsdPaymentAmount
+    btcWithFee: BtcPaymentAmount
+  }
+  metadata: IntraledgerLedgerMetadata
+  additionalDebitMetadata: TxMetadata
+}
+
 type LedgerMetadata = {
   type: LedgerTransactionType
   pending: boolean
-  usd: DisplayCurrencyBaseAmount // to be renamed amountDisplayCurrency
 }
 
 type NonIntraledgerLedgerMetadata = LedgerMetadata & {
+  usd: DisplayCurrencyBaseAmount // to be renamed amountDisplayCurrency
   fee: Satoshis
   feeUsd: DisplayCurrencyBaseAmount // to be renamed feeDisplayCurrency
 }
@@ -43,22 +83,23 @@ type AddColdStorageReceiveLedgerMetadata = AddColdStorageLedgerMetadata
 
 type AddColdStorageSendLedgerMetadata = AddColdStorageLedgerMetadata
 
-type IntraledgerLedgerMetadata = LedgerMetadata & {
-  memoPayer: string | undefined
-  username: Username | undefined
+type IntraledgerBaseMetadata = LedgerMetadata & {
+  usd: DisplayCurrencyBaseAmount // to be renamed amountDisplayCurrency
+  memoPayer?: string
+  username?: Username
 }
 
-type AddLnIntraledgerSendLedgerMetadata = IntraledgerLedgerMetadata & {
+type AddLnIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata & {
   hash: PaymentHash
   pubkey: Pubkey
 }
 
-type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerLedgerMetadata & {
+type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata & {
   payee_addresses: OnChainAddress[]
   sendAll: boolean
 }
 
-type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerLedgerMetadata
+type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata
 
 type FeeReimbursementLedgerMetadata = {
   hash: PaymentHash
@@ -66,6 +107,14 @@ type FeeReimbursementLedgerMetadata = {
   pending: boolean
   usd: DisplayCurrencyBaseAmount
   related_journal: LedgerJournalId
+}
+
+type LnRoutingRevenueLedgerMetadata = LedgerMetadata & {
+  feesCollectedOn: string
+}
+
+type LnChannelOpenOrClosingFee = LedgerMetadata & {
+  txid: OnChainTxHash
 }
 
 type LoadLedgerParams = {
@@ -79,3 +128,10 @@ type ReceiveLedgerMetadata =
   | FeeReimbursementLedgerMetadata
   | LnReceiveLedgerMetadata
   | OnChainReceiveLedgerMetadata
+
+type IntraledgerLedgerMetadata =
+  | AddOnChainIntraledgerSendLedgerMetadata
+  | AddLnIntraledgerSendLedgerMetadata
+  | AddWalletIdIntraledgerSendLedgerMetadata
+
+type SendLedgerMetadata = AddOnchainSendLedgerMetadata | AddLnSendLedgerMetadata

@@ -12,7 +12,7 @@ import {
   WalletCurrency,
 } from "@domain/shared"
 
-import { EntryBuilder, toLedgerAccountId } from "./domain"
+import { LegacyEntryBuilder, toLedgerAccountId } from "./domain"
 
 import { MainBook, Transaction } from "./books"
 import * as caching from "./caching"
@@ -178,7 +178,7 @@ const addSendNoInternalFee = async ({
 
   const metadata = { ...metaInput, currency: walletCurrency }
   let entry = MainBook.entry(description)
-  const builder = EntryBuilder({
+  const builder = LegacyEntryBuilder({
     staticAccountIds,
     entry,
     metadata,
@@ -249,7 +249,7 @@ const addSendInternalFee = async ({
 
   try {
     const entry = MainBook.entry(description)
-    const builder = EntryBuilder({
+    const builder = LegacyEntryBuilder({
       staticAccountIds,
       entry,
       metadata: metaInput,

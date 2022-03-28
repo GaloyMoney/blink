@@ -1,9 +1,8 @@
-import { lndLedgerAccountId, EntryBuilder } from "@services/ledger/domain"
-
-import { WalletCurrency, AmountCalculator, ZERO_FEE } from "@domain/shared"
+import { LegacyEntryBuilder, lndLedgerAccountId } from "@services/ledger/domain"
+import { WalletCurrency, AmountCalculator } from "@domain/shared"
 
 class TestMediciEntry {
-  credits: any  // eslint-disable-line
+  credits: any // eslint-disable-line
   debits: any // eslint-disable-line
 
   credit(accountPath, amount, metadata = null) {
@@ -19,35 +18,11 @@ class TestMediciEntry {
   }
 }
 
-describe("EntryBuilder", () => {
+describe("LegacyEntryBuilder", () => {
   const expectEntryToEqual = (entry, amount) => {
     expect(entry.amount).toEqual(Number(amount.amount))
     expect(entry.metadata.currency).toEqual(amount.currency)
   }
-
-  const expectJournalToBeBalanced = (journal) => {
-    let usdCredits = 0
-    let btcCredits = 0
-    let usdDebits = 0
-    let btcDebits = 0
-
-    // eslint-disable-next-line
-    Object.values<any>(journal.debits).forEach((entry) =>
-      entry.metadata.currency === WalletCurrency.Usd
-        ? (usdDebits += entry.amount)
-        : (btcDebits += entry.amount),
-    )
-    // eslint-disable-next-line
-    Object.values<any>(journal.credits).forEach((entry) =>
-      entry.metadata.currency === WalletCurrency.Usd
-        ? (usdCredits += entry.amount)
-        : (btcCredits += entry.amount),
-    )
-
-    expect(usdCredits).toEqual(usdDebits)
-    expect(btcCredits).toEqual(btcDebits)
-  }
-
   const calc = AmountCalculator()
   const staticAccountIds = {
     bankOwnerAccountId: "bankOwnerAccountId" as LedgerAccountId,
@@ -55,28 +30,7 @@ describe("EntryBuilder", () => {
     dealerUsdAccountId: "dealerUsdAccountId" as LedgerAccountId,
   }
   const debitorAccountId = "debitorAccountId" as LedgerAccountId
-  const btcDebitorAccountDescriptor = {
-    id: debitorAccountId,
-    currency: WalletCurrency.Btc,
-  } as LedgerAccountDescriptor<"BTC">
-
-  const usdDebitorAccountDescriptor = {
-    id: debitorAccountId,
-    currency: WalletCurrency.Usd,
-  } as LedgerAccountDescriptor<"USD">
-
   const creditorAccountId = "creditorAccountId" as LedgerAccountId
-
-  const btcCreditorAccountDescriptor = {
-    id: creditorAccountId,
-    currency: WalletCurrency.Btc,
-  } as LedgerAccountDescriptor<"BTC">
-
-  const usdCreditorAccountDescriptor = {
-    id: creditorAccountId,
-    currency: WalletCurrency.Usd,
-  } as LedgerAccountDescriptor<"USD">
-
   const btcAmount = {
     currency: WalletCurrency.Btc,
     amount: 2000n,
@@ -85,25 +39,10 @@ describe("EntryBuilder", () => {
     currency: WalletCurrency.Usd,
     amount: 20n,
   }
-
-  const amount = {
-    btcWithFee: btcAmount,
-    usdWithFee: usdAmount,
-  }
   const btcFee = {
     currency: WalletCurrency.Btc,
-    amount: 110n,
+    amount: 111n,
   }
-  const usdFee = {
-    currency: WalletCurrency.Usd,
-    amount: 1n,
-  }
-
-  const protocolFee = {
-    usdProtocolFee: usdFee,
-    btcProtocolFee: btcFee,
-  }
-
   const metadata = {
     currency: "BAD CURRENCY",
     some: "some",
@@ -114,18 +53,19 @@ describe("EntryBuilder", () => {
     describe("send", () => {
       it("without fee", () => {
         const entry = new TestMediciEntry()
-        const builder = EntryBuilder({
+        const builder = LegacyEntryBuilder({
           staticAccountIds,
           entry,
           metadata,
         })
         const result = builder
-          .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
-          .debitAccount({ accountDescriptor: btcDebitorAccountDescriptor })
+          .withoutFee()
+          .debitAccount({
+            accountId: debitorAccountId,
+            amount: btcAmount,
+          })
           .creditLnd()
 
-        expectJournalToBeBalanced(result)
         expectEntryToEqual(result.credits[lndLedgerAccountId], btcAmount)
         expectEntryToEqual(result.debits[debitorAccountId], btcAmount)
         expect(result.debits[staticAccountIds.bankOwnerAccountId]).toBeUndefined()
@@ -133,18 +73,19 @@ describe("EntryBuilder", () => {
 
       it("with fee", () => {
         const entry = new TestMediciEntry()
-        const builder = EntryBuilder({
+        const builder = LegacyEntryBuilder({
           staticAccountIds,
           entry,
           metadata,
         })
         const result = builder
-          .withTotalAmount(amount)
-          .withFee(protocolFee)
-          .debitAccount({ accountDescriptor: btcDebitorAccountDescriptor })
+          .withFee(btcFee)
+          .debitAccount({
+            accountId: debitorAccountId,
+            amount: btcAmount,
+          })
           .creditLnd()
 
-        expectJournalToBeBalanced(result)
         expectEntryToEqual(result.credits[staticAccountIds.bankOwnerAccountId], btcFee)
         expectEntryToEqual(
           result.credits[lndLedgerAccountId],
@@ -157,36 +98,31 @@ describe("EntryBuilder", () => {
     describe("receive", () => {
       it("without fee", () => {
         const entry = new TestMediciEntry()
-        const builder = EntryBuilder({
+        const builder = LegacyEntryBuilder({
           staticAccountIds,
           entry,
           metadata,
         })
         const result = builder
-          .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
-          .debitLnd()
-          .creditAccount(btcCreditorAccountDescriptor)
+          .withoutFee()
+          .debitLnd(btcAmount)
+          .creditAccount({ accountId: creditorAccountId })
 
-        expectJournalToBeBalanced(result)
         expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
         expectEntryToEqual(result.credits[creditorAccountId], btcAmount)
       })
 
       it("with fee", () => {
         const entry = new TestMediciEntry()
-        const builder = EntryBuilder({
+        const builder = LegacyEntryBuilder({
           staticAccountIds,
           entry,
           metadata,
         })
-        const result = builder
-          .withTotalAmount(amount)
-          .withFee(protocolFee)
-          .debitLnd()
-          .creditAccount(btcCreditorAccountDescriptor)
+        const result = builder.withFee(btcFee).debitLnd(btcAmount).creditAccount({
+          accountId: creditorAccountId,
+        })
 
-        expectJournalToBeBalanced(result)
         expect(result.credits[staticAccountIds.bankOwnerAccountId].amount).toEqual(
           Number(btcFee.amount),
         )
@@ -200,20 +136,19 @@ describe("EntryBuilder", () => {
     describe("send", () => {
       it("without fee", () => {
         const entry = new TestMediciEntry()
-        const builder = EntryBuilder({
+        const builder = LegacyEntryBuilder({
           staticAccountIds,
           entry,
           metadata,
         })
         const result = builder
-          .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
+          .withoutFee()
           .debitAccount({
-            accountDescriptor: usdDebitorAccountDescriptor,
+            accountId: debitorAccountId,
+            amount: usdAmount,
           })
-          .creditLnd()
+          .creditLnd(btcAmount)
 
-        expectJournalToBeBalanced(result)
         expectEntryToEqual(result.credits[lndLedgerAccountId], btcAmount)
         expectEntryToEqual(result.debits[debitorAccountId], usdAmount)
         expectEntryToEqual(result.debits[staticAccountIds.dealerBtcAccountId], btcAmount)
@@ -224,20 +159,19 @@ describe("EntryBuilder", () => {
 
       it("with fee", () => {
         const entry = new TestMediciEntry()
-        const builder = EntryBuilder({
+        const builder = LegacyEntryBuilder({
           staticAccountIds,
           entry,
           metadata,
         })
         const result = builder
-          .withTotalAmount(amount)
-          .withFee(protocolFee)
+          .withFee(btcFee)
           .debitAccount({
-            accountDescriptor: usdDebitorAccountDescriptor,
+            accountId: debitorAccountId,
+            amount: usdAmount,
           })
-          .creditLnd()
+          .creditLnd(btcAmount)
 
-        expectJournalToBeBalanced(result)
         expectEntryToEqual(
           result.credits[lndLedgerAccountId],
           calc.sub(btcAmount, btcFee),
@@ -254,18 +188,15 @@ describe("EntryBuilder", () => {
     describe("receive", () => {
       it("without fee", () => {
         const entry = new TestMediciEntry()
-        const builder = EntryBuilder({
+        const builder = LegacyEntryBuilder({
           staticAccountIds,
           entry,
           metadata,
         })
-        const result = builder
-          .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
-          .debitLnd()
-          .creditAccount(usdCreditorAccountDescriptor)
-
-        expectJournalToBeBalanced(result)
+        const result = builder.withoutFee().debitLnd(btcAmount).creditAccount({
+          accountId: creditorAccountId,
+          amount: usdAmount,
+        })
         expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
         expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
         expectEntryToEqual(result.credits[staticAccountIds.dealerBtcAccountId], btcAmount)
@@ -276,29 +207,20 @@ describe("EntryBuilder", () => {
 
       it("with fee", () => {
         const entry = new TestMediciEntry()
-        const builder = EntryBuilder({
+        const builder = LegacyEntryBuilder({
           staticAccountIds,
           entry,
           metadata,
         })
-        const result = builder
-          .withTotalAmount(amount)
-          .withFee(protocolFee)
-          .debitLnd()
-          .creditAccount(usdCreditorAccountDescriptor)
-
-        expectJournalToBeBalanced(result)
+        const result = builder.withoutFee().debitLnd(btcAmount).creditAccount({
+          accountId: creditorAccountId,
+          amount: usdAmount,
+        })
         expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.credits[creditorAccountId], calc.sub(usdAmount, usdFee))
-        expectEntryToEqual(
-          result.credits[staticAccountIds.dealerBtcAccountId],
-          calc.sub(btcAmount, btcFee),
-        )
+        expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
+        expectEntryToEqual(result.credits[staticAccountIds.dealerBtcAccountId], btcAmount)
         expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
-        expectEntryToEqual(
-          result.debits[staticAccountIds.dealerUsdAccountId],
-          calc.sub(usdAmount, usdFee),
-        )
+        expectEntryToEqual(result.debits[staticAccountIds.dealerUsdAccountId], usdAmount)
         expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
       })
     })
@@ -308,18 +230,20 @@ describe("EntryBuilder", () => {
     describe("from btc", () => {
       it("to btc", () => {
         const entry = new TestMediciEntry()
-        const builder = EntryBuilder({
+        const builder = LegacyEntryBuilder({
           staticAccountIds,
           entry,
           metadata,
         })
         const result = builder
-          .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
+          .withoutFee()
           .debitAccount({
-            accountDescriptor: btcDebitorAccountDescriptor,
+            accountId: debitorAccountId,
+            amount: btcAmount,
           })
-          .creditAccount(btcCreditorAccountDescriptor)
+          .creditAccount({
+            accountId: creditorAccountId,
+          })
 
         expectEntryToEqual(result.credits[creditorAccountId], btcAmount)
         expectEntryToEqual(result.debits[debitorAccountId], btcAmount)
@@ -327,20 +251,22 @@ describe("EntryBuilder", () => {
 
       it("to usd", () => {
         const entry = new TestMediciEntry()
-        const builder = EntryBuilder({
+        const builder = LegacyEntryBuilder({
           staticAccountIds,
           entry,
           metadata,
         })
         const result = builder
-          .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
+          .withoutFee()
           .debitAccount({
-            accountDescriptor: btcDebitorAccountDescriptor,
+            accountId: debitorAccountId,
+            amount: btcAmount,
           })
-          .creditAccount(usdCreditorAccountDescriptor)
+          .creditAccount({
+            accountId: creditorAccountId,
+            amount: usdAmount,
+          })
 
-        expectJournalToBeBalanced(result)
         expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
         expectEntryToEqual(result.debits[debitorAccountId], btcAmount)
         expectEntryToEqual(result.credits[staticAccountIds.dealerBtcAccountId], btcAmount)
@@ -352,19 +278,22 @@ describe("EntryBuilder", () => {
     describe("from usd", () => {
       it("to btc", () => {
         const entry = new TestMediciEntry()
-        const builder = EntryBuilder({
+        const builder = LegacyEntryBuilder({
           staticAccountIds,
           entry,
           metadata,
         })
         const result = builder
-          .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
+          .withoutFee()
           .debitAccount({
-            accountDescriptor: usdDebitorAccountDescriptor,
+            accountId: debitorAccountId,
+            amount: usdAmount,
           })
-          .creditAccount(btcCreditorAccountDescriptor)
-        expectJournalToBeBalanced(result)
+          .creditAccount({
+            accountId: creditorAccountId,
+            amount: btcAmount,
+          })
+
         expectEntryToEqual(result.credits[creditorAccountId], btcAmount)
         expectEntryToEqual(result.debits[debitorAccountId], usdAmount)
         expectEntryToEqual(result.debits[staticAccountIds.dealerBtcAccountId], btcAmount)
@@ -375,19 +304,21 @@ describe("EntryBuilder", () => {
 
       it("to usd", () => {
         const entry = new TestMediciEntry()
-        const builder = EntryBuilder({
+        const builder = LegacyEntryBuilder({
           staticAccountIds,
           entry,
           metadata,
         })
         const result = builder
-          .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
+          .withoutFee()
           .debitAccount({
-            accountDescriptor: usdDebitorAccountDescriptor,
+            accountId: debitorAccountId,
+            amount: usdAmount,
           })
-          .creditAccount(usdCreditorAccountDescriptor)
-        expectJournalToBeBalanced(result)
+          .creditAccount({
+            accountId: creditorAccountId,
+          })
+
         expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
         expectEntryToEqual(result.debits[debitorAccountId], usdAmount)
       })
@@ -397,23 +328,23 @@ describe("EntryBuilder", () => {
   describe("metadata", () => {
     it("debitor can take additional metadata", () => {
       const entry = new TestMediciEntry()
-      const builder = EntryBuilder({
+      const builder = LegacyEntryBuilder({
         staticAccountIds,
         entry,
         metadata,
       })
       const result = builder
-        .withTotalAmount(amount)
-        .withFee(ZERO_FEE)
+        .withFee(btcFee)
         .debitAccount({
-          accountDescriptor: btcDebitorAccountDescriptor,
+          accountId: debitorAccountId,
+          amount: btcAmount,
           additionalMetadata: {
             more: "yes",
             muchMore: "muchMore",
           },
         })
         .creditLnd()
-      expectJournalToBeBalanced(result)
+
       expect(result.debits[debitorAccountId].metadata).toEqual(
         expect.objectContaining({
           some: "some",

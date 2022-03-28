@@ -9,6 +9,10 @@ type PaymentAmount<T extends WalletCurrency> = {
   currency: T
   amount: bigint
 }
+type WalletDescriptor<T extends WalletCurrency> = {
+  id: WalletId
+  currency: T
+}
 
 type BtcPaymentAmount = PaymentAmount<"BTC">
 type UsdPaymentAmount = PaymentAmount<"USD">

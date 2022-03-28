@@ -107,7 +107,7 @@ export const addLndRoutingRevenue = async ({
   collectedOn: string // FIXME should be Date?
 }) => {
   const metadata = {
-    type: LedgerTransactionType.RoutingFee,
+    type: LedgerTransactionType.RoutingRevenue,
     currency: WalletCurrency.Btc,
     feesCollectedOn: collectedOn,
     pending: false,

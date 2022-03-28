@@ -8,7 +8,7 @@ import {
 
 import { NotReachableError } from "@domain/errors"
 
-import { EntryBuilder, toLedgerAccountId } from "./domain"
+import { LegacyEntryBuilder, toLedgerAccountId } from "./domain"
 
 import { MainBook } from "./books"
 import * as caching from "./caching"
@@ -162,11 +162,11 @@ const addIntraledgerTxTransfer = async ({
   const sharedMetadata = {
     ...metadata,
     username: senderUsername,
-    memoPayer: shareMemoWithPayee ? memoPayer : null,
+    memoPayer: shareMemoWithPayee ? memoPayer : undefined,
   }
 
   let entry = MainBook.entry(description)
-  const builder = EntryBuilder({
+  const builder = LegacyEntryBuilder({
     staticAccountIds,
     entry,
     metadata: sharedMetadata,

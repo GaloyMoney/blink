@@ -1,7 +1,13 @@
 declare const ledgerAccountId: unique symbol
 type LedgerAccountId = string & { [ledgerAccountId]: never }
 
+// eslint-disable-next-line
 type TxMetadata = any
+
+type LedgerAccountDescriptor<T extends WalletCurrency> = {
+  id: LedgerAccountId
+  currency: T
+}
 
 interface MediciEntry {
   credit: (LedgerAccountId, amount: number, extra?: TxMetadata) => MediciEntry
@@ -20,14 +26,92 @@ type EntryBuilderConfig<M extends MediciEntry> = {
   metadata: TxMetadata
 }
 
+type EntryBuilderFeeState<M extends MediciEntry> = {
+  entry: M
+  metadata: TxMetadata
+  staticAccountIds: StaticAccountIds
+  amountWithFee: {
+    usdWithFee: UsdPaymentAmount
+    btcWithFee: BtcPaymentAmount
+  }
+}
+
+type EntryBuilderFee<M extends MediciEntry> = {
+  withFee: ({
+    btcProtocolFee,
+    usdProtocolFee,
+  }: {
+    btcProtocolFee: BtcPaymentAmount
+    usdProtocolFee: UsdPaymentAmount
+  }) => EntryBuilderDebit<M>
+}
+
 type EntryBuilderDebitState<M extends MediciEntry> = {
+  entry: M
+  metadata: TxMetadata
+  staticAccountIds: StaticAccountIds
+  amountWithFee: {
+    usdWithFee: UsdPaymentAmount
+    btcWithFee: BtcPaymentAmount
+  }
+  fee: {
+    btcProtocolFee: BtcPaymentAmount
+    usdProtocolFee: UsdPaymentAmount
+  }
+}
+
+type EntryBuilderDebit<M extends MediciEntry> = {
+  debitAccount: <D extends WalletCurrency>({
+    accountDescriptor,
+    additionalMetadata,
+  }: {
+    accountDescriptor: LedgerAccountDescriptor<D>
+    additionalMetadata?: TxMetadata
+  }) => EntryBuilderCredit<M>
+  debitLnd: () => EntryBuilderCredit<M>
+  debitColdStorage: () => EntryBuilderCredit<M>
+}
+
+type EntryBuilderCreditState<M extends MediciEntry> = {
+  entry: M
+  metadata: TxMetadata
+  debitCurrency: WalletCurrency
+  amountWithFee: {
+    usdWithFee: UsdPaymentAmount
+    btcWithFee: BtcPaymentAmount
+  }
+  fee: {
+    usdProtocolFee: UsdPaymentAmount
+    btcProtocolFee: BtcPaymentAmount
+  }
+  staticAccountIds: {
+    dealerBtcAccountId: LedgerAccountId
+    dealerUsdAccountId: LedgerAccountId
+  }
+}
+
+type EntryBuilderCredit<M extends MediciEntry> = {
+  creditLnd: () => M
+  creditColdStorage: () => M
+  creditAccount: <C extends WalletCurrency>(
+    accountDescriptor: LedgerAccountDescriptor<C>,
+  ) => M
+}
+
+type LegacyEntryBuilderConfig<M extends MediciEntry> = {
+  entry: M
+  staticAccountIds: StaticAccountIds
+  metadata: TxMetadata
+}
+
+type LegacyEntryBuilderDebitState<M extends MediciEntry> = {
   entry: M
   metadata: TxMetadata
   fee: BtcPaymentAmount
   staticAccountIds: StaticAccountIds
 }
 
-type EntryBuilderDebit<M extends MediciEntry> = {
+type LegacyEntryBuilderDebit<M extends MediciEntry> = {
   debitAccount: <D extends WalletCurrency>({
     accountId,
     amount,
@@ -36,11 +120,22 @@ type EntryBuilderDebit<M extends MediciEntry> = {
     accountId: LedgerAccountId
     amount: PaymentAmount<D>
     additionalMetadata?: TxMetadata
-  }) => EntryBuilderCredit<M, D>
-  debitLnd: (amount: BtcPaymentAmount) => EntryBuilderCreditWithBtcDebit<M>
+  }) => LegacyEntryBuilderCredit<M, D>
+  debitLnd: (amount: BtcPaymentAmount) => LegacyEntryBuilderCreditWithBtcDebit<M>
 }
 
-type EntryBuilderCreditWithUsdDebit<M extends MediciEntry> = {
+type LegacyEntryBuilderCreditState<M extends MediciEntry, D extends WalletCurrency> = {
+  entry: M
+  metadata: TxMetadata
+  fee: BtcPaymentAmount
+  debitAmount: PaymentAmount<D>
+  staticAccountIds: {
+    dealerBtcAccountId: LedgerAccountId
+    dealerUsdAccountId: LedgerAccountId
+  }
+}
+
+type LegacyEntryBuilderCreditWithUsdDebit<M extends MediciEntry> = {
   creditLnd: (amount: BtcPaymentAmount) => M
   creditAccount: ({
     accountId,
@@ -51,7 +146,7 @@ type EntryBuilderCreditWithUsdDebit<M extends MediciEntry> = {
   }) => M
 }
 
-type EntryBuilderCreditWithBtcDebit<M extends MediciEntry> = {
+type LegacyEntryBuilderCreditWithBtcDebit<M extends MediciEntry> = {
   creditLnd: () => M
   creditAccount: ({
     accountId,
@@ -62,9 +157,12 @@ type EntryBuilderCreditWithBtcDebit<M extends MediciEntry> = {
   }) => M
 }
 
-type EntryBuilderCredit<M extends MediciEntry, D extends WalletCurrency> = D extends "USD"
-  ? EntryBuilderCreditWithUsdDebit<M>
-  : EntryBuilderCreditWithBtcDebit<M>
+type LegacyEntryBuilderCredit<
+  M extends MediciEntry,
+  D extends WalletCurrency,
+> = D extends "USD"
+  ? LegacyEntryBuilderCreditWithUsdDebit<M>
+  : LegacyEntryBuilderCreditWithBtcDebit<M>
 
 type BaseLedgerTransactionMetadata = {
   id: LedgerTransactionId
