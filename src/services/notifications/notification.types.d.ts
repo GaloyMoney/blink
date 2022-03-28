@@ -1,5 +1,5 @@
 interface IDataNotification {
-  type: TransactionType
+  type: LedgerTransactionType
   amount?: Satoshis // FIXME: is this consumed by the mobile app?
   cents?: UsdCents // FIXME: is this consumed by the mobile app?
   hash?: string
