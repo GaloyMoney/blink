@@ -12,6 +12,12 @@ services:
     - lnd-outside-1
     - lnd-outside-2
     - otel-agent
+  selfhosted-deps:
+    image: busybox
+    depends_on:
+    - price
+    - mongodb
+    - otel-agent
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.43.0
     command: ["--config=/etc/otel-agent-config.yaml"]
@@ -75,6 +81,21 @@ services:
     - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
     - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
     depends_on: [bitcoind]
+
+  galoy-backend:
+    # https://github.com/GaloyMoney/charts/blob/main/charts/galoy/values.yaml
+    image: us.gcr.io/galoy-org/galoy-app@sha256:d967ef6000a9fa00e3927d2b61aac70caa36673c3c11cee52f4e0fdae4f56f55
+    depends_on:
+    - selfhosted-deps
+    env_file:
+      - ${PWD}/.env.selfhosted
+
+  web-wallet:
+    # https://github.com/GaloyMoney/charts/blob/main/charts/web-wallet/values.yaml
+    image: us.gcr.io/galoy-org/web-wallet@sha256:f9e1269a2b063a40706c8e9407e1834d19ac5300912a645d88e157552b98694c
+    depends_on:
+    - galoy-backend
+
   e2e-tests:
     image: us.gcr.io/galoy-org/galoy-app-pipeline
     depends_on:

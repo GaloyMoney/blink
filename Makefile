@@ -34,6 +34,23 @@ clean-deps:
 
 reset-deps: clean-deps start-deps
 
+
+start-selfhosted-deps:
+	docker compose up selfhosted-deps -d
+	direnv reload
+
+start-galoy-backend:
+	docker compose up galoy-backend -d
+
+start-selfhosted-bare: start-selfhosted-deps
+	make start-main & make start-admin & make start-trigger
+
+start-selfhosted: start-selfhosted-deps
+    . ./.envrc && start-galoy-backend
+
+reset-selfhosted-deps: clean-deps start-selfhosted-deps
+
+
 test: unit integration
 
 test-migrate:

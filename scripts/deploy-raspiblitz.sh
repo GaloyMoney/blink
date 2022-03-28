@@ -10,6 +10,8 @@ githubUser="openoms"
 #githubBranch="main"
 githubBranch="self-hosting"
 
+NETWORK="testnet"
+
 # command info
 if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "-help" ]; then
   echo "
@@ -31,7 +33,7 @@ if [ "$1" = "on" ]; then
   # https://github.com/GaloyMoney/charts/blob/main/charts/galoy/Chart.yaml
 
   # NodeJS
-  /home/admin/config.scripts/bonus.nodejs.sh on
+  #/home/admin/config.scripts/bonus.nodejs.sh on
 
   # Docker
   /home/admin/config.scripts/blitz.docker.sh on
@@ -42,17 +44,17 @@ if [ "$1" = "on" ]; then
     sudo apt-get install -y direnv
   fi
 
-  # Yarn
-  if dpkg --list | grep yarn; then
-    echo "# Yarn is already installed"
-    yarn --version
-  else
-    echo "# Install Yarn"
-    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-    sudo apt-get update
-    sudo apt-get install -y yarn
-  fi
+  # # Yarn
+  # if dpkg --list | grep yarn; then
+  #   echo "# Yarn is already installed"
+  #   yarn --version
+  # else
+  #   echo "# Install Yarn"
+  #   curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+  #   echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+  #   sudo apt-get update
+  #   sudo apt-get install -y yarn
+  # fi
 
   # redis
   # https://github.com/bitnami/charts/tree/master/bitnami/redis#redis-image-parameters
@@ -108,17 +110,22 @@ if [ "$1" = "on" ]; then
   if [ ${#githubBranch} -gt 0 ]; then
     sudo -u galoy git checkout ${githubBranch}
   fi
-  sudo -u galoy cp /home/galoy/galoy/scripts/assets/galoy-env ./.envrc
+
+#  sudo -u galoy cp /home/galoy/galoy/scripts/assets/galoy-env ./.envrc
   sudo chmod +x .envrc
-  sudo -u galoy cp /home/galoy/galoy/scripts/assets/galoy-docker-compose.yml ./docker-compose.yml
-  sudo -u galoy cp /home/galoy/galoy/scripts/assets/galoy-Makefile ./Makefile
+  echo "# Set NETWORK"
+  sudo -u galoy sed -i "s/export NETWORK=.*/export NETWORK=${NETWORK}/g" ./.envrc
   echo "# Extract credentials from the bitcoin.conf"
   #TODO ?is the user hardcoded?
   #RPCuser=$(sudo cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcuser | cut -c 9-)
   RPCpassword=$(sudo cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcpassword | cut -c 13-)
   sudo -u galoy sed -i "s/export BITCOINDRPCPASS=.*/export BITCOINDRPCPASS=${RPCpassword}/g" ./.envrc
-  # sudo -u galoy sh -c "./.envrc; direnv allow; yarn install --ignore-scripts"
-  sudo -u galoy sh -c "direnv allow; ./.envrc; yarn install"
+
+  #  sudo -u galoy sh -c "direnv allow; ./.envrc; yarn install"
+
+  # create the .env.selfhosted file
+  sudo -u galoy /scripts/generate-env.sh
+  sudo -u galoy make start-galoy-backend
 
   ##############
   # Connections
@@ -148,12 +155,8 @@ if [ "$1" = "on" ]; then
   # Tor not active as there is no password protection
   # /home/admin/config.scripts/tor.onion-service.sh galoy-admin-api 80 4001
 
-  # sudo -u galoy make start-sh-deps
-  # sudo -u galoy make start-sh
-  # docker compose down
-  # sudo -u galoy make reset-sh-deps
-  echo "# Start with:"
-  echo "sudo -u galoy sh -c 'cd /home/galoy/galoy; make start-sh'"
+  echo "# Monitor with: "
+  echo "docker container logs --details galoy-galoy-backend-1"
 
   localIP=$(hostname -I | awk '{print $1}')
   echo "# Connect to the Galoy admin API on: https://${localIP}:4011/graphql"
@@ -166,6 +169,7 @@ if [ "$1" = "web-wallet" ]; then
   echo "# Build web-wallet"
   cd /home/galoy/ || exit 1
   githubUser="GaloyMoney"
+  githubBranch="main"
   sudo -u galoy git clone https://github.com/${githubUser}/web-wallet
   cd web-wallet || exit 1
   if [ ${#githubBranch} -gt 0 ]; then
