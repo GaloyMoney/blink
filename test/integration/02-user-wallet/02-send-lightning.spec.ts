@@ -5,7 +5,7 @@ import { getMidPriceRatio } from "@app/shared"
 
 import { delete2fa } from "@app/users"
 
-import { getDisplayCurrencyConfig, getLocale, TWO_WEEKS_IN_MS } from "@config"
+import { getDisplayCurrencyConfig, getLocale, TWO_MONTHS_IN_MS } from "@config"
 
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
 import {
@@ -1931,9 +1931,9 @@ describe("Delete payments from Lnd - Lightning Pay", () => {
     expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
 
     // Run delete-payments cronjob
-    const timestamp2Weeks = new Date(Date.now() - TWO_WEEKS_IN_MS)
-    expect(Number(timestamp2Weeks)).toBeLessThan(Number(retrievedPayment.createdAt))
-    const deleteLnPayments1Hour = await Lightning.deleteLnPaymentsBefore(timestamp2Weeks)
+    const timestamp2Months = new Date(Date.now() - TWO_MONTHS_IN_MS)
+    expect(Number(timestamp2Months)).toBeLessThan(Number(retrievedPayment.createdAt))
+    const deleteLnPayments1Hour = await Lightning.deleteLnPaymentsBefore(timestamp2Months)
     if (deleteLnPayments1Hour instanceof Error) throw deleteLnPayments1Hour
 
     // Confirm payment still exists
@@ -1950,7 +1950,7 @@ describe("Delete payments from Lnd - Lightning Pay", () => {
 
     // Run delete-payments cronjob again for payments before 2 weeks ago
     const deleteLnPayments1HourRetry = await Lightning.deleteLnPaymentsBefore(
-      timestamp2Weeks,
+      timestamp2Months,
     )
     if (deleteLnPayments1HourRetry instanceof Error) throw deleteLnPayments1HourRetry
 
