@@ -1,0 +1,21 @@
+export NODE_PATH="src/layouts/default:src/"
+export NODE_ENV="development"
+export SESSION_KEYS="sessionkeys"
+export HOST="localhost"
+export PORT="4030"
+
+export WALLET_NAME="Galoy"
+export WALLET_LAYOUT="default"
+export WALLET_THEME="default"
+export SUPPORT_EMAIL="support@galoy.io"
+export SHARE_URI="https://pay.mainnet.galoy.io/"
+
+export NETWORK="testnet"
+export GRAPHQL_URI="http://localhost:4002/graphql"
+export GRAPHQL_SUBSCRIPTION_URI="ws://localhost:4002/graphql"
+export AUTH_ENDPOINT="http://localhost:4030/api/login"
+export KRATOS_API_URL="http://localhost:4433"
+export KRATOS_BROWSER_URL="http://localhost:4433"
+export KRATOS_AUTH_ENDPOINT="http://localhost:4002/auth/browser"
+
+export KRATOS_FEATURE_FLAG="false"
