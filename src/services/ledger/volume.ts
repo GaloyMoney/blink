@@ -1,6 +1,6 @@
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerServiceError, UnknownLedgerError } from "@domain/ledger/errors"
-import { addAttributesToCurrentSpan, addEventToCurrentSpan } from "@services/tracing"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { Transaction } from "./books"
 
@@ -55,7 +55,6 @@ const txVolumeSince = async ({
   }))
 
   try {
-    addEventToCurrentSpan("volume aggregation starts")
     const [result]: (TxBaseVolume & { _id: null })[] = await Transaction.aggregate([
       {
         $match: {
@@ -72,7 +71,6 @@ const txVolumeSince = async ({
         },
       },
     ])
-    addEventToCurrentSpan("volume aggregation ends")
 
     const outgoingBaseAmount = result?.outgoingBaseAmount ?? (0 as CurrencyBaseAmount)
     const incomingBaseAmount = result?.incomingBaseAmount ?? (0 as CurrencyBaseAmount)
