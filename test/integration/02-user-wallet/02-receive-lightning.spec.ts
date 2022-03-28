@@ -90,8 +90,12 @@ describe("UserWallet - Lightning", () => {
 
     const ledger = LedgerService()
     const ledgerMetadata = TransactionsMetadataRepository()
-    const ledgerTxs = await ledger.getTransactionsByHash(hash)
+    const ledgerTxs = await ledger.getTransactionsByWalletIdAndHash({
+      walletId: walletIdB,
+      hash,
+    })
     if (ledgerTxs instanceof Error) throw ledgerTxs
+    expect(ledgerTxs).toHaveLength(1)
 
     const ledgerTx = ledgerTxs[0]
     const ledgerTxMetadata = await ledgerMetadata.findById(ledgerTx.id)
