@@ -127,7 +127,7 @@ if [ "$1" = "on" ]; then
 
   DOCKER_HOST_IP=$(ip addr show docker0 | awk '/inet/ {print $2}' | cut -d'/' -f1)}
   #TODO ?test if tlsextraip=DOCKER_HOST_IP i needed in lnd.conf
-  
+
   echo "# Extract credentials from the bitcoin.conf"
   #TODO ?is the user hardcoded?
   #RPCuser=$(sudo cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcuser | cut -c 9-)
@@ -146,25 +146,25 @@ if [ "$1" = "on" ]; then
   # http://localhost:4001/graphql (admin API)
   # http://localhost:4002/graphql (new API)
 
-  # # galoy-admin-API_ssl - not active in Docker
-  # if ! [ -f /etc/nginx/sites-available/galoy-admin-API_ssl.conf ]; then
-  #   sudo cp /home/galoy/galoy/scripts/assets/galoy-admin-API_ssl.conf /etc/nginx/sites-available/galoy-admin-API_ssl.conf
+  # # galoy-admin-api_ssl - not active in Docker
+  # if ! [ -f /etc/nginx/sites-available/galoy-admin-api_ssl.conf ]; then
+  #   sudo cp /home/galoy/galoy/scripts/assets/galoy-admin-api_ssl.conf /etc/nginx/sites-available/galoy-admin-api_ssl.conf
   # fi
-  # sudo ln -sf /etc/nginx/sites-available/galoy-admin-API_ssl.conf /etc/nginx/sites-enabled/
-  # sudo ufw allow 4011 comment "galoy-admin-API_ssl"
+  # sudo ln -sf /etc/nginx/sites-available/galoy-admin-api_ssl.conf /etc/nginx/sites-enabled/
+  # sudo ufw allow 4011 comment "galoy-admin-api_ssl"
 
-  # galoy-API_ssl
-  if ! [ -f /etc/nginx/sites-available/galoy-API_ssl.conf ]; then
-    sudo cp /home/galoy/galoy/scripts/assets/galoy-API_ssl.conf /etc/nginx/sites-available/galoy-API_ssl.conf
+  # galoy-api_ssl
+  if ! [ -f /etc/nginx/sites-available/galoy-api_ssl.conf ]; then
+    sudo cp /home/galoy/galoy/scripts/assets/galoy-api_ssl.conf /etc/nginx/sites-available/galoy-api_ssl.conf
   fi
-  sudo ln -sf /etc/nginx/sites-available/galoy-API_ssl.conf /etc/nginx/sites-enabled/
+  sudo ln -sf /etc/nginx/sites-available/galoy-api_ssl.conf /etc/nginx/sites-enabled/
   # BACKEND_ADDRESS=$(docker container inspect -f '{{ .NetworkSettings.Networks.galoy_default.IPAddress }}' galoy-backend-1)
-  sudo sed -i "s#proxy_pass http://127.0.0.1:4002;#proxy_pass http://$DOCKER_HOST_IP:4002;#g" /etc/nginx/sites-available/galoy-API_ssl.conf
+  sudo sed -i "s#proxy_pass http://127.0.0.1:4002;#proxy_pass http://$DOCKER_HOST_IP:4002;#g" /etc/nginx/sites-available/galoy-api_ssl.conf
 
   sudo nginx -t || exit 1
   sudo systemctl reload nginx
 
-  sudo ufw allow 4012 comment "galoy-API_ssl"
+  sudo ufw allow 4012 comment "galoy-api_ssl"
 
   # Tor not active as there is no password protection
   # /home/admin/config.scripts/tor.onion-service.sh galoy-admin-api 80 4001
@@ -298,8 +298,8 @@ if [ "$1" = "off" ]; then
   sudo ufw deny 4011
   sudo ufw deny 4012
   # /home/admin/config.scripts/tor.onion-service.sh off galoy-admin-api
-  sudo rm /etc/nginx/sites-available/galoy-admin-API_ssl.conf
-  sudo rm /etc/nginx/sites-available/galoy-API_ssl.conf
+  sudo rm /etc/nginx/sites-available/galoy-admin-api_ssl.conf
+  sudo rm /etc/nginx/sites-available/galoy-api_ssl.conf
   sudo rm /etc/nginx/sites-enabled/galoy-*
 
   # user
