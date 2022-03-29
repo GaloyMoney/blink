@@ -9,6 +9,7 @@ type PaymentFlowState<S extends WalletCurrency, R extends WalletCurrency> = {
   settlementMethod: SettlementMethod
   paymentInitiationMethod: PaymentInitiationMethod
   paymentHash: PaymentHash
+  descriptionFromInvoice: string
 
   btcPaymentAmount: BtcPaymentAmount
   usdPaymentAmount: UsdPaymentAmount
@@ -156,6 +157,7 @@ type LightningPaymentFlowBuilderConfig = {
 type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig & {
   paymentHash: PaymentHash
   settlementMethod: SettlementMethod
+  descriptionFromInvoice: string
   btcPaymentAmount?: BtcPaymentAmount
   inputAmount?: BigInt
   uncheckedAmount?: number
