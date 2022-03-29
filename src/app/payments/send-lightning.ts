@@ -120,8 +120,12 @@ const executePaymentViaIntraledger = async ({
 
   const { paymentHash } = paymentFlow
 
-  const { recipientWalletId, recipientPubkey, recipientWalletCurrency } =
-    paymentFlow.recipientDetails()
+  const {
+    recipientWalletId,
+    recipientPubkey,
+    recipientWalletCurrency,
+    recipientUsername,
+  } = paymentFlow.recipientDetails()
   if (!(recipientWalletId && recipientWalletCurrency && recipientPubkey)) {
     return new InvalidLightningPaymentFlowBuilderStateError(
       "Expected recipient details missing",

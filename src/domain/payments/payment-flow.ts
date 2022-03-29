@@ -29,10 +29,12 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
     recipientWalletId: WalletId | undefined
     recipientWalletCurrency: WalletCurrency | undefined
     recipientPubkey: Pubkey | undefined
+    recipientUsername: Username | undefined
   } => ({
     recipientWalletId: state.recipientWalletId,
     recipientWalletCurrency: state.recipientWalletCurrency,
     recipientPubkey: state.recipientPubkey,
+    recipientUsername: state.recipientUsername,
   })
 
   return {
