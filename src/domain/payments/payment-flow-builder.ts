@@ -164,7 +164,7 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
     ) {
       return LPFBWithError(
         new InvalidLightningPaymentFlowBuilderStateError(
-          "withRecipientWallet incorect combination of usdPaymentAmount and uncheckedAmount",
+          "withRecipientWallet incorrect combination of usdPaymentAmount and uncheckedAmount",
         ),
       )
     }
@@ -257,7 +257,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
 
     // Convert to usd if necessary
     if (btcPaymentAmount && btcProtocolFee) {
-      // We aready know usd amount from the recipient invoice
+      // We already know usd amount from the recipient invoice
       if (
         state.recipientWalletCurrency === WalletCurrency.Usd &&
         usdPaymentAmount &&
