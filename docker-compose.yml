@@ -88,7 +88,7 @@ services:
     depends_on:
     - selfhosted-deps
     env_file:
-      - .env.selfhosted
+      - .env
     ports:
     - "4002:4002"
 
