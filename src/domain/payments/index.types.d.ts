@@ -20,6 +20,7 @@ type PaymentFlowState<S extends WalletCurrency, R extends WalletCurrency> = {
   recipientWalletId?: WalletId
   recipientWalletCurrency?: R
   recipientPubkey?: Pubkey
+  recipientUsername?: Username
 
   outgoingNodePubkey?: Pubkey
   cachedRoute?: RawRoute
@@ -40,6 +41,7 @@ type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFl
     recipientWalletId: WalletId | undefined
     recipientWalletCurrency: WalletCurrency | undefined
     recipientPubkey: Pubkey | undefined
+    recipientUsername: Username | undefined
   }
 }
 
@@ -175,6 +177,7 @@ type LPFBWithRecipientWalletState<
   recipientWalletId?: WalletId
   recipientWalletCurrency?: R
   recipientPubkey?: Pubkey
+  recipientUsername?: Username
 }
 
 type LPFBWithConversionState<

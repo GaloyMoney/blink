@@ -149,9 +149,11 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
     currency: recipientWalletCurrency,
     pubkey: recipientPubkey,
     usdPaymentAmount,
+    username: recipientUsername,
   }: WalletDescriptor<R> & {
     pubkey: Pubkey
     usdPaymentAmount?: UsdPaymentAmount
+    username?: Username
   }): LPFBWithRecipientWallet<S, R> | LPFBWithError => {
     if (recipientWalletId === state.senderWalletId) {
       return LPFBWithError(new SelfPaymentError())
@@ -173,6 +175,7 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
       recipientWalletId,
       recipientWalletCurrency,
       recipientPubkey,
+      recipientUsername,
       usdPaymentAmount: usdPaymentAmount || state.usdPaymentAmount,
     })
   }
@@ -339,6 +342,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       senderWalletCurrency: state.senderWalletCurrency,
       recipientWalletId: state.recipientWalletId,
       recipientWalletCurrency: state.recipientWalletCurrency,
+      recipientUsername: state.recipientUsername,
 
       paymentHash: state.paymentHash,
       btcPaymentAmount: state.btcPaymentAmount,

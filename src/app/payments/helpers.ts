@@ -3,7 +3,11 @@ import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
 import { LightningPaymentFlowBuilder } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 import { NewDealerPriceService } from "@services/dealer-price"
-import { AccountsRepository, WalletInvoicesRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  WalletInvoicesRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
 import { AlreadyPaidError } from "@domain/errors"
@@ -80,12 +84,24 @@ export const constructPaymentFlowBuilder = async ({
         ? { amount: BigInt(cents), currency: WalletCurrency.Usd }
         : undefined
 
+    let recipientUsername: Username | undefined = undefined
+    if (builderWithSenderWallet.isIntraLedger()) {
+      const recipientWallet = await WalletsRepository().findById(recipientWalletId)
+      if (recipientWallet instanceof Error) return recipientWallet
+      const { accountId } = recipientWallet
+
+      const recipientAccount = await AccountsRepository().findById(accountId)
+      if (recipientAccount instanceof Error) return recipientAccount
+      ;({ username: recipientUsername } = recipientAccount)
+    }
+
     return builderWithSenderWallet
       .withRecipientWallet({
         id: recipientWalletId,
         currency: recipientsWalletCurrency,
         pubkey: recipientPubkey,
         usdPaymentAmount,
+        username: recipientUsername,
       })
       .withConversion({
         usdFromBtc,

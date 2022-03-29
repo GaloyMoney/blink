@@ -22,6 +22,7 @@ describe("LightningPaymentFlowBuilder", () => {
   const recipientBtcWallet = {
     id: "recipientWalletId" as WalletId,
     currency: WalletCurrency.Btc,
+    username: "Username" as Username,
   }
   const senderUsdWallet = {
     id: "walletId" as WalletId,
@@ -30,6 +31,7 @@ describe("LightningPaymentFlowBuilder", () => {
   const recipientUsdWallet = {
     id: "recipientWalletId" as WalletId,
     currency: WalletCurrency.Usd,
+    username: "Username" as Username,
   }
   const pubkey = "pubkey" as Pubkey
   const rawRoute = { fee: 100 } as RawRoute
@@ -357,6 +359,7 @@ describe("LightningPaymentFlowBuilder", () => {
               expect.objectContaining({
                 recipientWalletId: recipientBtcWallet.id,
                 recipientWalletCurrency: recipientBtcWallet.currency,
+                recipientUsername: recipientBtcWallet.username,
               }),
             )
           }
@@ -401,6 +404,7 @@ describe("LightningPaymentFlowBuilder", () => {
               expect.objectContaining({
                 recipientWalletId: recipientUsdWallet.id,
                 recipientWalletCurrency: recipientUsdWallet.currency,
+                recipientUsername: recipientUsdWallet.username,
                 usdPaymentAmount,
               }),
             )
@@ -460,6 +464,7 @@ describe("LightningPaymentFlowBuilder", () => {
               expect.objectContaining({
                 recipientWalletId: recipientBtcWallet.id,
                 recipientWalletCurrency: recipientBtcWallet.currency,
+                recipientUsername: recipientBtcWallet.username,
               }),
             )
           }
@@ -498,6 +503,7 @@ describe("LightningPaymentFlowBuilder", () => {
               expect.objectContaining({
                 recipientWalletId: recipientUsdWallet.id,
                 recipientWalletCurrency: recipientUsdWallet.currency,
+                recipientUsername: recipientUsdWallet.username,
               }),
             )
           }
@@ -553,6 +559,7 @@ describe("LightningPaymentFlowBuilder", () => {
               expect.objectContaining({
                 recipientWalletId: recipientBtcWallet.id,
                 recipientWalletCurrency: recipientBtcWallet.currency,
+                recipientUsername: recipientUsdWallet.username,
               }),
             )
           }
@@ -589,6 +596,7 @@ describe("LightningPaymentFlowBuilder", () => {
               expect.objectContaining({
                 recipientWalletId: recipientUsdWallet.id,
                 recipientWalletCurrency: recipientUsdWallet.currency,
+                recipientUsername: recipientUsdWallet.username,
               }),
             )
           }
