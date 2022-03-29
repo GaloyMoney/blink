@@ -115,17 +115,28 @@ if [ "$1" = "on" ]; then
   sudo chmod +x .envrc
   echo "# Set NETWORK"
   sudo -u galoy sed -i "s/export NETWORK=.*/export NETWORK=${NETWORK}/g" ./.envrc
+  sudo -u galoy sed -i "s/export NODE_ENV=.*/export NODE_ENV=production/g" ./.envrc
+
+  echo "# Set RPCPORTS"
+  source <(/home/admin/config.scripts/network.aliases.sh getvars lnd ${NETWORK})
+  sudo -u galoy sed -i "s/export LND1_RPCPORT=.*/export LND1_RPCPORT=1${L2rpcportmod}009/g" ./.envrc
+  sudo -u galoy sed -i "s/export LND2_RPCPORT=.*/export LND2_RPCPORT=1${L2rpcportmod}009/g" ./.envrc
+  sudo -u galoy sed -i "s/export LNDONCHAIN_RPCPORT=.*/export LNDONCHAIN_RPCPORT=1${L2rpcportmod}009/g" ./.envrc
+  sudo -u galoy sed -i "s/export LNDOUTSIDE1RPCPORT=.*/export LNDOUTSIDE1RPCPORT=1${L2rpcportmod}009/g" ./.envrc
+  sudo -u galoy sed -i "s/export LNDOUTSIDE2RPCPORT=.*/export LNDOUTSIDE2RPCPORT=1${L2rpcportmod}009/g" ./.envrc
+
+  DOCKER_HOST_IP=$(ip addr show docker0 | awk '/inet/ {print $2}' | cut -d'/' -f1)}
+  #TODO ?test if tlsextraip=DOCKER_HOST_IP i needed in lnd.conf
+  
   echo "# Extract credentials from the bitcoin.conf"
   #TODO ?is the user hardcoded?
   #RPCuser=$(sudo cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcuser | cut -c 9-)
   RPCpassword=$(sudo cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcpassword | cut -c 13-)
   sudo -u galoy sed -i "s/export BITCOINDRPCPASS=.*/export BITCOINDRPCPASS=${RPCpassword}/g" ./.envrc
 
-  #  sudo -u galoy sh -c "direnv allow; ./.envrc; yarn install"
-
-  # create the .env.selfhosted file
-  sudo -u galoy /scripts/generate-env.sh
-  sudo -u galoy make start-galoy-backend
+  # sudo -u galoy sh -c "direnv allow; ./.envrc; yarn install"
+  sudo -u galoy make start-selfhosted-deps
+  sudo -u galoy make start-selfhosted-backend
 
   ##############
   # Connections
@@ -134,32 +145,35 @@ if [ "$1" = "on" ]; then
   # http://localhost:4000/graphql (old API - deprecated)
   # http://localhost:4001/graphql (admin API)
   # http://localhost:4002/graphql (new API)
-  # galoy-admin-API_ssl
-  if ! [ -f /etc/nginx/sites-available/galoy-admin-API_ssl.conf ]; then
-    sudo cp /home/galoy/galoy/scripts/assets/galoy-admin-API_ssl.conf /etc/nginx/sites-available/galoy-admin-API_ssl.conf
-  fi
-  sudo ln -sf /etc/nginx/sites-available/galoy-admin-API_ssl.conf /etc/nginx/sites-enabled/
+
+  # # galoy-admin-API_ssl - not active in Docker
+  # if ! [ -f /etc/nginx/sites-available/galoy-admin-API_ssl.conf ]; then
+  #   sudo cp /home/galoy/galoy/scripts/assets/galoy-admin-API_ssl.conf /etc/nginx/sites-available/galoy-admin-API_ssl.conf
+  # fi
+  # sudo ln -sf /etc/nginx/sites-available/galoy-admin-API_ssl.conf /etc/nginx/sites-enabled/
+  # sudo ufw allow 4011 comment "galoy-admin-API_ssl"
 
   # galoy-API_ssl
   if ! [ -f /etc/nginx/sites-available/galoy-API_ssl.conf ]; then
     sudo cp /home/galoy/galoy/scripts/assets/galoy-API_ssl.conf /etc/nginx/sites-available/galoy-API_ssl.conf
   fi
   sudo ln -sf /etc/nginx/sites-available/galoy-API_ssl.conf /etc/nginx/sites-enabled/
+  # BACKEND_ADDRESS=$(docker container inspect -f '{{ .NetworkSettings.Networks.galoy_default.IPAddress }}' galoy-backend-1)
+  sudo sed -i "s#proxy_pass http://127.0.0.1:4002;#proxy_pass http://$DOCKER_HOST_IP:4002;#g" /etc/nginx/sites-available/galoy-API_ssl.conf
 
   sudo nginx -t || exit 1
   sudo systemctl reload nginx
 
-  sudo ufw allow 4011 comment "galoy-admin-API_ssl"
   sudo ufw allow 4012 comment "galoy-API_ssl"
 
   # Tor not active as there is no password protection
   # /home/admin/config.scripts/tor.onion-service.sh galoy-admin-api 80 4001
 
   echo "# Monitor with: "
-  echo "docker container logs --details galoy-galoy-backend-1"
+  echo "docker container logs -f --details galoy-backend-1"
 
   localIP=$(hostname -I | awk '{print $1}')
-  echo "# Connect to the Galoy admin API on: https://${localIP}:4011/graphql"
+#  echo "# Connect to the Galoy admin API on: https://${localIP}:4011/graphql"
   echo "# Connect to the Galoy API on: https://${localIP}:4012/graphql"
 fi
 
