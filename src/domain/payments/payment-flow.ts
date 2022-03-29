@@ -37,6 +37,19 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
     recipientUsername: state.recipientUsername,
   })
 
+  const senderWalletDescriptor = (): WalletDescriptor<WalletCurrency> => ({
+    id: state.senderWalletId,
+    currency: state.senderWalletCurrency,
+  })
+
+  const recipientWalletDescriptor = (): WalletDescriptor<WalletCurrency> | undefined =>
+    state.recipientWalletId && state.recipientWalletCurrency
+      ? {
+          id: state.recipientWalletId,
+          currency: state.recipientWalletCurrency,
+        }
+      : undefined
+
   return {
     ...state,
     protocolFeeInSenderWalletCurrency,
@@ -44,5 +57,7 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
     paymentAmountInSenderWalletCurrency,
     routeDetails,
     recipientDetails,
+    senderWalletDescriptor,
+    recipientWalletDescriptor,
   }
 }
