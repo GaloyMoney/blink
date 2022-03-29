@@ -43,6 +43,8 @@ type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFl
     recipientPubkey: Pubkey | undefined
     recipientUsername: Username | undefined
   }
+  senderWalletDescriptor(): WalletDescriptor<WalletCurrency>
+  recipientWalletDescriptor(): WalletDescriptor<WalletCurrency> | undefined
 }
 
 type LightningPaymentFlowBuilder<S extends WalletCurrency> = {

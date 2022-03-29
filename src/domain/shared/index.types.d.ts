@@ -5,11 +5,6 @@ type ValidationError = import("./errors").ValidationError
 type WalletCurrency =
   typeof import("./primitives").WalletCurrency[keyof typeof import("./primitives").WalletCurrency]
 
-type WalletDescriptor<T extends WalletCurrency> = {
-  currency: T
-  id: WalletId
-}
-
 type PaymentAmount<T extends WalletCurrency> = {
   currency: T
   amount: bigint
