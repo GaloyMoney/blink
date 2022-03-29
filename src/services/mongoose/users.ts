@@ -5,6 +5,7 @@ import {
   CouldNotFindUserFromKratosIdError,
   CouldNotFindUserFromPhoneError,
   RepositoryError,
+  DuplicateError,
   UnknownRepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
@@ -70,6 +71,9 @@ export const UsersRepository = (): IUsersRepository => {
       await user.save()
       return userFromRaw(user)
     } catch (err) {
+      if (err.message.contains("MongoError: E11000 duplicate key error collection")) {
+        return new DuplicateError(phone)
+      }
       return new UnknownRepositoryError(err)
     }
   }
