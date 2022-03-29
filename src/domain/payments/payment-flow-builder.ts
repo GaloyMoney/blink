@@ -48,6 +48,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
       paymentHash: invoice.paymentHash,
       btcPaymentAmount: invoice.paymentAmount,
       inputAmount: invoice.paymentAmount.amount,
+      descriptionFromInvoice: invoice.description,
     })
   }
 
@@ -63,6 +64,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
       ...settlementMethodFromInvoice(invoice),
       paymentHash: invoice.paymentHash,
       uncheckedAmount,
+      descriptionFromInvoice: invoice.description,
     })
   }
 
@@ -345,6 +347,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       recipientUsername: state.recipientUsername,
 
       paymentHash: state.paymentHash,
+      descriptionFromInvoice: state.descriptionFromInvoice,
       btcPaymentAmount: state.btcPaymentAmount,
       usdPaymentAmount: state.usdPaymentAmount,
       inputAmount: state.inputAmount,
