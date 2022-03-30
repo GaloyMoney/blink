@@ -259,6 +259,10 @@ const executePaymentViaLn = async ({
 
   // - get cached route if exists
   const { rawRoute, outgoingNodePubkey } = paymentFlow.routeDetails()
+  if (!(rawRoute && outgoingNodePubkey))
+    return new InvalidLightningPaymentFlowBuilderStateError(
+      "Route expected for payment via Lightning",
+    )
 
   // - validate route amount?
 
@@ -282,30 +286,43 @@ const executePaymentViaLn = async ({
         )
       }
 
-      const ledgerService = LedgerService()
+      const lndService = LndService()
+      if (lndService instanceof Error) return lndService
 
       const journal = await LockService().extendLock({ logger, lock }, async () => {
-        if (paymentFlow instanceof Error) return paymentFlow
+        const metadata = LedgerFacade.LnSendLedgerMetadata({
+          // FIXME: display currency
+          amountDisplayCurrency: Number(
+            paymentFlow.usdPaymentAmount.amount,
+          ) as DisplayCurrencyBaseAmount,
+          feeDisplayCurrency: Number(
+            paymentFlow.usdProtocolFee.amount,
+          ) as DisplayCurrencyBaseAmount,
 
-        // - TODO: record initial transaction
+          fee: paymentFlow.btcProtocolFee,
+          pubkey: outgoingNodePubkey,
+          paymentHash,
+          feeKnownInAdvance: true,
+        })
+
+        return LedgerFacade.recordSend({
+          description: paymentFlow.descriptionFromInvoice,
+          amount: {
+            btcWithFee: paymentFlow.btcPaymentAmount,
+            usdWithFee: paymentFlow.usdPaymentAmount,
+          },
+          senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
+          metadata,
+        })
       })
       if (journal instanceof Error) return journal
       const { journalId } = journal
 
-      const lndService = LndService()
-      if (lndService instanceof Error) return lndService
-
-      const payResult = rawRoute
-        ? await lndService.payInvoiceViaRoutes({
-            paymentHash,
-            rawRoute,
-            pubkey: outgoingNodePubkey,
-          })
-        : await lndService.newPayInvoiceViaPaymentDetails({
-            decodedInvoice,
-            btcPaymentAmount: paymentFlow.btcPaymentAmount,
-            maxFeeAmount: paymentFlow.protocolFeeInBtc(),
-          })
+      const payResult = await lndService.payInvoiceViaRoutes({
+        paymentHash,
+        rawRoute,
+        pubkey: outgoingNodePubkey,
+      })
 
       // Fire-and-forget update to 'lnPayments' collection
       if (!(payResult instanceof LnAlreadyPaidError)) {
@@ -316,12 +333,27 @@ const executePaymentViaLn = async ({
         })
 
         if (!(payResult instanceof Error))
-          ledgerService.updateMetadataByHash({
+          LedgerFacade.updateMetadataByHash({
             hash: paymentHash,
             revealedPreImage: payResult.revealedPreImage,
           })
       }
       if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending
+
+      const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
+      if (settled instanceof Error) return settled
+
+      if (payResult instanceof Error) {
+        const voided = await LedgerFacade.recordLnSendRevert({
+          journalId,
+          paymentHash,
+        })
+        if (voided instanceof Error) return voided
+
+        if (payResult instanceof LnAlreadyPaidError) return PaymentSendStatus.AlreadyPaid
+
+        return payResult
+      }
 
       return PaymentSendStatus.Success
     },

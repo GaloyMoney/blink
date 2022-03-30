@@ -1,14 +1,18 @@
-import { UnknownLedgerError } from "@domain/ledger"
-
 import { ZERO_BANK_FEE, AmountCalculator, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
+import { NoTransactionToSettleError, UnknownLedgerError } from "@domain/ledger"
 
-import { MainBook } from "./books"
+import { MainBook, Transaction } from "./books"
 import { toLedgerAccountDescriptor, toLedgerAccountId, EntryBuilder } from "./domain"
 import { persistAndReturnEntry } from "./helpers"
 import * as caching from "./caching"
+import { TransactionsMetadataRepository } from "./services"
+
+import { translateToLedgerJournal } from "."
+
 export * from "./tx-metadata"
 
 const calc = AmountCalculator()
+const txMetadataRepo = TransactionsMetadataRepository()
 
 const staticAccountIds = async () => {
   return {
@@ -121,3 +125,44 @@ export const recordIntraledger = async ({
     hash: "hash" in metadata ? metadata.hash : undefined,
   })
 }
+
+export const settlePendingLnSend = async (
+  paymentHash: PaymentHash,
+): Promise<true | LedgerServiceError> => {
+  try {
+    const result = await Transaction.updateMany({ hash: paymentHash }, { pending: false })
+    const success = result.nModified > 0
+    if (!success) {
+      return new NoTransactionToSettleError()
+    }
+    return true
+  } catch (err) {
+    return new UnknownLedgerError(err)
+  }
+}
+
+export const recordLnSendRevert = async ({
+  journalId,
+  paymentHash,
+}: RevertLightningPaymentArgs): Promise<void | LedgerServiceError> => {
+  const reason = "Payment canceled"
+  try {
+    const savedEntry = await MainBook.void(journalId, reason)
+    const journalEntry = translateToLedgerJournal(savedEntry)
+
+    const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+      id,
+      hash: paymentHash,
+    }))
+    txMetadataRepo.persistAll(txsMetadataToPersist)
+  } catch (err) {
+    return new UnknownLedgerError(err)
+  }
+}
+
+export const updateMetadataByHash = async (
+  ledgerTxMetadata:
+    | OnChainLedgerTransactionMetadataUpdate
+    | LnLedgerTransactionMetadataUpdate,
+): Promise<true | LedgerServiceError | RepositoryError> =>
+  TransactionsMetadataRepository().updateByHash(ledgerTxMetadata)
