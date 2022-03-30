@@ -15,7 +15,7 @@ import Phone from "../scalar/phone"
 
 import Username from "../scalar/username"
 
-import AccountContact from "./wallet-contact"
+import AccountContact from "./account-contact"
 import UserQuizQuestion from "./user-quiz-question"
 
 const GraphQLUser = GT.Object({

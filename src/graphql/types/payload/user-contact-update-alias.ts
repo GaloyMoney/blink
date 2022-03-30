@@ -1,18 +1,18 @@
 import { GT } from "@graphql/index"
 
 import IError from "../abstract/error"
-import UserContact from "../object/wallet-contact"
+import AccountContact from "../object/account-contact"
 
-const UserContactUpdateAliasPayload = GT.Object({
+const AccountContactUpdateAliasPayload = GT.Object({
   name: "UserContactUpdateAliasPayload",
   fields: () => ({
     errors: {
       type: GT.NonNullList(IError),
     },
     contact: {
-      type: UserContact,
+      type: AccountContact,
     },
   }),
 })
 
-export default UserContactUpdateAliasPayload
+export default AccountContactUpdateAliasPayload
