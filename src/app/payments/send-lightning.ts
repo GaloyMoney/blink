@@ -5,6 +5,8 @@ import {
   CouldNotFindLightningPaymentFlowError,
   PriceRatio,
   InvalidLightningPaymentFlowBuilderStateError,
+  checkedToBtcPaymentAmount,
+  checkedToUsdPaymentAmount,
 } from "@domain/payments"
 import { AccountValidator } from "@domain/accounts"
 import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
@@ -45,13 +47,7 @@ export const payInvoiceByWalletId = async ({
   senderWalletId: uncheckedSenderWalletId,
   senderAccount,
   logger,
-}: {
-  senderWalletId: string
-  paymentRequest: EncodedPaymentRequest
-  memo: string
-  senderAccount: Account
-  logger: Logger
-}): Promise<PaymentSendStatus | ApplicationError> => {
+}: PayInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
   if (senderWalletId instanceof Error) return senderWalletId
 
@@ -90,6 +86,80 @@ export const payInvoiceByWalletId = async ({
     })
     if (builder instanceof AlreadyPaidError) return PaymentSendStatus.AlreadyPaid
     if (builder instanceof Error) return builder
+
+    // TODO: Is this needed? May be called already in constructFlow
+    paymentFlow = await builder.withoutRoute()
+  }
+  if (paymentFlow instanceof Error) return paymentFlow
+
+  // Get display currency price... add to payment flow builder?
+
+  return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
+    ? executePaymentViaIntraledger({
+        paymentFlow,
+        senderWallet,
+        senderUsername: senderAccount.username,
+        memo,
+        logger,
+      })
+    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, logger })
+}
+
+export const payNoAmountInvoiceByWalletId = async ({
+  paymentRequest,
+  amount,
+  memo,
+  senderWalletId: uncheckedSenderWalletId,
+  senderAccount,
+  logger,
+}: PayNoAmountInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
+  if (senderWalletId instanceof Error) return senderWalletId
+
+  const decodedInvoice = decodeInvoice(paymentRequest)
+  if (decodedInvoice instanceof Error) return decodedInvoice
+
+  const { paymentAmount: lnInvoiceAmount } = decodedInvoice
+  if (lnInvoiceAmount && lnInvoiceAmount.amount > 0n) {
+    return new LnPaymentRequestZeroAmountRequiredError()
+  }
+
+  const senderWallet = await WalletsRepository().findById(senderWalletId)
+  if (senderWallet instanceof Error) return senderWallet
+
+  const accountValidated = AccountValidator().validateAccount({
+    account: senderAccount,
+    accountIdFromWallet: senderWallet.accountId,
+  })
+  if (accountValidated instanceof Error) return accountValidated
+
+  const inputPaymentAmount =
+    senderWallet.currency === WalletCurrency.Btc
+      ? checkedToBtcPaymentAmount(amount)
+      : checkedToUsdPaymentAmount(amount)
+  if (inputPaymentAmount instanceof Error) return inputPaymentAmount
+
+  let paymentFlow = await PaymentsRepository().findLightningPaymentFlow({
+    walletId: senderWalletId,
+    paymentHash: decodedInvoice.paymentHash,
+    inputAmount: inputPaymentAmount.amount,
+  })
+
+  const lndService = LndService()
+  if (lndService instanceof Error) return lndService
+
+  if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
+    const builder = await constructPaymentFlowBuilder({
+      senderWallet,
+      invoice: decodedInvoice,
+      uncheckedAmount: amount,
+      usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+      btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
+    })
+    if (builder instanceof AlreadyPaidError) return PaymentSendStatus.AlreadyPaid
+    if (builder instanceof Error) return builder
+
+    // TODO: Is this needed? May be called already in 'constructPaymentFlowBuilder'
     paymentFlow = await builder.withoutRoute()
   }
   if (paymentFlow instanceof Error) return paymentFlow
