@@ -29,6 +29,8 @@ import { LedgerService } from "@services/ledger"
 import { NotificationsService } from "@services/notifications"
 import { NewDealerPriceService } from "@services/dealer-price"
 
+import * as LedgerFacade from "@services/ledger/facade"
+
 import {
   constructPaymentFlowBuilder,
   newCheckWithdrawalLimits,
@@ -95,7 +97,13 @@ export const payInvoiceByWalletId = async ({
   // Get display currency price... add to payment flow builder?
 
   return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
-    ? executePaymentViaIntraledger({ paymentFlow, senderWallet, logger })
+    ? executePaymentViaIntraledger({
+        paymentFlow,
+        senderWallet,
+        senderUsername: senderAccount.username,
+        memo,
+        logger,
+      })
     : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, logger })
 }
 
@@ -103,10 +111,14 @@ const executePaymentViaIntraledger = async ({
   paymentFlow,
   senderWallet,
   logger,
+  senderUsername,
+  memo,
 }: {
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
   senderWallet: Wallet
   logger: Logger
+  senderUsername: Username | undefined
+  memo: string | undefined
 }): Promise<PaymentSendStatus | ApplicationError> => {
   const limitCheck = await newCheckIntraledgerLimits({
     amount: paymentFlow.usdPaymentAmount,
@@ -152,12 +164,38 @@ const executePaymentViaIntraledger = async ({
         )
       }
 
-      const ledgerService = LedgerService()
-
       const journal = await LockService().extendLock({ logger, lock }, async () => {
-        if (paymentFlow instanceof Error) return paymentFlow
+        const lnIntraLedgerMetadata = LedgerFacade.LnIntraledgerLedgerMetadata({
+          // FIXME: display currency
+          amountDisplayCurrency: Number(
+            paymentFlow.usdPaymentAmount.amount,
+          ) as DisplayCurrencyBaseAmount,
 
-        // - TODO: record initial transaction
+          memoOfPayer: memo,
+          senderUsername,
+          recipientUsername,
+          pubkey: recipientPubkey,
+          paymentHash,
+        })
+        const { metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
+          lnIntraLedgerMetadata
+
+        // FIXME: change to 'recipient'
+        const receiverWalletDescriptor = paymentFlow.recipientWalletDescriptor()
+        if (receiverWalletDescriptor === undefined)
+          return new InvalidLightningPaymentFlowBuilderStateError()
+
+        return LedgerFacade.recordIntraledger({
+          description: paymentFlow.descriptionFromInvoice,
+          amount: {
+            btcWithFee: paymentFlow.btcPaymentAmount,
+            usdWithFee: paymentFlow.usdPaymentAmount,
+          },
+          senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
+          receiverWalletDescriptor,
+          metadata,
+          additionalDebitMetadata,
+        })
       })
       if (journal instanceof Error) return journal
 
