@@ -4,25 +4,38 @@
 # sh -x deploy-raspiblitz.sh on
 # sh -x deploy-raspiblitz.sh web-wallet
 
-#githubUser="GaloyMoney"
-githubUser="openoms"
-
-#githubBranch="main"
-githubBranch="self-hosting"
-
-NETWORK="testnet"
-
 # command info
 if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "-help" ]; then
   echo "
 Script to install the Galoy stack.
-deploy-raspiblitz.sh [on|off|web-wallet|price|test] [?githubUser] [?branch]
+deploy-raspiblitz.sh [on|off] [?testnet|mainnet] [?githubUser] [?branch]
 Installs the latest main by default.
 
 Requirements:
 RaspiBlitz v1.7.2+ patched to 'dev'
 LND on Testnet activated"
   exit 1
+fi
+
+# install vars
+if [ $# -gt 1 ]; then
+  NETWORK="$2"
+else
+  NETWORK="testnet"
+fi
+
+if [ $# -gt 2 ]; then
+  githubUser="$3"
+else
+  #githubUser="GaloyMoney"
+  githubUser="openoms"
+fi
+
+if [ $# -gt 3 ]; then
+  githubBranch="$4"
+else
+  #githubBranch="main"
+  githubBranch="self-hosting"
 fi
 
 # install
@@ -125,7 +138,7 @@ if [ "$1" = "on" ]; then
   sudo -u galoy sed -i "s/export LNDOUTSIDE1RPCPORT=.*/export LNDOUTSIDE1RPCPORT=1${L2rpcportmod}009/g" ./.envrc
   sudo -u galoy sed -i "s/export LNDOUTSIDE2RPCPORT=.*/export LNDOUTSIDE2RPCPORT=1${L2rpcportmod}009/g" ./.envrc
 
-  DOCKER_HOST_IP=$(ip addr show docker0 | awk '/inet/ {print $2}' | cut -d'/' -f1)}
+  DOCKER_HOST_IP=$(ip addr show docker0 | awk '/inet/ {print $2}' | cut -d'/' -f1)
   #TODO ?test if tlsextraip=DOCKER_HOST_IP i needed in lnd.conf
 
   echo "# Extract credentials from the bitcoin.conf"
@@ -177,121 +190,7 @@ if [ "$1" = "on" ]; then
   echo "# Connect to the Galoy API on: https://${localIP}:4012/graphql"
 fi
 
-# https://github.com/GaloyMoney/web-wallet
-if [ "$1" = "web-wallet" ]; then
-  echo
-  echo "# Build web-wallet"
-  cd /home/galoy/ || exit 1
-  githubUser="GaloyMoney"
-  githubBranch="main"
-  sudo -u galoy git clone https://github.com/${githubUser}/web-wallet
-  cd web-wallet || exit 1
-  if [ ${#githubBranch} -gt 0 ]; then
-    sudo -u galoy git checkout ${githubBranch}
-  fi
-
-  # copy the edited env file
-  sudo -u galoy cp /home/galoy/galoy/scripts/assets/web-wallet-env ./.envrc
-  sudo chmod +x .envrc
-
-  # dependencies
-  sudo -u galoy docker compose down
-  sudo -u galoy docker compose up
-  # https://github.com/GaloyMoney/web-wallet#how-to-run-this-repo-locally
-  sudo -u galoy yarn install
-
-  # sudo -u galoy yarn dev:bundler
-  ## new terminal
-  #cd /home/galoy/web-wallet; sudo -u galoy yarn dev:server
-
- # sudo -u galoy sh -c ". ./.envrc; yarn build:all"
-  #sudo -u galoy sh -c ". ./.envrc; yarn prod:start"
-
-   ##################
-   # SYSTEMD SERVICE
-   ##################
-   echo "# Install web-wallet systemd"
-   echo "
-# Systemd unit for the web-wallet
-# /etc/systemd/system/web-wallet.service
-
-[Unit]
-Description=web-wallet daemon
-Wants=lnd.service
-After=lnd.service
-
-[Service]
-WorkingDirectory=/home/galoy/web-wallet
-ExecStart=/usr/bin/sh -c 'yarn dev:bundler & sleep 30; /usr/bin/yarn dev:server
-User=galoy
-Restart=on-failure
-TimeoutSec=120
-RestartSec=30
-StandardOutput=journal
-StandardError=journal
-
-# Hardening measures
-PrivateTmp=true
-ProtectSystem=full
-NoNewPrivileges=true
-PrivateDevices=true
-
-[Install]
-WantedBy=multi-user.target
-" | sudo tee /etc/systemd/system/web-wallet.service
-  sudo systemctl enable web-wallet
-  sudo systemctl start web-wallet
-
-  # galoy-web-wallet_ssl
-  if ! [ -f /etc/nginx/sites-available/galoy-web-wallet_ssl.conf ]; then
-    sudo cp /home/galoy/galoy/scripts/assets/web-wallet_ssl.conf /etc/nginx/sites-available/web-wallet_ssl.conf
-  fi
-  sudo ln -sf /etc/nginx/sites-available/web-wallet_ssl.conf /etc/nginx/sites-enabled/
-  sudo nginx -t || exit 1
-  sudo systemctl reload nginx
-  sudo ufw allow 4031 comment "galoy-web-wallet_ssl"
-
-  echo "# Monitor the service with:"
-  echo "sudo journalctl -fu web-wallet"
-  echo "# Connect to the web-wallet on: https://$(hostname -I|awk '{print $1}'):4031/graphql"
-fi
-
-# price
-# build Docker image from the source - downloaded by default
-if [ "$1" = "price" ]; then
-  echo
-  echo "# Build galoy-price"
-  cd /home/galoy/ || exit 1
-  githubUser="GaloyMoney"
-  sudo -u galoy git clone https://github.com/${githubUser}/price.git
-  if [ ${#githubBranch} -gt 0 ]; then
-    sudo -u galoy git checkout ${githubBranch}
-  fi
-  cd price || exit 1
-  sudo -u galoy docker build -f ./realtime/Dockerfile -t galoy-price .
-  sudo -u galoy docker run galoy-price
-fi
-
-# test
-if [ "$1" = "test" ]; then
-  cd /home/galoy/galoy || exit 1
-  sudo systemctl stop redis-server
-  #sudo systemctl stop mongod
-  sudo systemctl stop lnd
-  TEST="01|02" make reset-integration
-fi
-
 if [ "$1" = "off" ]; then
-
-  # web-wallet
-  cd /home/galoy/web-wallet
-  sudo -u galoy docker compose down
-  sudo systemctl stop web-wallet
-  sudo systemctl disable web-wallet
-  sudo ufw deny 4031
-  sudo rm /etc/nginx/sites-available/web-wallet_ssl.conf
-  sudo rm /etc/nginx/sites-enabled/web-wallet_ssl.conf
-
   # galoy
   cd /home/galoy/galoy
   sudo -u galoy docker compose down

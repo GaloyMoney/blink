@@ -92,10 +92,6 @@ services:
     ports:
     - "4002:4002"
 
-  web-wallet:
-    # https://github.com/GaloyMoney/charts/blob/main/charts/web-wallet/values.yaml
-    image: us.gcr.io/galoy-org/web-wallet@sha256:f9e1269a2b063a40706c8e9407e1834d19ac5300912a645d88e157552b98694c
-
   e2e-tests:
     image: us.gcr.io/galoy-org/galoy-app-pipeline
     depends_on:
