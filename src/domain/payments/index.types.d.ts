@@ -32,7 +32,6 @@ type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFl
   R
 > & {
   protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
-  protocolFeeInBtc(): BtcPaymentAmount
   paymentAmountInSenderWalletCurrency(): PaymentAmount<S>
   routeDetails(): {
     rawRoute?: RawRoute
