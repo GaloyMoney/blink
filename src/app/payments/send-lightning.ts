@@ -190,13 +190,15 @@ const executePaymentViaIntraledger = async ({
   senderUsername: Username | undefined
   memo: string | undefined
 }): Promise<PaymentSendStatus | ApplicationError> => {
+  const priceRatio = PriceRatio({
+    usd: paymentFlow.usdPaymentAmount,
+    btc: paymentFlow.btcPaymentAmount,
+  })
+
   const limitCheck = await newCheckIntraledgerLimits({
     amount: paymentFlow.usdPaymentAmount,
     wallet: senderWallet,
-    priceRatio: PriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
-    }),
+    priceRatio,
   })
   if (limitCheck instanceof Error) return limitCheck
 
@@ -282,20 +284,19 @@ const executePaymentViaIntraledger = async ({
       if (newWalletInvoice instanceof Error) return newWalletInvoice
 
       const notificationsService = NotificationsService(logger)
-
       if (recipientWalletCurrency === WalletCurrency.Btc) {
         notificationsService.lnInvoiceBitcoinWalletPaid({
           paymentHash,
           recipientWalletId,
           sats: paymentFlow.btcPaymentAmount.amount,
-          displayCurrencyPerSat,
+          displayCurrencyPerSat: priceRatio.usdPerSat(),
         })
       } else {
         notificationsService.lnInvoiceUsdWalletPaid({
           paymentHash,
           recipientWalletId,
           cents: paymentFlow.usdPaymentAmount.amount,
-          displayCurrencyPerSat,
+          displayCurrencyPerSat: priceRatio.usdPerSat(),
         })
       }
 

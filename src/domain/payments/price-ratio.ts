@@ -22,5 +22,6 @@ export const PriceRatio = ({
   return {
     convertFromUsd,
     convertFromBtc,
+    usdPerSat: () => (Number(usd.amount) / Number(btc.amount)) as DisplayCurrencyPerSat,
   }
 }

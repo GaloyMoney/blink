@@ -1,6 +1,7 @@
 type PriceRatio = {
   convertFromUsd(convert: UsdPaymentAmount): BtcPaymentAmount
   convertFromBtc(convert: BtcPaymentAmount): UsdPaymentAmount
+  usdPerSat(): DisplayCurrencyPerSat
 }
 
 type PaymentFlowState<S extends WalletCurrency, R extends WalletCurrency> = {
