@@ -78,17 +78,17 @@ export const payInvoiceByWalletId = async ({
   if (lndService instanceof Error) return lndService
 
   if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
-    const builder = await constructPaymentFlowBuilder({
+    const builderWithConversion = await constructPaymentFlowBuilder({
       senderWallet,
       invoice: decodedInvoice,
       usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
       btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
     })
-    if (builder instanceof AlreadyPaidError) return PaymentSendStatus.AlreadyPaid
-    if (builder instanceof Error) return builder
+    if (builderWithConversion instanceof AlreadyPaidError)
+      return PaymentSendStatus.AlreadyPaid
+    if (builderWithConversion instanceof Error) return builderWithConversion
 
-    // TODO: Is this needed? May be called already in constructFlow
-    paymentFlow = await builder.withoutRoute()
+    paymentFlow = await builderWithConversion.withoutRoute()
   }
   if (paymentFlow instanceof Error) return paymentFlow
 
@@ -149,18 +149,18 @@ export const payNoAmountInvoiceByWalletId = async ({
   if (lndService instanceof Error) return lndService
 
   if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
-    const builder = await constructPaymentFlowBuilder({
+    const builderwithConversion = await constructPaymentFlowBuilder({
       senderWallet,
       invoice: decodedInvoice,
       uncheckedAmount: amount,
       usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
       btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
     })
-    if (builder instanceof AlreadyPaidError) return PaymentSendStatus.AlreadyPaid
-    if (builder instanceof Error) return builder
+    if (builderwithConversion instanceof AlreadyPaidError)
+      return PaymentSendStatus.AlreadyPaid
+    if (builderwithConversion instanceof Error) return builderwithConversion
 
-    // TODO: Is this needed? May be called already in 'constructPaymentFlowBuilder'
-    paymentFlow = await builder.withoutRoute()
+    paymentFlow = await builderwithConversion.withoutRoute()
   }
   if (paymentFlow instanceof Error) return paymentFlow
 
