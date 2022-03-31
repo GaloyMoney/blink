@@ -59,59 +59,57 @@ export const constructPaymentFlowBuilder = async ({
     usdFromBtcMidPriceFn,
     btcFromUsdMidPriceFn,
   })
-  let builderWithInvoice
-  if (uncheckedAmount) {
-    builderWithInvoice = paymentBuilder.withNoAmountInvoice({ invoice, uncheckedAmount })
-  } else {
-    builderWithInvoice = paymentBuilder.withInvoice(invoice)
-  }
+  const builderWithInvoice = uncheckedAmount
+    ? paymentBuilder.withNoAmountInvoice({ invoice, uncheckedAmount })
+    : paymentBuilder.withInvoice(invoice)
+
   const builderWithSenderWallet = builderWithInvoice.withSenderWallet(senderWallet)
-  if (builderWithSenderWallet.isIntraLedger()) {
-    const invoicesRepo = WalletInvoicesRepository()
-    const walletInvoice = await invoicesRepo.findByPaymentHash(invoice.paymentHash)
-    if (walletInvoice instanceof Error) return walletInvoice
 
-    if (walletInvoice.paid) return new AlreadyPaidError(walletInvoice.paymentHash)
+  const recipientDetails = await recipientDetailsFromInvoice(invoice)
+  if (recipientDetails instanceof Error) return recipientDetails
 
-    const {
-      walletId: recipientWalletId,
-      currency: recipientsWalletCurrency,
-      pubkey: recipientPubkey,
-      cents,
-    } = walletInvoice
-    const usdPaymentAmount =
-      cents !== undefined
-        ? { amount: BigInt(cents), currency: WalletCurrency.Usd }
-        : undefined
+  const builderAfterRecipientStep = builderWithSenderWallet.isIntraLedger()
+    ? builderWithSenderWallet.withRecipientWallet(recipientDetails)
+    : builderWithSenderWallet.withoutRecipientWallet()
 
-    let recipientUsername: Username | undefined = undefined
-    if (builderWithSenderWallet.isIntraLedger()) {
-      const recipientWallet = await WalletsRepository().findById(recipientWalletId)
-      if (recipientWallet instanceof Error) return recipientWallet
-      const { accountId } = recipientWallet
+  return builderAfterRecipientStep.withConversion({
+    usdFromBtc,
+    btcFromUsd,
+  })
+}
 
-      const recipientAccount = await AccountsRepository().findById(accountId)
-      if (recipientAccount instanceof Error) return recipientAccount
-      ;({ username: recipientUsername } = recipientAccount)
-    }
+const recipientDetailsFromInvoice = async (invoice) => {
+  const invoicesRepo = WalletInvoicesRepository()
+  const walletInvoice = await invoicesRepo.findByPaymentHash(invoice.paymentHash)
+  if (walletInvoice instanceof Error) return walletInvoice
 
-    return builderWithSenderWallet
-      .withRecipientWallet({
-        id: recipientWalletId,
-        currency: recipientsWalletCurrency,
-        pubkey: recipientPubkey,
-        usdPaymentAmount,
-        username: recipientUsername,
-      })
-      .withConversion({
-        usdFromBtc,
-        btcFromUsd,
-      })
-  } else {
-    return builderWithSenderWallet.withoutRecipientWallet().withConversion({
-      usdFromBtc,
-      btcFromUsd,
-    })
+  if (walletInvoice.paid) return new AlreadyPaidError(walletInvoice.paymentHash)
+
+  const {
+    walletId: recipientWalletId,
+    currency: recipientsWalletCurrency,
+    pubkey: recipientPubkey,
+    cents,
+  } = walletInvoice
+  const usdPaymentAmount =
+    cents !== undefined
+      ? { amount: BigInt(cents), currency: WalletCurrency.Usd }
+      : undefined
+
+  const recipientWallet = await WalletsRepository().findById(recipientWalletId)
+  if (recipientWallet instanceof Error) return recipientWallet
+  const { accountId } = recipientWallet
+
+  const recipientAccount = await AccountsRepository().findById(accountId)
+  if (recipientAccount instanceof Error) return recipientAccount
+  const { username: recipientUsername } = recipientAccount
+
+  return {
+    id: recipientWalletId,
+    currency: recipientsWalletCurrency,
+    pubkey: recipientPubkey,
+    usdPaymentAmount,
+    username: recipientUsername,
   }
 }
 
