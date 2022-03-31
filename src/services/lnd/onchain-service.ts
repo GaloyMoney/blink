@@ -114,7 +114,7 @@ export const OnChainService = (
     return (tx && tx.fee) || new CouldNotFindOnChainTransactionError()
   }
 
-  const getOnChainFeeEstimate = async ({
+  const getMinerFeeEstimate = async ({
     amount,
     address,
     targetConfirmations,
@@ -167,7 +167,7 @@ export const OnChainService = (
       listIncomingTransactions,
       lookupOnChainFee,
       createOnChainAddress,
-      getOnChainFeeEstimate,
+      getMinerFeeEstimate,
       payToAddress,
     },
   })

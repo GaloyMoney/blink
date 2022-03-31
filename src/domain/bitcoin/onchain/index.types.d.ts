@@ -78,7 +78,7 @@ interface IOnChainService {
 
   createOnChainAddress(): Promise<OnChainAddressIdentifier | OnChainServiceError>
 
-  getOnChainFeeEstimate({
+  getMinerFeeEstimate({
     amount,
     address,
     targetConfirmations,

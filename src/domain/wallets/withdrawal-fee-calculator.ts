@@ -23,11 +23,16 @@ export const WithdrawalFeeCalculator = ({
     return {
       totalFee: toSats(bankFee + minerFee),
       bankFee,
+      minerFee,
     }
   }
 
   return {
     onChainWithdrawalFee,
-    onChainIntraLedgerFee: (): Satoshis => toSats(0),
+    onChainIntraLedgerFee: (): WithdrawalFeeCalculatorRes => ({
+      minerFee: toSats(0),
+      totalFee: toSats(0),
+      bankFee: toSats(0),
+    }),
   }
 }

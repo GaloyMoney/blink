@@ -171,11 +171,12 @@ type WithdrawalFeePriceMethod =
 type WithdrawalFeeCalculatorRes = {
   totalFee: Satoshis
   bankFee: Satoshis
+  minerFee: Satoshis
 }
 
 type WithdrawalFeeCalculator = {
   onChainWithdrawalFee(args: OnChainWithdrawalFeeArgs): WithdrawalFeeCalculatorRes
-  onChainIntraLedgerFee(): Satoshis
+  onChainIntraLedgerFee(): WithdrawalFeeCalculatorRes
 }
 
 type PaymentInputValidatorConfig = (

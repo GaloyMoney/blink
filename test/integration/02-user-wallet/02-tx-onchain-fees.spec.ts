@@ -42,8 +42,8 @@ describe("UserWallet - getOnchainFee", () => {
       address,
       targetConfirmations: defaultTarget,
     })
-    expect(fee).not.toBeInstanceOf(Error)
-    expect(fee).toBeGreaterThan(0)
+    if (fee instanceof Error) throw fee
+    expect(fee.totalFee).toBeGreaterThan(0)
 
     const wallet = await WalletsRepository().findById(walletIdA)
     if (wallet instanceof Error) throw wallet
@@ -64,8 +64,8 @@ describe("UserWallet - getOnchainFee", () => {
       address,
       targetConfirmations: defaultTarget,
     })
-    expect(fee).not.toBeInstanceOf(Error)
-    expect(fee).toBe(0)
+    if (fee instanceof Error) throw fee
+    expect(fee.totalFee).toBe(0)
   })
 
   it("returns error for dust amount", async () => {

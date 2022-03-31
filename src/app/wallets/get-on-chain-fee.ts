@@ -22,7 +22,7 @@ export const getOnChainFee = async ({
   amount,
   address,
   targetConfirmations,
-}: GetOnChainFeeArgs): Promise<Satoshis | ApplicationError> => {
+}: GetOnChainFeeArgs): Promise<WithdrawalFeeCalculatorRes | ApplicationError> => {
   const amountChecked = checkedToSats(amount)
   if (amountChecked instanceof Error) return amountChecked
 
@@ -68,7 +68,7 @@ export const getOnChainFee = async ({
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
 
-  const minerFee = await onChainService.getOnChainFeeEstimate({
+  const minerFee = await onChainService.getMinerFeeEstimate({
     amount: amountChecked,
     address,
     targetConfirmations: targetConfsChecked,
@@ -92,5 +92,5 @@ export const getOnChainFee = async ({
     minBankFee,
     imbalance,
   })
-  return fees.totalFee
+  return fees
 }

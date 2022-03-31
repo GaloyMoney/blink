@@ -16,11 +16,12 @@ import {
   SelfPaymentError,
 } from "@domain/errors"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
-import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
+import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { WalletCurrency } from "@domain/shared"
-import { LockService } from "@services/lock"
+import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
+import { LockService } from "@services/lock"
 import { baseLogger } from "@services/logger"
 import {
   AccountsRepository,
@@ -28,9 +29,7 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
-import { addAttributesToCurrentSpan } from "@services/tracing"
-
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+import { addAttributesToCurrentSpan, addEventToCurrentSpan } from "@services/tracing"
 
 import {
   checkAndVerifyTwoFA,
@@ -321,7 +320,7 @@ const executePaymentViaOnChain = async ({
   })
   if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
 
-  const getFeeEstimate = () =>
+  const getOnChainFeeWrapper = () =>
     getOnChainFee({
       walletId: senderWallet.id,
       account: senderAccount,
@@ -333,11 +332,11 @@ const executePaymentViaOnChain = async ({
   const onChainAvailableBalance = await onChainService.getBalance()
   if (onChainAvailableBalance instanceof Error) return onChainAvailableBalance
 
-  const estimatedFee = await getFeeEstimate()
+  const estimatedFee = await getOnChainFeeWrapper()
   if (estimatedFee instanceof Error) return estimatedFee
 
-  const amountToSend = sendAll ? toSats(amount - estimatedFee) : amountSats
-  if (onChainAvailableBalance < amountToSend + estimatedFee)
+  const amountToSend = sendAll ? toSats(amount - estimatedFee.totalFee) : amountSats
+  if (onChainAvailableBalance < amountToSend + estimatedFee.totalFee)
     return new RebalanceNeededError()
 
   if (amountToSend < dustThreshold)
@@ -350,11 +349,11 @@ const executePaymentViaOnChain = async ({
     async (lock) => {
       const balance = await LedgerService().getWalletBalance(senderWallet.id)
       if (balance instanceof Error) return balance
-      const estimatedFee = await getFeeEstimate()
+      const estimatedFee = await getOnChainFeeWrapper()
       if (estimatedFee instanceof Error) return estimatedFee
-      if (balance < amountToSend + estimatedFee) {
+      if (balance < amountToSend + estimatedFee.totalFee) {
         return new InsufficientBalanceError(
-          `${amountToSend + estimatedFee} exceeds balance ${balance}`,
+          `${amountToSend + estimatedFee.totalFee} exceeds balance ${balance}`,
         )
       }
 
@@ -383,7 +382,7 @@ const executePaymentViaOnChain = async ({
           addAttributesToCurrentSpan({
             "payOnChainByWalletId.errorGettingMinerFee": true,
           })
-          minerFee = estimatedFee
+          minerFee = estimatedFee.minerFee
         } else {
           minerFee = minerFee_
         }
@@ -407,6 +406,16 @@ const executePaymentViaOnChain = async ({
 
         const totalFee = fees.totalFee
         const bankFee = fees.bankFee
+
+        if (minerFee !== estimatedFee.minerFee || bankFee !== estimatedFee.bankFee) {
+          addEventToCurrentSpan("estimateNotMatchRealFees", {
+            minerFee,
+            bankFee,
+            estimatedMinerFee: estimatedFee.minerFee,
+            estimatedBankFee: estimatedFee.bankFee,
+            balance,
+          })
+        }
 
         addAttributesToCurrentSpan({
           "payOnChainByWalletId.actualMinerFee": `${minerFee}`,

@@ -147,7 +147,7 @@ describe("WithdrawalFeeCalculator", () => {
 
     it("always returns zero", async () => {
       const fee = calculator.onChainIntraLedgerFee()
-      expect(fee).toEqual(0)
+      expect(fee.totalFee).toEqual(0)
     })
   })
 })
