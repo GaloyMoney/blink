@@ -1,5 +1,3 @@
-export * from "./payments"
-
 import Redis from "ioredis"
 import { RedisPubSub } from "graphql-redis-subscriptions"
 
