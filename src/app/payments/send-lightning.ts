@@ -189,7 +189,7 @@ const executePaymentViaIntraledger = async ({
   senderWallet: Wallet
   logger: Logger
   senderUsername: Username | undefined
-  memo: string | undefined
+  memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {
   const priceRatio = PriceRatio({
     usd: paymentFlow.usdPaymentAmount,
@@ -244,7 +244,7 @@ const executePaymentViaIntraledger = async ({
             paymentFlow.usdPaymentAmount.amount,
           ) as DisplayCurrencyBaseAmount,
 
-          memoOfPayer: memo,
+          memoOfPayer: memo || undefined,
           senderUsername,
           recipientUsername,
           pubkey: recipientPubkey,
