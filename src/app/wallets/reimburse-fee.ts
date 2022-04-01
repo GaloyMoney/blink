@@ -100,7 +100,7 @@ export const newReimburseFee = async ({
   revealedPreImage?: RevealedPreImage
   logger: Logger
 }): Promise<true | ApplicationError> => {
-  const maxFee = toSats(Number(paymentFlow.btcPaymentAmount.amount))
+  const maxFee = toSats(Number(paymentFlow.btcProtocolFee.amount))
   const feeDifference = FeeReimbursement(maxFee).getReimbursement(actualFee)
 
   if (feeDifference instanceof Error) {
