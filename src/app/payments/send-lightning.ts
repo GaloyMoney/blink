@@ -32,6 +32,7 @@ import { NotificationsService } from "@services/notifications"
 import { NewDealerPriceService } from "@services/dealer-price"
 
 import * as LedgerFacade from "@services/ledger/facade"
+import { Wallets } from "@app"
 
 import {
   constructPaymentFlowBuilder,
@@ -389,11 +390,17 @@ const executePaymentViaLn = async ({
       if (journal instanceof Error) return journal
       const { journalId } = journal
 
-      const payResult = await lndService.payInvoiceViaRoutes({
-        paymentHash,
-        rawRoute,
-        pubkey: outgoingNodePubkey,
-      })
+      const payResult = rawRoute
+        ? await lndService.payInvoiceViaRoutes({
+            paymentHash,
+            rawRoute,
+            pubkey: outgoingNodePubkey,
+          })
+        : await lndService.payInvoiceViaPaymentDetails({
+            decodedInvoice,
+            milliSatsAmount: paymentFlow.btcPaymentAmount.amount,
+            maxFee: paymentFlow.btcProtocolFee.amount,
+          })
 
       // Fire-and-forget update to 'lnPayments' collection
       if (!(payResult instanceof LnAlreadyPaidError)) {
@@ -424,6 +431,17 @@ const executePaymentViaLn = async ({
         if (payResult instanceof LnAlreadyPaidError) return PaymentSendStatus.AlreadyPaid
 
         return payResult
+      }
+
+      if (!rawRoute) {
+        const reimbursed = await Wallets.newReimburseFee({
+          paymentFlow,
+          journalId,
+          actualFee: payResult.roundedUpFee,
+          revealedPreImage: payResult.revealedPreImage,
+          logger,
+        })
+        if (reimbursed instanceof Error) return reimbursed
       }
 
       return PaymentSendStatus.Success
