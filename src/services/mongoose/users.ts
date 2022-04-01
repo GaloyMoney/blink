@@ -71,7 +71,7 @@ export const UsersRepository = (): IUsersRepository => {
       await user.save()
       return userFromRaw(user)
     } catch (err) {
-      if (err.message.contains("MongoError: E11000 duplicate key error collection")) {
+      if (err.message?.includes("MongoError: E11000 duplicate key error collection")) {
         return new DuplicateError(phone)
       }
       return new UnknownRepositoryError(err)
