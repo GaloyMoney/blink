@@ -35,7 +35,7 @@ export const PaymentFlowStateRepository = (
       const result = await PaymentFlowState.findOne({
         walletId,
         paymentHash,
-        inputAmount,
+        inputAmount: Number(inputAmount),
       })
       if (!result) return new CouldNotFindLightningPaymentFlowError()
       return paymentFlowFromRaw(result)

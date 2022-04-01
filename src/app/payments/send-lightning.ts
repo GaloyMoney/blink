@@ -39,6 +39,7 @@ import {
   newCheckWithdrawalLimits,
   newCheckIntraledgerLimits,
 } from "./helpers"
+import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 
 const dealer = NewDealerPriceService()
 
@@ -331,10 +332,6 @@ const executePaymentViaLn = async ({
 
   // - get cached route if exists
   const { rawRoute, outgoingNodePubkey } = paymentFlow.routeDetails()
-  if (!(rawRoute && outgoingNodePubkey))
-    return new InvalidLightningPaymentFlowBuilderStateError(
-      "Route expected for payment via Lightning",
-    )
 
   // - validate route amount?
 
@@ -372,7 +369,7 @@ const executePaymentViaLn = async ({
           ) as DisplayCurrencyBaseAmount,
 
           fee: paymentFlow.btcProtocolFee,
-          pubkey: outgoingNodePubkey,
+          pubkey: outgoingNodePubkey || lndService.defaultPubkey(),
           paymentHash,
           feeKnownInAdvance: true,
         })
@@ -380,8 +377,16 @@ const executePaymentViaLn = async ({
         return LedgerFacade.recordSend({
           description: paymentFlow.descriptionFromInvoice,
           amount: {
-            btcWithFee: paymentFlow.btcPaymentAmount,
-            usdWithFee: paymentFlow.usdPaymentAmount,
+            btcWithFee: {
+              currency: paymentFlow.btcPaymentAmount.currency,
+              amount:
+                paymentFlow.btcPaymentAmount.amount + paymentFlow.btcProtocolFee.amount,
+            },
+            usdWithFee: {
+              currency: paymentFlow.usdPaymentAmount.currency,
+              amount:
+                paymentFlow.usdPaymentAmount.amount + paymentFlow.usdProtocolFee.amount,
+            },
           },
           senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
           metadata,
@@ -398,7 +403,9 @@ const executePaymentViaLn = async ({
           })
         : await lndService.payInvoiceViaPaymentDetails({
             decodedInvoice,
-            milliSatsAmount: paymentFlow.btcPaymentAmount.amount,
+            milliSatsAmount: toMilliSatsFromNumber(
+              Number(paymentFlow.btcPaymentAmount.amount) * 1000,
+            ),
             maxFee: paymentFlow.btcProtocolFee.amount,
           })
 

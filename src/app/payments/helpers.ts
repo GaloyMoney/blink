@@ -65,12 +65,15 @@ export const constructPaymentFlowBuilder = async ({
 
   const builderWithSenderWallet = builderWithInvoice.withSenderWallet(senderWallet)
 
-  const recipientDetails = await recipientDetailsFromInvoice(invoice)
-  if (recipientDetails instanceof Error) return recipientDetails
-
-  const builderAfterRecipientStep = builderWithSenderWallet.isIntraLedger()
-    ? builderWithSenderWallet.withRecipientWallet(recipientDetails)
-    : builderWithSenderWallet.withoutRecipientWallet()
+  let builderAfterRecipientStep: LPFBWithRecipientWallet<WalletCurrency, WalletCurrency>
+  if (builderWithSenderWallet.isIntraLedger()) {
+    const recipientDetails = await recipientDetailsFromInvoice(invoice)
+    if (recipientDetails instanceof Error) return recipientDetails
+    builderAfterRecipientStep =
+      builderWithSenderWallet.withRecipientWallet(recipientDetails)
+  } else {
+    builderAfterRecipientStep = builderWithSenderWallet.withoutRecipientWallet()
+  }
 
   return builderAfterRecipientStep.withConversion({
     usdFromBtc,
