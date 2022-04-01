@@ -6,7 +6,7 @@ import {
   PriceRatio,
 } from "@domain/payments"
 import { LndService } from "@services/lnd"
-import { PaymentsRepository } from "@services/redis"
+import { PaymentFlowStateRepository } from "@services/payment-flow"
 import { WalletsRepository } from "@services/mongoose"
 import { NewDealerPriceService } from "@services/dealer-price"
 
@@ -119,7 +119,7 @@ const estimateLightningFee = async ({
   }
   if (paymentFlow instanceof Error) return paymentFlow
 
-  const persistedPayment = await PaymentsRepository().persistNew(paymentFlow)
+  const persistedPayment = await PaymentFlowStateRepository().persistNew(paymentFlow)
   if (persistedPayment instanceof Error) return persistedPayment
 
   return persistedPayment.protocolFeeInSenderWalletCurrency()

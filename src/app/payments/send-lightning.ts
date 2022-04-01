@@ -24,7 +24,7 @@ import {
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { PaymentsRepository } from "@services/redis"
+import { PaymentFlowStateRepository } from "@services/payment-flow"
 
 import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
@@ -69,7 +69,7 @@ export const payInvoiceByWalletId = async ({
   })
   if (accountValidated instanceof Error) return accountValidated
 
-  let paymentFlow = await PaymentsRepository().findLightningPaymentFlow({
+  let paymentFlow = await PaymentFlowStateRepository().findLightningPaymentFlow({
     walletId: senderWalletId,
     paymentHash: decodedInvoice.paymentHash,
     inputAmount: lnInvoiceAmount.amount,
@@ -140,7 +140,7 @@ export const payNoAmountInvoiceByWalletId = async ({
       : checkedToUsdPaymentAmount(amount)
   if (inputPaymentAmount instanceof Error) return inputPaymentAmount
 
-  let paymentFlow = await PaymentsRepository().findLightningPaymentFlow({
+  let paymentFlow = await PaymentFlowStateRepository().findLightningPaymentFlow({
     walletId: senderWalletId,
     paymentHash: decodedInvoice.paymentHash,
     inputAmount: inputPaymentAmount.amount,
