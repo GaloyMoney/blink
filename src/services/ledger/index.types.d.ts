@@ -27,6 +27,7 @@ type RecordReceiveArgs = {
     usd: UsdPaymentAmount
     btc: BtcPaymentAmount
   }
+  txMetadata: LnLedgerTransactionMetadataUpdate
 }
 
 type RecordIntraledgerArgs = {

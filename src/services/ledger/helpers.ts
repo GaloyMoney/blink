@@ -8,9 +8,11 @@ const txMetadataRepo = TransactionsMetadataRepository()
 export const persistAndReturnEntry = async ({
   entry,
   hash,
+  revealedPreImage,
 }: {
   entry: Entry
   hash?: PaymentHash | OnChainTxHash
+  revealedPreImage?: RevealedPreImage
 }) => {
   try {
     const savedEntry = await entry.commit()
@@ -19,6 +21,7 @@ export const persistAndReturnEntry = async ({
     const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
       id,
       hash,
+      revealedPreImage,
     }))
     txMetadataRepo.persistAll(txsMetadataToPersist)
 
