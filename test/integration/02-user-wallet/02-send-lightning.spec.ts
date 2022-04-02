@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "crypto"
 
-import { Wallets, Lightning } from "@app"
+import { Wallets, Lightning, Payments } from "@app"
 
 import { delete2fa } from "@app/users"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
@@ -174,7 +174,7 @@ describe("UserWallet - Lightning Pay", () => {
       lnd: lndOutside1,
       tokens: amount,
     })
-    const paymentResult = await Wallets.payInvoiceByWalletId({
+    const paymentResult = await Payments.payInvoiceByWalletId({
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
       senderWalletId: walletIdB,
@@ -201,7 +201,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
 
-    const paymentResult = await Wallets.payInvoiceByWalletId({
+    const paymentResult = await Payments.payInvoiceByWalletId({
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
       senderWalletId: walletIdB,
@@ -230,7 +230,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (walletInvoice instanceof Error) throw walletInvoice
     expect(walletInvoice.paid).toBeFalsy()
 
-    const paymentResult = await Wallets.payInvoiceByWalletId({
+    const paymentResult = await Payments.payInvoiceByWalletId({
       paymentRequest: invoice,
       memo: null,
       senderWalletId: walletIdB,
@@ -282,7 +282,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
 
-    const paymentResult = await Wallets.payInvoiceByWalletId({
+    const paymentResult = await Payments.payInvoiceByWalletId({
       paymentRequest: request,
       memo: memoPayer,
       senderWalletId: walletIdB,
@@ -419,7 +419,7 @@ describe("UserWallet - Lightning Pay", () => {
     const revealedPreImage = secret as RevealedPreImage
 
     // Test payment is successful
-    const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
+    const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
       amount: amountInvoice,
@@ -569,7 +569,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: invoice } = lnInvoice
 
-    const paymentResult = await Wallets.payInvoiceByWalletId({
+    const paymentResult = await Payments.payInvoiceByWalletId({
       paymentRequest: invoice,
       memo: null,
       senderWalletId: walletIdB,
@@ -596,7 +596,7 @@ describe("UserWallet - Lightning Pay", () => {
       lnd: lndOutside1,
       tokens: initBalanceB + 1000000,
     })
-    const paymentResult = await Wallets.payInvoiceByWalletId({
+    const paymentResult = await Payments.payInvoiceByWalletId({
       paymentRequest: invoice as EncodedPaymentRequest,
       memo: null,
       senderWalletId: walletIdB,
@@ -608,7 +608,7 @@ describe("UserWallet - Lightning Pay", () => {
 
   it("fails to pay when channel capacity exceeded", async () => {
     const { request } = await createInvoice({ lnd: lndOutside1, tokens: 1500000 })
-    const paymentResult = await Wallets.payInvoiceByWalletId({
+    const paymentResult = await Payments.payInvoiceByWalletId({
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
       senderWalletId: walletIdA,
@@ -621,7 +621,7 @@ describe("UserWallet - Lightning Pay", () => {
   it("fails to pay zero amount invoice without separate amount", async () => {
     const { request } = await createInvoice({ lnd: lndOutside1 })
     // TODO: use custom ValidationError not apollo error
-    const paymentResult = await Wallets.payInvoiceByWalletId({
+    const paymentResult = await Payments.payInvoiceByWalletId({
       paymentRequest: request as EncodedPaymentRequest,
       memo: null,
       senderWalletId: walletIdB,
@@ -1107,7 +1107,7 @@ describe("USD Wallets - Lightning Pay", () => {
 
       const { request } = await createInvoice({ lnd: lndOutside1, tokens: amountPayment })
 
-      const paymentResult = await Wallets.payInvoiceByWalletId({
+      const paymentResult = await Payments.payInvoiceByWalletId({
         paymentRequest: request as EncodedPaymentRequest,
         memo: null,
         senderWalletId: walletIdUsdB,
@@ -1138,7 +1138,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (request instanceof Error) throw request
       const { paymentRequest } = request
 
-      const paymentResult = await Wallets.payInvoiceByWalletId({
+      const paymentResult = await Payments.payInvoiceByWalletId({
         paymentRequest,
         memo: null,
         senderWalletId: walletIdUsdB,
@@ -1168,7 +1168,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (request instanceof Error) throw request
       const { paymentRequest } = request
 
-      const paymentResult = await Wallets.payInvoiceByWalletId({
+      const paymentResult = await Payments.payInvoiceByWalletId({
         paymentRequest,
         memo: null,
         senderWalletId: walletIdUsdB,
@@ -1202,7 +1202,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (request instanceof Error) throw request
       const { paymentRequest } = request
 
-      const paymentResult = await Wallets.payInvoiceByWalletId({
+      const paymentResult = await Payments.payInvoiceByWalletId({
         paymentRequest,
         memo: null,
         senderWalletId: walletIdA,
@@ -1233,7 +1233,7 @@ describe("USD Wallets - Lightning Pay", () => {
 
       const amountPayment = toCents(100)
 
-      const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
         paymentRequest: request as EncodedPaymentRequest,
         memo: null,
         amount: amountPayment,
@@ -1266,7 +1266,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (request instanceof Error) throw request
       const { paymentRequest } = request
 
-      const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
         paymentRequest,
         memo: null,
         senderWalletId: walletIdUsdB,
@@ -1296,7 +1296,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (request instanceof Error) throw request
       const { paymentRequest } = request
 
-      const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
         paymentRequest,
         memo: null,
         senderWalletId: walletIdUsdB,
@@ -1330,7 +1330,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (request instanceof Error) throw request
       const { paymentRequest } = request
 
-      const paymentResult = await Wallets.payNoAmountInvoiceByWalletId({
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
         paymentRequest,
         memo: null,
         senderWalletId: walletIdA,
