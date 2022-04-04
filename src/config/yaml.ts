@@ -10,8 +10,6 @@ import { checkedToScanDepth } from "@domain/bitcoin/onchain"
 import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 
-import { WithdrawalFeePriceMethod } from "@domain/wallets"
-
 import { ConfigSchema, configSchema, RewardsConfigSchema } from "./schema"
 import { ConfigError } from "./error"
 
@@ -87,9 +85,8 @@ export const getLndParams = (): LndParams[] => {
 }
 
 export const getFeesConfig = (feesConfig = yamlConfig.fees): FeesConfig => {
-  const withdrawMethod = WithdrawalFeePriceMethod[feesConfig.withdraw.method]
-  const withdrawRatio =
-    withdrawMethod === WithdrawalFeePriceMethod.flat ? 0 : feesConfig.withdraw.ratio
+  const withdrawMethod: WithdrawalFeePriceMethod = feesConfig.withdraw.method
+  const withdrawRatio = withdrawMethod === "flat" ? 0 : feesConfig.withdraw.ratio
 
   return {
     depositFeeVariable: feesConfig.deposit,
