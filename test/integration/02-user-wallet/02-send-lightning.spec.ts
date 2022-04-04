@@ -166,10 +166,9 @@ describe("UserWallet - Lightning Pay", () => {
   it("fails to pay when withdrawalLimit exceeded", async () => {
     const amountAboveThreshold = toCents(accountLimits.withdrawalLimit + 10)
 
-    const price = await getCurrentPrice()
-    if (price instanceof Error) throw price
-    const dCConverter = DisplayCurrencyConverter(price)
-    const amount = dCConverter.fromCentsToSats(amountAboveThreshold)
+    const midPriceRatio = await DealerPriceService().getCentsPerSatsExchangeMidRate()
+    if (midPriceRatio instanceof Error) return midPriceRatio
+    const amount = Math.ceil(amountAboveThreshold / midPriceRatio)
 
     const { request } = await createInvoice({
       lnd: lndOutside1,
@@ -191,10 +190,9 @@ describe("UserWallet - Lightning Pay", () => {
   it("fails to pay when amount exceeds intraLedger limit", async () => {
     const amountAboveThreshold = toCents(accountLimits.intraLedgerLimit + 10)
 
-    const price = await getCurrentPrice()
-    if (price instanceof Error) throw price
-    const dCConverter = DisplayCurrencyConverter(price)
-    const amount = dCConverter.fromCentsToSats(amountAboveThreshold)
+    const midPriceRatio = await DealerPriceService().getCentsPerSatsExchangeMidRate()
+    if (midPriceRatio instanceof Error) return midPriceRatio
+    const amount = Math.ceil(amountAboveThreshold / midPriceRatio)
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletIdA as WalletId,
@@ -1052,17 +1050,16 @@ describe("UserWallet - Lightning Pay", () => {
         userRecordA = await getUserRecordByTestUserRef("A")
         expect(secret).toBe(userRecordA.twoFA.secret)
 
-        const price = await getCurrentPrice()
-        if (price instanceof Error) throw price
-        const dCConverter = DisplayCurrencyConverter(price)
+        const midPriceRatio = await DealerPriceService().getCentsPerSatsExchangeMidRate()
+        if (midPriceRatio instanceof Error) return midPriceRatio
 
         const remainingLimit = await getRemainingTwoFALimit({
           walletId: walletIdA,
-          dCConverter,
+          satsToCents: (sats) => Math.ceil(sats / midPriceRatio),
         })
 
         const aboveThreshold = add(remainingLimit, toCents(10))
-        const aboveThresholdSats = dCConverter.fromCentsToSats(aboveThreshold)
+        const aboveThresholdSats = Math.ceil(aboveThreshold / midPriceRatio)
 
         const { request } = await createInvoice({
           lnd: lndOutside1,
