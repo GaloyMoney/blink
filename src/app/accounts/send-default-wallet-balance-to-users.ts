@@ -1,3 +1,4 @@
+import { wrapAsyncToRunInSpan } from "@services/tracing"
 import { getCurrentPrice } from "@app/prices"
 import { NotificationsService } from "@services/notifications"
 import { LedgerService } from "@services/ledger"
@@ -12,9 +13,9 @@ export const sendDefaultWalletBalanceToUsers = async (logger: Logger) => {
 
   const price = await getCurrentPrice()
 
-  for (const account of accounts) {
+  const notifyUser = async (account) => {
     const balance = await LedgerService().getWalletBalance(account.defaultWalletId)
-    if (balance instanceof Error) throw balance
+    if (balance instanceof Error) return balance
 
     const wallet = await WalletsRepository().findById(account.defaultWalletId)
     if (wallet instanceof Error) return wallet
@@ -25,5 +26,12 @@ export const sendDefaultWalletBalanceToUsers = async (logger: Logger) => {
       userId: account.ownerId,
       price,
     })
+  }
+
+  for (const account of accounts) {
+    await wrapAsyncToRunInSpan({
+      namespace: "daily-balance-notification",
+      fn: async () => notifyUser(account),
+    })()
   }
 }
