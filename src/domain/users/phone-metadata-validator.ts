@@ -5,7 +5,7 @@ import {
   InvalidPhoneMetadataCountryError,
 } from "@domain/errors"
 
-const { whitelistedCountries } = getRewardsConfig()
+const { enabledCountries } = getRewardsConfig()
 export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
   const validateForReward = (phoneMetadata?: PhoneMetadata): true | ApplicationError => {
     if (!phoneMetadata || !phoneMetadata.carrier) return new MissingPhoneMetadataError()
@@ -13,9 +13,9 @@ export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
     if (phoneMetadata.carrier.type === "voip") return new InvalidPhoneMetadataTypeError()
 
     if (
-      whitelistedCountries.length > 0 &&
+      enabledCountries.length > 0 &&
       phoneMetadata.countryCode &&
-      !whitelistedCountries.includes(phoneMetadata.countryCode.toUpperCase())
+      !enabledCountries.includes(phoneMetadata.countryCode.toUpperCase())
     )
       return new InvalidPhoneMetadataCountryError()
 

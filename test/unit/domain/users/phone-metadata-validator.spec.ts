@@ -8,7 +8,7 @@ import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")
   config.yamlConfig.rewards = {
-    whitelistedCountries: ["sv", "US"],
+    enabledCountries: ["sv", "US"],
   }
   return config
 })
@@ -71,7 +71,7 @@ describe("PhoneMetadataValidator - validateForReward", () => {
   })
 
   it("returns error with null metadata", () => {
-    const validator = PhoneMetadataValidator().validateForReward(null)
+    const validator = PhoneMetadataValidator().validateForReward(undefined)
     expect(validator).toBeInstanceOf(MissingPhoneMetadataError)
   })
 

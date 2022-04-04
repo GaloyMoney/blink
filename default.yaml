@@ -12,7 +12,7 @@ buildVersion:
     lastBuildNumber: 269
 
 rewards:
-  whitelistedCountries: [SV]
+  enabledCountries: [SV]
 
 coldStorage:
   minOnChainHotWalletBalance: 1000000 # 0.1

@@ -2,7 +2,7 @@ import { JTDDataType } from "ajv/dist/types/jtd-schema"
 
 export type ConfigSchema = JTDDataType<typeof configSchema>
 export type RewardsConfigSchema = {
-  whitelistedCountries: string[]
+  enabledCountries: string[]
 }
 
 const buildNumberConfigSchema = {
@@ -18,13 +18,13 @@ const buildNumberConfigSchema = {
 const rewardsConfigSchema = {
   type: "object",
   properties: {
-    whitelistedCountries: {
+    enabledCountries: {
       type: "array",
       items: { type: "string" },
       uniqueItems: true,
     },
   },
-  required: ["whitelistedCountries"],
+  required: ["enabledCountries"],
   additionalProperties: false,
 }
 

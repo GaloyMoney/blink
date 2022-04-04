@@ -213,8 +213,8 @@ export const getKratosConfig = (config = yamlConfig): KratosConfig => config.kra
 export const getCaptcha = (config = yamlConfig): CaptchaConfig => config.captcha
 
 export const getRewardsConfig = (): RewardsConfigSchema => {
-  const whitelistedCountries = yamlConfig.rewards.whitelistedCountries || []
+  const enabledCountries = yamlConfig.rewards.enabledCountries || []
   return {
-    whitelistedCountries: whitelistedCountries.map((c) => c.toUpperCase()),
+    enabledCountries: enabledCountries.map((c) => c.toUpperCase()),
   }
 }
