@@ -9,18 +9,25 @@ import {
   checkedToUsdPaymentAmount,
 } from "@domain/payments"
 import { AccountValidator } from "@domain/accounts"
-import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
+import {
+  checkedToWalletId,
+  PaymentInitiationMethod,
+  SettlementMethod,
+} from "@domain/wallets"
+import { toMilliSatsFromNumber } from "@domain/bitcoin"
 import {
   decodeInvoice,
   LnAlreadyPaidError,
   LnPaymentPendingError,
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
+import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
 import { AlreadyPaidError, InsufficientBalanceError } from "@domain/errors"
 
 import { LndService } from "@services/lnd"
 import {
   LnPaymentsRepository,
+  UsersRepository,
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
@@ -32,16 +39,71 @@ import { NotificationsService } from "@services/notifications"
 import { NewDealerPriceService } from "@services/dealer-price"
 
 import * as LedgerFacade from "@services/ledger/facade"
+import { addAttributesToCurrentSpan } from "@services/tracing"
+
 import { Wallets } from "@app"
 
 import {
   constructPaymentFlowBuilder,
   newCheckWithdrawalLimits,
   newCheckIntraledgerLimits,
+  newCheckTwoFALimits,
 } from "./helpers"
-import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 
 const dealer = NewDealerPriceService()
+
+export const payInvoiceByWalletIdWithTwoFA = async ({
+  paymentRequest,
+  memo,
+  senderWalletId: uncheckedSenderWalletId,
+  senderAccount,
+  twoFAToken,
+  logger,
+}: PayInvoiceByWalletIdWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  addAttributesToCurrentSpan({
+    "payment.initiation_method": PaymentInitiationMethod.Lightning,
+  })
+
+  const validatedPaymentInputs = await validateInvoicePaymentInputs({
+    paymentRequest,
+    uncheckedSenderWalletId,
+    senderAccount,
+  })
+  if (validatedPaymentInputs instanceof AlreadyPaidError)
+    return PaymentSendStatus.AlreadyPaid
+  if (validatedPaymentInputs instanceof Error) return validatedPaymentInputs
+  const { senderWallet, paymentFlow, decodedInvoice } = validatedPaymentInputs
+
+  const user = await UsersRepository().findById(senderAccount.ownerId)
+  if (user instanceof Error) return user
+  const { twoFA } = user
+
+  const twoFACheck = twoFA?.secret
+    ? await newCheckAndVerifyTwoFA({
+        amount: paymentFlow.usdPaymentAmount,
+        twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
+        twoFASecret: twoFA.secret,
+        wallet: senderWallet,
+        priceRatio: PriceRatio({
+          usd: paymentFlow.usdPaymentAmount,
+          btc: paymentFlow.btcPaymentAmount,
+        }),
+      })
+    : true
+  if (twoFACheck instanceof Error) return twoFACheck
+
+  // Get display currency price... add to payment flow builder?
+
+  return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
+    ? executePaymentViaIntraledger({
+        paymentFlow,
+        senderWallet,
+        senderUsername: senderAccount.username,
+        memo,
+        logger,
+      })
+    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, logger })
+}
 
 export const payInvoiceByWalletId = async ({
   paymentRequest,
@@ -50,6 +112,124 @@ export const payInvoiceByWalletId = async ({
   senderAccount,
   logger,
 }: PayInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  const validatedPaymentInputs = await validateInvoicePaymentInputs({
+    paymentRequest,
+    uncheckedSenderWalletId,
+    senderAccount,
+  })
+  if (validatedPaymentInputs instanceof AlreadyPaidError)
+    return PaymentSendStatus.AlreadyPaid
+  if (validatedPaymentInputs instanceof Error) return validatedPaymentInputs
+  const { senderWallet, paymentFlow, decodedInvoice } = validatedPaymentInputs
+
+  // Get display currency price... add to payment flow builder?
+
+  return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
+    ? executePaymentViaIntraledger({
+        paymentFlow,
+        senderWallet,
+        senderUsername: senderAccount.username,
+        memo,
+        logger,
+      })
+    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, logger })
+}
+
+export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
+  paymentRequest,
+  amount,
+  memo,
+  senderWalletId: uncheckedSenderWalletId,
+  senderAccount,
+  twoFAToken,
+  logger,
+}: PayNoAmountInvoiceByWalletIdWithTwoFAArgs): Promise<
+  PaymentSendStatus | ApplicationError
+> => {
+  addAttributesToCurrentSpan({
+    "payment.initiation_method": PaymentInitiationMethod.Lightning,
+  })
+  const validatedNoAmountPaymentInputs = await validateNoAmountInvoicePaymentInputs({
+    paymentRequest,
+    amount,
+    uncheckedSenderWalletId,
+    senderAccount,
+  })
+  if (validatedNoAmountPaymentInputs instanceof AlreadyPaidError)
+    return PaymentSendStatus.AlreadyPaid
+  if (validatedNoAmountPaymentInputs instanceof Error)
+    return validatedNoAmountPaymentInputs
+  const { senderWallet, paymentFlow, decodedInvoice } = validatedNoAmountPaymentInputs
+
+  const user = await UsersRepository().findById(senderAccount.ownerId)
+  if (user instanceof Error) return user
+  const { twoFA } = user
+
+  const twoFACheck = twoFA?.secret
+    ? await newCheckAndVerifyTwoFA({
+        amount: paymentFlow.usdPaymentAmount,
+        twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
+        twoFASecret: twoFA.secret,
+        wallet: senderWallet,
+        priceRatio: PriceRatio({
+          usd: paymentFlow.usdPaymentAmount,
+          btc: paymentFlow.btcPaymentAmount,
+        }),
+      })
+    : true
+  if (twoFACheck instanceof Error) return twoFACheck
+
+  // Get display currency price... add to payment flow builder?
+
+  return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
+    ? executePaymentViaIntraledger({
+        paymentFlow,
+        senderWallet,
+        senderUsername: senderAccount.username,
+        memo,
+        logger,
+      })
+    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, logger })
+}
+
+export const payNoAmountInvoiceByWalletId = async ({
+  paymentRequest,
+  amount,
+  memo,
+  senderWalletId: uncheckedSenderWalletId,
+  senderAccount,
+  logger,
+}: PayNoAmountInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  const validatedNoAmountPaymentInputs = await validateNoAmountInvoicePaymentInputs({
+    paymentRequest,
+    amount,
+    uncheckedSenderWalletId,
+    senderAccount,
+  })
+  if (validatedNoAmountPaymentInputs instanceof AlreadyPaidError)
+    return PaymentSendStatus.AlreadyPaid
+  if (validatedNoAmountPaymentInputs instanceof Error)
+    return validatedNoAmountPaymentInputs
+  const { senderWallet, paymentFlow, decodedInvoice } = validatedNoAmountPaymentInputs
+
+  // Get display currency price... add to payment flow builder?
+
+  return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
+    ? executePaymentViaIntraledger({
+        paymentFlow,
+        senderWallet,
+        senderUsername: senderAccount.username,
+        memo,
+        logger,
+      })
+    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, logger })
+}
+
+const validateInvoicePaymentInputs = async ({
+  paymentRequest,
+  uncheckedSenderWalletId,
+  senderAccount,
+}) => {
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
   if (senderWalletId instanceof Error) return senderWalletId
 
@@ -76,9 +256,6 @@ export const payInvoiceByWalletId = async ({
     inputAmount: lnInvoiceAmount.amount,
   })
 
-  const lndService = LndService()
-  if (lndService instanceof Error) return lndService
-
   if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
     const builderWithConversion = await constructPaymentFlowBuilder({
       senderWallet,
@@ -86,35 +263,25 @@ export const payInvoiceByWalletId = async ({
       usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
       btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
     })
-    if (builderWithConversion instanceof AlreadyPaidError)
-      return PaymentSendStatus.AlreadyPaid
     if (builderWithConversion instanceof Error) return builderWithConversion
 
     paymentFlow = await builderWithConversion.withoutRoute()
   }
   if (paymentFlow instanceof Error) return paymentFlow
 
-  // Get display currency price... add to payment flow builder?
-
-  return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
-    ? executePaymentViaIntraledger({
-        paymentFlow,
-        senderWallet,
-        senderUsername: senderAccount.username,
-        memo,
-        logger,
-      })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, logger })
+  return {
+    senderWallet,
+    paymentFlow,
+    decodedInvoice,
+  }
 }
 
-export const payNoAmountInvoiceByWalletId = async ({
+const validateNoAmountInvoicePaymentInputs = async ({
   paymentRequest,
   amount,
-  memo,
-  senderWalletId: uncheckedSenderWalletId,
+  uncheckedSenderWalletId,
   senderAccount,
-  logger,
-}: PayNoAmountInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+}) => {
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
   if (senderWalletId instanceof Error) return senderWalletId
 
@@ -147,36 +314,55 @@ export const payNoAmountInvoiceByWalletId = async ({
     inputAmount: inputPaymentAmount.amount,
   })
 
-  const lndService = LndService()
-  if (lndService instanceof Error) return lndService
-
   if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
-    const builderwithConversion = await constructPaymentFlowBuilder({
+    const builderWithConversion = await constructPaymentFlowBuilder({
       senderWallet,
       invoice: decodedInvoice,
-      uncheckedAmount: amount,
       usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
       btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
     })
-    if (builderwithConversion instanceof AlreadyPaidError)
-      return PaymentSendStatus.AlreadyPaid
-    if (builderwithConversion instanceof Error) return builderwithConversion
+    if (builderWithConversion instanceof Error) return builderWithConversion
 
-    paymentFlow = await builderwithConversion.withoutRoute()
+    paymentFlow = await builderWithConversion.withoutRoute()
   }
   if (paymentFlow instanceof Error) return paymentFlow
 
-  // Get display currency price... add to payment flow builder?
+  return {
+    senderWallet,
+    paymentFlow,
+    decodedInvoice,
+  }
+}
 
-  return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
-    ? executePaymentViaIntraledger({
-        paymentFlow,
-        senderWallet,
-        senderUsername: senderAccount.username,
-        memo,
-        logger,
-      })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, logger })
+const newCheckAndVerifyTwoFA = async ({
+  amount,
+  twoFAToken,
+  twoFASecret,
+  wallet,
+  priceRatio,
+}: {
+  amount: UsdPaymentAmount
+  twoFAToken: TwoFAToken | null
+  twoFASecret: TwoFASecret
+  wallet: Wallet
+  priceRatio: PriceRatio
+}): Promise<true | ApplicationError> => {
+  const twoFALimitCheck = await newCheckTwoFALimits({
+    amount,
+    wallet,
+    priceRatio,
+  })
+  if (!(twoFALimitCheck instanceof Error)) return true
+
+  if (!twoFAToken) return new TwoFANewCodeNeededError()
+
+  const validTwoFA = TwoFA().verify({
+    secret: twoFASecret,
+    token: twoFAToken,
+  })
+  if (validTwoFA instanceof Error) return validTwoFA
+
+  return true
 }
 
 const executePaymentViaIntraledger = async ({
