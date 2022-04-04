@@ -427,6 +427,19 @@ export const LndService = (): ILightningService | LightningServiceError => {
     milliSatsAmount: MilliSatoshis
     maxFee: Satoshis
   }): Promise<PayInvoiceResult | LightningServiceError> => {
+    let routes: RawHopWithStrings[][] = []
+    if (decodedInvoice.routeHints) {
+      routes = decodedInvoice.routeHints.map((route) =>
+        route.map((hop) => ({
+          base_fee_mtokens: hop.baseFeeMTokens,
+          channel: hop.channel,
+          cltv_delta: hop.cltvDelta,
+          fee_rate: hop.feeRate,
+          public_key: hop.nodePubkey,
+        })),
+      )
+    }
+
     const paymentDetailsArgs: PayViaPaymentDetailsArgs = {
       lnd: defaultLnd,
       id: decodedInvoice.paymentHash,
@@ -442,23 +455,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
             type: f.type,
           }))
         : undefined,
-      routes: [],
-    }
-
-    if (decodedInvoice.routeHints) {
-      decodedInvoice.routeHints.forEach((route) => {
-        const rawRoute: RawHopWithStrings[] = []
-        route.forEach((hop) =>
-          rawRoute.push({
-            base_fee_mtokens: hop.baseFeeMTokens,
-            channel: hop.channel,
-            cltv_delta: hop.cltvDelta,
-            fee_rate: hop.feeRate,
-            public_key: hop.nodePubkey,
-          }),
-        )
-        paymentDetailsArgs.routes.push(rawRoute)
-      })
+      routes,
     }
 
     try {
