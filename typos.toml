@@ -1,6 +1,5 @@
 files.extend-exclude = [
-  "dev",
-  "test/postman/*.json"
+  "dev"
 ]
 
 [default.extend-words]
