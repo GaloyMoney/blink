@@ -43,7 +43,6 @@ module.exports = {
 
       if (!wallet) {
         const currency = "BTC"
-        // @ts-expect-error: ts complain about Crypto (capital C) doesn't have randomUUID
         const id = crypto.randomUUID()
 
         const result = await db
@@ -72,7 +71,6 @@ module.exports = {
         wallet = await db.collection("wallets").findOne({ _accountId, currency })
 
         if (!wallet) {
-          // @ts-expect-error: ts complain about Crypto (capital C) doesn't have randomUUID
           const id = crypto.randomUUID()
           const result = await db
             .collection("wallets")

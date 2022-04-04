@@ -234,7 +234,7 @@ export const asyncRunInSpan = <F extends () => ReturnType<F>>(
     try {
       const ret = await Promise.resolve(fn())
       if ((ret as unknown) instanceof Error) {
-        recordException(span, ret)
+        recordException(span, ret as Error)
       }
       span.end()
       return ret
