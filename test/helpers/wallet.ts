@@ -20,10 +20,10 @@ export const getBalanceHelper = async (
 // make it generic
 export const getRemainingTwoFALimit = async ({
   walletId,
-  dCConverter,
+  satsToCents,
 }: {
   walletId: WalletId
-  dCConverter: DisplayCurrencyConverter
+  satsToCents
 }): Promise<UsdCents> => {
   const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await LedgerService().allPaymentVolumeSince({
@@ -35,7 +35,7 @@ export const getRemainingTwoFALimit = async ({
   const twoFALimit = getTwoFALimits().threshold
   const outgoing = toSats(walletVolume.outgoingBaseAmount)
 
-  const remainingLimit = sub(twoFALimit, dCConverter.fromSatsToCents(outgoing))
+  const remainingLimit = sub(twoFALimit, satsToCents(outgoing))
   if (remainingLimit instanceof Error) throw remainingLimit
   return remainingLimit > 0 ? remainingLimit : toCents(0)
 }
