@@ -1,5 +1,4 @@
 import { InvalidWalletId } from "@domain/errors"
-
 export * from "./deposit-fee-calculator"
 export { WalletTransactionHistory } from "./tx-history"
 export * from "./tx-methods"

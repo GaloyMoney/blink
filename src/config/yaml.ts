@@ -1,22 +1,20 @@
 import fs from "fs"
 
+import Ajv from "ajv"
+
 import yaml from "js-yaml"
 import merge from "lodash.merge"
 
 import { baseLogger } from "@services/logger"
 import { checkedToScanDepth } from "@domain/bitcoin/onchain"
 import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
-import Ajv from "ajv"
 import { toCents } from "@domain/fiat"
-
-import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
 import { ConfigSchema, configSchema, RewardsConfigSchema } from "./schema"
 import { ConfigError } from "./error"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 const defaultConfig = yaml.load(defaultContent)
-
 let customContent, customConfig
 
 try {
@@ -87,9 +85,8 @@ export const getLndParams = (): LndParams[] => {
 }
 
 export const getFeesConfig = (feesConfig = yamlConfig.fees): FeesConfig => {
-  const withdrawMethod = WithdrawalFeePriceMethod[feesConfig.withdraw.method]
-  const withdrawRatio =
-    withdrawMethod === WithdrawalFeePriceMethod.flat ? 0 : feesConfig.withdraw.ratio
+  const withdrawMethod: WithdrawalFeePriceMethod = feesConfig.withdraw.method
+  const withdrawRatio = withdrawMethod === "flat" ? 0 : feesConfig.withdraw.ratio
 
   return {
     depositFeeVariable: feesConfig.deposit,
