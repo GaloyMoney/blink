@@ -1,0 +1,111 @@
+#!/bin/bash
+
+DOCKER_HOST_IP=$(ip addr show docker0 | awk '/inet/ {print $2}' | cut -d'/' -f1)
+export DOCKER_HOST_IP=${DOCKER_HOST_IP:-127.0.0.1}
+export NETWORK=testnet
+export NODE_ENV=production
+
+LND_TLS=$(base64 ~/.lnd/tls.cert | tr -d '\n\r')
+export LND1_TLS=${LND_TLS:-$(base64 dev/lnd/tls.cert | tr -d '\n\r')}
+export LND2_TLS=${LND_TLS:-$(base64 dev/lnd/tls.cert | tr -d '\n\r')}
+export LNDONCHAIN_TLS=${LND_TLS:-$(base64 dev/lnd/tls.cert | tr -d '\n\r')}
+export TLSOUTSIDE1=${LND_TLS:-$(base64 dev/lnd/tls.cert | tr -d '\n\r')}
+export TLSOUTSIDE2=${LND_TLS:-$(base64 dev/lnd/tls.cert | tr -d '\n\r')}
+
+fetch_macaroon() {
+  local container_id=$(docker ps -q -f status=running -f name="${PWD##*/}-$1-")
+  if [ ! -z "${container_id}" ]; then
+    # On Arch Linux `docker compose up` appears to complete before the lnd containers have initialized the macaroons.
+    # Here we retry for 10 seconds until we can copy the macaroon successfully
+    for i in 1 2 3 4 5 6 7 8 9 10; do
+      docker cp $container_id:/root/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon dev/lnd/$1.macaroon 2> /dev/null
+      if [ "$?" = "0" ]; then
+        base64 dev/lnd/$1.macaroon | tr -d '\n\r'
+        break
+      fi
+      sleep 1
+    done
+  fi
+}
+
+LND_MACAROON=$(base64 ~/.lnd/data/chain/bitcoin/$NETWORK/admin.macaroon | tr -d '\n\r')
+export LND1_MACAROON=${LND_MACAROON:-$(fetch_macaroon lnd1)}
+export LND2_MACAROON=${LND_MACAROON:-$(fetch_macaroon lnd2)}
+export LNDONCHAIN_MACAROON=${LND_MACAROON:-$(fetch_macaroon lndonchain)}
+export MACAROONOUTSIDE1=${LND_MACAROON:-$(fetch_macaroon lnd-outside-1)}
+export MACAROONOUTSIDE2=${LND_MACAROON:-$(fetch_macaroon lnd-outside-2)}
+
+fetch_pubkey() {
+  local container_id=$(docker ps -q -f status=running -f name="${PWD##*/}-$1-")
+  if [ ! -z "${container_id}" ]; then
+    for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+      docker exec ${container_id} lncli -n $NETWORK getinfo > /dev/null 2>&1
+      if [ "$?" = "0" ]; then
+      docker exec ${container_id} lncli -n $NETWORK getinfo 2> /dev/null | jq -r .identity_pubkey
+        break
+      fi
+      sleep 1
+    done
+  fi
+}
+
+LND_PUBKEY=$(sudo -u bitcoin /usr/local/bin/lncli -n=testnet --rpcserver localhost:11009 getinfo 2> /dev/null | jq -r .identity_pubkey)
+export LND1_PUBKEY=${LND_PUBKEY:-$(fetch_pubkey lnd1)}
+export LND2_PUBKEY=${LND_PUBKEY:-$(fetch_pubkey lnd2)}
+export LNDONCHAIN_PUBKEY=${LND_PUBKEY:-$(fetch_pubkey lndonchain)}
+
+export BITCOINDPORT=18443
+export BITCOINDADDR=${DOCKER_HOST_IP}
+# TODO
+#RPCuser$(sudo cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcuser | cut -c 9-)
+#export BITCOINDUSER=${RPCuser}
+RPCpassword=$(sudo cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcpassword | cut -c 13-)
+export BITCOINDRPCPASS=${RPCpassword}
+
+export LND1_DNS=${DOCKER_HOST_IP}
+export LND2_DNS=${DOCKER_HOST_IP}
+export LNDONCHAIN_DNS=${DOCKER_HOST_IP}
+export LNDOUTSIDE1ADDR=${DOCKER_HOST_IP}
+export LNDOUTSIDE2ADDR=${DOCKER_HOST_IP}
+
+LNDRPCPORT=11009
+export LND1_RPCPORT=${LNDRPCPORT}
+export LND2_RPCPORT=${LNDRPCPORT}
+export LNDONCHAIN_RPCPORT=${LNDRPCPORT}
+export LNDOUTSIDE1RPCPORT=${LNDRPCPORT}
+export LNDOUTSIDE2RPCPORT=${LNDRPCPORT}
+
+#MONGODB_ADDRESS=$(docker container inspect -f '{{ .NetworkSettings.Networks.galoy_default.IPAddress }}' galoy-mongodb-1)
+#export MONGODB_ADDRESS="${MONGODB_ADDRESS:-${DOCKER_HOST_IP}}:27017"
+export MONGODB_ADDRESS="${DOCKER_HOST_IP}:27017"
+export MONGODB_PASSWORD=password
+
+#TODO detect local redis
+# REDIS_ADDRESS=$(docker container inspect -f '{{ .NetworkSettings.Networks.galoy_default.IPAddress }}' galoy-redis-1)
+# export REDIS_0_INTERNAL_IP=${REDIS_ADDRESS:-${DOCKER_HOST_IP}}
+export REDIS_0_INTERNAL_IP=${DOCKER_HOST_IP}
+export REDIS_0_PORT=6379
+export REDIS_0_DNS=${REDIS_ADDRESS:-${DOCKER_HOST_IP}}
+export REDIS_0_SENTINEL_PORT=26379
+
+PRICE_ADDRESS=$(docker container inspect -f '{{ .NetworkSettings.Networks.galoy_default.IPAddress }}' galoy-price-1)
+export PRICE_ADDRESS=${PRICE_ADDRESS:-${DOCKER_HOST_IP}}
+#export PRICE_ADDRESS=${DOCKER_HOST_IP}
+export PRICE_PORT=50051
+
+export APOLLO_KEY=${APOLLO_KEY:-test}
+export APOLLO_GRAPH_REF=${APOLLO_GRAPH_REF:-test}
+
+export LOCAL=docker-compose
+export JWT_SECRET="jwt_secret"
+
+export GEETEST_ID="geetest_id"
+export GEETEST_KEY="geetest_key"
+
+export TWILIO_ACCOUNT_SID="AC_twilio_id"
+export TWILIO_AUTH_TOKEN="AC_twilio_auth_token"
+export TWILIO_PHONE_NUMBER="twilio_phone"
+
+export COMMITHASH="hash"
+export BUILDTIME="2022"
+export HELMREVISION="1"

@@ -1,0 +1,52 @@
+version: "2"
+services:
+  selfhosted-deps:
+    image: busybox
+    depends_on:
+    - price
+    - mongodb
+    - otel-agent
+  otel-agent:
+    image: otel/opentelemetry-collector-contrib:0.43.0
+    command: ["--config=/etc/otel-agent-config.yaml"]
+    environment:
+    - HONEYCOMB_DATASET=${HONEYCOMB_DATASET}
+    - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
+    volumes:
+      - ./dev/otel-agent-config.yaml:/etc/otel-agent-config.yaml
+    ports:
+      - "6831:6831/udp" # Jaeger receiver
+      - "6832:6832/udp" # Jaeger receiver
+  price:
+    image: us.gcr.io/galoy-org/price:edge
+    ports:
+    - "50051:50051"
+    - "9464:9464"
+  mongodb-migrate:
+    depends_on: [mongodb]
+    build:
+      context: .
+      dockerfile: Dockerfile-migrate
+    environment:
+    - MONGODB_ADDRESS=mongodb
+  mongodb:
+    image: bitnami/mongodb:4.4.6-debian-10-r0
+    environment:
+    - MONGODB_PASSWORD=password
+    - MONGODB_USERNAME=testGaloy
+    - MONGODB_DATABASE=galoy
+    - MONGODB_REPLICA_SET_MODE=primary
+    - MONGODB_ROOT_PASSWORD=password
+    - MONGODB_REPLICA_SET_KEY=replicasetkey
+    - MONGODB_ADVERTISED_HOSTNAME=172.17.0.1
+    ports:
+    - "27017:27017"
+  api:
+    # https://github.com/GaloyMoney/charts/blob/main/charts/galoy/values.yaml
+    image: us.gcr.io/galoy-org/galoy-app@sha256:d967ef6000a9fa00e3927d2b61aac70caa36673c3c11cee52f4e0fdae4f56f55
+    depends_on:
+    - selfhosted-deps
+    env_file:
+      - .env
+    ports:
+    - "4002:4002"

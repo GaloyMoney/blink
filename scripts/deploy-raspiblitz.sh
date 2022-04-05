@@ -125,31 +125,24 @@ if [ "$1" = "on" ]; then
   fi
 
 #  sudo -u galoy cp /home/galoy/galoy/scripts/assets/galoy-env ./.envrc
-  sudo chmod +x .envrc
-  echo "# Set NETWORK"
-  sudo -u galoy sed -i "s/export NETWORK=.*/export NETWORK=${NETWORK}/g" ./.envrc
-  sudo -u galoy sed -i "s/export NODE_ENV=.*/export NODE_ENV=production/g" ./.envrc
+#   sudo chmod +x .envrc
+#   echo "# Set NETWORK"
+#   sudo -u galoy sed -i "s/export NETWORK=.*/export NETWORK=${NETWORK}/g" ./.envrc
+#   sudo -u galoy sed -i "s/export NODE_ENV=.*/export NODE_ENV=production/g" ./.envrc
+# 
+#   echo "# Set RPCPORTS"
+#   source <(/home/admin/config.scripts/network.aliases.sh getvars lnd ${NETWORK})
+#   sudo -u galoy sed -i "s/export LND1_RPCPORT=.*/export LND1_RPCPORT=1${L2rpcportmod}009/g" ./.envrc
+#   sudo -u galoy sed -i "s/export LND2_RPCPORT=.*/export LND2_RPCPORT=1${L2rpcportmod}009/g" ./.envrc
+#   sudo -u galoy sed -i "s/export LNDONCHAIN_RPCPORT=.*/export LNDONCHAIN_RPCPORT=1${L2rpcportmod}009/g" ./.envrc
+#   sudo -u galoy sed -i "s/export LNDOUTSIDE1RPCPORT=.*/export LNDOUTSIDE1RPCPORT=1${L2rpcportmod}009/g" ./.envrc
+#   sudo -u galoy sed -i "s/export LNDOUTSIDE2RPCPORT=.*/export LNDOUTSIDE2RPCPORT=1${L2rpcportmod}009/g" ./.envrc
 
-  echo "# Set RPCPORTS"
-  source <(/home/admin/config.scripts/network.aliases.sh getvars lnd ${NETWORK})
-  sudo -u galoy sed -i "s/export LND1_RPCPORT=.*/export LND1_RPCPORT=1${L2rpcportmod}009/g" ./.envrc
-  sudo -u galoy sed -i "s/export LND2_RPCPORT=.*/export LND2_RPCPORT=1${L2rpcportmod}009/g" ./.envrc
-  sudo -u galoy sed -i "s/export LNDONCHAIN_RPCPORT=.*/export LNDONCHAIN_RPCPORT=1${L2rpcportmod}009/g" ./.envrc
-  sudo -u galoy sed -i "s/export LNDOUTSIDE1RPCPORT=.*/export LNDOUTSIDE1RPCPORT=1${L2rpcportmod}009/g" ./.envrc
-  sudo -u galoy sed -i "s/export LNDOUTSIDE2RPCPORT=.*/export LNDOUTSIDE2RPCPORT=1${L2rpcportmod}009/g" ./.envrc
-
-  DOCKER_HOST_IP=$(ip addr show docker0 | awk '/inet/ {print $2}' | cut -d'/' -f1)
   #TODO ?test if tlsextraip=DOCKER_HOST_IP i needed in lnd.conf
-
-  echo "# Extract credentials from the bitcoin.conf"
-  #TODO ?is the user hardcoded?
-  #RPCuser=$(sudo cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcuser | cut -c 9-)
-  RPCpassword=$(sudo cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcpassword | cut -c 13-)
-  sudo -u galoy sed -i "s/export BITCOINDRPCPASS=.*/export BITCOINDRPCPASS=${RPCpassword}/g" ./.envrc
 
   # sudo -u galoy sh -c "direnv allow; ./.envrc; yarn install"
   sudo -u galoy make start-selfhosted-deps
-  sudo -u galoy make start-selfhosted-backend
+  sudo -u galoy make start-selfhosted-api
 
   ##############
   # Connections
@@ -166,27 +159,23 @@ if [ "$1" = "on" ]; then
   # sudo ln -sf /etc/nginx/sites-available/galoy-admin-api_ssl.conf /etc/nginx/sites-enabled/
   # sudo ufw allow 4011 comment "galoy-admin-api_ssl"
 
+  DOCKER_HOST_IP=$(ip addr show docker0 | awk '/inet/ {print $2}' | cut -d'/' -f1)
   # galoy-api_ssl
   if ! [ -f /etc/nginx/sites-available/galoy-api_ssl.conf ]; then
     sudo cp /home/galoy/galoy/scripts/assets/galoy-api_ssl.conf /etc/nginx/sites-available/galoy-api_ssl.conf
   fi
   sudo ln -sf /etc/nginx/sites-available/galoy-api_ssl.conf /etc/nginx/sites-enabled/
-  # BACKEND_ADDRESS=$(docker container inspect -f '{{ .NetworkSettings.Networks.galoy_default.IPAddress }}' galoy-backend-1)
+  # BACKEND_ADDRESS=$(docker container inspect -f '{{ .NetworkSettings.Networks.galoy_default.IPAddress }}' galoy-api-1)
   sudo sed -i "s#proxy_pass http://127.0.0.1:4002;#proxy_pass http://$DOCKER_HOST_IP:4002;#g" /etc/nginx/sites-available/galoy-api_ssl.conf
 
   sudo nginx -t || exit 1
   sudo systemctl reload nginx
-
   sudo ufw allow 4012 comment "galoy-api_ssl"
 
-  # Tor not active as there is no password protection
-  # /home/admin/config.scripts/tor.onion-service.sh galoy-admin-api 80 4001
-
   echo "# Monitor with: "
-  echo "docker container logs -f --details galoy-backend-1"
-
+  echo "docker container logs -f --details galoy-api-1"
   localIP=$(hostname -I | awk '{print $1}')
-#  echo "# Connect to the Galoy admin API on: https://${localIP}:4011/graphql"
+  # echo "# Connect to the Galoy admin API on: https://${localIP}:4011/graphql"
   echo "# Connect to the Galoy API on: https://${localIP}:4012/graphql"
 fi
 

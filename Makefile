@@ -36,20 +36,23 @@ reset-deps: clean-deps start-deps
 
 
 start-selfhosted-deps:
-	docker compose up selfhosted-deps -d
+	docker compose -f docker-compose.selfhosted.yml up selfhosted-deps -d
 	direnv reload
 
-start-selfhosted-backend:
-	. ./.envrc && \
+start-selfhosted-api:
+	. ./.envrc.selfhosted && \
 	./scripts/generate-env.sh && \
-	docker compose up backend -d
+	docker compose -f docker-compose.selfhosted.yml up api -d
 
 start-selfhosted-bare: start-selfhosted-deps
 	make start-main & make start-admin & make start-trigger
 
+clean-selfhosted-deps: docker compose -f docker-compose.selfhosted.yml down
+
 reset-selfhosted-deps: clean-deps start-selfhosted-deps
 
-reset-selfhosted-backend: reset-selfhosted-deps start-selfhosted-backend
+reset-selfhosted-api: reset-selfhosted-deps start-selfhosted-api
+
 
 test: unit integration
 
