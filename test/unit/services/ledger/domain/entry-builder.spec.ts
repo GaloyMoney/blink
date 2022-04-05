@@ -1,6 +1,6 @@
 import { lndLedgerAccountId, EntryBuilder } from "@services/ledger/domain"
 
-import { WalletCurrency, AmountCalculator, ZERO_FEE } from "@domain/shared"
+import { WalletCurrency, AmountCalculator, ZERO_BANK_FEE } from "@domain/shared"
 
 class TestMediciEntry {
   credits: any  // eslint-disable-line
@@ -87,8 +87,8 @@ describe("EntryBuilder", () => {
   }
 
   const amount = {
-    btcWithFee: btcAmount,
-    usdWithFee: usdAmount,
+    btcWithFees: btcAmount,
+    usdWithFees: usdAmount,
   }
   const btcFee = {
     currency: WalletCurrency.Btc,
@@ -99,9 +99,9 @@ describe("EntryBuilder", () => {
     amount: 1n,
   }
 
-  const protocolFee = {
-    usdProtocolFee: usdFee,
-    btcProtocolFee: btcFee,
+  const bankFee = {
+    usdBankFee: usdFee,
+    btcBankFee: btcFee,
   }
 
   const metadata = {
@@ -121,7 +121,7 @@ describe("EntryBuilder", () => {
         })
         const result = builder
           .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
+          .withBankFee(ZERO_BANK_FEE)
           .debitAccount({ accountDescriptor: btcDebitorAccountDescriptor })
           .creditLnd()
 
@@ -140,7 +140,7 @@ describe("EntryBuilder", () => {
         })
         const result = builder
           .withTotalAmount(amount)
-          .withFee(protocolFee)
+          .withBankFee(bankFee)
           .debitAccount({ accountDescriptor: btcDebitorAccountDescriptor })
           .creditLnd()
 
@@ -164,7 +164,7 @@ describe("EntryBuilder", () => {
         })
         const result = builder
           .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
+          .withBankFee(ZERO_BANK_FEE)
           .debitLnd()
           .creditAccount(btcCreditorAccountDescriptor)
 
@@ -182,7 +182,7 @@ describe("EntryBuilder", () => {
         })
         const result = builder
           .withTotalAmount(amount)
-          .withFee(protocolFee)
+          .withBankFee(bankFee)
           .debitLnd()
           .creditAccount(btcCreditorAccountDescriptor)
 
@@ -207,7 +207,7 @@ describe("EntryBuilder", () => {
         })
         const result = builder
           .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
+          .withBankFee(ZERO_BANK_FEE)
           .debitAccount({
             accountDescriptor: usdDebitorAccountDescriptor,
           })
@@ -231,7 +231,7 @@ describe("EntryBuilder", () => {
         })
         const result = builder
           .withTotalAmount(amount)
-          .withFee(protocolFee)
+          .withBankFee(bankFee)
           .debitAccount({
             accountDescriptor: usdDebitorAccountDescriptor,
           })
@@ -261,7 +261,7 @@ describe("EntryBuilder", () => {
         })
         const result = builder
           .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
+          .withBankFee(ZERO_BANK_FEE)
           .debitLnd()
           .creditAccount(usdCreditorAccountDescriptor)
 
@@ -283,7 +283,7 @@ describe("EntryBuilder", () => {
         })
         const result = builder
           .withTotalAmount(amount)
-          .withFee(protocolFee)
+          .withBankFee(bankFee)
           .debitLnd()
           .creditAccount(usdCreditorAccountDescriptor)
 
@@ -315,7 +315,7 @@ describe("EntryBuilder", () => {
         })
         const result = builder
           .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
+          .withBankFee(ZERO_BANK_FEE)
           .debitAccount({
             accountDescriptor: btcDebitorAccountDescriptor,
           })
@@ -334,7 +334,7 @@ describe("EntryBuilder", () => {
         })
         const result = builder
           .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
+          .withBankFee(ZERO_BANK_FEE)
           .debitAccount({
             accountDescriptor: btcDebitorAccountDescriptor,
           })
@@ -359,7 +359,7 @@ describe("EntryBuilder", () => {
         })
         const result = builder
           .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
+          .withBankFee(ZERO_BANK_FEE)
           .debitAccount({
             accountDescriptor: usdDebitorAccountDescriptor,
           })
@@ -382,7 +382,7 @@ describe("EntryBuilder", () => {
         })
         const result = builder
           .withTotalAmount(amount)
-          .withFee(ZERO_FEE)
+          .withBankFee(ZERO_BANK_FEE)
           .debitAccount({
             accountDescriptor: usdDebitorAccountDescriptor,
           })
@@ -404,7 +404,7 @@ describe("EntryBuilder", () => {
       })
       const result = builder
         .withTotalAmount(amount)
-        .withFee(ZERO_FEE)
+        .withBankFee(ZERO_BANK_FEE)
         .debitAccount({
           accountDescriptor: btcDebitorAccountDescriptor,
           additionalMetadata: {
