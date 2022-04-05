@@ -12,7 +12,8 @@ buildVersion:
     lastBuildNumber: 269
 
 rewards:
-  enabledCountries: [SV]
+  denyPhoneCountries: []
+  allowPhoneCountries: [SV]
 
 coldStorage:
   minOnChainHotWalletBalance: 1000000 # 0.1

@@ -210,8 +210,10 @@ export const getKratosConfig = (config = yamlConfig): KratosConfig => config.kra
 export const getCaptcha = (config = yamlConfig): CaptchaConfig => config.captcha
 
 export const getRewardsConfig = (): RewardsConfigSchema => {
-  const enabledCountries = yamlConfig.rewards.enabledCountries || []
+  const denyPhoneCountries = yamlConfig.rewards.denyPhoneCountries || []
+  const allowPhoneCountries = yamlConfig.rewards.allowPhoneCountries || []
   return {
-    enabledCountries: enabledCountries.map((c) => c.toUpperCase()),
+    denyPhoneCountries: denyPhoneCountries.map((c) => c.toUpperCase()),
+    allowPhoneCountries: allowPhoneCountries.map((c) => c.toUpperCase()),
   }
 }
