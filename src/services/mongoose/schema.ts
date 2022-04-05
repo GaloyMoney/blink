@@ -139,6 +139,7 @@ const UserSchema = new Schema<UserRecord>(
           ip: String,
           provider: String,
           country: String,
+          isoCode: String,
           region: String,
           city: String,
           //using Type instead of type due to its special status in mongoose

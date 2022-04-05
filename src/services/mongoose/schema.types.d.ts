@@ -4,6 +4,7 @@ type IPType = {
   ip: IpAddress | undefined
   provider?: string
   country?: string
+  isoCode?: string
   region?: string
   city?: string
   Type?: string

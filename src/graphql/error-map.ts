@@ -175,6 +175,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new ValidationInternalError({ message, logger: baseLogger })
 
     case "InvalidPhoneMetadataForRewardError":
+    case "InvalidIPMetadataForRewardError":
       message = "Unsupported phone carrier for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
@@ -314,6 +315,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "MissingPhoneMetadataError":
     case "InvalidPhoneMetadataTypeError":
     case "InvalidPhoneMetadataCountryError":
+    case "MissingIPMetadataError":
+    case "InvalidIPMetadataProxyError":
+    case "InvalidIPMetadataASNError":
+    case "InvalidIPMetadataCountryError":
     case "InvalidAccountStatusError":
     case "InvalidOnChainAddress":
     case "InvalidScanDepthAmount":

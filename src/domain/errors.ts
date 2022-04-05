@@ -75,6 +75,13 @@ export class MissingPhoneMetadataError extends ValidationError {}
 export class InvalidPhoneMetadataTypeError extends ValidationError {}
 export class InvalidPhoneMetadataCountryError extends ValidationError {}
 export class InvalidPhoneMetadataForRewardError extends ValidationError {}
+
+export class MissingIPMetadataError extends ValidationError {}
+export class InvalidIPMetadataProxyError extends ValidationError {}
+export class InvalidIPMetadataCountryError extends ValidationError {}
+export class InvalidIPMetadataASNError extends ValidationError {}
+export class InvalidIPMetadataForRewardError extends ValidationError {}
+
 export class InvalidLanguageError extends ValidationError {}
 export class InvalidAccountLevelError extends ValidationError {}
 

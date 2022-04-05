@@ -9,7 +9,8 @@ export const IpFetcher = (): IIpFetcherService => {
         `https://proxycheck.io/v2/${ip}?key=${PROXY_CHECK_APIKEY}&vpn=1&asn=1`,
       )
       const proxy = !!(data[ip] && data[ip].proxy && data[ip].proxy === "yes")
-      return { ...data[ip], proxy, status: data.status }
+      const isoCode = data[ip] && data[ip].isocode
+      return { ...data[ip], isoCode, proxy, status: data.status }
     } catch (err) {
       return new UnknownIpFetcherServiceError(err)
     }
