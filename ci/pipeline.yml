@@ -321,7 +321,6 @@ jobs:
       trigger: true
       passed:
       - check-code
-      - audit
       - test-unit
       - test-integration
       - test-e2e

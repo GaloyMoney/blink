@@ -94,3 +94,7 @@ check-code:
 create-tmp-env-ci:
 	. ./.envrc && \
 	envsubst < .env.ci > tmp.env.ci
+
+# 16 is exit code for critical https://classic.yarnpkg.com/lang/en/docs/cli/audit
+audit:
+	bash -c 'yarn audit --level critical; [[ $$? -ge 16 ]] && exit 1 || exit 0'

@@ -4,4 +4,4 @@ set -eu
 
 pushd repo
 
-yarn audit --level critical
+make audit
