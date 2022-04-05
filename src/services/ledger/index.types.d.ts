@@ -4,28 +4,28 @@ type TxnTypes = typeof import("./volume").TxnGroups[TxnGroup]
 type RecordSendArgs = {
   description: string
   senderWalletDescriptor: WalletDescriptor<WalletCurrency>
-  amount: {
-    usdWithFee: UsdPaymentAmount
-    btcWithFee: BtcPaymentAmount
+  amountToDebitSender: {
+    usd: UsdPaymentAmount
+    btc: BtcPaymentAmount
   }
   metadata: SendLedgerMetadata
-  fee?: {
-    usdProtocolFee: UsdPaymentAmount
-    btcProtocolFee: BtcPaymentAmount
+  bankFee?: {
+    usd: UsdPaymentAmount
+    btc: BtcPaymentAmount
   }
 }
 
 type RecordReceiveArgs = {
   description: string
   receiverWalletDescriptor: WalletDescriptor<WalletCurrency>
-  amount: {
-    usdWithFee: UsdPaymentAmount
-    btcWithFee: BtcPaymentAmount
+  amountToCreditReceiver: {
+    usd: UsdPaymentAmount
+    btc: BtcPaymentAmount
   }
   metadata: ReceiveLedgerMetadata
-  fee?: {
-    usdProtocolFee: UsdPaymentAmount
-    btcProtocolFee: BtcPaymentAmount
+  bankFee?: {
+    usd: UsdPaymentAmount
+    btc: BtcPaymentAmount
   }
 }
 
@@ -34,8 +34,8 @@ type RecordIntraledgerArgs = {
   senderWalletDescriptor: WalletDescriptor<WalletCurrency>
   receiverWalletDescriptor: WalletDescriptor<WalletCurrency>
   amount: {
-    usdWithFee: UsdPaymentAmount
-    btcWithFee: BtcPaymentAmount
+    usd: UsdPaymentAmount
+    btc: BtcPaymentAmount
   }
   metadata: IntraledgerLedgerMetadata
   additionalDebitMetadata: TxMetadata

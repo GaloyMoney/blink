@@ -1,12 +1,14 @@
 import { UnknownLedgerError } from "@domain/ledger"
 
-import { ZERO_FEE } from "@domain/shared"
+import { ZERO_BANK_FEE, AmountCalculator, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
 
 import { MainBook } from "./books"
 import { toLedgerAccountDescriptor, toLedgerAccountId, EntryBuilder } from "./domain"
 import { persistAndReturnEntry } from "./helpers"
 import * as caching from "./caching"
 export * from "./tx-metadata"
+
+const calc = AmountCalculator()
 
 const staticAccountIds = async () => {
   return {
@@ -19,11 +21,11 @@ const staticAccountIds = async () => {
 export const recordSend = async ({
   description,
   senderWalletDescriptor,
-  amount,
-  fee,
+  amountToDebitSender,
+  bankFee,
   metadata,
 }: RecordSendArgs) => {
-  const actualFee = fee || ZERO_FEE
+  const actualFee = bankFee || { usd: ZERO_CENTS, btc: ZERO_SATS }
 
   let entry = MainBook.entry(description)
   const builder = EntryBuilder({
@@ -33,8 +35,11 @@ export const recordSend = async ({
   })
 
   entry = builder
-    .withTotalAmount(amount)
-    .withFee(actualFee)
+    .withTotalAmount({
+      usdWithFees: amountToDebitSender.usd,
+      btcWithFees: amountToDebitSender.btc,
+    })
+    .withBankFee({ usdBankFee: actualFee.usd, btcBankFee: actualFee.btc })
     .debitAccount({
       accountDescriptor: toLedgerAccountDescriptor(senderWalletDescriptor),
     })
@@ -46,11 +51,11 @@ export const recordSend = async ({
 export const recordReceive = async ({
   description,
   receiverWalletDescriptor,
-  amount,
-  fee,
+  amountToCreditReceiver,
+  bankFee,
   metadata,
 }: RecordReceiveArgs) => {
-  const actualFee = fee || ZERO_FEE
+  const actualFee = bankFee || { usd: ZERO_CENTS, btc: ZERO_SATS }
 
   let entry = MainBook.entry(description)
   const builder = EntryBuilder({
@@ -59,9 +64,14 @@ export const recordReceive = async ({
     metadata,
   })
 
+  const amountWithFees = {
+    usdWithFees: calc.add(amountToCreditReceiver.usd, actualFee.usd),
+    btcWithFees: calc.add(amountToCreditReceiver.btc, actualFee.btc),
+  }
+
   entry = builder
-    .withTotalAmount(amount)
-    .withFee(actualFee)
+    .withTotalAmount(amountWithFees)
+    .withBankFee({ usdBankFee: actualFee.usd, btcBankFee: actualFee.btc })
     .debitLnd()
     .creditAccount(toLedgerAccountDescriptor(receiverWalletDescriptor))
 
@@ -98,8 +108,8 @@ export const recordIntraledger = async ({
   })
 
   entry = builder
-    .withTotalAmount(amount)
-    .withFee(ZERO_FEE)
+    .withTotalAmount({ usdWithFees: amount.usd, btcWithFees: amount.btc })
+    .withBankFee(ZERO_BANK_FEE)
     .debitAccount({
       accountDescriptor: toLedgerAccountDescriptor(senderWalletDescriptor),
       additionalMetadata,

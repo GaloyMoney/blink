@@ -30,19 +30,19 @@ type EntryBuilderFeeState<M extends MediciEntry> = {
   entry: M
   metadata: TxMetadata
   staticAccountIds: StaticAccountIds
-  amountWithFee: {
-    usdWithFee: UsdPaymentAmount
-    btcWithFee: BtcPaymentAmount
+  amountWithFees: {
+    usdWithFees: UsdPaymentAmount
+    btcWithFees: BtcPaymentAmount
   }
 }
 
 type EntryBuilderFee<M extends MediciEntry> = {
-  withFee: ({
-    btcProtocolFee,
-    usdProtocolFee,
+  withBankFee: ({
+    btcBankFee,
+    usdBankFee,
   }: {
-    btcProtocolFee: BtcPaymentAmount
-    usdProtocolFee: UsdPaymentAmount
+    btcBankFee: BtcPaymentAmount
+    usdBankFee: UsdPaymentAmount
   }) => EntryBuilderDebit<M>
 }
 
@@ -50,13 +50,13 @@ type EntryBuilderDebitState<M extends MediciEntry> = {
   entry: M
   metadata: TxMetadata
   staticAccountIds: StaticAccountIds
-  amountWithFee: {
-    usdWithFee: UsdPaymentAmount
-    btcWithFee: BtcPaymentAmount
+  amountWithFees: {
+    usdWithFees: UsdPaymentAmount
+    btcWithFees: BtcPaymentAmount
   }
-  fee: {
-    btcProtocolFee: BtcPaymentAmount
-    usdProtocolFee: UsdPaymentAmount
+  bankFee: {
+    btcBankFee: BtcPaymentAmount
+    usdBankFee: UsdPaymentAmount
   }
 }
 
@@ -76,13 +76,13 @@ type EntryBuilderCreditState<M extends MediciEntry> = {
   entry: M
   metadata: TxMetadata
   debitCurrency: WalletCurrency
-  amountWithFee: {
-    usdWithFee: UsdPaymentAmount
-    btcWithFee: BtcPaymentAmount
+  amountWithFees: {
+    usdWithFees: UsdPaymentAmount
+    btcWithFees: BtcPaymentAmount
   }
-  fee: {
-    usdProtocolFee: UsdPaymentAmount
-    btcProtocolFee: BtcPaymentAmount
+  bankFee: {
+    usdBankFee: UsdPaymentAmount
+    btcBankFee: BtcPaymentAmount
   }
   staticAccountIds: {
     dealerBtcAccountId: LedgerAccountId

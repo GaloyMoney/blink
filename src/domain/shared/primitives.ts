@@ -14,9 +14,9 @@ export const ZERO_CENTS = {
   amount: 0n,
 }
 
-export const ZERO_FEE = {
-  usdProtocolFee: ZERO_CENTS,
-  btcProtocolFee: ZERO_SATS,
+export const ZERO_BANK_FEE = {
+  usdBankFee: ZERO_CENTS,
+  btcBankFee: ZERO_SATS,
 }
 
 export const BtcWalletDescriptor = (walletId: WalletId) => {
