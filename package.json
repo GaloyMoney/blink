@@ -151,7 +151,7 @@
     "nodemon": "^2.0.15",
     "pino-pretty": "^5.1.0",
     "prettier": "^2.5.1",
-    "spectaql": "^0.12.0",
+    "spectaql": "^1.0.7",
     "tree-kill": "^1.2.2",
     "ts-jest": "^27.1.3",
     "ts-node": "^10.0.0",
