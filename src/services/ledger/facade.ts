@@ -58,7 +58,6 @@ export const recordReceive = async ({
   amountToCreditReceiver,
   bankFee,
   metadata,
-  txMetadata,
 }: RecordReceiveArgs) => {
   const actualFee = bankFee || { usd: ZERO_CENTS, btc: ZERO_SATS }
 
@@ -80,7 +79,7 @@ export const recordReceive = async ({
     .debitLnd()
     .creditAccount(toLedgerAccountDescriptor(receiverWalletDescriptor))
 
-  return persistAndReturnEntry({ entry, ...txMetadata })
+  return persistAndReturnEntry({ entry, ...metadata })
 }
 
 export const getLedgerAccountBalanceForWalletId = async <T extends WalletCurrency>({

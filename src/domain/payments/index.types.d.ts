@@ -140,14 +140,6 @@ interface IPaymentFlowRepository {
   }): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
 }
 
-type UsdFromBtcMidPriceFn = (
-  amount: BtcPaymentAmount,
-) => Promise<UsdPaymentAmount | DealerPriceServiceError>
-
-type BtcFromUsdMidPriceFn = (
-  amount: UsdPaymentAmount,
-) => Promise<BtcPaymentAmount | DealerPriceServiceError>
-
 type LightningPaymentFlowBuilderConfig = {
   localNodeIds: Pubkey[]
   usdFromBtcMidPriceFn: UsdFromBtcMidPriceFn

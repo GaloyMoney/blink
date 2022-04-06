@@ -43,6 +43,14 @@ type BtcAmountWithExpiration = {
   expiration: Date
 }
 
+type UsdFromBtcMidPriceFn = (
+  amount: BtcPaymentAmount,
+) => Promise<UsdPaymentAmount | DealerPriceServiceError>
+
+type BtcFromUsdMidPriceFn = (
+  amount: UsdPaymentAmount,
+) => Promise<BtcPaymentAmount | DealerPriceServiceError>
+
 interface IDealerPriceServiceNew {
   getCentsFromSatsForImmediateBuy(
     amount: BtcPaymentAmount,

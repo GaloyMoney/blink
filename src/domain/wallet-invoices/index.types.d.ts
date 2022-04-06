@@ -12,11 +12,24 @@ type WalletInvoiceValidator = {
   validateToSend(fromWalletId: WalletId): true | ValidationError
 }
 
-type WalletFactoryConfig = {
-  walletId: WalletId
-  currency: WalletCurrency
+type WalletInvoiceAmounts = WalletInvoice & {
+  usdToCreditReceiver: UsdPaymentAmount
+  btcToCreditReceiver: BtcPaymentAmount
+  usdBankFee: UsdPaymentAmount
+  btcBankFee: BtcPaymentAmount
+  receiverWalletDescriptor: WalletDescriptor<WalletCurrency>
 }
 
+type WalletInvoiceAmountsArgs = {
+  walletInvoice: WalletInvoice
+  receivedBtc: BtcPaymentAmount
+  usdFromBtc(
+    amount: BtcPaymentAmount,
+  ): Promise<UsdPaymentAmount | DealerPriceServiceError>
+  usdFromBtcMidPrice(
+      amount: BtcPaymentAmount,
+    ): Promise<UsdPaymentAmount | DealerPriceServiceError>
+}
 interface IWalletInvoicesRepository {
   persistNew: (invoice: WalletInvoice) => Promise<WalletInvoice | RepositoryError>
 

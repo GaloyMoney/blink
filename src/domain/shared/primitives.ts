@@ -60,3 +60,11 @@ export const paymentAmountFromCents = (cents: UsdCents): UsdPaymentAmount => {
     amount: BigInt(cents),
   }
 }
+
+export const satsFromBtcPaymentAmount = (btcPaymentAmount: BtcPaymentAmount): Satoshis => {
+  return Number(btcPaymentAmount.amount) as Satoshis
+}
+
+export const centsFromUsdPaymentAmount = (usdPaymentAmount: UsdPaymentAmount): UsdCents => {
+  return Number(usdPaymentAmount.amount) as UsdCents
+}
