@@ -21,6 +21,8 @@ describe("Facade", () => {
 
   describe("recordReceive", () => {
     it("receives to btc wallet", async () => {
+      const paymentHash = crypto.randomUUID() as PaymentHash
+
       const metadata = LedgerFacade.LnReceiveLedgerMetadata({
         paymentHash: crypto.randomUUID() as PaymentHash,
         fee: bankFee.btc,
@@ -37,6 +39,7 @@ describe("Facade", () => {
         receiverWalletDescriptor: walletDescriptor1,
         bankFee,
         metadata,
+        txMetadata: { hash: paymentHash },
       })
 
       const balance = await LedgerFacade.getLedgerAccountBalanceForWalletId(

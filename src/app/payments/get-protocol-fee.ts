@@ -8,6 +8,7 @@ import {
 import { LndService } from "@services/lnd"
 import { PaymentsRepository } from "@services/redis"
 import { WalletsRepository } from "@services/mongoose"
+import { NewDealerPriceService } from "@services/dealer-price"
 
 import {
   constructPaymentFlowBuilder,
@@ -71,10 +72,13 @@ const estimateLightningFee = async ({
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
 
+  const dealer = NewDealerPriceService()
   const builder = await constructPaymentFlowBuilder({
     senderWallet,
     invoice,
     uncheckedAmount,
+    usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+    btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
   })
   if (builder instanceof Error) return builder
 

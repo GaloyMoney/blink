@@ -39,7 +39,7 @@ type GetOnChainFeeArgs = {
 type PaymentSendArgs = {
   senderWalletId: WalletId
   senderAccount: Account
-  memo: string | undefined
+  memo: string | null
   logger: Logger
 }
 
