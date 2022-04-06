@@ -37,6 +37,6 @@ describe("Price history", () => {
 
     const result = await PriceHistory.bulkWrite(bulkOps, { ordered: true })
     expect(result).toHaveProperty("ok", 1)
-    expect(result.nModified).toBeGreaterThanOrEqual(18)
+    expect(result.modifiedCount).toBeGreaterThanOrEqual(18)
   })
 })

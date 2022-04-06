@@ -67,7 +67,7 @@ interface UserRecord {
   status?: string // ?: enum ["active", "locked"]
   language?: string // ?: enum ["en", "es"]
 
-  twilio: TwilioObjectForUser | null
+  twilio?: TwilioObjectForUser
   depositFeeRatio?: number
   withdrawFee?: number
   earn: string[]

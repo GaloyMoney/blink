@@ -62,8 +62,8 @@ export const AccountsRepository = (): IAccountsRepository => {
     try {
       const accounts: UserRecord[] = await User.find(
         {
-          title: { $exists: true, $ne: null },
-          coordinates: { $exists: true, $ne: null },
+          title: { $exists: true, $ne: undefined },
+          coordinates: { $exists: true, $ne: undefined },
         },
         { username: 1, title: 1, coordinates: 1 },
       )

@@ -1,4 +1,4 @@
-import { toMilliSatsFromString, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import {
   CouldNotFindLnPaymentFromHashError,
   UnknownRepositoryError,
@@ -80,7 +80,7 @@ const lnPaymentFromRaw = (result: LnPaymentType): PersistedLnPaymentLookup => ({
   paymentHash: result.paymentHash as PaymentHash,
   paymentRequest: result.paymentRequest as EncodedPaymentRequest,
   sentFromPubkey: result.sentFromPubkey as Pubkey,
-  milliSatsAmount: toMilliSatsFromString(result.milliSatsAmount),
+  milliSatsAmount: toMilliSatsFromNumber(result.milliSatsAmount),
   roundedUpAmount: toSats(result.roundedUpAmount),
   confirmedDetails: result.confirmedDetails
     ? {

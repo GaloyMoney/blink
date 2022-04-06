@@ -5,7 +5,7 @@ interface LnPaymentType {
   paymentHash: string
   paymentRequest: string
   sentFromPubkey: string
-  milliSatsAmount: string
+  milliSatsAmount: number
   roundedUpAmount: number
   confirmedDetails: LnPaymentConfirmedDetails | undefined
   attempts: LnPaymentAttempt[]
