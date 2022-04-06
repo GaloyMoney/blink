@@ -49,7 +49,7 @@ fetch_pubkey() {
   fi
 }
 
-LND_PUBKEY=$(sudo -u bitcoin /usr/local/bin/lncli -n=testnet --rpcserver localhost:11009 getinfo 2> /dev/null | jq -r .identity_pubkey)
+LND_PUBKEY=$(lncli -n=testnet --rpcserver localhost:11009 getinfo 2> /dev/null | jq -r .identity_pubkey)
 export LND1_PUBKEY=${LND_PUBKEY:-$(fetch_pubkey lnd1)}
 export LND2_PUBKEY=${LND_PUBKEY:-$(fetch_pubkey lnd2)}
 export LNDONCHAIN_PUBKEY=${LND_PUBKEY:-$(fetch_pubkey lndonchain)}
@@ -59,7 +59,7 @@ export BITCOINDADDR=${DOCKER_HOST_IP}
 # TODO
 #RPCuser$(sudo cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcuser | cut -c 9-)
 #export BITCOINDUSER=${RPCuser}
-RPCpassword=$(sudo cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcpassword | cut -c 13-)
+RPCpassword=$(cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcpassword | cut -c 13-)
 export BITCOINDRPCPASS=${RPCpassword}
 
 export LND1_DNS=${DOCKER_HOST_IP}
