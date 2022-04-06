@@ -557,7 +557,7 @@ const executePaymentViaLn = async ({
           fee: paymentFlow.btcProtocolFee,
           pubkey: outgoingNodePubkey || lndService.defaultPubkey(),
           paymentHash,
-          feeKnownInAdvance: true,
+          feeKnownInAdvance: !!rawRoute,
         })
 
         return LedgerFacade.recordSend({
