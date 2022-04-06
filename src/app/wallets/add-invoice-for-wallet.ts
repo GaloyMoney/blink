@@ -42,7 +42,7 @@ export const addInvoiceForSelf = async ({
   }
 
   const walletInvoiceFactory = WalletInvoiceFactory({
-    walletId: walletIdChecked,
+    id: walletIdChecked,
     currency: wallet.currency,
   })
 
@@ -73,7 +73,7 @@ export const addInvoiceNoAmountForSelf = async ({
   const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Btc, new Date())
 
   const walletInvoiceFactory = WalletInvoiceFactory({
-    walletId: wallet.id,
+    id: wallet.id,
     currency: wallet.currency,
   })
 
@@ -112,7 +112,7 @@ export const addInvoiceForRecipient = async ({
   }
 
   const walletInvoiceFactory = WalletInvoiceFactory({
-    walletId: walletIdChecked,
+    id: walletIdChecked,
     currency: wallet.currency,
   })
 
@@ -143,7 +143,7 @@ export const addInvoiceNoAmountForRecipient = async ({
   const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Btc, new Date())
 
   const walletInvoiceFactory = WalletInvoiceFactory({
-    walletId: walletIdChecked,
+    id: walletIdChecked,
     currency: wallet.currency,
   })
 

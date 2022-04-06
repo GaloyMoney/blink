@@ -1,5 +1,8 @@
 export { decodeInvoice } from "./ln-invoice"
-export { invoiceExpirationForCurrency } from "./invoice-expiration"
+export {
+  invoiceExpirationForCurrency,
+  defaultTimeToExpiryInSeconds,
+} from "./invoice-expiration"
 export * from "./fee-calculator"
 export * from "./errors"
 
