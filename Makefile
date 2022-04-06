@@ -44,9 +44,6 @@ start-selfhosted-api:
 	./scripts/generate-env.sh && \
 	docker compose -f docker-compose.selfhosted.yml up api -d
 
-start-selfhosted-bare: start-selfhosted-deps
-	make start-main & make start-admin & make start-trigger
-
 clean-selfhosted-deps: docker compose -f docker-compose.selfhosted.yml down
 
 reset-selfhosted-deps: clean-deps start-selfhosted-deps

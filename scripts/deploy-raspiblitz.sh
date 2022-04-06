@@ -2,7 +2,6 @@
 
 # wget https://raw.githubusercontent.com/openoms/galoy/self-hosting/scripts/deploy-raspiblitz.sh -O deploy-raspiblitz.sh
 # sh -x deploy-raspiblitz.sh on
-# sh -x deploy-raspiblitz.sh web-wallet
 
 # command info
 if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "-help" ]; then
@@ -38,15 +37,14 @@ else
   githubBranch="self-hosting"
 fi
 
+#TODO menu
+
 # install
 if [ "$1" = "on" ]; then
   ################
   # Dependencies
   ################
   # https://github.com/GaloyMoney/charts/blob/main/charts/galoy/Chart.yaml
-
-  # NodeJS
-  #/home/admin/config.scripts/bonus.nodejs.sh on
 
   # Docker
   /home/admin/config.scripts/blitz.docker.sh on
@@ -57,17 +55,20 @@ if [ "$1" = "on" ]; then
     sudo apt-get install -y direnv
   fi
 
-  # # Yarn
-  # if dpkg --list | grep yarn; then
-  #   echo "# Yarn is already installed"
-  #   yarn --version
-  # else
-  #   echo "# Install Yarn"
-  #   curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-  #   echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-  #   sudo apt-get update
-  #   sudo apt-get install -y yarn
-  # fi
+  # NodeJS
+  /home/admin/config.scripts/bonus.nodejs.sh on
+
+  # Yarn
+  if dpkg --list | grep yarn; then
+    echo "# Yarn is already installed"
+    yarn --version
+  else
+    echo "# Install Yarn"
+    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+    sudo apt-get update
+    sudo apt-get install -y yarn
+  fi
 
   # redis
   # https://github.com/bitnami/charts/tree/master/bitnami/redis#redis-image-parameters
@@ -94,8 +95,6 @@ if [ "$1" = "on" ]; then
   echo
   echo "# Create user and symlinks"
   sudo adduser --disabled-password --gecos "" galoy
-  # passwordless access to sudo
-  sudo adduser galoy sudo
 
   # add the user to the docker group
   sudo usermod -aG docker galoy
@@ -124,40 +123,101 @@ if [ "$1" = "on" ]; then
     sudo -u galoy git checkout ${githubBranch}
   fi
 
-#  sudo -u galoy cp /home/galoy/galoy/scripts/assets/galoy-env ./.envrc
-#   sudo chmod +x .envrc
-#   echo "# Set NETWORK"
-#   sudo -u galoy sed -i "s/export NETWORK=.*/export NETWORK=${NETWORK}/g" ./.envrc
-#   sudo -u galoy sed -i "s/export NODE_ENV=.*/export NODE_ENV=production/g" ./.envrc
-# 
-#   echo "# Set RPCPORTS"
-#   source <(/home/admin/config.scripts/network.aliases.sh getvars lnd ${NETWORK})
-#   sudo -u galoy sed -i "s/export LND1_RPCPORT=.*/export LND1_RPCPORT=1${L2rpcportmod}009/g" ./.envrc
-#   sudo -u galoy sed -i "s/export LND2_RPCPORT=.*/export LND2_RPCPORT=1${L2rpcportmod}009/g" ./.envrc
-#   sudo -u galoy sed -i "s/export LNDONCHAIN_RPCPORT=.*/export LNDONCHAIN_RPCPORT=1${L2rpcportmod}009/g" ./.envrc
-#   sudo -u galoy sed -i "s/export LNDOUTSIDE1RPCPORT=.*/export LNDOUTSIDE1RPCPORT=1${L2rpcportmod}009/g" ./.envrc
-#   sudo -u galoy sed -i "s/export LNDOUTSIDE2RPCPORT=.*/export LNDOUTSIDE2RPCPORT=1${L2rpcportmod}009/g" ./.envrc
+  sudo -u galoy chmod +x ./scripts/*.sh
 
-  #TODO ?test if tlsextraip=DOCKER_HOST_IP i needed in lnd.conf
+  #TODO ?test if tlsextraip=DOCKER_HOST_IP is needed in lnd.conf
 
-  # sudo -u galoy sh -c "direnv allow; ./.envrc; yarn install"
-  sudo -u galoy make start-selfhosted-deps
-  sudo -u galoy make start-selfhosted-api
+  # build libs as in https://github.com/GaloyMoney/galoy/blob/main/Dockerfile
+  sudo -u galoy yarn install --frozen-lockfile
+  sudo -u galoy yarn build
+
+  # trigger.service
+  echo "\
+# Systemd unit for trigger.js
+# /etc/systemd/system/trigger.service
+
+[Unit]
+Description=trigger daemon
+Wants=lnd.service
+After=lnd.service
+
+[Service]
+WorkingDirectory=/home/galoy/galoy/
+ExecStart=sh -c '. ./.envrc.selfhosted && /usr/bin/node lib/servers/trigger.js'
+User=galoy
+Restart=on-failure
+TimeoutSec=120
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+# Hardening measures
+PrivateTmp=true
+ProtectSystem=full
+NoNewPrivileges=true
+PrivateDevices=true
+
+[Install]
+WantedBy=multi-user.target
+" | sudo tee /etc/systemd/system/trigger.service
+  sudo systemctl enable trigger
+  source <(/home/admin/_cache.sh get state)
+  if [ "${state}" == "ready" ]; then
+    echo "# OK - the trigger.service is enabled, system is ready so starting service"
+    sudo systemctl start trigger
+  else
+    echo "# OK - the trigger.service is enabled, to start manually use: 'sudo systemctl start trigger'"
+  fi
+
+  # cron,js
+  if [ $(crontab -u galoy -l | grep -c "lib/servers/cron.js") -eq 0 ]; then
+    echo "# Schedule cron.js"
+    cronjob="0 2 * * * /home/galoy/lib/servers/cron.js"
+    (crontab -u galoy -l; echo "$cronjob" ) | crontab -u galoy -
+  fi
+  echo "# The crontab for galoy now is:"
+  crontab -u galoy -l
+  echo
+
+  #TODO push notifications
+
+  # galoy-api.service
+  echo "\
+# Systemd unit for galoy-api
+# /etc/systemd/system/galoy-api.service
+
+[Unit]
+Description=galoy-api docker with deps
+Wants=lnd.service trigger.service
+After=lnd.service trigger.service
+
+[Service]
+WorkingDirectory=/home/galoy/galoy
+ExecStart=make start-selfhosted-api
+User=galoy
+Restart=on-failure
+TimeoutSec=120
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+# Hardening measures
+PrivateTmp=true
+ProtectSystem=full
+NoNewPrivileges=true
+PrivateDevices=true
+
+[Install]
+WantedBy=multi-user.target
+" | sudo tee /etc/systemd/system/galoy-api.service
+  sudo systemctl enable galoy-api.service
+  sudo systemctl start galoy-api.service
 
   ##############
   # Connections
   ##############
   # setup nginx symlinks
-  # http://localhost:4000/graphql (old API - deprecated)
-  # http://localhost:4001/graphql (admin API)
   # http://localhost:4002/graphql (new API)
-
-  # # galoy-admin-api_ssl - not active in Docker
-  # if ! [ -f /etc/nginx/sites-available/galoy-admin-api_ssl.conf ]; then
-  #   sudo cp /home/galoy/galoy/scripts/assets/galoy-admin-api_ssl.conf /etc/nginx/sites-available/galoy-admin-api_ssl.conf
-  # fi
-  # sudo ln -sf /etc/nginx/sites-available/galoy-admin-api_ssl.conf /etc/nginx/sites-enabled/
-  # sudo ufw allow 4011 comment "galoy-admin-api_ssl"
 
   DOCKER_HOST_IP=$(ip addr show docker0 | awk '/inet/ {print $2}' | cut -d'/' -f1)
   # galoy-api_ssl
@@ -175,21 +235,22 @@ if [ "$1" = "on" ]; then
   echo "# Monitor with: "
   echo "docker container logs -f --details galoy-api-1"
   localIP=$(hostname -I | awk '{print $1}')
-  # echo "# Connect to the Galoy admin API on: https://${localIP}:4011/graphql"
   echo "# Connect to the Galoy API on: https://${localIP}:4012/graphql"
 fi
 
 if [ "$1" = "off" ]; then
-  # galoy
+  #trigger
+  sudo systemctl stop trigger
+  sudo systemctl disable trigger
+
+  # galoy-api
+  sudo systemctl stop galoy-api
+  sudo systemctl disable galoy-api
   cd /home/galoy/galoy
-  sudo -u galoy docker compose down
-  sudo ufw deny 4011
+  docker compose -f docker-compose.selfhosted.yml down
   sudo ufw deny 4012
-  # /home/admin/config.scripts/tor.onion-service.sh off galoy-admin-api
-  sudo rm /etc/nginx/sites-available/galoy-admin-api_ssl.conf
   sudo rm /etc/nginx/sites-available/galoy-api_ssl.conf
   sudo rm /etc/nginx/sites-enabled/galoy-*
-
   # user
   sudo userdel -rf galoy
 

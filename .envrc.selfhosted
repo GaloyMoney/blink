@@ -56,10 +56,10 @@ export LNDONCHAIN_PUBKEY=${LND_PUBKEY:-$(fetch_pubkey lndonchain)}
 
 export BITCOINDPORT=18443
 export BITCOINDADDR=${DOCKER_HOST_IP}
-# TODO
-#RPCuser$(sudo cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcuser | cut -c 9-)
+#TODO
+#RPCuser=$(grep rpcuser < /mnt/hdd/bitcoin/bitcoin.conf | cut -c 9-)
 #export BITCOINDUSER=${RPCuser}
-RPCpassword=$(cat /mnt/hdd/bitcoin/bitcoin.conf | grep rpcpassword | cut -c 13-)
+RPCpassword=$(grep rpcpassword < /mnt/hdd/bitcoin/bitcoin.conf | cut -c 13-)
 export BITCOINDRPCPASS=${RPCpassword}
 
 export LND1_DNS=${DOCKER_HOST_IP}
@@ -75,22 +75,18 @@ export LNDONCHAIN_RPCPORT=${LNDRPCPORT}
 export LNDOUTSIDE1RPCPORT=${LNDRPCPORT}
 export LNDOUTSIDE2RPCPORT=${LNDRPCPORT}
 
-#MONGODB_ADDRESS=$(docker container inspect -f '{{ .NetworkSettings.Networks.galoy_default.IPAddress }}' galoy-mongodb-1)
-#export MONGODB_ADDRESS="${MONGODB_ADDRESS:-${DOCKER_HOST_IP}}:27017"
 export MONGODB_ADDRESS="${DOCKER_HOST_IP}:27017"
 export MONGODB_PASSWORD=password
 
-#TODO detect local redis
-# REDIS_ADDRESS=$(docker container inspect -f '{{ .NetworkSettings.Networks.galoy_default.IPAddress }}' galoy-redis-1)
-# export REDIS_0_INTERNAL_IP=${REDIS_ADDRESS:-${DOCKER_HOST_IP}}
+
 export REDIS_0_INTERNAL_IP=${DOCKER_HOST_IP}
 export REDIS_0_PORT=6379
-export REDIS_0_DNS=${REDIS_ADDRESS:-${DOCKER_HOST_IP}}
+export REDIS_0_DNS=${DOCKER_HOST_IP}}
 export REDIS_0_SENTINEL_PORT=26379
 
 PRICE_ADDRESS=$(docker container inspect -f '{{ .NetworkSettings.Networks.galoy_default.IPAddress }}' galoy-price-1)
 export PRICE_ADDRESS=${PRICE_ADDRESS:-${DOCKER_HOST_IP}}
-#export PRICE_ADDRESS=${DOCKER_HOST_IP}
+
 export PRICE_PORT=50051
 
 export APOLLO_KEY=${APOLLO_KEY:-test}
