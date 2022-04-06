@@ -1,13 +1,16 @@
-import { getRewardsConfig } from "@config"
 import {
   MissingPhoneMetadataError,
   InvalidPhoneMetadataTypeError,
   InvalidPhoneMetadataCountryError,
 } from "@domain/errors"
 
-export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
-  const { denyPhoneCountries, allowPhoneCountries } = getRewardsConfig()
-
+export const PhoneMetadataValidator = ({
+  denyPhoneCountries,
+  allowPhoneCountries,
+}: {
+  denyPhoneCountries: string[]
+  allowPhoneCountries: string[]
+}): PhoneMetadataValidator => {
   const validateForReward = (phoneMetadata?: PhoneMetadata): true | ApplicationError => {
     if (!phoneMetadata || !phoneMetadata.carrier || !phoneMetadata.countryCode)
       return new MissingPhoneMetadataError()

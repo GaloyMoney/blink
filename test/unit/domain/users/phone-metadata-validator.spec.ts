@@ -1,4 +1,4 @@
-import { yamlConfig } from "@config"
+import { getRewardsConfig, yamlConfig } from "@config"
 import {
   InvalidPhoneMetadataCountryError,
   InvalidPhoneMetadataTypeError,
@@ -15,11 +15,11 @@ beforeEach(async () => {
 
 describe("PhoneMetadataValidator - validateForReward", () => {
   it("returns true for empty config", () => {
-    yamlConfig.rewards = {
+    const config = {
       denyPhoneCountries: [],
       allowPhoneCountries: [],
     }
-    const validatorSV = PhoneMetadataValidator().validateForReward({
+    const validatorSV = PhoneMetadataValidator(config).validateForReward({
       carrier: {
         error_code: "",
         mobile_country_code: "",
@@ -33,7 +33,7 @@ describe("PhoneMetadataValidator - validateForReward", () => {
   })
 
   it("returns true for a valid country", () => {
-    const validatorSV = PhoneMetadataValidator().validateForReward({
+    const validatorSV = PhoneMetadataValidator(getRewardsConfig()).validateForReward({
       carrier: {
         error_code: "",
         mobile_country_code: "",
@@ -45,7 +45,7 @@ describe("PhoneMetadataValidator - validateForReward", () => {
     })
     expect(validatorSV).toBe(true)
 
-    const validatorSV1 = PhoneMetadataValidator().validateForReward({
+    const validatorSV1 = PhoneMetadataValidator(getRewardsConfig()).validateForReward({
       carrier: {
         error_code: "",
         mobile_country_code: "",
@@ -57,7 +57,7 @@ describe("PhoneMetadataValidator - validateForReward", () => {
     })
     expect(validatorSV1).toBe(true)
 
-    const validatorUS = PhoneMetadataValidator().validateForReward({
+    const validatorUS = PhoneMetadataValidator(getRewardsConfig()).validateForReward({
       carrier: {
         error_code: "",
         mobile_country_code: "",
@@ -69,11 +69,11 @@ describe("PhoneMetadataValidator - validateForReward", () => {
     })
     expect(validatorUS).toBe(true)
 
-    yamlConfig.rewards = {
+    const config = {
       denyPhoneCountries: ["AF"],
       allowPhoneCountries: [],
     }
-    const validatorIN = PhoneMetadataValidator().validateForReward({
+    const validatorIN = PhoneMetadataValidator(config).validateForReward({
       carrier: {
         error_code: "",
         mobile_country_code: "",
@@ -87,7 +87,7 @@ describe("PhoneMetadataValidator - validateForReward", () => {
   })
 
   it("returns error for invalid country", () => {
-    const validator = PhoneMetadataValidator().validateForReward({
+    const validator = PhoneMetadataValidator(getRewardsConfig()).validateForReward({
       carrier: {
         error_code: "",
         mobile_country_code: "",
@@ -99,11 +99,11 @@ describe("PhoneMetadataValidator - validateForReward", () => {
     })
     expect(validator).toBeInstanceOf(InvalidPhoneMetadataCountryError)
 
-    yamlConfig.rewards = {
+    const config = {
       denyPhoneCountries: ["AF"],
       allowPhoneCountries: [],
     }
-    const validatorAF = PhoneMetadataValidator().validateForReward({
+    const validatorAF = PhoneMetadataValidator(config).validateForReward({
       carrier: {
         error_code: "",
         mobile_country_code: "",
@@ -117,11 +117,11 @@ describe("PhoneMetadataValidator - validateForReward", () => {
   })
 
   it("returns error for allowed and denied country", () => {
-    yamlConfig.rewards = {
+    const config = {
       denyPhoneCountries: ["in"],
       allowPhoneCountries: ["in"],
     }
-    const validator = PhoneMetadataValidator().validateForReward({
+    const validator = PhoneMetadataValidator(config).validateForReward({
       carrier: {
         error_code: "",
         mobile_country_code: "",
@@ -136,13 +136,15 @@ describe("PhoneMetadataValidator - validateForReward", () => {
     expect(validator).toBeInstanceOf(InvalidPhoneMetadataCountryError)
   })
 
-  it("returns error with null metadata", () => {
-    const validator = PhoneMetadataValidator().validateForReward(undefined)
+  it("returns error with undefined metadata", () => {
+    const validator = PhoneMetadataValidator(getRewardsConfig()).validateForReward(
+      undefined,
+    )
     expect(validator).toBeInstanceOf(MissingPhoneMetadataError)
   })
 
   it("returns error with voip type", () => {
-    const validator = PhoneMetadataValidator().validateForReward({
+    const validator = PhoneMetadataValidator(getRewardsConfig()).validateForReward({
       carrier: {
         error_code: "",
         mobile_country_code: "",
