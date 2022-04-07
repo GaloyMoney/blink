@@ -3,6 +3,13 @@ type UserIPs = {
   lastIPs: IPType[]
 }
 
+type IPMetadataValidatorArgs = {
+  denyIPCountries: string[]
+  allowIPCountries: string[]
+  denyASNs: string[]
+  allowASNs: string[]
+}
+
 type IPMetadataValidator = {
   validateForReward(ipMetadata?: IPType): true | ApplicationError
 }

@@ -12,6 +12,7 @@ import { addWallet } from "@app/accounts/add-wallet"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { adminUsers } from "@domain/admin-users"
+import { UsersIpRepository } from "@services/mongoose/users-ips"
 
 const users = UsersRepository()
 
@@ -110,6 +111,27 @@ export const createUserAndWallet = async (entry) => {
       : undefined
     userRepo = await createUser({ phone, phoneMetadata })
     if (userRepo instanceof Error) throw userRepo
+
+    const lastConnection = new Date()
+    const ipInfo: IPType = {
+      ip: "89.187.173.251" as IpAddress,
+      firstConnection: lastConnection,
+      lastConnection: lastConnection,
+      asn: "AS60068",
+      provider: "ISP",
+      country: "United States",
+      isoCode: "US",
+      region: "Florida",
+      city: "Miami",
+      proxy: false,
+    }
+
+    const userIP = await UsersIpRepository().findById(userRepo.id)
+    if (userIP instanceof Error) throw userIP
+
+    userIP.lastIPs.push(ipInfo)
+    const result = await UsersIpRepository().update(userIP)
+    if (result instanceof Error) throw result
 
     if (entry.needUsdWallet) {
       await addWallet({
