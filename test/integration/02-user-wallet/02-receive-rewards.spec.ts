@@ -33,7 +33,12 @@ const onBoardingEarnAmt: number = Object.keys(onboardingEarn)
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")
   config.yamlConfig.rewards = {
+    denyPhoneCountries: [],
     allowPhoneCountries: ["US"],
+    denyIPCountries: [],
+    allowIPCountries: [],
+    denyASNs: [],
+    allowASNs: [],
   }
   return config
 })
