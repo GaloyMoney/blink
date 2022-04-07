@@ -15,7 +15,7 @@ rewards:
   denyPhoneCountries: []
   allowPhoneCountries: [SV]
   denyIPCountries: []
-  allowIPCountries: [SV, US]
+  allowIPCountries: []
   denyASNs: []
   allowASNs: []
 
