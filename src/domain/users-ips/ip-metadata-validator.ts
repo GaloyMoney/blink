@@ -1,4 +1,3 @@
-import { getRewardsConfig } from "@config"
 import {
   MissingIPMetadataError,
   InvalidIPMetadataCountryError,
@@ -6,9 +5,17 @@ import {
   InvalidIPMetadataASNError,
 } from "@domain/errors"
 
-export const IPMetadataValidator = (): IPMetadataValidator => {
-  const { denyIPCountries, allowIPCountries, denyASNs, allowASNs } = getRewardsConfig()
-
+export const IPMetadataValidator = ({
+  denyIPCountries,
+  allowIPCountries,
+  denyASNs,
+  allowASNs,
+}: {
+  denyIPCountries: string[]
+  allowIPCountries: string[]
+  denyASNs: string[]
+  allowASNs: string[]
+}): IPMetadataValidator => {
   const validateForReward = (ipMetadata?: IPType): true | ApplicationError => {
     if (!ipMetadata || !ipMetadata.isoCode || !ipMetadata.asn)
       return new MissingIPMetadataError()

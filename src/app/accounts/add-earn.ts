@@ -53,7 +53,7 @@ export const addEarn = async ({
 
   const lastIPs = userIps.lastIPs
   const lastIp = lastIPs.length > 0 ? lastIPs[lastIPs.length - 1] : undefined
-  const validatedIPMetadata = IPMetadataValidator().validateForReward(lastIp)
+  const validatedIPMetadata = IPMetadataValidator(rewardsConfig).validateForReward(lastIp)
   if (validatedIPMetadata instanceof Error)
     return new InvalidIPMetadataForRewardError(validatedIPMetadata.name)
 
