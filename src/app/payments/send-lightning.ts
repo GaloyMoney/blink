@@ -316,6 +316,7 @@ const validateNoAmountInvoicePaymentInputs = async ({
 
   if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
     const builderWithConversion = await constructPaymentFlowBuilder({
+      uncheckedAmount: amount,
       senderWallet,
       invoice: decodedInvoice,
       usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
