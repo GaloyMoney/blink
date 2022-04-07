@@ -344,6 +344,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       senderWalletCurrency: state.senderWalletCurrency,
       recipientWalletId: state.recipientWalletId,
       recipientWalletCurrency: state.recipientWalletCurrency,
+      recipientPubkey: state.recipientPubkey,
       recipientUsername: state.recipientUsername,
 
       paymentHash: state.paymentHash,
