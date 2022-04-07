@@ -35,7 +35,7 @@ export const PaymentFlowStateRepository = (
   }): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError> => {
     try {
       const result = await PaymentFlowState.findOne({
-        walletId,
+        senderWalletId: walletId,
         paymentHash,
         inputAmount: Number(inputAmount),
       })
