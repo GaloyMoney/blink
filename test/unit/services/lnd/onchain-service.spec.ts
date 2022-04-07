@@ -7,8 +7,8 @@ import {
 
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")
-  config.getLndParams = () => []
-  return config
+  const getLndParams = (): LndParams[] => []
+  return { ...config, getLndParams }
 })
 
 afterAll(async () => {

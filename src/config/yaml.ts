@@ -1,22 +1,22 @@
 import fs from "fs"
 
+import Ajv from "ajv"
+
 import yaml from "js-yaml"
 import merge from "lodash.merge"
 
 import { baseLogger } from "@services/logger"
 import { checkedToScanDepth } from "@domain/bitcoin/onchain"
 import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
-import Ajv from "ajv"
 import { toCents } from "@domain/fiat"
 
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
-import { ConfigSchema, configSchema } from "./schema"
+import { ConfigSchema, configSchema, RewardsConfigSchema } from "./schema"
 import { ConfigError } from "./error"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 const defaultConfig = yaml.load(defaultContent)
-
 let customContent, customConfig
 
 try {
@@ -211,3 +211,12 @@ export const getCronConfig = (config = yamlConfig): CronConfig => config.cronCon
 export const getKratosConfig = (config = yamlConfig): KratosConfig => config.kratosConfig
 
 export const getCaptcha = (config = yamlConfig): CaptchaConfig => config.captcha
+
+export const getRewardsConfig = (): RewardsConfigSchema => {
+  const denyPhoneCountries = yamlConfig.rewards.denyPhoneCountries || []
+  const allowPhoneCountries = yamlConfig.rewards.allowPhoneCountries || []
+  return {
+    denyPhoneCountries: denyPhoneCountries.map((c) => c.toUpperCase()),
+    allowPhoneCountries: allowPhoneCountries.map((c) => c.toUpperCase()),
+  }
+}

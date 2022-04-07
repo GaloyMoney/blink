@@ -73,6 +73,7 @@ export class RebalanceNeededError extends ValidationError {}
 export class InvalidQuizQuestionIdError extends ValidationError {}
 export class MissingPhoneMetadataError extends ValidationError {}
 export class InvalidPhoneMetadataTypeError extends ValidationError {}
+export class InvalidPhoneMetadataCountryError extends ValidationError {}
 export class InvalidPhoneMetadataForRewardError extends ValidationError {}
 export class InvalidLanguageError extends ValidationError {}
 export class InvalidAccountLevelError extends ValidationError {}

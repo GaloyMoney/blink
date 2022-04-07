@@ -30,6 +30,14 @@ const onBoardingEarnAmt: number = Object.keys(onboardingEarn)
   .filter((k) => find(onBoardingEarnIds, (o) => o === k))
   .reduce((p, k) => p + onboardingEarn[k], 0)
 
+jest.mock("@config", () => {
+  const config = jest.requireActual("@config")
+  config.yamlConfig.rewards = {
+    allowPhoneCountries: ["US"],
+  }
+  return config
+})
+
 beforeAll(async () => {
   await createUserAndWalletFromUserRef("B")
 
@@ -37,6 +45,10 @@ beforeAll(async () => {
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
 
   await createMandatoryUsers()
+})
+
+afterAll(async () => {
+  jest.restoreAllMocks()
 })
 
 describe("UserWallet - addEarn", () => {

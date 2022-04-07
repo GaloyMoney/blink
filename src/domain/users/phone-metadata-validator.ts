@@ -1,15 +1,34 @@
-import { MissingPhoneMetadataError, InvalidPhoneMetadataTypeError } from "@domain/errors"
+import {
+  MissingPhoneMetadataError,
+  InvalidPhoneMetadataTypeError,
+  InvalidPhoneMetadataCountryError,
+} from "@domain/errors"
 
-export const PhoneMetadataValidator = (): PhoneMetadataValidator => {
-  const validate = (phoneMetadata?: PhoneMetadata): true | ApplicationError => {
-    if (!phoneMetadata || !phoneMetadata.carrier) return new MissingPhoneMetadataError()
+export const PhoneMetadataValidator = ({
+  denyPhoneCountries,
+  allowPhoneCountries,
+}: {
+  denyPhoneCountries: string[]
+  allowPhoneCountries: string[]
+}): PhoneMetadataValidator => {
+  const validateForReward = (phoneMetadata?: PhoneMetadata): true | ApplicationError => {
+    if (!phoneMetadata || !phoneMetadata.carrier || !phoneMetadata.countryCode)
+      return new MissingPhoneMetadataError()
 
     if (phoneMetadata.carrier.type === "voip") return new InvalidPhoneMetadataTypeError()
+
+    const countryCode = phoneMetadata.countryCode.toUpperCase()
+    const allowed =
+      allowPhoneCountries.length <= 0 || allowPhoneCountries.includes(countryCode)
+    const denied =
+      denyPhoneCountries.length > 0 && denyPhoneCountries.includes(countryCode)
+
+    if (!allowed || denied) return new InvalidPhoneMetadataCountryError()
 
     return true
   }
 
   return {
-    validate,
+    validateForReward,
   }
 }

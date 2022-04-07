@@ -1,5 +1,5 @@
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
-import { onboardingEarn } from "@config"
+import { getRewardsConfig, onboardingEarn } from "@config"
 import {
   InvalidPhoneMetadataForRewardError,
   InvalidQuizQuestionIdError,
@@ -12,6 +12,8 @@ import {
   AccountsRepository,
   UsersRepository,
 } from "@services/mongoose"
+
+const rewardsConfig = getRewardsConfig()
 
 export const addEarn = async ({
   quizQuestionId,
@@ -37,7 +39,9 @@ export const addEarn = async ({
   const user = await UsersRepository().findById(recipientAccount.ownerId)
   if (user instanceof Error) return user
 
-  const validatedPhoneMetadata = PhoneMetadataValidator().validate(user.phoneMetadata)
+  const validatedPhoneMetadata = PhoneMetadataValidator(rewardsConfig).validateForReward(
+    user.phoneMetadata,
+  )
   if (validatedPhoneMetadata instanceof Error)
     return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
 
