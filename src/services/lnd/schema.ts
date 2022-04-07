@@ -50,7 +50,7 @@ const paymentSchema = new Schema<LnPaymentType>({
     type: String,
     required: true,
   },
-  milliSatsAmount: String,
+  milliSatsAmount: Number,
   roundedUpAmount: Number,
   confirmedDetails: confirmedDetailsSchema,
   attempts: [paymentAttemptSchema],

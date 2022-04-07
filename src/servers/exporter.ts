@@ -152,7 +152,7 @@ const main = async () => {
         wallet.gauge.set(balance)
       }
 
-      business_g.set(await User.count({ title: { $ne: null } }))
+      business_g.set(await User.count({ title: { $ne: undefined } }))
 
       try {
         let balances = await ColdStorage.getBalances()
