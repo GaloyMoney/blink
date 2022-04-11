@@ -226,7 +226,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         walletId: WalletId
         type: NotificationType
       }) => {
-        const wallet = await WalletsRepository().findById(senderWalletId)
+        const wallet = await WalletsRepository().findById(walletId)
         if (wallet instanceof Error) return wallet
 
         const account = await AccountsRepository().findById(wallet.accountId)
