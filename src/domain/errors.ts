@@ -66,8 +66,6 @@ export class InsufficientBalanceError extends ValidationError {}
 export class BalanceLessThanZeroError extends ValidationError {}
 export class InvalidTargetConfirmations extends ValidationError {}
 export class NoContactForUsernameError extends ValidationError {}
-export class LnPaymentRequestNonZeroAmountRequiredError extends ValidationError {}
-export class LnPaymentRequestZeroAmountRequiredError extends ValidationError {}
 export class NoWalletExistsForUserError extends ValidationError {}
 export class RebalanceNeededError extends ValidationError {}
 export class InvalidQuizQuestionIdError extends ValidationError {}

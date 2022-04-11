@@ -16,10 +16,12 @@ import {
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
 import {
-  AlreadyPaidError,
-  InsufficientBalanceError,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
+} from "@domain/payments"
+import {
+  AlreadyPaidError,
+  InsufficientBalanceError,
   NotImplementedError,
   NotReachableError,
 } from "@domain/errors"
