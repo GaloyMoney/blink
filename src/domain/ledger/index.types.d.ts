@@ -175,6 +175,12 @@ type FeeReimbursement = {
   getReimbursement(actualFee: Satoshis): Satoshis | FeeDifferenceError
 }
 
+type NewFeeReimbursement = {
+  getReimbursement(
+    actualFee: BtcPaymentAmount,
+  ): { btc: BtcPaymentAmount; usd: UsdPaymentAmount } | FeeDifferenceError
+}
+
 type TxBaseVolume = {
   outgoingBaseAmount: CurrencyBaseAmount
   incomingBaseAmount: CurrencyBaseAmount

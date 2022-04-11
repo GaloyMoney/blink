@@ -1,17 +1,12 @@
 import { getCurrentPrice } from "@app/prices"
-import { toSats } from "@domain/bitcoin"
 import { DealerPriceServiceError } from "@domain/dealer-price"
 import {
   DisplayCurrencyConverter,
   toDisplayCurrencyBaseAmount,
 } from "@domain/fiat/display-currency"
 import { LedgerTransactionType } from "@domain/ledger"
-import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
-import {
-  paymentAmountFromCents,
-  paymentAmountFromSats,
-  WalletCurrency,
-} from "@domain/shared"
+import { FeeReimbursement, NewFeeReimbursement } from "@domain/ledger/fee-reimbursement"
+import { paymentAmountFromSats, WalletCurrency } from "@domain/shared"
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 
@@ -100,24 +95,32 @@ export const newReimburseFee = async ({
   revealedPreImage?: RevealedPreImage
   logger: Logger
 }): Promise<true | ApplicationError> => {
-  const maxFee = toSats(Number(paymentFlow.btcProtocolFee.amount))
-  const feeDifference = FeeReimbursement(maxFee).getReimbursement(actualFee)
+  const actualFeeAmount = paymentAmountFromSats(actualFee)
 
+  const maxFeeAmounts = {
+    btc: paymentFlow.btcProtocolFee,
+    usd: paymentFlow.usdProtocolFee,
+  }
+
+  const feeDifference =
+    NewFeeReimbursement(maxFeeAmounts).getReimbursement(actualFeeAmount)
   if (feeDifference instanceof Error) {
-    logger.warn({ maxFee, actualFee }, `Invalid reimbursement fee`)
+    logger.warn(
+      { maxFee: maxFeeAmounts, actualFee: actualFeeAmount },
+      `Invalid reimbursement fee`,
+    )
     return true
   }
 
   // TODO: only reimburse fees is this is above a (configurable) threshold
   // ie: adding an entry for 1 sat fees may not be the best scalability wise for the db
-  if (feeDifference === 0) {
+  if (feeDifference.btc.amount === 0n) {
     return true
   }
 
-  const cents = await DealerPriceService().getCentsFromSatsForImmediateBuy(feeDifference)
-  if (cents instanceof DealerPriceServiceError) return cents
-
-  const amountDisplayCurrency = Number(cents) as DisplayCurrencyBaseAmount
+  const amountDisplayCurrency = Number(
+    feeDifference.usd.amount,
+  ) as DisplayCurrencyBaseAmount
 
   const metadata: FeeReimbursementLedgerMetadata = {
     hash: paymentFlow.paymentHash,
@@ -133,7 +136,12 @@ export const newReimburseFee = async ({
   }
 
   logger.info(
-    { feeDifference, maxFee, actualFee, paymentHash: paymentFlow.paymentHash, cents },
+    {
+      feeDifference,
+      maxFee: maxFeeAmounts,
+      actualFee,
+      paymentHash: paymentFlow.paymentHash,
+    },
     "logging a fee difference",
   )
 
@@ -141,8 +149,8 @@ export const newReimburseFee = async ({
     description: "fee reimbursement",
     receiverWalletDescriptor: paymentFlow.senderWalletDescriptor(),
     amount: {
-      usdWithFee: paymentAmountFromCents(cents),
-      btcWithFee: paymentAmountFromSats(feeDifference),
+      usdWithFee: feeDifference.usd,
+      btcWithFee: feeDifference.btc,
     },
     metadata,
     txMetadata,
