@@ -5,6 +5,7 @@ import { Wallets, Lightning } from "@app"
 import { delete2fa } from "@app/users"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
 import {
+  defaultTimeToExpiryInSeconds,
   LightningServiceError,
   PaymentSendStatus,
   PaymentStatus,
@@ -1213,7 +1214,10 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(paymentResult).toBe(PaymentSendStatus.Success)
 
       const dealerFns = DealerPriceService()
-      const sats = await dealerFns.getSatsFromCentsForImmediateBuy(amountPayment)
+      const sats = await dealerFns.getSatsFromCentsForFutureBuy(
+        amountPayment,
+        defaultTimeToExpiryInSeconds,
+      )
       if (sats instanceof Error) throw sats
 
       const finalBalanceB = await getBalanceHelper(walletIdUsdB)
