@@ -106,6 +106,13 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "A valid satoshi amount is required"
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "InvalidBtcPaymentAmountError":
+      message = "A valid satoshi amount is required"
+      return new ValidationInternalError({ message, logger: baseLogger })
+    case "InvalidUsdPaymentAmountError":
+      message = "A valid usd amount is required"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "LnPaymentRequestNonZeroAmountRequiredError":
       message = "Invoice does not have a valid amount to pay"
       return new ValidationInternalError({ message, logger: baseLogger })
@@ -272,6 +279,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "NoContactForUsernameError":
     case "NoWalletExistsForUserError":
     case "LimitsExceededError":
+    case "CouldNotFindLightningPaymentFlowError":
     case "CouldNotFindWalletFromIdError":
     case "CouldNotListWalletsFromAccountIdError":
     case "CouldNotFindWalletFromUsernameError":
@@ -351,6 +359,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CouldNotFindUserFromKratosIdError":
     case "MissingPhoneError":
     case "InvalidKratosUserId":
+    case "InvalidLightningPaymentFlowBuilderStateError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 
