@@ -1,8 +1,6 @@
-import { AmountCalculator, WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@domain/shared"
 
 import { coldStorageAccountDescriptor, lndLedgerAccountDescriptor } from "./accounts"
-
-const calc = AmountCalculator()
 
 export const EntryBuilder = <M extends MediciEntry>({
   staticAccountIds,
