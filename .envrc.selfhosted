@@ -1,6 +1,7 @@
 #!/bin/bash
 
-DOCKER_HOST_IP=$(ip addr show docker0 | awk '/inet/ {print $2}' | cut -d'/' -f1)
+#DOCKER_HOST_IP=$(ip addr show docker0 | awk '/inet/ {print $2}' | head -1 | cut -d'/' -f1)
+DOCKER_HOST_IP=172.17.0.1
 export DOCKER_HOST_IP=${DOCKER_HOST_IP:-127.0.0.1}
 export NETWORK=testnet
 export NODE_ENV=production
