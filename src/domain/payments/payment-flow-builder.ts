@@ -215,19 +215,19 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
 
     if (noConversionRequired) {
       if (btcPaymentAmount && btcProtocolFee) {
-        if (usdPaymentAmount && usdProtocolFee) {
-          return LPFBWithConversion(
-            new Promise((res) =>
-              res({
-                ...state,
-                btcPaymentAmount,
-                usdPaymentAmount,
-                btcProtocolFee,
-                usdProtocolFee,
-              }),
-            ),
-          )
-        }
+        // if (usdPaymentAmount && usdProtocolFee) {
+        //   return LPFBWithConversion(
+        //     new Promise((res) =>
+        //       res({
+        //         ...state,
+        //         btcPaymentAmount,
+        //         usdPaymentAmount,
+        //         btcProtocolFee,
+        //         usdProtocolFee,
+        //       }),
+        //     ),
+        //   )
+        // }
         return LPFBWithConversion(
           state.usdFromBtcMidPriceFn(btcPaymentAmount).then((convertedAmount) => {
             if (convertedAmount instanceof Error) {
