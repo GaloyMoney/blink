@@ -5,16 +5,16 @@ import * as LedgerFacade from "@services/ledger/facade"
 
 describe("Facade", () => {
   const receiveAmount = {
-    usdWithFee: { amount: 100n, currency: WalletCurrency.Usd },
-    btcWithFee: { amount: 200n, currency: WalletCurrency.Btc },
+    usd: { amount: 100n, currency: WalletCurrency.Usd },
+    btc: { amount: 200n, currency: WalletCurrency.Btc },
   }
   const sendAmount = {
-    usdWithFee: { amount: 20n, currency: WalletCurrency.Usd },
-    btcWithFee: { amount: 40n, currency: WalletCurrency.Btc },
+    usd: { amount: 20n, currency: WalletCurrency.Usd },
+    btc: { amount: 40n, currency: WalletCurrency.Btc },
   }
-  const fee = {
-    usdProtocolFee: { amount: 10n, currency: WalletCurrency.Usd },
-    btcProtocolFee: { amount: 20n, currency: WalletCurrency.Btc },
+  const bankFee = {
+    usd: { amount: 10n, currency: WalletCurrency.Usd },
+    btc: { amount: 20n, currency: WalletCurrency.Btc },
   }
   const walletDescriptor1 = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
   const walletDescriptor2 = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
@@ -23,21 +23,19 @@ describe("Facade", () => {
     it("receives to btc wallet", async () => {
       const metadata = LedgerFacade.LnReceiveLedgerMetadata({
         paymentHash: crypto.randomUUID() as PaymentHash,
-        fee: fee.btcProtocolFee,
-        feeDisplayCurrency: Number(
-          fee.usdProtocolFee.amount,
-        ) as DisplayCurrencyBaseAmount,
+        fee: bankFee.btc,
+        feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
         amountDisplayCurrency: Number(
-          receiveAmount.usdWithFee.amount,
+          receiveAmount.usd.amount,
         ) as DisplayCurrencyBaseAmount,
         pubkey: crypto.randomUUID() as Pubkey,
       })
 
       await LedgerFacade.recordReceive({
         description: "receives bitcoin",
-        amount: receiveAmount,
+        amountToCreditReceiver: receiveAmount,
         receiverWalletDescriptor: walletDescriptor1,
-        fee,
+        bankFee,
         metadata,
       })
 
@@ -48,7 +46,7 @@ describe("Facade", () => {
       if (balance instanceof Error) throw balance
       expect(balance).toEqual(
         expect.objectContaining({
-          amount: receiveAmount.btcWithFee.amount - fee.btcProtocolFee.amount,
+          amount: receiveAmount.btc.amount,
           currency: WalletCurrency.Btc,
         }),
       )
@@ -65,12 +63,10 @@ describe("Facade", () => {
 
       const metadata = LedgerFacade.LnSendLedgerMetadata({
         paymentHash: crypto.randomUUID() as PaymentHash,
-        fee: fee.btcProtocolFee,
-        feeDisplayCurrency: Number(
-          fee.usdProtocolFee.amount,
-        ) as DisplayCurrencyBaseAmount,
+        fee: bankFee.btc,
+        feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
         amountDisplayCurrency: Number(
-          receiveAmount.usdWithFee.amount,
+          receiveAmount.usd.amount,
         ) as DisplayCurrencyBaseAmount,
         pubkey: crypto.randomUUID() as Pubkey,
         feeKnownInAdvance: true,
@@ -78,9 +74,9 @@ describe("Facade", () => {
 
       await LedgerFacade.recordSend({
         description: "sends bitcoin",
-        amount: sendAmount,
+        amountToDebitSender: sendAmount,
         senderWalletDescriptor: walletDescriptor1,
-        fee,
+        bankFee,
         metadata,
       })
 
@@ -91,7 +87,7 @@ describe("Facade", () => {
       if (balance instanceof Error) throw balance
       expect(balance).toEqual(
         expect.objectContaining({
-          amount: startingBalance.amount - sendAmount.btcWithFee.amount,
+          amount: startingBalance.amount - sendAmount.btc.amount,
           currency: WalletCurrency.Btc,
         }),
       )
@@ -110,7 +106,7 @@ describe("Facade", () => {
         LedgerFacade.LnIntraledgerLedgerMetadata({
           paymentHash: crypto.randomUUID() as PaymentHash,
           amountDisplayCurrency: Number(
-            receiveAmount.usdWithFee.amount,
+            receiveAmount.usd.amount,
           ) as DisplayCurrencyBaseAmount,
           pubkey: crypto.randomUUID() as Pubkey,
         })
@@ -135,13 +131,13 @@ describe("Facade", () => {
 
       expect(finishBalanceSender).toEqual(
         expect.objectContaining({
-          amount: startingBalanceSender.amount - sendAmount.btcWithFee.amount,
+          amount: startingBalanceSender.amount - sendAmount.btc.amount,
           currency: WalletCurrency.Btc,
         }),
       )
       expect(finishBalanceReceiver).toEqual(
         expect.objectContaining({
-          amount: sendAmount.usdWithFee.amount,
+          amount: sendAmount.usd.amount,
           currency: WalletCurrency.Usd,
         }),
       )
