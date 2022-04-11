@@ -449,8 +449,8 @@ const executePaymentViaIntraledger = async ({
         return LedgerFacade.recordIntraledger({
           description: paymentFlow.descriptionFromInvoice,
           amount: {
-            btcWithFee: paymentFlow.btcPaymentAmount,
-            usdWithFee: paymentFlow.usdPaymentAmount,
+            btc: paymentFlow.btcPaymentAmount,
+            usd: paymentFlow.usdPaymentAmount,
           },
           senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
           receiverWalletDescriptor,
@@ -563,13 +563,13 @@ const executePaymentViaLn = async ({
 
         return LedgerFacade.recordSend({
           description: paymentFlow.descriptionFromInvoice,
-          amount: {
-            btcWithFee: {
+          amountToDebitSender: {
+            btc: {
               currency: paymentFlow.btcPaymentAmount.currency,
               amount:
                 paymentFlow.btcPaymentAmount.amount + paymentFlow.btcProtocolFee.amount,
             },
-            usdWithFee: {
+            usd: {
               currency: paymentFlow.usdPaymentAmount.currency,
               amount:
                 paymentFlow.usdPaymentAmount.amount + paymentFlow.usdProtocolFee.amount,
