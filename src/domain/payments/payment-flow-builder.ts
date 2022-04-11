@@ -207,13 +207,27 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
   }): LPFBWithConversion<S, R> | LPFBWithError => {
     const { btcPaymentAmount, usdPaymentAmount, btcProtocolFee, usdProtocolFee } = state
     // Use mid price when no buy / sell required
-    if (
+    const noConversionRequired =
       (state.senderWalletCurrency === WalletCurrency.Btc &&
         state.settlementMethod === SettlementMethod.Lightning) ||
-      (state.senderWalletCurrency as unknown) ===
-        (state.recipientWalletCurrency as unknown)
-    ) {
+      (state.senderWalletCurrency as WalletCurrency) ===
+        (state.recipientWalletCurrency as WalletCurrency)
+
+    if (noConversionRequired) {
       if (btcPaymentAmount && btcProtocolFee) {
+        if (usdPaymentAmount && usdProtocolFee) {
+          return LPFBWithConversion(
+            new Promise((res) =>
+              res({
+                ...state,
+                btcPaymentAmount,
+                usdPaymentAmount,
+                btcProtocolFee,
+                usdProtocolFee,
+              }),
+            ),
+          )
+        }
         return LPFBWithConversion(
           state.usdFromBtcMidPriceFn(btcPaymentAmount).then((convertedAmount) => {
             if (convertedAmount instanceof Error) {
