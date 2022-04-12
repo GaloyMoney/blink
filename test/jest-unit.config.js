@@ -26,4 +26,5 @@ module.exports = {
     "^@graphql/(.*)$": ["<rootDir>src/graphql/$1"],
     "^test/(.*)$": ["<rootDir>test/$1"],
   },
+  maxWorkers: 1,
 }
