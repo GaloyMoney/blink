@@ -145,12 +145,18 @@ type ListLnPayments = (
   args: ListLnPaymentsArgs,
 ) => Promise<ListLnPaymentsResult | LightningError>
 
+type LightningServiceConfig = {
+  feeCapPercent: number
+}
+
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
 
   defaultPubkey(): Pubkey
 
   listActivePubkeys(): Pubkey[]
+
+  listAllPubkeys(): Pubkey[]
 
   findRouteForInvoice({
     decodedInvoice,
@@ -159,6 +165,14 @@ interface ILightningService {
     decodedInvoice: LnInvoice
     maxFee: Satoshis
   }): Promise<RawRoute | LightningServiceError>
+
+  findRouteForInvoiceNew({
+    invoice,
+    amount,
+  }: {
+    invoice: LnInvoice
+    amount?: BtcPaymentAmount
+  }): Promise<{ pubkey: Pubkey; rawRoute: RawRoute } | LightningServiceError>
 
   findRouteForNoAmountInvoice({
     decodedInvoice,
@@ -212,8 +226,8 @@ interface ILightningService {
     pubkey,
   }: {
     paymentHash: PaymentHash
-    rawRoute: RawRoute | null
-    pubkey: Pubkey | null
+    rawRoute: RawRoute | undefined
+    pubkey: Pubkey | undefined
   }): Promise<PayInvoiceResult | LightningServiceError>
 
   payInvoiceViaPaymentDetails({
@@ -222,7 +236,17 @@ interface ILightningService {
     maxFee,
   }: {
     decodedInvoice: LnInvoice
-    milliSatsAmount: MilliSatoshis
-    maxFee: Satoshis
+    milliSatsAmount: MilliSatoshis | bigint
+    maxFee: Satoshis | bigint
+  }): Promise<PayInvoiceResult | LightningServiceError>
+
+  newPayInvoiceViaPaymentDetails({
+    decodedInvoice,
+    btcPaymentAmount,
+    maxFeeAmount,
+  }: {
+    decodedInvoice: LnInvoice
+    btcPaymentAmount: BtcPaymentAmount
+    maxFeeAmount: BtcPaymentAmount
   }): Promise<PayInvoiceResult | LightningServiceError>
 }
