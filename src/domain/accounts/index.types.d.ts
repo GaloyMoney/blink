@@ -83,6 +83,16 @@ type LimitsChecker = {
   checkWithdrawal: LimitsCheckerFn
 }
 
+type AccountValidator = {
+  validateAccount({
+    account,
+    accountIdFromWallet,
+  }: {
+    account: Account
+    accountIdFromWallet: AccountId
+  }): true | ValidationError
+}
+
 interface IAccountsRepository {
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
