@@ -1,5 +1,7 @@
 import { SATS_PER_BTC, toSats } from "@domain/bitcoin"
+import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 import { CENTS_PER_USD, toCents, toCentsPerSatsRatio } from "@domain/fiat"
+import { paymentAmountFromCents, paymentAmountFromSats } from "@domain/shared"
 
 // simulated price at 20k btc/usd
 // or 50 sats per cents. 0.05 sat per cents
@@ -59,6 +61,74 @@ export const DealerPriceService = (): IDealerPriceService => ({
     toSats(
       (Math.floor(Number(amount) * getSellUsdQuoteFromCents) * timeToExpiryInSeconds) /
         timeToExpiryInSeconds,
+    ),
+  getCentsPerSatsExchangeMidRate: async (): Promise<CentsPerSatsRatio> =>
+    toCentsPerSatsRatio((baseRate * CENTS_PER_USD) / SATS_PER_BTC),
+})
+
+export const NewDealerPriceService = (
+  timeToExpiryInSeconds: Seconds = defaultTimeToExpiryInSeconds,
+): IDealerPriceServiceNew => ({
+  getCentsFromSatsForImmediateBuy: async (
+    amount: BtcPaymentAmount,
+  ): Promise<UsdPaymentAmount> =>
+    paymentAmountFromCents(toCents(Math.floor(Number(amount.amount) / buyImmediate))),
+  getCentsFromSatsForImmediateSell: async (
+    amount: BtcPaymentAmount,
+  ): Promise<UsdPaymentAmount> =>
+    paymentAmountFromCents(
+      toCents(Math.floor(Number(amount.amount) / sellUsdImmediateFromSats)),
+    ),
+  getCentsFromSatsForFutureBuy: async (
+    amount: BtcPaymentAmount,
+  ): Promise<UsdPaymentAmount> =>
+    paymentAmountFromCents(
+      toCents(
+        (Math.floor(Number(amount.amount) * getBuyUsdQuoteFromSats) *
+          timeToExpiryInSeconds) /
+          timeToExpiryInSeconds,
+      ),
+    ),
+  getCentsFromSatsForFutureSell: async (
+    amount: BtcPaymentAmount,
+  ): Promise<UsdPaymentAmount> =>
+    paymentAmountFromCents(
+      toCents(
+        (Math.floor(Number(amount.amount) * getSellUsdQuoteFromSats) *
+          timeToExpiryInSeconds) /
+          timeToExpiryInSeconds,
+      ),
+    ),
+
+  getSatsFromCentsForImmediateBuy: async (
+    amount: UsdPaymentAmount,
+  ): Promise<BtcPaymentAmount> =>
+    paymentAmountFromSats(
+      toSats(Math.floor(Number(amount.amount) * buyUsdImmediateFromCents)),
+    ),
+  getSatsFromCentsForImmediateSell: async (
+    amount: UsdPaymentAmount,
+  ): Promise<BtcPaymentAmount> =>
+    paymentAmountFromSats(toSats(Math.floor(Number(amount.amount) * sellUsdImmediate))),
+  getSatsFromCentsForFutureBuy: async (
+    amount: UsdPaymentAmount,
+  ): Promise<BtcPaymentAmount> =>
+    paymentAmountFromSats(
+      toSats(
+        (Math.floor(Number(amount.amount) * getBuyUsdQuoteFromCents) *
+          timeToExpiryInSeconds) /
+          timeToExpiryInSeconds,
+      ),
+    ),
+  getSatsFromCentsForFutureSell: async (
+    amount: UsdPaymentAmount,
+  ): Promise<BtcPaymentAmount> =>
+    paymentAmountFromSats(
+      toSats(
+        (Math.floor(Number(amount.amount) * getSellUsdQuoteFromCents) *
+          timeToExpiryInSeconds) /
+          timeToExpiryInSeconds,
+      ),
     ),
   getCentsPerSatsExchangeMidRate: async (): Promise<CentsPerSatsRatio> =>
     toCentsPerSatsRatio((baseRate * CENTS_PER_USD) / SATS_PER_BTC),
