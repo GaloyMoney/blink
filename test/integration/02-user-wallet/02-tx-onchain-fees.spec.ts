@@ -51,7 +51,7 @@ describe("UserWallet - getOnchainFee", () => {
     const account = await AccountsRepository().findById(wallet.accountId)
     if (account instanceof Error) throw account
 
-    expect(fee).toBeGreaterThan(account.withdrawFee)
+    expect(fee.totalFee).toBeGreaterThan(account.withdrawFee)
   })
 
   it("returns zero for an on us address", async () => {
