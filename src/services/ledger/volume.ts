@@ -38,6 +38,25 @@ const volumeFn =
   async (args) =>
     txVolumeSince({ ...args, txnGroup })
 
+const volumeAmountFn =
+  (txnGroup: TxnGroup): GetVolumeAmountSinceFn<WalletCurrency> =>
+  async (args) => {
+    const { walletId, timestamp, walletCurrency } = args
+    const volume = await txVolumeSince({ walletId, timestamp, txnGroup })
+    if (volume instanceof Error) return volume
+
+    return {
+      outgoingBaseAmount: {
+        amount: BigInt(volume.outgoingBaseAmount),
+        currency: walletCurrency,
+      },
+      incomingBaseAmount: {
+        amount: BigInt(volume.incomingBaseAmount),
+        currency: walletCurrency,
+      },
+    }
+  }
+
 const txVolumeSince = async ({
   walletId,
   timestamp,
@@ -92,4 +111,7 @@ export const volume = {
   allTxBaseVolumeSince: volumeFn("allTxBaseVolumeSince"),
   onChainTxBaseVolumeSince: volumeFn("onChainTxBaseVolumeSince"),
   lightningTxBaseVolumeSince: volumeFn("lightningTxBaseVolumeSince"),
+  allPaymentVolumeAmountSince: volumeAmountFn("lightningTxBaseVolumeSince"),
+  externalPaymentVolumeAmountSince: volumeAmountFn("lightningTxBaseVolumeSince"),
+  intraledgerTxBaseVolumeAmountSince: volumeAmountFn("lightningTxBaseVolumeSince"),
 }
