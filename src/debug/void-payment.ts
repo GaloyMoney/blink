@@ -26,10 +26,15 @@ const voidPayment = async (paymentHash: PaymentHash) => {
   const lndPayment = await lndService.lookupPayment({ paymentHash })
   if (lndPayment instanceof Error) return lndPayment
 
+  // this will be handled by trigger
+  if (lndPayment.status === PaymentStatus.Settled)
+    return new Error("Payment has been settled")
+
   // TODO: add timeout validation
-  if (lndPayment.status !== PaymentStatus.Pending)
-    return new Error("Payment has been handled")
-  if (payment.timestamp > new Date(Date.now() - 1296e6))
+  if (
+    lndPayment.status === PaymentStatus.Pending &&
+    payment.timestamp > new Date(Date.now() - 1296e6)
+  )
     return new Error("You need to wait at least 15 days to void a payment")
 
   const settled = await ledgerService.settlePendingLnPayment(paymentHash)
