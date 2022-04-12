@@ -711,7 +711,7 @@ describe("UserWallet - onChainPay", () => {
 
       const remainingLimit = await getRemainingTwoFALimit({
         walletId: walletIdA,
-        dCConverter,
+        satsToCents: dCConverter.fromSatsToCents,
       })
 
       const aboveThreshold = add(remainingLimit, toCents(10))
