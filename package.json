@@ -164,7 +164,9 @@
   "resolutions": {
     "**/**/ws": ">=7.4.6",
     "**/**/json-bigint": ">=1.0.0",
-    "**/**/mongoose": "~5.13.14"
+    "**/**/mongoose": "~5.13.14",
+    "**/**/lodash": ">=4.17.12",
+    "**/**/lodash.merge": ">=4.6.2"
   },
   "private": true
 }
