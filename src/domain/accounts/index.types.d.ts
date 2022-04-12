@@ -83,6 +83,24 @@ type LimitsChecker = {
   checkWithdrawal: LimitsCheckerFn
 }
 
+type NewLimiterCheckInputs = {
+  amount: UsdPaymentAmount
+  walletVolume: TxBaseVolumeAmount<WalletCurrency>
+}
+
+type NewLimitsCheckerFn = (
+  args: NewLimiterCheckInputs,
+) => Promise<true | LimitsExceededError>
+
+type AccountLimitsChecker = {
+  checkIntraledger: NewLimitsCheckerFn
+  checkWithdrawal: NewLimitsCheckerFn
+}
+
+type TwoFALimitsChecker = {
+  checkTwoFA: NewLimitsCheckerFn
+}
+
 type AccountValidator = {
   validateAccount({
     account,
