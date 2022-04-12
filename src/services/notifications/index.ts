@@ -8,6 +8,7 @@ import {
 import { toSats } from "@domain/bitcoin"
 import { lnPaymentStatusEvent } from "@domain/bitcoin/lightning"
 import { NotImplementedError } from "@domain/errors"
+import { toCents } from "@domain/fiat"
 import {
   accountUpdateEvent,
   NotificationsServiceError,
@@ -146,7 +147,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         type: NotificationType.LnInvoicePaid,
         user,
         logger,
-        sats,
+        sats: toSats(Number(sats)),
         paymentHash,
         displayCurrencyPerSat,
       })
@@ -191,7 +192,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         type: NotificationType.LnInvoicePaid,
         user,
         logger,
-        cents,
+        cents: toCents(Number(cents)),
         paymentHash,
         displayCurrencyPerSat,
       })
