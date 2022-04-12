@@ -99,6 +99,7 @@ type LnInvoice = {
   readonly description: string
   readonly cltvDelta: number | null
   readonly amount: Satoshis | null
+  readonly paymentAmount: BtcPaymentAmount | null
   readonly routeHints: Hop[][]
   readonly paymentSecret: PaymentIdentifyingSecret | null
   readonly features: LnInvoiceFeature[]
