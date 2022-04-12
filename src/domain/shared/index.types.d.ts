@@ -16,3 +16,5 @@ type WalletDescriptor<T extends WalletCurrency> = {
 
 type BtcPaymentAmount = PaymentAmount<"BTC">
 type UsdPaymentAmount = PaymentAmount<"USD">
+
+type RequireField<T, K extends keyof T> = T & Required<Pick<T, K>>
