@@ -1,5 +1,6 @@
 export * from "./errors"
 export * from "./payment-flow"
+export * from "./price-ratio"
 
 import { ValidationError, WalletCurrency } from "@domain/shared"
 
