@@ -226,7 +226,7 @@ WantedBy=multi-user.target
   fi
   sudo ln -sf /etc/nginx/sites-available/galoy-api_ssl.conf /etc/nginx/sites-enabled/
   # BACKEND_ADDRESS=$(docker container inspect -f '{{ .NetworkSettings.Networks.galoy_default.IPAddress }}' galoy-api-1)
-  sudo sed -i "s#proxy_pass http://127.0.0.1:4002;#proxy_pass http://$DOCKER_HOST_IP:4002;#g" /etc/nginx/sites-available/galoy-api_ssl.conf
+  # sudo sed -i "s#proxy_pass http://127.0.0.1:4002;#proxy_pass http://$DOCKER_HOST_IP:4002;#g" /etc/nginx/sites-available/galoy-api_ssl.conf
 
   sudo nginx -t || exit 1
   sudo systemctl reload nginx
