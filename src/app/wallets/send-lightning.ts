@@ -18,6 +18,7 @@ import {
 import {
   AlreadyPaidError,
   InsufficientBalanceError,
+  LnPaymentAlreadyRecordedError,
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
   NotImplementedError,
@@ -646,6 +647,10 @@ const executePaymentViaLn = async ({
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
     async (lock) => {
+      const recorded = await LedgerService().isLnTxRecorded(paymentHash)
+      if (recorded instanceof Error) return recorded
+      if (recorded) return new LnPaymentAlreadyRecordedError(paymentHash)
+
       const balance = await LedgerService().getWalletBalance(senderWallet.id)
       if (balance instanceof Error) return balance
 

@@ -51,6 +51,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invoice is already paid"
       return new LightningPaymentError({ message, logger: baseLogger })
 
+    case "LnPaymentAlreadyRecordedError":
+      message = "Invoice is already processed"
+      return new LightningPaymentError({ message, logger: baseLogger })
+
     case "CouldNotFindWalletInvoiceError":
       message = `User tried to pay invoice with hash ${error.message}, but it does not exist`
       return new LightningPaymentError({ message, logger: baseLogger })

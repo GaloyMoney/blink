@@ -12,6 +12,7 @@ import {
 import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   LimitsExceededError,
+  LnPaymentAlreadyRecordedError,
   SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
 import { ValidationError } from "@domain/shared"
@@ -721,8 +722,7 @@ describe("UserWallet - Lightning Pay", () => {
         const result = await fn({ account: accountB, walletId: walletIdB })({
           invoice: request,
         })
-        if (result instanceof Error) throw result
-        expect(result).toBe(PaymentSendStatus.AlreadyPaid)
+        expect(result).toBeInstanceOf(LnPaymentAlreadyRecordedError)
 
         const finalBalanceSats = await getBalanceHelper(walletIdB)
         expect(finalBalanceSats).toEqual(intermediateBalanceSats)
