@@ -11,7 +11,7 @@ type IPMetadataValidatorArgs = {
 }
 
 type IPMetadataValidator = {
-  validateForReward(ipMetadata?: IPType): true | ApplicationError
+  validateForReward(ipMetadata?: IPType): true | ValidationError
 }
 
 interface IUsersIPsRepository {
