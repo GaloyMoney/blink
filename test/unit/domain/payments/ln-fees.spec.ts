@@ -24,5 +24,16 @@ describe("LnFees", () => {
         currency: WalletCurrency.Btc,
       })
     })
+
+    it("handles a small amount", () => {
+      const btcAmount = {
+        amount: 1n,
+        currency: WalletCurrency.Btc,
+      }
+      expect(LnFees().maxProtocolFee(btcAmount)).toEqual({
+        amount: 1n,
+        currency: WalletCurrency.Btc,
+      })
+    })
   })
 })
