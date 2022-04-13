@@ -1,5 +1,5 @@
 import { WalletCurrency } from "@domain/shared"
-import { PriceRatio } from "@domain/payments"
+import { InvalidZeroAmountPriceRatioInputError, PriceRatio } from "@domain/payments"
 
 describe("PriceRatio", () => {
   const usdQuoteAmount = {
@@ -55,5 +55,33 @@ describe("PriceRatio", () => {
       amount: 25n,
       currency: WalletCurrency.Btc,
     })
+  })
+
+  it("returns error for zero amount btc", () => {
+    const priceRatio = PriceRatio({
+      usd: {
+        amount: 1n,
+        currency: WalletCurrency.Usd,
+      },
+      btc: {
+        amount: 0n,
+        currency: WalletCurrency.Btc,
+      },
+    })
+    expect(priceRatio).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+  })
+
+  it("returns error for zero amount usd", () => {
+    const priceRatio = PriceRatio({
+      usd: {
+        amount: 0n,
+        currency: WalletCurrency.Usd,
+      },
+      btc: {
+        amount: 1n,
+        currency: WalletCurrency.Btc,
+      },
+    })
+    expect(priceRatio).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
   })
 })

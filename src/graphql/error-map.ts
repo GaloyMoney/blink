@@ -360,7 +360,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "MissingPhoneError":
     case "InvalidKratosUserId":
     case "InvalidLightningPaymentFlowBuilderStateError":
-      message = `Unknown error occurred (code: ${error.name})`
+    case "InvalidZeroAmountPriceRatioInputError":
+      message = `Unknown error occurred (code: ${error.name}: ${error.message})`
       return new UnknownClientError({ message, logger: baseLogger })
 
     default:
