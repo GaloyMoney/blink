@@ -94,7 +94,7 @@ export APOLLO_KEY=${APOLLO_KEY:-test}
 export APOLLO_GRAPH_REF=${APOLLO_GRAPH_REF:-test}
 
 export LOCAL=docker-compose
-random_jwt_secret=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c16)
+random_jwt_secret=$(openssl rand -hex 64)
 export JWT_SECRET="${random_jwt_secret}"
 
 export GEETEST_ID="geetest_id"
