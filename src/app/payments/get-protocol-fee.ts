@@ -46,7 +46,9 @@ export const getNoAmountLightningFeeEstimation = async ({
 }): Promise<PaymentAmount<WalletCurrency> | ApplicationError> => {
   const decodedInvoice = decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
-  if (decodedInvoice.paymentAmount === null) {
+
+  const { amount: lnInvoiceAmount } = decodedInvoice
+  if (lnInvoiceAmount && lnInvoiceAmount > 0) {
     return new LnPaymentRequestZeroAmountRequiredError()
   }
 
