@@ -1,9 +1,12 @@
 #!/bin/bash
 
+## how to use:
+## download
 # wget https://raw.githubusercontent.com/openoms/galoy/self-hosting/scripts/deploy-raspiblitz.sh -O deploy-raspiblitz.sh
-# sh -x deploy-raspiblitz.sh on
+## run
+# bash deploy-raspiblitz.sh on
 
-# command info
+## command info
 if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "-help" ]; then
   echo "
 Script to install the Galoy stack.
@@ -16,7 +19,7 @@ LND on Testnet activated"
   exit 1
 fi
 
-# install vars
+## install vars
 if [ $# -gt 1 ]; then
   NETWORK="$2"
 else
@@ -39,26 +42,26 @@ fi
 
 #TODO menu
 
-# install
+## install
 if [ "$1" = "on" ]; then
-  ################
-  # Dependencies
-  ################
-  # https://github.com/GaloyMoney/charts/blob/main/charts/galoy/Chart.yaml
+  #################
+  ## Dependencies
+  #################
+  ## https://github.com/GaloyMoney/charts/blob/main/charts/galoy/Chart.yaml
 
-  # Docker
+  ## Docker
   /home/admin/config.scripts/blitz.docker.sh on
 
-  # direnv
+  ## direnv
   if ! dpkg --list | grep direnv; then
     sudo apt-get update
     sudo apt-get install -y direnv
   fi
 
-  # NodeJS
+  ## NodeJS
   /home/admin/config.scripts/bonus.nodejs.sh on
 
-  # Yarn
+  ## Yarn
   if dpkg --list | grep yarn; then
     echo "# Yarn is already installed"
     yarn --version
@@ -70,9 +73,9 @@ if [ "$1" = "on" ]; then
     sudo apt-get install -y yarn
   fi
 
-  # redis
-  # https://github.com/bitnami/charts/tree/master/bitnami/redis#redis-image-parameters
-  # 6.2.6-debian-10-r142
+  ## redis
+  ## https://github.com/bitnami/charts/tree/master/bitnami/redis#redis-image-parameters
+  ## 6.2.6-debian-10-r142
   if [ $(redis-cli --version | grep -c "6.2.6") -lt 1 ]; then
     if ! gpg  /usr/share/keyrings/redis-archive-keyring.gpg 2>/dev/null; then
       curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
@@ -86,38 +89,38 @@ if [ "$1" = "on" ]; then
   fi
 
   ## MongoDB - using the Docker image
-  #https://github.com/bitnami/charts/tree/master/bitnami/mongodb#mongodb-parameters
-  # 4.4.11-debian-10-r12
+  ##https://github.com/bitnami/charts/tree/master/bitnami/mongodb#mongodb-parameters
+  ## 4.4.11-debian-10-r12
 
-  #############################
-  # User, symlinks, permissions
-  #############################
+  ##############################
+  ## User, symlinks, permissions
+  ##############################
   echo
   echo "# Create user and symlinks"
   sudo adduser --disabled-password --gecos "" galoy
 
-  # add the user to the docker group
+  ## add the user to the docker group
   sudo usermod -aG docker galoy
 
-  # https://direnv.net/docs/hook.html
+  ## https://direnv.net/docs/hook.html
   echo 'eval "$(direnv hook bash)"' | sudo tee -a /home/galoy/.bashrc
 
-  # symlink to the lnd data directory exists"
+  ## symlink to the lnd data directory exists"
   sudo rm -rf /home/galoy/.lnd  # not a symlink.. delete it silently
-  # create symlink
+  ## create symlink
   sudo ln -s "/home/bitcoin/.lnd/" "/home/galoy/.lnd"
   sudo chmod -R 750 /home/galoy/.lnd/
   sudo /usr/sbin/usermod --append --groups lndadmin galoy
   sudo /usr/sbin/usermod --append --groups bitcoin galoy
 
   ################
-  # Installation
+  ## Installation
   ################
   echo "# Clone galoy"
   cd /home/galoy/ || exit 1
   sudo -u galoy git clone https://github.com/${githubUser}/galoy
   cd galoy || exit 1
-  # https://github.com/grpc/grpc-node/issues/1405
+  ## https://github.com/grpc/grpc-node/issues/1405
   sudo npm install -g grpc-tools  --target_arch=x64
   if [ ${#githubBranch} -gt 0 ]; then
     sudo -u galoy git checkout ${githubBranch}
@@ -127,7 +130,7 @@ if [ "$1" = "on" ]; then
 
   #TODO ?test if tlsextraip=DOCKER_HOST_IP is needed in lnd.conf
 
-  # build libs as in https://github.com/GaloyMoney/galoy/blob/main/Dockerfile
+  ## build libs as in https://github.com/GaloyMoney/galoy/blob/main/Dockerfile
   sudo -u galoy yarn install --frozen-lockfile
   sudo -u galoy yarn build
 
@@ -181,7 +184,7 @@ WantedBy=multi-user.target
 
   #TODO push notifications
 
-  # galoy-api.service
+  ## galoy-api.service
   echo "\
 # Systemd unit for galoy-api
 # /etc/systemd/system/galoy-api.service
@@ -214,13 +217,13 @@ WantedBy=multi-user.target
   sudo systemctl start galoy-api.service
 
   ##############
-  # Connections
+  ## Connections
   ##############
-  # setup nginx symlinks
-  # http://localhost:4002/graphql (new API)
+  ## setup nginx symlinks
+  ## http://localhost:4002/graphql (new API)
 
   DOCKER_HOST_IP=$(ip addr show docker0 | awk '/inet/ {print $2}' | cut -d'/' -f1)
-  # galoy-api_ssl
+  ## galoy-api_ssl
   if ! [ -f /etc/nginx/sites-available/galoy-api_ssl.conf ]; then
     sudo cp /home/galoy/galoy/scripts/assets/galoy-api_ssl.conf /etc/nginx/sites-available/galoy-api_ssl.conf
   fi
@@ -239,11 +242,11 @@ WantedBy=multi-user.target
 fi
 
 if [ "$1" = "off" ]; then
-  #trigger
+  ## trigger
   sudo systemctl stop trigger
   sudo systemctl disable trigger
 
-  # galoy-api
+  ## galoy-api
   sudo systemctl stop galoy-api
   sudo systemctl disable galoy-api
   cd /home/galoy/galoy
@@ -251,7 +254,7 @@ if [ "$1" = "off" ]; then
   sudo ufw deny 4012
   sudo rm /etc/nginx/sites-available/galoy-api_ssl.conf
   sudo rm /etc/nginx/sites-enabled/galoy-*
-  # user
+  ## user
   sudo userdel -rf galoy
 
   sudo nginx -t || exit 1
