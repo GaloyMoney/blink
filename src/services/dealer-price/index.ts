@@ -253,7 +253,6 @@ export const DealerPriceService = (): IDealerPriceService => {
     getCentsPerSatsExchangeMidRate,
   }
 }
-
 export const NewDealerPriceService = (
   timeToExpiryInSeconds: Seconds = defaultTimeToExpiryInSeconds,
 ): IDealerPriceServiceNew => {

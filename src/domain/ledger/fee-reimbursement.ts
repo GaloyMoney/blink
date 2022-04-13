@@ -31,6 +31,8 @@ export const NewFeeReimbursement = (prepaidFeeAmount: {
     }
 
     const priceRatio = PriceRatio(prepaidFeeAmount)
+    if (priceRatio instanceof Error) return new FeeDifferenceError()
+
     const feeDifferenceUsdAmount = priceRatio.convertFromBtc(feeDifferenceBtcAmount)
 
     return { btc: feeDifferenceBtcAmount, usd: feeDifferenceUsdAmount }

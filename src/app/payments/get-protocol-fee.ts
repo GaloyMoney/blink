@@ -88,6 +88,7 @@ const estimateLightningFee = async ({
   if (btcPaymentAmount instanceof Error) return btcPaymentAmount
 
   const priceRatio = PriceRatio({ usd: usdPaymentAmount, btc: btcPaymentAmount })
+  if (priceRatio instanceof Error) return priceRatio
 
   let paymentFlow
   if (!(await builder.needsRoute())) {
