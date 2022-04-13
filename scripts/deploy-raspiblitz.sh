@@ -52,12 +52,6 @@ if [ "$1" = "on" ]; then
   ## Docker
   /home/admin/config.scripts/blitz.docker.sh on
 
-  ## direnv
-  if ! dpkg --list | grep direnv; then
-    sudo apt-get update
-    sudo apt-get install -y direnv
-  fi
-
   ## NodeJS
   /home/admin/config.scripts/bonus.nodejs.sh on
 
@@ -95,6 +89,16 @@ if [ "$1" = "on" ]; then
   ## MongoDB - using the Docker image
   ##https://github.com/bitnami/charts/tree/master/bitnami/mongodb#mongodb-parameters
   ## 4.4.11-debian-10-r12
+
+  ## direnv
+  if ! dpkg --list | grep direnv; then
+    sudo apt-get install -y direnv
+  fi
+
+  ## dotenv
+  if ! pip list | grep dotenv; then
+    sudo pip install python-dotenv==v0.19.2
+  fi
 
   ##############################
   ## User, symlinks, permissions
@@ -140,6 +144,38 @@ if [ "$1" = "on" ]; then
   sudo -u galoy yarn install --frozen-lockfile
   sudo -u galoy yarn build
 
+  ## galoy-api.service
+  echo "\
+# Systemd unit for galoy-api
+# /etc/systemd/system/galoy-api.service
+
+[Unit]
+Description=galoy-api docker with deps
+Wants=lnd.service
+After=lnd.service
+
+[Service]
+WorkingDirectory=/home/galoy/galoy
+ExecStart=make start-selfhosted-api
+User=galoy
+Restart=on-failure
+TimeoutSec=120
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+# Hardening measures
+PrivateTmp=true
+ProtectSystem=full
+NoNewPrivileges=true
+PrivateDevices=true
+
+[Install]
+WantedBy=multi-user.target
+" | sudo tee /etc/systemd/system/galoy-api.service
+  sudo systemctl enable galoy-api.service
+  sudo systemctl start galoy-api.service
+
   # trigger.service
   echo "\
 # Systemd unit for trigger.js
@@ -181,8 +217,8 @@ WantedBy=multi-user.target
 
   # cron,js
   # dotenv gets the values from /home/galoy/galoy/.env
-  cronjob="0 2 * * * dotenv run node /home/galoy/galoy/lib/servers/cron.js"
-  if [ $(sudo crontab -u galoy -l | grep -c "${cronjob}") -eq 0 ]; then
+  cronjob="0 2 * * * cd /home/galoy/galoy && dotenv run node /home/galoy/galoy/lib/servers/cron.js"
+  if ! sudo crontab -u galoy -l | grep "cd /home/galoy/galoy && dotenv run node /home/galoy/galoy/lib/servers/cron.js"; then
     echo "# Schedule cron.js"
     (sudo crontab -u galoy -l; echo "${cronjob}" ) | sudo crontab -u galoy -
   fi
@@ -191,38 +227,6 @@ WantedBy=multi-user.target
   echo
 
   #TODO push notifications
-
-  ## galoy-api.service
-  echo "\
-# Systemd unit for galoy-api
-# /etc/systemd/system/galoy-api.service
-
-[Unit]
-Description=galoy-api docker with deps
-Wants=lnd.service trigger.service
-After=lnd.service trigger.service
-
-[Service]
-WorkingDirectory=/home/galoy/galoy
-ExecStart=make start-selfhosted-api
-User=galoy
-Restart=on-failure
-TimeoutSec=120
-RestartSec=30
-StandardOutput=journal
-StandardError=journal
-
-# Hardening measures
-PrivateTmp=true
-ProtectSystem=full
-NoNewPrivileges=true
-PrivateDevices=true
-
-[Install]
-WantedBy=multi-user.target
-" | sudo tee /etc/systemd/system/galoy-api.service
-  sudo systemctl enable galoy-api.service
-  sudo systemctl start galoy-api.service
 
   ##############
   ## Connections
