@@ -3,6 +3,7 @@ import {
   checkedToUsdPaymentAmount,
   InvalidBtcPaymentAmountError,
   InvalidUsdPaymentAmountError,
+  normalizePaymentAmount,
 } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 
@@ -41,5 +42,27 @@ describe("checkedToUsdPaymentAmount", () => {
         amount: 1n,
       }),
     )
+  })
+})
+
+describe("normalizePaymentAmount", () => {
+  it("returns the correct type", () => {
+    const btcPaymentAmount = {
+      amount: 1n,
+      currency: WalletCurrency.Btc,
+    }
+    expect(normalizePaymentAmount(btcPaymentAmount)).toStrictEqual({
+      amount: 1,
+      currency: WalletCurrency.Btc,
+    })
+
+    const usdPaymentAmount = {
+      amount: 1n,
+      currency: WalletCurrency.Usd,
+    }
+    expect(normalizePaymentAmount(usdPaymentAmount)).toStrictEqual({
+      amount: 1,
+      currency: WalletCurrency.Usd,
+    })
   })
 })
