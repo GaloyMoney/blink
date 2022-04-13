@@ -7,7 +7,7 @@
 # bash nginx-subdomain-redirect.sh
 
 echo "
-Input your email:
+Input your email (used for notifications about the SSL certificate):
 "
 read EMAIL
 

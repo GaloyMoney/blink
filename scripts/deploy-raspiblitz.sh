@@ -125,7 +125,7 @@ if [ "$1" = "on" ]; then
   sudo -u galoy git clone https://github.com/${githubUser}/galoy
   cd galoy || exit 1
   ## https://github.com/grpc/grpc-node/issues/1405
-  sudo -u galoy npm install -g grpc-tools --target_arch=x64
+  sudo -u galoy npm install grpc-tools --target_arch=x64
   if [ ${#githubBranch} -gt 0 ]; then
     sudo -u galoy git checkout ${githubBranch}
   fi
