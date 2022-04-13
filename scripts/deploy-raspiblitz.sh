@@ -88,8 +88,8 @@ if [ "$1" = "on" ]; then
     redis-cli --version
   fi
   ## make sure to listen on the docker host
-  if ! sudo cat /etc/redis/redis.conf | grep "^bind 172.17.0.1 -::1"; then
-    echo "bind 172.17.0.1 -::1" | sudo tee -a /etc/redis/redis.conf
+  if ! sudo cat /etc/redis/redis.conf | grep "^bind 127.0.0.1 -172.17.0.1"; then
+    echo "bind 127.0.0.1 -172.17.0.1" | sudo tee -a /etc/redis/redis.conf
   fi
 
   ## MongoDB - using the Docker image
@@ -124,8 +124,10 @@ if [ "$1" = "on" ]; then
   cd /home/galoy/ || exit 1
   sudo -u galoy git clone https://github.com/${githubUser}/galoy
   cd galoy || exit 1
+
   ## https://github.com/grpc/grpc-node/issues/1405
-  sudo -u galoy npm install grpc-tools --target_arch=x64
+  #sudo -u galoy npm install grpc-tools --target_arch=x64
+
   if [ ${#githubBranch} -gt 0 ]; then
     sudo -u galoy git checkout ${githubBranch}
   fi
