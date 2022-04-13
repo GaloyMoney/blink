@@ -78,16 +78,19 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
   if (user instanceof Error) return user
   const { twoFA } = user
 
+  const priceRatio = PriceRatio({
+    usd: paymentFlow.usdPaymentAmount,
+    btc: paymentFlow.btcPaymentAmount,
+  })
+  if (priceRatio instanceof Error) return priceRatio
+
   const twoFACheck = twoFA?.secret
     ? await newCheckAndVerifyTwoFA({
         amount: paymentFlow.usdPaymentAmount,
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
         wallet: senderWallet,
-        priceRatio: PriceRatio({
-          usd: paymentFlow.usdPaymentAmount,
-          btc: paymentFlow.btcPaymentAmount,
-        }),
+        priceRatio,
       })
     : true
   if (twoFACheck instanceof Error) return twoFACheck
@@ -165,16 +168,19 @@ export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
   if (user instanceof Error) return user
   const { twoFA } = user
 
+  const priceRatio = PriceRatio({
+    usd: paymentFlow.usdPaymentAmount,
+    btc: paymentFlow.btcPaymentAmount,
+  })
+  if (priceRatio instanceof Error) return priceRatio
+
   const twoFACheck = twoFA?.secret
     ? await newCheckAndVerifyTwoFA({
         amount: paymentFlow.usdPaymentAmount,
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
         wallet: senderWallet,
-        priceRatio: PriceRatio({
-          usd: paymentFlow.usdPaymentAmount,
-          btc: paymentFlow.btcPaymentAmount,
-        }),
+        priceRatio,
       })
     : true
   if (twoFACheck instanceof Error) return twoFACheck
@@ -383,6 +389,7 @@ const executePaymentViaIntraledger = async ({
     usd: paymentFlow.usdPaymentAmount,
     btc: paymentFlow.btcPaymentAmount,
   })
+  if (priceRatio instanceof Error) return priceRatio
 
   const limitCheck = await newCheckIntraledgerLimits({
     amount: paymentFlow.usdPaymentAmount,
@@ -505,13 +512,16 @@ const executePaymentViaLn = async ({
   senderWallet: Wallet
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
+  const priceRatio = PriceRatio({
+    usd: paymentFlow.usdPaymentAmount,
+    btc: paymentFlow.btcPaymentAmount,
+  })
+  if (priceRatio instanceof Error) return priceRatio
+
   const limitCheck = await newCheckWithdrawalLimits({
     amount: paymentFlow.usdPaymentAmount,
     wallet: senderWallet,
-    priceRatio: PriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
-    }),
+    priceRatio,
   })
   if (limitCheck instanceof Error) return limitCheck
 

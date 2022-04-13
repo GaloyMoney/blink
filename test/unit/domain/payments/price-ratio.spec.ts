@@ -18,6 +18,8 @@ describe("PriceRatio", () => {
     }
 
     const priceRatio = PriceRatio({ usd: usdQuoteAmount, btc: btcQuoteAmount })
+    if (priceRatio instanceof Error) throw priceRatio
+
     expect(priceRatio.convertFromUsd(convertAmount)).toEqual({
       amount: 400n,
       currency: WalletCurrency.Btc,
@@ -31,6 +33,8 @@ describe("PriceRatio", () => {
     }
 
     const priceRatio = PriceRatio({ usd: usdQuoteAmount, btc: btcQuoteAmount })
+    if (priceRatio instanceof Error) throw priceRatio
+
     expect(priceRatio.convertFromBtc(convertAmount)).toEqual({
       amount: 4n,
       currency: WalletCurrency.Usd,
@@ -48,6 +52,7 @@ describe("PriceRatio", () => {
         currency: WalletCurrency.Btc,
       },
     })
+    if (priceRatio instanceof Error) throw priceRatio
 
     expect(
       priceRatio.convertFromUsd({ amount: 1n, currency: WalletCurrency.Usd }),
