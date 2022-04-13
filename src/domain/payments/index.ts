@@ -39,3 +39,10 @@ export const checkedToUsdPaymentAmount = (
     currency: WalletCurrency.Usd,
   }
 }
+
+export const normalizePaymentAmount = <S extends WalletCurrency>(
+  paymentAmount: PaymentAmount<S>,
+): { amount: number; currency: S } => ({
+  amount: Number(paymentAmount.amount),
+  currency: paymentAmount.currency,
+})
