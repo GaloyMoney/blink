@@ -3,8 +3,10 @@ import { GT } from "@graphql/index"
 const AccountStatus = GT.Enum({
   name: "AccountStatus",
   values: {
-    LOCKED: { value: "locked" },
+    NEW: { value: "new" },
+    PENDING: { value: "pending" },
     ACTIVE: { value: "active" },
+    LOCKED: { value: "locked" },
   },
 })
 

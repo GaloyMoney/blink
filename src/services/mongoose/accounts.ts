@@ -1,3 +1,5 @@
+import { getAccountsConfig } from "@config"
+
 import { AccountLevel, AccountStatus } from "@domain/accounts"
 import {
   CouldNotFindAccountFromUsernameError,
@@ -5,6 +7,7 @@ import {
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
+
 import { User } from "@services/mongoose/schema"
 
 import { toObjectId, fromObjectId } from "./utils"
@@ -145,7 +148,7 @@ const translateToAccount = (result: UserRecord): Account => ({
   defaultWalletId: result.defaultWalletId as WalletId,
   username: result.username as Username,
   level: (result.level as AccountLevel) || AccountLevel.One,
-  status: (result.status as AccountStatus) || AccountStatus.Active,
+  status: (result.status as AccountStatus) || getAccountsConfig().initialStatus,
   title: result.title as BusinessMapTitle,
   coordinates: result.coordinates as Coordinates,
   ownerId: fromObjectId<UserId>(result._id),

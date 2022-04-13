@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { getFeesConfig, getTwoFAConfig, levels } from "@config"
+import { getAccountsConfig, getFeesConfig, getTwoFAConfig, levels } from "@config"
 import { UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
@@ -272,8 +272,8 @@ const UserSchema = new Schema<UserRecord>(
 
     status: {
       type: String,
-      enum: ["active", "locked"],
-      default: "active",
+      enum: ["new", "pending", "active", "locked"],
+      default: getAccountsConfig().initialStatus,
     },
 
     twoFA: {

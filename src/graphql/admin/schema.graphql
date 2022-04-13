@@ -25,6 +25,8 @@ enum AccountLevel {
 enum AccountStatus {
   ACTIVE
   LOCKED
+  NEW
+  PENDING
 }
 
 input AccountUpdateLevelInput {

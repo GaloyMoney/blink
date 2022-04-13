@@ -160,19 +160,31 @@ describe("UserWallet", () => {
 
   describe("updateAccountStatus", () => {
     it("sets account status for given user id", async () => {
-      let user = await Accounts.updateAccountStatus({
-        id: accountIdC,
-        status: "locked",
-      })
+      let user
+
+      user = await Accounts.updateAccountStatus({ id: accountIdC, status: "new" })
       if (user instanceof Error) {
         throw user
       }
-      expect(user.status).toBe("locked")
+      expect(user.status).toBe("new")
+
+      user = await Accounts.updateAccountStatus({ id: user.id, status: "pending" })
+      if (user instanceof Error) {
+        throw user
+      }
+      expect(user.status).toBe("pending")
+
       user = await Accounts.updateAccountStatus({ id: user.id, status: "active" })
       if (user instanceof Error) {
         throw user
       }
       expect(user.status).toBe("active")
+
+      user = await Accounts.updateAccountStatus({ id: user.id, status: "locked" })
+      if (user instanceof Error) {
+        throw user
+      }
+      expect(user.status).toBe("locked")
     })
   })
 
