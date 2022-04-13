@@ -87,6 +87,10 @@ if [ "$1" = "on" ]; then
     echo "# Redis is already installed"
     redis-cli --version
   fi
+  ## make sure to listen on the docker host
+  if ! sudo cat /etc/redis/redis.conf | grep "^bind 172.17.0.1 -::1"; then
+    echo "bind 172.17.0.1 -::1" | sudo tee -a /etc/redis/redis.conf
+  fi
 
   ## MongoDB - using the Docker image
   ##https://github.com/bitnami/charts/tree/master/bitnami/mongodb#mongodb-parameters
@@ -121,7 +125,7 @@ if [ "$1" = "on" ]; then
   sudo -u galoy git clone https://github.com/${githubUser}/galoy
   cd galoy || exit 1
   ## https://github.com/grpc/grpc-node/issues/1405
-  sudo npm install -g grpc-tools  --target_arch=x64
+  sudo -u galoy npm install -g grpc-tools --target_arch=x64
   if [ ${#githubBranch} -gt 0 ]; then
     sudo -u galoy git checkout ${githubBranch}
   fi
@@ -146,7 +150,8 @@ After=lnd.service
 
 [Service]
 WorkingDirectory=/home/galoy/galoy/
-ExecStart=sh -c '. ./.envrc.selfhosted && /usr/bin/node lib/servers/trigger.js'
+# dotenv gets the values from /home/galoy/galoy/.env
+ExecStart=sh -c 'dotenv run node lib/servers/trigger.js'
 User=galoy
 Restart=on-failure
 TimeoutSec=120
@@ -173,13 +178,14 @@ WantedBy=multi-user.target
   fi
 
   # cron,js
-  if [ $(crontab -u galoy -l | grep -c "lib/servers/cron.js") -eq 0 ]; then
+  # dotenv gets the values from /home/galoy/galoy/.env
+  cronjob="0 2 * * * dotenv run node /home/galoy/galoy/lib/servers/cron.js"
+  if [ $(sudo crontab -u galoy -l | grep -c "${cronjob}") -eq 0 ]; then
     echo "# Schedule cron.js"
-    cronjob="0 2 * * * /home/galoy/lib/servers/cron.js"
-    (crontab -u galoy -l; echo "$cronjob" ) | crontab -u galoy -
+    (sudo crontab -u galoy -l; echo "${cronjob}" ) | sudo crontab -u galoy -
   fi
   echo "# The crontab for galoy now is:"
-  crontab -u galoy -l
+  sudo crontab -u galoy -l
   echo
 
   #TODO push notifications
@@ -222,14 +228,11 @@ WantedBy=multi-user.target
   ## setup nginx symlinks
   ## http://localhost:4002/graphql (new API)
 
-  DOCKER_HOST_IP=$(ip addr show docker0 | awk '/inet/ {print $2}' | cut -d'/' -f1)
   ## galoy-api_ssl
   if ! [ -f /etc/nginx/sites-available/galoy-api_ssl.conf ]; then
     sudo cp /home/galoy/galoy/scripts/assets/galoy-api_ssl.conf /etc/nginx/sites-available/galoy-api_ssl.conf
   fi
   sudo ln -sf /etc/nginx/sites-available/galoy-api_ssl.conf /etc/nginx/sites-enabled/
-  # BACKEND_ADDRESS=$(docker container inspect -f '{{ .NetworkSettings.Networks.galoy_default.IPAddress }}' galoy-api-1)
-  # sudo sed -i "s#proxy_pass http://127.0.0.1:4002;#proxy_pass http://$DOCKER_HOST_IP:4002;#g" /etc/nginx/sites-available/galoy-api_ssl.conf
 
   sudo nginx -t || exit 1
   sudo systemctl reload nginx

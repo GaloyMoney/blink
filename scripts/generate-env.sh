@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# records the generated variables in /home/galoy/galoy/.env
+
 echo "\
 DOCKER_HOST_IP=${DOCKER_HOST_IP}
 NETWORK=${NETWORK}
@@ -66,3 +68,6 @@ COMMITHASH=${COMMITHASH}
 BUILDTIME=${BUILDTIME}
 HELMREVISION=${HELMREVISION}
 " | tee .env
+
+# read-write by the galoy user only
+chmod 0600 .env
