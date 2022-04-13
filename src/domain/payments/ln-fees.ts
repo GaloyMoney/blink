@@ -12,9 +12,11 @@ export const LnFees = (
   },
 ) => {
   const maxProtocolFee = <T extends WalletCurrency>(amount: PaymentAmount<T>) => {
+    // Adding 1n to effect a rounding up of the fee
+    const maxFee = ((amount.amount + 1n) * feeCapPercent) / 100n
+
     return {
-      // Adding 1n to effect a rounding up of the fee
-      amount: ((amount.amount + 1n) * feeCapPercent) / 100n,
+      amount: maxFee === 0n ? 1n : maxFee,
       currency: amount.currency,
     }
   }
