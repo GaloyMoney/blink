@@ -7,8 +7,7 @@ import SatAmount from "@graphql/types/scalar/sat-amount"
 import OnChainTxFee from "@graphql/types/object/onchain-tx-fee"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
-import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/shared"
+import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 
 const OnChainTxFeeQuery = GT.Field({
   type: GT.NonNull(OnChainTxFee),
@@ -29,15 +28,8 @@ const OnChainTxFeeQuery = GT.Field({
       if (input instanceof Error) throw input
     }
 
-    const wallet = await WalletsRepository().findById(walletId)
-    if (wallet instanceof Error)
-      return { errors: [{ message: mapError(wallet).message }] }
-
-    const MutationDoesNotMatchWalletCurrencyError =
-      "MutationDoesNotMatchWalletCurrencyError"
-    if (wallet.currency === WalletCurrency.Usd) {
-      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
-    }
+    const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
+    if (btcWalletValidated != true) return btcWalletValidated
 
     const fee = await Wallets.getOnChainFee({
       walletId,

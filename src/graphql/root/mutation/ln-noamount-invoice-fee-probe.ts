@@ -7,8 +7,7 @@ import SatAmount from "@graphql/types/scalar/sat-amount"
 import SatAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { mapError } from "@graphql/error-map"
-import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/shared"
+import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 
 const LnNoAmountInvoiceFeeProbeInput = GT.Input({
   name: "LnNoAmountInvoiceFeeProbeInput",
@@ -33,15 +32,8 @@ const LnNoAmountInvoiceFeeProbeMutation = GT.Field({
       }
     }
 
-    const wallet = await WalletsRepository().findById(walletId)
-    if (wallet instanceof Error)
-      return { errors: [{ message: mapError(wallet).message }] }
-
-    const MutationDoesNotMatchWalletCurrencyError =
-      "MutationDoesNotMatchWalletCurrencyError"
-    if (wallet.currency === WalletCurrency.Usd) {
-      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
-    }
+    const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
+    if (btcWalletValidated != true) return btcWalletValidated
 
     const feeSatAmount = await Payments.getNoAmountLightningFeeEstimation({
       walletId,
