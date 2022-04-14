@@ -2,9 +2,8 @@ import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
+import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 import { Wallets } from "@app"
-import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/shared"
 
 const OnChainAddressCurrentInput = GT.Input({
   name: "OnChainAddressCurrentInput",
@@ -24,15 +23,8 @@ const OnChainAddressCurrentMutation = GT.Field({
       return { errors: [{ message: walletId.message }] }
     }
 
-    const wallet = await WalletsRepository().findById(walletId)
-    if (wallet instanceof Error)
-      return { errors: [{ message: mapError(wallet).message }] }
-
-    const MutationDoesNotMatchWalletCurrencyError =
-      "MutationDoesNotMatchWalletCurrencyError"
-    if (wallet.currency === WalletCurrency.Usd) {
-      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
-    }
+    const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
+    if (btcWalletValidated != true) return btcWalletValidated
 
     const address = await Wallets.getLastOnChainAddress(walletId)
     if (address instanceof Error) {

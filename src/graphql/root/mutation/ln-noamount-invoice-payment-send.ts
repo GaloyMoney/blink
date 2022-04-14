@@ -7,8 +7,7 @@ import { Payments } from "@app"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnIPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { InputValidationError } from "@graphql/error"
-import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/shared"
+import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 import dedent from "dedent"
 
 const LnNoAmountInvoicePaymentInput = GT.Input({
@@ -69,15 +68,8 @@ const LnNoAmountInvoicePaymentSendMutation = GT.Field<
       return { errors: [{ message: memo.message }] }
     }
 
-    const wallet = await WalletsRepository().findById(walletId)
-    if (wallet instanceof Error)
-      return { errors: [{ message: mapError(wallet).message }] }
-
-    const MutationDoesNotMatchWalletCurrencyError =
-      "MutationDoesNotMatchWalletCurrencyError"
-    if (wallet.currency === WalletCurrency.Usd) {
-      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
-    }
+    const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
+    if (btcWalletValidated != true) return btcWalletValidated
 
     const status = await Payments.payNoAmountInvoiceByWalletId({
       senderWalletId: walletId,
