@@ -14,9 +14,18 @@ interface INotification {
   logger: Logger
 }
 
-type getTitleBitcoinArgs = {
-  displayCurrency: DisplayCurrencyBaseAmount
-  sats: Satoshis
+type GetTitleBitcoinArgs = {
+  type: string
+  locale: string
+  fiatSymbol: string
+  fiatAmount: string
+  satsAmount: string
+}
+
+type GetTitleBitcoinNoDisplayCurrencyArgs = {
+  type: string
+  locale: string
+  satsAmount: string
 }
 
 type getTitleUsdArgs = {

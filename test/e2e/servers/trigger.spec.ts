@@ -1,7 +1,6 @@
 import { Prices, Wallets } from "@app"
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { getDisplayCurrency, getLocale, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
-import { toDisplayCurrencyBaseAmount } from "@domain/fiat/display-currency"
 import { NotificationType } from "@domain/notifications"
 import { TxStatus } from "@domain/wallets"
 import { onchainBlockEventhandler, onInvoiceUpdate } from "@servers/trigger"
@@ -45,6 +44,9 @@ let userIdF: UserId
 
 let userRecordA: UserRecord
 let userRecordD: UserRecord
+
+const locale = getLocale()
+const { symbol: fiatSymbol } = getDisplayCurrency()
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
@@ -221,9 +223,18 @@ describe("onchainBlockEventhandler", () => {
 
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
-    const displayCurrency = toDisplayCurrencyBaseAmount(sats * satsPrice)
+    const fiatAmount = (sats * satsPrice).toLocaleString(locale, {
+      maximumFractionDigits: 2,
+    })
+
     expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitleBitcoin[NotificationType.LnInvoicePaid]({ displayCurrency, sats }),
+      getTitleBitcoin({
+        type: NotificationType.LnInvoicePaid,
+        locale,
+        fiatSymbol,
+        fiatAmount,
+        satsAmount: sats + "",
+      }),
     )
     expect(sendNotification.mock.calls[0][0].user.id).toStrictEqual(userIdF)
     expect(sendNotification.mock.calls[0][0].data.type).toBe(

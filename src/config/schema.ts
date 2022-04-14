@@ -1,10 +1,22 @@
 import { JTDDataType } from "ajv/dist/types/jtd-schema"
 
 export type ConfigSchema = JTDDataType<typeof configSchema>
+export type DisplayCurrencyConfigSchema = JTDDataType<typeof displayCurrencyConfigSchema>
+
 export type RewardsConfigSchema = {
   denyPhoneCountries: string[]
   allowPhoneCountries: string[]
 }
+
+const displayCurrencyConfigSchema = {
+  type: "object",
+  properties: {
+    code: { type: "string", default: "USD" },
+    symbol: { type: "string", default: "$" },
+  },
+  required: ["code", "symbol"],
+  additionalProperties: false,
+} as const
 
 const buildNumberConfigSchema = {
   type: "object",
@@ -82,6 +94,8 @@ export const configSchema = {
   properties: {
     PROXY_CHECK_APIKEY: { type: "string" },
     name: { type: "string" },
+    locale: { type: "string", enum: ["en", "es"], default: "en" },
+    displayCurrency: displayCurrencyConfigSchema,
     funder: { type: "string" },
     buildVersion: {
       type: "object",

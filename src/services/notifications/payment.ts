@@ -1,27 +1,33 @@
+import { getDisplayCurrency, getI18nInstance, getLocale } from "@config"
+
 import { sendNotification } from "./notification"
 
-export const getTitleBitcoin = {
-  "paid-invoice": ({ displayCurrency, sats }: getTitleBitcoinArgs) =>
-    `+$${displayCurrency.toFixed(2)} | ${sats} sats`,
-  "onchain_receipt": ({ displayCurrency, sats }: getTitleBitcoinArgs) =>
-    `+$${displayCurrency.toFixed(2)} | ${sats} sats`,
-  "onchain_receipt_pending": ({ displayCurrency, sats }: getTitleBitcoinArgs) =>
-    `pending +$${displayCurrency.toFixed(2)} | ${sats} sats`,
-  "onchain_payment": ({ sats }: { sats: Satoshis }) =>
-    `Sent onchain payment of ${sats} sats confirmed`,
-  "intra_ledger_receipt": ({ displayCurrency, sats }: getTitleBitcoinArgs) =>
-    `+$${displayCurrency.toFixed(2)} | ${sats} sats`,
-  "intra_ledger_payment": ({ displayCurrency, sats }: getTitleBitcoinArgs) =>
-    `Sent payment of $${displayCurrency.toFixed(2)} | ${sats} sats`,
+const i18n = getI18nInstance()
+const defaultLocale = getLocale()
+const { symbol: fiatSymbol } = getDisplayCurrency()
+
+export const getTitleBitcoin = ({
+  type,
+  locale,
+  fiatSymbol,
+  fiatAmount,
+  satsAmount,
+}: GetTitleBitcoinArgs): string => {
+  return i18n.__(
+    { phrase: `notification.btcPayments.${type}.fiat`, locale },
+    { fiatSymbol, fiatAmount, satsAmount },
+  )
 }
 
-export const getTitleBitcoinNoDisplayCurrency = {
-  "paid-invoice": (sats: Satoshis) => `+${sats} sats`,
-  "onchain_receipt": (sats: Satoshis) => `+${sats} sats`,
-  "onchain_receipt_pending": (sats: Satoshis) => `pending +${sats} sats`,
-  "onchain_payment": (sats: Satoshis) => `Sent onchain payment of ${sats} sats confirmed`,
-  "intra_ledger_receipt": (sats: Satoshis) => `+${sats} sats`,
-  "intra_ledger_payment": (sats: Satoshis) => `Sent payment of ${sats} sats`,
+export const getTitleBitcoinNoDisplayCurrency = ({
+  type,
+  locale,
+  satsAmount,
+}: GetTitleBitcoinNoDisplayCurrencyArgs) => {
+  return i18n.__(
+    { phrase: `notification.btcPayments.${type}.sats`, locale },
+    { satsAmount },
+  )
 }
 
 export const getTitleUsd = {
@@ -58,11 +64,21 @@ export const transactionBitcoinNotification = async ({
   txHash,
   displayCurrencyPerSat,
 }: IPaymentBitcoinNotification) => {
-  let title = getTitleBitcoinNoDisplayCurrency[type](sats)
+  const locale = user.language || defaultLocale
+  const satsAmount = sats + ""
+  let title = getTitleBitcoinNoDisplayCurrency({ type, locale, satsAmount })
 
   if (displayCurrencyPerSat) {
-    const displayCurrency = sats * displayCurrencyPerSat
-    title = getTitleBitcoin[type]({ displayCurrency, sats })
+    const fiatAmount = (sats * displayCurrencyPerSat).toLocaleString(locale, {
+      maximumFractionDigits: 2,
+    })
+    title = getTitleBitcoin({
+      type,
+      locale,
+      fiatSymbol,
+      fiatAmount,
+      satsAmount,
+    })
   }
 
   const data: IDataNotification = {

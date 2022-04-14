@@ -1,4 +1,10 @@
-import { SAT_USDCENT_PRICE, USER_PRICE_UPDATE_EVENT } from "@config"
+import {
+  getLocale,
+  SAT_USDCENT_PRICE,
+  USER_PRICE_UPDATE_EVENT,
+  getDisplayCurrency,
+  getI18nInstance,
+} from "@config"
 import { toSats } from "@domain/bitcoin"
 import { lnPaymentStatusEvent } from "@domain/bitcoin/lightning"
 import { NotImplementedError } from "@domain/errors"
@@ -17,6 +23,10 @@ import pubsub from "@services/pubsub"
 
 import { sendNotification } from "./notification"
 import { transactionBitcoinNotification, transactionUsdNotification } from "./payment"
+
+const i18n = getI18nInstance()
+const defaultLocale = getLocale()
+const { symbol: fiatSymbol } = getDisplayCurrency()
 
 export const NotificationsService = (logger: Logger): INotificationsService => {
   const sendOnChainNotification = async ({
@@ -286,37 +296,47 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       return new NotImplementedError("sendBalance works with sats")
     }
 
-    const balanceSats = toSats(balance)
-
-    // Add commas to balancesats
-    const balanceSatsAsFormattedString = balanceSats.toLocaleString("en")
-
-    let balanceUsdAsFormattedString: string, title: string
-    if (price instanceof Error) {
-      logger.warn({ price }, "impossible to fetch price for notification")
-
-      // TODO: i18n
-      title = `Your balance is ${balanceSatsAsFormattedString} sats)`
-    } else {
-      const usdValue = price * balanceSats
-      balanceUsdAsFormattedString = usdValue.toLocaleString("en", {
-        maximumFractionDigits: 2,
-      })
-
-      // TODO: i18n
-      title = `Your balance is $${balanceUsdAsFormattedString} (${balanceSatsAsFormattedString} sats)`
-    }
-
-    logger.info(
-      { balanceSatsAsFormattedString, title, userId },
-      `sending balance notification to user`,
-    )
-
     const user = await UsersRepository().findById(userId)
     if (user instanceof Error) {
       logger.warn({ user }, "impossible to fetch user to send transaction")
       return
     }
+
+    const locale = user.language || defaultLocale
+    const satsBalance = toSats(balance)
+
+    // Add commas to balancesats
+    const satsBalanceFormatted = satsBalance.toLocaleString(locale)
+
+    let fiatBalanceFormatted = ""
+    let title: string
+    if (price instanceof Error) {
+      logger.warn({ price }, "impossible to fetch price for notification")
+
+      title = i18n.__(
+        { phrase: "notification.balance.sats", locale },
+        { satsBalance: satsBalanceFormatted },
+      )
+    } else {
+      const fiatValue = price * satsBalance
+      fiatBalanceFormatted = fiatValue.toLocaleString(locale, {
+        maximumFractionDigits: 2,
+      })
+
+      title = i18n.__(
+        { phrase: "notification.balance.fiat", locale },
+        {
+          fiatSymbol,
+          fiatAmount: fiatBalanceFormatted,
+          satsAmount: satsBalanceFormatted,
+        },
+      )
+    }
+
+    logger.info(
+      { fiatBalanceFormatted, satsBalanceFormatted, title, userId, locale },
+      `sending balance notification to user`,
+    )
 
     await sendNotification({
       user,

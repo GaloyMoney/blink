@@ -5,6 +5,8 @@ import {
   getFeesConfig,
   getOnChainAddressCreateAttemptLimits,
   getAccountLimits,
+  getLocale,
+  getDisplayCurrency,
 } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
@@ -16,10 +18,7 @@ import { baseLogger } from "@services/logger"
 import { getTitleBitcoin } from "@services/notifications/payment"
 import { sleep } from "@utils"
 
-import {
-  DisplayCurrencyConverter,
-  toDisplayCurrencyBaseAmount,
-} from "@domain/fiat/display-currency"
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
 import { getCurrentPrice } from "@app/prices"
 
@@ -54,6 +53,8 @@ const accountLimits = getAccountLimits({ level: 1 })
 jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
+const locale = getLocale()
+const { symbol: fiatSymbol } = getDisplayCurrency()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -269,12 +270,17 @@ describe("UserWallet - On chain", () => {
 
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
-    const displayCurrency = toDisplayCurrencyBaseAmount(amountSats * satsPrice)
+    const fiatAmount = (amountSats * satsPrice).toLocaleString(locale, {
+      maximumFractionDigits: 2,
+    })
 
     expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitleBitcoin[NotificationType.OnchainReceiptPending]({
-        displayCurrency,
-        sats: amountSats,
+      getTitleBitcoin({
+        type: NotificationType.OnchainReceiptPending,
+        locale,
+        fiatSymbol,
+        fiatAmount,
+        satsAmount: amountSats + "",
       }),
     )
 

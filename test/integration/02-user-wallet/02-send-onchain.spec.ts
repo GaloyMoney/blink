@@ -1,11 +1,13 @@
 import { once } from "events"
 
-import { Wallets } from "@app"
+import { Prices, Wallets } from "@app"
 import {
   getFeesConfig,
   getOnChainWalletConfig,
   getAccountLimits,
   MS_PER_DAY,
+  getLocale,
+  getDisplayCurrency,
 } from "@config"
 import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
@@ -80,6 +82,8 @@ let userIdA: UserId
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
+const locale = getLocale()
+const { symbol: fiatSymbol } = getDisplayCurrency()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -179,9 +183,20 @@ describe("UserWallet - onChainPay", () => {
     await sleep(1000)
 
     // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
+    const satsPrice = await Prices.getCurrentPrice()
+    if (satsPrice instanceof Error) throw satsPrice
+    const fiatAmount = (amount * satsPrice).toLocaleString(locale, {
+      maximumFractionDigits: 2,
+    })
 
     expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitleBitcoin[NotificationType.OnchainPayment]({ sats: amount }),
+      getTitleBitcoin({
+        type: NotificationType.OnchainPayment,
+        locale,
+        fiatSymbol,
+        fiatAmount,
+        satsAmount: amount + "",
+      }),
     )
     expect(sendNotification.mock.calls[0][0].user.id.toString()).toStrictEqual(userIdA)
     expect(sendNotification.mock.calls[0][0].data.type).toBe(
