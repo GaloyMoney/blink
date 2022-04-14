@@ -46,7 +46,7 @@ let userRecordA: UserRecord
 let userRecordD: UserRecord
 
 const locale = getLocale()
-const { symbol } = getDisplayCurrency()
+const { symbol: fiatSymbol } = getDisplayCurrency()
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
@@ -223,7 +223,7 @@ describe("onchainBlockEventhandler", () => {
 
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
-    const displayCurrency = (sats * satsPrice).toLocaleString(locale, {
+    const fiatAmount = (sats * satsPrice).toLocaleString(locale, {
       maximumFractionDigits: 2,
     })
 
@@ -231,9 +231,9 @@ describe("onchainBlockEventhandler", () => {
       getTitleBitcoin({
         type: NotificationType.LnInvoicePaid,
         locale,
-        symbol,
-        displayCurrency,
-        sats: sats + "",
+        fiatSymbol,
+        fiatAmount,
+        satsAmount: sats + "",
       }),
     )
     expect(sendNotification.mock.calls[0][0].user.id).toStrictEqual(userIdF)

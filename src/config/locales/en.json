@@ -1,33 +1,33 @@
 {
   "notification": {
     "balance": {
-      "fiat": "Your balance is %s%s (%s sats)",
-      "sats": "Your balance is %s sats"
+      "fiat": "Your balance is {{fiatSymbol}}{{fiatAmount}} ({{satsAmount}} sats)",
+      "sats": "Your balance is {{satsAmount}} sats"
     },
     "btcPayments": {
       "intra_ledger_payment": {
-        "fiat": "Sent payment of %s%s | %s sats",
-        "sats": "Sent payment of %s sats"
+        "fiat": "Sent payment of {{fiatSymbol}}{{fiatAmount}} | {{satsAmount}} sats",
+        "sats": "Sent payment of {{satsAmount}} sats"
       },
       "intra_ledger_receipt": {
-        "fiat": "+%s%s | %s sats",
-        "sats": "+%s sats"
+        "fiat": "+{{fiatSymbol}}{{fiatAmount}} | {{satsAmount}} sats",
+        "sats": "+{{satsAmount}} sats"
       },
       "onchain_payment": {
-        "fiat": "Sent onchain payment of +%s%s | %s sats confirmed",
-        "sats": "Sent onchain payment of %s sats confirmed"
+        "fiat": "Sent onchain payment of +{{fiatSymbol}}{{fiatAmount}} | {{satsAmount}} sats confirmed",
+        "sats": "Sent onchain payment of {{satsAmount}} sats confirmed"
       },
       "onchain_receipt": {
-        "fiat": "+%s%s | %s sats",
-        "sats": "+%s sats"
+        "fiat": "+{{fiatSymbol}}{{fiatAmount}} | {{satsAmount}} sats",
+        "sats": "+{{satsAmount}} sats"
       },
       "onchain_receipt_pending": {
-        "fiat": "pending +%s%s | %s sats",
-        "sats": "pending +%s sats"
+        "fiat": "pending +{{fiatSymbol}}{{fiatAmount}} | {{satsAmount}} sats",
+        "sats": "pending +{{satsAmount}} sats"
       },
       "paid-invoice": {
-        "fiat": "+%s%s | %s sats",
-        "sats": "+%s sats"
+        "fiat": "+{{fiatSymbol}}{{fiatAmount}} | {{satsAmount}} sats",
+        "sats": "+{{satsAmount}} sats"
       }
     }
   }

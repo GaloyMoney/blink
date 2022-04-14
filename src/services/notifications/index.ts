@@ -26,7 +26,7 @@ import { transactionBitcoinNotification, transactionUsdNotification } from "./pa
 
 const i18n = getI18nInstance()
 const defaultLocale = getLocale()
-const { symbol } = getDisplayCurrency()
+const { symbol: fiatSymbol } = getDisplayCurrency()
 
 export const NotificationsService = (logger: Logger): INotificationsService => {
   const sendOnChainNotification = async ({
@@ -303,35 +303,38 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     }
 
     const locale = user.language || defaultLocale
-    const balanceSats = toSats(balance)
+    const satsBalance = toSats(balance)
 
     // Add commas to balancesats
-    const balanceSatsAsFormattedString = balanceSats.toLocaleString(locale)
+    const satsBalanceFormatted = satsBalance.toLocaleString(locale)
 
-    let balanceUsdAsFormattedString: string, title: string
+    let fiatBalanceFormatted = ""
+    let title: string
     if (price instanceof Error) {
       logger.warn({ price }, "impossible to fetch price for notification")
 
       title = i18n.__(
         { phrase: "notification.balance.sats", locale },
-        balanceSatsAsFormattedString,
+        { satsBalance: satsBalanceFormatted },
       )
     } else {
-      const usdValue = price * balanceSats
-      balanceUsdAsFormattedString = usdValue.toLocaleString(locale, {
+      const fiatValue = price * satsBalance
+      fiatBalanceFormatted = fiatValue.toLocaleString(locale, {
         maximumFractionDigits: 2,
       })
 
       title = i18n.__(
         { phrase: "notification.balance.fiat", locale },
-        symbol,
-        balanceUsdAsFormattedString,
-        balanceSatsAsFormattedString,
+        {
+          fiatSymbol,
+          fiatAmount: fiatBalanceFormatted,
+          satsAmount: satsBalanceFormatted,
+        },
       )
     }
 
     logger.info(
-      { balanceSatsAsFormattedString, title, userId, locale },
+      { fiatBalanceFormatted, satsBalanceFormatted, title, userId, locale },
       `sending balance notification to user`,
     )
 

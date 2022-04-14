@@ -4,29 +4,30 @@ import { sendNotification } from "./notification"
 
 const i18n = getI18nInstance()
 const defaultLocale = getLocale()
-const { symbol } = getDisplayCurrency()
+const { symbol: fiatSymbol } = getDisplayCurrency()
 
 export const getTitleBitcoin = ({
   type,
   locale,
-  symbol,
-  displayCurrency,
-  sats,
+  fiatSymbol,
+  fiatAmount,
+  satsAmount,
 }: GetTitleBitcoinArgs): string => {
   return i18n.__(
     { phrase: `notification.btcPayments.${type}.fiat`, locale },
-    symbol,
-    displayCurrency,
-    sats,
+    { fiatSymbol, fiatAmount, satsAmount },
   )
 }
 
 export const getTitleBitcoinNoDisplayCurrency = ({
   type,
   locale,
-  sats,
+  satsAmount,
 }: GetTitleBitcoinNoDisplayCurrencyArgs) => {
-  return i18n.__({ phrase: `notification.btcPayments.${type}.sats`, locale }, sats + "")
+  return i18n.__(
+    { phrase: `notification.btcPayments.${type}.sats`, locale },
+    { satsAmount },
+  )
 }
 
 export const getTitleUsd = {
@@ -65,13 +66,19 @@ export const transactionBitcoinNotification = async ({
 }: IPaymentBitcoinNotification) => {
   const locale = user.language || defaultLocale
   const satsAmount = sats + ""
-  let title = getTitleBitcoinNoDisplayCurrency({ type, locale, sats: satsAmount })
+  let title = getTitleBitcoinNoDisplayCurrency({ type, locale, satsAmount })
 
   if (displayCurrencyPerSat) {
-    const displayCurrency = (sats * displayCurrencyPerSat).toLocaleString(locale, {
+    const fiatAmount = (sats * displayCurrencyPerSat).toLocaleString(locale, {
       maximumFractionDigits: 2,
     })
-    title = getTitleBitcoin({ type, locale, symbol, displayCurrency, sats: satsAmount })
+    title = getTitleBitcoin({
+      type,
+      locale,
+      fiatSymbol,
+      fiatAmount,
+      satsAmount,
+    })
   }
 
   const data: IDataNotification = {

@@ -83,7 +83,7 @@ let userIdA: UserId
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
 const locale = getLocale()
-const { symbol } = getDisplayCurrency()
+const { symbol: fiatSymbol } = getDisplayCurrency()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -185,7 +185,7 @@ describe("UserWallet - onChainPay", () => {
     // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
-    const displayCurrency = (amount * satsPrice).toLocaleString(locale, {
+    const fiatAmount = (amount * satsPrice).toLocaleString(locale, {
       maximumFractionDigits: 2,
     })
 
@@ -193,9 +193,9 @@ describe("UserWallet - onChainPay", () => {
       getTitleBitcoin({
         type: NotificationType.OnchainPayment,
         locale,
-        symbol,
-        displayCurrency,
-        sats: amount + "",
+        fiatSymbol,
+        fiatAmount,
+        satsAmount: amount + "",
       }),
     )
     expect(sendNotification.mock.calls[0][0].user.id.toString()).toStrictEqual(userIdA)

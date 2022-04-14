@@ -17,15 +17,15 @@ interface INotification {
 type GetTitleBitcoinArgs = {
   type: string
   locale: string
-  symbol: string
-  displayCurrency: string
-  sats: string
+  fiatSymbol: string
+  fiatAmount: string
+  satsAmount: string
 }
 
 type GetTitleBitcoinNoDisplayCurrencyArgs = {
   type: string
   locale: string
-  sats: string
+  satsAmount: string
 }
 
 type getTitleUsdArgs = {

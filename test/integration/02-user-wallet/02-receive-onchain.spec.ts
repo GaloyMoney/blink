@@ -54,7 +54,7 @@ jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
 const locale = getLocale()
-const { symbol } = getDisplayCurrency()
+const { symbol: fiatSymbol } = getDisplayCurrency()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -270,7 +270,7 @@ describe("UserWallet - On chain", () => {
 
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
-    const displayCurrency = (amountSats * satsPrice).toLocaleString(locale, {
+    const fiatAmount = (amountSats * satsPrice).toLocaleString(locale, {
       maximumFractionDigits: 2,
     })
 
@@ -278,9 +278,9 @@ describe("UserWallet - On chain", () => {
       getTitleBitcoin({
         type: NotificationType.OnchainReceiptPending,
         locale,
-        symbol,
-        displayCurrency,
-        sats: amountSats + "",
+        fiatSymbol,
+        fiatAmount,
+        satsAmount: amountSats + "",
       }),
     )
 
