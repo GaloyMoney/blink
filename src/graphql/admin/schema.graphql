@@ -35,6 +35,7 @@ input AccountUpdateLevelInput {
 }
 
 input AccountUpdateStatusInput {
+  comment: String
   status: AccountStatus!
   uid: ID!
 }

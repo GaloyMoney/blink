@@ -1,7 +1,7 @@
 import crypto from "crypto"
 
 import { getAccountsConfig, getFeesConfig, getTwoFAConfig, levels } from "@config"
-import { UsernameRegex } from "@domain/accounts"
+import { AccountStatus, UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import * as mongoose from "mongoose"
@@ -274,6 +274,33 @@ const UserSchema = new Schema<UserRecord>(
       type: String,
       enum: ["new", "pending", "active", "locked"],
       default: getAccountsConfig().initialStatus,
+    },
+
+    statusHistory: {
+      type: [
+        {
+          status: {
+            type: String,
+            required: true,
+            enum: Object.values(AccountStatus),
+          },
+          updatedAt: {
+            type: Date,
+            default: Date.now,
+            required: true,
+          },
+          updatedByUserId: {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+          },
+          comment: {
+            type: String,
+            required: false,
+          },
+        },
+      ],
+      default: [],
     },
 
     twoFA: {

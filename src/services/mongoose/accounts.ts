@@ -92,6 +92,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     id,
     level,
     status,
+    statusHistory,
     coordinates,
     contacts,
     title,
@@ -105,6 +106,7 @@ export const AccountsRepository = (): IAccountsRepository => {
         {
           level,
           status,
+          statusHistory,
           coordinates,
           title,
           username,
@@ -149,6 +151,7 @@ const translateToAccount = (result: UserRecord): Account => ({
   username: result.username as Username,
   level: (result.level as AccountLevel) || AccountLevel.One,
   status: (result.status as AccountStatus) || getAccountsConfig().initialStatus,
+  statusHistory: (result.statusHistory || []) as AccountStatusHistory,
   title: result.title as BusinessMapTitle,
   coordinates: result.coordinates as Coordinates,
   ownerId: fromObjectId<UserId>(result._id),
@@ -173,6 +176,7 @@ const translateToAccount = (result: UserRecord): Account => ({
 const projection = {
   level: 1,
   status: 1,
+  statusHistory: 1,
   coordinates: 1,
   defaultWalletId: 1,
   username: 1,
