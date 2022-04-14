@@ -3,7 +3,7 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import SatAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
-import { Wallets } from "@app"
+import { Payments } from "@app"
 import { mapError } from "@graphql/error-map"
 import { WalletsRepository } from "@services/mongoose"
 import { WalletCurrency } from "@domain/shared"
@@ -41,7 +41,7 @@ const LnNoAmountInvoiceFeeProbeMutation = GT.Field({
       return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
     }
 
-    const feeSatAmount = await Wallets.getNoAmountLightningFee({
+    const feeSatAmount = await Payments.getNoAmountLightningFeeEstimation({
       walletId,
       amount,
       paymentRequest,

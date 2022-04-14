@@ -3,7 +3,7 @@ import { mapError } from "@graphql/error-map"
 import Memo from "@graphql/types/scalar/memo"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
-import { Wallets } from "@app"
+import { Payments } from "@app"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnIPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { InputValidationError } from "@graphql/error"
@@ -79,7 +79,7 @@ const LnNoAmountInvoicePaymentSendMutation = GT.Field<
       return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
     }
 
-    const status = await Wallets.payNoAmountInvoiceByWalletId({
+    const status = await Payments.payNoAmountInvoiceByWalletId({
       senderWalletId: walletId,
       paymentRequest,
       memo: memo ?? null,
