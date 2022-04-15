@@ -14,7 +14,9 @@ export const PriceRatio = ({
   }
 
   const convertFromUsd = (convert: UsdPaymentAmount): BtcPaymentAmount => {
-    const amount = (convert.amount * btc.amount) / usd.amount
+    const amountAsNumber =
+      (Number(convert.amount) * Number(btc.amount)) / Number(usd.amount)
+    const amount = BigInt(Math.round(amountAsNumber))
     return {
       amount: amount === 0n ? 1n : amount,
       currency: WalletCurrency.Btc,
@@ -22,7 +24,9 @@ export const PriceRatio = ({
   }
 
   const convertFromBtc = (convert: BtcPaymentAmount): UsdPaymentAmount => {
-    const amount = (convert.amount * usd.amount) / btc.amount
+    const amountAsNumber =
+      (Number(convert.amount) * Number(usd.amount)) / Number(btc.amount)
+    const amount = BigInt(Math.round(amountAsNumber))
     return {
       amount: amount === 0n ? 1n : amount,
       currency: WalletCurrency.Usd,
