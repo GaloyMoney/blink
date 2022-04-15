@@ -1,6 +1,7 @@
 import { toSats } from "@domain/bitcoin"
 import { FeeDifferenceError } from "@domain/ledger"
 import { FeeReimbursement, NewFeeReimbursement } from "@domain/ledger/fee-reimbursement"
+import { PriceRatio } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 
 describe("FeeReimbursement", () => {
@@ -33,7 +34,11 @@ describe("NewFeeReimbursement", () => {
       btc: { amount: 100n, currency: WalletCurrency.Btc },
       usd: { amount: 5n, currency: WalletCurrency.Usd },
     }
-    const feeReimbursement = NewFeeReimbursement(prepaidFeeAmount)
+
+    const priceRatio = PriceRatio(prepaidFeeAmount)
+    if (priceRatio instanceof Error) throw priceRatio
+
+    const feeReimbursement = NewFeeReimbursement({ prepaidFeeAmount, priceRatio })
     const actualFeeAmount = { amount: 20n, currency: WalletCurrency.Btc }
     const feeDifferenceAmount = feeReimbursement.getReimbursement(actualFeeAmount)
 
@@ -48,7 +53,14 @@ describe("NewFeeReimbursement", () => {
       btc: { amount: 0n, currency: WalletCurrency.Btc },
       usd: { amount: 0n, currency: WalletCurrency.Usd },
     }
-    const feeReimbursement = NewFeeReimbursement(prepaidFeeAmount)
+
+    const priceRatio = PriceRatio({
+      btc: { amount: 80n, currency: WalletCurrency.Btc },
+      usd: { amount: 4n, currency: WalletCurrency.Usd },
+    })
+    if (priceRatio instanceof Error) throw priceRatio
+
+    const feeReimbursement = NewFeeReimbursement({ prepaidFeeAmount, priceRatio })
     const actualFeeAmount = { amount: 20n, currency: WalletCurrency.Btc }
     const feeDifference = feeReimbursement.getReimbursement(actualFeeAmount)
     expect(feeDifference).toBeInstanceOf(FeeDifferenceError)
@@ -58,7 +70,11 @@ describe("NewFeeReimbursement", () => {
       btc: { amount: 100n, currency: WalletCurrency.Btc },
       usd: { amount: 5n, currency: WalletCurrency.Usd },
     }
-    const feeReimbursement = NewFeeReimbursement(prepaidFeeAmount)
+
+    const priceRatio = PriceRatio(prepaidFeeAmount)
+    if (priceRatio instanceof Error) throw priceRatio
+
+    const feeReimbursement = NewFeeReimbursement({ prepaidFeeAmount, priceRatio })
     const actualFeeAmount = { amount: 300n, currency: WalletCurrency.Btc }
     const feeDifference = feeReimbursement.getReimbursement(actualFeeAmount)
     expect(feeDifference).toBeInstanceOf(FeeDifferenceError)
