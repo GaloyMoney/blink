@@ -15,6 +15,11 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
       : (state.usdPaymentAmount as PaymentAmount<S>)
   }
 
+  const paymentAmounts = (): { btc: BtcPaymentAmount; usd: UsdPaymentAmount } => ({
+    btc: state.btcPaymentAmount,
+    usd: state.usdPaymentAmount,
+  })
+
   const routeDetails = (): {
     rawRoute?: RawRoute
     outgoingNodePubkey?: Pubkey
@@ -52,6 +57,7 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
     ...state,
     protocolFeeInSenderWalletCurrency,
     paymentAmountInSenderWalletCurrency,
+    paymentAmounts,
     routeDetails,
     recipientDetails,
     senderWalletDescriptor,
