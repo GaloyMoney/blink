@@ -6,6 +6,7 @@ import {
 } from "@domain/fiat/display-currency"
 import { LedgerTransactionType } from "@domain/ledger"
 import { FeeReimbursement, NewFeeReimbursement } from "@domain/ledger/fee-reimbursement"
+import { PriceRatio } from "@domain/payments"
 import { paymentAmountFromSats, WalletCurrency } from "@domain/shared"
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
@@ -107,8 +108,13 @@ export const newReimburseFee = async ({
     usd: paymentFlow.usdProtocolFee,
   }
 
-  const feeDifference =
-    NewFeeReimbursement(maxFeeAmounts).getReimbursement(actualFeeAmount)
+  const priceRatio = PriceRatio(paymentFlow.paymentAmounts())
+  if (priceRatio instanceof Error) return priceRatio
+
+  const feeDifference = NewFeeReimbursement({
+    prepaidFeeAmount: maxFeeAmounts,
+    priceRatio,
+  }).getReimbursement(actualFeeAmount)
   if (feeDifference instanceof Error) {
     logger.warn(
       { maxFee: maxFeeAmounts, actualFee: actualFeeAmount },
