@@ -16,9 +16,15 @@ export const FeeReimbursement = (prepaidFee: Satoshis): FeeReimbursement => {
   }
 }
 
-export const NewFeeReimbursement = (prepaidFeeAmount: {
-  btc: BtcPaymentAmount
-  usd: UsdPaymentAmount
+export const NewFeeReimbursement = ({
+  prepaidFeeAmount,
+  priceRatio,
+}: {
+  prepaidFeeAmount: {
+    btc: BtcPaymentAmount
+    usd: UsdPaymentAmount
+  }
+  priceRatio: PriceRatio
 }): NewFeeReimbursement => {
   const getReimbursement = (
     actualFee: BtcPaymentAmount,
@@ -29,9 +35,6 @@ export const NewFeeReimbursement = (prepaidFeeAmount: {
       amount: feeDifferenceBtc,
       currency: WalletCurrency.Btc,
     }
-
-    const priceRatio = PriceRatio(prepaidFeeAmount)
-    if (priceRatio instanceof Error) return new FeeDifferenceError()
 
     const feeDifferenceUsdAmount = priceRatio.convertFromBtc(feeDifferenceBtcAmount)
 
