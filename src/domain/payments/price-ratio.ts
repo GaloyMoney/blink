@@ -18,7 +18,7 @@ export const PriceRatio = ({
       (Number(convert.amount) * Number(btc.amount)) / Number(usd.amount)
     const amount = BigInt(Math.round(amountAsNumber))
     return {
-      amount: amount === 0n ? 1n : amount,
+      amount: convert.amount === 0n ? 0n : amount === 0n ? 1n : amount,
       currency: WalletCurrency.Btc,
     }
   }
@@ -28,7 +28,7 @@ export const PriceRatio = ({
       (Number(convert.amount) * Number(usd.amount)) / Number(btc.amount)
     const amount = BigInt(Math.round(amountAsNumber))
     return {
-      amount: amount === 0n ? 1n : amount,
+      amount: convert.amount === 0n ? 0n : amount === 0n ? 1n : amount,
       currency: WalletCurrency.Usd,
     }
   }
