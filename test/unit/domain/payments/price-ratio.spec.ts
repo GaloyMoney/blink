@@ -62,6 +62,42 @@ describe("PriceRatio", () => {
     })
   })
 
+  it("does not return zero usd amount for small ratios", () => {
+    const convertAmount = {
+      amount: 40n,
+      currency: WalletCurrency.Btc,
+    }
+
+    const priceRatio = PriceRatio({
+      usd: { amount: 1n, currency: WalletCurrency.Usd },
+      btc: { amount: 1000n, currency: WalletCurrency.Btc },
+    })
+    if (priceRatio instanceof Error) throw priceRatio
+
+    expect(priceRatio.convertFromBtc(convertAmount)).toEqual({
+      amount: 1n,
+      currency: WalletCurrency.Usd,
+    })
+  })
+
+  it("does not return zero btc amount for small ratios", () => {
+    const convertAmount = {
+      amount: 40n,
+      currency: WalletCurrency.Usd,
+    }
+
+    const priceRatio = PriceRatio({
+      usd: { amount: 1000n, currency: WalletCurrency.Usd },
+      btc: { amount: 1n, currency: WalletCurrency.Btc },
+    })
+    if (priceRatio instanceof Error) throw priceRatio
+
+    expect(priceRatio.convertFromUsd(convertAmount)).toEqual({
+      amount: 1n,
+      currency: WalletCurrency.Btc,
+    })
+  })
+
   it("returns error for zero amount btc", () => {
     const priceRatio = PriceRatio({
       usd: {

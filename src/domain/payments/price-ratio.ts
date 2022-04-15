@@ -14,15 +14,17 @@ export const PriceRatio = ({
   }
 
   const convertFromUsd = (convert: UsdPaymentAmount): BtcPaymentAmount => {
+    const amount = (convert.amount * btc.amount) / usd.amount
     return {
-      amount: (convert.amount * btc.amount) / usd.amount,
+      amount: amount === 0n ? 1n : amount,
       currency: WalletCurrency.Btc,
     }
   }
 
   const convertFromBtc = (convert: BtcPaymentAmount): UsdPaymentAmount => {
+    const amount = (convert.amount * usd.amount) / btc.amount
     return {
-      amount: (convert.amount * usd.amount) / btc.amount,
+      amount: amount === 0n ? 1n : amount,
       currency: WalletCurrency.Usd,
     }
   }
