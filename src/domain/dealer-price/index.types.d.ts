@@ -43,7 +43,7 @@ type BtcAmountWithExpiration = {
   expiration: Date
 }
 
-interface IDealerPriceServiceNew {
+interface INewDealerPriceService {
   getCentsFromSatsForImmediateBuy(
     amount: BtcPaymentAmount,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError>
