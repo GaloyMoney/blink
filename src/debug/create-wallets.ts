@@ -8,7 +8,7 @@
  * The fifth and final argument is the account level that will be set for each generated account
  */
 
-import { Wallets } from "@app"
+import { Payments, Wallets } from "@app"
 import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { BTC_NETWORK } from "@config"
 import { checkedToSats } from "@domain/bitcoin"
@@ -124,7 +124,7 @@ const disburseFunds = async (
     })
     if (invoice instanceof Error) return invoice
 
-    await Wallets.payInvoiceByWalletId({
+    await Payments.payInvoiceByWalletId({
       paymentRequest: invoice.paymentRequest,
       memo: null,
       senderWalletId: disburserWalletId,
