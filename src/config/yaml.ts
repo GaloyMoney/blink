@@ -18,6 +18,7 @@ import {
   ConfigSchema,
   configSchema,
   DisplayCurrencyConfigSchema,
+  DealerConfigSchema,
   RewardsConfigSchema,
 } from "./schema"
 import { ConfigError } from "./error"
@@ -85,6 +86,8 @@ export const getDisplayCurrency = (): DisplayCurrencyConfigSchema => ({
   code: yamlConfig.displayCurrency.code,
   symbol: yamlConfig.displayCurrency.symbol,
 })
+
+export const getDealerConfig = (): DealerConfigSchema => yamlConfig.dealer
 
 export const getLndParams = (): LndParams[] => {
   const lnds = yamlConfig.lnds

@@ -9,6 +9,10 @@ displayCurrency:
 # username of the account that will be used to fund rewards
 funder: "FunderWallet"
 
+dealer:
+  usd:
+    hedgingEnabled: false
+
 buildVersion:
   android:
     minBuildNumber: 182
