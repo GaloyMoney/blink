@@ -1,22 +1,8 @@
-import { toSats } from "@domain/bitcoin"
-import { PriceRatio } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 
 import { FeeDifferenceError } from "./errors"
 
-export const FeeReimbursement = (prepaidFee: Satoshis): FeeReimbursement => {
-  const getReimbursement = (actualFee: Satoshis): Satoshis | FeeDifferenceError => {
-    const feeDifference = toSats(prepaidFee - actualFee)
-    if (feeDifference < 0) return new FeeDifferenceError()
-    return feeDifference
-  }
-
-  return {
-    getReimbursement,
-  }
-}
-
-export const NewFeeReimbursement = ({
+export const FeeReimbursement = ({
   prepaidFeeAmount,
   priceRatio,
 }: {
@@ -25,7 +11,7 @@ export const NewFeeReimbursement = ({
     usd: UsdPaymentAmount
   }
   priceRatio: PriceRatio
-}): NewFeeReimbursement => {
+}): FeeReimbursement => {
   const getReimbursement = (
     actualFee: BtcPaymentAmount,
   ): { btc: BtcPaymentAmount; usd: UsdPaymentAmount } | FeeDifferenceError => {

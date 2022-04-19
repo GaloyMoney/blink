@@ -641,7 +641,7 @@ const executePaymentViaLn = async ({
       }
 
       if (!rawRoute) {
-        const reimbursed = await Wallets.newReimburseFee({
+        const reimbursed = await Wallets.reimburseFee({
           paymentFlow,
           journalId,
           actualFee: payResult.roundedUpFee,
