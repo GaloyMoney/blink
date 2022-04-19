@@ -47,7 +47,7 @@ const LnNoAmountUsdInvoiceFeeProbeMutation = GT.Field({
 
     return {
       errors: [],
-      amount: normalizePaymentAmount(feeUsdAmount).amount,
+      ...normalizePaymentAmount(feeUsdAmount),
     }
   },
 })
