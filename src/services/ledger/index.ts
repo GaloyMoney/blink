@@ -59,7 +59,7 @@ export const LedgerService = (): ILedgerService => {
 
   const getTransactionById = async (
     id: LedgerTransactionId,
-  ): Promise<LedgerTransaction | LedgerServiceError> => {
+  ): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError> => {
     try {
       const _id = toObjectId<LedgerTransactionId>(id)
       const { results } = await MainBook.ledger({
@@ -77,7 +77,7 @@ export const LedgerService = (): ILedgerService => {
 
   const getTransactionsByHash = async (
     hash: PaymentHash | OnChainTxHash,
-  ): Promise<LedgerTransaction[] | LedgerServiceError> => {
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
     try {
       const { results } = await MainBook.ledger({
         account_path: liabilitiesMainAccount,
@@ -91,7 +91,7 @@ export const LedgerService = (): ILedgerService => {
 
   const getTransactionsByWalletId = async (
     walletId: WalletId,
-  ): Promise<LedgerTransaction[] | LedgerError> => {
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
       const { results } = await MainBook.ledger({ account: liabilitiesWalletId })
@@ -104,7 +104,7 @@ export const LedgerService = (): ILedgerService => {
   const getTransactionsByWalletIdAndContactUsername = async (
     walletId: WalletId,
     contactUsername,
-  ): Promise<LedgerTransaction[] | LedgerError> => {
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
       const { results } = await MainBook.ledger({
@@ -119,7 +119,7 @@ export const LedgerService = (): ILedgerService => {
 
   const listPendingPayments = async (
     walletId: WalletId,
-  ): Promise<LedgerTransaction[] | LedgerError> => {
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
       const { results } = await MainBook.ledger({
@@ -324,7 +324,7 @@ export const LedgerService = (): ILedgerService => {
   })
 }
 
-export const translateToLedgerTx = (tx): LedgerTransaction => ({
+export const translateToLedgerTx = (tx): LedgerTransaction<WalletCurrency> => ({
   id: tx.id,
   walletId: toWalletId(tx.accounts),
   type: tx.type,

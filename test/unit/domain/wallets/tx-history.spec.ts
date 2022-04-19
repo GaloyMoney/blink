@@ -16,7 +16,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
     const settlementDisplayCurrencyPerSat = Math.abs(usd / settlementAmount)
     const walletId = crypto.randomUUID() as WalletId
 
-    const ledgerTransactions: LedgerTransaction[] = [
+    const ledgerTransactions: LedgerTransaction<WalletCurrency>[] = [
       {
         id: "id" as LedgerTransactionId,
         walletId,

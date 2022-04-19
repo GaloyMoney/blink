@@ -20,14 +20,14 @@ type LedgerJournal = {
 }
 
 // Differentiate fields depending on what 'type' we have (see domain/wallets/index.types.d.ts)
-type LedgerTransaction = {
+type LedgerTransaction<S extends WalletCurrency> = {
   readonly id: LedgerTransactionId
   readonly walletId: WalletId | undefined // FIXME create a subclass so that this field is always set for liabilities wallets
   readonly type: LedgerTransactionType
-  readonly debit: Satoshis
-  readonly credit: Satoshis
+  readonly debit: S extends "BTC" ? Satoshis : UsdCents
+  readonly credit: S extends "BTC" ? Satoshis : UsdCents
   readonly fee: Satoshis
-  readonly currency: WalletCurrency
+  readonly currency: S
   readonly timestamp: Date
   readonly pendingConfirmation: boolean
   readonly journalId: LedgerJournalId
@@ -234,24 +234,24 @@ interface ILedgerService {
 
   getTransactionById(
     id: LedgerTransactionId,
-  ): Promise<LedgerTransaction | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError>
 
   getTransactionsByHash(
     paymentHash: PaymentHash | OnChainTxHash,
-  ): Promise<LedgerTransaction[] | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
   getTransactionsByWalletId(
     walletId: WalletId,
-  ): Promise<LedgerTransaction[] | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
   getTransactionsByWalletIdAndContactUsername(
     walletId: WalletId,
     contactUsername: Username,
-  ): Promise<LedgerTransaction[] | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
   listPendingPayments(
     walletId: WalletId,
-  ): Promise<LedgerTransaction[] | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
   listAllPaymentHashes(): AsyncGenerator<PaymentHash | LedgerError>
 
