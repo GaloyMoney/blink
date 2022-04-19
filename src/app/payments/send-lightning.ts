@@ -275,6 +275,9 @@ const validateInvoicePaymentInputs = async ({
   }
   if (paymentFlow instanceof Error) return paymentFlow
 
+  const persistedPayment = await PaymentFlowStateRepository().persistNew(paymentFlow)
+  if (persistedPayment instanceof Error) return persistedPayment
+
   return {
     senderWallet,
     paymentFlow,
