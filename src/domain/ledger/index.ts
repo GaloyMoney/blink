@@ -1,4 +1,5 @@
 import { InvalidLedgerTransactionId } from "@domain/errors"
+import { WalletCurrency } from "@domain/shared"
 
 export * from "./errors"
 export * from "./activity-checker"
@@ -63,4 +64,11 @@ export const checkedToLedgerTransactionId = (
     return ledgerTransactionId as LedgerTransactionId
   }
   return new InvalidLedgerTransactionId(ledgerTransactionId)
+}
+
+export const inputAmountFromLedgerTransaction = (
+  txn: LedgerTransaction<WalletCurrency>,
+) => {
+  const fee = txn.currency == WalletCurrency.Usd ? txn.feeUsd : txn.fee
+  return txn.debit - fee
 }

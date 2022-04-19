@@ -6,9 +6,11 @@ import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
 import { runInParallel } from "@utils"
 
+import { Wallets } from "@app"
 import { WalletsRepository } from "@services/mongoose"
 
-import { reimburseFee } from "./reimburse-fee"
+import { PaymentFlowStateRepository } from "@services/payment-flow"
+import { inputAmountFromLedgerTransaction } from "@domain/ledger"
 
 export const updatePendingPayments = async (logger: Logger): Promise<void> => {
   const ledgerService = LedgerService()
@@ -151,12 +153,16 @@ const updatePendingPayment = async ({
           })
         if (pendingPayment.feeKnownInAdvance) return true
 
-        return reimburseFee({
+        const paymentFlow = await PaymentFlowStateRepository().findLightningPaymentFlow({
           walletId,
-          walletCurrency: wallet.currency,
-          journalId: pendingPayment.journalId,
           paymentHash,
-          maxFee: pendingPayment.fee,
+          inputAmount: BigInt(inputAmountFromLedgerTransaction(pendingPayment)),
+        })
+        if (paymentFlow instanceof Error) return paymentFlow
+
+        return Wallets.newReimburseFee({
+          paymentFlow,
+          journalId: pendingPayment.journalId,
           actualFee: roundedUpFee,
           revealedPreImage,
           paymentAmount: toSats(
