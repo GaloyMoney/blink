@@ -91,6 +91,11 @@ input CaptchaRequestAuthCodeInput {
 """
 scalar CentAmount
 
+type CentAmountPayload {
+  amount: CentAmount
+  errors: [Error!]!
+}
+
 type ConsumerAccount implements Account {
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
@@ -345,6 +350,12 @@ input LnNoAmountInvoicePaymentInput {
   walletId: WalletId!
 }
 
+input LnNoAmountUsdInvoiceFeeProbeInput {
+  amount: CentAmount!
+  paymentRequest: LnPaymentRequest!
+  walletId: WalletId!
+}
+
 input LnNoAmountUsdInvoicePaymentInput {
   """
   Amount to pay in USD cents.
@@ -502,6 +513,9 @@ type Mutation {
   Returns payment status (success, failed, pending, already_paid).
   """
   lnNoAmountInvoicePaymentSend(input: LnNoAmountInvoicePaymentInput!): PaymentSendPayload!
+  lnNoAmountUsdInvoiceFeeProbe(
+    input: LnNoAmountUsdInvoiceFeeProbeInput!
+  ): CentAmountPayload!
 
   """
   Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
