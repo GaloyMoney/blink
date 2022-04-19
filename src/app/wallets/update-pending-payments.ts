@@ -160,7 +160,7 @@ const updatePendingPayment = async ({
         })
         if (paymentFlow instanceof Error) return paymentFlow
 
-        return Wallets.newReimburseFee({
+        return Wallets.reimburseFee({
           paymentFlow,
           journalId: pendingPayment.journalId,
           actualFee: roundedUpFee,
