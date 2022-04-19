@@ -72,7 +72,7 @@ const updatePendingPayment = async ({
   lock,
 }: {
   walletId: WalletId
-  pendingPayment: LedgerTransaction
+  pendingPayment: LedgerTransaction<WalletCurrency>
   logger: Logger
   lock?: DistributedLock
 }): Promise<true | ApplicationError> => {

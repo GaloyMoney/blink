@@ -40,7 +40,7 @@ const filterPendingIncoming = (
 }
 
 export const fromLedger = (
-  ledgerTransactions: LedgerTransaction[],
+  ledgerTransactions: LedgerTransaction<WalletCurrency>[],
 ): ConfirmedTransactionHistory => {
   const transactions: WalletTransaction[] = ledgerTransactions.map(
     ({
