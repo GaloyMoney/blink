@@ -4,6 +4,11 @@ export const WalletCurrency = {
   Btc: "BTC",
 } as const
 
+export const ExchangeCurrencyUnit = {
+  Usd: "USDCENT",
+  Btc: "BTCSAT",
+} as const
+
 export const ZERO_SATS = {
   currency: WalletCurrency.Btc,
   amount: 0n,

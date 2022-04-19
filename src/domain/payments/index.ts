@@ -4,7 +4,7 @@ export * from "./payment-flow-builder"
 export * from "./price-ratio"
 export * from "./ln-fees"
 
-import { ValidationError, WalletCurrency } from "@domain/shared"
+import { ExchangeCurrencyUnit, ValidationError, WalletCurrency } from "@domain/shared"
 
 import { InvalidBtcPaymentAmountError, InvalidUsdPaymentAmountError } from "./errors"
 
@@ -40,9 +40,12 @@ export const checkedToUsdPaymentAmount = (
   }
 }
 
-export const normalizePaymentAmount = <S extends WalletCurrency>(
-  paymentAmount: PaymentAmount<S>,
-): { amount: number; currency: S } => ({
+export const normalizePaymentAmount = (
+  paymentAmount: PaymentAmount<WalletCurrency>,
+): PaymentAmountPayload<ExchangeCurrencyUnit> => ({
   amount: Number(paymentAmount.amount),
-  currency: paymentAmount.currency,
+  currencyUnit:
+    paymentAmount.currency === WalletCurrency.Usd
+      ? ExchangeCurrencyUnit.Usd
+      : ExchangeCurrencyUnit.Btc,
 })
