@@ -68,7 +68,7 @@ export const DealerPriceService = (): IDealerPriceService => ({
 
 export const NewDealerPriceService = (
   timeToExpiryInSeconds: Seconds = defaultTimeToExpiryInSeconds,
-): IDealerPriceServiceNew => ({
+): INewDealerPriceService => ({
   getCentsFromSatsForImmediateBuy: async (
     amount: BtcPaymentAmount,
   ): Promise<UsdPaymentAmount> =>
