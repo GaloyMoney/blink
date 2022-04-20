@@ -69,11 +69,11 @@ let initialBalanceUserA: Satoshis
 let userA: UserRecord
 
 let accountA: Account
+let accountG: Account
 
 let walletIdA: WalletId
-let accountB: Account
-let walletIdB: WalletId
 let walletIdD: WalletId
+let walletIdG: WalletId
 
 // using walletIdE and walletIdF to sendAll
 let walletIdE: WalletId
@@ -98,11 +98,11 @@ beforeAll(async () => {
   userIdA = await getUserIdByTestUserRef("A")
   accountA = await getAccountByTestUserRef("A")
 
-  walletIdB = await getDefaultWalletIdByTestUserRef("B")
-  accountB = await getAccountByTestUserRef("B")
   walletIdD = await getDefaultWalletIdByTestUserRef("D")
   walletIdE = await getDefaultWalletIdByTestUserRef("E")
   walletIdF = await getDefaultWalletIdByTestUserRef("F")
+  walletIdG = await getDefaultWalletIdByTestUserRef("G")
+  accountG = await getAccountByTestUserRef("G")
 
   await bitcoindClient.loadWallet({ filename: "outside" })
 })
@@ -605,13 +605,13 @@ describe("UserWallet - onChainPay", () => {
       lnd: lndOutside1,
       format: "p2wpkh",
     })
-    const initialBalanceUserB = await getBalanceHelper(walletIdB)
+    const initialBalanceUserG = await getBalanceHelper(walletIdG)
 
     const status = await Wallets.payOnChainByWalletId({
-      senderAccount: accountB,
-      senderWalletId: walletIdB,
+      senderAccount: accountG,
+      senderWalletId: walletIdG,
       address,
-      amount: initialBalanceUserB,
+      amount: initialBalanceUserG,
       targetConfirmations,
       memo: null,
       sendAll: false,
