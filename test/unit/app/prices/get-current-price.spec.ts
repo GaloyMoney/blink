@@ -23,7 +23,7 @@ describe("Prices", () => {
         .spyOn(PriceServiceImpl, "PriceService")
         .mockImplementationOnce(() => ({
           listHistory: jest.fn(),
-          getRealTimePrice: () => Promise.resolve(0.0005 as DisplayCurrencyPerSat),
+          getRealTimePrice: () => Promise.resolve(0.05 as DisplayCurrencyPerSat),
         }))
         .mockImplementationOnce(() => ({
           listHistory: jest.fn(),
@@ -31,10 +31,10 @@ describe("Prices", () => {
         }))
 
       let price = await Prices.getCurrentPrice()
-      expect(price).toEqual(0.0005)
+      expect(price).toEqual(0.05)
 
       price = await Prices.getCurrentPrice()
-      expect(price).toEqual(0.0005)
+      expect(price).toEqual(0.05)
     })
 
     it("fails when realtime fails and cache is empty", async () => {
