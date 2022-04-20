@@ -1,5 +1,7 @@
 type DealerPriceServiceError = import("./errors").DealerPriceServiceError
 
+type DealerTypes = typeof import(".").DealerTypes[keyof typeof import(".").DealerTypes]
+
 interface IDealerPriceService {
   getCentsFromSatsForImmediateBuy(
     amountInSatoshis: Satoshis,
