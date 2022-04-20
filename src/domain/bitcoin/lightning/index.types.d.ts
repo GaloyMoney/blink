@@ -224,16 +224,6 @@ interface ILightningService {
 
   payInvoiceViaPaymentDetails({
     decodedInvoice,
-    milliSatsAmount,
-    maxFee,
-  }: {
-    decodedInvoice: LnInvoice
-    milliSatsAmount: MilliSatoshis | bigint
-    maxFee: Satoshis | bigint
-  }): Promise<PayInvoiceResult | LightningServiceError>
-
-  newPayInvoiceViaPaymentDetails({
-    decodedInvoice,
     btcPaymentAmount,
     maxFeeAmount,
   }: {
