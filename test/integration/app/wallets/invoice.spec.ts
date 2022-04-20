@@ -1,12 +1,11 @@
 import { Wallets } from "@app"
 import { addWallet } from "@app/accounts/add-wallet"
-import { getCurrentPrice } from "@app/prices"
 import {
   getInvoiceCreateAttemptLimits,
   getInvoiceCreateForRecipientAttemptLimits,
 } from "@config"
-import { decodeInvoice } from "@domain/bitcoin/lightning"
-import { CENTS_PER_USD } from "@domain/fiat"
+import { decodeInvoice, defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
+import { toCents } from "@domain/fiat"
 import {
   InvoiceCreateForRecipientRateLimiterExceededError,
   InvoiceCreateRateLimiterExceededError,
@@ -14,6 +13,7 @@ import {
 import { WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import { WalletInvoicesRepository } from "@services/mongoose"
+import { DealerPriceService } from "@services/dealer-price"
 
 import {
   createUserAndWalletFromUserRef,
@@ -136,13 +136,14 @@ describe("Wallet - addInvoice BTC", () => {
 
 describe("Wallet - addInvoice USD", () => {
   it("add a self generated USD invoice", async () => {
-    const displayCurrencyPerSat = await getCurrentPrice()
-    if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
-
     const centsInput = 10000
 
-    const centsPerSat = displayCurrencyPerSat * CENTS_PER_USD
-    const sats = (centsInput / centsPerSat) * 0.996 // 40 bps spread
+    const sats = await DealerPriceService().getSatsFromCentsForFutureBuy(
+      toCents(centsInput),
+      defaultTimeToExpiryInSeconds,
+    )
+    expect(sats).not.toBeInstanceOf(Error)
+    if (sats instanceof Error) throw sats
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletIdUsd,
@@ -181,13 +182,14 @@ describe("Wallet - addInvoice USD", () => {
   })
 
   it("adds a public with amount invoice", async () => {
-    const displayCurrencyPerSat = await getCurrentPrice()
-    if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
-
     const centsInput = 10000
 
-    const centsPerSat = displayCurrencyPerSat * CENTS_PER_USD
-    const sats = (centsInput / centsPerSat) * 0.996 // 40 bps spread
+    const sats = await DealerPriceService().getSatsFromCentsForFutureBuy(
+      toCents(centsInput),
+      defaultTimeToExpiryInSeconds,
+    )
+    expect(sats).not.toBeInstanceOf(Error)
+    if (sats instanceof Error) throw sats
 
     const lnInvoice = await Wallets.addInvoiceForRecipient({
       recipientWalletId: walletIdUsd,
