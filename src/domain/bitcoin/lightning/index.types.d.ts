@@ -159,14 +159,6 @@ interface ILightningService {
   listAllPubkeys(): Pubkey[]
 
   findRouteForInvoice({
-    decodedInvoice,
-    maxFee,
-  }: {
-    decodedInvoice: LnInvoice
-    maxFee: Satoshis
-  }): Promise<RawRoute | LightningServiceError>
-
-  findRouteForInvoiceNew({
     invoice,
     amount,
   }: {

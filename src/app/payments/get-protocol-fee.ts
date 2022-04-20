@@ -112,7 +112,7 @@ const estimateLightningFee = async ({
 
     const lndService = LndService()
     if (lndService instanceof Error) return lndService
-    const routeResult = await lndService.findRouteForInvoiceNew({
+    const routeResult = await lndService.findRouteForInvoice({
       invoice,
       amount: btcPaymentAmount,
     })
