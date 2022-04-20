@@ -1,11 +1,10 @@
-import { getTwoFALimits, getAccountLimits, MS_PER_DAY } from "@config"
+import { getTwoFALimits, getAccountLimits, MS_PER_DAY, getDealerConfig } from "@config"
 import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
 import { LightningPaymentFlowBuilder } from "@domain/payments"
-import { DealerTypes } from "@domain/dealer-price"
 import { WalletCurrency } from "@domain/shared"
 import { AlreadyPaidError } from "@domain/errors"
 
-import { NewDealerPriceService, dealerType } from "@services/dealer-price"
+import { NewDealerPriceService } from "@services/dealer-price"
 import {
   AccountsRepository,
   WalletInvoicesRepository,
@@ -14,7 +13,9 @@ import {
 import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
 
-import { newGetCurrentPrice } from "@app/prices"
+import { getCurrentPrice } from "@app/prices"
+
+const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
 const dealer = NewDealerPriceService()
 const ledger = LedgerService()
@@ -22,16 +23,11 @@ const ledger = LedgerService()
 const usdFromBtcMidPriceFn = async (
   amount: BtcPaymentAmount,
 ): Promise<UsdPaymentAmount | DealerPriceServiceError> => {
-  let midPriceRatio = await dealer.getCentsPerSatsExchangeMidRate()
-
-  if (midPriceRatio instanceof Error && dealerType == DealerTypes.NoHedge) {
-    return midPriceRatio
-  }
-
-  if (midPriceRatio instanceof Error) {
-    midPriceRatio = await newGetCurrentPrice()
-    if (midPriceRatio instanceof Error) return midPriceRatio
-  }
+  // TODO: Decide if we should fallback to PriceService if Dealer fails; remove TODO if not
+  const midPriceRatio = usdHedgeEnabled
+    ? await dealer.getCentsPerSatsExchangeMidRate()
+    : await getCurrentPrice()
+  if (midPriceRatio instanceof Error) return midPriceRatio
 
   return {
     amount: BigInt(Math.ceil(Number(amount.amount) * midPriceRatio)),
@@ -42,16 +38,11 @@ const usdFromBtcMidPriceFn = async (
 const btcFromUsdMidPriceFn = async (
   amount: UsdPaymentAmount,
 ): Promise<BtcPaymentAmount | DealerPriceServiceError> => {
-  let midPriceRatio = await dealer.getCentsPerSatsExchangeMidRate()
-
-  if (midPriceRatio instanceof Error && dealerType == DealerTypes.NoHedge) {
-    return midPriceRatio
-  }
-
-  if (midPriceRatio instanceof Error) {
-    midPriceRatio = await newGetCurrentPrice()
-    if (midPriceRatio instanceof Error) return midPriceRatio
-  }
+  // TODO: Decide if we should fallback to PriceService if Dealer fails; remove TODO if not
+  const midPriceRatio = usdHedgeEnabled
+    ? await dealer.getCentsPerSatsExchangeMidRate()
+    : await getCurrentPrice()
+  if (midPriceRatio instanceof Error) return midPriceRatio
 
   return {
     amount: BigInt(Math.ceil(Number(amount.amount) / midPriceRatio)),
