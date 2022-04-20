@@ -16,6 +16,7 @@ import {
   PhoneCodeError,
   UsernameError,
   RebalanceNeededError,
+  DealerOfflineError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -185,6 +186,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidIPMetadataForRewardError":
       message = "Unsupported phone carrier for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "NoConnectionToDealerError":
+      message = "No connection to dealer to perform USD operation."
+      return new DealerOfflineError({ message, logger: baseLogger })
 
     case "RouteNotFoundError":
       message = "Unable to find a route for payment."
