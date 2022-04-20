@@ -6,7 +6,10 @@ import { credentials } from "@grpc/grpc-js"
 
 import { WalletCurrency } from "@domain/shared"
 
-import { UnknownDealerPriceServiceError } from "@domain/dealer-price"
+import {
+  NoConnectionToDealerError,
+  UnknownDealerPriceServiceError,
+} from "@domain/dealer-price"
 
 import { toSats } from "@domain/bitcoin"
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
@@ -101,7 +104,7 @@ export const DealerPriceService = (): IDealerPriceService => {
       return toCents(response.getAmountInCents())
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForImmediateBuy unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -120,7 +123,7 @@ export const DealerPriceService = (): IDealerPriceService => {
         { error },
         "GetCentsFromSatsForImmediateSell unable to fetch price",
       )
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -137,7 +140,7 @@ export const DealerPriceService = (): IDealerPriceService => {
       return toCents(response.getAmountInCents())
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForFutureBuy unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -154,7 +157,7 @@ export const DealerPriceService = (): IDealerPriceService => {
       return toCents(response.getAmountInCents())
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForFutureSell unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -168,7 +171,7 @@ export const DealerPriceService = (): IDealerPriceService => {
       return toSats(response.getAmountInSatoshis())
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForImmediateBuy unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -185,7 +188,7 @@ export const DealerPriceService = (): IDealerPriceService => {
         { error },
         "GetSatsFromCentsForImmediateSell unable to fetch price",
       )
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -202,7 +205,7 @@ export const DealerPriceService = (): IDealerPriceService => {
       return toSats(response.getAmountInSatoshis())
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForFutureBuy unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -219,7 +222,7 @@ export const DealerPriceService = (): IDealerPriceService => {
       return toSats(response.getAmountInSatoshis())
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForFutureSell unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -233,7 +236,7 @@ export const DealerPriceService = (): IDealerPriceService => {
       return toCentsPerSatsRatio(response.getRatioInCentsPerSatoshis())
     } catch (error) {
       baseLogger.error({ error }, "GetCentsPerSatsExchangeMidRate unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -271,7 +274,7 @@ export const NewDealerPriceService = (
       }
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForImmediateBuy unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -293,7 +296,7 @@ export const NewDealerPriceService = (
         { error },
         "GetCentsFromSatsForImmediateSell unable to fetch price",
       )
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -312,7 +315,7 @@ export const NewDealerPriceService = (
       }
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForFutureBuy unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -331,7 +334,7 @@ export const NewDealerPriceService = (
       }
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForFutureSell unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -350,7 +353,7 @@ export const NewDealerPriceService = (
       }
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForImmediateBuy unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -372,7 +375,7 @@ export const NewDealerPriceService = (
         { error },
         "GetSatsFromCentsForImmediateSell unable to fetch price",
       )
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -391,7 +394,7 @@ export const NewDealerPriceService = (
       }
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForFutureBuy unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -410,7 +413,7 @@ export const NewDealerPriceService = (
       }
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForFutureSell unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -424,7 +427,7 @@ export const NewDealerPriceService = (
       return toCentsPerSatsRatio(response.getRatioInCentsPerSatoshis())
     } catch (error) {
       baseLogger.error({ error }, "GetCentsPerSatsExchangeMidRate unable to fetch price")
-      return new UnknownDealerPriceServiceError(error.message)
+      return parseDealerErrors(error)
     }
   }
 
@@ -443,4 +446,11 @@ export const NewDealerPriceService = (
 
     getCentsPerSatsExchangeMidRate,
   }
+}
+
+const parseDealerErrors = (error): DealerPriceServiceError => {
+  if (error.details === "No connection established") {
+    return new NoConnectionToDealerError()
+  }
+  return new UnknownDealerPriceServiceError(error.message)
 }

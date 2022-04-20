@@ -154,6 +154,17 @@ export class LndOfflineError extends CustomApolloError {
   }
 }
 
+export class DealerOfflineError extends CustomApolloError {
+  constructor(errData: PartialBy<CustomApolloErrorData, "logger" | "forwardToClient">) {
+    super({
+      code: "DEALER_OFFLINE",
+      forwardToClient: true,
+      ...errData,
+      logger: baseLogger,
+    })
+  }
+}
+
 export class CaptchaFailedError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
