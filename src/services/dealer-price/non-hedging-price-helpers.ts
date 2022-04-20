@@ -2,10 +2,10 @@ import { CacheKeys } from "@domain/cache"
 import { toSeconds } from "@domain/primitives"
 import { PriceService } from "@services/price"
 import { LocalCacheService } from "@services/cache"
-import { PriceNotAvailableError } from "@domain/price"
+import { DealerPriceNotAvailableError } from "@domain/dealer-price"
 
 export const getCurrentPrice = async (): Promise<
-  CentsPerSatsRatio | ApplicationError
+  CentsPerSatsRatio | DealerPriceServiceError
 > => {
   const realtimePrice = await PriceService().getRealTimePrice()
   if (realtimePrice instanceof Error) return getCachedPrice()
@@ -18,10 +18,10 @@ export const getCurrentPrice = async (): Promise<
   return realtimePrice as unknown as CentsPerSatsRatio
 }
 
-const getCachedPrice = async (): Promise<CentsPerSatsRatio | PriceNotAvailableError> => {
+const getCachedPrice = async (): Promise<CentsPerSatsRatio | DealerPriceServiceError> => {
   const cachedPrice = await LocalCacheService().get<DisplayCurrencyPerSat>(
     CacheKeys.CurrentPrice,
   )
-  if (cachedPrice instanceof Error) return new PriceNotAvailableError()
+  if (cachedPrice instanceof Error) return new DealerPriceNotAvailableError()
   return cachedPrice as unknown as CentsPerSatsRatio
 }
