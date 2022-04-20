@@ -390,7 +390,7 @@ export const LndService = (
     }
   }
 
-  const newPayInvoiceViaPaymentDetails = async ({
+  const payInvoiceViaPaymentDetails = async ({
     decodedInvoice,
     btcPaymentAmount,
     maxFeeAmount,
@@ -398,22 +398,10 @@ export const LndService = (
     decodedInvoice: LnInvoice
     btcPaymentAmount: BtcPaymentAmount
     maxFeeAmount: BtcPaymentAmount
-  }): Promise<PayInvoiceResult | LightningServiceError> =>
-    payInvoiceViaPaymentDetails({
-      decodedInvoice,
-      milliSatsAmount: btcPaymentAmount.amount * 1000n,
-      maxFee: maxFeeAmount.amount,
-    })
-
-  const payInvoiceViaPaymentDetails = async ({
-    decodedInvoice,
-    milliSatsAmount,
-    maxFee,
-  }: {
-    decodedInvoice: LnInvoice
-    milliSatsAmount: MilliSatoshis | bigint
-    maxFee: Satoshis | bigint
   }): Promise<PayInvoiceResult | LightningServiceError> => {
+    const milliSatsAmount = btcPaymentAmount.amount * 1000n
+    const maxFee = maxFeeAmount.amount
+
     let routes: RawHopWithStrings[][] = []
     if (decodedInvoice.routeHints) {
       routes = decodedInvoice.routeHints.map((route) =>
@@ -494,7 +482,6 @@ export const LndService = (
       cancelInvoice,
       payInvoiceViaRoutes,
       payInvoiceViaPaymentDetails,
-      newPayInvoiceViaPaymentDetails,
     },
   })
 }

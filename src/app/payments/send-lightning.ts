@@ -14,7 +14,6 @@ import {
   PaymentInitiationMethod,
   SettlementMethod,
 } from "@domain/wallets"
-import { toMilliSatsFromNumber } from "@domain/bitcoin"
 import {
   decodeInvoice,
   LnAlreadyPaidError,
@@ -603,10 +602,8 @@ const executePaymentViaLn = async ({
           })
         : await lndService.payInvoiceViaPaymentDetails({
             decodedInvoice,
-            milliSatsAmount: toMilliSatsFromNumber(
-              Number(paymentFlow.btcPaymentAmount.amount) * 1000,
-            ),
-            maxFee: paymentFlow.btcProtocolFee.amount,
+            btcPaymentAmount: paymentFlow.btcPaymentAmount,
+            maxFeeAmount: paymentFlow.btcProtocolFee,
           })
 
       // Fire-and-forget update to 'lnPayments' collection
