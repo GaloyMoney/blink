@@ -1,4 +1,5 @@
 import { toSats } from "@domain/bitcoin"
+import { DealerPriceServiceError } from "@domain/dealer-price"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 
