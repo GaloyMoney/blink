@@ -53,6 +53,7 @@ groups:
   - test-e2e
   - test-unit
   - check-code
+  - audit
   - build-edge-image
   - build-debug-edge-image
   - build-migrate-edge-image
@@ -204,6 +205,23 @@ jobs:
       - name: repo
       run:
         path: pipeline-tasks/ci/tasks/check-code.sh
+  on_failure: #@ slack_failure_notification()
+
+- name: audit
+  serial: true
+  plan:
+  - in_parallel:
+    - { get: repo, trigger: true }
+    - { get: pipeline-tasks }
+  - task: audit
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+      - name: pipeline-tasks
+      - name: repo
+      run:
+        path: pipeline-tasks/ci/tasks/audit.sh
   on_failure: #@ slack_failure_notification()
 
 - name: build-edge-image
