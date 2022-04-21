@@ -6,6 +6,10 @@ export type DisplayCurrencyConfigSchema = JTDDataType<typeof displayCurrencyConf
 export type RewardsConfigSchema = {
   denyPhoneCountries: string[]
   allowPhoneCountries: string[]
+  denyIPCountries: string[]
+  allowIPCountries: string[]
+  denyASNs: string[]
+  allowASNs: string[]
 }
 
 const displayCurrencyConfigSchema = {
@@ -41,8 +45,35 @@ const rewardsConfigSchema = {
       items: { type: "string" },
       uniqueItems: true,
     },
+    allowIPCountries: {
+      type: "array",
+      items: { type: "string" },
+      uniqueItems: true,
+    },
+    denyIPCountries: {
+      type: "array",
+      items: { type: "string" },
+      uniqueItems: true,
+    },
+    allowASNs: {
+      type: "array",
+      items: { type: "string" },
+      uniqueItems: true,
+    },
+    denyASNs: {
+      type: "array",
+      items: { type: "string" },
+      uniqueItems: true,
+    },
   },
-  required: ["allowPhoneCountries", "denyPhoneCountries"],
+  required: [
+    "allowPhoneCountries",
+    "denyPhoneCountries",
+    "allowIPCountries",
+    "denyIPCountries",
+    "allowASNs",
+    "denyASNs",
+  ],
   additionalProperties: false,
 }
 

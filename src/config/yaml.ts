@@ -238,8 +238,17 @@ export const getCaptcha = (config = yamlConfig): CaptchaConfig => config.captcha
 export const getRewardsConfig = (): RewardsConfigSchema => {
   const denyPhoneCountries = yamlConfig.rewards.denyPhoneCountries || []
   const allowPhoneCountries = yamlConfig.rewards.allowPhoneCountries || []
+  const denyIPCountries = yamlConfig.rewards.denyIPCountries || []
+  const allowIPCountries = yamlConfig.rewards.allowIPCountries || []
+  const denyASNs = yamlConfig.rewards.denyASNs || []
+  const allowASNs = yamlConfig.rewards.allowASNs || []
+
   return {
     denyPhoneCountries: denyPhoneCountries.map((c) => c.toUpperCase()),
     allowPhoneCountries: allowPhoneCountries.map((c) => c.toUpperCase()),
+    denyIPCountries: denyIPCountries.map((c) => c.toUpperCase()),
+    allowIPCountries: allowIPCountries.map((c) => c.toUpperCase()),
+    denyASNs: denyASNs.map((c) => c.toUpperCase()),
+    allowASNs: allowASNs.map((c) => c.toUpperCase()),
   }
 }

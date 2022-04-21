@@ -20,6 +20,10 @@ buildVersion:
 rewards:
   denyPhoneCountries: []
   allowPhoneCountries: [SV]
+  denyIPCountries: []
+  allowIPCountries: []
+  denyASNs: []
+  allowASNs: []
 
 coldStorage:
   minOnChainHotWalletBalance: 1000000 # 0.1

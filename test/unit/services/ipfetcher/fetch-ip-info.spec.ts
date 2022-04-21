@@ -67,7 +67,7 @@ const getIpInfo = (ip: string) => ({
     organisation: "Cable Tica",
     continent: "North America",
     country: "Costa Rica",
-    isocode: "CR",
+    isoCode: "CR",
     region: "Provincia de San Jose",
     regioncode: "SJ",
     city: "Perez Zeledon",

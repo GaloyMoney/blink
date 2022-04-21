@@ -11,7 +11,7 @@ export const PhoneMetadataValidator = ({
   denyPhoneCountries: string[]
   allowPhoneCountries: string[]
 }): PhoneMetadataValidator => {
-  const validateForReward = (phoneMetadata?: PhoneMetadata): true | ApplicationError => {
+  const validateForReward = (phoneMetadata?: PhoneMetadata): true | ValidationError => {
     if (!phoneMetadata || !phoneMetadata.carrier || !phoneMetadata.countryCode)
       return new MissingPhoneMetadataError()
 
