@@ -1,7 +1,7 @@
 import { getTwoFALimits, getAccountLimits, MS_PER_DAY, getDealerConfig } from "@config"
 import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
 import { LightningPaymentFlowBuilder } from "@domain/payments"
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
+import { ErrorLevel, ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
 import { AlreadyPaidError } from "@domain/errors"
 import { CENTS_PER_USD } from "@domain/fiat"
 
@@ -47,8 +47,16 @@ const usdFromBtcMidPriceFn = async (
 
       addAttributesToCurrentSpan({
         "usdFromBtcMidPriceFn.midPriceRatio": midPriceRatio,
-        "usdFromBtcMidPriceFn.paymentAmount.amount": Number(usdPaymentAmount.amount),
-        "usdFromBtcMidPriceFn.paymentAmount.currency": usdPaymentAmount.currency,
+        "usdFromBtcMidPriceFn.incoming.amount": Number(amount.amount),
+        "usdFromBtcMidPriceFn.incoming.unit":
+          amount.currency === WalletCurrency.Btc
+            ? ExchangeCurrencyUnit.Btc
+            : ExchangeCurrencyUnit.Usd,
+        "usdFromBtcMidPriceFn.outgoing.amount": Number(usdPaymentAmount.amount),
+        "usdFromBtcMidPriceFn.outgoing.unit":
+          usdPaymentAmount.currency === WalletCurrency.Usd
+            ? ExchangeCurrencyUnit.Usd
+            : ExchangeCurrencyUnit.Btc,
       })
 
       return usdPaymentAmount
@@ -75,8 +83,16 @@ const btcFromUsdMidPriceFn = async (
 
       addAttributesToCurrentSpan({
         "btcFromUsdMidPriceFn.midPriceRatio": midPriceRatio,
-        "btcFromUsdMidPriceFn.paymentAmount.amount": Number(btcPaymentAmount.amount),
-        "btcFromUsdMidPriceFn.paymentAmount.currency": btcPaymentAmount.currency,
+        "btcFromUsdMidPriceFn.incoming.amount": Number(amount.amount),
+        "btcFromUsdMidPriceFn.incoming.unit":
+          amount.currency === WalletCurrency.Usd
+            ? ExchangeCurrencyUnit.Usd
+            : ExchangeCurrencyUnit.Btc,
+        "btcFromUsdMidPriceFn.outgoing.amount": Number(btcPaymentAmount.amount),
+        "btcFromUsdMidPriceFn.outgoing.unit":
+          btcPaymentAmount.currency === WalletCurrency.Btc
+            ? ExchangeCurrencyUnit.Btc
+            : ExchangeCurrencyUnit.Usd,
       })
 
       return btcPaymentAmount
