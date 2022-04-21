@@ -6,14 +6,16 @@ import * as jwt from "jsonwebtoken"
 // and provide more information than just the network
 export const createToken = ({
   uid,
+  accountStatus,
   network,
   kratosUserId,
 }: {
   uid: UserId
+  accountStatus?: string
   network: BtcNetwork
   kratosUserId?: KratosUserId
 }): JwtToken => {
-  return jwt.sign({ uid, network, kratosUserId }, JWT_SECRET, {
+  return jwt.sign({ uid, accountStatus, network, kratosUserId }, JWT_SECRET, {
     // TODO use asymmetric signature
     // and verify the signature from the client
     // otherwise we could get subject to DDos attack

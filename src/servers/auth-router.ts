@@ -7,6 +7,7 @@ import { Users } from "@app"
 import { baseLogger } from "@services/logger"
 import { isDev, getKratosConfig } from "@config"
 import { parseIps } from "@domain/users-ips"
+import { mapError } from "@graphql/error-map"
 
 export const KratosSdk: (kratosEndpoint?: string) => V0alpha2ApiInterface = (
   kratosEndpoint,
@@ -48,7 +49,7 @@ authRouter.post("/browser", async (req, res) => {
     })
 
     if (authToken instanceof Error) {
-      throw authToken
+      return res.send({ error: mapError(authToken) })
     }
 
     res.send({ authToken })
