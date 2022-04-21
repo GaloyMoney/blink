@@ -450,9 +450,8 @@ const executePaymentViaIntraledger = async ({
         const { metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
           lnIntraLedgerMetadata
 
-        // FIXME: change to 'recipient'
-        const receiverWalletDescriptor = paymentFlow.recipientWalletDescriptor()
-        if (receiverWalletDescriptor === undefined)
+        const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
+        if (recipientWalletDescriptor === undefined)
           return new InvalidLightningPaymentFlowBuilderStateError()
 
         return LedgerFacade.recordIntraledger({
@@ -462,7 +461,7 @@ const executePaymentViaIntraledger = async ({
             usd: paymentFlow.usdPaymentAmount,
           },
           senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
-          receiverWalletDescriptor,
+          recipientWalletDescriptor,
           metadata,
           additionalDebitMetadata,
         })

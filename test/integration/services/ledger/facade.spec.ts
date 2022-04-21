@@ -37,7 +37,7 @@ describe("Facade", () => {
       await LedgerFacade.recordReceive({
         description: "receives bitcoin",
         amountToCreditReceiver: receiveAmount,
-        receiverWalletDescriptor: walletDescriptor1,
+        recipientWalletDescriptor: walletDescriptor1,
         bankFee,
         metadata,
         txMetadata: { hash: paymentHash },
@@ -121,7 +121,7 @@ describe("Facade", () => {
         description: "sends bitcoin",
         amount: sendAmount,
         senderWalletDescriptor: walletDescriptor1,
-        receiverWalletDescriptor: walletDescriptor2,
+        recipientWalletDescriptor: walletDescriptor2,
         metadata,
         additionalDebitMetadata: debitAccountAdditionalMetadata,
       })

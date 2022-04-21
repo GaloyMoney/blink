@@ -75,7 +75,7 @@ export const reimburseFee = async ({
 
   const result = await LedgerFacade.recordReceive({
     description: "fee reimbursement",
-    receiverWalletDescriptor: paymentFlow.senderWalletDescriptor(),
+    recipientWalletDescriptor: paymentFlow.senderWalletDescriptor(),
     amountToCreditReceiver: {
       usd: feeDifference.usd,
       btc: feeDifference.btc,
