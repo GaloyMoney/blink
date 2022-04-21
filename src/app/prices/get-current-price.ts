@@ -5,7 +5,7 @@ import { LocalCacheService } from "@services/cache"
 import { PriceNotAvailableError } from "@domain/price"
 
 export const getCurrentPrice = async (): Promise<
-  DisplayCurrencyPerSat | ApplicationError
+  DisplayCurrencyPerSat | PriceServiceError
 > => {
   const realtimePrice = await PriceService().getRealTimePrice()
   if (realtimePrice instanceof Error) return getCachedPrice()
