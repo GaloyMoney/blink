@@ -1,8 +1,7 @@
 import { createHash, randomBytes } from "crypto"
 
-import { getDealerConfig } from "@config"
 import { Wallets, Lightning, Payments } from "@app"
-import { getCurrentPrice } from "@app/prices"
+import { getMidPriceRatio } from "@app/payments/helpers"
 
 import { delete2fa } from "@app/users"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
@@ -77,8 +76,6 @@ const accountLimits: IAccountLimits = {
   intraLedgerLimit: 100 as UsdCents,
   withdrawalLimit: 100 as UsdCents,
 }
-
-const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
 jest.mock("@config", () => {
   return {
@@ -167,9 +164,7 @@ describe("UserWallet - Lightning Pay", () => {
   it("fails to pay when withdrawalLimit exceeded", async () => {
     const amountAboveThreshold = toCents(accountLimits.withdrawalLimit + 10)
 
-    const midPriceRatio = usdHedgeEnabled
-      ? await DealerPriceService().getCentsPerSatsExchangeMidRate()
-      : await getCurrentPrice()
+    const midPriceRatio = await getMidPriceRatio()
     if (midPriceRatio instanceof Error) return midPriceRatio
     const amount = Math.ceil(amountAboveThreshold / midPriceRatio)
 
@@ -193,9 +188,7 @@ describe("UserWallet - Lightning Pay", () => {
   it("fails to pay when amount exceeds intraLedger limit", async () => {
     const amountAboveThreshold = toCents(accountLimits.intraLedgerLimit + 10)
 
-    const midPriceRatio = usdHedgeEnabled
-      ? await DealerPriceService().getCentsPerSatsExchangeMidRate()
-      : await getCurrentPrice()
+    const midPriceRatio = await getMidPriceRatio()
     if (midPriceRatio instanceof Error) return midPriceRatio
     const amount = Math.ceil(amountAboveThreshold / midPriceRatio)
 
@@ -1078,9 +1071,7 @@ describe("UserWallet - Lightning Pay", () => {
         userRecordA = await getUserRecordByTestUserRef("A")
         expect(secret).toBe(userRecordA.twoFA.secret)
 
-        const midPriceRatio = usdHedgeEnabled
-          ? await DealerPriceService().getCentsPerSatsExchangeMidRate()
-          : await getCurrentPrice()
+        const midPriceRatio = await getMidPriceRatio()
         if (midPriceRatio instanceof Error) return midPriceRatio
 
         const remainingLimit = await getRemainingTwoFALimit({
