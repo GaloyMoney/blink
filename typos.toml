@@ -1,5 +1,6 @@
 files.extend-exclude = [
-  "dev"
+  "dev",
+  "src/domain/users/languages.ts"
 ]
 
 [default.extend-words]

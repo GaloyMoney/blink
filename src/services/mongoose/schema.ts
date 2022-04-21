@@ -4,6 +4,7 @@ import { getFeesConfig, getTwoFAConfig, levels } from "@config"
 import { UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
+import { Languages } from "@domain/users"
 import * as mongoose from "mongoose"
 
 import { WalletRecord } from "./wallets"
@@ -246,7 +247,7 @@ const UserSchema = new Schema<UserRecord>(
     },
     language: {
       type: String,
-      enum: ["en", "es", ""],
+      enum: [...Languages, ""],
       default: "",
     },
     // firstName,
