@@ -1,19 +1,13 @@
-import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 import { UnknownRepositoryError } from "@domain/errors"
 import { CouldNotFindLightningPaymentFlowError, PaymentFlow } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 
 import { PaymentFlowState } from "./schema"
 
-export const PaymentFlowStateRepository = (
-  expiryTimeInSeconds: Seconds = defaultTimeToExpiryInSeconds,
-): IPaymentFlowRepository => {
+export const PaymentFlowStateRepository = (): IPaymentFlowRepository => {
   const persistNew = async <S extends WalletCurrency, R extends WalletCurrency>(
     paymentFlow: PaymentFlow<S, R>,
   ): Promise<PaymentFlow<S, R> | RepositoryError> => {
-    // FIXME: Should we switch to redis and add expiry?
-    console.log(expiryTimeInSeconds)
-
     try {
       const rawPaymentFlowState = rawFromPaymentFlow(paymentFlow)
       const paymentFlowState = new PaymentFlowState(rawPaymentFlowState)
