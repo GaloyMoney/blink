@@ -464,6 +464,7 @@ jobs:
       image_resource: #@ task_image_config()
       inputs:
       - name: pipeline-tasks
+      - name: repo
       params:
         BRANCH: #@ data.values.git_branch
         BOT_BRANCH: #@ data.values.git_proto_bot_branch
