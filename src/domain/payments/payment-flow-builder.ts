@@ -164,7 +164,7 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
       recipientWalletCurrency === WalletCurrency.Usd &&
       // This means (usdPaymentAmount === undefined XNOR state.uncheckedAmount === undefined)
       // XNOR => if both or neither are set we get here - else we're fine
-      !(!usdPaymentAmount != !state.uncheckedAmount)
+      !!usdPaymentAmount === !!state.uncheckedAmount
     ) {
       return LPFBWithError(
         new InvalidLightningPaymentFlowBuilderStateError(
