@@ -431,14 +431,20 @@ jobs:
 
 - name: sync-dealer-proto
   plan:
-  - get: dealer-price-proto
-    trigger: true
+  - in_parallel:
+    - get: repo
+    - get: pipeline-tasks
+    - get: dealer-price-proto
+      trigger: true
   - task: sync-proto
     config:
       platform: linux
       image_resource: #@ release_task_image_config()
       inputs:
       - name: repo
+      - name: pipeline-tasks
+      - name: dealer-price-proto
+        path: src-repo
       outputs:
       - name: repo
       params:
@@ -601,7 +607,7 @@ resources:
   type: git
   source:
     paths: ["dealer/proto/services/price/v1/*"]
-    uri: #@ data.values.git_uri
+    uri: #@ data.values.git_dealer_uri
     branch: #@ data.values.git_branch
     private_key: #@ data.values.github_private_key
 
