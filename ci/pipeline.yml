@@ -451,6 +451,7 @@ jobs:
         SRC_REPO: #@ data.values.git_dealer_uri
         PROTO_FILE_SRC_PATH: dealer/proto/services/price/v1/price_service.proto
         PROTO_FILE_DEST_PATH: src/services/dealer-price/proto/services/price/v1
+        BRANCH: #@ data.values.git_branch
       run:
         path: pipeline-tasks/ci/tasks/sync-proto.sh
   - put: proto-bot-branch
@@ -466,6 +467,7 @@ jobs:
       params:
         BRANCH: #@ data.values.git_branch
         BOT_BRANCH: #@ data.values.git_proto_bot_branch
+        GH_TOKEN: #@ data.values.github_token
       run:
         path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
 
