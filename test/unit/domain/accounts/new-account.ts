@@ -5,6 +5,9 @@ describe("New Account", () => {
   it("uses the default account status", async () => {
     const user = new User()
     await user.save()
-    expect(user.status).toEqual(getAccountsConfig().initialStatus)
+    expect(user.statusHistory).toEqual({
+      status: getAccountsConfig().initialStatus,
+      comment: "Initial Status",
+    })
   })
 })

@@ -20,8 +20,6 @@ export const updateAccountStatus = async ({
   const statusChecked = checkedAccountStatus(status)
   if (statusChecked instanceof Error) return statusChecked
 
-  account.status = statusChecked
-
   account.statusHistory = (account.statusHistory ?? []).concat({
     status: statusChecked,
     updatedByUserId,

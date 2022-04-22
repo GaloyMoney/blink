@@ -270,12 +270,6 @@ const UserSchema = new Schema<UserRecord>(
       },
     },
 
-    status: {
-      type: String,
-      enum: ["new", "pending", "active", "locked"],
-      default: getAccountsConfig().initialStatus,
-    },
-
     statusHistory: {
       type: [
         {
@@ -292,7 +286,7 @@ const UserSchema = new Schema<UserRecord>(
           updatedByUserId: {
             type: Schema.Types.ObjectId,
             ref: "User",
-            required: true,
+            required: false,
           },
           comment: {
             type: String,
@@ -300,7 +294,7 @@ const UserSchema = new Schema<UserRecord>(
           },
         },
       ],
-      default: [],
+      default: [{ status: getAccountsConfig().initialStatus, comment: "Initial Status" }],
     },
 
     twoFA: {

@@ -41,8 +41,8 @@ type AccountContact = {
 
 type AccountStatusHistory = Array<{
   status: AccountStatus
-  updatedByUserId: UserId
   updatedAt?: Date
+  updatedByUserId?: UserId
   comment?: string
 }>
 
@@ -56,7 +56,7 @@ type Account = {
   withdrawFee: Satoshis // TODO: make it optional. only save when not default value from yaml
   level: AccountLevel
   status: AccountStatus
-  statusHistory?: AccountStatusHistory
+  statusHistory: AccountStatusHistory
   title: BusinessMapTitle
   coordinates: Coordinates
   readonly contacts: AccountContact[]
