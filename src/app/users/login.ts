@@ -87,7 +87,7 @@ export const loginWithKratos = async ({
   emailAddress: string
   logger: Logger
   ip: IpAddress
-}): Promise<JwtToken | ApplicationError> => {
+}): Promise<{ accountStatus: string; authToken: JwtToken } | ApplicationError> => {
   const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
   if (kratosUserIdValid instanceof Error) return kratosUserIdValid
 
@@ -124,12 +124,13 @@ export const loginWithKratos = async ({
   const account = await AccountsRepository().findByUserId(user.id)
   if (account instanceof Error) return account
 
-  return createToken({
-    uid: user.id,
+  return {
     accountStatus: account.status.toUpperCase(),
-    network,
-    kratosUserId: kratosUserIdValid,
-  })
+    authToken: createToken({
+      uid: user.id,
+      network,
+    }),
+  }
 }
 
 const checkFailedLoginAttemptPerIpLimits = async (
