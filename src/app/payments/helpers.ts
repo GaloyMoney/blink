@@ -135,8 +135,8 @@ export const constructPaymentFlowBuilder = async ({
   senderWallet: Wallet
   invoice: LnInvoice
   uncheckedAmount?: number
-  usdFromBtc
-  btcFromUsd
+  usdFromBtc: (amount: BtcPaymentAmount) => Promise<UsdPaymentAmount | ApplicationError>
+  btcFromUsd: (amount: UsdPaymentAmount) => Promise<BtcPaymentAmount | ApplicationError>
 }): Promise<LPFBWithConversion<WalletCurrency, WalletCurrency> | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
