@@ -62,6 +62,8 @@ groups:
   - release
 - name: image
   jobs: [ build-pipeline-image ]
+- name: sync-proto
+  jobs: [ sync-dealer-proto ]
 
 jobs:
 - name: build-pipeline-image
@@ -427,6 +429,38 @@ jobs:
       run:
         path: pipeline-tasks/ci/tasks/open-charts-pr.sh
 
+- name: sync-dealer-proto
+  plan:
+  - get: dealer-price-proto
+    trigger: true
+  - task: sync-proto
+    config:
+      platform: linux
+      image_resource: #@ release_task_image_config()
+      inputs:
+      - name: repo
+      outputs:
+      - name: repo
+      params:
+        SRC_REPO: #@ data.values.git_dealer_uri
+        PROTO_FILE_SRC_PATH: dealer/proto/services/price/v1/price_service.proto
+        PROTO_FILE_DEST_PATH: src/services/dealer-price/proto/services/price/v1
+      run:
+        path: pipeline-tasks/ci/tasks/sync-proto.sh
+  - put: proto-bot-branch
+    params:
+      repository: repo
+      force: true
+  - task: open-bump-proto-pr
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      params:
+        BRANCH: #@ data.values.git_branch
+        BOT_BRANCH: #@ data.values.git_proto_bot_branch
+      run:
+        path: pipeline-tasks/ci/tasks/open-proto-bump-pr.sh
+
 resources:
 - name: repo
   type: git
@@ -442,6 +476,13 @@ resources:
   source:
     uri: #@ data.values.git_charts_uri
     branch: #@ data.values.git_charts_bot_branch
+    private_key: #@ data.values.github_private_key
+
+- name: proto-bot-branch
+  type: git
+  source:
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_proto_bot_branch
     private_key: #@ data.values.github_private_key
 
 - name: charts-repo
@@ -555,6 +596,14 @@ resources:
     owner: #@ data.values.gh_org
     repository: #@ data.values.gh_repository
     access_token: #@ data.values.github_token
+
+- name: dealer-price-proto
+  type: git
+  source:
+    paths: ["dealer/proto/services/price/v1/*"]
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_branch
+    private_key: #@ data.values.github_private_key
 
 resource_types:
 - name: gcs-resource
