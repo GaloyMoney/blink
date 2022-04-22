@@ -117,7 +117,7 @@ export const getMidPriceRatio = async (): Promise<
   if (midPriceRatio instanceof Error && usdHedgeEnabled) {
     recordExceptionInCurrentSpan({
       error: midPriceRatio,
-      level: ErrorLevel.Warn,
+      level: ErrorLevel.Critical,
     })
     midPriceRatio = await getCurrentPriceInCentsPerSat()
   }
