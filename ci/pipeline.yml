@@ -461,11 +461,13 @@ jobs:
     config:
       platform: linux
       image_resource: #@ task_image_config()
+      inputs:
+      - name: pipeline-tasks
       params:
         BRANCH: #@ data.values.git_branch
         BOT_BRANCH: #@ data.values.git_proto_bot_branch
       run:
-        path: pipeline-tasks/ci/tasks/open-proto-bump-pr.sh
+        path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
 
 resources:
 - name: repo
