@@ -144,10 +144,12 @@ const updatePendingPayment = async ({
 
       let paymentFlow = await PaymentFlowStateRepository(
         defaultTimeToExpiryInSeconds,
-      ).findLightningPaymentFlow({
-        walletId,
+      ).updateLightningPaymentFlowPartial({
+        senderWalletId: walletId,
         paymentHash,
         inputAmount: BigInt(inputAmountFromLedgerTransaction(pendingPayment)),
+
+        paymentSentAndPending: false,
       })
       if (paymentFlow instanceof Error) {
         paymentFlow = await reconstructPendingPaymentFlow(paymentHash)
