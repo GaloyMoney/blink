@@ -13,6 +13,8 @@ const paymentFlowStateSchema = new Schema<PaymentFlowStateRecord>(
     paymentInitiationMethod: String,
     paymentHash: String,
     descriptionFromInvoice: String,
+    createdAt: Date,
+    paymentSentAndPending: Boolean,
 
     btcPaymentAmount: Number,
     usdPaymentAmount: Number,

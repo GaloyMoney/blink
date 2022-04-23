@@ -9,6 +9,8 @@ type PaymentFlowStateRecordPartial = {
   paymentInitiationMethod: string
   paymentHash: string
   descriptionFromInvoice: string
+  createdAt: Date
+  paymentSentAndPending: boolean
 
   btcPaymentAmount: number
   usdPaymentAmount: number

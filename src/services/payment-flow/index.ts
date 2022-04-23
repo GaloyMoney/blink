@@ -57,6 +57,8 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
       paymentFlowState.paymentInitiationMethod as PaymentInitiationMethod,
     paymentHash: paymentFlowState.paymentHash as PaymentHash,
     descriptionFromInvoice: paymentFlowState.descriptionFromInvoice,
+    createdAt: paymentFlowState.createdAt,
+    paymentSentAndPending: paymentFlowState.paymentSentAndPending,
 
     btcPaymentAmount: {
       currency: WalletCurrency.Btc,
@@ -95,6 +97,8 @@ const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
   paymentInitiationMethod: paymentFlow.paymentInitiationMethod,
   paymentHash: paymentFlow.paymentHash,
   descriptionFromInvoice: paymentFlow.descriptionFromInvoice,
+  createdAt: paymentFlow.createdAt,
+  paymentSentAndPending: paymentFlow.paymentSentAndPending,
 
   btcPaymentAmount: Number(paymentFlow.btcPaymentAmount.amount),
   usdPaymentAmount: Number(paymentFlow.usdPaymentAmount.amount),
