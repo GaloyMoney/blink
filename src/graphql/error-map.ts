@@ -285,6 +285,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "NoWalletExistsForUserError":
     case "LimitsExceededError":
     case "CouldNotFindLightningPaymentFlowError":
+    case "CouldNotUpdateLightningPaymentFlowError":
     case "CouldNotFindWalletFromIdError":
     case "CouldNotListWalletsFromAccountIdError":
     case "CouldNotFindWalletFromUsernameError":

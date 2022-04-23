@@ -141,6 +141,9 @@ interface IPaymentFlowRepository {
     paymentHash: PaymentHash
     inputAmount: BigInt
   }): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
+  updateLightningPaymentFlow<S extends WalletCurrency>(
+    payymentFlow: PaymentFlow<S, WalletCurrency>,
+  ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
   deleteLightningPaymentFlow({
     walletId,
     paymentHash,
