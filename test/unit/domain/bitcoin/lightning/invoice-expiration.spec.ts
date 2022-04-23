@@ -7,9 +7,9 @@ describe("invoice-expiration", () => {
     expect(expiresAt).toEqual(new Date("2000-01-02T00:00:00.000Z"))
   })
 
-  it("USD invoice expires in 2 minutes", () => {
+  it("USD invoice expires in 5 minutes", () => {
     const creationDate = new Date("2000-01-01T00:00:00.000Z")
     const expiresAt = invoiceExpirationForCurrency("USD", creationDate)
-    expect(expiresAt).toEqual(new Date("2000-01-01T00:02:00.000Z"))
+    expect(expiresAt).toEqual(new Date("2000-01-01T00:05:00.000Z"))
   })
 })
