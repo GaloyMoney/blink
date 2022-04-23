@@ -2,7 +2,6 @@ import { WalletCurrency } from "@domain/shared"
 import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
-  CouldNotFindLightningPaymentFlowError,
   PriceRatio,
   InvalidLightningPaymentFlowBuilderStateError,
   checkedToBtcPaymentAmount,
@@ -22,7 +21,11 @@ import {
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
 import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
-import { AlreadyPaidError, InsufficientBalanceError } from "@domain/errors"
+import {
+  AlreadyPaidError,
+  CouldNotFindLightningPaymentFlowError,
+  InsufficientBalanceError,
+} from "@domain/errors"
 
 import { LndService } from "@services/lnd"
 import {
@@ -70,9 +73,12 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
     uncheckedSenderWalletId,
     senderAccount,
   })
-  if (validatedPaymentInputs instanceof AlreadyPaidError)
+  if (validatedPaymentInputs instanceof AlreadyPaidError) {
     return PaymentSendStatus.AlreadyPaid
-  if (validatedPaymentInputs instanceof Error) return validatedPaymentInputs
+  }
+  if (validatedPaymentInputs instanceof Error) {
+    return validatedPaymentInputs
+  }
   const { senderWallet, paymentFlow, decodedInvoice } = validatedPaymentInputs
 
   const user = await UsersRepository().findById(senderAccount.ownerId)
@@ -121,9 +127,12 @@ export const payInvoiceByWalletId = async ({
     uncheckedSenderWalletId,
     senderAccount,
   })
-  if (validatedPaymentInputs instanceof AlreadyPaidError)
+  if (validatedPaymentInputs instanceof AlreadyPaidError) {
     return PaymentSendStatus.AlreadyPaid
-  if (validatedPaymentInputs instanceof Error) return validatedPaymentInputs
+  }
+  if (validatedPaymentInputs instanceof Error) {
+    return validatedPaymentInputs
+  }
   const { senderWallet, paymentFlow, decodedInvoice } = validatedPaymentInputs
 
   // Get display currency price... add to payment flow builder?
@@ -159,10 +168,12 @@ export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
     uncheckedSenderWalletId,
     senderAccount,
   })
-  if (validatedNoAmountPaymentInputs instanceof AlreadyPaidError)
+  if (validatedNoAmountPaymentInputs instanceof AlreadyPaidError) {
     return PaymentSendStatus.AlreadyPaid
-  if (validatedNoAmountPaymentInputs instanceof Error)
+  }
+  if (validatedNoAmountPaymentInputs instanceof Error) {
     return validatedNoAmountPaymentInputs
+  }
   const { senderWallet, paymentFlow, decodedInvoice } = validatedNoAmountPaymentInputs
 
   const user = await UsersRepository().findById(senderAccount.ownerId)
@@ -213,10 +224,12 @@ export const payNoAmountInvoiceByWalletId = async ({
     uncheckedSenderWalletId,
     senderAccount,
   })
-  if (validatedNoAmountPaymentInputs instanceof AlreadyPaidError)
+  if (validatedNoAmountPaymentInputs instanceof AlreadyPaidError) {
     return PaymentSendStatus.AlreadyPaid
-  if (validatedNoAmountPaymentInputs instanceof Error)
+  }
+  if (validatedNoAmountPaymentInputs instanceof Error) {
     return validatedNoAmountPaymentInputs
+  }
   const { senderWallet, paymentFlow, decodedInvoice } = validatedNoAmountPaymentInputs
 
   // Get display currency price... add to payment flow builder?
@@ -504,6 +517,9 @@ const executePaymentViaIntraledger = async ({
         })
       }
 
+      // fire-and-forget delete payment flow
+      deletePaymentFlow(paymentFlow)
+
       return PaymentSendStatus.Success
     },
   )
@@ -626,7 +642,11 @@ const executePaymentViaLn = async ({
             revealedPreImage: payResult.revealedPreImage,
           })
       }
-      if (payResult instanceof LnPaymentPendingError) return PaymentSendStatus.Pending
+      if (payResult instanceof LnPaymentPendingError) {
+        paymentFlow.paymentSentAndPending = true
+        paymentFlowRepo.updateLightningPaymentFlow(paymentFlow)
+        return PaymentSendStatus.Pending
+      }
 
       const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
       if (settled instanceof Error) return settled
@@ -638,7 +658,12 @@ const executePaymentViaLn = async ({
         })
         if (voided instanceof Error) return voided
 
-        if (payResult instanceof LnAlreadyPaidError) return PaymentSendStatus.AlreadyPaid
+        if (payResult instanceof LnAlreadyPaidError) {
+          // fire-and-forget delete payment flow
+          deletePaymentFlow(paymentFlow)
+
+          return PaymentSendStatus.AlreadyPaid
+        }
 
         return payResult
       }
@@ -654,7 +679,17 @@ const executePaymentViaLn = async ({
         if (reimbursed instanceof Error) return reimbursed
       }
 
+      // fire-and-forget delete payment flow
+      deletePaymentFlow(paymentFlow)
+
       return PaymentSendStatus.Success
     },
   )
 }
+
+const deletePaymentFlow = (paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>) =>
+  paymentFlowRepo.deleteLightningPaymentFlow({
+    walletId: paymentFlow.senderWalletId,
+    paymentHash: paymentFlow.paymentHash,
+    inputAmount: paymentFlow.inputAmount,
+  })
