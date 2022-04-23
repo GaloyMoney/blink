@@ -205,7 +205,9 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
       amount: UsdPaymentAmount,
     ): Promise<BtcPaymentAmount | DealerPriceServiceError>
   }): LPFBWithConversion<S, R> | LPFBWithError => {
+    const stateWithCreatedAt = { ...state, createdAt: new Date(Date.now()) }
     const { btcPaymentAmount, usdPaymentAmount, btcProtocolFee, usdProtocolFee } = state
+
     // Use mid price when no buy / sell required
     const noConversionRequired =
       (state.senderWalletCurrency === WalletCurrency.Btc &&
@@ -219,7 +221,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
           return LPFBWithConversion(
             new Promise((res) =>
               res({
-                ...state,
+                ...stateWithCreatedAt,
                 btcPaymentAmount,
                 usdPaymentAmount,
                 btcProtocolFee,
@@ -241,7 +243,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
 
             const usdProtocolFee = priceRatio.convertFromBtc(btcProtocolFee)
             return {
-              ...state,
+              ...stateWithCreatedAt,
               btcPaymentAmount,
               usdPaymentAmount: convertedAmount,
               btcProtocolFee,
@@ -263,7 +265,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
 
             const btcProtocolFee = priceRatio.convertFromUsd(usdProtocolFee)
             return {
-              ...state,
+              ...stateWithCreatedAt,
               btcPaymentAmount: convertedAmount,
               usdPaymentAmount,
               btcProtocolFee,
@@ -290,7 +292,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
       ) {
         return LPFBWithConversion(
           Promise.resolve({
-            ...state,
+            ...stateWithCreatedAt,
             btcPaymentAmount,
             usdPaymentAmount,
             btcProtocolFee,
@@ -311,7 +313,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
 
           const usdProtocolFee = priceRatio.convertFromBtc(btcProtocolFee)
           return {
-            ...state,
+            ...stateWithCreatedAt,
             btcPaymentAmount,
             usdPaymentAmount: convertedAmount,
             btcProtocolFee,
@@ -335,7 +337,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
 
           const btcProtocolFee = priceRatio.convertFromUsd(usdProtocolFee)
           return {
-            ...state,
+            ...stateWithCreatedAt,
             btcPaymentAmount: convertedAmount,
             usdPaymentAmount,
             btcProtocolFee,
@@ -378,6 +380,8 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       btcPaymentAmount: state.btcPaymentAmount,
       usdPaymentAmount: state.usdPaymentAmount,
       inputAmount: state.inputAmount,
+      createdAt: state.createdAt,
+      paymentSentAndPending: false,
 
       settlementMethod: state.settlementMethod,
       paymentInitiationMethod: PaymentInitiationMethod.Lightning,

@@ -11,6 +11,8 @@ type PaymentFlowState<S extends WalletCurrency, R extends WalletCurrency> = {
   paymentInitiationMethod: PaymentInitiationMethod
   paymentHash: PaymentHash
   descriptionFromInvoice: string
+  createdAt: Date
+  paymentSentAndPending: boolean
 
   btcPaymentAmount: BtcPaymentAmount
   usdPaymentAmount: UsdPaymentAmount
