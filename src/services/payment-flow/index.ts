@@ -80,6 +80,33 @@ export const PaymentFlowStateRepository = (
     }
   }
 
+  const updateLightningPaymentFlowPartial = async <
+    S extends WalletCurrency,
+    R extends WalletCurrency,
+  >(
+    paymentFlowPartial: PaymentFlowStatePartial,
+  ): Promise<PaymentFlow<S, R> | RepositoryError> => {
+    try {
+      const result = await PaymentFlowState.findOneAndUpdate(
+        {
+          senderWalletId: paymentFlowPartial.senderWalletId,
+          paymentHash: paymentFlowPartial.paymentHash,
+          inputAmount: Number(paymentFlowPartial.inputAmount),
+        },
+        rawFromPaymentFlowPartial(paymentFlowPartial),
+        {
+          new: true,
+        },
+      )
+      if (!result) {
+        return new CouldNotUpdateLightningPaymentFlowError()
+      }
+      return paymentFlowFromRaw(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const deleteLightningPaymentFlow = async ({
     walletId,
     paymentHash,
@@ -108,6 +135,7 @@ export const PaymentFlowStateRepository = (
     findLightningPaymentFlow,
     persistNew,
     updateLightningPaymentFlow,
+    updateLightningPaymentFlowPartial,
     deleteLightningPaymentFlow,
   }
 }
@@ -180,6 +208,16 @@ const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
 
   outgoingNodePubkey: paymentFlow.outgoingNodePubkey,
   cachedRoute: paymentFlow.cachedRoute,
+})
+
+const rawFromPaymentFlowPartial = (
+  paymentFlowPartial: PaymentFlowStatePartial,
+): Partial<PaymentFlowStateRecordPartial> => ({
+  senderWalletId: paymentFlowPartial.senderWalletId,
+  paymentHash: paymentFlowPartial.paymentHash,
+  inputAmount: Number(paymentFlowPartial.inputAmount),
+
+  paymentSentAndPending: paymentFlowPartial.paymentSentAndPending,
 })
 
 const isExpired = ({
