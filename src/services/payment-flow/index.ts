@@ -1,5 +1,6 @@
 import {
   CouldNotFindLightningPaymentFlowError,
+  CouldNotUpdateLightningPaymentFlowError,
   UnknownRepositoryError,
 } from "@domain/errors"
 import { PaymentFlow } from "@domain/payments"
@@ -52,6 +53,33 @@ export const PaymentFlowStateRepository = (
     }
   }
 
+  const updateLightningPaymentFlow = async <
+    S extends WalletCurrency,
+    R extends WalletCurrency,
+  >(
+    paymentFlow: PaymentFlow<S, R>,
+  ): Promise<PaymentFlow<S, R> | RepositoryError> => {
+    try {
+      const result = await PaymentFlowState.findOneAndUpdate(
+        {
+          senderWalletId: paymentFlow.senderWalletId,
+          paymentHash: paymentFlow.paymentHash,
+          inputAmount: Number(paymentFlow.inputAmount),
+        },
+        rawFromPaymentFlow(paymentFlow),
+        {
+          new: true,
+        },
+      )
+      if (!result) {
+        return new CouldNotUpdateLightningPaymentFlowError()
+      }
+      return paymentFlowFromRaw(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   const deleteLightningPaymentFlow = async ({
     walletId,
     paymentHash,
@@ -79,6 +107,7 @@ export const PaymentFlowStateRepository = (
   return {
     findLightningPaymentFlow,
     persistNew,
+    updateLightningPaymentFlow,
     deleteLightningPaymentFlow,
   }
 }
