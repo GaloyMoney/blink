@@ -141,6 +141,15 @@ interface IPaymentFlowRepository {
     paymentHash: PaymentHash
     inputAmount: BigInt
   }): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
+  deleteLightningPaymentFlow({
+    walletId,
+    paymentHash,
+    inputAmount,
+  }: {
+    walletId: WalletId
+    paymentHash: PaymentHash
+    inputAmount: BigInt
+  }): Promise<boolean | RepositoryError>
 }
 
 type UsdFromBtcMidPriceFn = (

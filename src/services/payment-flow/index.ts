@@ -1,10 +1,15 @@
-import { UnknownRepositoryError } from "@domain/errors"
-import { CouldNotFindLightningPaymentFlowError, PaymentFlow } from "@domain/payments"
+import {
+  CouldNotFindLightningPaymentFlowError,
+  UnknownRepositoryError,
+} from "@domain/errors"
+import { PaymentFlow } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 
 import { PaymentFlowState } from "./schema"
 
-export const PaymentFlowStateRepository = (): IPaymentFlowRepository => {
+export const PaymentFlowStateRepository = (
+  expiryTimeInSeconds: Seconds,
+): IPaymentFlowRepository => {
   const persistNew = async <S extends WalletCurrency, R extends WalletCurrency>(
     paymentFlow: PaymentFlow<S, R>,
   ): Promise<PaymentFlow<S, R> | RepositoryError> => {
@@ -34,15 +39,47 @@ export const PaymentFlowStateRepository = (): IPaymentFlowRepository => {
         inputAmount: Number(inputAmount),
       })
       if (!result) return new CouldNotFindLightningPaymentFlowError()
-      return paymentFlowFromRaw(result)
+
+      const paymentFlow: PaymentFlow<S, WalletCurrency> = paymentFlowFromRaw(result)
+      if (isExpired({ paymentFlow, expiryTimeInSeconds })) {
+        await deleteLightningPaymentFlow({ walletId, paymentHash, inputAmount })
+        return new CouldNotFindLightningPaymentFlowError()
+      }
+
+      return paymentFlow
     } catch (err) {
       return new UnknownRepositoryError(err)
+    }
+  }
+
+  const deleteLightningPaymentFlow = async ({
+    walletId,
+    paymentHash,
+    inputAmount,
+  }: {
+    walletId: WalletId
+    paymentHash: PaymentHash
+    inputAmount: BigInt
+  }): Promise<boolean | RepositoryError> => {
+    try {
+      const result = await PaymentFlowState.deleteOne({
+        senderWalletId: walletId,
+        paymentHash,
+        inputAmount: Number(inputAmount),
+      })
+      if (result.deletedCount === 0) {
+        return new CouldNotFindLightningPaymentFlowError(paymentHash)
+      }
+      return true
+    } catch (error) {
+      return new UnknownRepositoryError(error)
     }
   }
 
   return {
     findLightningPaymentFlow,
     persistNew,
+    deleteLightningPaymentFlow,
   }
 }
 
@@ -115,3 +152,16 @@ const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
   outgoingNodePubkey: paymentFlow.outgoingNodePubkey,
   cachedRoute: paymentFlow.cachedRoute,
 })
+
+const isExpired = ({
+  paymentFlow,
+  expiryTimeInSeconds,
+}: {
+  paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
+  expiryTimeInSeconds: Seconds
+}): boolean => {
+  if (paymentFlow.paymentSentAndPending) return false
+
+  const elapsed = Date.now() - Number(paymentFlow.createdAt)
+  return elapsed > expiryTimeInSeconds
+}
