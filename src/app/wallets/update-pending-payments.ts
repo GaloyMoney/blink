@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { PaymentStatus } from "@domain/bitcoin/lightning"
+import { defaultTimeToExpiryInSeconds, PaymentStatus } from "@domain/bitcoin/lightning"
 import { InconsistentDataError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
@@ -153,7 +153,9 @@ const updatePendingPayment = async ({
           })
         if (pendingPayment.feeKnownInAdvance) return true
 
-        const paymentFlow = await PaymentFlowStateRepository().findLightningPaymentFlow({
+        const paymentFlow = await PaymentFlowStateRepository(
+          defaultTimeToExpiryInSeconds,
+        ).findLightningPaymentFlow({
           walletId,
           paymentHash,
           inputAmount: BigInt(inputAmountFromLedgerTransaction(pendingPayment)),

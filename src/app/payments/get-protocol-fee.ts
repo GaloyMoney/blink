@@ -1,4 +1,4 @@
-import { decodeInvoice } from "@domain/bitcoin/lightning"
+import { decodeInvoice, defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 import { checkedToWalletId } from "@domain/wallets"
 import {
   LnPaymentRequestNonZeroAmountRequiredError,
@@ -122,7 +122,9 @@ const estimateLightningFee = async ({
   }
   if (paymentFlow instanceof Error) return paymentFlow
 
-  const persistedPayment = await PaymentFlowStateRepository().persistNew(paymentFlow)
+  const persistedPayment = await PaymentFlowStateRepository(
+    defaultTimeToExpiryInSeconds,
+  ).persistNew(paymentFlow)
   if (persistedPayment instanceof Error) return persistedPayment
 
   return persistedPayment.protocolFeeInSenderWalletCurrency()

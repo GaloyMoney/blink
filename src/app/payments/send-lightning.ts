@@ -16,6 +16,7 @@ import {
 } from "@domain/wallets"
 import {
   decodeInvoice,
+  defaultTimeToExpiryInSeconds,
   LnAlreadyPaidError,
   LnPaymentPendingError,
   PaymentSendStatus,
@@ -50,6 +51,7 @@ import {
 } from "./helpers"
 
 const dealer = NewDealerPriceService()
+const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
 
 export const payInvoiceByWalletIdWithTwoFA = async ({
   paymentRequest,
@@ -255,7 +257,7 @@ const validateInvoicePaymentInputs = async ({
   })
   if (accountValidated instanceof Error) return accountValidated
 
-  let paymentFlow = await PaymentFlowStateRepository().findLightningPaymentFlow({
+  let paymentFlow = await paymentFlowRepo.findLightningPaymentFlow({
     walletId: senderWalletId,
     paymentHash: decodedInvoice.paymentHash,
     inputAmount: lnInvoiceAmount.amount,
@@ -271,11 +273,12 @@ const validateInvoicePaymentInputs = async ({
     if (builderWithConversion instanceof Error) return builderWithConversion
 
     paymentFlow = await builderWithConversion.withoutRoute()
+    if (paymentFlow instanceof Error) return paymentFlow
+
+    const persistedPayment = await paymentFlowRepo.persistNew(paymentFlow)
+    if (persistedPayment instanceof Error) return persistedPayment
   }
   if (paymentFlow instanceof Error) return paymentFlow
-
-  const persistedPayment = await PaymentFlowStateRepository().persistNew(paymentFlow)
-  if (persistedPayment instanceof Error) return persistedPayment
 
   return {
     senderWallet,
@@ -316,7 +319,7 @@ const validateNoAmountInvoicePaymentInputs = async ({
       : checkedToUsdPaymentAmount(amount)
   if (inputPaymentAmount instanceof Error) return inputPaymentAmount
 
-  let paymentFlow = await PaymentFlowStateRepository().findLightningPaymentFlow({
+  let paymentFlow = await paymentFlowRepo.findLightningPaymentFlow({
     walletId: senderWalletId,
     paymentHash: decodedInvoice.paymentHash,
     inputAmount: inputPaymentAmount.amount,
@@ -333,6 +336,10 @@ const validateNoAmountInvoicePaymentInputs = async ({
     if (builderWithConversion instanceof Error) return builderWithConversion
 
     paymentFlow = await builderWithConversion.withoutRoute()
+    if (paymentFlow instanceof Error) return paymentFlow
+
+    const persistedPayment = await paymentFlowRepo.persistNew(paymentFlow)
+    if (persistedPayment instanceof Error) return persistedPayment
   }
   if (paymentFlow instanceof Error) return paymentFlow
 
