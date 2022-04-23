@@ -1,5 +1,9 @@
 import { toSats } from "@domain/bitcoin"
-import { defaultTimeToExpiryInSeconds, PaymentStatus } from "@domain/bitcoin/lightning"
+import {
+  defaultTimeToExpiryInSeconds,
+  PaymentStatus,
+  UnknownLightningServiceError,
+} from "@domain/bitcoin/lightning"
 import { InconsistentDataError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
@@ -10,7 +14,15 @@ import { Wallets } from "@app"
 import { WalletsRepository } from "@services/mongoose"
 
 import { PaymentFlowStateRepository } from "@services/payment-flow"
-import { inputAmountFromLedgerTransaction } from "@domain/ledger"
+import {
+  CouldNotFindTransactionError,
+  inputAmountFromLedgerTransaction,
+  LedgerTransactionType,
+  UnknownLedgerError,
+} from "@domain/ledger"
+import { PaymentFlow } from "@domain/payments"
+import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
+import { WalletCurrency } from "@domain/shared"
 
 export const updatePendingPayments = async (logger: Logger): Promise<void> => {
   const ledgerService = LedgerService()
@@ -130,6 +142,18 @@ const updatePendingPayment = async ({
         return true
       }
 
+      let paymentFlow = await PaymentFlowStateRepository(
+        defaultTimeToExpiryInSeconds,
+      ).findLightningPaymentFlow({
+        walletId,
+        paymentHash,
+        inputAmount: BigInt(inputAmountFromLedgerTransaction(pendingPayment)),
+      })
+      if (paymentFlow instanceof Error) {
+        paymentFlow = await reconstructPendingPaymentFlow(paymentHash)
+        if (paymentFlow instanceof Error) return paymentFlow
+      }
+
       const settled = await ledgerService.settlePendingLnPayment(paymentHash)
       if (settled instanceof Error) {
         paymentLogger.error({ error: settled }, "no transaction to update")
@@ -152,15 +176,6 @@ const updatePendingPayment = async ({
             revealedPreImage,
           })
         if (pendingPayment.feeKnownInAdvance) return true
-
-        const paymentFlow = await PaymentFlowStateRepository(
-          defaultTimeToExpiryInSeconds,
-        ).findLightningPaymentFlow({
-          walletId,
-          paymentHash,
-          inputAmount: BigInt(inputAmountFromLedgerTransaction(pendingPayment)),
-        })
-        if (paymentFlow instanceof Error) return paymentFlow
 
         return Wallets.reimburseFee({
           paymentFlow,
@@ -194,4 +209,71 @@ const updatePendingPayment = async ({
     })
   }
   return true
+}
+
+const reconstructPendingPaymentFlow = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>(
+  paymentHash: PaymentHash,
+): Promise<PaymentFlow<S, R> | ApplicationError> => {
+  const ledgerTxns = await LedgerService().getTransactionsByHash(paymentHash)
+  if (ledgerTxns instanceof Error) return ledgerTxns
+
+  const payment = ledgerTxns.find(
+    (tx) =>
+      tx.pendingConfirmation === true &&
+      tx.type === LedgerTransactionType.Payment &&
+      tx.debit > 0,
+  ) as LedgerTransaction<S> | undefined
+  if (!payment) return new CouldNotFindTransactionError()
+
+  const { walletId: senderWalletId, currency: senderWalletCurrency } = payment
+  if (!senderWalletId) return new UnknownLedgerError()
+
+  const usdPaymentAmount: UsdPaymentAmount =
+    senderWalletCurrency === WalletCurrency.Usd
+      ? { amount: BigInt(payment.debit), currency: WalletCurrency.Usd }
+      : { amount: BigInt(payment.usd), currency: WalletCurrency.Usd }
+
+  let btcPaymentAmount: BtcPaymentAmount
+  if (senderWalletCurrency === WalletCurrency.Usd) {
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
+
+    const lnPayment = await lndService.lookupPayment({ paymentHash })
+    if (lnPayment instanceof Error) return lnPayment
+    if (lnPayment.status === PaymentStatus.Failed) {
+      return new UnknownLightningServiceError()
+    }
+
+    btcPaymentAmount = {
+      amount: BigInt(lnPayment.roundedUpAmount),
+      currency: WalletCurrency.Btc,
+    }
+  } else {
+    btcPaymentAmount = { amount: BigInt(payment.debit), currency: WalletCurrency.Btc }
+  }
+
+  return PaymentFlow({
+    senderWalletId,
+    senderWalletCurrency,
+
+    paymentHash,
+    descriptionFromInvoice: "",
+    btcPaymentAmount: btcPaymentAmount,
+    usdPaymentAmount: usdPaymentAmount,
+    inputAmount:
+      senderWalletCurrency === WalletCurrency.Usd
+        ? usdPaymentAmount.amount
+        : btcPaymentAmount.amount,
+    createdAt: payment.timestamp,
+    paymentSentAndPending: true,
+
+    settlementMethod: SettlementMethod.Lightning,
+    paymentInitiationMethod: PaymentInitiationMethod.Lightning,
+
+    btcProtocolFee: { amount: BigInt(payment.fee), currency: WalletCurrency.Btc },
+    usdProtocolFee: { amount: BigInt(payment.feeUsd), currency: WalletCurrency.Usd },
+  })
 }
