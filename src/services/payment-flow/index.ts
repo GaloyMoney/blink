@@ -1,6 +1,7 @@
 import {
   CouldNotFindLightningPaymentFlowError,
   CouldNotUpdateLightningPaymentFlowError,
+  NoExpiredLightningPaymentFlowsError,
   UnknownRepositoryError,
 } from "@domain/errors"
 import { PaymentFlow } from "@domain/payments"
@@ -48,6 +49,33 @@ export const PaymentFlowStateRepository = (
       }
 
       return paymentFlow
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
+  const listExpiredLightningPaymentFlows = async <
+    S extends WalletCurrency,
+    R extends WalletCurrency,
+  >(): Promise<PaymentFlow<S, R>[] | RepositoryError> => {
+    const EXPIRY_TIME_IN_MS = expiryTimeInSeconds * 1000
+    const timestampExpired = new Date(Date.now() - EXPIRY_TIME_IN_MS)
+
+    try {
+      const result: PaymentFlowStateRecord[] = await PaymentFlowState.aggregate([
+        {
+          $match: {
+            createdAt: { $lte: timestampExpired },
+            paymentSentAndPending: false,
+          },
+        },
+      ])
+
+      if (!result || result.length === 0) {
+        return new NoExpiredLightningPaymentFlowsError()
+      }
+
+      return result.map<PaymentFlow<S, R>>(paymentFlowFromRaw)
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
@@ -131,12 +159,34 @@ export const PaymentFlowStateRepository = (
     }
   }
 
+  const deleteExpiredLightningPaymentFlows = async (): Promise<
+    number | RepositoryError
+  > => {
+    const EXPIRY_TIME_IN_MS = expiryTimeInSeconds * 1000
+    const timestampExpired = new Date(Date.now() - EXPIRY_TIME_IN_MS)
+
+    try {
+      const result = await PaymentFlowState.deleteMany({
+        createdAt: { $lte: timestampExpired },
+        paymentSentAndPending: false,
+      })
+      if (result.deletedCount === 0) {
+        return new NoExpiredLightningPaymentFlowsError()
+      }
+      return result.deletedCount
+    } catch (error) {
+      return new UnknownRepositoryError(error)
+    }
+  }
+
   return {
     findLightningPaymentFlow,
+    listExpiredLightningPaymentFlows,
     persistNew,
     updateLightningPaymentFlow,
     updatePendingLightningPaymentFlow,
     deleteLightningPaymentFlow,
+    deleteExpiredLightningPaymentFlows,
   }
 }
 

@@ -31,6 +31,7 @@ export class CouldNotFindLnPaymentFromHashError extends CouldNotFindError {}
 export class NoTransactionToUpdateError extends CouldNotFindError {}
 export class CouldNotFindLightningPaymentFlowError extends CouldNotFindError {}
 export class CouldNotUpdateLightningPaymentFlowError extends CouldNotFindError {}
+export class NoExpiredLightningPaymentFlowsError extends CouldNotFindError {}
 
 export class CouldNotFindAccountFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
