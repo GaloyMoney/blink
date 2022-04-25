@@ -33,16 +33,6 @@ interface IDealerPriceService {
   getCentsPerSatsExchangeMidRate(): Promise<CentsPerSatsRatio | DealerPriceServiceError>
 }
 
-type UsdAmountWithExpiration = {
-  amount: UsdPaymentAmount
-  expiration: Date
-}
-
-type BtcAmountWithExpiration = {
-  amount: BtcPaymentAmount
-  expiration: Date
-}
-
 interface INewDealerPriceService {
   getCentsFromSatsForImmediateBuy(
     amount: BtcPaymentAmount,
