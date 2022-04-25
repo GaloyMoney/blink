@@ -149,6 +149,10 @@ interface IPaymentFlowRepository {
     paymentHash: PaymentHash
     inputAmount: BigInt
   }): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
+  listExpiredLightningPaymentFlows<
+    S extends WalletCurrency,
+    R extends WalletCurrency,
+  >(): Promise<PaymentFlow<S, R>[] | RepositoryError>
   updateLightningPaymentFlow<S extends WalletCurrency>(
     paymentFlow: PaymentFlow<S, WalletCurrency>,
   ): Promise<true | RepositoryError>
@@ -164,6 +168,7 @@ interface IPaymentFlowRepository {
     paymentHash: PaymentHash
     inputAmount: BigInt
   }): Promise<boolean | RepositoryError>
+  deleteExpiredLightningPaymentFlows(): Promise<number | RepositoryError>
 }
 
 type UsdFromBtcMidPriceFn = (
