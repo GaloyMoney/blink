@@ -449,8 +449,8 @@ jobs:
       - name: repo
       params:
         SRC_REPO: #@ data.values.git_dealer_uri
-        PROTO_FILE_SRC_PATH: dealer/proto/services/price/v1/price_service.proto
-        PROTO_FILE_DEST_PATH: src/services/dealer-price/proto/services/price/v1
+        PROTO_FILES_SRC_PATH: dealer/proto
+        PROTO_FILES_DEST_PATH: src/services/dealer-price
         BRANCH: #@ data.values.git_branch
       run:
         path: pipeline-tasks/ci/tasks/sync-proto.sh
