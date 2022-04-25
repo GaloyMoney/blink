@@ -58,7 +58,7 @@ export const PaymentFlowStateRepository = (
     R extends WalletCurrency,
   >(
     paymentFlow: PaymentFlow<S, R>,
-  ): Promise<PaymentFlow<S, R> | RepositoryError> => {
+  ): Promise<true | RepositoryError> => {
     try {
       const result = await PaymentFlowState.findOneAndUpdate(
         {
@@ -74,26 +74,26 @@ export const PaymentFlowStateRepository = (
       if (!result) {
         return new CouldNotUpdateLightningPaymentFlowError()
       }
-      return paymentFlowFromRaw(result)
+      return true
     } catch (err) {
       return new UnknownRepositoryError(err)
     }
   }
 
-  const updateLightningPaymentFlowPartial = async <
+  const updatePendingLightningPaymentFlow = async <
     S extends WalletCurrency,
     R extends WalletCurrency,
   >(
-    paymentFlowPartial: PaymentFlowStatePartial,
+    paymentFlowPendingUpdate: PaymentFlowStatePendingUpdate,
   ): Promise<PaymentFlow<S, R> | RepositoryError> => {
     try {
       const result = await PaymentFlowState.findOneAndUpdate(
         {
-          senderWalletId: paymentFlowPartial.senderWalletId,
-          paymentHash: paymentFlowPartial.paymentHash,
-          inputAmount: Number(paymentFlowPartial.inputAmount),
+          senderWalletId: paymentFlowPendingUpdate.senderWalletId,
+          paymentHash: paymentFlowPendingUpdate.paymentHash,
+          inputAmount: Number(paymentFlowPendingUpdate.inputAmount),
         },
-        rawFromPaymentFlowPartial(paymentFlowPartial),
+        rawFromPaymentFlowPendingUpdate(paymentFlowPendingUpdate),
         {
           new: true,
         },
@@ -135,7 +135,7 @@ export const PaymentFlowStateRepository = (
     findLightningPaymentFlow,
     persistNew,
     updateLightningPaymentFlow,
-    updateLightningPaymentFlowPartial,
+    updatePendingLightningPaymentFlow,
     deleteLightningPaymentFlow,
   }
 }
@@ -210,14 +210,14 @@ const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
   cachedRoute: paymentFlow.cachedRoute,
 })
 
-const rawFromPaymentFlowPartial = (
-  paymentFlowPartial: PaymentFlowStatePartial,
-): Partial<PaymentFlowStateRecordPartial> => ({
-  senderWalletId: paymentFlowPartial.senderWalletId,
-  paymentHash: paymentFlowPartial.paymentHash,
-  inputAmount: Number(paymentFlowPartial.inputAmount),
+const rawFromPaymentFlowPendingUpdate = (
+  paymentFlowPendingUpdate: PaymentFlowStatePendingUpdate,
+): PaymentFlowStateRecordPendingUpdate => ({
+  senderWalletId: paymentFlowPendingUpdate.senderWalletId,
+  paymentHash: paymentFlowPendingUpdate.paymentHash,
+  inputAmount: Number(paymentFlowPendingUpdate.inputAmount),
 
-  paymentSentAndPending: paymentFlowPartial.paymentSentAndPending,
+  paymentSentAndPending: paymentFlowPendingUpdate.paymentSentAndPending,
 })
 
 const isExpired = ({
