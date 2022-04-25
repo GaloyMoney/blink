@@ -191,7 +191,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       const errDetails = parseLndErrorDetails(err)
       switch (errDetails) {
         default:
-          return new UnknownLightningServiceError(err)
+          return new UnknownLightningServiceError(JSON.stringify(err))
       }
     }
   }
@@ -232,7 +232,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         case KnownLndErrorDetails.InvoiceNotFound:
           return new InvoiceNotFoundError()
         default:
-          return new UnknownLightningServiceError(err)
+          return new UnknownLightningServiceError(JSON.stringify(err))
       }
     }
   }
@@ -366,7 +366,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         case KnownLndErrorDetails.InvoiceNotFound:
           return true
         default:
-          return new UnknownLightningServiceError(err)
+          return new UnknownLightningServiceError(JSON.stringify(err))
       }
     }
   }
@@ -413,7 +413,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         case KnownLndErrorDetails.PaymentAttemptsTimedOut:
           return new PaymentAttemptsTimedOutError()
         default:
-          return new UnknownLightningServiceError(err)
+          return new UnknownLightningServiceError(JSON.stringify(err))
       }
     }
   }
@@ -484,7 +484,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         case KnownLndErrorDetails.PaymentAttemptsTimedOut:
           return new PaymentAttemptsTimedOutError()
         default:
-          return new UnknownLightningServiceError(err)
+          return new UnknownLightningServiceError(JSON.stringify(err))
       }
     }
   }
@@ -570,7 +570,7 @@ const lookupPaymentByPubkeyAndHash = async ({
       case KnownLndErrorDetails.SentPaymentNotFound:
         return new PaymentNotFoundError(JSON.stringify({ paymentHash, pubkey }))
       default:
-        return new UnknownLightningServiceError(err)
+        return new UnknownLightningServiceError(JSON.stringify(err))
     }
   }
 }
