@@ -157,7 +157,6 @@ export const PaymentFlowStateRepository = (
     persistNew,
     updateLightningPaymentFlow,
     updatePendingLightningPaymentFlow,
-    deleteLightningPaymentFlow,
     deleteExpiredLightningPaymentFlows,
   }
 }
