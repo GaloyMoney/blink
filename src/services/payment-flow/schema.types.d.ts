@@ -27,3 +27,11 @@ type PaymentFlowStateRecordPartial = {
   outgoingNodePubkey?: string
   cachedRoute?: RawRoute
 }
+
+type PaymentFlowStateRecordPendingUpdate = {
+  senderWalletId: string
+  paymentHash: string
+  inputAmount: number
+
+  paymentSentAndPending: boolean
+}

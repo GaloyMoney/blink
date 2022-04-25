@@ -30,12 +30,12 @@ type PaymentFlowState<S extends WalletCurrency, R extends WalletCurrency> = {
   cachedRoute?: RawRoute
 }
 
-type PaymentFlowStatePartial = {
+type PaymentFlowStatePendingUpdate = {
   senderWalletId: WalletId
   paymentHash: PaymentHash
   inputAmount: BigInt
 
-  paymentSentAndPending?: boolean
+  paymentSentAndPending: boolean
 }
 
 type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFlowState<
@@ -151,9 +151,9 @@ interface IPaymentFlowRepository {
   }): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
   updateLightningPaymentFlow<S extends WalletCurrency>(
     paymentFlow: PaymentFlow<S, WalletCurrency>,
-  ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
-  updateLightningPaymentFlowPartial<S extends WalletCurrency>(
-    paymentFlowPartial: PaymentFlowStatePartial,
+  ): Promise<true | RepositoryError>
+  updatePendingLightningPaymentFlow<S extends WalletCurrency>(
+    paymentFlowPendingUpdate: PaymentFlowStatePendingUpdate,
   ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
   deleteLightningPaymentFlow({
     walletId,
