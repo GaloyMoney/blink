@@ -439,10 +439,7 @@ const executePaymentViaIntraledger = async ({
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
     async (lock) => {
-      const balance = await LedgerService().getWalletBalanceAmount({
-        walletId: senderWallet.id,
-        walletCurrency: senderWallet.currency,
-      })
+      const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
       if (balance instanceof Error) return balance
 
       const paymentAmount = paymentFlow.paymentAmountInSenderWalletCurrency()
@@ -553,10 +550,7 @@ const executePaymentViaLn = async ({
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
     async (lock) => {
-      const balance = await LedgerService().getWalletBalanceAmount({
-        walletId: senderWallet.id,
-        walletCurrency: senderWallet.currency,
-      })
+      const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
       if (balance instanceof Error) return balance
 
       const paymentAmount = paymentFlow.paymentAmountInSenderWalletCurrency()
