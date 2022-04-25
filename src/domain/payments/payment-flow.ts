@@ -1,4 +1,7 @@
-import { WalletCurrency } from "@domain/shared"
+import { ErrorLevel, WalletCurrency } from "@domain/shared"
+import { recordExceptionInCurrentSpan } from "@services/tracing"
+
+import { RouteValidator } from "./route-validator"
 
 export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
   state: PaymentFlowState<S, R>,
@@ -21,12 +24,27 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
   })
 
   const routeDetails = (): {
-    rawRoute?: RawRoute
-    outgoingNodePubkey?: Pubkey
-  } => ({
-    rawRoute: state.cachedRoute,
-    outgoingNodePubkey: state.outgoingNodePubkey,
-  })
+    rawRoute: RawRoute | undefined
+    outgoingNodePubkey: Pubkey | undefined
+  } => {
+    const uncheckedRawRoute = state.cachedRoute
+
+    let rawRoute: RawRoute | undefined = uncheckedRawRoute
+    if (uncheckedRawRoute) {
+      const validateRoute = RouteValidator(uncheckedRawRoute).validate(
+        state.btcPaymentAmount,
+      )
+      if (validateRoute instanceof Error) {
+        rawRoute = undefined
+        recordExceptionInCurrentSpan({ error: validateRoute, level: ErrorLevel.Warn })
+      }
+    }
+
+    return {
+      rawRoute,
+      outgoingNodePubkey: rawRoute ? state.outgoingNodePubkey : undefined,
+    }
+  }
 
   const recipientDetails = (): {
     recipientWalletId: WalletId | undefined

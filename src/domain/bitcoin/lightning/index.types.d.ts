@@ -17,7 +17,7 @@ type PagingContinueToken = string & { readonly brand: unique symbol }
 type PagingStopToken = false
 
 type RouteValidator = {
-  validate(amount: Satoshis): true | ValidationError
+  validate(btcPaymentAmount: BtcPaymentAmount): true | ValidationError
 }
 
 type PaymentStatus =

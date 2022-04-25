@@ -34,7 +34,7 @@ describe("LightningPaymentFlowBuilder", () => {
     username: "Username" as Username,
   }
   const pubkey = "pubkey" as Pubkey
-  const rawRoute = { fee: 100 } as RawRoute
+  const rawRoute = { total_mtokens: "2000000", fee: 100 } as RawRoute
   const midPriceRatio = 1n
   const dealerPriceRatio = 2n
   const usdFromBtcMidPriceFn = async (amount: BtcPaymentAmount) => {
@@ -160,6 +160,11 @@ describe("LightningPaymentFlowBuilder", () => {
               cachedRoute: rawRoute,
             }),
           )
+
+          const { rawRoute: returnedRawRoute, outgoingNodePubkey } =
+            payment.routeDetails()
+          expect(returnedRawRoute).toStrictEqual(rawRoute)
+          expect(outgoingNodePubkey).toBe(pubkey)
         })
       })
 
