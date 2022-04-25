@@ -7,21 +7,21 @@ const Schema = mongoose.Schema
 
 const paymentFlowStateSchema = new Schema<PaymentFlowStateRecord>(
   {
-    senderWalletId: String,
-    senderWalletCurrency: String,
-    settlementMethod: String,
-    paymentInitiationMethod: String,
-    paymentHash: String,
+    senderWalletId: { type: String, required: true },
+    senderWalletCurrency: { type: String, required: true },
+    settlementMethod: { type: String, required: true },
+    paymentInitiationMethod: { type: String, required: true },
+    paymentHash: { type: String, required: true },
+    createdAt: { type: Date, required: true },
+    paymentSentAndPending: { type: Boolean, required: true },
     descriptionFromInvoice: String,
-    createdAt: Date,
-    paymentSentAndPending: Boolean,
 
-    btcPaymentAmount: Number,
-    usdPaymentAmount: Number,
-    inputAmount: Number,
+    btcPaymentAmount: { type: Number, required: true },
+    usdPaymentAmount: { type: Number, required: true },
+    inputAmount: { type: Number, required: true },
 
-    btcProtocolFee: Number,
-    usdProtocolFee: Number,
+    btcProtocolFee: { type: Number, required: true },
+    usdProtocolFee: { type: Number, required: true },
 
     recipientWalletId: String,
     recipientWalletCurrency: String,
