@@ -33,6 +33,8 @@ import {
   SubscriptionServer,
 } from "subscriptions-transport-ws"
 
+import { mapError } from "@graphql/error-map"
+
 import { parseIps } from "@domain/users-ips"
 
 import { playgroundTabs } from "../graphql/playground"
@@ -161,51 +163,42 @@ export const startApolloServer = async ({
       })
     },
     formatError: (err) => {
-      const exception = err.extensions?.exception as unknown as CustomError
-      const log = exception.log
+      try {
+        const exception = err.extensions?.exception as CustomError
+        const errorCode = err.extensions?.code as string
 
-      // An err object needs to necessarily have the forwardToClient field to be forwarded
-      // i.e. catch-all errors will not be forwarded
-      if (log) {
-        const errObj = { message: err.message, code: err.extensions?.code }
+        if (errorCode) {
+          const errObj = { message: err.message, code: errorCode }
 
-        // we are logging additional details but not sending those to the client
-        // ex: fields that indicate whether a payment succeeded or not, or stacktraces, that are required
-        // for metrics or debugging
-        // the err.extensions.metadata field contains such fields
-        // log({ ...errObj, ...err?.extensions?.metadata })
-        if (exception?.forwardToClient) {
-          return errObj
-        }
-      } else {
-        graphqlLogger.error(err)
-      }
-
-      // GraphQL shield seems to have a bug around throwing a custom ApolloError
-      // This is a workaround for now
-      const isShieldError = ["NOT_AUTHENTICATED", "NOT_AUTHORIZED"].includes(err.message)
-
-      const reportErrorToClient =
-        ["GRAPHQL_PARSE_FAILED", "GRAPHQL_VALIDATION_FAILED", "BAD_USER_INPUT"].includes(
-          // err.extensions?.code,
-          err.toString(),
-        ) ||
-        isShieldError ||
-        err instanceof ApolloError ||
-        err instanceof GraphQLError
-
-      const reportedError = {
-        message: err.message,
-        locations: err.locations,
-        path: err.path,
-        code: isShieldError ? err.message : err.extensions?.code,
-      }
-
-      return reportErrorToClient
-        ? reportedError
-        : {
-            message: `Error processing GraphQL request ${reportedError.code}`,
+          if (exception?.forwardToClient) {
+            return errObj
           }
+        } else {
+          graphqlLogger.error(err)
+        }
+
+        // GraphQL shield seems to have a bug around throwing a custom ApolloError
+        // This is a workaround for now
+        const isShieldError = ["NOT_AUTHENTICATED", "NOT_AUTHORIZED"].includes(
+          err.message,
+        )
+
+        const reportErrorToClient =
+          isShieldError || err instanceof ApolloError || err instanceof GraphQLError
+
+        const reportedError = {
+          message: err.message,
+          locations: err.locations,
+          path: err.path,
+          code: isShieldError ? err.message : err.extensions?.code,
+        }
+
+        return reportErrorToClient
+          ? reportedError
+          : { message: `Error processing GraphQL request ${reportedError.code}` }
+      } catch (err) {
+        return mapError(err)
+      }
     },
   })
 
