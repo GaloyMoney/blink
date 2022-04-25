@@ -93,7 +93,6 @@ scalar CentAmount
 
 type CentAmountPayload {
   amount: CentAmount
-  currencyUnit: ExchangeCurrencyUnit
   errors: [Error!]!
 }
 
@@ -780,7 +779,6 @@ scalar SatAmount
 
 type SatAmountPayload {
   amount: SatAmount
-  currencyUnit: ExchangeCurrencyUnit
   errors: [Error!]!
 }
 
