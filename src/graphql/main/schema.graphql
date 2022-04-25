@@ -429,6 +429,11 @@ input LnUsdInvoiceCreateOnBehalfOfRecipientInput {
   recipientWalletId: WalletId!
 }
 
+input LnUsdInvoiceFeeProbeInput {
+  paymentRequest: LnPaymentRequest!
+  walletId: WalletId!
+}
+
 type MapInfo {
   coordinates: Coordinates!
   title: String!
@@ -544,6 +549,7 @@ type Mutation {
   lnUsdInvoiceCreateOnBehalfOfRecipient(
     input: LnUsdInvoiceCreateOnBehalfOfRecipientInput!
   ): LnInvoicePayload!
+  lnUsdInvoiceFeeProbe(input: LnUsdInvoiceFeeProbeInput!): SatAmountPayload!
   onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload!
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
