@@ -54,33 +54,6 @@ export const PaymentFlowStateRepository = (
     }
   }
 
-  const listExpiredLightningPaymentFlows = async <
-    S extends WalletCurrency,
-    R extends WalletCurrency,
-  >(): Promise<PaymentFlow<S, R>[] | RepositoryError> => {
-    const EXPIRY_TIME_IN_MS = expiryTimeInSeconds * 1000
-    const timestampExpired = new Date(Date.now() - EXPIRY_TIME_IN_MS)
-
-    try {
-      const result: PaymentFlowStateRecord[] = await PaymentFlowState.aggregate([
-        {
-          $match: {
-            createdAt: { $lte: timestampExpired },
-            paymentSentAndPending: false,
-          },
-        },
-      ])
-
-      if (!result || result.length === 0) {
-        return new NoExpiredLightningPaymentFlowsError()
-      }
-
-      return result.map<PaymentFlow<S, R>>(paymentFlowFromRaw)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
   const updateLightningPaymentFlow = async <
     S extends WalletCurrency,
     R extends WalletCurrency,
@@ -181,7 +154,6 @@ export const PaymentFlowStateRepository = (
 
   return {
     findLightningPaymentFlow,
-    listExpiredLightningPaymentFlows,
     persistNew,
     updateLightningPaymentFlow,
     updatePendingLightningPaymentFlow,
