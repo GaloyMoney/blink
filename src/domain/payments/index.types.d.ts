@@ -155,15 +155,6 @@ interface IPaymentFlowRepository {
   updatePendingLightningPaymentFlow<S extends WalletCurrency>(
     paymentFlowPendingUpdate: PaymentFlowStatePendingUpdate,
   ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
-  deleteLightningPaymentFlow({
-    walletId,
-    paymentHash,
-    inputAmount,
-  }: {
-    walletId: WalletId
-    paymentHash: PaymentHash
-    inputAmount: BigInt
-  }): Promise<boolean | RepositoryError>
   deleteExpiredLightningPaymentFlows(): Promise<number | RepositoryError>
 }
 

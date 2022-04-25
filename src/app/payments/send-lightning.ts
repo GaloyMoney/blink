@@ -517,9 +517,6 @@ const executePaymentViaIntraledger = async ({
         })
       }
 
-      // fire-and-forget delete payment flow
-      deletePaymentFlow(paymentFlow)
-
       return PaymentSendStatus.Success
     },
   )
@@ -659,9 +656,6 @@ const executePaymentViaLn = async ({
         if (voided instanceof Error) return voided
 
         if (payResult instanceof LnAlreadyPaidError) {
-          // fire-and-forget delete payment flow
-          deletePaymentFlow(paymentFlow)
-
           return PaymentSendStatus.AlreadyPaid
         }
 
@@ -679,17 +673,7 @@ const executePaymentViaLn = async ({
         if (reimbursed instanceof Error) return reimbursed
       }
 
-      // fire-and-forget delete payment flow
-      deletePaymentFlow(paymentFlow)
-
       return PaymentSendStatus.Success
     },
   )
 }
-
-const deletePaymentFlow = (paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>) =>
-  paymentFlowRepo.deleteLightningPaymentFlow({
-    walletId: paymentFlow.senderWalletId,
-    paymentHash: paymentFlow.paymentHash,
-    inputAmount: paymentFlow.inputAmount,
-  })
