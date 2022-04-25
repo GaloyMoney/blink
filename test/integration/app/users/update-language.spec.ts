@@ -33,7 +33,7 @@ describe("Users - updateLanguage", () => {
   })
 
   it("fails with invalid language", async () => {
-    const result = await Users.updateLanguage({ userId: userIdA, language: "ru" })
+    const result = await Users.updateLanguage({ userId: userIdA, language: "Klingon" })
     expect(result).toBeInstanceOf(InvalidLanguageError)
   })
 })

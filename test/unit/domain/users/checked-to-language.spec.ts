@@ -9,6 +9,6 @@ describe("language-check", () => {
   })
 
   it("Fails with invalid languages", () => {
-    expect(checkedToLanguage("ru")).toBeInstanceOf(InvalidLanguageError)
+    expect(checkedToLanguage("Klingon")).toBeInstanceOf(InvalidLanguageError)
   })
 })
