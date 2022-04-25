@@ -199,19 +199,15 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const getWalletBalanceAmount = async <S extends WalletCurrency>({
-    walletId,
-    walletCurrency,
-  }: {
-    walletId: WalletId
-    walletCurrency: S
-  }): Promise<PaymentAmount<S> | LedgerError> => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+  const getWalletBalanceAmount = async <S extends WalletCurrency>(
+    walletDescriptor: WalletDescriptor<S>,
+  ): Promise<PaymentAmount<S> | LedgerError> => {
+    const liabilitiesWalletId = toLiabilitiesWalletId(walletDescriptor.id)
     try {
       const { balance } = await MainBook.balance({
         account: liabilitiesWalletId,
       })
-      return { amount: BigInt(balance), currency: walletCurrency }
+      return { amount: BigInt(balance), currency: walletDescriptor.currency }
     } catch (err) {
       return new UnknownLedgerError(err)
     }
