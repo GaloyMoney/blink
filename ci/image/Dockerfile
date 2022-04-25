@@ -26,3 +26,7 @@ RUN mkdir ghcli && cd ghcli \
   && wget https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/gh_${GH_CLI_VERSION}_linux_386.tar.gz -O ghcli.tar.gz \
   && tar --strip-components=1 -xf ghcli.tar.gz \
   && mv bin/gh /usr/local/bin && cd ../ && rm -rf ./ghcli
+
+ENV BUF_VERSION 1.4.0
+RUN wget https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-Linux-x86_64 -O buf \
+  && chmod +x buf && mv buf /usr/local/bin
