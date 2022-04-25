@@ -548,12 +548,7 @@ const executePaymentViaLn = async ({
 
   const { paymentHash } = decodedInvoice
 
-  // - get cached route if exists
   const { rawRoute, outgoingNodePubkey } = paymentFlow.routeDetails()
-
-  // - validate route amount?
-
-  // - amount + fee in display currency?
 
   return LockService().lockWalletId(
     { walletId: senderWallet.id, logger },
