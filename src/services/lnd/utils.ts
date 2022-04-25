@@ -3,6 +3,14 @@ import assert from "assert"
 import { MS_PER_DAY, ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE } from "@config"
 import { toSats } from "@domain/bitcoin"
 import {
+  defaultTimeToExpiryInSeconds,
+  NoValidNodeForPubkeyError,
+  OffChainServiceUnavailableError,
+} from "@domain/bitcoin/lightning"
+import { OnChainServiceUnavailableError } from "@domain/bitcoin/onchain"
+import { CouldNotFindError } from "@domain/errors"
+
+import {
   addLndChannelOpeningOrClosingFee,
   addLndRoutingRevenue,
   updateLndEscrow,
@@ -10,6 +18,8 @@ import {
 import { baseLogger } from "@services/logger"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { DbMetadata } from "@services/mongoose/schema"
+import { PaymentFlowStateRepository } from "@services/payment-flow"
+
 import { default as axios } from "axios"
 import {
   deleteFailedPayAttempts,
@@ -29,12 +39,6 @@ import groupBy from "lodash.groupby"
 import map from "lodash.map"
 import mapValues from "lodash.mapvalues"
 import sumBy from "lodash.sumby"
-
-import {
-  NoValidNodeForPubkeyError,
-  OffChainServiceUnavailableError,
-} from "@domain/bitcoin/lightning"
-import { OnChainServiceUnavailableError } from "@domain/bitcoin/onchain"
 
 import { params } from "./auth"
 
@@ -65,6 +69,18 @@ export const deleteFailedPaymentsAttemptAllLnds = async () => {
     } catch (err) {
       baseLogger.warn({ err }, "error deleting failed payment")
     }
+  }
+}
+
+export const deleteExpiredLightningPaymentFlows = async () => {
+  const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
+
+  const deleted = await paymentFlowRepo.deleteExpiredLightningPaymentFlows()
+  if (deleted instanceof Error) {
+    if (!(deleted instanceof CouldNotFindError)) {
+      baseLogger.error({ error: deleted }, "error deleting expired payment flows")
+    }
+    return 0
   }
 }
 

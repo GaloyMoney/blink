@@ -1,6 +1,7 @@
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 import {
+  deleteExpiredLightningPaymentFlows,
   deleteExpiredWalletInvoice,
   deleteFailedPaymentsAttemptAllLnds,
   updateEscrows,
@@ -38,6 +39,10 @@ const main = async () => {
     await deleteExpiredWalletInvoice()
   }
 
+  const deleteExpiredPaymentFlows = async () => {
+    await deleteExpiredLightningPaymentFlows()
+  }
+
   const updateLnPaymentsCollection = async () => {
     const result = await Lightning.updateLnPayments()
     if (result instanceof Error) throw result
@@ -53,6 +58,7 @@ const main = async () => {
     updateRoutingRevenues,
     updateOnChainReceipt,
     ...(cronConfig.rebalanceEnabled ? [rebalance] : []),
+    deleteExpiredPaymentFlows,
   ]
 
   for (const task of tasks) {
