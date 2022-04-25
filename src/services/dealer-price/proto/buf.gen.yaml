@@ -1,0 +1,17 @@
+# /proto/buf.gen.yaml
+version: v1beta1
+
+plugins:
+
+  - name: js
+    out: ../src/services/price/proto
+    opt: import_style=commonjs,binary
+
+  - name: grpc
+    out: ../src/services/price/proto
+    opt: grpc_js
+    path: grpc_tools_node_protoc_plugin
+
+  - name: ts
+    out: ../src/services/price/proto
+    opt: grpc_js
