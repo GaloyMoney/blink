@@ -3,9 +3,11 @@
 set -eu
 
 export ref=$(cat ./src-repo/.git/short_ref)
-cp -R src-repo/${PROTO_FILES_SRC_PATH} repo/${PROTO_FILES_DEST_PATH}
+cp -R src-repo/${PROTO_FILES_SRC_PATH}/* repo/${PROTO_FILES_DEST_PATH}
 
-cd repo
+pushd repo/${PROTO_FILES_DEST_PATH}
+
+buf generate
 
 if [[ -z $(git config --global user.email) ]]; then
   git config --global user.email "bot@galoy.io"
