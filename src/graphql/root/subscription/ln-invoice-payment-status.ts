@@ -33,6 +33,10 @@ const LnInvoicePaymentStatusSubscription = {
   subscribe: async (_, args) => {
     const { paymentRequest } = args.input
 
+    if (paymentRequest instanceof Error) {
+      return { errors: [{ message: paymentRequest.message }] }
+    }
+
     const paymentStatusChecker = await Lightning.PaymentStatusChecker({ paymentRequest })
 
     if (paymentStatusChecker instanceof Error) {

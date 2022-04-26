@@ -270,6 +270,8 @@ const resolveFunctionSpanOptions = ({
       attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = params[key]
       attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}.null`] =
         params[key] === null
+      attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}.undefined`] =
+        params[key] === undefined
     }
   }
   return { attributes }
