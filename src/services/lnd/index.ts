@@ -35,6 +35,7 @@ import {
   getFailedPayments,
   getClosedChannels,
   getWalletInfo,
+  getPendingPayments,
 } from "lightning"
 
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -259,90 +260,44 @@ export const LndService = (): ILightningService | LightningServiceError => {
     return new PaymentNotFoundError(JSON.stringify({ paymentHash, pubkey }))
   }
 
-  const listFailedPayments = async ({
-    after,
-    pubkey,
-  }: {
-    after: PagingStartToken | PagingContinueToken
-    pubkey: Pubkey
-  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
-    const lnd = getLndFromPubkey({ pubkey })
-    if (lnd instanceof Error) return lnd
-
-    const pagingArgs = after ? { token: after } : {}
-
-    try {
-      const { payments, next } = await getFailedPayments({ lnd, ...pagingArgs })
-      return {
-        lnPayments: payments
-          .map(translateLnPaymentLookup)
-          .map((p) => ({ ...p, status: PaymentStatus.Failed })),
-        endCursor: (next as PagingContinueToken) || false,
-      }
-    } catch (err) {
-      const errDetails = parseLndErrorDetails(err)
-      switch (errDetails) {
-        case KnownLndErrorDetails.LndDbCorruption:
-          return new CorruptLndDbError()
-        default:
-          return new UnknownRouteNotFoundError(err)
-      }
-    }
-  }
-
-  const listSettledAndPendingPayments = async ({
-    after,
-    pubkey,
-  }: {
-    after: PagingStartToken | PagingContinueToken
-    pubkey: Pubkey
-  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
-    try {
+  const listPaymentsFactory =
+    (getPaymentsFn) =>
+    async ({
+      after,
+      pubkey,
+    }: {
+      after: PagingStartToken | PagingContinueToken
+      pubkey: Pubkey
+    }): Promise<ListLnPaymentsResult | LightningServiceError> => {
       const lnd = getLndFromPubkey({ pubkey })
       if (lnd instanceof Error) return lnd
 
       const pagingArgs = after ? { token: after } : {}
-      const { payments, next } = await getPayments({ lnd, ...pagingArgs })
 
-      return {
-        lnPayments: payments.map(translateLnPaymentLookup),
-        endCursor: (next as PagingStartToken) || false,
-      }
-    } catch (err) {
-      const errDetails = parseLndErrorDetails(err)
-      switch (errDetails) {
-        case KnownLndErrorDetails.LndDbCorruption:
-          return new CorruptLndDbError()
-        default:
-          return new UnknownRouteNotFoundError(err)
+      try {
+        const { payments, next } = await getPaymentsFn({ lnd, ...pagingArgs })
+        return {
+          lnPayments: payments.map(translateLnPaymentLookup),
+          endCursor: (next as PagingContinueToken) || false,
+        }
+      } catch (err) {
+        const errDetails = parseLndErrorDetails(err)
+        switch (errDetails) {
+          case KnownLndErrorDetails.LndDbCorruption:
+            return new CorruptLndDbError()
+          default:
+            return new UnknownRouteNotFoundError(err)
+        }
       }
     }
-  }
 
-  const listSettledPayments = async (args: {
-    after: PagingStartToken | PagingContinueToken
-    pubkey: Pubkey
-  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
-    const settledAndPendingPayments = await listSettledAndPendingPayments(args)
-    if (settledAndPendingPayments instanceof Error) return settledAndPendingPayments
+  const listFailedPayments = async (args) => {
+    const result = await listPaymentsFactory(getFailedPayments)(args)
+    if (result instanceof Error) return result
 
-    const { lnPayments, endCursor } = settledAndPendingPayments
+    const { lnPayments, endCursor } = result
     return {
-      lnPayments: lnPayments.filter((p) => p.status === PaymentStatus.Settled),
-      endCursor,
-    }
-  }
-
-  const listPendingPayments = async (args: {
-    after: PagingStartToken | PagingContinueToken
-    pubkey: Pubkey
-  }): Promise<ListLnPaymentsResult | LightningServiceError> => {
-    const settledAndPendingPayments = await listSettledAndPendingPayments(args)
-    if (settledAndPendingPayments instanceof Error) return settledAndPendingPayments
-
-    const { lnPayments, endCursor } = settledAndPendingPayments
-    return {
-      lnPayments: lnPayments.filter((p) => p.status !== PaymentStatus.Settled),
+      lnPayments: lnPayments.map((p) => ({ ...p, status: PaymentStatus.Failed })),
       endCursor,
     }
   }
@@ -500,10 +455,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
       registerInvoice,
       lookupInvoice,
       lookupPayment,
-      listSettledPayments,
-      listPendingPayments,
+      listSettledPayments: listPaymentsFactory(getPayments),
+      listPendingPayments: listPaymentsFactory(getPendingPayments),
       listFailedPayments,
-      listSettledAndPendingPayments,
       cancelInvoice,
       payInvoiceViaRoutes,
       payInvoiceViaPaymentDetails,

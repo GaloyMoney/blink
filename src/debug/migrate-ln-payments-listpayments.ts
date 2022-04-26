@@ -39,10 +39,7 @@ const main = async () =>
       const lndService = LndService()
       if (lndService instanceof Error) return lndService
 
-      const listFns = [
-        lndService.listSettledAndPendingPayments,
-        lndService.listFailedPayments,
-      ]
+      const listFns = [lndService.listSettledPayments, lndService.listFailedPayments]
       const pubkeys = lndService.listActivePubkeys()
 
       for (const listFn of listFns) {
