@@ -58,9 +58,8 @@ $ make watch
 
 You can load GraphiQL, a web GUI for GraphQL. Start the server and open the following url:
 
-- http://localhost:4000/graphql (old API - deprecated)
 - http://localhost:4001/graphql (admin API)
-- http://localhost:4002/graphql (new API)
+- http://localhost:4002/graphql (end user API)
 
 ### Docker compose
 
