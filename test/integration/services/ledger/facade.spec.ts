@@ -67,7 +67,6 @@ describe("Facade", () => {
 
       const metadata = LedgerFacade.LnSendLedgerMetadata({
         paymentHash: crypto.randomUUID() as PaymentHash,
-        fee: bankFee.btc,
         feeDisplayCurrency: Number(bankFee.usd.amount) as DisplayCurrencyBaseAmount,
         amountDisplayCurrency: Number(
           receiveAmount.usd.amount,
@@ -75,7 +74,12 @@ describe("Facade", () => {
         displayCurrency: getDisplayCurrencyConfig().code,
         pubkey: crypto.randomUUID() as Pubkey,
         feeKnownInAdvance: true,
-        paymentFlow: { btcPaymentAmount: receiveAmount.btc, btcProtocolFee: bankFee.btc },
+        paymentFlow: {
+          btcPaymentAmount: receiveAmount.btc,
+          usdPaymentAmount: receiveAmount.usd,
+          btcProtocolFee: bankFee.btc,
+          usdProtocolFee: bankFee.usd,
+        } as PaymentFlowState<WalletCurrency, WalletCurrency>,
       })
 
       await LedgerFacade.recordSend({
