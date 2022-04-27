@@ -23,6 +23,7 @@ import {
   SpanOptions,
   TimeInput,
   Exception,
+  Context,
 } from "@opentelemetry/api"
 import { tracingConfig } from "@config"
 import { ErrorLevel } from "@domain/shared"
@@ -147,7 +148,7 @@ const provider = new NodeTracerProvider({
 })
 
 class SpanProcessorWrapper extends SimpleSpanProcessor {
-  onStart(span: SdkSpan) {
+  onStart(span: SdkSpan, parentContext: Context) {
     const ctx = context.active()
     if (ctx) {
       const baggage = propagation.getBaggage(ctx)
@@ -157,7 +158,7 @@ class SpanProcessorWrapper extends SimpleSpanProcessor {
         })
       }
     }
-    super.onStart(span)
+    super.onStart(span, parentContext)
   }
 }
 provider.addSpanProcessor(
