@@ -1,8 +1,6 @@
-import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotImplementedError } from "@domain/errors"
 import {
-  LedgerError,
   LedgerServiceError,
   NoTransactionToSettleError,
   UnknownLedgerError,
@@ -25,40 +23,6 @@ import { translateToLedgerJournal } from "."
 const txMetadataRepo = TransactionsMetadataRepository()
 
 export const send = {
-  addLnTxSend: async ({
-    walletId,
-    walletCurrency,
-    paymentHash,
-    description,
-    sats,
-    feeRouting,
-    feeRoutingDisplayCurrency,
-    pubkey,
-    amountDisplayCurrency,
-    feeKnownInAdvance,
-    cents,
-  }: AddLnTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const metadata: AddLnSendLedgerMetadata = {
-      type: LedgerTransactionType.Payment,
-      pending: true,
-      hash: paymentHash,
-      fee: feeRouting,
-      feeUsd: feeRoutingDisplayCurrency,
-      usd: amountDisplayCurrency,
-      pubkey,
-      feeKnownInAdvance,
-      satsAmount: toSats(sats - feeRouting),
-    }
-    return addSendNoInternalFee({
-      walletId,
-      walletCurrency,
-      metadata,
-      description,
-      sats,
-      cents,
-    })
-  },
-
   addOnChainTxSend: async ({
     walletId,
     walletCurrency,
