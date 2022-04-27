@@ -610,7 +610,7 @@ resources:
 - name: dealer-price-proto
   type: git
   source:
-    paths: ["dealer/proto/services/price/v1/*"]
+    paths: ["dealer/proto/*"]
     uri: #@ data.values.git_dealer_uri
     branch: #@ data.values.git_branch
     private_key: #@ data.values.github_private_key
