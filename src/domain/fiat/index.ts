@@ -4,8 +4,8 @@ import {
   NonIntegerError,
 } from "@domain/errors"
 
-export const toCents = (amount: number): UsdCents => {
-  return amount as UsdCents
+export const toCents = (amount: number | bigint): UsdCents => {
+  return Number(amount) as UsdCents
 }
 
 export const toCentsPerSatsRatio = (amount: number): CentsPerSatsRatio => {
