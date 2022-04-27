@@ -1,37 +1,50 @@
 import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 
-export const LnSendLedgerMetadata = ({
+export const LnSendLedgerMetadata = <S extends WalletCurrency, R extends WalletCurrency>({
   paymentHash,
-  fee,
+  pubkey,
+  paymentFlow,
   feeDisplayCurrency,
   amountDisplayCurrency,
-  pubkey,
+  displayCurrency,
   feeKnownInAdvance,
-  paymentFlow,
 }: {
   paymentHash: PaymentHash
-  fee: BtcPaymentAmount
+  pubkey: Pubkey
+  paymentFlow: PaymentFlowState<S, R>
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
-  pubkey: Pubkey
+  displayCurrency: DisplayCurrency
   feeKnownInAdvance: boolean
-  paymentFlow: { btcPaymentAmount: BtcPaymentAmount }
 }) => {
   const {
     btcPaymentAmount: { amount: satsAmount },
+    usdPaymentAmount: { amount: centsAmount },
+    btcProtocolFee: { amount: satsFee },
+    usdProtocolFee: { amount: centsFee },
   } = paymentFlow
 
   const metadata: AddLnSendLedgerMetadata = {
     type: LedgerTransactionType.Payment,
     pending: true,
     hash: paymentHash,
-    fee: Number(fee.amount) as Satoshis,
-    feeUsd: feeDisplayCurrency,
-    usd: amountDisplayCurrency,
     pubkey,
     feeKnownInAdvance,
+
+    fee: toSats(satsFee),
+    feeUsd: (feeDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+    usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+
+    satsFee: toSats(satsFee),
+    displayFee: feeDisplayCurrency,
+    displayAmount: amountDisplayCurrency,
+
+    displayCurrency,
+    centsAmount: toCents(centsAmount),
     satsAmount: toSats(satsAmount),
+    centsFee: toCents(centsFee),
   }
   return metadata
 }
@@ -113,19 +126,29 @@ export const LnReceiveLedgerMetadata = ({
   return metadata
 }
 
-export const LnFeeReimbursementReceiveLedgerMetadata = ({
+export const LnFeeReimbursementReceiveLedgerMetadata = <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
+  paymentFlow,
   paymentHash,
   journalId,
+  feeDisplayCurrency,
   amountDisplayCurrency,
-  paymentFlow,
+  displayCurrency,
 }: {
   paymentHash: PaymentHash
+  paymentFlow: PaymentFlowState<S, R>
   journalId: LedgerJournalId
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
-  paymentFlow: { btcPaymentAmount: BtcPaymentAmount }
+  displayCurrency: DisplayCurrency
 }) => {
   const {
     btcPaymentAmount: { amount: satsAmount },
+    usdPaymentAmount: { amount: centsAmount },
+    btcProtocolFee: { amount: satsFee },
+    usdProtocolFee: { amount: centsFee },
   } = paymentFlow
 
   const metadata: FeeReimbursementLedgerMetadata = {
@@ -133,8 +156,17 @@ export const LnFeeReimbursementReceiveLedgerMetadata = ({
     hash: paymentHash,
     related_journal: journalId,
     pending: false,
-    usd: amountDisplayCurrency,
+
+    usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+
+    satsFee: toSats(satsFee),
+    displayFee: feeDisplayCurrency,
+    displayAmount: amountDisplayCurrency,
+
+    displayCurrency,
+    centsAmount: toCents(centsAmount),
     satsAmount: toSats(satsAmount),
+    centsFee: toCents(centsFee),
   }
   return metadata
 }
