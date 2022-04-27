@@ -15,6 +15,10 @@ interface DisplayCurrencyConverter {
   fromCentsToSats: (amount: UsdCents) => Satoshis
 }
 
+interface NewDisplayCurrencyConverter {
+  fromBtcAmount: (amount: BtcPaymentAmount) => DisplayCurrencyBaseAmount
+}
+
 interface AmountFromSatoshis {
   sats: Satoshis
 }

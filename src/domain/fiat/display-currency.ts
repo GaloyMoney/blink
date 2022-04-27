@@ -23,3 +23,12 @@ export const DisplayCurrencyConverter = (
     return Math.floor(Number(amount) / (price * CENTS_PER_USD)) as Satoshis
   },
 })
+
+export const NewDisplayCurrencyConverter = (
+  displayCurrencyPrice: DisplayCurrencyBasePerSat,
+): NewDisplayCurrencyConverter => {
+  return {
+    fromBtcAmount: (btc: BtcPaymentAmount): DisplayCurrencyBaseAmount =>
+      (Number(btc.amount) * displayCurrencyPrice) as DisplayCurrencyBaseAmount,
+  }
+}

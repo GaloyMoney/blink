@@ -1,4 +1,5 @@
 type DisplayCurrencyPerSat = number & { readonly brand: unique symbol }
+type DisplayCurrencyBasePerSat = number & { readonly brand: unique symbol }
 type UserId = string & { readonly brand: unique symbol }
 type Username = string & { readonly brand: unique symbol }
 type Pubkey = string & { readonly brand: unique symbol }
