@@ -1,3 +1,4 @@
+import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotImplementedError } from "@domain/errors"
 import {
@@ -46,6 +47,7 @@ export const send = {
       usd: amountDisplayCurrency,
       pubkey,
       feeKnownInAdvance,
+      satsAmount: toSats(sats - feeRouting),
     }
     return addSendNoInternalFee({
       walletId,

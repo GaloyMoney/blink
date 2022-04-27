@@ -1,3 +1,4 @@
+import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 
 export const LnSendLedgerMetadata = ({
@@ -7,6 +8,7 @@ export const LnSendLedgerMetadata = ({
   amountDisplayCurrency,
   pubkey,
   feeKnownInAdvance,
+  paymentFlow,
 }: {
   paymentHash: PaymentHash
   fee: BtcPaymentAmount
@@ -14,7 +16,12 @@ export const LnSendLedgerMetadata = ({
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   pubkey: Pubkey
   feeKnownInAdvance: boolean
+  paymentFlow: { btcPaymentAmount: BtcPaymentAmount }
 }) => {
+  const {
+    btcPaymentAmount: { amount: satsAmount },
+  } = paymentFlow
+
   const metadata: AddLnSendLedgerMetadata = {
     type: LedgerTransactionType.Payment,
     pending: true,
@@ -24,6 +31,7 @@ export const LnSendLedgerMetadata = ({
     usd: amountDisplayCurrency,
     pubkey,
     feeKnownInAdvance,
+    satsAmount: toSats(satsAmount),
   }
   return metadata
 }
@@ -109,17 +117,24 @@ export const LnFeeReimbursementReceiveLedgerMetadata = ({
   paymentHash,
   journalId,
   amountDisplayCurrency,
+  paymentFlow,
 }: {
   paymentHash: PaymentHash
   journalId: LedgerJournalId
   amountDisplayCurrency: DisplayCurrencyBaseAmount
+  paymentFlow: { btcPaymentAmount: BtcPaymentAmount }
 }) => {
+  const {
+    btcPaymentAmount: { amount: satsAmount },
+  } = paymentFlow
+
   const metadata: FeeReimbursementLedgerMetadata = {
     type: LedgerTransactionType.LnFeeReimbursement,
     hash: paymentHash,
     related_journal: journalId,
     pending: false,
     usd: amountDisplayCurrency,
+    satsAmount: toSats(satsAmount),
   }
   return metadata
 }

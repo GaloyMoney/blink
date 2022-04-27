@@ -4,6 +4,7 @@ import {
   WalletCurrency,
 } from "@domain/shared"
 import { NotImplementedError, NotReachableError } from "@domain/errors"
+import { toSats } from "@domain/bitcoin"
 
 import { LedgerTransactionType } from "@domain/ledger"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
@@ -114,6 +115,7 @@ export const receive = {
     sats,
     cents,
     revealedPreImage,
+    paymentFlow,
   }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
     const metadata: FeeReimbursementLedgerMetadata = {
       type: LedgerTransactionType.LnFeeReimbursement,
@@ -121,6 +123,7 @@ export const receive = {
       related_journal: journalId,
       pending: false,
       usd: amountDisplayCurrency,
+      satsAmount: toSats(paymentFlow.btcPaymentAmount.amount),
     }
 
     const description = "fee reimbursement"
