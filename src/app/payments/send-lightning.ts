@@ -21,6 +21,7 @@ import {
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
 import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
+import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
 import {
   AlreadyPaidError,
   CouldNotFindLightningPaymentFlowError,
@@ -52,7 +53,6 @@ import {
   newCheckIntraledgerLimits,
   newCheckTwoFALimits,
 } from "./helpers"
-import { DisplayCurrency } from "@domain/fiat"
 
 const dealer = NewDealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
@@ -452,12 +452,12 @@ const executePaymentViaIntraledger = async ({
         )
       }
 
+      const displayCentsPerSat = 1 as DisplayCurrencyBasePerSat
+      const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+
       const journal = await LockService().extendLock({ logger, lock }, async () => {
         const lnIntraLedgerMetadata = LedgerFacade.LnIntraledgerLedgerMetadata({
-          // FIXME: display currency
-          amountDisplayCurrency: Number(
-            paymentFlow.usdPaymentAmount.amount,
-          ) as DisplayCurrencyBaseAmount,
+          amountDisplayCurrency: converter.fromBtcAmount(paymentFlow.btcPaymentAmount),
 
           memoOfPayer: memo || undefined,
           senderUsername,
@@ -566,15 +566,13 @@ const executePaymentViaLn = async ({
       const lndService = LndService()
       if (lndService instanceof Error) return lndService
 
+      const displayCentsPerSat = 1 as DisplayCurrencyBasePerSat
+      const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+
       const journal = await LockService().extendLock({ logger, lock }, async () => {
         const metadata = LedgerFacade.LnSendLedgerMetadata({
-          // FIXME: display currency
-          amountDisplayCurrency: Number(
-            paymentFlow.usdPaymentAmount.amount,
-          ) as DisplayCurrencyBaseAmount,
-          feeDisplayCurrency: Number(
-            paymentFlow.usdProtocolFee.amount,
-          ) as DisplayCurrencyBaseAmount,
+          amountDisplayCurrency: converter.fromBtcAmount(paymentFlow.btcPaymentAmount),
+          feeDisplayCurrency: converter.fromBtcAmount(paymentFlow.btcProtocolFee),
           displayCurrency: DisplayCurrency.Usd,
 
           paymentFlow,
@@ -659,6 +657,8 @@ const executePaymentViaLn = async ({
           journalId,
           actualFee: payResult.roundedUpFee,
           revealedPreImage: payResult.revealedPreImage,
+          amountDisplayCurrency: converter.fromBtcAmount(paymentFlow.btcPaymentAmount),
+          feeDisplayCurrency: converter.fromBtcAmount(paymentFlow.btcProtocolFee),
           logger,
         })
         if (reimbursed instanceof Error) return reimbursed
