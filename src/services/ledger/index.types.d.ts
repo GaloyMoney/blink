@@ -61,11 +61,16 @@ type OnChainReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {
   payee_addresses: OnChainAddress[]
 }
 
-type AddLnSendLedgerMetadata = NonIntraledgerLedgerMetadata & {
-  hash: PaymentHash
-  pubkey: Pubkey
-  feeKnownInAdvance: boolean
+type LnSendAmountsMetadata = {
+  satsAmount: Satoshis
 }
+
+type AddLnSendLedgerMetadata = NonIntraledgerLedgerMetadata &
+  LnSendAmountsMetadata & {
+    hash: PaymentHash
+    pubkey: Pubkey
+    feeKnownInAdvance: boolean
+  }
 
 type AddOnchainSendLedgerMetadata = NonIntraledgerLedgerMetadata & {
   hash: OnChainTxHash
@@ -101,7 +106,7 @@ type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata & {
 
 type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata
 
-type FeeReimbursementLedgerMetadata = {
+type FeeReimbursementLedgerMetadata = LnSendAmountsMetadata & {
   hash: PaymentHash
   type: LedgerTransactionType
   pending: boolean
