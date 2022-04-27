@@ -3,11 +3,22 @@
 set -eu
 
 export ref=$(cat ./src-repo/.git/short_ref)
-cp -R src-repo/${PROTO_FILES_SRC_PATH}/* repo/${PROTO_FILES_DEST_PATH}
 
-pushd repo/${PROTO_FILES_DEST_PATH}
+pushd src-repo
+
+yarn install
+export PATH=$PATH:$(pwd)/node_modules/.bin
+
+pushd ${PROTO_FILES_SRC_PATH}/
 
 buf generate
+
+popd
+popd
+
+cp -R src-repo/${PROTO_FILES_SRC_PATH}/* repo/${PROTO_FILES_DEST_PATH}
+
+cd repo/${PROTO_FILES_DEST_PATH}
 
 if [[ -z $(git config --global user.email) ]]; then
   git config --global user.email "bot@galoy.io"
