@@ -52,6 +52,7 @@ import {
   newCheckIntraledgerLimits,
   newCheckTwoFALimits,
 } from "./helpers"
+import { DisplayCurrency } from "@domain/fiat"
 
 const dealer = NewDealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
@@ -574,8 +575,9 @@ const executePaymentViaLn = async ({
           feeDisplayCurrency: Number(
             paymentFlow.usdProtocolFee.amount,
           ) as DisplayCurrencyBaseAmount,
+          displayCurrency: DisplayCurrency.Usd,
 
-          fee: paymentFlow.btcProtocolFee,
+          paymentFlow,
           pubkey: outgoingNodePubkey || lndService.defaultPubkey(),
           paymentHash,
           feeKnownInAdvance: !!rawRoute,
