@@ -159,6 +159,10 @@ const updatePendingPayment = async ({
           maxFee: pendingPayment.fee,
           actualFee: roundedUpFee,
           revealedPreImage,
+          paymentAmount: toSats(
+            (pendingPayment.debit > 0 ? pendingPayment.debit : pendingPayment.credit) -
+              pendingPayment.fee,
+          ),
           logger,
         })
       } else if (status === PaymentStatus.Failed) {
