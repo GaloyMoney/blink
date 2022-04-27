@@ -4,6 +4,8 @@ import {
   NonIntegerError,
 } from "@domain/errors"
 
+export * from "./display-currency"
+
 export const toCents = (amount: number | bigint): UsdCents => {
   return Number(amount) as UsdCents
 }
