@@ -169,6 +169,7 @@ type AddLnFeeReeimbursementReceiveArgs = {
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   journalId: LedgerJournalId
   revealedPreImage?: RevealedPreImage
+  paymentFlow: { btcPaymentAmount: BtcPaymentAmount }
 }
 
 type FeeReimbursement = {

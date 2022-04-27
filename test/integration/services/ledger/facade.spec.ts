@@ -70,6 +70,7 @@ describe("Facade", () => {
         ) as DisplayCurrencyBaseAmount,
         pubkey: crypto.randomUUID() as Pubkey,
         feeKnownInAdvance: true,
+        paymentFlow: { btcPaymentAmount: receiveAmount.btc },
       })
 
       await LedgerFacade.recordSend({
