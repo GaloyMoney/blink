@@ -299,8 +299,6 @@ interface ILedgerService {
     args: AddLnFeeReeimbursementReceiveArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  addLnTxSend(args: AddLnTxSendArgs): Promise<LedgerJournal | LedgerServiceError>
-
   addLnIntraledgerTxTransfer(
     args: AddLnIntraledgerTxTransferArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
