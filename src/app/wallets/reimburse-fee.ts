@@ -1,4 +1,5 @@
 import { getCurrentPrice } from "@app/prices"
+import { getDisplayCurrencyConfig } from "@config"
 import { DealerPriceServiceError } from "@domain/dealer-price"
 import {
   DisplayCurrencyConverter,
@@ -82,7 +83,7 @@ export const reimburseFee = async ({
     },
     feeDisplayCurrency: usdFee,
     amountDisplayCurrency,
-    displayCurrency: WalletCurrency.Usd,
+    displayCurrency: getDisplayCurrencyConfig().code,
   })
   if (result instanceof Error) return result
 
