@@ -9,12 +9,12 @@ module.exports = {
       )
       console.log(
         { result: resultDebits },
-        "added 'satsAmount' prop to debit medici_transactions",
+        "added new props to debit medici_transactions",
       )
     } catch (error) {
       console.log(
         { result: error },
-        "Couldn't add 'satsAmount' prop to debit medici_transactions",
+        "Couldn't add new props to debit medici_transactions",
       )
     }
 
@@ -29,40 +29,71 @@ module.exports = {
           $group: {
             _id: "$hash",
             satsAmount: { $first: "$satsAmount" },
+            fee: { $first: "$fee" },
+            usd: { $first: "$usd" },
+            feeUsd: { $first: "$feeUsd" },
           },
         },
       ])
-      for await (const { _id: hash, satsAmount } of allTxns) {
+      for await (const { _id: hash, satsAmount, fee, usd, feeUsd } of allTxns) {
         if (!hash) continue
-        const resultRest = await collection.update({ hash }, [{ $set: { satsAmount } }], {
-          multi: true,
-        })
+        const centsAmount = Math.round((usd - feeUsd) * 100)
+        const centsFee = Math.round(feeUsd * 100)
+
+        const resultRest = await collection.update(
+          { hash },
+          [
+            {
+              $set: {
+                satsAmount,
+                satsFee: fee,
+                centsAmount,
+                centsFee,
+                displayAmount: centsAmount,
+                displayFee: centsFee,
+                displayCurrency: "USD",
+              },
+            },
+          ],
+          {
+            multi: true,
+          },
+        )
         const {
           result: { n, nModified },
         } = resultRest
         console.log(
-          `added 'satsAmount' prop to ${nModified} of ${n}  transactions for hash: ${hash}`,
+          `added new props to ${nModified} of ${n}  transactions for hash: ${hash}`,
         )
       }
     } catch (error) {
       console.log(
         { result: error },
-        "Couldn't add 'satsAmount' prop to rest of medici_transactions",
+        "Couldn't add new props to rest of medici_transactions",
       )
     }
   },
 
   async down(db) {
     try {
-      const result = await db
-        .collection("medici_transactions")
-        .update({}, { $unset: { satsAmount: "" } }, { multi: true })
-      console.log({ result }, "removed 'satsAmount' prop from medici_transactions")
-    } catch (error) {
-      console.log(
-        { result: error },
-        "Couldn't remove 'satsAmount' prop from medici_transactions",
+      const result = await db.collection("medici_transactions").update(
+        {},
+        {
+          $unset: {
+            satsAmount: "",
+            satsFee: "",
+            centsAmount: "",
+            centsFee: "",
+            displayAmount: "",
+            displayFee: "",
+            displayCurrency: "",
+          },
+        },
+        { multi: true },
       )
+      console.log({ result }, "removed new props from medici_transactions")
+    } catch (error) {
+      console.log({ result: error }, "Couldn't remove new props from medici_transactions")
     }
   },
 }
