@@ -163,6 +163,7 @@ const updatePendingPayment = async ({
             (pendingPayment.debit > 0 ? pendingPayment.debit : pendingPayment.credit) -
               pendingPayment.fee,
           ),
+          usdFee: pendingPayment.feeUsd as DisplayCurrencyBaseAmount,
           logger,
         })
       } else if (status === PaymentStatus.Failed) {
