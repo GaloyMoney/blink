@@ -1,3 +1,5 @@
+import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
 import { PriceRatio } from "@domain/payments"
@@ -5,17 +7,23 @@ import { paymentAmountFromSats, WalletCurrency } from "@domain/shared"
 
 import * as LedgerFacade from "@services/ledger/facade"
 
-export const reimburseFee = async ({
+export const reimburseFee = async <S extends WalletCurrency, R extends WalletCurrency>({
   paymentFlow,
   journalId,
   actualFee,
   revealedPreImage,
+  amountDisplayCurrency,
+  feeDisplayCurrency,
+  displayCurrency,
   logger,
 }: {
-  paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
+  paymentFlow: PaymentFlow<S, R>
   journalId: LedgerJournalId
   actualFee: Satoshis
   revealedPreImage?: RevealedPreImage
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
   logger: Logger
 }): Promise<true | ApplicationError> => {
   const actualFeeAmount = paymentAmountFromSats(actualFee)
@@ -46,16 +54,30 @@ export const reimburseFee = async ({
     return true
   }
 
-  const amountDisplayCurrency = Number(
-    feeDifference.usd.amount,
-  ) as DisplayCurrencyBaseAmount
+  const {
+    btcPaymentAmount: { amount: satsAmount },
+    usdPaymentAmount: { amount: centsAmount },
+    btcProtocolFee: { amount: satsFee },
+    usdProtocolFee: { amount: centsFee },
+  } = paymentFlow
 
   const metadata: FeeReimbursementLedgerMetadata = {
     hash: paymentFlow.paymentHash,
     type: LedgerTransactionType.LnFeeReimbursement,
     pending: false,
-    usd: amountDisplayCurrency,
     related_journal: journalId,
+
+    usd: ((amountDisplayCurrency + feeDisplayCurrency) /
+      100) as DisplayCurrencyBaseAmount,
+
+    satsAmount: toSats(satsAmount),
+    centsAmount: toCents(centsAmount),
+    satsFee: toSats(satsFee),
+    centsFee: toCents(centsFee),
+
+    displayAmount: amountDisplayCurrency,
+    displayFee: feeDisplayCurrency,
+    displayCurrency,
   }
 
   const txMetadata: LnLedgerTransactionMetadataUpdate = {

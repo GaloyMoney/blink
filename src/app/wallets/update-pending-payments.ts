@@ -179,16 +179,18 @@ const updatePendingPayment = async ({
           })
         if (pendingPayment.feeKnownInAdvance) return true
 
+        const { displayAmount, displayFee } = pendingPayment
+        if (displayAmount === undefined || displayFee === undefined)
+          return new UnknownLedgerError("missing display-related values in transaction")
+
         return Wallets.reimburseFee({
           paymentFlow,
           journalId: pendingPayment.journalId,
           actualFee: roundedUpFee,
           revealedPreImage,
-          paymentAmount: toSats(
-            (pendingPayment.debit > 0 ? pendingPayment.debit : pendingPayment.credit) -
-              pendingPayment.fee,
-          ),
-          usdFee: pendingPayment.feeUsd as DisplayCurrencyBaseAmount,
+          amountDisplayCurrency: displayAmount,
+          feeDisplayCurrency: displayFee,
+          displayCurrency: WalletCurrency.Usd,
           logger,
         })
       } else if (status === PaymentStatus.Failed) {
