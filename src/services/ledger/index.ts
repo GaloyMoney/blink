@@ -344,6 +344,14 @@ export const translateToLedgerTx = (tx): LedgerTransaction<WalletCurrency> => ({
       : undefined,
   txHash: tx.hash,
   feeKnownInAdvance: tx.feeKnownInAdvance || false,
+
+  satsAmount: tx?.satsAmount,
+  centsAmount: tx?.centsAmount,
+  satsFee: tx?.satsFee,
+  centsFee: tx?.centsFee,
+  displayAmount: tx?.displayAmount,
+  displayFee: tx?.displayFee,
+  displayCurrency: tx?.displayCurrency,
 })
 
 export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
