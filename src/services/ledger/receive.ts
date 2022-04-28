@@ -5,6 +5,7 @@ import {
 } from "@domain/shared"
 import { NotImplementedError, NotReachableError } from "@domain/errors"
 import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
 
 import { LedgerTransactionType } from "@domain/ledger"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
@@ -106,24 +107,45 @@ export const receive = {
   // this use case run for a lightning payment (not on an initial receive),
   // when the sender overpaid in fee;
   // the bankowner needs to reimburse the end user
-  addLnFeeReimbursementReceive: async ({
+  addLnFeeReimbursementReceive: async <
+    S extends WalletCurrency,
+    R extends WalletCurrency,
+  >({
     walletId,
     walletCurrency,
     paymentHash,
-    amountDisplayCurrency,
     journalId,
     sats,
     cents,
     revealedPreImage,
     paymentFlow,
-  }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
+    feeDisplayCurrency,
+    amountDisplayCurrency,
+    displayCurrency,
+  }: AddLnFeeReeimbursementReceiveArgs<S, R>): Promise<LedgerJournal | LedgerError> => {
+    const {
+      btcPaymentAmount: { amount: satsAmount },
+      usdPaymentAmount: { amount: centsAmount },
+      btcProtocolFee: { amount: satsFee },
+      usdProtocolFee: { amount: centsFee },
+    } = paymentFlow
+
     const metadata: FeeReimbursementLedgerMetadata = {
       type: LedgerTransactionType.LnFeeReimbursement,
       hash: paymentHash,
       related_journal: journalId,
       pending: false,
-      usd: amountDisplayCurrency,
-      satsAmount: toSats(paymentFlow.btcPaymentAmount.amount),
+
+      usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+
+      satsFee: toSats(satsFee),
+      displayFee: feeDisplayCurrency,
+      displayAmount: amountDisplayCurrency,
+
+      displayCurrency,
+      centsAmount: toCents(centsAmount),
+      satsAmount: toSats(satsAmount),
+      centsFee: toCents(centsFee),
     }
 
     const description = "fee reimbursement"
