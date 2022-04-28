@@ -63,6 +63,13 @@ type OnChainReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {
 
 type LnSendAmountsMetadata = {
   satsAmount: Satoshis
+  centsAmount: UsdCents
+  satsFee: Satoshis
+  centsFee: UsdCents
+
+  displayAmount: DisplayCurrencyBaseAmount
+  displayFee: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
 }
 
 type AddLnSendLedgerMetadata = NonIntraledgerLedgerMetadata &

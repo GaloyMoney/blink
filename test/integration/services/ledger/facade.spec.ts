@@ -68,9 +68,10 @@ describe("Facade", () => {
         amountDisplayCurrency: Number(
           receiveAmount.usd.amount,
         ) as DisplayCurrencyBaseAmount,
+        displayCurrency: WalletCurrency.Usd,
         pubkey: crypto.randomUUID() as Pubkey,
         feeKnownInAdvance: true,
-        paymentFlow: { btcPaymentAmount: receiveAmount.btc },
+        paymentFlow: { btcPaymentAmount: receiveAmount.btc, btcProtocolFee: bankFee.btc },
       })
 
       await LedgerFacade.recordSend({

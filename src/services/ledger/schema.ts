@@ -70,6 +70,25 @@ const transactionSchema = new Schema({
   },
 
   satsAmount: Number,
+  centsAmount: Number,
+  satsFee: {
+    type: Number,
+    default: 0,
+  },
+  centsFee: {
+    type: Number,
+    default: 0,
+  },
+
+  displayAmount: Number,
+  displayFee: {
+    type: Number,
+    default: 0,
+  },
+  displayCurrency: {
+    type: String,
+    enum: ["USD", "BTC"],
+  },
 
   // when transaction with on_us transaction, this is the other party username
   // TODO: refactor, define username as a type so that every property that should be an username can inherit from those parameters

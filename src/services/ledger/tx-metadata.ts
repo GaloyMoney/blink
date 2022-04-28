@@ -1,37 +1,52 @@
 import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 
 export const LnSendLedgerMetadata = ({
   paymentHash,
   fee,
+  pubkey,
+  paymentFlow,
   feeDisplayCurrency,
   amountDisplayCurrency,
-  pubkey,
+  displayCurrency,
   feeKnownInAdvance,
-  paymentFlow,
 }: {
   paymentHash: PaymentHash
   fee: BtcPaymentAmount
+  pubkey: Pubkey
+  paymentFlow: { btcPaymentAmount: BtcPaymentAmount; btcProtocolFee: BtcPaymentAmount }
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
-  pubkey: Pubkey
+  displayCurrency: DisplayCurrency
   feeKnownInAdvance: boolean
-  paymentFlow: { btcPaymentAmount: BtcPaymentAmount }
 }) => {
   const {
     btcPaymentAmount: { amount: satsAmount },
+    btcProtocolFee: { amount: satsFee },
   } = paymentFlow
+  const centsAmount = Math.round(amountDisplayCurrency * 100)
+  const centsFee = Math.round(feeDisplayCurrency * 100)
 
   const metadata: AddLnSendLedgerMetadata = {
     type: LedgerTransactionType.Payment,
     pending: true,
     hash: paymentHash,
+    pubkey,
+    feeKnownInAdvance,
+
     fee: Number(fee.amount) as Satoshis,
     feeUsd: feeDisplayCurrency,
     usd: amountDisplayCurrency,
-    pubkey,
-    feeKnownInAdvance,
+
+    satsFee: toSats(satsFee),
+    displayFee: feeDisplayCurrency,
+    displayAmount: amountDisplayCurrency,
+
+    displayCurrency,
+    centsAmount: toCents(centsAmount),
     satsAmount: toSats(satsAmount),
+    centsFee: toCents(centsFee),
   }
   return metadata
 }
