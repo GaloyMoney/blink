@@ -450,10 +450,12 @@ jobs:
       params:
         PROTO_FILES_SRC_PATH: dealer/proto
         PROTO_FILES_DEST_PATH: src/services/dealer-price/proto
+        RUN_BUF_GENERATE: "true"
         BRANCH: #@ data.values.git_branch
+        MODULE: dealer
       run:
         path: pipeline-tasks/ci/tasks/sync-proto.sh
-  - put: proto-bot-branch
+  - put: dealer-proto-bot-branch
     params:
       repository: repo
       force: true
@@ -466,8 +468,54 @@ jobs:
       - name: repo
       params:
         BRANCH: #@ data.values.git_branch
-        BOT_BRANCH: #@ data.values.git_proto_bot_branch
+        BOT_BRANCH: #@ data.values.git_dealer_proto_bot_branch
         GH_TOKEN: #@ data.values.github_token
+        MODULE: dealer
+      run:
+        path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
+
+- name: sync-price-history-proto
+  plan:
+  - in_parallel:
+    - get: repo
+    - get: pipeline-tasks
+    - get: price-history-proto
+      trigger: true
+  - task: sync-proto
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+      - name: repo
+      - name: pipeline-tasks
+      - name: price-history-proto
+        path: src-repo
+      outputs:
+      - name: repo
+      params:
+        PROTO_FILES_SRC_PATH: history/src/servers/protos
+        PROTO_FILES_DEST_PATH: src/services/price/protos
+        RUN_BUF_GENERATE: "false"
+        BRANCH: #@ data.values.git_branch
+        MODULE: price-history
+      run:
+        path: pipeline-tasks/ci/tasks/sync-proto.sh
+  - put: price-history-proto-bot-branch
+    params:
+      repository: repo
+      force: true
+  - task: open-bump-proto-pr
+    config:
+      platform: linux
+      image_resource: #@ task_image_config()
+      inputs:
+      - name: pipeline-tasks
+      - name: repo
+      params:
+        BRANCH: #@ data.values.git_branch
+        BOT_BRANCH: #@ data.values.git_price_history_proto_bot_branch
+        GH_TOKEN: #@ data.values.github_token
+        MODULE: price-history
       run:
         path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
 
@@ -488,11 +536,18 @@ resources:
     branch: #@ data.values.git_charts_bot_branch
     private_key: #@ data.values.github_private_key
 
-- name: proto-bot-branch
+- name: dealer-proto-bot-branch
   type: git
   source:
     uri: #@ data.values.git_uri
-    branch: #@ data.values.git_proto_bot_branch
+    branch: #@ data.values.git_dealer_proto_bot_branch
+    private_key: #@ data.values.github_private_key
+
+- name: price-history-proto-bot-branch
+  type: git
+  source:
+    uri: #@ data.values.git_uri
+    branch: #@ data.values.git_price_history_proto_bot_branch
     private_key: #@ data.values.github_private_key
 
 - name: charts-repo
@@ -612,6 +667,14 @@ resources:
   source:
     paths: ["dealer/proto/*"]
     uri: #@ data.values.git_dealer_uri
+    branch: #@ data.values.git_branch
+    private_key: #@ data.values.github_private_key
+
+- name: price-history-proto
+  type: git
+  source:
+    paths: ["history/src/servers/protos/*"]
+    uri: #@ data.values.git_price_uri
     branch: #@ data.values.git_branch
     private_key: #@ data.values.github_private_key
 
