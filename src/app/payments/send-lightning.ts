@@ -659,6 +659,7 @@ const executePaymentViaLn = async ({
           revealedPreImage: payResult.revealedPreImage,
           amountDisplayCurrency: converter.fromBtcAmount(paymentFlow.btcPaymentAmount),
           feeDisplayCurrency: converter.fromBtcAmount(paymentFlow.btcProtocolFee),
+          displayCurrency: WalletCurrency.Usd,
           logger,
         })
         if (reimbursed instanceof Error) return reimbursed

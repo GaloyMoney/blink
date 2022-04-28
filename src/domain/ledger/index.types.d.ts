@@ -169,16 +169,21 @@ type AddOnChainIntraledgerTxTransferArgs = AddIntraLedgerTxSendArgs & {
 
 type AddWalletIdIntraledgerTxTransferArgs = AddIntraLedgerTxSendArgs
 
-type AddLnFeeReeimbursementReceiveArgs = {
+type AddLnFeeReeimbursementReceiveArgs<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = {
   walletId: WalletId
   walletCurrency: WalletCurrency
   paymentHash: PaymentHash
   sats: Satoshis
   cents?: UsdCents
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
   journalId: LedgerJournalId
   revealedPreImage?: RevealedPreImage
-  paymentFlow: { btcPaymentAmount: BtcPaymentAmount }
+  paymentFlow: PaymentFlowState<S, R>
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
 }
 
 type FeeReimbursement = {
@@ -302,8 +307,8 @@ interface ILedgerService {
 
   addLnTxReceive(args: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerServiceError>
 
-  addLnFeeReimbursementReceive(
-    args: AddLnFeeReeimbursementReceiveArgs,
+  addLnFeeReimbursementReceive<S extends WalletCurrency, R extends WalletCurrency>(
+    args: AddLnFeeReeimbursementReceiveArgs<S, R>,
   ): Promise<LedgerJournal | LedgerServiceError>
 
   addLnIntraledgerTxTransfer(
