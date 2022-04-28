@@ -35,8 +35,3 @@ export const sub = <T extends number>(
   if (result < 0) return new InvalidNegativeAmountError()
   return result as T
 }
-
-export const DisplayCurrency = {
-  Usd: "USD",
-  Btc: "BTC",
-} as const
