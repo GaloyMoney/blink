@@ -5,6 +5,7 @@ import {
 } from "@domain/shared"
 import { NotImplementedError, NotReachableError } from "@domain/errors"
 import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
 
 import { LedgerTransactionType } from "@domain/ledger"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
@@ -110,20 +111,38 @@ export const receive = {
     walletId,
     walletCurrency,
     paymentHash,
-    amountDisplayCurrency,
     journalId,
     sats,
     cents,
     revealedPreImage,
     paymentFlow,
+    feeDisplayCurrency,
+    amountDisplayCurrency,
+    displayCurrency,
   }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
+    const {
+      btcPaymentAmount: { amount: satsAmount },
+      btcProtocolFee: { amount: satsFee },
+    } = paymentFlow
+    const centsAmount = Math.round((amountDisplayCurrency - feeDisplayCurrency) * 100)
+    const centsFee = Math.round(feeDisplayCurrency * 100)
+
     const metadata: FeeReimbursementLedgerMetadata = {
       type: LedgerTransactionType.LnFeeReimbursement,
       hash: paymentHash,
       related_journal: journalId,
       pending: false,
+
       usd: amountDisplayCurrency,
-      satsAmount: toSats(paymentFlow.btcPaymentAmount.amount),
+
+      satsFee: toSats(satsFee),
+      displayFee: feeDisplayCurrency,
+      displayAmount: amountDisplayCurrency,
+
+      displayCurrency,
+      centsAmount: toCents(centsAmount),
+      satsAmount: toSats(satsAmount),
+      centsFee: toCents(centsFee),
     }
 
     const description = "fee reimbursement"

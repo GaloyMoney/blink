@@ -25,7 +25,7 @@ export const LnSendLedgerMetadata = ({
     btcPaymentAmount: { amount: satsAmount },
     btcProtocolFee: { amount: satsFee },
   } = paymentFlow
-  const centsAmount = Math.round(amountDisplayCurrency * 100)
+  const centsAmount = Math.round((amountDisplayCurrency - feeDisplayCurrency) * 100)
   const centsFee = Math.round(feeDisplayCurrency * 100)
 
   const metadata: AddLnSendLedgerMetadata = {
@@ -129,27 +129,43 @@ export const LnReceiveLedgerMetadata = ({
 }
 
 export const LnFeeReimbursementReceiveLedgerMetadata = ({
+  paymentFlow,
   paymentHash,
   journalId,
+  feeDisplayCurrency,
   amountDisplayCurrency,
-  paymentFlow,
+  displayCurrency,
 }: {
+  paymentFlow: { btcPaymentAmount: BtcPaymentAmount; btcProtocolFee: BtcPaymentAmount }
   paymentHash: PaymentHash
   journalId: LedgerJournalId
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
-  paymentFlow: { btcPaymentAmount: BtcPaymentAmount }
+  displayCurrency: DisplayCurrency
 }) => {
   const {
     btcPaymentAmount: { amount: satsAmount },
+    btcProtocolFee: { amount: satsFee },
   } = paymentFlow
+  const centsAmount = Math.round((amountDisplayCurrency - feeDisplayCurrency) * 100)
+  const centsFee = Math.round(feeDisplayCurrency * 100)
 
   const metadata: FeeReimbursementLedgerMetadata = {
     type: LedgerTransactionType.LnFeeReimbursement,
     hash: paymentHash,
     related_journal: journalId,
     pending: false,
+
     usd: amountDisplayCurrency,
+
+    satsFee: toSats(satsFee),
+    displayFee: feeDisplayCurrency,
+    displayAmount: amountDisplayCurrency,
+
+    displayCurrency,
+    centsAmount: toCents(centsAmount),
     satsAmount: toSats(satsAmount),
+    centsFee: toCents(centsFee),
   }
   return metadata
 }
