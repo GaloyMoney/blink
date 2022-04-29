@@ -1,3 +1,6 @@
+/* eslint @typescript-eslint/no-var-requires: "off" */
+const { getDisplayCurrencyConfig } = require("../../lib/config/yaml")
+
 module.exports = {
   async up(db) {
     const collection = db.collection("medici_transactions")
@@ -51,7 +54,7 @@ module.exports = {
                 centsFee,
                 displayAmount: centsAmount,
                 displayFee: centsFee,
-                displayCurrency: "USD",
+                displayCurrency: getDisplayCurrencyConfig()?.code || "USD",
               },
             },
           ],
