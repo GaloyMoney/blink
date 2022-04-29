@@ -63,7 +63,9 @@ groups:
 - name: image
   jobs: [ build-pipeline-image ]
 - name: sync-proto
-  jobs: [ sync-dealer-proto ]
+  jobs:
+  - sync-dealer-proto
+  - sync-price-history-proto
 
 jobs:
 - name: build-pipeline-image
