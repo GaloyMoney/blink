@@ -23,8 +23,8 @@ export const decodeInvoice = (
     return new LnInvoiceMissingPaymentSecretError()
   }
   const paymentSecret: PaymentIdentifyingSecret = decodedInvoice.payment
-  const amount: Satoshis | null = decodedInvoice.tokens
-    ? toSats(decodedInvoice.tokens)
+  const amount: Satoshis | null = decodedInvoice.safe_tokens
+    ? toSats(decodedInvoice.safe_tokens)
     : null
   const cltvDelta: number | null = decodedInvoice.cltv_delta
     ? decodedInvoice.cltv_delta
@@ -56,7 +56,7 @@ export const decodeInvoice = (
     description: decodedInvoice.description || "",
     paymentHash: decodedInvoice.id as PaymentHash,
     destination: decodedInvoice.destination as Pubkey,
-    milliSatsAmount: toMilliSatsFromNumber(decodedInvoice.mtokens || 0),
+    milliSatsAmount: toMilliSatsFromNumber(amount ? amount * 1000 : 0),
     features: (decodedInvoice.features || []) as LnInvoiceFeature[],
   }
 }
