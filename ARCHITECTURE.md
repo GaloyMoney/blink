@@ -14,7 +14,7 @@ Kubernetes comes with some overhead, and while we have not tried to run on low-c
 
 https://twitter.com/memenetes/status/1366826625531342856?s=20
 
-![Overall diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/GaloyMoney/galoy/architecture.iuml)
+![Overall diagram](https://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/GaloyMoney/galoy/main/architecture.iuml)
 
 
 ### Deps
