@@ -17,7 +17,7 @@ import {
   checkedToPhoneNumber,
 } from "@domain/users"
 import { createToken } from "@services/jwt"
-import { UsersRepository } from "@services/mongoose"
+import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
 
@@ -87,7 +87,7 @@ export const loginWithKratos = async ({
   emailAddress: string
   logger: Logger
   ip: IpAddress
-}): Promise<JwtToken | ApplicationError> => {
+}): Promise<{ accountStatus: string; authToken: JwtToken } | ApplicationError> => {
   const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
   if (kratosUserIdValid instanceof Error) return kratosUserIdValid
 
@@ -120,7 +120,17 @@ export const loginWithKratos = async ({
   }
 
   const network = BTC_NETWORK
-  return createToken({ uid: user.id, network, kratosUserId: kratosUserIdValid })
+
+  const account = await AccountsRepository().findByUserId(user.id)
+  if (account instanceof Error) return account
+
+  return {
+    accountStatus: account.status.toUpperCase(),
+    authToken: createToken({
+      uid: user.id,
+      network,
+    }),
+  }
 }
 
 const checkFailedLoginAttemptPerIpLimits = async (

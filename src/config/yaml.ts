@@ -252,3 +252,5 @@ export const getRewardsConfig = (): RewardsConfigSchema => {
     allowASNs: allowASNs.map((c) => c.toUpperCase()),
   }
 }
+
+export const getAccountsConfig = (config = yamlConfig): AccountsConfig => config.accounts

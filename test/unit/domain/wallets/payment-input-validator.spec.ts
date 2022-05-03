@@ -20,6 +20,7 @@ describe("PaymentInputValidator", () => {
     withdrawFee: 0 as Satoshis,
     level: AccountLevel.One,
     status: AccountStatus.Active,
+    statusHistory: [{ status: AccountStatus.Active }],
     title: "" as BusinessMapTitle,
     coordinates: {
       latitude: 0,

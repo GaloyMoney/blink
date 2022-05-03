@@ -7,6 +7,7 @@ import { Users } from "@app"
 import { baseLogger } from "@services/logger"
 import { isDev, getKratosConfig } from "@config"
 import { parseIps } from "@domain/users-ips"
+import { mapError } from "@graphql/error-map"
 
 export const KratosSdk: (kratosEndpoint?: string) => V0alpha2ApiInterface = (
   kratosEndpoint,
@@ -40,18 +41,18 @@ authRouter.post("/browser", async (req, res) => {
   try {
     const { data } = await kratos.toSession(undefined, req.header("Cookie"))
 
-    const authToken = await Users.loginWithKratos({
+    const kratosLoginResp = await Users.loginWithKratos({
       kratosUserId: data.identity.id,
       emailAddress: data.identity.traits.email,
       logger,
       ip,
     })
 
-    if (authToken instanceof Error) {
-      throw authToken
+    if (kratosLoginResp instanceof Error) {
+      return res.send({ error: mapError(kratosLoginResp) })
     }
 
-    res.send({ authToken })
+    res.send({ kratosUserId: data.identity.id, ...kratosLoginResp })
   } catch (error) {
     res.send({ error: "Browser auth error" })
   }

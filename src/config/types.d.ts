@@ -26,3 +26,7 @@ type ApolloConfig = {
 type TwoFAConfig = {
   threshold: number
 }
+
+type AccountsConfig = {
+  initialStatus: AccountStatus
+}

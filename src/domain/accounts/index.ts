@@ -17,8 +17,10 @@ export const AccountLevel = {
 } as const
 
 export const AccountStatus = {
-  Locked: "locked",
+  New: "new",
+  Pending: "pending",
   Active: "active",
+  Locked: "locked",
 } as const
 
 export const checkedCoordinates = ({

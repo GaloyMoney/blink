@@ -204,6 +204,14 @@ export const configSchema = {
       ],
       additionalProperties: false,
     },
+    accounts: {
+      type: "object",
+      properties: {
+        initialStatus: { type: "string" },
+      },
+      required: ["initialStatus"],
+      additionalProperties: false,
+    },
     accountLimits: {
       type: "object",
       properties: {

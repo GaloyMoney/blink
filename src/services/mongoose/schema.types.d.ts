@@ -65,7 +65,7 @@ interface UserRecord {
   role: string
 
   level?: number // ?: enum [1, 2]
-  status?: string // ?: enum ["active", "locked"]
+  statusHistory: AccountStatusHistory
   language?: string // ?: enum ["en", "es"]
 
   twilio?: TwilioObjectForUser

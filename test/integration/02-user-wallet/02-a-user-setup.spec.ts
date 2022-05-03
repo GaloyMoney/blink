@@ -159,20 +159,47 @@ describe("UserWallet", () => {
   })
 
   describe("updateAccountStatus", () => {
-    it("sets account status for given user id", async () => {
-      let user = await Accounts.updateAccountStatus({
+    it("sets account status (with history) for given user id", async () => {
+      let account
+
+      const updatedByUserId = userRecordA._id as unknown as UserId
+
+      account = await Accounts.updateAccountStatus({
         id: accountIdC,
-        status: "locked",
+        status: "pending",
+        updatedByUserId,
       })
-      if (user instanceof Error) {
-        throw user
+      if (account instanceof Error) {
+        throw account
       }
-      expect(user.status).toBe("locked")
-      user = await Accounts.updateAccountStatus({ id: user.id, status: "active" })
-      if (user instanceof Error) {
-        throw user
+      expect(account.status).toEqual("pending")
+
+      account = await Accounts.updateAccountStatus({
+        id: account.id,
+        status: "locked",
+        updatedByUserId,
+        comment: "Looks spammy",
+      })
+      if (account instanceof Error) {
+        throw account
       }
-      expect(user.status).toBe("active")
+      expect(account.statusHistory.slice(-1)[0]).toMatchObject({
+        status: "locked",
+        updatedByUserId,
+        comment: "Looks spammy",
+      })
+      expect(account.status).toEqual("locked")
+
+      account = await Accounts.updateAccountStatus({
+        id: account.id,
+        status: "active",
+        updatedByUserId,
+      })
+      if (account instanceof Error) {
+        throw account
+      }
+      expect(account.statusHistory.length).toBe(4)
+      expect(account.status).toEqual("active")
     })
   })
 

@@ -69,6 +69,9 @@ export const graphqlAdmin = <
   T = Promise<ExecutionResult<ObjMap<unknown>, ObjMap<unknown>>>,
 >({
   source,
+  contextValue,
 }: {
   source: string | Source
-}) => graphql({ schema: gqlAdminSchema, source }) as unknown as T
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  contextValue?: Record<string, any>
+}) => graphql({ schema: gqlAdminSchema, source, contextValue }) as unknown as T

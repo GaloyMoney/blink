@@ -108,6 +108,9 @@ rateLimits:
     duration: 3600
     blockDuration: 14400 # 60 * 60 * 4 s  # 4 hours
 
+accounts:
+  initialStatus: active
+
 accountLimits:
   withdrawal:
     level:

@@ -1,10 +1,13 @@
+import { AccountStatus as DomainAccountStatus } from "@domain/accounts"
 import { GT } from "@graphql/index"
 
 const AccountStatus = GT.Enum({
   name: "AccountStatus",
   values: {
-    LOCKED: { value: "locked" },
-    ACTIVE: { value: "active" },
+    NEW: { value: DomainAccountStatus.New },
+    PENDING: { value: DomainAccountStatus.Pending },
+    ACTIVE: { value: DomainAccountStatus.Active },
+    LOCKED: { value: DomainAccountStatus.Locked },
   },
 })
 

@@ -128,8 +128,13 @@ describe("GraphQLMutationRoot", () => {
         }
       }
     `
-    const result = await graphqlAdmin<AccountUpdateStatusMutation>({ source: mutation })
+
+    const result = await graphqlAdmin<AccountUpdateStatusMutation>({
+      source: mutation,
+      contextValue: { domainUser: { id: user._id } },
+    })
     const { data: dataMutation, errors } = result
+
     expect(errors).toBeUndefined()
 
     const query = `

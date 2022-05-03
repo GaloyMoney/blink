@@ -39,6 +39,13 @@ type AccountContact = {
   transactionsCount: number
 }
 
+type AccountStatusHistory = Array<{
+  status: AccountStatus
+  updatedAt?: Date
+  updatedByUserId?: UserId
+  comment?: string
+}>
+
 type Account = {
   readonly id: AccountId
   readonly createdAt: Date
@@ -49,6 +56,7 @@ type Account = {
   withdrawFee: Satoshis // TODO: make it optional. only save when not default value from yaml
   level: AccountLevel
   status: AccountStatus
+  statusHistory: AccountStatusHistory
   title: BusinessMapTitle
   coordinates: Coordinates
   readonly contacts: AccountContact[]

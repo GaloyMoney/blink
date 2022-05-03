@@ -5,6 +5,7 @@ import {
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
+
 import { User } from "@services/mongoose/schema"
 
 import { toObjectId, fromObjectId } from "./utils"
@@ -15,7 +16,10 @@ export const AccountsRepository = (): IAccountsRepository => {
   const listUnlockedAccounts = async (): Promise<Account[] | RepositoryError> => {
     try {
       const result: UserRecord[] /* UserRecord actually not correct with {projection} */ =
-        await User.find({ status: AccountStatus.Active }, projection)
+        await User.find(
+          { $expr: { $eq: [{ $last: "$statusHistory.status" }, AccountStatus.Active] } },
+          projection,
+        )
       if (result.length === 0) return new CouldNotFindError()
       return result.map((a) => translateToAccount(a))
     } catch (err) {
@@ -88,7 +92,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   const update = async ({
     id,
     level,
-    status,
+    statusHistory,
     coordinates,
     contacts,
     title,
@@ -101,7 +105,7 @@ export const AccountsRepository = (): IAccountsRepository => {
         { _id: toObjectId<AccountId>(id) },
         {
           level,
-          status,
+          statusHistory,
           coordinates,
           title,
           username,
@@ -145,7 +149,8 @@ const translateToAccount = (result: UserRecord): Account => ({
   defaultWalletId: result.defaultWalletId as WalletId,
   username: result.username as Username,
   level: (result.level as AccountLevel) || AccountLevel.One,
-  status: (result.status as AccountStatus) || AccountStatus.Active,
+  status: result.statusHistory.slice(-1)[0].status,
+  statusHistory: (result.statusHistory || []) as AccountStatusHistory,
   title: result.title as BusinessMapTitle,
   coordinates: result.coordinates as Coordinates,
   ownerId: fromObjectId<UserId>(result._id),
@@ -169,7 +174,7 @@ const translateToAccount = (result: UserRecord): Account => ({
 
 const projection = {
   level: 1,
-  status: 1,
+  statusHistory: 1,
   coordinates: 1,
   defaultWalletId: 1,
   username: 1,
