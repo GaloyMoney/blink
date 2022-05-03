@@ -1,5 +1,5 @@
 import { Prices, Wallets } from "@app"
-import { getDisplayCurrency, getLocale, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { getDisplayCurrencyConfig, getLocale, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
 import { TxStatus } from "@domain/wallets"
@@ -46,7 +46,7 @@ let userRecordA: UserRecord
 let userRecordD: UserRecord
 
 const locale = getLocale()
-const { symbol: fiatSymbol } = getDisplayCurrency()
+const { symbol: fiatSymbol } = getDisplayCurrencyConfig()
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())

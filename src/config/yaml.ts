@@ -81,7 +81,7 @@ i18n.configure({
 
 export const getI18nInstance = (): I18n => i18n
 
-export const getDisplayCurrency = (): DisplayCurrencyConfigSchema => ({
+export const getDisplayCurrencyConfig = (): DisplayCurrencyConfigSchema => ({
   code: yamlConfig.displayCurrency.code,
   symbol: yamlConfig.displayCurrency.symbol,
 })
