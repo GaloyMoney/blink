@@ -1,10 +1,10 @@
-import { getDisplayCurrency, getI18nInstance, getLocale } from "@config"
+import { getDisplayCurrencyConfig, getI18nInstance, getLocale } from "@config"
 
 import { sendNotification } from "./notification"
 
 const i18n = getI18nInstance()
 const defaultLocale = getLocale()
-const { symbol: fiatSymbol } = getDisplayCurrency()
+const { symbol: fiatSymbol } = getDisplayCurrencyConfig()
 
 export const getTitleBitcoin = ({
   type,

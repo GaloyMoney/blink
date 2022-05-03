@@ -7,7 +7,7 @@ import {
   getAccountLimits,
   MS_PER_DAY,
   getLocale,
-  getDisplayCurrency,
+  getDisplayCurrencyConfig,
 } from "@config"
 import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
@@ -83,7 +83,7 @@ let userIdA: UserId
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
 const locale = getLocale()
-const { symbol: fiatSymbol } = getDisplayCurrency()
+const { symbol: fiatSymbol } = getDisplayCurrencyConfig()
 
 beforeAll(async () => {
   await createMandatoryUsers()

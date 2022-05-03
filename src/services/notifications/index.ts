@@ -2,7 +2,7 @@ import {
   getLocale,
   SAT_USDCENT_PRICE,
   USER_PRICE_UPDATE_EVENT,
-  getDisplayCurrency,
+  getDisplayCurrencyConfig,
   getI18nInstance,
 } from "@config"
 import { toSats } from "@domain/bitcoin"
@@ -26,7 +26,7 @@ import { transactionBitcoinNotification, transactionUsdNotification } from "./pa
 
 const i18n = getI18nInstance()
 const defaultLocale = getLocale()
-const { symbol: fiatSymbol } = getDisplayCurrency()
+const { symbol: fiatSymbol } = getDisplayCurrencyConfig()
 
 export const NotificationsService = (logger: Logger): INotificationsService => {
   const sendOnChainNotification = async ({

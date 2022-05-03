@@ -6,7 +6,7 @@ import {
   getOnChainAddressCreateAttemptLimits,
   getAccountLimits,
   getLocale,
-  getDisplayCurrency,
+  getDisplayCurrencyConfig,
 } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
@@ -54,7 +54,7 @@ jest.mock("@services/notifications/notification")
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { sendNotification } = require("@services/notifications/notification")
 const locale = getLocale()
-const { symbol: fiatSymbol } = getDisplayCurrency()
+const { symbol: fiatSymbol } = getDisplayCurrencyConfig()
 
 beforeAll(async () => {
   await createMandatoryUsers()
