@@ -123,6 +123,10 @@ export const payInvoiceByWalletId = async ({
   senderAccount,
   logger,
 }: PayInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  addAttributesToCurrentSpan({
+    "payment.initiation_method": PaymentInitiationMethod.Lightning,
+  })
+
   const validatedPaymentInputs = await validateInvoicePaymentInputs({
     paymentRequest,
     uncheckedSenderWalletId,
@@ -163,6 +167,7 @@ export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
   addAttributesToCurrentSpan({
     "payment.initiation_method": PaymentInitiationMethod.Lightning,
   })
+
   const validatedNoAmountPaymentInputs = await validateNoAmountInvoicePaymentInputs({
     paymentRequest,
     amount,
@@ -219,6 +224,10 @@ export const payNoAmountInvoiceByWalletId = async ({
   senderAccount,
   logger,
 }: PayNoAmountInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+  addAttributesToCurrentSpan({
+    "payment.initiation_method": PaymentInitiationMethod.Lightning,
+  })
+
   const validatedNoAmountPaymentInputs = await validateNoAmountInvoicePaymentInputs({
     paymentRequest,
     amount,
@@ -294,6 +303,16 @@ const validateInvoicePaymentInputs = async ({
   }
   if (paymentFlow instanceof Error) return paymentFlow
 
+  addAttributesToCurrentSpan({
+    "payment.amount": paymentFlow.btcPaymentAmount.amount.toString(),
+    "payment.request.destination": decodedInvoice.destination,
+    "payment.request.hash": decodedInvoice.paymentHash,
+    "payment.request.description": decodedInvoice.description,
+    "payment.request.expiresAt": decodedInvoice.expiresAt
+      ? decodedInvoice.expiresAt.toISOString()
+      : "undefined",
+  })
+
   return {
     senderWallet,
     paymentFlow,
@@ -357,6 +376,16 @@ const validateNoAmountInvoicePaymentInputs = async ({
   }
   if (paymentFlow instanceof Error) return paymentFlow
 
+  addAttributesToCurrentSpan({
+    "payment.amount": paymentFlow.btcPaymentAmount.amount.toString(),
+    "payment.request.destination": decodedInvoice.destination,
+    "payment.request.hash": decodedInvoice.paymentHash,
+    "payment.request.description": decodedInvoice.description,
+    "payment.request.expiresAt": decodedInvoice.expiresAt
+      ? decodedInvoice.expiresAt.toISOString()
+      : "undefined",
+  })
+
   return {
     senderWallet,
     paymentFlow,
@@ -408,6 +437,10 @@ const executePaymentViaIntraledger = async ({
   senderUsername: Username | undefined
   memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {
+  addAttributesToCurrentSpan({
+    "payment.settlement_method": SettlementMethod.IntraLedger,
+  })
+
   const priceRatio = PriceRatio({
     usd: paymentFlow.usdPaymentAmount,
     btc: paymentFlow.btcPaymentAmount,
@@ -539,6 +572,10 @@ const executePaymentViaLn = async ({
   senderWallet: Wallet
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
+  addAttributesToCurrentSpan({
+    "payment.settlement_method": SettlementMethod.Lightning,
+  })
+
   const priceRatio = PriceRatio({
     usd: paymentFlow.usdPaymentAmount,
     btc: paymentFlow.btcPaymentAmount,

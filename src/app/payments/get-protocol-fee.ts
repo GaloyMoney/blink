@@ -9,6 +9,7 @@ import { LndService } from "@services/lnd"
 import { PaymentFlowStateRepository } from "@services/payment-flow"
 import { WalletsRepository } from "@services/mongoose"
 import { NewDealerPriceService } from "@services/dealer-price"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import {
   constructPaymentFlowBuilder,
@@ -88,6 +89,16 @@ const estimateLightningFee = async ({
   if (usdPaymentAmount instanceof Error) return usdPaymentAmount
   const btcPaymentAmount = await builder.btcPaymentAmount()
   if (btcPaymentAmount instanceof Error) return btcPaymentAmount
+
+  addAttributesToCurrentSpan({
+    "payment.amount": btcPaymentAmount.amount.toString(),
+    "payment.request.destination": invoice.destination,
+    "payment.request.hash": invoice.paymentHash,
+    "payment.request.description": invoice.description,
+    "payment.request.expiresAt": invoice.expiresAt
+      ? invoice.expiresAt.toISOString()
+      : "undefined",
+  })
 
   const priceRatio = PriceRatio({ usd: usdPaymentAmount, btc: btcPaymentAmount })
   if (priceRatio instanceof Error) return priceRatio
