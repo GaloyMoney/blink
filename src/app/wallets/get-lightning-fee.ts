@@ -16,6 +16,7 @@ import { WalletCurrency } from "@domain/shared"
 import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
 import { RoutesCache } from "@services/redis/routes"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 import { WalletsRepository } from "@services/mongoose"
 import { DealerPriceService } from "@services/dealer-price"
 import { toCents } from "@domain/fiat"
@@ -89,6 +90,15 @@ const feeProbe = async ({
   paymentAmount: Satoshis
   walletCurrency: WalletCurrency
 }): Promise<Satoshis | ApplicationError> => {
+  addAttributesToCurrentSpan({
+    "payment.amount": paymentAmount,
+    "payment.request.destination": decodedInvoice.destination,
+    "payment.request.hash": decodedInvoice.paymentHash,
+    "payment.request.description": decodedInvoice.description,
+    "payment.request.expiresAt": decodedInvoice.expiresAt
+      ? decodedInvoice.expiresAt.toISOString()
+      : "undefined",
+  })
   const { destination, paymentHash } = decodedInvoice
 
   const walletIdChecked = checkedToWalletId(walletId)
