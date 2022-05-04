@@ -1,6 +1,7 @@
 type UsdCents = number & { readonly brand: unique symbol }
 type CentsPerSatsRatio = number & { readonly brand: unique symbol }
 type DisplayCurrencyBaseAmount = number & { readonly brand: unique symbol }
+type DisplayCurrency = string & { readonly brand: unique symbol }
 
 // TODO: a better way to type it can be:
 // <T extends Satoshis | UsdCents> someFunction({amount}: {amount: T})

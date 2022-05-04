@@ -735,6 +735,8 @@ const executePaymentViaLn = async ({
           maxFee: feeRouting,
           actualFee: payResult.roundedUpFee,
           revealedPreImage: payResult.revealedPreImage,
+          paymentAmount: toSats(sats - feeRouting),
+          usdFee: feeRoutingDisplayCurrency,
           logger,
         })
         if (reimbursed instanceof Error) return reimbursed

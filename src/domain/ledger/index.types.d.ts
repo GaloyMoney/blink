@@ -166,9 +166,12 @@ type AddLnFeeReeimbursementReceiveArgs = {
   paymentHash: PaymentHash
   sats: Satoshis
   cents?: UsdCents
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
   journalId: LedgerJournalId
   revealedPreImage?: RevealedPreImage
+  paymentFlow: { btcPaymentAmount: BtcPaymentAmount; btcProtocolFee: BtcPaymentAmount }
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
 }
 
 type FeeReimbursement = {

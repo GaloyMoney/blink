@@ -14,12 +14,7 @@ import { toCents } from "@domain/fiat"
 
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
-import {
-  ConfigSchema,
-  configSchema,
-  DisplayCurrencyConfigSchema,
-  RewardsConfigSchema,
-} from "./schema"
+import { ConfigSchema, configSchema, RewardsConfigSchema } from "./schema"
 import { ConfigError } from "./error"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
@@ -81,7 +76,10 @@ i18n.configure({
 
 export const getI18nInstance = (): I18n => i18n
 
-export const getDisplayCurrencyConfig = (): DisplayCurrencyConfigSchema => ({
+export const getDisplayCurrencyConfig = (): {
+  code: DisplayCurrency
+  symbol: string
+} => ({
   code: yamlConfig.displayCurrency.code,
   symbol: yamlConfig.displayCurrency.symbol,
 })

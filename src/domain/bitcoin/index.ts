@@ -14,8 +14,8 @@ export const sat2btc = (sat: number) => {
   return sat / SATS_PER_BTC
 }
 
-export const toSats = (amount: number): Satoshis => {
-  return amount as Satoshis
+export const toSats = (amount: number | bigint): Satoshis => {
+  return Number(amount) as Satoshis
 }
 
 export const toTargetConfs = (confs: number): TargetConfirmations => {

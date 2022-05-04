@@ -1,4 +1,5 @@
 import { getCurrentPrice } from "@app/prices"
+import { getDisplayCurrencyConfig } from "@config"
 import { DealerPriceServiceError } from "@domain/dealer-price"
 import {
   DisplayCurrencyConverter,
@@ -17,6 +18,8 @@ export const reimburseFee = async ({
   maxFee,
   actualFee,
   revealedPreImage,
+  paymentAmount,
+  usdFee,
   logger,
 }: {
   walletId: WalletId
@@ -26,6 +29,8 @@ export const reimburseFee = async ({
   maxFee: Satoshis
   actualFee: Satoshis
   revealedPreImage?: RevealedPreImage
+  paymentAmount: Satoshis
+  usdFee: DisplayCurrencyBaseAmount
   logger: Logger
 }): Promise<true | ApplicationError> => {
   let cents: UsdCents | undefined
@@ -69,10 +74,16 @@ export const reimburseFee = async ({
     walletCurrency,
     paymentHash,
     sats: feeDifference,
-    amountDisplayCurrency,
     journalId,
     cents,
     revealedPreImage,
+    paymentFlow: {
+      btcPaymentAmount: { amount: BigInt(paymentAmount), currency: WalletCurrency.Btc },
+      btcProtocolFee: { amount: BigInt(maxFee), currency: WalletCurrency.Btc },
+    },
+    feeDisplayCurrency: usdFee,
+    amountDisplayCurrency,
+    displayCurrency: getDisplayCurrencyConfig().code,
   })
   if (result instanceof Error) return result
 

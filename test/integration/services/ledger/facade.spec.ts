@@ -1,5 +1,6 @@
 import crypto from "crypto"
 
+import { getDisplayCurrencyConfig } from "@config"
 import { BtcWalletDescriptor, UsdWalletDescriptor, WalletCurrency } from "@domain/shared"
 import * as LedgerFacade from "@services/ledger/facade"
 
@@ -68,8 +69,10 @@ describe("Facade", () => {
         amountDisplayCurrency: Number(
           receiveAmount.usd.amount,
         ) as DisplayCurrencyBaseAmount,
+        displayCurrency: getDisplayCurrencyConfig().code,
         pubkey: crypto.randomUUID() as Pubkey,
         feeKnownInAdvance: true,
+        paymentFlow: { btcPaymentAmount: receiveAmount.btc, btcProtocolFee: bankFee.btc },
       })
 
       await LedgerFacade.recordSend({
