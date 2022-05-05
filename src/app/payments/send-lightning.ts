@@ -289,6 +289,11 @@ const validateInvoicePaymentInputs = async ({
     paymentHash: decodedInvoice.paymentHash,
     inputAmount: lnInvoiceAmount.amount,
   })
+  addAttributesToCurrentSpan({
+    "payment.paymentFlow.existsFromProbe": !(
+      paymentFlow instanceof CouldNotFindLightningPaymentFlowError
+    ),
+  })
 
   if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
     const builderWithConversion = await constructPaymentFlowBuilder({
@@ -365,6 +370,11 @@ const validateNoAmountInvoicePaymentInputs = async ({
     walletId: senderWalletId,
     paymentHash: decodedInvoice.paymentHash,
     inputAmount: inputPaymentAmount.amount,
+  })
+  addAttributesToCurrentSpan({
+    "payment.paymentFlow.existsFromProbe": !(
+      paymentFlow instanceof CouldNotFindLightningPaymentFlowError
+    ),
   })
 
   if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
