@@ -248,8 +248,10 @@ const isExpired = ({
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
   expiryTimeInSeconds: Seconds
 }): boolean => {
+  const expiryTimeInMS = expiryTimeInSeconds * 1000
+
   if (paymentFlow.paymentSentAndPending) return false
 
-  const elapsed = Date.now() - Number(paymentFlow.createdAt)
-  return elapsed > expiryTimeInSeconds
+  const elapsedInMS = Date.now() - Number(paymentFlow.createdAt)
+  return elapsedInMS > expiryTimeInMS
 }
