@@ -104,7 +104,7 @@ const estimateLightningFee = async ({
   if (priceRatio instanceof Error) return priceRatio
 
   let paymentFlow
-  if (await builder.isIntraledger()) {
+  if (await builder.isIntraLedger()) {
     const limitCheck = await newCheckIntraledgerLimits({
       amount: usdPaymentAmount,
       wallet: senderWallet,

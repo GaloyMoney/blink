@@ -117,7 +117,7 @@ type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
   btcPaymentAmount(): Promise<BtcPaymentAmount | DealerPriceServiceError>
   usdPaymentAmount(): Promise<UsdPaymentAmount | DealerPriceServiceError>
 
-  isIntraledger(): Promise<boolean | DealerPriceServiceError>
+  isIntraLedger(): Promise<boolean | DealerPriceServiceError>
 }
 
 type LPFBTest = {
@@ -129,12 +129,11 @@ type LPFBWithError = {
   withoutRecipientWallet(): LPFBWithError
   withRecipientWallet(): LPFBWithError
   withConversion(): LPFBWithError
-  isIntraLedger(): DealerPriceServiceError | ValidationError
   withRoute(): Promise<ValidationError | DealerPriceServiceError>
   withoutRoute(): Promise<ValidationError | DealerPriceServiceError>
   btcPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
   usdPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
-  isIntraledger(): Promise<boolean | ValidationError | DealerPriceServiceError>
+  isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
 }
 interface IPaymentFlowRepository {
   persistNew<S extends WalletCurrency>(

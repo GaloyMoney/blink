@@ -441,7 +441,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     return state.usdPaymentAmount
   }
 
-  const isIntraledger = async () => {
+  const isIntraLedger = async () => {
     const state = await Promise.resolve(statePromise)
     if (state instanceof Error) return state
 
@@ -453,7 +453,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     withoutRoute,
     btcPaymentAmount,
     usdPaymentAmount,
-    isIntraledger,
+    isIntraLedger,
   }
 }
 
@@ -476,17 +476,14 @@ const LPFBWithError = (
   const withConversion = () => {
     return LPFBWithError(error)
   }
-  const isIntraLedger = () => {
-    return error
-  }
   const withRoute = async () => {
     return Promise.resolve(error)
   }
   const withoutRoute = async () => {
     return Promise.resolve(error)
   }
-  const isIntraledger = async () => {
-    return Promise.resolve(true)
+  const isIntraLedger = async () => {
+    return Promise.resolve(error)
   }
   const btcPaymentAmount = async () => {
     return Promise.resolve(error)
@@ -504,7 +501,6 @@ const LPFBWithError = (
     isIntraLedger,
     withRoute,
     withoutRoute,
-    isIntraledger,
     btcPaymentAmount,
     usdPaymentAmount,
   }

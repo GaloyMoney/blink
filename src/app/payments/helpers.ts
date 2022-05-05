@@ -154,10 +154,7 @@ export const constructPaymentFlowBuilder = async ({
   let builderAfterRecipientStep:
     | LPFBWithRecipientWallet<WalletCurrency, WalletCurrency>
     | LPFBWithError
-  if (
-    !(builderWithSenderWallet.isIntraLedger() instanceof Error) &&
-    builderWithSenderWallet.isIntraLedger()
-  ) {
+  if (builderWithSenderWallet.isIntraLedger()) {
     const recipientDetails = await recipientDetailsFromInvoice(invoice)
     if (recipientDetails instanceof Error) return recipientDetails
     builderAfterRecipientStep =
