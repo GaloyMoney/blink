@@ -1,8 +1,15 @@
 import crypto from "crypto"
 
 import { getDisplayCurrencyConfig } from "@config"
-import { BtcWalletDescriptor, UsdWalletDescriptor, WalletCurrency } from "@domain/shared"
+import {
+  BtcWalletDescriptor,
+  UsdWalletDescriptor,
+  WalletCurrency,
+  ZERO_CENTS,
+  ZERO_SATS,
+} from "@domain/shared"
 import * as LedgerFacade from "@services/ledger/facade"
+import { DisplayCurrency } from "@domain/fiat"
 
 describe("Facade", () => {
   const receiveAmount = {
@@ -118,7 +125,15 @@ describe("Facade", () => {
           amountDisplayCurrency: Number(
             receiveAmount.usd.amount,
           ) as DisplayCurrencyBaseAmount,
+          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+          displayCurrency: DisplayCurrency.Usd,
           pubkey: crypto.randomUUID() as Pubkey,
+          paymentFlow: {
+            btcPaymentAmount: receiveAmount.btc,
+            usdPaymentAmount: receiveAmount.usd,
+            btcProtocolFee: ZERO_SATS,
+            usdProtocolFee: ZERO_CENTS,
+          } as PaymentFlowState<WalletCurrency, WalletCurrency>,
         })
 
       await LedgerFacade.recordIntraledger({

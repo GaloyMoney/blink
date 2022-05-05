@@ -107,6 +107,12 @@ type AddLnIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata & {
   pubkey: Pubkey
 }
 
+type NewAddLnIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
+  LnSendAmountsMetadata & {
+    hash: PaymentHash
+    pubkey: Pubkey
+  }
+
 type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata & {
   payee_addresses: OnChainAddress[]
   sendAll: boolean

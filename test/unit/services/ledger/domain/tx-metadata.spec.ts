@@ -1,4 +1,7 @@
+import { toSats } from "@domain/bitcoin"
+import { DisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
+import { WalletCurrency, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
 import {
   LnIntraledgerLedgerMetadata,
   OnChainIntraledgerLedgerMetadata,
@@ -13,6 +16,19 @@ describe("Tx metadata", () => {
   const payeeAddresses: OnChainAddress[] = ["Address" as OnChainAddress]
   const paymentHash = "paymenthash" as PaymentHash
   const amountDisplayCurrency = 10 as DisplayCurrencyBaseAmount
+  const feeDisplayCurrency = 0 as DisplayCurrencyBaseAmount
+  const displayCurrency = DisplayCurrency.Usd
+
+  const receiveAmount = {
+    usd: { amount: 10n, currency: WalletCurrency.Usd },
+    btc: { amount: 2000n, currency: WalletCurrency.Btc },
+  }
+  const paymentFlow = {
+    btcPaymentAmount: receiveAmount.btc,
+    usdPaymentAmount: receiveAmount.usd,
+    btcProtocolFee: ZERO_SATS,
+    usdProtocolFee: ZERO_CENTS,
+  } as PaymentFlowState<WalletCurrency, WalletCurrency>
 
   describe("intraledger", () => {
     it("onchain", () => {
@@ -43,12 +59,17 @@ describe("Tx metadata", () => {
 
     it("ln", () => {
       const { metadata, debitAccountAdditionalMetadata } = LnIntraledgerLedgerMetadata({
+        paymentHash,
+        pubkey,
+        paymentFlow,
+
         amountDisplayCurrency,
+        feeDisplayCurrency,
+        displayCurrency,
+
         memoOfPayer,
         senderUsername,
         recipientUsername,
-        pubkey,
-        paymentHash,
       })
 
       expect(metadata).toEqual(
@@ -56,6 +77,17 @@ describe("Tx metadata", () => {
           username: senderUsername,
           memoPayer: undefined,
           type: LedgerTransactionType.LnIntraLedger,
+
+          usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+
+          satsFee: toSats(0),
+          displayFee: feeDisplayCurrency,
+          displayAmount: amountDisplayCurrency,
+
+          displayCurrency,
+          centsAmount: toCents(10),
+          satsAmount: toSats(2000),
+          centsFee: toCents(0),
         }),
       )
       expect(debitAccountAdditionalMetadata).toEqual(
