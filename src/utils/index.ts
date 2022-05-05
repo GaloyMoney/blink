@@ -44,3 +44,7 @@ export const mapObj = <T, R>(
   }
   return mappedObj
 }
+
+export const elapsedSinceTimestamp = (date: Date): Seconds => {
+  return ((Date.now() - Number(date)) / 1000) as Seconds
+}
