@@ -229,29 +229,55 @@ export const WalletIdIntraledgerLedgerMetadata = ({
   return { metadata, debitAccountAdditionalMetadata }
 }
 
-export const LnIntraledgerLedgerMetadata = ({
+export const LnIntraledgerLedgerMetadata = <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
+  paymentHash,
+  pubkey,
+  paymentFlow,
+  feeDisplayCurrency,
   amountDisplayCurrency,
+  displayCurrency,
   memoOfPayer,
   senderUsername,
   recipientUsername,
-  pubkey,
-  paymentHash,
 }: {
+  paymentHash: PaymentHash
+  pubkey: Pubkey
+  paymentFlow: PaymentFlowState<S, R>
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
   memoOfPayer?: string
   senderUsername?: Username
   recipientUsername?: Username
-  pubkey: Pubkey
-  paymentHash: PaymentHash
 }) => {
-  const metadata: AddLnIntraledgerSendLedgerMetadata = {
+  const {
+    btcPaymentAmount: { amount: satsAmount },
+    usdPaymentAmount: { amount: centsAmount },
+    btcProtocolFee: { amount: satsFee },
+    usdProtocolFee: { amount: centsFee },
+  } = paymentFlow
+
+  const metadata: NewAddLnIntraledgerSendLedgerMetadata = {
     type: LedgerTransactionType.LnIntraLedger,
     pending: false,
-    usd: amountDisplayCurrency,
     memoPayer: undefined,
     username: senderUsername,
     hash: paymentHash,
     pubkey,
+
+    usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+
+    satsFee: toSats(satsFee),
+    displayFee: feeDisplayCurrency,
+    displayAmount: amountDisplayCurrency,
+
+    displayCurrency,
+    centsAmount: toCents(centsAmount),
+    satsAmount: toSats(satsAmount),
+    centsFee: toCents(centsFee),
   }
   const debitAccountAdditionalMetadata = {
     memoPayer: memoOfPayer,

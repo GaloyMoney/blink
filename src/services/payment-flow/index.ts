@@ -6,6 +6,7 @@ import {
 } from "@domain/errors"
 import { PaymentFlow } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
+import { elapsedSinceTimestamp } from "@utils"
 
 import { PaymentFlowState } from "./schema"
 
@@ -248,10 +249,7 @@ const isExpired = ({
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
   expiryTimeInSeconds: Seconds
 }): boolean => {
-  const expiryTimeInMS = expiryTimeInSeconds * 1000
-
   if (paymentFlow.paymentSentAndPending) return false
 
-  const elapsedInMS = Date.now() - Number(paymentFlow.createdAt)
-  return elapsedInMS > expiryTimeInMS
+  return elapsedSinceTimestamp(paymentFlow.createdAt) > expiryTimeInSeconds
 }

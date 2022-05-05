@@ -515,13 +515,17 @@ const executePaymentViaIntraledger = async ({
 
       const journal = await LockService().extendLock({ logger, lock }, async () => {
         const lnIntraLedgerMetadata = LedgerFacade.LnIntraledgerLedgerMetadata({
+          paymentHash,
+          pubkey: recipientPubkey,
+          paymentFlow,
+
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+          displayCurrency: DisplayCurrency.Usd,
 
           memoOfPayer: memo || undefined,
           senderUsername,
           recipientUsername,
-          pubkey: recipientPubkey,
-          paymentHash,
         })
         const { metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
           lnIntraLedgerMetadata

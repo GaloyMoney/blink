@@ -246,26 +246,28 @@ describe("UserWallet - Lightning Pay", () => {
       tx.settlementVia.type === PaymentInitiationMethod.IntraLedger &&
       tx.initiationVia.paymentHash === getHash(invoice)
 
-    let txResult = await Wallets.getTransactionsForWalletId({
+    const txResultB = await Wallets.getTransactionsForWalletId({
       walletId: walletIdB,
     })
-    if (txResult.error instanceof Error || txResult.result === null) {
-      throw txResult.error
+    if (txResultB.error instanceof Error || txResultB.result === null) {
+      throw txResultB.error
     }
-    const userBTxn = txResult.result
-    expect(userBTxn.filter(matchTx)[0].memo).toBe(memo)
-    expect(userBTxn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
-    // expect(userBTxn.filter(matchTx)[0].recipientUsername).toBe("lily")
+    const userBTxn = txResultB.result.filter(matchTx)[0]
+    expect(userBTxn.memo).toBe(memo)
+    expect(userBTxn.settlementDisplayCurrencyPerSat).toBe(0.0005)
+    expect(userBTxn.settlementVia.type).toBe("intraledger")
+    // expect(userBTxn.recipientUsername).toBe("lily")
 
-    txResult = await Wallets.getTransactionsForWalletId({
+    const txResultC = await Wallets.getTransactionsForWalletId({
       walletId: walletIdB,
     })
-    if (txResult.error instanceof Error || txResult.result === null) {
-      throw txResult.error
+    if (txResultC.error instanceof Error || txResultC.result === null) {
+      throw txResultC.error
     }
-    const userCTxn = txResult.result
-    expect(userCTxn.filter(matchTx)[0].memo).toBe(memo)
-    expect(userCTxn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
+    const userCTxn = txResultC.result.filter(matchTx)[0]
+    expect(userCTxn.memo).toBe(memo)
+    expect(userCTxn.settlementDisplayCurrencyPerSat).toBe(0.0005)
+    expect(userCTxn.settlementVia.type).toBe("intraledger")
   })
 
   it("sends to another Galoy user with two different memos", async () => {
