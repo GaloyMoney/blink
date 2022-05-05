@@ -42,7 +42,7 @@ import sumBy from "lodash.sumby"
 
 import { params } from "./auth"
 
-export const deleteExpiredWalletInvoice = async () => {
+export const deleteExpiredWalletInvoice = async (): Promise<number> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
 
   // this should be longer than the invoice validity time
@@ -72,7 +72,7 @@ export const deleteFailedPaymentsAttemptAllLnds = async () => {
   }
 }
 
-export const deleteExpiredLightningPaymentFlows = async () => {
+export const deleteExpiredLightningPaymentFlows = async (): Promise<number> => {
   const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
 
   const deleted = await paymentFlowRepo.deleteExpiredLightningPaymentFlows()
@@ -82,6 +82,7 @@ export const deleteExpiredLightningPaymentFlows = async () => {
     }
     return 0
   }
+  return deleted
 }
 
 export const lndsBalances = async () => {
