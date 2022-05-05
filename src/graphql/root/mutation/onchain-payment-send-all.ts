@@ -5,9 +5,8 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
+import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 import { Wallets } from "@app"
-import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/shared"
 
 const OnChainPaymentSendAllInput = GT.Input({
   name: "OnChainPaymentSendAllInput",
@@ -33,15 +32,8 @@ const OnChainPaymentSendAllMutation = GT.Field<{ input }, null, GraphQLContextFo
       }
     }
 
-    const wallet = await WalletsRepository().findById(walletId)
-    if (wallet instanceof Error)
-      return { errors: [{ message: mapError(wallet).message }] }
-
-    const MutationDoesNotMatchWalletCurrencyError =
-      "MutationDoesNotMatchWalletCurrencyError"
-    if (wallet.currency === WalletCurrency.Usd) {
-      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
-    }
+    const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
+    if (btcWalletValidated != true) return btcWalletValidated
 
     const status = await Wallets.payOnChainByWalletId({
       senderAccount: domainAccount,

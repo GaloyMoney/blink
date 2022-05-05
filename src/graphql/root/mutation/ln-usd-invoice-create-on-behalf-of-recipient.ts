@@ -7,8 +7,7 @@ import Memo from "@graphql/types/scalar/memo"
 import Hex32Bytes from "@graphql/types/scalar/hex32bytes"
 import CentAmount from "@graphql/types/scalar/cent-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
-import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/shared"
+import { validateIsUsdWalletForMutation } from "@graphql/helpers"
 import dedent from "dedent"
 
 const LnUsdInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
@@ -32,7 +31,7 @@ const LnUsdInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
   type: GT.NonNull(LnInvoicePayload),
   description: dedent`Returns a lightning invoice denominated in satoshis for an associated wallet.
   When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.
-  Expires after 2 minutes (short expiry time because there is a USD/BTC exchange rate
+  Expires after 5 minutes (short expiry time because there is a USD/BTC exchange rate
     associated with the amount).`,
   args: {
     input: { type: GT.NonNull(LnUsdInvoiceCreateOnBehalfOfRecipientInput) },
@@ -45,15 +44,8 @@ const LnUsdInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
       }
     }
 
-    const wallet = await WalletsRepository().findById(recipientWalletId)
-    if (wallet instanceof Error)
-      return { errors: [{ message: mapError(wallet).message }] }
-
-    const MutationDoesNotMatchWalletCurrencyError =
-      "MutationDoesNotMatchWalletCurrencyError"
-    if (wallet.currency === WalletCurrency.Btc) {
-      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
-    }
+    const usdWalletValidated = await validateIsUsdWalletForMutation(recipientWalletId)
+    if (usdWalletValidated != true) return usdWalletValidated
 
     const invoice = await Wallets.addInvoiceForRecipient({
       recipientWalletId,

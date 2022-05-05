@@ -107,7 +107,10 @@ export const receive = {
   // this use case run for a lightning payment (not on an initial receive),
   // when the sender overpaid in fee;
   // the bankowner needs to reimburse the end user
-  addLnFeeReimbursementReceive: async ({
+  addLnFeeReimbursementReceive: async <
+    S extends WalletCurrency,
+    R extends WalletCurrency,
+  >({
     walletId,
     walletCurrency,
     paymentHash,
@@ -119,13 +122,13 @@ export const receive = {
     feeDisplayCurrency,
     amountDisplayCurrency,
     displayCurrency,
-  }: AddLnFeeReeimbursementReceiveArgs): Promise<LedgerJournal | LedgerError> => {
+  }: AddLnFeeReeimbursementReceiveArgs<S, R>): Promise<LedgerJournal | LedgerError> => {
     const {
       btcPaymentAmount: { amount: satsAmount },
+      usdPaymentAmount: { amount: centsAmount },
       btcProtocolFee: { amount: satsFee },
+      usdProtocolFee: { amount: centsFee },
     } = paymentFlow
-    const centsAmount = Math.round((amountDisplayCurrency - feeDisplayCurrency) * 100)
-    const centsFee = Math.round(feeDisplayCurrency * 100)
 
     const metadata: FeeReimbursementLedgerMetadata = {
       type: LedgerTransactionType.LnFeeReimbursement,
@@ -133,7 +136,8 @@ export const receive = {
       related_journal: journalId,
       pending: false,
 
-      usd: amountDisplayCurrency,
+      usd: ((amountDisplayCurrency + feeDisplayCurrency) /
+        100) as DisplayCurrencyBaseAmount,
 
       satsFee: toSats(satsFee),
       displayFee: feeDisplayCurrency,

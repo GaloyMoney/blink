@@ -20,14 +20,14 @@ type LedgerJournal = {
 }
 
 // Differentiate fields depending on what 'type' we have (see domain/wallets/index.types.d.ts)
-type LedgerTransaction = {
+type LedgerTransaction<S extends WalletCurrency> = {
   readonly id: LedgerTransactionId
   readonly walletId: WalletId | undefined // FIXME create a subclass so that this field is always set for liabilities wallets
   readonly type: LedgerTransactionType
-  readonly debit: Satoshis
-  readonly credit: Satoshis
+  readonly debit: S extends "BTC" ? Satoshis : UsdCents
+  readonly credit: S extends "BTC" ? Satoshis : UsdCents
   readonly fee: Satoshis
-  readonly currency: WalletCurrency
+  readonly currency: S
   readonly timestamp: Date
   readonly pendingConfirmation: boolean
   readonly journalId: LedgerJournalId
@@ -46,6 +46,15 @@ type LedgerTransaction = {
   readonly paymentHash?: PaymentHash
   readonly pubkey?: Pubkey
   readonly feeKnownInAdvance: boolean
+
+  readonly satsAmount?: Satoshis
+  readonly centsAmount?: UsdCents
+  readonly satsFee?: Satoshis
+  readonly centsFee?: UsdCents
+
+  readonly displayAmount?: DisplayCurrencyBaseAmount
+  readonly displayFee?: DisplayCurrencyBaseAmount
+  readonly displayCurrency?: DisplayCurrency
 
   // for onchain
   readonly address?: OnChainAddress
@@ -160,7 +169,10 @@ type AddOnChainIntraledgerTxTransferArgs = AddIntraLedgerTxSendArgs & {
 
 type AddWalletIdIntraledgerTxTransferArgs = AddIntraLedgerTxSendArgs
 
-type AddLnFeeReeimbursementReceiveArgs = {
+type AddLnFeeReeimbursementReceiveArgs<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = {
   walletId: WalletId
   walletCurrency: WalletCurrency
   paymentHash: PaymentHash
@@ -168,19 +180,26 @@ type AddLnFeeReeimbursementReceiveArgs = {
   cents?: UsdCents
   journalId: LedgerJournalId
   revealedPreImage?: RevealedPreImage
-  paymentFlow: { btcPaymentAmount: BtcPaymentAmount; btcProtocolFee: BtcPaymentAmount }
+  paymentFlow: PaymentFlowState<S, R>
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   displayCurrency: DisplayCurrency
 }
 
 type FeeReimbursement = {
-  getReimbursement(actualFee: Satoshis): Satoshis | FeeDifferenceError
+  getReimbursement(
+    actualFee: BtcPaymentAmount,
+  ): { btc: BtcPaymentAmount; usd: UsdPaymentAmount } | FeeDifferenceError
 }
 
 type TxBaseVolume = {
   outgoingBaseAmount: CurrencyBaseAmount
   incomingBaseAmount: CurrencyBaseAmount
+}
+
+type TxBaseVolumeAmount<S extends WalletCurrency> = {
+  outgoingBaseAmount: PaymentAmount<S>
+  incomingBaseAmount: PaymentAmount<S>
 }
 
 type TxCentsVolume = {
@@ -193,12 +212,21 @@ interface IGetVolumeArgs {
   timestamp: Date
 }
 
-type VolumeSinceArgs = {
+interface IGetVolumeAmountArgs {
   walletId: WalletId
+  walletCurrency: WalletCurrency
   timestamp: Date
 }
+
 type VolumeResult = Promise<TxBaseVolume | LedgerServiceError>
-type GetVolumeSinceFn = (args: VolumeSinceArgs) => VolumeResult
+type GetVolumeSinceFn = (args: IGetVolumeArgs) => VolumeResult
+
+type VolumeAmountResult<S extends WalletCurrency> = Promise<
+  TxBaseVolumeAmount<S> | LedgerServiceError
+>
+type GetVolumeAmountSinceFn<S extends WalletCurrency> = (
+  args: IGetVolumeAmountArgs,
+) => VolumeAmountResult<S>
 
 type RevertLightningPaymentArgs = {
   journalId: LedgerJournalId
@@ -214,24 +242,24 @@ interface ILedgerService {
 
   getTransactionById(
     id: LedgerTransactionId,
-  ): Promise<LedgerTransaction | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError>
 
   getTransactionsByHash(
     paymentHash: PaymentHash | OnChainTxHash,
-  ): Promise<LedgerTransaction[] | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
   getTransactionsByWalletId(
     walletId: WalletId,
-  ): Promise<LedgerTransaction[] | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
   getTransactionsByWalletIdAndContactUsername(
     walletId: WalletId,
     contactUsername: Username,
-  ): Promise<LedgerTransaction[] | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
   listPendingPayments(
     walletId: WalletId,
-  ): Promise<LedgerTransaction[] | LedgerServiceError>
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
   listAllPaymentHashes(): AsyncGenerator<PaymentHash | LedgerError>
 
@@ -239,17 +267,27 @@ interface ILedgerService {
 
   getWalletBalance(walletId: WalletId): Promise<CurrencyBaseAmount | LedgerServiceError>
 
-  allPaymentVolumeSince(args: IGetVolumeArgs): VolumeResult
+  getWalletBalanceAmount<S extends WalletCurrency>(
+    walletDescriptor: WalletDescriptor<S>,
+  ): Promise<PaymentAmount<S> | LedgerServiceError>
 
-  lightningTxBaseVolumeSince(args: IGetVolumeArgs): VolumeResult
+  allPaymentVolumeSince: GetVolumeSinceFn
 
-  onChainTxBaseVolumeSince(args: IGetVolumeArgs): VolumeResult
+  externalPaymentVolumeSince: GetVolumeSinceFn
 
-  externalPaymentVolumeSince(args: IGetVolumeArgs): VolumeResult
+  intraledgerTxBaseVolumeSince: GetVolumeSinceFn
 
-  allTxBaseVolumeSince(args: IGetVolumeArgs): VolumeResult
+  allTxBaseVolumeSince: GetVolumeSinceFn
 
-  intraledgerTxBaseVolumeSince(args: IGetVolumeArgs): VolumeResult
+  lightningTxBaseVolumeSince: GetVolumeSinceFn
+
+  onChainTxBaseVolumeSince: GetVolumeSinceFn
+
+  allPaymentVolumeAmountSince: GetVolumeAmountSinceFn<WalletCurrency>
+
+  externalPaymentVolumeAmountSince: GetVolumeAmountSinceFn<WalletCurrency>
+
+  intraledgerTxBaseVolumeAmountSince: GetVolumeAmountSinceFn<WalletCurrency>
 
   isOnChainTxRecorded({
     walletId,
@@ -269,11 +307,9 @@ interface ILedgerService {
 
   addLnTxReceive(args: AddLnTxReceiveArgs): Promise<LedgerJournal | LedgerServiceError>
 
-  addLnFeeReimbursementReceive(
-    args: AddLnFeeReeimbursementReceiveArgs,
+  addLnFeeReimbursementReceive<S extends WalletCurrency, R extends WalletCurrency>(
+    args: AddLnFeeReeimbursementReceiveArgs<S, R>,
   ): Promise<LedgerJournal | LedgerServiceError>
-
-  addLnTxSend(args: AddLnTxSendArgs): Promise<LedgerJournal | LedgerServiceError>
 
   addLnIntraledgerTxTransfer(
     args: AddLnIntraledgerTxTransferArgs,

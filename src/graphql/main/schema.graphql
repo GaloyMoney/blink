@@ -91,6 +91,11 @@ input CaptchaRequestAuthCodeInput {
 """
 scalar CentAmount
 
+type CentAmountPayload {
+  amount: CentAmount
+  errors: [Error!]!
+}
+
 type ConsumerAccount implements Account {
   """
   return CSV stream, base64 encoded, of the list of transactions in the wallet
@@ -345,6 +350,12 @@ input LnNoAmountInvoicePaymentInput {
   walletId: WalletId!
 }
 
+input LnNoAmountUsdInvoiceFeeProbeInput {
+  amount: CentAmount!
+  paymentRequest: LnPaymentRequest!
+  walletId: WalletId!
+}
+
 input LnNoAmountUsdInvoicePaymentInput {
   """
   Amount to pay in USD cents.
@@ -415,6 +426,11 @@ input LnUsdInvoiceCreateOnBehalfOfRecipientInput {
   Wallet ID for a USD wallet which belongs to the account of any user.
   """
   recipientWalletId: WalletId!
+}
+
+input LnUsdInvoiceFeeProbeInput {
+  paymentRequest: LnPaymentRequest!
+  walletId: WalletId!
 }
 
 type MapInfo {
@@ -502,6 +518,9 @@ type Mutation {
   Returns payment status (success, failed, pending, already_paid).
   """
   lnNoAmountInvoicePaymentSend(input: LnNoAmountInvoicePaymentInput!): PaymentSendPayload!
+  lnNoAmountUsdInvoiceFeeProbe(
+    input: LnNoAmountUsdInvoiceFeeProbeInput!
+  ): CentAmountPayload!
 
   """
   Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
@@ -515,7 +534,7 @@ type Mutation {
   """
   Returns a lightning invoice denominated in satoshis for an associated wallet.
   When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.
-  Expires after 2 minutes (short expiry time because there is a USD/BTC exchange rate
+  Expires after 5 minutes (short expiry time because there is a USD/BTC exchange rate
   associated with the amount).
   """
   lnUsdInvoiceCreate(input: LnUsdInvoiceCreateInput!): LnInvoicePayload!
@@ -523,12 +542,13 @@ type Mutation {
   """
   Returns a lightning invoice denominated in satoshis for an associated wallet.
   When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.
-  Expires after 2 minutes (short expiry time because there is a USD/BTC exchange rate
+  Expires after 5 minutes (short expiry time because there is a USD/BTC exchange rate
     associated with the amount).
   """
   lnUsdInvoiceCreateOnBehalfOfRecipient(
     input: LnUsdInvoiceCreateOnBehalfOfRecipientInput!
   ): LnInvoicePayload!
+  lnUsdInvoiceFeeProbe(input: LnUsdInvoiceFeeProbeInput!): SatAmountPayload!
   onChainAddressCreate(input: OnChainAddressCreateInput!): OnChainAddressPayload!
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!

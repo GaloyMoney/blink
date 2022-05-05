@@ -1,89 +1,109 @@
-import { getCurrentPrice } from "@app/prices"
-import { getDisplayCurrencyConfig } from "@config"
-import { DealerPriceServiceError } from "@domain/dealer-price"
-import {
-  DisplayCurrencyConverter,
-  toDisplayCurrencyBaseAmount,
-} from "@domain/fiat/display-currency"
+import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
+import { LedgerTransactionType } from "@domain/ledger"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
-import { WalletCurrency } from "@domain/shared"
-import { DealerPriceService } from "@services/dealer-price"
-import { LedgerService } from "@services/ledger"
+import { PriceRatio } from "@domain/payments"
+import { paymentAmountFromSats, WalletCurrency } from "@domain/shared"
 
-export const reimburseFee = async ({
-  walletId,
-  walletCurrency,
+import * as LedgerFacade from "@services/ledger/facade"
+
+export const reimburseFee = async <S extends WalletCurrency, R extends WalletCurrency>({
+  paymentFlow,
   journalId,
-  paymentHash,
-  maxFee,
   actualFee,
   revealedPreImage,
-  paymentAmount,
-  usdFee,
+  amountDisplayCurrency,
+  feeDisplayCurrency,
+  displayCurrency,
   logger,
 }: {
-  walletId: WalletId
-  walletCurrency: WalletCurrency
+  paymentFlow: PaymentFlow<S, R>
   journalId: LedgerJournalId
-  paymentHash: PaymentHash
-  maxFee: Satoshis
   actualFee: Satoshis
   revealedPreImage?: RevealedPreImage
-  paymentAmount: Satoshis
-  usdFee: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
   logger: Logger
 }): Promise<true | ApplicationError> => {
-  let cents: UsdCents | undefined
+  const actualFeeAmount = paymentAmountFromSats(actualFee)
 
-  const feeDifference = FeeReimbursement(maxFee).getReimbursement(actualFee)
+  const maxFeeAmounts = {
+    btc: paymentFlow.btcProtocolFee,
+    usd: paymentFlow.usdProtocolFee,
+  }
 
+  const priceRatio = PriceRatio(paymentFlow.paymentAmounts())
+  if (priceRatio instanceof Error) return priceRatio
+
+  const feeDifference = FeeReimbursement({
+    prepaidFeeAmount: maxFeeAmounts,
+    priceRatio,
+  }).getReimbursement(actualFeeAmount)
   if (feeDifference instanceof Error) {
-    logger.warn({ maxFee, actualFee }, `Invalid reimbursement fee`)
+    logger.warn(
+      { maxFee: maxFeeAmounts, actualFee: actualFeeAmount },
+      `Invalid reimbursement fee`,
+    )
     return true
   }
 
   // TODO: only reimburse fees is this is above a (configurable) threshold
   // ie: adding an entry for 1 sat fees may not be the best scalability wise for the db
-  if (feeDifference === 0) {
+  if (feeDifference.btc.amount === 0n) {
     return true
   }
 
-  const price = await getCurrentPrice()
-  let amountDisplayCurrency: DisplayCurrencyBaseAmount
-  if (price instanceof Error) {
-    amountDisplayCurrency = toDisplayCurrencyBaseAmount(0)
-  } else {
-    amountDisplayCurrency = DisplayCurrencyConverter(price).fromSats(feeDifference)
+  const {
+    btcPaymentAmount: { amount: satsAmount },
+    usdPaymentAmount: { amount: centsAmount },
+    btcProtocolFee: { amount: satsFee },
+    usdProtocolFee: { amount: centsFee },
+  } = paymentFlow
+
+  const metadata: FeeReimbursementLedgerMetadata = {
+    hash: paymentFlow.paymentHash,
+    type: LedgerTransactionType.LnFeeReimbursement,
+    pending: false,
+    related_journal: journalId,
+
+    usd: ((amountDisplayCurrency + feeDisplayCurrency) /
+      100) as DisplayCurrencyBaseAmount,
+
+    satsAmount: toSats(satsAmount),
+    centsAmount: toCents(centsAmount),
+    satsFee: toSats(satsFee),
+    centsFee: toCents(centsFee),
+
+    displayAmount: amountDisplayCurrency,
+    displayFee: feeDisplayCurrency,
+    displayCurrency,
   }
 
-  if (walletCurrency === WalletCurrency.Usd) {
-    const dealerPrice = DealerPriceService()
-    const cents_ = await dealerPrice.getCentsFromSatsForImmediateBuy(feeDifference)
-    if (cents_ instanceof DealerPriceServiceError) return cents_
-    cents = cents_
+  const txMetadata: LnLedgerTransactionMetadataUpdate = {
+    hash: paymentFlow.paymentHash,
+    revealedPreImage,
   }
 
   logger.info(
-    { feeDifference, maxFee, actualFee, paymentHash, cents },
+    {
+      feeDifference,
+      maxFee: maxFeeAmounts,
+      actualFee,
+      paymentHash: paymentFlow.paymentHash,
+    },
     "logging a fee difference",
   )
 
-  const ledgerService = LedgerService()
-  const result = await ledgerService.addLnFeeReimbursementReceive({
-    walletId,
-    walletCurrency,
-    paymentHash,
-    sats: feeDifference,
-    journalId,
-    cents,
-    revealedPreImage,
-    paymentFlow: {
-      btcPaymentAmount: { amount: BigInt(paymentAmount), currency: WalletCurrency.Btc },
-      btcProtocolFee: { amount: BigInt(maxFee), currency: WalletCurrency.Btc },
+  const result = await LedgerFacade.recordReceive({
+    description: "fee reimbursement",
+    recipientWalletDescriptor: paymentFlow.senderWalletDescriptor(),
+    amountToCreditReceiver: {
+      usd: feeDifference.usd,
+      btc: feeDifference.btc,
     },
-    feeDisplayCurrency: usdFee,
-    amountDisplayCurrency,
-    displayCurrency: getDisplayCurrencyConfig().code,
+    metadata,
+    txMetadata,
   })
   if (result instanceof Error) return result
 

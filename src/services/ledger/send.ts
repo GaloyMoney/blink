@@ -1,11 +1,6 @@
-import { getDisplayCurrencyConfig } from "@config"
-
-import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { NotImplementedError } from "@domain/errors"
 import {
-  LedgerError,
   LedgerServiceError,
   NoTransactionToSettleError,
   UnknownLedgerError,
@@ -28,54 +23,6 @@ import { translateToLedgerJournal } from "."
 const txMetadataRepo = TransactionsMetadataRepository()
 
 export const send = {
-  addLnTxSend: async ({
-    walletId,
-    walletCurrency,
-    paymentHash,
-    description,
-    sats,
-    feeRouting,
-    feeRoutingDisplayCurrency,
-    pubkey,
-    amountDisplayCurrency,
-    feeKnownInAdvance,
-    cents,
-  }: AddLnTxSendArgs): Promise<LedgerJournal | LedgerError> => {
-    const centsAmount = Math.round(
-      (amountDisplayCurrency - feeRoutingDisplayCurrency) * 100,
-    )
-    const centsFee = Math.round(feeRoutingDisplayCurrency * 100)
-
-    const metadata: AddLnSendLedgerMetadata = {
-      type: LedgerTransactionType.Payment,
-      pending: true,
-      hash: paymentHash,
-      pubkey,
-      feeKnownInAdvance,
-
-      fee: feeRouting,
-      feeUsd: feeRoutingDisplayCurrency,
-      usd: amountDisplayCurrency,
-
-      satsFee: toSats(feeRouting),
-      displayFee: centsFee as DisplayCurrencyBaseAmount,
-      displayAmount: centsAmount as DisplayCurrencyBaseAmount,
-
-      displayCurrency: getDisplayCurrencyConfig().code,
-      centsAmount: toCents(centsAmount),
-      satsAmount: toSats(sats - feeRouting),
-      centsFee: toCents(centsFee),
-    }
-    return addSendNoInternalFee({
-      walletId,
-      walletCurrency,
-      metadata,
-      description,
-      sats,
-      cents,
-    })
-  },
-
   addOnChainTxSend: async ({
     walletId,
     walletCurrency,

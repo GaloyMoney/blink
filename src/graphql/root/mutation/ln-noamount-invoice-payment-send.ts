@@ -3,12 +3,11 @@ import { mapError } from "@graphql/error-map"
 import Memo from "@graphql/types/scalar/memo"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
-import { Wallets } from "@app"
+import { Payments } from "@app"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import LnIPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { InputValidationError } from "@graphql/error"
-import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/shared"
+import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 import dedent from "dedent"
 
 const LnNoAmountInvoicePaymentInput = GT.Input({
@@ -69,17 +68,10 @@ const LnNoAmountInvoicePaymentSendMutation = GT.Field<
       return { errors: [{ message: memo.message }] }
     }
 
-    const wallet = await WalletsRepository().findById(walletId)
-    if (wallet instanceof Error)
-      return { errors: [{ message: mapError(wallet).message }] }
+    const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
+    if (btcWalletValidated != true) return btcWalletValidated
 
-    const MutationDoesNotMatchWalletCurrencyError =
-      "MutationDoesNotMatchWalletCurrencyError"
-    if (wallet.currency === WalletCurrency.Usd) {
-      return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
-    }
-
-    const status = await Wallets.payNoAmountInvoiceByWalletId({
+    const status = await Payments.payNoAmountInvoiceByWalletId({
       senderWalletId: walletId,
       paymentRequest,
       memo: memo ?? null,

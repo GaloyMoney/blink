@@ -29,6 +29,9 @@ export class CouldNotFindWalletFromOnChainAddressError extends CouldNotFindError
 export class CouldNotFindWalletFromOnChainAddressesError extends CouldNotFindError {}
 export class CouldNotFindLnPaymentFromHashError extends CouldNotFindError {}
 export class NoTransactionToUpdateError extends CouldNotFindError {}
+export class CouldNotFindLightningPaymentFlowError extends CouldNotFindError {}
+export class CouldNotUpdateLightningPaymentFlowError extends CouldNotFindError {}
+export class NoExpiredLightningPaymentFlowsError extends CouldNotFindError {}
 
 export class CouldNotFindAccountFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
@@ -66,8 +69,6 @@ export class InsufficientBalanceError extends ValidationError {}
 export class BalanceLessThanZeroError extends ValidationError {}
 export class InvalidTargetConfirmations extends ValidationError {}
 export class NoContactForUsernameError extends ValidationError {}
-export class LnPaymentRequestNonZeroAmountRequiredError extends ValidationError {}
-export class LnPaymentRequestZeroAmountRequiredError extends ValidationError {}
 export class NoWalletExistsForUserError extends ValidationError {}
 export class RebalanceNeededError extends ValidationError {}
 export class InvalidQuizQuestionIdError extends ValidationError {}

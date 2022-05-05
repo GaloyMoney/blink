@@ -7,10 +7,12 @@ import LnUsdInvoiceCreateMutation from "@graphql/root/mutation/ln-usd-invoice-cr
 import LnInvoiceCreateOnBehalfOfRecipientMutation from "@graphql/root/mutation/ln-invoice-create-on-behalf-of-recipient"
 import LnUsdInvoiceCreateOnBehalfOfRecipientMutation from "@graphql/root/mutation/ln-usd-invoice-create-on-behalf-of-recipient"
 import LnInvoiceFeeProbeMutation from "@graphql/root/mutation/ln-invoice-fee-probe"
+import LnUsdInvoiceFeeProbeMutation from "@graphql/root/mutation/ln-usd-invoice-fee-probe"
 import LnInvoicePaymentSendMutation from "@graphql/root/mutation/ln-invoice-payment-send"
 import LnNoAmountInvoiceCreateMutation from "@graphql/root/mutation/ln-noamount-invoice-create"
 import LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation from "@graphql/root/mutation/ln-noamount-invoice-create-on-behalf-of-recipient"
 import LnNoAmountInvoiceFeeProbeMutation from "@graphql/root/mutation/ln-noamount-invoice-fee-probe"
+import LnNoAmountUsdInvoiceFeeProbeMutation from "@graphql/root/mutation/ln-noamount-usd-invoice-fee-probe"
 import LnNoAmountInvoicePaymentSendMutation from "@graphql/root/mutation/ln-noamount-invoice-payment-send"
 import LnNoAmountUsdInvoicePaymentSendMutation from "@graphql/root/mutation/ln-noamount-usd-invoice-payment-send"
 import OnChainAddressCreateMutation from "@graphql/root/mutation/on-chain-address-create"
@@ -58,7 +60,9 @@ const fields = {
   userContactUpdateAlias: UserContactUpdateAliasMutation,
 
   lnInvoiceFeeProbe: LnInvoiceFeeProbeMutation,
+  lnUsdInvoiceFeeProbe: LnUsdInvoiceFeeProbeMutation,
   lnNoAmountInvoiceFeeProbe: LnNoAmountInvoiceFeeProbeMutation,
+  lnNoAmountUsdInvoiceFeeProbe: LnNoAmountUsdInvoiceFeeProbeMutation,
 
   lnInvoiceCreate: LnInvoiceCreateMutation,
   lnUsdInvoiceCreate: LnUsdInvoiceCreateMutation,

@@ -103,6 +103,7 @@ export const transactionUsdNotification = async ({
   let title = getTitleUsdNoDisplayCurrency[type](cents)
 
   if (displayCurrencyPerSat) {
+    // FIXME: This 'displayCurrency' calc may be wrong
     const displayCurrency = cents * displayCurrencyPerSat
     title = getTitleUsd[type]({ displayCurrency, cents })
   }

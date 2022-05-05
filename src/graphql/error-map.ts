@@ -16,6 +16,7 @@ import {
   PhoneCodeError,
   UsernameError,
   RebalanceNeededError,
+  DealerOfflineError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -106,6 +107,13 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "A valid satoshi amount is required"
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "InvalidBtcPaymentAmountError":
+      message = "A valid satoshi amount is required"
+      return new ValidationInternalError({ message, logger: baseLogger })
+    case "InvalidUsdPaymentAmountError":
+      message = "A valid usd amount is required"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "LnPaymentRequestNonZeroAmountRequiredError":
       message = "Invoice does not have a valid amount to pay"
       return new ValidationInternalError({ message, logger: baseLogger })
@@ -178,6 +186,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidIPMetadataForRewardError":
       message = "Unsupported phone carrier for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "NoConnectionToDealerError":
+      message = "No connection to dealer to perform USD operation."
+      return new DealerOfflineError({ message, logger: baseLogger })
 
     case "RouteNotFoundError":
       message = "Unable to find a route for payment."
@@ -272,6 +284,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "NoContactForUsernameError":
     case "NoWalletExistsForUserError":
     case "LimitsExceededError":
+    case "CouldNotFindLightningPaymentFlowError":
+    case "NoExpiredLightningPaymentFlowsError":
+    case "CouldNotUpdateLightningPaymentFlowError":
     case "CouldNotFindWalletFromIdError":
     case "CouldNotListWalletsFromAccountIdError":
     case "CouldNotFindWalletFromUsernameError":
@@ -286,6 +301,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "PriceError":
     case "PriceServiceError":
     case "PriceNotAvailableError":
+    case "DealerPriceNotAvailableError":
     case "PriceHistoryNotAvailableError":
     case "UnknownPriceServiceError":
     case "OnChainError":
@@ -351,7 +367,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CouldNotFindUserFromKratosIdError":
     case "MissingPhoneError":
     case "InvalidKratosUserId":
-      message = `Unknown error occurred (code: ${error.name})`
+    case "InvalidLightningPaymentFlowBuilderStateError":
+    case "InvalidZeroAmountPriceRatioInputError":
+      message = `Unknown error occurred (code: ${error.name}${
+        error.message ? ": " + error.message : ""
+      })`
       return new UnknownClientError({ message, logger: baseLogger })
 
     default:

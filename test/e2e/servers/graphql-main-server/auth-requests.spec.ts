@@ -228,13 +228,11 @@ describe("graphql", () => {
     })
 
     it("returns an error if it is unable to find a route for payment", async () => {
-      const messageRegex = /^Payment amount '\d+' exceeds balance '\d+'$/
-      const { request: paymentRequest } = await createInvoice({
-        lnd: lndOutside2,
-        tokens: 10_010_000_000,
-      })
+      const messageRegex = /^Unable to find a route for payment.$/
+      const unreachablePaymentRequest =
+        "lnbcrt10n1p39jatkpp5djwv295kunhe5e0e4whj3dcjzwy7cmcxk8cl2a4dquyrp3dqydesdqqcqzpuxqr23ssp56u5m680x7resnvcelmsngc64ljm7g5q9r26zw0qyq5fenuqlcfzq9qyyssqxv4kvltas2qshhmqnjctnqkjpdfzu89e428ga6yk9jsp8rf382f3t03ex4e6x3a4sxkl7ruj6lsfpkuu9u9ee5kgr5zdyj7x2nwdljgq74025p"
 
-      const input = { walletId, paymentRequest }
+      const input = { walletId, paymentRequest: unreachablePaymentRequest }
       const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { amount, errors } = result.data.lnInvoiceFeeProbe
       expect(errors).toHaveLength(1)
@@ -263,12 +261,11 @@ describe("graphql", () => {
     })
 
     it("returns an error if it is unable to find a route for payment", async () => {
-      const messageRegex = /^Payment amount '\d+' exceeds balance '\d+'$/
-      const { request: paymentRequest } = await createInvoice({
-        lnd: lndOutside2,
-      })
+      const messageRegex = /^Unable to find a route for payment.$/
+      const unreachablePaymentRequest =
+        "lnbcrt1p39jaempp58sazckz8cce377ry7cle7k6rwafsjzkuqg022cp2vhxvccyss3csdqqcqzpuxqr23ssp509fhyjxf4utxetalmjett6xvwrm3g7datl6sted2w2m3qdnlq7ps9qyyssqg49tguulzccdtfdl07ltep8294d60tcryxl0tcau0uzwpre6mmxq7mc6737ffctl59fxv32a9g0ul63gx304862fuuwslnr2cd3ghuqq2rsxaz"
 
-      const input = { walletId, amount: 10_010_000_000, paymentRequest }
+      const input = { walletId, amount: 1, paymentRequest: unreachablePaymentRequest }
       const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { amount, errors } = result.data.lnNoAmountInvoiceFeeProbe
       expect(errors).toHaveLength(1)

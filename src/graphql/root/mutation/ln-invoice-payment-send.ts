@@ -1,4 +1,4 @@
-import { Wallets } from "@app"
+import { Payments } from "@app"
 import { InputValidationError } from "@graphql/error"
 import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
@@ -57,7 +57,7 @@ const LnInvoicePaymentSendMutation = GT.Field<
       return { errors: [{ message: memo.message }] }
     }
 
-    const status = await Wallets.payInvoiceByWalletId({
+    const status = await Payments.payInvoiceByWalletId({
       senderWalletId: walletId,
       paymentRequest,
       memo: memo ?? null,

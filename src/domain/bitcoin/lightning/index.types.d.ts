@@ -17,7 +17,7 @@ type PagingContinueToken = string & { readonly brand: unique symbol }
 type PagingStopToken = false
 
 type RouteValidator = {
-  validate(amount: Satoshis): true | ValidationError
+  validate(btcPaymentAmount: BtcPaymentAmount): true | ValidationError
 }
 
 type PaymentStatus =
@@ -99,6 +99,7 @@ type LnInvoice = {
   readonly description: string
   readonly cltvDelta: number | null
   readonly amount: Satoshis | null
+  readonly paymentAmount: BtcPaymentAmount | null
   readonly routeHints: Hop[][]
   readonly paymentSecret: PaymentIdentifyingSecret | null
   readonly features: LnInvoiceFeature[]
@@ -144,6 +145,10 @@ type ListLnPayments = (
   args: ListLnPaymentsArgs,
 ) => Promise<ListLnPaymentsResult | LightningError>
 
+type LightningServiceConfig = {
+  feeCapPercent: number
+}
+
 interface ILightningService {
   isLocal(pubkey: Pubkey): boolean | LightningServiceError
 
@@ -151,13 +156,15 @@ interface ILightningService {
 
   listActivePubkeys(): Pubkey[]
 
+  listAllPubkeys(): Pubkey[]
+
   findRouteForInvoice({
-    decodedInvoice,
-    maxFee,
+    invoice,
+    amount,
   }: {
-    decodedInvoice: LnInvoice
-    maxFee: Satoshis
-  }): Promise<RawRoute | LightningServiceError>
+    invoice: LnInvoice
+    amount?: BtcPaymentAmount
+  }): Promise<{ pubkey: Pubkey; rawRoute: RawRoute } | LightningServiceError>
 
   findRouteForNoAmountInvoice({
     decodedInvoice,
@@ -211,17 +218,17 @@ interface ILightningService {
     pubkey,
   }: {
     paymentHash: PaymentHash
-    rawRoute: RawRoute | null
-    pubkey: Pubkey | null
+    rawRoute: RawRoute | undefined
+    pubkey: Pubkey | undefined
   }): Promise<PayInvoiceResult | LightningServiceError>
 
   payInvoiceViaPaymentDetails({
     decodedInvoice,
-    milliSatsAmount,
-    maxFee,
+    btcPaymentAmount,
+    maxFeeAmount,
   }: {
     decodedInvoice: LnInvoice
-    milliSatsAmount: MilliSatoshis
-    maxFee: Satoshis
+    btcPaymentAmount: BtcPaymentAmount
+    maxFeeAmount: BtcPaymentAmount
   }): Promise<PayInvoiceResult | LightningServiceError>
 }

@@ -17,12 +17,13 @@ type RecordSendArgs = {
 
 type RecordReceiveArgs = {
   description: string
-  receiverWalletDescriptor: WalletDescriptor<WalletCurrency>
+  recipientWalletDescriptor: WalletDescriptor<WalletCurrency>
   amountToCreditReceiver: {
     usd: UsdPaymentAmount
     btc: BtcPaymentAmount
   }
   metadata: ReceiveLedgerMetadata
+  txMetadata: LnLedgerTransactionMetadataUpdate
   bankFee?: {
     usd: UsdPaymentAmount
     btc: BtcPaymentAmount
@@ -32,7 +33,7 @@ type RecordReceiveArgs = {
 type RecordIntraledgerArgs = {
   description: string
   senderWalletDescriptor: WalletDescriptor<WalletCurrency>
-  receiverWalletDescriptor: WalletDescriptor<WalletCurrency>
+  recipientWalletDescriptor: WalletDescriptor<WalletCurrency>
   amount: {
     usd: UsdPaymentAmount
     btc: BtcPaymentAmount

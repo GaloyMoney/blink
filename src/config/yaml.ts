@@ -14,7 +14,12 @@ import { toCents } from "@domain/fiat"
 
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
-import { ConfigSchema, configSchema, RewardsConfigSchema } from "./schema"
+import {
+  ConfigSchema,
+  configSchema,
+  DealerConfigSchema,
+  RewardsConfigSchema,
+} from "./schema"
 import { ConfigError } from "./error"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
@@ -83,6 +88,8 @@ export const getDisplayCurrencyConfig = (): {
   code: yamlConfig.displayCurrency.code,
   symbol: yamlConfig.displayCurrency.symbol,
 })
+
+export const getDealerConfig = (): DealerConfigSchema => yamlConfig.dealer
 
 export const getLndParams = (): LndParams[] => {
   const lnds = yamlConfig.lnds

@@ -1,8 +1,7 @@
 import { GT } from "@graphql/index"
 
-import IError from "../abstract/error"
-
-import SatAmount from "../scalar/sat-amount"
+import IError from "@graphql/types/abstract/error"
+import SatAmount from "@graphql/types/scalar/sat-amount"
 
 const SatAmountPayload = GT.Object({
   name: "SatAmountPayload",

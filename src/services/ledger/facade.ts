@@ -1,14 +1,19 @@
-import { UnknownLedgerError } from "@domain/ledger"
-
+import { NoTransactionToSettleError, UnknownLedgerError } from "@domain/ledger"
 import { ZERO_BANK_FEE, AmountCalculator, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
 
-import { MainBook } from "./books"
+import { MainBook, Transaction } from "./books"
 import { toLedgerAccountDescriptor, toLedgerAccountId, EntryBuilder } from "./domain"
 import { persistAndReturnEntry } from "./helpers"
 import * as caching from "./caching"
+import { TransactionsMetadataRepository } from "./services"
+
+import { translateToLedgerJournal } from "."
+
 export * from "./tx-metadata"
 
 const calc = AmountCalculator()
+
+const txMetadataRepo = TransactionsMetadataRepository()
 
 const staticAccountIds = async () => {
   return {
@@ -50,10 +55,11 @@ export const recordSend = async ({
 
 export const recordReceive = async ({
   description,
-  receiverWalletDescriptor,
+  recipientWalletDescriptor,
   amountToCreditReceiver,
   bankFee,
   metadata,
+  txMetadata,
 }: RecordReceiveArgs) => {
   const actualFee = bankFee || { usd: ZERO_CENTS, btc: ZERO_SATS }
 
@@ -73,9 +79,9 @@ export const recordReceive = async ({
     .withTotalAmount(amountWithFees)
     .withBankFee({ usdBankFee: actualFee.usd, btcBankFee: actualFee.btc })
     .debitLnd()
-    .creditAccount(toLedgerAccountDescriptor(receiverWalletDescriptor))
+    .creditAccount(toLedgerAccountDescriptor(recipientWalletDescriptor))
 
-  return persistAndReturnEntry({ entry, hash: metadata.hash })
+  return persistAndReturnEntry({ entry, ...txMetadata })
 }
 
 export const getLedgerAccountBalanceForWalletId = async <T extends WalletCurrency>({
@@ -95,7 +101,7 @@ export const getLedgerAccountBalanceForWalletId = async <T extends WalletCurrenc
 export const recordIntraledger = async ({
   description,
   senderWalletDescriptor,
-  receiverWalletDescriptor,
+  recipientWalletDescriptor,
   amount,
   metadata,
   additionalDebitMetadata: additionalMetadata,
@@ -114,10 +120,51 @@ export const recordIntraledger = async ({
       accountDescriptor: toLedgerAccountDescriptor(senderWalletDescriptor),
       additionalMetadata,
     })
-    .creditAccount(toLedgerAccountDescriptor(receiverWalletDescriptor))
+    .creditAccount(toLedgerAccountDescriptor(recipientWalletDescriptor))
 
   return persistAndReturnEntry({
     entry,
     hash: "hash" in metadata ? metadata.hash : undefined,
   })
 }
+
+export const settlePendingLnSend = async (
+  paymentHash: PaymentHash,
+): Promise<true | LedgerServiceError> => {
+  try {
+    const result = await Transaction.updateMany({ hash: paymentHash }, { pending: false })
+    const success = result.nModified > 0
+    if (!success) {
+      return new NoTransactionToSettleError()
+    }
+    return true
+  } catch (err) {
+    return new UnknownLedgerError(err)
+  }
+}
+
+export const recordLnSendRevert = async ({
+  journalId,
+  paymentHash,
+}: RevertLightningPaymentArgs): Promise<void | LedgerServiceError> => {
+  const reason = "Payment canceled"
+  try {
+    const savedEntry = await MainBook.void(journalId, reason)
+    const journalEntry = translateToLedgerJournal(savedEntry)
+
+    const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+      id,
+      hash: paymentHash,
+    }))
+    txMetadataRepo.persistAll(txsMetadataToPersist)
+  } catch (err) {
+    return new UnknownLedgerError(err)
+  }
+}
+
+export const updateMetadataByHash = async (
+  ledgerTxMetadata:
+    | OnChainLedgerTransactionMetadataUpdate
+    | LnLedgerTransactionMetadataUpdate,
+): Promise<true | LedgerServiceError | RepositoryError> =>
+  TransactionsMetadataRepository().updateByHash(ledgerTxMetadata)
