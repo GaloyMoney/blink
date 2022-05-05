@@ -259,6 +259,10 @@ const validateInvoicePaymentInputs = async ({
   paymentRequest,
   uncheckedSenderWalletId,
   senderAccount,
+}: {
+  paymentRequest: EncodedPaymentRequest
+  uncheckedSenderWalletId: string
+  senderAccount: Account
 }) => {
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
   if (senderWalletId instanceof Error) return senderWalletId
@@ -325,6 +329,11 @@ const validateNoAmountInvoicePaymentInputs = async ({
   amount,
   uncheckedSenderWalletId,
   senderAccount,
+}: {
+  paymentRequest: EncodedPaymentRequest
+  amount: number
+  uncheckedSenderWalletId: string
+  senderAccount: Account
 }) => {
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
   if (senderWalletId instanceof Error) return senderWalletId
