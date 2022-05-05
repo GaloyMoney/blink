@@ -44,7 +44,7 @@ export const PaymentFlowStateRepository = (
 
       const paymentFlow: PaymentFlow<S, WalletCurrency> = paymentFlowFromRaw(result)
       if (isExpired({ paymentFlow, expiryTimeInSeconds })) {
-        await deleteLightningPaymentFlow({ walletId, paymentHash, inputAmount })
+        deleteLightningPaymentFlow({ walletId, paymentHash, inputAmount })
         return new CouldNotFindLightningPaymentFlowError()
       }
 
