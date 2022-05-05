@@ -13,11 +13,6 @@ type PaymentAmount<T extends WalletCurrency> = {
   amount: bigint
 }
 
-type PaymentAmountPayload<T extends ExchangeCurrencyUnit> = {
-  currencyUnit: T
-  amount: number
-}
-
 type WalletDescriptor<T extends WalletCurrency> = {
   id: WalletId
   currency: T

@@ -1,5 +1,4 @@
 import { Payments } from "@app"
-import { normalizePaymentAmount } from "@domain/payments"
 
 import { GT } from "@graphql/index"
 import WalletId from "@graphql/types/scalar/wallet-id"
@@ -8,6 +7,8 @@ import SatAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { mapError } from "@graphql/error-map"
 import { validateIsBtcWalletForMutation } from "@graphql/helpers"
+
+import { normalizePaymentAmount } from "."
 
 const LnNoAmountInvoiceFeeProbeInput = GT.Input({
   name: "LnNoAmountInvoiceFeeProbeInput",
