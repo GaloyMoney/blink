@@ -1,9 +1,9 @@
 import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
+import { DisplayCurrency, NewDisplayCurrencyConverter, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
 import { PriceRatio } from "@domain/payments"
-import { paymentAmountFromSats, WalletCurrency } from "@domain/shared"
+import { paymentAmountFromSats } from "@domain/shared"
 
 import * as LedgerFacade from "@services/ledger/facade"
 
@@ -14,7 +14,6 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
   revealedPreImage,
   amountDisplayCurrency,
   feeDisplayCurrency,
-  displayCurrency,
   logger,
 }: {
   paymentFlow: PaymentFlow<S, R>
@@ -23,7 +22,6 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
   revealedPreImage?: RevealedPreImage
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   feeDisplayCurrency: DisplayCurrencyBaseAmount
-  displayCurrency: DisplayCurrency
   logger: Logger
 }): Promise<true | ApplicationError> => {
   const actualFeeAmount = paymentAmountFromSats(actualFee)
@@ -61,14 +59,17 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
     usdProtocolFee: { amount: centsFee },
   } = paymentFlow
 
+  const displayCentsPerSat = priceRatio.usdPerSat()
+  const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+  const reimburseAmountDisplayCurrency = converter.fromUsdAmount(feeDifference.usd)
+
   const metadata: FeeReimbursementLedgerMetadata = {
     hash: paymentFlow.paymentHash,
     type: LedgerTransactionType.LnFeeReimbursement,
     pending: false,
     related_journal: journalId,
 
-    usd: ((amountDisplayCurrency + feeDisplayCurrency) /
-      100) as DisplayCurrencyBaseAmount,
+    usd: (reimburseAmountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
 
     satsAmount: toSats(satsAmount),
     centsAmount: toCents(centsAmount),
@@ -77,7 +78,7 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
 
     displayAmount: amountDisplayCurrency,
     displayFee: feeDisplayCurrency,
-    displayCurrency,
+    displayCurrency: DisplayCurrency.Usd,
   }
 
   const txMetadata: LnLedgerTransactionMetadataUpdate = {

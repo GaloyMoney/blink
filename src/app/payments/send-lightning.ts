@@ -733,7 +733,6 @@ const executePaymentViaLn = async ({
           revealedPreImage: payResult.revealedPreImage,
           amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
           feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),
-          displayCurrency: WalletCurrency.Usd,
           logger,
         })
         if (reimbursed instanceof Error) return reimbursed

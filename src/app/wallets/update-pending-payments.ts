@@ -190,7 +190,6 @@ const updatePendingPayment = async ({
           revealedPreImage,
           amountDisplayCurrency: displayAmount,
           feeDisplayCurrency: displayFee,
-          displayCurrency: WalletCurrency.Usd,
           logger,
         })
       } else if (status === PaymentStatus.Failed) {
