@@ -11,12 +11,18 @@ import {
   PaymentSendStatus,
   PaymentStatus,
 } from "@domain/bitcoin/lightning"
+import { LedgerTransactionType } from "@domain/ledger"
+import { PriceRatio } from "@domain/payments"
 import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   LimitsExceededError,
   SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
-import { ValidationError } from "@domain/shared"
+import {
+  paymentAmountFromCents,
+  paymentAmountFromSats,
+  ValidationError,
+} from "@domain/shared"
 import { TwoFAError } from "@domain/twoFA"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
@@ -430,9 +436,51 @@ describe("UserWallet - Lightning Pay", () => {
     if (paymentResult instanceof Error) throw paymentResult
     expect(paymentResult).toBe(PaymentSendStatus.Success)
 
-    // Test metadata is correctly persisted
     const txns = await LedgerService().getTransactionsByHash(paymentHash)
     if (txns instanceof Error) throw txns
+
+    // Test fee reimbursement amounts
+    const txnPayment = txns.find((tx) => tx.type === LedgerTransactionType.Payment)
+    expect(txnPayment).not.toBeUndefined()
+    if (!txnPayment?.centsAmount) throw new Error("centsAmount missing from payment")
+    if (!txnPayment?.satsAmount) throw new Error("satsAmount missing from payment")
+    const paymentAmounts = {
+      usd: paymentAmountFromCents(txnPayment.centsAmount),
+      btc: paymentAmountFromSats(txnPayment.satsAmount),
+    }
+    const priceRatio = PriceRatio(paymentAmounts)
+    if (priceRatio instanceof Error) throw priceRatio
+
+    const feeSats = toSats(amountInvoice * FEECAP_PERCENT)
+    const feeCents = toCents(
+      priceRatio.convertFromBtc(paymentAmountFromSats(feeSats)).amount,
+    )
+
+    const txnFeeReimburse = txns.find(
+      (tx) => tx.type === LedgerTransactionType.LnFeeReimbursement,
+    )
+    expect(txnFeeReimburse).not.toBeUndefined()
+    expect(txnFeeReimburse).toEqual(
+      expect.objectContaining({
+        debit: 0,
+        credit: feeSats,
+
+        fee: 0,
+        feeUsd: 0,
+        usd: feeCents / 100,
+
+        // FIXME: migrate db and fix code to make these pass
+
+        // satsAmount: feeSats,
+        // satsFee: 0,
+        // centsAmount: feeCents,
+        // centsFee: 0,
+        // displayAmount: feeCents,
+        // displayFee: 0,
+      }),
+    )
+
+    // Test metadata is correctly persisted
     const txns_metadata = await Promise.all(
       txns.map(async (txn) => TransactionsMetadataRepository().findById(txn.id)),
     )
