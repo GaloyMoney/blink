@@ -111,7 +111,7 @@ export const volume = {
   allTxBaseVolumeSince: volumeFn("allTxBaseVolumeSince"),
   onChainTxBaseVolumeSince: volumeFn("onChainTxBaseVolumeSince"),
   lightningTxBaseVolumeSince: volumeFn("lightningTxBaseVolumeSince"),
-  allPaymentVolumeAmountSince: volumeAmountFn("lightningTxBaseVolumeSince"),
-  externalPaymentVolumeAmountSince: volumeAmountFn("lightningTxBaseVolumeSince"),
-  intraledgerTxBaseVolumeAmountSince: volumeAmountFn("lightningTxBaseVolumeSince"),
+  allPaymentVolumeAmountSince: volumeAmountFn("allPaymentVolumeSince"),
+  externalPaymentVolumeAmountSince: volumeAmountFn("externalPaymentVolumeSince"),
+  intraledgerTxBaseVolumeAmountSince: volumeAmountFn("intraledgerTxBaseVolumeSince"),
 }

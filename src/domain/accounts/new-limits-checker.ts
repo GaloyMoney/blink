@@ -58,7 +58,7 @@ export const AccountLimitsChecker = ({
     addAttributesToCurrentSpan({
       "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
       "txVolume.threshold": `${limit.amount}`,
-      "txVolume.amountInBase": `${amount}`,
+      "txVolume.amountInBase": `${amount.amount}`,
       "txVolume.limitCheck": "checkWithdrawal",
     })
 
@@ -100,7 +100,7 @@ export const TwoFALimitsChecker = ({
     addAttributesToCurrentSpan({
       "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
       "txVolume.threshold": `${limit.amount}`,
-      "txVolume.amountInBase": `${amount}`,
+      "txVolume.amountInBase": `${amount.amount}`,
       "txVolume.limitCheck": "checkTwoFA",
     })
 
