@@ -222,6 +222,7 @@ export const recordExceptionInCurrentSpan = ({
 const recordException = (span: Span, exception: Exception, level?: ErrorLevel) => {
   const errorLevel = level || exception["level"] || ErrorLevel.Warn
   span.setAttribute("error.level", errorLevel)
+  span.setAttribute("error.name", exception["name"])
   span.recordException(exception)
   span.setStatus({ code: SpanStatusCode.ERROR })
 }
