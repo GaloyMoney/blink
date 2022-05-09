@@ -1,4 +1,12 @@
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
+import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
+import { InvalidTransactionForPaymentFlowError } from "@domain/payments"
+import {
+  ErrorLevel,
+  paymentAmountFromCents,
+  paymentAmountFromSats,
+  WalletCurrency,
+} from "@domain/shared"
+import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 import { RouteValidator } from "./route-validator"
@@ -81,4 +89,67 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
     senderWalletDescriptor,
     recipientWalletDescriptor,
   }
+}
+
+export const PaymentFlowFromLedgerTransaction = <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>(
+  ledgerTxn: LedgerTransaction<S>,
+): PaymentFlow<S, R> | LedgerServiceError | ValidationError => {
+  if (ledgerTxn.type !== LedgerTransactionType.Payment) {
+    return new InvalidTransactionForPaymentFlowError()
+  }
+  const settlementMethod = SettlementMethod.Lightning
+  const paymentInitiationMethod = PaymentInitiationMethod.Lightning
+
+  const {
+    walletId: senderWalletId,
+    currency: senderWalletCurrency,
+    paymentHash,
+    satsAmount,
+    centsAmount,
+    satsFee,
+    centsFee,
+    timestamp: createdAt,
+  } = ledgerTxn
+  if (
+    !(
+      senderWalletId &&
+      senderWalletCurrency &&
+      paymentHash &&
+      satsAmount &&
+      centsAmount &&
+      satsFee &&
+      centsFee &&
+      createdAt
+    )
+  ) {
+    return new UnknownLedgerError()
+  }
+
+  const btcPaymentAmount = paymentAmountFromSats(satsAmount)
+  const usdPaymentAmount = paymentAmountFromCents(centsAmount)
+
+  return PaymentFlow({
+    senderWalletId,
+    senderWalletCurrency,
+    settlementMethod,
+    paymentInitiationMethod,
+
+    paymentHash,
+    descriptionFromInvoice: "",
+    createdAt,
+    paymentSentAndPending: true,
+
+    btcPaymentAmount,
+    usdPaymentAmount,
+    inputAmount:
+      senderWalletCurrency === WalletCurrency.Usd
+        ? usdPaymentAmount.amount
+        : btcPaymentAmount.amount,
+
+    btcProtocolFee: paymentAmountFromSats(satsFee),
+    usdProtocolFee: paymentAmountFromCents(centsFee),
+  })
 }
