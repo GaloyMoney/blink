@@ -234,10 +234,15 @@ const reconstructPendingPaymentFlow = async <
   const { walletId: senderWalletId, currency: senderWalletCurrency } = payment
   if (!senderWalletId) return new UnknownLedgerError()
 
-  const usdPaymentAmount: UsdPaymentAmount =
+  const usdAmount =
     senderWalletCurrency === WalletCurrency.Usd
-      ? { amount: BigInt(payment.debit), currency: WalletCurrency.Usd }
-      : { amount: BigInt(payment.usd), currency: WalletCurrency.Usd }
+      ? BigInt(payment.debit)
+      : BigInt(Math.round(payment.usd * 100))
+
+  const usdPaymentAmount: UsdPaymentAmount = {
+    amount: usdAmount,
+    currency: WalletCurrency.Usd,
+  }
 
   let btcPaymentAmount: BtcPaymentAmount
   if (senderWalletCurrency === WalletCurrency.Usd) {
