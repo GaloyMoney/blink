@@ -88,6 +88,58 @@ describe("PaymentFlowFromLedgerTransaction", () => {
     expect(paymentFlow).toEqual(expect.objectContaining(expectedPaymentFlowState))
   })
 
+  it("handles zero fee btc transaction", () => {
+    const ledgerTx = {
+      ...ledgerTxBase,
+      currency: WalletCurrency.Btc,
+      satsFee: toSats(0),
+      centsFee: toCents(0),
+    } as LedgerTransaction<WalletCurrency>
+    const paymentFlow = PaymentFlowFromLedgerTransaction(ledgerTx)
+    expect(paymentFlow).not.toBeInstanceOf(Error)
+
+    const expectedPaymentFlowState = {
+      ...expectedPaymentFlowStateBase,
+      senderWalletCurrency: WalletCurrency.Btc,
+      inputAmount: BigInt(satsAmount),
+      btcProtocolFee: {
+        amount: BigInt(0),
+        currency: WalletCurrency.Btc,
+      },
+      usdProtocolFee: {
+        amount: BigInt(0),
+        currency: WalletCurrency.Usd,
+      },
+    }
+    expect(paymentFlow).toEqual(expect.objectContaining(expectedPaymentFlowState))
+  })
+
+  it("handles zero fee usd transaction", () => {
+    const ledgerTx = {
+      ...ledgerTxBase,
+      currency: WalletCurrency.Usd,
+      satsFee: toSats(0),
+      centsFee: toCents(0),
+    } as LedgerTransaction<WalletCurrency>
+    const paymentFlow = PaymentFlowFromLedgerTransaction(ledgerTx)
+    expect(paymentFlow).not.toBeInstanceOf(Error)
+
+    const expectedPaymentFlowState = {
+      ...expectedPaymentFlowStateBase,
+      senderWalletCurrency: WalletCurrency.Usd,
+      inputAmount: BigInt(centsAmount),
+      btcProtocolFee: {
+        amount: BigInt(0),
+        currency: WalletCurrency.Btc,
+      },
+      usdProtocolFee: {
+        amount: BigInt(0),
+        currency: WalletCurrency.Usd,
+      },
+    }
+    expect(paymentFlow).toEqual(expect.objectContaining(expectedPaymentFlowState))
+  })
+
   it("returns error for transaction with missing walletId", () => {
     const ledgerTx = {
       ...ledgerTxBase,
