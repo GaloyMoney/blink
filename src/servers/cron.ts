@@ -11,7 +11,7 @@ import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 
 import { activateLndHealthCheck } from "@services/lnd/health"
-import { ColdStorage, Lightning, Wallets } from "@app"
+import { ColdStorage, Lightning, Wallets, Payments } from "@app"
 import { getCronConfig } from "@config"
 
 const logger = baseLogger.child({ module: "cron" })
@@ -28,7 +28,7 @@ const main = async () => {
 
   const updatePendingLightningInvoices = () => Wallets.updatePendingInvoices(logger)
 
-  const updatePendingLightningPayments = () => Wallets.updatePendingPayments(logger)
+  const updatePendingLightningPayments = () => Payments.updatePendingPayments(logger)
 
   const updateOnChainReceipt = async () => {
     const txNumber = await Wallets.updateOnChainReceipt({ logger })
