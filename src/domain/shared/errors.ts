@@ -15,3 +15,12 @@ export class DomainError extends Error {
 }
 
 export class ValidationError extends DomainError {}
+
+export class SafeWrapperError extends DomainError {
+  level = ErrorLevel.Critical
+}
+export class BigIntConversionError extends SafeWrapperError {}
+export class BigIntFloatConversionError extends BigIntConversionError {}
+export class UnknownBigIntConversionError extends BigIntConversionError {
+  level = ErrorLevel.Critical
+}
