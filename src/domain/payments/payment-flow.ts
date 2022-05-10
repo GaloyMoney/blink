@@ -1,5 +1,8 @@
-import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
-import { InvalidTransactionForPaymentFlowError } from "@domain/payments"
+import { LedgerTransactionType } from "@domain/ledger"
+import {
+  MissingPropsInTransactionForPaymentFlowError,
+  NonLnPaymentTransactionForPaymentFlowError,
+} from "@domain/payments"
 import {
   ErrorLevel,
   paymentAmountFromCents,
@@ -96,9 +99,9 @@ export const PaymentFlowFromLedgerTransaction = <
   R extends WalletCurrency,
 >(
   ledgerTxn: LedgerTransaction<S>,
-): PaymentFlow<S, R> | LedgerServiceError | ValidationError => {
+): PaymentFlow<S, R> | ValidationError => {
   if (ledgerTxn.type !== LedgerTransactionType.Payment) {
-    return new InvalidTransactionForPaymentFlowError()
+    return new NonLnPaymentTransactionForPaymentFlowError()
   }
   const settlementMethod = SettlementMethod.Lightning
   const paymentInitiationMethod = PaymentInitiationMethod.Lightning
@@ -123,7 +126,7 @@ export const PaymentFlowFromLedgerTransaction = <
     centsFee === undefined ||
     createdAt === undefined
   ) {
-    return new UnknownLedgerError()
+    return new MissingPropsInTransactionForPaymentFlowError()
   }
 
   const btcPaymentAmount = paymentAmountFromSats(satsAmount)

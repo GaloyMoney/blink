@@ -1,8 +1,9 @@
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
-import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
+import { LedgerTransactionType } from "@domain/ledger"
 import {
-  InvalidTransactionForPaymentFlowError,
+  MissingPropsInTransactionForPaymentFlowError,
+  NonLnPaymentTransactionForPaymentFlowError,
   PaymentFlowFromLedgerTransaction,
 } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
@@ -146,7 +147,7 @@ describe("PaymentFlowFromLedgerTransaction", () => {
       walletId: undefined,
     } as LedgerTransaction<WalletCurrency>
     const paymentFlow = PaymentFlowFromLedgerTransaction(ledgerTx)
-    expect(paymentFlow).toBeInstanceOf(UnknownLedgerError)
+    expect(paymentFlow).toBeInstanceOf(MissingPropsInTransactionForPaymentFlowError)
   })
 
   it("returns error for transaction with wrong type", () => {
@@ -155,6 +156,6 @@ describe("PaymentFlowFromLedgerTransaction", () => {
       type: LedgerTransactionType.LnIntraLedger,
     } as LedgerTransaction<WalletCurrency>
     const paymentFlow = PaymentFlowFromLedgerTransaction(ledgerTx)
-    expect(paymentFlow).toBeInstanceOf(InvalidTransactionForPaymentFlowError)
+    expect(paymentFlow).toBeInstanceOf(NonLnPaymentTransactionForPaymentFlowError)
   })
 })
