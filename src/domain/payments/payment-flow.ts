@@ -114,16 +114,14 @@ export const PaymentFlowFromLedgerTransaction = <
     timestamp: createdAt,
   } = ledgerTxn
   if (
-    !(
-      senderWalletId &&
-      senderWalletCurrency &&
-      paymentHash &&
-      satsAmount &&
-      centsAmount &&
-      satsFee &&
-      centsFee &&
-      createdAt
-    )
+    senderWalletId === undefined ||
+    senderWalletCurrency === undefined ||
+    paymentHash === undefined ||
+    satsAmount === undefined ||
+    centsAmount === undefined ||
+    satsFee === undefined ||
+    centsFee === undefined ||
+    createdAt === undefined
   ) {
     return new UnknownLedgerError()
   }
