@@ -16,7 +16,8 @@ import {
   LedgerTransactionType,
   UnknownLedgerError,
 } from "@domain/ledger"
-import { PaymentFlowFromLedgerTransaction } from "@domain/payments"
+
+import { PaymentFlowFromLedgerTransaction } from "@app/payments"
 
 export const updatePendingPayments = async (logger: Logger): Promise<void> => {
   const ledgerService = LedgerService()
