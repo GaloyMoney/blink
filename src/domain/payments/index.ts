@@ -4,7 +4,9 @@ export * from "./payment-flow-builder"
 export * from "./price-ratio"
 export * from "./ln-fees"
 
-import { ValidationError, WalletCurrency } from "@domain/shared"
+import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
+import { paymentAmountFromCents, paymentAmountFromSats } from "@domain/shared"
 
 import { InvalidBtcPaymentAmountError, InvalidUsdPaymentAmountError } from "./errors"
 
@@ -18,10 +20,7 @@ export const checkedToBtcPaymentAmount = (
     return new InvalidBtcPaymentAmountError()
   }
   if (!(amount && amount > 0)) return new InvalidBtcPaymentAmountError()
-  return {
-    amount: BigInt(amount),
-    currency: WalletCurrency.Btc,
-  }
+  return paymentAmountFromSats(toSats(amount))
 }
 
 export const checkedToUsdPaymentAmount = (
@@ -34,8 +33,5 @@ export const checkedToUsdPaymentAmount = (
     return new InvalidUsdPaymentAmountError()
   }
   if (!(amount && amount > 0)) return new InvalidUsdPaymentAmountError()
-  return {
-    amount: BigInt(amount),
-    currency: WalletCurrency.Usd,
-  }
+  return paymentAmountFromCents(toCents(amount))
 }
