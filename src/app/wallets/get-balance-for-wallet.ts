@@ -1,7 +1,7 @@
 import { LedgerService } from "@services/ledger"
+import { updatePendingPaymentsByWalletId } from "@app/payments"
 
 import { updatePendingInvoicesByWalletId } from "./update-pending-invoices"
-import { updatePendingPaymentsByWalletId } from "./update-pending-payments"
 
 export const getBalanceForWallet = async ({
   walletId,

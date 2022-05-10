@@ -1,8 +1,5 @@
-import {
-  updatePendingInvoices,
-  updatePendingPayments,
-  updateOnChainReceipt,
-} from "@app/wallets"
+import { updatePendingPayments } from "@app/payments"
+import { updatePendingInvoices, updateOnChainReceipt } from "@app/wallets"
 import { balanceSheetIsBalanced } from "@core/balance-sheet"
 import { baseLogger } from "@services/logger"
 
