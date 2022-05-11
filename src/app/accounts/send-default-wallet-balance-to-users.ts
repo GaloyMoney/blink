@@ -13,7 +13,7 @@ export const sendDefaultWalletBalanceToUsers = async (logger: Logger) => {
 
   const price = await getCurrentPrice()
 
-  const notifyUser = async (account) => {
+  const notifyUser = async (account: Account) => {
     const balance = await LedgerService().getWalletBalance(account.defaultWalletId)
     if (balance instanceof Error) return balance
 
