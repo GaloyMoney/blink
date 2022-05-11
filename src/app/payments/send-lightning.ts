@@ -22,11 +22,7 @@ import {
 } from "@domain/bitcoin/lightning"
 import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
 import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
-import {
-  AlreadyPaidError,
-  CouldNotFindLightningPaymentFlowError,
-  InsufficientBalanceError,
-} from "@domain/errors"
+import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
 
 import { LndService } from "@services/lnd"
 import {
@@ -495,14 +491,8 @@ const executePaymentViaIntraledger = async ({
       const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
       if (balance instanceof Error) return balance
 
-      const paymentAmount = paymentFlow.paymentAmountInSenderWalletCurrency()
-
-      if (balance.amount < paymentAmount.amount) {
-        const unitForMsg = senderWallet.currency === WalletCurrency.Btc ? "sats" : "cents"
-        return new InsufficientBalanceError(
-          `Payment amount '${paymentAmount.amount}' ${unitForMsg} exceeds balance '${balance.amount}'`,
-        )
-      }
+      const balanceCheck = paymentFlow.checkBalanceForSend(balance)
+      if (balanceCheck instanceof Error) return balanceCheck
 
       const priceRatio = PriceRatio({
         usd: paymentFlow.usdPaymentAmount,
@@ -621,15 +611,8 @@ const executePaymentViaLn = async ({
     async (lock) => {
       const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
       if (balance instanceof Error) return balance
-
-      const paymentAmount = paymentFlow.paymentAmountInSenderWalletCurrency()
-
-      if (balance.amount < paymentAmount.amount) {
-        const unitForMsg = senderWallet.currency === WalletCurrency.Btc ? "sats" : "cents"
-        return new InsufficientBalanceError(
-          `Payment amount '${paymentAmount.amount}' ${unitForMsg} exceeds balance '${balance.amount}'`,
-        )
-      }
+      const balanceCheck = paymentFlow.checkBalanceForSend(balance)
+      if (balanceCheck instanceof Error) return balanceCheck
 
       const lndService = LndService()
       if (lndService instanceof Error) return lndService
