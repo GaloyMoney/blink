@@ -1,4 +1,5 @@
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
+import { InsufficientBalanceError, InvalidCurrencyForWalletError } from "@domain/errors"
+import { AmountCalculator, ErrorLevel, WalletCurrency } from "@domain/shared"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 import { RouteValidator } from "./route-validator"
@@ -58,18 +59,41 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
     recipientUsername: state.recipientUsername,
   })
 
-  const senderWalletDescriptor = (): WalletDescriptor<WalletCurrency> => ({
+  const senderWalletDescriptor = (): WalletDescriptor<S> => ({
     id: state.senderWalletId,
     currency: state.senderWalletCurrency,
   })
 
-  const recipientWalletDescriptor = (): WalletDescriptor<WalletCurrency> | undefined =>
+  const recipientWalletDescriptor = (): WalletDescriptor<R> | undefined =>
     state.recipientWalletId && state.recipientWalletCurrency
       ? {
           id: state.recipientWalletId,
           currency: state.recipientWalletCurrency,
         }
       : undefined
+
+  const checkBalanceForSend = (
+    balanceAmount: PaymentAmount<S>,
+  ): true | ValidationError => {
+    if (state.senderWalletCurrency !== balanceAmount.currency)
+      return new InvalidCurrencyForWalletError()
+
+    const { amount, fee } =
+      balanceAmount.currency === WalletCurrency.Btc
+        ? { amount: state.btcPaymentAmount, fee: state.btcProtocolFee }
+        : { amount: state.usdPaymentAmount, fee: state.usdProtocolFee }
+    const totalSendAmount = AmountCalculator().add(amount, fee)
+
+    if (balanceAmount.amount < totalSendAmount.amount) {
+      const unitForMsg =
+        state.senderWalletCurrency === WalletCurrency.Btc ? "sats" : "cents"
+      return new InsufficientBalanceError(
+        `Payment amount '${totalSendAmount.amount}' ${unitForMsg} exceeds balance '${balanceAmount.amount}'`,
+      )
+    }
+
+    return true
+  }
 
   return {
     ...state,
@@ -80,5 +104,6 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
     recipientDetails,
     senderWalletDescriptor,
     recipientWalletDescriptor,
+    checkBalanceForSend,
   }
 }
