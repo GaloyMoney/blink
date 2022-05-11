@@ -13,12 +13,6 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
       : (state.usdProtocolFee as PaymentAmount<S>)
   }
 
-  const paymentAmountInSenderWalletCurrency = (): PaymentAmount<S> => {
-    return state.senderWalletCurrency === WalletCurrency.Btc
-      ? (state.btcPaymentAmount as PaymentAmount<S>)
-      : (state.usdPaymentAmount as PaymentAmount<S>)
-  }
-
   const paymentAmounts = (): { btc: BtcPaymentAmount; usd: UsdPaymentAmount } => ({
     btc: state.btcPaymentAmount,
     usd: state.usdPaymentAmount,
@@ -98,7 +92,6 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
   return {
     ...state,
     protocolFeeInSenderWalletCurrency,
-    paymentAmountInSenderWalletCurrency,
     paymentAmounts,
     routeDetails,
     recipientDetails,
