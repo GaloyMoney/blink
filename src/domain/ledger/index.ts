@@ -1,5 +1,6 @@
 import { InvalidLedgerTransactionId } from "@domain/errors"
 import { WalletCurrency } from "@domain/shared"
+import { safeBigInt } from "@domain/shared/safe"
 
 export * from "./errors"
 export * from "./activity-checker"
@@ -70,5 +71,5 @@ export const inputAmountFromLedgerTransaction = (
   txn: LedgerTransaction<WalletCurrency>,
 ) => {
   const fee = txn.currency == WalletCurrency.Usd ? txn.feeUsd : txn.fee
-  return txn.debit - fee
+  return safeBigInt(txn.debit - fee)
 }

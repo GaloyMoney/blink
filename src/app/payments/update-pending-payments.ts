@@ -132,7 +132,8 @@ const updatePendingPayment = async ({
         return true
       }
 
-      const inputAmount = BigInt(inputAmountFromLedgerTransaction(pendingPayment))
+      const inputAmount = inputAmountFromLedgerTransaction(pendingPayment)
+      if (inputAmount instanceof Error) return inputAmount
 
       let paymentFlow = await PaymentFlowStateRepository(
         defaultTimeToExpiryInSeconds,

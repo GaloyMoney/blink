@@ -13,6 +13,7 @@ import {
   paymentAmountFromSats,
   WalletCurrency,
 } from "@domain/shared"
+import { safeBigInt } from "@domain/shared/safe"
 import { elapsedSinceTimestamp } from "@utils"
 
 import { PaymentFlowState } from "./schema"
@@ -192,7 +193,8 @@ export const PaymentFlowStateRepository = (
 const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
   paymentFlowState: PaymentFlowStateRecord,
 ): PaymentFlow<S, R> | ValidationError => {
-  const inputAmount = BigInt(paymentFlowState.inputAmount)
+  const inputAmount = safeBigInt(paymentFlowState.inputAmount)
+  if (inputAmount instanceof Error) return inputAmount
 
   const { paymentHash, intraLedgerHash } = paymentFlowState
   const hash = paymentHash
