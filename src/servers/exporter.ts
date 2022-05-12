@@ -136,7 +136,7 @@ const main = async () => {
         const userCount = await User.countDocuments()
         userCount_g.set(userCount)
 
-        business_g.set(await User.count({ title: { $ne: undefined } }))
+        business_g.set(await User.countDocuments({ title: { $ne: undefined } }))
       })
 
       await asyncRunInSpan("loopCustomWallets", {}, async () => {
