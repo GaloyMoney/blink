@@ -71,17 +71,17 @@ export const NewDealerPriceService = (
 ): INewDealerPriceService => ({
   getCentsFromSatsForImmediateBuy: async (
     amount: BtcPaymentAmount,
-  ): Promise<UsdPaymentAmount> =>
+  ): Promise<UsdPaymentAmount | DealerPriceServiceError> =>
     paymentAmountFromCents(toCents(Math.floor(Number(amount.amount) / buyImmediate))),
   getCentsFromSatsForImmediateSell: async (
     amount: BtcPaymentAmount,
-  ): Promise<UsdPaymentAmount> =>
+  ): Promise<UsdPaymentAmount | DealerPriceServiceError> =>
     paymentAmountFromCents(
       toCents(Math.floor(Number(amount.amount) / sellUsdImmediateFromSats)),
     ),
   getCentsFromSatsForFutureBuy: async (
     amount: BtcPaymentAmount,
-  ): Promise<UsdPaymentAmount> =>
+  ): Promise<UsdPaymentAmount | DealerPriceServiceError> =>
     paymentAmountFromCents(
       toCents(
         (Math.floor(Number(amount.amount) * getBuyUsdQuoteFromSats) *
@@ -91,7 +91,7 @@ export const NewDealerPriceService = (
     ),
   getCentsFromSatsForFutureSell: async (
     amount: BtcPaymentAmount,
-  ): Promise<UsdPaymentAmount> =>
+  ): Promise<UsdPaymentAmount | DealerPriceServiceError> =>
     paymentAmountFromCents(
       toCents(
         (Math.floor(Number(amount.amount) * getSellUsdQuoteFromSats) *
@@ -102,17 +102,17 @@ export const NewDealerPriceService = (
 
   getSatsFromCentsForImmediateBuy: async (
     amount: UsdPaymentAmount,
-  ): Promise<BtcPaymentAmount> =>
+  ): Promise<BtcPaymentAmount | DealerPriceServiceError> =>
     paymentAmountFromSats(
       toSats(Math.floor(Number(amount.amount) * buyUsdImmediateFromCents)),
     ),
   getSatsFromCentsForImmediateSell: async (
     amount: UsdPaymentAmount,
-  ): Promise<BtcPaymentAmount> =>
+  ): Promise<BtcPaymentAmount | DealerPriceServiceError> =>
     paymentAmountFromSats(toSats(Math.floor(Number(amount.amount) * sellUsdImmediate))),
   getSatsFromCentsForFutureBuy: async (
     amount: UsdPaymentAmount,
-  ): Promise<BtcPaymentAmount> =>
+  ): Promise<BtcPaymentAmount | DealerPriceServiceError> =>
     paymentAmountFromSats(
       toSats(
         (Math.floor(Number(amount.amount) * getBuyUsdQuoteFromCents) *
@@ -122,7 +122,7 @@ export const NewDealerPriceService = (
     ),
   getSatsFromCentsForFutureSell: async (
     amount: UsdPaymentAmount,
-  ): Promise<BtcPaymentAmount> =>
+  ): Promise<BtcPaymentAmount | DealerPriceServiceError> =>
     paymentAmountFromSats(
       toSats(
         (Math.floor(Number(amount.amount) * getSellUsdQuoteFromCents) *

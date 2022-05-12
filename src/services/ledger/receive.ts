@@ -185,6 +185,10 @@ const addReceiptNoFee = async ({
     dealerBtcAccountId: toLedgerAccountId(await caching.getDealerBtcWalletId()),
     dealerUsdAccountId: toLedgerAccountId(await caching.getDealerUsdWalletId()),
   }
+
+  const satsAmount = paymentAmountFromSats(sats)
+  if (satsAmount instanceof Error) return satsAmount
+
   let entry = MainBook.entry(description)
   const builder = LegacyEntryBuilder({
     staticAccountIds,
@@ -192,15 +196,18 @@ const addReceiptNoFee = async ({
     metadata: metaInput,
   })
     .withoutFee()
-    .debitLnd(paymentAmountFromSats(sats))
+    .debitLnd(satsAmount)
 
   if (walletCurrency === WalletCurrency.Btc) {
     entry = builder.creditAccount({ accountId })
   } else {
     if (cents === undefined) return new NotReachableError("cents should be defined here")
+    const centsAmount = paymentAmountFromCents(cents)
+    if (centsAmount instanceof Error) return centsAmount
+
     entry = builder.creditAccount({
       accountId,
-      amount: paymentAmountFromCents(cents),
+      amount: centsAmount,
     })
   }
   try {
@@ -247,14 +254,19 @@ const addReceiptFee = async ({
     return new NotImplementedError("USD Intraledger")
   }
 
+  const feeSatsAmount = paymentAmountFromSats(fee)
+  if (feeSatsAmount instanceof Error) return feeSatsAmount
+  const satsAmount = paymentAmountFromSats(sats)
+  if (satsAmount instanceof Error) return satsAmount
+
   const entry = MainBook.entry(description)
   const builder = LegacyEntryBuilder({
     staticAccountIds,
     entry,
     metadata: metaInput,
   })
-    .withFee(paymentAmountFromSats(fee))
-    .debitLnd(paymentAmountFromSats(sats))
+    .withFee(feeSatsAmount)
+    .debitLnd(satsAmount)
     .creditAccount({ accountId })
 
   try {

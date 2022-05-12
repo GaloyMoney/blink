@@ -24,17 +24,16 @@ export const decodeInvoice = (
     return new LnInvoiceMissingPaymentSecretError()
   }
   const paymentSecret: PaymentIdentifyingSecret = decodedInvoice.payment
-  const amount: Satoshis | null = decodedInvoice.safe_tokens
-    ? toSats(decodedInvoice.safe_tokens)
-    : null
-  const paymentAmount: BtcPaymentAmount | null = amount
-    ? paymentAmountFromSats(amount)
-    : null
   const cltvDelta: number | null = decodedInvoice.cltv_delta
     ? decodedInvoice.cltv_delta
     : null
   const expiresAt = new Date(decodedInvoice.expires_at)
   const isExpired = !!decodedInvoice.is_expired
+  const amount: Satoshis | null = decodedInvoice.safe_tokens
+    ? toSats(decodedInvoice.safe_tokens)
+    : null
+  const paymentAmount = amount ? paymentAmountFromSats(amount) : null
+  if (paymentAmount instanceof Error) return paymentAmount
 
   let routeHints: Hop[][] = []
   if (decodedInvoice.routes) {

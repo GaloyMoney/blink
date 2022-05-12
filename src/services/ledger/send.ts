@@ -150,24 +150,29 @@ const addSendNoInternalFee = async ({
     metadata,
   }).withoutFee()
 
+  const satsAmount = paymentAmountFromSats(sats)
+  if (satsAmount instanceof Error) return satsAmount
+
   if (walletCurrency === WalletCurrency.Btc) {
     entry = builder
       .debitAccount({
         accountId,
-        amount: paymentAmountFromSats(sats),
+        amount: satsAmount,
       })
       .creditLnd()
   }
 
   if (walletCurrency === WalletCurrency.Usd) {
     if (!cents) return new UnknownLedgerError("Cents are required")
+    const centsAmount = paymentAmountFromCents(cents)
+    if (centsAmount instanceof Error) return centsAmount
 
     entry = builder
       .debitAccount({
         accountId,
-        amount: paymentAmountFromCents(cents),
+        amount: centsAmount,
       })
-      .creditLnd(paymentAmountFromSats(sats))
+      .creditLnd(satsAmount)
   }
 
   try {
@@ -214,14 +219,19 @@ const addSendInternalFee = async ({
   }
 
   try {
+    const feeSatsAmount = paymentAmountFromSats(fee)
+    if (feeSatsAmount instanceof Error) return feeSatsAmount
+    const satsAmount = paymentAmountFromSats(sats)
+    if (satsAmount instanceof Error) return satsAmount
+
     const entry = MainBook.entry(description)
     const builder = LegacyEntryBuilder({
       staticAccountIds,
       entry,
       metadata: metaInput,
     })
-      .withFee(paymentAmountFromSats(fee))
-      .debitAccount({ accountId, amount: paymentAmountFromSats(sats) })
+      .withFee(feeSatsAmount)
+      .debitAccount({ accountId, amount: satsAmount })
       .creditLnd()
 
     const savedEntry = await builder.commit()

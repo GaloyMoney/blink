@@ -34,7 +34,7 @@ export const LnFees = (
     }
   }
 
-  const feeFromRawRoute = (rawRoute: RawRoute): BtcPaymentAmount => {
+  const feeFromRawRoute = (rawRoute: RawRoute): BtcPaymentAmount | ValidationError => {
     const amount = toSats(Math.ceil(rawRoute.fee))
     return paymentAmountFromSats(amount)
   }

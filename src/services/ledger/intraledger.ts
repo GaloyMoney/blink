@@ -179,10 +179,14 @@ const addIntraledgerTxTransfer = async ({
     if (sats === undefined) {
       return new NotReachableError("sats undefined implementation error")
     }
+
+    const satsAmount = paymentAmountFromSats(sats)
+    if (satsAmount instanceof Error) return satsAmount
+
     entry = builder
       .debitAccount({
         accountId: senderAccountId,
-        amount: paymentAmountFromSats(sats),
+        amount: satsAmount,
         additionalMetadata: {
           memoPayer,
           username: recipientUsername,
@@ -198,10 +202,14 @@ const addIntraledgerTxTransfer = async ({
     if (cents === undefined) {
       return new Error("cents undefined implementation error")
     }
+
+    const centsAmount = paymentAmountFromCents(cents)
+    if (centsAmount instanceof Error) return centsAmount
+
     entry = builder
       .debitAccount({
         accountId: senderAccountId,
-        amount: paymentAmountFromCents(cents),
+        amount: centsAmount,
         additionalMetadata: {
           memoPayer,
           username: recipientUsername,
@@ -218,10 +226,15 @@ const addIntraledgerTxTransfer = async ({
       return new Error("cents or sats undefined implementation error")
     }
 
+    const centsAmount = paymentAmountFromCents(cents)
+    if (centsAmount instanceof Error) return centsAmount
+    const satsAmount = paymentAmountFromSats(sats)
+    if (satsAmount instanceof Error) return satsAmount
+
     entry = builder
       .debitAccount({
         accountId: senderAccountId,
-        amount: paymentAmountFromCents(cents),
+        amount: centsAmount,
         additionalMetadata: {
           memoPayer,
           username: recipientUsername,
@@ -229,7 +242,7 @@ const addIntraledgerTxTransfer = async ({
       })
       .creditAccount({
         accountId: recipientAccountId,
-        amount: paymentAmountFromSats(sats),
+        amount: satsAmount,
       })
   } else {
     // if (
@@ -240,10 +253,15 @@ const addIntraledgerTxTransfer = async ({
       return new Error("cents or sats undefined implementation error")
     }
 
+    const centsAmount = paymentAmountFromCents(cents)
+    if (centsAmount instanceof Error) return centsAmount
+    const satsAmount = paymentAmountFromSats(sats)
+    if (satsAmount instanceof Error) return satsAmount
+
     entry = builder
       .debitAccount({
         accountId: senderAccountId,
-        amount: paymentAmountFromSats(sats),
+        amount: satsAmount,
         additionalMetadata: {
           memoPayer,
           username: recipientUsername,
@@ -251,7 +269,7 @@ const addIntraledgerTxTransfer = async ({
       })
       .creditAccount({
         accountId: recipientAccountId,
-        amount: paymentAmountFromCents(cents),
+        amount: centsAmount,
       })
   }
 

@@ -15,7 +15,9 @@ export const PriceRatio = ({
     return new InvalidZeroAmountPriceRatioInputError()
   }
 
-  const convertFromUsd = (convert: UsdPaymentAmount): BtcPaymentAmount => {
+  const convertFromUsd = (
+    convert: UsdPaymentAmount,
+  ): BtcPaymentAmount | ValidationError => {
     const amountAsNumber =
       (Number(convert.amount) * Number(btc.amount)) / Number(usd.amount)
     const amount = Math.round(amountAsNumber)
@@ -23,7 +25,9 @@ export const PriceRatio = ({
     return paymentAmountFromSats(toSats(btcAmount))
   }
 
-  const convertFromBtc = (convert: BtcPaymentAmount): UsdPaymentAmount => {
+  const convertFromBtc = (
+    convert: BtcPaymentAmount,
+  ): UsdPaymentAmount | ValidationError => {
     const amountAsNumber =
       (Number(convert.amount) * Number(usd.amount)) / Number(btc.amount)
     const amount = Math.round(amountAsNumber)

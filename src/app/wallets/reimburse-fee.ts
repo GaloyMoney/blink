@@ -21,6 +21,7 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
   logger: Logger
 }): Promise<true | ApplicationError> => {
   const actualFeeAmount = paymentAmountFromSats(actualFee)
+  if (actualFeeAmount instanceof Error) return actualFeeAmount
 
   const maxFeeAmounts = {
     btc: paymentFlow.btcProtocolFee,

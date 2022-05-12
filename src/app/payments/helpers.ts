@@ -62,6 +62,7 @@ export const usdFromBtcMidPriceFn = async (
 
       const usdAmount = Math.ceil(Number(amount.amount) * midPriceRatio)
       const usdPaymentAmount = paymentAmountFromCents(toCents(usdAmount))
+      if (usdPaymentAmount instanceof Error) return usdPaymentAmount
 
       addAttributesToCurrentSpan({
         "usdFromBtcMidPriceFn.midPriceRatio": midPriceRatio,
@@ -98,6 +99,7 @@ export const btcFromUsdMidPriceFn = async (
 
       const btcAmount = Math.ceil(Number(amount.amount) / midPriceRatio)
       const btcPaymentAmount = paymentAmountFromSats(toSats(btcAmount))
+      if (btcPaymentAmount instanceof Error) return btcPaymentAmount
 
       addAttributesToCurrentSpan({
         "btcFromUsdMidPriceFn.midPriceRatio": midPriceRatio,
@@ -212,6 +214,7 @@ const recipientDetailsFromInvoice = async (invoice: LnInvoice) => {
   } = walletInvoice
   const usdPaymentAmount =
     cents !== undefined ? paymentAmountFromCents(toCents(cents)) : undefined
+  if (usdPaymentAmount instanceof Error) return usdPaymentAmount
 
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet

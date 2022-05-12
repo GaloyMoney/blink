@@ -47,7 +47,16 @@ export const PaymentFlowFromLedgerTransaction = <
   }
 
   const btcPaymentAmount = paymentAmountFromSats(satsAmount)
+  if (btcPaymentAmount instanceof Error) return btcPaymentAmount
+
   const usdPaymentAmount = paymentAmountFromCents(centsAmount)
+  if (usdPaymentAmount instanceof Error) return usdPaymentAmount
+
+  const btcProtocolFee = paymentAmountFromSats(satsFee)
+  if (btcProtocolFee instanceof Error) return btcProtocolFee
+
+  const usdProtocolFee = paymentAmountFromCents(centsFee)
+  if (usdProtocolFee instanceof Error) return usdProtocolFee
 
   return PaymentFlow({
     senderWalletId,
@@ -67,7 +76,7 @@ export const PaymentFlowFromLedgerTransaction = <
         ? usdPaymentAmount.amount
         : btcPaymentAmount.amount,
 
-    btcProtocolFee: paymentAmountFromSats(satsFee),
-    usdProtocolFee: paymentAmountFromCents(centsFee),
+    btcProtocolFee,
+    usdProtocolFee,
   })
 }

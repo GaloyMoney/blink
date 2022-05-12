@@ -52,16 +52,19 @@ const volumeAmountFn =
     const volume = await txVolumeSince({ walletId, timestamp, txnGroup })
     if (volume instanceof Error) return volume
 
-    return {
-      outgoingBaseAmount:
-        walletCurrency === WalletCurrency.Btc
-          ? paymentAmountFromSats(toSats(volume.outgoingBaseAmount))
-          : paymentAmountFromCents(toCents(volume.outgoingBaseAmount)),
-      incomingBaseAmount:
-        walletCurrency === WalletCurrency.Btc
-          ? paymentAmountFromSats(toSats(volume.incomingBaseAmount))
-          : paymentAmountFromCents(toCents(volume.incomingBaseAmount)),
-    }
+    const outgoingBaseAmount =
+      walletCurrency === WalletCurrency.Btc
+        ? paymentAmountFromSats(toSats(volume.outgoingBaseAmount))
+        : paymentAmountFromCents(toCents(volume.outgoingBaseAmount))
+    if (outgoingBaseAmount instanceof Error) return outgoingBaseAmount
+
+    const incomingBaseAmount =
+      walletCurrency === WalletCurrency.Btc
+        ? paymentAmountFromSats(toSats(volume.incomingBaseAmount))
+        : paymentAmountFromCents(toCents(volume.incomingBaseAmount))
+    if (incomingBaseAmount instanceof Error) return incomingBaseAmount
+
+    return { outgoingBaseAmount, incomingBaseAmount }
   }
 
 const txVolumeSince = async ({

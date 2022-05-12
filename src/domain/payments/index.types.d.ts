@@ -1,6 +1,6 @@
 type PriceRatio = {
-  convertFromUsd(convert: UsdPaymentAmount): BtcPaymentAmount
-  convertFromBtc(convert: BtcPaymentAmount): UsdPaymentAmount
+  convertFromUsd(convert: UsdPaymentAmount): BtcPaymentAmount | ValidationError
+  convertFromBtc(convert: BtcPaymentAmount): UsdPaymentAmount | ValidationError
   usdPerSat(): DisplayCurrencyBasePerSat
 }
 

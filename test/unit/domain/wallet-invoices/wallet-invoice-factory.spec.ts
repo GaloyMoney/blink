@@ -15,6 +15,9 @@ beforeAll(async () => {
 describe("wallet invoice factory methods", () => {
   it("translates a registered invoice to wallet invoice", () => {
     const amountInSats = toSats(42)
+    const paymentAmount = paymentAmountFromSats(amountInSats)
+    if (paymentAmount instanceof Error) throw paymentAmount
+
     const registeredInvoice: RegisteredInvoice = {
       invoice: {
         paymentHash: "paymentHash" as PaymentHash,
@@ -24,7 +27,7 @@ describe("wallet invoice factory methods", () => {
         cltvDelta: null,
         destination: "destination" as Pubkey,
         amount: amountInSats,
-        paymentAmount: paymentAmountFromSats(amountInSats),
+        paymentAmount,
         milliSatsAmount: toMilliSatsFromNumber(42000),
         description: "",
         features: [],
@@ -52,6 +55,9 @@ describe("wallet invoice factory methods", () => {
 
   it("translates a registered invoice to wallet invoice for a recipient", () => {
     const amountInSats = toSats(42)
+    const paymentAmount = paymentAmountFromSats(amountInSats)
+    if (paymentAmount instanceof Error) throw paymentAmount
+
     const registeredInvoice: RegisteredInvoice = {
       invoice: {
         paymentHash: "paymentHash" as PaymentHash,
@@ -61,7 +67,7 @@ describe("wallet invoice factory methods", () => {
         cltvDelta: null,
         destination: "destination" as Pubkey,
         amount: amountInSats,
-        paymentAmount: paymentAmountFromSats(amountInSats),
+        paymentAmount,
         milliSatsAmount: toMilliSatsFromNumber(42000),
         description: "",
         features: [],

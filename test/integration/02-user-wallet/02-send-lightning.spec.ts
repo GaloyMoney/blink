@@ -537,17 +537,24 @@ describe("UserWallet - Lightning Pay", () => {
     expect(txnPayment).not.toBeUndefined()
     if (!txnPayment?.centsAmount) throw new Error("centsAmount missing from payment")
     if (!txnPayment?.satsAmount) throw new Error("satsAmount missing from payment")
+
+    const usdPaymentAmount = paymentAmountFromCents(txnPayment.centsAmount)
+    if (usdPaymentAmount instanceof Error) return usdPaymentAmount
+    const btcPaymentAmount = paymentAmountFromSats(txnPayment.satsAmount)
+    if (btcPaymentAmount instanceof Error) return btcPaymentAmount
     const paymentAmounts = {
-      usd: paymentAmountFromCents(txnPayment.centsAmount),
-      btc: paymentAmountFromSats(txnPayment.satsAmount),
+      usd: usdPaymentAmount,
+      btc: btcPaymentAmount,
     }
     const priceRatio = PriceRatio(paymentAmounts)
     if (priceRatio instanceof Error) throw priceRatio
 
     const feeSats = toSats(amountInvoice * FEECAP_PERCENT)
-    const feeCents = toCents(
-      priceRatio.convertFromBtc(paymentAmountFromSats(feeSats)).amount,
-    )
+    const feeAmountSats = paymentAmountFromSats(feeSats)
+    if (feeAmountSats instanceof Error) return feeAmountSats
+    const feeAmountCents = priceRatio.convertFromBtc(feeAmountSats)
+    if (feeAmountCents instanceof Error) return feeAmountCents
+    const feeCents = toCents(feeAmountCents.amount)
 
     const txnFeeReimburse = txns.find(
       (tx) => tx.type === LedgerTransactionType.LnFeeReimbursement,

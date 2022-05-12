@@ -26,6 +26,7 @@ export const AccountLimitsChecker = ({
     if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
     const limit = paymentAmountFromCents(accountLimits.intraLedgerLimit)
+    if (limit instanceof Error) return limit
     addAttributesToCurrentSpan({
       "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
       "txVolume.threshold": `${limit.amount}`,
@@ -55,6 +56,7 @@ export const AccountLimitsChecker = ({
     if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
     const limit = paymentAmountFromCents(accountLimits.withdrawalLimit)
+    if (limit instanceof Error) return limit
     addAttributesToCurrentSpan({
       "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
       "txVolume.threshold": `${limit.amount}`,
@@ -97,6 +99,7 @@ export const TwoFALimitsChecker = ({
     if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
     const limit = paymentAmountFromCents(twoFALimits.threshold)
+    if (limit instanceof Error) return limit
     addAttributesToCurrentSpan({
       "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
       "txVolume.threshold": `${limit.amount}`,
