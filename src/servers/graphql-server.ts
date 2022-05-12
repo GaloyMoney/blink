@@ -2,7 +2,6 @@ import { createServer } from "http"
 import crypto from "crypto"
 
 import { Accounts, Users } from "@app"
-import { CustomError } from "@core/error"
 import { getApolloConfig, getGeetestConfig, isDev, isProd, JWT_SECRET } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
@@ -164,19 +163,6 @@ export const startApolloServer = async ({
     },
     formatError: (err) => {
       try {
-        const exception = err.extensions?.exception as CustomError
-        const errorCode = err.extensions?.code as string
-
-        if (errorCode) {
-          const errObj = { message: err.message, code: errorCode }
-
-          if (exception?.forwardToClient) {
-            return errObj
-          }
-        } else {
-          graphqlLogger.error(err)
-        }
-
         // GraphQL shield seems to have a bug around throwing a custom ApolloError
         // This is a workaround for now
         const isShieldError = ["NOT_AUTHENTICATED", "NOT_AUTHORIZED"].includes(

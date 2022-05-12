@@ -3,9 +3,11 @@ import dedent from "dedent"
 
 import { GT } from "@graphql/index"
 
-import { UnknownClientError } from "@core/error"
-
 import { Accounts } from "@app"
+
+import { UnknownClientError } from "@graphql/error"
+
+import { baseLogger } from "@services/logger"
 
 import Account from "../abstract/account"
 
@@ -71,17 +73,20 @@ const GraphQLUser = GT.Object({
       resolve: async (source, args, { domainAccount }) => {
         const { username } = args
         if (!domainAccount) {
-          throw new UnknownClientError("Something went wrong")
+          throw new UnknownClientError({
+            message: "Something went wrong",
+            logger: baseLogger,
+          })
         }
         if (username instanceof Error) {
           throw username
         }
         const contact = await Accounts.getContactByUsername({
           account: domainAccount,
-          contactUsername: args.username,
+          contactUsername: username,
         })
         if (contact instanceof Error) {
-          throw new UnknownClientError("Something went wrong") // TODO: Map error
+          throw contact
         }
         return contact
       },

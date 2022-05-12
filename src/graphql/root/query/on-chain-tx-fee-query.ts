@@ -1,4 +1,3 @@
-import { UnknownClientError } from "@core/error"
 import { GT } from "@graphql/index"
 import { Wallets } from "@app"
 import { mapError } from "@graphql/error-map"
@@ -17,11 +16,7 @@ const OnChainTxFeeQuery = GT.Field({
     amount: { type: GT.NonNull(SatAmount) },
     targetConfirmations: { type: TargetConfirmations, defaultValue: 1 },
   },
-  resolve: async (_, args, { domainAccount }) => {
-    if (!domainAccount) {
-      throw new UnknownClientError("Something went wrong")
-    }
-
+  resolve: async (_, args, { domainAccount }: { domainAccount: Account }) => {
     const { walletId, address, amount, targetConfirmations } = args
 
     for (const input of [walletId, address, amount, targetConfirmations]) {

@@ -136,10 +136,6 @@ ipRecording:
   proxyChecking:
     enabled: true
 
-# blacklistedIPTypes: ['VPN', 'Compromised Server']
-
-# blacklistedIPs: ['1.2.3.4', '5.6.7.8']
-
 fees:
   withdraw:
     method: "flat" # flat || proportionalOnImbalance
