@@ -73,6 +73,9 @@ test_accounts:
   phone: "+16505554335"
   code: "321321"
   username: "user15"
+- ref: "H"
+  phone: "+16505554336"
+  code: "321321"
 
 rateLimits:
   requestPhoneCodePerPhone:
