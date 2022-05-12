@@ -114,9 +114,11 @@ let userIdA: UserId
 let accountA: Account
 let accountB: Account
 let accountC: Account
+let accountH: Account
 
 let walletIdA: WalletId
 let walletIdB: WalletId
+let walletIdH: WalletId
 let walletIdUsdB: WalletId
 let walletIdUsdA: WalletId
 let walletIdC: WalletId
@@ -129,16 +131,19 @@ beforeAll(async () => {
   await createUserAndWalletFromUserRef("A")
   await createUserAndWalletFromUserRef("B")
   await createUserAndWalletFromUserRef("C")
+  await createUserAndWalletFromUserRef("H")
 
   userIdA = await getUserIdByTestUserRef("A")
 
   accountA = await getAccountByTestUserRef("A")
   accountB = await getAccountByTestUserRef("B")
   accountC = await getAccountByTestUserRef("C")
+  accountH = await getAccountByTestUserRef("H")
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
   walletIdC = await getDefaultWalletIdByTestUserRef("C")
+  walletIdH = await getDefaultWalletIdByTestUserRef("H")
 
   userRecordA = await getUserRecordByTestUserRef("A")
   usernameA = userRecordA.username as Username
@@ -677,6 +682,68 @@ describe("UserWallet - Lightning Pay", () => {
       logger: baseLogger,
     })
     expect(paymentResult).toBeInstanceOf(ValidationError)
+  })
+
+  it("fails if user sends balance amount without accounting for fee", async () => {
+    const res = await Wallets.intraledgerPaymentSendWalletId({
+      recipientWalletId: walletIdH,
+      memo: "",
+      amount: toSats(1000),
+      senderWalletId: walletIdB,
+      senderAccount: accountB,
+      logger: baseLogger,
+    })
+    expect(res).not.toBeInstanceOf(Error)
+    if (res instanceof Error) return res
+
+    const balance = await getBalanceHelper(walletIdH)
+    const { request } = await createInvoice({ lnd: lndOutside1, tokens: balance })
+
+    const paymentResult = await Payments.payInvoiceByWalletId({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
+      senderWalletId: walletIdH,
+      senderAccount: accountH,
+      logger: baseLogger,
+    })
+    expect(paymentResult).toBeInstanceOf(DomainInsufficientBalanceError)
+  })
+
+  it("sends balance amount accounting for fee", async () => {
+    const res = await Wallets.intraledgerPaymentSendWalletId({
+      recipientWalletId: walletIdH,
+      memo: "",
+      amount: toSats(1000),
+      senderWalletId: walletIdB,
+      senderAccount: accountB,
+      logger: baseLogger,
+    })
+    expect(res).not.toBeInstanceOf(Error)
+    if (res instanceof Error) return res
+
+    const balanceBefore = await getBalanceHelper(walletIdH)
+    const { request } = await createInvoice({ lnd: lndOutside1, tokens: balanceBefore })
+
+    const fee = await Payments.getLightningFeeEstimation({
+      walletId: walletIdH,
+      paymentRequest: request as EncodedPaymentRequest,
+    })
+    if (fee instanceof Error) return fee
+    expect(fee.amount).toBe(0n)
+
+    const paymentResult = await Payments.payInvoiceByWalletId({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
+      senderWalletId: walletIdH,
+      senderAccount: accountH,
+      logger: baseLogger,
+    })
+    if (paymentResult instanceof Error) return paymentResult
+    expect(paymentResult).not.toBeInstanceOf(Error)
+    expect(paymentResult).toStrictEqual(PaymentSendStatus.Success)
+
+    const balanceAfter = await getBalanceHelper(walletIdH)
+    expect(balanceAfter).toBe(0)
   })
 
   const createInvoiceHash = () => {

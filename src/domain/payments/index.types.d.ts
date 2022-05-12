@@ -43,7 +43,6 @@ type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFl
   R
 > & {
   protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
-  paymentAmountInSenderWalletCurrency(): PaymentAmount<S>
   paymentAmounts(): { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
   routeDetails(): {
     rawRoute?: RawRoute
@@ -55,8 +54,9 @@ type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFl
     recipientPubkey: Pubkey | undefined
     recipientUsername: Username | undefined
   }
-  senderWalletDescriptor(): WalletDescriptor<WalletCurrency>
-  recipientWalletDescriptor(): WalletDescriptor<WalletCurrency> | undefined
+  senderWalletDescriptor(): WalletDescriptor<S>
+  recipientWalletDescriptor(): WalletDescriptor<R> | undefined
+  checkBalanceForSend(balanceAmount: PaymentAmount<S>): true | ValidationError
 }
 
 type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
