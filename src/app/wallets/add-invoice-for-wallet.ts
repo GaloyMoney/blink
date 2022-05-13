@@ -1,88 +1,61 @@
-import { checkedToSats, toSats } from "@domain/bitcoin"
-import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
-import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning/invoice-expiration"
-import { DealerPriceServiceError } from "@domain/dealer-price"
-import { checkedtoCents } from "@domain/fiat"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import { WalletInvoiceFactory } from "@domain/wallet-invoices/wallet-invoice-factory"
 import { checkedToWalletId } from "@domain/wallets"
-import { WalletCurrency } from "@domain/shared"
-import { DealerPriceService } from "@services/dealer-price"
+import { NewDealerPriceService } from "@services/dealer-price"
 import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 import { consumeLimiter } from "@services/rate-limit"
+import { WalletInvoiceBuilder } from "@domain/wallet-invoices/wallet-invoice-builder"
 
 export const addInvoiceForSelf = async ({
   walletId,
   amount,
   memo = "",
 }: AddInvoiceForSelfArgs): Promise<LnInvoice | ApplicationError> => {
-  const walletIdChecked = checkedToWalletId(walletId)
-  if (walletIdChecked instanceof Error) return walletIdChecked
-
-  const wallets = WalletsRepository()
-  const wallet = await wallets.findById(walletIdChecked)
-  if (wallet instanceof Error) return wallet
-
-  const limitOk = await checkSelfWalletIdRateLimits(wallet.accountId)
-  if (limitOk instanceof Error) return limitOk
-
-  let addInvoiceWithAmount: (
-    args: AddInvoiceArgs,
-  ) => Promise<LnInvoice | ApplicationError>
-
-  switch (wallet.currency) {
-    case WalletCurrency.Btc:
-      addInvoiceWithAmount = addInvoiceSatsDenomiation
-      break
-    case WalletCurrency.Usd:
-      addInvoiceWithAmount = addInvoiceFiatDenomiation
-      break
+  const limitCheckFn = checkSelfWalletIdRateLimits
+  const buildWIBWithAmountFn = ({
+    walletInvoiceBuilder,
+    recipientWalletDescriptor,
+  }: BuildWIBWithAmountFnArgs) => {
+    return Promise.resolve(
+      walletInvoiceBuilder
+        .withDescription({ description: memo })
+        .generatedForSelf()
+        .withRecipientWallet(recipientWalletDescriptor)
+        .withAmount(amount),
+    )
   }
 
-  const walletInvoiceFactory = WalletInvoiceFactory({
-    walletId: walletIdChecked,
-    currency: wallet.currency,
-  })
+  const lnInvoice = await addInvoice({ walletId, limitCheckFn, buildWIBWithAmountFn })
 
-  return addInvoiceWithAmount({
-    walletInvoiceCreateFn: walletInvoiceFactory.createForSelf,
-    amount,
-    memo,
-  })
+  if (lnInvoice instanceof Error) return lnInvoice
+
+  return lnInvoice
 }
 
 export const addInvoiceNoAmountForSelf = async ({
   walletId,
   memo = "",
 }: AddInvoiceNoAmountForSelfArgs): Promise<LnInvoice | ApplicationError> => {
-  const walletIdChecked = checkedToWalletId(walletId)
-  if (walletIdChecked instanceof Error) return walletIdChecked
+  const limitCheckFn = checkSelfWalletIdRateLimits
+  const buildWIBWithAmountFn = ({
+    walletInvoiceBuilder,
+    recipientWalletDescriptor,
+  }: BuildWIBWithAmountFnArgs) => {
+    return Promise.resolve(
+      walletInvoiceBuilder
+        .withDescription({ description: memo })
+        .generatedForSelf()
+        .withRecipientWallet(recipientWalletDescriptor)
+        .withoutAmount(),
+    )
+  }
 
-  const wallets = WalletsRepository()
-  const wallet = await wallets.findById(walletIdChecked)
-  if (wallet instanceof Error) return wallet
+  const lnInvoice = await addInvoice({ walletId, limitCheckFn, buildWIBWithAmountFn })
 
-  const limitOk = await checkSelfWalletIdRateLimits(wallet.accountId)
-  if (limitOk instanceof Error) return limitOk
+  if (lnInvoice instanceof Error) return lnInvoice
 
-  // when an invoice have a fiat deonimation but doesn't have an amount,
-  // the exchange rate will be defined at settlement time, not at the invoice creation time
-  // therefore this is safe to have an extended period of time for those invoices
-  const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Btc, new Date())
-
-  const walletInvoiceFactory = WalletInvoiceFactory({
-    walletId: wallet.id,
-    currency: wallet.currency,
-  })
-
-  return registerAndPersistInvoice({
-    sats: toSats(0),
-    memo,
-    walletInvoiceCreateFn: walletInvoiceFactory.createForSelf,
-    expiresAt,
-  })
+  return lnInvoice
 }
 
 export const addInvoiceForRecipient = async ({
@@ -91,152 +64,108 @@ export const addInvoiceForRecipient = async ({
   memo = "",
   descriptionHash,
 }: AddInvoiceForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  const walletIdChecked = checkedToWalletId(recipientWalletId)
-  if (walletIdChecked instanceof Error) return walletIdChecked
-
-  const wallet = await WalletsRepository().findById(walletIdChecked)
-  if (wallet instanceof Error) return wallet
-
-  const limitOk = await checkRecipientWalletIdRateLimits(wallet.accountId)
-  if (limitOk instanceof Error) return limitOk
-
-  let addInvoice: (args: AddInvoiceArgs) => Promise<LnInvoice | ApplicationError>
-
-  switch (wallet.currency) {
-    case WalletCurrency.Btc:
-      addInvoice = addInvoiceSatsDenomiation
-      break
-    case WalletCurrency.Usd:
-      addInvoice = addInvoiceFiatDenomiation
-      break
+  const limitCheckFn = checkRecipientWalletIdRateLimits
+  const buildWIBWithAmountFn = ({
+    walletInvoiceBuilder,
+    recipientWalletDescriptor,
+  }: BuildWIBWithAmountFnArgs) => {
+    return walletInvoiceBuilder
+      .withDescription({ description: memo, descriptionHash })
+      .generatedForRecipient()
+      .withRecipientWallet(recipientWalletDescriptor)
+      .withAmount(amount)
   }
 
-  const walletInvoiceFactory = WalletInvoiceFactory({
-    walletId: walletIdChecked,
-    currency: wallet.currency,
+  const lnInvoice = await addInvoice({
+    walletId: recipientWalletId,
+    limitCheckFn,
+    buildWIBWithAmountFn,
   })
 
-  return addInvoice({
-    amount,
-    memo,
-    walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
-    descriptionHash,
-  })
+  if (lnInvoice instanceof Error) return lnInvoice
+
+  return lnInvoice
 }
 
 export const addInvoiceNoAmountForRecipient = async ({
   recipientWalletId,
   memo = "",
 }: AddInvoiceNoAmountForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  const walletIdChecked = checkedToWalletId(recipientWalletId)
+  const limitCheckFn = checkRecipientWalletIdRateLimits
+  const buildWIBWithAmountFn = ({
+    walletInvoiceBuilder,
+    recipientWalletDescriptor,
+  }: BuildWIBWithAmountFnArgs) => {
+    return Promise.resolve(
+      walletInvoiceBuilder
+        .withDescription({ description: memo })
+        .generatedForRecipient()
+        .withRecipientWallet(recipientWalletDescriptor)
+        .withoutAmount(),
+    )
+  }
+
+  const lnInvoice = await addInvoice({
+    walletId: recipientWalletId,
+    limitCheckFn,
+    buildWIBWithAmountFn,
+  })
+
+  if (lnInvoice instanceof Error) return lnInvoice
+
+  return lnInvoice
+}
+
+const addInvoice = async ({
+  walletId,
+  limitCheckFn,
+  buildWIBWithAmountFn,
+}: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
+  const walletIdChecked = checkedToWalletId(walletId)
   if (walletIdChecked instanceof Error) return walletIdChecked
 
-  const wallet = await WalletsRepository().findById(walletIdChecked)
+  const wallets = WalletsRepository()
+  const wallet = await wallets.findById(walletIdChecked)
   if (wallet instanceof Error) return wallet
-
-  const limitOk = await checkRecipientWalletIdRateLimits(wallet.accountId)
+  const limitOk = await limitCheckFn(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
 
-  // when an invoice have a fiat deonimation but doesn't have an amount,
-  // the exchange rate will be defined at settlement time, not at the invoice creation time
-  // therefore this is safe to have an extended period of time for those invoices
-  const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Btc, new Date())
+  const walletInvoiceBuilder = createWalletInvoiceBuilder()
 
-  const walletInvoiceFactory = WalletInvoiceFactory({
-    walletId: walletIdChecked,
-    currency: wallet.currency,
+  if (walletInvoiceBuilder instanceof Error) return walletInvoiceBuilder
+
+  const walletInvoiceBuilderWithAmount = await buildWIBWithAmountFn({
+    walletInvoiceBuilder,
+    recipientWalletDescriptor: wallet,
   })
 
-  return registerAndPersistInvoice({
-    sats: toSats(0),
-    memo,
-    walletInvoiceCreateFn: walletInvoiceFactory.createForRecipient,
-    expiresAt,
-  })
-}
+  if (walletInvoiceBuilderWithAmount instanceof Error)
+    return walletInvoiceBuilderWithAmount
 
-const addInvoiceSatsDenomiation = async ({
-  walletInvoiceCreateFn,
-  amount,
-  memo = "",
-  descriptionHash,
-}: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
-  const sats = checkedToSats(amount)
-  if (sats instanceof Error) return sats
+  const invoiceObjects = await walletInvoiceBuilderWithAmount.registerInvoice()
 
-  const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Btc, new Date())
+  if (invoiceObjects instanceof Error) return invoiceObjects
 
-  return registerAndPersistInvoice({
-    sats,
-    memo,
-    walletInvoiceCreateFn,
-    expiresAt,
-    descriptionHash,
-  })
-}
-
-const addInvoiceFiatDenomiation = async ({
-  walletInvoiceCreateFn,
-  amount,
-  memo = "",
-  descriptionHash,
-}: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
-  const cents = checkedtoCents(amount)
-  if (cents instanceof Error) return cents
-
-  const expiresAt = invoiceExpirationForCurrency(WalletCurrency.Usd, new Date())
-
-  const dealer = DealerPriceService()
-
-  const sats = await dealer.getSatsFromCentsForFutureBuy(
-    cents,
-    defaultTimeToExpiryInSeconds,
-  )
-  if (sats instanceof DealerPriceServiceError) return sats
-
-  return registerAndPersistInvoice({
-    sats,
-    memo,
-    walletInvoiceCreateFn,
-    expiresAt,
-    descriptionHash,
-    cents,
-  })
-}
-
-const registerAndPersistInvoice = async ({
-  sats,
-  memo,
-  walletInvoiceCreateFn,
-  expiresAt,
-  descriptionHash,
-  cents,
-}: {
-  sats: Satoshis
-  memo: string
-  walletInvoiceCreateFn: WalletInvoiceFactoryCreateMethod
-  expiresAt: InvoiceExpiration
-  descriptionHash?: string
-  cents?: UsdCents
-}): Promise<LnInvoice | ApplicationError> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
+
+  const persistedInvoice = await walletInvoicesRepo.persistNew(
+    invoiceObjects.walletInvoice,
+  )
+
+  if (persistedInvoice instanceof Error) return persistedInvoice
+
+  return invoiceObjects.lnInvoice
+}
+
+const createWalletInvoiceBuilder = () => {
+  const dealer = NewDealerPriceService()
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
-  const registeredInvoice = await lndService.registerInvoice({
-    description: memo,
-    descriptionHash,
-    sats,
-    expiresAt,
+  return WalletInvoiceBuilder({
+    dealerBtcFromUsd: dealer.getSatsFromCentsForFutureBuy,
+    lnRegisterInvoice: lndService.registerInvoice,
   })
-  if (registeredInvoice instanceof Error) return registeredInvoice
-  const { invoice } = registeredInvoice
-
-  const walletInvoice = walletInvoiceCreateFn({ registeredInvoice, cents })
-  const persistedWalletInvoice = await walletInvoicesRepo.persistNew(walletInvoice)
-  if (persistedWalletInvoice instanceof Error) return persistedWalletInvoice
-
-  return invoice
 }
 
 const checkSelfWalletIdRateLimits = async (

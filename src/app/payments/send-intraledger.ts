@@ -29,13 +29,9 @@ import { NotificationsService } from "@services/notifications"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 
 import { Accounts } from "@app"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 
-import {
-  newCheckIntraledgerLimits,
-  btcFromUsdMidPriceFn,
-  usdFromBtcMidPriceFn,
-  getPriceRatioForLimits,
-} from "./helpers"
+import { newCheckIntraledgerLimits, getPriceRatioForLimits } from "./helpers"
 
 const dealer = NewDealerPriceService()
 

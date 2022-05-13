@@ -1,17 +1,21 @@
 import { AlreadyPaidError, SelfPaymentError } from "@domain/errors"
-import { toCents } from "@domain/fiat"
 import { WalletInvoiceValidator } from "@domain/wallet-invoices"
 import { WalletCurrency } from "@domain/shared"
 
 describe("WalletInvoiceValidator", () => {
   const walletInvoice: WalletInvoice = {
     paymentHash: "paymentHash" as PaymentHash,
-    walletId: "toWalletId" as WalletId,
+    recipientWalletDescriptor: {
+      id: "toWalletId" as WalletId,
+      currency: WalletCurrency.Btc,
+    },
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
-    cents: toCents(10),
+    usdAmount: {
+      currency: WalletCurrency.Usd,
+      amount: BigInt(10),
+    },
     paid: false,
-    currency: WalletCurrency.Btc,
   }
   const fromWalletId = "fromWalletId" as WalletId
 
@@ -27,7 +31,9 @@ describe("WalletInvoiceValidator", () => {
     walletInvoice.paid = false
     const walletInvoiceValidator = WalletInvoiceValidator(walletInvoice)
 
-    const validatorResult = walletInvoiceValidator.validateToSend(walletInvoice.walletId)
+    const validatorResult = walletInvoiceValidator.validateToSend(
+      walletInvoice.recipientWalletDescriptor.id,
+    )
     expect(validatorResult).toBeInstanceOf(SelfPaymentError)
   })
 

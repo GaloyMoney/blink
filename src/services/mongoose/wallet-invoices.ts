@@ -3,29 +3,28 @@ import {
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
-import { toCents } from "@domain/fiat"
+import { UsdPaymentAmount } from "@domain/shared"
 
 import { WalletInvoice } from "./schema"
 
 export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   const persistNew = async ({
     paymentHash,
-    walletId,
+    recipientWalletDescriptor,
     selfGenerated,
     pubkey,
     paid,
-    cents,
-    currency,
+    usdAmount,
   }: WalletInvoice): Promise<WalletInvoice | RepositoryError> => {
     try {
       const walletInvoice = await new WalletInvoice({
         _id: paymentHash,
-        walletId,
+        walletId: recipientWalletDescriptor.id,
         selfGenerated,
         pubkey,
         paid,
-        cents,
-        currency,
+        cents: usdAmount ? Number(usdAmount.amount) : undefined,
+        currency: recipientWalletDescriptor.currency,
       }).save()
       return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
@@ -146,10 +145,12 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
 
 const walletInvoiceFromRaw = (result: WalletInvoiceRecord): WalletInvoice => ({
   paymentHash: result.id as PaymentHash,
-  walletId: result.walletId as WalletId,
+  recipientWalletDescriptor: {
+    id: result.walletId as WalletId,
+    currency: result.currency as WalletCurrency,
+  },
   selfGenerated: result.selfGenerated,
   pubkey: result.pubkey as Pubkey,
   paid: result.paid as boolean,
-  cents: result.cents ? toCents(result.cents) : undefined,
-  currency: result.currency as WalletCurrency,
+  usdAmount: result.cents ? UsdPaymentAmount(BigInt(result.cents)) : undefined,
 })
