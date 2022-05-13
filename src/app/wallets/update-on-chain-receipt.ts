@@ -97,7 +97,7 @@ const processTxForWallet = async (
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   const lockService = LockService()
-  return lockService.lockOnChainTxHash({ txHash: tx.rawTx.txHash, logger }, async () => {
+  return lockService.lockOnChainTxHash({ txHash: tx.rawTx.txHash }, async () => {
     const recorded = await ledger.isOnChainTxRecorded({
       walletId: wallet.id,
       txHash: tx.rawTx.txHash,
@@ -172,7 +172,7 @@ const processTxForHotWallet = async ({
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   const lockService = LockService()
-  return lockService.lockOnChainTxHash({ txHash: tx.rawTx.txHash, logger }, async () => {
+  return lockService.lockOnChainTxHash({ txHash: tx.rawTx.txHash }, async () => {
     const recorded = await ledger.isToHotWalletTxRecorded(tx.rawTx.txHash)
     if (recorded instanceof Error) {
       logger.error({ error: recorded }, "Could not query ledger")

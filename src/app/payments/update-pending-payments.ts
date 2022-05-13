@@ -50,11 +50,9 @@ export const updatePendingPayments = async (logger: Logger): Promise<void> => {
 export const updatePendingPaymentsByWalletId = async ({
   walletId,
   logger,
-  lock,
 }: {
   walletId: WalletId
   logger: Logger
-  lock?: DistributedLock
 }): Promise<void | ApplicationError> => {
   const ledgerService = LedgerService()
   const count = await ledgerService.getPendingPaymentsCount(walletId)
@@ -69,7 +67,6 @@ export const updatePendingPaymentsByWalletId = async ({
       walletId,
       pendingPayment,
       logger,
-      lock,
     })
   }
 }
@@ -78,12 +75,10 @@ const updatePendingPayment = async ({
   walletId,
   pendingPayment,
   logger,
-  lock,
 }: {
   walletId: WalletId
   pendingPayment: LedgerTransaction<WalletCurrency>
   logger: Logger
-  lock?: DistributedLock
 }): Promise<true | ApplicationError> => {
   const paymentLogger = logger.child({
     topic: "payment",
@@ -125,7 +120,7 @@ const updatePendingPayment = async ({
 
   if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {
     const ledgerService = LedgerService()
-    return LockService().lockPaymentHash({ paymentHash, logger, lock }, async () => {
+    return LockService().lockPaymentHash({ paymentHash }, async () => {
       const recorded = await ledgerService.isLnTxRecorded(paymentHash)
       if (recorded instanceof Error) {
         paymentLogger.error({ error: recorded }, "we couldn't query pending transaction")

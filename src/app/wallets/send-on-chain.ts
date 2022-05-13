@@ -32,6 +32,8 @@ import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
+import { ResourceExpiredLockServiceError } from "@domain/lock"
+
 import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
@@ -215,58 +217,57 @@ const executePaymentViaIntraledger = async ({
   const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
   if (recipientAccount instanceof Error) return recipientAccount
 
-  return LockService().lockWalletId(
-    { walletId: senderWallet.id, logger },
-    async (lock) => {
-      const balance = await LedgerService().getWalletBalance(senderWallet.id)
-      if (balance instanceof Error) return balance
-      if (balance < amount)
-        return new InsufficientBalanceError(
-          `Payment amount '${amount}' exceeds balance '${balance}'`,
-        )
-
-      const onchainLoggerOnUs = logger.child({ balance, onUs: true })
-      const journal = await LockService().extendLock(
-        { logger: onchainLoggerOnUs, lock },
-        async () =>
-          LedgerService().addOnChainIntraledgerTxTransfer({
-            senderWalletId: senderWallet.id,
-            senderWalletCurrency: senderWallet.currency,
-            senderUsername: senderAccount.username,
-            description: "",
-            sats: amountSats,
-            amountDisplayCurrency,
-            payeeAddresses: [address],
-            sendAll,
-            recipientWalletId: recipientWallet.id,
-            recipientWalletCurrency: recipientWallet.currency,
-            recipientUsername: recipientAccount.username,
-            memoPayer: memo || undefined,
-          }),
-      )
-      if (journal instanceof Error) return journal
-
-      const notificationsService = NotificationsService(logger)
-      notificationsService.intraLedgerPaid({
-        senderWalletId: senderWallet.id,
-        recipientWalletId: recipientWallet.id,
-        amount: amountSats,
-        displayCurrencyPerSat,
-      })
-
-      onchainLoggerOnUs.info(
-        {
-          success: true,
-          type: "onchain_on_us",
-          pending: false,
-          amountDisplayCurrency,
-        },
-        "onchain payment succeed",
+  return LockService().lockWalletId({ walletId: senderWallet.id }, async (signal) => {
+    const balance = await LedgerService().getWalletBalance(senderWallet.id)
+    if (balance instanceof Error) return balance
+    if (balance < amount)
+      return new InsufficientBalanceError(
+        `Payment amount '${amount}' exceeds balance '${balance}'`,
       )
 
-      return PaymentSendStatus.Success
-    },
-  )
+    const onchainLoggerOnUs = logger.child({ balance, onUs: true })
+
+    if (signal.aborted) {
+      return new ResourceExpiredLockServiceError(signal.error?.message)
+    }
+
+    const journal = await LedgerService().addOnChainIntraledgerTxTransfer({
+      senderWalletId: senderWallet.id,
+      senderWalletCurrency: senderWallet.currency,
+      senderUsername: senderAccount.username,
+      description: "",
+      sats: amountSats,
+      amountDisplayCurrency,
+      payeeAddresses: [address],
+      sendAll,
+      recipientWalletId: recipientWallet.id,
+      recipientWalletCurrency: recipientWallet.currency,
+      recipientUsername: recipientAccount.username,
+      memoPayer: memo || undefined,
+    })
+
+    if (journal instanceof Error) return journal
+
+    const notificationsService = NotificationsService(logger)
+    notificationsService.intraLedgerPaid({
+      senderWalletId: senderWallet.id,
+      recipientWalletId: recipientWallet.id,
+      amount: amountSats,
+      displayCurrencyPerSat,
+    })
+
+    onchainLoggerOnUs.info(
+      {
+        success: true,
+        type: "onchain_on_us",
+        pending: false,
+        amountDisplayCurrency,
+      },
+      "onchain payment succeed",
+    )
+
+    return PaymentSendStatus.Success
+  })
 }
 
 const executePaymentViaOnChain = async ({
@@ -345,97 +346,96 @@ const executePaymentViaOnChain = async ({
       `Use lightning to send amounts less than ${dustThreshold}`,
     )
 
-  return LockService().lockWalletId(
-    { walletId: senderWallet.id, logger },
-    async (lock) => {
-      const balance = await LedgerService().getWalletBalance(senderWallet.id)
-      if (balance instanceof Error) return balance
-      const estimatedFee = await getFeeEstimate()
-      if (estimatedFee instanceof Error) return estimatedFee
-      if (balance < amountToSend + estimatedFee) {
-        return new InsufficientBalanceError(
-          `${amountToSend + estimatedFee} exceeds balance ${balance}`,
-        )
-      }
+  return LockService().lockWalletId({ walletId: senderWallet.id }, async (signal) => {
+    const balance = await LedgerService().getWalletBalance(senderWallet.id)
+    if (balance instanceof Error) return balance
+    const estimatedFee = await getFeeEstimate()
+    if (estimatedFee instanceof Error) return estimatedFee
+    if (balance < amountToSend + estimatedFee) {
+      return new InsufficientBalanceError(
+        `${amountToSend + estimatedFee} exceeds balance ${balance}`,
+      )
+    }
 
-      const journal = await LockService().extendLock({ logger, lock }, async () => {
-        const txHash = await onChainService.payToAddress({
-          address,
-          amount: amountToSend,
-          targetConfirmations,
-        })
-        if (txHash instanceof Error) {
-          logger.error(
-            { err: txHash, address, tokens: amountToSend, success: false },
-            "Impossible to sendToChainAddress",
-          )
-          return txHash
-        }
+    if (signal.aborted) {
+      return new ResourceExpiredLockServiceError(signal.error?.message)
+    }
 
-        let minerFee: Satoshis
+    const txHash = await onChainService.payToAddress({
+      address,
+      amount: amountToSend,
+      targetConfirmations,
+    })
+    if (txHash instanceof Error) {
+      logger.error(
+        { err: txHash, address, tokens: amountToSend, success: false },
+        "Impossible to sendToChainAddress",
+      )
+      return txHash
+    }
 
-        const minerFee_ = await onChainService.lookupOnChainFee({
-          txHash,
-          scanDepth: ONCHAIN_SCAN_DEPTH_OUTGOING,
-        })
-        if (minerFee_ instanceof Error) {
-          logger.error({ err: minerFee_ }, "impossible to get fee for onchain payment")
-          addAttributesToCurrentSpan({
-            "payOnChainByWalletId.errorGettingMinerFee": true,
-          })
-          minerFee = estimatedFee
-        } else {
-          minerFee = minerFee_
-        }
+    let minerFee: Satoshis
 
-        const imbalanceCalculator = ImbalanceCalculator({
-          method: feeConfig.withdrawMethod,
-          volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
-          volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
-          sinceDaysAgo: feeConfig.withdrawDaysLookback,
-        })
-
-        const imbalance = await imbalanceCalculator.getSwapOutImbalance(senderWallet.id)
-        if (imbalance instanceof Error) return imbalance
-
-        const fees = withdrawFeeCalculator.onChainWithdrawalFee({
-          amount: amountToSend,
-          minerFee,
-          minBankFee: toSats(senderAccount.withdrawFee || feeConfig.withdrawDefaultMin),
-          imbalance,
-        })
-
-        const totalFee = fees.totalFee
-        const bankFee = fees.bankFee
-
-        addAttributesToCurrentSpan({
-          "payOnChainByWalletId.actualMinerFee": `${minerFee}`,
-          "payOnChainByWalletId.totalFee": `${totalFee}`,
-          "payOnChainByWalletId.bankFee": `${bankFee}`,
-        })
-
-        const sats = toSats(amountToSend + totalFee)
-
-        const amountDisplayCurrency = dCConverter.fromSats(sats)
-        const totalFeeDisplayCurrency = dCConverter.fromSats(totalFee)
-
-        return ledgerService.addOnChainTxSend({
-          walletId: senderWallet.id,
-          walletCurrency: senderWallet.currency,
-          txHash,
-          description: memo || "",
-          sats,
-          totalFee,
-          bankFee,
-          amountDisplayCurrency,
-          payeeAddress: address,
-          sendAll,
-          totalFeeDisplayCurrency,
-        })
+    const minerFee_ = await onChainService.lookupOnChainFee({
+      txHash,
+      scanDepth: ONCHAIN_SCAN_DEPTH_OUTGOING,
+    })
+    if (minerFee_ instanceof Error) {
+      logger.error({ err: minerFee_ }, "impossible to get fee for onchain payment")
+      addAttributesToCurrentSpan({
+        "payOnChainByWalletId.errorGettingMinerFee": true,
       })
-      if (journal instanceof Error) return journal
+      minerFee = estimatedFee
+    } else {
+      minerFee = minerFee_
+    }
 
-      return PaymentSendStatus.Success
-    },
-  )
+    const imbalanceCalculator = ImbalanceCalculator({
+      method: feeConfig.withdrawMethod,
+      volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
+      volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
+      sinceDaysAgo: feeConfig.withdrawDaysLookback,
+    })
+
+    const imbalance = await imbalanceCalculator.getSwapOutImbalance(senderWallet.id)
+    if (imbalance instanceof Error) return imbalance
+
+    const fees = withdrawFeeCalculator.onChainWithdrawalFee({
+      amount: amountToSend,
+      minerFee,
+      minBankFee: toSats(senderAccount.withdrawFee || feeConfig.withdrawDefaultMin),
+      imbalance,
+    })
+
+    const totalFee = fees.totalFee
+    const bankFee = fees.bankFee
+
+    addAttributesToCurrentSpan({
+      "payOnChainByWalletId.actualMinerFee": `${minerFee}`,
+      "payOnChainByWalletId.totalFee": `${totalFee}`,
+      "payOnChainByWalletId.bankFee": `${bankFee}`,
+    })
+
+    const sats = toSats(amountToSend + totalFee)
+
+    const amountDisplayCurrency = dCConverter.fromSats(sats)
+    const totalFeeDisplayCurrency = dCConverter.fromSats(totalFee)
+
+    const journal = await ledgerService.addOnChainTxSend({
+      walletId: senderWallet.id,
+      walletCurrency: senderWallet.currency,
+      txHash,
+      description: memo || "",
+      sats,
+      totalFee,
+      bankFee,
+      amountDisplayCurrency,
+      payeeAddress: address,
+      sendAll,
+      totalFeeDisplayCurrency,
+    })
+    if (journal instanceof Error) return journal
+
+    return PaymentSendStatus.Success
+  })
 }

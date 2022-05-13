@@ -45,11 +45,9 @@ export const updatePendingInvoices = async (logger: Logger): Promise<void> => {
 export const updatePendingInvoicesByWalletId = async ({
   walletId,
   logger,
-  lock,
 }: {
   walletId: WalletId
   logger: Logger
-  lock?: DistributedLock
 }) => {
   const invoicesRepo = WalletInvoicesRepository()
 
@@ -57,18 +55,16 @@ export const updatePendingInvoicesByWalletId = async ({
   if (invoices instanceof Error) return invoices
 
   for await (const walletInvoice of invoices) {
-    await updatePendingInvoice({ walletInvoice, logger, lock })
+    await updatePendingInvoice({ walletInvoice, logger })
   }
 }
 
 export const updatePendingInvoiceByPaymentHash = async ({
   paymentHash,
   logger,
-  lock,
 }: {
   paymentHash: PaymentHash
   logger: Logger
-  lock?: DistributedLock
 }): Promise<boolean | ApplicationError> => {
   const invoicesRepo = WalletInvoicesRepository()
   const walletInvoice = await invoicesRepo.findByPaymentHash(paymentHash)
@@ -77,17 +73,15 @@ export const updatePendingInvoiceByPaymentHash = async ({
     return false
   }
   if (walletInvoice instanceof Error) return walletInvoice
-  return updatePendingInvoice({ walletInvoice, logger, lock })
+  return updatePendingInvoice({ walletInvoice, logger })
 }
 
 const updatePendingInvoice = async ({
   walletInvoice,
   logger,
-  lock,
 }: {
   walletInvoice: WalletInvoice
   logger: Logger
-  lock?: DistributedLock
 }): Promise<boolean | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
@@ -143,7 +137,7 @@ const updatePendingInvoice = async ({
   }
 
   const lockService = LockService()
-  return lockService.lockPaymentHash({ paymentHash, logger, lock }, async () => {
+  return lockService.lockPaymentHash({ paymentHash }, async () => {
     // we're getting the invoice another time, now behind the lock, to avoid potential race condition
     const invoiceToUpdate = await walletInvoicesRepo.findByPaymentHash(paymentHash)
     if (invoiceToUpdate instanceof CouldNotFindError) {
