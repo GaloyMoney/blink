@@ -185,13 +185,17 @@ export const LedgerService = (): ILedgerService => {
         account: liabilitiesWalletId,
       })
       if (balance < 0) {
-        recordExceptionInCurrentSpan({
-          error: new BalanceLessThanZeroError(balance),
-          attributes: {
-            "getWalletBalance.error.invalidBalance": `${balance}`,
-          },
-          level: ErrorLevel.Critical,
-        })
+        const dealerUsdWalletId = await caching.getDealerUsdWalletId()
+
+        if (walletId !== dealerUsdWalletId) {
+          recordExceptionInCurrentSpan({
+            error: new BalanceLessThanZeroError(balance),
+            attributes: {
+              "getWalletBalance.error.invalidBalance": `${balance}`,
+            },
+            level: ErrorLevel.Critical,
+          })
+        }
       }
       return toSats(balance)
     } catch (err) {
@@ -208,13 +212,17 @@ export const LedgerService = (): ILedgerService => {
         account: liabilitiesWalletId,
       })
       if (balance < 0) {
-        recordExceptionInCurrentSpan({
-          error: new BalanceLessThanZeroError(balance),
-          attributes: {
-            "getWalletBalance.error.invalidBalance": `${balance}`,
-          },
-          level: ErrorLevel.Critical,
-        })
+        const dealerUsdWalletId = await caching.getDealerUsdWalletId()
+
+        if (walletDescriptor.id !== dealerUsdWalletId) {
+          recordExceptionInCurrentSpan({
+            error: new BalanceLessThanZeroError(balance),
+            attributes: {
+              "getWalletBalance.error.invalidBalance": `${balance}`,
+            },
+            level: ErrorLevel.Critical,
+          })
+        }
       }
       return { amount: BigInt(balance), currency: walletDescriptor.currency }
     } catch (err) {
