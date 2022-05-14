@@ -63,6 +63,7 @@ const path = `mongodb://${user}:${password}@${address}/${db}`
 export const setupMongoConnection = async (syncIndexes = false) => {
   try {
     await mongoose.connect(path, {
+      autoIndex: false,
       useNewUrlParser: true,
       useUnifiedTopology: true,
       useCreateIndex: true,
