@@ -746,6 +746,7 @@ type Query {
   businessMapMarkers: [MapMarker]
   globals: Globals
   me: User
+  memoSharingSatsThreshold: SatAmount
   mobileVersions: [MobileVersions]
   onChainTxFee(
     address: OnChainAddress!

@@ -11,6 +11,7 @@ import QuizQuestionsQuery from "@graphql/root/query/quiz-questions"
 import BtcPriceListQuery from "@graphql/root/query/btc-price-list"
 import OnChainTxFeeQuery from "@graphql/root/query/on-chain-tx-fee-query"
 import BtcPriceQuery from "@graphql/root/query/btc-price"
+import MemoSharingSatsThresholdQuery from "@graphql/root/query/memo-sharing-sats-threshold"
 
 import {
   addAttributesToCurrentSpanAndPropagate,
@@ -30,6 +31,7 @@ const fields = {
   btcPrice: BtcPriceQuery,
   btcPriceList: BtcPriceListQuery,
   onChainTxFee: OnChainTxFeeQuery,
+  memoSharingSatsThreshold: MemoSharingSatsThresholdQuery
 }
 
 const addTracing = (fields) => {
