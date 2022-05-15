@@ -31,7 +31,7 @@ const fields = {
   btcPrice: BtcPriceQuery,
   btcPriceList: BtcPriceListQuery,
   onChainTxFee: OnChainTxFeeQuery,
-  memoSharingSatsThreshold: MemoSharingSatsThresholdQuery
+  memoSharingSatsThreshold: MemoSharingSatsThresholdQuery,
 }
 
 const addTracing = (fields) => {

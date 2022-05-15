@@ -3,7 +3,7 @@ import { lndLedgerAccountId, EntryBuilder } from "@services/ledger/domain"
 import { WalletCurrency, AmountCalculator, ZERO_BANK_FEE } from "@domain/shared"
 
 class TestMediciEntry {
-  credits: any  // eslint-disable-line
+  credits: any // eslint-disable-line
   debits: any // eslint-disable-line
 
   credit(accountPath, amount, metadata = null) {
