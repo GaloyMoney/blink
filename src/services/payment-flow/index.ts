@@ -2,9 +2,10 @@ import {
   CouldNotFindLightningPaymentFlowError,
   CouldNotUpdateLightningPaymentFlowError,
   NoExpiredLightningPaymentFlowsError,
+  BadInputsForFindError,
   UnknownRepositoryError,
 } from "@domain/errors"
-import { PaymentFlow } from "@domain/payments"
+import { InvalidLightningPaymentFlowStateError, PaymentFlow } from "@domain/payments"
 import { WalletCurrency } from "@domain/shared"
 import { elapsedSinceTimestamp } from "@utils"
 
@@ -18,6 +19,8 @@ export const PaymentFlowStateRepository = (
   ): Promise<PaymentFlow<S, R> | RepositoryError> => {
     try {
       const rawPaymentFlowState = rawFromPaymentFlow(paymentFlow)
+      if (rawPaymentFlowState instanceof Error) return rawPaymentFlowState
+
       const paymentFlowState = new PaymentFlowState(rawPaymentFlowState)
       await paymentFlowState.save()
       return paymentFlowFromRaw(paymentFlowState)
@@ -26,26 +29,32 @@ export const PaymentFlowStateRepository = (
     }
   }
 
-  const findLightningPaymentFlow = async <S extends WalletCurrency>({
-    walletId,
-    paymentHash,
-    inputAmount,
-  }: {
-    walletId: WalletId
-    paymentHash: PaymentHash
-    inputAmount: BigInt
-  }): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError> => {
+  const findLightningPaymentFlow = async <S extends WalletCurrency>(
+    args: XorPaymentHashProperty & {
+      walletId: WalletId
+      inputAmount: BigInt
+    },
+  ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError> => {
+    const { walletId, paymentHash, intraLedgerHash, inputAmount } = args
+
+    const hash = paymentHash
+      ? { paymentHash }
+      : intraLedgerHash
+      ? { intraLedgerHash }
+      : new BadInputsForFindError(JSON.stringify(args))
+    if (hash instanceof Error) return hash
+
     try {
       const result = await PaymentFlowState.findOne({
+        ...hash,
         senderWalletId: walletId,
-        paymentHash,
         inputAmount: Number(inputAmount),
       })
       if (!result) return new CouldNotFindLightningPaymentFlowError()
 
       const paymentFlow: PaymentFlow<S, WalletCurrency> = paymentFlowFromRaw(result)
       if (isExpired({ paymentFlow, expiryTimeInSeconds })) {
-        deleteLightningPaymentFlow({ walletId, paymentHash, inputAmount })
+        deleteLightningPaymentFlow({ ...hash, walletId, inputAmount })
         return new CouldNotFindLightningPaymentFlowError()
       }
 
@@ -62,13 +71,16 @@ export const PaymentFlowStateRepository = (
     paymentFlow: PaymentFlow<S, R>,
   ): Promise<true | RepositoryError> => {
     try {
+      const rawPaymentFlowState = rawFromPaymentFlow(paymentFlow)
+      if (rawPaymentFlowState instanceof Error) return rawPaymentFlowState
+
       const result = await PaymentFlowState.findOneAndUpdate(
         {
           senderWalletId: paymentFlow.senderWalletId,
           paymentHash: paymentFlow.paymentHash,
           inputAmount: Number(paymentFlow.inputAmount),
         },
-        rawFromPaymentFlow(paymentFlow),
+        rawPaymentFlowState,
         {
           new: true,
         },
@@ -88,6 +100,9 @@ export const PaymentFlowStateRepository = (
   >(
     paymentFlowPendingUpdate: PaymentFlowStatePendingUpdate,
   ): Promise<PaymentFlow<S, R> | RepositoryError> => {
+    const rawPaymentFlowUpdate = rawFromPaymentFlowPendingUpdate(paymentFlowPendingUpdate)
+    if (rawPaymentFlowUpdate instanceof Error) return rawPaymentFlowUpdate
+
     try {
       const result = await PaymentFlowState.findOneAndUpdate(
         {
@@ -95,7 +110,7 @@ export const PaymentFlowStateRepository = (
           paymentHash: paymentFlowPendingUpdate.paymentHash,
           inputAmount: Number(paymentFlowPendingUpdate.inputAmount),
         },
-        rawFromPaymentFlowPendingUpdate(paymentFlowPendingUpdate),
+        rawPaymentFlowUpdate,
         {
           new: true,
         },
@@ -112,16 +127,17 @@ export const PaymentFlowStateRepository = (
   const deleteLightningPaymentFlow = async ({
     walletId,
     paymentHash,
+    intraLedgerHash,
     inputAmount,
-  }: {
+  }: XorPaymentHashProperty & {
     walletId: WalletId
-    paymentHash: PaymentHash
     inputAmount: BigInt
   }): Promise<boolean | RepositoryError> => {
+    const hash = paymentHash ? { paymentHash } : { intraLedgerHash }
     try {
       const result = await PaymentFlowState.deleteOne({
+        ...hash,
         senderWalletId: walletId,
-        paymentHash,
         inputAmount: Number(inputAmount),
       })
       if (result.deletedCount === 0) {
@@ -206,41 +222,66 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
 
 const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
   paymentFlow: PaymentFlow<S, R>,
-): PaymentFlowStateRecordPartial => ({
-  senderWalletId: paymentFlow.senderWalletId,
-  senderWalletCurrency: paymentFlow.senderWalletCurrency,
-  settlementMethod: paymentFlow.settlementMethod,
-  paymentInitiationMethod: paymentFlow.paymentInitiationMethod,
-  paymentHash: paymentFlow.paymentHash,
-  descriptionFromInvoice: paymentFlow.descriptionFromInvoice,
-  createdAt: paymentFlow.createdAt,
-  paymentSentAndPending: paymentFlow.paymentSentAndPending,
+): PaymentFlowStateRecordPartial | ValidationError => {
+  const { paymentHash, intraLedgerHash } = paymentFlow
+  const hash = paymentHash
+    ? { paymentHash }
+    : intraLedgerHash
+    ? { intraLedgerHash }
+    : new InvalidLightningPaymentFlowStateError(
+        "Missing valid 'paymentHash' or 'intraLedgerHash'",
+      )
+  if (hash instanceof Error) return hash
 
-  btcPaymentAmount: Number(paymentFlow.btcPaymentAmount.amount),
-  usdPaymentAmount: Number(paymentFlow.usdPaymentAmount.amount),
-  inputAmount: Number(paymentFlow.inputAmount),
+  return {
+    ...hash,
 
-  btcProtocolFee: Number(paymentFlow.btcProtocolFee.amount),
-  usdProtocolFee: Number(paymentFlow.usdProtocolFee.amount),
+    senderWalletId: paymentFlow.senderWalletId,
+    senderWalletCurrency: paymentFlow.senderWalletCurrency,
+    settlementMethod: paymentFlow.settlementMethod,
+    paymentInitiationMethod: paymentFlow.paymentInitiationMethod,
+    descriptionFromInvoice: paymentFlow.descriptionFromInvoice,
+    createdAt: paymentFlow.createdAt,
+    paymentSentAndPending: paymentFlow.paymentSentAndPending,
 
-  recipientWalletId: paymentFlow.recipientWalletId,
-  recipientWalletCurrency: paymentFlow.recipientWalletCurrency,
-  recipientPubkey: paymentFlow.recipientPubkey,
-  recipientUsername: paymentFlow.recipientUsername,
+    btcPaymentAmount: Number(paymentFlow.btcPaymentAmount.amount),
+    usdPaymentAmount: Number(paymentFlow.usdPaymentAmount.amount),
+    inputAmount: Number(paymentFlow.inputAmount),
 
-  outgoingNodePubkey: paymentFlow.outgoingNodePubkey,
-  cachedRoute: paymentFlow.cachedRoute,
-})
+    btcProtocolFee: Number(paymentFlow.btcProtocolFee.amount),
+    usdProtocolFee: Number(paymentFlow.usdProtocolFee.amount),
+
+    recipientWalletId: paymentFlow.recipientWalletId,
+    recipientWalletCurrency: paymentFlow.recipientWalletCurrency,
+    recipientPubkey: paymentFlow.recipientPubkey,
+    recipientUsername: paymentFlow.recipientUsername,
+
+    outgoingNodePubkey: paymentFlow.outgoingNodePubkey,
+    cachedRoute: paymentFlow.cachedRoute,
+  }
+}
 
 const rawFromPaymentFlowPendingUpdate = (
   paymentFlowPendingUpdate: PaymentFlowStatePendingUpdate,
-): PaymentFlowStateRecordPendingUpdate => ({
-  senderWalletId: paymentFlowPendingUpdate.senderWalletId,
-  paymentHash: paymentFlowPendingUpdate.paymentHash,
-  inputAmount: Number(paymentFlowPendingUpdate.inputAmount),
+): PaymentFlowStateRecordPendingUpdate | ValidationError => {
+  const { paymentHash, intraLedgerHash } = paymentFlowPendingUpdate
+  const hash = paymentHash
+    ? { paymentHash }
+    : intraLedgerHash
+    ? { intraLedgerHash }
+    : new InvalidLightningPaymentFlowStateError(
+        "Missing valid 'paymentHash' or 'intraLedgerHash'",
+      )
+  if (hash instanceof Error) return hash
 
-  paymentSentAndPending: paymentFlowPendingUpdate.paymentSentAndPending,
-})
+  return {
+    ...hash,
+    senderWalletId: paymentFlowPendingUpdate.senderWalletId,
+    inputAmount: Number(paymentFlowPendingUpdate.inputAmount),
+
+    paymentSentAndPending: paymentFlowPendingUpdate.paymentSentAndPending,
+  }
+}
 
 const isExpired = ({
   paymentFlow,

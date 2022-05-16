@@ -15,3 +15,6 @@ export class MissingPropsInTransactionForPaymentFlowError extends ValidationErro
 export class InvalidLightningPaymentFlowBuilderStateError extends ValidationError {
   level = ErrorLevel.Critical
 }
+export class InvalidLightningPaymentFlowStateError extends ValidationError {
+  level = ErrorLevel.Critical
+}

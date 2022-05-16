@@ -2,12 +2,14 @@ type PaymentFlowStateRecord = {
   _id: ObjectId
 } & PaymentFlowStateRecordPartial
 
-type PaymentFlowStateRecordPartial = {
+type PaymentFlowStateRecordPartial = XOR<
+  { paymentHash: string },
+  { intraLedgerHash: string }
+> & {
   senderWalletId: string
   senderWalletCurrency: string
   settlementMethod: string
   paymentInitiationMethod: string
-  paymentHash: string
   createdAt: Date
   paymentSentAndPending: boolean
   descriptionFromInvoice: string
@@ -28,9 +30,11 @@ type PaymentFlowStateRecordPartial = {
   cachedRoute?: RawRoute
 }
 
-type PaymentFlowStateRecordPendingUpdate = {
+type PaymentFlowStateRecordPendingUpdate = XOR<
+  { paymentHash: string },
+  { intraLedgerHash: string }
+> & {
   senderWalletId: string
-  paymentHash: string
   inputAmount: number
 
   paymentSentAndPending: boolean

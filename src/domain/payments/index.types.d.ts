@@ -4,12 +4,19 @@ type PriceRatio = {
   usdPerSat(): DisplayCurrencyBasePerSat
 }
 
-type PaymentFlowState<S extends WalletCurrency, R extends WalletCurrency> = {
+type XorPaymentHashProperty = XOR<
+  { paymentHash: PaymentHash },
+  { intraLedgerHash: IntraLedgerHash }
+>
+
+type PaymentFlowState<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = XorPaymentHashProperty & {
   senderWalletId: WalletId
   senderWalletCurrency: S
   settlementMethod: SettlementMethod
   paymentInitiationMethod: PaymentInitiationMethod
-  paymentHash: PaymentHash
   descriptionFromInvoice: string
   createdAt: Date
   paymentSentAndPending: boolean
@@ -30,9 +37,8 @@ type PaymentFlowState<S extends WalletCurrency, R extends WalletCurrency> = {
   cachedRoute?: RawRoute
 }
 
-type PaymentFlowStatePendingUpdate = {
+type PaymentFlowStatePendingUpdate = XorPaymentHashProperty & {
   senderWalletId: WalletId
-  paymentHash: PaymentHash
   inputAmount: BigInt
 
   paymentSentAndPending: boolean
@@ -142,10 +148,10 @@ interface IPaymentFlowRepository {
   findLightningPaymentFlow<S extends WalletCurrency>({
     walletId,
     paymentHash,
+    intraLedgerHash,
     inputAmount,
-  }: {
+  }: XorPaymentHashProperty & {
     walletId: WalletId
-    paymentHash: PaymentHash
     inputAmount: BigInt
   }): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
   updateLightningPaymentFlow<S extends WalletCurrency>(
@@ -171,16 +177,16 @@ type LightningPaymentFlowBuilderConfig = {
   btcFromUsdMidPriceFn: BtcFromUsdMidPriceFn
 }
 
-type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig & {
-  paymentHash: PaymentHash
-  settlementMethod: SettlementMethod
-  descriptionFromInvoice: string
-  btcPaymentAmount?: BtcPaymentAmount
-  inputAmount?: BigInt
-  uncheckedAmount?: number
-  btcProtocolFee?: BtcPaymentAmount
-  usdProtocolFee?: UsdPaymentAmount
-}
+type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &
+  XorPaymentHashProperty & {
+    settlementMethod: SettlementMethod
+    descriptionFromInvoice: string
+    btcPaymentAmount?: BtcPaymentAmount
+    inputAmount?: BigInt
+    uncheckedAmount?: number
+    btcProtocolFee?: BtcPaymentAmount
+    usdProtocolFee?: UsdPaymentAmount
+  }
 
 type LPFBWithSenderWalletState<S extends WalletCurrency> = RequireField<
   LPFBWithInvoiceState,

@@ -376,6 +376,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       recipientUsername: state.recipientUsername,
 
       paymentHash: state.paymentHash,
+      intraLedgerHash: state.intraLedgerHash,
       descriptionFromInvoice: state.descriptionFromInvoice,
       btcPaymentAmount: state.btcPaymentAmount,
       usdPaymentAmount: state.usdPaymentAmount,
