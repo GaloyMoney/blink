@@ -1,4 +1,4 @@
-import { Wallets, Accounts } from "@app"
+import { Accounts, Payments } from "@app"
 import { checkedToWalletId } from "@domain/wallets"
 import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
@@ -6,7 +6,6 @@ import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import Memo from "@graphql/types/scalar/memo"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
-import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 import dedent from "dedent"
 
 const IntraLedgerPaymentSendInput = GT.Input({
@@ -47,14 +46,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       return { errors: [{ message: appErr.message }] }
     }
 
-    const btcWalletValidated = await validateIsBtcWalletForMutation(senderWalletId)
-    if (btcWalletValidated != true) return btcWalletValidated
-
-    const recipientBtcWalletValidated = await validateIsBtcWalletForMutation(
-      recipientWalletId,
-    )
-    if (recipientBtcWalletValidated != true) return recipientBtcWalletValidated
-
+    // TODO: confirm whether we need to check for username here
     const recipientUsername = await Accounts.getUsernameFromWalletId(
       recipientWalletIdChecked,
     )
@@ -63,8 +55,8 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       return { errors: [{ message: appErr.message }] }
     }
 
-    const status = await Wallets.intraledgerPaymentSendUsername({
-      recipientUsername,
+    const status = await Payments.intraledgerPaymentSendWalletId({
+      recipientWalletId,
       memo,
       amount,
       senderWalletId: walletId,
