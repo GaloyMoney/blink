@@ -120,6 +120,9 @@ type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata & {
 
 type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata
 
+type NewAddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
+  SendAmountsMetadata
+
 type FeeReimbursementLedgerMetadata = SendAmountsMetadata & {
   hash: PaymentHash
   type: LedgerTransactionType

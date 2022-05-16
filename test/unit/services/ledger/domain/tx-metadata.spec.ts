@@ -101,7 +101,12 @@ describe("Tx metadata", () => {
     it("wallet id", () => {
       const { metadata, debitAccountAdditionalMetadata } =
         WalletIdIntraledgerLedgerMetadata({
+          paymentFlow,
+
+          feeDisplayCurrency,
           amountDisplayCurrency,
+          displayCurrency,
+
           memoOfPayer,
           senderUsername,
           recipientUsername,
@@ -112,6 +117,17 @@ describe("Tx metadata", () => {
           username: senderUsername,
           memoPayer: memoOfPayer,
           type: LedgerTransactionType.IntraLedger,
+
+          usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+
+          satsFee: toSats(0),
+          displayFee: feeDisplayCurrency,
+          displayAmount: amountDisplayCurrency,
+
+          displayCurrency,
+          centsAmount: toCents(10),
+          satsAmount: toSats(2000),
+          centsFee: toCents(0),
         }),
       )
       expect(debitAccountAdditionalMetadata).toEqual(
