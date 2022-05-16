@@ -174,7 +174,7 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
     usdPaymentAmount,
     username: recipientUsername,
   }: WalletDescriptor<R> & {
-    pubkey: Pubkey
+    pubkey?: Pubkey
     usdPaymentAmount?: UsdPaymentAmount
     username?: Username
   }): LPFBWithRecipientWallet<S, R> | LPFBWithError => {
