@@ -1,4 +1,4 @@
-import { WalletCurrency } from "@domain/shared"
+import { ErrorLevel, WalletCurrency } from "@domain/shared"
 import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
 import { AccountValidator } from "@domain/accounts"
 import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
@@ -8,13 +8,18 @@ import {
   PriceRatio,
 } from "@domain/payments"
 
-import { addAttributesToCurrentSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+} from "@services/tracing"
 import { NewDealerPriceService } from "@services/dealer-price"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
 import { NotificationsService } from "@services/notifications"
+
+import { Accounts } from "@app"
 
 import { constructPaymentFlowBuilder, newCheckIntraledgerLimits } from "./helpers"
 
@@ -39,14 +44,29 @@ export const intraledgerPaymentSendWalletId = async ({
   })
   if (validatedPaymentInputs instanceof Error) return validatedPaymentInputs
 
-  const { senderWallet, paymentFlow } = validatedPaymentInputs
-  return executePaymentViaIntraledger({
+  const { senderWallet, paymentFlow, recipientAccountId, recipientUsername } =
+    validatedPaymentInputs
+
+  const paymentSendStatus = await executePaymentViaIntraledger({
     paymentFlow,
     senderWallet,
     logger,
     senderUsername: senderAccount.username,
     memo,
   })
+  if (paymentSendStatus instanceof Error) return paymentSendStatus
+
+  const addContactResult = await addContactsAfterSend({
+    senderAccountId: senderAccount.id,
+    senderUsername: senderAccount.username,
+    recipientAccountId,
+    recipientUsername,
+  })
+  if (addContactResult instanceof Error) {
+    recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
+  }
+
+  return paymentSendStatus
 }
 
 const validateIntraledgerPaymentInputs = async ({
@@ -112,6 +132,8 @@ const validateIntraledgerPaymentInputs = async ({
   return {
     senderWallet,
     paymentFlow,
+    recipientAccountId,
+    recipientUsername,
   }
 }
 
@@ -230,4 +252,34 @@ const executePaymentViaIntraledger = async ({
       return PaymentSendStatus.Success
     },
   )
+}
+
+const addContactsAfterSend = async ({
+  senderAccountId,
+  senderUsername,
+  recipientAccountId,
+  recipientUsername,
+}: {
+  senderAccountId: AccountId
+  senderUsername: Username | undefined
+  recipientAccountId: AccountId
+  recipientUsername: Username | undefined
+}): Promise<true | ApplicationError> => {
+  if (recipientUsername) {
+    const addContactToPayerResult = await Accounts.addNewContact({
+      accountId: senderAccountId,
+      contactUsername: recipientUsername,
+    })
+    if (addContactToPayerResult instanceof Error) return addContactToPayerResult
+  }
+
+  if (senderUsername) {
+    const addContactToPayeeResult = await Accounts.addNewContact({
+      accountId: recipientAccountId,
+      contactUsername: senderUsername,
+    })
+    if (addContactToPayeeResult instanceof Error) return addContactToPayeeResult
+  }
+
+  return true
 }
