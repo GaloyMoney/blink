@@ -63,6 +63,8 @@ type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFl
   senderWalletDescriptor(): WalletDescriptor<S>
   recipientWalletDescriptor(): WalletDescriptor<R> | undefined
   checkBalanceForSend(balanceAmount: PaymentAmount<S>): true | ValidationError
+  paymentHashForFlow(): PaymentHash | ValidationError
+  intraLedgerHashForFlow(): IntraLedgerHash | ValidationError
 }
 
 type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
