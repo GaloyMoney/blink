@@ -1647,6 +1647,23 @@ describe("USD Wallets - Lightning Pay", () => {
       })
       expect(res).not.toBeInstanceOf(Error)
     })
+
+    it.skip("sends 10 sats (e.g. reward) from BTC wallet to USD wallet", async () => {
+      const btcSendAmount = 10
+      const btcSendAmountInUsd = await dealerFns.getCentsFromSatsForImmediateBuy(
+        toSats(btcSendAmount),
+      )
+      expect(btcSendAmountInUsd).not.toBe(0)
+
+      const res = await testIntraledgerSend({
+        senderWalletId: walletIdA,
+        senderAccount: accountB,
+        recipientWalletId: walletIdUsdA,
+        senderAmountInvoice: btcSendAmount,
+        recipientAmountInvoice: btcSendAmountInUsd,
+      })
+      expect(res).not.toBeInstanceOf(Error)
+    })
   })
 })
 
