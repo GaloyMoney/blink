@@ -685,7 +685,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if user sends balance amount without accounting for fee", async () => {
-    const res = await Wallets.intraledgerPaymentSendWalletId({
+    const res = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId: walletIdH,
       memo: "",
       amount: toSats(1000),
@@ -710,7 +710,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("sends balance amount accounting for fee", async () => {
-    const res = await Wallets.intraledgerPaymentSendWalletId({
+    const res = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId: walletIdH,
       memo: "",
       amount: toSats(1000),
