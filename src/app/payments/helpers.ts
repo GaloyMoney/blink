@@ -1,6 +1,9 @@
 import { getTwoFALimits, getAccountLimits, MS_PER_DAY, getDealerConfig } from "@config"
 import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
-import { LightningPaymentFlowBuilder } from "@domain/payments"
+import {
+  LightningPaymentFlowBuilder,
+  NoRecipientDetailsForIntraLedgerFlowError,
+} from "@domain/payments"
 import { ErrorLevel, ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
 import { AlreadyPaidError } from "@domain/errors"
 import { CENTS_PER_USD } from "@domain/fiat"
@@ -130,6 +133,7 @@ export const constructPaymentFlowBuilder = async ({
   invoice,
   uncheckedAmount,
   memoPayer,
+  recipientDetails,
   usdFromBtc,
   btcFromUsd,
 }: {
@@ -137,6 +141,7 @@ export const constructPaymentFlowBuilder = async ({
   invoice: LnInvoice | undefined
   uncheckedAmount?: number
   memoPayer?: string
+  recipientDetails?: { id: WalletId; currency: WalletCurrency; username: Username }
   usdFromBtc: (amount: BtcPaymentAmount) => Promise<UsdPaymentAmount | ApplicationError>
   btcFromUsd: (amount: UsdPaymentAmount) => Promise<BtcPaymentAmount | ApplicationError>
 }): Promise<LPFBWithConversion<WalletCurrency, WalletCurrency> | ApplicationError> => {
@@ -159,10 +164,15 @@ export const constructPaymentFlowBuilder = async ({
     | LPFBWithRecipientWallet<WalletCurrency, WalletCurrency>
     | LPFBWithError
   if (builderWithSenderWallet.isIntraLedger()) {
-    const recipientDetails = await recipientDetailsFromInvoice(invoice)
-    if (recipientDetails instanceof Error) return recipientDetails
-    builderAfterRecipientStep =
-      builderWithSenderWallet.withRecipientWallet(recipientDetails)
+    const recipientDetailsForBuilder =
+      invoice === undefined
+        ? recipientDetailsFromWallet(recipientDetails)
+        : await recipientDetailsFromInvoice(invoice)
+    if (recipientDetailsForBuilder instanceof Error) return recipientDetailsForBuilder
+
+    builderAfterRecipientStep = builderWithSenderWallet.withRecipientWallet(
+      recipientDetailsForBuilder,
+    )
   } else {
     builderAfterRecipientStep = builderWithSenderWallet.withoutRecipientWallet()
   }
@@ -205,6 +215,20 @@ const recipientDetailsFromInvoice = async (invoice) => {
     pubkey: recipientPubkey,
     usdPaymentAmount,
     username: recipientUsername,
+  }
+}
+
+const recipientDetailsFromWallet = (recipientDetails) => {
+  if (recipientDetails === undefined) {
+    return new NoRecipientDetailsForIntraLedgerFlowError()
+  }
+
+  return {
+    id: recipientDetails.id,
+    currency: recipientDetails.currency,
+    username: recipientDetails.username,
+    pubkey: undefined,
+    usdPaymentAmount: undefined,
   }
 }
 

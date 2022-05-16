@@ -376,6 +376,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "BadInputsForFindError":
     case "LnHashPresentInIntraLedgerFlowError":
     case "IntraLedgerHashPresentInLnFlowError":
+    case "NoRecipientDetailsForIntraLedgerFlowError":
       message = `Unknown error occurred (code: ${error.name}${
         error.message ? ": " + error.message : ""
       })`
