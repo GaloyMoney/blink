@@ -129,12 +129,14 @@ export const constructPaymentFlowBuilder = async ({
   senderWallet,
   invoice,
   uncheckedAmount,
+  memoPayer,
   usdFromBtc,
   btcFromUsd,
 }: {
   senderWallet: Wallet
-  invoice: LnInvoice
+  invoice: LnInvoice | undefined
   uncheckedAmount?: number
+  memoPayer?: string
   usdFromBtc: (amount: BtcPaymentAmount) => Promise<UsdPaymentAmount | ApplicationError>
   btcFromUsd: (amount: UsdPaymentAmount) => Promise<BtcPaymentAmount | ApplicationError>
 }): Promise<LPFBWithConversion<WalletCurrency, WalletCurrency> | ApplicationError> => {
@@ -145,9 +147,11 @@ export const constructPaymentFlowBuilder = async ({
     usdFromBtcMidPriceFn,
     btcFromUsdMidPriceFn,
   })
-  const builderWithInvoice = uncheckedAmount
-    ? paymentBuilder.withNoAmountInvoice({ invoice, uncheckedAmount })
-    : paymentBuilder.withInvoice(invoice)
+  const builderWithInvoice = invoice
+    ? uncheckedAmount
+      ? paymentBuilder.withNoAmountInvoice({ invoice, uncheckedAmount })
+      : paymentBuilder.withInvoice(invoice)
+    : paymentBuilder.withoutInvoice({ uncheckedAmount, description: memoPayer })
 
   const builderWithSenderWallet = builderWithInvoice.withSenderWallet(senderWallet)
 
