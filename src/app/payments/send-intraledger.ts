@@ -27,7 +27,9 @@ export const intraledgerPaymentSendWalletId = async ({
   memo,
   senderWalletId: uncheckedSenderWalletId,
   logger,
-}: IntraLedgerPaymentSendWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
+}: NewIntraLedgerPaymentSendWalletIdArgs): Promise<
+  PaymentSendStatus | ApplicationError
+> => {
   const validatedPaymentInputs = await validateIntraledgerPaymentInputs({
     uncheckedAmount,
     uncheckedSenderWalletId,
