@@ -330,8 +330,8 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("sends to another Galoy user a push payment", async () => {
-    const res = await Wallets.intraledgerPaymentSendUsername({
-      recipientUsername: usernameA,
+    const res = await Wallets.intraledgerPaymentSendWalletId({
+      recipientWalletId: walletIdA,
       memo: "",
       amount: amountInvoice,
       senderWalletId: walletIdB,
@@ -385,8 +385,8 @@ describe("UserWallet - Lightning Pay", () => {
     )
     const txnCount1 = contact1?.transactionsCount || 0
 
-    const res2 = await Wallets.intraledgerPaymentSendUsername({
-      recipientUsername: usernameA,
+    const res2 = await Wallets.intraledgerPaymentSendWalletId({
+      recipientWalletId: walletIdA,
       memo: "",
       amount: amountInvoice,
       senderWalletId: walletIdB,
@@ -532,8 +532,8 @@ describe("UserWallet - Lightning Pay", () => {
 
     const satsBelow = 100
     const memoSpamBelowThreshold = "Spam BELOW threshold"
-    const resBelowThreshold = await Wallets.intraledgerPaymentSendUsername({
-      recipientUsername: usernameA,
+    const resBelowThreshold = await Wallets.intraledgerPaymentSendWalletId({
+      recipientWalletId: walletIdA,
       memo: memoSpamBelowThreshold,
       amount: toSats(satsBelow),
       senderWalletId: walletIdB,
@@ -544,8 +544,8 @@ describe("UserWallet - Lightning Pay", () => {
 
     const satsAbove = 1100
     const memoSpamAboveThreshold = "Spam ABOVE threshold"
-    const resAboveThreshold = await Wallets.intraledgerPaymentSendUsername({
-      recipientUsername: usernameA,
+    const resAboveThreshold = await Wallets.intraledgerPaymentSendWalletId({
+      recipientWalletId: walletIdA,
       memo: memoSpamAboveThreshold,
       amount: toSats(satsAbove),
       senderWalletId: walletIdB,
@@ -635,8 +635,8 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if sends to self an on us push payment", async () => {
-    const paymentResult = await Wallets.intraledgerPaymentSendUsername({
-      recipientUsername: usernameB,
+    const paymentResult = await Wallets.intraledgerPaymentSendWalletId({
+      recipientWalletId: walletIdB,
       memo: "",
       amount: amountInvoice,
       senderWalletId: walletIdB,
