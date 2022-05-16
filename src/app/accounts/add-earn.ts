@@ -1,4 +1,4 @@
-import { intraledgerPaymentSendWalletId } from "@app/wallets"
+import { Payments } from "@app"
 import { getRewardsConfig, onboardingEarn } from "@config"
 import {
   InvalidIPMetadataForRewardError,
@@ -62,7 +62,7 @@ export const addEarn = async ({
   const shouldGiveReward = await RewardsRepository(accountId).add(quizQuestionId)
   if (shouldGiveReward instanceof Error) return shouldGiveReward
 
-  const payment = await intraledgerPaymentSendWalletId({
+  const payment = await Payments.intraledgerPaymentSendWalletId({
     senderWalletId: funderWalletId,
     recipientWalletId,
     amount,
