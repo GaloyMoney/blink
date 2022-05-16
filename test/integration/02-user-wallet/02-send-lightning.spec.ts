@@ -330,7 +330,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("sends to another Galoy user a push payment", async () => {
-    const res = await Wallets.intraledgerPaymentSendWalletId({
+    const res = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId: walletIdA,
       memo: "",
       amount: amountInvoice,
@@ -385,7 +385,7 @@ describe("UserWallet - Lightning Pay", () => {
     )
     const txnCount1 = contact1?.transactionsCount || 0
 
-    const res2 = await Wallets.intraledgerPaymentSendWalletId({
+    const res2 = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId: walletIdA,
       memo: "",
       amount: amountInvoice,
@@ -532,7 +532,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     const satsBelow = 100
     const memoSpamBelowThreshold = "Spam BELOW threshold"
-    const resBelowThreshold = await Wallets.intraledgerPaymentSendWalletId({
+    const resBelowThreshold = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId: walletIdA,
       memo: memoSpamBelowThreshold,
       amount: toSats(satsBelow),
@@ -544,7 +544,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     const satsAbove = 1100
     const memoSpamAboveThreshold = "Spam ABOVE threshold"
-    const resAboveThreshold = await Wallets.intraledgerPaymentSendWalletId({
+    const resAboveThreshold = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId: walletIdA,
       memo: memoSpamAboveThreshold,
       amount: toSats(satsAbove),
@@ -635,7 +635,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if sends to self an on us push payment", async () => {
-    const paymentResult = await Wallets.intraledgerPaymentSendWalletId({
+    const paymentResult = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId: walletIdB,
       memo: "",
       amount: amountInvoice,
