@@ -50,6 +50,7 @@ type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFl
 > & {
   protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
   paymentAmounts(): { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
+  totalAmountsForPayment(): { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
   routeDetails(): {
     rawRoute?: RawRoute
     outgoingNodePubkey?: Pubkey
