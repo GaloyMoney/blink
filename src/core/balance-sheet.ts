@@ -17,6 +17,32 @@ export const getLedgerAccounts = async () => {
   return { assets, liabilities, lightning, bitcoin, bankOwnerBalance }
 }
 
+export const getAssetsLiabilitiesDifference = async () => {
+  const [assets, liabilities] = await Promise.all([
+    ledgerAdmin.getAssetsBalance(),
+    ledgerAdmin.getLiabilitiesBalance(),
+  ])
+
+  return assets + liabilities
+}
+
+export const getBookingVersusRealWorldAssets = async () => {
+  const [lightning, bitcoin, lndBalances, bitcoind] = await Promise.all([
+    ledgerAdmin.getLndBalance(),
+    ledgerAdmin.getBitcoindBalance(),
+    lndsBalances(),
+    getBitcoindBalance(),
+  ])
+
+  const { total: lnd } = lndBalances
+
+  return (
+    lnd + // physical assets
+    bitcoind + // physical assets
+    (lightning + bitcoin)
+  ) // value in accounting
+}
+
 export const balanceSheetIsBalanced = async () => {
   const { assets, liabilities, lightning, bitcoin, bankOwnerBalance } =
     await getLedgerAccounts()

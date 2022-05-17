@@ -3,6 +3,7 @@ import {
   LocalCacheUndefinedError,
   UnknownLocalCacheServiceError,
 } from "@domain/cache"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 import NodeCache from "node-cache"
 
 const localCache = new NodeCache()
@@ -54,5 +55,8 @@ export const LocalCacheService = (): ILocalCacheService => {
     }
   }
 
-  return { set, get, getOrSet, clear }
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.cache",
+    fns: { set, get, getOrSet, clear },
+  })
 }

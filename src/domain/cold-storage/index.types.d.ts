@@ -42,7 +42,9 @@ type GetColdStoragePsbtArgs = {
 }
 
 interface IColdStorageService {
+  listWallets(): Promise<string[] | ColdStorageServiceError>
   getBalances(): Promise<ColdStorageBalance[] | ColdStorageServiceError>
+  getBalance(walletName: string): Promise<ColdStorageBalance | ColdStorageServiceError>
   createPsbt({
     walletName,
     onChainAddress,

@@ -18,17 +18,24 @@ export const ColdStorageService = async (): Promise<
   const bitcoindCurrentWalletClient = await getBitcoindCurrentWalletClient()
   if (bitcoindCurrentWalletClient instanceof Error) return bitcoindCurrentWalletClient
 
-  const getBalances = async (): Promise<
-    ColdStorageBalance[] | ColdStorageServiceError
-  > => {
+  const listWallets = async (): Promise<string[] | ColdStorageServiceError> => {
     try {
       const client = await getBitcoindClient()
       if (client instanceof Error) return client
 
       const wallets = await client.listWallets()
-      const coldStorageWallets = wallets.filter((item: string) =>
-        item.includes(walletPattern),
-      )
+      return wallets.filter((item: string) => item.includes(walletPattern))
+    } catch (err) {
+      return new UnknownColdStorageServiceError(err)
+    }
+  }
+
+  const getBalances = async (): Promise<
+    ColdStorageBalance[] | ColdStorageServiceError
+  > => {
+    try {
+      const coldStorageWallets = await listWallets()
+      if (coldStorageWallets instanceof Error) return coldStorageWallets
 
       const balances: ColdStorageBalance[] = []
       for await (const walletName of coldStorageWallets) {
@@ -39,6 +46,19 @@ export const ColdStorageService = async (): Promise<
       }
 
       return balances
+    } catch (err) {
+      return new UnknownColdStorageServiceError(err)
+    }
+  }
+
+  const getBalance = async (
+    walletName: string,
+  ): Promise<ColdStorageBalance | ColdStorageServiceError> => {
+    try {
+      const client = await getBitcoindClient(walletName)
+      if (client instanceof Error) client
+      const amount = btc2sat(await client.getBalance())
+      return { walletName, amount }
     } catch (err) {
       return new UnknownColdStorageServiceError(err)
     }
@@ -126,7 +146,9 @@ export const ColdStorageService = async (): Promise<
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.coldstorage",
     fns: {
+      listWallets,
       getBalances,
+      getBalance,
       createPsbt,
       createOnChainAddress,
       isDerivedAddress,
