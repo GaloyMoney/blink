@@ -41,69 +41,16 @@ export const intraledgerPaymentSendWalletId = async ({
   logger,
 }: IntraLedgerPaymentSendWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
   const validatedPaymentInputs = await validateIntraledgerPaymentInputs({
-    uncheckedAmount,
     uncheckedSenderWalletId,
     uncheckedRecipientWalletId,
-    memo,
     senderAccount,
   })
   if (validatedPaymentInputs instanceof Error) return validatedPaymentInputs
 
-  const { senderWallet, paymentFlow, recipientAccountId, recipientUsername } =
-    validatedPaymentInputs
+  const { senderWallet, recipientWallet, recipientAccount } = validatedPaymentInputs
 
-  const paymentSendStatus = await executePaymentViaIntraledger({
-    paymentFlow,
-    senderWallet,
-    logger,
-    senderUsername: senderAccount.username,
-    memo,
-  })
-  if (paymentSendStatus instanceof Error) return paymentSendStatus
-
-  const addContactResult = await addContactsAfterSend({
-    senderAccountId: senderAccount.id,
-    senderUsername: senderAccount.username,
-    recipientAccountId,
-    recipientUsername,
-  })
-  if (addContactResult instanceof Error) {
-    recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
-  }
-
-  return paymentSendStatus
-}
-
-const validateIntraledgerPaymentInputs = async ({
-  uncheckedAmount,
-  uncheckedSenderWalletId,
-  uncheckedRecipientWalletId,
-  memo,
-  senderAccount,
-}) => {
-  const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
-  if (senderWalletId instanceof Error) return senderWalletId
-
-  const senderWallet = await WalletsRepository().findById(senderWalletId)
-  if (senderWallet instanceof Error) return senderWallet
-
-  const accountValidated = AccountValidator().validateAccount({
-    account: senderAccount,
-    accountIdFromWallet: senderWallet.accountId,
-  })
-  if (accountValidated instanceof Error) return accountValidated
-
-  const recipientWalletId = checkedToWalletId(uncheckedRecipientWalletId)
-  if (recipientWalletId instanceof Error) return recipientWalletId
-
-  const recipientWallet = await WalletsRepository().findById(recipientWalletId)
-  if (recipientWallet instanceof Error) return recipientWallet
-  const { accountId: recipientAccountId, currency: recipientWalletCurrency } =
-    recipientWallet
-
-  const recipientAccount = await AccountsRepository().findById(recipientAccountId)
-  if (recipientAccount instanceof Error) return recipientAccount
-  const { username: recipientUsername } = recipientAccount
+  const { id: recipientWalletId, currency: recipientWalletCurrency } = recipientWallet
+  const { id: recipientAccountId, username: recipientUsername } = recipientAccount
 
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
@@ -139,8 +86,6 @@ const validateIntraledgerPaymentInputs = async ({
   const paymentFlow = await builderWithConversion.withoutRoute()
   if (paymentFlow instanceof Error) return paymentFlow
 
-  if (paymentFlow instanceof Error) return paymentFlow
-
   addAttributesToCurrentSpan({
     "payment.intraLedger.inputAmount": paymentFlow.inputAmount.toString(),
     "payment.intraLedger.senderWalletId": paymentFlow.senderWalletId,
@@ -150,11 +95,62 @@ const validateIntraledgerPaymentInputs = async ({
     "payment.intraLedger.description": memo || "",
   })
 
-  return {
-    senderWallet,
+  const paymentSendStatus = await executePaymentViaIntraledger({
     paymentFlow,
+    senderWallet,
+    logger,
+    senderUsername: senderAccount.username,
+    memo,
+  })
+  if (paymentSendStatus instanceof Error) return paymentSendStatus
+
+  const addContactResult = await addContactsAfterSend({
+    senderAccountId: senderAccount.id,
+    senderUsername: senderAccount.username,
     recipientAccountId,
     recipientUsername,
+  })
+  if (addContactResult instanceof Error) {
+    recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
+  }
+
+  return paymentSendStatus
+}
+
+const validateIntraledgerPaymentInputs = async ({
+  uncheckedSenderWalletId,
+  uncheckedRecipientWalletId,
+  senderAccount,
+}): Promise<
+  | { senderWallet: Wallet; recipientWallet: Wallet; recipientAccount: Account }
+  | ApplicationError
+> => {
+  const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
+  if (senderWalletId instanceof Error) return senderWalletId
+
+  const senderWallet = await WalletsRepository().findById(senderWalletId)
+  if (senderWallet instanceof Error) return senderWallet
+
+  const accountValidated = AccountValidator().validateAccount({
+    account: senderAccount,
+    accountIdFromWallet: senderWallet.accountId,
+  })
+  if (accountValidated instanceof Error) return accountValidated
+
+  const recipientWalletId = checkedToWalletId(uncheckedRecipientWalletId)
+  if (recipientWalletId instanceof Error) return recipientWalletId
+
+  const recipientWallet = await WalletsRepository().findById(recipientWalletId)
+  if (recipientWallet instanceof Error) return recipientWallet
+  const { accountId: recipientAccountId } = recipientWallet
+
+  const recipientAccount = await AccountsRepository().findById(recipientAccountId)
+  if (recipientAccount instanceof Error) return recipientAccount
+
+  return {
+    senderWallet,
+    recipientWallet,
+    recipientAccount,
   }
 }
 
@@ -207,13 +203,7 @@ const executePaymentViaIntraledger = async ({
       const balanceCheck = paymentFlow.checkBalanceForSend(balance)
       if (balanceCheck instanceof Error) return balanceCheck
 
-      const priceRatio = PriceRatio({
-        usd: paymentFlow.usdPaymentAmount,
-        btc: paymentFlow.btcPaymentAmount,
-      })
-      if (priceRatio instanceof Error) return priceRatio
       const displayCentsPerSat = priceRatio.usdPerSat()
-
       const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
 
       const journal = await LockService().extendLock({ logger, lock }, async () => {
