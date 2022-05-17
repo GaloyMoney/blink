@@ -82,6 +82,14 @@ export const isRunningJest = typeof jest !== "undefined"
 
 export const DropboxAccessToken = process.env.DROPBOX_ACCESS_TOKEN
 export const GcsApplicationCredentials = process.env.GCS_APPLICATION_CREDENTIALS
+export const Nextcloudurl = process.env.NEXTCLOUD_URL
+export const Nextclouduser = process.env.NEXTCLOUD_USER
+export const Nextcloudpassword = process.env.NEXTCLOUD_PASSWORD
+
+if(!(DropboxAccessToken || GcsApplicationCredentials || (Nextcloudurl && Nextclouduser && Nextcloudpassword))) {
+  throw new ConfigError("missing credentials for static channel backup, please check environment variables")
+}
+
 
 export const getBitcoinCoreRPCConfig = () => {
   return {
