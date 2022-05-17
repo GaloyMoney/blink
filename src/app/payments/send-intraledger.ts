@@ -5,6 +5,8 @@ import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
+  LightningPaymentFlowBuilder,
+  NoRecipientDetailsForIntraLedgerFlowError,
   PriceRatio,
 } from "@domain/payments"
 
@@ -17,11 +19,16 @@ import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
+import { LndService } from "@services/lnd"
 import { NotificationsService } from "@services/notifications"
 
 import { Accounts } from "@app"
 
-import { constructPaymentFlowBuilder, newCheckIntraledgerLimits } from "./helpers"
+import {
+  newCheckIntraledgerLimits,
+  btcFromUsdMidPriceFn,
+  usdFromBtcMidPriceFn,
+} from "./helpers"
 
 const dealer = NewDealerPriceService()
 
@@ -98,16 +105,32 @@ const validateIntraledgerPaymentInputs = async ({
   if (recipientAccount instanceof Error) return recipientAccount
   const { username: recipientUsername } = recipientAccount
 
-  const builderWithConversion = await constructPaymentFlowBuilder({
+  const lndService = LndService()
+  if (lndService instanceof Error) return lndService
+  const paymentBuilder = LightningPaymentFlowBuilder({
+    localNodeIds: lndService.listAllPubkeys(),
+    usdFromBtcMidPriceFn,
+    btcFromUsdMidPriceFn,
+  })
+  const builderWithInvoice = paymentBuilder.withoutInvoice({
     uncheckedAmount,
-    senderWallet,
-    invoice: undefined,
-    memoPayer: memo,
-    recipientDetails: {
-      id: recipientWalletId,
-      currency: recipientWalletCurrency,
-      username: recipientUsername,
-    },
+    description: memo,
+  })
+
+  const builderWithSenderWallet = builderWithInvoice.withSenderWallet(senderWallet)
+
+  const recipientDetailsForBuilder = recipientDetailsFromWallet({
+    id: recipientWalletId,
+    currency: recipientWalletCurrency,
+    username: recipientUsername,
+  })
+  if (recipientDetailsForBuilder instanceof Error) return recipientDetailsForBuilder
+
+  const builderAfterRecipientStep = builderWithSenderWallet.withRecipientWallet(
+    recipientDetailsForBuilder,
+  )
+
+  const builderWithConversion = builderAfterRecipientStep.withConversion({
     usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
     btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
   })
@@ -280,4 +303,18 @@ const addContactsAfterSend = async ({
   }
 
   return true
+}
+
+const recipientDetailsFromWallet = (recipientDetails) => {
+  if (recipientDetails === undefined) {
+    return new NoRecipientDetailsForIntraLedgerFlowError()
+  }
+
+  return {
+    id: recipientDetails.id,
+    currency: recipientDetails.currency,
+    username: recipientDetails.username,
+    pubkey: undefined,
+    usdPaymentAmount: undefined,
+  }
 }
