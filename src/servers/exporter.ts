@@ -1,7 +1,21 @@
-import { ColdStorage } from "@app"
-import { asyncRunInSpan, addAttributesToCurrentSpan } from "@services/tracing"
-import { balanceSheetIsBalanced, getLedgerAccounts } from "@core/balance-sheet"
-import { toSats } from "@domain/bitcoin"
+import express from "express"
+import client, { register } from "prom-client"
+
+import { baseLogger } from "@services/logger"
+import { ledgerAdmin, setupMongoConnection } from "@services/mongodb"
+import { activateLndHealthCheck } from "@services/lnd/health"
+
+import {
+  asyncRunInSpan,
+  addAttributesToCurrentSpan,
+  wrapAsyncToRunInSpan,
+} from "@services/tracing"
+import { User } from "@services/mongoose/schema"
+import { getBosScore, lndsBalances } from "@services/lnd/utils"
+import {
+  getAssetsLiabilitiesDifference,
+  getBookingVersusRealWorldAssets,
+} from "@core/balance-sheet"
 import { LedgerService } from "@services/ledger"
 import {
   getBankOwnerWalletId,
@@ -9,189 +23,147 @@ import {
   getDealerUsdWalletId,
   getFunderWalletId,
 } from "@services/ledger/caching"
-import { activateLndHealthCheck } from "@services/lnd/health"
-import { getBosScore, lndsBalances } from "@services/lnd/utils"
-import { baseLogger } from "@services/logger"
-import { setupMongoConnection } from "@services/mongodb"
-import { User } from "@services/mongoose/schema"
-import express from "express"
-import client, { register } from "prom-client"
+import { ColdStorage } from "@app"
+
+import { SECS_PER_5_MINS } from "@config"
+import { LocalCacheService } from "@services/cache"
+import { toSeconds } from "@domain/primitives"
+import { timeout } from "@utils"
 
 import healthzHandler from "./middlewares/healthz"
 
-const logger = baseLogger.child({ module: "exporter" })
+const TIMEOUT_WALLET_BALANCE = 30000
 
-const server = express()
+const logger = baseLogger.child({ module: "exporter" })
 
 const prefix = "galoy"
 
-const liabilities_g = new client.Gauge({
-  name: `${prefix}_liabilities`,
-  help: "how much money customers has",
-})
-const lightning_g = new client.Gauge({
-  name: `${prefix}_lightning`,
-  help: "how much money there is our books for lnd",
-})
-const userCount_g = new client.Gauge({
-  name: `${prefix}_userCount`,
-  help: "how much users have registered",
-})
-const lnd_g = new client.Gauge({
-  name: `${prefix}_lnd`,
-  help: "how much money in our node",
-})
-const lndOnChain_g = new client.Gauge({
-  name: `${prefix}_lnd_onchain`,
-  help: "how much fund is onChain in lnd",
-})
-const lndOffChain_g = new client.Gauge({
-  name: `${prefix}_lnd_offchain`,
-  help: "how much fund is offChain in our node",
-})
-const lndOpeningChannelBalance_g = new client.Gauge({
-  name: `${prefix}_lnd_openingchannelbalance`,
-  help: "how much fund is pending following opening channel",
-})
-const lndClosingChannelBalance_g = new client.Gauge({
-  name: `${prefix}_lnd_closingchannelbalance`,
-  help: "how much fund is closing following force closed channel",
-})
-const assetsLiabilitiesDifference_g = new client.Gauge({
-  name: `${prefix}_assetsEqLiabilities`,
-  help: "do we have a balanced book",
-})
-const bookingVersusRealWorldAssets_g = new client.Gauge({
-  name: `${prefix}_lndBalanceSync`,
-  help: "are lnd in syncs with our books",
-})
-const bos_g = new client.Gauge({ name: `${prefix}_bos`, help: "bos score" })
-const bitcoin_g = new client.Gauge({
-  name: `${prefix}_bitcoin`,
-  help: "amount in accounting for cold storage",
-})
-const business_g = new client.Gauge({
-  name: `${prefix}_business`,
-  help: "number of businesses in the app",
-})
-
-const walletsInit = [
-  { name: "dealer_btc", getId: getDealerBtcWalletId },
-  { name: "dealer_usd", getId: getDealerUsdWalletId },
-  { name: "funder", getId: getFunderWalletId },
-  { name: "bankowner", getId: getBankOwnerWalletId },
-]
-const wallets = walletsInit.map((wallet) => ({
-  gauge: new client.Gauge({
-    name: `${prefix}_${wallet.name}_balance`,
-    help: `${wallet.name}`,
-  }),
-  ...wallet,
-}))
-
-const coldWallets: { [key: string]: client.Gauge<string> } = {}
-
 const main = async () => {
+  const { getLiabilitiesBalance, getLndBalance, getBitcoindBalance } = ledgerAdmin
+  createGauge({
+    name: "liabilities",
+    description: "how much money customers has",
+    collect: getLiabilitiesBalance,
+  })
+
+  createGauge({
+    name: "lightning",
+    description: "how much money there is our books for lnd",
+    collect: getLndBalance,
+  })
+
+  createGauge({
+    name: "userCount",
+    description: "how much users have registered",
+    collect: async () => {
+      const value = await User.countDocuments()
+      return value
+    },
+  })
+
+  createGauge({
+    name: "lnd",
+    description: "how much money in our node",
+    collect: async () => {
+      const { total } = await lndsBalances()
+      return total
+    },
+  })
+
+  createGauge({
+    name: "lnd_onchain",
+    description: "how much fund is onChain in lnd",
+    collect: async () => {
+      const { onChain } = await lndsBalances()
+      return onChain
+    },
+  })
+
+  createGauge({
+    name: "lnd_offchain",
+    description: "how much fund is offChain in our node",
+    collect: async () => {
+      const { offChain } = await lndsBalances()
+      return offChain
+    },
+  })
+
+  createGauge({
+    name: "lnd_openingchannelbalance",
+    description: "how much fund is pending following opening channel",
+    collect: async () => {
+      const { opening_channel_balance } = await lndsBalances()
+      return opening_channel_balance
+    },
+  })
+
+  createGauge({
+    name: "lnd_closingchannelbalance",
+    description: "how much fund is closing following force closed channel",
+    collect: async () => {
+      const { closing_channel_balance } = await lndsBalances()
+      return closing_channel_balance
+    },
+  })
+
+  createGauge({
+    name: "assetsEqLiabilities",
+    description: "do we have a balanced book",
+    collect: getAssetsLiabilitiesDifference,
+  })
+
+  createGauge({
+    name: "lndBalanceSync",
+    description: "are lnd in syncs with our books",
+    collect: getBookingVersusRealWorldAssets,
+  })
+
+  createGauge({
+    name: "bos",
+    description: "bos score",
+    collect: getBosScore,
+  })
+
+  createGauge({
+    name: "bitcoin",
+    description: "amount in accounting for cold storage",
+    collect: getBitcoindBalance,
+  })
+
+  createGauge({
+    name: "business",
+    description: "number of businesses in the app",
+    collect: async () => {
+      const value = await User.countDocuments({ title: { $ne: undefined } })
+      return value
+    },
+  })
+
+  const galoyWallets = [
+    { name: "dealer_btc", getId: getDealerBtcWalletId },
+    { name: "dealer_usd", getId: getDealerUsdWalletId },
+    { name: "funder", getId: getFunderWalletId },
+    { name: "bankowner", getId: getBankOwnerWalletId },
+  ]
+  for (const wallet of galoyWallets) {
+    createWalletGauge({ walletName: wallet.name, getId: wallet.getId })
+  }
+
+  const coldStorageWallets = await ColdStorage.listWallets()
+  if (!(coldStorageWallets instanceof Error)) {
+    for (const walletName of coldStorageWallets) {
+      createColdStorageWalletGauge(walletName)
+    }
+  }
+
+  const server = express()
   server.get("/metrics", async (req, res) =>
     asyncRunInSpan("metrics", {}, async () => {
-      await asyncRunInSpan("getBosScore", {}, async () => {
-        const bosScore = await getBosScore()
-        bos_g.set(bosScore)
-      })
-
-      await asyncRunInSpan("getLedgerAccounts", {}, async () => {
-        const { lightning, liabilities, bitcoin } = await getLedgerAccounts()
-        liabilities_g.set(liabilities)
-        lightning_g.set(lightning)
-        bitcoin_g.set(bitcoin)
-      })
-
-      await asyncRunInSpan("balanceSheetIsBalanced", {}, async () => {
-        try {
-          const { assetsLiabilitiesDifference, bookingVersusRealWorldAssets } =
-            await balanceSheetIsBalanced()
-          assetsLiabilitiesDifference_g.set(assetsLiabilitiesDifference)
-          bookingVersusRealWorldAssets_g.set(bookingVersusRealWorldAssets)
-        } catch (err) {
-          logger.error({ err }, "impossible to calculate balance sheet")
-        }
-      })
-
-      await asyncRunInSpan("lndsBalances", {}, async () => {
-        const {
-          total,
-          onChain,
-          offChain,
-          opening_channel_balance,
-          closing_channel_balance,
-        } = await lndsBalances()
-        lnd_g.set(total)
-        lndOnChain_g.set(onChain)
-        lndOffChain_g.set(offChain)
-        lndOpeningChannelBalance_g.set(opening_channel_balance)
-        lndClosingChannelBalance_g.set(closing_channel_balance)
-      })
-
-      await asyncRunInSpan("countDocuments", {}, async () => {
-        const userCount = await User.countDocuments()
-        userCount_g.set(userCount)
-
-        business_g.set(await User.countDocuments({ title: { $ne: undefined } }))
-      })
-
-      await asyncRunInSpan("loopCustomWallets", {}, async () => {
-        for (const wallet of wallets) {
-          let walletId: WalletId
-          try {
-            walletId = await wallet.getId()
-          } catch (err) {
-            baseLogger.error({ err }, `Could not load wallet id for ${wallet.name}`)
-            continue
-          }
-
-          let balance: CurrencyBaseAmount
-
-          const walletBalance = await LedgerService().getWalletBalance(walletId)
-          if (walletBalance instanceof Error) {
-            baseLogger.warn({ walletId, walletBalance }, "impossible to get balance")
-            balance = toSats(0)
-          } else {
-            balance = walletBalance
-            addAttributesToCurrentSpan({
-              [`${wallet.name}_balance`]: balance,
-            })
-          }
-
-          wallet.gauge.set(balance)
-        }
-      })
-
-      await asyncRunInSpan("getColdStorage", {}, async () => {
-        try {
-          let balances = await ColdStorage.getBalances()
-          if (balances instanceof Error) balances = []
-          for (const { walletName, amount } of balances) {
-            const walletSanitized = walletName.replace("/", "_")
-            if (!coldWallets[walletSanitized]) {
-              coldWallets[walletSanitized] = new client.Gauge({
-                name: `${prefix}_bitcoind_${walletSanitized}`,
-                help: `amount in wallet ${walletName}`,
-              })
-              addAttributesToCurrentSpan({
-                [`${prefix}_bitcoind_${walletSanitized}`]: amount,
-              })
-            }
-            coldWallets[walletSanitized].set(amount)
-          }
-        } catch (err) {
-          logger.error({ err }, "error setting bitcoind/specter balance")
-        }
-      })
-
       res.set("Content-Type", register.contentType)
       res.end(await register.metrics())
     }),
   )
+
   server.get(
     "/healthz",
     healthzHandler({
@@ -202,11 +174,108 @@ const main = async () => {
   )
 
   const port = process.env.PORT || 3000
-  logger.info(`Server listening to ${port}, metrics exposed on /metrics endpoint`)
-  server.listen(port)
+  server.listen(port, () => {
+    logger.info(`Server listening to ${port}, metrics exposed on /metrics endpoint`)
+  })
   activateLndHealthCheck()
 }
 
 setupMongoConnection()
   .then(() => main())
   .catch((err) => logger.error(err))
+
+const createGauge = ({
+  name,
+  description,
+  collect,
+}: {
+  name: string
+  description: string
+  collect: () => Promise<number>
+}) => {
+  const collectFn = wrapAsyncToRunInSpan({
+    namespace: "exporter",
+    fnName: name,
+    fn: collect,
+  })
+  return new client.Gauge({
+    name: `${prefix}_${name}`,
+    help: description,
+    async collect() {
+      const value = await collectFn()
+      addAttributesToCurrentSpan({ [`${name}_value`]: `${value}` })
+      this.set(value)
+    },
+  })
+}
+
+const cache = LocalCacheService()
+const createWalletGauge = ({ walletName, getId }) => {
+  const name = `${walletName}_balance`
+  const description = `${walletName} balance`
+
+  return createGauge({
+    name,
+    description,
+    collect: async () => {
+      const getWalletBalancePromise = async () => {
+        const walletId = await getId()
+        return getWalletBalance(walletId)
+      }
+      try {
+        const timeoutPromise = timeout(TIMEOUT_WALLET_BALANCE, "Timeout")
+        const balance = (await Promise.race([
+          getWalletBalancePromise(),
+          timeoutPromise,
+        ])) as number
+
+        await cache.set<number>({
+          key: name,
+          value: balance,
+          ttlSecs: toSeconds(SECS_PER_5_MINS * 3),
+        })
+
+        return balance
+      } catch (err) {
+        logger.error({ err }, `Could not load wallet id for ${walletName}.`)
+
+        if (err.message === "Timeout")
+          logger.info(`Getting ${walletName} wallet balance from cache.`)
+
+        return cache.getOrSet({
+          key: name,
+          ttlSecs: toSeconds(SECS_PER_5_MINS * 3),
+          fn: getWalletBalancePromise,
+        })
+      }
+    },
+  })
+}
+
+const getWalletBalance = async (walletId: WalletId): Promise<number> => {
+  const walletBalance = await LedgerService().getWalletBalance(walletId)
+  if (walletBalance instanceof Error) {
+    logger.warn({ walletId, walletBalance }, "impossible to get balance")
+    return 0
+  }
+
+  return walletBalance
+}
+
+const createColdStorageWalletGauge = (walletName: string) => {
+  const walletNameSanitized = walletName.replace("/", "_")
+  const name = `bitcoind_${walletNameSanitized}`
+  const description = `amount in wallet ${walletNameSanitized}`
+  return createGauge({
+    name,
+    description,
+    collect: async () => {
+      const balance = await ColdStorage.getBalance(walletName)
+      if (balance instanceof Error) {
+        logger.error({ walletName }, "error getting bitcoind/specter balance")
+        return 0
+      }
+      return balance.amount
+    },
+  })
+}
