@@ -4420,13 +4420,6 @@ double-ended-queue@^2.1.0-0:
   resolved "https://registry.yarnpkg.com/double-ended-queue/-/double-ended-queue-2.1.0-0.tgz#103d3527fd31528f40188130c841efdd78264e5c"
   integrity sha512-+BNfZ+deCo8hMNpDqDnvT+c0XpJ5cUa6mqYq89bho2Ifze4URTqRkcwR399hWoTrTkbZ/XJYDgP6rc7pRgffEQ==
 
-dropbox@^10.4.1:
-  version "10.30.0"
-  resolved "https://registry.yarnpkg.com/dropbox/-/dropbox-10.30.0.tgz#6b2a5bdf3fac8475645ea2d6d19b86abb0a504d5"
-  integrity sha512-ah4mb4YoI7WwS0yXtDLKxbp9apXp5TfPksDuEvvgCYR1bpMmQKUFG9raNMLC2NsF4Dc/9Axxqj436ErPvg9HeQ==
-  dependencies:
-    node-fetch "^2.6.1"
-
 dtrace-provider@~0.8:
   version "0.8.8"
   resolved "https://registry.yarnpkg.com/dtrace-provider/-/dtrace-provider-0.8.8.tgz#2996d5490c37e1347be263b423ed7b297fb0d97e"
