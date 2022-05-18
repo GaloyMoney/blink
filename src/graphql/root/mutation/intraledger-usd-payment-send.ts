@@ -1,31 +1,31 @@
 import { Accounts, Payments } from "@app"
 import { checkedToWalletId } from "@domain/wallets"
 import { mapError } from "@graphql/error-map"
-import { validateIsBtcWalletForMutation } from "@graphql/helpers"
+import { validateIsUsdWalletForMutation } from "@graphql/helpers"
 import { GT } from "@graphql/index"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
+import CentAmount from "@graphql/types/scalar/cent-amount"
 import Memo from "@graphql/types/scalar/memo"
-import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import dedent from "dedent"
 
-const IntraLedgerPaymentSendInput = GT.Input({
-  name: "IntraLedgerPaymentSendInput",
+const IntraLedgerUsdPaymentSendInput = GT.Input({
+  name: "IntraLedgerUsdPaymentSendInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId), description: "The wallet ID of the sender." }, // TODO: rename senderWalletId
     recipientWalletId: { type: GT.NonNull(WalletId) },
-    amount: { type: GT.NonNull(SatAmount), description: "Amount in satoshis." },
+    amount: { type: GT.NonNull(CentAmount), description: "Amount in cents." },
     memo: { type: Memo, description: "Optional memo to be attached to the payment." },
   }),
 })
 
-const IntraLedgerPaymentSendMutation = GT.Field({
+const IntraLedgerUsdPaymentSendMutation = GT.Field({
   type: GT.NonNull(PaymentSendPayload),
   description: dedent`Actions a payment which is internal to the ledger e.g. it does
   not use onchain/lightning. Returns payment status (success,
   failed, pending, already_paid).`,
   args: {
-    input: { type: GT.NonNull(IntraLedgerPaymentSendInput) },
+    input: { type: GT.NonNull(IntraLedgerUsdPaymentSendInput) },
   },
   resolve: async (_, args, { domainAccount, logger }: GraphQLContextForUser) => {
     const { walletId, recipientWalletId, amount, memo } = args.input
@@ -41,8 +41,8 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       return { errors: [{ message: appErr.message }] }
     }
 
-    const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
-    if (btcWalletValidated != true) return btcWalletValidated
+    const usdWalletValidated = await validateIsUsdWalletForMutation(walletId)
+    if (usdWalletValidated != true) return usdWalletValidated
 
     const recipientWalletIdChecked = checkedToWalletId(recipientWalletId)
     if (recipientWalletIdChecked instanceof Error) {
@@ -79,4 +79,4 @@ const IntraLedgerPaymentSendMutation = GT.Field({
   },
 })
 
-export default IntraLedgerPaymentSendMutation
+export default IntraLedgerUsdPaymentSendMutation
