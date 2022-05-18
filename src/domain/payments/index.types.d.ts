@@ -187,6 +187,7 @@ type LightningPaymentFlowBuilderConfig = {
 type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &
   XorPaymentHashProperty & {
     settlementMethod: SettlementMethod
+    paymentInitiationMethod: PaymentInitiationMethod
     descriptionFromInvoice: string
     btcPaymentAmount?: BtcPaymentAmount
     inputAmount?: BigInt

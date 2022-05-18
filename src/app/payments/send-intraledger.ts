@@ -19,7 +19,6 @@ import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
-import { LndService } from "@services/lnd"
 import { NotificationsService } from "@services/notifications"
 
 import { Accounts } from "@app"
@@ -52,10 +51,8 @@ export const intraledgerPaymentSendWalletId = async ({
   const { id: recipientWalletId, currency: recipientWalletCurrency } = recipientWallet
   const { id: recipientAccountId, username: recipientUsername } = recipientAccount
 
-  const lndService = LndService()
-  if (lndService instanceof Error) return lndService
   const paymentBuilder = LightningPaymentFlowBuilder({
-    localNodeIds: lndService.listAllPubkeys(),
+    localNodeIds: [],
     usdFromBtcMidPriceFn,
     btcFromUsdMidPriceFn,
   })

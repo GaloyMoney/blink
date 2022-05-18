@@ -49,6 +49,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     return LPFBWithInvoice({
       ...config,
       ...settlementMethodFromDestination(invoice.destination),
+      paymentInitiationMethod: PaymentInitiationMethod.Lightning,
       paymentHash: invoice.paymentHash,
       btcPaymentAmount: invoice.paymentAmount,
       inputAmount: invoice.paymentAmount.amount,
@@ -66,6 +67,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     return LPFBWithInvoice({
       ...config,
       ...settlementMethodFromDestination(invoice.destination),
+      paymentInitiationMethod: PaymentInitiationMethod.Lightning,
       paymentHash: invoice.paymentHash,
       uncheckedAmount,
       descriptionFromInvoice: invoice.description,
@@ -82,6 +84,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     return LPFBWithInvoice({
       ...config,
       ...settlementMethodFromDestination(undefined),
+      paymentInitiationMethod: PaymentInitiationMethod.IntraLedger,
       intraLedgerHash: generateIntraLedgerHash(),
       uncheckedAmount,
       descriptionFromInvoice: description,
@@ -406,7 +409,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       paymentSentAndPending: false,
 
       settlementMethod: state.settlementMethod,
-      paymentInitiationMethod: PaymentInitiationMethod.Lightning,
+      paymentInitiationMethod: state.paymentInitiationMethod,
 
       btcProtocolFee: state.btcProtocolFee,
       usdProtocolFee: state.usdProtocolFee,
