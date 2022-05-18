@@ -360,10 +360,18 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalanceA).toBe(initBalanceA + amountInvoice)
     expect(finalBalanceB).toBe(initBalanceB - amountInvoice)
 
+    expect(txWalletA[0].initiationVia).toHaveProperty(
+      "type",
+      PaymentInitiationMethod.IntraLedger,
+    )
     expect(txWalletA[0].initiationVia).toHaveProperty("counterPartyUsername", usernameB)
     expect(userBTransaction[0].initiationVia).toHaveProperty(
       "counterPartyUsername",
       usernameA,
+    )
+    expect(userBTransaction[0].initiationVia).toHaveProperty(
+      "type",
+      PaymentInitiationMethod.IntraLedger,
     )
 
     let userRecordA = await getUserRecordByTestUserRef("A")
