@@ -283,6 +283,27 @@ describe("UserWallet - Lightning Pay", () => {
     expect(userCTxn.settlementVia.type).toBe("intraledger")
   })
 
+  it("sends to another Galoy user an amount less than 1 cent", async () => {
+    const lnInvoice = await Wallets.addInvoiceForSelf({
+      walletId: walletIdC as WalletId,
+      amount: toSats(1),
+    })
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentRequest: invoice } = lnInvoice
+
+    const paymentResult = await Payments.payInvoiceByWalletId({
+      paymentRequest: invoice,
+      memo: null,
+      senderWalletId: walletIdB,
+      senderAccount: accountB,
+      logger: baseLogger,
+    })
+    expect(paymentResult).not.toBeInstanceOf(Error)
+    if (paymentResult instanceof Error) throw paymentResult
+
+    expect(paymentResult).toBe(PaymentSendStatus.Success)
+  })
+
   it("sends to another Galoy user with two different memos", async () => {
     const memo = "invoiceMemo"
     const memoPayer = "my memo as a payer"
@@ -533,6 +554,32 @@ describe("UserWallet - Lightning Pay", () => {
 
     // imbalance is reduced with lightning payment
     expect(imbalanceFinal).toBe(imbalanceInit - amountInvoice)
+  })
+
+  it("pay zero amount invoice with amount less than 1 cent", async () => {
+    const imbalanceCalc = ImbalanceCalculator({
+      method: WithdrawalFeePriceMethod.proportionalOnImbalance,
+      sinceDaysAgo: 1 as Days,
+      volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
+      volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
+    })
+
+    const imbalanceInit = await imbalanceCalc.getSwapOutImbalance(walletIdB)
+    if (imbalanceInit instanceof Error) throw imbalanceInit
+
+    const { request } = await createInvoice({ lnd: lndOutside1 })
+
+    // Test payment is successful
+    const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
+      amount: toSats(1),
+      senderWalletId: walletIdB,
+      senderAccount: accountB,
+      logger: baseLogger,
+    })
+    if (paymentResult instanceof Error) throw paymentResult
+    expect(paymentResult).toBe(PaymentSendStatus.Success)
   })
 
   it("filters spam from send to another Galoy user as push payment", async () => {
@@ -1387,6 +1434,35 @@ describe("USD Wallets - Lightning Pay", () => {
 
       expect(finalBalanceB).toBe(initBalanceUsdB + amountPayment)
       expect(finalBalanceA).toBe(initBalanceA - sats)
+    })
+
+    it("fails to pay internal invoice with less-than-1-cent amount from btc wallet to usd wallet", async () => {
+      const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
+      const initBalanceA = toSats(await getBalanceHelper(walletIdA))
+
+      const amountPayment = toSats(1)
+
+      const request = await Wallets.addInvoiceNoAmountForSelf({
+        walletId: walletIdUsdB,
+      })
+      if (request instanceof Error) throw request
+      const { paymentRequest } = request
+
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+        paymentRequest,
+        memo: null,
+        senderWalletId: walletIdA,
+        senderAccount: accountA,
+        amount: amountPayment,
+        logger: baseLogger,
+      })
+      expect(paymentResult).toBeInstanceOf(ZeroAmountForUsdRecipientError)
+
+      const finalBalanceB = await getBalanceHelper(walletIdUsdB)
+      const finalBalanceA = await getBalanceHelper(walletIdA)
+
+      expect(finalBalanceB).toBe(initBalanceUsdB)
+      expect(finalBalanceA).toBe(initBalanceA)
     })
   })
   describe("No amount lightning invoices", () => {
