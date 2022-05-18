@@ -4,7 +4,9 @@ import {
   InvalidIPMetadataForRewardError,
   InvalidPhoneMetadataForRewardError,
   InvalidQuizQuestionIdError,
+  NoBtcWalletExistsForAccountError,
 } from "@domain/errors"
+import { WalletCurrency } from "@domain/shared"
 import { IPMetadataValidator } from "@domain/users-ips/ip-metadata-validator"
 import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
 import { getFunderWalletId } from "@services/ledger/caching"
@@ -54,10 +56,18 @@ export const addEarn = async ({
   const lastIPs = userIps.lastIPs
   const lastIp = lastIPs.length > 0 ? lastIPs[lastIPs.length - 1] : undefined
   const validatedIPMetadata = IPMetadataValidator(rewardsConfig).validateForReward(lastIp)
-  if (validatedIPMetadata instanceof Error)
+  if (validatedIPMetadata instanceof Error) {
     return new InvalidIPMetadataForRewardError(validatedIPMetadata.name)
+  }
 
-  const recipientWalletId = recipientAccount.defaultWalletId
+  const recipientWallets = await WalletsRepository().listByAccountId(accountId)
+  if (recipientWallets instanceof Error) return recipientWallets
+
+  const recipientBtcWallet = recipientWallets.find(
+    (wallet) => wallet.currency === WalletCurrency.Btc,
+  )
+  if (recipientBtcWallet === undefined) return new NoBtcWalletExistsForAccountError()
+  const recipientWalletId = recipientBtcWallet.id
 
   const shouldGiveReward = await RewardsRepository(accountId).add(quizQuestionId)
   if (shouldGiveReward instanceof Error) return shouldGiveReward

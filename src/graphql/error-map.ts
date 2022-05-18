@@ -283,6 +283,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidTargetConfirmations":
     case "NoContactForUsernameError":
     case "NoWalletExistsForUserError":
+    case "NoBtcWalletExistsForAccountError":
     case "LimitsExceededError":
     case "CouldNotFindLightningPaymentFlowError":
     case "NoExpiredLightningPaymentFlowsError":
