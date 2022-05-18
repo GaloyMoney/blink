@@ -11,6 +11,7 @@ export class UnknownRepositoryError extends RepositoryError {
 export class PersistError extends RepositoryError {}
 export class DuplicateError extends RepositoryError {}
 
+export class BadInputsForFindError extends RepositoryError {}
 export class CouldNotFindError extends RepositoryError {}
 
 export class CouldNotFindWalletInvoiceError extends CouldNotFindError {}
@@ -71,6 +72,7 @@ export class BalanceLessThanZeroError extends ValidationError {}
 export class InvalidTargetConfirmations extends ValidationError {}
 export class NoContactForUsernameError extends ValidationError {}
 export class NoWalletExistsForUserError extends ValidationError {}
+export class NoBtcWalletExistsForAccountError extends ValidationError {}
 export class RebalanceNeededError extends ValidationError {}
 export class InvalidQuizQuestionIdError extends ValidationError {}
 export class MissingPhoneMetadataError extends ValidationError {}

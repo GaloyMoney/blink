@@ -202,6 +202,24 @@ type IntraLedgerUpdate {
   walletId: WalletId!
 }
 
+input IntraLedgerUsdPaymentSendInput {
+  """
+  Amount in cents.
+  """
+  amount: CentAmount!
+
+  """
+  Optional memo to be attached to the payment.
+  """
+  memo: Memo
+  recipientWalletId: WalletId!
+
+  """
+  The wallet ID of the sender.
+  """
+  walletId: WalletId!
+}
+
 enum InvoicePaymentStatus {
   PAID
   PENDING
@@ -466,10 +484,17 @@ type Mutation {
 
   """
   Actions a payment which is internal to the ledger e.g. it does
-  not use onchain/lightning.  Does not currently support payments to or from USD wallets.
-  Returns payment status (success, failed, pending, already_paid).
+  not use onchain/lightning. Returns payment status (success,
+  failed, pending, already_paid).
   """
   intraLedgerPaymentSend(input: IntraLedgerPaymentSendInput!): PaymentSendPayload!
+
+  """
+  Actions a payment which is internal to the ledger e.g. it does
+  not use onchain/lightning. Returns payment status (success,
+  failed, pending, already_paid).
+  """
+  intraLedgerUsdPaymentSend(input: IntraLedgerUsdPaymentSendInput!): PaymentSendPayload!
 
   """
   Returns a lightning invoice for an associated wallet.

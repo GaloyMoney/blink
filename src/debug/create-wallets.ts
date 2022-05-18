@@ -9,7 +9,6 @@
  */
 
 import { Payments, Wallets } from "@app"
-import { intraledgerPaymentSendWalletId } from "@app/wallets"
 import { BTC_NETWORK } from "@config"
 import { checkedToSats } from "@domain/bitcoin"
 import { checkedtoCents } from "@domain/fiat"
@@ -109,7 +108,7 @@ const disburseFunds = async (
   cents: UsdCents,
 ) => {
   for (const wallet of wallets) {
-    await intraledgerPaymentSendWalletId({
+    await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId: wallet.btcWalletId,
       amount: sats,
       logger: baseLogger,

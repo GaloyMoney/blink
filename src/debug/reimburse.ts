@@ -12,7 +12,7 @@
  * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/reimburse.ts
  */
 
-import { intraledgerPaymentSendWalletId } from "@app/wallets"
+import { Payments } from "@app"
 import { checkedToSats } from "@domain/bitcoin"
 import { checkedToWalletId } from "@domain/wallets"
 import { getBankOwnerWalletId } from "@services/ledger/caching"
@@ -51,7 +51,7 @@ const reimburse = async (reimbursements: Array<reimbursement>) => {
       continue
     }
 
-    const reimburseResult = await intraledgerPaymentSendWalletId({
+    const reimburseResult = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId,
       amount,
       logger: baseLogger,

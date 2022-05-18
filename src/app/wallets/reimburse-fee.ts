@@ -63,8 +63,11 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
   const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
   const reimburseAmountDisplayCurrency = converter.fromUsdAmount(feeDifference.usd)
 
+  const paymentHash = paymentFlow.paymentHashForFlow()
+  if (paymentHash instanceof Error) return paymentHash
+
   const metadata: FeeReimbursementLedgerMetadata = {
-    hash: paymentFlow.paymentHash,
+    hash: paymentHash,
     type: LedgerTransactionType.LnFeeReimbursement,
     pending: false,
     related_journal: journalId,
@@ -82,7 +85,7 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
   }
 
   const txMetadata: LnLedgerTransactionMetadataUpdate = {
-    hash: paymentFlow.paymentHash,
+    hash: paymentHash,
     revealedPreImage,
   }
 

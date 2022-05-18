@@ -469,7 +469,8 @@ const executePaymentViaIntraledger = async ({
   })
   if (limitCheck instanceof Error) return limitCheck
 
-  const { paymentHash } = paymentFlow
+  const paymentHash = paymentFlow.paymentHashForFlow()
+  if (paymentHash instanceof Error) return paymentHash
 
   const {
     recipientWalletId,

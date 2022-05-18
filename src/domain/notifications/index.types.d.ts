@@ -36,6 +36,20 @@ type IntraLedgerArgs = {
   displayCurrencyPerSat?: DisplayCurrencyPerSat
 }
 
+type IntraLedgerPaidBitcoinWalletArgs = {
+  senderWalletId: WalletId
+  recipientWalletId: WalletId
+  sats: Satoshis | bigint
+  displayCurrencyPerSat?: DisplayCurrencyPerSat
+}
+
+type IntraLedgerPaidUsdWalletArgs = {
+  senderWalletId: WalletId
+  recipientWalletId: WalletId
+  cents: UsdCents | bigint
+  displayCurrencyPerSat?: DisplayCurrencyPerSat
+}
+
 type SendBalanceArgs = {
   balance: CurrencyBaseAmount
   walletCurrency: WalletCurrency
@@ -56,6 +70,12 @@ interface INotificationsService {
   priceUpdate: (DisplayCurrencyPerSat: number) => void
   lnInvoiceBitcoinWalletPaid: (args: LnInvoicePaidBitcoinWalletArgs) => void
   lnInvoiceUsdWalletPaid: (args: LnInvoicePaidUsdWalletArgs) => void
+  intraLedgerBtcWalletPaid(
+    args: IntraLedgerPaidBitcoinWalletArgs,
+  ): Promise<void | NotificationsServiceError>
+  intraLedgerUsdWalletPaid(
+    args: IntraLedgerPaidUsdWalletArgs,
+  ): Promise<void | NotificationsServiceError>
   intraLedgerPaid(args: IntraLedgerArgs): Promise<void | NotificationsServiceError>
   sendBalance(args: SendBalanceArgs): Promise<void | NotImplementedError>
 }

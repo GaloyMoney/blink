@@ -2,6 +2,7 @@ import { ValidationError, WalletCurrency } from "@domain/shared"
 import { SelfPaymentError } from "@domain/errors"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
+import { generateIntraLedgerHash } from "@domain/payments/get-intraledger-hash"
 
 import { InvalidLightningPaymentFlowBuilderStateError } from "./errors"
 import { LnFees } from "./ln-fees"
@@ -11,16 +12,19 @@ import { PaymentFlow } from "./payment-flow"
 export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
   config: LightningPaymentFlowBuilderConfig,
 ): LightningPaymentFlowBuilder<S> => {
-  const settlementMethodFromInvoice = (
-    invoice: LnInvoice,
+  const settlementMethodFromDestination = (
+    destination: Pubkey | undefined,
   ): {
     settlementMethod: SettlementMethod
     btcProtocolFee: BtcPaymentAmount | undefined
     usdProtocolFee: UsdPaymentAmount | undefined
   } => {
-    const settlementMethod = config.localNodeIds.includes(invoice.destination)
-      ? SettlementMethod.IntraLedger
-      : SettlementMethod.Lightning
+    const settlementMethod =
+      destination === undefined
+        ? SettlementMethod.IntraLedger
+        : config.localNodeIds.includes(destination)
+        ? SettlementMethod.IntraLedger
+        : SettlementMethod.Lightning
     return {
       settlementMethod,
       btcProtocolFee:
@@ -44,7 +48,8 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     }
     return LPFBWithInvoice({
       ...config,
-      ...settlementMethodFromInvoice(invoice),
+      ...settlementMethodFromDestination(invoice.destination),
+      paymentInitiationMethod: PaymentInitiationMethod.Lightning,
       paymentHash: invoice.paymentHash,
       btcPaymentAmount: invoice.paymentAmount,
       inputAmount: invoice.paymentAmount.amount,
@@ -61,16 +66,35 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
   }): LPFBWithInvoice<S> | LPFBWithError => {
     return LPFBWithInvoice({
       ...config,
-      ...settlementMethodFromInvoice(invoice),
+      ...settlementMethodFromDestination(invoice.destination),
+      paymentInitiationMethod: PaymentInitiationMethod.Lightning,
       paymentHash: invoice.paymentHash,
       uncheckedAmount,
       descriptionFromInvoice: invoice.description,
     })
   }
 
+  const withoutInvoice = ({
+    uncheckedAmount,
+    description,
+  }: {
+    uncheckedAmount: number
+    description: string
+  }): LPFBWithInvoice<S> | LPFBWithError => {
+    return LPFBWithInvoice({
+      ...config,
+      ...settlementMethodFromDestination(undefined),
+      paymentInitiationMethod: PaymentInitiationMethod.IntraLedger,
+      intraLedgerHash: generateIntraLedgerHash(),
+      uncheckedAmount,
+      descriptionFromInvoice: description,
+    })
+  }
+
   return {
     withInvoice,
     withNoAmountInvoice,
+    withoutInvoice,
   }
 }
 
@@ -153,7 +177,7 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
     usdPaymentAmount,
     username: recipientUsername,
   }: WalletDescriptor<R> & {
-    pubkey: Pubkey
+    pubkey?: Pubkey
     usdPaymentAmount?: UsdPaymentAmount
     username?: Username
   }): LPFBWithRecipientWallet<S, R> | LPFBWithError => {
@@ -376,6 +400,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       recipientUsername: state.recipientUsername,
 
       paymentHash: state.paymentHash,
+      intraLedgerHash: state.intraLedgerHash,
       descriptionFromInvoice: state.descriptionFromInvoice,
       btcPaymentAmount: state.btcPaymentAmount,
       usdPaymentAmount: state.usdPaymentAmount,
@@ -384,7 +409,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       paymentSentAndPending: false,
 
       settlementMethod: state.settlementMethod,
-      paymentInitiationMethod: PaymentInitiationMethod.Lightning,
+      paymentInitiationMethod: state.paymentInitiationMethod,
 
       btcProtocolFee: state.btcProtocolFee,
       usdProtocolFee: state.usdProtocolFee,

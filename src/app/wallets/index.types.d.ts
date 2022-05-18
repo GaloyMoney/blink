@@ -67,7 +67,7 @@ type IntraLedgerPaymentSendUsernameArgs = PaymentSendArgs & {
 
 type IntraLedgerPaymentSendWalletIdArgs = PaymentSendArgs & {
   recipientWalletId: WalletId
-  amount: Satoshis
+  amount: number
 }
 
 type IntraLedgerPaymentSendWithTwoFAArgs = IntraLedgerPaymentSendUsernameArgs & {

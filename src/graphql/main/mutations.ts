@@ -2,6 +2,7 @@ import { GT } from "@graphql/index"
 
 import DeviceNotificationTokenCreateMutation from "@graphql/root/mutation/device-notification-token-create"
 import IntraLedgerPaymentSendMutation from "@graphql/root/mutation/intraledger-payment-send"
+import IntraLedgerUsdPaymentSendMutation from "@graphql/root/mutation/intraledger-usd-payment-send"
 import LnInvoiceCreateMutation from "@graphql/root/mutation/ln-invoice-create"
 import LnUsdInvoiceCreateMutation from "@graphql/root/mutation/ln-usd-invoice-create"
 import LnInvoiceCreateOnBehalfOfRecipientMutation from "@graphql/root/mutation/ln-invoice-create-on-behalf-of-recipient"
@@ -78,6 +79,7 @@ const fields = {
   lnNoAmountUsdInvoicePaymentSend: LnNoAmountUsdInvoicePaymentSendMutation,
 
   intraLedgerPaymentSend: IntraLedgerPaymentSendMutation,
+  intraLedgerUsdPaymentSend: IntraLedgerUsdPaymentSendMutation,
 
   onChainAddressCreate: OnChainAddressCreateMutation,
   onChainAddressCurrent: OnChainAddressCurrentMutation,

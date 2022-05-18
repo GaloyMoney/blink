@@ -1,5 +1,6 @@
 import { addEarn } from "@app/accounts/add-earn"
-import { getTransactionsForWalletId, intraledgerPaymentSendWalletId } from "@app/wallets"
+import { getTransactionsForWalletId } from "@app/wallets"
+import { Payments } from "@app"
 import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
@@ -116,7 +117,7 @@ describe("UserWallet - addEarn", () => {
     if (funderWallet instanceof Error) throw funderWallet
     const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
     if (funderAccount instanceof Error) throw funderAccount
-    const payment = await intraledgerPaymentSendWalletId({
+    const payment = await Payments.intraledgerPaymentSendWalletId({
       senderWalletId: funderWalletId,
       senderAccount: funderAccount,
       recipientWalletId: walletIdB,

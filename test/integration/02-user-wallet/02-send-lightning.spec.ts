@@ -12,7 +12,7 @@ import {
   PaymentStatus,
 } from "@domain/bitcoin/lightning"
 import { LedgerTransactionType } from "@domain/ledger"
-import { PriceRatio } from "@domain/payments"
+import { PriceRatio, ZeroAmountForUsdRecipientError } from "@domain/payments"
 import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   LimitsExceededError,
@@ -69,6 +69,8 @@ import {
 import { getBalanceHelper, getRemainingTwoFALimit } from "test/helpers/wallet"
 
 import { DealerPriceService } from "test/mocks/dealer-price"
+
+const dealerFns = DealerPriceService()
 
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 // required to avoid withdrawal limits validation
@@ -281,6 +283,27 @@ describe("UserWallet - Lightning Pay", () => {
     expect(userCTxn.settlementVia.type).toBe("intraledger")
   })
 
+  it("sends to another Galoy user an amount less than 1 cent", async () => {
+    const lnInvoice = await Wallets.addInvoiceForSelf({
+      walletId: walletIdC as WalletId,
+      amount: toSats(1),
+    })
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentRequest: invoice } = lnInvoice
+
+    const paymentResult = await Payments.payInvoiceByWalletId({
+      paymentRequest: invoice,
+      memo: null,
+      senderWalletId: walletIdB,
+      senderAccount: accountB,
+      logger: baseLogger,
+    })
+    expect(paymentResult).not.toBeInstanceOf(Error)
+    if (paymentResult instanceof Error) throw paymentResult
+
+    expect(paymentResult).toBe(PaymentSendStatus.Success)
+  })
+
   it("sends to another Galoy user with two different memos", async () => {
     const memo = "invoiceMemo"
     const memoPayer = "my memo as a payer"
@@ -328,8 +351,8 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("sends to another Galoy user a push payment", async () => {
-    const res = await Wallets.intraledgerPaymentSendUsername({
-      recipientUsername: usernameA,
+    const res = await Payments.intraledgerPaymentSendWalletId({
+      recipientWalletId: walletIdA,
       memo: "",
       amount: amountInvoice,
       senderWalletId: walletIdB,
@@ -358,10 +381,18 @@ describe("UserWallet - Lightning Pay", () => {
     expect(finalBalanceA).toBe(initBalanceA + amountInvoice)
     expect(finalBalanceB).toBe(initBalanceB - amountInvoice)
 
+    expect(txWalletA[0].initiationVia).toHaveProperty(
+      "type",
+      PaymentInitiationMethod.IntraLedger,
+    )
     expect(txWalletA[0].initiationVia).toHaveProperty("counterPartyUsername", usernameB)
     expect(userBTransaction[0].initiationVia).toHaveProperty(
       "counterPartyUsername",
       usernameA,
+    )
+    expect(userBTransaction[0].initiationVia).toHaveProperty(
+      "type",
+      PaymentInitiationMethod.IntraLedger,
     )
 
     let userRecordA = await getUserRecordByTestUserRef("A")
@@ -383,8 +414,8 @@ describe("UserWallet - Lightning Pay", () => {
     )
     const txnCount1 = contact1?.transactionsCount || 0
 
-    const res2 = await Wallets.intraledgerPaymentSendUsername({
-      recipientUsername: usernameA,
+    const res2 = await Payments.intraledgerPaymentSendWalletId({
+      recipientWalletId: walletIdA,
       memo: "",
       amount: amountInvoice,
       senderWalletId: walletIdB,
@@ -525,13 +556,39 @@ describe("UserWallet - Lightning Pay", () => {
     expect(imbalanceFinal).toBe(imbalanceInit - amountInvoice)
   })
 
+  it("pay zero amount invoice with amount less than 1 cent", async () => {
+    const imbalanceCalc = ImbalanceCalculator({
+      method: WithdrawalFeePriceMethod.proportionalOnImbalance,
+      sinceDaysAgo: 1 as Days,
+      volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
+      volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
+    })
+
+    const imbalanceInit = await imbalanceCalc.getSwapOutImbalance(walletIdB)
+    if (imbalanceInit instanceof Error) throw imbalanceInit
+
+    const { request } = await createInvoice({ lnd: lndOutside1 })
+
+    // Test payment is successful
+    const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
+      amount: toSats(1),
+      senderWalletId: walletIdB,
+      senderAccount: accountB,
+      logger: baseLogger,
+    })
+    if (paymentResult instanceof Error) throw paymentResult
+    expect(paymentResult).toBe(PaymentSendStatus.Success)
+  })
+
   it("filters spam from send to another Galoy user as push payment", async () => {
     // TODO: good candidate for a unit test?
 
     const satsBelow = 100
     const memoSpamBelowThreshold = "Spam BELOW threshold"
-    const resBelowThreshold = await Wallets.intraledgerPaymentSendUsername({
-      recipientUsername: usernameA,
+    const resBelowThreshold = await Payments.intraledgerPaymentSendWalletId({
+      recipientWalletId: walletIdA,
       memo: memoSpamBelowThreshold,
       amount: toSats(satsBelow),
       senderWalletId: walletIdB,
@@ -542,8 +599,8 @@ describe("UserWallet - Lightning Pay", () => {
 
     const satsAbove = 1100
     const memoSpamAboveThreshold = "Spam ABOVE threshold"
-    const resAboveThreshold = await Wallets.intraledgerPaymentSendUsername({
-      recipientUsername: usernameA,
+    const resAboveThreshold = await Payments.intraledgerPaymentSendWalletId({
+      recipientWalletId: walletIdA,
       memo: memoSpamAboveThreshold,
       amount: toSats(satsAbove),
       senderWalletId: walletIdB,
@@ -633,8 +690,8 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if sends to self an on us push payment", async () => {
-    const paymentResult = await Wallets.intraledgerPaymentSendUsername({
-      recipientUsername: usernameB,
+    const paymentResult = await Payments.intraledgerPaymentSendWalletId({
+      recipientWalletId: walletIdB,
       memo: "",
       amount: amountInvoice,
       senderWalletId: walletIdB,
@@ -685,7 +742,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails if user sends balance amount without accounting for fee", async () => {
-    const res = await Wallets.intraledgerPaymentSendWalletId({
+    const res = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId: walletIdH,
       memo: "",
       amount: toSats(1000),
@@ -710,7 +767,7 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("sends balance amount accounting for fee", async () => {
-    const res = await Wallets.intraledgerPaymentSendWalletId({
+    const res = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId: walletIdH,
       memo: "",
       amount: toSats(1000),
@@ -1271,7 +1328,6 @@ describe("USD Wallets - Lightning Pay", () => {
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
 
-      const dealerFns = DealerPriceService()
       const cents = await dealerFns.getCentsFromSatsForImmediateBuy(amountPayment)
       if (cents instanceof Error) throw cents
 
@@ -1378,6 +1434,35 @@ describe("USD Wallets - Lightning Pay", () => {
 
       expect(finalBalanceB).toBe(initBalanceUsdB + amountPayment)
       expect(finalBalanceA).toBe(initBalanceA - sats)
+    })
+
+    it("fails to pay internal invoice with less-than-1-cent amount from btc wallet to usd wallet", async () => {
+      const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
+      const initBalanceA = toSats(await getBalanceHelper(walletIdA))
+
+      const amountPayment = toSats(1)
+
+      const request = await Wallets.addInvoiceNoAmountForSelf({
+        walletId: walletIdUsdB,
+      })
+      if (request instanceof Error) throw request
+      const { paymentRequest } = request
+
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+        paymentRequest,
+        memo: null,
+        senderWalletId: walletIdA,
+        senderAccount: accountA,
+        amount: amountPayment,
+        logger: baseLogger,
+      })
+      expect(paymentResult).toBeInstanceOf(ZeroAmountForUsdRecipientError)
+
+      const finalBalanceB = await getBalanceHelper(walletIdUsdB)
+      const finalBalanceA = await getBalanceHelper(walletIdA)
+
+      expect(finalBalanceB).toBe(initBalanceUsdB)
+      expect(finalBalanceA).toBe(initBalanceA)
     })
   })
   describe("No amount lightning invoices", () => {
@@ -1507,6 +1592,161 @@ describe("USD Wallets - Lightning Pay", () => {
 
       expect(finalBalanceB).toBe(initBalanceUsdB + cents)
       expect(finalBalanceA).toBe(initBalanceA - amountPayment)
+    })
+  })
+  describe("Intraledger payments", () => {
+    const btcSendAmount = 50_000
+    const btcPromise = dealerFns.getCentsFromSatsForImmediateBuy(toSats(btcSendAmount))
+
+    const usdSendAmount = 100
+    const usdPromise = dealerFns.getSatsFromCentsForImmediateSell(toCents(usdSendAmount))
+
+    const testIntraledgerSend = async ({
+      senderWalletId,
+      senderAccount,
+      recipientWalletId,
+      senderAmountInvoice,
+      recipientAmountInvoice,
+    }) => {
+      const senderInitBalance = toSats(await getBalanceHelper(senderWalletId))
+      const recipientInitBalance = toSats(await getBalanceHelper(recipientWalletId))
+
+      const res = await Payments.intraledgerPaymentSendWalletId({
+        recipientWalletId: recipientWalletId,
+        memo: "",
+        amount: senderAmountInvoice,
+        senderWalletId: senderWalletId,
+        senderAccount,
+        logger: baseLogger,
+      })
+      if (res instanceof Error) return res
+      expect(res).toBe(PaymentSendStatus.Success)
+
+      const recipientFinalBalance = await getBalanceHelper(recipientWalletId)
+      const { result: txWalletA, error } = await Wallets.getTransactionsForWalletId({
+        walletId: recipientWalletId,
+      })
+      if (error instanceof Error || txWalletA === null) {
+        return error
+      }
+      expect(recipientFinalBalance).toBe(recipientInitBalance + recipientAmountInvoice)
+
+      const senderFinalBalance = await getBalanceHelper(senderWalletId)
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: senderWalletId,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        return txResult.error
+      }
+      expect(senderFinalBalance).toBe(senderInitBalance - senderAmountInvoice)
+    }
+
+    it("sends to self, conversion from BTC wallet to USD wallet", async () => {
+      const btcSendAmountInUsd = await Promise.resolve(btcPromise)
+      if (btcSendAmountInUsd instanceof Error) throw btcSendAmountInUsd
+
+      const res = await testIntraledgerSend({
+        senderWalletId: walletIdA,
+        senderAccount: accountA,
+        recipientWalletId: walletIdUsdA,
+        senderAmountInvoice: btcSendAmount,
+        recipientAmountInvoice: btcSendAmountInUsd,
+      })
+      expect(res).not.toBeInstanceOf(Error)
+    })
+
+    it("sends to self, conversion from USD wallet to BTC wallet", async () => {
+      const usdSendAmountInBtc = await Promise.resolve(usdPromise)
+      if (usdSendAmountInBtc instanceof Error) throw usdSendAmountInBtc
+
+      const res = await testIntraledgerSend({
+        senderWalletId: walletIdUsdA,
+        senderAccount: accountA,
+        recipientWalletId: walletIdA,
+        senderAmountInvoice: usdSendAmount,
+        recipientAmountInvoice: usdSendAmountInBtc,
+      })
+      expect(res).not.toBeInstanceOf(Error)
+    })
+
+    it("fails to self, from BTC wallet to same BTC wallet", async () => {
+      const walletId = walletIdA
+      const res = await testIntraledgerSend({
+        senderWalletId: walletId,
+        senderAccount: accountA,
+        recipientWalletId: walletId,
+        senderAmountInvoice: btcSendAmount,
+        recipientAmountInvoice: btcSendAmount,
+      })
+      expect(res).toBeInstanceOf(DomainSelfPaymentError)
+    })
+
+    it("fails to self, from USD wallet to same USD wallet", async () => {
+      const walletId = walletIdUsdA
+      const res = await testIntraledgerSend({
+        senderWalletId: walletId,
+        senderAccount: accountA,
+        recipientWalletId: walletId,
+        senderAmountInvoice: usdSendAmount,
+        recipientAmountInvoice: usdSendAmount,
+      })
+      expect(res).toBeInstanceOf(DomainSelfPaymentError)
+    })
+
+    it("sends from BTC wallet to another Galoy user's USD wallet", async () => {
+      const btcSendAmountInUsd = await Promise.resolve(btcPromise)
+      if (btcSendAmountInUsd instanceof Error) throw btcSendAmountInUsd
+
+      const res = await testIntraledgerSend({
+        senderWalletId: walletIdA,
+        senderAccount: accountA,
+        recipientWalletId: walletIdUsdB,
+        senderAmountInvoice: btcSendAmount,
+        recipientAmountInvoice: btcSendAmountInUsd,
+      })
+      expect(res).not.toBeInstanceOf(Error)
+    })
+
+    it("sends from USD wallet to another Galoy user's BTC wallet", async () => {
+      const usdSendAmountInBtc = await Promise.resolve(usdPromise)
+      if (usdSendAmountInBtc instanceof Error) throw usdSendAmountInBtc
+
+      const res = await testIntraledgerSend({
+        senderWalletId: walletIdUsdA,
+        senderAccount: accountA,
+        recipientWalletId: walletIdB,
+        senderAmountInvoice: usdSendAmount,
+        recipientAmountInvoice: usdSendAmountInBtc,
+      })
+      expect(res).not.toBeInstanceOf(Error)
+    })
+
+    it("sends from USD wallet to another Galoy user's USD wallet", async () => {
+      const res = await testIntraledgerSend({
+        senderWalletId: walletIdUsdB,
+        senderAccount: accountB,
+        recipientWalletId: walletIdUsdA,
+        senderAmountInvoice: usdSendAmount,
+        recipientAmountInvoice: usdSendAmount,
+      })
+      expect(res).not.toBeInstanceOf(Error)
+    })
+
+    it("fails to send less-than-1-cent amount from BTC wallet to USD wallet", async () => {
+      const btcSendAmount = 10
+      const btcSendAmountInUsd = await dealerFns.getCentsFromSatsForImmediateBuy(
+        toSats(btcSendAmount),
+      )
+      expect(btcSendAmountInUsd).toBe(0)
+
+      const res = await testIntraledgerSend({
+        senderWalletId: walletIdA,
+        senderAccount: accountA,
+        recipientWalletId: walletIdUsdB,
+        senderAmountInvoice: btcSendAmount,
+        recipientAmountInvoice: btcSendAmountInUsd,
+      })
+      expect(res).toBeInstanceOf(ZeroAmountForUsdRecipientError)
     })
   })
 })

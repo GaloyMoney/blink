@@ -282,6 +282,124 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     }
   }
 
+  const intraLedgerBtcWalletPaid = async ({
+    senderWalletId,
+    recipientWalletId,
+    sats,
+    displayCurrencyPerSat,
+  }: IntraLedgerPaidBitcoinWalletArgs): Promise<void | NotificationsServiceError> => {
+    try {
+      const publish = async ({
+        walletId,
+        type,
+      }: {
+        walletId: WalletId
+        type: NotificationType
+      }) => {
+        const wallet = await WalletsRepository().findById(walletId)
+        if (wallet instanceof Error) return wallet
+
+        const account = await AccountsRepository().findById(wallet.accountId)
+        if (account instanceof Error) return account
+
+        // Notify the recipient (via GraphQL subscription if any)
+        const accountUpdatedEventName = accountUpdateEvent(account.id)
+
+        pubsub.publish(accountUpdatedEventName, {
+          intraLedger: {
+            walletId,
+            txNotificationType: type,
+            sats: toSats(Number(sats)),
+            displayCurrencyPerSat,
+          },
+        })
+
+        const user = await UsersRepository().findById(account.ownerId)
+        if (user instanceof Error) return user
+
+        // Do not await this call for quicker processing
+        transactionBitcoinNotification({
+          type: NotificationType.IntraLedgerPayment,
+          user,
+          logger,
+          sats: toSats(Number(sats)),
+          displayCurrencyPerSat,
+        })
+      }
+
+      publish({
+        walletId: senderWalletId,
+        type: NotificationType.IntraLedgerPayment,
+      })
+
+      publish({
+        walletId: recipientWalletId,
+        type: NotificationType.IntraLedgerReceipt,
+      })
+    } catch (err) {
+      return new NotificationsServiceError(err)
+    }
+  }
+
+  const intraLedgerUsdWalletPaid = async ({
+    senderWalletId,
+    recipientWalletId,
+    cents,
+    displayCurrencyPerSat,
+  }: IntraLedgerPaidUsdWalletArgs): Promise<void | NotificationsServiceError> => {
+    try {
+      const publish = async ({
+        walletId,
+        type,
+      }: {
+        walletId: WalletId
+        type: NotificationType
+      }) => {
+        const wallet = await WalletsRepository().findById(walletId)
+        if (wallet instanceof Error) return wallet
+
+        const account = await AccountsRepository().findById(wallet.accountId)
+        if (account instanceof Error) return account
+
+        // Notify the recipient (via GraphQL subscription if any)
+        const accountUpdatedEventName = accountUpdateEvent(account.id)
+
+        pubsub.publish(accountUpdatedEventName, {
+          intraLedger: {
+            walletId,
+            txNotificationType: type,
+            cents: toCents(Number(cents)),
+            displayCurrencyPerSat,
+          },
+        })
+
+        const user = await UsersRepository().findById(account.ownerId)
+        if (user instanceof Error) return user
+
+        // Do not await this call for quicker processing
+        transactionUsdNotification({
+          type: NotificationType.IntraLedgerPayment,
+          user,
+          logger,
+          cents: toCents(Number(cents)),
+          displayCurrencyPerSat,
+        })
+      }
+
+      publish({
+        walletId: senderWalletId,
+        type: NotificationType.IntraLedgerPayment,
+      })
+
+      publish({
+        walletId: recipientWalletId,
+        type: NotificationType.IntraLedgerReceipt,
+      })
+    } catch (err) {
+      return new NotificationsServiceError(err)
+    }
+  }
+
   const sendBalance = async ({
     balance,
     walletCurrency,
@@ -354,6 +472,8 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     lnInvoiceBitcoinWalletPaid,
     lnInvoiceUsdWalletPaid,
     intraLedgerPaid,
+    intraLedgerBtcWalletPaid,
+    intraLedgerUsdWalletPaid,
     sendBalance,
   }
 }
