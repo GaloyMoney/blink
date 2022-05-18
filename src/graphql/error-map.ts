@@ -182,6 +182,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Reward for quiz question was already claimed."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "ZeroAmountForUsdRecipientError":
+      message = "Amount sent was too low for recipient's usd wallet."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "InvalidPhoneMetadataForRewardError":
     case "InvalidIPMetadataForRewardError":
       message = "Unsupported phone carrier for rewards."

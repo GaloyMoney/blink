@@ -5,9 +5,11 @@ import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
+  InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
   NoRecipientDetailsForIntraLedgerFlowError,
   PriceRatio,
+  ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 
 import {
@@ -81,6 +83,9 @@ export const intraledgerPaymentSendWalletId = async ({
   if (builderWithConversion instanceof Error) return builderWithConversion
 
   const paymentFlow = await builderWithConversion.withoutRoute()
+  if (paymentFlow instanceof InvalidZeroAmountPriceRatioInputError) {
+    return new ZeroAmountForUsdRecipientError()
+  }
   if (paymentFlow instanceof Error) return paymentFlow
 
   addAttributesToCurrentSpan({

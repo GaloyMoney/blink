@@ -12,7 +12,7 @@ import {
   PaymentStatus,
 } from "@domain/bitcoin/lightning"
 import { LedgerTransactionType } from "@domain/ledger"
-import { PriceRatio } from "@domain/payments"
+import { PriceRatio, ZeroAmountForUsdRecipientError } from "@domain/payments"
 import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   LimitsExceededError,
@@ -1656,21 +1656,21 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(res).not.toBeInstanceOf(Error)
     })
 
-    it.skip("sends 10 sats (e.g. reward) from BTC wallet to USD wallet", async () => {
+    it("fails to send less-than-1-cent amount from BTC wallet to USD wallet", async () => {
       const btcSendAmount = 10
       const btcSendAmountInUsd = await dealerFns.getCentsFromSatsForImmediateBuy(
         toSats(btcSendAmount),
       )
-      expect(btcSendAmountInUsd).not.toBe(0)
+      expect(btcSendAmountInUsd).toBe(0)
 
       const res = await testIntraledgerSend({
         senderWalletId: walletIdA,
-        senderAccount: accountB,
-        recipientWalletId: walletIdUsdA,
+        senderAccount: accountA,
+        recipientWalletId: walletIdUsdB,
         senderAmountInvoice: btcSendAmount,
         recipientAmountInvoice: btcSendAmountInUsd,
       })
-      expect(res).not.toBeInstanceOf(Error)
+      expect(res).toBeInstanceOf(ZeroAmountForUsdRecipientError)
     })
   })
 })
