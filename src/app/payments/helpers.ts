@@ -1,6 +1,10 @@
 import { getTwoFALimits, getAccountLimits, MS_PER_DAY, getDealerConfig } from "@config"
 import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
-import { LightningPaymentFlowBuilder } from "@domain/payments"
+import {
+  InvalidZeroAmountPriceRatioInputError,
+  LightningPaymentFlowBuilder,
+  ZeroAmountForUsdRecipientError,
+} from "@domain/payments"
 import { ErrorLevel, ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
 import { AlreadyPaidError } from "@domain/errors"
 import { CENTS_PER_USD } from "@domain/fiat"
@@ -163,10 +167,20 @@ export const constructPaymentFlowBuilder = async ({
     builderAfterRecipientStep = builderWithSenderWallet.withoutRecipientWallet()
   }
 
-  return builderAfterRecipientStep.withConversion({
+  const builderWithConversion = await builderAfterRecipientStep.withConversion({
     usdFromBtc,
     btcFromUsd,
   })
+
+  const check = await builderWithConversion.usdPaymentAmount()
+  if (
+    check instanceof InvalidZeroAmountPriceRatioInputError &&
+    builderWithSenderWallet.isIntraLedger() === true
+  ) {
+    return new ZeroAmountForUsdRecipientError()
+  }
+
+  return builderWithConversion
 }
 
 const recipientDetailsFromInvoice = async (invoice) => {
