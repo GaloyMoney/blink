@@ -48,6 +48,7 @@ import {
   newCheckWithdrawalLimits,
   newCheckIntraledgerLimits,
   newCheckTwoFALimits,
+  getPriceRatioForLimits,
 } from "./helpers"
 
 const dealer = NewDealerPriceService()
@@ -82,11 +83,8 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
   if (user instanceof Error) return user
   const { twoFA } = user
 
-  const priceRatio = PriceRatio({
-    usd: paymentFlow.usdPaymentAmount,
-    btc: paymentFlow.btcPaymentAmount,
-  })
-  if (priceRatio instanceof Error) return priceRatio
+  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
+  if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const twoFACheck = twoFA?.secret
     ? await newCheckAndVerifyTwoFA({
@@ -94,7 +92,7 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
         wallet: senderWallet,
-        priceRatio,
+        priceRatio: priceRatioForLimits,
       })
     : true
   if (twoFACheck instanceof Error) return twoFACheck
@@ -182,11 +180,8 @@ export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
   if (user instanceof Error) return user
   const { twoFA } = user
 
-  const priceRatio = PriceRatio({
-    usd: paymentFlow.usdPaymentAmount,
-    btc: paymentFlow.btcPaymentAmount,
-  })
-  if (priceRatio instanceof Error) return priceRatio
+  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
+  if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const twoFACheck = twoFA?.secret
     ? await newCheckAndVerifyTwoFA({
@@ -194,7 +189,7 @@ export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
         twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
         twoFASecret: twoFA.secret,
         wallet: senderWallet,
-        priceRatio,
+        priceRatio: priceRatioForLimits,
       })
     : true
   if (twoFACheck instanceof Error) return twoFACheck
@@ -456,16 +451,13 @@ const executePaymentViaIntraledger = async ({
     "payment.settlement_method": SettlementMethod.IntraLedger,
   })
 
-  const priceRatio = PriceRatio({
-    usd: paymentFlow.usdPaymentAmount,
-    btc: paymentFlow.btcPaymentAmount,
-  })
-  if (priceRatio instanceof Error) return priceRatio
+  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
+  if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const limitCheck = await newCheckIntraledgerLimits({
     amount: paymentFlow.usdPaymentAmount,
     wallet: senderWallet,
-    priceRatio,
+    priceRatio: priceRatioForLimits,
   })
   if (limitCheck instanceof Error) return limitCheck
 
@@ -590,16 +582,13 @@ const executePaymentViaLn = async ({
     "payment.settlement_method": SettlementMethod.Lightning,
   })
 
-  const priceRatio = PriceRatio({
-    usd: paymentFlow.usdPaymentAmount,
-    btc: paymentFlow.btcPaymentAmount,
-  })
-  if (priceRatio instanceof Error) return priceRatio
+  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
+  if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const limitCheck = await newCheckWithdrawalLimits({
     amount: paymentFlow.usdPaymentAmount,
     wallet: senderWallet,
-    priceRatio,
+    priceRatio: priceRatioForLimits,
   })
   if (limitCheck instanceof Error) return limitCheck
 

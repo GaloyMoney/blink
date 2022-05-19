@@ -1,8 +1,15 @@
-import { getTwoFALimits, getAccountLimits, MS_PER_DAY, getDealerConfig } from "@config"
+import {
+  getTwoFALimits,
+  getAccountLimits,
+  MS_PER_DAY,
+  getDealerConfig,
+  MIN_SATS_FOR_PRICE_RATIO_PRECISION,
+} from "@config"
 import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
 import {
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
+  PriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import { ErrorLevel, ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
@@ -303,5 +310,33 @@ export const newCheckTwoFALimits = async ({
   return checkTwoFA({
     amount,
     walletVolume,
+  })
+}
+
+export const getPriceRatioForLimits = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>(
+  paymentFlow: PaymentFlow<S, R>,
+) => {
+  const amount = MIN_SATS_FOR_PRICE_RATIO_PRECISION
+
+  if (paymentFlow.btcPaymentAmount.amount < amount) {
+    const btcPaymentAmountForRatio = {
+      amount,
+      currency: WalletCurrency.Btc,
+    }
+    const usdPaymentAmountForRatio = await usdFromBtcMidPriceFn(btcPaymentAmountForRatio)
+    if (usdPaymentAmountForRatio instanceof Error) return usdPaymentAmountForRatio
+
+    return PriceRatio({
+      usd: usdPaymentAmountForRatio,
+      btc: btcPaymentAmountForRatio,
+    })
+  }
+
+  return PriceRatio({
+    usd: paymentFlow.usdPaymentAmount,
+    btc: paymentFlow.btcPaymentAmount,
   })
 }
