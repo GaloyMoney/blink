@@ -1,4 +1,10 @@
-import { getTwoFALimits, getAccountLimits, MS_PER_DAY, getDealerConfig } from "@config"
+import {
+  getTwoFALimits,
+  getAccountLimits,
+  MS_PER_DAY,
+  getDealerConfig,
+  MIN_SATS_FOR_PRICE_RATIO_PRECISION,
+} from "@config"
 import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
 import {
   InvalidZeroAmountPriceRatioInputError,
@@ -313,11 +319,11 @@ export const getPriceRatioForLimits = async <
 >(
   paymentFlow: PaymentFlow<S, R>,
 ) => {
-  const minSatsForPrecision = 5000n
+  const amount = MIN_SATS_FOR_PRICE_RATIO_PRECISION
 
-  if (paymentFlow.btcPaymentAmount.amount < minSatsForPrecision) {
+  if (paymentFlow.btcPaymentAmount.amount < amount) {
     const btcPaymentAmountForRatio = {
-      amount: minSatsForPrecision,
+      amount,
       currency: WalletCurrency.Btc,
     }
     const usdPaymentAmountForRatio = await usdFromBtcMidPriceFn(btcPaymentAmountForRatio)
