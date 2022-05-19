@@ -1,4 +1,5 @@
 /* eslint @typescript-eslint/no-var-requires: "off" */
+// @ts-expect-error ts complain about "Cannot redeclare block-scoped variable 'crypto'"
 const { randomUUID } = require("crypto")
 
 module.exports = {
