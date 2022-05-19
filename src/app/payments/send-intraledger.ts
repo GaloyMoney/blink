@@ -91,9 +91,6 @@ export const intraledgerPaymentSendWalletId = async ({
 
   addAttributesToCurrentSpan({
     "payment.intraLedger.inputAmount": paymentFlow.inputAmount.toString(),
-    "payment.intraLedger.senderWalletId": paymentFlow.senderWalletId,
-    "payment.intraLedger.senderWalletCurrency": paymentFlow.senderWalletCurrency,
-    "payment.intraLedger.recipientWalletId": paymentFlow.recipientWalletId,
     "payment.intraLedger.hash": paymentFlow.intraLedgerHash,
     "payment.intraLedger.description": memo || "",
   })
@@ -149,6 +146,13 @@ const validateIntraledgerPaymentInputs = async ({
 
   const recipientAccount = await AccountsRepository().findById(recipientAccountId)
   if (recipientAccount instanceof Error) return recipientAccount
+
+  addAttributesToCurrentSpan({
+    "payment.intraLedger.senderWalletId": senderWalletId,
+    "payment.intraLedger.senderWalletCurrency": senderWallet.currency,
+    "payment.intraLedger.recipientWalletId": recipientWalletId,
+    "payment.intraLedger.recipientWalletCurrency": recipientWallet.currency,
+  })
 
   return {
     senderWallet,
