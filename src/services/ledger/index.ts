@@ -224,7 +224,7 @@ export const LedgerService = (): ILedgerService => {
           })
         }
       }
-      return { amount: BigInt(balance), currency: walletDescriptor.currency }
+      return { amount: BigInt(Math.floor(balance)), currency: walletDescriptor.currency }
     } catch (err) {
       return new UnknownLedgerError(err)
     }
