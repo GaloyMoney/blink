@@ -3,6 +3,7 @@ import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
 import {
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
+  PriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import { ErrorLevel, ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
@@ -303,5 +304,33 @@ export const newCheckTwoFALimits = async ({
   return checkTwoFA({
     amount,
     walletVolume,
+  })
+}
+
+export const getPriceRatioForLimits = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>(
+  paymentFlow: PaymentFlow<S, R>,
+) => {
+  const minSatsForPrecision = 5000n
+
+  if (paymentFlow.btcPaymentAmount.amount < minSatsForPrecision) {
+    const btcPaymentAmountForRatio = {
+      amount: minSatsForPrecision,
+      currency: WalletCurrency.Btc,
+    }
+    const usdPaymentAmountForRatio = await usdFromBtcMidPriceFn(btcPaymentAmountForRatio)
+    if (usdPaymentAmountForRatio instanceof Error) return usdPaymentAmountForRatio
+
+    return PriceRatio({
+      usd: usdPaymentAmountForRatio,
+      btc: btcPaymentAmountForRatio,
+    })
+  }
+
+  return PriceRatio({
+    usd: paymentFlow.usdPaymentAmount,
+    btc: paymentFlow.btcPaymentAmount,
   })
 }

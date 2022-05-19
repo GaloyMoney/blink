@@ -29,6 +29,7 @@ import {
   newCheckIntraledgerLimits,
   btcFromUsdMidPriceFn,
   usdFromBtcMidPriceFn,
+  getPriceRatioForLimits,
 } from "./helpers"
 
 const dealer = NewDealerPriceService()
@@ -173,16 +174,13 @@ const executePaymentViaIntraledger = async ({
     "payment.settlement_method": SettlementMethod.IntraLedger,
   })
 
-  const priceRatio = PriceRatio({
-    usd: paymentFlow.usdPaymentAmount,
-    btc: paymentFlow.btcPaymentAmount,
-  })
-  if (priceRatio instanceof Error) return priceRatio
+  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
+  if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const limitCheck = await newCheckIntraledgerLimits({
     amount: paymentFlow.usdPaymentAmount,
     wallet: senderWallet,
-    priceRatio,
+    priceRatio: priceRatioForLimits,
   })
   if (limitCheck instanceof Error) return limitCheck
 
@@ -205,6 +203,11 @@ const executePaymentViaIntraledger = async ({
       const balanceCheck = paymentFlow.checkBalanceForSend(balance)
       if (balanceCheck instanceof Error) return balanceCheck
 
+      const priceRatio = PriceRatio({
+        usd: paymentFlow.usdPaymentAmount,
+        btc: paymentFlow.btcPaymentAmount,
+      })
+      if (priceRatio instanceof Error) return priceRatio
       const displayCentsPerSat = priceRatio.usdPerSat()
       const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
 
