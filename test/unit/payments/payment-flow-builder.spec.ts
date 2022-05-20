@@ -980,6 +980,25 @@ describe("LightningPaymentFlowBuilder", () => {
         expect(payment).toBeInstanceOf(ValidationError)
       })
     })
+    describe("zero-value uncheckedAmount", () => {
+      it("returns a ValidationError", async () => {
+        const payment = await LightningPaymentFlowBuilder({
+          localNodeIds: [],
+          usdFromBtcMidPriceFn,
+          btcFromUsdMidPriceFn,
+        })
+          .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 0 })
+          .withSenderWallet(senderBtcWallet)
+          .withoutRecipientWallet()
+          .withConversion({
+            usdFromBtc,
+            btcFromUsd,
+          })
+          .withoutRoute()
+
+        expect(payment).toBeInstanceOf(ValidationError)
+      })
+    })
     describe("no recipient wallet despite IntraLedger", () => {
       it("returns InvalidLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
