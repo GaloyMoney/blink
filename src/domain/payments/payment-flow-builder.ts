@@ -103,7 +103,7 @@ const LPFBWithInvoice = <S extends WalletCurrency>(
 ): LPFBWithInvoice<S> | LPFBWithError => {
   const withSenderWallet = (senderWallet: WalletDescriptor<S>) => {
     const { id: senderWalletId, currency: senderWalletCurrency } = senderWallet
-    if (state.uncheckedAmount) {
+    if (state.uncheckedAmount !== undefined) {
       if (senderWalletCurrency === WalletCurrency.Btc) {
         const paymentAmount = checkedToBtcPaymentAmount(state.uncheckedAmount)
         if (paymentAmount instanceof ValidationError) {
