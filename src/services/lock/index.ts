@@ -51,16 +51,16 @@ interface IRedLock {
   signal?: RedlockAbortSignal
 }
 
-export const redlock = async ({ path, signal }: IRedLock, async_fn) => {
+export const redlock = async ({ path, signal }: IRedLock, asyncFn) => {
   if (signal) {
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
-    return async_fn(signal)
+    return asyncFn(signal)
   }
 
   try {
-    return await redlockClient.using([path], ttl, async (signal) => async_fn(signal))
+    return await redlockClient.using([path], ttl, async (signal) => asyncFn(signal))
   } catch (error) {
     if (error instanceof ExecutionError) {
       return new ResourceAttemptsLockServiceError()
