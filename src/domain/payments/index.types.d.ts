@@ -23,7 +23,7 @@ type PaymentFlowState<
 
   btcPaymentAmount: BtcPaymentAmount
   usdPaymentAmount: UsdPaymentAmount
-  inputAmount: BigInt
+  inputAmount: bigint
 
   btcProtocolFee: BtcPaymentAmount
   usdProtocolFee: UsdPaymentAmount
@@ -39,7 +39,7 @@ type PaymentFlowState<
 
 type PaymentFlowStatePendingUpdate = XorPaymentHashProperty & {
   senderWalletId: WalletId
-  inputAmount: BigInt
+  inputAmount: bigint
 
   paymentSentAndPending: boolean
 }
@@ -159,7 +159,7 @@ interface IPaymentFlowRepository {
     inputAmount,
   }: XorPaymentHashProperty & {
     walletId: WalletId
-    inputAmount: BigInt
+    inputAmount: bigint
   }): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
   updateLightningPaymentFlow<S extends WalletCurrency>(
     paymentFlow: PaymentFlow<S, WalletCurrency>,
@@ -190,7 +190,7 @@ type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &
     paymentInitiationMethod: PaymentInitiationMethod
     descriptionFromInvoice: string
     btcPaymentAmount?: BtcPaymentAmount
-    inputAmount?: BigInt
+    inputAmount?: bigint
     uncheckedAmount?: number
     btcProtocolFee?: BtcPaymentAmount
     usdProtocolFee?: UsdPaymentAmount

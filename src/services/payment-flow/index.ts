@@ -32,7 +32,7 @@ export const PaymentFlowStateRepository = (
   const findLightningPaymentFlow = async <S extends WalletCurrency>(
     args: XorPaymentHashProperty & {
       walletId: WalletId
-      inputAmount: BigInt
+      inputAmount: bigint
     },
   ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError> => {
     const { walletId, paymentHash, intraLedgerHash, inputAmount } = args
@@ -131,7 +131,7 @@ export const PaymentFlowStateRepository = (
     inputAmount,
   }: XorPaymentHashProperty & {
     walletId: WalletId
-    inputAmount: BigInt
+    inputAmount: bigint
   }): Promise<boolean | RepositoryError> => {
     const hash = paymentHash ? { paymentHash } : { intraLedgerHash }
     try {
