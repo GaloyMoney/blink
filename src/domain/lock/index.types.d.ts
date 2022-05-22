@@ -20,3 +20,8 @@ interface ILockService {
     f: (signal: OnChainTxAbortSignal) => Promise<Res>,
   ): Promise<Res | LockServiceError>
 }
+
+interface IRedLock {
+  path: string
+  signal?: RedlockAbortSignal
+}

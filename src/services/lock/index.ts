@@ -1,4 +1,4 @@
-import Redlock, { RedlockAbortSignal, ExecutionError } from "redlock"
+import Redlock, { ExecutionError } from "redlock"
 
 import {
   ResourceAttemptsLockServiceError,
@@ -44,11 +44,6 @@ const redlockClient = new Redlock(
 const getWalletLockResource = (path) => `locks:wallet:${path}`
 const getPaymentHashLockResource = (path) => `locks:paymenthash:${path}`
 const getOnChainTxHashLockResource = (path) => `locks:onchaintxhash:${path}`
-
-interface IRedLock {
-  path: string
-  signal?: RedlockAbortSignal
-}
 
 export const redlock = async ({ path, signal }: IRedLock, asyncFn) => {
   if (signal) {
