@@ -200,7 +200,7 @@ const executePaymentViaIntraledger = async ({
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  return LockService().lockWalletId({ walletId: senderWallet.id }, async (signal) => {
+  return LockService().lockWalletId(senderWallet.id, async (signal) => {
     const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
     if (balance instanceof Error) return balance
 

@@ -8,15 +8,15 @@ type OnChainTxAbortSignal = RedlockAbortSignal & { readonly brand: unique symbol
 
 interface ILockService {
   lockWalletId<Res>(
-    args: { walletId: WalletId },
+    walletId: WalletId,
     f: (signal: WalletIdAbortSignal) => Promise<Res>,
   ): Promise<Res | LockServiceError>
   lockPaymentHash<Res>(
-    args: { paymentHash: PaymentHash },
+    paymentHash: PaymentHash,
     f: (signal: PaymentHashAbortSignal) => Promise<Res>,
   ): Promise<Res | LockServiceError>
   lockOnChainTxHash<Res>(
-    args: { txHash: OnChainTxHash },
+    txHash: OnChainTxHash,
     f: (signal: OnChainTxAbortSignal) => Promise<Res>,
   ): Promise<Res | LockServiceError>
 }

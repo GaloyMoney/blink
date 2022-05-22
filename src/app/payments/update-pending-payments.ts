@@ -120,7 +120,7 @@ const updatePendingPayment = async ({
 
   if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {
     const ledgerService = LedgerService()
-    return LockService().lockPaymentHash({ paymentHash }, async () => {
+    return LockService().lockPaymentHash(paymentHash, async () => {
       const recorded = await ledgerService.isLnTxRecorded(paymentHash)
       if (recorded instanceof Error) {
         paymentLogger.error({ error: recorded }, "we couldn't query pending transaction")

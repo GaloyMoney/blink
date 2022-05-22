@@ -11,12 +11,12 @@ describe("Lock", () => {
       const walletId = "walletId" as WalletId
       const lockService = LockService()
 
-      const lock1 = lockService.lockWalletId({ walletId }, async () => {
+      const lock1 = lockService.lockWalletId(walletId, async () => {
         await sleep(5000)
         return 1
       })
 
-      const lock2 = lockService.lockWalletId({ walletId }, async () => {
+      const lock2 = lockService.lockWalletId(walletId, async () => {
         return 2
       })
 

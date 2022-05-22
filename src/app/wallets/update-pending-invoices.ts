@@ -137,7 +137,7 @@ const updatePendingInvoice = async ({
   }
 
   const lockService = LockService()
-  return lockService.lockPaymentHash({ paymentHash }, async () => {
+  return lockService.lockPaymentHash(paymentHash, async () => {
     // we're getting the invoice another time, now behind the lock, to avoid potential race condition
     const invoiceToUpdate = await walletInvoicesRepo.findByPaymentHash(paymentHash)
     if (invoiceToUpdate instanceof CouldNotFindError) {

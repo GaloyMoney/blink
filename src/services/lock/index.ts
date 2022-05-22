@@ -72,7 +72,7 @@ export const redlock = async ({ path, signal }: IRedLock, asyncFn) => {
 
 export const LockService = (): ILockService => {
   const lockWalletId = async <Res>(
-    { walletId }: { walletId: WalletId },
+    walletId: WalletId,
     f: (signal: WalletIdAbortSignal) => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     const path = getWalletLockResource(walletId)
@@ -81,7 +81,7 @@ export const LockService = (): ILockService => {
   }
 
   const lockPaymentHash = async <Res>(
-    { paymentHash }: { paymentHash: PaymentHash },
+    paymentHash: PaymentHash,
     f: (signal: PaymentHashAbortSignal) => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     const path = getPaymentHashLockResource(paymentHash)
@@ -90,7 +90,7 @@ export const LockService = (): ILockService => {
   }
 
   const lockOnChainTxHash = async <Res>(
-    { txHash }: { txHash: OnChainTxHash },
+    txHash: OnChainTxHash,
     f: (signal: OnChainTxAbortSignal) => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     const path = getOnChainTxHashLockResource(txHash)

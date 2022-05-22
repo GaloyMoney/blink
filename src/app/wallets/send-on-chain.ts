@@ -217,7 +217,7 @@ const executePaymentViaIntraledger = async ({
   const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
   if (recipientAccount instanceof Error) return recipientAccount
 
-  return LockService().lockWalletId({ walletId: senderWallet.id }, async (signal) => {
+  return LockService().lockWalletId(senderWallet.id, async (signal) => {
     const balance = await LedgerService().getWalletBalance(senderWallet.id)
     if (balance instanceof Error) return balance
     if (balance < amount)
@@ -346,7 +346,7 @@ const executePaymentViaOnChain = async ({
       `Use lightning to send amounts less than ${dustThreshold}`,
     )
 
-  return LockService().lockWalletId({ walletId: senderWallet.id }, async (signal) => {
+  return LockService().lockWalletId(senderWallet.id, async (signal) => {
     const balance = await LedgerService().getWalletBalance(senderWallet.id)
     if (balance instanceof Error) return balance
     const estimatedFee = await getFeeEstimate()
