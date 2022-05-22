@@ -8,12 +8,11 @@ import {
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { redis } from "@services/redis"
+import { BTC_NETWORK } from "@config"
 
-// the maximum amount of time you want the resource locked,
-// keeping in mind that you can extend the lock up until
-// the point when it expires
-// TODO: use TIMEOUTs env variable
-const ttl = process.env.NETWORK !== "regtest" ? 180000 : 10000
+// the maximum amount of time you want the resource to initially be locked,
+// note: with redlock 5, the lock is automatically extended
+const ttl = BTC_NETWORK !== "regtest" ? 180000 : 10000
 
 const redlockClient = new Redlock(
   // you should have one client for each independent redis node
