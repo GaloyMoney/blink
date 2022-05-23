@@ -302,6 +302,11 @@ type Transaction {
   Amount of sats sent or received.
   """
   settlementAmount: SatAmount!
+
+  """
+  Wallet currency for transaction.
+  """
+  settlementCurrency: WalletCurrency!
   settlementFee: SatAmount!
 
   """
@@ -348,6 +353,11 @@ input UserRequestAuthCodeInput {
 Unique identifier of a user
 """
 scalar Username
+
+enum WalletCurrency {
+  BTC
+  USD
+}
 
 """
 Unique identifier of a wallet

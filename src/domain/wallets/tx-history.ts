@@ -8,6 +8,7 @@ import { TxStatus } from "./tx-status"
 const filterPendingIncoming = (
   pendingTransactions: IncomingOnChainTransaction[],
   addressesByWalletId: { [key: WalletId]: OnChainAddress[] },
+  walletDetailsByWalletId: { [key: WalletId]: { currency: WalletCurrency } },
   displayCurrencyPerSat: DisplayCurrencyPerSat,
 ): WalletOnChainTransaction[] => {
   const walletTransactions: WalletOnChainTransaction[] = []
@@ -22,6 +23,7 @@ const filterPendingIncoming = (
               walletId,
               settlementAmount: sats,
               settlementFee: toSats(0),
+              settlementCurrency: walletDetailsByWalletId[walletId].currency,
               settlementDisplayCurrencyPerSat: displayCurrencyPerSat,
               status: TxStatus.Pending,
               memo: null,
@@ -65,6 +67,7 @@ export const fromLedger = (
       address,
       pendingConfirmation,
       timestamp,
+      currency,
     }) => {
       const settlementAmount = toSats(credit - debit)
 
@@ -81,6 +84,7 @@ export const fromLedger = (
         walletId,
         settlementAmount,
         settlementFee: toSats(fee || 0),
+        settlementCurrency: currency,
         settlementDisplayCurrencyPerSat: displayCurrencyPerBaseUnitFromAmounts({
           displayAmountAsNumber: usd,
           settlementAmountInBaseAsNumber: settlementAmount,
@@ -200,12 +204,14 @@ export const fromLedger = (
     addPendingIncoming: ({
       pendingIncoming,
       addressesByWalletId,
+      walletDetailsByWalletId,
       displayCurrencyPerSat,
     }: AddPendingIncomingArgs): WalletTransactionHistoryWithPending => ({
       transactions: [
         ...filterPendingIncoming(
           pendingIncoming,
           addressesByWalletId,
+          walletDetailsByWalletId,
           displayCurrencyPerSat,
         ),
         ...transactions,

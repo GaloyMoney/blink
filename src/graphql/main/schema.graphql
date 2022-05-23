@@ -928,6 +928,10 @@ type Transaction {
   """
   settlementAmount: SatAmount!
 
+  """
+  Wallet currency for transaction.
+  """
+  settlementCurrency: WalletCurrency!
   settlementFee: SatAmount!
 
   """

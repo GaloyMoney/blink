@@ -68,10 +68,15 @@ export const getTransactionsForWallets = async (
   const addressesByWalletId: { walletId: OnChainAddress[] } = {} as {
     walletId: OnChainAddress[]
   }
+  const walletDetailsByWalletId: { walletId: { currency: WalletCurrency } } = {} as {
+    walletId: { currency: WalletCurrency }
+  }
   for (const wallet of wallets) {
     const walletAddresses = wallet.onChainAddresses()
     addressesByWalletId[wallet.id] = walletAddresses
     addresses.push(...walletAddresses)
+
+    walletDetailsByWalletId[wallet.id] = { currency: wallet.currency }
   }
 
   const filter = TxFilter({
@@ -93,6 +98,7 @@ export const getTransactionsForWallets = async (
     confirmedHistory.addPendingIncoming({
       pendingIncoming,
       addressesByWalletId,
+      walletDetailsByWalletId,
       displayCurrencyPerSat: price,
     }).transactions,
   )
