@@ -242,12 +242,11 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     ]
     const history = WalletTransactionHistory.fromLedger([])
     const addresses = ["userAddress1", "userAddress2"] as OnChainAddress[]
-    const result = history.addPendingIncoming(
-      walletId,
-      incomingTxs,
-      addresses,
-      1 as DisplayCurrencyPerSat,
-    )
+    const result = history.addPendingIncoming({
+      pendingIncoming: incomingTxs,
+      addressesByWalletId: { [walletId]: addresses },
+      displayCurrencyPerSat: 1 as DisplayCurrencyPerSat,
+    })
     const expected = [
       {
         id: "txHash" as OnChainTxHash,
@@ -312,12 +311,11 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     ]
     const history = WalletTransactionHistory.fromLedger([])
     const addresses = ["userAddress1"] as OnChainAddress[]
-    const result = history.addPendingIncoming(
-      walletId,
-      incomingTxs,
-      addresses,
-      NaN as DisplayCurrencyPerSat,
-    )
+    const result = history.addPendingIncoming({
+      pendingIncoming: incomingTxs,
+      addressesByWalletId: { [walletId]: addresses },
+      displayCurrencyPerSat: NaN as DisplayCurrencyPerSat,
+    })
     const expected = [
       {
         id: "txHash" as OnChainTxHash,

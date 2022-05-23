@@ -6,33 +6,37 @@ import { PaymentInitiationMethod, SettlementMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
 
 const filterPendingIncoming = (
-  walletId: WalletId,
   pendingTransactions: IncomingOnChainTransaction[],
-  addresses: OnChainAddress[],
+  addressesByWalletId: { [key: WalletId]: OnChainAddress[] },
   displayCurrencyPerSat: DisplayCurrencyPerSat,
 ): WalletOnChainTransaction[] => {
   const walletTransactions: WalletOnChainTransaction[] = []
   pendingTransactions.forEach(({ rawTx, createdAt }) => {
     rawTx.outs.forEach(({ sats, address }) => {
-      if (address && addresses.includes(address)) {
-        walletTransactions.push({
-          id: rawTx.txHash,
-          walletId,
-          settlementAmount: sats,
-          settlementFee: toSats(0),
-          settlementDisplayCurrencyPerSat: displayCurrencyPerSat,
-          status: TxStatus.Pending,
-          memo: null,
-          createdAt: createdAt,
-          initiationVia: {
-            type: PaymentInitiationMethod.OnChain,
-            address,
-          },
-          settlementVia: {
-            type: SettlementMethod.OnChain,
-            transactionHash: rawTx.txHash,
-          },
-        })
+      if (address) {
+        for (const walletIdString in addressesByWalletId) {
+          const walletId = walletIdString as WalletId
+          if (addressesByWalletId[walletId].includes(address)) {
+            walletTransactions.push({
+              id: rawTx.txHash,
+              walletId,
+              settlementAmount: sats,
+              settlementFee: toSats(0),
+              settlementDisplayCurrencyPerSat: displayCurrencyPerSat,
+              status: TxStatus.Pending,
+              memo: null,
+              createdAt: createdAt,
+              initiationVia: {
+                type: PaymentInitiationMethod.OnChain,
+                address,
+              },
+              settlementVia: {
+                type: SettlementMethod.OnChain,
+                transactionHash: rawTx.txHash,
+              },
+            })
+          }
+        }
       }
     })
   })
@@ -193,17 +197,15 @@ export const fromLedger = (
 
   return {
     transactions,
-    addPendingIncoming: (
-      walletId: WalletId,
-      pendingIncoming: IncomingOnChainTransaction[],
-      addresses: OnChainAddress[],
-      displayCurrencyPerSat: DisplayCurrencyPerSat,
-    ): WalletTransactionHistoryWithPending => ({
+    addPendingIncoming: ({
+      pendingIncoming,
+      addressesByWalletId,
+      displayCurrencyPerSat,
+    }: AddPendingIncomingArgs): WalletTransactionHistoryWithPending => ({
       transactions: [
         ...filterPendingIncoming(
-          walletId,
           pendingIncoming,
-          addresses,
+          addressesByWalletId,
           displayCurrencyPerSat,
         ),
         ...transactions,

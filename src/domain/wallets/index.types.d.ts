@@ -105,14 +105,19 @@ type WalletTransaction =
   | WalletOnChainTransaction
   | WalletLnTransaction
 
+type AddPendingIncomingArgs = {
+  pendingIncoming: IncomingOnChainTransaction[]
+  addressesByWalletId: { [key: WalletId]: OnChainAddress[] }
+  displayCurrencyPerSat: DisplayCurrencyPerSat
+}
+
 type ConfirmedTransactionHistory = {
   readonly transactions: WalletTransaction[]
-  addPendingIncoming(
-    walletId: WalletId,
-    pendingIncoming: IncomingOnChainTransaction[],
-    addresses: OnChainAddress[],
-    displayCurrencyPerSat: DisplayCurrencyPerSat,
-  ): WalletTransactionHistoryWithPending
+  addPendingIncoming({
+    pendingIncoming,
+    addressesByWalletId,
+    displayCurrencyPerSat,
+  }: AddPendingIncomingArgs): WalletTransactionHistoryWithPending
 }
 
 type WalletTransactionHistoryWithPending = {
