@@ -1,4 +1,7 @@
 import { GT } from "@graphql/index"
+import { connectionArgs } from "graphql-relay"
+
+import { TransactionConnection } from "../object/transaction"
 
 import WalletId from "../scalar/wallet-id"
 
@@ -19,6 +22,15 @@ const IAccount = GT.Interface({
     csvTransactions: {
       type: GT.NonNull(GT.String),
       args: {
+        walletIds: {
+          type: GT.NonNullList(WalletId),
+        },
+      },
+    },
+    transactionsByWalletIds: {
+      type: TransactionConnection,
+      args: {
+        ...connectionArgs,
         walletIds: {
           type: GT.NonNullList(WalletId),
         },

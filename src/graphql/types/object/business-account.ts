@@ -1,10 +1,15 @@
-import { Accounts, Wallets } from "@app"
 import { GT } from "@graphql/index"
+import { connectionArgs, connectionFromArray } from "graphql-relay"
+
+import { Accounts, Wallets } from "@app"
 import getUuidByString from "uuid-by-string"
 
 import IAccount from "../abstract/account"
 import Wallet from "../abstract/wallet"
+
 import WalletId from "../scalar/wallet-id"
+
+import { TransactionConnection } from "./transaction"
 
 const BusinessAccount = GT.Object({
   name: "BusinessAccount",
@@ -40,6 +45,30 @@ const BusinessAccount = GT.Object({
       },
       resolve: async (source) => {
         return Accounts.getCSVForAccount(source.id)
+      },
+    },
+    transactionsByWalletIds: {
+      description: "A list of all transactions associated with walletIds passed.",
+      type: TransactionConnection,
+      args: {
+        ...connectionArgs,
+        walletIds: {
+          type: GT.NonNullList(WalletId),
+        },
+      },
+      resolve: async (source, args) => {
+        const { walletIds } = args
+        if (walletIds instanceof Error) {
+          return { errors: [{ message: walletIds.message }] }
+        }
+
+        const { result: transactions, error } = await Wallets.getTransactionsForWalletIds(
+          walletIds,
+        )
+        if (error instanceof Error || transactions === null) {
+          throw error
+        }
+        return connectionFromArray<WalletTransaction>(transactions, args)
       },
     },
   }),
