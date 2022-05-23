@@ -273,7 +273,7 @@ interface ILedgerService {
 
   getWalletBalanceAmount<S extends WalletCurrency>(
     walletDescriptor: WalletDescriptor<S>,
-  ): Promise<PaymentAmount<WalletCurrency> | LedgerServiceError>
+  ): Promise<PaymentAmount<S> | LedgerServiceError>
 
   allPaymentVolumeSince: GetVolumeSinceFn
 

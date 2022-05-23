@@ -1,3 +1,5 @@
+import { safeBigInt } from "./safe"
+
 // TODO: think how to differentiate physical from synthetic USD
 export const WalletCurrency = {
   Usd: "USD",
@@ -63,5 +65,21 @@ export const paymentAmountFromCents = (cents: UsdCents): UsdPaymentAmount => {
   return {
     currency: WalletCurrency.Usd,
     amount: BigInt(cents),
+  }
+}
+
+export const paymentAmountFromNumber = <T extends WalletCurrency>({
+  amount,
+  currency,
+}: {
+  amount: number
+  currency: T
+}): PaymentAmount<T> | ValidationError => {
+  const safeAmount = safeBigInt(amount)
+  if (safeAmount instanceof Error) return safeAmount
+
+  return {
+    amount: safeAmount,
+    currency,
   }
 }

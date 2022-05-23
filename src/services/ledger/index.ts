@@ -4,7 +4,6 @@
  */
 
 import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
 import {
   LedgerTransactionType,
   liabilitiesMainAccount,
@@ -18,12 +17,7 @@ import {
   LedgerServiceError,
   UnknownLedgerError,
 } from "@domain/ledger/errors"
-import {
-  ErrorLevel,
-  paymentAmountFromCents,
-  paymentAmountFromSats,
-  WalletCurrency,
-} from "@domain/shared"
+import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { toObjectId } from "@services/mongoose/utils"
 import {
   recordExceptionInCurrentSpan,
@@ -223,7 +217,7 @@ export const LedgerService = (): ILedgerService => {
 
   const getWalletBalanceAmount = async <S extends WalletCurrency>(
     walletDescriptor: WalletDescriptor<S>,
-  ): Promise<PaymentAmount<WalletCurrency> | LedgerError> => {
+  ): Promise<PaymentAmount<S> | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletDescriptor.id)
     try {
       const { balance } = await MainBook.balance({
@@ -242,9 +236,10 @@ export const LedgerService = (): ILedgerService => {
           })
         }
       }
-      return walletDescriptor.currency === WalletCurrency.Btc
-        ? paymentAmountFromSats(toSats(balance))
-        : paymentAmountFromCents(toCents(balance))
+      return paymentAmountFromNumber({
+        amount: balance,
+        currency: walletDescriptor.currency,
+      })
     } catch (err) {
       return new UnknownLedgerError(err)
     }
