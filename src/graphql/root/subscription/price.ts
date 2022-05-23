@@ -1,12 +1,17 @@
 import crypto from "crypto"
 
+import { SAT_PRICE_PRECISION_OFFSET } from "@config"
+
 import { GT } from "@graphql/index"
-import ExchangeCurrencyUnit from "@graphql/types/scalar/exchange-currency-unit"
 import PricePayload from "@graphql/types/payload/price"
-import { SAT_PRICE_PRECISION_OFFSET, SAT_USDCENT_PRICE } from "@config"
 import SatAmount from "@graphql/types/scalar/sat-amount"
-import pubsub from "@services/pubsub"
+import ExchangeCurrencyUnit from "@graphql/types/scalar/exchange-currency-unit"
+
 import { Prices } from "@app"
+import { PubSubService } from "@services/pubsub"
+import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
+
+const pubsub = PubSubService()
 
 const PriceInput = GT.Input({
   name: "PriceInput",
@@ -40,39 +45,47 @@ const PriceSubscription = {
   subscribe: async (_, args) => {
     const { amount, amountCurrencyUnit, priceCurrencyUnit } = args.input
 
-    const eventName = SAT_USDCENT_PRICE
-    const immediateEventName = `SAT_USDCENT_PRICE_${crypto.randomUUID()}`
+    const immediateTrigger = customPubSubTrigger({
+      event: PubSubDefaultTriggers.PriceUpdate,
+      suffix: crypto.randomUUID(),
+    })
 
     for (const input of [amountCurrencyUnit, priceCurrencyUnit]) {
       if (input instanceof Error) {
-        pubsub.publishImmediate(immediateEventName, {
-          errors: [{ message: input.message }],
+        pubsub.publishImmediate({
+          trigger: immediateTrigger,
+          payload: { errors: [{ message: input.message }] },
         })
-        return pubsub.asyncIterator(immediateEventName)
+        return pubsub.createAsyncIterator({ trigger: immediateTrigger })
       }
     }
 
     if (amountCurrencyUnit !== "BTCSAT" || priceCurrencyUnit !== "USDCENT") {
       // For now, keep the only supported exchange price as SAT -> USD
-      pubsub.publishImmediate(immediateEventName, {
-        errors: [{ message: "Unsupported exchange unit" }],
+      pubsub.publishImmediate({
+        trigger: immediateTrigger,
+        payload: { errors: [{ message: "Unsupported exchange unit" }] },
       })
     } else if (amount >= 1000000) {
       // SafeInt limit, reject for now
-      pubsub.publishImmediate(immediateEventName, {
-        errors: [{ message: "Unsupported exchange amount" }],
+      pubsub.publishImmediate({
+        trigger: immediateTrigger,
+        payload: { errors: [{ message: "Unsupported exchange amount" }] },
       })
     } else {
       const satUsdPrice = await Prices.getCurrentPrice()
       if (!(satUsdPrice instanceof Error)) {
-        pubsub.publishImmediate(immediateEventName, {
-          satUsdCentPrice: 100 * satUsdPrice,
+        pubsub.publishImmediate({
+          trigger: immediateTrigger,
+          payload: { satUsdCentPrice: 100 * satUsdPrice },
         })
       }
-      return pubsub.asyncIterator([immediateEventName, eventName])
+      return pubsub.createAsyncIterator({
+        trigger: [immediateTrigger, PubSubDefaultTriggers.PriceUpdate],
+      })
     }
 
-    return pubsub.asyncIterator(immediateEventName)
+    return pubsub.createAsyncIterator({ trigger: immediateTrigger })
   },
 }
 

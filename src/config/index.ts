@@ -12,8 +12,6 @@ export const MAX_AGE_TIME_CODE = (20 * 60) as Seconds
 
 export const MAX_BYTES_FOR_MEMO = 639 // BOLT
 
-export const SAT_USDCENT_PRICE = "SAT-USDCENT-PRICE"
-export const USER_PRICE_UPDATE_EVENT = "USER-PRICE-UPDATE-EVENT"
 export const SAT_PRICE_PRECISION_OFFSET = 12
 export const BTC_PRICE_PRECISION_OFFSET = 4
 

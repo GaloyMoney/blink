@@ -1,13 +1,39 @@
+import { PubSubServiceError, UnknownPubSubError } from "@domain/pubsub"
+
 import { redisPubSub } from "./redis"
 
-// TODO: add interface and proper error handling
-const pubsub = {
-  asyncIterator: (trigger: string | string[]) => redisPubSub.asyncIterator(trigger),
+export const PubSubService = (): IPubSubService => {
+  const createAsyncIterator = <T>({
+    trigger,
+  }: AsyncIteratorArgs): AsyncIterator<T> | PubSubServiceError => {
+    try {
+      return redisPubSub.asyncIterator(trigger)
+    } catch (err) {
+      return new UnknownPubSubError(err && err.message)
+    }
+  }
 
-  publish: (trigger: string, payload: unknown) => redisPubSub.publish(trigger, payload),
+  const publish = async <T>({
+    trigger,
+    payload,
+  }: PublishArgs<T>): Promise<void | PubSubServiceError> => {
+    try {
+      return await redisPubSub.publish(trigger, payload)
+    } catch (err) {
+      return new UnknownPubSubError(err && err.message)
+    }
+  }
 
-  publishImmediate: (trigger: string, payload: unknown) =>
-    setImmediate(() => setImmediate(() => redisPubSub.publish(trigger, payload))),
+  const publishImmediate = <T>({
+    trigger,
+    payload,
+  }: PublishArgs<T>): NodeJS.Immediate => {
+    return setImmediate(() => setImmediate(() => publish({ trigger, payload })))
+  }
+
+  return {
+    createAsyncIterator,
+    publish,
+    publishImmediate,
+  }
 }
-
-export default pubsub
