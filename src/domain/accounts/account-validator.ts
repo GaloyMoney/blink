@@ -2,22 +2,21 @@ import { InvalidAccountStatusError, InvalidWalletId } from "@domain/errors"
 
 import { AccountStatus } from "."
 
-export const AccountValidator = (): AccountValidator => {
-  const validateAccount = ({
-    account,
-    accountIdFromWallet,
-  }: {
-    account: Account
-    accountIdFromWallet: AccountId
-  }): true | ValidationError => {
-    if (account.status !== AccountStatus.Active) {
-      return new InvalidAccountStatusError()
-    }
+export const AccountValidator = (
+  account: Account,
+): AccountValidator | ValidationError => {
+  if (account.status !== AccountStatus.Active) {
+    return new InvalidAccountStatusError()
+  }
 
-    if (accountIdFromWallet !== account.id) return new InvalidWalletId()
+  const validateWalletForAccount = (wallet: Wallet): true | ValidationError => {
+    if (wallet.accountId !== account.id)
+      return new InvalidWalletId(
+        JSON.stringify({ accountId: account.id, accountIdFromWallet: wallet.accountId }),
+      )
 
     return true
   }
 
-  return { validateAccount }
+  return { validateWalletForAccount }
 }

@@ -133,11 +133,10 @@ const validateIntraledgerPaymentInputs = async ({
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
 
-  const accountValidated = AccountValidator().validateAccount({
-    account: senderAccount,
-    accountIdFromWallet: senderWallet.accountId,
-  })
-  if (accountValidated instanceof Error) return accountValidated
+  const accountValidator = AccountValidator(senderAccount)
+  if (accountValidator instanceof Error) return accountValidator
+  const validateWallet = accountValidator.validateWalletForAccount(senderWallet)
+  if (validateWallet instanceof Error) return validateWallet
 
   const recipientWalletId = checkedToWalletId(uncheckedRecipientWalletId)
   if (recipientWalletId instanceof Error) return recipientWalletId

@@ -110,13 +110,7 @@ type TwoFALimitsChecker = {
 }
 
 type AccountValidator = {
-  validateAccount({
-    account,
-    accountIdFromWallet,
-  }: {
-    account: Account
-    accountIdFromWallet: AccountId
-  }): true | ValidationError
+  validateWalletForAccount(wallet: Wallet): true | ValidationError
 }
 
 interface IAccountsRepository {

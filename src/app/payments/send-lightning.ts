@@ -271,11 +271,10 @@ const validateInvoicePaymentInputs = async ({
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
 
-  const accountValidated = AccountValidator().validateAccount({
-    account: senderAccount,
-    accountIdFromWallet: senderWallet.accountId,
-  })
-  if (accountValidated instanceof Error) return accountValidated
+  const accountValidator = AccountValidator(senderAccount)
+  if (accountValidator instanceof Error) return accountValidator
+  const validateWallet = accountValidator.validateWalletForAccount(senderWallet)
+  if (validateWallet instanceof Error) return validateWallet
 
   let paymentFlow = await paymentFlowRepo.findLightningPaymentFlow({
     walletId: senderWalletId,
@@ -347,11 +346,10 @@ const validateNoAmountInvoicePaymentInputs = async ({
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
 
-  const accountValidated = AccountValidator().validateAccount({
-    account: senderAccount,
-    accountIdFromWallet: senderWallet.accountId,
-  })
-  if (accountValidated instanceof Error) return accountValidated
+  const accountValidator = AccountValidator(senderAccount)
+  if (accountValidator instanceof Error) return accountValidator
+  const validateWallet = accountValidator.validateWalletForAccount(senderWallet)
+  if (validateWallet instanceof Error) return validateWallet
 
   const inputPaymentAmount =
     senderWallet.currency === WalletCurrency.Btc
