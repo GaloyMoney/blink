@@ -62,9 +62,11 @@ const BusinessAccount = GT.Object({
           return { errors: [{ message: walletIds.message }] }
         }
 
-        const { result: transactions, error } = await Wallets.getTransactionsForWalletIds(
-          walletIds,
-        )
+        const { result: transactions, error } =
+          await Accounts.getTransactionsForAccountByWalletIds({
+            account: source,
+            walletIds,
+          })
         if (error instanceof Error || transactions === null) {
           throw error
         }

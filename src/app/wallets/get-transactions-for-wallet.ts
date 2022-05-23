@@ -23,21 +23,6 @@ export const getTransactionsForWalletId = async ({
   return getTransactionsForWallets([wallet])
 }
 
-export const getTransactionsForWalletIds = async (
-  walletIds: WalletId[],
-): Promise<PartialResult<WalletTransaction[]>> => {
-  const walletsRepo = WalletsRepository()
-
-  const wallets: Wallet[] = []
-  for (const walletId of walletIds) {
-    const wallet = await walletsRepo.findById(walletId)
-    if (wallet instanceof RepositoryError) return PartialResult.err(wallet)
-
-    wallets.push(wallet)
-  }
-  return getTransactionsForWallets(wallets)
-}
-
 export const getTransactionsForWallets = async (
   wallets: Wallet[],
 ): Promise<PartialResult<WalletTransaction[]>> => {

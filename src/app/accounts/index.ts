@@ -13,6 +13,7 @@ export * from "./update-contact-alias"
 export * from "./add-new-contact"
 export * from "./update-default-walletid"
 export * from "./get-csv-for-account"
+export * from "./get-transactions-for-account"
 
 const accounts = AccountsRepository()
 

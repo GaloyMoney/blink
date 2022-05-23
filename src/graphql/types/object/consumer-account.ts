@@ -56,15 +56,17 @@ const ConsumerAccount = GT.Object({
           type: GT.NonNullList(WalletId),
         },
       },
-      resolve: async (_, args) => {
+      resolve: async (source, args) => {
         const { walletIds } = args
         if (walletIds instanceof Error) {
           return { errors: [{ message: walletIds.message }] }
         }
 
-        const { result: transactions, error } = await Wallets.getTransactionsForWalletIds(
-          walletIds,
-        )
+        const { result: transactions, error } =
+          await Accounts.getTransactionsForAccountByWalletIds({
+            account: source,
+            walletIds,
+          })
         if (error instanceof Error || transactions === null) {
           throw error
         }
