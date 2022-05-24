@@ -249,6 +249,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "RebalanceNeededError":
       return new RebalanceNeededError({ logger: baseLogger })
 
+    case "InvalidWalletId":
+      message = "Invalid walletId for account."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -282,7 +286,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidUsername":
     case "InvalidPhoneNumber":
     case "InvalidEmailAddress":
-    case "InvalidWalletId":
     case "LessThanDustThresholdError":
     case "InvalidTargetConfirmations":
     case "NoContactForUsernameError":
