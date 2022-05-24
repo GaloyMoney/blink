@@ -22,7 +22,7 @@ interface Account {
     Returns the last n items from the list.
     """
     last: Int
-    walletIds: [WalletId!]!
+    walletIds: [WalletId]
   ): TransactionConnection
   wallets: [Wallet!]!
 }
@@ -127,7 +127,7 @@ type ConsumerAccount implements Account {
   id: ID!
 
   """
-  A list of all transactions associated with walletIds passed.
+  A list of all transactions associated with walletIds optionally passed.
   """
   transactionsByWalletIds(
     """
@@ -149,7 +149,7 @@ type ConsumerAccount implements Account {
     Returns the last n items from the list.
     """
     last: Int
-    walletIds: [WalletId!]!
+    walletIds: [WalletId]
   ): TransactionConnection
   wallets: [Wallet!]!
 }

@@ -32,7 +32,7 @@ const IAccount = GT.Interface({
       args: {
         ...connectionArgs,
         walletIds: {
-          type: GT.NonNullList(WalletId),
+          type: GT.List(WalletId),
         },
       },
     },

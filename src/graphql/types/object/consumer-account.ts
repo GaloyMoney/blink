@@ -1,6 +1,8 @@
 import { GT } from "@graphql/index"
 import { connectionArgs, connectionFromArray } from "graphql-relay"
 
+import { WalletsRepository } from "@services/mongoose"
+
 import { Accounts, Wallets } from "@app"
 import getUuidByString from "uuid-by-string"
 
@@ -48,18 +50,27 @@ const ConsumerAccount = GT.Object({
       },
     },
     transactionsByWalletIds: {
-      description: "A list of all transactions associated with walletIds passed.",
+      description:
+        "A list of all transactions associated with walletIds optionally passed.",
       type: TransactionConnection,
       args: {
         ...connectionArgs,
         walletIds: {
-          type: GT.NonNullList(WalletId),
+          type: GT.List(WalletId),
         },
       },
       resolve: async (source, args) => {
-        const { walletIds } = args
+        let { walletIds } = args
         if (walletIds instanceof Error) {
           return { errors: [{ message: walletIds.message }] }
+        }
+
+        if (walletIds === undefined) {
+          const wallets = await WalletsRepository().listByAccountId(source.id)
+          if (wallets instanceof Error) {
+            return { errors: [{ message: walletIds.message }] }
+          }
+          walletIds = wallets.map((wallet) => wallet.id)
         }
 
         const { result: transactions, error } =
