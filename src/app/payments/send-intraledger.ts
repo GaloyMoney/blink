@@ -23,6 +23,8 @@ import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
 import { NotificationsService } from "@services/notifications"
 
+import { ResourceExpiredLockServiceError } from "@domain/lock"
+
 import { Accounts } from "@app"
 
 import {
@@ -198,80 +200,77 @@ const executePaymentViaIntraledger = async ({
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  return LockService().lockWalletId(
-    { walletId: senderWallet.id, logger },
-    async (lock) => {
-      const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
-      if (balance instanceof Error) return balance
+  return LockService().lockWalletId(senderWallet.id, async (signal) => {
+    const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
+    if (balance instanceof Error) return balance
 
-      const balanceCheck = paymentFlow.checkBalanceForSend(balance)
-      if (balanceCheck instanceof Error) return balanceCheck
+    const balanceCheck = paymentFlow.checkBalanceForSend(balance)
+    if (balanceCheck instanceof Error) return balanceCheck
 
-      const priceRatio = PriceRatio({
-        usd: paymentFlow.usdPaymentAmount,
+    const priceRatio = PriceRatio({
+      usd: paymentFlow.usdPaymentAmount,
+      btc: paymentFlow.btcPaymentAmount,
+    })
+    if (priceRatio instanceof Error) return priceRatio
+    const displayCentsPerSat = priceRatio.usdPerSat()
+    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+
+    if (signal.aborted) {
+      return new ResourceExpiredLockServiceError(signal.error?.message)
+    }
+
+    const lnIntraLedgerMetadata = LedgerFacade.WalletIdIntraledgerLedgerMetadata({
+      paymentFlow,
+
+      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+      feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+      displayCurrency: DisplayCurrency.Usd,
+
+      memoOfPayer: memo || undefined,
+      senderUsername,
+      recipientUsername,
+    })
+    const { metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
+      lnIntraLedgerMetadata
+
+    const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
+    if (recipientWalletDescriptor === undefined)
+      return new InvalidLightningPaymentFlowBuilderStateError()
+
+    const journal = await LedgerFacade.recordIntraledger({
+      description: paymentFlow.descriptionFromInvoice,
+      amount: {
         btc: paymentFlow.btcPaymentAmount,
+        usd: paymentFlow.usdPaymentAmount,
+      },
+      senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
+      recipientWalletDescriptor,
+      metadata,
+      additionalDebitMetadata,
+    })
+    if (journal instanceof Error) return journal
+
+    const totalSendAmounts = paymentFlow.totalAmountsForPayment()
+
+    const notificationsService = NotificationsService(logger)
+    if (recipientWalletCurrency === WalletCurrency.Btc) {
+      notificationsService.intraLedgerBtcWalletPaid({
+        senderWalletId: senderWallet.id,
+        recipientWalletId,
+        sats: totalSendAmounts.btc.amount,
+        displayCurrencyPerSat: priceRatio.usdPerSat() as unknown as DisplayCurrencyPerSat,
       })
-      if (priceRatio instanceof Error) return priceRatio
-      const displayCentsPerSat = priceRatio.usdPerSat()
-      const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
-
-      const journal = await LockService().extendLock({ logger, lock }, async () => {
-        const lnIntraLedgerMetadata = LedgerFacade.WalletIdIntraledgerLedgerMetadata({
-          paymentFlow,
-
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: DisplayCurrency.Usd,
-
-          memoOfPayer: memo || undefined,
-          senderUsername,
-          recipientUsername,
-        })
-        const { metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
-          lnIntraLedgerMetadata
-
-        const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
-        if (recipientWalletDescriptor === undefined)
-          return new InvalidLightningPaymentFlowBuilderStateError()
-
-        return LedgerFacade.recordIntraledger({
-          description: paymentFlow.descriptionFromInvoice,
-          amount: {
-            btc: paymentFlow.btcPaymentAmount,
-            usd: paymentFlow.usdPaymentAmount,
-          },
-          senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
-          recipientWalletDescriptor,
-          metadata,
-          additionalDebitMetadata,
-        })
+    } else {
+      notificationsService.intraLedgerUsdWalletPaid({
+        senderWalletId: senderWallet.id,
+        recipientWalletId,
+        cents: totalSendAmounts.usd.amount,
+        displayCurrencyPerSat: priceRatio.usdPerSat() as unknown as DisplayCurrencyPerSat,
       })
-      if (journal instanceof Error) return journal
+    }
 
-      const totalSendAmounts = paymentFlow.totalAmountsForPayment()
-
-      const notificationsService = NotificationsService(logger)
-      if (recipientWalletCurrency === WalletCurrency.Btc) {
-        notificationsService.intraLedgerBtcWalletPaid({
-          senderWalletId: senderWallet.id,
-          recipientWalletId,
-          sats: totalSendAmounts.btc.amount,
-          displayCurrencyPerSat:
-            priceRatio.usdPerSat() as unknown as DisplayCurrencyPerSat,
-        })
-      } else {
-        notificationsService.intraLedgerUsdWalletPaid({
-          senderWalletId: senderWallet.id,
-          recipientWalletId,
-          cents: totalSendAmounts.usd.amount,
-          displayCurrencyPerSat:
-            priceRatio.usdPerSat() as unknown as DisplayCurrencyPerSat,
-        })
-      }
-
-      return PaymentSendStatus.Success
-    },
-  )
+    return PaymentSendStatus.Success
+  })
 }
 
 const addContactsAfterSend = async ({

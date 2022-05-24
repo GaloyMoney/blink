@@ -43,6 +43,8 @@ import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { Wallets } from "@app"
 
+import { ResourceExpiredLockServiceError } from "@domain/lock"
+
 import {
   constructPaymentFlowBuilder,
   newCheckWithdrawalLimits,
@@ -478,93 +480,90 @@ const executePaymentViaIntraledger = async ({
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  return LockService().lockWalletId(
-    { walletId: senderWallet.id, logger },
-    async (lock) => {
-      const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
-      if (balance instanceof Error) return balance
+  return LockService().lockWalletId(senderWallet.id, async (signal) => {
+    const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
+    if (balance instanceof Error) return balance
 
-      const balanceCheck = paymentFlow.checkBalanceForSend(balance)
-      if (balanceCheck instanceof Error) return balanceCheck
+    const balanceCheck = paymentFlow.checkBalanceForSend(balance)
+    if (balanceCheck instanceof Error) return balanceCheck
 
-      const priceRatio = PriceRatio({
-        usd: paymentFlow.usdPaymentAmount,
+    const priceRatio = PriceRatio({
+      usd: paymentFlow.usdPaymentAmount,
+      btc: paymentFlow.btcPaymentAmount,
+    })
+    if (priceRatio instanceof Error) return priceRatio
+    const displayCentsPerSat = priceRatio.usdPerSat()
+
+    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+
+    if (signal.aborted) {
+      return new ResourceExpiredLockServiceError(signal.error?.message)
+    }
+
+    const lnIntraLedgerMetadata = LedgerFacade.LnIntraledgerLedgerMetadata({
+      paymentHash,
+      pubkey: recipientPubkey,
+      paymentFlow,
+
+      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+      feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+      displayCurrency: DisplayCurrency.Usd,
+
+      memoOfPayer: memo || undefined,
+      senderUsername,
+      recipientUsername,
+    })
+    const { metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
+      lnIntraLedgerMetadata
+
+    const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
+    if (recipientWalletDescriptor === undefined)
+      return new InvalidLightningPaymentFlowBuilderStateError()
+
+    const journal = await LedgerFacade.recordIntraledger({
+      description: paymentFlow.descriptionFromInvoice,
+      amount: {
         btc: paymentFlow.btcPaymentAmount,
-      })
-      if (priceRatio instanceof Error) return priceRatio
-      const displayCentsPerSat = priceRatio.usdPerSat()
+        usd: paymentFlow.usdPaymentAmount,
+      },
+      senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
+      recipientWalletDescriptor,
+      metadata,
+      additionalDebitMetadata,
+    })
+    if (journal instanceof Error) return journal
 
-      const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
 
-      const journal = await LockService().extendLock({ logger, lock }, async () => {
-        const lnIntraLedgerMetadata = LedgerFacade.LnIntraledgerLedgerMetadata({
-          paymentHash,
-          pubkey: recipientPubkey,
-          paymentFlow,
+    const deletedLnInvoice = await lndService.cancelInvoice({
+      pubkey: recipientPubkey,
+      paymentHash,
+    })
+    if (deletedLnInvoice instanceof Error) return deletedLnInvoice
 
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: DisplayCurrency.Usd,
+    const newWalletInvoice = await WalletInvoicesRepository().markAsPaid(paymentHash)
+    if (newWalletInvoice instanceof Error) return newWalletInvoice
 
-          memoOfPayer: memo || undefined,
-          senderUsername,
-          recipientUsername,
-        })
-        const { metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
-          lnIntraLedgerMetadata
-
-        const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
-        if (recipientWalletDescriptor === undefined)
-          return new InvalidLightningPaymentFlowBuilderStateError()
-
-        return LedgerFacade.recordIntraledger({
-          description: paymentFlow.descriptionFromInvoice,
-          amount: {
-            btc: paymentFlow.btcPaymentAmount,
-            usd: paymentFlow.usdPaymentAmount,
-          },
-          senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
-          recipientWalletDescriptor,
-          metadata,
-          additionalDebitMetadata,
-        })
-      })
-      if (journal instanceof Error) return journal
-
-      const lndService = LndService()
-      if (lndService instanceof Error) return lndService
-
-      const deletedLnInvoice = await lndService.cancelInvoice({
-        pubkey: recipientPubkey,
+    const notificationsService = NotificationsService(logger)
+    if (recipientWalletCurrency === WalletCurrency.Btc) {
+      notificationsService.lnInvoiceBitcoinWalletPaid({
         paymentHash,
+        recipientWalletId,
+        sats: paymentFlow.btcPaymentAmount.amount,
+        displayCurrencyPerSat: priceRatio.usdPerSat() as unknown as DisplayCurrencyPerSat,
       })
-      if (deletedLnInvoice instanceof Error) return deletedLnInvoice
+    } else {
+      notificationsService.lnInvoiceUsdWalletPaid({
+        paymentHash,
+        recipientWalletId,
+        cents: paymentFlow.usdPaymentAmount.amount,
+        displayCurrencyPerSat: priceRatio.usdPerSat() as unknown as DisplayCurrencyPerSat,
+      })
+    }
 
-      const newWalletInvoice = await WalletInvoicesRepository().markAsPaid(paymentHash)
-      if (newWalletInvoice instanceof Error) return newWalletInvoice
-
-      const notificationsService = NotificationsService(logger)
-      if (recipientWalletCurrency === WalletCurrency.Btc) {
-        notificationsService.lnInvoiceBitcoinWalletPaid({
-          paymentHash,
-          recipientWalletId,
-          sats: paymentFlow.btcPaymentAmount.amount,
-          displayCurrencyPerSat:
-            priceRatio.usdPerSat() as unknown as DisplayCurrencyPerSat,
-        })
-      } else {
-        notificationsService.lnInvoiceUsdWalletPaid({
-          paymentHash,
-          recipientWalletId,
-          cents: paymentFlow.usdPaymentAmount.amount,
-          displayCurrencyPerSat:
-            priceRatio.usdPerSat() as unknown as DisplayCurrencyPerSat,
-        })
-      }
-
-      return PaymentSendStatus.Success
-    },
-  )
+    return PaymentSendStatus.Success
+  })
 }
 
 const executePaymentViaLn = async ({
@@ -596,122 +595,119 @@ const executePaymentViaLn = async ({
 
   const { rawRoute, outgoingNodePubkey } = paymentFlow.routeDetails()
 
-  return LockService().lockWalletId(
-    { walletId: senderWallet.id, logger },
-    async (lock) => {
-      const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
-      if (balance instanceof Error) return balance
-      const balanceCheck = paymentFlow.checkBalanceForSend(balance)
-      if (balanceCheck instanceof Error) return balanceCheck
+  return LockService().lockWalletId(senderWallet.id, async (signal) => {
+    const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
+    if (balance instanceof Error) return balance
+    const balanceCheck = paymentFlow.checkBalanceForSend(balance)
+    if (balanceCheck instanceof Error) return balanceCheck
 
-      const lndService = LndService()
-      if (lndService instanceof Error) return lndService
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
 
-      const priceRatio = PriceRatio({
-        usd: paymentFlow.usdPaymentAmount,
-        btc: paymentFlow.btcPaymentAmount,
-      })
-      if (priceRatio instanceof Error) return priceRatio
-      const displayCentsPerSat = priceRatio.usdPerSat()
+    const priceRatio = PriceRatio({
+      usd: paymentFlow.usdPaymentAmount,
+      btc: paymentFlow.btcPaymentAmount,
+    })
+    if (priceRatio instanceof Error) return priceRatio
+    const displayCentsPerSat = priceRatio.usdPerSat()
 
-      const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
 
-      const journal = await LockService().extendLock({ logger, lock }, async () => {
-        const metadata = LedgerFacade.LnSendLedgerMetadata({
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-          feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),
-          displayCurrency: DisplayCurrency.Usd,
+    if (signal.aborted) {
+      return new ResourceExpiredLockServiceError(signal.error?.message)
+    }
 
-          paymentFlow,
-          pubkey: outgoingNodePubkey || lndService.defaultPubkey(),
+    const metadata = LedgerFacade.LnSendLedgerMetadata({
+      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+      feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),
+      displayCurrency: DisplayCurrency.Usd,
+
+      paymentFlow,
+      pubkey: outgoingNodePubkey || lndService.defaultPubkey(),
+      paymentHash,
+      feeKnownInAdvance: !!rawRoute,
+    })
+
+    const journal = await LedgerFacade.recordSend({
+      description: paymentFlow.descriptionFromInvoice,
+      amountToDebitSender: {
+        btc: {
+          currency: paymentFlow.btcPaymentAmount.currency,
+          amount: paymentFlow.btcPaymentAmount.amount + paymentFlow.btcProtocolFee.amount,
+        },
+        usd: {
+          currency: paymentFlow.usdPaymentAmount.currency,
+          amount: paymentFlow.usdPaymentAmount.amount + paymentFlow.usdProtocolFee.amount,
+        },
+      },
+      senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
+      metadata,
+    })
+    if (journal instanceof Error) return journal
+    const { journalId } = journal
+
+    const payResult = rawRoute
+      ? await lndService.payInvoiceViaRoutes({
           paymentHash,
-          feeKnownInAdvance: !!rawRoute,
+          rawRoute,
+          pubkey: outgoingNodePubkey,
+        })
+      : await lndService.payInvoiceViaPaymentDetails({
+          decodedInvoice,
+          btcPaymentAmount: paymentFlow.btcPaymentAmount,
+          maxFeeAmount: paymentFlow.btcProtocolFee,
         })
 
-        return LedgerFacade.recordSend({
-          description: paymentFlow.descriptionFromInvoice,
-          amountToDebitSender: {
-            btc: {
-              currency: paymentFlow.btcPaymentAmount.currency,
-              amount:
-                paymentFlow.btcPaymentAmount.amount + paymentFlow.btcProtocolFee.amount,
-            },
-            usd: {
-              currency: paymentFlow.usdPaymentAmount.currency,
-              amount:
-                paymentFlow.usdPaymentAmount.amount + paymentFlow.usdProtocolFee.amount,
-            },
-          },
-          senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
-          metadata,
-        })
+    // Fire-and-forget update to 'lnPayments' collection
+    if (!(payResult instanceof LnAlreadyPaidError)) {
+      LnPaymentsRepository().persistNew({
+        paymentHash: decodedInvoice.paymentHash,
+        paymentRequest: decodedInvoice.paymentRequest,
+        sentFromPubkey: outgoingNodePubkey || lndService.defaultPubkey(),
       })
-      if (journal instanceof Error) return journal
-      const { journalId } = journal
 
-      const payResult = rawRoute
-        ? await lndService.payInvoiceViaRoutes({
-            paymentHash,
-            rawRoute,
-            pubkey: outgoingNodePubkey,
-          })
-        : await lndService.payInvoiceViaPaymentDetails({
-            decodedInvoice,
-            btcPaymentAmount: paymentFlow.btcPaymentAmount,
-            maxFeeAmount: paymentFlow.btcProtocolFee,
-          })
-
-      // Fire-and-forget update to 'lnPayments' collection
-      if (!(payResult instanceof LnAlreadyPaidError)) {
-        LnPaymentsRepository().persistNew({
-          paymentHash: decodedInvoice.paymentHash,
-          paymentRequest: decodedInvoice.paymentRequest,
-          sentFromPubkey: outgoingNodePubkey || lndService.defaultPubkey(),
-        })
-
-        if (!(payResult instanceof Error))
-          LedgerFacade.updateMetadataByHash({
-            hash: paymentHash,
-            revealedPreImage: payResult.revealedPreImage,
-          })
-      }
-      if (payResult instanceof LnPaymentPendingError) {
-        paymentFlow.paymentSentAndPending = true
-        paymentFlowRepo.updateLightningPaymentFlow(paymentFlow)
-        return PaymentSendStatus.Pending
-      }
-
-      const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
-      if (settled instanceof Error) return settled
-
-      if (payResult instanceof Error) {
-        const voided = await LedgerFacade.recordLnSendRevert({
-          journalId,
-          paymentHash,
-        })
-        if (voided instanceof Error) return voided
-
-        if (payResult instanceof LnAlreadyPaidError) {
-          return PaymentSendStatus.AlreadyPaid
-        }
-
-        return payResult
-      }
-
-      if (!rawRoute) {
-        const reimbursed = await Wallets.reimburseFee({
-          paymentFlow,
-          journalId,
-          actualFee: payResult.roundedUpFee,
+      if (!(payResult instanceof Error))
+        LedgerFacade.updateMetadataByHash({
+          hash: paymentHash,
           revealedPreImage: payResult.revealedPreImage,
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-          feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),
-          logger,
         })
-        if (reimbursed instanceof Error) return reimbursed
+    }
+    if (payResult instanceof LnPaymentPendingError) {
+      paymentFlow.paymentSentAndPending = true
+      paymentFlowRepo.updateLightningPaymentFlow(paymentFlow)
+      return PaymentSendStatus.Pending
+    }
+
+    const settled = await LedgerFacade.settlePendingLnSend(paymentHash)
+    if (settled instanceof Error) return settled
+
+    if (payResult instanceof Error) {
+      const voided = await LedgerFacade.recordLnSendRevert({
+        journalId,
+        paymentHash,
+      })
+      if (voided instanceof Error) return voided
+
+      if (payResult instanceof LnAlreadyPaidError) {
+        return PaymentSendStatus.AlreadyPaid
       }
 
-      return PaymentSendStatus.Success
-    },
-  )
+      return payResult
+    }
+
+    if (!rawRoute) {
+      const reimbursed = await Wallets.reimburseFee({
+        paymentFlow,
+        journalId,
+        actualFee: payResult.roundedUpFee,
+        revealedPreImage: payResult.revealedPreImage,
+        amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+        feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),
+        logger,
+      })
+      if (reimbursed instanceof Error) return reimbursed
+    }
+
+    return PaymentSendStatus.Success
+  })
 }
