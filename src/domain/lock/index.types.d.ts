@@ -21,7 +21,8 @@ interface ILockService {
   ): Promise<Res | LockServiceError>
 }
 
-interface IRedLock {
+type RedlockArgs<Signal, Ret> = {
   path: string
-  signal?: RedlockAbortSignal
+  signal?: Signal
+  asyncFn: (signal: Signal) => Promise<Ret>
 }

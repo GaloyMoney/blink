@@ -45,7 +45,11 @@ const getWalletLockResource = (path) => `locks:wallet:${path}`
 const getPaymentHashLockResource = (path) => `locks:paymenthash:${path}`
 const getOnChainTxHashLockResource = (path) => `locks:onchaintxhash:${path}`
 
-export const redlock = async ({ path, signal }: IRedLock, asyncFn) => {
+export const redlock = async <Signal extends RedlockAbortSignal, Ret>({
+  path,
+  signal,
+  asyncFn,
+}: RedlockArgs<Signal, Ret>): Promise<Ret | LockServiceError> => {
   if (signal) {
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
@@ -54,7 +58,9 @@ export const redlock = async ({ path, signal }: IRedLock, asyncFn) => {
   }
 
   try {
-    return await redlockClient.using([path], ttl, async (signal) => asyncFn(signal))
+    return await redlockClient.using([path], ttl, async (signal) =>
+      asyncFn(signal as Signal),
+    )
   } catch (error) {
     if (error instanceof ExecutionError) {
       return new ResourceAttemptsLockServiceError()
@@ -67,29 +73,29 @@ export const redlock = async ({ path, signal }: IRedLock, asyncFn) => {
 export const LockService = (): ILockService => {
   const lockWalletId = async <Res>(
     walletId: WalletId,
-    f: (signal: WalletIdAbortSignal) => Promise<Res>,
+    asyncFn: (signal: WalletIdAbortSignal) => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     const path = getWalletLockResource(walletId)
 
-    return redlock({ path }, f)
+    return redlock({ path, asyncFn })
   }
 
   const lockPaymentHash = async <Res>(
     paymentHash: PaymentHash,
-    f: (signal: PaymentHashAbortSignal) => Promise<Res>,
+    asyncFn: (signal: PaymentHashAbortSignal) => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     const path = getPaymentHashLockResource(paymentHash)
 
-    return redlock({ path }, f)
+    return redlock({ path, asyncFn })
   }
 
   const lockOnChainTxHash = async <Res>(
     txHash: OnChainTxHash,
-    f: (signal: OnChainTxAbortSignal) => Promise<Res>,
+    asyncFn: (signal: OnChainTxAbortSignal) => Promise<Res>,
   ): Promise<Res | LockServiceError> => {
     const path = getOnChainTxHashLockResource(txHash)
 
-    return redlock({ path }, f)
+    return redlock({ path, asyncFn })
   }
 
   return wrapAsyncFunctionsToRunInSpan({

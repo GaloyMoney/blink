@@ -37,18 +37,28 @@ const checkLockExist = (client) =>
 
 describe("Redlock", () => {
   it("return value is passed with a promise", async () => {
-    const result = await redlock({ path: walletId }, () => {
-      return "r"
+    const result = await redlock({
+      path: walletId,
+      asyncFn: async () => {
+        return "r"
+      },
     })
 
     expect(result).toBe("r")
   })
 
   it("use signal if this exist", async () => {
-    const result = await redlock({ path: walletId }, (signal) => {
-      return redlock({ path: walletId, signal }, () => {
-        return "r"
-      })
+    const result = await redlock({
+      path: walletId,
+      asyncFn: async (signal) => {
+        return redlock({
+          path: walletId,
+          signal,
+          asyncFn: async () => {
+            return "r"
+          },
+        })
+      },
     })
 
     expect(result).toBe("r")
@@ -56,10 +66,16 @@ describe("Redlock", () => {
 
   it("relocking fail if signal is not passed down the tree", async () => {
     await expect(
-      redlock({ path: walletId }, async () => {
-        return redlock({ path: walletId }, () => {
-          return "r"
-        })
+      redlock({
+        path: walletId,
+        asyncFn: async () => {
+          return redlock({
+            path: walletId,
+            asyncFn: async () => {
+              return "r"
+            },
+          })
+        },
       }),
     ).resolves.toBeInstanceOf(ResourceAttemptsLockServiceError)
   })
@@ -68,15 +84,21 @@ describe("Redlock", () => {
     const order: number[] = []
 
     await Promise.all([
-      redlock({ path: walletId }, async () => {
-        order.push(1)
-        await sleep(500)
-        order.push(2)
+      redlock({
+        path: walletId,
+        asyncFn: async () => {
+          order.push(1)
+          await sleep(500)
+          order.push(2)
+        },
       }),
-      redlock({ path: walletId }, async () => {
-        order.push(3)
-        await sleep(500)
-        order.push(4)
+      redlock({
+        path: walletId,
+        asyncFn: async () => {
+          order.push(3)
+          await sleep(500)
+          order.push(4)
+        },
       }),
     ])
 
@@ -85,10 +107,13 @@ describe("Redlock", () => {
 
   it("throwing error releases the lock", async () => {
     try {
-      await redlock({ path: walletId }, async () => {
-        expect(await checkLockExist(redis)).toBeTruthy()
-        await sleep(500)
-        throw Error("dummy error")
+      await redlock({
+        path: walletId,
+        asyncFn: async () => {
+          expect(await checkLockExist(redis)).toBeTruthy()
+          await sleep(500)
+          throw Error("dummy error")
+        },
       })
     } catch (err) {
       baseLogger.info(`error is being caught ${err}`)
