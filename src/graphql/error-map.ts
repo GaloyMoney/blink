@@ -382,6 +382,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LnHashPresentInIntraLedgerFlowError":
     case "IntraLedgerHashPresentInLnFlowError":
     case "NoRecipientDetailsForIntraLedgerFlowError":
+    case "PubSubError":
+    case "PubSubServiceError":
+    case "UnknownPubSubError":
       message = `Unknown error occurred (code: ${error.name}${
         error.message ? ": " + error.message : ""
       })`

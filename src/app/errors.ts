@@ -15,6 +15,7 @@ import * as CacheErrors from "@domain/cache/errors"
 import * as PhoneProviderServiceErrors from "@domain/phone-provider/errors"
 import * as ColdStorageServiceErrors from "@domain/cold-storage/errors"
 import * as DealerPriceErrors from "@domain/dealer-price/errors"
+import * as PubSubErrors from "@domain/pubsub/errors"
 
 export const ApplicationErrors = {
   ...SharedErrors,
@@ -34,4 +35,5 @@ export const ApplicationErrors = {
   ...PhoneProviderServiceErrors,
   ...ColdStorageServiceErrors,
   ...DealerPriceErrors,
+  ...PubSubErrors,
 } as const

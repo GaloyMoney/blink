@@ -1,18 +1,21 @@
-import { GT } from "@graphql/index"
+import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
-import { SAT_PRICE_PRECISION_OFFSET, USER_PRICE_UPDATE_EVENT } from "@config"
-import pubsub from "@services/pubsub"
-import { Prices } from "@app"
-import IError from "@graphql/types/abstract/error"
+import { GT } from "@graphql/index"
 import Price from "@graphql/types/object/price"
-import PaymentHash from "@graphql/types/scalar/payment-hash"
-import InvoicePaymentStatus from "@graphql/types/scalar/invoice-payment-status"
+import IError from "@graphql/types/abstract/error"
+import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
+import GraphQLUser from "@graphql/types/object/graphql-user"
+import PaymentHash from "@graphql/types/scalar/payment-hash"
 import OnChainTxHash from "@graphql/types/scalar/onchain-tx-hash"
 import TxNotificationType from "@graphql/types/scalar/tx-notification-type"
-import GraphQLUser from "@graphql/types/object/graphql-user"
-import WalletId from "@graphql/types/scalar/wallet-id"
-import { accountUpdateEvent } from "@domain/notifications"
+import InvoicePaymentStatus from "@graphql/types/scalar/invoice-payment-status"
+
+import { Prices } from "@app"
+import { PubSubService } from "@services/pubsub"
+import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
+
+const pubsub = PubSubService()
 
 const IntraLedgerUpdate = GT.Object({
   name: "IntraLedgerUpdate",
@@ -121,18 +124,22 @@ const MeSubscription = {
     if (!ctx.uid) {
       throw new Error("Not Authenticated")
     }
+    const accountUpdatedTrigger = customPubSubTrigger({
+      event: PubSubDefaultTriggers.AccountUpdate,
+      suffix: ctx.domainAccount.id,
+    })
 
     const satUsdPrice = await Prices.getCurrentPrice()
     if (!(satUsdPrice instanceof Error)) {
-      pubsub.publishImmediate(accountUpdateEvent(ctx.domainAccount.id), {
-        price: { satUsdCentPrice: 100 * satUsdPrice },
+      pubsub.publishImmediate({
+        trigger: accountUpdatedTrigger,
+        payload: { price: { satUsdCentPrice: 100 * satUsdPrice } },
       })
     }
 
-    return pubsub.asyncIterator([
-      USER_PRICE_UPDATE_EVENT,
-      accountUpdateEvent(ctx.domainAccount.id),
-    ])
+    return pubsub.createAsyncIterator({
+      trigger: [accountUpdatedTrigger, PubSubDefaultTriggers.UserPriceUpdate],
+    })
   },
 }
 

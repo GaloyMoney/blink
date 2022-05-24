@@ -18,6 +18,3 @@ export const PaymentSendStatus = {
   Pending: { value: "pending" },
   AlreadyPaid: { value: "already_paid" },
 } as const
-
-export const lnPaymentStatusEvent = (paymentHash: PaymentHash) =>
-  `LN-PAYMENT-STATUS-${paymentHash}`

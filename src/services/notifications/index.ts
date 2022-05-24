@@ -1,26 +1,17 @@
-import {
-  getLocale,
-  SAT_USDCENT_PRICE,
-  USER_PRICE_UPDATE_EVENT,
-  getDisplayCurrencyConfig,
-  getI18nInstance,
-} from "@config"
+import { getLocale, getDisplayCurrencyConfig, getI18nInstance } from "@config"
 import { toSats } from "@domain/bitcoin"
-import { lnPaymentStatusEvent } from "@domain/bitcoin/lightning"
 import { NotImplementedError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
-import {
-  accountUpdateEvent,
-  NotificationsServiceError,
-  NotificationType,
-} from "@domain/notifications"
+import { NotificationsServiceError, NotificationType } from "@domain/notifications"
+import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 import { WalletCurrency } from "@domain/shared"
 import {
   AccountsRepository,
   UsersRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import pubsub from "@services/pubsub"
+import { PubSubService } from "@services/pubsub"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { sendNotification } from "./notification"
 import { transactionBitcoinNotification, transactionUsdNotification } from "./payment"
@@ -30,6 +21,7 @@ const defaultLocale = getLocale()
 const { symbol: fiatSymbol } = getDisplayCurrencyConfig()
 
 export const NotificationsService = (logger: Logger): INotificationsService => {
+  const pubsub = PubSubService()
   const sendOnChainNotification = async ({
     type,
     sats,
@@ -67,18 +59,22 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       })
 
       // Notify the recipient (via GraphQL subscription if any)
-      const accountUpdatedEventName = accountUpdateEvent(account.id)
-
-      pubsub.publish(accountUpdatedEventName, {
-        transaction: {
-          walletId,
-          txNotificationType: type,
-          amount: sats,
-          txHash,
-          displayCurrencyPerSat,
+      const accountUpdatedTrigger = customPubSubTrigger({
+        event: PubSubDefaultTriggers.AccountUpdate,
+        suffix: account.id,
+      })
+      pubsub.publish({
+        trigger: accountUpdatedTrigger,
+        payload: {
+          transaction: {
+            walletId,
+            txNotificationType: type,
+            amount: sats,
+            txHash,
+            displayCurrencyPerSat,
+          },
         },
       })
-      return
     } catch (err) {
       return new NotificationsServiceError(err)
     }
@@ -153,19 +149,30 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       })
 
       // Notify public subscribers (via GraphQL subscription if any)
-      const eventName = lnPaymentStatusEvent(paymentHash)
-      pubsub.publish(eventName, { status: "PAID" })
+      const lnPaymentStatusTrigger = customPubSubTrigger({
+        event: PubSubDefaultTriggers.LnPaymentStatus,
+        suffix: paymentHash,
+      })
+      pubsub.publish({
+        trigger: lnPaymentStatusTrigger,
+        payload: { status: "PAID" },
+      })
 
       // Notify the recipient (via GraphQL subscription if any)
-      const accountUpdatedEventName = accountUpdateEvent(account.id)
-      pubsub.publish(accountUpdatedEventName, {
-        invoice: {
-          walletId: recipientWalletId,
-          paymentHash,
-          status: "PAID",
+      const accountUpdatedTrigger = customPubSubTrigger({
+        event: PubSubDefaultTriggers.AccountUpdate,
+        suffix: account.id,
+      })
+      pubsub.publish({
+        trigger: accountUpdatedTrigger,
+        payload: {
+          invoice: {
+            walletId: recipientWalletId,
+            paymentHash,
+            status: "PAID",
+          },
         },
       })
-      return
     } catch (err) {
       return new NotificationsServiceError(err)
     }
@@ -198,28 +205,43 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       })
 
       // Notify public subscribers (via GraphQL subscription if any)
-      const eventName = lnPaymentStatusEvent(paymentHash)
-      pubsub.publish(eventName, { status: "PAID" })
+      const lnPaymentStatusTrigger = customPubSubTrigger({
+        event: PubSubDefaultTriggers.LnPaymentStatus,
+        suffix: paymentHash,
+      })
+      pubsub.publish({
+        trigger: lnPaymentStatusTrigger,
+        payload: { status: "PAID" },
+      })
 
       // Notify the recipient (via GraphQL subscription if any)
-      const accountUpdatedEventName = accountUpdateEvent(account.id)
-      pubsub.publish(accountUpdatedEventName, {
-        invoice: {
-          walletId: recipientWalletId,
-          paymentHash,
-          status: "PAID",
+      const accountUpdatedTrigger = customPubSubTrigger({
+        event: PubSubDefaultTriggers.AccountUpdate,
+        suffix: account.id,
+      })
+      pubsub.publish({
+        trigger: accountUpdatedTrigger,
+        payload: {
+          invoice: {
+            walletId: recipientWalletId,
+            paymentHash,
+            status: "PAID",
+          },
         },
       })
-      return
     } catch (err) {
       return new NotificationsServiceError(err)
     }
   }
 
   const priceUpdate = (displayCurrencyPerSat) => {
-    pubsub.publish(SAT_USDCENT_PRICE, { satUsdCentPrice: 100 * displayCurrencyPerSat })
-    pubsub.publish(USER_PRICE_UPDATE_EVENT, {
-      price: { satUsdCentPrice: 100 * displayCurrencyPerSat },
+    const payload = { satUsdCentPrice: 100 * displayCurrencyPerSat }
+    pubsub.publish({ trigger: PubSubDefaultTriggers.PriceUpdate, payload })
+    pubsub.publish({
+      trigger: PubSubDefaultTriggers.UserPriceUpdate,
+      payload: {
+        price: payload,
+      },
     })
   }
 
@@ -244,14 +266,19 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         if (account instanceof Error) return account
 
         // Notify the recipient (via GraphQL subscription if any)
-        const accountUpdatedEventName = accountUpdateEvent(account.id)
-
-        pubsub.publish(accountUpdatedEventName, {
-          intraLedger: {
-            walletId,
-            txNotificationType: type,
-            amount,
-            displayCurrencyPerSat,
+        const accountUpdatedTrigger = customPubSubTrigger({
+          event: PubSubDefaultTriggers.AccountUpdate,
+          suffix: account.id,
+        })
+        pubsub.publish({
+          trigger: accountUpdatedTrigger,
+          payload: {
+            intraLedger: {
+              walletId,
+              txNotificationType: type,
+              amount,
+              displayCurrencyPerSat,
+            },
           },
         })
 
@@ -303,14 +330,19 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         if (account instanceof Error) return account
 
         // Notify the recipient (via GraphQL subscription if any)
-        const accountUpdatedEventName = accountUpdateEvent(account.id)
-
-        pubsub.publish(accountUpdatedEventName, {
-          intraLedger: {
-            walletId,
-            txNotificationType: type,
-            sats: toSats(Number(sats)),
-            displayCurrencyPerSat,
+        const accountUpdatedTrigger = customPubSubTrigger({
+          event: PubSubDefaultTriggers.AccountUpdate,
+          suffix: account.id,
+        })
+        pubsub.publish({
+          trigger: accountUpdatedTrigger,
+          payload: {
+            intraLedger: {
+              walletId,
+              txNotificationType: type,
+              sats: toSats(Number(sats)),
+              displayCurrencyPerSat,
+            },
           },
         })
 
@@ -362,14 +394,19 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         if (account instanceof Error) return account
 
         // Notify the recipient (via GraphQL subscription if any)
-        const accountUpdatedEventName = accountUpdateEvent(account.id)
-
-        pubsub.publish(accountUpdatedEventName, {
-          intraLedger: {
-            walletId,
-            txNotificationType: type,
-            cents: toCents(Number(cents)),
-            displayCurrencyPerSat,
+        const accountUpdatedTrigger = customPubSubTrigger({
+          event: PubSubDefaultTriggers.AccountUpdate,
+          suffix: account.id,
+        })
+        pubsub.publish({
+          trigger: accountUpdatedTrigger,
+          payload: {
+            intraLedger: {
+              walletId,
+              txNotificationType: type,
+              cents: toCents(Number(cents)),
+              displayCurrencyPerSat,
+            },
           },
         })
 
@@ -464,16 +501,22 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     })
   }
 
+  // trace everything except price update because it runs every 30 seconds
   return {
-    onChainTransactionReceived,
-    onChainTransactionReceivedPending,
-    onChainTransactionPayment,
     priceUpdate,
-    lnInvoiceBitcoinWalletPaid,
-    lnInvoiceUsdWalletPaid,
-    intraLedgerPaid,
-    intraLedgerBtcWalletPaid,
-    intraLedgerUsdWalletPaid,
-    sendBalance,
+    ...wrapAsyncFunctionsToRunInSpan({
+      namespace: "services.lnd.offchain",
+      fns: {
+        onChainTransactionReceived,
+        onChainTransactionReceivedPending,
+        onChainTransactionPayment,
+        lnInvoiceBitcoinWalletPaid,
+        lnInvoiceUsdWalletPaid,
+        intraLedgerPaid,
+        intraLedgerBtcWalletPaid,
+        intraLedgerUsdWalletPaid,
+        sendBalance,
+      },
+    }),
   }
 }
