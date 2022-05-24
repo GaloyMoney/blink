@@ -2,8 +2,8 @@ import { AccountValidator } from "@domain/accounts"
 import { RepositoryError } from "@domain/errors"
 import { WalletsRepository } from "@services/mongoose"
 
-import { Wallets } from "@app"
-import { PartialResult } from "@app/partial-result"
+import { getTransactionsForWallets } from "../wallets"
+import { PartialResult } from "../partial-result"
 
 export const getTransactionsForAccountByWalletIds = async ({
   account,
@@ -27,5 +27,5 @@ export const getTransactionsForAccountByWalletIds = async ({
     wallets.push(wallet)
   }
 
-  return Wallets.getTransactionsForWallets(wallets)
+  return getTransactionsForWallets(wallets)
 }
