@@ -77,7 +77,10 @@ export const fromLedger = (
         walletId,
         settlementAmount,
         settlementFee: toSats(fee || 0),
-        settlementDisplayCurrencyPerSat: Math.abs(usd / settlementAmount),
+        settlementDisplayCurrencyPerSat: displayCurrencyPerBaseUnitFromAmounts({
+          displayAmountAsNumber: usd,
+          settlementAmountInBaseAsNumber: settlementAmount,
+        }),
         status,
         memo,
         createdAt: timestamp,
@@ -246,3 +249,16 @@ export const translateMemo = ({
 export const WalletTransactionHistory = {
   fromLedger,
 } as const
+
+// TODO: refactor this to use PriceRatio eventually instead after
+// 'usd' property removal from db
+const displayCurrencyPerBaseUnitFromAmounts = ({
+  displayAmountAsNumber,
+  settlementAmountInBaseAsNumber,
+}: {
+  displayAmountAsNumber: number
+  settlementAmountInBaseAsNumber: number
+}): number =>
+  settlementAmountInBaseAsNumber === 0
+    ? 0
+    : Math.abs(displayAmountAsNumber / settlementAmountInBaseAsNumber)
