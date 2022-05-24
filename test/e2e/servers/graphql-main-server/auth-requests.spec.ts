@@ -1,4 +1,6 @@
 import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
+import { WalletCurrency } from "@domain/shared"
 import { yamlConfig } from "@config"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
@@ -12,6 +14,7 @@ import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-
 import USER_LOGIN from "./mutations/user-login.gql"
 import ME from "./queries/me.gql"
 import MAIN from "./queries/main.gql"
+import TRANSACTIONS_BY_WALLET_IDS from "./queries/transactions-by-wallet-ids.gql"
 
 import {
   bitcoindClient,
@@ -127,6 +130,49 @@ describe("graphql", () => {
           expect.objectContaining({
             id: expect.any(String),
             earnAmount: expect.any(Number),
+          }),
+        ]),
+      )
+    })
+  })
+
+  describe("transactionsByWalletId selection in 'me' query", () => {
+    it("returns valid data", async () => {
+      const meResult = await apolloClient.query({
+        query: ME,
+      })
+
+      const { wallets } = meResult.data.me.defaultAccount
+      expect(wallets).toBeTruthy()
+      for (const wallet of wallets) {
+        if (wallet.walletCurrency === WalletCurrency.Usd) {
+          await fundWalletIdFromLightning({
+            walletId: wallet.id,
+            amount: toCents(10_000),
+          })
+        }
+      }
+
+      const { data } = await apolloClient.query({
+        query: TRANSACTIONS_BY_WALLET_IDS,
+        variables: { walletIds: wallets.map((wallet) => wallet.id), first: 5 },
+      })
+
+      const { edges: txns } = data.me.defaultAccount.transactionsByWalletIds
+      expect(txns).toBeTruthy()
+      expect(txns).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            node: expect.objectContaining({
+              settlementAmount: 10_000,
+              settlementCurrency: WalletCurrency.Usd,
+            }),
+          }),
+          expect.objectContaining({
+            node: expect.objectContaining({
+              settlementAmount: 50_000,
+              settlementCurrency: WalletCurrency.Btc,
+            }),
           }),
         ]),
       )
