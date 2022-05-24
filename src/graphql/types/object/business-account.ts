@@ -1,4 +1,6 @@
+import { CouldNotFindTransactionsForAccountError } from "@domain/errors"
 import { GT } from "@graphql/index"
+import { mapError } from "@graphql/error-map"
 import { connectionArgs, connectionFromArray } from "graphql-relay"
 
 import { WalletsRepository } from "@services/mongoose"
@@ -78,9 +80,14 @@ const BusinessAccount = GT.Object({
             account: source,
             walletIds,
           })
-        if (error instanceof Error || transactions === null) {
-          throw error
+        if (error instanceof Error) {
+          throw mapError(error)
         }
+        if (transactions === null) {
+          const nullError = new CouldNotFindTransactionsForAccountError()
+          throw mapError(nullError)
+        }
+
         return connectionFromArray<WalletTransaction>(transactions, args)
       },
     },

@@ -76,6 +76,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `Account does not exist for username ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
+    case "CouldNotFindTransactionsForAccountError":
+      message = "No transactions found for your account."
+      return new NotFoundError({ message, logger: baseLogger })
+
     case "CouldNotFindUserFromPhoneError":
       message = `User does not exist for phone ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
