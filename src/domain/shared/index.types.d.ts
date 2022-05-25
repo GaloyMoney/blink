@@ -1,6 +1,7 @@
 type ErrorLevel =
   typeof import("./errors").ErrorLevel[keyof typeof import("./errors").ErrorLevel]
 type ValidationError = import("./errors").ValidationError
+type BigIntConversionError = import("./errors").BigIntConversionError
 
 type WalletCurrency =
   typeof import("./primitives").WalletCurrency[keyof typeof import("./primitives").WalletCurrency]
