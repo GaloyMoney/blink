@@ -2,6 +2,28 @@ interface Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+  transactionsByWalletIds(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+    walletIds: [WalletId]
+  ): TransactionConnection
   wallets: [Wallet!]!
 }
 
@@ -103,6 +125,32 @@ type ConsumerAccount implements Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+
+  """
+  A list of all transactions associated with walletIds optionally passed.
+  """
+  transactionsByWalletIds(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+    walletIds: [WalletId]
+  ): TransactionConnection
   wallets: [Wallet!]!
 }
 
@@ -879,6 +927,11 @@ type Transaction {
   Amount of sats sent or received.
   """
   settlementAmount: SatAmount!
+
+  """
+  Wallet currency for transaction.
+  """
+  settlementCurrency: WalletCurrency!
   settlementFee: SatAmount!
 
   """

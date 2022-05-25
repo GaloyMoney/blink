@@ -41,9 +41,9 @@ const UsdWallet = GT.Object<Wallet>({
       type: TransactionConnection,
       args: connectionArgs,
       resolve: async (source, args) => {
-        const { result: transactions, error } = await Wallets.getTransactionsForWallet(
+        const { result: transactions, error } = await Wallets.getTransactionsForWallets([
           source,
-        )
+        ])
         if (error instanceof Error || transactions === null) {
           throw error
         }

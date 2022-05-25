@@ -36,6 +36,7 @@ export class NoExpiredLightningPaymentFlowsError extends CouldNotFindError {}
 
 export class CouldNotFindAccountFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
+export class CouldNotFindTransactionsForAccountError extends CouldNotFindError {}
 
 export class RewardAlreadyPresentError extends DomainError {}
 

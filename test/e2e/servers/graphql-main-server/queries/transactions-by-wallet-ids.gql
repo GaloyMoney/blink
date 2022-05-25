@@ -1,40 +1,11 @@
-query mainQuery($hasToken: Boolean!) {
-  globals {
-    nodesIds
-  }
-  quizQuestions {
-    id
-    earnAmount
-  }
-  me @include(if: $hasToken) {
-    id
-    language
-    username
-    phone
-    quizQuestions {
-      question {
-        id
-        earnAmount
-      }
-      completed
-    }
+query transactionsByWalletIds($walletIds: [WalletId], $first: Int, $after: String) {
+  me {
     defaultAccount {
-      id
       defaultWalletId
-      wallets {
-        id
-        balance
-        walletCurrency
-        transactions(first: 3) {
-          ...TransactionList
-        }
+      transactionsByWalletIds(walletIds: $walletIds, first: $first, after: $after) {
+        ...TransactionList
       }
     }
-  }
-  mobileVersions {
-    platform
-    currentSupported
-    minSupported
   }
 }
 

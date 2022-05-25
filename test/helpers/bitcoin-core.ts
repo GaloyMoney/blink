@@ -107,7 +107,7 @@ export const fundWalletIdFromLightning = async ({
   amount,
 }: {
   walletId: WalletId
-  amount: Satoshis
+  amount: Satoshis | UsdCents
 }) => {
   const invoice = await addInvoiceForSelf({ walletId, amount })
   if (invoice instanceof Error) return invoice

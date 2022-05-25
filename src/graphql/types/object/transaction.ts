@@ -13,6 +13,7 @@ import SettlementVia from "../abstract/settlement-via"
 import Timestamp from "../scalar/timestamp"
 import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
 import TxStatus from "../scalar/tx-status"
+import WalletCurrency from "../scalar/wallet-currency"
 
 import Price from "./price"
 
@@ -57,6 +58,10 @@ const Transaction = GT.Object<WalletTransaction>({
         }
       },
       description: "Price in USDCENT/SATS at time of settlement.",
+    },
+    settlementCurrency: {
+      type: GT.NonNull(WalletCurrency),
+      description: "Wallet currency for transaction.",
     },
     direction: {
       type: GT.NonNull(TxDirection),

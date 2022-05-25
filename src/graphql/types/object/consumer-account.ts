@@ -1,10 +1,20 @@
-import { Accounts, Wallets } from "@app"
+import { CouldNotFindTransactionsForAccountError } from "@domain/errors"
 import { GT } from "@graphql/index"
+import { mapError } from "@graphql/error-map"
+import { connectionArgs, connectionFromArray } from "graphql-relay"
+
+import { WalletsRepository } from "@services/mongoose"
+
+import { Accounts, Wallets } from "@app"
+
 import getUuidByString from "uuid-by-string"
 
 import IAccount from "../abstract/account"
 import Wallet from "../abstract/wallet"
+
 import WalletId from "../scalar/wallet-id"
+
+import { TransactionConnection } from "./transaction"
 
 const ConsumerAccount = GT.Object({
   name: "ConsumerAccount",
@@ -40,6 +50,46 @@ const ConsumerAccount = GT.Object({
       },
       resolve: async (source: Account) => {
         return Accounts.getCSVForAccount(source.id)
+      },
+    },
+    transactionsByWalletIds: {
+      description:
+        "A list of all transactions associated with walletIds optionally passed.",
+      type: TransactionConnection,
+      args: {
+        ...connectionArgs,
+        walletIds: {
+          type: GT.List(WalletId),
+        },
+      },
+      resolve: async (source, args) => {
+        let { walletIds } = args
+        if (walletIds instanceof Error) {
+          return { errors: [{ message: walletIds.message }] }
+        }
+
+        if (walletIds === undefined) {
+          const wallets = await WalletsRepository().listByAccountId(source.id)
+          if (wallets instanceof Error) {
+            return { errors: [{ message: walletIds.message }] }
+          }
+          walletIds = wallets.map((wallet) => wallet.id)
+        }
+
+        const { result: transactions, error } =
+          await Accounts.getTransactionsForAccountByWalletIds({
+            account: source,
+            walletIds,
+          })
+        if (error instanceof Error) {
+          throw mapError(error)
+        }
+        if (transactions === null) {
+          const nullError = new CouldNotFindTransactionsForAccountError()
+          throw mapError(nullError)
+        }
+
+        return connectionFromArray<WalletTransaction>(transactions, args)
       },
     },
   }),

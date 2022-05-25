@@ -1,4 +1,6 @@
 import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
+import { WalletCurrency } from "@domain/shared"
 import { yamlConfig } from "@config"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
@@ -12,6 +14,7 @@ import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-
 import USER_LOGIN from "./mutations/user-login.gql"
 import ME from "./queries/me.gql"
 import MAIN from "./queries/main.gql"
+import TRANSACTIONS_BY_WALLET_IDS from "./queries/transactions-by-wallet-ids.gql"
 
 import {
   bitcoindClient,
@@ -37,11 +40,14 @@ let apolloClient: ApolloClient<NormalizedCacheObject>,
 const userRef = "D"
 const { phone, code } = yamlConfig.test_accounts.find((item) => item.ref === userRef)
 
+const satsAmount = toSats(50_000)
+const centsAmount = toCents(10_000)
+
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
   walletId = await getDefaultWalletIdByTestUserRef(userRef)
 
-  await fundWalletIdFromLightning({ walletId, amount: toSats(50_000) })
+  await fundWalletIdFromLightning({ walletId, amount: satsAmount })
   serverPid = await startServer()
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
   const input = { phone, code }
@@ -127,6 +133,89 @@ describe("graphql", () => {
           expect.objectContaining({
             id: expect.any(String),
             earnAmount: expect.any(Number),
+          }),
+        ]),
+      )
+    })
+  })
+
+  describe("transactionsByWalletId selection in 'me' query", () => {
+    it("returns valid data for walletIds passed", async () => {
+      const meResult = await apolloClient.query({
+        query: ME,
+      })
+
+      const { wallets } = meResult.data.me.defaultAccount
+      expect(wallets).toBeTruthy()
+      for (const wallet of wallets) {
+        if (wallet.walletCurrency === WalletCurrency.Usd) {
+          await fundWalletIdFromLightning({
+            walletId: wallet.id,
+            amount: centsAmount,
+          })
+        }
+      }
+
+      const { data } = await apolloClient.query({
+        query: TRANSACTIONS_BY_WALLET_IDS,
+        variables: { walletIds: wallets.map((wallet) => wallet.id), first: 5 },
+      })
+
+      const { edges: txns } = data.me.defaultAccount.transactionsByWalletIds
+      expect(txns).toBeTruthy()
+      expect(txns).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            node: expect.objectContaining({
+              settlementAmount: 10_000,
+              settlementCurrency: WalletCurrency.Usd,
+            }),
+          }),
+          expect.objectContaining({
+            node: expect.objectContaining({
+              settlementAmount: 50_000,
+              settlementCurrency: WalletCurrency.Btc,
+            }),
+          }),
+        ]),
+      )
+    })
+
+    it("returns valid data for no walletIds passed", async () => {
+      const meResult = await apolloClient.query({
+        query: ME,
+      })
+
+      const { wallets } = meResult.data.me.defaultAccount
+      expect(wallets).toBeTruthy()
+      for (const wallet of wallets) {
+        if (wallet.walletCurrency === WalletCurrency.Usd) {
+          await fundWalletIdFromLightning({
+            walletId: wallet.id,
+            amount: centsAmount,
+          })
+        }
+      }
+
+      const { data } = await apolloClient.query({
+        query: TRANSACTIONS_BY_WALLET_IDS,
+      })
+
+      const { edges: txns } = data.me.defaultAccount.transactionsByWalletIds
+      expect(txns).toBeTruthy()
+      expect(txns).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            node: expect.objectContaining({
+              settlementAmount: 10_000,
+              settlementCurrency: WalletCurrency.Usd,
+            }),
+          }),
+          expect.objectContaining({
+            node: expect.objectContaining({
+              settlementAmount: 50_000,
+              settlementCurrency: WalletCurrency.Btc,
+            }),
           }),
         ]),
       )

@@ -76,6 +76,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `Account does not exist for username ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
+    case "CouldNotFindTransactionsForAccountError":
+      message = "No transactions found for your account."
+      return new NotFoundError({ message, logger: baseLogger })
+
     case "CouldNotFindUserFromPhoneError":
       message = `User does not exist for phone ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
@@ -249,6 +253,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "RebalanceNeededError":
       return new RebalanceNeededError({ logger: baseLogger })
 
+    case "InvalidWalletId":
+      message = "Invalid walletId for account."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -282,7 +290,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidUsername":
     case "InvalidPhoneNumber":
     case "InvalidEmailAddress":
-    case "InvalidWalletId":
     case "LessThanDustThresholdError":
     case "InvalidTargetConfirmations":
     case "NoContactForUsernameError":
