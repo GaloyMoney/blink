@@ -2,7 +2,7 @@ interface Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
-  transactionsByWalletIds(
+  transactions(
     """
     Returns the items in the list that come after the specified cursor.
     """
@@ -129,7 +129,7 @@ type ConsumerAccount implements Account {
   """
   A list of all transactions associated with walletIds optionally passed.
   """
-  transactionsByWalletIds(
+  transactions(
     """
     Returns the items in the list that come after the specified cursor.
     """

@@ -27,7 +27,7 @@ const IAccount = GT.Interface({
         },
       },
     },
-    transactionsByWalletIds: {
+    transactions: {
       type: TransactionConnection,
       args: {
         ...connectionArgs,
