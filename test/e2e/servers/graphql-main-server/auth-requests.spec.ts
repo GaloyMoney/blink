@@ -161,7 +161,7 @@ describe("graphql", () => {
         variables: { walletIds: wallets.map((wallet) => wallet.id), first: 5 },
       })
 
-      const { edges: txns } = data.me.defaultAccount.transactionsByWalletIds
+      const { edges: txns } = data.me.defaultAccount.transactions
       expect(txns).toBeTruthy()
       expect(txns).toEqual(
         expect.arrayContaining([
@@ -201,7 +201,7 @@ describe("graphql", () => {
         query: TRANSACTIONS_BY_WALLET_IDS,
       })
 
-      const { edges: txns } = data.me.defaultAccount.transactionsByWalletIds
+      const { edges: txns } = data.me.defaultAccount.transactions
       expect(txns).toBeTruthy()
       expect(txns).toEqual(
         expect.arrayContaining([

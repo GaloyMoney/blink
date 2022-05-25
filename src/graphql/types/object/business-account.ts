@@ -51,7 +51,7 @@ const BusinessAccount = GT.Object({
         return Accounts.getCSVForAccount(source.id)
       },
     },
-    transactionsByWalletIds: {
+    transactions: {
       description:
         "A list of all transactions associated with walletIds optionally passed.",
       type: TransactionConnection,
