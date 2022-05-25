@@ -4,11 +4,7 @@ import {
   NonLnPaymentTransactionForPaymentFlowError,
   PaymentFlow,
 } from "@domain/payments"
-import {
-  paymentAmountFromCents,
-  paymentAmountFromSats,
-  WalletCurrency,
-} from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 
 export const PaymentFlowFromLedgerTransaction = <
@@ -46,16 +42,28 @@ export const PaymentFlowFromLedgerTransaction = <
     return new MissingPropsInTransactionForPaymentFlowError()
   }
 
-  const btcPaymentAmount = paymentAmountFromSats(satsAmount)
+  const btcPaymentAmount = paymentAmountFromNumber({
+    amount: satsAmount,
+    currency: WalletCurrency.Btc,
+  })
   if (btcPaymentAmount instanceof Error) return btcPaymentAmount
 
-  const usdPaymentAmount = paymentAmountFromCents(centsAmount)
+  const usdPaymentAmount = paymentAmountFromNumber({
+    amount: centsAmount,
+    currency: WalletCurrency.Usd,
+  })
   if (usdPaymentAmount instanceof Error) return usdPaymentAmount
 
-  const btcProtocolFee = paymentAmountFromSats(satsFee)
+  const btcProtocolFee = paymentAmountFromNumber({
+    amount: satsFee,
+    currency: WalletCurrency.Btc,
+  })
   if (btcProtocolFee instanceof Error) return btcProtocolFee
 
-  const usdProtocolFee = paymentAmountFromCents(centsFee)
+  const usdProtocolFee = paymentAmountFromNumber({
+    amount: centsFee,
+    currency: WalletCurrency.Usd,
+  })
   if (usdProtocolFee instanceof Error) return usdProtocolFee
 
   return PaymentFlow({

@@ -1,4 +1,4 @@
-import { paymentAmountFromSats } from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { parsePaymentRequest } from "invoices"
 
@@ -32,7 +32,9 @@ export const decodeInvoice = (
   const amount: Satoshis | null = decodedInvoice.safe_tokens
     ? toSats(decodedInvoice.safe_tokens)
     : null
-  const paymentAmount = amount ? paymentAmountFromSats(amount) : null
+  const paymentAmount = amount
+    ? paymentAmountFromNumber({ amount, currency: WalletCurrency.Btc })
+    : null
   if (paymentAmount instanceof Error) return paymentAmount
 
   let routeHints: Hop[][] = []

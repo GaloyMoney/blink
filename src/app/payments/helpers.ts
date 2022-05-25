@@ -15,12 +15,12 @@ import {
 import {
   ErrorLevel,
   ExchangeCurrencyUnit,
-  paymentAmountFromCents,
+  paymentAmountFromNumber,
   paymentAmountFromSats,
   WalletCurrency,
 } from "@domain/shared"
 import { AlreadyPaidError } from "@domain/errors"
-import { CENTS_PER_USD, toCents } from "@domain/fiat"
+import { CENTS_PER_USD } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
 
 import { NewDealerPriceService } from "@services/dealer-price"
@@ -61,7 +61,10 @@ export const usdFromBtcMidPriceFn = async (
       if (midPriceRatio instanceof Error) return midPriceRatio
 
       const usdAmount = Math.ceil(Number(amount.amount) * midPriceRatio)
-      const usdPaymentAmount = paymentAmountFromCents(toCents(usdAmount))
+      const usdPaymentAmount = paymentAmountFromNumber({
+        amount: usdAmount,
+        currency: WalletCurrency.Usd,
+      })
       if (usdPaymentAmount instanceof Error) return usdPaymentAmount
 
       addAttributesToCurrentSpan({
@@ -213,7 +216,9 @@ const recipientDetailsFromInvoice = async (invoice: LnInvoice) => {
     cents,
   } = walletInvoice
   const usdPaymentAmount =
-    cents !== undefined ? paymentAmountFromCents(toCents(cents)) : undefined
+    cents !== undefined
+      ? paymentAmountFromNumber({ amount: cents, currency: WalletCurrency.Usd })
+      : undefined
   if (usdPaymentAmount instanceof Error) return usdPaymentAmount
 
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)

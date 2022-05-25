@@ -3,7 +3,7 @@ import {
   TwoFALimitsExceededError,
   WithdrawalLimitsExceededError,
 } from "@domain/errors"
-import { paymentAmountFromCents, WalletCurrency } from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 export const AccountLimitsChecker = ({
@@ -25,7 +25,10 @@ export const AccountLimitsChecker = ({
         : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
     if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
-    const limit = paymentAmountFromCents(accountLimits.intraLedgerLimit)
+    const limit = paymentAmountFromNumber({
+      amount: accountLimits.intraLedgerLimit,
+      currency: WalletCurrency.Usd,
+    })
     if (limit instanceof Error) return limit
     addAttributesToCurrentSpan({
       "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
@@ -55,7 +58,10 @@ export const AccountLimitsChecker = ({
         : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
     if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
-    const limit = paymentAmountFromCents(accountLimits.withdrawalLimit)
+    const limit = paymentAmountFromNumber({
+      amount: accountLimits.withdrawalLimit,
+      currency: WalletCurrency.Usd,
+    })
     if (limit instanceof Error) return limit
     addAttributesToCurrentSpan({
       "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
@@ -98,7 +104,10 @@ export const TwoFALimitsChecker = ({
         : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
     if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
-    const limit = paymentAmountFromCents(twoFALimits.threshold)
+    const limit = paymentAmountFromNumber({
+      amount: twoFALimits.threshold,
+      currency: WalletCurrency.Usd,
+    })
     if (limit instanceof Error) return limit
     addAttributesToCurrentSpan({
       "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
