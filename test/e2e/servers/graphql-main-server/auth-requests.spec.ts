@@ -220,6 +220,29 @@ describe("graphql", () => {
         ]),
       )
     })
+
+    it("returns an error if non-owned walletId is included", async () => {
+      const expectedErrorMessage = "Invalid walletId for account."
+      const otherWalletId = await getDefaultWalletIdByTestUserRef("A")
+
+      const walletIdsCases = [
+        [otherWalletId, walletId],
+        [otherWalletId],
+        [walletId, otherWalletId],
+      ]
+
+      for (const walletIds of walletIdsCases) {
+        const { data, errors } = await apolloClient.query({
+          query: TRANSACTIONS_BY_WALLET_IDS,
+          variables: { walletIds },
+        })
+        expect(data.me.defaultAccount.transactions).toBeNull()
+        expect(errors).not.toBeUndefined()
+        if (errors == undefined) throw new Error("'errors' property missing")
+
+        expect(errors[0].message).toBe(expectedErrorMessage)
+      }
+    })
   })
 
   describe("lnNoAmountInvoiceCreate", () => {
