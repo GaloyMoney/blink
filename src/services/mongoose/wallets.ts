@@ -102,6 +102,17 @@ export const WalletsRepository = (): IWalletsRepository => {
       return new UnknownRepositoryError(err)
     }
   }
+  const findAll = async (): Promise<Wallet[] | RepositoryError> => {
+    try {
+      const result: WalletRecord[] = await Wallet.find()
+      if (!result || result.length === 0) {
+        return new CouldNotFindWalletFromIdError()
+      }
+      return result.map(resultToWallet)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
 
   return {
     findById,
@@ -109,6 +120,7 @@ export const WalletsRepository = (): IWalletsRepository => {
     findByAddress,
     listByAddresses,
     persistNew,
+    findAll,
   }
 }
 
