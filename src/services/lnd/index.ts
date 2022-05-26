@@ -17,6 +17,7 @@ import {
   InvoiceExpiredOrBadPaymentHashError,
   PaymentAttemptsTimedOutError,
   ProbeForRouteTimedOutError,
+  PaymentInTransitionError,
 } from "@domain/bitcoin/lightning"
 import lnService from "ln-service"
 import {
@@ -384,6 +385,8 @@ export const LndService = (
           return new InvoiceExpiredOrBadPaymentHashError(paymentHash)
         case KnownLndErrorDetails.PaymentAttemptsTimedOut:
           return new PaymentAttemptsTimedOutError()
+        case KnownLndErrorDetails.PaymentInTransition:
+          return new PaymentInTransitionError(paymentHash)
         default:
           return new UnknownLightningServiceError(JSON.stringify(err))
       }
@@ -458,6 +461,8 @@ export const LndService = (
           return new InvoiceExpiredOrBadPaymentHashError(decodedInvoice.paymentHash)
         case KnownLndErrorDetails.PaymentAttemptsTimedOut:
           return new PaymentAttemptsTimedOutError()
+        case KnownLndErrorDetails.PaymentInTransition:
+          return new PaymentInTransitionError(decodedInvoice.paymentHash)
         default:
           return new UnknownLightningServiceError(JSON.stringify(err))
       }
@@ -586,6 +591,7 @@ const KnownLndErrorDetails = {
   PaymentAttemptsTimedOut: "PaymentAttemptsTimedOut",
   ProbeForRouteTimedOut: "ProbeForRouteTimedOut",
   SentPaymentNotFound: "SentPaymentNotFound",
+  PaymentInTransition: "payment is in transition",
 } as const
 
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({
