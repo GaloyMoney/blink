@@ -16,12 +16,10 @@ import {
   ErrorLevel,
   ExchangeCurrencyUnit,
   paymentAmountFromNumber,
-  paymentAmountFromSats,
   WalletCurrency,
 } from "@domain/shared"
 import { AlreadyPaidError } from "@domain/errors"
 import { CENTS_PER_USD } from "@domain/fiat"
-import { toSats } from "@domain/bitcoin"
 
 import { NewDealerPriceService } from "@services/dealer-price"
 import {
@@ -101,7 +99,10 @@ export const btcFromUsdMidPriceFn = async (
       if (midPriceRatio instanceof Error) return midPriceRatio
 
       const btcAmount = Math.ceil(Number(amount.amount) / midPriceRatio)
-      const btcPaymentAmount = paymentAmountFromSats(toSats(btcAmount))
+      const btcPaymentAmount = paymentAmountFromNumber({
+        amount: btcAmount,
+        currency: WalletCurrency.Btc,
+      })
       if (btcPaymentAmount instanceof Error) return btcPaymentAmount
 
       addAttributesToCurrentSpan({

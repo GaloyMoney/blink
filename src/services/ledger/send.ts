@@ -5,11 +5,7 @@ import {
   NoTransactionToSettleError,
   UnknownLedgerError,
 } from "@domain/ledger/errors"
-import {
-  paymentAmountFromSats,
-  paymentAmountFromCents,
-  WalletCurrency,
-} from "@domain/shared"
+import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
 
 import { LegacyEntryBuilder, toLedgerAccountId } from "./domain"
 
@@ -150,7 +146,10 @@ const addSendNoInternalFee = async ({
     metadata,
   }).withoutFee()
 
-  const satsAmount = paymentAmountFromSats(sats)
+  const satsAmount = paymentAmountFromNumber({
+    amount: sats,
+    currency: WalletCurrency.Btc,
+  })
   if (satsAmount instanceof Error) return satsAmount
 
   if (walletCurrency === WalletCurrency.Btc) {
@@ -164,7 +163,10 @@ const addSendNoInternalFee = async ({
 
   if (walletCurrency === WalletCurrency.Usd) {
     if (!cents) return new UnknownLedgerError("Cents are required")
-    const centsAmount = paymentAmountFromCents(cents)
+    const centsAmount = paymentAmountFromNumber({
+      amount: cents,
+      currency: WalletCurrency.Usd,
+    })
     if (centsAmount instanceof Error) return centsAmount
 
     entry = builder
@@ -219,9 +221,15 @@ const addSendInternalFee = async ({
   }
 
   try {
-    const feeSatsAmount = paymentAmountFromSats(fee)
+    const feeSatsAmount = paymentAmountFromNumber({
+      amount: fee,
+      currency: WalletCurrency.Btc,
+    })
     if (feeSatsAmount instanceof Error) return feeSatsAmount
-    const satsAmount = paymentAmountFromSats(sats)
+    const satsAmount = paymentAmountFromNumber({
+      amount: sats,
+      currency: WalletCurrency.Btc,
+    })
     if (satsAmount instanceof Error) return satsAmount
 
     const entry = MainBook.entry(description)

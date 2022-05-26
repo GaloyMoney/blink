@@ -1,9 +1,8 @@
-import { toSats } from "@domain/bitcoin"
 import {
   WalletCurrency,
   ZERO_SATS,
   ZERO_CENTS,
-  paymentAmountFromSats,
+  paymentAmountFromNumber,
 } from "@domain/shared"
 
 export const FEECAP_PERCENT = 2n
@@ -35,8 +34,8 @@ export const LnFees = (
   }
 
   const feeFromRawRoute = (rawRoute: RawRoute): BtcPaymentAmount | ValidationError => {
-    const amount = toSats(Math.ceil(rawRoute.fee))
-    return paymentAmountFromSats(amount)
+    const amount = Math.ceil(rawRoute.fee)
+    return paymentAmountFromNumber({ amount, currency: WalletCurrency.Btc })
   }
 
   return {

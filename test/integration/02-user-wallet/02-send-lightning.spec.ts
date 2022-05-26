@@ -19,12 +19,7 @@ import {
   LimitsExceededError,
   SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
-import {
-  paymentAmountFromCents,
-  paymentAmountFromSats,
-  ValidationError,
-  WalletCurrency,
-} from "@domain/shared"
+import { paymentAmountFromNumber, ValidationError, WalletCurrency } from "@domain/shared"
 import { TwoFAError } from "@domain/twoFA"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
 import { LedgerService } from "@services/ledger"
@@ -538,9 +533,15 @@ describe("UserWallet - Lightning Pay", () => {
     if (!txnPayment?.centsAmount) throw new Error("centsAmount missing from payment")
     if (!txnPayment?.satsAmount) throw new Error("satsAmount missing from payment")
 
-    const usdPaymentAmount = paymentAmountFromCents(txnPayment.centsAmount)
+    const usdPaymentAmount = paymentAmountFromNumber({
+      amount: txnPayment.centsAmount,
+      currency: WalletCurrency.Usd,
+    })
     if (usdPaymentAmount instanceof Error) return usdPaymentAmount
-    const btcPaymentAmount = paymentAmountFromSats(txnPayment.satsAmount)
+    const btcPaymentAmount = paymentAmountFromNumber({
+      amount: txnPayment.satsAmount,
+      currency: WalletCurrency.Btc,
+    })
     if (btcPaymentAmount instanceof Error) return btcPaymentAmount
     const paymentAmounts = {
       usd: usdPaymentAmount,
@@ -550,7 +551,10 @@ describe("UserWallet - Lightning Pay", () => {
     if (priceRatio instanceof Error) throw priceRatio
 
     const feeSats = toSats(amountInvoice * FEECAP_PERCENT)
-    const feeAmountSats = paymentAmountFromSats(feeSats)
+    const feeAmountSats = paymentAmountFromNumber({
+      amount: feeSats,
+      currency: WalletCurrency.Btc,
+    })
     if (feeAmountSats instanceof Error) return feeAmountSats
     const feeAmountCents = priceRatio.convertFromBtc(feeAmountSats)
     if (feeAmountCents instanceof Error) return feeAmountCents

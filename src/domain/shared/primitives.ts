@@ -54,30 +54,6 @@ export const UsdPaymentAmount = (cents: bigint): UsdPaymentAmount => {
   }
 }
 
-export const paymentAmountFromSats = (
-  sats: Satoshis,
-): BtcPaymentAmount | ValidationError => {
-  const amount = safeBigInt(sats)
-  if (amount instanceof Error) return amount
-
-  return {
-    currency: WalletCurrency.Btc,
-    amount,
-  }
-}
-
-export const paymentAmountFromCents = (
-  cents: UsdCents,
-): UsdPaymentAmount | ValidationError => {
-  const amount = safeBigInt(cents)
-  if (amount instanceof Error) return amount
-
-  return {
-    currency: WalletCurrency.Usd,
-    amount,
-  }
-}
-
 export const paymentAmountFromNumber = <T extends WalletCurrency>({
   amount,
   currency,

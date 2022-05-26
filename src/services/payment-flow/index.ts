@@ -1,5 +1,3 @@
-import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
 import {
   CouldNotFindLightningPaymentFlowError,
   CouldNotUpdateLightningPaymentFlowError,
@@ -8,11 +6,7 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 import { InvalidLightningPaymentFlowStateError, PaymentFlow } from "@domain/payments"
-import {
-  paymentAmountFromCents,
-  paymentAmountFromSats,
-  WalletCurrency,
-} from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { safeBigInt } from "@domain/shared/safe"
 import { elapsedSinceTimestamp } from "@utils"
 
@@ -202,20 +196,28 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
       )
   if (hash instanceof Error) return hash
 
-  const btcPaymentAmount = paymentAmountFromSats(
-    toSats(paymentFlowState.btcPaymentAmount),
-  )
+  const btcPaymentAmount = paymentAmountFromNumber({
+    amount: paymentFlowState.btcPaymentAmount,
+    currency: WalletCurrency.Btc,
+  })
   if (btcPaymentAmount instanceof Error) return btcPaymentAmount
 
-  const usdPaymentAmount = paymentAmountFromCents(
-    toCents(paymentFlowState.usdPaymentAmount),
-  )
+  const usdPaymentAmount = paymentAmountFromNumber({
+    amount: paymentFlowState.usdPaymentAmount,
+    currency: WalletCurrency.Usd,
+  })
   if (usdPaymentAmount instanceof Error) return usdPaymentAmount
 
-  const btcProtocolFee = paymentAmountFromSats(toSats(paymentFlowState.btcProtocolFee))
+  const btcProtocolFee = paymentAmountFromNumber({
+    amount: paymentFlowState.btcProtocolFee,
+    currency: WalletCurrency.Btc,
+  })
   if (btcProtocolFee instanceof Error) return btcProtocolFee
 
-  const usdProtocolFee = paymentAmountFromCents(toCents(paymentFlowState.usdProtocolFee))
+  const usdProtocolFee = paymentAmountFromNumber({
+    amount: paymentFlowState.usdProtocolFee,
+    currency: WalletCurrency.Usd,
+  })
   if (usdProtocolFee instanceof Error) return usdProtocolFee
 
   return PaymentFlow<S, R>({

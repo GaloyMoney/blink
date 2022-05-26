@@ -1,10 +1,6 @@
 import { LedgerTransactionType } from "@domain/ledger"
 import { LedgerError, UnknownLedgerError } from "@domain/ledger/errors"
-import {
-  paymentAmountFromSats,
-  paymentAmountFromCents,
-  WalletCurrency,
-} from "@domain/shared"
+import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
 
 import { NotReachableError } from "@domain/errors"
 
@@ -180,7 +176,10 @@ const addIntraledgerTxTransfer = async ({
       return new NotReachableError("sats undefined implementation error")
     }
 
-    const satsAmount = paymentAmountFromSats(sats)
+    const satsAmount = paymentAmountFromNumber({
+      amount: sats,
+      currency: WalletCurrency.Btc,
+    })
     if (satsAmount instanceof Error) return satsAmount
 
     entry = builder
@@ -203,7 +202,10 @@ const addIntraledgerTxTransfer = async ({
       return new Error("cents undefined implementation error")
     }
 
-    const centsAmount = paymentAmountFromCents(cents)
+    const centsAmount = paymentAmountFromNumber({
+      amount: cents,
+      currency: WalletCurrency.Usd,
+    })
     if (centsAmount instanceof Error) return centsAmount
 
     entry = builder
@@ -226,9 +228,15 @@ const addIntraledgerTxTransfer = async ({
       return new Error("cents or sats undefined implementation error")
     }
 
-    const centsAmount = paymentAmountFromCents(cents)
+    const centsAmount = paymentAmountFromNumber({
+      amount: cents,
+      currency: WalletCurrency.Usd,
+    })
     if (centsAmount instanceof Error) return centsAmount
-    const satsAmount = paymentAmountFromSats(sats)
+    const satsAmount = paymentAmountFromNumber({
+      amount: sats,
+      currency: WalletCurrency.Btc,
+    })
     if (satsAmount instanceof Error) return satsAmount
 
     entry = builder
@@ -253,9 +261,15 @@ const addIntraledgerTxTransfer = async ({
       return new Error("cents or sats undefined implementation error")
     }
 
-    const centsAmount = paymentAmountFromCents(cents)
+    const centsAmount = paymentAmountFromNumber({
+      amount: cents,
+      currency: WalletCurrency.Usd,
+    })
     if (centsAmount instanceof Error) return centsAmount
-    const satsAmount = paymentAmountFromSats(sats)
+    const satsAmount = paymentAmountFromNumber({
+      amount: sats,
+      currency: WalletCurrency.Btc,
+    })
     if (satsAmount instanceof Error) return satsAmount
 
     entry = builder

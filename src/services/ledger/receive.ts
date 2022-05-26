@@ -1,8 +1,4 @@
-import {
-  paymentAmountFromSats,
-  paymentAmountFromCents,
-  WalletCurrency,
-} from "@domain/shared"
+import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
 import { NotImplementedError, NotReachableError } from "@domain/errors"
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
@@ -186,7 +182,10 @@ const addReceiptNoFee = async ({
     dealerUsdAccountId: toLedgerAccountId(await caching.getDealerUsdWalletId()),
   }
 
-  const satsAmount = paymentAmountFromSats(sats)
+  const satsAmount = paymentAmountFromNumber({
+    amount: sats,
+    currency: WalletCurrency.Btc,
+  })
   if (satsAmount instanceof Error) return satsAmount
 
   let entry = MainBook.entry(description)
@@ -202,7 +201,10 @@ const addReceiptNoFee = async ({
     entry = builder.creditAccount({ accountId })
   } else {
     if (cents === undefined) return new NotReachableError("cents should be defined here")
-    const centsAmount = paymentAmountFromCents(cents)
+    const centsAmount = paymentAmountFromNumber({
+      amount: cents,
+      currency: WalletCurrency.Usd,
+    })
     if (centsAmount instanceof Error) return centsAmount
 
     entry = builder.creditAccount({
@@ -254,9 +256,15 @@ const addReceiptFee = async ({
     return new NotImplementedError("USD Intraledger")
   }
 
-  const feeSatsAmount = paymentAmountFromSats(fee)
+  const feeSatsAmount = paymentAmountFromNumber({
+    amount: fee,
+    currency: WalletCurrency.Btc,
+  })
   if (feeSatsAmount instanceof Error) return feeSatsAmount
-  const satsAmount = paymentAmountFromSats(sats)
+  const satsAmount = paymentAmountFromNumber({
+    amount: sats,
+    currency: WalletCurrency.Btc,
+  })
   if (satsAmount instanceof Error) return satsAmount
 
   const entry = MainBook.entry(description)
