@@ -151,6 +151,7 @@ interface IWalletsRepository {
 
   findByAddress(address: OnChainAddress): Promise<Wallet | RepositoryError>
   listByAddresses(addresses: OnChainAddress[]): Promise<Wallet[] | RepositoryError>
+  findAll(): Promise<Wallet[] | RepositoryError>
 }
 
 type onChainDepositFeeArgs = {
