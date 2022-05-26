@@ -252,6 +252,10 @@ interface ILedgerService {
     walletId: WalletId,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
+  getTransactionsByWalletIds(
+    walletIds: WalletId[],
+  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
+
   getTransactionsByWalletIdAndContactUsername(
     walletId: WalletId,
     contactUsername: Username,

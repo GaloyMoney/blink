@@ -1,10 +1,12 @@
 import { GT } from "@graphql/index"
-
-import { Lightning } from "@app"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
-import pubsub from "@services/pubsub"
-import { lnPaymentStatusEvent } from "@domain/bitcoin/lightning"
+
+import { Lightning } from "@app"
+import { PubSubService } from "@services/pubsub"
+import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
+
+const pubsub = PubSubService()
 
 const LnInvoicePaymentStatusInput = GT.Input({
   name: "LnInvoicePaymentStatusInput",
@@ -37,24 +39,36 @@ const LnInvoicePaymentStatusSubscription = {
     const paymentStatusChecker = await Lightning.PaymentStatusChecker({ paymentRequest })
 
     if (paymentStatusChecker instanceof Error) {
-      pubsub.publishImmediate(paymentRequest, {
-        errors: [{ message: paymentStatusChecker.message }], // TODO: refine message
+      const lnPaymentStatusTrigger = customPubSubTrigger({
+        event: PubSubDefaultTriggers.LnPaymentStatus,
+        suffix: paymentRequest,
       })
-      return pubsub.asyncIterator(paymentRequest)
+      pubsub.publishImmediate({
+        trigger: lnPaymentStatusTrigger,
+        payload: { errors: [{ message: paymentStatusChecker.message }] },
+      })
+
+      return pubsub.createAsyncIterator({ trigger: lnPaymentStatusTrigger })
     }
 
-    const eventName = lnPaymentStatusEvent(paymentStatusChecker.paymentHash)
+    const trigger = customPubSubTrigger({
+      event: PubSubDefaultTriggers.LnPaymentStatus,
+      suffix: paymentStatusChecker.paymentHash,
+    })
     const paid = await paymentStatusChecker.invoiceIsPaid()
 
     if (paid instanceof Error) {
-      pubsub.publishImmediate(eventName, { errors: [{ message: paid.message }] })
+      pubsub.publishImmediate({
+        trigger,
+        payload: { errors: [{ message: paid.message }] },
+      })
     }
 
     if (paid) {
-      pubsub.publishImmediate(eventName, { status: "PAID" })
+      pubsub.publishImmediate({ trigger, payload: { status: "PAID" } })
     }
 
-    return pubsub.asyncIterator(eventName)
+    return pubsub.createAsyncIterator({ trigger })
   },
 }
 

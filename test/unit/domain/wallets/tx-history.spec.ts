@@ -6,6 +6,7 @@ import { translateMemo, WalletTransactionHistory } from "@domain/wallets/tx-hist
 import { toSats } from "@domain/bitcoin"
 import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
 import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
+import { WalletCurrency } from "@domain/shared"
 
 describe("WalletTransactionHistory.fromLedger", () => {
   it("translates ledger txs to wallet txs", () => {
@@ -108,6 +109,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         },
         settlementAmount,
         settlementFee: toSats(0),
+        settlementCurrency: WalletCurrency.Btc,
         settlementDisplayCurrencyPerSat,
         status: TxStatus.Success,
         createdAt: timestamp,
@@ -128,6 +130,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         memo: null,
         settlementAmount,
         settlementFee: toSats(0),
+        settlementCurrency: WalletCurrency.Btc,
         settlementDisplayCurrencyPerSat,
 
         status: TxStatus.Success,
@@ -148,6 +151,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         memo: null,
         settlementAmount,
         settlementFee: toSats(0),
+        settlementCurrency: WalletCurrency.Btc,
         settlementDisplayCurrencyPerSat,
 
         status: TxStatus.Success,
@@ -167,6 +171,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
         memo: null,
         settlementAmount,
         settlementFee: toSats(0),
+        settlementCurrency: WalletCurrency.Btc,
         settlementDisplayCurrencyPerSat,
 
         status: TxStatus.Success,
@@ -242,12 +247,12 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     ]
     const history = WalletTransactionHistory.fromLedger([])
     const addresses = ["userAddress1", "userAddress2"] as OnChainAddress[]
-    const result = history.addPendingIncoming(
-      walletId,
-      incomingTxs,
-      addresses,
-      1 as DisplayCurrencyPerSat,
-    )
+    const result = history.addPendingIncoming({
+      pendingIncoming: incomingTxs,
+      addressesByWalletId: { [walletId]: addresses },
+      walletDetailsByWalletId: { [walletId]: { currency: WalletCurrency.Btc } },
+      displayCurrencyPerSat: 1 as DisplayCurrencyPerSat,
+    })
     const expected = [
       {
         id: "txHash" as OnChainTxHash,
@@ -263,6 +268,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         },
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
+        settlementCurrency: WalletCurrency.Btc,
         settlementDisplayCurrencyPerSat: 1,
         status: TxStatus.Pending,
         createdAt: timestamp,
@@ -279,6 +285,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
           transactionHash: "txHash",
         },
         settlementAmount: toSats(50000),
+        settlementCurrency: WalletCurrency.Btc,
         memo: null,
         settlementFee: toSats(0),
         settlementDisplayCurrencyPerSat: 1,
@@ -312,12 +319,12 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     ]
     const history = WalletTransactionHistory.fromLedger([])
     const addresses = ["userAddress1"] as OnChainAddress[]
-    const result = history.addPendingIncoming(
-      walletId,
-      incomingTxs,
-      addresses,
-      NaN as DisplayCurrencyPerSat,
-    )
+    const result = history.addPendingIncoming({
+      pendingIncoming: incomingTxs,
+      addressesByWalletId: { [walletId]: addresses },
+      walletDetailsByWalletId: { [walletId]: { currency: WalletCurrency.Btc } },
+      displayCurrencyPerSat: NaN as DisplayCurrencyPerSat,
+    })
     const expected = [
       {
         id: "txHash" as OnChainTxHash,
@@ -333,6 +340,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         memo: null,
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
+        settlementCurrency: WalletCurrency.Btc,
         settlementDisplayCurrencyPerSat: NaN,
         status: TxStatus.Pending,
         createdAt: timestamp,

@@ -76,6 +76,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `Account does not exist for username ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
 
+    case "CouldNotFindTransactionsForAccountError":
+      message = "No transactions found for your account."
+      return new NotFoundError({ message, logger: baseLogger })
+
     case "CouldNotFindUserFromPhoneError":
       message = `User does not exist for phone ${error.message}`
       return new NotFoundError({ message, logger: baseLogger })
@@ -182,6 +186,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Reward for quiz question was already claimed."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "ZeroAmountForUsdRecipientError":
+      message = "Amount sent was too low for recipient's usd wallet."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "InvalidPhoneMetadataForRewardError":
     case "InvalidIPMetadataForRewardError":
       message = "Unsupported phone carrier for rewards."
@@ -214,6 +222,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownLedgerError":
       return new DbError({ message, logger: baseLogger, level: "fatal" })
 
+    case "PaymentInTransitionError":
+      message = "Payment was sent and is still in transition."
+      return new LightningPaymentError({ message, logger: baseLogger })
+
     case "UnknownLightningServiceError":
       return new LightningPaymentError({ message, logger: baseLogger })
 
@@ -244,6 +256,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
 
     case "RebalanceNeededError":
       return new RebalanceNeededError({ logger: baseLogger })
+
+    case "InvalidWalletId":
+      message = "Invalid walletId for account."
+      return new ValidationInternalError({ message, logger: baseLogger })
 
     // ----------
     // Unhandled below here
@@ -278,11 +294,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidUsername":
     case "InvalidPhoneNumber":
     case "InvalidEmailAddress":
-    case "InvalidWalletId":
     case "LessThanDustThresholdError":
     case "InvalidTargetConfirmations":
     case "NoContactForUsernameError":
     case "NoWalletExistsForUserError":
+    case "NoBtcWalletExistsForAccountError":
     case "LimitsExceededError":
     case "CouldNotFindLightningPaymentFlowError":
     case "NoExpiredLightningPaymentFlowsError":
@@ -297,6 +313,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LockError":
     case "LockServiceError":
     case "ResourceAttemptsLockServiceError":
+    case "ResourceExpiredLockServiceError":
     case "UnknownLockServiceError":
     case "PriceError":
     case "PriceServiceError":
@@ -372,6 +389,14 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "MissingPropsInTransactionForPaymentFlowError":
     case "InvalidZeroAmountPriceRatioInputError":
     case "InvalidCurrencyForWalletError":
+    case "InvalidLightningPaymentFlowStateError":
+    case "BadInputsForFindError":
+    case "LnHashPresentInIntraLedgerFlowError":
+    case "IntraLedgerHashPresentInLnFlowError":
+    case "NoRecipientDetailsForIntraLedgerFlowError":
+    case "PubSubError":
+    case "PubSubServiceError":
+    case "UnknownPubSubError":
       message = `Unknown error occurred (code: ${error.name}${
         error.message ? ": " + error.message : ""
       })`

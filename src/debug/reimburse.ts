@@ -4,15 +4,15 @@
  * Make sure there's a file named reimbursements.json in src/debug
  * following the structure:
  * {
- *  "feeUpdateOperations" = [
- *    { "walletId": "first-wallet-id", fee: 13, memo: "your memo" },
- *    { "walletId": "second-wallet-id", fee: 10, memo: "refund" },
+ *  "reimbursements" = [
+ *    { "recipientWalletId": "first-wallet-id", "amount": 13, "memo": "memo1" },
+ *    { "recipientWalletId": "second-wallet-id", "amount": 10, "memo": "memo2" },
  *  ]
  * }
  * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/reimburse.ts
  */
 
-import { intraledgerPaymentSendWalletId } from "@app/wallets"
+import { Payments } from "@app"
 import { checkedToSats } from "@domain/bitcoin"
 import { checkedToWalletId } from "@domain/wallets"
 import { getBankOwnerWalletId } from "@services/ledger/caching"
@@ -51,7 +51,7 @@ const reimburse = async (reimbursements: Array<reimbursement>) => {
       continue
     }
 
-    const reimburseResult = await intraledgerPaymentSendWalletId({
+    const reimburseResult = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId,
       amount,
       logger: baseLogger,

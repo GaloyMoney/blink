@@ -6,6 +6,7 @@ type RouteNotFoundError = import("./errors").RouteNotFoundError
 type InvoiceExpiration = Date & { readonly brand: unique symbol }
 type EncodedPaymentRequest = string & { readonly brand: unique symbol }
 type PaymentHash = string & { readonly brand: unique symbol }
+type IntraLedgerHash = string & { readonly brand: unique symbol }
 type SecretPreImage = string & { readonly brand: unique symbol }
 type RevealedPreImage = string & { readonly brand: unique symbol }
 type PaymentIdentifyingSecret = string & { readonly brand: unique symbol }

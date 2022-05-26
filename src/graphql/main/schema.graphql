@@ -2,6 +2,28 @@ interface Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+  transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+    walletIds: [WalletId]
+  ): TransactionConnection
   wallets: [Wallet!]!
 }
 
@@ -103,6 +125,32 @@ type ConsumerAccount implements Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+
+  """
+  A list of all transactions associated with walletIds optionally passed.
+  """
+  transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+    walletIds: [WalletId]
+  ): TransactionConnection
   wallets: [Wallet!]!
 }
 
@@ -199,6 +247,24 @@ type IntraLedgerUpdate {
   displayCurrencyPerSat: Float!
   txNotificationType: TxNotificationType!
   usdPerSat: Float! @deprecated(reason: "updated over displayCurrencyPerSat")
+  walletId: WalletId!
+}
+
+input IntraLedgerUsdPaymentSendInput {
+  """
+  Amount in cents.
+  """
+  amount: CentAmount!
+
+  """
+  Optional memo to be attached to the payment.
+  """
+  memo: Memo
+  recipientWalletId: WalletId!
+
+  """
+  The wallet ID of the sender.
+  """
   walletId: WalletId!
 }
 
@@ -466,10 +532,17 @@ type Mutation {
 
   """
   Actions a payment which is internal to the ledger e.g. it does
-  not use onchain/lightning.  Does not currently support payments to or from USD wallets.
-  Returns payment status (success, failed, pending, already_paid).
+  not use onchain/lightning. Returns payment status (success,
+  failed, pending, already_paid).
   """
   intraLedgerPaymentSend(input: IntraLedgerPaymentSendInput!): PaymentSendPayload!
+
+  """
+  Actions a payment which is internal to the ledger e.g. it does
+  not use onchain/lightning. Returns payment status (success,
+  failed, pending, already_paid).
+  """
+  intraLedgerUsdPaymentSend(input: IntraLedgerUsdPaymentSendInput!): PaymentSendPayload!
 
   """
   Returns a lightning invoice for an associated wallet.
@@ -854,6 +927,11 @@ type Transaction {
   Amount of sats sent or received.
   """
   settlementAmount: SatAmount!
+
+  """
+  Wallet currency for transaction.
+  """
+  settlementCurrency: WalletCurrency!
   settlementFee: SatAmount!
 
   """

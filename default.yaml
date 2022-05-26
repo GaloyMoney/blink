@@ -63,6 +63,7 @@ test_accounts:
 - ref: D
   phone: "+16505554324"
   code: "321321"
+  needUsdWallet: true
 - ref: E
   phone: "+16505554332"
   code: "321321"

@@ -51,6 +51,7 @@ type BaseWalletTransaction = {
   readonly walletId: WalletId | undefined
   readonly settlementAmount: Satoshis
   readonly settlementFee: Satoshis
+  readonly settlementCurrency: WalletCurrency
   readonly settlementDisplayCurrencyPerSat: number
   readonly status: TxStatus
   readonly memo: string | null
@@ -105,14 +106,21 @@ type WalletTransaction =
   | WalletOnChainTransaction
   | WalletLnTransaction
 
+type AddPendingIncomingArgs = {
+  pendingIncoming: IncomingOnChainTransaction[]
+  addressesByWalletId: { [key: WalletId]: OnChainAddress[] }
+  walletDetailsByWalletId: { [key: WalletId]: { currency: WalletCurrency } }
+  displayCurrencyPerSat: DisplayCurrencyPerSat
+}
+
 type ConfirmedTransactionHistory = {
   readonly transactions: WalletTransaction[]
-  addPendingIncoming(
-    walletId: WalletId,
-    pendingIncoming: IncomingOnChainTransaction[],
-    addresses: OnChainAddress[],
-    displayCurrencyPerSat: DisplayCurrencyPerSat,
-  ): WalletTransactionHistoryWithPending
+  addPendingIncoming({
+    pendingIncoming,
+    addressesByWalletId,
+    walletDetailsByWalletId,
+    displayCurrencyPerSat,
+  }: AddPendingIncomingArgs): WalletTransactionHistoryWithPending
 }
 
 type WalletTransactionHistoryWithPending = {

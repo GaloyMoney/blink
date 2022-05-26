@@ -2,6 +2,12 @@ import { InsufficientBalanceError, InvalidCurrencyForWalletError } from "@domain
 import { AmountCalculator, ErrorLevel, WalletCurrency } from "@domain/shared"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
+import {
+  InvalidLightningPaymentFlowBuilderStateError,
+  IntraLedgerHashPresentInLnFlowError,
+  LnHashPresentInIntraLedgerFlowError,
+} from "./errors"
+
 import { RouteValidator } from "./route-validator"
 
 export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
@@ -16,6 +22,14 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
   const paymentAmounts = (): { btc: BtcPaymentAmount; usd: UsdPaymentAmount } => ({
     btc: state.btcPaymentAmount,
     usd: state.usdPaymentAmount,
+  })
+
+  const totalAmountsForPayment = (): {
+    btc: BtcPaymentAmount
+    usd: UsdPaymentAmount
+  } => ({
+    btc: AmountCalculator().add(state.btcPaymentAmount, state.btcProtocolFee),
+    usd: AmountCalculator().add(state.usdPaymentAmount, state.usdProtocolFee),
   })
 
   const routeDetails = (): {
@@ -89,14 +103,43 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
     return true
   }
 
+  const paymentHashForFlow = (): PaymentHash | ValidationError => {
+    const { paymentHash, intraLedgerHash } = state
+    if (!!paymentHash === !!intraLedgerHash) {
+      return new InvalidLightningPaymentFlowBuilderStateError()
+    }
+
+    if (!paymentHash) {
+      return new IntraLedgerHashPresentInLnFlowError()
+    }
+
+    return paymentHash
+  }
+
+  const intraLedgerHashForFlow = (): IntraLedgerHash | ValidationError => {
+    const { paymentHash, intraLedgerHash } = state
+    if (!!paymentHash === !!intraLedgerHash) {
+      return new InvalidLightningPaymentFlowBuilderStateError()
+    }
+
+    if (!intraLedgerHash) {
+      return new LnHashPresentInIntraLedgerFlowError()
+    }
+
+    return intraLedgerHash
+  }
+
   return {
     ...state,
     protocolFeeInSenderWalletCurrency,
     paymentAmounts,
+    totalAmountsForPayment,
     routeDetails,
     recipientDetails,
     senderWalletDescriptor,
     recipientWalletDescriptor,
     checkBalanceForSend,
+    paymentHashForFlow,
+    intraLedgerHashForFlow,
   }
 }

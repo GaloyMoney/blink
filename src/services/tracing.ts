@@ -292,7 +292,7 @@ export const wrapToRunInSpan = <
   namespace: string
 }) => {
   return (...args: A): R => {
-    const functionName = fn.name || fnName || "unknown"
+    const functionName = fnName || fn.name || "unknown"
     const spanName = `${namespace}.${functionName}`
     const spanOptions = resolveFunctionSpanOptions({
       namespace,
@@ -334,7 +334,7 @@ export const wrapAsyncToRunInSpan = <
   namespace: string
 }) => {
   return (...args: A): Promise<PromiseReturnType<R>> => {
-    const functionName = fn.name || fnName || "unknown"
+    const functionName = fnName || fn.name || "unknown"
     const spanName = `${namespace}.${functionName}`
     const spanOptions = resolveFunctionSpanOptions({
       namespace,

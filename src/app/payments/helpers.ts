@@ -1,6 +1,17 @@
-import { getTwoFALimits, getAccountLimits, MS_PER_DAY, getDealerConfig } from "@config"
+import {
+  getTwoFALimits,
+  getAccountLimits,
+  MS_PER_DAY,
+  getDealerConfig,
+  MIN_SATS_FOR_PRICE_RATIO_PRECISION,
+} from "@config"
 import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
-import { LightningPaymentFlowBuilder } from "@domain/payments"
+import {
+  InvalidZeroAmountPriceRatioInputError,
+  LightningPaymentFlowBuilder,
+  PriceRatio,
+  ZeroAmountForUsdRecipientError,
+} from "@domain/payments"
 import { ErrorLevel, ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
 import { AlreadyPaidError } from "@domain/errors"
 import { CENTS_PER_USD } from "@domain/fiat"
@@ -27,7 +38,7 @@ const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 const dealer = NewDealerPriceService()
 const ledger = LedgerService()
 
-const usdFromBtcMidPriceFn = async (
+export const usdFromBtcMidPriceFn = async (
   amount: BtcPaymentAmount,
 ): Promise<UsdPaymentAmount | DealerPriceServiceError> =>
   asyncRunInSpan(
@@ -63,7 +74,7 @@ const usdFromBtcMidPriceFn = async (
     },
   )
 
-const btcFromUsdMidPriceFn = async (
+export const btcFromUsdMidPriceFn = async (
   amount: UsdPaymentAmount,
 ): Promise<BtcPaymentAmount | DealerPriceServiceError> =>
   asyncRunInSpan(
@@ -163,10 +174,20 @@ export const constructPaymentFlowBuilder = async ({
     builderAfterRecipientStep = builderWithSenderWallet.withoutRecipientWallet()
   }
 
-  return builderAfterRecipientStep.withConversion({
+  const builderWithConversion = await builderAfterRecipientStep.withConversion({
     usdFromBtc,
     btcFromUsd,
   })
+
+  const check = await builderWithConversion.usdPaymentAmount()
+  if (
+    check instanceof InvalidZeroAmountPriceRatioInputError &&
+    builderWithSenderWallet.isIntraLedger() === true
+  ) {
+    return new ZeroAmountForUsdRecipientError()
+  }
+
+  return builderWithConversion
 }
 
 const recipientDetailsFromInvoice = async (invoice) => {
@@ -289,5 +310,33 @@ export const newCheckTwoFALimits = async ({
   return checkTwoFA({
     amount,
     walletVolume,
+  })
+}
+
+export const getPriceRatioForLimits = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>(
+  paymentFlow: PaymentFlow<S, R>,
+) => {
+  const amount = MIN_SATS_FOR_PRICE_RATIO_PRECISION
+
+  if (paymentFlow.btcPaymentAmount.amount < amount) {
+    const btcPaymentAmountForRatio = {
+      amount,
+      currency: WalletCurrency.Btc,
+    }
+    const usdPaymentAmountForRatio = await usdFromBtcMidPriceFn(btcPaymentAmountForRatio)
+    if (usdPaymentAmountForRatio instanceof Error) return usdPaymentAmountForRatio
+
+    return PriceRatio({
+      usd: usdPaymentAmountForRatio,
+      btc: btcPaymentAmountForRatio,
+    })
+  }
+
+  return PriceRatio({
+    usd: paymentFlow.usdPaymentAmount,
+    btc: paymentFlow.btcPaymentAmount,
   })
 }
