@@ -55,7 +55,6 @@
     "bip66": "^1.1.5",
     "bitcoin-core": "^3.0.0",
     "bitcoinjs-lib": "^6.0.1",
-    "ccxt": "^1.85.66",
     "cors": "^2.8.5",
     "csv-writer": "^1.6.0",
     "dedent": "^0.7.0",
