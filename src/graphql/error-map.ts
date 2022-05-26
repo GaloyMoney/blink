@@ -222,6 +222,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownLedgerError":
       return new DbError({ message, logger: baseLogger, level: "fatal" })
 
+    case "PaymentInTransitionError":
+      message = "Payment was sent and is still in transition."
+      return new LightningPaymentError({ message, logger: baseLogger })
+
     case "UnknownLightningServiceError":
       return new LightningPaymentError({ message, logger: baseLogger })
 
