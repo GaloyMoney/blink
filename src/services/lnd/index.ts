@@ -375,21 +375,7 @@ export const LndService = (
     } catch (err) {
       if (err.message === "Timeout") return new LnPaymentPendingError()
 
-      const errDetails = parseLndErrorDetails(err)
-      switch (errDetails) {
-        case KnownLndErrorDetails.InvoiceAlreadyPaid:
-          return new LnAlreadyPaidError()
-        case KnownLndErrorDetails.UnableToFindRoute:
-          return new RouteNotFoundError()
-        case KnownLndErrorDetails.PaymentRejectedByDestination:
-          return new InvoiceExpiredOrBadPaymentHashError(paymentHash)
-        case KnownLndErrorDetails.PaymentAttemptsTimedOut:
-          return new PaymentAttemptsTimedOutError()
-        case KnownLndErrorDetails.PaymentInTransition:
-          return new PaymentInTransitionError(paymentHash)
-        default:
-          return new UnknownLightningServiceError(JSON.stringify(err))
-      }
+      return handleSendPaymentLndErrors({ err, paymentHash })
     }
   }
 
@@ -450,22 +436,7 @@ export const LndService = (
       }
     } catch (err) {
       if (err.message === "Timeout") return new LnPaymentPendingError()
-
-      const errDetails = parseLndErrorDetails(err)
-      switch (errDetails) {
-        case KnownLndErrorDetails.InvoiceAlreadyPaid:
-          return new LnAlreadyPaidError()
-        case KnownLndErrorDetails.UnableToFindRoute:
-          return new RouteNotFoundError()
-        case KnownLndErrorDetails.PaymentRejectedByDestination:
-          return new InvoiceExpiredOrBadPaymentHashError(decodedInvoice.paymentHash)
-        case KnownLndErrorDetails.PaymentAttemptsTimedOut:
-          return new PaymentAttemptsTimedOutError()
-        case KnownLndErrorDetails.PaymentInTransition:
-          return new PaymentInTransitionError(decodedInvoice.paymentHash)
-        default:
-          return new UnknownLightningServiceError(JSON.stringify(err))
-      }
+      return handleSendPaymentLndErrors({ err, paymentHash: decodedInvoice.paymentHash })
     }
   }
 
@@ -660,4 +631,28 @@ const resolvePaymentStatus = async ({
   }
 
   return PaymentStatus.Pending
+}
+
+const handleSendPaymentLndErrors = ({
+  err,
+  paymentHash,
+}: {
+  err: Error
+  paymentHash: PaymentHash
+}) => {
+  const errDetails = parseLndErrorDetails(err)
+  switch (errDetails) {
+    case KnownLndErrorDetails.InvoiceAlreadyPaid:
+      return new LnAlreadyPaidError()
+    case KnownLndErrorDetails.UnableToFindRoute:
+      return new RouteNotFoundError()
+    case KnownLndErrorDetails.PaymentRejectedByDestination:
+      return new InvoiceExpiredOrBadPaymentHashError(paymentHash)
+    case KnownLndErrorDetails.PaymentAttemptsTimedOut:
+      return new PaymentAttemptsTimedOutError()
+    case KnownLndErrorDetails.PaymentInTransition:
+      return new PaymentInTransitionError(paymentHash)
+    default:
+      return new UnknownLightningServiceError(JSON.stringify(err))
+  }
 }
