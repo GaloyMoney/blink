@@ -1,4 +1,3 @@
-
 type Liabilities = {
   accountId: AccountId
   walletBalance: CurrencyBaseAmount

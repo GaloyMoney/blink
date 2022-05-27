@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6f392dcc-90b2-49c6-82ab-847574f47fbd" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/domain/wallets/index.types.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/domain/wallets/index.types.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/mongoose/wallets.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/mongoose/wallets.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/domain/proof-of-liabilities/generate-liabilities-tree.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/domain/proof-of-liabilities/generate-liabilities-tree.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/domain/proof-of-liabilities/index.types.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/domain/proof-of-liabilities/index.types.d.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,18 +31,18 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "yarn",
-    "ts.external.directory.path": "/home/vaibhav/Desktop/galoy/node_modules/typescript/lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;yarn&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/home/vaibhav/Desktop/galoy/node_modules/typescript/lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -53,6 +53,7 @@
       <updated>1653602223217</updated>
       <workItem from="1653602228213" duration="51000" />
       <workItem from="1653602685296" duration="534000" />
+      <workItem from="1653673764342" duration="341000" />
     </task>
     <servers />
   </component>
