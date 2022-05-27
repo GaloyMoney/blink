@@ -34,7 +34,10 @@ import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
 import { add, sub, toCents } from "@domain/fiat"
 
-import { getTitleBitcoin } from "@services/notifications/payment"
+import { getPushNotificationContent } from "@services/notifications"
+import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+
+import { WalletCurrency } from "@domain/shared"
 
 import {
   bitcoindClient,
@@ -58,8 +61,6 @@ import {
 } from "test/helpers"
 import { getBalanceHelper, getRemainingTwoFALimit } from "test/helpers/wallet"
 
-jest.mock("@services/notifications/notification")
-
 const date = Date.now() + 1000 * 60 * 60 * 24 * 8
 jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
 
@@ -80,10 +81,8 @@ let walletIdE: WalletId
 let walletIdF: WalletId
 let userIdA: UserId
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { sendNotification } = require("@services/notifications/notification")
 const locale = getLocale()
-const { symbol: fiatSymbol } = getDisplayCurrencyConfig()
+const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -125,6 +124,10 @@ const targetConfirmations = toTargetConfs(1)
 
 describe("UserWallet - onChainPay", () => {
   it("sends a successful payment", async () => {
+    const sendNotification = jest.fn()
+    jest
+      .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+      .mockImplementation(() => ({ sendNotification }))
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
     const sub = subscribeToTransactions({ lnd: lndonchain })
@@ -175,33 +178,25 @@ describe("UserWallet - onChainPay", () => {
 
     // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
 
-    await Promise.all([
-      once(sub, "chain_transaction"),
-      mineBlockAndSync({ lnds: [lndonchain] }),
-    ])
+    await Promise.all([once(sub, "chain_transaction"), mineBlockAndSyncAll()])
 
-    await sleep(1000)
+    await sleep(3000)
 
-    // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
-    const fiatAmount = (amount * satsPrice).toLocaleString(locale, {
-      maximumFractionDigits: 2,
+
+    const { title, body } = getPushNotificationContent({
+      type: NotificationType.OnchainPayment,
+      userLanguage: locale as UserLanguage,
+      baseCurrency: WalletCurrency.Btc,
+      amountBaseCurrency: amount,
+      displayCurrency: DefaultDisplayCurrency,
+      amountDisplayCurrency: (amount * satsPrice) as DisplayCurrencyBaseAmount,
     })
 
-    expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitleBitcoin({
-        type: NotificationType.OnchainPayment,
-        locale,
-        fiatSymbol,
-        fiatAmount,
-        satsAmount: amount + "",
-      }),
-    )
-    expect(sendNotification.mock.calls[0][0].user.id.toString()).toStrictEqual(userIdA)
-    expect(sendNotification.mock.calls[0][0].data.type).toBe(
-      NotificationType.OnchainPayment,
-    )
+    expect(sendNotification.mock.calls.length).toBe(1)
+    expect(sendNotification.mock.calls[0][0].title).toBe(title)
+    expect(sendNotification.mock.calls[0][0].body).toBe(body)
 
     {
       const txResult = await Wallets.getTransactionsForWalletId({
@@ -240,6 +235,10 @@ describe("UserWallet - onChainPay", () => {
   })
 
   it("sends all in a successful payment", async () => {
+    const sendNotification = jest.fn()
+    jest
+      .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+      .mockImplementation(() => ({ sendNotification }))
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
 
     const sub = subscribeToTransactions({ lnd: lndonchain })
@@ -301,15 +300,7 @@ describe("UserWallet - onChainPay", () => {
 
     await sleep(1000)
 
-    // expect(sendNotification.mock.calls.length).toBe(2)  // FIXME: should be 1
-
-    /// TODO Still showing amount, find where this happens...
-    // expect(sendNotification.mock.calls[0][0].title).toBe(
-    //   getTitle[NotificationType.OnchainPayment]({ amount: initialBalanceUserB }),
-    // )
-    expect(sendNotification.mock.calls[0][0].data.type).toBe(
-      NotificationType.OnchainPayment,
-    )
+    expect(sendNotification.mock.calls.length).toBe(1)
 
     {
       const txResult = await Wallets.getTransactionsForWalletId({

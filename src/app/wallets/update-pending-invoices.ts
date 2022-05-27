@@ -190,12 +190,14 @@ const updatePendingInvoice = async ({
         sats: roundedDownReceived,
         displayCurrencyPerSat,
       })
-    } else {
+      return true
+    }
+
+    if (cents) {
       notificationsService.lnInvoiceUsdWalletPaid({
         paymentHash,
         recipientWalletId: walletId,
-        cents: cents!,
-        displayCurrencyPerSat,
+        cents,
       })
     }
 

@@ -26,7 +26,6 @@ type LnInvoicePaidUsdWalletArgs = {
   paymentHash: PaymentHash
   recipientWalletId: WalletId
   cents: UsdCents | bigint
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
 }
 
 type IntraLedgerArgs = {

@@ -13,15 +13,16 @@ import {
 import { PubSubService } from "@services/pubsub"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
-import { sendNotification } from "./notification"
-import { transactionBitcoinNotification, transactionUsdNotification } from "./payment"
+import { PushNotificationsService } from "./push-notifications"
 
 const i18n = getI18nInstance()
 const defaultLocale = getLocale()
-const { symbol: fiatSymbol } = getDisplayCurrencyConfig()
+const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 export const NotificationsService = (logger: Logger): INotificationsService => {
   const pubsub = PubSubService()
+  const pushNotification = PushNotificationsService()
+
   const sendOnChainNotification = async ({
     type,
     sats,
@@ -48,14 +49,21 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const user = await UsersRepository().findById(account.ownerId)
       if (user instanceof Error) return user
 
-      // Do not await this call for quicker processing
-      transactionBitcoinNotification({
+      const { title, body } = getPushNotificationContent({
         type,
-        user,
-        logger,
-        sats,
-        txHash,
-        displayCurrencyPerSat,
+        userLanguage: user.language,
+        baseCurrency: WalletCurrency.Btc,
+        amountBaseCurrency: sats,
+        displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
+        amountDisplayCurrency: (sats *
+          (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
+      })
+
+      // Do not await this call for quicker processing
+      pushNotification.sendNotification({
+        deviceToken: user.deviceTokens,
+        title,
+        body,
       })
 
       // Notify the recipient (via GraphQL subscription if any)
@@ -138,14 +146,23 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const user = await UsersRepository().findById(account.ownerId)
       if (user instanceof Error) return user
 
-      // Do not await this call for quicker processing
-      transactionBitcoinNotification({
+      const amountBaseCurrency = toSats(Number(sats))
+
+      const { title, body } = getPushNotificationContent({
         type: NotificationType.LnInvoicePaid,
-        user,
-        logger,
-        sats: toSats(Number(sats)),
-        paymentHash,
-        displayCurrencyPerSat,
+        userLanguage: user.language,
+        baseCurrency: WalletCurrency.Btc,
+        amountBaseCurrency,
+        displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
+        amountDisplayCurrency: (amountBaseCurrency *
+          (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
+      })
+
+      // Do not await this call for quicker processing
+      pushNotification.sendNotification({
+        deviceToken: user.deviceTokens,
+        title,
+        body,
       })
 
       // Notify public subscribers (via GraphQL subscription if any)
@@ -182,7 +199,6 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     paymentHash,
     recipientWalletId,
     cents,
-    displayCurrencyPerSat,
   }: LnInvoicePaidUsdWalletArgs) => {
     try {
       const wallet = await WalletsRepository().findById(recipientWalletId)
@@ -194,14 +210,18 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const user = await UsersRepository().findById(account.ownerId)
       if (user instanceof Error) return user
 
-      // Do not await this call for quicker processing
-      transactionUsdNotification({
+      const { title, body } = getPushNotificationContent({
         type: NotificationType.LnInvoicePaid,
-        user,
-        logger,
-        cents: toCents(Number(cents)),
-        paymentHash,
-        displayCurrencyPerSat,
+        userLanguage: user.language,
+        baseCurrency: WalletCurrency.Usd,
+        amountBaseCurrency: toCents(Number(cents)),
+      })
+
+      // Do not await this call for quicker processing
+      pushNotification.sendNotification({
+        deviceToken: user.deviceTokens,
+        title,
+        body,
       })
 
       // Notify public subscribers (via GraphQL subscription if any)
@@ -285,13 +305,21 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const user = await UsersRepository().findById(account.ownerId)
         if (user instanceof Error) return user
 
+        const { title, body } = getPushNotificationContent({
+          type,
+          userLanguage: user.language,
+          baseCurrency: WalletCurrency.Btc,
+          amountBaseCurrency: amount,
+          displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
+          amountDisplayCurrency: (amount *
+            (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
+        })
+
         // Do not await this call for quicker processing
-        transactionBitcoinNotification({
-          type: NotificationType.IntraLedgerPayment,
-          user,
-          logger,
-          sats: amount,
-          displayCurrencyPerSat,
+        pushNotification.sendNotification({
+          deviceToken: user.deviceTokens,
+          title,
+          body,
         })
       }
 
@@ -349,13 +377,23 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const user = await UsersRepository().findById(account.ownerId)
         if (user instanceof Error) return user
 
+        const amount = toSats(Number(sats))
+
+        const { title, body } = getPushNotificationContent({
+          type,
+          userLanguage: user.language,
+          baseCurrency: WalletCurrency.Btc,
+          amountBaseCurrency: amount,
+          displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
+          amountDisplayCurrency: (amount *
+            (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
+        })
+
         // Do not await this call for quicker processing
-        transactionBitcoinNotification({
-          type: NotificationType.IntraLedgerPayment,
-          user,
-          logger,
-          sats: toSats(Number(sats)),
-          displayCurrencyPerSat,
+        pushNotification.sendNotification({
+          deviceToken: user.deviceTokens,
+          title,
+          body,
         })
       }
 
@@ -413,13 +451,18 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const user = await UsersRepository().findById(account.ownerId)
         if (user instanceof Error) return user
 
+        const { title, body } = getPushNotificationContent({
+          type,
+          userLanguage: user.language,
+          baseCurrency: WalletCurrency.Usd,
+          amountBaseCurrency: toCents(Number(cents)),
+        })
+
         // Do not await this call for quicker processing
-        transactionUsdNotification({
-          type: NotificationType.IntraLedgerPayment,
-          user,
-          logger,
-          cents: toCents(Number(cents)),
-          displayCurrencyPerSat,
+        pushNotification.sendNotification({
+          deviceToken: user.deviceTokens,
+          title,
+          body,
         })
       }
 
@@ -446,58 +489,36 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     balance: CurrencyBaseAmount
     walletCurrency: WalletCurrency
     userId: UserId
-    price: DisplayCurrencyPerSat | ApplicationError
+    price: DisplayCurrencyPerSat | Error
   }): Promise<void | NotImplementedError> => {
-    if (walletCurrency === WalletCurrency.Usd) {
-      return new NotImplementedError("sendBalance works with sats")
-    }
-
     const user = await UsersRepository().findById(userId)
     if (user instanceof Error) {
       logger.warn({ user }, "impossible to fetch user to send transaction")
       return
     }
 
-    const locale = user.language || defaultLocale
-    const satsBalance = toSats(balance)
+    const displayCurrencyPerSat = price instanceof Error ? undefined : price
 
-    // Add commas to balancesats
-    const satsBalanceFormatted = satsBalance.toLocaleString(locale)
-
-    let fiatBalanceFormatted = ""
-    let title: string
-    if (price instanceof Error) {
-      logger.warn({ price }, "impossible to fetch price for notification")
-
-      title = i18n.__(
-        { phrase: "notification.balance.sats", locale },
-        { satsBalance: satsBalanceFormatted },
-      )
-    } else {
-      const fiatValue = price * satsBalance
-      fiatBalanceFormatted = fiatValue.toLocaleString(locale, {
-        maximumFractionDigits: 2,
-      })
-
-      title = i18n.__(
-        { phrase: "notification.balance.fiat", locale },
-        {
-          fiatSymbol,
-          fiatAmount: fiatBalanceFormatted,
-          satsAmount: satsBalanceFormatted,
-        },
-      )
-    }
+    const { title, body } = getPushNotificationContent({
+      type: "balance",
+      userLanguage: user.language,
+      baseCurrency: walletCurrency,
+      amountBaseCurrency: balance,
+      displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
+      amountDisplayCurrency: (balance *
+        (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
+    })
 
     logger.info(
-      { fiatBalanceFormatted, satsBalanceFormatted, title, userId, locale },
+      { userId, locale: user.language, balance, title, body },
       `sending balance notification to user`,
     )
 
-    await sendNotification({
-      user,
+    // Do not await this call for quicker processing
+    pushNotification.sendNotification({
+      deviceToken: user.deviceTokens,
       title,
-      logger,
+      body,
     })
   }
 
@@ -519,4 +540,66 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       },
     }),
   }
+}
+
+export const getPushNotificationContent = ({
+  type,
+  amountBaseCurrency,
+  baseCurrency,
+  amountDisplayCurrency,
+  displayCurrency,
+  userLanguage,
+}: {
+  type: NotificationType | "balance"
+  amountBaseCurrency: Satoshis | UsdCents
+  baseCurrency: WalletCurrency
+  amountDisplayCurrency?: DisplayCurrencyBaseAmount
+  displayCurrency?: DisplayCurrency
+  userLanguage?: UserLanguage
+}): {
+  title: string
+  body: string
+} => {
+  const locale = userLanguage || defaultLocale
+  const notificationType = type === "balance" ? type : `transaction.${type}`
+  const title = i18n.__({ phrase: `notification.${notificationType}.title`, locale })
+  const baseCurrencyName = baseCurrency === WalletCurrency.Btc ? "sats" : ""
+  const baseCurrencySymbol = baseCurrency === WalletCurrency.Usd ? "$" : ""
+  const amount =
+    baseCurrency === WalletCurrency.Usd ? amountBaseCurrency / 100 : amountBaseCurrency
+  const baseCurrencyAmount = amount.toLocaleString(locale, {
+    maximumFractionDigits: 2,
+  })
+
+  let body = i18n.__(
+    { phrase: `notification.${notificationType}.body`, locale },
+    { baseCurrencySymbol, baseCurrencyAmount, baseCurrencyName },
+  )
+
+  if (displayCurrency && amountDisplayCurrency && displayCurrency !== baseCurrency) {
+    const displayCurrencyName = i18n.__({
+      phrase: `currency.${displayCurrency}.name`,
+      locale,
+    })
+    const displayCurrencySymbol = i18n.__({
+      phrase: `currency.${displayCurrency}.symbol`,
+      locale,
+    })
+    const displayCurrencyAmount = amountDisplayCurrency.toLocaleString(locale, {
+      maximumFractionDigits: 2,
+    })
+    body = i18n.__(
+      { phrase: `notification.${notificationType}.bodyDisplayCurrency`, locale },
+      {
+        displayCurrencySymbol,
+        displayCurrencyAmount,
+        displayCurrencyName,
+        baseCurrencySymbol,
+        baseCurrencyAmount,
+        baseCurrencyName,
+      },
+    )
+  }
+
+  return { title, body }
 }

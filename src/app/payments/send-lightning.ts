@@ -556,7 +556,6 @@ const executePaymentViaIntraledger = async ({
         paymentHash,
         recipientWalletId,
         cents: paymentFlow.usdPaymentAmount.amount,
-        displayCurrencyPerSat: priceRatio.usdPerSat() as unknown as DisplayCurrencyPerSat,
       })
     }
 
