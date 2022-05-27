@@ -252,3 +252,14 @@ export class UsernameError extends CustomApolloError {
     })
   }
 }
+
+export class InsufficientLiquidityError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Temporary funds offline issue",
+      forwardToClient: true,
+      code: "LIQUIDITY_ERROR",
+      ...errData,
+    })
+  }
+}
