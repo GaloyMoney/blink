@@ -22,6 +22,9 @@ services:
   postgres-price-history:
     ports:
       - "5432:5432"
+  postgres:
+    ports:
+    - "5432:5432"
   bitcoind:
     ports:
       - "18443:18443"
