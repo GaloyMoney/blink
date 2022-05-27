@@ -1,4 +1,3 @@
-
 import { getHash } from "@domain/proof-of-liabilities/generate-leaves"
 import { toSats } from "@domain/bitcoin"
 
