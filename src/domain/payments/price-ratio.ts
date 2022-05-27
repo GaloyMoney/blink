@@ -1,4 +1,6 @@
-import { WalletCurrency } from "@domain/shared"
+import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
+import { paymentAmountFromCents, paymentAmountFromSats } from "@domain/shared"
 
 import { InvalidZeroAmountPriceRatioInputError } from "./errors"
 
@@ -16,21 +18,17 @@ export const PriceRatio = ({
   const convertFromUsd = (convert: UsdPaymentAmount): BtcPaymentAmount => {
     const amountAsNumber =
       (Number(convert.amount) * Number(btc.amount)) / Number(usd.amount)
-    const amount = BigInt(Math.round(amountAsNumber))
-    return {
-      amount: convert.amount === 0n ? 0n : amount === 0n ? 1n : amount,
-      currency: WalletCurrency.Btc,
-    }
+    const amount = Math.round(amountAsNumber)
+    const btcAmount = convert.amount === 0n ? 0n : amount === 0 ? 1n : amount
+    return paymentAmountFromSats(toSats(btcAmount))
   }
 
   const convertFromBtc = (convert: BtcPaymentAmount): UsdPaymentAmount => {
     const amountAsNumber =
       (Number(convert.amount) * Number(usd.amount)) / Number(btc.amount)
-    const amount = BigInt(Math.round(amountAsNumber))
-    return {
-      amount: convert.amount === 0n ? 0n : amount === 0n ? 1n : amount,
-      currency: WalletCurrency.Usd,
-    }
+    const amount = Math.round(amountAsNumber)
+    const usdAmount = convert.amount === 0n ? 0 : amount === 0 ? 1 : amount
+    return paymentAmountFromCents(toCents(usdAmount))
   }
 
   return {

@@ -1,21 +1,21 @@
 import { toSats } from "@domain/bitcoin"
 import { defaultTimeToExpiryInSeconds, PaymentStatus } from "@domain/bitcoin/lightning"
 import { InconsistentDataError } from "@domain/errors"
-import { LedgerService } from "@services/ledger"
-import { LndService } from "@services/lnd"
-import { LockService } from "@services/lock"
-import { runInParallel } from "@utils"
-
-import { Wallets } from "@app"
-import { WalletsRepository } from "@services/mongoose"
-
-import { PaymentFlowStateRepository } from "@services/payment-flow"
 import {
   CouldNotFindTransactionError,
   inputAmountFromLedgerTransaction,
   LedgerTransactionType,
   UnknownLedgerError,
 } from "@domain/ledger"
+
+import { LedgerService } from "@services/ledger"
+import { LndService } from "@services/lnd"
+import { LockService } from "@services/lock"
+import { WalletsRepository } from "@services/mongoose"
+import { PaymentFlowStateRepository } from "@services/payment-flow"
+
+import { Wallets } from "@app"
+import { runInParallel } from "@utils"
 
 import { PaymentFlowFromLedgerTransaction } from "./translations"
 
@@ -132,12 +132,15 @@ const updatePendingPayment = async ({
         return true
       }
 
+      const inputAmount = inputAmountFromLedgerTransaction(pendingPayment)
+      if (inputAmount instanceof Error) return inputAmount
+
       let paymentFlow = await PaymentFlowStateRepository(
         defaultTimeToExpiryInSeconds,
       ).updatePendingLightningPaymentFlow({
         senderWalletId: walletId,
         paymentHash,
-        inputAmount: BigInt(inputAmountFromLedgerTransaction(pendingPayment)),
+        inputAmount,
 
         paymentSentAndPending: false,
       })

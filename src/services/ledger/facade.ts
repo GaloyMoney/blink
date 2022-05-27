@@ -1,5 +1,11 @@
 import { NoTransactionToSettleError, UnknownLedgerError } from "@domain/ledger"
-import { ZERO_BANK_FEE, AmountCalculator, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
+import {
+  ZERO_BANK_FEE,
+  AmountCalculator,
+  ZERO_CENTS,
+  ZERO_SATS,
+  paymentAmountFromNumber,
+} from "@domain/shared"
 
 import { MainBook, Transaction } from "./books"
 import { toLedgerAccountDescriptor, toLedgerAccountId, EntryBuilder } from "./domain"
@@ -86,13 +92,13 @@ export const recordReceive = async ({
 
 export const getLedgerAccountBalanceForWalletId = async <T extends WalletCurrency>({
   id: walletId,
-  currency: walletCurrency,
+  currency,
 }: WalletDescriptor<T>): Promise<PaymentAmount<T> | LedgerError> => {
   try {
     const { balance } = await MainBook.balance({
       account: toLedgerAccountId(walletId),
     })
-    return { amount: BigInt(balance), currency: walletCurrency }
+    return paymentAmountFromNumber({ amount: balance, currency })
   } catch (err) {
     return new UnknownLedgerError(err)
   }

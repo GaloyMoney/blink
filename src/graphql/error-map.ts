@@ -397,6 +397,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "PubSubError":
     case "PubSubServiceError":
     case "UnknownPubSubError":
+    case "BigIntConversionError":
+    case "BigIntFloatConversionError":
+    case "UnknownBigIntConversionError":
+    case "SafeWrapperError":
       message = `Unknown error occurred (code: ${error.name}${
         error.message ? ": " + error.message : ""
       })`

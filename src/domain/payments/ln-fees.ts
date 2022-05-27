@@ -1,4 +1,10 @@
-import { WalletCurrency, ZERO_SATS, ZERO_CENTS } from "@domain/shared"
+import { toSats } from "@domain/bitcoin"
+import {
+  WalletCurrency,
+  ZERO_SATS,
+  ZERO_CENTS,
+  paymentAmountFromSats,
+} from "@domain/shared"
 
 export const FEECAP_PERCENT = 2n
 
@@ -28,11 +34,9 @@ export const LnFees = (
     }
   }
 
-  const feeFromRawRoute = (rawRoute: RawRoute) => {
-    return {
-      amount: BigInt(Math.ceil(rawRoute.fee)),
-      currency: WalletCurrency.Btc,
-    }
+  const feeFromRawRoute = (rawRoute: RawRoute): BtcPaymentAmount => {
+    const amount = toSats(Math.ceil(rawRoute.fee))
+    return paymentAmountFromSats(amount)
   }
 
   return {

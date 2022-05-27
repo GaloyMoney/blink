@@ -12,9 +12,16 @@ import {
   PriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
-import { ErrorLevel, ExchangeCurrencyUnit, WalletCurrency } from "@domain/shared"
+import {
+  ErrorLevel,
+  ExchangeCurrencyUnit,
+  paymentAmountFromCents,
+  paymentAmountFromSats,
+  WalletCurrency,
+} from "@domain/shared"
 import { AlreadyPaidError } from "@domain/errors"
-import { CENTS_PER_USD } from "@domain/fiat"
+import { CENTS_PER_USD, toCents } from "@domain/fiat"
+import { toSats } from "@domain/bitcoin"
 
 import { NewDealerPriceService } from "@services/dealer-price"
 import {
@@ -51,10 +58,8 @@ export const usdFromBtcMidPriceFn = async (
       const midPriceRatio = await getMidPriceRatio()
       if (midPriceRatio instanceof Error) return midPriceRatio
 
-      const usdPaymentAmount = {
-        amount: BigInt(Math.ceil(Number(amount.amount) * midPriceRatio)),
-        currency: WalletCurrency.Usd,
-      }
+      const usdAmount = Math.ceil(Number(amount.amount) * midPriceRatio)
+      const usdPaymentAmount = paymentAmountFromCents(toCents(usdAmount))
 
       addAttributesToCurrentSpan({
         "usdFromBtcMidPriceFn.midPriceRatio": midPriceRatio,
@@ -87,10 +92,8 @@ export const btcFromUsdMidPriceFn = async (
       const midPriceRatio = await getMidPriceRatio()
       if (midPriceRatio instanceof Error) return midPriceRatio
 
-      const btcPaymentAmount = {
-        amount: BigInt(Math.ceil(Number(amount.amount) / midPriceRatio)),
-        currency: WalletCurrency.Btc,
-      }
+      const btcAmount = Math.ceil(Number(amount.amount) / midPriceRatio)
+      const btcPaymentAmount = paymentAmountFromSats(toSats(btcAmount))
 
       addAttributesToCurrentSpan({
         "btcFromUsdMidPriceFn.midPriceRatio": midPriceRatio,
@@ -204,9 +207,7 @@ const recipientDetailsFromInvoice = async (invoice) => {
     cents,
   } = walletInvoice
   const usdPaymentAmount =
-    cents !== undefined
-      ? { amount: BigInt(cents), currency: WalletCurrency.Usd }
-      : undefined
+    cents !== undefined ? paymentAmountFromCents(toCents(cents)) : undefined
 
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet

@@ -17,7 +17,7 @@ import {
   LedgerServiceError,
   UnknownLedgerError,
 } from "@domain/ledger/errors"
-import { ErrorLevel } from "@domain/shared"
+import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { toObjectId } from "@services/mongoose/utils"
 import {
   recordExceptionInCurrentSpan,
@@ -236,7 +236,10 @@ export const LedgerService = (): ILedgerService => {
           })
         }
       }
-      return { amount: BigInt(Math.floor(balance)), currency: walletDescriptor.currency }
+      return paymentAmountFromNumber({
+        amount: balance,
+        currency: walletDescriptor.currency,
+      })
     } catch (err) {
       return new UnknownLedgerError(err)
     }

@@ -4,7 +4,7 @@ import { getDealerPriceConfig } from "@config"
 
 import { credentials } from "@grpc/grpc-js"
 
-import { WalletCurrency } from "@domain/shared"
+import { paymentAmountFromCents, paymentAmountFromSats } from "@domain/shared"
 
 import {
   NoConnectionToDealerError,
@@ -268,10 +268,8 @@ export const NewDealerPriceService = (
           Number(btcAmount.amount),
         ),
       )
-      return {
-        amount: BigInt(response.getAmountInCents()),
-        currency: WalletCurrency.Usd,
-      }
+      const amount = response.getAmountInCents()
+      return paymentAmountFromCents(toCents(amount))
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForImmediateBuy unable to fetch price")
       return parseDealerErrors(error)
@@ -287,10 +285,8 @@ export const NewDealerPriceService = (
           Number(btcAmount.amount),
         ),
       )
-      return {
-        amount: BigInt(response.getAmountInCents()),
-        currency: WalletCurrency.Usd,
-      }
+      const amount = response.getAmountInCents()
+      return paymentAmountFromCents(toCents(amount))
     } catch (error) {
       baseLogger.error(
         { error },
@@ -309,10 +305,8 @@ export const NewDealerPriceService = (
           .setAmountInSatoshis(Number(btcAmount.amount))
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
-      return {
-        amount: BigInt(response.getAmountInCents()),
-        currency: WalletCurrency.Usd,
-      }
+      const amount = response.getAmountInCents()
+      return paymentAmountFromCents(toCents(amount))
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForFutureBuy unable to fetch price")
       return parseDealerErrors(error)
@@ -328,10 +322,8 @@ export const NewDealerPriceService = (
           .setAmountInSatoshis(Number(btcAmount.amount))
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
-      return {
-        amount: BigInt(response.getAmountInCents()),
-        currency: WalletCurrency.Usd,
-      }
+      const amount = response.getAmountInCents()
+      return paymentAmountFromCents(toCents(amount))
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForFutureSell unable to fetch price")
       return parseDealerErrors(error)
@@ -347,10 +339,8 @@ export const NewDealerPriceService = (
           Number(usdAmount.amount),
         ),
       )
-      return {
-        amount: BigInt(response.getAmountInSatoshis()),
-        currency: WalletCurrency.Btc,
-      }
+      const amount = response.getAmountInSatoshis()
+      return paymentAmountFromSats(toSats(amount))
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForImmediateBuy unable to fetch price")
       return parseDealerErrors(error)
@@ -366,10 +356,8 @@ export const NewDealerPriceService = (
           Number(usdAmount.amount),
         ),
       )
-      return {
-        amount: BigInt(response.getAmountInSatoshis()),
-        currency: WalletCurrency.Btc,
-      }
+      const amount = response.getAmountInSatoshis()
+      return paymentAmountFromSats(toSats(amount))
     } catch (error) {
       baseLogger.error(
         { error },
@@ -388,10 +376,8 @@ export const NewDealerPriceService = (
           .setAmountInCents(Number(usdAmount.amount))
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
-      return {
-        amount: BigInt(response.getAmountInSatoshis()),
-        currency: WalletCurrency.Btc,
-      }
+      const amount = response.getAmountInSatoshis()
+      return paymentAmountFromSats(toSats(amount))
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForFutureBuy unable to fetch price")
       return parseDealerErrors(error)
@@ -407,10 +393,8 @@ export const NewDealerPriceService = (
           .setAmountInCents(Number(usdAmount.amount))
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
-      return {
-        amount: BigInt(response.getAmountInSatoshis()),
-        currency: WalletCurrency.Btc,
-      }
+      const amount = response.getAmountInSatoshis()
+      return paymentAmountFromSats(toSats(amount))
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForFutureSell unable to fetch price")
       return parseDealerErrors(error)

@@ -1,5 +1,12 @@
+import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerServiceError, UnknownLedgerError } from "@domain/ledger/errors"
+import {
+  paymentAmountFromCents,
+  paymentAmountFromSats,
+  WalletCurrency,
+} from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { Transaction } from "./books"
@@ -46,14 +53,14 @@ const volumeAmountFn =
     if (volume instanceof Error) return volume
 
     return {
-      outgoingBaseAmount: {
-        amount: BigInt(volume.outgoingBaseAmount),
-        currency: walletCurrency,
-      },
-      incomingBaseAmount: {
-        amount: BigInt(volume.incomingBaseAmount),
-        currency: walletCurrency,
-      },
+      outgoingBaseAmount:
+        walletCurrency === WalletCurrency.Btc
+          ? paymentAmountFromSats(toSats(volume.outgoingBaseAmount))
+          : paymentAmountFromCents(toCents(volume.outgoingBaseAmount)),
+      incomingBaseAmount:
+        walletCurrency === WalletCurrency.Btc
+          ? paymentAmountFromSats(toSats(volume.incomingBaseAmount))
+          : paymentAmountFromCents(toCents(volume.incomingBaseAmount)),
     }
   }
 
