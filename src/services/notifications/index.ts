@@ -562,7 +562,10 @@ export const getPushNotificationContent = ({
 } => {
   const locale = userLanguage || defaultLocale
   const notificationType = type === "balance" ? type : `transaction.${type}`
-  const title = i18n.__({ phrase: `notification.${notificationType}.title`, locale })
+  const title = i18n.__(
+    { phrase: `notification.${notificationType}.title`, locale },
+    { walletCurrency: baseCurrency },
+  )
   const baseCurrencyName = baseCurrency === WalletCurrency.Btc ? "sats" : ""
   const baseCurrencySymbol = baseCurrency === WalletCurrency.Usd ? "$" : ""
   const amount =
