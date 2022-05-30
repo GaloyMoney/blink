@@ -223,14 +223,17 @@ describe("onchainBlockEventhandler", () => {
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
 
-    const amountBaseCurrency = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+    const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+    const displayPaymentAmount = {
+      amount: sats * satsPrice,
+      currency: DefaultDisplayCurrency,
+    }
 
     const { title, body } = getPushNotificationContent({
       type: NotificationType.LnInvoicePaid,
       userLanguage: locale as UserLanguage,
-      amountBaseCurrency,
-      displayCurrency: DefaultDisplayCurrency,
-      amountDisplayCurrency: (sats * satsPrice) as DisplayCurrencyBaseAmount,
+      paymentAmount,
+      displayPaymentAmount,
     })
 
     expect(sendNotification.mock.calls.length).toBe(1)

@@ -49,15 +49,19 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const user = await UsersRepository().findById(account.ownerId)
       if (user instanceof Error) return user
 
-      const amountBaseCurrency = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+      const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+      const displayPaymentAmount = displayCurrencyPerSat
+        ? {
+            amount: sats * (displayCurrencyPerSat || 0),
+            currency: DefaultDisplayCurrency,
+          }
+        : undefined
 
       const { title, body } = getPushNotificationContent({
         type,
         userLanguage: user.language,
-        amountBaseCurrency,
-        displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
-        amountDisplayCurrency: (sats *
-          (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
+        paymentAmount,
+        displayPaymentAmount,
       })
 
       // Do not await this call for quicker processing
@@ -147,15 +151,19 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const user = await UsersRepository().findById(account.ownerId)
       if (user instanceof Error) return user
 
-      const amountBaseCurrency = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+      const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+      const displayPaymentAmount = displayCurrencyPerSat
+        ? {
+            amount: Number(paymentAmount.amount) * (displayCurrencyPerSat || 0),
+            currency: DefaultDisplayCurrency,
+          }
+        : undefined
 
       const { title, body } = getPushNotificationContent({
         type: NotificationType.LnInvoicePaid,
         userLanguage: user.language,
-        amountBaseCurrency,
-        displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
-        amountDisplayCurrency: (Number(amountBaseCurrency.amount) *
-          (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
+        paymentAmount,
+        displayPaymentAmount,
       })
 
       // Do not await this call for quicker processing
@@ -210,12 +218,12 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const user = await UsersRepository().findById(account.ownerId)
       if (user instanceof Error) return user
 
-      const amountBaseCurrency = { amount: BigInt(cents), currency: WalletCurrency.Usd }
+      const paymentAmount = { amount: BigInt(cents), currency: WalletCurrency.Usd }
 
       const { title, body } = getPushNotificationContent({
         type: NotificationType.LnInvoicePaid,
         userLanguage: user.language,
-        amountBaseCurrency,
+        paymentAmount,
       })
 
       // Do not await this call for quicker processing
@@ -306,18 +314,23 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const user = await UsersRepository().findById(account.ownerId)
         if (user instanceof Error) return user
 
-        const amountBaseCurrency = {
+        const paymentAmount = {
           amount: BigInt(amount),
           currency: WalletCurrency.Btc,
         }
 
+        const displayPaymentAmount = displayCurrencyPerSat
+          ? {
+              amount: amount * (displayCurrencyPerSat || 0),
+              currency: DefaultDisplayCurrency,
+            }
+          : undefined
+
         const { title, body } = getPushNotificationContent({
           type,
           userLanguage: user.language,
-          amountBaseCurrency,
-          displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
-          amountDisplayCurrency: (amount *
-            (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
+          paymentAmount,
+          displayPaymentAmount,
         })
 
         // Do not await this call for quicker processing
@@ -382,15 +395,19 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const user = await UsersRepository().findById(account.ownerId)
         if (user instanceof Error) return user
 
-        const amountBaseCurrency = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+        const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+        const displayPaymentAmount = displayCurrencyPerSat
+          ? {
+              amount: Number(paymentAmount.amount) * (displayCurrencyPerSat || 0),
+              currency: DefaultDisplayCurrency,
+            }
+          : undefined
 
         const { title, body } = getPushNotificationContent({
           type,
           userLanguage: user.language,
-          amountBaseCurrency,
-          displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
-          amountDisplayCurrency: (Number(amountBaseCurrency.amount) *
-            (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
+          paymentAmount,
+          displayPaymentAmount,
         })
 
         // Do not await this call for quicker processing
@@ -455,12 +472,12 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const user = await UsersRepository().findById(account.ownerId)
         if (user instanceof Error) return user
 
-        const amountBaseCurrency = { amount: BigInt(cents), currency: WalletCurrency.Usd }
+        const paymentAmount = { amount: BigInt(cents), currency: WalletCurrency.Usd }
 
         const { title, body } = getPushNotificationContent({
           type,
           userLanguage: user.language,
-          amountBaseCurrency,
+          paymentAmount,
         })
 
         // Do not await this call for quicker processing
@@ -497,15 +514,19 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       return
     }
 
-    const amountBaseCurrency = { amount: BigInt(balance), currency: walletCurrency }
+    const paymentAmount = { amount: BigInt(balance), currency: walletCurrency }
+    const displayPaymentAmount = displayCurrencyPerSat
+      ? {
+          amount: balance * (displayCurrencyPerSat || 0),
+          currency: DefaultDisplayCurrency,
+        }
+      : undefined
 
     const { title, body } = getPushNotificationContent({
       type: "balance",
       userLanguage: user.language,
-      amountBaseCurrency,
-      displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
-      amountDisplayCurrency: (balance *
-        (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
+      paymentAmount,
+      displayPaymentAmount,
     })
 
     logger.info(
@@ -543,22 +564,20 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
 
 export const getPushNotificationContent = ({
   type,
-  amountBaseCurrency,
-  amountDisplayCurrency,
-  displayCurrency,
+  paymentAmount,
+  displayPaymentAmount,
   userLanguage,
 }: {
   type: NotificationType | "balance"
-  amountBaseCurrency: PaymentAmount<WalletCurrency>
-  amountDisplayCurrency?: DisplayCurrencyBaseAmount
-  displayCurrency?: DisplayCurrency
+  paymentAmount: PaymentAmount<WalletCurrency>
+  displayPaymentAmount?: DisplayPaymentAmount<DisplayCurrency>
   userLanguage?: UserLanguage
 }): {
   title: string
   body: string
 } => {
   const locale = userLanguage || defaultLocale
-  const baseCurrency = amountBaseCurrency.currency
+  const baseCurrency = paymentAmount.currency
   const notificationType = type === "balance" ? type : `transaction.${type}`
   const title = i18n.__(
     { phrase: `notification.${notificationType}.title`, locale },
@@ -568,8 +587,8 @@ export const getPushNotificationContent = ({
   const baseCurrencySymbol = baseCurrency === WalletCurrency.Usd ? "$" : ""
   const displayedBaseAmount =
     baseCurrency === WalletCurrency.Usd
-      ? amountBaseCurrency.amount / 100n
-      : amountBaseCurrency.amount
+      ? paymentAmount.amount / 100n
+      : paymentAmount.amount
   const baseCurrencyAmount = displayedBaseAmount.toLocaleString(locale, {
     maximumFractionDigits: 2,
   })
@@ -579,16 +598,20 @@ export const getPushNotificationContent = ({
     { baseCurrencySymbol, baseCurrencyAmount, baseCurrencyName },
   )
 
-  if (displayCurrency && amountDisplayCurrency && displayCurrency !== baseCurrency) {
+  if (
+    displayPaymentAmount &&
+    displayPaymentAmount.amount > 0 &&
+    displayPaymentAmount.currency !== baseCurrency
+  ) {
     const displayCurrencyName = i18n.__({
-      phrase: `currency.${displayCurrency}.name`,
+      phrase: `currency.${displayPaymentAmount.currency}.name`,
       locale,
     })
     const displayCurrencySymbol = i18n.__({
-      phrase: `currency.${displayCurrency}.symbol`,
+      phrase: `currency.${displayPaymentAmount.currency}.symbol`,
       locale,
     })
-    const displayCurrencyAmount = amountDisplayCurrency.toLocaleString(locale, {
+    const displayCurrencyAmount = displayPaymentAmount.amount.toLocaleString(locale, {
       maximumFractionDigits: 2,
     })
     body = i18n.__(

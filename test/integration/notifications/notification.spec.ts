@@ -65,14 +65,17 @@ describe("notification", () => {
         const balance = await LedgerService().getWalletBalance(defaultWalletId)
         if (balance instanceof Error) throw balance
 
-        const amountBaseCurrency = { amount: BigInt(balance), currency: wallet.currency }
+        const paymentAmount = { amount: BigInt(balance), currency: wallet.currency }
+        const displayPaymentAmount = {
+          amount: balance * price,
+          currency: DefaultDisplayCurrency,
+        }
 
         const { title, body } = getPushNotificationContent({
           type: "balance",
           userLanguage: user.language,
-          amountBaseCurrency,
-          displayCurrency: DefaultDisplayCurrency,
-          amountDisplayCurrency: (balance * price) as DisplayCurrencyBaseAmount,
+          paymentAmount,
+          displayPaymentAmount,
         })
 
         expect(call.title).toBe(title)
