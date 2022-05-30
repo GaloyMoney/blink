@@ -49,11 +49,12 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const user = await UsersRepository().findById(account.ownerId)
       if (user instanceof Error) return user
 
+      const amountBaseCurrency = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+
       const { title, body } = getPushNotificationContent({
         type,
         userLanguage: user.language,
-        baseCurrency: WalletCurrency.Btc,
-        amountBaseCurrency: sats,
+        amountBaseCurrency,
         displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
         amountDisplayCurrency: (sats *
           (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
@@ -146,15 +147,14 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const user = await UsersRepository().findById(account.ownerId)
       if (user instanceof Error) return user
 
-      const amountBaseCurrency = toSats(Number(sats))
+      const amountBaseCurrency = { amount: BigInt(sats), currency: WalletCurrency.Btc }
 
       const { title, body } = getPushNotificationContent({
         type: NotificationType.LnInvoicePaid,
         userLanguage: user.language,
-        baseCurrency: WalletCurrency.Btc,
         amountBaseCurrency,
         displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
-        amountDisplayCurrency: (amountBaseCurrency *
+        amountDisplayCurrency: (Number(amountBaseCurrency.amount) *
           (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
       })
 
@@ -210,11 +210,12 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const user = await UsersRepository().findById(account.ownerId)
       if (user instanceof Error) return user
 
+      const amountBaseCurrency = { amount: BigInt(cents), currency: WalletCurrency.Usd }
+
       const { title, body } = getPushNotificationContent({
         type: NotificationType.LnInvoicePaid,
         userLanguage: user.language,
-        baseCurrency: WalletCurrency.Usd,
-        amountBaseCurrency: toCents(Number(cents)),
+        amountBaseCurrency,
       })
 
       // Do not await this call for quicker processing
@@ -305,11 +306,15 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const user = await UsersRepository().findById(account.ownerId)
         if (user instanceof Error) return user
 
+        const amountBaseCurrency = {
+          amount: BigInt(amount),
+          currency: WalletCurrency.Btc,
+        }
+
         const { title, body } = getPushNotificationContent({
           type,
           userLanguage: user.language,
-          baseCurrency: WalletCurrency.Btc,
-          amountBaseCurrency: amount,
+          amountBaseCurrency,
           displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
           amountDisplayCurrency: (amount *
             (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
@@ -377,15 +382,14 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const user = await UsersRepository().findById(account.ownerId)
         if (user instanceof Error) return user
 
-        const amount = toSats(Number(sats))
+        const amountBaseCurrency = { amount: BigInt(sats), currency: WalletCurrency.Btc }
 
         const { title, body } = getPushNotificationContent({
           type,
           userLanguage: user.language,
-          baseCurrency: WalletCurrency.Btc,
-          amountBaseCurrency: amount,
+          amountBaseCurrency,
           displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
-          amountDisplayCurrency: (amount *
+          amountDisplayCurrency: (Number(amountBaseCurrency.amount) *
             (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
         })
 
@@ -451,11 +455,12 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const user = await UsersRepository().findById(account.ownerId)
         if (user instanceof Error) return user
 
+        const amountBaseCurrency = { amount: BigInt(cents), currency: WalletCurrency.Usd }
+
         const { title, body } = getPushNotificationContent({
           type,
           userLanguage: user.language,
-          baseCurrency: WalletCurrency.Usd,
-          amountBaseCurrency: toCents(Number(cents)),
+          amountBaseCurrency,
         })
 
         // Do not await this call for quicker processing
@@ -484,26 +489,20 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     balance,
     walletCurrency,
     userId,
-    price,
-  }: {
-    balance: CurrencyBaseAmount
-    walletCurrency: WalletCurrency
-    userId: UserId
-    price: DisplayCurrencyPerSat | Error
-  }): Promise<void | NotImplementedError> => {
+    displayCurrencyPerSat,
+  }: SendBalanceArgs): Promise<void | NotImplementedError> => {
     const user = await UsersRepository().findById(userId)
     if (user instanceof Error) {
       logger.warn({ user }, "impossible to fetch user to send transaction")
       return
     }
 
-    const displayCurrencyPerSat = price instanceof Error ? undefined : price
+    const amountBaseCurrency = { amount: BigInt(balance), currency: walletCurrency }
 
     const { title, body } = getPushNotificationContent({
       type: "balance",
       userLanguage: user.language,
-      baseCurrency: walletCurrency,
-      amountBaseCurrency: balance,
+      amountBaseCurrency,
       displayCurrency: displayCurrencyPerSat ? DefaultDisplayCurrency : undefined,
       amountDisplayCurrency: (balance *
         (displayCurrencyPerSat || 0)) as DisplayCurrencyBaseAmount,
@@ -545,14 +544,12 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
 export const getPushNotificationContent = ({
   type,
   amountBaseCurrency,
-  baseCurrency,
   amountDisplayCurrency,
   displayCurrency,
   userLanguage,
 }: {
   type: NotificationType | "balance"
-  amountBaseCurrency: Satoshis | UsdCents
-  baseCurrency: WalletCurrency
+  amountBaseCurrency: PaymentAmount<WalletCurrency>
   amountDisplayCurrency?: DisplayCurrencyBaseAmount
   displayCurrency?: DisplayCurrency
   userLanguage?: UserLanguage
@@ -561,6 +558,7 @@ export const getPushNotificationContent = ({
   body: string
 } => {
   const locale = userLanguage || defaultLocale
+  const baseCurrency = amountBaseCurrency.currency
   const notificationType = type === "balance" ? type : `transaction.${type}`
   const title = i18n.__(
     { phrase: `notification.${notificationType}.title`, locale },
@@ -568,9 +566,11 @@ export const getPushNotificationContent = ({
   )
   const baseCurrencyName = baseCurrency === WalletCurrency.Btc ? "sats" : ""
   const baseCurrencySymbol = baseCurrency === WalletCurrency.Usd ? "$" : ""
-  const amount =
-    baseCurrency === WalletCurrency.Usd ? amountBaseCurrency / 100 : amountBaseCurrency
-  const baseCurrencyAmount = amount.toLocaleString(locale, {
+  const displayedBaseAmount =
+    baseCurrency === WalletCurrency.Usd
+      ? amountBaseCurrency.amount / 100n
+      : amountBaseCurrency.amount
+  const baseCurrencyAmount = displayedBaseAmount.toLocaleString(locale, {
     maximumFractionDigits: 2,
   })
 

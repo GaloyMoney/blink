@@ -53,7 +53,7 @@ type SendBalanceArgs = {
   balance: CurrencyBaseAmount
   walletCurrency: WalletCurrency
   userId: UserId
-  price: DisplayCurrencyPerSat | ApplicationError
+  displayCurrencyPerSat?: DisplayCurrencyPerSat
 }
 
 interface INotificationsService {

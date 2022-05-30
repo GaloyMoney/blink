@@ -185,11 +185,12 @@ describe("UserWallet - onChainPay", () => {
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
 
+    const amountBaseCurrency = { amount: BigInt(amount), currency: WalletCurrency.Btc }
+
     const { title, body } = getPushNotificationContent({
       type: NotificationType.OnchainPayment,
       userLanguage: locale as UserLanguage,
-      baseCurrency: WalletCurrency.Btc,
-      amountBaseCurrency: amount,
+      amountBaseCurrency,
       displayCurrency: DefaultDisplayCurrency,
       amountDisplayCurrency: (amount * satsPrice) as DisplayCurrencyBaseAmount,
     })

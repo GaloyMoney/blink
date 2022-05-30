@@ -223,11 +223,12 @@ describe("onchainBlockEventhandler", () => {
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
 
+    const amountBaseCurrency = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+
     const { title, body } = getPushNotificationContent({
       type: NotificationType.LnInvoicePaid,
       userLanguage: locale as UserLanguage,
-      baseCurrency: WalletCurrency.Btc,
-      amountBaseCurrency: sats,
+      amountBaseCurrency,
       displayCurrency: DefaultDisplayCurrency,
       amountDisplayCurrency: (sats * satsPrice) as DisplayCurrencyBaseAmount,
     })

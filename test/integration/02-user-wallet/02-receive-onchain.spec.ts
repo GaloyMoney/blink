@@ -276,11 +276,15 @@ describe("UserWallet - On chain", () => {
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
 
+    const amountBaseCurrency = {
+      amount: BigInt(amountSats),
+      currency: WalletCurrency.Btc,
+    }
+
     const pendingNotification = getPushNotificationContent({
       type: NotificationType.OnchainReceiptPending,
       userLanguage: locale as UserLanguage,
-      baseCurrency: WalletCurrency.Btc,
-      amountBaseCurrency: amountSats,
+      amountBaseCurrency,
       displayCurrency: DefaultDisplayCurrency,
       amountDisplayCurrency: (amountSats * satsPrice) as DisplayCurrencyBaseAmount,
     })
