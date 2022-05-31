@@ -23,7 +23,6 @@ export const FeeReimbursement = ({
     }
 
     const feeDifferenceUsdAmount = priceRatio.convertFromBtc(feeDifferenceBtcAmount)
-    if (feeDifferenceUsdAmount instanceof Error) return feeDifferenceUsdAmount
 
     return { btc: feeDifferenceBtcAmount, usd: feeDifferenceUsdAmount }
   }

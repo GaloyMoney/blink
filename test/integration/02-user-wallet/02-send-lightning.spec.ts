@@ -199,7 +199,6 @@ describe("UserWallet - Lightning Pay", () => {
     const midPriceRatio = await getMidPriceRatio()
     if (midPriceRatio instanceof Error) throw midPriceRatio
     const btcThresholdAmount = midPriceRatio.convertFromUsd(usdAmountAboveThreshold)
-    if (btcThresholdAmount instanceof Error) throw btcThresholdAmount
 
     const { request } = await createInvoice({
       lnd: lndOutside1,
@@ -229,7 +228,6 @@ describe("UserWallet - Lightning Pay", () => {
     const midPriceRatio = await getMidPriceRatio()
     if (midPriceRatio instanceof Error) throw midPriceRatio
     const btcThresholdAmount = midPriceRatio.convertFromUsd(usdAmountAboveThreshold)
-    if (btcThresholdAmount instanceof Error) throw btcThresholdAmount
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletIdA as WalletId,
@@ -574,7 +572,6 @@ describe("UserWallet - Lightning Pay", () => {
     })
     if (feeAmountSats instanceof Error) return feeAmountSats
     const feeAmountCents = priceRatio.convertFromBtc(feeAmountSats)
-    if (feeAmountCents instanceof Error) return feeAmountCents
     const feeCents = toCents(feeAmountCents.amount)
 
     const txnFeeReimburse = txns.find(
@@ -1391,7 +1388,6 @@ describe("UserWallet - Lightning Pay", () => {
         const btcAmountAboveThreshold = midPriceRatio.convertFromUsd(
           usdAmountAboveThreshold,
         )
-        if (btcAmountAboveThreshold instanceof Error) throw btcAmountAboveThreshold
 
         const { request } = await createInvoice({
           lnd: lndOutside1,

@@ -60,7 +60,6 @@ export const usdFromBtcMidPriceFn = async (
       if (midPriceRatio instanceof Error) return midPriceRatio
 
       const usdPaymentAmount = midPriceRatio.convertFromBtc(amount)
-      if (usdPaymentAmount instanceof Error) return usdPaymentAmount
 
       addAttributesToCurrentSpan({
         "usdFromBtcMidPriceFn.midPriceRatio": midPriceRatio.usdPerSat(),
@@ -96,7 +95,6 @@ export const btcFromUsdMidPriceFn = async (
       if (midPriceRatio instanceof Error) return midPriceRatio
 
       const btcPaymentAmount = midPriceRatio.convertFromUsd(amount)
-      if (btcPaymentAmount instanceof Error) return btcPaymentAmount
 
       addAttributesToCurrentSpan({
         "btcFromUsdMidPriceFn.midPriceRatio": midPriceRatio.usdPerSat(),

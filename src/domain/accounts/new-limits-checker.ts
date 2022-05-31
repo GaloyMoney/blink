@@ -23,7 +23,6 @@ export const AccountLimitsChecker = ({
             walletVolume.outgoingBaseAmount as BtcPaymentAmount,
           )
         : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
-    if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
     const limit = paymentAmountFromNumber({
       amount: accountLimits.intraLedgerLimit,
@@ -56,7 +55,6 @@ export const AccountLimitsChecker = ({
             walletVolume.outgoingBaseAmount as BtcPaymentAmount,
           )
         : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
-    if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
     const limit = paymentAmountFromNumber({
       amount: accountLimits.withdrawalLimit,
@@ -102,7 +100,6 @@ export const TwoFALimitsChecker = ({
             walletVolume.outgoingBaseAmount as BtcPaymentAmount,
           )
         : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
-    if (volumeInUsdAmount instanceof Error) return volumeInUsdAmount
 
     const limit = paymentAmountFromNumber({
       amount: twoFALimits.threshold,

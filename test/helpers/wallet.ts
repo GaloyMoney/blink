@@ -71,7 +71,6 @@ export const newGetRemainingTwoFALimit = async <T extends WalletCurrency>({
     walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
       ? priceRatio.convertFromBtc(walletVolume.outgoingBaseAmount as BtcPaymentAmount)
       : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
-  if (usdOutgoingAmount instanceof Error) return usdOutgoingAmount
 
   const remainingLimitAmount = AmountCalculator().sub(twoFALimitAmount, usdOutgoingAmount)
   if (remainingLimitAmount instanceof Error) return remainingLimitAmount
