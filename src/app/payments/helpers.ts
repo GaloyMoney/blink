@@ -10,6 +10,7 @@ import {
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
   PriceRatio,
+  toPriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import {
@@ -58,15 +59,11 @@ export const usdFromBtcMidPriceFn = async (
       const midPriceRatio = await getMidPriceRatio()
       if (midPriceRatio instanceof Error) return midPriceRatio
 
-      const usdAmount = Math.ceil(Number(amount.amount) * midPriceRatio)
-      const usdPaymentAmount = paymentAmountFromNumber({
-        amount: usdAmount,
-        currency: WalletCurrency.Usd,
-      })
+      const usdPaymentAmount = midPriceRatio.convertFromBtc(amount)
       if (usdPaymentAmount instanceof Error) return usdPaymentAmount
 
       addAttributesToCurrentSpan({
-        "usdFromBtcMidPriceFn.midPriceRatio": midPriceRatio,
+        "usdFromBtcMidPriceFn.midPriceRatio": midPriceRatio.usdPerSat(),
         "usdFromBtcMidPriceFn.incoming.amount": Number(amount.amount),
         "usdFromBtcMidPriceFn.incoming.unit":
           amount.currency === WalletCurrency.Btc
@@ -98,15 +95,11 @@ export const btcFromUsdMidPriceFn = async (
       const midPriceRatio = await getMidPriceRatio()
       if (midPriceRatio instanceof Error) return midPriceRatio
 
-      const btcAmount = Math.ceil(Number(amount.amount) / midPriceRatio)
-      const btcPaymentAmount = paymentAmountFromNumber({
-        amount: btcAmount,
-        currency: WalletCurrency.Btc,
-      })
+      const btcPaymentAmount = midPriceRatio.convertFromUsd(amount)
       if (btcPaymentAmount instanceof Error) return btcPaymentAmount
 
       addAttributesToCurrentSpan({
-        "btcFromUsdMidPriceFn.midPriceRatio": midPriceRatio,
+        "btcFromUsdMidPriceFn.midPriceRatio": midPriceRatio.usdPerSat(),
         "btcFromUsdMidPriceFn.incoming.amount": Number(amount.amount),
         "btcFromUsdMidPriceFn.incoming.unit":
           amount.currency === WalletCurrency.Usd
@@ -132,21 +125,25 @@ export const getCurrentPriceInCentsPerSat = async (): Promise<
   return (price * CENTS_PER_USD) as CentsPerSatsRatio
 }
 
-export const getMidPriceRatio = async (): Promise<
-  CentsPerSatsRatio | DealerPriceServiceError | PriceServiceError
-> => {
-  let midPriceRatio = usdHedgeEnabled
-    ? await dealer.getCentsPerSatsExchangeMidRate()
-    : await getCurrentPriceInCentsPerSat()
-  if (midPriceRatio instanceof Error && usdHedgeEnabled) {
-    recordExceptionInCurrentSpan({
-      error: midPriceRatio,
-      level: ErrorLevel.Critical,
-    })
-    midPriceRatio = await getCurrentPriceInCentsPerSat()
+export const getMidPriceRatio = async (): Promise<PriceRatio | PriceServiceError> => {
+  if (usdHedgeEnabled) {
+    const priceRatio = await dealer.getCentsPerSatsExchangeMidRate()
+    if (priceRatio instanceof Error) {
+      recordExceptionInCurrentSpan({
+        error: priceRatio,
+        level: ErrorLevel.Critical,
+      })
+      const ratio = await getCurrentPriceInCentsPerSat()
+      if (ratio instanceof Error) return ratio
+
+      return toPriceRatio(ratio)
+    }
   }
 
-  return midPriceRatio
+  const ratio = await getCurrentPriceInCentsPerSat()
+  if (ratio instanceof Error) return ratio
+
+  return toPriceRatio(ratio)
 }
 
 export const constructPaymentFlowBuilder = async ({
