@@ -107,6 +107,10 @@ describe("WalletTransactionHistory.fromLedger", () => {
         currency === WalletCurrency.Btc ? toSats(fee) : toCents(Math.floor(feeUsd * 100))
       const settlementDisplayCurrencyPerSat = Math.abs(usd / settlementAmount)
 
+      if (currency === WalletCurrency.Usd) {
+        expect(settlementDisplayCurrencyPerSat).toEqual(0.01)
+      }
+
       const currencyBaseWalletTxns = {
         ...baseWalletTransaction,
         walletId,
@@ -177,6 +181,26 @@ describe("WalletTransactionHistory.fromLedger", () => {
     it("translates btc ledger txs", () => {
       const currency = WalletCurrency.Btc
       const settlementAmount = toSats(100000)
+      const usd = 20
+
+      const txnsArgs = {
+        walletId: crypto.randomUUID() as WalletId,
+        settlementAmount,
+        usd,
+        feeUsd,
+        currency,
+      }
+
+      const ledgerTransactions = ledgerTxnsInputs(txnsArgs)
+      const result = WalletTransactionHistory.fromLedger(ledgerTransactions)
+
+      const expected = expectedWalletTxns(txnsArgs)
+      expect(result.transactions).toEqual(expected)
+    })
+
+    it("translates usd ledger txs", () => {
+      const currency = WalletCurrency.Usd
+      const settlementAmount = toCents(2000)
       const usd = 20
 
       const txnsArgs = {
