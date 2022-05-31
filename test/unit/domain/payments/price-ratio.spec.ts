@@ -1,5 +1,9 @@
 import { WalletCurrency } from "@domain/shared"
-import { InvalidZeroAmountPriceRatioInputError, PriceRatio } from "@domain/payments"
+import {
+  InvalidZeroAmountPriceRatioInputError,
+  PriceRatio,
+  toPriceRatio,
+} from "@domain/payments"
 
 describe("PriceRatio", () => {
   const usdQuoteAmount = {
@@ -223,5 +227,17 @@ describe("PriceRatio", () => {
       },
     })
     expect(priceRatio).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+  })
+})
+
+describe("to PriceRatio from float ratio", () => {
+  it("converts a float ratio to PriceRatio object", async () => {
+    const ratio = 0.0005
+
+    const priceRatio = toPriceRatio(ratio)
+    expect(priceRatio).not.toBeInstanceOf(Error)
+    if (priceRatio instanceof Error) throw priceRatio
+
+    expect(priceRatio.usdPerSat()).toEqual(ratio)
   })
 })

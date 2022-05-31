@@ -46,3 +46,19 @@ export const PriceRatio = ({
       (Number(usd.amount) / Number(btc.amount)) as DisplayCurrencyBasePerSat,
   }
 }
+
+export const toPriceRatio = (ratio: number): PriceRatio | ValidationError => {
+  const precision = 1_000_000
+
+  const usd: UsdPaymentAmount = {
+    amount: BigInt(Math.floor(ratio * precision)),
+    currency: WalletCurrency.Usd,
+  }
+
+  const btc: BtcPaymentAmount = {
+    amount: BigInt(precision),
+    currency: WalletCurrency.Btc,
+  }
+
+  return PriceRatio({ usd, btc })
+}
