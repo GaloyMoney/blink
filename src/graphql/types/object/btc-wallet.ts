@@ -13,7 +13,7 @@ import WalletCurrency from "../scalar/wallet-currency"
 import { TransactionConnection } from "./transaction"
 
 const BtcWallet = GT.Object<Wallet>({
-  name: "BTCWallet",
+  name: "BtcWallet",
   description:
     "A wallet belonging to an account which contains a BTC balance and a list of transactions.",
   interfaces: () => [IWallet],

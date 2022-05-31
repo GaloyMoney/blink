@@ -49,7 +49,7 @@ type AuthTokenPayload {
 """
 A wallet belonging to an account which contains a BTC balance and a list of transactions.
 """
-type BTCWallet implements Wallet {
+type BtcWallet implements Wallet {
   """
   A balance stored in BTC.
   """
