@@ -15,6 +15,7 @@ import { toSats } from "@domain/bitcoin"
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 
 import { toCents, toCentsPerSatsRatio } from "@domain/fiat"
+import { toPriceRatio } from "@domain/payments"
 
 import { baseLogger } from "../logger"
 
@@ -402,13 +403,13 @@ export const NewDealerPriceService = (
   }
 
   const getCentsPerSatsExchangeMidRate = async function (): Promise<
-    CentsPerSatsRatio | DealerPriceServiceError
+    PriceRatio | ValidationError
   > {
     try {
       const response = await clientGetCentsPerSatsExchangeMidRate(
         new GetCentsPerSatsExchangeMidRateRequest(),
       )
-      return toCentsPerSatsRatio(response.getRatioInCentsPerSatoshis())
+      return toPriceRatio(response.getRatioInCentsPerSatoshis())
     } catch (error) {
       baseLogger.error({ error }, "GetCentsPerSatsExchangeMidRate unable to fetch price")
       return parseDealerErrors(error)

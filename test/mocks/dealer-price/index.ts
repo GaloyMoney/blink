@@ -1,6 +1,7 @@
 import { SATS_PER_BTC, toSats } from "@domain/bitcoin"
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 import { CENTS_PER_USD, toCents, toCentsPerSatsRatio } from "@domain/fiat"
+import { toPriceRatio } from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 // simulated price at 20k btc/usd
@@ -162,6 +163,6 @@ export const NewDealerPriceService = (
       currency: WalletCurrency.Btc,
     })
   },
-  getCentsPerSatsExchangeMidRate: async (): Promise<CentsPerSatsRatio> =>
-    toCentsPerSatsRatio((baseRate * CENTS_PER_USD) / SATS_PER_BTC),
+  getCentsPerSatsExchangeMidRate: async (): Promise<PriceRatio | ValidationError> =>
+    toPriceRatio((baseRate * CENTS_PER_USD) / SATS_PER_BTC),
 })
