@@ -2,6 +2,53 @@ import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 describe("AmountCalculator", () => {
   const calc = AmountCalculator()
+
+  describe("adds", () => {
+    const currency = WalletCurrency.Btc
+    const a = { amount: 200n, currency }
+    const b = { amount: 100n, currency }
+
+    it("adds two payment amounts", () => {
+      const res = calc.add(a, b)
+      expect(res).toStrictEqual({ amount: 300n, currency })
+    })
+
+    // TODO: implement
+    it.skip("fails with two payment amounts of mismatched currencies", () => {
+      const res1 = calc.add(a, { amount: 200n, currency: WalletCurrency.Usd })
+      expect(res1).toBeInstanceOf(Error)
+
+      const res2 = calc.add({ amount: 100n, currency: WalletCurrency.Usd }, b)
+      expect(res2).toBeInstanceOf(Error)
+    })
+  })
+
+  describe("subs", () => {
+    const currency = WalletCurrency.Btc
+    const a = { amount: 200n, currency }
+    const b = { amount: 100n, currency }
+
+    it("sub two payment amounts", () => {
+      const res = calc.sub(a, b)
+      expect(res).toStrictEqual({ amount: 100n, currency })
+    })
+
+    // TODO: implement
+    it.skip("fails with two payment amounts of mismatched currencies", () => {
+      const res1 = calc.sub(a, { amount: 200n, currency: WalletCurrency.Usd })
+      expect(res1).toBeInstanceOf(Error)
+
+      const res2 = calc.sub({ amount: 100n, currency: WalletCurrency.Usd }, b)
+      expect(res2).toBeInstanceOf(Error)
+    })
+
+    // TODO: implement
+    it.skip("fails with if 1st value is smaller than 2nd one", () => {
+      const res = calc.sub(b, a)
+      expect(res).toBeInstanceOf(Error)
+    })
+  })
+
   describe("divides", () => {
     const currency = WalletCurrency.Btc
 
