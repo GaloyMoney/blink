@@ -67,7 +67,7 @@ describe("PriceRatio", () => {
       })
     })
 
-    it.skip("correctly rounds up when value is just above 0.5", () => {
+    it("correctly rounds up when value is just above 0.5", () => {
       const priceRatio = PriceRatio({
         usd: {
           amount: 3_900_000n,
@@ -112,7 +112,7 @@ describe("PriceRatio", () => {
       })
     })
 
-    it.skip("correctly rounds up when value is just below 1.0", () => {
+    it("correctly rounds up when value is just below 1.0", () => {
       const priceRatio = PriceRatio({
         usd: {
           amount: 4_000_100n,

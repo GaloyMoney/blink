@@ -1,6 +1,8 @@
-import { WalletCurrency } from "@domain/shared"
+import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import { InvalidZeroAmountPriceRatioInputError } from "./errors"
+
+const calc = AmountCalculator()
 
 export const PriceRatio = ({
   usd,
@@ -14,23 +16,33 @@ export const PriceRatio = ({
   }
 
   const convertFromUsd = (convert: UsdPaymentAmount): BtcPaymentAmount => {
+    const currency = WalletCurrency.Btc
+
     if (convert.amount === 0n) {
-      return { amount: 0n, currency: WalletCurrency.Btc }
+      return { amount: 0n, currency }
     }
 
-    const amount = (convert.amount * btc.amount) / usd.amount
+    const amount = calc.divide(
+      { amount: convert.amount * btc.amount, currency },
+      usd.amount,
+    )
 
-    return { amount: amount || 1n, currency: WalletCurrency.Btc }
+    return { amount: amount.amount || 1n, currency }
   }
 
   const convertFromBtc = (convert: BtcPaymentAmount): UsdPaymentAmount => {
+    const currency = WalletCurrency.Usd
+
     if (convert.amount === 0n) {
-      return { amount: 0n, currency: WalletCurrency.Usd }
+      return { amount: 0n, currency }
     }
 
-    const amount = (convert.amount * usd.amount) / btc.amount
+    const amount = calc.divide(
+      { amount: convert.amount * usd.amount, currency },
+      btc.amount,
+    )
 
-    return { amount: amount || 1n, currency: WalletCurrency.Usd }
+    return { amount: amount.amount || 1n, currency }
   }
 
   return {
