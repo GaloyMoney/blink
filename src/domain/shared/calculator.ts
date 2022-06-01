@@ -1,4 +1,4 @@
-export const AmountCalculator = () => {
+export const AmountCalculator = (): AmountCalculator => {
   const add = <T extends WalletCurrency>(a: PaymentAmount<T>, b: PaymentAmount<T>) => {
     return {
       currency: a.currency,
@@ -13,7 +13,7 @@ export const AmountCalculator = () => {
     }
   }
 
-  const divide = <T extends WalletCurrency>(
+  const div = <T extends WalletCurrency>(
     a: PaymentAmount<T>,
     b: bigint,
   ): PaymentAmount<T> => {
@@ -29,6 +29,6 @@ export const AmountCalculator = () => {
   return {
     sub,
     add,
-    divide,
+    div,
   }
 }

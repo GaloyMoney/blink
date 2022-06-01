@@ -28,3 +28,15 @@ type BtcPaymentAmount = PaymentAmount<"BTC">
 type UsdPaymentAmount = PaymentAmount<"USD">
 
 type RequireField<T, K extends keyof T> = T & Required<Pick<T, K>>
+
+type AmountCalculator = {
+  add: <T extends WalletCurrency>(
+    a: PaymentAmount<T>,
+    b: PaymentAmount<T>,
+  ) => PaymentAmount<T>
+  sub: <T extends WalletCurrency>(
+    a: PaymentAmount<T>,
+    b: PaymentAmount<T>,
+  ) => PaymentAmount<T>
+  div: <T extends WalletCurrency>(a: PaymentAmount<T>, b: bigint) => PaymentAmount<T>
+}

@@ -22,10 +22,7 @@ export const PriceRatio = ({
       return { amount: 0n, currency }
     }
 
-    const amount = calc.divide(
-      { amount: convert.amount * btc.amount, currency },
-      usd.amount,
-    )
+    const amount = calc.div({ amount: convert.amount * btc.amount, currency }, usd.amount)
 
     return { amount: amount.amount || 1n, currency }
   }
@@ -37,10 +34,7 @@ export const PriceRatio = ({
       return { amount: 0n, currency }
     }
 
-    const amount = calc.divide(
-      { amount: convert.amount * usd.amount, currency },
-      btc.amount,
-    )
+    const amount = calc.div({ amount: convert.amount * usd.amount, currency }, btc.amount)
 
     return { amount: amount.amount || 1n, currency }
   }
