@@ -209,7 +209,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new RouteFindingError({ message, logger: baseLogger })
 
     case "InsufficientOnChainFundsError":
-      message = "Funds temporarily offline. Will be restored shortly."
+      message =
+        "Onchain service temporarily unavailable. Withdraw via Lightning until service is restored."
       return new InsufficientLiquidityError({ message, logger: baseLogger })
 
     case "UnknownRouteNotFoundError":
