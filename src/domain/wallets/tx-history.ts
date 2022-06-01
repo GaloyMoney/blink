@@ -1,6 +1,8 @@
 import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
 import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
 import { ExtendedLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
+import { WalletCurrency } from "@domain/shared"
 
 import { PaymentInitiationMethod, SettlementMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
@@ -60,6 +62,7 @@ export const fromLedger = (
       debit,
       fee,
       usd,
+      feeUsd,
       paymentHash,
       txHash,
       pubkey,
@@ -69,7 +72,12 @@ export const fromLedger = (
       timestamp,
       currency,
     }) => {
-      const settlementAmount = toSats(credit - debit)
+      const settlementAmount =
+        currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
+      const settlementFee =
+        currency === WalletCurrency.Btc
+          ? toSats(fee || 0)
+          : toCents(feeUsd ? Math.floor(feeUsd * 100) : 0)
 
       const memo = translateMemo({
         memoFromPayer,
@@ -83,7 +91,7 @@ export const fromLedger = (
         id,
         walletId,
         settlementAmount,
-        settlementFee: toSats(fee || 0),
+        settlementFee,
         settlementCurrency: currency,
         settlementDisplayCurrencyPerSat: displayCurrencyPerBaseUnitFromAmounts({
           displayAmountAsNumber: usd,
