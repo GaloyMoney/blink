@@ -181,8 +181,6 @@ const updatePendingPayment = async ({
           journalId: pendingPayment.journalId,
           actualFee: roundedUpFee,
           revealedPreImage,
-          amountDisplayCurrency: displayAmount,
-          feeDisplayCurrency: displayFee,
           logger,
         })
       } else if (status === PaymentStatus.Failed) {
