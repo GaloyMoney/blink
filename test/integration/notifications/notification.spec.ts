@@ -6,7 +6,7 @@ import { toSats } from "@domain/bitcoin"
 import * as serviceLedger from "@services/ledger"
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
-import { getPushNotificationContent } from "@services/notifications"
+import { createPushNotificationContent } from "@services/notifications"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { UsersRepository, WalletsRepository } from "@services/mongoose"
 
@@ -71,7 +71,7 @@ describe("notification", () => {
           currency: DefaultDisplayCurrency,
         }
 
-        const { title, body } = getPushNotificationContent({
+        const { title, body } = createPushNotificationContent({
           type: "balance",
           userLanguage: user.language,
           paymentAmount,

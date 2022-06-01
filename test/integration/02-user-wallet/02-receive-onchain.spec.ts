@@ -15,7 +15,7 @@ import { TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
-import { getPushNotificationContent } from "@services/notifications"
+import { createPushNotificationContent } from "@services/notifications"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { sleep } from "@utils"
 
@@ -282,7 +282,7 @@ describe("UserWallet - On chain", () => {
       currency: DefaultDisplayCurrency,
     }
 
-    const pendingNotification = getPushNotificationContent({
+    const pendingNotification = createPushNotificationContent({
       type: NotificationType.OnchainReceiptPending,
       userLanguage: locale as UserLanguage,
       paymentAmount,

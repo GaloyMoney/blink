@@ -57,7 +57,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
           }
         : undefined
 
-      const { title, body } = getPushNotificationContent({
+      const { title, body } = createPushNotificationContent({
         type,
         userLanguage: user.language,
         paymentAmount,
@@ -159,7 +159,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
           }
         : undefined
 
-      const { title, body } = getPushNotificationContent({
+      const { title, body } = createPushNotificationContent({
         type: NotificationType.LnInvoicePaid,
         userLanguage: user.language,
         paymentAmount,
@@ -220,7 +220,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
 
       const paymentAmount = { amount: BigInt(cents), currency: WalletCurrency.Usd }
 
-      const { title, body } = getPushNotificationContent({
+      const { title, body } = createPushNotificationContent({
         type: NotificationType.LnInvoicePaid,
         userLanguage: user.language,
         paymentAmount,
@@ -326,7 +326,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
             }
           : undefined
 
-        const { title, body } = getPushNotificationContent({
+        const { title, body } = createPushNotificationContent({
           type,
           userLanguage: user.language,
           paymentAmount,
@@ -403,7 +403,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
             }
           : undefined
 
-        const { title, body } = getPushNotificationContent({
+        const { title, body } = createPushNotificationContent({
           type,
           userLanguage: user.language,
           paymentAmount,
@@ -474,7 +474,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
 
         const paymentAmount = { amount: BigInt(cents), currency: WalletCurrency.Usd }
 
-        const { title, body } = getPushNotificationContent({
+        const { title, body } = createPushNotificationContent({
           type,
           userLanguage: user.language,
           paymentAmount,
@@ -522,7 +522,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         }
       : undefined
 
-    const { title, body } = getPushNotificationContent({
+    const { title, body } = createPushNotificationContent({
       type: "balance",
       userLanguage: user.language,
       paymentAmount,
@@ -562,7 +562,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   }
 }
 
-export const getPushNotificationContent = ({
+export const createPushNotificationContent = ({
   type,
   paymentAmount,
   displayPaymentAmount,

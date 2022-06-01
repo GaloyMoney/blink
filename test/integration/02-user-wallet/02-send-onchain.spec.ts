@@ -34,7 +34,7 @@ import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
 import { add, sub, toCents } from "@domain/fiat"
 
-import { getPushNotificationContent } from "@services/notifications"
+import { createPushNotificationContent } from "@services/notifications"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
 import { WalletCurrency } from "@domain/shared"
@@ -191,7 +191,7 @@ describe("UserWallet - onChainPay", () => {
       currency: DefaultDisplayCurrency,
     }
 
-    const { title, body } = getPushNotificationContent({
+    const { title, body } = createPushNotificationContent({
       type: NotificationType.OnchainPayment,
       userLanguage: locale as UserLanguage,
       paymentAmount,

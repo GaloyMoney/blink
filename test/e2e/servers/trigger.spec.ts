@@ -7,7 +7,7 @@ import { TxStatus } from "@domain/wallets"
 import { onchainBlockEventhandler, onInvoiceUpdate } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
-import { getPushNotificationContent } from "@services/notifications"
+import { createPushNotificationContent } from "@services/notifications"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { sleep } from "@utils"
 
@@ -229,7 +229,7 @@ describe("onchainBlockEventhandler", () => {
       currency: DefaultDisplayCurrency,
     }
 
-    const { title, body } = getPushNotificationContent({
+    const { title, body } = createPushNotificationContent({
       type: NotificationType.LnInvoicePaid,
       userLanguage: locale as UserLanguage,
       paymentAmount,
