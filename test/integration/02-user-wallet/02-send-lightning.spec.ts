@@ -505,14 +505,12 @@ describe("UserWallet - Lightning Pay", () => {
         feeUsd: 0,
         usd: feeCents / 100,
 
-        // FIXME: migrate db and fix code to make these pass
-
-        // satsAmount: feeSats,
-        // satsFee: 0,
-        // centsAmount: feeCents,
-        // centsFee: 0,
-        // displayAmount: feeCents,
-        // displayFee: 0,
+        satsAmount: feeSats,
+        satsFee: 0,
+        centsAmount: feeCents,
+        centsFee: 0,
+        displayAmount: feeCents,
+        displayFee: 0,
       }),
     )
 

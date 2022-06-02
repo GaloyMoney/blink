@@ -699,8 +699,6 @@ const executePaymentViaLn = async ({
         journalId,
         actualFee: payResult.roundedUpFee,
         revealedPreImage: payResult.revealedPreImage,
-        amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-        feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),
         logger,
       })
       if (reimbursed instanceof Error) return reimbursed

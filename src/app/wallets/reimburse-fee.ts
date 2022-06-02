@@ -12,16 +12,12 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
   journalId,
   actualFee,
   revealedPreImage,
-  amountDisplayCurrency,
-  feeDisplayCurrency,
   logger,
 }: {
   paymentFlow: PaymentFlow<S, R>
   journalId: LedgerJournalId
   actualFee: Satoshis
   revealedPreImage?: RevealedPreImage
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
-  feeDisplayCurrency: DisplayCurrencyBaseAmount
   logger: Logger
 }): Promise<true | ApplicationError> => {
   const actualFeeAmount = paymentAmountFromSats(actualFee)
@@ -52,13 +48,6 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
     return true
   }
 
-  const {
-    btcPaymentAmount: { amount: satsAmount },
-    usdPaymentAmount: { amount: centsAmount },
-    btcProtocolFee: { amount: satsFee },
-    usdProtocolFee: { amount: centsFee },
-  } = paymentFlow
-
   const displayCentsPerSat = priceRatio.usdPerSat()
   const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
   const reimburseAmountDisplayCurrency = converter.fromUsdAmount(feeDifference.usd)
@@ -74,13 +63,13 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
 
     usd: (reimburseAmountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
 
-    satsAmount: toSats(satsAmount),
-    centsAmount: toCents(centsAmount),
-    satsFee: toSats(satsFee),
-    centsFee: toCents(centsFee),
+    satsAmount: toSats(feeDifference.btc.amount),
+    centsAmount: toCents(feeDifference.usd.amount),
+    satsFee: toSats(0),
+    centsFee: toCents(0),
 
-    displayAmount: amountDisplayCurrency,
-    displayFee: feeDisplayCurrency,
+    displayAmount: reimburseAmountDisplayCurrency,
+    displayFee: 0 as DisplayCurrencyBaseAmount,
     displayCurrency: DisplayCurrency.Usd,
   }
 
