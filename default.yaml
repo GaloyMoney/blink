@@ -13,6 +13,8 @@ dealer:
   usd:
     hedgingEnabled: false
 
+ratioPrecision: 1_000_000
+
 buildVersion:
   android:
     minBuildNumber: 182

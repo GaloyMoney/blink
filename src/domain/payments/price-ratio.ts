@@ -1,3 +1,4 @@
+import { RATIO_PRECISION } from "@config"
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import { InvalidZeroAmountPriceRatioInputError } from "./errors"
@@ -48,7 +49,7 @@ export const PriceRatio = ({
 }
 
 export const toPriceRatio = (ratio: number): PriceRatio | ValidationError => {
-  const precision = 1_000_000
+  const precision = RATIO_PRECISION
 
   const usd: UsdPaymentAmount = {
     amount: BigInt(Math.floor(ratio * precision)),
