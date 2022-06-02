@@ -6,7 +6,7 @@ import { toSats } from "@domain/bitcoin"
 import * as serviceLedger from "@services/ledger"
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
-import { createPushNotificationContent } from "@services/notifications"
+import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { UsersRepository, WalletsRepository } from "@services/mongoose"
 

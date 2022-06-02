@@ -1,4 +1,4 @@
-import { getLocale, getDisplayCurrencyConfig, getI18nInstance } from "@config"
+import { getDisplayCurrencyConfig } from "@config"
 import { toSats } from "@domain/bitcoin"
 import { NotImplementedError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
@@ -14,9 +14,8 @@ import { PubSubService } from "@services/pubsub"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { PushNotificationsService } from "./push-notifications"
+import { createPushNotificationContent } from "./create-push-notification-content"
 
-const i18n = getI18nInstance()
-const defaultLocale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 export const NotificationsService = (logger: Logger): INotificationsService => {
@@ -560,72 +559,4 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       },
     }),
   }
-}
-
-export const createPushNotificationContent = ({
-  type,
-  paymentAmount,
-  displayPaymentAmount,
-  userLanguage,
-}: {
-  type: NotificationType | "balance"
-  paymentAmount: PaymentAmount<WalletCurrency>
-  displayPaymentAmount?: DisplayPaymentAmount<DisplayCurrency>
-  userLanguage?: UserLanguage
-}): {
-  title: string
-  body: string
-} => {
-  const locale = userLanguage || defaultLocale
-  const baseCurrency = paymentAmount.currency
-  const notificationType = type === "balance" ? type : `transaction.${type}`
-  const title = i18n.__(
-    { phrase: `notification.${notificationType}.title`, locale },
-    { walletCurrency: baseCurrency },
-  )
-  const baseCurrencyName = baseCurrency === WalletCurrency.Btc ? "sats" : ""
-  const baseCurrencySymbol = baseCurrency === WalletCurrency.Usd ? "$" : ""
-  const displayedBaseAmount =
-    baseCurrency === WalletCurrency.Usd
-      ? paymentAmount.amount / 100n
-      : paymentAmount.amount
-  const baseCurrencyAmount = displayedBaseAmount.toLocaleString(locale, {
-    maximumFractionDigits: 2,
-  })
-
-  let body = i18n.__(
-    { phrase: `notification.${notificationType}.body`, locale },
-    { baseCurrencySymbol, baseCurrencyAmount, baseCurrencyName },
-  )
-
-  if (
-    displayPaymentAmount &&
-    displayPaymentAmount.amount > 0 &&
-    displayPaymentAmount.currency !== baseCurrency
-  ) {
-    const displayCurrencyName = i18n.__({
-      phrase: `currency.${displayPaymentAmount.currency}.name`,
-      locale,
-    })
-    const displayCurrencySymbol = i18n.__({
-      phrase: `currency.${displayPaymentAmount.currency}.symbol`,
-      locale,
-    })
-    const displayCurrencyAmount = displayPaymentAmount.amount.toLocaleString(locale, {
-      maximumFractionDigits: 2,
-    })
-    body = i18n.__(
-      { phrase: `notification.${notificationType}.bodyDisplayCurrency`, locale },
-      {
-        displayCurrencySymbol,
-        displayCurrencyAmount,
-        displayCurrencyName,
-        baseCurrencySymbol,
-        baseCurrencyAmount,
-        baseCurrencyName,
-      },
-    )
-  }
-
-  return { title, body }
 }

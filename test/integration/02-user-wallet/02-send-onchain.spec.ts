@@ -34,7 +34,7 @@ import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
 import { add, sub, toCents } from "@domain/fiat"
 
-import { createPushNotificationContent } from "@services/notifications"
+import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
 import { WalletCurrency } from "@domain/shared"
