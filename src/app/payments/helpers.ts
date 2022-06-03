@@ -51,8 +51,10 @@ export const usdFromBtcMidPriceFn = async (
   asyncRunInSpan(
     "app.payments.usdFromBtcMidPriceFn",
     {
-      [SemanticAttributes.CODE_FUNCTION]: "usdFromBtcMidPriceFn",
-      [SemanticAttributes.CODE_NAMESPACE]: "app.payments",
+      attributes: {
+        [SemanticAttributes.CODE_FUNCTION]: "usdFromBtcMidPriceFn",
+        [SemanticAttributes.CODE_NAMESPACE]: "app.payments",
+      },
     },
     async () => {
       const midPriceRatio = await getMidPriceRatio()
@@ -85,8 +87,10 @@ export const btcFromUsdMidPriceFn = async (
   asyncRunInSpan(
     "app.payments.btcFromUsdMidPriceFn",
     {
-      [SemanticAttributes.CODE_FUNCTION]: "btcFromUsdMidPriceFn",
-      [SemanticAttributes.CODE_NAMESPACE]: "app.payments",
+      attributes: {
+        [SemanticAttributes.CODE_FUNCTION]: "btcFromUsdMidPriceFn",
+        [SemanticAttributes.CODE_NAMESPACE]: "app.payments",
+      },
     },
     async () => {
       const midPriceRatio = await getMidPriceRatio()

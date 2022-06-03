@@ -60,15 +60,17 @@ const updateLnPaymentsByFunction = async ({
     const results = await asyncRunInSpan(
       "app.lightning.updateLnPaymentsPaginated",
       {
-        [SemanticAttributes.CODE_FUNCTION]: "updateLnPaymentsPaginated",
-        [SemanticAttributes.CODE_NAMESPACE]: "app.lightning",
-        [`${SemanticAttributes.CODE_FUNCTION}.params.cursor`]: String(after),
-        [`${SemanticAttributes.CODE_FUNCTION}.params.listPaymentsMethod`]: listFn.name,
-        [`${SemanticAttributes.CODE_FUNCTION}.params.pubkey`]: pubkey,
-        [`${SemanticAttributes.CODE_FUNCTION}.params.totalIncomplete`]:
-          incompleteLnPayments.length,
-        [`${SemanticAttributes.CODE_FUNCTION}.params.processedCount`]:
-          updatedProcessedHashes.length,
+        attributes: {
+          [SemanticAttributes.CODE_FUNCTION]: "updateLnPaymentsPaginated",
+          [SemanticAttributes.CODE_NAMESPACE]: "app.lightning",
+          [`${SemanticAttributes.CODE_FUNCTION}.params.cursor`]: String(after),
+          [`${SemanticAttributes.CODE_FUNCTION}.params.listPaymentsMethod`]: listFn.name,
+          [`${SemanticAttributes.CODE_FUNCTION}.params.pubkey`]: pubkey,
+          [`${SemanticAttributes.CODE_FUNCTION}.params.totalIncomplete`]:
+            incompleteLnPayments.length,
+          [`${SemanticAttributes.CODE_FUNCTION}.params.processedCount`]:
+            updatedProcessedHashes.length,
+        },
       },
       async () => {
         if (after === false) return new UnknownLightningServiceError()

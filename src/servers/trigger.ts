@@ -21,6 +21,7 @@ import {
   subscribeToTransactions,
   SubscribeToTransactionsChainTransactionEvent,
 } from "lightning"
+import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -174,9 +175,22 @@ const listenerOnchain = ({ lnd }) => {
   })
 
   const subBlocks = subscribeToBlocks({ lnd })
-  subBlocks.on("block", async ({ height }) => {
-    await onchainBlockEventhandler({ height })
-  })
+  subBlocks.on("block", async ({ height }) =>
+    asyncRunInSpan(
+      "servers.trigger.onchainBlockEventhandler",
+      {
+        root: true,
+        attributes: {
+          [SemanticAttributes.CODE_FUNCTION]: "onchainBlockEventhandler",
+          [SemanticAttributes.CODE_NAMESPACE]: "servers.trigger",
+          [`${SemanticAttributes.CODE_FUNCTION}.params.height`]: height,
+        },
+      },
+      async () => {
+        onchainBlockEventhandler({ height })
+      },
+    ),
+  )
 
   subBlocks.on("error", (err) => {
     baseLogger.error({ err }, "error subBlocks")
