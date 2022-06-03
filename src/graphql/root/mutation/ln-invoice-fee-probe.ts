@@ -41,7 +41,7 @@ const LnInvoiceFeeProbeMutation = GT.Field({
       paymentRequest,
     })
 
-    if (feeSatAmount && error instanceof Error) {
+    if (feeSatAmount !== null && error instanceof Error) {
       return {
         errors: [{ message: mapError(error).message }],
         ...normalizePaymentAmount(feeSatAmount),
