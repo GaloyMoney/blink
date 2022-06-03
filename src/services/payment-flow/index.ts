@@ -106,23 +106,19 @@ export const PaymentFlowStateRepository = (
     }
   }
 
-  const updatePendingLightningPaymentFlow = async <
+  const markLightningPaymentFlowNotPending = async <
     S extends WalletCurrency,
     R extends WalletCurrency,
   >(
-    paymentFlowPendingUpdate: PaymentFlowStatePendingUpdate,
+    paymentFlowIndex: PaymentFlowStateIndex,
   ): Promise<PaymentFlow<S, R> | RepositoryError | ValidationError> => {
-    const rawPaymentFlowUpdate = rawFromPaymentFlowPendingUpdate(paymentFlowPendingUpdate)
-    if (rawPaymentFlowUpdate instanceof Error) return rawPaymentFlowUpdate
+    const rawPaymentFlowIndex = rawIndexFromPaymentFlowIndex(paymentFlowIndex)
+    if (rawPaymentFlowIndex instanceof Error) return rawPaymentFlowIndex
 
     try {
       const result = await PaymentFlowState.findOneAndUpdate(
-        {
-          senderWalletId: paymentFlowPendingUpdate.senderWalletId,
-          paymentHash: paymentFlowPendingUpdate.paymentHash,
-          inputAmount: Number(paymentFlowPendingUpdate.inputAmount),
-        },
-        rawPaymentFlowUpdate,
+        rawPaymentFlowIndex,
+        { paymentSentAndPending: false },
         {
           new: true,
         },
@@ -185,7 +181,7 @@ export const PaymentFlowStateRepository = (
     findLightningPaymentFlow,
     persistNew,
     updateLightningPaymentFlow,
-    updatePendingLightningPaymentFlow,
+    markLightningPaymentFlowNotPending,
     deleteExpiredLightningPaymentFlows,
   }
 }
@@ -276,10 +272,10 @@ const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
   }
 }
 
-const rawFromPaymentFlowPendingUpdate = (
-  paymentFlowPendingUpdate: PaymentFlowStatePendingUpdate,
-): PaymentFlowStateRecordPendingUpdate | ValidationError => {
-  const { paymentHash, intraLedgerHash } = paymentFlowPendingUpdate
+const rawIndexFromPaymentFlowIndex = (
+  paymentFlowIndex: PaymentFlowStateIndex,
+): PaymentFlowStateRecordIndex | ValidationError => {
+  const { paymentHash, intraLedgerHash } = paymentFlowIndex
   const hash = paymentHash
     ? { paymentHash }
     : intraLedgerHash
@@ -291,10 +287,8 @@ const rawFromPaymentFlowPendingUpdate = (
 
   return {
     ...hash,
-    senderWalletId: paymentFlowPendingUpdate.senderWalletId,
-    inputAmount: Number(paymentFlowPendingUpdate.inputAmount),
-
-    paymentSentAndPending: paymentFlowPendingUpdate.paymentSentAndPending,
+    senderWalletId: paymentFlowIndex.walletId,
+    inputAmount: Number(paymentFlowIndex.inputAmount),
   }
 }
 
