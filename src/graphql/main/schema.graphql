@@ -79,7 +79,7 @@ type BTCWallet implements Wallet {
     Returns the last n items from the list.
     """
     last: Int
-  ): TransactionConnection
+  ): [Transaction!]!
   walletCurrency: WalletCurrency!
 }
 
@@ -912,7 +912,7 @@ settling intraledger when both the payer and payee use the same wallet
 therefore it's possible the transactions is being initiated onchain
 or with lightning but settled intraledger.
 """
-type Transaction {
+interface Transaction {
   createdAt: Timestamp!
   direction: TxDirection!
   id: ID!
@@ -922,21 +922,13 @@ type Transaction {
   """
   initiationVia: InitiationVia!
   memo: Memo
-
-  """
-  Amount of sats sent or received.
-  """
-  settlementAmount: SatAmount!
+  settlementAmount: CentAmount!
 
   """
   Wallet currency for transaction.
   """
   settlementCurrency: WalletCurrency!
-  settlementFee: SatAmount!
-
-  """
-  Price in USDCENT/SATS at time of settlement.
-  """
+  settlementFee: CentAmount!
   settlementPrice: Price!
 
   """
@@ -1041,7 +1033,7 @@ type UsdWallet implements Wallet {
     Returns the last n items from the list.
     """
     last: Int
-  ): TransactionConnection
+  ): [Transaction!]!
   walletCurrency: WalletCurrency!
 }
 
@@ -1214,7 +1206,7 @@ interface Wallet {
     Returns the last n items from the list.
     """
     last: Int
-  ): TransactionConnection
+  ): [Transaction!]!
   walletCurrency: WalletCurrency!
 }
 

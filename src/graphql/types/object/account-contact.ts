@@ -7,7 +7,7 @@ import { connectionArgs, connectionFromArray } from "@graphql/connections"
 import ContactAlias from "../scalar/contact-alias"
 import Username from "../scalar/username"
 
-import { TransactionConnection } from "./transaction"
+import TransactionConnection from "./transaction-connection"
 
 const AccountContact = GT.Object<UserRecord, GraphQLContextForUser>({
   name: "UserContact",

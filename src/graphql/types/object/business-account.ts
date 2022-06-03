@@ -13,7 +13,7 @@ import Wallet from "../abstract/wallet"
 
 import WalletId from "../scalar/wallet-id"
 
-import { TransactionConnection } from "./transaction"
+import TransactionConnection from "./transaction-connection"
 
 const BusinessAccount = GT.Object({
   name: "BusinessAccount",

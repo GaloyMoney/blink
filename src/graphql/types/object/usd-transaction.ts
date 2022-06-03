@@ -1,29 +1,33 @@
 import dedent from "dedent"
 
+import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
+
 import { GT } from "@graphql/index"
-import { connectionDefinitions } from "@graphql/connections"
 
 import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
 import Memo from "../scalar/memo"
 
-import SatAmount from "../scalar/sat-amount"
+import CentAmount from "../scalar/cent-amount"
 import InitiationVia from "../abstract/initiation-via"
 import SettlementVia from "../abstract/settlement-via"
 import Timestamp from "../scalar/timestamp"
 import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
 import TxStatus from "../scalar/tx-status"
 import WalletCurrency from "../scalar/wallet-currency"
+import ITransaction from "../abstract/transaction"
 
 import Price from "./price"
 
-const Transaction = GT.Object<WalletTransaction>({
-  name: "Transaction",
+const UsdTransaction = GT.Object<WalletTransaction>({
+  name: "UsdTransaction",
   description: dedent`Give details about an individual transaction.
   Galoy have a smart routing system which is automatically
   settling intraledger when both the payer and payee use the same wallet
   therefore it's possible the transactions is being initiated onchain
   or with lightning but settled intraledger.`,
+  interfaces: () => [ITransaction],
+  isTypeOf: (source) => source.settlementCurrency === WalletCurrencyDomain.Usd,
   fields: () => ({
     id: {
       type: GT.NonNullID,
@@ -37,27 +41,27 @@ const Transaction = GT.Object<WalletTransaction>({
       description: "To which protocol the payment has settled on.",
     },
     settlementAmount: {
-      type: GT.NonNull(SatAmount),
-      description: "Amount of sats sent or received.",
+      type: GT.NonNull(CentAmount),
+      description: "Amount of cents sent or received.",
     },
     settlementFee: {
-      type: GT.NonNull(SatAmount),
+      type: GT.NonNull(CentAmount),
     },
     settlementPrice: {
       type: GT.NonNull(Price),
       resolve: (source) => {
-        const settlementDisplayCurrencyPerSatInCents =
+        const settlementDisplayCurrencyPerCentInCents =
           source.settlementDisplayCurrencyPerSat * 100
         return {
-          formattedAmount: settlementDisplayCurrencyPerSatInCents.toString(),
+          formattedAmount: settlementDisplayCurrencyPerCentInCents.toString(),
           base: Math.round(
-            settlementDisplayCurrencyPerSatInCents * 10 ** SAT_PRICE_PRECISION_OFFSET,
+            settlementDisplayCurrencyPerCentInCents * 10 ** SAT_PRICE_PRECISION_OFFSET,
           ),
           offset: SAT_PRICE_PRECISION_OFFSET,
           currencyUnit: "USDCENT",
         }
       },
-      description: "Price in USDCENT/SATS at time of settlement.",
+      description: "Price in USDCENT/USDCENT at time of settlement.",
     },
     settlementCurrency: {
       type: GT.NonNull(WalletCurrency),
@@ -80,8 +84,4 @@ const Transaction = GT.Object<WalletTransaction>({
   }),
 })
 
-export const { connectionType: TransactionConnection } = connectionDefinitions({
-  nodeType: Transaction,
-})
-
-export default Transaction
+export default UsdTransaction

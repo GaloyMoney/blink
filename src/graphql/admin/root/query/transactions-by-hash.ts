@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
 import { Wallets } from "@app"
-import Transaction from "@graphql/types/object/transaction"
+import Transaction from "@graphql/types/abstract/transaction"
 import PaymentHash from "@graphql/types/scalar/payment-hash"
 
 const TransactionsByHashQuery = GT.Field({

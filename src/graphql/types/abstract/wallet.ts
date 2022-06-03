@@ -3,7 +3,7 @@ import dedent from "dedent"
 import { GT } from "@graphql/index"
 import { connectionArgs, connectionFromArray } from "@graphql/connections"
 
-import { TransactionConnection } from "../object/transaction"
+import TransactionConnection from "../object/transaction-connection"
 import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"
 

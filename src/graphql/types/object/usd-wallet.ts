@@ -10,7 +10,7 @@ import IWallet from "../abstract/wallet"
 import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"
 
-import { TransactionConnection } from "./transaction"
+import TransactionConnection from "./transaction-connection"
 
 const UsdWallet = GT.Object<Wallet>({
   name: "UsdWallet",

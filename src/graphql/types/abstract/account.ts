@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { connectionArgs } from "graphql-relay"
 
-import { TransactionConnection } from "../object/transaction"
+import TransactionConnection from "../object/transaction-connection"
 
 import WalletId from "../scalar/wallet-id"
 
