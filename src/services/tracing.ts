@@ -229,10 +229,10 @@ const recordException = (span: Span, exception: Exception, level?: ErrorLevel) =
 
 export const asyncRunInSpan = <F extends () => ReturnType<F>>(
   spanName: string,
-  attributes: SpanAttributes,
+  options: SpanOptions,
   fn: F,
 ) => {
-  const ret = tracer.startActiveSpan(spanName, { attributes }, async (span) => {
+  const ret = tracer.startActiveSpan(spanName, options, async (span) => {
     try {
       const ret = await Promise.resolve(fn())
       if ((ret as unknown) instanceof Error) {

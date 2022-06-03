@@ -42,8 +42,10 @@ const updateUserIPsInfo = async ({
   asyncRunInSpan(
     "app.users.updateUserIPsInfo",
     {
-      [SemanticAttributes.CODE_FUNCTION]: "updateUserIPsInfo",
-      [SemanticAttributes.CODE_NAMESPACE]: "app.users",
+      attributes: {
+        [SemanticAttributes.CODE_FUNCTION]: "updateUserIPsInfo",
+        [SemanticAttributes.CODE_NAMESPACE]: "app.users",
+      },
     },
     async () => {
       const ipConfig = getIpConfig()

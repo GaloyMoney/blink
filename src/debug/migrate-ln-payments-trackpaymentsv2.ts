@@ -44,10 +44,12 @@ const migrateLnPayment = async (
   asyncRunInSpan(
     "debug.migrateLnPayment",
     {
-      [SemanticAttributes.CODE_FUNCTION]: "migrateLnPayment",
-      [SemanticAttributes.CODE_NAMESPACE]: "debug",
-      "migrateLnPayment.paymentHash":
-        paymentHash instanceof Error ? paymentHash.name : paymentHash,
+      attributes: {
+        [SemanticAttributes.CODE_FUNCTION]: "migrateLnPayment",
+        [SemanticAttributes.CODE_NAMESPACE]: "debug",
+        "migrateLnPayment.paymentHash":
+          paymentHash instanceof Error ? paymentHash.name : paymentHash,
+      },
     },
     async (): Promise<true | LightningServiceError> => {
       if (paymentHash instanceof Error) return paymentHash

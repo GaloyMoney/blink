@@ -34,7 +34,11 @@ const indexRegex = /{"offset":(\d+),"limit":\d+}/
 const main = async () =>
   asyncRunInSpan(
     "debug.migrateLnPaymentsFromLnd",
-    { [SemanticAttributes.CODE_FUNCTION]: "debug.migrateLnPaymentsFromLnd" },
+    {
+      attributes: {
+        [SemanticAttributes.CODE_FUNCTION]: "debug.migrateLnPaymentsFromLnd",
+      },
+    },
     async (): Promise<true | ApplicationError> => {
       const lndService = LndService()
       if (lndService instanceof Error) return lndService
@@ -51,9 +55,11 @@ const main = async () =>
             count = await asyncRunInSpan(
               "debug.migrateLnPaymentsByFunction",
               {
-                [SemanticAttributes.CODE_FUNCTION]: "debug.migrateLnPaymentsByFunction",
-                "migrateLnPaymentsByFunction.iteration": `${listFn.name}:${count}`,
-                "migrateLnPaymentsByFunction.pubkey": pubkey,
+                attributes: {
+                  [SemanticAttributes.CODE_FUNCTION]: "debug.migrateLnPaymentsByFunction",
+                  "migrateLnPaymentsByFunction.iteration": `${listFn.name}:${count}`,
+                  "migrateLnPaymentsByFunction.pubkey": pubkey,
+                },
               },
               async () => {
                 if (count instanceof Error) return count
