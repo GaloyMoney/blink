@@ -135,15 +135,15 @@ const updatePendingPayment = async ({
       const inputAmount = inputAmountFromLedgerTransaction(pendingPayment)
       if (inputAmount instanceof Error) return inputAmount
 
+      const paymentFlowIndex: PaymentFlowStateIndex = {
+        paymentHash,
+        walletId,
+        inputAmount,
+      }
+
       let paymentFlow = await PaymentFlowStateRepository(
         defaultTimeToExpiryInSeconds,
-      ).updatePendingLightningPaymentFlow({
-        senderWalletId: walletId,
-        paymentHash,
-        inputAmount,
-
-        paymentSentAndPending: false,
-      })
+      ).markLightningPaymentFlowNotPending(paymentFlowIndex)
       if (paymentFlow instanceof Error) {
         paymentFlow = await reconstructPendingPaymentFlow(paymentHash)
         if (paymentFlow instanceof Error) return paymentFlow
