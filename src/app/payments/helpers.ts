@@ -197,7 +197,7 @@ export const constructPaymentFlowBuilder = async ({
   return builderWithConversion
 }
 
-const recipientDetailsFromInvoice = async (invoice) => {
+const recipientDetailsFromInvoice = async (invoice: LnInvoice) => {
   const invoicesRepo = WalletInvoicesRepository()
   const walletInvoice = await invoicesRepo.findByPaymentHash(invoice.paymentHash)
   if (walletInvoice instanceof Error) return walletInvoice

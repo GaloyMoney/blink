@@ -36,7 +36,7 @@ const LnInvoicePaymentStatusSubscription = {
     const { paymentRequest } = args.input
     if (paymentRequest instanceof Error) throw paymentRequest
 
-    const paymentStatusChecker = await Lightning.PaymentStatusChecker({ paymentRequest })
+    const paymentStatusChecker = await Lightning.PaymentStatusChecker(paymentRequest)
 
     if (paymentStatusChecker instanceof Error) {
       const lnPaymentStatusTrigger = customPubSubTrigger({
