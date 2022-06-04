@@ -2025,6 +2025,11 @@
     "@types/minimatch" "*"
     "@types/node" "*"
 
+"@types/google-protobuf@^3.15.6":
+  version "3.15.6"
+  resolved "https://registry.yarnpkg.com/@types/google-protobuf/-/google-protobuf-3.15.6.tgz#674a69493ef2c849b95eafe69167ea59079eb504"
+  integrity sha512-pYVNNJ+winC4aek+lZp93sIKxnXt5qMkuKmaqS3WGuTq0Bw1ZDYNBgzG5kkdtwcv+GmYJGo3yEg6z2cKKAiEdw==
+
 "@types/graceful-fs@^4.1.2":
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/@types/graceful-fs/-/graceful-fs-4.1.5.tgz#21ffba0d98da4350db64891f92a9e5db3cdb4e15"
@@ -6407,7 +6412,7 @@ interpret@~1.1.0:
   resolved "https://registry.yarnpkg.com/interpret/-/interpret-1.1.0.tgz#7ed1b1410c6a0e0f78cf95d3b8440c63f78b8614"
   integrity sha1-ftGxQQxqDg94z5XTuEQMY/eLhhQ=
 
-invoices@2.0.6, invoices@^2.0.0:
+invoices@2.0.6, invoices@^2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/invoices/-/invoices-2.0.6.tgz#7b888e199f13696e88f3591f87637adff67030ca"
   integrity sha512-adGV6WmSItMWzuZXmgR2sbaiLKXMg4YTybNgmSc+TsNDCVgTFluJFUWaihyn1ewK483z6/vNZ9VMP2tYw5tMug==

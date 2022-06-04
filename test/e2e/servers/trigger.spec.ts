@@ -93,7 +93,7 @@ describe("onchainBlockEventhandler", () => {
     const amount = toSats(10_000)
     const amount2 = toSats(20_000)
     const blocksToMine = ONCHAIN_MIN_CONFIRMATIONS
-    const scanDepth = ONCHAIN_MIN_CONFIRMATIONS + 1
+    const scanDepth = (ONCHAIN_MIN_CONFIRMATIONS + 1) as ScanDepth
 
     await mineBlockAndSyncAll()
     const result = await Wallets.updateOnChainReceipt({ scanDepth, logger: baseLogger })

@@ -1,22 +1,10 @@
-import { JTDDataType } from "ajv/dist/types/jtd-schema"
-
-export type ConfigSchema = JTDDataType<typeof configSchema>
-export type DisplayCurrencyConfigSchema = JTDDataType<typeof displayCurrencyConfigSchema>
-export type DealerConfigSchema = JTDDataType<typeof dealerConfigSchema>
-
-export type RewardsConfigSchema = {
-  denyPhoneCountries: string[]
-  allowPhoneCountries: string[]
-  denyIPCountries: string[]
-  allowIPCountries: string[]
-  denyASNs: string[]
-  allowASNs: string[]
-}
+import { AccountStatus } from "@domain/accounts/const"
+import { DisplayCurrency } from "@domain/fiat"
 
 const displayCurrencyConfigSchema = {
   type: "object",
   properties: {
-    code: { type: "string", default: "USD" },
+    code: { type: "string", default: "USD", enum: Object.values(DisplayCurrency) },
     symbol: { type: "string", default: "$" },
   },
   required: ["code", "symbol"],
@@ -161,6 +149,7 @@ export const configSchema = {
         minRebalanceSize: { type: "number" },
         maxHotWalletBalance: { type: "number" },
         walletPattern: { type: "string" },
+        // TODO: confusing: 2 properties with the same name
         onChainWallet: { type: "string" },
         targetConfirmations: { type: "number" },
       },
@@ -223,7 +212,7 @@ export const configSchema = {
     accounts: {
       type: "object",
       properties: {
-        initialStatus: { type: "string" },
+        initialStatus: { type: "string", enum: Object.values(AccountStatus) },
       },
       required: ["initialStatus"],
       additionalProperties: false,
@@ -278,6 +267,8 @@ export const configSchema = {
           properties: {
             method: {
               type: "string",
+              // TODO: enum or pattern?
+              // items: { enum: ["flat", "proportionalOnImbalance"] },
               pattern: "^flat$|^proportionalOnImbalance$",
             },
             ratio: { type: "number" },
@@ -300,11 +291,11 @@ export const configSchema = {
     onChainWallet: {
       type: "object",
       properties: {
-        dustThreshold: { type: "number" },
-        minConfirmations: { type: "number" },
-        scanDepth: { type: "number" },
-        scanDepthOutgoing: { type: "number" },
-        scanDepthChannelUpdate: { type: "number" },
+        dustThreshold: { type: "integer" },
+        minConfirmations: { type: "integer" },
+        scanDepth: { type: "integer" }, // TODO: improve naming
+        scanDepthOutgoing: { type: "integer" },
+        scanDepthChannelUpdate: { type: "integer" },
       },
       required: [
         "dustThreshold",

@@ -27,7 +27,7 @@ const walletInvoiceSchema = new Schema({
     required: true,
     type: String,
     validate: {
-      validator: function (v) {
+      validator: function (v: string) {
         return v.match(WalletIdRegex)
       },
     },

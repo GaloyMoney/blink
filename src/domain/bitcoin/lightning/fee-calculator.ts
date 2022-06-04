@@ -5,7 +5,7 @@ export const LnFeeCalculator = (
     feeCapPercent,
   }: // feeMin,
   {
-    feeCapPercent
+    feeCapPercent: number
     // feeMin: Satoshis
   } = {
     feeCapPercent: FEECAP_PERCENT,

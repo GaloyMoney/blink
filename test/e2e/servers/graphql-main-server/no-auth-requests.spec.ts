@@ -1,4 +1,4 @@
-import { yamlConfig, JWT_SECRET } from "@config"
+import { JWT_SECRET } from "@config"
 import * as jwt from "jsonwebtoken"
 
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
@@ -12,21 +12,22 @@ import {
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
-import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
+import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import MAIN from "./queries/main.gql"
 
 import {
   clearAccountLocks,
-  clearLimitersWithExclusions,
-  startServer,
-  killServer,
-  createApolloClient,
-  defaultTestClientConfig,
-  PID,
-  initializeTestingState,
-  defaultStateConfig,
   clearLimiters,
+  clearLimitersWithExclusions,
+  createApolloClient,
+  defaultStateConfig,
+  defaultTestClientConfig,
+  getPhoneAndCodeFromRef,
+  initializeTestingState,
+  killServer,
+  PID,
+  startServer,
 } from "test/helpers"
 
 let correctCode: PhoneCode,
@@ -34,7 +35,7 @@ let correctCode: PhoneCode,
   disposeClient: () => void = () => null,
   serverPid: PID
 
-const { phone, code } = yamlConfig.test_accounts.find((item) => item.ref === "G")
+const { phone, code } = getPhoneAndCodeFromRef("G")
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())

@@ -10,6 +10,10 @@ beforeEach(async () => {
   yamlConfig.rewards = {
     denyPhoneCountries: ["in"],
     allowPhoneCountries: ["sv", "US"],
+    denyIPCountries: [],
+    allowIPCountries: [],
+    denyASNs: [],
+    allowASNs: [],
   }
 })
 

@@ -116,7 +116,7 @@ export async function onchainTransactionEventHandler(
 }
 
 export async function onchainBlockEventhandler({ height }) {
-  const scanDepth = ONCHAIN_MIN_CONFIRMATIONS + 1
+  const scanDepth = (ONCHAIN_MIN_CONFIRMATIONS + 1) as ScanDepth
   const txNumber = await Wallets.updateOnChainReceipt({ scanDepth, logger })
   if (txNumber instanceof Error) {
     logger.error(
