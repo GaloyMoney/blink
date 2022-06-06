@@ -24,7 +24,7 @@ export const sendDefaultWalletBalanceToUsers = async (logger: Logger) => {
       balance,
       walletCurrency: wallet.currency,
       userId: account.ownerId,
-      price,
+      displayCurrencyPerSat: price instanceof Error ? undefined : price,
     })
   }
 

@@ -15,12 +15,15 @@ import { TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
-import { getTitleBitcoin } from "@services/notifications/payment"
+import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
+import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { sleep } from "@utils"
 
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
 import { getCurrentPrice } from "@app/prices"
+
+import { WalletCurrency } from "@domain/shared"
 
 import {
   amountAfterFeeDeduction,
@@ -50,11 +53,8 @@ let accountIdA: AccountId
 
 const accountLimits = getAccountLimits({ level: 1 })
 
-jest.mock("@services/notifications/notification")
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { sendNotification } = require("@services/notifications/notification")
 const locale = getLocale()
-const { symbol: fiatSymbol } = getDisplayCurrencyConfig()
+const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -232,6 +232,13 @@ describe("UserWallet - On chain", () => {
   })
 
   it("identifies unconfirmed incoming on-chain transactions", async () => {
+    const sendNotification = jest.fn()
+    jest
+      .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+      .mockImplementationOnce(() => ({
+        sendNotification,
+      }))
+
     const amountSats = getRandomAmountOfSats()
 
     const address = await Wallets.createOnChainAddress(walletIdA)
@@ -266,46 +273,33 @@ describe("UserWallet - On chain", () => {
 
     await sleep(1000)
 
-    expect(sendNotification.mock.calls.length).toBe(1)
-    expect(sendNotification.mock.calls[0][0].data.type).toBe(
-      NotificationType.OnchainReceiptPending,
-    )
-
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
-    const fiatAmount = (amountSats * satsPrice).toLocaleString(locale, {
-      maximumFractionDigits: 2,
+
+    const paymentAmount = { amount: BigInt(amountSats), currency: WalletCurrency.Btc }
+    const displayPaymentAmount = {
+      amount: amountSats * satsPrice,
+      currency: DefaultDisplayCurrency,
+    }
+
+    const pendingNotification = createPushNotificationContent({
+      type: NotificationType.OnchainReceiptPending,
+      userLanguage: locale as UserLanguage,
+      paymentAmount,
+      displayPaymentAmount,
     })
 
-    expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitleBitcoin({
-        type: NotificationType.OnchainReceiptPending,
-        locale,
-        fiatSymbol,
-        fiatAmount,
-        satsAmount: amountSats + "",
-      }),
-    )
+    expect(sendNotification.mock.calls.length).toBe(1)
+    expect(sendNotification.mock.calls[0][0].title).toBe(pendingNotification.title)
+    expect(sendNotification.mock.calls[0][0].body).toBe(pendingNotification.body)
 
     await Promise.all([
-      bitcoindOutside.generateToAddress({ nblocks: 3, address: RANDOM_ADDRESS }),
       once(sub, "chain_transaction"),
+      bitcoindOutside.generateToAddress({ nblocks: 3, address: RANDOM_ADDRESS }),
     ])
 
     await sleep(3000)
     sub.removeAllListeners()
-
-    // import util from 'util'
-    // baseLogger.debug(util.inspect(sendNotification.mock.calls, false, Infinity))
-    // FIXME: the event is actually fired twice.
-    // is it a lnd issue?
-    // a workaround: use a hash of the event and store in redis
-    // to not replay if it has already been handled?
-    //
-    // expect(notification.sendNotification.mock.calls.length).toBe(2)
-    // expect(notification.sendNotification.mock.calls[1][0].data.type).toBe(NotificationType.OnchainReceipt)
-    // expect(notification.sendNotification.mock.calls[1][0].title).toBe(
-    //   `Your wallet has been credited with ${btc2sat(amountSats)} sats`)
   })
 
   it("allows fee exemption for specific users", async () => {

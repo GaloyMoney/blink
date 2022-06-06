@@ -2,11 +2,13 @@ import { Prices, Wallets } from "@app"
 import { getDisplayCurrencyConfig, getLocale, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
+import { WalletCurrency } from "@domain/shared"
 import { TxStatus } from "@domain/wallets"
 import { onchainBlockEventhandler, onInvoiceUpdate } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
-import { getTitleBitcoin } from "@services/notifications/payment"
+import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
+import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { sleep } from "@utils"
 
 import {
@@ -16,7 +18,6 @@ import {
   getDefaultWalletIdByTestUserRef,
   getHash,
   getInvoice,
-  getUserIdByTestUserRef,
   getUserRecordByTestUserRef,
   lnd1,
   lndOutside1,
@@ -31,22 +32,15 @@ import {
 } from "test/helpers"
 import { getBalanceHelper } from "test/helpers/wallet"
 
-jest.mock("@services/notifications/notification")
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { sendNotification } = require("@services/notifications/notification")
-
 let walletIdA: WalletId
 let walletIdD: WalletId
 let walletIdF: WalletId
-
-let userIdF: UserId
 
 let userRecordA: UserRecord
 let userRecordD: UserRecord
 
 const locale = getLocale()
-const { symbol: fiatSymbol } = getDisplayCurrencyConfig()
+const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
@@ -54,8 +48,6 @@ beforeAll(async () => {
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   walletIdD = await getDefaultWalletIdByTestUserRef("D")
   walletIdF = await getDefaultWalletIdByTestUserRef("F")
-
-  userIdF = await getUserIdByTestUserRef("F")
 
   userRecordA = await getUserRecordByTestUserRef("A")
   userRecordD = await getUserRecordByTestUserRef("D")
@@ -194,6 +186,13 @@ describe("onchainBlockEventhandler", () => {
   })
 
   it("should process pending invoices on invoice update event", async () => {
+    const sendNotification = jest.fn()
+    jest
+      .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+      .mockImplementation(() => ({
+        sendNotification,
+      }))
+
     const sats = toSats(500)
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
@@ -223,22 +222,22 @@ describe("onchainBlockEventhandler", () => {
 
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
-    const fiatAmount = (sats * satsPrice).toLocaleString(locale, {
-      maximumFractionDigits: 2,
+
+    const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+    const displayPaymentAmount = {
+      amount: sats * satsPrice,
+      currency: DefaultDisplayCurrency,
+    }
+
+    const { title, body } = createPushNotificationContent({
+      type: NotificationType.LnInvoicePaid,
+      userLanguage: locale as UserLanguage,
+      paymentAmount,
+      displayPaymentAmount,
     })
 
-    expect(sendNotification.mock.calls[0][0].title).toBe(
-      getTitleBitcoin({
-        type: NotificationType.LnInvoicePaid,
-        locale,
-        fiatSymbol,
-        fiatAmount,
-        satsAmount: sats + "",
-      }),
-    )
-    expect(sendNotification.mock.calls[0][0].user.id).toStrictEqual(userIdF)
-    expect(sendNotification.mock.calls[0][0].data.type).toBe(
-      NotificationType.LnInvoicePaid,
-    )
+    expect(sendNotification.mock.calls.length).toBe(1)
+    expect(sendNotification.mock.calls[0][0].title).toBe(title)
+    expect(sendNotification.mock.calls[0][0].body).toBe(body)
   })
 })

@@ -1,4 +1,4 @@
-import { getLocale, getDisplayCurrencyConfig, getI18nInstance } from "@config"
+import { getDisplayCurrencyConfig } from "@config"
 import { toSats } from "@domain/bitcoin"
 import { NotImplementedError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
@@ -13,15 +13,15 @@ import {
 import { PubSubService } from "@services/pubsub"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
-import { sendNotification } from "./notification"
-import { transactionBitcoinNotification, transactionUsdNotification } from "./payment"
+import { PushNotificationsService } from "./push-notifications"
+import { createPushNotificationContent } from "./create-push-notification-content"
 
-const i18n = getI18nInstance()
-const defaultLocale = getLocale()
-const { symbol: fiatSymbol } = getDisplayCurrencyConfig()
+const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 export const NotificationsService = (logger: Logger): INotificationsService => {
   const pubsub = PubSubService()
+  const pushNotification = PushNotificationsService()
+
   const sendOnChainNotification = async ({
     type,
     sats,
@@ -48,14 +48,26 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const user = await UsersRepository().findById(account.ownerId)
       if (user instanceof Error) return user
 
-      // Do not await this call for quicker processing
-      transactionBitcoinNotification({
+      const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+      const displayPaymentAmount = displayCurrencyPerSat
+        ? {
+            amount: sats * (displayCurrencyPerSat || 0),
+            currency: DefaultDisplayCurrency,
+          }
+        : undefined
+
+      const { title, body } = createPushNotificationContent({
         type,
-        user,
-        logger,
-        sats,
-        txHash,
-        displayCurrencyPerSat,
+        userLanguage: user.language,
+        paymentAmount,
+        displayPaymentAmount,
+      })
+
+      // Do not await this call for quicker processing
+      pushNotification.sendNotification({
+        deviceToken: user.deviceTokens,
+        title,
+        body,
       })
 
       // Notify the recipient (via GraphQL subscription if any)
@@ -138,14 +150,26 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const user = await UsersRepository().findById(account.ownerId)
       if (user instanceof Error) return user
 
-      // Do not await this call for quicker processing
-      transactionBitcoinNotification({
+      const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+      const displayPaymentAmount = displayCurrencyPerSat
+        ? {
+            amount: Number(paymentAmount.amount) * (displayCurrencyPerSat || 0),
+            currency: DefaultDisplayCurrency,
+          }
+        : undefined
+
+      const { title, body } = createPushNotificationContent({
         type: NotificationType.LnInvoicePaid,
-        user,
-        logger,
-        sats: toSats(Number(sats)),
-        paymentHash,
-        displayCurrencyPerSat,
+        userLanguage: user.language,
+        paymentAmount,
+        displayPaymentAmount,
+      })
+
+      // Do not await this call for quicker processing
+      pushNotification.sendNotification({
+        deviceToken: user.deviceTokens,
+        title,
+        body,
       })
 
       // Notify public subscribers (via GraphQL subscription if any)
@@ -182,7 +206,6 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     paymentHash,
     recipientWalletId,
     cents,
-    displayCurrencyPerSat,
   }: LnInvoicePaidUsdWalletArgs) => {
     try {
       const wallet = await WalletsRepository().findById(recipientWalletId)
@@ -194,14 +217,19 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const user = await UsersRepository().findById(account.ownerId)
       if (user instanceof Error) return user
 
-      // Do not await this call for quicker processing
-      transactionUsdNotification({
+      const paymentAmount = { amount: BigInt(cents), currency: WalletCurrency.Usd }
+
+      const { title, body } = createPushNotificationContent({
         type: NotificationType.LnInvoicePaid,
-        user,
-        logger,
-        cents: toCents(Number(cents)),
-        paymentHash,
-        displayCurrencyPerSat,
+        userLanguage: user.language,
+        paymentAmount,
+      })
+
+      // Do not await this call for quicker processing
+      pushNotification.sendNotification({
+        deviceToken: user.deviceTokens,
+        title,
+        body,
       })
 
       // Notify public subscribers (via GraphQL subscription if any)
@@ -285,13 +313,30 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const user = await UsersRepository().findById(account.ownerId)
         if (user instanceof Error) return user
 
+        const paymentAmount = {
+          amount: BigInt(amount),
+          currency: WalletCurrency.Btc,
+        }
+
+        const displayPaymentAmount = displayCurrencyPerSat
+          ? {
+              amount: amount * (displayCurrencyPerSat || 0),
+              currency: DefaultDisplayCurrency,
+            }
+          : undefined
+
+        const { title, body } = createPushNotificationContent({
+          type,
+          userLanguage: user.language,
+          paymentAmount,
+          displayPaymentAmount,
+        })
+
         // Do not await this call for quicker processing
-        transactionBitcoinNotification({
-          type: NotificationType.IntraLedgerPayment,
-          user,
-          logger,
-          sats: amount,
-          displayCurrencyPerSat,
+        pushNotification.sendNotification({
+          deviceToken: user.deviceTokens,
+          title,
+          body,
         })
       }
 
@@ -349,13 +394,26 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const user = await UsersRepository().findById(account.ownerId)
         if (user instanceof Error) return user
 
+        const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
+        const displayPaymentAmount = displayCurrencyPerSat
+          ? {
+              amount: Number(paymentAmount.amount) * (displayCurrencyPerSat || 0),
+              currency: DefaultDisplayCurrency,
+            }
+          : undefined
+
+        const { title, body } = createPushNotificationContent({
+          type,
+          userLanguage: user.language,
+          paymentAmount,
+          displayPaymentAmount,
+        })
+
         // Do not await this call for quicker processing
-        transactionBitcoinNotification({
-          type: NotificationType.IntraLedgerPayment,
-          user,
-          logger,
-          sats: toSats(Number(sats)),
-          displayCurrencyPerSat,
+        pushNotification.sendNotification({
+          deviceToken: user.deviceTokens,
+          title,
+          body,
         })
       }
 
@@ -413,13 +471,19 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const user = await UsersRepository().findById(account.ownerId)
         if (user instanceof Error) return user
 
+        const paymentAmount = { amount: BigInt(cents), currency: WalletCurrency.Usd }
+
+        const { title, body } = createPushNotificationContent({
+          type,
+          userLanguage: user.language,
+          paymentAmount,
+        })
+
         // Do not await this call for quicker processing
-        transactionUsdNotification({
-          type: NotificationType.IntraLedgerPayment,
-          user,
-          logger,
-          cents: toCents(Number(cents)),
-          displayCurrencyPerSat,
+        pushNotification.sendNotification({
+          deviceToken: user.deviceTokens,
+          title,
+          body,
         })
       }
 
@@ -441,63 +505,39 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     balance,
     walletCurrency,
     userId,
-    price,
-  }: {
-    balance: CurrencyBaseAmount
-    walletCurrency: WalletCurrency
-    userId: UserId
-    price: DisplayCurrencyPerSat | ApplicationError
-  }): Promise<void | NotImplementedError> => {
-    if (walletCurrency === WalletCurrency.Usd) {
-      return new NotImplementedError("sendBalance works with sats")
-    }
-
+    displayCurrencyPerSat,
+  }: SendBalanceArgs): Promise<void | NotImplementedError> => {
     const user = await UsersRepository().findById(userId)
     if (user instanceof Error) {
       logger.warn({ user }, "impossible to fetch user to send transaction")
       return
     }
 
-    const locale = user.language || defaultLocale
-    const satsBalance = toSats(balance)
+    const paymentAmount = { amount: BigInt(balance), currency: walletCurrency }
+    const displayPaymentAmount = displayCurrencyPerSat
+      ? {
+          amount: balance * (displayCurrencyPerSat || 0),
+          currency: DefaultDisplayCurrency,
+        }
+      : undefined
 
-    // Add commas to balancesats
-    const satsBalanceFormatted = satsBalance.toLocaleString(locale)
-
-    let fiatBalanceFormatted = ""
-    let title: string
-    if (price instanceof Error) {
-      logger.warn({ price }, "impossible to fetch price for notification")
-
-      title = i18n.__(
-        { phrase: "notification.balance.sats", locale },
-        { satsBalance: satsBalanceFormatted },
-      )
-    } else {
-      const fiatValue = price * satsBalance
-      fiatBalanceFormatted = fiatValue.toLocaleString(locale, {
-        maximumFractionDigits: 2,
-      })
-
-      title = i18n.__(
-        { phrase: "notification.balance.fiat", locale },
-        {
-          fiatSymbol,
-          fiatAmount: fiatBalanceFormatted,
-          satsAmount: satsBalanceFormatted,
-        },
-      )
-    }
+    const { title, body } = createPushNotificationContent({
+      type: "balance",
+      userLanguage: user.language,
+      paymentAmount,
+      displayPaymentAmount,
+    })
 
     logger.info(
-      { fiatBalanceFormatted, satsBalanceFormatted, title, userId, locale },
+      { userId, locale: user.language, balance, title, body },
       `sending balance notification to user`,
     )
 
-    await sendNotification({
-      user,
+    // Do not await this call for quicker processing
+    pushNotification.sendNotification({
+      deviceToken: user.deviceTokens,
       title,
-      logger,
+      body,
     })
   }
 

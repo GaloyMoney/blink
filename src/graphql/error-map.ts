@@ -335,6 +335,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "OnChainServiceUnavailableError":
     case "NotificationsError":
     case "NotificationsServiceError":
+    case "InvalidDeviceNotificationsServiceError":
+    case "UnknownNotificationsServiceError":
     case "AccountError":
     case "IpFetcherError":
     case "IpFetcherServiceError":

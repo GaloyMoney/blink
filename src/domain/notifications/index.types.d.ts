@@ -26,7 +26,6 @@ type LnInvoicePaidUsdWalletArgs = {
   paymentHash: PaymentHash
   recipientWalletId: WalletId
   cents: UsdCents | bigint
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
 }
 
 type IntraLedgerArgs = {
@@ -54,7 +53,7 @@ type SendBalanceArgs = {
   balance: CurrencyBaseAmount
   walletCurrency: WalletCurrency
   userId: UserId
-  price: DisplayCurrencyPerSat | ApplicationError
+  displayCurrencyPerSat?: DisplayCurrencyPerSat
 }
 
 interface INotificationsService {

@@ -16,6 +16,10 @@ start-trigger: start-deps
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/trigger.ts | yarn pino-pretty -c -l
 
+start-cron: start-deps
+	. ./.envrc && yarn tsnd --files -r tsconfig-paths/register -r src/services/tracing.ts \
+		src/servers/cron.ts | yarn pino-pretty -c -l
+
 start: start-deps
 	make start-main & make start-admin & make start-trigger
 

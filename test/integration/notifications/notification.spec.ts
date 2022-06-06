@@ -1,3 +1,4 @@
+import { getDisplayCurrencyConfig } from "@config"
 import { Prices } from "@app"
 import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { sendDefaultWalletBalanceToUsers } from "@app/accounts/send-default-wallet-balance-to-users"
@@ -5,12 +6,13 @@ import { toSats } from "@domain/bitcoin"
 import * as serviceLedger from "@services/ledger"
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
+import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
+import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+import { UsersRepository, WalletsRepository } from "@services/mongoose"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
-jest.mock("@services/notifications/notification")
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { sendNotification } = require("@services/notifications/notification")
+const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 let price, spy
 
@@ -37,6 +39,11 @@ afterAll(() => {
 describe("notification", () => {
   describe("sendNotification", () => {
     it("sends daily balance to active users", async () => {
+      const sendNotification = jest.fn()
+      jest
+        .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+        .mockImplementation(() => ({ sendNotification }))
+
       await sendDefaultWalletBalanceToUsers(baseLogger)
       const activeAccounts = await getRecentlyActiveAccounts()
       if (activeAccounts instanceof Error) throw activeAccounts
@@ -45,22 +52,34 @@ describe("notification", () => {
       expect(sendNotification.mock.calls.length).toBeGreaterThan(0)
       expect(sendNotification.mock.calls.length).toBe(activeAccounts.length)
 
-      const localeOpts = { maximumFractionDigits: 2 }
-
       for (let i = 0; i < activeAccounts.length; i++) {
         const [call] = sendNotification.mock.calls[i]
-        const { id, defaultWalletId } = activeAccounts[i]
-        expect(id).toBe(call.user.defaultAccountId)
+        const { defaultWalletId, ownerId } = activeAccounts[i]
+
+        const user = await UsersRepository().findById(ownerId)
+        if (user instanceof Error) throw user
+
+        const wallet = await WalletsRepository().findById(defaultWalletId)
+        if (wallet instanceof Error) throw wallet
 
         const balance = await LedgerService().getWalletBalance(defaultWalletId)
         if (balance instanceof Error) throw balance
 
-        const expectedUsdBalance = (price * balance).toLocaleString("en", localeOpts)
-        const expectedSatsBalance = balance.toLocaleString("en", localeOpts)
+        const paymentAmount = { amount: BigInt(balance), currency: wallet.currency }
+        const displayPaymentAmount = {
+          amount: balance * price,
+          currency: DefaultDisplayCurrency,
+        }
 
-        expect(call.title).toBe(
-          `Your balance is $${expectedUsdBalance} (${expectedSatsBalance} sats)`,
-        )
+        const { title, body } = createPushNotificationContent({
+          type: "balance",
+          userLanguage: user.language,
+          paymentAmount,
+          displayPaymentAmount,
+        })
+
+        expect(call.title).toBe(title)
+        expect(call.body).toBe(body)
       }
     })
   })

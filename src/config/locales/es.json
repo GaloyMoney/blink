@@ -1,33 +1,54 @@
 {
+  "currency": {
+    "BTC": {
+      "name": "sats",
+      "symbol": ""
+    },
+    "CRC": {
+      "name": "colones",
+      "symbol": "₡"
+    },
+    "USD": {
+      "name": "",
+      "symbol": "$"
+    }
+  },
   "notification": {
     "balance": {
-      "fiat": "Su balance es {{fiatSymbol}}{{fiatAmount}} ({{satsAmount}} sats)",
-      "sats": "Su balance es {{satsAmount}} sats"
+      "body": "Su balance es {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+      "bodyDisplayCurrency": "Su balance es {{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} ({{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}})",
+      "title": "Balance {{walletCurrency}}"
     },
-    "btcPayments": {
+    "transaction": {
       "intra_ledger_payment": {
-        "fiat": "Pago enviado por {{fiatSymbol}}{{fiatAmount}} | {{satsAmount}} sats",
-        "sats": "Pago enviado por {{satsAmount}} sats"
+        "body": "Pago enviado por {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "bodyDisplayCurrency": "Pago enviado por {{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} | {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "title": "Transacción {{walletCurrency}}"
       },
       "intra_ledger_receipt": {
-        "fiat": "+{{fiatSymbol}}{{fiatAmount}} | {{satsAmount}} sats",
-        "sats": "+{{satsAmount}} sats"
+        "body": "+{{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "bodyDisplayCurrency": "+{{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} | {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "title": "Transacción {{walletCurrency}}"
       },
       "onchain_payment": {
-        "fiat": "Pago onchain por +{{fiatSymbol}}{{fiatAmount}} | {{satsAmount}} sats confirmado",
-        "sats": "Pago onchain por {{satsAmount}} sats confirmado"
+        "body": "Pago onchain por {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}} confirmado",
+        "bodyDisplayCurrency": "Pago onchain por +{{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} | {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}} confirmado",
+        "title": "Transacción {{walletCurrency}}"
       },
       "onchain_receipt": {
-        "fiat": "+{{fiatSymbol}}{{fiatAmount}} | {{satsAmount}} sats",
-        "sats": "+{{satsAmount}} sats"
+        "body": "+{{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "bodyDisplayCurrency": "+{{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} | {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "title": "Transacción {{walletCurrency}}"
       },
       "onchain_receipt_pending": {
-        "fiat": "pendiente +{{fiatSymbol}}{{fiatAmount}} | {{satsAmount}} sats",
-        "sats": "pendiente +{{satsAmount}} sats"
+        "body": "pendiente +{{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "bodyDisplayCurrency": "pendiente +{{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} | {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "title": "Transacción {{walletCurrency}} | Pendiente por confirmar"
       },
       "paid-invoice": {
-        "fiat": "+{{fiatSymbol}}{{fiatAmount}} | {{satsAmount}} sats",
-        "sats": "+{{satsAmount}} sats"
+        "body": "+{{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "bodyDisplayCurrency": "+{{displayCurrencySymbol}}{{displayCurrencyAmount}}{{displayCurrencyName}} | {{baseCurrencySymbol}}{{baseCurrencyAmount}}{{baseCurrencyName}}",
+        "title": "Transacción {{walletCurrency}}"
       }
     }
   }
