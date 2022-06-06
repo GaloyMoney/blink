@@ -17,7 +17,11 @@ import {
   LedgerServiceError,
   UnknownLedgerError,
 } from "@domain/ledger/errors"
-import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  BigIntFloatConversionError,
+  ErrorLevel,
+  paymentAmountFromNumber,
+} from "@domain/shared"
 import { toObjectId } from "@services/mongoose/utils"
 import {
   recordExceptionInCurrentSpan,
@@ -236,10 +240,27 @@ export const LedgerService = (): ILedgerService => {
           })
         }
       }
-      return paymentAmountFromNumber({
+
+      const balanceAmount = paymentAmountFromNumber({
         amount: balance,
         currency: walletDescriptor.currency,
       })
+      // FIXME: correct database entries in staging/prod to remove this check
+      if (balanceAmount instanceof BigIntFloatConversionError) {
+        recordExceptionInCurrentSpan({
+          error: balanceAmount,
+          level: ErrorLevel.Critical,
+          attributes: {
+            ["error.message"]: `Inconsistent float balance from db: ${balance}`,
+          },
+        })
+        return paymentAmountFromNumber({
+          amount: Math.floor(balance),
+          currency: walletDescriptor.currency,
+        })
+      }
+
+      return balanceAmount
     } catch (err) {
       return new UnknownLedgerError(err)
     }
