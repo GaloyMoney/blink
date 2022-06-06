@@ -8,22 +8,13 @@ import {
   InvalidWithdrawFeeError,
 } from "@domain/errors"
 
+import { AccountStatus } from "./primitives"
+
 export * from "./errors"
 export * from "./limits-checker"
 export * from "./new-limits-checker"
 export * from "./account-validator"
-
-export const AccountLevel = {
-  One: 1,
-  Two: 2,
-} as const
-
-export const AccountStatus = {
-  New: "new",
-  Pending: "pending",
-  Active: "active",
-  Locked: "locked",
-} as const
+export * from "./primitives"
 
 export const checkedCoordinates = ({
   latitude,

@@ -14,17 +14,14 @@ import { toCents } from "@domain/fiat"
 
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
-import {
-  ConfigSchema,
-  configSchema,
-  DealerConfigSchema,
-  RewardsConfigSchema,
-} from "./schema"
+import { toDays, toSeconds } from "@domain/primitives"
+
+import { configSchema } from "./schema"
 import { ConfigError } from "./error"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 const defaultConfig = yaml.load(defaultContent)
-let customContent, customConfig
+let customContent: string, customConfig
 
 try {
   customContent = fs.readFileSync("/var/yaml/custom.yaml", "utf8")
@@ -33,29 +30,34 @@ try {
   baseLogger.info({ err }, "no custom.yaml available. using default values")
 }
 
-export const yamlConfig = merge(defaultConfig, customConfig)
+export const yamlConfigInit = merge(defaultConfig, customConfig)
 
 const ajv = new Ajv()
 
 // TODO: fix errors
 // const ajv = new Ajv({ allErrors: true, strict: "log" })
 
-const validate = ajv.compile<ConfigSchema>(configSchema)
-const valid = validate(yamlConfig)
+const validate = ajv.compile<YamlSchema>(configSchema)
+const valid = validate(yamlConfigInit)
 if (!valid) {
   baseLogger.error({ validationErrors: validate.errors }, "Invalid yaml configuration")
   throw new ConfigError("Invalid yaml configuration", validate.errors)
 }
+export const yamlConfig = yamlConfigInit as YamlSchema
 
 export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.spamLimits.memoSharingSatsThreshold
 
-export const ONCHAIN_MIN_CONFIRMATIONS = yamlConfig.onChainWallet.minConfirmations
 // how many block are we looking back for getChainTransactions
 const getOnChainScanDepth = (val: number): ScanDepth => {
   const scanDepth = checkedToScanDepth(val)
   if (scanDepth instanceof Error) throw scanDepth
   return scanDepth
 }
+
+export const ONCHAIN_MIN_CONFIRMATIONS = getOnChainScanDepth(
+  yamlConfig.onChainWallet.minConfirmations,
+)
+
 export const ONCHAIN_SCAN_DEPTH = getOnChainScanDepth(yamlConfig.onChainWallet.scanDepth)
 export const ONCHAIN_SCAN_DEPTH_OUTGOING = getOnChainScanDepth(
   yamlConfig.onChainWallet.scanDepthOutgoing,
@@ -85,11 +87,11 @@ export const getDisplayCurrencyConfig = (): {
   code: DisplayCurrency
   symbol: string
 } => ({
-  code: yamlConfig.displayCurrency.code,
+  code: yamlConfig.displayCurrency.code as DisplayCurrency,
   symbol: yamlConfig.displayCurrency.symbol,
 })
 
-export const getDealerConfig = (): DealerConfigSchema => yamlConfig.dealer
+export const getDealerConfig = () => yamlConfig.dealer
 
 export const getLndParams = (): LndParams[] => {
   const lnds = yamlConfig.lnds
@@ -103,29 +105,47 @@ export const getLndParams = (): LndParams[] => {
     })
   })
 
-  return lnds.map((input) => ({
-    cert: process.env[`${input.name}_TLS`],
-    macaroon: process.env[`${input.name}_MACAROON`],
-    node: process.env[`${input.name}_DNS`],
-    port: process.env[`${input.name}_RPCPORT`] ?? 10009,
-    pubkey: process.env[`${input.name}_PUBKEY`],
-    priority: 1, // will be overridden if present in the yaml
-    ...input,
-  }))
+  return lnds.map((input) => {
+    const cert = process.env[`${input.name}_TLS`]
+    if (!cert) throw new ConfigError(`missing TLS for ${input.name}`)
+
+    const macaroon = process.env[`${input.name}_MACAROON`]
+    if (!macaroon) throw new ConfigError(`missing macaroon for ${input.name}`)
+
+    const node = process.env[`${input.name}_DNS`]
+    if (!node) throw new ConfigError(`missing DNS for ${input.name}`)
+
+    const pubkey = process.env[`${input.name}_PUBKEY`]
+    if (!pubkey) throw new ConfigError(`missing PUBKEY for ${input.name}`)
+
+    const port = process.env[`${input.name}_RPCPORT`] ?? 10009
+    const type = input.type.map((item) => item as NodeType)
+    const priority = input.priority
+
+    return {
+      cert,
+      macaroon,
+      node,
+      port,
+      pubkey,
+      type,
+      priority,
+    }
+  })
 }
 
 export const getFeesConfig = (feesConfig = yamlConfig.fees): FeesConfig => {
-  const withdrawMethod = WithdrawalFeePriceMethod[feesConfig.withdraw.method]
+  const method = feesConfig.withdraw.method as WithdrawalFeePriceMethod
   const withdrawRatio =
-    withdrawMethod === WithdrawalFeePriceMethod.flat ? 0 : feesConfig.withdraw.ratio
+    method === WithdrawalFeePriceMethod.flat ? 0 : feesConfig.withdraw.ratio
 
   return {
     depositFeeVariable: feesConfig.deposit,
     depositFeeFixed: toSats(0),
-    withdrawMethod,
+    withdrawMethod: method,
     withdrawRatio,
-    withdrawThreshold: feesConfig.withdraw.threshold,
-    withdrawDaysLookback: feesConfig.withdraw.daysLookback,
+    withdrawThreshold: toSats(feesConfig.withdraw.threshold),
+    withdrawDaysLookback: toDays(feesConfig.withdraw.daysLookback),
     withdrawDefaultMin: toSats(feesConfig.withdraw.defaultMin),
   }
 }
@@ -135,8 +155,8 @@ export const getAccountLimits = ({
   accountLimits = yamlConfig.accountLimits,
 }: AccountLimitsArgs): IAccountLimits => {
   return {
-    intraLedgerLimit: accountLimits.intraLedger.level[level],
-    withdrawalLimit: accountLimits.withdrawal.level[level],
+    intraLedgerLimit: toCents(accountLimits.intraLedger.level[level]),
+    withdrawalLimit: toCents(accountLimits.withdrawal.level[level]),
   }
 }
 
@@ -144,15 +164,15 @@ export const getTwoFALimits = (): TwoFALimits => ({
   threshold: toCents(yamlConfig.twoFALimits.threshold),
 })
 
-const getRateLimits = (config): RateLimitOptions => {
+const getRateLimits = (config: RateLimitInput): RateLimitOptions => {
   /**
    * Returns a subset of the required parameters for the
    * 'rate-limiter-flexible.RateLimiterRedis' object.
    */
   return {
     points: config.points,
-    duration: config.duration,
-    blockDuration: config.blockDuration,
+    duration: toSeconds(config.duration),
+    blockDuration: toSeconds(config.blockDuration),
   }
 }
 
@@ -169,7 +189,7 @@ export const getFailedLoginAttemptPerPhoneLimits = () =>
   getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerPhone)
 
 export const getfailedLoginAttemptPerEmailAddressLimits = () =>
-  getRateLimits(yamlConfig.rateLimits.failedLoginAttemptEmailAddress)
+  getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerEmailAddress)
 
 export const getFailedLoginAttemptPerIpLimits = () =>
   getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerIp)
@@ -233,14 +253,19 @@ export const getTwoFAConfig = (config = yamlConfig): TwoFAConfig => config.twoFA
 export const LND_SCB_BACKUP_BUCKET_NAME = yamlConfig.lndScbBackupBucketName
 
 export const getTestAccounts = (config = yamlConfig): TestAccount[] =>
-  config.test_accounts
+  config.test_accounts.map((account) => ({
+    phone: account.phone as PhoneNumber,
+    code: account.code as PhoneCode,
+    username: account.username as Username,
+    role: account.role,
+  }))
 
 export const getCronConfig = (config = yamlConfig): CronConfig => config.cronConfig
 export const getKratosConfig = (config = yamlConfig): KratosConfig => config.kratosConfig
 
 export const getCaptcha = (config = yamlConfig): CaptchaConfig => config.captcha
 
-export const getRewardsConfig = (): RewardsConfigSchema => {
+export const getRewardsConfig = () => {
   const denyPhoneCountries = yamlConfig.rewards.denyPhoneCountries || []
   const allowPhoneCountries = yamlConfig.rewards.allowPhoneCountries || []
   const denyIPCountries = yamlConfig.rewards.denyIPCountries || []
@@ -258,4 +283,6 @@ export const getRewardsConfig = (): RewardsConfigSchema => {
   }
 }
 
-export const getAccountsConfig = (config = yamlConfig): AccountsConfig => config.accounts
+export const getAccountsConfig = (config = yamlConfig): AccountsConfig => ({
+  initialStatus: config.accounts.initialStatus as AccountStatus,
+})

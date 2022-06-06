@@ -1,4 +1,4 @@
-import { getAccountLimits, yamlConfig, ConfigSchema, configSchema } from "@config"
+import { configSchema, getAccountLimits, yamlConfig } from "@config"
 import { toCents } from "@domain/fiat"
 import Ajv from "ajv"
 
@@ -23,7 +23,7 @@ const accountLimits = {
 describe("config.ts", () => {
   describe("yml config validation", () => {
     beforeAll(() => {
-      validate = ajv.compile<ConfigSchema>(configSchema)
+      validate = ajv.compile(configSchema)
     })
 
     it("passes validation with valid config", () => {

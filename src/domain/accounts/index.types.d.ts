@@ -16,12 +16,12 @@ type AccountLimitsArgs = {
   accountLimits?: {
     intraLedger: {
       level: {
-        [l: number]: UsdCents
+        [l: number]: number
       }
     }
     withdrawal: {
       level: {
-        [l: number]: UsdCents
+        [l: number]: number
       }
     }
   }

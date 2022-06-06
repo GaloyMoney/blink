@@ -78,8 +78,11 @@ type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
     uncheckedAmount: number
   }): LPFBWithInvoice<S> | LPFBWithError
   withoutInvoice({
-    uncheckedAmount: number,
-    description: string,
+    uncheckedAmount,
+    description,
+  }: {
+    uncheckedAmount: number
+    description: string | null
   }): LPFBWithInvoice<S> | LPFBWithError
 }
 

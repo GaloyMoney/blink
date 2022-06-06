@@ -28,11 +28,13 @@ import {
 import { tracingConfig } from "@config"
 import { ErrorLevel } from "@domain/shared"
 
+import type * as graphqlTypes from "graphql"
+
 propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 
 // FYI this hook is executed BEFORE the `formatError` hook from apollo
 // The data.errors field here may still change before being returned to the client
-const gqlResponseHook = (span: Span, data) => {
+const gqlResponseHook = (span: Span, data: graphqlTypes.ExecutionResult) => {
   if (data.errors && data.errors.length > 0) {
     recordGqlErrors({ errors: data.errors, span, subPathName: "" })
   }
@@ -42,7 +44,9 @@ const gqlResponseHook = (span: Span, data) => {
     gqlNestedKeys = Object.keys(data.data)
   }
   for (const nestedObj of gqlNestedKeys) {
-    const nestedObjData = data.data?.[nestedObj] as Required<{ errors: IError[] }>
+    const nestedObjData = data.data?.[nestedObj] as Required<{
+      errors: IError[]
+    }>
     if (!nestedObjData) continue
     if (nestedObjData.errors && nestedObjData.errors.length > 0) {
       recordGqlErrors({ errors: nestedObjData.errors, span, subPathName: nestedObj })
@@ -50,7 +54,15 @@ const gqlResponseHook = (span: Span, data) => {
   }
 }
 
-const recordGqlErrors = ({ errors, span, subPathName }) => {
+const recordGqlErrors = ({
+  errors,
+  span,
+  subPathName,
+}: {
+  errors
+  span: Span
+  subPathName: string
+}) => {
   const subPath = subPathName ? `${subPathName}.` : ""
 
   recordException(
@@ -131,6 +143,7 @@ registerInstrumentations({
     new GraphQLInstrumentation({
       mergeItems: true,
       allowValues: true,
+      // @ts-expect-error: type mismatch for some reasons
       responseHook: gqlResponseHook,
     }),
     new MongoDBInstrumentation(),
@@ -269,11 +282,12 @@ const resolveFunctionSpanOptions = ({
     const params =
       typeof functionArgs[0] === "object" ? functionArgs[0] : { "0": functionArgs[0] }
     for (const key in params) {
-      attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = params[key]
+      const value = params[key]
+      attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = value
       attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}.null`] =
-        params[key] === null
+        value === null
       attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}.undefined`] =
-        params[key] === undefined
+        value === undefined
     }
   }
   return { attributes }

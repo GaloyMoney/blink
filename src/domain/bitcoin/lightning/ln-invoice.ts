@@ -38,7 +38,8 @@ export const decodeInvoice = (
 
   let routeHints: Hop[][] = []
   if (decodedInvoice.routes) {
-    routeHints = decodedInvoice.routes.map((rawRoute) =>
+    const invoicesRoutes = decodedInvoice.routes as RoutesBolt11Library
+    routeHints = invoicesRoutes.map((rawRoute) =>
       rawRoute.map((route) => ({
         baseFeeMTokens: route.base_fee_mtokens,
         channel: route.channel,

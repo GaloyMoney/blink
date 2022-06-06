@@ -77,7 +77,7 @@ const updateLnPaymentsByFunction = async ({
         return updateLnPaymentsPaginated({
           processedLnPaymentsHashes: updatedProcessedHashes,
           incompleteLnPayments,
-          after: after,
+          after,
           pubkey,
           listFn,
         })

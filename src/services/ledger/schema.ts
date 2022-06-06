@@ -120,7 +120,7 @@ const transactionSchema = new Schema({
   accounts: {
     type: String,
     validate: {
-      validator: function (v) {
+      validator: function (v: string) {
         // liabilities account should be uuid-v4
         if (v.startsWith("Liabilities")) return v.length === 12 + 36
         else return true

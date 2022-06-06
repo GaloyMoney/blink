@@ -123,6 +123,10 @@ const validateIntraledgerPaymentInputs = async ({
   uncheckedSenderWalletId,
   uncheckedRecipientWalletId,
   senderAccount,
+}: {
+  uncheckedSenderWalletId: string
+  uncheckedRecipientWalletId: string
+  senderAccount: Account
 }): Promise<
   | { senderWallet: Wallet; recipientWallet: Wallet; recipientAccount: Account }
   | ApplicationError

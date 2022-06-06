@@ -1,22 +1,10 @@
-import { JTDDataType } from "ajv/dist/types/jtd-schema"
-
-export type ConfigSchema = JTDDataType<typeof configSchema>
-export type DisplayCurrencyConfigSchema = JTDDataType<typeof displayCurrencyConfigSchema>
-export type DealerConfigSchema = JTDDataType<typeof dealerConfigSchema>
-
-export type RewardsConfigSchema = {
-  denyPhoneCountries: string[]
-  allowPhoneCountries: string[]
-  denyIPCountries: string[]
-  allowIPCountries: string[]
-  denyASNs: string[]
-  allowASNs: string[]
-}
+import { AccountStatus } from "@domain/accounts/primitives"
+import { DisplayCurrency } from "@domain/fiat"
 
 const displayCurrencyConfigSchema = {
   type: "object",
   properties: {
-    code: { type: "string", default: "USD" },
+    code: { type: "string", default: "USD", enum: Object.values(DisplayCurrency) },
     symbol: { type: "string", default: "$" },
   },
   required: ["code", "symbol"],
@@ -40,8 +28,8 @@ const dealerConfigSchema = {
 const buildNumberConfigSchema = {
   type: "object",
   properties: {
-    minBuildNumber: { type: "number" },
-    lastBuildNumber: { type: "number" },
+    minBuildNumber: { type: "integer" },
+    lastBuildNumber: { type: "integer" },
   },
   required: ["minBuildNumber", "lastBuildNumber"],
   additionalProperties: false,
@@ -98,8 +86,8 @@ const accountLimitConfigSchema = {
     level: {
       type: "object",
       properties: {
-        1: { type: "number" },
-        2: { type: "number" },
+        1: { type: "integer" },
+        2: { type: "integer" },
       },
       required: ["1", "2"],
       additionalProperties: false,
@@ -112,9 +100,9 @@ const accountLimitConfigSchema = {
 const rateLimitConfigSchema = {
   type: "object",
   properties: {
-    points: { type: "number" },
-    duration: { type: "number" },
-    blockDuration: { type: "number" },
+    points: { type: "integer" },
+    duration: { type: "integer" },
+    blockDuration: { type: "integer" },
   },
   required: ["points", "duration", "blockDuration"],
   additionalProperties: false,
@@ -129,7 +117,7 @@ const lndConfig = {
       items: { enum: ["offchain", "onchain"] },
       uniqueItems: true,
     },
-    priority: { type: "number" },
+    priority: { type: "integer" },
   },
   required: ["name", "type", "priority"],
   additionalProperties: false,
@@ -138,7 +126,7 @@ const lndConfig = {
 export const configSchema = {
   type: "object",
   properties: {
-    PROXY_CHECK_APIKEY: { type: "string" },
+    PROXY_CHECK_APIKEY: { type: "string" }, // TODO: move out of yaml and to env
     name: { type: "string" },
     locale: { type: "string", enum: ["en", "es"], default: "en" },
     displayCurrency: displayCurrencyConfigSchema,
@@ -153,16 +141,16 @@ export const configSchema = {
       required: ["ios", "android"],
     },
     rewards: rewardsConfigSchema,
-    quotes: { type: "array", items: { type: "string" }, uniqueItems: true },
     coldStorage: {
       type: "object",
       properties: {
-        minOnChainHotWalletBalance: { type: "number" },
-        minRebalanceSize: { type: "number" },
-        maxHotWalletBalance: { type: "number" },
+        minOnChainHotWalletBalance: { type: "integer" },
+        minRebalanceSize: { type: "integer" },
+        maxHotWalletBalance: { type: "integer" },
         walletPattern: { type: "string" },
+        // TODO: confusing: 2 properties with the same name
         onChainWallet: { type: "string" },
-        targetConfirmations: { type: "number" },
+        targetConfirmations: { type: "integer" },
       },
       required: [
         "minOnChainHotWalletBalance",
@@ -223,7 +211,7 @@ export const configSchema = {
     accounts: {
       type: "object",
       properties: {
-        initialStatus: { type: "string" },
+        initialStatus: { type: "string", enum: Object.values(AccountStatus) },
       },
       required: ["initialStatus"],
       additionalProperties: false,
@@ -240,7 +228,7 @@ export const configSchema = {
     spamLimits: {
       type: "object",
       properties: {
-        memoSharingSatsThreshold: { type: "number" },
+        memoSharingSatsThreshold: { type: "integer" },
       },
       required: ["memoSharingSatsThreshold"],
       additionalProperties: false,
@@ -248,7 +236,7 @@ export const configSchema = {
     twoFALimits: {
       type: "object",
       properties: {
-        threshold: { type: "number" },
+        threshold: { type: "integer" },
       },
       required: ["threshold"],
       additionalProperties: false,
@@ -278,12 +266,12 @@ export const configSchema = {
           properties: {
             method: {
               type: "string",
-              pattern: "^flat$|^proportionalOnImbalance$",
+              enum: ["flat", "proportionalOnImbalance"],
             },
             ratio: { type: "number" },
-            threshold: { type: "number" },
-            daysLookback: { type: "number" },
-            defaultMin: { type: "number" },
+            threshold: { type: "integer" },
+            daysLookback: { type: "integer" },
+            defaultMin: { type: "integer" },
           },
           required: ["method", "ratio", "threshold", "daysLookback", "defaultMin"],
           additionalProperties: false,
@@ -300,11 +288,11 @@ export const configSchema = {
     onChainWallet: {
       type: "object",
       properties: {
-        dustThreshold: { type: "number" },
-        minConfirmations: { type: "number" },
-        scanDepth: { type: "number" },
-        scanDepthOutgoing: { type: "number" },
-        scanDepthChannelUpdate: { type: "number" },
+        dustThreshold: { type: "integer" },
+        minConfirmations: { type: "integer" },
+        scanDepth: { type: "integer" }, // TODO: improve naming
+        scanDepthOutgoing: { type: "integer" },
+        scanDepthChannelUpdate: { type: "integer" },
       },
       required: [
         "dustThreshold",
@@ -328,7 +316,7 @@ export const configSchema = {
       then: { required: ["playgroundUrl"] },
       additionalProperties: false,
     },
-    userActivenessMonthlyVolumeThreshold: { type: "number" },
+    userActivenessMonthlyVolumeThreshold: { type: "integer" },
     cronConfig: {
       type: "object",
       properties: {

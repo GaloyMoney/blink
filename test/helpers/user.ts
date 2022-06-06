@@ -16,14 +16,20 @@ import { UsersIpRepository } from "@services/mongoose/users-ips"
 
 const users = UsersRepository()
 
-const getPhoneByTestUserIndex = (ref: string) => {
+const getPhoneByTestUserRef = (ref: string) => {
   const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
-  const phone = entry.phone as PhoneNumber
+  const phone = entry?.phone as PhoneNumber
+
   return phone
 }
 
+export const getPhoneAndCodeFromRef = (ref: string) => {
+  const result = yamlConfig.test_accounts.find((item) => item.ref === ref)
+  return { phone: result?.phone as PhoneNumber, code: result?.code as PhoneCode }
+}
+
 const getUserByTestUserRef = async (ref: string) => {
-  const phone = getPhoneByTestUserIndex(ref)
+  const phone = getPhoneByTestUserRef(ref)
   const user = await UsersRepository().findByPhone(phone)
   if (user instanceof Error) throw user
   return user
@@ -74,7 +80,7 @@ export const getDefaultWalletIdByRole = async (role: string) => {
 
 export const getUserRecordByTestUserRef = async (ref: string) => {
   const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
-  const phone = entry.phone as PhoneNumber
+  const phone = entry?.phone as PhoneNumber
 
   const result = await User.findOne({ phone })
   if (!result) throw Error("user not found")

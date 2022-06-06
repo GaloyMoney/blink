@@ -1,7 +1,6 @@
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
-import { yamlConfig } from "@config"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
@@ -12,25 +11,26 @@ import LN_NO_AMOUNT_INVOICE_CREATE from "./mutations/ln-no-amount-invoice-create
 import LN_NO_AMOUNT_INVOICE_FEE_PROBE from "./mutations/ln-no-amount-invoice-fee-probe.gql"
 import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-payment-send.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
-import ME from "./queries/me.gql"
 import MAIN from "./queries/main.gql"
+import ME from "./queries/me.gql"
 import TRANSACTIONS_BY_WALLET_IDS from "./queries/transactions-by-wallet-ids.gql"
 
 import {
   bitcoindClient,
   clearAccountLocks,
   clearLimiters,
+  createApolloClient,
   createInvoice,
+  defaultStateConfig,
+  defaultTestClientConfig,
   fundWalletIdFromLightning,
   getDefaultWalletIdByTestUserRef,
-  lndOutside2,
-  createApolloClient,
-  defaultTestClientConfig,
-  startServer,
-  killServer,
-  PID,
+  getPhoneAndCodeFromRef,
   initializeTestingState,
-  defaultStateConfig,
+  killServer,
+  lndOutside2,
+  PID,
+  startServer,
 } from "test/helpers"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -38,7 +38,8 @@ let apolloClient: ApolloClient<NormalizedCacheObject>,
   walletId: WalletId,
   serverPid: PID
 const userRef = "D"
-const { phone, code } = yamlConfig.test_accounts.find((item) => item.ref === userRef)
+
+const { phone, code } = getPhoneAndCodeFromRef(userRef)
 
 const satsAmount = toSats(50_000)
 const centsAmount = toCents(10_000)

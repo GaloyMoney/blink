@@ -1,5 +1,3 @@
-import { Entry } from "medici"
-
 import { UnknownLedgerError } from "./domain/errors"
 import { TransactionsMetadataRepository } from "./services"
 
@@ -10,7 +8,7 @@ export const persistAndReturnEntry = async ({
   hash,
   revealedPreImage,
 }: {
-  entry: Entry
+  entry
   hash?: PaymentHash | OnChainTxHash
   revealedPreImage?: RevealedPreImage
 }) => {

@@ -1,11 +1,11 @@
-type nodeType = "offchain" | "onchain"
+type NodeType = "offchain" | "onchain"
 
 type LndParams = {
   cert: string
   macaroon: string
   node: string
   port: string | number
-  type: nodeType[]
+  type: NodeType[]
   pubkey: string
   priority: number
 }

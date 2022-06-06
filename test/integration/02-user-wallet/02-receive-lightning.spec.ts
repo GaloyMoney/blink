@@ -62,7 +62,7 @@ describe("UserWallet - Lightning", () => {
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: invoice } = lnInvoice
 
-    const checker = await Lightning.PaymentStatusChecker({ paymentRequest: invoice })
+    const checker = await Lightning.PaymentStatusChecker(invoice)
     expect(checker).not.toBeInstanceOf(Error)
     if (checker instanceof Error) throw checker
 

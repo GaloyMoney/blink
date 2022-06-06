@@ -1,33 +1,33 @@
 import crypto from "crypto"
 
-import { yamlConfig } from "@config"
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
-import { publishSingleCurrentPrice } from "@servers/trigger"
 import { toSats } from "@domain/bitcoin"
+import { publishSingleCurrentPrice } from "@servers/trigger"
 
-import ME from "./queries/me.gql"
+import LN_INVOICE_CREATE_ON_BEHALF_OF from "./mutations/ln-invoice-create-on-behalf-of-recipient.gql"
+import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
+import LN_NO_AMOUNT_INVOICE_CREATE_ON_BEHALF_OF from "./mutations/ln-no-amount-invoice-create-on-behalf-of-recipient.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
+import ME from "./queries/me.gql"
 import NODE_IDS from "./queries/node-ids.gql"
 import USER_DEFAULT_WALLET_ID from "./queries/user-default-walletid.gql"
-import LN_INVOICE_CREATE_ON_BEHALF_OF from "./mutations/ln-invoice-create-on-behalf-of-recipient.gql"
-import LN_NO_AMOUNT_INVOICE_CREATE_ON_BEHALF_OF from "./mutations/ln-no-amount-invoice-create-on-behalf-of-recipient.gql"
-import PRICE from "./subscriptions/price.gql"
 import LN_INVOICE_PAYMENT_STATUS from "./subscriptions/ln-invoice-payment-status.gql"
-import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
+import PRICE from "./subscriptions/price.gql"
 
 import {
   clearAccountLocks,
   clearLimiters,
-  getDefaultWalletIdByTestUserRef,
   createApolloClient,
-  getSubscriptionNext,
+  defaultStateConfig,
   defaultTestClientConfig,
-  startServer,
+  fundWalletIdFromLightning,
+  getDefaultWalletIdByTestUserRef,
+  getPhoneAndCodeFromRef,
+  getSubscriptionNext,
+  initializeTestingState,
   killServer,
   PID,
-  fundWalletIdFromLightning,
-  initializeTestingState,
-  defaultStateConfig,
+  startServer,
 } from "test/helpers"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
@@ -36,14 +36,13 @@ let apolloClient: ApolloClient<NormalizedCacheObject>,
   serverPid: PID
 const receivingUsername = "user15"
 const receivingUserRef = "G"
-const sendingUserIndex = "D"
-const { phone, code } = yamlConfig.test_accounts.find(
-  (item) => item.ref === sendingUserIndex,
-)
+const sendingUserRef = "D"
+
+const { phone, code } = getPhoneAndCodeFromRef(sendingUserRef)
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
-  const sendingWalletId = await getDefaultWalletIdByTestUserRef(sendingUserIndex)
+  const sendingWalletId = await getDefaultWalletIdByTestUserRef(sendingUserRef)
   await fundWalletIdFromLightning({ walletId: sendingWalletId, amount: toSats(50_000) })
   receivingWalletId = await getDefaultWalletIdByTestUserRef(receivingUserRef)
 

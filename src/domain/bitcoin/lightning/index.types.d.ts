@@ -233,3 +233,12 @@ interface ILightningService {
     maxFeeAmount: BtcPaymentAmount
   }): Promise<PayInvoiceResult | LightningServiceError>
 }
+
+// from Alex Bosworth invoice library
+type RoutesBolt11Library = {
+  base_fee_mtokens: string
+  channel: string
+  cltv_delta: number
+  public_key: string
+  fee_rate: number
+}[][]

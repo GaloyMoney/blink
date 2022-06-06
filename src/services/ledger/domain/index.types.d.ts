@@ -10,8 +10,16 @@ type LedgerAccountDescriptor<T extends WalletCurrency> = {
 }
 
 interface MediciEntry {
-  credit: (LedgerAccountId, amount: number, extra?: TxMetadata) => MediciEntry
-  debit: (LedgerAccountId, amount: number, extra?: TxMetadata) => MediciEntry
+  credit: (
+    LedgerAccountId: LedgerAccountId,
+    amount: number,
+    extra?: TxMetadata,
+  ) => MediciEntry
+  debit: (
+    LedgerAccountId: LedgerAccountId,
+    amount: number,
+    extra?: TxMetadata,
+  ) => MediciEntry
 }
 
 type StaticAccountIds = {

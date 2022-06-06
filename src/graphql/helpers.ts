@@ -4,7 +4,7 @@ import { WalletCurrency } from "@domain/shared"
 import { mapError } from "./error-map"
 
 export const validateIsBtcWalletForMutation = async (
-  walletId,
+  walletId: WalletId,
 ): Promise<true | { errors: [{ message: string }] }> => {
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return { errors: [{ message: mapError(wallet).message }] }
@@ -18,7 +18,7 @@ export const validateIsBtcWalletForMutation = async (
 }
 
 export const validateIsUsdWalletForMutation = async (
-  walletId,
+  walletId: WalletId,
 ): Promise<true | { errors: [{ message: string }] }> => {
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return { errors: [{ message: mapError(wallet).message }] }

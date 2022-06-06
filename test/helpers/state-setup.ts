@@ -91,9 +91,14 @@ export type TestingStateConfig = {
   populatePriceData: boolean
 }
 
+const testAccounts = yamlConfig.test_accounts.map((account) => ({
+  ...account,
+  phone: account.phone as PhoneNumber,
+}))
+
 export const defaultStateConfig = (): TestingStateConfig => ({
   resetState: true,
-  userAccounts: [...yamlConfig.test_accounts, ...adminUsers],
+  userAccounts: [...testAccounts, ...adminUsers],
   outsideWalletBlocksToMineAndConfirm: 10,
   fundFunderWallet: {
     amountInBitcoin: 1,
