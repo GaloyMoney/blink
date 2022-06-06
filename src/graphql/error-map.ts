@@ -17,6 +17,7 @@ import {
   UsernameError,
   RebalanceNeededError,
   DealerOfflineError,
+  InsufficientLiquidityError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -207,6 +208,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Unable to find a route for payment."
       return new RouteFindingError({ message, logger: baseLogger })
 
+    case "InsufficientOnChainFundsError":
+      message =
+        "Onchain service temporarily unavailable. Withdraw via Lightning until service is restored."
+      return new InsufficientLiquidityError({ message, logger: baseLogger })
+
     case "UnknownRouteNotFoundError":
       message = "Unknown error occurred when trying to find a route for payment."
       return new RouteFindingError({ message, logger: baseLogger })
@@ -324,7 +330,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "OnChainError":
     case "TransactionDecodeError":
     case "OnChainServiceError":
-    case "InsufficientOnChainFundsError":
     case "UnknownOnChainServiceError":
     case "CouldNotFindOnChainTransactionError":
     case "OnChainServiceUnavailableError":
