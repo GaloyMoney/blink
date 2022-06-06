@@ -8,13 +8,13 @@ import {
   InvalidWithdrawFeeError,
 } from "@domain/errors"
 
-import { AccountStatus } from "./const"
+import { AccountStatus } from "./primitives"
 
 export * from "./errors"
 export * from "./limits-checker"
 export * from "./new-limits-checker"
 export * from "./account-validator"
-export * from "./const"
+export * from "./primitives"
 
 export const checkedCoordinates = ({
   latitude,

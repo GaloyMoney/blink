@@ -35,7 +35,7 @@ export const updateOnChainReceipt = async ({
     txHash,
     error,
   }: {
-    walletId: WalletId
+    walletId: WalletId | undefined
     txHash: OnChainTxHash
     error: RepositoryError
   }) => {
@@ -64,7 +64,7 @@ export const updateOnChainReceipt = async ({
     }
 
     if (wallets instanceof Error) {
-      logError({ walletId: null, txHash, error: wallets })
+      logError({ walletId: undefined, txHash, error: wallets })
       continue
     }
 

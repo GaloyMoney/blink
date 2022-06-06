@@ -1,4 +1,4 @@
-import { AccountStatus } from "@domain/accounts/const"
+import { AccountStatus } from "@domain/accounts/primitives"
 import { DisplayCurrency } from "@domain/fiat"
 
 const displayCurrencyConfigSchema = {

@@ -22,7 +22,7 @@ const AccountUpdateStatusInput = GT.Input({
 
 const AccountUpdateStatusMutation = GT.Field<
   {
-    input: { uid: string; status: string; comment: string }
+    input: { uid: string; status: AccountStatus | Error; comment: string }
   },
   null,
   GraphQLContextForUser
@@ -38,6 +38,8 @@ const AccountUpdateStatusMutation = GT.Field<
         return { errors: [{ message: input.message }] }
       }
     }
+
+    if (status instanceof Error) return { errors: [{ message: status.message }] }
 
     const account = await Accounts.updateAccountStatus({
       id: uid,
