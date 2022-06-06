@@ -20,14 +20,20 @@ const AccountUpdateStatusInput = GT.Input({
   }),
 })
 
-const AccountUpdateStatusMutation = GT.Field<{ input }, null, GraphQLContextForUser>({
+const AccountUpdateStatusMutation = GT.Field<
+  {
+    input: { uid: string; status: string; comment: string }
+  },
+  null,
+  GraphQLContextForUser
+>({
   type: GT.NonNull(AccountDetailPayload),
   args: {
     input: { type: GT.NonNull(AccountUpdateStatusInput) },
   },
   resolve: async (_, args, { domainUser }) => {
     const { uid, status, comment } = args.input
-    for (const input of [uid, status]) {
+    for (const input of [uid, status, comment]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }

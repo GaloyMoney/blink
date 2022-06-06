@@ -37,10 +37,9 @@ const AccountUpdateLevelMutation = GT.Field<{
       }
     }
 
-    const account = await Accounts.updateAccountLevel({ id: uid, level } as {
-      id: string
-      level: AccountLevel // TODO: check if that is the case given graphql validation of GT.Enum({ name: "AccountLevel" })
-    })
+    if (level instanceof Error) return { errors: [{ message: level.message }] }
+
+    const account = await Accounts.updateAccountLevel({ id: uid, level })
 
     if (account instanceof Error) {
       return { errors: [{ message: mapError(account).message }] }

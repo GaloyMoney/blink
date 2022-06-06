@@ -9,8 +9,10 @@ import AccountStatus from "../scalar/account-status"
 
 import GraphQLUser from "./user"
 
-const Account = GT.Object({
+const Account = GT.Object<Account>({
   name: "Account",
+  description:
+    "Accounts are core to the Galoy architecture. they have users, and own wallets",
   fields: () => ({
     id: { type: GT.NonNullID },
     username: { type: Username },
@@ -25,7 +27,7 @@ const Account = GT.Object({
       // and users: [Users] in DetailCorporateAccount
 
       type: GT.NonNull(GraphQLUser),
-      resolve: async (source: Account) => {
+      resolve: async (source) => {
         const user = await Users.getUser(source.ownerId)
         if (user instanceof Error) {
           throw user

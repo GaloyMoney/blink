@@ -30,7 +30,15 @@ export const updateOnChainReceipt = async ({
   }
 
   const walletRepo = WalletsRepository()
-  const logError = ({ walletId, txHash, error }) => {
+  const logError = ({
+    walletId,
+    txHash,
+    error,
+  }: {
+    walletId: WalletId
+    txHash: OnChainTxHash
+    error: RepositoryError
+  }) => {
     logger.error(
       { walletId, txHash, error },
       "Could not updateOnChainReceipt from updateOnChainReceiptForWallet",
