@@ -3,6 +3,7 @@ import dedent from "dedent"
 import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
 
 import { GT } from "@graphql/index"
+import { connectionDefinitions } from "@graphql/connections"
 
 import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
@@ -82,6 +83,10 @@ const UsdTransaction = GT.Object<WalletTransaction>({
       type: GT.NonNull(Timestamp),
     },
   }),
+})
+
+export const { connectionType: UsdTransactionConnection } = connectionDefinitions({
+  nodeType: UsdTransaction,
 })
 
 export default UsdTransaction

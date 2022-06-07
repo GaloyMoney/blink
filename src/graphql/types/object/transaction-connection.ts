@@ -1,9 +1,11 @@
-import { connectionDefinitions } from "@graphql/connections"
+import { GT } from "@graphql/index"
 
-import Transaction from "../abstract/transaction"
+import { BtcTransactionConnection } from "./btc-transaction"
+import { UsdTransactionConnection } from "./usd-transaction"
 
-const { connectionType: TransactionConnection } = connectionDefinitions({
-  nodeType: Transaction,
+const TransactionConnection = GT.Union({
+  name: "TransactionConnection",
+  types: () => [BtcTransactionConnection, UsdTransactionConnection],
 })
 
 export default TransactionConnection

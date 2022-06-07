@@ -12,6 +12,7 @@ import TxDirection from "../scalar/tx-direction"
 import TxStatus from "../scalar/tx-status"
 import WalletCurrency from "../scalar/wallet-currency"
 import Price from "../object/price"
+import SatAmount from "../scalar/sat-amount"
 
 const ITransaction = GT.Interface({
   name: "Transaction",
@@ -35,10 +36,18 @@ const ITransaction = GT.Interface({
     // FIXME: make this union of SatAmount & CentAmount
     settlementAmount: {
       type: GT.NonNull(CentAmount),
+      // type: GT.Union({
+      //   name: "settlementAmount",
+      //   types: () => [SatAmount, CentAmount],
+      // }),
     },
     // FIXME: make this union of SatAmount & CentAmount
     settlementFee: {
       type: GT.NonNull(CentAmount),
+      // type: GT.Union({
+      //   name: "settlementFee",
+      //   types: () => [SatAmount, CentAmount],
+      // }),
     },
     settlementPrice: {
       type: GT.NonNull(Price),

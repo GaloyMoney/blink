@@ -79,8 +79,79 @@ type BTCWallet implements Wallet {
     Returns the last n items from the list.
     """
     last: Int
-  ): [Transaction!]!
+  ): TransactionConnection
   walletCurrency: WalletCurrency!
+}
+
+"""
+Give details about an individual transaction.
+Galoy have a smart routing system which is automatically
+settling intraledger when both the payer and payee use the same wallet
+therefore it's possible the transactions is being initiated onchain
+or with lightning but settled intraledger.
+"""
+type BtcTransaction implements Transaction {
+  createdAt: Timestamp!
+  direction: TxDirection!
+  id: ID!
+
+  """
+  From which protocol the payment has been initiated.
+  """
+  initiationVia: InitiationVia!
+  memo: Memo
+
+  """
+  Amount of sats sent or received.
+  """
+  settlementAmount: SatAmount!
+
+  """
+  Wallet currency for transaction.
+  """
+  settlementCurrency: WalletCurrency!
+  settlementFee: SatAmount!
+
+  """
+  Price in USDCENT/SAT at time of settlement.
+  """
+  settlementPrice: Price!
+
+  """
+  To which protocol the payment has settled on.
+  """
+  settlementVia: SettlementVia!
+  status: TxStatus!
+}
+
+"""
+A connection to a list of items.
+"""
+type BtcTransactionConnection {
+  """
+  A list of edges.
+  """
+  edges: [BtcTransactionEdge!]
+
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+}
+
+"""
+An edge in a connection.
+"""
+type BtcTransactionEdge {
+  """
+  A cursor for use in pagination
+  """
+  cursor: String!
+
+  """
+  The item at the end of the edge
+  """
+  node: BtcTransaction!
 }
 
 type BuildInformation {
@@ -938,35 +1009,7 @@ interface Transaction {
   status: TxStatus!
 }
 
-"""
-A connection to a list of items.
-"""
-type TransactionConnection {
-  """
-  A list of edges.
-  """
-  edges: [TransactionEdge!]
-
-  """
-  Information to aid in pagination.
-  """
-  pageInfo: PageInfo!
-}
-
-"""
-An edge in a connection.
-"""
-type TransactionEdge {
-  """
-  A cursor for use in pagination
-  """
-  cursor: String!
-
-  """
-  The item at the end of the edge
-  """
-  node: Transaction!
-}
+union TransactionConnection = BtcTransactionConnection | UsdTransactionConnection
 
 input TwoFADeleteInput {
   token: String!
@@ -1008,6 +1051,77 @@ enum TxStatus {
 }
 
 """
+Give details about an individual transaction.
+Galoy have a smart routing system which is automatically
+settling intraledger when both the payer and payee use the same wallet
+therefore it's possible the transactions is being initiated onchain
+or with lightning but settled intraledger.
+"""
+type UsdTransaction implements Transaction {
+  createdAt: Timestamp!
+  direction: TxDirection!
+  id: ID!
+
+  """
+  From which protocol the payment has been initiated.
+  """
+  initiationVia: InitiationVia!
+  memo: Memo
+
+  """
+  Amount of cents sent or received.
+  """
+  settlementAmount: CentAmount!
+
+  """
+  Wallet currency for transaction.
+  """
+  settlementCurrency: WalletCurrency!
+  settlementFee: CentAmount!
+
+  """
+  Price in USDCENT/USDCENT at time of settlement.
+  """
+  settlementPrice: Price!
+
+  """
+  To which protocol the payment has settled on.
+  """
+  settlementVia: SettlementVia!
+  status: TxStatus!
+}
+
+"""
+A connection to a list of items.
+"""
+type UsdTransactionConnection {
+  """
+  A list of edges.
+  """
+  edges: [UsdTransactionEdge!]
+
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+}
+
+"""
+An edge in a connection.
+"""
+type UsdTransactionEdge {
+  """
+  A cursor for use in pagination
+  """
+  cursor: String!
+
+  """
+  The item at the end of the edge
+  """
+  node: UsdTransaction!
+}
+
+"""
 A wallet belonging to an account which contains a USD balance and a list of transactions.
 """
 type UsdWallet implements Wallet {
@@ -1033,7 +1147,7 @@ type UsdWallet implements Wallet {
     Returns the last n items from the list.
     """
     last: Int
-  ): [Transaction!]!
+  ): TransactionConnection
   walletCurrency: WalletCurrency!
 }
 
@@ -1206,7 +1320,7 @@ interface Wallet {
     Returns the last n items from the list.
     """
     last: Int
-  ): [Transaction!]!
+  ): TransactionConnection
   walletCurrency: WalletCurrency!
 }
 
