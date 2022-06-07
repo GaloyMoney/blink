@@ -274,3 +274,14 @@ export class InsufficientLiquidityError extends CustomApolloError {
     })
   }
 }
+
+export class PermissionError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "You do not have permission to perform this action.",
+      forwardToClient: true,
+      code: "PERMISSION_ERROR",
+      ...errData,
+    })
+  }
+}

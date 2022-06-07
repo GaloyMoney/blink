@@ -1,67 +1,78 @@
 import path from "path"
-import { UnknownAuthorizationServiceError } from "@domain/authorization"
-import { newEnforcer } from "casbin"
+import {
+  // subjectIdFromUserId,
+  subjectIdFromRole,
+  UnknownAuthorizationServiceError,
+} from "@domain/authorization"
+import { newEnforcer, Enforcer, Util } from "casbin"
 import { getCasbinPgCreds } from "@config"
 import PostgresAdapter from "casbin-pg-adapter"
 
-let adapter: PostgresAdapter
-const lazyGetAdaptor = async () => {
-  if (!adapter) {
-    adapter = await PostgresAdapter.newAdapter(getCasbinPgCreds())
+let cachedEnforcer: Enforcer
+const lazyGetEnforcer = async () => {
+  if (!cachedEnforcer) {
+    const adapter = await PostgresAdapter.newAdapter(getCasbinPgCreds())
+    cachedEnforcer = await newEnforcer(model, adapter)
   }
-  return adapter
+  cachedEnforcer.addNamedDomainMatchingFunc("g", Util.keyMatchFunc)
+  return cachedEnforcer
 }
 const model = path.resolve(__dirname, "./casbin.conf")
-export const CasbinService = async (): Promise<IAuthorizationService> => {
-  const enforcer = await newEnforcer(model, await lazyGetAdaptor())
-
-  const addRoleToUser = async ({
-    userId,
+export const CasbinService = (): IAuthorizationService => {
+  const addRoleToSubject = async ({
+    subjectId,
     scope,
     role,
-  }: AddRoleToUserArgs): Promise<true | AuthorizationError> => {
+  }: AddRoleToSubjectArgs): Promise<true | AuthorizationError> => {
     try {
-      await enforcer.addRoleForUser(userId, role, scope)
+      const enforcer = await lazyGetEnforcer()
+      await enforcer.addRoleForUser(subjectId, role, scope)
       return true
     } catch (error) {
       return new UnknownAuthorizationServiceError(error.message)
     }
   }
 
-  const addPermissionsToRole = async ({
+  const addPermissionsToRole = async <
+    RType extends keyof AuthPermissions,
+    Attribute extends keyof AuthPermissions[RType],
+  >({
     role,
     scope,
-    resourceId,
-    permissions,
-  }: AddPermissionsToRoleArgs): Promise<true | AuthorizationError> => {
-    try {
-      for (const p of permissions) {
-        await enforcer.addPermissionForUser(role, scope, resourceId, p)
-      }
-      return true
-    } catch (error) {
-      return new UnknownAuthorizationServiceError(error.message)
-    }
-  }
-
-  const checkPermission = async ({
-    userId,
-    resourceId,
+    resource,
     permission,
-  }: CheckPermissionArgs): Promise<boolean | AuthorizationError> => {
+  }: AddPermissionToRoleArgs<RType, Attribute>): Promise<true | AuthorizationError> => {
     try {
+      const enforcer = await lazyGetEnforcer()
+      await enforcer.addPermissionForUser(role, scope, resource.uri, permission.uri)
+      return true
+    } catch (error) {
+      return new UnknownAuthorizationServiceError(error.message)
+    }
+  }
+
+  const checkPermission = async <
+    RType extends keyof AuthPermissions,
+    Attribute extends keyof AuthPermissions[RType],
+  >({
+    subjectId,
+    resource,
+    permission,
+  }: CheckPermissionArgs<RType, Attribute>): Promise<boolean | AuthorizationError> => {
+    try {
+      const enforcer = await lazyGetEnforcer()
       await enforcer.loadFilteredPolicy({
-        g: [userId],
-        p: ["", "", resourceId, permission],
+        g: [""],
+        p: ["", "", resource.uri, permission.uri],
       })
-      return await enforcer.enforce(userId, resourceId, permission)
+      return await enforcer.enforce(subjectId, resource.uri, permission.uri)
     } catch (error) {
       return new UnknownAuthorizationServiceError(error.message)
     }
   }
 
   return {
-    addRoleToUser,
+    addRoleToSubject,
     addPermissionsToRole,
     checkPermission,
   }

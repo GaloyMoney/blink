@@ -1,45 +1,45 @@
-import { CasbinService } from "@services/casbin"
-import {
-  Role,
-  WalletPermission,
-  scopeFromAccountId,
-  resourceIdFromWalletId,
-} from "@domain/authorization"
+// import { CasbinService } from "@services/casbin"
+// import { createMandatoryUsers, getUserIdByTestUserRef } from "test/helpers"
+// import {
+//   Role,
+//   subjectIdFromUserId,
+//   subjectIdFromRole,
+//   AccountPermission,
+//   WalletPermission,
+//   GlobalAuthorizationScope,
+//   resourceIdFromAccountId,
+//   resourceIdFromWalletId,
+//   scopeFromAccountId,
+// } from "@domain/authorization"
 
-describe("CasbinService", () => {
-  it("Should enforce wallet access", async () => {
-    const casbinService = await CasbinService()
-    const userId = "some-user" as UserId
-    const accountid = "some-account" as AccountId
-    const walletId = "some-wallet" as WalletId
+// describe("CasbinService", () => {
+//   beforeAll(async () => {
+//     await createMandatoryUsers()
+//   })
+//   describe("Role SupportLevel1 (from default config)", () => {
+//     it("can read account status", async () => {
+//       const casbinService = await CasbinService()
+//       const userIdA = await getUserIdByTestUserRef("A")
+//       const accountId = "some-account" as AccountId
 
-    let result = await casbinService.addRoleToUser({
-      userId,
-      scope: scopeFromAccountId(accountid),
-      role: Role.AccountOwner,
-    })
-    expect(result).toBeTruthy()
+//       await casbinService.addRoleToSubject({
+//         subjectId: subjectIdFromUserId(userIdA),
+//         scope: GlobalAuthorizationScope,
+//         role: Role.SupportLevel1,
+//       })
+//       let allowed = await casbinService.checkPermission({
+//         subjectId: subjectIdFromUserId(userIdA),
+//         resourceId: resourceIdFromAccountId(accountId),
+//         permission: AccountPermission.StatusRead,
+//       })
+//       expect(allowed).toBe(true)
 
-    result = await casbinService.addPermissionsToRole({
-      role: Role.AccountOwner,
-      scope: scopeFromAccountId(accountid),
-      resourceId: resourceIdFromWalletId(walletId),
-      permissions: [WalletPermission.BalanceRead],
-    })
-    expect(result).toBeTruthy()
-
-    const allowed = await casbinService.checkPermission({
-      userId,
-      resourceId: resourceIdFromWalletId(walletId),
-      permission: WalletPermission.BalanceRead,
-    })
-    expect(allowed).toBe(true)
-
-    const notAllowed = await casbinService.checkPermission({
-      userId,
-      resourceId: resourceIdFromWalletId(walletId),
-      permission: WalletPermission.OnChainSend,
-    })
-    expect(notAllowed).toBe(false)
-  })
-})
+//       allowed = await casbinService.checkPermission({
+//         subjectId: subjectIdFromUserId(userIdA),
+//         resourceId: resourceIdFromAccountId(accountId),
+//         permission: AccountPermission.StatusUpdate,
+//       })
+//       expect(allowed).toBe(false)
+//     })
+//   })
+// })

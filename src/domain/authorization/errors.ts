@@ -1,5 +1,7 @@
-export class AuthorizationServiceError extends Error {
-  name = this.constructor.name
-}
+import { DomainError, ErrorLevel } from "@domain/shared"
+
+export class AuthorizationServiceError extends DomainError {}
 
 export class UnknownAuthorizationServiceError extends AuthorizationServiceError {}
+
+export class AuthorizationError extends DomainError {}
