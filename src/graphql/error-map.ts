@@ -400,7 +400,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "BadInputsForFindError":
     case "LnHashPresentInIntraLedgerFlowError":
     case "IntraLedgerHashPresentInLnFlowError":
-    case "NoRecipientDetailsForIntraLedgerFlowError":
     case "PubSubError":
     case "PubSubServiceError":
     case "UnknownPubSubError":

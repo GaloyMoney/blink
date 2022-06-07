@@ -19,8 +19,18 @@ export function timeout(delay: MilliSeconds | number, msg: string) {
  * @param  logger  logger instance, just needed if you want to log processor errors
  * @return       Promise with all workers
  */
-export const runInParallel = ({ iterator, processor, logger, workers = 5 }) => {
-  const runWorkerInParallel = async (items, index) => {
+export const runInParallel = <U, T extends AsyncGenerator<U>>({
+  iterator,
+  processor,
+  logger,
+  workers = 5,
+}: {
+  iterator: T
+  processor: (arg: U, index: number) => void
+  logger: Logger
+  workers?: number
+}) => {
+  const runWorkerInParallel = async (items: T, index: number) => {
     for await (const item of items) {
       try {
         await processor(item, index)

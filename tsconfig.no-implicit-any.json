@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.d.json",
+  "include": ["src/"],
+  "exclude": ["test/", "src/debug", "src/migrations"],
+  "compilerOptions": {
+    "noImplicitAny": true
+  }
+}

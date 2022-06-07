@@ -7,7 +7,6 @@ import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
-  NoRecipientDetailsForIntraLedgerFlowError,
   PriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
@@ -68,12 +67,13 @@ export const intraledgerPaymentSendWalletId = async ({
 
   const builderWithSenderWallet = builderWithInvoice.withSenderWallet(senderWallet)
 
-  const recipientDetailsForBuilder = recipientDetailsFromWallet({
+  const recipientDetailsForBuilder = {
     id: recipientWalletId,
     currency: recipientWalletCurrency,
     username: recipientUsername,
-  })
-  if (recipientDetailsForBuilder instanceof Error) return recipientDetailsForBuilder
+    pubkey: undefined,
+    usdPaymentAmount: undefined,
+  }
 
   const builderAfterRecipientStep = builderWithSenderWallet.withRecipientWallet(
     recipientDetailsForBuilder,
@@ -304,18 +304,4 @@ const addContactsAfterSend = async ({
   }
 
   return true
-}
-
-const recipientDetailsFromWallet = (recipientDetails) => {
-  if (recipientDetails === undefined) {
-    return new NoRecipientDetailsForIntraLedgerFlowError()
-  }
-
-  return {
-    id: recipientDetails.id,
-    currency: recipientDetails.currency,
-    username: recipientDetails.username,
-    pubkey: undefined,
-    usdPaymentAmount: undefined,
-  }
 }

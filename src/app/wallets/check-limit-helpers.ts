@@ -123,7 +123,8 @@ const limitCheckWithCurrencyConversion = ({
   dCConverter: DisplayCurrencyConverter
   limitsCheckerFn: LimitsCheckerFn
 }) => {
-  const dCSatstoCents = (amount) => dCConverter.fromSatsToCents(toSats(amount))
+  const dCSatstoCents = (amount: CurrencyBaseAmount) =>
+    dCConverter.fromSatsToCents(toSats(amount))
 
   addAttributesToCurrentSpan({ "txVolume.fromWalletCurrency": walletCurrency })
   if (walletCurrency === WalletCurrency.Usd) {

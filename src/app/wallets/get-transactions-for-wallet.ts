@@ -50,12 +50,9 @@ export const getTransactionsForWallets = async (
   }
 
   const addresses: OnChainAddress[] = []
-  const addressesByWalletId: { walletId: OnChainAddress[] } = {} as {
-    walletId: OnChainAddress[]
-  }
-  const walletDetailsByWalletId: { walletId: { currency: WalletCurrency } } = {} as {
-    walletId: { currency: WalletCurrency }
-  }
+  const addressesByWalletId: { [walletid: string]: OnChainAddress[] } = {}
+  const walletDetailsByWalletId: { [walletid: string]: { currency: WalletCurrency } } = {}
+
   for (const wallet of wallets) {
     const walletAddresses = wallet.onChainAddresses()
     addressesByWalletId[wallet.id] = walletAddresses

@@ -1,6 +1,7 @@
 {
   "name": "galoy",
   "scripts": {
+    "tsc-check-noimplicitany": "tsc --noEmit -p tsconfig.no-implicit-any.json --skipLibCheck",
     "tsc-check": "tsc --noEmit -p tsconfig.d.json && tsc --noEmit --skipLibCheck",
     "eslint-check": "eslint \"{src,test}/**/*.ts\"",
     "eslint-fix": "eslint \"{src,test}/**/*.ts\" --fix",
