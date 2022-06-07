@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "crypto"
 
-import { Wallets, Lightning, Payments } from "@app"
+import { Wallets, Lightning, Payments, Prices } from "@app"
 import { getMidPriceRatio } from "@app/payments/helpers"
 
 import { delete2fa } from "@app/users"
@@ -23,6 +23,7 @@ import {
   paymentAmountFromCents,
   paymentAmountFromSats,
   ValidationError,
+  WalletCurrency,
 } from "@domain/shared"
 import { TwoFAError } from "@domain/twoFA"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
@@ -47,6 +48,12 @@ import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
 import { PaymentFlowStateRepository } from "@services/payment-flow"
 
+import { getDisplayCurrencyConfig, getLocale } from "@config"
+import { NotificationType } from "@domain/notifications"
+
+import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
+import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
+
 import {
   cancelHodlInvoice,
   checkIsBalanced,
@@ -57,9 +64,11 @@ import {
   enable2FA,
   generateTokenHelper,
   getAccountByTestUserRef,
+  getBalanceHelper,
   getDefaultWalletIdByTestUserRef,
   getHash,
   getInvoice,
+  getRemainingTwoFALimit,
   getUsdWalletIdByTestUserRef,
   getUserIdByTestUserRef,
   getUserRecordByTestUserRef,
@@ -69,7 +78,6 @@ import {
   waitFor,
   waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
-import { getBalanceHelper, getRemainingTwoFALimit } from "test/helpers/wallet"
 
 import { DealerPriceService } from "test/mocks/dealer-price"
 
@@ -131,6 +139,9 @@ let walletIdC: WalletId
 let usernameA: Username
 let usernameB: Username
 let usernameC: Username
+
+const locale = getLocale()
+const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 beforeAll(async () => {
   await createUserAndWalletFromUserRef("A")
@@ -354,6 +365,13 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("sends to another Galoy user a push payment", async () => {
+    const sendNotification = jest.fn()
+    jest
+      .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+      .mockImplementation(() => ({
+        sendNotification,
+      }))
+
     const res = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId: walletIdA,
       memo: "",
@@ -397,6 +415,42 @@ describe("UserWallet - Lightning Pay", () => {
       "type",
       PaymentInitiationMethod.IntraLedger,
     )
+
+    await sleep(1000)
+
+    const satsPrice = await Prices.getCurrentPrice()
+    if (satsPrice instanceof Error) throw satsPrice
+
+    const paymentAmount = { amount: BigInt(amountInvoice), currency: WalletCurrency.Btc }
+    const displayPaymentAmount = {
+      amount: amountInvoice * satsPrice,
+      currency: DefaultDisplayCurrency,
+    }
+
+    const { title: titleReceipt, body: bodyReceipt } = createPushNotificationContent({
+      type: NotificationType.IntraLedgerReceipt,
+      userLanguage: locale as UserLanguage,
+      paymentAmount,
+      displayPaymentAmount,
+    })
+
+    const { title: titlePayment, body: bodyPayment } = createPushNotificationContent({
+      type: NotificationType.IntraLedgerPayment,
+      userLanguage: locale as UserLanguage,
+      paymentAmount,
+      displayPaymentAmount,
+    })
+
+    expect(sendNotification.mock.calls.length).toBe(2)
+
+    const titles = [titleReceipt, titlePayment]
+    const bodies = [bodyReceipt, bodyPayment]
+
+    // notifications are asynchronous, so we can't guarantee order
+    expect(titles).toContain(sendNotification.mock.calls[0][0].title)
+    expect(titles).toContain(sendNotification.mock.calls[1][0].title)
+    expect(bodies).toContain(sendNotification.mock.calls[0][0].body)
+    expect(bodies).toContain(sendNotification.mock.calls[1][0].body)
 
     let userRecordA = await getUserRecordByTestUserRef("A")
     let userRecordB = await getUserRecordByTestUserRef("B")
