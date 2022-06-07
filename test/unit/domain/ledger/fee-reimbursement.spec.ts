@@ -54,4 +54,70 @@ describe("FeeReimbursement", () => {
     const feeDifference = feeReimbursement.getReimbursement(actualFeeAmount)
     expect(feeDifference).toBeInstanceOf(FeeDifferenceError)
   })
+  it("returns rounded down amount for USD amounts", () => {
+    const prepaidFeeAmount = {
+      btc: { amount: 100n, currency: WalletCurrency.Btc },
+      usd: { amount: 5n, currency: WalletCurrency.Usd },
+    }
+
+    const priceRatio = PriceRatio(prepaidFeeAmount)
+    if (priceRatio instanceof Error) throw priceRatio
+
+    const feeReimbursement = FeeReimbursement({ prepaidFeeAmount, priceRatio })
+
+    const actualFeeAmount1 = { amount: 1n, currency: WalletCurrency.Btc }
+    const feeDifference1 = feeReimbursement.getReimbursement(actualFeeAmount1)
+    expect(feeDifference1).toStrictEqual({
+      btc: { amount: 99n, currency: "BTC" },
+      usd: { currency: "USD", amount: 4n },
+    })
+
+    const actualFeeAmount2 = { amount: 19n, currency: WalletCurrency.Btc }
+    const feeDifference2 = feeReimbursement.getReimbursement(actualFeeAmount2)
+    expect(feeDifference2).toStrictEqual({
+      btc: { amount: 81n, currency: "BTC" },
+      usd: { currency: "USD", amount: 4n },
+    })
+
+    const actualFeeAmount3 = { amount: 21n, currency: WalletCurrency.Btc }
+    const feeDifference3 = feeReimbursement.getReimbursement(actualFeeAmount3)
+    expect(feeDifference3).toStrictEqual({
+      btc: { amount: 79n, currency: "BTC" },
+      usd: { currency: "USD", amount: 3n },
+    })
+  })
+  it("returns exact amount for USD amounts when no remainder", () => {
+    const prepaidFeeAmount = {
+      btc: { amount: 100n, currency: WalletCurrency.Btc },
+      usd: { amount: 5n, currency: WalletCurrency.Usd },
+    }
+
+    const priceRatio = PriceRatio(prepaidFeeAmount)
+    if (priceRatio instanceof Error) throw priceRatio
+
+    const feeReimbursement = FeeReimbursement({ prepaidFeeAmount, priceRatio })
+
+    const actualFeeAmount = { amount: 20n, currency: WalletCurrency.Btc }
+    const feeDifference = feeReimbursement.getReimbursement(actualFeeAmount)
+    expect(feeDifference).toStrictEqual({
+      btc: { amount: 80n, currency: "BTC" },
+      usd: { currency: "USD", amount: 4n },
+    })
+  })
+  it("returns original amount for zero fee actual amount", () => {
+    const prepaidFeeAmount = {
+      btc: { amount: 100n, currency: WalletCurrency.Btc },
+      usd: { amount: 5n, currency: WalletCurrency.Usd },
+    }
+
+    const priceRatio = PriceRatio(prepaidFeeAmount)
+    if (priceRatio instanceof Error) throw priceRatio
+
+    const feeReimbursement = FeeReimbursement({ prepaidFeeAmount, priceRatio })
+    const actualFeeAmount = { amount: 0n, currency: WalletCurrency.Btc }
+    const feeDifference = feeReimbursement.getReimbursement(actualFeeAmount)
+
+    console.log(feeDifference)
+    expect(feeDifference).toStrictEqual(prepaidFeeAmount)
+  })
 })
