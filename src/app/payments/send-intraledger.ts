@@ -306,7 +306,7 @@ const addContactsAfterSend = async ({
   return true
 }
 
-const recipientDetailsFromWallet = (recipientDetails) => {
+const recipientDetailsFromWallet = (recipientDetails: RecipientDetails) => {
   if (recipientDetails === undefined) {
     return new NoRecipientDetailsForIntraLedgerFlowError()
   }
