@@ -37,11 +37,9 @@ type PaymentFlowState<
   cachedRoute?: RawRoute
 }
 
-type PaymentFlowStatePendingUpdate = XorPaymentHashProperty & {
-  senderWalletId: WalletId
+type PaymentFlowStateIndex = XorPaymentHashProperty & {
+  walletId: WalletId
   inputAmount: bigint
-
-  paymentSentAndPending: boolean
 }
 
 type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFlowState<
@@ -155,20 +153,14 @@ interface IPaymentFlowRepository {
   persistNew<S extends WalletCurrency>(
     payment: PaymentFlow<S, WalletCurrency>,
   ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
-  findLightningPaymentFlow<S extends WalletCurrency, R extends WalletCurrency>({
-    walletId,
-    paymentHash,
-    intraLedgerHash,
-    inputAmount,
-  }: XorPaymentHashProperty & {
-    walletId: WalletId
-    inputAmount: bigint
-  }): Promise<PaymentFlow<S, R> | RepositoryError>
+  findLightningPaymentFlow<S extends WalletCurrency, R extends WalletCurrency>(
+    paymentFlowIndex: PaymentFlowStateIndex,
+  ): Promise<PaymentFlow<S, R> | RepositoryError>
   updateLightningPaymentFlow<S extends WalletCurrency>(
     paymentFlow: PaymentFlow<S, WalletCurrency>,
   ): Promise<true | RepositoryError>
-  updatePendingLightningPaymentFlow<S extends WalletCurrency>(
-    paymentFlowPendingUpdate: PaymentFlowStatePendingUpdate,
+  markLightningPaymentFlowNotPending<S extends WalletCurrency>(
+    paymentFlowIndex: PaymentFlowStateIndex,
   ): Promise<PaymentFlow<S, WalletCurrency> | RepositoryError>
   deleteExpiredLightningPaymentFlows(): Promise<number | RepositoryError>
 }

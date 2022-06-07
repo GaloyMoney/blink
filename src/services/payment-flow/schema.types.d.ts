@@ -30,12 +30,10 @@ type PaymentFlowStateRecordPartial = XOR<
   cachedRoute?: RawRoute
 }
 
-type PaymentFlowStateRecordPendingUpdate = XOR<
+type PaymentFlowStateRecordIndex = XOR<
   { paymentHash: string },
   { intraLedgerHash: string }
 > & {
   senderWalletId: string
   inputAmount: number
-
-  paymentSentAndPending: boolean
 }

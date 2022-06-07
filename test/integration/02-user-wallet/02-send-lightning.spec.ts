@@ -45,6 +45,8 @@ import { add, toCents } from "@domain/fiat"
 
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
+import { PaymentFlowStateRepository } from "@services/payment-flow"
+
 import {
   cancelHodlInvoice,
   checkIsBalanced,
@@ -1068,6 +1070,13 @@ describe("UserWallet - Lightning Pay", () => {
       it("pay hodl invoice & ln payments repo updates", async () => {
         const { id, secret } = createInvoiceHash()
 
+        const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
+        const paymentFlowIndex: PaymentFlowStateIndex = {
+          paymentHash: id as PaymentHash,
+          walletId: walletIdB,
+          inputAmount: BigInt(amountInvoice),
+        }
+
         const { request } = await createHodlInvoice({
           id,
           lnd: lndOutside1,
@@ -1112,6 +1121,12 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnPending.isCompleteRecord).toBeFalsy()
         expect(lnPaymentOnPending.createdAt).toBeInstanceOf(Date)
         expect(lnPaymentOnPending.status).toBeUndefined()
+
+        const paymentFlowPending = await paymentFlowRepo.findLightningPaymentFlow(
+          paymentFlowIndex,
+        )
+        if (paymentFlowPending instanceof Error) throw paymentFlowPending
+        expect(paymentFlowPending.paymentSentAndPending).toBeTruthy()
 
         const lndService = LndService()
         if (lndService instanceof Error) throw lndService
@@ -1181,6 +1196,12 @@ describe("UserWallet - Lightning Pay", () => {
         expect(lnPaymentOnSettled.paymentRequest).toBe(request)
         expect(lnPaymentOnSettled.sentFromPubkey).toBe(lnPaymentOnPay.sentFromPubkey)
         expect(lnPaymentOnSettled.isCompleteRecord).toBeTruthy()
+
+        const paymentFlowSettled = await paymentFlowRepo.findLightningPaymentFlow(
+          paymentFlowIndex,
+        )
+        if (paymentFlowSettled instanceof Error) throw paymentFlowSettled
+        expect(paymentFlowSettled.paymentSentAndPending).toBeFalsy()
 
         const finalBalance = await getBalanceHelper(walletIdB)
         expect(finalBalance).toBe(initBalanceB - amountInvoice)
