@@ -39,4 +39,5 @@ type AmountCalculator = {
     b: PaymentAmount<T>,
   ) => PaymentAmount<T>
   divRound: <T extends WalletCurrency>(a: PaymentAmount<T>, b: bigint) => PaymentAmount<T>
+  divFloor: <T extends WalletCurrency>(a: PaymentAmount<T>, b: bigint) => PaymentAmount<T>
 }
