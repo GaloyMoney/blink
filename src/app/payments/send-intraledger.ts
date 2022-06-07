@@ -1,7 +1,7 @@
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
 import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
 import { AccountValidator } from "@domain/accounts"
-import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
+import { CENTS_PER_USD, DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
@@ -261,7 +261,8 @@ const executePaymentViaIntraledger = async ({
         senderWalletId: senderWallet.id,
         recipientWalletId,
         sats: totalSendAmounts.btc.amount,
-        displayCurrencyPerSat: priceRatio.usdPerSat() as unknown as DisplayCurrencyPerSat,
+        displayCurrencyPerSat: (displayCentsPerSat /
+          CENTS_PER_USD) as DisplayCurrencyPerSat,
       })
     } else {
       notificationsService.intraLedgerUsdWalletPaid({

@@ -21,7 +21,7 @@ import {
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
 import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
-import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
+import { CENTS_PER_USD, DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
 
 import { LndService } from "@services/lnd"
@@ -549,7 +549,8 @@ const executePaymentViaIntraledger = async ({
         paymentHash,
         recipientWalletId,
         sats: paymentFlow.btcPaymentAmount.amount,
-        displayCurrencyPerSat: priceRatio.usdPerSat() as unknown as DisplayCurrencyPerSat,
+        displayCurrencyPerSat: (displayCentsPerSat /
+          CENTS_PER_USD) as DisplayCurrencyPerSat,
       })
     } else {
       notificationsService.lnInvoiceUsdWalletPaid({

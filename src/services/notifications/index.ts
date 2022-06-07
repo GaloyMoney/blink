@@ -545,7 +545,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   return {
     priceUpdate,
     ...wrapAsyncFunctionsToRunInSpan({
-      namespace: "services.lnd.offchain",
+      namespace: "services.notifications",
       fns: {
         onChainTransactionReceived,
         onChainTransactionReceivedPending,
