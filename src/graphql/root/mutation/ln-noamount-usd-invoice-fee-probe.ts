@@ -1,3 +1,5 @@
+import { InvalidFeeProbeStateError } from "@domain/bitcoin/lightning"
+
 import { Payments } from "@app"
 
 import { GT } from "@graphql/index"
@@ -36,19 +38,35 @@ const LnNoAmountUsdInvoiceFeeProbeMutation = GT.Field({
     const usdWalletValidated = await validateIsUsdWalletForMutation(walletId)
     if (usdWalletValidated != true) return usdWalletValidated
 
-    const feeUsdAmount = await Payments.getNoAmountLightningFeeEstimation({
-      walletId,
-      amount,
-      paymentRequest,
-    })
-    if (feeUsdAmount instanceof Error) {
-      const appErr = mapError(feeUsdAmount)
-      return { errors: [{ message: appErr.message }] }
+    const { result: feeSatAmount, error } =
+      await Payments.getNoAmountLightningFeeEstimation({
+        walletId,
+        amount,
+        paymentRequest,
+      })
+
+    if (feeSatAmount !== null && error instanceof Error) {
+      return {
+        errors: [{ message: mapError(error).message }],
+        ...normalizePaymentAmount(feeSatAmount),
+      }
+    }
+
+    if (error instanceof Error) {
+      return {
+        errors: [{ message: mapError(error).message }],
+      }
+    }
+
+    if (feeSatAmount === null) {
+      return {
+        errors: [{ message: mapError(new InvalidFeeProbeStateError()).message }],
+      }
     }
 
     return {
       errors: [],
-      ...normalizePaymentAmount(feeUsdAmount),
+      ...normalizePaymentAmount(feeSatAmount),
     }
   },
 })

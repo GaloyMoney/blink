@@ -7,6 +7,7 @@ import { delete2fa } from "@app/users"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
 import {
   defaultTimeToExpiryInSeconds,
+  InvalidFeeProbeStateError,
   LightningServiceError,
   PaymentSendStatus,
   PaymentStatus,
@@ -779,11 +780,13 @@ describe("UserWallet - Lightning Pay", () => {
     const balanceBefore = await getBalanceHelper(walletIdH)
     const { request } = await createInvoice({ lnd: lndOutside1, tokens: balanceBefore })
 
-    const fee = await Payments.getLightningFeeEstimation({
+    const { result: fee, error } = await Payments.getLightningFeeEstimation({
       walletId: walletIdH,
       paymentRequest: request as EncodedPaymentRequest,
     })
-    if (fee instanceof Error) return fee
+    if (error instanceof Error) throw error
+    expect(fee).not.toBeNull()
+    if (fee === null) throw new InvalidFeeProbeStateError()
     expect(fee.amount).toBe(0n)
 
     const paymentResult = await Payments.payInvoiceByWalletId({
@@ -818,11 +821,15 @@ describe("UserWallet - Lightning Pay", () => {
           const wallet = await WalletsRepository().findById(walletId)
           if (wallet instanceof Error) throw wallet
 
-          const feeFromProbe = await Payments.getLightningFeeEstimation({
-            walletId: walletId,
-            paymentRequest: input.invoice,
-          })
-          if (feeFromProbe instanceof Error) throw feeFromProbe
+          const { result: feeFromProbe, error } =
+            await Payments.getLightningFeeEstimation({
+              walletId: walletId,
+              paymentRequest: input.invoice,
+            })
+          if (error instanceof Error) throw error
+          expect(feeFromProbe).not.toBeNull()
+          if (feeFromProbe === null) throw new InvalidFeeProbeStateError()
+
           const paymentResult = await Payments.payInvoiceByWalletIdWithTwoFA({
             paymentRequest: input.invoice as EncodedPaymentRequest,
             memo: input.memo,

@@ -11,6 +11,8 @@ import { WalletsRepository } from "@services/mongoose"
 import { NewDealerPriceService } from "@services/dealer-price"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
+import { PartialResult } from "../partial-result"
+
 import {
   constructPaymentFlowBuilder,
   newCheckIntraledgerLimits,
@@ -23,11 +25,11 @@ export const getLightningFeeEstimation = async ({
 }: {
   walletId: string
   paymentRequest: EncodedPaymentRequest
-}): Promise<PaymentAmount<WalletCurrency> | ApplicationError> => {
+}): Promise<PartialResult<PaymentAmount<WalletCurrency>>> => {
   const decodedInvoice = decodeInvoice(paymentRequest)
-  if (decodedInvoice instanceof Error) return decodedInvoice
+  if (decodedInvoice instanceof Error) return PartialResult.err(decodedInvoice)
   if (decodedInvoice.paymentAmount === null) {
-    return new LnPaymentRequestNonZeroAmountRequiredError()
+    return PartialResult.err(new LnPaymentRequestNonZeroAmountRequiredError())
   }
 
   return estimateLightningFee({
@@ -44,13 +46,13 @@ export const getNoAmountLightningFeeEstimation = async ({
   walletId: string
   paymentRequest: EncodedPaymentRequest
   amount: number
-}): Promise<PaymentAmount<WalletCurrency> | ApplicationError> => {
+}): Promise<PartialResult<PaymentAmount<WalletCurrency>>> => {
   const decodedInvoice = decodeInvoice(paymentRequest)
-  if (decodedInvoice instanceof Error) return decodedInvoice
+  if (decodedInvoice instanceof Error) return PartialResult.err(decodedInvoice)
 
   const { amount: lnInvoiceAmount } = decodedInvoice
   if (lnInvoiceAmount && lnInvoiceAmount > 0) {
-    return new LnPaymentRequestZeroAmountRequiredError()
+    return PartialResult.err(new LnPaymentRequestZeroAmountRequiredError())
   }
 
   return estimateLightningFee({
@@ -68,12 +70,12 @@ const estimateLightningFee = async ({
   uncheckedSenderWalletId: string
   invoice: LnInvoice
   uncheckedAmount?: number
-}): Promise<PaymentAmount<WalletCurrency> | ApplicationError> => {
+}): Promise<PartialResult<PaymentAmount<WalletCurrency>>> => {
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
-  if (senderWalletId instanceof Error) return senderWalletId
+  if (senderWalletId instanceof Error) return PartialResult.err(senderWalletId)
 
   const senderWallet = await WalletsRepository().findById(senderWalletId)
-  if (senderWallet instanceof Error) return senderWallet
+  if (senderWallet instanceof Error) return PartialResult.err(senderWallet)
 
   const dealer = NewDealerPriceService()
   const builder = await constructPaymentFlowBuilder({
@@ -83,12 +85,12 @@ const estimateLightningFee = async ({
     usdFromBtc: dealer.getCentsFromSatsForFutureBuy,
     btcFromUsd: dealer.getSatsFromCentsForFutureSell,
   })
-  if (builder instanceof Error) return builder
+  if (builder instanceof Error) return PartialResult.err(builder)
 
   const usdPaymentAmount = await builder.usdPaymentAmount()
-  if (usdPaymentAmount instanceof Error) return usdPaymentAmount
+  if (usdPaymentAmount instanceof Error) return PartialResult.err(usdPaymentAmount)
   const btcPaymentAmount = await builder.btcPaymentAmount()
-  if (btcPaymentAmount instanceof Error) return btcPaymentAmount
+  if (btcPaymentAmount instanceof Error) return PartialResult.err(btcPaymentAmount)
 
   addAttributesToCurrentSpan({
     "payment.amount": btcPaymentAmount.amount.toString(),
@@ -101,16 +103,16 @@ const estimateLightningFee = async ({
   })
 
   const priceRatio = PriceRatio({ usd: usdPaymentAmount, btc: btcPaymentAmount })
-  if (priceRatio instanceof Error) return priceRatio
+  if (priceRatio instanceof Error) return PartialResult.err(priceRatio)
 
-  let paymentFlow
+  let paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency> | ApplicationError
   if (await builder.isIntraLedger()) {
     const limitCheck = await newCheckIntraledgerLimits({
       amount: usdPaymentAmount,
       wallet: senderWallet,
       priceRatio,
     })
-    if (limitCheck instanceof Error) return limitCheck
+    if (limitCheck instanceof Error) return PartialResult.err(limitCheck)
 
     paymentFlow = await builder.withoutRoute()
   } else {
@@ -119,24 +121,38 @@ const estimateLightningFee = async ({
       wallet: senderWallet,
       priceRatio,
     })
-    if (limitCheck instanceof Error) return limitCheck
+    if (limitCheck instanceof Error) return PartialResult.err(limitCheck)
 
     const lndService = LndService()
-    if (lndService instanceof Error) return lndService
+    if (lndService instanceof Error) {
+      return PartialResult.err(lndService)
+    }
+
     const routeResult = await lndService.findRouteForInvoice({
       invoice,
       amount: btcPaymentAmount,
     })
-    if (routeResult instanceof Error) return routeResult
+    if (routeResult instanceof Error) {
+      paymentFlow = await builder.withoutRoute()
+      if (paymentFlow instanceof Error) {
+        return PartialResult.err(paymentFlow)
+      }
+
+      PaymentFlowStateRepository(defaultTimeToExpiryInSeconds).persistNew(paymentFlow)
+      return PartialResult.partial(
+        paymentFlow.protocolFeeInSenderWalletCurrency(),
+        routeResult,
+      )
+    }
 
     paymentFlow = await builder.withRoute(routeResult)
   }
-  if (paymentFlow instanceof Error) return paymentFlow
+  if (paymentFlow instanceof Error) return PartialResult.err(paymentFlow)
 
   const persistedPayment = await PaymentFlowStateRepository(
     defaultTimeToExpiryInSeconds,
   ).persistNew(paymentFlow)
-  if (persistedPayment instanceof Error) return persistedPayment
+  if (persistedPayment instanceof Error) return PartialResult.err(persistedPayment)
 
-  return persistedPayment.protocolFeeInSenderWalletCurrency()
+  return PartialResult.ok(persistedPayment.protocolFeeInSenderWalletCurrency())
 }

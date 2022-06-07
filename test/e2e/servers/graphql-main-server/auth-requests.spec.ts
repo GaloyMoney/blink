@@ -1,4 +1,4 @@
-import { toSats } from "@domain/bitcoin"
+import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 
@@ -340,16 +340,34 @@ describe("graphql", () => {
       expect(amount).toBe(0)
     })
 
-    it("returns an error if it is unable to find a route for payment", async () => {
+    it("returns an error & 1 sat fee if it is unable to find a route for 1 sat payment", async () => {
       const messageRegex = /^Unable to find a route for payment.$/
-      const unreachablePaymentRequest =
+      const unreachable1SatPaymentRequest =
         "lnbcrt10n1p39jatkpp5djwv295kunhe5e0e4whj3dcjzwy7cmcxk8cl2a4dquyrp3dqydesdqqcqzpuxqr23ssp56u5m680x7resnvcelmsngc64ljm7g5q9r26zw0qyq5fenuqlcfzq9qyyssqxv4kvltas2qshhmqnjctnqkjpdfzu89e428ga6yk9jsp8rf382f3t03ex4e6x3a4sxkl7ruj6lsfpkuu9u9ee5kgr5zdyj7x2nwdljgq74025p"
 
-      const input = { walletId, paymentRequest: unreachablePaymentRequest }
+      const input = { walletId, paymentRequest: unreachable1SatPaymentRequest }
       const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { amount, errors } = result.data.lnInvoiceFeeProbe
       expect(errors).toHaveLength(1)
-      expect(amount).toBe(null)
+      expect(amount).toBe(1)
+      expect(errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
+        ]),
+      )
+    })
+
+    it("returns an error & expected sat fee if it is unable to find a route for 10k sat payment", async () => {
+      const messageRegex = /^Unable to find a route for payment.$/
+      const unreachable10kSatPaymentRequest =
+        "lnbc100u1p3fj2qlpp5gnp23luuectecrlqddwkh7n7flj6zrnna8eqm8h9ws4ecweucqzsdqqcqzpgxqyz5vqsp5gue9tr3djq08kw6286tzk948ys69pphyd6xmwyut0xyn6fqt2zfs9qyyssq043fsndfudcjt05m7pyeusgpdlegm8kcstc5xywc2zws35tmlpsxdyed8jg8vk4erdxpwwap8akc9vm769qw2zqq86u63mqpa22fu6cpqjuudj"
+      const expectedFee = 10_000 * FEECAP_PERCENT
+
+      const input = { walletId, paymentRequest: unreachable10kSatPaymentRequest }
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
+      const { amount, errors } = result.data.lnInvoiceFeeProbe
+      expect(errors).toHaveLength(1)
+      expect(amount).toBe(expectedFee)
       expect(errors).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
@@ -373,7 +391,7 @@ describe("graphql", () => {
       expect(amount).toBe(0)
     })
 
-    it("returns an error if it is unable to find a route for payment", async () => {
+    it("returns an error & 1 sat fee if it is unable to find a route for 1 sat payment", async () => {
       const messageRegex = /^Unable to find a route for payment.$/
       const unreachablePaymentRequest =
         "lnbcrt1p39jaempp58sazckz8cce377ry7cle7k6rwafsjzkuqg022cp2vhxvccyss3csdqqcqzpuxqr23ssp509fhyjxf4utxetalmjett6xvwrm3g7datl6sted2w2m3qdnlq7ps9qyyssqg49tguulzccdtfdl07ltep8294d60tcryxl0tcau0uzwpre6mmxq7mc6737ffctl59fxv32a9g0ul63gx304862fuuwslnr2cd3ghuqq2rsxaz"
@@ -382,7 +400,31 @@ describe("graphql", () => {
       const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { amount, errors } = result.data.lnNoAmountInvoiceFeeProbe
       expect(errors).toHaveLength(1)
-      expect(amount).toBe(null)
+      expect(amount).toBe(1)
+      expect(errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
+        ]),
+      )
+    })
+
+    it("returns an error & expected fee if it is unable to find a route for 10k sat payment", async () => {
+      const messageRegex = /^Unable to find a route for payment.$/
+      const unreachablePaymentRequest =
+        "lnbcrt1p39jaempp58sazckz8cce377ry7cle7k6rwafsjzkuqg022cp2vhxvccyss3csdqqcqzpuxqr23ssp509fhyjxf4utxetalmjett6xvwrm3g7datl6sted2w2m3qdnlq7ps9qyyssqg49tguulzccdtfdl07ltep8294d60tcryxl0tcau0uzwpre6mmxq7mc6737ffctl59fxv32a9g0ul63gx304862fuuwslnr2cd3ghuqq2rsxaz"
+
+      const paymentAmount = 10_000
+      const expectedFee = paymentAmount * FEECAP_PERCENT
+
+      const input = {
+        walletId,
+        amount: paymentAmount,
+        paymentRequest: unreachablePaymentRequest,
+      }
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
+      const { amount, errors } = result.data.lnNoAmountInvoiceFeeProbe
+      expect(errors).toHaveLength(1)
+      expect(amount).toBe(expectedFee)
       expect(errors).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
