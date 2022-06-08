@@ -2,6 +2,7 @@ type PriceRatio = {
   convertFromUsd(convert: UsdPaymentAmount): BtcPaymentAmount
   convertFromBtc(convert: BtcPaymentAmount): UsdPaymentAmount
   convertFromBtcToFloor(convert: BtcPaymentAmount): UsdPaymentAmount
+  convertFromBtcToCeil(convert: BtcPaymentAmount): UsdPaymentAmount
   usdPerSat(): DisplayCurrencyBasePerSat
 }
 

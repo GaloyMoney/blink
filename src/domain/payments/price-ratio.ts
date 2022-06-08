@@ -52,10 +52,17 @@ export const PriceRatio = ({
       btc.amount,
     )
 
+  const convertFromBtcToCeil = (convert: BtcPaymentAmount): UsdPaymentAmount =>
+    calc.divCeil(
+      { amount: convert.amount * usd.amount, currency: WalletCurrency.Usd },
+      btc.amount,
+    )
+
   return {
     convertFromUsd,
     convertFromBtc,
     convertFromBtcToFloor,
+    convertFromBtcToCeil,
     usdPerSat: () =>
       (Number(usd.amount) / Number(btc.amount)) as DisplayCurrencyBasePerSat,
   }
