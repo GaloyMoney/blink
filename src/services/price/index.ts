@@ -13,7 +13,7 @@ import { baseLogger } from "../logger"
 
 import { PriceHistoryProtoDescriptor, PriceProtoDescriptor } from "./grpc"
 
-const priceUrl = process.env.PRICE_ADDRESS ?? "galoy-price"
+const priceUrl = process.env.PRICE_HOST ?? "galoy-price"
 const pricePort = process.env.PRICE_PORT ?? "50051"
 const fullUrl = `${priceUrl}:${pricePort}`
 const priceClient = new PriceProtoDescriptor.PriceFeed(
@@ -22,7 +22,7 @@ const priceClient = new PriceProtoDescriptor.PriceFeed(
 )
 const getPrice = util.promisify(priceClient.getPrice).bind(priceClient)
 
-const priceHistoryUrl = process.env.PRICE_HISTORY_ADDRESS ?? "galoy-price-history"
+const priceHistoryUrl = process.env.PRICE_HISTORY_HOST ?? "price-history"
 const priceHistoryPort = process.env.PRICE_HISTORY_PORT ?? "50052"
 const priceHistoryFullUrl = `${priceHistoryUrl}:${priceHistoryPort}`
 const priceHistoryClient = new PriceHistoryProtoDescriptor.PriceHistory(
