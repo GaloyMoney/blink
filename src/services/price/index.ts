@@ -22,7 +22,7 @@ const priceClient = new PriceProtoDescriptor.PriceFeed(
 )
 const getPrice = util.promisify(priceClient.getPrice).bind(priceClient)
 
-const priceHistoryUrl = process.env.PRICE_HISTORY_ADDRESS ?? "galoy-price-history"
+const priceHistoryUrl = process.env.PRICE_HISTORY_ADDRESS ?? "price-history"
 const priceHistoryPort = process.env.PRICE_HISTORY_PORT ?? "50052"
 const priceHistoryFullUrl = `${priceHistoryUrl}:${priceHistoryPort}`
 const priceHistoryClient = new PriceHistoryProtoDescriptor.PriceHistory(
