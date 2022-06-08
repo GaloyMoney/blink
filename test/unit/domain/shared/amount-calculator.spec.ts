@@ -144,5 +144,49 @@ describe("AmountCalculator", () => {
         expect(result.currency).toBe(currency)
       })
     })
+
+    describe("by rounding to ceil", () => {
+      it("no rounding if remainder is 0", () => {
+        const result = calc.divCeil({ amount: pivot, currency }, divisor)
+        expect(result.amount).toEqual(quotient)
+        expect(result.currency).toBe(currency)
+      })
+
+      it("rounds up if remainder is just above pivot", () => {
+        const result = calc.divCeil({ amount: pivot + 1n, currency }, divisor)
+        expect(result.amount).toEqual(quotient + 1n)
+        expect(result.currency).toBe(currency)
+      })
+
+      it("rounds up if remainder is just below pivot", () => {
+        const result = calc.divCeil({ amount: pivot - 1n, currency }, divisor)
+        expect(result.amount).toEqual(quotient)
+        expect(result.currency).toBe(currency)
+      })
+
+      it("rounds up if remainder is just below half of the divisor", () => {
+        const result = calc.divCeil(
+          { amount: pivot + (divisorBound - 1n), currency },
+          divisor,
+        )
+        expect(result.amount).toEqual(quotient + 1n)
+        expect(result.currency).toBe(currency)
+      })
+
+      it("rounds up if remainder is half of the divisor", () => {
+        const result = calc.divCeil({ amount: pivot + divisorBound, currency }, divisor)
+        expect(result.amount).toEqual(quotient + 1n)
+        expect(result.currency).toBe(currency)
+      })
+
+      it("rounds up if remainder is just above half of the divisor", () => {
+        const result = calc.divCeil(
+          { amount: pivot + (divisorBound + 1n), currency },
+          divisor,
+        )
+        expect(result.amount).toEqual(quotient + 1n)
+        expect(result.currency).toBe(currency)
+      })
+    })
   })
 })
