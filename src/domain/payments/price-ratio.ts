@@ -1,8 +1,9 @@
-import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
-import { paymentAmountFromCents, paymentAmountFromSats } from "@domain/shared"
+import { RATIO_PRECISION } from "@config"
+import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import { InvalidZeroAmountPriceRatioInputError } from "./errors"
+
+const calc = AmountCalculator()
 
 export const PriceRatio = ({
   usd,
@@ -16,19 +17,27 @@ export const PriceRatio = ({
   }
 
   const convertFromUsd = (convert: UsdPaymentAmount): BtcPaymentAmount => {
-    const amountAsNumber =
-      (Number(convert.amount) * Number(btc.amount)) / Number(usd.amount)
-    const amount = Math.round(amountAsNumber)
-    const btcAmount = convert.amount === 0n ? 0n : amount === 0 ? 1n : amount
-    return paymentAmountFromSats(toSats(btcAmount))
+    const currency = WalletCurrency.Btc
+
+    if (convert.amount === 0n) {
+      return { amount: 0n, currency }
+    }
+
+    const amount = calc.div({ amount: convert.amount * btc.amount, currency }, usd.amount)
+
+    return { amount: amount.amount || 1n, currency }
   }
 
   const convertFromBtc = (convert: BtcPaymentAmount): UsdPaymentAmount => {
-    const amountAsNumber =
-      (Number(convert.amount) * Number(usd.amount)) / Number(btc.amount)
-    const amount = Math.round(amountAsNumber)
-    const usdAmount = convert.amount === 0n ? 0 : amount === 0 ? 1 : amount
-    return paymentAmountFromCents(toCents(usdAmount))
+    const currency = WalletCurrency.Usd
+
+    if (convert.amount === 0n) {
+      return { amount: 0n, currency }
+    }
+
+    const amount = calc.div({ amount: convert.amount * usd.amount, currency }, btc.amount)
+
+    return { amount: amount.amount || 1n, currency }
   }
 
   return {
@@ -37,4 +46,20 @@ export const PriceRatio = ({
     usdPerSat: () =>
       (Number(usd.amount) / Number(btc.amount)) as DisplayCurrencyBasePerSat,
   }
+}
+
+export const toPriceRatio = (ratio: number): PriceRatio | ValidationError => {
+  const precision = RATIO_PRECISION
+
+  const usd: UsdPaymentAmount = {
+    amount: BigInt(Math.floor(ratio * precision)),
+    currency: WalletCurrency.Usd,
+  }
+
+  const btc: BtcPaymentAmount = {
+    amount: BigInt(precision),
+    currency: WalletCurrency.Btc,
+  }
+
+  return PriceRatio({ usd, btc })
 }

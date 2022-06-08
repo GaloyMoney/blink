@@ -149,6 +149,9 @@ describe("LightningPaymentFlowBuilder", () => {
           checkSenderWallet(payment)
 
           const btcProtocolFee = LnFees().feeFromRawRoute(rawRoute)
+          if (btcProtocolFee instanceof Error) return btcProtocolFee
+          expect(btcProtocolFee).not.toBeInstanceOf(Error)
+
           expect(payment).toEqual(
             expect.objectContaining({
               btcProtocolFee,

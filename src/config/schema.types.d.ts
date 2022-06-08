@@ -30,6 +30,7 @@ type YamlSchema = {
       hedgingEnabled: boolean
     }
   }
+  ratioPrecision: number
   buildVersion: {
     android: BuildNumberInput
     ios: BuildNumberInput

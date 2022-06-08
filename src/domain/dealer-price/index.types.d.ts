@@ -60,5 +60,5 @@ interface INewDealerPriceService {
     amount: UsdPaymentAmount,
   ): Promise<BtcPaymentAmount | DealerPriceServiceError>
 
-  getCentsPerSatsExchangeMidRate(): Promise<CentsPerSatsRatio | DealerPriceServiceError>
+  getCentsPerSatsExchangeMidRate(): Promise<PriceRatio | ValidationError>
 }

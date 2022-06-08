@@ -1,7 +1,8 @@
 import { SATS_PER_BTC, toSats } from "@domain/bitcoin"
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 import { CENTS_PER_USD, toCents, toCentsPerSatsRatio } from "@domain/fiat"
-import { paymentAmountFromCents, paymentAmountFromSats } from "@domain/shared"
+import { toPriceRatio } from "@domain/payments"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 // simulated price at 20k btc/usd
 // or 50 sats per cents. 0.05 sat per cents
@@ -71,65 +72,97 @@ export const NewDealerPriceService = (
 ): INewDealerPriceService => ({
   getCentsFromSatsForImmediateBuy: async (
     amount: BtcPaymentAmount,
-  ): Promise<UsdPaymentAmount> =>
-    paymentAmountFromCents(toCents(Math.floor(Number(amount.amount) / buyImmediate))),
+  ): Promise<UsdPaymentAmount | DealerPriceServiceError> => {
+    const amountForPayment = Math.floor(Number(amount.amount) / buyImmediate)
+
+    return paymentAmountFromNumber({
+      amount: amountForPayment,
+      currency: WalletCurrency.Usd,
+    })
+  },
   getCentsFromSatsForImmediateSell: async (
     amount: BtcPaymentAmount,
-  ): Promise<UsdPaymentAmount> =>
-    paymentAmountFromCents(
-      toCents(Math.floor(Number(amount.amount) / sellUsdImmediateFromSats)),
-    ),
+  ): Promise<UsdPaymentAmount | DealerPriceServiceError> => {
+    const amountForPayment = Math.floor(Number(amount.amount) / sellUsdImmediateFromSats)
+
+    return paymentAmountFromNumber({
+      amount: amountForPayment,
+      currency: WalletCurrency.Usd,
+    })
+  },
   getCentsFromSatsForFutureBuy: async (
     amount: BtcPaymentAmount,
-  ): Promise<UsdPaymentAmount> =>
-    paymentAmountFromCents(
-      toCents(
-        (Math.floor(Number(amount.amount) * getBuyUsdQuoteFromSats) *
-          timeToExpiryInSeconds) /
-          timeToExpiryInSeconds,
-      ),
-    ),
+  ): Promise<UsdPaymentAmount | DealerPriceServiceError> => {
+    const amountForPayment =
+      (Math.floor(Number(amount.amount) * getBuyUsdQuoteFromSats) *
+        timeToExpiryInSeconds) /
+      timeToExpiryInSeconds
+
+    return paymentAmountFromNumber({
+      amount: amountForPayment,
+      currency: WalletCurrency.Usd,
+    })
+  },
   getCentsFromSatsForFutureSell: async (
     amount: BtcPaymentAmount,
-  ): Promise<UsdPaymentAmount> =>
-    paymentAmountFromCents(
-      toCents(
-        (Math.floor(Number(amount.amount) * getSellUsdQuoteFromSats) *
-          timeToExpiryInSeconds) /
-          timeToExpiryInSeconds,
-      ),
-    ),
+  ): Promise<UsdPaymentAmount | DealerPriceServiceError> => {
+    const amountForPayment =
+      (Math.floor(Number(amount.amount) * getSellUsdQuoteFromSats) *
+        timeToExpiryInSeconds) /
+      timeToExpiryInSeconds
+
+    return paymentAmountFromNumber({
+      amount: amountForPayment,
+      currency: WalletCurrency.Usd,
+    })
+  },
 
   getSatsFromCentsForImmediateBuy: async (
     amount: UsdPaymentAmount,
-  ): Promise<BtcPaymentAmount> =>
-    paymentAmountFromSats(
-      toSats(Math.floor(Number(amount.amount) * buyUsdImmediateFromCents)),
-    ),
+  ): Promise<BtcPaymentAmount | DealerPriceServiceError> => {
+    const amountForPayment = Math.floor(Number(amount.amount) * buyUsdImmediateFromCents)
+
+    return paymentAmountFromNumber({
+      amount: amountForPayment,
+      currency: WalletCurrency.Btc,
+    })
+  },
   getSatsFromCentsForImmediateSell: async (
     amount: UsdPaymentAmount,
-  ): Promise<BtcPaymentAmount> =>
-    paymentAmountFromSats(toSats(Math.floor(Number(amount.amount) * sellUsdImmediate))),
+  ): Promise<BtcPaymentAmount | DealerPriceServiceError> => {
+    const amountForPayment = Math.floor(Number(amount.amount) * sellUsdImmediate)
+
+    return paymentAmountFromNumber({
+      amount: amountForPayment,
+      currency: WalletCurrency.Btc,
+    })
+  },
   getSatsFromCentsForFutureBuy: async (
     amount: UsdPaymentAmount,
-  ): Promise<BtcPaymentAmount> =>
-    paymentAmountFromSats(
-      toSats(
-        (Math.floor(Number(amount.amount) * getBuyUsdQuoteFromCents) *
-          timeToExpiryInSeconds) /
-          timeToExpiryInSeconds,
-      ),
-    ),
+  ): Promise<BtcPaymentAmount | DealerPriceServiceError> => {
+    const amountForPayment =
+      (Math.floor(Number(amount.amount) * getBuyUsdQuoteFromCents) *
+        timeToExpiryInSeconds) /
+      timeToExpiryInSeconds
+
+    return paymentAmountFromNumber({
+      amount: amountForPayment,
+      currency: WalletCurrency.Btc,
+    })
+  },
   getSatsFromCentsForFutureSell: async (
     amount: UsdPaymentAmount,
-  ): Promise<BtcPaymentAmount> =>
-    paymentAmountFromSats(
-      toSats(
-        (Math.floor(Number(amount.amount) * getSellUsdQuoteFromCents) *
-          timeToExpiryInSeconds) /
-          timeToExpiryInSeconds,
-      ),
-    ),
-  getCentsPerSatsExchangeMidRate: async (): Promise<CentsPerSatsRatio> =>
-    toCentsPerSatsRatio((baseRate * CENTS_PER_USD) / SATS_PER_BTC),
+  ): Promise<BtcPaymentAmount | DealerPriceServiceError> => {
+    const amountForPayment =
+      (Math.floor(Number(amount.amount) * getSellUsdQuoteFromCents) *
+        timeToExpiryInSeconds) /
+      timeToExpiryInSeconds
+
+    return paymentAmountFromNumber({
+      amount: amountForPayment,
+      currency: WalletCurrency.Btc,
+    })
+  },
+  getCentsPerSatsExchangeMidRate: async (): Promise<PriceRatio | ValidationError> =>
+    toPriceRatio((baseRate * CENTS_PER_USD) / SATS_PER_BTC),
 })

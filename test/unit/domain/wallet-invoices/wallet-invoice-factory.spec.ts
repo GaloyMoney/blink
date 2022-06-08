@@ -1,4 +1,4 @@
-import { paymentAmountFromSats, WalletCurrency } from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { MS_PER_DAY } from "@config"
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
@@ -14,7 +14,13 @@ beforeAll(async () => {
 
 describe("wallet invoice factory methods", () => {
   it("translates a registered invoice to wallet invoice", () => {
-    const amountInSats = toSats(42)
+    const amountInSats = 42
+    const paymentAmount = paymentAmountFromNumber({
+      amount: amountInSats,
+      currency: WalletCurrency.Btc,
+    })
+    if (paymentAmount instanceof Error) throw paymentAmount
+
     const registeredInvoice: RegisteredInvoice = {
       invoice: {
         paymentHash: "paymentHash" as PaymentHash,
@@ -23,8 +29,8 @@ describe("wallet invoice factory methods", () => {
         routeHints: [],
         cltvDelta: null,
         destination: "destination" as Pubkey,
-        amount: amountInSats,
-        paymentAmount: paymentAmountFromSats(amountInSats),
+        amount: toSats(amountInSats),
+        paymentAmount,
         milliSatsAmount: toMilliSatsFromNumber(42000),
         description: "",
         features: [],
@@ -51,7 +57,13 @@ describe("wallet invoice factory methods", () => {
   })
 
   it("translates a registered invoice to wallet invoice for a recipient", () => {
-    const amountInSats = toSats(42)
+    const amountInSats = 42
+    const paymentAmount = paymentAmountFromNumber({
+      amount: amountInSats,
+      currency: WalletCurrency.Btc,
+    })
+    if (paymentAmount instanceof Error) throw paymentAmount
+
     const registeredInvoice: RegisteredInvoice = {
       invoice: {
         paymentHash: "paymentHash" as PaymentHash,
@@ -60,8 +72,8 @@ describe("wallet invoice factory methods", () => {
         routeHints: [],
         cltvDelta: null,
         destination: "destination" as Pubkey,
-        amount: amountInSats,
-        paymentAmount: paymentAmountFromSats(amountInSats),
+        amount: toSats(amountInSats),
+        paymentAmount,
         milliSatsAmount: toMilliSatsFromNumber(42000),
         description: "",
         features: [],

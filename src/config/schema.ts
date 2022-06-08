@@ -132,6 +132,7 @@ export const configSchema = {
     displayCurrency: displayCurrencyConfigSchema,
     funder: { type: "string" },
     dealer: dealerConfigSchema,
+    ratioPrecision: { type: "number" },
     buildVersion: {
       type: "object",
       properties: {

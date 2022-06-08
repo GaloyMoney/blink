@@ -441,6 +441,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     if (priceRatio instanceof Error) return priceRatio
 
     const btcProtocolFee = LnFees().feeFromRawRoute(rawRoute)
+    if (btcProtocolFee instanceof Error) return btcProtocolFee
     const usdProtocolFee = priceRatio.convertFromBtc(btcProtocolFee)
 
     return paymentFromState({

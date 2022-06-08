@@ -54,20 +54,6 @@ export const UsdPaymentAmount = (cents: bigint): UsdPaymentAmount => {
   }
 }
 
-export const paymentAmountFromSats = (sats: Satoshis): BtcPaymentAmount => {
-  return {
-    currency: WalletCurrency.Btc,
-    amount: BigInt(sats),
-  }
-}
-
-export const paymentAmountFromCents = (cents: UsdCents): UsdPaymentAmount => {
-  return {
-    currency: WalletCurrency.Usd,
-    amount: BigInt(cents),
-  }
-}
-
 export const paymentAmountFromNumber = <T extends WalletCurrency>({
   amount,
   currency,

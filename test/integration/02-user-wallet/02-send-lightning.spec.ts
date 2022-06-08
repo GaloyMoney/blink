@@ -20,8 +20,8 @@ import {
   SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
 import {
-  paymentAmountFromCents,
-  paymentAmountFromSats,
+  AmountCalculator,
+  paymentAmountFromNumber,
   ValidationError,
   WalletCurrency,
 } from "@domain/shared"
@@ -42,7 +42,7 @@ import { TransactionsMetadataRepository } from "@services/ledger/services"
 
 import { sleep } from "@utils"
 
-import { add, toCents } from "@domain/fiat"
+import { toCents } from "@domain/fiat"
 
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
@@ -68,7 +68,7 @@ import {
   getDefaultWalletIdByTestUserRef,
   getHash,
   getInvoice,
-  getRemainingTwoFALimit,
+  newGetRemainingTwoFALimit,
   getUsdWalletIdByTestUserRef,
   getUserIdByTestUserRef,
   getUserRecordByTestUserRef,
@@ -189,15 +189,20 @@ afterAll(() => {
 
 describe("UserWallet - Lightning Pay", () => {
   it("fails to pay when withdrawalLimit exceeded", async () => {
-    const amountAboveThreshold = toCents(accountLimits.withdrawalLimit + 10)
+    const usdAmountAboveThreshold = paymentAmountFromNumber({
+      amount: accountLimits.withdrawalLimit + 10,
+      currency: WalletCurrency.Usd,
+    })
+    expect(usdAmountAboveThreshold).not.toBeInstanceOf(Error)
+    if (usdAmountAboveThreshold instanceof Error) throw usdAmountAboveThreshold
 
     const midPriceRatio = await getMidPriceRatio()
-    if (midPriceRatio instanceof Error) return midPriceRatio
-    const amount = Math.ceil(amountAboveThreshold / midPriceRatio)
+    if (midPriceRatio instanceof Error) throw midPriceRatio
+    const btcThresholdAmount = midPriceRatio.convertFromUsd(usdAmountAboveThreshold)
 
     const { request } = await createInvoice({
       lnd: lndOutside1,
-      tokens: amount,
+      tokens: Number(btcThresholdAmount.amount),
     })
     const paymentResult = await Payments.payInvoiceByWalletId({
       paymentRequest: request as EncodedPaymentRequest,
@@ -213,15 +218,20 @@ describe("UserWallet - Lightning Pay", () => {
   })
 
   it("fails to pay when amount exceeds intraLedger limit", async () => {
-    const amountAboveThreshold = toCents(accountLimits.intraLedgerLimit + 10)
+    const usdAmountAboveThreshold = paymentAmountFromNumber({
+      amount: accountLimits.intraLedgerLimit + 10,
+      currency: WalletCurrency.Usd,
+    })
+    expect(usdAmountAboveThreshold).not.toBeInstanceOf(Error)
+    if (usdAmountAboveThreshold instanceof Error) throw usdAmountAboveThreshold
 
     const midPriceRatio = await getMidPriceRatio()
-    if (midPriceRatio instanceof Error) return midPriceRatio
-    const amount = Math.ceil(amountAboveThreshold / midPriceRatio)
+    if (midPriceRatio instanceof Error) throw midPriceRatio
+    const btcThresholdAmount = midPriceRatio.convertFromUsd(usdAmountAboveThreshold)
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletIdA as WalletId,
-      amount,
+      amount: Number(btcThresholdAmount.amount),
     })
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
@@ -537,17 +547,32 @@ describe("UserWallet - Lightning Pay", () => {
     expect(txnPayment).not.toBeUndefined()
     if (!txnPayment?.centsAmount) throw new Error("centsAmount missing from payment")
     if (!txnPayment?.satsAmount) throw new Error("satsAmount missing from payment")
+
+    const usdPaymentAmount = paymentAmountFromNumber({
+      amount: txnPayment.centsAmount,
+      currency: WalletCurrency.Usd,
+    })
+    if (usdPaymentAmount instanceof Error) return usdPaymentAmount
+    const btcPaymentAmount = paymentAmountFromNumber({
+      amount: txnPayment.satsAmount,
+      currency: WalletCurrency.Btc,
+    })
+    if (btcPaymentAmount instanceof Error) return btcPaymentAmount
     const paymentAmounts = {
-      usd: paymentAmountFromCents(txnPayment.centsAmount),
-      btc: paymentAmountFromSats(txnPayment.satsAmount),
+      usd: usdPaymentAmount,
+      btc: btcPaymentAmount,
     }
     const priceRatio = PriceRatio(paymentAmounts)
     if (priceRatio instanceof Error) throw priceRatio
 
     const feeSats = toSats(amountInvoice * FEECAP_PERCENT)
-    const feeCents = toCents(
-      priceRatio.convertFromBtc(paymentAmountFromSats(feeSats)).amount,
-    )
+    const feeAmountSats = paymentAmountFromNumber({
+      amount: feeSats,
+      currency: WalletCurrency.Btc,
+    })
+    if (feeAmountSats instanceof Error) return feeAmountSats
+    const feeAmountCents = priceRatio.convertFromBtc(feeAmountSats)
+    const feeCents = toCents(feeAmountCents.amount)
 
     const txnFeeReimburse = txns.find(
       (tx) => tx.type === LedgerTransactionType.LnFeeReimbursement,
@@ -1344,17 +1369,29 @@ describe("UserWallet - Lightning Pay", () => {
         const midPriceRatio = await getMidPriceRatio()
         if (midPriceRatio instanceof Error) return midPriceRatio
 
-        const remainingLimit = await getRemainingTwoFALimit({
-          walletId: walletIdA,
-          satsToCents: (sats) => Math.ceil(sats / midPriceRatio),
+        const remainingLimitAmount = await newGetRemainingTwoFALimit({
+          walletDescriptor: { id: walletIdA, currency: WalletCurrency.Btc },
+          priceRatio: midPriceRatio,
         })
+        if (remainingLimitAmount instanceof Error) throw Error
 
-        const aboveThreshold = add(remainingLimit, toCents(10))
-        const aboveThresholdSats = Math.ceil(aboveThreshold / midPriceRatio)
+        const thresholdDeltaAmount = paymentAmountFromNumber({
+          amount: 10,
+          currency: WalletCurrency.Usd,
+        })
+        if (thresholdDeltaAmount instanceof Error) throw thresholdDeltaAmount
+
+        const usdAmountAboveThreshold = AmountCalculator().add(
+          remainingLimitAmount,
+          thresholdDeltaAmount,
+        )
+        const btcAmountAboveThreshold = midPriceRatio.convertFromUsd(
+          usdAmountAboveThreshold,
+        )
 
         const { request } = await createInvoice({
           lnd: lndOutside1,
-          tokens: aboveThresholdSats,
+          tokens: Number(btcAmountAboveThreshold.amount),
         })
         const result = await fn({ account: accountA, walletId: walletIdA })({
           invoice: request,

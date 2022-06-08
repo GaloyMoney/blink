@@ -45,6 +45,8 @@ if (!valid) {
 }
 export const yamlConfig = yamlConfigInit as YamlSchema
 
+export const RATIO_PRECISION: number = yamlConfig.ratioPrecision
+
 export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.spamLimits.memoSharingSatsThreshold
 
 // how many block are we looking back for getChainTransactions

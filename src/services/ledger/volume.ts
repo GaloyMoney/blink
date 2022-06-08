@@ -1,12 +1,6 @@
-import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerServiceError, UnknownLedgerError } from "@domain/ledger/errors"
-import {
-  paymentAmountFromCents,
-  paymentAmountFromSats,
-  WalletCurrency,
-} from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { Transaction } from "./books"
@@ -52,16 +46,19 @@ const volumeAmountFn =
     const volume = await txVolumeSince({ walletId, timestamp, txnGroup })
     if (volume instanceof Error) return volume
 
-    return {
-      outgoingBaseAmount:
-        walletCurrency === WalletCurrency.Btc
-          ? paymentAmountFromSats(toSats(volume.outgoingBaseAmount))
-          : paymentAmountFromCents(toCents(volume.outgoingBaseAmount)),
-      incomingBaseAmount:
-        walletCurrency === WalletCurrency.Btc
-          ? paymentAmountFromSats(toSats(volume.incomingBaseAmount))
-          : paymentAmountFromCents(toCents(volume.incomingBaseAmount)),
-    }
+    const outgoingBaseAmount = paymentAmountFromNumber({
+      amount: volume.outgoingBaseAmount,
+      currency: walletCurrency,
+    })
+    if (outgoingBaseAmount instanceof Error) return outgoingBaseAmount
+
+    const incomingBaseAmount = paymentAmountFromNumber({
+      amount: volume.incomingBaseAmount,
+      currency: walletCurrency,
+    })
+    if (incomingBaseAmount instanceof Error) return incomingBaseAmount
+
+    return { outgoingBaseAmount, incomingBaseAmount }
   }
 
 const txVolumeSince = async ({

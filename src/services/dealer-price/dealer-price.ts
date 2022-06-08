@@ -4,7 +4,7 @@ import { getDealerPriceConfig } from "@config"
 
 import { credentials } from "@grpc/grpc-js"
 
-import { paymentAmountFromCents, paymentAmountFromSats } from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import {
   NoConnectionToDealerError,
@@ -15,6 +15,7 @@ import { toSats } from "@domain/bitcoin"
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 
 import { toCents, toCentsPerSatsRatio } from "@domain/fiat"
+import { toPriceRatio } from "@domain/payments"
 
 import { baseLogger } from "../logger"
 
@@ -269,7 +270,7 @@ export const NewDealerPriceService = (
         ),
       )
       const amount = response.getAmountInCents()
-      return paymentAmountFromCents(toCents(amount))
+      return paymentAmountFromNumber({ amount, currency: WalletCurrency.Usd })
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForImmediateBuy unable to fetch price")
       return parseDealerErrors(error)
@@ -286,7 +287,7 @@ export const NewDealerPriceService = (
         ),
       )
       const amount = response.getAmountInCents()
-      return paymentAmountFromCents(toCents(amount))
+      return paymentAmountFromNumber({ amount, currency: WalletCurrency.Usd })
     } catch (error) {
       baseLogger.error(
         { error },
@@ -306,7 +307,7 @@ export const NewDealerPriceService = (
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
       const amount = response.getAmountInCents()
-      return paymentAmountFromCents(toCents(amount))
+      return paymentAmountFromNumber({ amount, currency: WalletCurrency.Usd })
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForFutureBuy unable to fetch price")
       return parseDealerErrors(error)
@@ -323,7 +324,7 @@ export const NewDealerPriceService = (
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
       const amount = response.getAmountInCents()
-      return paymentAmountFromCents(toCents(amount))
+      return paymentAmountFromNumber({ amount, currency: WalletCurrency.Usd })
     } catch (error) {
       baseLogger.error({ error }, "GetCentsFromSatsForFutureSell unable to fetch price")
       return parseDealerErrors(error)
@@ -340,7 +341,7 @@ export const NewDealerPriceService = (
         ),
       )
       const amount = response.getAmountInSatoshis()
-      return paymentAmountFromSats(toSats(amount))
+      return paymentAmountFromNumber({ amount, currency: WalletCurrency.Btc })
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForImmediateBuy unable to fetch price")
       return parseDealerErrors(error)
@@ -357,7 +358,7 @@ export const NewDealerPriceService = (
         ),
       )
       const amount = response.getAmountInSatoshis()
-      return paymentAmountFromSats(toSats(amount))
+      return paymentAmountFromNumber({ amount, currency: WalletCurrency.Btc })
     } catch (error) {
       baseLogger.error(
         { error },
@@ -377,7 +378,7 @@ export const NewDealerPriceService = (
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
       const amount = response.getAmountInSatoshis()
-      return paymentAmountFromSats(toSats(amount))
+      return paymentAmountFromNumber({ amount, currency: WalletCurrency.Btc })
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForFutureBuy unable to fetch price")
       return parseDealerErrors(error)
@@ -394,7 +395,7 @@ export const NewDealerPriceService = (
           .setTimeInSeconds(timeToExpiryInSeconds),
       )
       const amount = response.getAmountInSatoshis()
-      return paymentAmountFromSats(toSats(amount))
+      return paymentAmountFromNumber({ amount, currency: WalletCurrency.Btc })
     } catch (error) {
       baseLogger.error({ error }, "GetSatsFromCentsForFutureSell unable to fetch price")
       return parseDealerErrors(error)
@@ -402,13 +403,13 @@ export const NewDealerPriceService = (
   }
 
   const getCentsPerSatsExchangeMidRate = async function (): Promise<
-    CentsPerSatsRatio | DealerPriceServiceError
+    PriceRatio | ValidationError
   > {
     try {
       const response = await clientGetCentsPerSatsExchangeMidRate(
         new GetCentsPerSatsExchangeMidRateRequest(),
       )
-      return toCentsPerSatsRatio(response.getRatioInCentsPerSatoshis())
+      return toPriceRatio(response.getRatioInCentsPerSatoshis())
     } catch (error) {
       baseLogger.error({ error }, "GetCentsPerSatsExchangeMidRate unable to fetch price")
       return parseDealerErrors(error)

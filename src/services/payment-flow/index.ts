@@ -1,5 +1,3 @@
-import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
 import {
   CouldNotFindLightningPaymentFlowError,
   CouldNotUpdateLightningPaymentFlowError,
@@ -8,11 +6,7 @@ import {
   UnknownRepositoryError,
 } from "@domain/errors"
 import { InvalidLightningPaymentFlowStateError, PaymentFlow } from "@domain/payments"
-import {
-  paymentAmountFromCents,
-  paymentAmountFromSats,
-  WalletCurrency,
-} from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { safeBigInt } from "@domain/shared/safe"
 import { elapsedSinceTimestamp } from "@utils"
 
@@ -202,6 +196,30 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
       )
   if (hash instanceof Error) return hash
 
+  const btcPaymentAmount = paymentAmountFromNumber({
+    amount: paymentFlowState.btcPaymentAmount,
+    currency: WalletCurrency.Btc,
+  })
+  if (btcPaymentAmount instanceof Error) return btcPaymentAmount
+
+  const usdPaymentAmount = paymentAmountFromNumber({
+    amount: paymentFlowState.usdPaymentAmount,
+    currency: WalletCurrency.Usd,
+  })
+  if (usdPaymentAmount instanceof Error) return usdPaymentAmount
+
+  const btcProtocolFee = paymentAmountFromNumber({
+    amount: paymentFlowState.btcProtocolFee,
+    currency: WalletCurrency.Btc,
+  })
+  if (btcProtocolFee instanceof Error) return btcProtocolFee
+
+  const usdProtocolFee = paymentAmountFromNumber({
+    amount: paymentFlowState.usdProtocolFee,
+    currency: WalletCurrency.Usd,
+  })
+  if (usdProtocolFee instanceof Error) return usdProtocolFee
+
   return PaymentFlow<S, R>({
     ...hash,
 
@@ -214,12 +232,12 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
     createdAt: paymentFlowState.createdAt,
     paymentSentAndPending: paymentFlowState.paymentSentAndPending,
 
-    btcPaymentAmount: paymentAmountFromSats(toSats(paymentFlowState.btcPaymentAmount)),
-    usdPaymentAmount: paymentAmountFromCents(toCents(paymentFlowState.usdPaymentAmount)),
+    btcPaymentAmount,
+    usdPaymentAmount,
     inputAmount,
 
-    btcProtocolFee: paymentAmountFromSats(toSats(paymentFlowState.btcProtocolFee)),
-    usdProtocolFee: paymentAmountFromCents(toCents(paymentFlowState.usdProtocolFee)),
+    btcProtocolFee,
+    usdProtocolFee,
 
     recipientWalletId: (paymentFlowState.recipientWalletId as WalletId) || undefined,
     recipientWalletCurrency: (paymentFlowState.recipientWalletCurrency as R) || undefined,
