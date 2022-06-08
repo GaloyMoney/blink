@@ -46,9 +46,16 @@ export const PriceRatio = ({
     return { amount: amount.amount || 1n, currency }
   }
 
+  const convertFromBtcToFloor = (convert: BtcPaymentAmount): UsdPaymentAmount =>
+    calc.divFloor(
+      { amount: convert.amount * usd.amount, currency: WalletCurrency.Usd },
+      btc.amount,
+    )
+
   return {
     convertFromUsd,
     convertFromBtc,
+    convertFromBtcToFloor,
     usdPerSat: () =>
       (Number(usd.amount) / Number(btc.amount)) as DisplayCurrencyBasePerSat,
   }
