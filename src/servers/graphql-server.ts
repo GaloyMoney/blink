@@ -19,7 +19,7 @@ import {
 } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import express from "express"
-import expressJwt from "express-jwt"
+import { expressjwt } from "express-jwt"
 import { execute, GraphQLError, subscribe } from "graphql"
 import { rule } from "graphql-shield"
 import helmet from "helmet"
@@ -190,9 +190,14 @@ export const startApolloServer = async ({
 
   app.use("/auth", authRouter)
 
+  const enablePolicy = apolloConfig.playground ? false : undefined
+
   app.use(
     helmet({
-      contentSecurityPolicy: apolloConfig.playground ? false : undefined,
+      crossOriginEmbedderPolicy: enablePolicy,
+      crossOriginOpenerPolicy: enablePolicy,
+      crossOriginResourcePolicy: enablePolicy,
+      contentSecurityPolicy: enablePolicy,
     }),
   )
 
@@ -223,7 +228,7 @@ export const startApolloServer = async ({
   }
 
   app.use(
-    expressJwt({
+    expressjwt({
       secret: JWT_SECRET,
       algorithms: ["HS256"],
       credentialsRequired: false,

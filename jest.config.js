@@ -4,7 +4,7 @@ module.exports = {
   roots: ["<rootDir>/test"],
   transform: {
     "^.+\\.(ts)$": "ts-jest",
-    "^.+\\.(gql)$": "@jagi/jest-transform-graphql",
+    "^.+\\.(gql)$": "@graphql-tools/jest-transform",
   },
   testRegex: ".*\\.spec\\.ts$",
   testSequencer: "./test/jest-test-sequencer.js",

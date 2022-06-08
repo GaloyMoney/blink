@@ -4,18 +4,13 @@ module.exports = {
   roots: ["<rootDir>/test/e2e"],
   transform: {
     "^.+\\.(ts)$": "ts-jest",
-    "^.+\\.(gql)$": "@jagi/jest-transform-graphql",
-    "node_modules/tiny-secp256k1/lib/cjs/.+\\.(js|ts|cjs|mjs)$": "ts-jest",
-    "node_modules/uint8array-tools/src/cjs.+\\.(js|ts|cjs|mjs)$": "ts-jest"
+    "^.+\\.(gql)$": "@graphql-tools/jest-transform"
   },
   testRegex: ".*\\.spec\\.ts$",
   testSequencer: "<rootDir>/test/jest-test-sequencer.js",
   setupFilesAfterEnv: ["<rootDir>/test/jest-e2e.setup.js"],
   testEnvironment: "node",
   moduleNameMapper: {
-    "^tiny-secp256k1$": "tiny-secp256k1/lib/cjs",
-    "^uint8array-tools$": "uint8array-tools/src/cjs",
-
     "^@config$": ["<rootDir>src/config/index"],
     "^@app$": ["<rootDir>src/app/index"],
     "^@utils$": ["<rootDir>src/utils/index"],
