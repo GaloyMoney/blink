@@ -4,27 +4,27 @@ import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import Timestamp from "@graphql/types/scalar/timestamp"
 
-const LightningInvoice = GT.Object({
+const LightningInvoice = GT.Object<LnInvoiceLookup>({
   name: "LightningInvoice",
   fields: () => ({
     createdAt: { type: GT.NonNull(Timestamp) },
     confirmedAt: { type: Timestamp },
     description: {
       type: GT.NonNull(GT.String),
-      resolve: (source: LnInvoiceLookup) => source.lnInvoice.description,
+      resolve: (source) => source.lnInvoice.description,
     },
     expiresAt: {
       type: Timestamp,
-      resolve: (source: LnInvoiceLookup) => source.lnInvoice.expiresAt,
+      resolve: (source) => source.lnInvoice.expiresAt,
     },
     isSettled: { type: GT.NonNull(GT.Boolean) },
     received: {
       type: GT.NonNull(SatAmount),
-      resolve: (source: LnInvoiceLookup) => source.roundedDownReceived,
+      resolve: (source) => source.roundedDownReceived,
     },
     request: {
       type: LnPaymentRequest,
-      resolve: (source: LnInvoiceLookup) => source.lnInvoice.paymentRequest,
+      resolve: (source) => source.lnInvoice.paymentRequest,
     },
     secretPreImage: { type: GT.NonNull(LnPaymentPreImage) },
   }),

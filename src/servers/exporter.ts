@@ -210,7 +210,13 @@ const createGauge = ({
 }
 
 const cache = LocalCacheService()
-const createWalletGauge = ({ walletName, getId }) => {
+const createWalletGauge = ({
+  walletName,
+  getId,
+}: {
+  walletName: string
+  getId: () => Promise<WalletId>
+}) => {
   const name = `${walletName}_balance`
   const description = `${walletName} balance`
 
