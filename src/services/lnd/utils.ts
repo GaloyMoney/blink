@@ -86,7 +86,7 @@ export const deleteExpiredLightningPaymentFlows = async (): Promise<number> => {
 }
 
 export const lndsBalances = async () => {
-  const data = await Promise.all(getLnds().map(({ lnd }) => lndBalances({ lnd })))
+  const data = await Promise.all(getLnds().map(({ lnd }) => lndBalances(lnd)))
   return {
     total: toSats(sumBy(data, "total")),
     onChain: toSats(sumBy(data, "onChain")),
@@ -96,7 +96,7 @@ export const lndsBalances = async () => {
   }
 }
 
-export const lndBalances = async ({ lnd }) => {
+export const lndBalances = async (lnd: AuthenticatedLnd) => {
   // Onchain
   const { chain_balance } = await getChainBalance({ lnd })
   const { channel_balance, pending_balance: opening_channel_balance } =
