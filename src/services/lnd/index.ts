@@ -279,7 +279,7 @@ export const LndService = (
   }
 
   const listPaymentsFactory =
-    (getPaymentsFn) =>
+    (getPaymentsFn: PaymentFnFactory) =>
     async ({
       after,
       pubkey,
@@ -309,7 +309,7 @@ export const LndService = (
       }
     }
 
-  const listFailedPayments = async (args) => {
+  const listFailedPayments = async (args: ListLnPaymentsArgs) => {
     const result = await listPaymentsFactory(getFailedPayments)(args)
     if (result instanceof Error) return result
 

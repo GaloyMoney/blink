@@ -21,7 +21,7 @@ const dbMetadataSchema = new Schema({
 })
 export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
 
-const walletInvoiceSchema = new Schema({
+const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
   _id: String, // hash of invoice
   walletId: {
     required: true,

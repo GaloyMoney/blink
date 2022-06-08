@@ -66,7 +66,7 @@ interface INotificationsService {
   onChainTransactionPayment(
     args: OnChainTxPaymentArgs,
   ): Promise<void | NotificationsServiceError>
-  priceUpdate: (DisplayCurrencyPerSat: number) => void
+  priceUpdate: (DisplayCurrencyPerSat: DisplayCurrencyPerSat) => void
   lnInvoiceBitcoinWalletPaid: (args: LnInvoicePaidBitcoinWalletArgs) => void
   lnInvoiceUsdWalletPaid: (args: LnInvoicePaidUsdWalletArgs) => void
   intraLedgerBtcWalletPaid(

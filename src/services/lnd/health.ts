@@ -17,7 +17,7 @@ const refreshTime = 10000 // ms
 
 const intervals: NodeJS.Timer[] = []
 
-const isUpLoop = async (param) => {
+const isUpLoop = async (param: LndParamsUnAuthed) => {
   await isUp(param)
   const interval = setInterval(async () => {
     await isUp(param)
@@ -25,7 +25,7 @@ const isUpLoop = async (param) => {
   intervals.push(interval)
 }
 
-const isLndUp = async (param): Promise<void> => {
+const isLndUp = async (param: LndParamsUnAuthed): Promise<void> => {
   let active = false
   const { lnd, socket, active: isParamActive } = param
 

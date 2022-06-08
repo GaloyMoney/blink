@@ -262,7 +262,7 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     }
   }
 
-  const priceUpdate = (displayCurrencyPerSat) => {
+  const priceUpdate = (displayCurrencyPerSat: DisplayCurrencyPerSat) => {
     const payload = { satUsdCentPrice: 100 * displayCurrencyPerSat }
     pubsub.publish({ trigger: PubSubDefaultTriggers.PriceUpdate, payload })
     pubsub.publish({

@@ -9,6 +9,11 @@ type HealthzArgs = {
   checkLndsStatus: boolean
 }
 
+type EventLndActive = {
+  pubkey: string
+  active: boolean
+}
+
 export default function ({
   checkDbConnectionStatus,
   checkRedisStatus,
@@ -16,11 +21,11 @@ export default function ({
 }: HealthzArgs) {
   const lndStatus: { [key: string]: boolean } = {}
   if (checkLndsStatus) {
-    lndStatusEvent.on("started", ({ pubkey, active }) => {
+    lndStatusEvent.on("started", ({ pubkey, active }: EventLndActive) => {
       lndStatus[pubkey] = active
     })
 
-    lndStatusEvent.on("stopped", ({ pubkey, active }) => {
+    lndStatusEvent.on("stopped", ({ pubkey, active }: EventLndActive) => {
       lndStatus[pubkey] = active
     })
   }
