@@ -12,9 +12,9 @@ export const PriceInterval = {
 } as const
 
 export const PriceRange = {
-  OneDay: "1d",
-  OneWeek: "1w",
-  OneMonth: "1m",
-  OneYear: "1y",
-  FiveYears: "5y",
+  OneDay: "OneDay",
+  OneWeek: "OneWeek",
+  OneMonth: "OneMonth",
+  OneYear: "OneYear",
+  FiveYears: "FiveYears",
 } as const

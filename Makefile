@@ -4,6 +4,9 @@ start-deps:
 	docker compose up integration-deps -d
 	direnv reload
 
+update-price-history:
+	docker compose run price-history node servers/history/cron.js
+
 start-main:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/graphql-main-server.ts | yarn pino-pretty -c -l

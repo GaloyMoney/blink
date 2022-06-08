@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+service PriceHistory {
+  rpc ListPrices(PriceHistoryQuery) returns (PriceHistoryResponse) {}
+}
+
+message PriceHistoryQuery {
+  string currency = 1;
+  enum PriceRange {
+    OneDay = 0;
+    OneWeek = 1;
+    OneMonth = 2;
+    OneYear = 3;
+    FiveYears = 4;
+  }
+  PriceRange range = 2;
+}
+
+message PriceHistoryResponse {
+  repeated Tick priceHistory = 1;
+}
+
+message Tick {
+  uint64 timestamp = 1;
+  float price = 2;
+}
