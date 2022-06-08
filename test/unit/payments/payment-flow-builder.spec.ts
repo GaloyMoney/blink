@@ -6,7 +6,9 @@ import {
   LnFees,
   InvalidLightningPaymentFlowBuilderStateError,
 } from "@domain/payments"
-import { ValidationError, WalletCurrency } from "@domain/shared"
+import { AmountCalculator, ValidationError, WalletCurrency } from "@domain/shared"
+
+const calc = AmountCalculator()
 
 describe("LightningPaymentFlowBuilder", () => {
   const paymentRequestWithAmount =
@@ -38,13 +40,27 @@ describe("LightningPaymentFlowBuilder", () => {
 
   // 0.05 ratio
   const midPriceRatioBase = 2000n
-  const divByMidPriceRatio = (amount) => (amount * 100n) / midPriceRatioBase
-  const mulByMidPriceRatio = (amount) => (amount * midPriceRatioBase) / 100n
+  const divByMidPriceRatio = (amount: bigint): bigint =>
+    (amount * 100n) / midPriceRatioBase
+  const divCeilByMidPriceRatio = (amount: bigint): bigint =>
+    calc.divCeil(
+      { amount: amount * 100n, currency: WalletCurrency.Btc },
+      midPriceRatioBase,
+    ).amount
+  const mulByMidPriceRatio = (amount: bigint): bigint =>
+    (amount * midPriceRatioBase) / 100n
 
   // 0.49 ratio
   const dealerPriceRatioBase = 2950n
-  const divByDealerPriceRatio = (amount) => (amount * 100n) / dealerPriceRatioBase
-  const mulByDealerPriceRatio = (amount) => (amount * dealerPriceRatioBase) / 100n
+  const divByDealerPriceRatio = (amount: bigint): bigint =>
+    (amount * 100n) / dealerPriceRatioBase
+  const divCeilByDealerPriceRatio = (amount: bigint): bigint =>
+    calc.divCeil(
+      { amount: amount * 100n, currency: WalletCurrency.Btc },
+      dealerPriceRatioBase,
+    ).amount
+  const mulByDealerPriceRatio = (amount: bigint): bigint =>
+    (amount * dealerPriceRatioBase) / 100n
 
   const usdFromBtcMidPriceFn = async (amount: BtcPaymentAmount) => {
     return Promise.resolve({
@@ -161,11 +177,18 @@ describe("LightningPaymentFlowBuilder", () => {
           if (btcProtocolFee instanceof Error) return btcProtocolFee
           expect(btcProtocolFee).not.toBeInstanceOf(Error)
 
+          // Ensure divCeil will be different from divFloor
+          const amountToMod = btcProtocolFee.amount * 100n
+          expect(amountToMod / dealerPriceRatioBase).not.toEqual(
+            amountToMod / midPriceRatioBase,
+          )
+          expect(amountToMod % midPriceRatioBase).not.toEqual(0n)
+
           expect(payment).toEqual(
             expect.objectContaining({
               btcProtocolFee,
               usdProtocolFee: {
-                amount: divByMidPriceRatio(btcProtocolFee.amount),
+                amount: divCeilByMidPriceRatio(btcProtocolFee.amount),
                 currency: WalletCurrency.Usd,
               },
               outgoingNodePubkey: pubkey,
@@ -218,6 +241,51 @@ describe("LightningPaymentFlowBuilder", () => {
               usdPaymentAmount,
             }),
           )
+        })
+
+        it("can take fees from a route", async () => {
+          const payment = await withUsdWalletBuilder
+            .withConversion({
+              usdFromBtc,
+              btcFromUsd,
+            })
+            .withRoute({
+              pubkey,
+              rawRoute,
+            })
+          if (payment instanceof Error) throw payment
+
+          checkSettlementMethod(payment)
+          checkInvoice(payment)
+          checkSenderWallet(payment)
+
+          const btcProtocolFee = LnFees().feeFromRawRoute(rawRoute)
+          if (btcProtocolFee instanceof Error) return btcProtocolFee
+          expect(btcProtocolFee).not.toBeInstanceOf(Error)
+
+          // Ensure divCeil will be different from divFloor
+          const amountToMod = btcProtocolFee.amount * 100n
+          expect(amountToMod / dealerPriceRatioBase).not.toEqual(
+            amountToMod / midPriceRatioBase,
+          )
+          expect(amountToMod % dealerPriceRatioBase).not.toEqual(0n)
+
+          expect(payment).toEqual(
+            expect.objectContaining({
+              btcProtocolFee,
+              usdProtocolFee: {
+                amount: divCeilByDealerPriceRatio(btcProtocolFee.amount),
+                currency: WalletCurrency.Usd,
+              },
+              outgoingNodePubkey: pubkey,
+              cachedRoute: rawRoute,
+            }),
+          )
+
+          const { rawRoute: returnedRawRoute, outgoingNodePubkey } =
+            payment.routeDetails()
+          expect(returnedRawRoute).toStrictEqual(rawRoute)
+          expect(outgoingNodePubkey).toBe(pubkey)
         })
       })
     })
