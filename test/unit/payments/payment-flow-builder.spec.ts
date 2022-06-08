@@ -10,7 +10,7 @@ import { ValidationError, WalletCurrency } from "@domain/shared"
 
 describe("LightningPaymentFlowBuilder", () => {
   const paymentRequestWithAmount =
-    "lnbc20u1pvjluezhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppqw508d6qejxtdg4y5r3zarvary0c5xw7kxqrrsssp5m6kmam774klwlh4dhmhaatd7al02m0h0m6kmam774klwlh4dhmhs9qypqqqcqpf3cwux5979a8j28d4ydwahx00saa68wq3az7v9jdgzkghtxnkf3z5t7q5suyq2dl9tqwsap8j0wptc82cpyvey9gf6zyylzrm60qtcqsq7egtsq" as EncodedPaymentRequest
+    "lnbc210u1p32zq9xpp5dpzhj6e7y6d4ggs6awh7m4eupuemas0gq06pqjgy9tq35740jlfsdqqcqzpgxqyz5vqsp58t3zalj5sc563g0xpcgx9lfkeqrx7m7xw53v2txc2pr60jcwn0vq9qyyssqkatadajwt0n285teummg4urul9t3shddnf05cfxzsfykvscxm4zqz37j87sahvz3kul0lzgz2svltdm933yr96du84zpyn8rx6fst4sp43jh32" as EncodedPaymentRequest
   const invoiceWithAmount = decodeInvoice(paymentRequestWithAmount) as LnInvoice
   const paymentRequestWithNoAmount =
     "lnbc1p3zn402pp54skf32qeal5jnfm73u5e3d9h5448l4yutszy0kr9l56vdsy8jefsdqqcqzpuxqyz5vqsp5c6z7a4lrey4ejvhx5q4l83jm9fhy34dsqgxnceem4dgz6fmh456s9qyyssqkxkg6ke6nt39dusdhpansu8j0r5f7gadwcampnw2g8ap0fccteer7hzjc8tgat9m5wxd98nxjxhwx0ha6g95v9edmgd30f0m8kujslgpxtzt6w" as EncodedPaymentRequest
@@ -34,30 +34,39 @@ describe("LightningPaymentFlowBuilder", () => {
     username: "Username" as Username,
   }
   const pubkey = "pubkey" as Pubkey
-  const rawRoute = { total_mtokens: "2000000", fee: 100 } as RawRoute
-  const midPriceRatio = 1n
-  const dealerPriceRatio = 2n
+  const rawRoute = { total_mtokens: "21000000", fee: 210 } as RawRoute
+
+  // 0.05 ratio
+  const midPriceRatioBase = 2000n
+  const divByMidPriceRatio = (amount) => (amount * 100n) / midPriceRatioBase
+  const mulByMidPriceRatio = (amount) => (amount * midPriceRatioBase) / 100n
+
+  // 0.49 ratio
+  const dealerPriceRatioBase = 2950n
+  const divByDealerPriceRatio = (amount) => (amount * 100n) / dealerPriceRatioBase
+  const mulByDealerPriceRatio = (amount) => (amount * dealerPriceRatioBase) / 100n
+
   const usdFromBtcMidPriceFn = async (amount: BtcPaymentAmount) => {
     return Promise.resolve({
-      amount: amount.amount * midPriceRatio,
+      amount: divByMidPriceRatio(amount.amount),
       currency: WalletCurrency.Usd,
     })
   }
   const btcFromUsdMidPriceFn = async (amount: UsdPaymentAmount) => {
     return Promise.resolve({
-      amount: amount.amount / midPriceRatio,
+      amount: mulByMidPriceRatio(amount.amount),
       currency: WalletCurrency.Btc,
     })
   }
   const usdFromBtc = async (amount: BtcPaymentAmount) => {
     return Promise.resolve({
-      amount: amount.amount * dealerPriceRatio,
+      amount: divByDealerPriceRatio(amount.amount),
       currency: WalletCurrency.Usd,
     })
   }
   const btcFromUsd = async (amount: UsdPaymentAmount) => {
     return Promise.resolve({
-      amount: amount.amount / dealerPriceRatio,
+      amount: mulByDealerPriceRatio(amount.amount),
       currency: WalletCurrency.Btc,
     })
   }
@@ -112,9 +121,9 @@ describe("LightningPaymentFlowBuilder", () => {
           if (payment instanceof Error) throw payment
 
           const usdPaymentAmount = {
-            amount:
-              (invoiceWithAmount.paymentAmount as BtcPaymentAmount).amount *
-              midPriceRatio,
+            amount: divByMidPriceRatio(
+              (invoiceWithAmount.paymentAmount as BtcPaymentAmount).amount,
+            ),
             currency: WalletCurrency.Usd,
           }
 
@@ -156,7 +165,7 @@ describe("LightningPaymentFlowBuilder", () => {
             expect.objectContaining({
               btcProtocolFee,
               usdProtocolFee: {
-                amount: btcProtocolFee.amount * midPriceRatio,
+                amount: divByMidPriceRatio(btcProtocolFee.amount),
                 currency: WalletCurrency.Usd,
               },
               outgoingNodePubkey: pubkey,
@@ -195,9 +204,9 @@ describe("LightningPaymentFlowBuilder", () => {
           if (payment instanceof Error) throw payment
 
           const usdPaymentAmount = {
-            amount:
-              (invoiceWithAmount.paymentAmount as BtcPaymentAmount).amount *
-              dealerPriceRatio,
+            amount: divByDealerPriceRatio(
+              (invoiceWithAmount.paymentAmount as BtcPaymentAmount).amount,
+            ),
             currency: WalletCurrency.Usd,
           }
 
@@ -255,7 +264,7 @@ describe("LightningPaymentFlowBuilder", () => {
           if (payment instanceof Error) throw payment
 
           const usdPaymentAmount = {
-            amount: uncheckedAmount * midPriceRatio,
+            amount: divByMidPriceRatio(uncheckedAmount),
             currency: WalletCurrency.Usd,
           }
 
@@ -303,7 +312,7 @@ describe("LightningPaymentFlowBuilder", () => {
           if (payment instanceof Error) throw payment
 
           const btcPaymentAmount = {
-            amount: uncheckedAmount / dealerPriceRatio,
+            amount: mulByDealerPriceRatio(uncheckedAmount),
             currency: WalletCurrency.Btc,
           }
 
@@ -381,9 +390,9 @@ describe("LightningPaymentFlowBuilder", () => {
             if (payment instanceof Error) throw payment
 
             const usdPaymentAmount = {
-              amount:
-                (invoiceWithAmount.paymentAmount as BtcPaymentAmount).amount *
-                midPriceRatio,
+              amount: divByMidPriceRatio(
+                (invoiceWithAmount.paymentAmount as BtcPaymentAmount).amount,
+              ),
               currency: WalletCurrency.Usd,
             }
 
@@ -468,9 +477,9 @@ describe("LightningPaymentFlowBuilder", () => {
             if (payment instanceof Error) throw payment
 
             const usdPaymentAmount = {
-              amount:
-                (invoiceWithAmount.paymentAmount as BtcPaymentAmount).amount *
-                dealerPriceRatio,
+              amount: divByDealerPriceRatio(
+                (invoiceWithAmount.paymentAmount as BtcPaymentAmount).amount,
+              ),
               currency: WalletCurrency.Usd,
             }
 
@@ -574,7 +583,7 @@ describe("LightningPaymentFlowBuilder", () => {
             if (payment instanceof Error) throw payment
 
             const usdPaymentAmount = {
-              amount: uncheckedAmount * midPriceRatio,
+              amount: divByMidPriceRatio(uncheckedAmount),
               currency: WalletCurrency.Usd,
             }
 
@@ -613,7 +622,7 @@ describe("LightningPaymentFlowBuilder", () => {
             if (payment instanceof Error) throw payment
 
             const usdPaymentAmount = {
-              amount: uncheckedAmount * dealerPriceRatio,
+              amount: divByDealerPriceRatio(uncheckedAmount),
               currency: WalletCurrency.Usd,
             }
 
@@ -668,7 +677,7 @@ describe("LightningPaymentFlowBuilder", () => {
             if (payment instanceof Error) throw payment
 
             const btcPaymentAmount = {
-              amount: uncheckedAmount / dealerPriceRatio,
+              amount: mulByDealerPriceRatio(uncheckedAmount),
               currency: WalletCurrency.Btc,
             }
 
@@ -706,7 +715,7 @@ describe("LightningPaymentFlowBuilder", () => {
             if (payment instanceof Error) throw payment
 
             const btcPaymentAmount = {
-              amount: uncheckedAmount / midPriceRatio,
+              amount: mulByMidPriceRatio(uncheckedAmount),
               currency: WalletCurrency.Btc,
             }
 
@@ -793,7 +802,7 @@ describe("LightningPaymentFlowBuilder", () => {
             if (payment instanceof Error) throw payment
 
             const usdPaymentAmount = {
-              amount: uncheckedAmount * midPriceRatio,
+              amount: divByMidPriceRatio(uncheckedAmount),
               currency: WalletCurrency.Usd,
             }
 
@@ -832,7 +841,7 @@ describe("LightningPaymentFlowBuilder", () => {
             if (payment instanceof Error) throw payment
 
             const usdPaymentAmount = {
-              amount: uncheckedAmount * dealerPriceRatio,
+              amount: divByDealerPriceRatio(uncheckedAmount),
               currency: WalletCurrency.Usd,
             }
 
@@ -887,7 +896,7 @@ describe("LightningPaymentFlowBuilder", () => {
             if (payment instanceof Error) throw payment
 
             const btcPaymentAmount = {
-              amount: uncheckedAmount / dealerPriceRatio,
+              amount: mulByDealerPriceRatio(uncheckedAmount),
               currency: WalletCurrency.Btc,
             }
 
@@ -925,7 +934,7 @@ describe("LightningPaymentFlowBuilder", () => {
             if (payment instanceof Error) throw payment
 
             const btcPaymentAmount = {
-              amount: uncheckedAmount / midPriceRatio,
+              amount: mulByMidPriceRatio(uncheckedAmount),
               currency: WalletCurrency.Btc,
             }
 
