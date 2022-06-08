@@ -1,21 +1,15 @@
 module.exports = {
-  moduleFileExtensions: ["js", "json", "ts", "gql", "cjs", "mjs"],
+  moduleFileExtensions: ["js", "json", "ts", "cjs", "mjs"],
   rootDir: "../",
   roots: ["<rootDir>/test/integration"],
   transform: {
-    "^.+\\.(ts)$": "ts-jest",
-    "^.+\\.(gql)$": "@jagi/jest-transform-graphql",
-    "node_modules/tiny-secp256k1/lib/cjs/.+\\.(js|ts|cjs|mjs)$": "ts-jest",
-    "node_modules/uint8array-tools/src/cjs.+\\.(js|ts|cjs|mjs)$": "ts-jest"
+    "^.+\\.(ts)$": "ts-jest"
   },
   testRegex: ".*\\.spec\\.ts$",
   testSequencer: "<rootDir>/test/jest-test-sequencer.js",
   setupFilesAfterEnv: ["<rootDir>/test/jest-integration.setup.js"],
   testEnvironment: "node",
   moduleNameMapper: {
-    "^tiny-secp256k1$": "tiny-secp256k1/lib/cjs",
-    "^uint8array-tools$": "uint8array-tools/src/cjs",
-
     "^@config$": ["<rootDir>src/config/index"],
     "^@app$": ["<rootDir>src/app/index"],
     "^@utils$": ["<rootDir>src/utils/index"],
