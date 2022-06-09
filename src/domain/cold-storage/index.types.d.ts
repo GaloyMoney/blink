@@ -19,7 +19,7 @@ type ColdStorageConfig = RebalanceCheckerConfig & {
   targetConfirmations: TargetConfirmations
 }
 
-type RebalanceCheckerArgs = {
+type WithdrawFromHotWalletAmountArgs = {
   onChainHotWalletBalance: Satoshis
   offChainHotWalletBalance: Satoshis
 }
@@ -28,7 +28,7 @@ type RebalanceChecker = {
   getWithdrawFromHotWalletAmount({
     onChainHotWalletBalance,
     offChainHotWalletBalance,
-  }: RebalanceCheckerArgs): Satoshis
+  }: WithdrawFromHotWalletAmountArgs): Satoshis
 }
 
 type ColdStorageBalance = {

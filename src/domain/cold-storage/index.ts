@@ -8,7 +8,7 @@ export const RebalanceChecker = ({
   const getWithdrawFromHotWalletAmount = ({
     onChainHotWalletBalance,
     offChainHotWalletBalance,
-  }: RebalanceCheckerArgs): Satoshis => {
+  }: WithdrawFromHotWalletAmountArgs): Satoshis => {
     const totalHotWallet = onChainHotWalletBalance + offChainHotWalletBalance
     if (totalHotWallet > maxHotWalletBalance) {
       const rebalanceAmount = onChainHotWalletBalance - minOnChainHotWalletBalance
