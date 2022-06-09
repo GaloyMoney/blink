@@ -35,10 +35,23 @@ export const AmountCalculator = (): AmountCalculator => {
     return { amount: quotient, currency: a.currency }
   }
 
+  const divCeil = <T extends WalletCurrency>(
+    a: PaymentAmount<T>,
+    b: bigint,
+  ): PaymentAmount<T> => {
+    const quotient = a.amount / b
+
+    const mod = a.amount % b
+    return mod > 0n
+      ? { amount: quotient + 1n, currency: a.currency }
+      : { amount: quotient, currency: a.currency }
+  }
+
   return {
     sub,
     add,
     divRound,
     divFloor,
+    divCeil,
   }
 }

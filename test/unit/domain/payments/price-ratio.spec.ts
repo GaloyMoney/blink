@@ -240,6 +240,64 @@ describe("PriceRatio", () => {
         })
       })
     })
+
+    describe("rounds amounts to ceil", () => {
+      describe("converts from usd", () => {
+        it("Not Implemented Yet", async () => true)
+      })
+      describe("converts from btc", () => {
+        const product = 2n
+        const priceRatio = PriceRatio({
+          btc: { amount: 100_000_000n, currency: WalletCurrency.Btc },
+          usd: { amount: 5_000_000n, currency: WalletCurrency.Usd },
+        })
+        if (priceRatio instanceof Error) throw priceRatio
+
+        it("correctly rounds up when unrounded value is just below 0.5 less than target product", () => {
+          const usdPaymentAmount = priceRatio.convertFromBtcToCeil({
+            amount: 29n,
+            currency: WalletCurrency.Btc,
+          })
+          expect(usdPaymentAmount).toEqual({
+            amount: product,
+            currency: WalletCurrency.Usd,
+          })
+        })
+
+        it("correctly rounds up when unrounded value is just above 0.5 more than target product", () => {
+          const usdPaymentAmount = priceRatio.convertFromBtcToCeil({
+            amount: 51n,
+            currency: WalletCurrency.Btc,
+          })
+          expect(usdPaymentAmount).toEqual({
+            amount: product + 1n,
+            currency: WalletCurrency.Usd,
+          })
+        })
+
+        it("correctly rounds up when unrounded value is just above target product", () => {
+          const usdPaymentAmount = priceRatio.convertFromBtcToCeil({
+            amount: 41n,
+            currency: WalletCurrency.Btc,
+          })
+          expect(usdPaymentAmount).toEqual({
+            amount: product + 1n,
+            currency: WalletCurrency.Usd,
+          })
+        })
+
+        it("correctly rounds up when unrounded value is just below target product", () => {
+          const usdPaymentAmount = priceRatio.convertFromBtcToCeil({
+            amount: 39n,
+            currency: WalletCurrency.Btc,
+          })
+          expect(usdPaymentAmount).toEqual({
+            amount: product,
+            currency: WalletCurrency.Usd,
+          })
+        })
+      })
+    })
   })
 
   it("does not return zero usd amount for small ratios", () => {

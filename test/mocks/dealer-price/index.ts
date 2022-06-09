@@ -4,8 +4,8 @@ import { CENTS_PER_USD, toCents, toCentsPerSatsRatio } from "@domain/fiat"
 import { toPriceRatio } from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
-// simulated price at 20k btc/usd
-// or 50 sats per cents. 0.05 sat per cents
+// simulated price at 20k usd/btc
+// or 50 sats per cents. 0.02 sat per cents
 const baseRate = 20_000
 const baseRatio = baseRate / 1000
 const spreadImmediate = 0.04

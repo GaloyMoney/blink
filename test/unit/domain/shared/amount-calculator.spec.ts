@@ -57,92 +57,97 @@ describe("AmountCalculator", () => {
     const divisorBound = 50n
     const quotient = 2n
 
-    describe("by rounding normally", () => {
-      it("no rounding if remainder is 0", () => {
-        const result = calc.divRound({ amount: pivot, currency }, divisor)
-        expect(result.amount).toEqual(quotient)
-        expect(result.currency).toBe(currency)
-      })
+    const describeCases = [
+      {
+        type: "normal",
+        div: calc.divRound,
+        up: "up",
+        down: "down",
+      },
+      {
+        type: "floor",
+        div: calc.divFloor,
+        up: "down",
+        down: "down",
+      },
+      {
+        type: "ceil",
+        div: calc.divCeil,
+        up: "up",
+        down: "up",
+      },
+    ]
+    const itCases = ({ up, down }) => [
+      {
+        title: `no rounding if remainder is 0`,
+        amount: pivot,
+        result: {
+          normal: quotient,
+          floor: quotient,
+          ceil: quotient,
+        },
+      },
+      {
+        title: `rounds ${down} if remainder is just above pivot`,
+        amount: pivot + 1n,
+        result: {
+          normal: quotient,
+          floor: quotient,
+          ceil: quotient + 1n,
+        },
+      },
+      {
+        title: `rounds ${up} if remainder is just below pivot`,
+        amount: pivot - 1n,
+        result: {
+          normal: quotient,
+          floor: quotient - 1n,
+          ceil: quotient,
+        },
+      },
+      {
+        title: `rounds ${down} if remainder is just below half of the divisor`,
+        amount: pivot + (divisorBound - 1n),
+        result: {
+          normal: quotient,
+          floor: quotient,
+          ceil: quotient + 1n,
+        },
+      },
+      {
+        title: `rounds ${up} if remainder is just above half of the divisor`,
+        amount: pivot + (divisorBound + 1n),
+        result: {
+          normal: quotient + 1n,
+          floor: quotient,
+          ceil: quotient + 1n,
+        },
+      },
+      {
+        title: `rounds ${down} if remainder is half of the divisor`,
+        amount: pivot + divisorBound,
+        result: {
+          normal: quotient,
+          floor: quotient,
+          ceil: quotient + 1n,
+        },
+      },
+    ]
 
-      it("rounds down if remainder is just above pivot", () => {
-        const result = calc.divRound({ amount: pivot + 1n, currency }, divisor)
-        expect(result.amount).toEqual(quotient)
-        expect(result.currency).toBe(currency)
-      })
+    for (const describeGroup of describeCases) {
+      describe(`by rounding to ${describeGroup.type}`, () => {
+        const { up, down } = describeGroup
+        for (const testCase of itCases({ up, down })) {
+          const { title, amount } = testCase
+          const expectedResult = testCase.result[describeGroup.type]
 
-      it("rounds up if remainder is just below pivot", () => {
-        const result = calc.divRound({ amount: pivot - 1n, currency }, divisor)
-        expect(result.amount).toEqual(quotient)
-        expect(result.currency).toBe(currency)
+          it(title, () => {
+            const result = describeGroup.div({ amount, currency }, divisor)
+            expect(result.amount).toEqual(expectedResult)
+            expect(result.currency).toBe(currency)
+          })
+        }
       })
-
-      it("rounds down if remainder is just below half of the divisor", () => {
-        const result = calc.divRound(
-          { amount: pivot + (divisorBound - 1n), currency },
-          divisor,
-        )
-        expect(result.amount).toEqual(quotient)
-        expect(result.currency).toBe(currency)
-      })
-
-      it("rounds down if remainder is half of the divisor", () => {
-        const result = calc.divRound({ amount: pivot + divisorBound, currency }, divisor)
-        expect(result.amount).toEqual(quotient)
-        expect(result.currency).toBe(currency)
-      })
-
-      it("rounds up if remainder is just above half of the divisor", () => {
-        const result = calc.divRound(
-          { amount: pivot + (divisorBound + 1n), currency },
-          divisor,
-        )
-        expect(result.amount).toEqual(quotient + 1n)
-        expect(result.currency).toBe(currency)
-      })
-    })
-
-    describe("by rounding to floor", () => {
-      it("no rounding if remainder is 0", () => {
-        const result = calc.divFloor({ amount: pivot, currency }, divisor)
-        expect(result.amount).toEqual(quotient)
-        expect(result.currency).toBe(currency)
-      })
-
-      it("rounds down if remainder is just above pivot", () => {
-        const result = calc.divFloor({ amount: pivot + 1n, currency }, divisor)
-        expect(result.amount).toEqual(quotient)
-        expect(result.currency).toBe(currency)
-      })
-
-      it("rounds down if remainder is just below pivot", () => {
-        const result = calc.divFloor({ amount: pivot - 1n, currency }, divisor)
-        expect(result.amount).toEqual(quotient - 1n)
-        expect(result.currency).toBe(currency)
-      })
-
-      it("rounds down if remainder is just below half of the divisor", () => {
-        const result = calc.divFloor(
-          { amount: pivot + (divisorBound - 1n), currency },
-          divisor,
-        )
-        expect(result.amount).toEqual(quotient)
-        expect(result.currency).toBe(currency)
-      })
-
-      it("rounds down if remainder is half of the divisor", () => {
-        const result = calc.divFloor({ amount: pivot + divisorBound, currency }, divisor)
-        expect(result.amount).toEqual(quotient)
-        expect(result.currency).toBe(currency)
-      })
-
-      it("rounds down if remainder is just above half of the divisor", () => {
-        const result = calc.divFloor(
-          { amount: pivot + (divisorBound + 1n), currency },
-          divisor,
-        )
-        expect(result.amount).toEqual(quotient)
-        expect(result.currency).toBe(currency)
-      })
-    })
+    }
   })
 })
