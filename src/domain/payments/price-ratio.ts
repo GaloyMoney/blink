@@ -23,7 +23,10 @@ export const PriceRatio = ({
       return { amount: 0n, currency }
     }
 
-    const amount = calc.div({ amount: convert.amount * btc.amount, currency }, usd.amount)
+    const amount = calc.divRound(
+      { amount: convert.amount * btc.amount, currency },
+      usd.amount,
+    )
 
     return { amount: amount.amount || 1n, currency }
   }
@@ -35,14 +38,24 @@ export const PriceRatio = ({
       return { amount: 0n, currency }
     }
 
-    const amount = calc.div({ amount: convert.amount * usd.amount, currency }, btc.amount)
+    const amount = calc.divRound(
+      { amount: convert.amount * usd.amount, currency },
+      btc.amount,
+    )
 
     return { amount: amount.amount || 1n, currency }
   }
 
+  const convertFromBtcToFloor = (convert: BtcPaymentAmount): UsdPaymentAmount =>
+    calc.divFloor(
+      { amount: convert.amount * usd.amount, currency: WalletCurrency.Usd },
+      btc.amount,
+    )
+
   return {
     convertFromUsd,
     convertFromBtc,
+    convertFromBtcToFloor,
     usdPerSat: () =>
       (Number(usd.amount) / Number(btc.amount)) as DisplayCurrencyBasePerSat,
   }

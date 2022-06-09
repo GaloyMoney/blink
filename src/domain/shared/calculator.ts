@@ -13,7 +13,7 @@ export const AmountCalculator = (): AmountCalculator => {
     }
   }
 
-  const div = <T extends WalletCurrency>(
+  const divRound = <T extends WalletCurrency>(
     a: PaymentAmount<T>,
     b: bigint,
   ): PaymentAmount<T> => {
@@ -26,9 +26,19 @@ export const AmountCalculator = (): AmountCalculator => {
       : { amount: quotient, currency: a.currency }
   }
 
+  const divFloor = <T extends WalletCurrency>(
+    a: PaymentAmount<T>,
+    b: bigint,
+  ): PaymentAmount<T> => {
+    const quotient = a.amount / b
+
+    return { amount: quotient, currency: a.currency }
+  }
+
   return {
     sub,
     add,
-    div,
+    divRound,
+    divFloor,
   }
 }

@@ -22,7 +22,10 @@ export const FeeReimbursement = ({
       currency: WalletCurrency.Btc,
     }
 
-    const feeDifferenceUsdAmount = priceRatio.convertFromBtc(feeDifferenceBtcAmount)
+    const feeDifferenceUsdAmount =
+      actualFee.amount === 0n
+        ? priceRatio.convertFromBtc(feeDifferenceBtcAmount)
+        : priceRatio.convertFromBtcToFloor(feeDifferenceBtcAmount)
 
     return { btc: feeDifferenceBtcAmount, usd: feeDifferenceUsdAmount }
   }
