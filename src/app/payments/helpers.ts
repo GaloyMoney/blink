@@ -144,19 +144,22 @@ export const getMidPriceRatio = async (): Promise<PriceRatio | PriceServiceError
   return toPriceRatio(ratio)
 }
 
-export const constructPaymentFlowBuilder = async ({
+export const constructPaymentFlowBuilder = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   senderWallet,
   invoice,
   uncheckedAmount,
   usdFromBtc,
   btcFromUsd,
 }: {
-  senderWallet: Wallet
+  senderWallet: WalletDescriptor<S>
   invoice: LnInvoice
   uncheckedAmount?: number
   usdFromBtc: (amount: BtcPaymentAmount) => Promise<UsdPaymentAmount | ApplicationError>
   btcFromUsd: (amount: UsdPaymentAmount) => Promise<BtcPaymentAmount | ApplicationError>
-}): Promise<LPFBWithConversion<WalletCurrency, WalletCurrency> | ApplicationError> => {
+}): Promise<LPFBWithConversion<S, R> | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
   const paymentBuilder = LightningPaymentFlowBuilder({
@@ -165,19 +168,20 @@ export const constructPaymentFlowBuilder = async ({
     btcFromUsdMidPriceFn,
   })
   const builderWithInvoice = uncheckedAmount
-    ? paymentBuilder.withNoAmountInvoice({ invoice, uncheckedAmount })
-    : paymentBuilder.withInvoice(invoice)
+    ? (paymentBuilder.withNoAmountInvoice({
+        invoice,
+        uncheckedAmount,
+      }) as LPFBWithInvoice<S>)
+    : (paymentBuilder.withInvoice(invoice) as LPFBWithInvoice<S>)
 
   const builderWithSenderWallet = builderWithInvoice.withSenderWallet(senderWallet)
 
-  let builderAfterRecipientStep:
-    | LPFBWithRecipientWallet<WalletCurrency, WalletCurrency>
-    | LPFBWithError
+  let builderAfterRecipientStep: LPFBWithRecipientWallet<S, R> | LPFBWithError
   if (builderWithSenderWallet.isIntraLedger()) {
-    const recipientDetails = await recipientDetailsFromInvoice(invoice)
+    const recipientDetails = await recipientDetailsFromInvoice<R>(invoice)
     if (recipientDetails instanceof Error) return recipientDetails
     builderAfterRecipientStep =
-      builderWithSenderWallet.withRecipientWallet(recipientDetails)
+      builderWithSenderWallet.withRecipientWallet<R>(recipientDetails)
   } else {
     builderAfterRecipientStep = builderWithSenderWallet.withoutRecipientWallet()
   }
@@ -198,7 +202,18 @@ export const constructPaymentFlowBuilder = async ({
   return builderWithConversion
 }
 
-const recipientDetailsFromInvoice = async (invoice: LnInvoice) => {
+const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
+  invoice: LnInvoice,
+): Promise<
+  | {
+      id: WalletId
+      currency: R
+      pubkey: Pubkey
+      usdPaymentAmount: UsdPaymentAmount | undefined
+      username: Username
+    }
+  | ApplicationError
+> => {
   const invoicesRepo = WalletInvoicesRepository()
   const walletInvoice = await invoicesRepo.findByPaymentHash(invoice.paymentHash)
   if (walletInvoice instanceof Error) return walletInvoice
@@ -227,7 +242,7 @@ const recipientDetailsFromInvoice = async (invoice: LnInvoice) => {
 
   return {
     id: recipientWalletId,
-    currency: recipientsWalletCurrency,
+    currency: recipientsWalletCurrency as R,
     pubkey: recipientPubkey,
     usdPaymentAmount,
     username: recipientUsername,

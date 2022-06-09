@@ -372,12 +372,12 @@ const getPaymentFlow = async <S extends WalletCurrency, R extends WalletCurrency
   inputPaymentAmount,
   uncheckedAmount,
 }: {
-  senderWallet: Wallet
+  senderWallet: WalletDescriptor<S>
   decodedInvoice: LnInvoice
   inputPaymentAmount: PaymentAmount<S>
   uncheckedAmount?: number | undefined
 }): Promise<PaymentFlow<S, R> | ApplicationError> => {
-  let paymentFlow = await paymentFlowRepo.findLightningPaymentFlow({
+  let paymentFlow = await paymentFlowRepo.findLightningPaymentFlow<S, R>({
     walletId: senderWallet.id,
     paymentHash: decodedInvoice.paymentHash,
     inputAmount: inputPaymentAmount.amount,
@@ -389,7 +389,7 @@ const getPaymentFlow = async <S extends WalletCurrency, R extends WalletCurrency
   })
 
   if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
-    const builderWithConversion = await constructPaymentFlowBuilder({
+    const builderWithConversion = await constructPaymentFlowBuilder<S, R>({
       uncheckedAmount,
       senderWallet,
       invoice: decodedInvoice,
