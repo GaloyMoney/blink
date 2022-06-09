@@ -1,12 +1,12 @@
 import { once } from "events"
 
-import { baseLogger } from "@services/logger"
 import {
   offchainLnds,
   onchainLnds,
   onChannelUpdated,
   updateEscrows,
 } from "@services/lnd/utils"
+import { baseLogger } from "@services/logger"
 import {
   authenticatedLndGrpc,
   closeChannel,
@@ -14,6 +14,7 @@ import {
   getChainBalance,
   getChannelBalance,
   getChannels,
+  getInvoice,
   getWalletInfo,
   openChannel,
   sendToChainAddress,
@@ -45,6 +46,20 @@ export const getHash = (request: EncodedPaymentRequest) => {
 
 export const getAmount = (request: EncodedPaymentRequest) => {
   return parsePaymentRequest({ request }).tokens as Satoshis
+}
+
+export const getInvoiceAttempt = async ({ lnd, id }) => {
+  try {
+    const result = await getInvoice({ lnd, id })
+    return result
+  } catch (err) {
+    const invoiceNotFound = "unable to locate invoice"
+    if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {
+      return null
+    }
+    // must be wrapped error?
+    throw err
+  }
 }
 
 // TODO: this could be refactored with lndAuth

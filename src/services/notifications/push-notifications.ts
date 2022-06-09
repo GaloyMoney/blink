@@ -8,6 +8,9 @@ import { baseLogger } from "@services/logger"
 
 const logger = baseLogger.child({ module: "notifications" })
 
+type MessagingPayload = admin.messaging.MessagingPayload
+type NotificationMessagePayload = admin.messaging.NotificationMessagePayload
+
 // The key GOOGLE_APPLICATION_CREDENTIALS should be set in production
 // This key defined the path of the config file that include the key
 // more info at https://firebase.google.com/docs/admin/setup
@@ -25,7 +28,7 @@ export const PushNotificationsService = (): IPushNotificationsService => {
     body,
     data,
   }: SendPushNotificationArgs): Promise<true | NotificationsServiceError> => {
-    const message = {
+    const message: MessagingPayload & { notification: NotificationMessagePayload } = {
       // if we set notification, it will appears on both background and quit stage for iOS.
       // if we don't set notification, this will appear for background but not quit stage
       // we may be able to use data only, but this should be implemented first:
@@ -35,7 +38,7 @@ export const PushNotificationsService = (): IPushNotificationsService => {
     }
 
     if (body) {
-      message["notification"]["body"] = body
+      message.notification.body = body
     }
 
     const tokens = Array.isArray(deviceToken) ? deviceToken : [deviceToken]

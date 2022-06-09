@@ -41,9 +41,10 @@ const redlockClient = new Redlock(
   },
 )
 
-const getWalletLockResource = (path) => `locks:wallet:${path}`
-const getPaymentHashLockResource = (path) => `locks:paymenthash:${path}`
-const getOnChainTxHashLockResource = (path) => `locks:onchaintxhash:${path}`
+const getWalletLockResource = (path: WalletId) => `locks:wallet:${path}`
+const getPaymentHashLockResource = (path: PaymentHash) => `locks:paymenthash:${path}`
+const getOnChainTxHashLockResource = (path: OnChainTxHash) =>
+  `locks:onchaintxhash:${path}`
 
 export const redlock = async <Signal extends RedlockAbortSignal, Ret>({
   path,

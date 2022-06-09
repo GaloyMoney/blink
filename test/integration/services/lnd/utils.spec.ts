@@ -1,9 +1,5 @@
 import { MS_PER_DAY } from "@config"
-import {
-  deleteExpiredWalletInvoice,
-  getInvoiceAttempt,
-  updateRoutingRevenues,
-} from "@services/lnd/utils"
+import { deleteExpiredWalletInvoice, updateRoutingRevenues } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledgerAdmin } from "@services/mongodb"
 import { DbMetadata, WalletInvoice } from "@services/mongoose/schema"
@@ -15,6 +11,7 @@ import {
   clearAccountLocks,
   createInvoice,
   getForwards,
+  getInvoiceAttempt,
   lnd1,
   lndOutside1,
   lndOutside2,

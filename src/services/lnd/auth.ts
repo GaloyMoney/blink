@@ -17,6 +17,6 @@ const addProps = (array: LndParams[]) => {
   return result
 }
 
-export const params = addProps(sortBy(inputs, ["priority"]))
+export const params: LndParamsAuthed[] = addProps(sortBy(inputs, ["priority"]))
 
 export const TIMEOUT_PAYMENT = process.env.NETWORK !== "regtest" ? 45000 : 3000

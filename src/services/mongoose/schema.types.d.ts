@@ -56,6 +56,17 @@ type OnChainMongooseType = {
   address: string
 }
 
+interface WalletInvoiceRecord {
+  id: string
+  walletId: string
+  cents: number
+  currency: string
+  timestamp: Date
+  selfGenerated: boolean
+  pubkey: string
+  paid: boolean
+}
+
 interface UserRecord {
   _id: ObjectId
   kratosUserId: string

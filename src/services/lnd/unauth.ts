@@ -4,7 +4,7 @@ import { getLndParams } from "@config"
 
 const inputs: LndParams[] = getLndParams()
 
-const addProps = (array) =>
+const addProps = (array: LndParams[]) =>
   array.map((input) => {
     const socket = `${input.node}:${input.port}`
     return {
@@ -15,4 +15,4 @@ const addProps = (array) =>
     }
   })
 
-export const params = addProps(sortBy(inputs, ["priority"]))
+export const params: LndParamsUnAuthed[] = addProps(sortBy(inputs, ["priority"]))

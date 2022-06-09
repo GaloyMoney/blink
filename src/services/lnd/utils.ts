@@ -29,7 +29,6 @@ import {
   getChannels,
   getClosedChannels,
   getForwards,
-  getInvoice,
   getPendingChainBalance,
   getWalletInfo,
   SubscribeToChannelsChannelClosedEvent,
@@ -86,7 +85,7 @@ export const deleteExpiredLightningPaymentFlows = async (): Promise<number> => {
 }
 
 export const lndsBalances = async () => {
-  const data = await Promise.all(getLnds().map(({ lnd }) => lndBalances({ lnd })))
+  const data = await Promise.all(getLnds().map(({ lnd }) => lndBalances(lnd)))
   return {
     total: toSats(sumBy(data, "total")),
     onChain: toSats(sumBy(data, "onChain")),
@@ -96,7 +95,7 @@ export const lndsBalances = async () => {
   }
 }
 
-export const lndBalances = async ({ lnd }) => {
+export const lndBalances = async (lnd: AuthenticatedLnd) => {
   // Onchain
   const { chain_balance } = await getChainBalance({ lnd })
   const { channel_balance, pending_balance: opening_channel_balance } =
@@ -131,7 +130,7 @@ export const lndBalances = async ({ lnd }) => {
   }
 }
 
-export async function nodeStats({ lnd }) {
+export async function nodeStats(lnd: AuthenticatedLnd) {
   // FIXME: only return the public key from process.env
   // this would avoid a round trip to lnd
   const result = await getWalletInfo({ lnd })
@@ -146,7 +145,7 @@ export async function nodeStats({ lnd }) {
 }
 
 export const nodesStats = async () => {
-  const data = offchainLnds.map(({ lnd }) => nodeStats({ lnd }))
+  const data = offchainLnds.map(({ lnd }) => nodeStats(lnd))
   // TODO: try if we don't need a Promise.all()
   return Promise.all(data)
 }
@@ -159,7 +158,9 @@ export async function getBosScore() {
     const activeNode = getActiveLnd()
     if (activeNode instanceof Error) return 0
 
-    const bosScore = data.data.find(({ publicKey }) => publicKey === activeNode.pubkey)
+    const bosScore = data.data.find(
+      ({ publicKey }: { publicKey: string }) => publicKey === activeNode.pubkey,
+    )
     if (!bosScore) {
       baseLogger.info("key is not in bos list")
     }
@@ -209,20 +210,6 @@ export const getRoutingFees = async ({
 
   // returns an array of objects where each object has key = date and value = fees
   return map(feePerDate, (v, k) => ({ [k]: v }))
-}
-
-export const getInvoiceAttempt = async ({ lnd, id }) => {
-  try {
-    const result = await getInvoice({ lnd, id })
-    return result
-  } catch (err) {
-    const invoiceNotFound = "unable to locate invoice"
-    if (err.length === 3 && err[2]?.err?.details === invoiceNotFound) {
-      return null
-    }
-    // must be wrapped error?
-    throw err
-  }
 }
 
 export const updateRoutingRevenues = async () => {

@@ -6,34 +6,34 @@ import LnPaymentStatus from "@graphql/types/scalar/ln-payment-status"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import LnPaymentPreImage from "@graphql/types/scalar/ln-payment-preimage"
 
-const LightningPayment = GT.Object({
+const LightningPayment = GT.Object<LnPaymentLookup>({
   name: "LightningPayment",
   fields: () => ({
     status: { type: LnPaymentStatus },
     roundedUpFee: {
       type: SatAmount,
-      resolve: (source: LnPaymentLookup) => source.confirmedDetails?.roundedUpFee,
+      resolve: (source) => source.confirmedDetails?.roundedUpFee,
     },
     createdAt: { type: Timestamp },
     confirmedAt: {
       type: Timestamp,
-      resolve: (source: LnPaymentLookup) => source.confirmedDetails?.confirmedAt,
+      resolve: (source) => source.confirmedDetails?.confirmedAt,
     },
     amount: {
       type: SatAmount,
-      resolve: (source: LnPaymentLookup) => source.roundedUpAmount,
+      resolve: (source) => source.roundedUpAmount,
     },
     revealedPreImage: {
       type: LnPaymentPreImage,
-      resolve: (source: LnPaymentLookup) => source.confirmedDetails?.revealedPreImage,
+      resolve: (source) => source.confirmedDetails?.revealedPreImage,
     },
     request: {
       type: LnPaymentRequest,
-      resolve: (source: LnPaymentLookup) => source.paymentRequest,
+      resolve: (source) => source.paymentRequest,
     },
     destination: {
       type: LnPubkey,
-      resolve: (source: LnPaymentLookup) => source.confirmedDetails?.destination,
+      resolve: (source) => source.confirmedDetails?.destination,
     },
   }),
 })

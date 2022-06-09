@@ -3,13 +3,14 @@ import { GT } from "@graphql/index"
 import Coordinates from "@graphql/types/object/coordinates"
 import Timestamp from "@graphql/types/scalar/timestamp"
 import Username from "@graphql/types/scalar/username"
+import { GraphQLObjectType } from "graphql"
 
 import AccountLevel from "../scalar/account-level"
 import AccountStatus from "../scalar/account-status"
 
 import GraphQLUser from "./user"
 
-const Account = GT.Object<Account>({
+const Account: GraphQLObjectType<Account> = GT.Object<Account>({
   name: "Account",
   description:
     "Accounts are core to the Galoy architecture. they have users, and own wallets",
