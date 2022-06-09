@@ -79,7 +79,8 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
   if (validatedPaymentInputs instanceof Error) {
     return validatedPaymentInputs
   }
-  const { senderWallet, paymentFlow, decodedInvoice } = validatedPaymentInputs
+  const paymentFlow = await getPaymentFlow(validatedPaymentInputs)
+  if (paymentFlow instanceof Error) return paymentFlow
 
   const user = await UsersRepository().findById(senderAccount.ownerId)
   if (user instanceof Error) return user
@@ -88,6 +89,7 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
+  const { senderWallet, decodedInvoice } = validatedPaymentInputs
   const twoFACheck = twoFA?.secret
     ? await newCheckAndVerifyTwoFA({
         amount: paymentFlow.usdPaymentAmount,
@@ -134,10 +136,12 @@ export const payInvoiceByWalletId = async ({
   if (validatedPaymentInputs instanceof Error) {
     return validatedPaymentInputs
   }
-  const { senderWallet, paymentFlow, decodedInvoice } = validatedPaymentInputs
+  const paymentFlow = await getPaymentFlow(validatedPaymentInputs)
+  if (paymentFlow instanceof Error) return paymentFlow
 
   // Get display currency price... add to payment flow builder?
 
+  const { senderWallet, decodedInvoice } = validatedPaymentInputs
   return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
     ? executePaymentViaIntraledger({
         paymentFlow,
@@ -176,7 +180,8 @@ export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
   if (validatedNoAmountPaymentInputs instanceof Error) {
     return validatedNoAmountPaymentInputs
   }
-  const { senderWallet, paymentFlow, decodedInvoice } = validatedNoAmountPaymentInputs
+  const paymentFlow = await getPaymentFlow(validatedNoAmountPaymentInputs)
+  if (paymentFlow instanceof Error) return paymentFlow
 
   const user = await UsersRepository().findById(senderAccount.ownerId)
   if (user instanceof Error) return user
@@ -185,6 +190,7 @@ export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
+  const { senderWallet, decodedInvoice } = validatedNoAmountPaymentInputs
   const twoFACheck = twoFA?.secret
     ? await newCheckAndVerifyTwoFA({
         amount: paymentFlow.usdPaymentAmount,
@@ -233,10 +239,12 @@ export const payNoAmountInvoiceByWalletId = async ({
   if (validatedNoAmountPaymentInputs instanceof Error) {
     return validatedNoAmountPaymentInputs
   }
-  const { senderWallet, paymentFlow, decodedInvoice } = validatedNoAmountPaymentInputs
+  const paymentFlow = await getPaymentFlow(validatedNoAmountPaymentInputs)
+  if (paymentFlow instanceof Error) return paymentFlow
 
   // Get display currency price... add to payment flow builder?
 
+  const { senderWallet, decodedInvoice } = validatedNoAmountPaymentInputs
   return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
     ? executePaymentViaIntraledger({
         paymentFlow,
@@ -256,12 +264,27 @@ const validateInvoicePaymentInputs = async ({
   paymentRequest: EncodedPaymentRequest
   uncheckedSenderWalletId: string
   senderAccount: Account
-}) => {
+}): Promise<
+  | {
+      senderWallet: Wallet
+      decodedInvoice: LnInvoice
+      inputPaymentAmount: BtcPaymentAmount
+    }
+  | ApplicationError
+> => {
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
   if (senderWalletId instanceof Error) return senderWalletId
 
   const decodedInvoice = decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
+  addAttributesToCurrentSpan({
+    "payment.request.destination": decodedInvoice.destination,
+    "payment.request.hash": decodedInvoice.paymentHash,
+    "payment.request.description": decodedInvoice.description,
+    "payment.request.expiresAt": decodedInvoice.expiresAt
+      ? decodedInvoice.expiresAt.toISOString()
+      : "undefined",
+  })
 
   const { paymentAmount: lnInvoiceAmount } = decodedInvoice
   if (!(lnInvoiceAmount && lnInvoiceAmount.amount > 0n)) {
@@ -276,52 +299,14 @@ const validateInvoicePaymentInputs = async ({
   const validateWallet = accountValidator.validateWalletForAccount(senderWallet)
   if (validateWallet instanceof Error) return validateWallet
 
-  let paymentFlow = await paymentFlowRepo.findLightningPaymentFlow({
-    walletId: senderWalletId,
-    paymentHash: decodedInvoice.paymentHash,
-    inputAmount: lnInvoiceAmount.amount,
-  })
-  addAttributesToCurrentSpan({
-    "payment.paymentFlow.existsFromProbe": !(
-      paymentFlow instanceof CouldNotFindLightningPaymentFlowError
-    ),
-  })
-
-  if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
-    const builderWithConversion = await constructPaymentFlowBuilder({
-      senderWallet,
-      invoice: decodedInvoice,
-      usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
-      btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
-    })
-    if (builderWithConversion instanceof Error) return builderWithConversion
-
-    paymentFlow = await builderWithConversion.withoutRoute()
-    if (paymentFlow instanceof Error) return paymentFlow
-
-    const persistedPayment = await paymentFlowRepo.persistNew(paymentFlow)
-    if (persistedPayment instanceof Error) return persistedPayment
-  }
-  if (paymentFlow instanceof Error) return paymentFlow
-
-  addAttributesToCurrentSpan({
-    "payment.amount": paymentFlow.btcPaymentAmount.amount.toString(),
-    "payment.request.destination": decodedInvoice.destination,
-    "payment.request.hash": decodedInvoice.paymentHash,
-    "payment.request.description": decodedInvoice.description,
-    "payment.request.expiresAt": decodedInvoice.expiresAt
-      ? decodedInvoice.expiresAt.toISOString()
-      : "undefined",
-  })
-
   return {
     senderWallet,
-    paymentFlow,
     decodedInvoice,
+    inputPaymentAmount: lnInvoiceAmount,
   }
 }
 
-const validateNoAmountInvoicePaymentInputs = async ({
+const validateNoAmountInvoicePaymentInputs = async <S extends WalletCurrency>({
   paymentRequest,
   amount,
   uncheckedSenderWalletId,
@@ -331,12 +316,28 @@ const validateNoAmountInvoicePaymentInputs = async ({
   amount: number
   uncheckedSenderWalletId: string
   senderAccount: Account
-}) => {
+}): Promise<
+  | {
+      senderWallet: Wallet
+      decodedInvoice: LnInvoice
+      inputPaymentAmount: PaymentAmount<S>
+      uncheckedAmount: number
+    }
+  | ApplicationError
+> => {
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
   if (senderWalletId instanceof Error) return senderWalletId
 
   const decodedInvoice = decodeInvoice(paymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
+  addAttributesToCurrentSpan({
+    "payment.request.destination": decodedInvoice.destination,
+    "payment.request.hash": decodedInvoice.paymentHash,
+    "payment.request.description": decodedInvoice.description,
+    "payment.request.expiresAt": decodedInvoice.expiresAt
+      ? decodedInvoice.expiresAt.toISOString()
+      : "undefined",
+  })
 
   const { paymentAmount: lnInvoiceAmount } = decodedInvoice
   if (lnInvoiceAmount && lnInvoiceAmount.amount > 0n) {
@@ -357,8 +358,27 @@ const validateNoAmountInvoicePaymentInputs = async ({
       : checkedToUsdPaymentAmount(amount)
   if (inputPaymentAmount instanceof Error) return inputPaymentAmount
 
-  let paymentFlow = await paymentFlowRepo.findLightningPaymentFlow({
-    walletId: senderWalletId,
+  return {
+    senderWallet,
+    decodedInvoice,
+    inputPaymentAmount: inputPaymentAmount as PaymentAmount<S>,
+    uncheckedAmount: amount,
+  }
+}
+
+const getPaymentFlow = async <S extends WalletCurrency, R extends WalletCurrency>({
+  senderWallet,
+  decodedInvoice,
+  inputPaymentAmount,
+  uncheckedAmount,
+}: {
+  senderWallet: WalletDescriptor<S>
+  decodedInvoice: LnInvoice
+  inputPaymentAmount: PaymentAmount<S>
+  uncheckedAmount?: number | undefined
+}): Promise<PaymentFlow<S, R> | ApplicationError> => {
+  let paymentFlow = await paymentFlowRepo.findLightningPaymentFlow<S, R>({
+    walletId: senderWallet.id,
     paymentHash: decodedInvoice.paymentHash,
     inputAmount: inputPaymentAmount.amount,
   })
@@ -369,8 +389,8 @@ const validateNoAmountInvoicePaymentInputs = async ({
   })
 
   if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
-    const builderWithConversion = await constructPaymentFlowBuilder({
-      uncheckedAmount: amount,
+    const builderWithConversion = await constructPaymentFlowBuilder<S, R>({
+      uncheckedAmount,
       senderWallet,
       invoice: decodedInvoice,
       usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
@@ -388,19 +408,9 @@ const validateNoAmountInvoicePaymentInputs = async ({
 
   addAttributesToCurrentSpan({
     "payment.amount": paymentFlow.btcPaymentAmount.amount.toString(),
-    "payment.request.destination": decodedInvoice.destination,
-    "payment.request.hash": decodedInvoice.paymentHash,
-    "payment.request.description": decodedInvoice.description,
-    "payment.request.expiresAt": decodedInvoice.expiresAt
-      ? decodedInvoice.expiresAt.toISOString()
-      : "undefined",
   })
 
-  return {
-    senderWallet,
-    paymentFlow,
-    decodedInvoice,
-  }
+  return paymentFlow
 }
 
 const newCheckAndVerifyTwoFA = async ({
