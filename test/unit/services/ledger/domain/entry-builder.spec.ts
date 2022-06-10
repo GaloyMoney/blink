@@ -3,7 +3,7 @@ import { lndLedgerAccountId, EntryBuilder } from "@services/ledger/domain"
 import { WalletCurrency, AmountCalculator, ZERO_BANK_FEE } from "@domain/shared"
 
 class TestMediciEntry {
-  credits: any  // eslint-disable-line
+  credits: any // eslint-disable-line
   debits: any // eslint-disable-line
 
   credit(accountPath, amount, metadata = null) {
@@ -252,26 +252,76 @@ describe("EntryBuilder", () => {
     })
 
     describe("receive", () => {
-      it("without fee", () => {
-        const entry = new TestMediciEntry()
-        const builder = EntryBuilder({
-          staticAccountIds,
-          entry,
-          metadata,
-        })
-        const result = builder
-          .withTotalAmount(amount)
-          .withBankFee(ZERO_BANK_FEE)
-          .debitLnd()
-          .creditAccount(usdCreditorAccountDescriptor)
+      describe("without fee", () => {
+        it("handles txn with btc amount & usd amount", () => {
+          const entry = new TestMediciEntry()
+          const builder = EntryBuilder({
+            staticAccountIds,
+            entry,
+            metadata,
+          })
 
-        expectJournalToBeBalanced(result)
-        expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
-        expectEntryToEqual(result.credits[staticAccountIds.dealerBtcAccountId], btcAmount)
-        expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
-        expectEntryToEqual(result.debits[staticAccountIds.dealerUsdAccountId], usdAmount)
-        expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+          const result = builder
+            .withTotalAmount(amount)
+            .withBankFee(ZERO_BANK_FEE)
+            .debitLnd()
+            .creditAccount(usdCreditorAccountDescriptor)
+
+          expectJournalToBeBalanced(result)
+          expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
+          expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
+          expectEntryToEqual(
+            result.credits[staticAccountIds.dealerBtcAccountId],
+            btcAmount,
+          )
+          expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
+          expectEntryToEqual(
+            result.debits[staticAccountIds.dealerUsdAccountId],
+            usdAmount,
+          )
+          expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+        })
+
+        // e.g. a `recordReceive' fee-reimbursement with low sats amount
+        it("handles txn with btc amount & zero usd amount", () => {
+          const btcAmount = {
+            currency: WalletCurrency.Btc,
+            amount: 18n,
+          }
+          const usdAmount = {
+            currency: WalletCurrency.Usd,
+            amount: 0n,
+          }
+
+          const amount = {
+            btcWithFees: btcAmount,
+            usdWithFees: usdAmount,
+          }
+
+          const entry = new TestMediciEntry()
+          const builder = EntryBuilder({
+            staticAccountIds,
+            entry,
+            metadata,
+          })
+
+          const result = builder
+            .withTotalAmount(amount)
+            .withBankFee(ZERO_BANK_FEE)
+            .debitLnd()
+            .creditAccount(usdCreditorAccountDescriptor)
+
+          expectJournalToBeBalanced(result)
+          expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
+          expect(result.credits[creditorAccountId]).toBeUndefined()
+          expectEntryToEqual(
+            result.credits[staticAccountIds.dealerBtcAccountId],
+            btcAmount,
+          )
+          expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
+          expect(result.debits[staticAccountIds.dealerUsdAccountId].toBeUndefined())
+          expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+        })
       })
 
       it("with fee", () => {

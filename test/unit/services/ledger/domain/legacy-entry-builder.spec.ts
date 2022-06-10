@@ -186,23 +186,64 @@ describe("LegacyEntryBuilder", () => {
     })
 
     describe("receive", () => {
-      it("without fee", () => {
-        const entry = new TestMediciEntry()
-        const builder = LegacyEntryBuilder({
-          staticAccountIds,
-          entry,
-          metadata,
+      describe("without fee", () => {
+        it("handles txn with btc amount & usd amount", () => {
+          const entry = new TestMediciEntry()
+          const builder = LegacyEntryBuilder({
+            staticAccountIds,
+            entry,
+            metadata,
+          })
+          const result = builder.withoutFee().debitLnd(btcAmount).creditAccount({
+            accountId: creditorAccountId,
+            amount: usdAmount,
+          })
+          expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
+          expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
+          expectEntryToEqual(
+            result.credits[staticAccountIds.dealerBtcAccountId],
+            btcAmount,
+          )
+          expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
+          expectEntryToEqual(
+            result.debits[staticAccountIds.dealerUsdAccountId],
+            usdAmount,
+          )
+          expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
         })
-        const result = builder.withoutFee().debitLnd(btcAmount).creditAccount({
-          accountId: creditorAccountId,
-          amount: usdAmount,
+
+        // e.g. a `recordReceive' fee-reimbursement with low sats amount
+        it("handles txn with btc amount & zero usd amount", () => {
+          const btcAmount = {
+            currency: WalletCurrency.Btc,
+            amount: 18n,
+          }
+          const usdAmount = {
+            currency: WalletCurrency.Usd,
+            amount: 0n,
+          }
+
+          const entry = new TestMediciEntry()
+          const builder = LegacyEntryBuilder({
+            staticAccountIds,
+            entry,
+            metadata,
+          })
+          const result = builder.withoutFee().debitLnd(btcAmount).creditAccount({
+            accountId: creditorAccountId,
+            amount: usdAmount,
+          })
+
+          expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
+          expect(result.credits[creditorAccountId]).toBeUndefined()
+          expectEntryToEqual(
+            result.credits[staticAccountIds.dealerBtcAccountId],
+            btcAmount,
+          )
+          expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
+          expect(result.debits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+          expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
         })
-        expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
-        expectEntryToEqual(result.credits[staticAccountIds.dealerBtcAccountId], btcAmount)
-        expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
-        expectEntryToEqual(result.debits[staticAccountIds.dealerUsdAccountId], usdAmount)
-        expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
       })
 
       it("with fee", () => {
