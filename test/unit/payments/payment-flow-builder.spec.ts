@@ -38,14 +38,14 @@ describe("LightningPaymentFlowBuilder", () => {
   const pubkey = "pubkey" as Pubkey
   const rawRoute = { total_mtokens: "21000000", fee: 210 } as RawRoute
 
-  // 0.05 ratio (0.05 cents/sat, or $50,000 USD/BTC)
-  const inverseMidPriceRatio = 20n
+  // ~0.045 ratio (0.045 cents/sat, or $45,455 USD/BTC)
+  const inverseMidPriceRatio = 22n
   const mulByMidPriceRatio = (amount: bigint): bigint => amount / inverseMidPriceRatio
   const mulCeilByMidPriceRatio = (amount: bigint): bigint =>
     calc.divCeil({ amount, currency: WalletCurrency.Btc }, inverseMidPriceRatio).amount
   const divByMidPriceRatio = (amount: bigint): bigint => amount * inverseMidPriceRatio
 
-  // ~0.3448 ratio (45% spread on 0.05 cents/sat rate)
+  // ~0.3448 ratio (~32% spread on 0.045 cents/sat rate)
   const inverseDealerPriceRatio = 29n
   const mulByDealerPriceRatio = (amount: bigint): bigint =>
     amount / inverseDealerPriceRatio
@@ -119,7 +119,7 @@ describe("LightningPaymentFlowBuilder", () => {
           )
         }
 
-        it("uses mid price and max fees", async () => {
+        it("uses mid price and max btc fees", async () => {
           const payment = await withBtcWalletBuilder
             .withConversion({
               usdFromBtc,
@@ -128,10 +128,20 @@ describe("LightningPaymentFlowBuilder", () => {
             .withoutRoute()
           if (payment instanceof Error) throw payment
 
+          if (invoiceWithAmount.paymentAmount === null)
+            throw new Error("paymentAmount should not be null")
+
           const usdPaymentAmount = {
-            amount: mulByMidPriceRatio(
-              (invoiceWithAmount.paymentAmount as BtcPaymentAmount).amount,
-            ),
+            amount: mulByMidPriceRatio(invoiceWithAmount.paymentAmount.amount),
+            currency: WalletCurrency.Usd,
+          }
+
+          const btcProtocolFee = LnFees().maxProtocolFee(invoiceWithAmount.paymentAmount)
+          if (btcProtocolFee instanceof Error) return btcProtocolFee
+          expect(btcProtocolFee).not.toBeInstanceOf(Error)
+
+          const usdProtocolFee = {
+            amount: mulCeilByMidPriceRatio(btcProtocolFee.amount),
             currency: WalletCurrency.Usd,
           }
 
@@ -141,10 +151,8 @@ describe("LightningPaymentFlowBuilder", () => {
           expect(payment).toEqual(
             expect.objectContaining({
               usdPaymentAmount,
-              btcProtocolFee: LnFees().maxProtocolFee(
-                invoiceWithAmount.paymentAmount as BtcPaymentAmount,
-              ),
-              usdProtocolFee: LnFees().maxProtocolFee(usdPaymentAmount),
+              btcProtocolFee,
+              usdProtocolFee,
             }),
           )
         })
@@ -209,7 +217,7 @@ describe("LightningPaymentFlowBuilder", () => {
           )
         }
 
-        it("uses dealer price", async () => {
+        it("uses dealer price and max btc fees", async () => {
           const payment = await withUsdWalletBuilder
             .withConversion({
               usdFromBtc,
@@ -218,10 +226,20 @@ describe("LightningPaymentFlowBuilder", () => {
             .withoutRoute()
           if (payment instanceof Error) throw payment
 
+          if (invoiceWithAmount.paymentAmount === null)
+            throw new Error("paymentAmount should not be null")
+
           const usdPaymentAmount = {
-            amount: mulByDealerPriceRatio(
-              (invoiceWithAmount.paymentAmount as BtcPaymentAmount).amount,
-            ),
+            amount: mulByDealerPriceRatio(invoiceWithAmount.paymentAmount.amount),
+            currency: WalletCurrency.Usd,
+          }
+
+          const btcProtocolFee = LnFees().maxProtocolFee(invoiceWithAmount.paymentAmount)
+          if (btcProtocolFee instanceof Error) return btcProtocolFee
+          expect(btcProtocolFee).not.toBeInstanceOf(Error)
+
+          const usdProtocolFee = {
+            amount: mulCeilByDealerPriceRatio(btcProtocolFee.amount),
             currency: WalletCurrency.Usd,
           }
 
@@ -231,6 +249,8 @@ describe("LightningPaymentFlowBuilder", () => {
           expect(payment).toEqual(
             expect.objectContaining({
               usdPaymentAmount,
+              btcProtocolFee,
+              usdProtocolFee,
             }),
           )
         })
@@ -314,7 +334,7 @@ describe("LightningPaymentFlowBuilder", () => {
           )
         }
 
-        it("uses mid price and max fees", async () => {
+        it("uses mid price and max btc fees", async () => {
           const payment = await withBtcWalletBuilder
             .withConversion({
               usdFromBtc,
@@ -323,8 +343,23 @@ describe("LightningPaymentFlowBuilder", () => {
             .withoutRoute()
           if (payment instanceof Error) throw payment
 
+          if (invoiceWithAmount.paymentAmount === null)
+            throw new Error("paymentAmount should not be null")
+
           const usdPaymentAmount = {
             amount: mulByMidPriceRatio(uncheckedAmount),
+            currency: WalletCurrency.Usd,
+          }
+
+          const btcProtocolFee = LnFees().maxProtocolFee({
+            amount: uncheckedAmount,
+            currency: WalletCurrency.Btc,
+          })
+          if (btcProtocolFee instanceof Error) return btcProtocolFee
+          expect(btcProtocolFee).not.toBeInstanceOf(Error)
+
+          const usdProtocolFee = {
+            amount: mulCeilByMidPriceRatio(btcProtocolFee.amount),
             currency: WalletCurrency.Usd,
           }
 
@@ -334,11 +369,8 @@ describe("LightningPaymentFlowBuilder", () => {
           expect(payment).toEqual(
             expect.objectContaining({
               usdPaymentAmount,
-              btcProtocolFee: LnFees().maxProtocolFee({
-                amount: uncheckedAmount,
-                currency: WalletCurrency.Btc,
-              }),
-              usdProtocolFee: LnFees().maxProtocolFee(usdPaymentAmount),
+              btcProtocolFee,
+              usdProtocolFee,
             }),
           )
         })
@@ -362,7 +394,7 @@ describe("LightningPaymentFlowBuilder", () => {
           )
         }
 
-        it("uses dealer price", async () => {
+        it("uses dealer price and max usd fees", async () => {
           const payment = await withUsdWalletBuilder
             .withConversion({
               usdFromBtc,
@@ -440,7 +472,7 @@ describe("LightningPaymentFlowBuilder", () => {
               }),
             )
           }
-          it("uses mid price and intraledeger fees", async () => {
+          it("uses mid price and intraledger fees", async () => {
             const payment = await withBtcRecipientBuilder
               .withConversion({
                 usdFromBtc,
