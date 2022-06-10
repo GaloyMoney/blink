@@ -3,9 +3,12 @@ import {
   ZERO_SATS,
   ZERO_CENTS,
   paymentAmountFromNumber,
+  AmountCalculator,
 } from "@domain/shared"
 
 export const FEECAP_PERCENT = 2n
+
+const calc = AmountCalculator()
 
 export const LnFees = (
   {
@@ -17,11 +20,17 @@ export const LnFees = (
   },
 ) => {
   const maxProtocolFee = <T extends WalletCurrency>(amount: PaymentAmount<T>) => {
-    // Adding 1n to effect a rounding up of the fee
-    const maxFee = ((amount.amount + 1n) * feeCapPercent) / 100n
+    if (amount.amount == 0n) {
+      return amount
+    }
+
+    const maxFee = calc.divRound(
+      { amount: amount.amount * feeCapPercent, currency: amount.currency },
+      100n,
+    )
 
     return {
-      amount: maxFee === 0n ? 1n : maxFee,
+      amount: maxFee.amount === 0n ? 1n : maxFee.amount,
       currency: amount.currency,
     }
   }
