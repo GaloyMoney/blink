@@ -1,6 +1,7 @@
 export const WalletInvoiceFactory = ({
   walletId,
   currency,
+  callback
 }: WalletFactoryConfig): WalletInvoiceFactory => {
   const createForSelf = ({
     registeredInvoice,
@@ -13,6 +14,7 @@ export const WalletInvoiceFactory = ({
     paid: false,
     cents,
     currency,
+    callback
   })
 
   const createForRecipient = ({
@@ -26,6 +28,7 @@ export const WalletInvoiceFactory = ({
     paid: false,
     cents,
     currency,
+    callback
   })
 
   return {

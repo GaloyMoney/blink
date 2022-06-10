@@ -8,7 +8,7 @@ type AddInvoiceArgs = {
   walletInvoiceCreateFn: (args: WalletInvoiceFactoryArgs) => WalletInvoice
   amount: number
   memo?: string
-  descriptionHash?: string
+  descriptionHash?: string,
 }
 
 type AddInvoiceNoAmountForSelfArgs = {
@@ -16,11 +16,20 @@ type AddInvoiceNoAmountForSelfArgs = {
   memo?: string
 }
 
+type Callback = {
+  url: string
+  state: string
+}
+
 type AddInvoiceForRecipientArgs = {
   recipientWalletId: string
   amount: number
   memo?: string
-  descriptionHash?: string
+  descriptionHash?: string,
+  callback?: {
+    url: string,
+    state: string
+  }
 }
 
 type AddInvoiceNoAmountForRecipientArgs = {

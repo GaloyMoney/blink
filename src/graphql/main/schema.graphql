@@ -89,6 +89,18 @@ type BuildInformation {
   helmRevision: Int
 }
 
+input CallbackInput {
+  """
+  State that will be returned in callback
+  """
+  state: String
+
+  """
+  Url to call back to.
+  """
+  url: String
+}
+
 type CaptchaCreateChallengePayload {
   errors: [Error!]!
   result: CaptchaCreateChallengeResult
@@ -304,6 +316,11 @@ input LnInvoiceCreateOnBehalfOfRecipientInput {
   Amount in satoshis.
   """
   amount: SatAmount!
+
+  """
+  Callback info.
+  """
+  callback: CallbackInput
   descriptionHash: Hex32Bytes
 
   """

@@ -20,6 +20,16 @@ const LnInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
     amount: { type: GT.NonNull(SatAmount), description: "Amount in satoshis." },
     memo: { type: Memo, description: "Optional memo for the lightning invoice." },
     descriptionHash: { type: Hex32Bytes },
+    callback: {
+      type: GT.Input({
+        name: "CallbackInput",
+        fields: () => ({
+          url: { type: GT.String, description: "Url to call back to." },
+          state: { type: GT.String, description: "State that will be returned in callback" },
+        })
+      }),
+      description: "Callback info."
+    }
   }),
 })
 
@@ -32,7 +42,7 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     input: { type: GT.NonNull(LnInvoiceCreateOnBehalfOfRecipientInput) },
   },
   resolve: async (_, args) => {
-    const { recipientWalletId, amount, memo, descriptionHash } = args.input
+    const { recipientWalletId, amount, memo, descriptionHash, callback } = args.input
     for (const input of [recipientWalletId, amount, memo, descriptionHash]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
@@ -47,6 +57,7 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
       amount,
       memo,
       descriptionHash,
+      callback
     })
 
     if (invoice instanceof Error) {

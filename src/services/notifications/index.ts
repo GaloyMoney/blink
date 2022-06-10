@@ -8,6 +8,7 @@ import { WalletCurrency } from "@domain/shared"
 import {
   AccountsRepository,
   UsersRepository,
+  WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
 import { PubSubService } from "@services/pubsub"
@@ -15,6 +16,7 @@ import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { PushNotificationsService } from "./push-notifications"
 import { createPushNotificationContent } from "./create-push-notification-content"
+import axios from "axios"
 
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
@@ -51,9 +53,9 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
       const displayPaymentAmount = displayCurrencyPerSat
         ? {
-            amount: sats * (displayCurrencyPerSat || 0),
-            currency: DefaultDisplayCurrency,
-          }
+          amount: sats * (displayCurrencyPerSat || 0),
+          currency: DefaultDisplayCurrency,
+        }
         : undefined
 
       const { title, body } = createPushNotificationContent({
@@ -144,6 +146,9 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const wallet = await WalletsRepository().findById(recipientWalletId)
       if (wallet instanceof Error) throw wallet
 
+      const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(paymentHash)
+      if (walletInvoice instanceof Error) throw walletInvoice
+
       const account = await AccountsRepository().findById(wallet.accountId)
       if (account instanceof Error) return account
 
@@ -153,9 +158,9 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
       const displayPaymentAmount = displayCurrencyPerSat
         ? {
-            amount: Number(paymentAmount.amount) * (displayCurrencyPerSat || 0),
-            currency: DefaultDisplayCurrency,
-          }
+          amount: Number(paymentAmount.amount) * (displayCurrencyPerSat || 0),
+          currency: DefaultDisplayCurrency,
+        }
         : undefined
 
       const { title, body } = createPushNotificationContent({
@@ -171,6 +176,27 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         title,
         body,
       })
+
+      if (walletInvoice.callback?.url) {
+        try {
+          const config = {
+            method: 'post',
+            url: walletInvoice.callback.url,
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            data: {
+              state: walletInvoice.callback.state || "",
+              paymentHash: walletInvoice.paymentHash,
+              event: "invoice_paid",
+              paymentAmount: Number(paymentAmount.amount)
+            }
+          }
+          await axios(config)
+        } catch (error) {
+          console.error(error)
+        }
+      }
 
       // Notify public subscribers (via GraphQL subscription if any)
       const lnPaymentStatusTrigger = customPubSubTrigger({
@@ -320,9 +346,9 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
 
         const displayPaymentAmount = displayCurrencyPerSat
           ? {
-              amount: amount * (displayCurrencyPerSat || 0),
-              currency: DefaultDisplayCurrency,
-            }
+            amount: amount * (displayCurrencyPerSat || 0),
+            currency: DefaultDisplayCurrency,
+          }
           : undefined
 
         const { title, body } = createPushNotificationContent({
@@ -397,9 +423,9 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
         const displayPaymentAmount = displayCurrencyPerSat
           ? {
-              amount: Number(paymentAmount.amount) * (displayCurrencyPerSat || 0),
-              currency: DefaultDisplayCurrency,
-            }
+            amount: Number(paymentAmount.amount) * (displayCurrencyPerSat || 0),
+            currency: DefaultDisplayCurrency,
+          }
           : undefined
 
         const { title, body } = createPushNotificationContent({
@@ -516,9 +542,9 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     const paymentAmount = { amount: BigInt(balance), currency: walletCurrency }
     const displayPaymentAmount = displayCurrencyPerSat
       ? {
-          amount: balance * (displayCurrencyPerSat || 0),
-          currency: DefaultDisplayCurrency,
-        }
+        amount: balance * (displayCurrencyPerSat || 0),
+        currency: DefaultDisplayCurrency,
+      }
       : undefined
 
     const { title, body } = createPushNotificationContent({

@@ -16,6 +16,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     paid,
     cents,
     currency,
+    callback
   }: WalletInvoice): Promise<WalletInvoice | RepositoryError> => {
     try {
       const walletInvoice = await new WalletInvoice({
@@ -26,6 +27,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
         paid,
         cents,
         currency,
+        callback,
       }).save()
       return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
@@ -152,4 +154,5 @@ const walletInvoiceFromRaw = (result: WalletInvoiceRecord): WalletInvoice => ({
   paid: result.paid as boolean,
   cents: result.cents ? toCents(result.cents) : undefined,
   currency: result.currency as WalletCurrency,
+  callback: result.callback ? result.callback as Callback : undefined
 })

@@ -6,6 +6,7 @@ type WalletInvoice = {
   readonly cents: UsdCents | undefined
   readonly currency: WalletCurrency
   paid: boolean
+  callback?: Callback
 }
 
 type WalletInvoiceValidator = {
@@ -15,6 +16,7 @@ type WalletInvoiceValidator = {
 type WalletFactoryConfig = {
   walletId: WalletId
   currency: WalletCurrency
+  callback?: Callback
 }
 
 interface IWalletInvoicesRepository {

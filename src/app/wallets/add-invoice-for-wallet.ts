@@ -85,11 +85,16 @@ export const addInvoiceNoAmountForSelf = async ({
   })
 }
 
+const checkedToCallBack = (callback?: {url: string, state: string}) => {
+  return callback as Callback
+}
+
 export const addInvoiceForRecipient = async ({
   recipientWalletId,
   amount,
   memo = "",
   descriptionHash,
+  callback
 }: AddInvoiceForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
   const walletIdChecked = checkedToWalletId(recipientWalletId)
   if (walletIdChecked instanceof Error) return walletIdChecked
@@ -99,6 +104,9 @@ export const addInvoiceForRecipient = async ({
 
   const limitOk = await checkRecipientWalletIdRateLimits(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
+
+  const callbackChecked = await checkedToCallBack(callback)
+  if (callback instanceof Error) return callback
 
   let addInvoice: (args: AddInvoiceArgs) => Promise<LnInvoice | ApplicationError>
 
@@ -114,6 +122,7 @@ export const addInvoiceForRecipient = async ({
   const walletInvoiceFactory = WalletInvoiceFactory({
     walletId: walletIdChecked,
     currency: wallet.currency,
+    callback: callbackChecked
   })
 
   return addInvoice({
