@@ -143,7 +143,7 @@ describe("FeeReimbursement", () => {
       const priceRatio = PriceRatio(paymentAmounts)
       if (priceRatio instanceof Error) throw priceRatio
 
-      const paymentFlowConvertFromBtc = priceRatio.convertFromBtc
+      const paymentFlowConvertFromBtc = priceRatio.convertFromBtcToCeil
 
       it("rounds down if fee normally rounds down to 'max fee - 1'", () => {
         // Construct max fees paid
@@ -183,7 +183,7 @@ describe("FeeReimbursement", () => {
       const priceRatio = PriceRatio(paymentAmounts)
       if (priceRatio instanceof Error) throw priceRatio
 
-      const paymentFlowConvertFromBtc = priceRatio.convertFromBtc
+      const paymentFlowConvertFromBtc = priceRatio.convertFromBtcToCeil
 
       it("rounds down to 'max fee - 1' if fee normally rounds up to max fee", () => {
         // Construct max fees paid

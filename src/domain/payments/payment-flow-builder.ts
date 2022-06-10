@@ -265,7 +265,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
             })
             if (priceRatio instanceof Error) return priceRatio
 
-            const usdProtocolFee = priceRatio.convertFromBtc(btcProtocolFee)
+            const usdProtocolFee = priceRatio.convertFromBtcToCeil(btcProtocolFee)
             return {
               ...stateWithCreatedAt,
               btcPaymentAmount,
@@ -335,7 +335,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
           })
           if (priceRatio instanceof Error) return priceRatio
 
-          const usdProtocolFee = priceRatio.convertFromBtc(btcProtocolFee)
+          const usdProtocolFee = priceRatio.convertFromBtcToCeil(btcProtocolFee)
           return {
             ...stateWithCreatedAt,
             btcPaymentAmount,
