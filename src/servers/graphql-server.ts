@@ -223,10 +223,6 @@ export const startApolloServer = async ({
     }),
   )
 
-  if (!JWT_SECRET) {
-    throw new Error("JWT_SECRET env variable is missing")
-  }
-
   app.use(
     expressjwt({
       secret: JWT_SECRET,
@@ -266,7 +262,7 @@ export const startApolloServer = async ({
                 connectionParams.authorization || connectionParams.Authorization
               if (authz) {
                 const rawToken = authz.slice(7)
-                token = jwt.decode(rawToken)
+                token = jwt.verify(rawToken, JWT_SECRET, { algorithms: ["HS256"] })
               }
 
               return sessionContext({
