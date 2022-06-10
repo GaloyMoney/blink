@@ -134,6 +134,87 @@ describe("FeeReimbursement", () => {
       })
     })
 
+    describe("ratio from payment amounts, max fee rounds down normally", () => {
+      const paymentAmounts = {
+        btc: { amount: 4000n, currency: WalletCurrency.Btc },
+        usd: { amount: 120n, currency: WalletCurrency.Usd },
+      }
+
+      const priceRatio = PriceRatio(paymentAmounts)
+      if (priceRatio instanceof Error) throw priceRatio
+
+      const paymentFlowConvertFromBtc = priceRatio.convertFromBtc
+
+      it("rounds down if fee normally rounds down to 'max fee - 1'", () => {
+        // Construct max fees paid
+        const feeBtc = { amount: 80n, currency: WalletCurrency.Btc }
+        const feeUsd = paymentFlowConvertFromBtc(feeBtc)
+        expect(feeUsd).toStrictEqual({ amount: 3n, currency: WalletCurrency.Usd })
+        const prepaidFeeAmount = { btc: feeBtc, usd: feeUsd }
+
+        // Test: max usd fee has a remainder and rounds down to 'max fee - 1' normally
+        const { usd, btc } = paymentAmounts
+        expect((feeBtc.amount * usd.amount) % btc.amount).not.toEqual(0n)
+        const feeUsdWithNormalRounding = priceRatio.convertFromBtc(feeBtc)
+        expect(feeUsdWithNormalRounding.amount).toEqual(feeUsd.amount - 1n)
+
+        // Calculate fee reimbursement
+        const feeReimbursement = FeeReimbursement({ prepaidFeeAmount, priceRatio })
+        const actualFeeAmount = { amount: 5n, currency: WalletCurrency.Btc }
+        const feeDifference = feeReimbursement.getReimbursement(actualFeeAmount)
+        expect(feeDifference).not.toBeInstanceOf(Error)
+        if (feeDifference instanceof Error) throw feeDifference
+
+        // Test: fee reimbursement
+        expect(feeDifference).toStrictEqual({
+          btc: { amount: 75n, currency: WalletCurrency.Btc },
+          usd: { amount: 2n, currency: WalletCurrency.Usd },
+        })
+        expect(feeDifference.usd.amount).toEqual(feeUsd.amount - 1n)
+      })
+    })
+
+    describe("ratio from payment amounts, max fee rounds up normally", () => {
+      const paymentAmounts = {
+        btc: { amount: 5000n, currency: WalletCurrency.Btc },
+        usd: { amount: 150n, currency: WalletCurrency.Usd },
+      }
+
+      const priceRatio = PriceRatio(paymentAmounts)
+      if (priceRatio instanceof Error) throw priceRatio
+
+      const paymentFlowConvertFromBtc = priceRatio.convertFromBtc
+
+      it("rounds down to 'max fee - 1' if fee normally rounds up to max fee", () => {
+        // Construct max fees paid
+        const feeBtc = { amount: 90n, currency: WalletCurrency.Btc }
+        const feeUsd = paymentFlowConvertFromBtc(feeBtc)
+        expect(feeUsd).toStrictEqual({ amount: 3n, currency: WalletCurrency.Usd })
+        const prepaidFeeAmount = { btc: feeBtc, usd: feeUsd }
+
+        // Test: max usd fee has a remainder and rounds up to max fee normally
+        const { usd, btc } = paymentAmounts
+        expect((feeBtc.amount * usd.amount) % btc.amount).not.toEqual(0n)
+        const feeUsdWithNormalRounding = priceRatio.convertFromBtc(feeBtc)
+        expect(feeUsdWithNormalRounding.amount).toEqual(feeUsd.amount)
+
+        // Calculate fee reimbursement
+        const feeReimbursement = FeeReimbursement({ prepaidFeeAmount, priceRatio })
+        const actualFeeAmount = { amount: 5n, currency: WalletCurrency.Btc }
+        const feeDifference = feeReimbursement.getReimbursement(actualFeeAmount)
+        expect(feeDifference).not.toBeInstanceOf(Error)
+        if (feeDifference instanceof Error) throw feeDifference
+
+        // Test: fee reimbursement
+        expect(feeDifference).toStrictEqual({
+          btc: { amount: 85n, currency: WalletCurrency.Btc },
+          usd: { amount: 2n, currency: WalletCurrency.Usd },
+        })
+        expect(feeDifference.usd.amount).toEqual(feeUsd.amount - 1n)
+      })
+    })
+  })
+
   it("returns exact amount for USD amounts when no remainder", () => {
     const prepaidFeeAmount = {
       btc: { amount: 100n, currency: WalletCurrency.Btc },
