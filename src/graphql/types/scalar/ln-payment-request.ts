@@ -5,6 +5,9 @@ const LnPaymentRequest = GT.Scalar({
   name: "LnPaymentRequest",
   description: "BOLT11 lightning invoice payment request with the amount included",
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for LnPaymentRequest" })
+    }
     return validLnPaymentRequest(value)
   },
   parseLiteral(ast) {
@@ -15,8 +18,9 @@ const LnPaymentRequest = GT.Scalar({
   },
 })
 
-function validLnPaymentRequest(value) {
-  // TODO: verify/improve
+function validLnPaymentRequest(value: string) {
+  // TODO: add network type
+  // TODO: limit length of the invoice
   if (value.match(/^ln[a-z0-9]+$/i)) {
     return value
   }

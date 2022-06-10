@@ -7,6 +7,9 @@ const OnChainAddress = GT.Scalar({
   name: "OnChainAddress",
   description: "An address for an on-chain bitcoin destination",
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for OnChainAddress" })
+    }
     return validOnChainAddressValue(value)
   },
   parseLiteral(ast) {
@@ -17,7 +20,7 @@ const OnChainAddress = GT.Scalar({
   },
 })
 
-function validOnChainAddressValue(value) {
+function validOnChainAddressValue(value: string) {
   const address = checkedToOnChainAddress({ network: BTC_NETWORK, value })
   if (address instanceof Error)
     return new InputValidationError({ message: "Invalid value for OnChainAddress" })

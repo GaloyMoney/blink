@@ -18,7 +18,18 @@ const OnChainPaymentSendAllInput = GT.Input({
   }),
 })
 
-const OnChainPaymentSendAllMutation = GT.Field<{ input }, null, GraphQLContextForUser>({
+const OnChainPaymentSendAllMutation = GT.Field<
+  {
+    input: {
+      walletId: WalletId | InputValidationError
+      address: OnChainAddress | InputValidationError
+      memo: Memo | InputValidationError | null
+      targetConfirmations: number
+    }
+  },
+  null,
+  GraphQLContextForUser
+>({
   type: GT.NonNull(PaymentSendPayload),
   args: {
     input: { type: GT.NonNull(OnChainPaymentSendAllInput) },
@@ -26,10 +37,16 @@ const OnChainPaymentSendAllMutation = GT.Field<{ input }, null, GraphQLContextFo
   resolve: async (_, args, { domainAccount }) => {
     const { walletId, address, memo, targetConfirmations } = args.input
 
-    for (const input of [walletId, memo, address, targetConfirmations]) {
-      if (input instanceof Error) {
-        return { errors: [{ message: input.message }] }
-      }
+    if (walletId instanceof Error) {
+      return { errors: [{ message: walletId.message }] }
+    }
+
+    if (address instanceof Error) {
+      return { errors: [{ message: address.message }] }
+    }
+
+    if (memo instanceof Error) {
+      return { errors: [{ message: memo.message }] }
     }
 
     const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)

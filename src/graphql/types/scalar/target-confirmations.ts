@@ -6,6 +6,9 @@ const TargetConfirmations = GT.Scalar({
   description:
     "(Positive) Number of blocks in which the transaction is expected to be confirmed",
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for TargetConfirmations" })
+    }
     return validTargetConfirmations(value)
   },
   parseLiteral(ast) {
@@ -16,7 +19,7 @@ const TargetConfirmations = GT.Scalar({
   },
 })
 
-function validTargetConfirmations(value) {
+function validTargetConfirmations(value: string) {
   const intValue = Number.parseInt(value, 10)
   if (Number.isInteger(intValue) && intValue > 0) {
     return intValue

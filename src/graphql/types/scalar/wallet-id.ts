@@ -2,10 +2,13 @@ import { checkedToWalletId } from "@domain/wallets"
 import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
 
-const WalletId = GT.Scalar({
+const WalletId = GT.Scalar<WalletId | InputValidationError>({
   name: "WalletId",
   description: "Unique identifier of a wallet",
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for WalletId" })
+    }
     return validWalletIdValue(value)
   },
   parseLiteral(ast) {
@@ -16,7 +19,7 @@ const WalletId = GT.Scalar({
   },
 })
 
-function validWalletIdValue(value) {
+function validWalletIdValue(value: string) {
   const checkedWalletId = checkedToWalletId(value)
   if (checkedWalletId instanceof Error) {
     return new InputValidationError({ message: "Invalid value for WalletId" })

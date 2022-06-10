@@ -6,6 +6,9 @@ const Memo = GT.Scalar({
   name: "Memo",
   description: "Text field in a lightning payment transaction",
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for Memo" })
+    }
     return validMemo(value)
   },
   parseLiteral(ast) {
@@ -16,9 +19,9 @@ const Memo = GT.Scalar({
   },
 })
 
-function validMemo(value) {
+function validMemo(value: string) {
   if (Buffer.byteLength(value, "utf8") <= MAX_BYTES_FOR_MEMO) {
-    return value
+    return value as Memo
   }
   return new InputValidationError({ message: "Memo is too long" })
 }

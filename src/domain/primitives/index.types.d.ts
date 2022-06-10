@@ -9,6 +9,7 @@ type Seconds = number & { readonly brand: unique symbol }
 type MilliSeconds = number & { readonly brand: unique symbol }
 type Days = number & { readonly brand: unique symbol }
 type JwtToken = string & { readonly brand: unique symbol }
+type Memo = string & { readonly brand: unique symbol }
 
 type XOR<T1, T2> =
   | (T1 & { [k in Exclude<keyof T2, keyof T1>]?: never })
