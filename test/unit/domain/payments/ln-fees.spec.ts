@@ -16,11 +16,11 @@ describe("LnFees", () => {
 
     it("correctly rounds the fee", () => {
       const btcAmount = {
-        amount: 99n,
+        amount: 25844n,
         currency: WalletCurrency.Btc,
       }
       expect(LnFees().maxProtocolFee(btcAmount)).toEqual({
-        amount: 2n,
+        amount: 517n,
         currency: WalletCurrency.Btc,
       })
     })
