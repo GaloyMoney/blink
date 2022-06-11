@@ -22,9 +22,9 @@ services:
   postgres-price-history:
     ports:
       - "5432:5432"
-  postgres:
+  casbin-postgres:
     ports:
-    - "5432:5432"
+    - "5433:5432"
   bitcoind:
     ports:
       - "18443:18443"

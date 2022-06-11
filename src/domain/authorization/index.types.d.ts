@@ -30,6 +30,8 @@ type AuthResource = {
   uri: string
 }
 
+type SupportRole =
+  typeof import("./role").SupportRole[keyof typeof import("./role").SupportRole]
 type Role = typeof import("./primitives").Role[keyof typeof import("./primitives").Role]
 
 declare const subjectIdSymbol: unique symbol

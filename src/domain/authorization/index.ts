@@ -1,4 +1,5 @@
 export * from "./errors"
 export * from "./resource"
+export * from "./role"
 export * from "./permission"
 export * from "./primitives"

@@ -1,8 +1,9 @@
-import { Accounts } from "@app"
+import { Accounts, Admin } from "@app"
 import { GT } from "@graphql/index"
 import Language from "@graphql/types/scalar/language"
 import Phone from "@graphql/types/scalar/phone"
 import Timestamp from "@graphql/types/scalar/timestamp"
+import SupportRole from "@graphql/admin/types/scalar/support-role"
 
 import Account from "./account"
 
@@ -21,6 +22,24 @@ const User = GT.Object<User>({
           throw account
         }
         return account
+      },
+    },
+    supportRole: {
+      type: SupportRole,
+      resolve: async (source, _, { domainUser }) => {
+        if (!domainUser) {
+          throw "bad"
+        }
+
+        const result = await Admin.getSupportRoleForUser({
+          loggedInUserId: domainUser.id,
+          userId: source.id,
+        })
+        if (result instanceof Error) {
+          throw result
+        }
+
+        return result
       },
     },
     createdAt: {

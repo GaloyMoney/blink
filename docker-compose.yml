@@ -9,7 +9,7 @@ services:
     - redis
     - mongodb
     - postgres-price-history
-    - postgres
+    - casbin-postgres
     - bitcoind
     - lnd1
     - lnd2
@@ -80,7 +80,7 @@ services:
       - POSTGRES_USER=galoy-price-usr
       - POSTGRES_PASSWORD=galoy-price-pwd
       - POSTGRES_DB=galoy-price-history
-  postgres:
+  casbin-postgres:
     image: postgres:14
     environment:
       POSTGRES_USER: postgres
