@@ -5,18 +5,58 @@ import { WalletCurrency, AmountCalculator, ZERO_BANK_FEE } from "@domain/shared"
 class TestMediciEntry {
   credits: any // eslint-disable-line
   debits: any // eslint-disable-line
+  transactions: any // eslint-disable-line
 
   credit(accountPath, amount, metadata = null) {
     this.credits = this.credits || {}
+    this.transactions = this.transactions || []
     this.credits[accountPath] = { amount, metadata }
+
+    const metadataObj = metadata === null ? {} : metadata
+    this.transactions.push({
+      debit: 0,
+      credit: amount,
+      accounts: accountPath,
+      ...metadataObj,
+    })
     return this
   }
 
   debit(accountPath, amount, metadata = null) {
     this.debits = this.debits || {}
+    this.transactions = this.transactions || []
     this.debits[accountPath] = { amount, metadata }
+
+    const metadataObj = metadata === null ? {} : metadata
+    this.transactions.push({
+      debit: amount,
+      credit: 0,
+      accounts: accountPath,
+      ...metadataObj,
+    })
     return this
   }
+}
+
+const reconstructEntryFromTransactions = (entry: TestMediciEntry): TestMediciEntry => {
+  const result = new TestMediciEntry()
+
+  for (const txn of entry.transactions) {
+    let accountPath, amount, metadata, credit, debit
+    if (txn.debit > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      ;({ debit: amount, credit, accounts: accountPath, ...metadata } = txn)
+      result.debit(accountPath, amount, metadata)
+    }
+
+    if (txn.credit > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      ;({ credit: amount, debit, accounts: accountPath, ...metadata } = txn)
+      result.credit(accountPath, amount, metadata)
+    }
+  }
+
+  return result
 }
 
 describe("EntryBuilder", () => {
@@ -305,11 +345,12 @@ describe("EntryBuilder", () => {
             metadata,
           })
 
-          const result = builder
+          const initialResult = builder
             .withTotalAmount(amount)
             .withBankFee(ZERO_BANK_FEE)
             .debitLnd()
             .creditAccount(usdCreditorAccountDescriptor)
+          const result = reconstructEntryFromTransactions(initialResult)
 
           expectJournalToBeBalanced(result)
           expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
@@ -319,7 +360,7 @@ describe("EntryBuilder", () => {
             btcAmount,
           )
           expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
-          expect(result.debits[staticAccountIds.dealerUsdAccountId].toBeUndefined())
+          expect(result.debits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
           expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
         })
       })

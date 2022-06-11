@@ -20,6 +20,12 @@ interface MediciEntry {
     amount: number,
     extra?: TxMetadata,
   ) => MediciEntry
+  transactions: {
+    credit: number
+    debit: number
+    currency: WalletCurrency
+    accounts: LedgerAccountId
+  }[]
 }
 
 type StaticAccountIds = {

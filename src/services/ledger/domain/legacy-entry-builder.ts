@@ -116,7 +116,7 @@ const LegacyEntryBuilderCreditWithUsdDebit = <M extends MediciEntry>({
       ...metadata,
       currency: btcCreditAmount.currency,
     })
-    return entry
+    return removeZeroAmountEntries(entry)
   }
   const creditAccount = ({
     accountId,
@@ -139,7 +139,8 @@ const LegacyEntryBuilderCreditWithUsdDebit = <M extends MediciEntry>({
       ...metadata,
       currency: creditAmount.currency,
     })
-    return entry
+
+    return removeZeroAmountEntries(entry)
   }
   return {
     creditLnd,
@@ -243,5 +244,15 @@ const withdrawUsdFromDealer = ({
     ...metadata,
     currency: usdAmount.currency,
   })
+  return entry
+}
+
+const removeZeroAmountEntries = <M extends MediciEntry>(entry: M): M => {
+  const updatedTransactions = entry.transactions.filter(
+    (txn) => !(txn.debit === 0 && txn.credit === 0),
+  )
+
+  entry.transactions = updatedTransactions
+
   return entry
 }
