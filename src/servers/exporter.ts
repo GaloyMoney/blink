@@ -11,12 +11,9 @@ import {
   wrapAsyncToRunInSpan,
 } from "@services/tracing"
 import { User } from "@services/mongoose/schema"
-import { getBosScore, lndsBalances } from "@services/lnd/utils"
-import {
-  getAssetsLiabilitiesDifference,
-  getBookingVersusRealWorldAssets,
-} from "@core/balance-sheet"
 import { LedgerService } from "@services/ledger"
+import { getBosScore, lndsBalances } from "@services/lnd/utils"
+import { getBalance as getBitcoindBalance } from "@services/bitcoind"
 import {
   getBankOwnerWalletId,
   getDealerBtcWalletId,
@@ -284,4 +281,30 @@ const createColdStorageWalletGauge = (walletName: string) => {
       return balance.amount
     },
   })
+}
+
+const getAssetsLiabilitiesDifference = async () => {
+  const [assets, liabilities] = await Promise.all([
+    ledgerAdmin.getAssetsBalance(),
+    ledgerAdmin.getLiabilitiesBalance(),
+  ])
+
+  return assets + liabilities
+}
+
+export const getBookingVersusRealWorldAssets = async () => {
+  const [lightning, bitcoin, lndBalances, bitcoind] = await Promise.all([
+    ledgerAdmin.getLndBalance(),
+    ledgerAdmin.getBitcoindBalance(),
+    lndsBalances(),
+    getBitcoindBalance(),
+  ])
+
+  const { total: lnd } = lndBalances
+
+  return (
+    lnd + // physical assets
+    bitcoind + // physical assets
+    (lightning + bitcoin)
+  ) // value in accounting
 }
