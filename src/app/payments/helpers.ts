@@ -115,12 +115,12 @@ export const btcFromUsdMidPriceFn = async (
   )
 
 export const getCurrentPriceInCentsPerSat = async (): Promise<
-  CentsPerSatsRatio | PriceServiceError
+  PriceRatio | PriceServiceError
 > => {
   const price = await getCurrentPrice()
   if (price instanceof Error) return price
 
-  return (price * CENTS_PER_USD) as CentsPerSatsRatio
+  return toPriceRatio(price * CENTS_PER_USD)
 }
 
 export const getMidPriceRatio = async (): Promise<PriceRatio | PriceServiceError> => {
@@ -131,17 +131,11 @@ export const getMidPriceRatio = async (): Promise<PriceRatio | PriceServiceError
         error: priceRatio,
         level: ErrorLevel.Critical,
       })
-      const ratio = await getCurrentPriceInCentsPerSat()
-      if (ratio instanceof Error) return ratio
-
-      return toPriceRatio(ratio)
+      return getCurrentPriceInCentsPerSat()
     }
   }
 
-  const ratio = await getCurrentPriceInCentsPerSat()
-  if (ratio instanceof Error) return ratio
-
-  return toPriceRatio(ratio)
+  return getCurrentPriceInCentsPerSat()
 }
 
 export const constructPaymentFlowBuilder = async <
