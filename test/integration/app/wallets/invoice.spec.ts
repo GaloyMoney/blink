@@ -136,7 +136,7 @@ describe("Wallet - addInvoice BTC", () => {
 })
 
 describe("Wallet - addInvoice USD", () => {
-  it.only("add a self generated USD invoice", async () => {
+  it("add a self generated USD invoice", async () => {
     const centsInput = 10000
 
     const centsPerSat = await getCurrentPriceInCentsPerSat()
