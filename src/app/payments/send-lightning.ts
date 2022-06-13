@@ -22,11 +22,12 @@ import {
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
 import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
-import { CENTS_PER_USD, DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
+import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
 
 import { LndService } from "@services/lnd"
 import {
+  AccountsRepository,
   LnPaymentsRepository,
   UsersRepository,
   WalletInvoicesRepository,
@@ -509,14 +510,19 @@ const executePaymentViaIntraledger = async ({
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
 
+    const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {
+      amount: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+      currency: DisplayCurrency.Usd,
+    }
+
     const lnIntraLedgerMetadata = LedgerFacade.LnIntraledgerLedgerMetadata({
       paymentHash,
       pubkey: recipientPubkey,
       paymentFlow,
 
-      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+      amountDisplayCurrency: displayPaymentAmount.amount as DisplayCurrencyBaseAmount,
       feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-      displayCurrency: DisplayCurrency.Usd,
+      displayCurrency: displayPaymentAmount.currency,
 
       memoOfPayer: memo || undefined,
       senderUsername,
@@ -554,22 +560,29 @@ const executePaymentViaIntraledger = async ({
     const newWalletInvoice = await WalletInvoicesRepository().markAsPaid(paymentHash)
     if (newWalletInvoice instanceof Error) return newWalletInvoice
 
-    const notificationsService = NotificationsService(logger)
-    if (recipientWalletCurrency === WalletCurrency.Btc) {
-      notificationsService.lnInvoiceBitcoinWalletPaid({
-        paymentHash,
-        recipientWalletId,
-        sats: paymentFlow.btcPaymentAmount.amount,
-        displayCurrencyPerSat: (displayCentsPerSat /
-          CENTS_PER_USD) as DisplayCurrencyPerSat,
-      })
-    } else {
-      notificationsService.lnInvoiceUsdWalletPaid({
-        paymentHash,
-        recipientWalletId,
-        cents: paymentFlow.usdPaymentAmount.amount,
-      })
+    const recipientAccount = await AccountsRepository().findById(
+      recipientWallet.accountId,
+    )
+    if (recipientAccount instanceof Error) return recipientAccount
+
+    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+    if (recipientUser instanceof Error) return recipientUser
+
+    let amount = paymentFlow.btcPaymentAmount.amount
+    if (recipientWalletCurrency === WalletCurrency.Usd) {
+      amount = paymentFlow.usdPaymentAmount.amount
     }
+
+    const notificationsService = NotificationsService(logger)
+    notificationsService.lightningTxReceived({
+      recipientAccountId: recipientWallet.accountId,
+      recipientWalletId,
+      paymentAmount: { amount, currency: recipientWalletCurrency },
+      displayPaymentAmount,
+      paymentHash,
+      recipientDeviceTokens: recipientUser.deviceTokens,
+      recipientLanguage: recipientUser.language,
+    })
 
     return PaymentSendStatus.Success
   })

@@ -2,7 +2,11 @@ import { getDisplayCurrencyConfig } from "@config"
 import { toSats } from "@domain/bitcoin"
 import { NotImplementedError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
-import { NotificationsServiceError, NotificationType } from "@domain/notifications"
+import {
+  NotificationsServiceError,
+  NotificationType,
+  UnknownNotificationsServiceError,
+} from "@domain/notifications"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 import { WalletCurrency } from "@domain/shared"
 import {
@@ -21,6 +25,62 @@ const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 export const NotificationsService = (logger: Logger): INotificationsService => {
   const pubsub = PubSubService()
   const pushNotification = PushNotificationsService()
+
+  const lightningTxReceived = async ({
+    recipientAccountId,
+    recipientWalletId,
+    paymentAmount,
+    displayPaymentAmount,
+    paymentHash,
+    recipientDeviceTokens,
+    recipientLanguage,
+  }: LightningTxReceivedArgs): Promise<void | NotificationsServiceError> => {
+    try {
+      if (recipientDeviceTokens && recipientDeviceTokens.length > 0) {
+        const { title, body } = createPushNotificationContent({
+          type: NotificationType.LnInvoicePaid,
+          userLanguage: recipientLanguage,
+          paymentAmount,
+          displayPaymentAmount,
+        })
+
+        // Do not await this call for quicker processing
+        pushNotification.sendNotification({
+          deviceToken: recipientDeviceTokens,
+          title,
+          body,
+        })
+      }
+
+      // Notify public subscribers (via GraphQL subscription if any)
+      const lnPaymentStatusTrigger = customPubSubTrigger({
+        event: PubSubDefaultTriggers.LnPaymentStatus,
+        suffix: paymentHash,
+      })
+      pubsub.publish({
+        trigger: lnPaymentStatusTrigger,
+        payload: { status: "PAID" },
+      })
+
+      // Notify the recipient (via GraphQL subscription if any)
+      const accountUpdatedTrigger = customPubSubTrigger({
+        event: PubSubDefaultTriggers.AccountUpdate,
+        suffix: recipientAccountId,
+      })
+      pubsub.publish({
+        trigger: accountUpdatedTrigger,
+        payload: {
+          invoice: {
+            walletId: recipientWalletId,
+            paymentHash,
+            status: "PAID",
+          },
+        },
+      })
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err.message || err)
+    }
+  }
 
   const sendOnChainNotification = async ({
     type,
@@ -133,134 +193,6 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       txHash,
       displayCurrencyPerSat,
     })
-
-  const lnInvoiceBitcoinWalletPaid = async ({
-    paymentHash,
-    recipientWalletId,
-    sats,
-    displayCurrencyPerSat,
-  }: LnInvoicePaidBitcoinWalletArgs) => {
-    try {
-      const wallet = await WalletsRepository().findById(recipientWalletId)
-      if (wallet instanceof Error) throw wallet
-
-      const account = await AccountsRepository().findById(wallet.accountId)
-      if (account instanceof Error) return account
-
-      const user = await UsersRepository().findById(account.ownerId)
-      if (user instanceof Error) return user
-
-      const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
-      const displayPaymentAmount = displayCurrencyPerSat
-        ? {
-            amount: Number(paymentAmount.amount) * (displayCurrencyPerSat || 0),
-            currency: DefaultDisplayCurrency,
-          }
-        : undefined
-
-      const { title, body } = createPushNotificationContent({
-        type: NotificationType.LnInvoicePaid,
-        userLanguage: user.language,
-        paymentAmount,
-        displayPaymentAmount,
-      })
-
-      // Do not await this call for quicker processing
-      pushNotification.sendNotification({
-        deviceToken: user.deviceTokens,
-        title,
-        body,
-      })
-
-      // Notify public subscribers (via GraphQL subscription if any)
-      const lnPaymentStatusTrigger = customPubSubTrigger({
-        event: PubSubDefaultTriggers.LnPaymentStatus,
-        suffix: paymentHash,
-      })
-      pubsub.publish({
-        trigger: lnPaymentStatusTrigger,
-        payload: { status: "PAID" },
-      })
-
-      // Notify the recipient (via GraphQL subscription if any)
-      const accountUpdatedTrigger = customPubSubTrigger({
-        event: PubSubDefaultTriggers.AccountUpdate,
-        suffix: account.id,
-      })
-      pubsub.publish({
-        trigger: accountUpdatedTrigger,
-        payload: {
-          invoice: {
-            walletId: recipientWalletId,
-            paymentHash,
-            status: "PAID",
-          },
-        },
-      })
-    } catch (err) {
-      return new NotificationsServiceError(err)
-    }
-  }
-
-  const lnInvoiceUsdWalletPaid = async ({
-    paymentHash,
-    recipientWalletId,
-    cents,
-  }: LnInvoicePaidUsdWalletArgs) => {
-    try {
-      const wallet = await WalletsRepository().findById(recipientWalletId)
-      if (wallet instanceof Error) throw wallet
-
-      const account = await AccountsRepository().findById(wallet.accountId)
-      if (account instanceof Error) return account
-
-      const user = await UsersRepository().findById(account.ownerId)
-      if (user instanceof Error) return user
-
-      const paymentAmount = { amount: BigInt(cents), currency: WalletCurrency.Usd }
-
-      const { title, body } = createPushNotificationContent({
-        type: NotificationType.LnInvoicePaid,
-        userLanguage: user.language,
-        paymentAmount,
-      })
-
-      // Do not await this call for quicker processing
-      pushNotification.sendNotification({
-        deviceToken: user.deviceTokens,
-        title,
-        body,
-      })
-
-      // Notify public subscribers (via GraphQL subscription if any)
-      const lnPaymentStatusTrigger = customPubSubTrigger({
-        event: PubSubDefaultTriggers.LnPaymentStatus,
-        suffix: paymentHash,
-      })
-      pubsub.publish({
-        trigger: lnPaymentStatusTrigger,
-        payload: { status: "PAID" },
-      })
-
-      // Notify the recipient (via GraphQL subscription if any)
-      const accountUpdatedTrigger = customPubSubTrigger({
-        event: PubSubDefaultTriggers.AccountUpdate,
-        suffix: account.id,
-      })
-      pubsub.publish({
-        trigger: accountUpdatedTrigger,
-        payload: {
-          invoice: {
-            walletId: recipientWalletId,
-            paymentHash,
-            status: "PAID",
-          },
-        },
-      })
-    } catch (err) {
-      return new NotificationsServiceError(err)
-    }
-  }
 
   const priceUpdate = (displayCurrencyPerSat: DisplayCurrencyPerSat) => {
     const payload = { satUsdCentPrice: 100 * displayCurrencyPerSat }
@@ -547,11 +479,10 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     ...wrapAsyncFunctionsToRunInSpan({
       namespace: "services.notifications",
       fns: {
+        lightningTxReceived,
         onChainTransactionReceived,
         onChainTransactionReceivedPending,
         onChainTransactionPayment,
-        lnInvoiceBitcoinWalletPaid,
-        lnInvoiceUsdWalletPaid,
         intraLedgerPaid,
         intraLedgerBtcWalletPaid,
         intraLedgerUsdWalletPaid,

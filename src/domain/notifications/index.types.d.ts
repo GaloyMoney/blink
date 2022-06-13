@@ -4,6 +4,15 @@ type NotificationsServiceError = import("./errors").NotificationsServiceError
 type NotificationType =
   typeof import("./index").NotificationType[keyof typeof import("./index").NotificationType]
 
+type TransactionNotificationBaseArgs = {
+  recipientAccountId: AccountId
+  recipientWalletId: WalletId
+  paymentAmount: PaymentAmount<WalletCurrency>
+  displayPaymentAmount?: DisplayPaymentAmount<DisplayCurrency>
+  recipientDeviceTokens?: DeviceToken[]
+  recipientLanguage?: UserLanguage
+}
+
 type OnChainTxBaseArgs = {
   walletId: WalletId
   amount: Satoshis
@@ -15,17 +24,8 @@ type OnChainTxReceivedArgs = OnChainTxBaseArgs
 type OnChainTxReceivedPendingArgs = OnChainTxBaseArgs
 type OnChainTxPaymentArgs = OnChainTxBaseArgs
 
-type LnInvoicePaidBitcoinWalletArgs = {
+type LightningTxReceivedArgs = TransactionNotificationBaseArgs & {
   paymentHash: PaymentHash
-  recipientWalletId: WalletId
-  sats: Satoshis | bigint
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
-}
-
-type LnInvoicePaidUsdWalletArgs = {
-  paymentHash: PaymentHash
-  recipientWalletId: WalletId
-  cents: UsdCents | bigint
 }
 
 type IntraLedgerArgs = {
@@ -57,6 +57,10 @@ type SendBalanceArgs = {
 }
 
 interface INotificationsService {
+  lightningTxReceived: (
+    args: LightningTxReceivedArgs,
+  ) => Promise<void | NotificationsServiceError>
+
   onChainTransactionReceived(
     args: OnChainTxReceivedArgs,
   ): Promise<void | NotificationsServiceError>
@@ -67,8 +71,6 @@ interface INotificationsService {
     args: OnChainTxPaymentArgs,
   ): Promise<void | NotificationsServiceError>
   priceUpdate: (DisplayCurrencyPerSat: DisplayCurrencyPerSat) => void
-  lnInvoiceBitcoinWalletPaid: (args: LnInvoicePaidBitcoinWalletArgs) => void
-  lnInvoiceUsdWalletPaid: (args: LnInvoicePaidUsdWalletArgs) => void
   intraLedgerBtcWalletPaid(
     args: IntraLedgerPaidBitcoinWalletArgs,
   ): Promise<void | NotificationsServiceError>
