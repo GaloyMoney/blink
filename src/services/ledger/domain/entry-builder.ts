@@ -192,7 +192,8 @@ const EntryBuilderCredit = <M extends MediciEntry>({
       ...metadata,
       currency: creditAmount.currency,
     })
-    return entryToReturn
+
+    return removeZeroAmountEntries(entryToReturn)
   }
 
   return {
@@ -253,5 +254,15 @@ const addUsdToBtcConversionToEntry = <M extends MediciEntry>({
     ...metadata,
     currency: usdAmount.currency,
   })
+  return entry
+}
+
+const removeZeroAmountEntries = <M extends MediciEntry>(entry: M): M => {
+  const updatedTransactions = entry.transactions.filter(
+    (txn) => !(txn.debit === 0 && txn.credit === 0),
+  )
+
+  entry.transactions = updatedTransactions
+
   return entry
 }
