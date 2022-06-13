@@ -139,9 +139,10 @@ describe("Wallet - addInvoice USD", () => {
   it("add a self generated USD invoice", async () => {
     const centsInput = 10000
 
-    const centsPerSat = await getCurrentPriceInCentsPerSat()
-    if (centsPerSat instanceof Error) return centsPerSat
-    const satsFallbackViaPriceService = (centsInput / centsPerSat) * 0.996 // 40 bps spread
+    const centsPerSatRatio = await getCurrentPriceInCentsPerSat()
+    if (centsPerSatRatio instanceof Error) return centsPerSatRatio
+    const satsFallbackViaPriceService =
+      (centsInput / centsPerSatRatio.usdPerSat()) * 0.996 // 40 bps spread
 
     const sats = await DealerPriceService().getSatsFromCentsForFutureBuy(
       toCents(centsInput),
