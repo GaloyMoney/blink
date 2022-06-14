@@ -13,7 +13,7 @@ import { params as authParams } from "./auth"
 /* eslint-disable @typescript-eslint/no-var-requires */
 const EventEmitter = require("events")
 
-const refreshTime = 10000 // ms
+const refreshTime = 20000 // ms
 
 const intervals: NodeJS.Timer[] = []
 

@@ -28,10 +28,9 @@ const UsdWallet = GT.Object<Wallet>({
     },
     balance: {
       type: GT.NonNull(SignedAmount),
-      resolve: async (source, args, { logger }) => {
+      resolve: async (source) => {
         const balanceCents = await Wallets.getBalanceForWallet({
           walletId: source.id,
-          logger,
         })
         if (balanceCents instanceof Error) throw balanceCents
         return Math.floor(balanceCents)

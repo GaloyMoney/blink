@@ -6,7 +6,6 @@ import {
 } from "@app/wallets"
 import { getBitcoinCoreRPCConfig } from "@config"
 import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
-import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 import { pay } from "lightning"
 
@@ -114,7 +113,7 @@ export const fundWalletIdFromLightning = async ({
 
   await pay({ lnd: lndOutside1, request: invoice.paymentRequest })
 
-  const balance = await getBalanceForWallet({ walletId, logger: baseLogger })
+  const balance = await getBalanceForWallet({ walletId })
   if (balance instanceof Error) throw balance
 }
 
