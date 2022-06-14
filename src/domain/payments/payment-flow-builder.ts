@@ -390,12 +390,8 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   statePromise: Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError>,
 ): LPFBWithConversion<S, R> | LPFBWithError => {
   const paymentFromState = (
-    state: LPFBWithConversionState<S, R> | DealerPriceServiceError,
-  ): PaymentFlow<S, R> | DealerPriceServiceError | ValidationError => {
-    if (state instanceof Error) {
-      return state
-    }
-
+    state: LPFBWithRouteState<S, R>,
+  ): PaymentFlow<S, R> | ValidationError => {
     const hash = state.paymentHash
       ? { paymentHash: state.paymentHash }
       : state.intraLedgerHash
@@ -432,8 +428,16 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   }
 
   const withoutRoute = async () => {
-    return paymentFromState(await statePromise)
+    const state = await statePromise
+    if (state instanceof Error) return state
+
+    return paymentFromState({
+      ...state,
+      outgoingNodePubkey: undefined,
+      checkedRoute: undefined,
+    })
   }
+
   const withRoute = async ({
     pubkey,
     rawRoute,
@@ -442,9 +446,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     rawRoute: RawRoute
   }): Promise<PaymentFlow<S, R> | ValidationError | DealerPriceServiceError> => {
     const state = await statePromise
-    if (state instanceof Error) {
-      return state
-    }
+    if (state instanceof Error) return state
 
     const priceRatio = PriceRatio({
       usd: state.usdPaymentAmount,
