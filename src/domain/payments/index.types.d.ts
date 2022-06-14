@@ -218,4 +218,12 @@ type LPFBWithConversionState<
 > = RequireField<
   LPFBWithRecipientWalletState<S, R>,
   "btcPaymentAmount" | "btcProtocolFee" | "usdProtocolFee" | "usdPaymentAmount"
->
+> & { createdAt: Date }
+
+type LPFBWithRouteState<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = LPFBWithConversionState<S, R> & {
+  outgoingNodePubkey: Pubkey | undefined
+  checkedRoute: RawRoute | undefined
+}
