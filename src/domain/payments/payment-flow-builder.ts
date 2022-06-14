@@ -4,7 +4,10 @@ import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 import { generateIntraLedgerHash } from "@domain/payments/get-intraledger-hash"
 
-import { InvalidLightningPaymentFlowBuilderStateError } from "./errors"
+import {
+  InvalidLightningPaymentFlowBuilderStateError,
+  InvalidLightningPaymentFlowStateError,
+} from "./errors"
 import { LnFees } from "./ln-fees"
 import { PriceRatio } from "./price-ratio"
 import { PaymentFlow } from "./payment-flow"
@@ -386,12 +389,23 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
 const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   statePromise: Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError>,
 ): LPFBWithConversion<S, R> | LPFBWithError => {
-  const paymentFromState = (state: Error | LPFBWithConversionState<S, R>) => {
+  const paymentFromState = (
+    state: LPFBWithConversionState<S, R> | DealerPriceServiceError,
+  ): PaymentFlow<S, R> | DealerPriceServiceError | ValidationError => {
     if (state instanceof Error) {
       return state
     }
 
+    const hash = state.paymentHash
+      ? { paymentHash: state.paymentHash }
+      : state.intraLedgerHash
+      ? { intraLedgerHash: state.intraLedgerHash }
+      : new InvalidLightningPaymentFlowStateError()
+    if (hash instanceof Error) return hash
+
     return PaymentFlow({
+      ...hash,
+
       senderWalletId: state.senderWalletId,
       senderWalletCurrency: state.senderWalletCurrency,
       recipientWalletId: state.recipientWalletId,
@@ -399,8 +413,6 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       recipientPubkey: state.recipientPubkey,
       recipientUsername: state.recipientUsername,
 
-      paymentHash: state.paymentHash,
-      intraLedgerHash: state.intraLedgerHash,
       descriptionFromInvoice: state.descriptionFromInvoice,
       btcPaymentAmount: state.btcPaymentAmount,
       usdPaymentAmount: state.usdPaymentAmount,
