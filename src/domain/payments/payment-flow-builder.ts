@@ -386,7 +386,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
 const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   statePromise: Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError>,
 ): LPFBWithConversion<S, R> | LPFBWithError => {
-  const paymentFromState = (state) => {
+  const paymentFromState = (state: Error | LPFBWithConversionState<S, R>) => {
     if (state instanceof Error) {
       return state
     }
