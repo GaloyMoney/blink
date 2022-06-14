@@ -45,7 +45,8 @@ export const checkedToSats = (amount: number): Satoshis | ValidationError => {
 export const checkedToTargetConfs = (
   confs: number,
 ): TargetConfirmations | ValidationError => {
-  if (!(confs && confs > 0)) return new InvalidTargetConfirmations()
+  if (!(confs && confs > 0 && Number.isInteger(confs)))
+    return new InvalidTargetConfirmations()
   return toTargetConfs(confs)
 }
 

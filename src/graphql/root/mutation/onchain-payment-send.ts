@@ -27,7 +27,7 @@ const OnChainPaymentSendMutation = GT.Field<
       address: OnChainAddress | InputValidationError
       amount: number
       memo: Memo | InputValidationError | null
-      targetConfirmations: number
+      targetConfirmations: TargetConfirmations | InputValidationError
     }
   },
   null,
@@ -50,6 +50,10 @@ const OnChainPaymentSendMutation = GT.Field<
 
     if (memo instanceof Error) {
       return { errors: [{ message: memo.message }] }
+    }
+
+    if (targetConfirmations instanceof Error) {
+      return { errors: [{ message: targetConfirmations.message }] }
     }
 
     const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)

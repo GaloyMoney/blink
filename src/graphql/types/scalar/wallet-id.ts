@@ -19,7 +19,7 @@ const WalletId = GT.Scalar<WalletId | InputValidationError>({
   },
 })
 
-function validWalletIdValue(value: string) {
+function validWalletIdValue(value: string): WalletId | InputValidationError {
   const checkedWalletId = checkedToWalletId(value)
   if (checkedWalletId instanceof Error) {
     return new InputValidationError({ message: "Invalid value for WalletId" })

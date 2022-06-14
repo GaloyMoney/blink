@@ -1,3 +1,4 @@
+import { checkedToTargetConfs } from "@domain/bitcoin"
 import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
 
@@ -19,12 +20,15 @@ const TargetConfirmations = GT.Scalar({
   },
 })
 
-function validTargetConfirmations(value: string) {
+function validTargetConfirmations(
+  value: string,
+): TargetConfirmations | InputValidationError {
   const intValue = Number.parseInt(value, 10)
-  if (Number.isInteger(intValue) && intValue > 0) {
-    return intValue
+  const targetConfValid = checkedToTargetConfs(intValue)
+  if (targetConfValid instanceof Error) {
+    return new InputValidationError({ message: "Invalid value for TargetConfirmations" })
   }
-  return new InputValidationError({ message: "Invalid value for TargetConfirmations" })
+  return targetConfValid
 }
 
 export default TargetConfirmations

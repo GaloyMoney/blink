@@ -20,7 +20,7 @@ const OnChainAddress = GT.Scalar({
   },
 })
 
-function validOnChainAddressValue(value: string) {
+function validOnChainAddressValue(value: string): OnChainAddress | InputValidationError {
   const address = checkedToOnChainAddress({ network: BTC_NETWORK, value })
   if (address instanceof Error)
     return new InputValidationError({ message: "Invalid value for OnChainAddress" })

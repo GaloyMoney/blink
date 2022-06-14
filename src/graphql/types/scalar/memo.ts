@@ -19,7 +19,7 @@ const Memo = GT.Scalar({
   },
 })
 
-function validMemo(value: string) {
+function validMemo(value: string): Memo | InputValidationError {
   if (Buffer.byteLength(value, "utf8") <= MAX_BYTES_FOR_MEMO) {
     return value as Memo
   }
