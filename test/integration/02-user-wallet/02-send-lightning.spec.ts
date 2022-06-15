@@ -18,7 +18,11 @@ import {
   SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
 import { LedgerTransactionType } from "@domain/ledger"
-import { PriceRatio, ZeroAmountForUsdRecipientError } from "@domain/payments"
+import {
+  LnPaymentRequestInTransitError,
+  PriceRatio,
+  ZeroAmountForUsdRecipientError,
+} from "@domain/payments"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
@@ -1167,7 +1171,14 @@ describe("UserWallet - Lightning Pay", () => {
         })
         if (result instanceof Error) throw result
 
-        expect(result).toBe(PaymentSendStatus.Pending)
+        // Payment method should return an error when there is a payment in transit (pending)
+        const resultPendingPayment = await fn({ account: accountB, walletId: walletIdB })(
+          {
+            invoice: request,
+          },
+        )
+        expect(resultPendingPayment).toBeInstanceOf(LnPaymentRequestInTransitError)
+
         const balanceBeforeSettlement = await getBalanceHelper(walletIdB)
         expect(balanceBeforeSettlement).toBe(
           initBalanceB - amountInvoice * (1 + initialFee),
