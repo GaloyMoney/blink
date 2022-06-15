@@ -6,6 +6,7 @@ import {
   InvalidLightningPaymentFlowBuilderStateError,
   checkedToBtcPaymentAmount,
   checkedToUsdPaymentAmount,
+  LnPaymentRequestInTransitError,
 } from "@domain/payments"
 import { AccountValidator } from "@domain/accounts"
 import {
@@ -604,7 +605,15 @@ const executePaymentViaLn = async ({
   const { rawRoute, outgoingNodePubkey } = paymentFlow.routeDetails()
 
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
-    const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
+    const ledgerService = LedgerService()
+
+    const ledgerTransactions = await ledgerService.getTransactionsByHash(paymentHash)
+    if (ledgerTransactions instanceof Error) return ledgerTransactions
+
+    const pendingPayment = ledgerTransactions.find((tx) => tx.pendingConfirmation)
+    if (pendingPayment) return new LnPaymentRequestInTransitError()
+
+    const balance = await ledgerService.getWalletBalanceAmount(senderWallet)
     if (balance instanceof Error) return balance
     const balanceCheck = paymentFlow.checkBalanceForSend(balance)
     if (balanceCheck instanceof Error) return balanceCheck
