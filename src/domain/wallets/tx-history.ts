@@ -26,7 +26,7 @@ const filterPendingIncoming = (
               settlementAmount: sats,
               settlementFee: toSats(0),
               settlementCurrency: walletDetailsByWalletId[walletId].currency,
-              settlementDisplayCurrencyPerSat: displayCurrencyPerSat,
+              displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerSat,
               status: TxStatus.Pending,
               memo: null,
               createdAt: createdAt,
@@ -93,7 +93,7 @@ export const fromLedger = (
         settlementAmount,
         settlementFee,
         settlementCurrency: currency,
-        settlementDisplayCurrencyPerSat: displayCurrencyPerBaseUnitFromAmounts({
+        displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerBaseUnitFromAmounts({
           displayAmountAsNumber: usd,
           settlementAmountInBaseAsNumber: settlementAmount,
         }),

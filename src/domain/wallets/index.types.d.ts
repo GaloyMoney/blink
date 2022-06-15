@@ -52,7 +52,7 @@ type BaseWalletTransaction = {
   readonly settlementAmount: Satoshis | UsdCents
   readonly settlementFee: Satoshis | UsdCents
   readonly settlementCurrency: WalletCurrency
-  readonly settlementDisplayCurrencyPerSat: number
+  readonly displayCurrencyPerSettlementCurrencyUnit: number
   readonly status: TxStatus
   readonly memo: string | null
   readonly createdAt: Date
