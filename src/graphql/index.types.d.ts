@@ -1,4 +1,5 @@
 type GraphQLError = import("graphql").GraphQLError
+type InputValidationError = import("./error").InputValidationError
 
 type IError = {
   message: string
