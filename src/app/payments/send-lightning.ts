@@ -510,19 +510,14 @@ const executePaymentViaIntraledger = async ({
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
 
-    const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {
-      amount: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-      currency: DisplayCurrency.Usd,
-    }
-
     const lnIntraLedgerMetadata = LedgerFacade.LnIntraledgerLedgerMetadata({
       paymentHash,
       pubkey: recipientPubkey,
       paymentFlow,
 
-      amountDisplayCurrency: displayPaymentAmount.amount as DisplayCurrencyBaseAmount,
+      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
       feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-      displayCurrency: displayPaymentAmount.currency,
+      displayCurrency: DisplayCurrency.Usd,
 
       memoOfPayer: memo || undefined,
       senderUsername,
@@ -578,7 +573,7 @@ const executePaymentViaIntraledger = async ({
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId,
       paymentAmount: { amount, currency: recipientWalletCurrency },
-      displayPaymentAmount,
+      displayPaymentAmount: { amount: metadata.usd, currency: DisplayCurrency.Usd },
       paymentHash,
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,

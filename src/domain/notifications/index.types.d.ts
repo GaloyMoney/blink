@@ -28,26 +28,7 @@ type LightningTxReceivedArgs = TransactionNotificationBaseArgs & {
   paymentHash: PaymentHash
 }
 
-type IntraLedgerArgs = {
-  senderWalletId: WalletId
-  recipientWalletId: WalletId
-  amount: Satoshis
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
-}
-
-type IntraLedgerPaidBitcoinWalletArgs = {
-  senderWalletId: WalletId
-  recipientWalletId: WalletId
-  sats: Satoshis | bigint
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
-}
-
-type IntraLedgerPaidUsdWalletArgs = {
-  senderWalletId: WalletId
-  recipientWalletId: WalletId
-  cents: UsdCents | bigint
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
-}
+type IntraLedgerTxReceivedArgs = TransactionNotificationBaseArgs
 
 type SendBalanceArgs = {
   balance: CurrencyBaseAmount
@@ -61,6 +42,10 @@ interface INotificationsService {
     args: LightningTxReceivedArgs,
   ) => Promise<void | NotificationsServiceError>
 
+  intraLedgerTxReceived: (
+    args: IntraLedgerTxReceivedArgs,
+  ) => Promise<void | NotificationsServiceError>
+
   onChainTransactionReceived(
     args: OnChainTxReceivedArgs,
   ): Promise<void | NotificationsServiceError>
@@ -71,12 +56,5 @@ interface INotificationsService {
     args: OnChainTxPaymentArgs,
   ): Promise<void | NotificationsServiceError>
   priceUpdate: (DisplayCurrencyPerSat: DisplayCurrencyPerSat) => void
-  intraLedgerBtcWalletPaid(
-    args: IntraLedgerPaidBitcoinWalletArgs,
-  ): Promise<void | NotificationsServiceError>
-  intraLedgerUsdWalletPaid(
-    args: IntraLedgerPaidUsdWalletArgs,
-  ): Promise<void | NotificationsServiceError>
-  intraLedgerPaid(args: IntraLedgerArgs): Promise<void | NotificationsServiceError>
   sendBalance(args: SendBalanceArgs): Promise<void | NotImplementedError>
 }

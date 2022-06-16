@@ -161,6 +161,11 @@ export const createUserAndWallet = async (entry) => {
   if (userRepo instanceof Error) throw userRepo
   const uid = userRepo.id
 
+  await User.findOneAndUpdate(
+    { _id: toObjectId<UserId>(uid) },
+    { deviceToken: ["test-token"] },
+  )
+
   if (entry.username) {
     await User.findOneAndUpdate(
       { _id: toObjectId<UserId>(uid) },

@@ -383,9 +383,7 @@ describe("UserWallet - Lightning Pay", () => {
     const sendNotification = jest.fn()
     jest
       .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-      .mockImplementation(() => ({
-        sendNotification,
-      }))
+      .mockImplementationOnce(() => ({ sendNotification }))
 
     const res = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId: walletIdA,
@@ -449,23 +447,9 @@ describe("UserWallet - Lightning Pay", () => {
       displayPaymentAmount,
     })
 
-    const { title: titlePayment, body: bodyPayment } = createPushNotificationContent({
-      type: NotificationType.IntraLedgerPayment,
-      userLanguage: locale as UserLanguage,
-      paymentAmount,
-      displayPaymentAmount,
-    })
-
-    expect(sendNotification.mock.calls.length).toBe(2)
-
-    const titles = [titleReceipt, titlePayment]
-    const bodies = [bodyReceipt, bodyPayment]
-
-    // notifications are asynchronous, so we can't guarantee order
-    expect(titles).toContain(sendNotification.mock.calls[0][0].title)
-    expect(titles).toContain(sendNotification.mock.calls[1][0].title)
-    expect(bodies).toContain(sendNotification.mock.calls[0][0].body)
-    expect(bodies).toContain(sendNotification.mock.calls[1][0].body)
+    expect(sendNotification.mock.calls.length).toBe(1)
+    expect(sendNotification.mock.calls[0][0].title).toBe(titleReceipt)
+    expect(sendNotification.mock.calls[0][0].body).toBe(bodyReceipt)
 
     let userRecordA = await getUserRecordByTestUserRef("A")
     let userRecordB = await getUserRecordByTestUserRef("B")
@@ -1021,6 +1005,10 @@ describe("UserWallet - Lightning Pay", () => {
 
       it("pay invoice to another Galoy user", async () => {
         const memo = "my memo as a payer"
+        const sendNotification = jest.fn()
+        jest
+          .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+          .mockImplementationOnce(() => ({ sendNotification }))
 
         const paymentOtherGaloyUser = async ({
           walletIdPayer,
@@ -1051,6 +1039,29 @@ describe("UserWallet - Lightning Pay", () => {
 
           expect(payerFinalBalance).toBe(payerInitialBalance - amountInvoice)
           expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
+
+          const satsPrice = await Prices.getCurrentPrice()
+          if (satsPrice instanceof Error) throw satsPrice
+
+          const paymentAmount = {
+            amount: BigInt(amountInvoice),
+            currency: WalletCurrency.Btc,
+          }
+          const displayPaymentAmount = {
+            amount: amountInvoice * satsPrice,
+            currency: DefaultDisplayCurrency,
+          }
+
+          const { title, body } = createPushNotificationContent({
+            type: NotificationType.LnInvoicePaid,
+            userLanguage: locale as UserLanguage,
+            paymentAmount,
+            displayPaymentAmount,
+          })
+
+          expect(sendNotification.mock.calls.length).toBe(1)
+          expect(sendNotification.mock.calls[0][0].title).toBe(title)
+          expect(sendNotification.mock.calls[0][0].body).toBe(body)
 
           const hash = getHash(request)
           const matchTx = (tx) =>
