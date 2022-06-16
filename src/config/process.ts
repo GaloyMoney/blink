@@ -93,3 +93,8 @@ export const getBitcoinCoreRPCConfig = () => {
     version: "0.22.0",
   }
 }
+
+export const LND_HEALTH_REFRESH_TIME_MS = parseInt(
+  process.env.LND_HEALTH_REFRESH_TIME_MS || "20000",
+  10,
+)
