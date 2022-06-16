@@ -1,6 +1,8 @@
 import { getWalletStatus } from "lightning"
 import { baseLogger } from "@services/logger"
 
+import { LND_HEALTH_REFRESH_TIME_MS } from "@config"
+
 import { params as unauthParams } from "./unauth"
 import { params as authParams } from "./auth"
 
@@ -13,15 +15,13 @@ import { params as authParams } from "./auth"
 /* eslint-disable @typescript-eslint/no-var-requires */
 const EventEmitter = require("events")
 
-const refreshTime = 10000 // ms
-
 const intervals: NodeJS.Timer[] = []
 
 const isUpLoop = async (param: LndParamsUnAuthed) => {
   await isUp(param)
   const interval = setInterval(async () => {
     await isUp(param)
-  }, refreshTime)
+  }, LND_HEALTH_REFRESH_TIME_MS)
   intervals.push(interval)
 }
 
