@@ -50,6 +50,8 @@ type AuthTokenPayload {
 A wallet belonging to an account which contains a BTC balance and a list of transactions.
 """
 type BTCWallet implements Wallet {
+  accountId: ID!
+
   """
   A balance stored in BTC.
   """
@@ -1019,6 +1021,7 @@ enum TxStatus {
 A wallet belonging to an account which contains a USD balance and a list of transactions.
 """
 type UsdWallet implements Wallet {
+  accountId: ID!
   balance: SignedAmount!
   id: ID!
   transactions(
@@ -1187,6 +1190,7 @@ scalar Username
 A generic wallet which stores value in one of our supported currencies.
 """
 interface Wallet {
+  accountId: ID!
   balance: SignedAmount!
   id: ID!
 

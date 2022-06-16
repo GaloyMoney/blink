@@ -1,6 +1,4 @@
-import { User } from "@services/mongoose/schema"
-
-import { graphqlAdmin } from "test/helpers"
+import { createUserAndWalletFromUserRef, graphqlAdmin } from "test/helpers"
 
 // TODO?: use generated types
 
@@ -33,10 +31,7 @@ type AccountDetailsQuery = GraphQLResult<{
 }>
 
 beforeAll(async () => {
-  let user = await User.findOne({ username: "tester", phone: "+19876543210" })
-  if (!user) {
-    user = await User.create({ username: "tester", phone: "+19876543210" })
-  }
+  await createUserAndWalletFromUserRef("H")
 })
 
 describe("GraphQLQueryRoot", () => {

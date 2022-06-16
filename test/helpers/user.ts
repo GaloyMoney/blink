@@ -8,7 +8,7 @@ import {
 } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 import { toObjectId } from "@services/mongoose/utils"
-import { addWallet } from "@app/accounts/add-wallet"
+import { addWalletIfNonexistent } from "@app/accounts/add-wallet"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { adminUsers } from "@domain/admin-users"
@@ -50,6 +50,16 @@ export const getUserIdByTestUserRef = async (ref: string) => {
 export const getAccountIdByTestUserRef = async (ref: string) => {
   const account = await getAccountByTestUserRef(ref)
   return account.id
+}
+
+export const getWalletsByTestUserRef = async (ref: string) => {
+  const account = await getAccountByTestUserRef(ref)
+
+  const walletsRepo = WalletsRepository()
+  const wallets = await walletsRepo.listByAccountId(account.id)
+  if (wallets instanceof Error) throw wallets
+
+  return wallets
 }
 
 export const getDefaultWalletIdByTestUserRef = async (ref: string) => {
@@ -140,7 +150,7 @@ export const createUserAndWallet = async (entry) => {
     if (result instanceof Error) throw result
 
     if (entry.needUsdWallet) {
-      await addWallet({
+      await addWalletIfNonexistent({
         currency: WalletCurrency.Usd,
         accountId: userRepo.defaultAccountId,
         type: WalletType.Checking,
