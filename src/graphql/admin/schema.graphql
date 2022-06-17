@@ -13,6 +13,7 @@ type Account {
   status: AccountStatus!
   title: String
   username: Username
+  wallets: [Wallet!]!
 }
 
 type AccountDetailPayload {
@@ -220,7 +221,7 @@ scalar Memo
 type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
-  accountsAddUsdWallet(input: AccountsAddUsdWalletInput!): [WalletDetailPayload!]!
+  accountsAddUsdWallet(input: AccountsAddUsdWalletInput!): WalletDetailsPayload
   businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
@@ -533,9 +534,9 @@ enum WalletCurrency {
   USD
 }
 
-type WalletDetailPayload {
+type WalletDetailsPayload {
   errors: [Error!]!
-  walletDetails: Wallet
+  walletDetails: [Wallet!]!
 }
 
 """

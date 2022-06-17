@@ -56,8 +56,8 @@ it("does not add a usd wallet if one exists", async () => {
 
   const newWallet = await Accounts.addWalletIfNonexistent({
     accountId: account.id,
-    type: "checking",
-    currency: "USD",
+    type: WalletType.Checking,
+    currency: WalletCurrency.Usd,
   })
   if (newWallet instanceof Error) throw newWallet
 

@@ -4,7 +4,7 @@ import { Accounts } from "@app"
 import { mapError } from "@graphql/error-map"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
-import WalletDetailPayload from "@graphql/admin/types/payload/wallet-detail"
+import WalletDetailsPayload from "@graphql/admin/types/payload/wallet-details"
 
 const AccountsAddUsdWalletInput = GT.Input({
   name: "AccountsAddUsdWalletInput",
@@ -22,7 +22,7 @@ const AccountsAddUsdWalletMutation = GT.Field<
   null,
   GraphQLContextForUser
 >({
-  type: GT.NonNullList(WalletDetailPayload),
+  type: WalletDetailsPayload,
   args: {
     input: { type: GT.NonNull(AccountsAddUsdWalletInput) },
   },
@@ -41,15 +41,19 @@ const AccountsAddUsdWalletMutation = GT.Field<
         }),
       ),
     )
-    const walletDetails = addWalletResults.map((wallet) => {
+
+    const errors: IError[] = []
+    const walletDetails: Wallet[] = []
+
+    addWalletResults.forEach((wallet) => {
       if (wallet instanceof Error) {
-        return { errors: [{ message: mapError(wallet).message }] }
+        return errors.push({ message: mapError(wallet).message })
       }
 
-      return { errors: [], walletDetails: wallet }
+      walletDetails.push(wallet)
     })
 
-    return walletDetails
+    return { errors, walletDetails }
   },
 })
 

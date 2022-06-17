@@ -36,12 +36,9 @@ export const addWalletIfNonexistent = async ({
   )
   if (walletOfTypeAndCurrency) return walletOfTypeAndCurrency
 
-  const wallet = await WalletsRepository().persistNew({
+  return WalletsRepository().persistNew({
     accountId,
     type,
     currency,
   })
-  if (wallet instanceof Error) return wallet
-
-  return wallet
 }

@@ -2,16 +2,16 @@ import { GT } from "@graphql/index"
 import IError from "@graphql/types/abstract/error"
 import Wallet from "@graphql/types/abstract/wallet"
 
-const WalletDetailPayload = GT.Object({
-  name: "WalletDetailPayload",
+const WalletDetailsPayload = GT.Object({
+  name: "WalletDetailsPayload",
   fields: () => ({
     errors: {
       type: GT.NonNullList(IError),
     },
     walletDetails: {
-      type: Wallet,
+      type: GT.NonNullList(Wallet),
     },
   }),
 })
 
-export default WalletDetailPayload
+export default WalletDetailsPayload

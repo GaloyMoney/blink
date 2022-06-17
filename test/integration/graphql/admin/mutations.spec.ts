@@ -1,3 +1,5 @@
+import { WalletCurrency } from "@domain/shared"
+
 import {
   createUserAndWalletFromUserRef,
   getUserRecordByTestUserRef,
@@ -52,8 +54,8 @@ type AccountsAddUsdWalletMutation = GraphQLResult<{
       accountId: string
       walletCurrency: string
       balance: number
-    }
-  }[]
+    }[]
+  }
 }>
 
 type BusinessUpdateMapInfoQuery = GraphQLResult<{
@@ -246,15 +248,17 @@ describe("GraphQLMutationRoot", () => {
     const { data: dataMutation, errors } = result
 
     expect(errors).toBeUndefined()
-    expect(dataMutation.accountsAddUsdWallet[0]).toEqual(
+    expect(dataMutation.accountsAddUsdWallet).toEqual(
       expect.objectContaining({
         errors: [],
-        walletDetails: expect.objectContaining({
-          walletCurrency: "USD",
-          id: expect.any(String),
-          accountId: user._id.toString(),
-          balance: 0,
-        }),
+        walletDetails: [
+          expect.objectContaining({
+            walletCurrency: WalletCurrency.Usd,
+            id: expect.any(String),
+            accountId: user._id.toString(),
+            balance: 0,
+          }),
+        ],
       }),
     )
   })
