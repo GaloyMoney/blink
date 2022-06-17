@@ -202,6 +202,10 @@ type LedgerTransactionMetadata = BaseLedgerTransactionMetadata &
     | IntraledgerLedgerTransactionMetadataUpdate
   )
 
+type TransactionRecordWithMetadata = TransactionRecord & {
+  metadata: LedgerTransactionMetadata[]
+}
+
 interface ITransactionsMetadataRepository {
   updateByHash(
     ledgerTxMetadata:

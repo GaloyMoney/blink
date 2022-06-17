@@ -29,7 +29,6 @@ import {
   recordExceptionInCurrentSpan,
   wrapAsyncFunctionsToRunInSpan,
 } from "@services/tracing"
-import { baseLogger } from "@services/logger"
 
 import { admin } from "./admin"
 import * as adminLegacy from "./admin-legacy"
@@ -56,8 +55,6 @@ export const lazyLoadLedgerAdmin = ({
   }
 }
 
-const txnMetadataRepo = TransactionsMetadataRepository()
-
 export const LedgerService = (): ILedgerService => {
   const updateMetadataByHash = async (
     ledgerTxMetadata:
@@ -69,10 +66,10 @@ export const LedgerService = (): ILedgerService => {
   const getTransactionById = async (
     id: LedgerTransactionId,
   ): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError> => {
-    let txnRecord: TransactionRecord
+    let txnRecord: TransactionRecordWithMetadata
     try {
       const _id = toObjectId<LedgerTransactionId>(id)
-      const { results } = await MainBook.ledger({
+      const { results } = await mainbookLedgerQuery({
         account_path: liabilitiesMainAccount,
         _id,
       })
@@ -89,9 +86,9 @@ export const LedgerService = (): ILedgerService => {
   const getTransactionsByHash = async (
     hash: PaymentHash | OnChainTxHash,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
-    let txnRecords: TransactionRecord[]
+    let txnRecords: TransactionRecordWithMetadata[]
     try {
-      ;({ results: txnRecords } = await MainBook.ledger({
+      ;({ results: txnRecords } = await mainbookLedgerQuery({
         account_path: liabilitiesMainAccount,
         hash,
       }))
@@ -105,9 +102,9 @@ export const LedgerService = (): ILedgerService => {
     walletId: WalletId,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-    let txnRecords: TransactionRecord[]
+    let txnRecords: TransactionRecordWithMetadata[]
     try {
-      ;({ results: txnRecords } = await MainBook.ledger({
+      ;({ results: txnRecords } = await mainbookLedgerQuery({
         account: liabilitiesWalletId,
       }))
       return translateTxRecordsToLedgerTxs(txnRecords)
@@ -120,9 +117,9 @@ export const LedgerService = (): ILedgerService => {
     walletIds: WalletId[],
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
-    let txnRecords: TransactionRecord[]
+    let txnRecords: TransactionRecordWithMetadata[]
     try {
-      ;({ results: txnRecords } = await MainBook.ledger({
+      ;({ results: txnRecords } = await mainbookLedgerQuery({
         account: liabilitiesWalletIds,
       }))
       return translateTxRecordsToLedgerTxs(txnRecords)
@@ -136,9 +133,9 @@ export const LedgerService = (): ILedgerService => {
     contactUsername,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-    let txnRecords: TransactionRecord[]
+    let txnRecords: TransactionRecordWithMetadata[]
     try {
-      ;({ results: txnRecords } = await MainBook.ledger({
+      ;({ results: txnRecords } = await mainbookLedgerQuery({
         account: liabilitiesWalletId,
         username: contactUsername,
       }))
@@ -152,9 +149,9 @@ export const LedgerService = (): ILedgerService => {
     walletId: WalletId,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
-    let txnRecords: TransactionRecord[]
+    let txnRecords: TransactionRecordWithMetadata[]
     try {
-      ;({ results: txnRecords } = await MainBook.ledger({
+      ;({ results: txnRecords } = await mainbookLedgerQuery({
         account: liabilitiesWalletId,
         type: LedgerTransactionType.Payment,
         pending: true,
@@ -307,7 +304,7 @@ export const LedgerService = (): ILedgerService => {
     paymentHash: PaymentHash,
   ): Promise<boolean | LedgerServiceError> => {
     try {
-      const { total } = await MainBook.ledger({
+      const { total } = await mainbookLedgerQuery({
         pending: false,
         hash: paymentHash,
       })
@@ -390,17 +387,13 @@ export const LedgerService = (): ILedgerService => {
   })
 }
 
-const translateToLedgerTx = <S extends WalletCurrency>({
-  txnRecord,
-  txnMetadata,
-}: {
-  txnRecord: TransactionRecord
-  txnMetadata: LedgerTransactionMetadata | undefined
-}): LedgerTransaction<S> => {
+const translateToLedgerTx = <S extends WalletCurrency>(
+  txnRecord: TransactionRecordWithMetadata,
+): LedgerTransaction<S> => {
   const currency = txnRecord.currency as S
 
   const fromTxnRecord: LedgerTransaction<S> = {
-    id: txnRecord.id as LedgerTransactionId,
+    id: `${txnRecord._id}` as LedgerTransactionId,
     walletId: toWalletId(txnRecord.accounts as LiabilitiesWalletId),
     type: txnRecord.type as LedgerTransactionType,
     debit:
@@ -450,7 +443,8 @@ const translateToLedgerTx = <S extends WalletCurrency>({
         : undefined,
   }
 
-  if (txnMetadata === undefined) return fromTxnRecord
+  if (!(txnRecord.metadata && txnRecord.metadata.length)) return fromTxnRecord
+  const txnMetadata = txnRecord.metadata[0]
 
   let fromTxnMetadata: PartialLedgerTransactionFromMetadata = {}
   if ("revealedPreImage" in txnMetadata) {
@@ -460,38 +454,42 @@ const translateToLedgerTx = <S extends WalletCurrency>({
 }
 
 const translateTxRecordsToLedgerTxs = async (
-  txnRecords: TransactionRecord[],
-): Promise<LedgerTransaction<WalletCurrency>[]> => {
-  const txnsMetadata = await Promise.all(
-    txnRecords.map(async (tx): Promise<LedgerTransactionMetadata | undefined> => {
-      const txnMetadataResult = await txnMetadataRepo.findById(
-        tx.id as LedgerTransactionId,
-      )
-
-      if (txnMetadataResult instanceof Error) {
-        if (!(txnMetadataResult instanceof CouldNotFindTransactionError)) {
-          baseLogger.error(
-            { error: txnMetadataResult },
-            `could not fetch transaction metadata for id '${tx.id}'`,
-          )
-        }
-        return undefined
-      }
-
-      return txnMetadataResult
-    }),
-  )
-
-  return txnRecords.map((txnRecord, i) =>
-    translateToLedgerTx({
-      txnRecord,
-      txnMetadata: txnsMetadata[i],
-    }),
-  )
-}
+  txnRecords: TransactionRecordWithMetadata[],
+): Promise<LedgerTransaction<WalletCurrency>[]> => txnRecords.map(translateToLedgerTx)
 
 export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
   journalId: savedEntry._id.toString(),
   voided: savedEntry.voided,
   transactionIds: savedEntry._transactions.map((id) => id.toString()),
 })
+
+const mainbookLedgerQuery = async (
+  args,
+): Promise<{ results: TransactionRecordWithMetadata[]; total: number }> => {
+  const { account, accountPath, ...keysToMatch } = args
+  const accountMatch = accountPath
+    ? { $expr: { $in: [accountPath, "$account_path"] } }
+    : Array.isArray(account)
+    ? { accounts: { $in: account } }
+    : account
+    ? { accounts: account }
+    : {}
+
+  const metadataJoin = [
+    {
+      $lookup: {
+        from: "medici_transaction_metadatas",
+        localField: "_id",
+        foreignField: "_id",
+        as: "metadata",
+      },
+    },
+  ]
+
+  const results = await Transaction.aggregate([
+    { $match: { ...keysToMatch, ...accountMatch } },
+    ...metadataJoin,
+    { $sort: { datetime: -1, timestamp: -1 } },
+  ])
+  return { results, total: results.length }
+}
