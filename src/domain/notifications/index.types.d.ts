@@ -39,10 +39,10 @@ type OnChainTxReceivedPendingArgs = TransactionReceivedNotificationBaseArgs &
 type OnChainTxSentArgs = TransactionSentNotificationBaseArgs & OnChainTxBaseArgs
 
 type SendBalanceArgs = {
-  balance: CurrencyBaseAmount
-  walletCurrency: WalletCurrency
-  userId: UserId
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
+  balanceAmount: BalanceAmount<WalletCurrency>
+  recipientDeviceTokens: DeviceToken[]
+  displayBalanceAmount?: DisplayBalanceAmount<DisplayCurrency>
+  recipientLanguage?: UserLanguage
 }
 
 interface INotificationsService {
@@ -63,5 +63,5 @@ interface INotificationsService {
   onChainTxSent(args: OnChainTxSentArgs): Promise<void | NotificationsServiceError>
 
   priceUpdate: (DisplayCurrencyPerSat: DisplayCurrencyPerSat) => void
-  sendBalance(args: SendBalanceArgs): Promise<void | NotImplementedError>
+  sendBalance(args: SendBalanceArgs): Promise<void | NotificationsServiceError>
 }

@@ -3,7 +3,6 @@ import { getTransactionsForWalletId } from "@app/wallets"
 import { Payments } from "@app"
 import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
 import { getFunderWalletId } from "@services/ledger/caching"
-import { baseLogger } from "@services/logger"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import difference from "lodash.difference"
 import find from "lodash.find"
@@ -71,7 +70,6 @@ describe("UserWallet - addEarn", () => {
         addEarn({
           quizQuestionId: onBoardingEarnId as QuizQuestionId,
           accountId: accountIdB,
-          logger: baseLogger,
         }),
       )
       await Promise.all(promises)
@@ -123,7 +121,6 @@ describe("UserWallet - addEarn", () => {
       recipientWalletId: walletIdB,
       amount,
       memo: onboardingEarnId,
-      logger: baseLogger,
     })
     if (payment instanceof Error) return payment
 

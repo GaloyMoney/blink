@@ -100,7 +100,7 @@ export async function onchainTransactionEventHandler(
     const senderUser = await UsersRepository().findById(senderAccount.ownerId)
     if (senderUser instanceof Error) return senderUser
 
-    await NotificationsService(onchainLogger).onChainTxSent({
+    await NotificationsService().onChainTxSent({
       senderAccountId: senderWallet.accountId,
       senderWalletId: senderWallet.id,
       // TODO: tx.tokens represent the total sum, need to segregate amount by address
@@ -147,7 +147,7 @@ export async function onchainTransactionEventHandler(
         const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
         if (recipientUser instanceof Error) return recipientUser
 
-        NotificationsService(onchainLogger).onChainTxReceivedPending({
+        NotificationsService().onChainTxReceivedPending({
           recipientAccountId: wallet.accountId,
           recipientWalletId: wallet.id,
           // TODO: tx.tokens represent the total sum, need to segregate amount by address
@@ -192,7 +192,7 @@ export const publishSingleCurrentPrice = async () => {
   if (displayCurrencyPerSat instanceof Error) {
     return logger.error({ err: displayCurrencyPerSat }, "can't publish the price")
   }
-  NotificationsService(logger).priceUpdate(displayCurrencyPerSat)
+  NotificationsService().priceUpdate(displayCurrencyPerSat)
 }
 
 const publishCurrentPrice = () => {

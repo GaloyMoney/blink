@@ -1,24 +1,20 @@
-import { getDisplayCurrencyConfig } from "@config"
-import { toSats } from "@domain/bitcoin"
-import { NotImplementedError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
+import { toSats } from "@domain/bitcoin"
+import { WalletCurrency } from "@domain/shared"
+import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 import {
   NotificationsServiceError,
   NotificationType,
   UnknownNotificationsServiceError,
 } from "@domain/notifications"
-import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
-import { WalletCurrency } from "@domain/shared"
-import { UsersRepository } from "@services/mongoose"
+
 import { PubSubService } from "@services/pubsub"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { PushNotificationsService } from "./push-notifications"
 import { createPushNotificationContent } from "./create-push-notification-content"
 
-const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
-
-export const NotificationsService = (logger: Logger): INotificationsService => {
+export const NotificationsService = (): INotificationsService => {
   const pubsub = PubSubService()
   const pushNotification = PushNotificationsService()
 
@@ -62,8 +58,8 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const { title, body } = createPushNotificationContent({
           type: NotificationType.LnInvoicePaid,
           userLanguage: recipientLanguage,
-          paymentAmount,
-          displayPaymentAmount,
+          amount: paymentAmount,
+          displayAmount: displayPaymentAmount,
         })
 
         // Do not await this call for quicker processing
@@ -119,8 +115,8 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const { title, body } = createPushNotificationContent({
           type: NotificationType.IntraLedgerReceipt,
           userLanguage: recipientLanguage,
-          paymentAmount,
-          displayPaymentAmount,
+          amount: paymentAmount,
+          displayAmount: displayPaymentAmount,
         })
 
         // Do not await this call for quicker processing
@@ -184,8 +180,8 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
         const { title, body } = createPushNotificationContent({
           type,
           userLanguage: language,
-          paymentAmount,
-          displayPaymentAmount,
+          amount: paymentAmount,
+          displayAmount: displayPaymentAmount,
         })
 
         // Do not await this call for quicker processing
@@ -272,43 +268,31 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
   }
 
   const sendBalance = async ({
-    balance,
-    walletCurrency,
-    userId,
-    displayCurrencyPerSat,
-  }: SendBalanceArgs): Promise<void | NotImplementedError> => {
-    const user = await UsersRepository().findById(userId)
-    if (user instanceof Error) {
-      logger.warn({ user }, "impossible to fetch user to send transaction")
-      return
+    balanceAmount,
+    recipientDeviceTokens,
+    displayBalanceAmount,
+    recipientLanguage,
+  }: SendBalanceArgs): Promise<void | NotificationsServiceError> => {
+    const hasDeviceTokens = recipientDeviceTokens && recipientDeviceTokens.length > 0
+    if (!hasDeviceTokens) return
+
+    try {
+      const { title, body } = createPushNotificationContent({
+        type: "balance",
+        userLanguage: recipientLanguage,
+        amount: balanceAmount,
+        displayAmount: displayBalanceAmount,
+      })
+
+      // Do not await this call for quicker processing
+      pushNotification.sendNotification({
+        deviceToken: recipientDeviceTokens,
+        title,
+        body,
+      })
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err.message || err)
     }
-
-    const paymentAmount = { amount: BigInt(balance), currency: walletCurrency }
-    const displayPaymentAmount = displayCurrencyPerSat
-      ? {
-          amount: balance * (displayCurrencyPerSat || 0),
-          currency: DefaultDisplayCurrency,
-        }
-      : undefined
-
-    const { title, body } = createPushNotificationContent({
-      type: "balance",
-      userLanguage: user.language,
-      paymentAmount,
-      displayPaymentAmount,
-    })
-
-    logger.info(
-      { userId, locale: user.language, balance, title, body },
-      `sending balance notification to user`,
-    )
-
-    // Do not await this call for quicker processing
-    pushNotification.sendNotification({
-      deviceToken: user.deviceTokens,
-      title,
-      body,
-    })
   }
 
   // trace everything except price update because it runs every 30 seconds

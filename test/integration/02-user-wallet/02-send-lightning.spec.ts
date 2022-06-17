@@ -214,7 +214,6 @@ describe("UserWallet - Lightning Pay", () => {
       memo: null,
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
 
     expect(paymentResult).toBeInstanceOf(LimitsExceededError)
@@ -246,7 +245,6 @@ describe("UserWallet - Lightning Pay", () => {
       memo: null,
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
 
     expect(paymentResult).toBeInstanceOf(LimitsExceededError)
@@ -275,7 +273,6 @@ describe("UserWallet - Lightning Pay", () => {
       memo: null,
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     if (paymentResult instanceof Error) throw paymentResult
 
@@ -325,7 +322,6 @@ describe("UserWallet - Lightning Pay", () => {
       memo: null,
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     expect(paymentResult).not.toBeInstanceOf(Error)
     if (paymentResult instanceof Error) throw paymentResult
@@ -350,7 +346,6 @@ describe("UserWallet - Lightning Pay", () => {
       memo: memoPayer,
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     if (paymentResult instanceof Error) throw paymentResult
 
@@ -391,7 +386,6 @@ describe("UserWallet - Lightning Pay", () => {
       amount: amountInvoice,
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     if (res instanceof Error) throw res
 
@@ -443,8 +437,8 @@ describe("UserWallet - Lightning Pay", () => {
     const { title: titleReceipt, body: bodyReceipt } = createPushNotificationContent({
       type: NotificationType.IntraLedgerReceipt,
       userLanguage: locale as UserLanguage,
-      paymentAmount,
-      displayPaymentAmount,
+      amount: paymentAmount,
+      displayAmount: displayPaymentAmount,
     })
 
     expect(sendNotification.mock.calls.length).toBe(1)
@@ -476,7 +470,6 @@ describe("UserWallet - Lightning Pay", () => {
       amount: amountInvoice,
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     if (res2 instanceof Error) throw res2
     expect(res2).toBe(PaymentSendStatus.Success)
@@ -523,7 +516,6 @@ describe("UserWallet - Lightning Pay", () => {
       amount: amountInvoice,
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     if (paymentResult instanceof Error) throw paymentResult
     expect(paymentResult).toBe(PaymentSendStatus.Success)
@@ -645,7 +637,6 @@ describe("UserWallet - Lightning Pay", () => {
       amount: toSats(1),
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     if (paymentResult instanceof Error) throw paymentResult
     expect(paymentResult).toBe(PaymentSendStatus.Success)
@@ -662,7 +653,6 @@ describe("UserWallet - Lightning Pay", () => {
       amount: toSats(satsBelow),
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     if (resBelowThreshold instanceof Error) throw resBelowThreshold
 
@@ -674,7 +664,6 @@ describe("UserWallet - Lightning Pay", () => {
       amount: toSats(satsAbove),
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     if (resAboveThreshold instanceof Error) throw resAboveThreshold
 
@@ -753,7 +742,6 @@ describe("UserWallet - Lightning Pay", () => {
       memo: null,
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     expect(paymentResult).toBeInstanceOf(DomainSelfPaymentError)
   })
@@ -765,7 +753,6 @@ describe("UserWallet - Lightning Pay", () => {
       amount: amountInvoice,
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     expect(paymentResult).toBeInstanceOf(DomainSelfPaymentError)
   })
@@ -780,7 +767,6 @@ describe("UserWallet - Lightning Pay", () => {
       memo: null,
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     expect(paymentResult).toBeInstanceOf(DomainInsufficientBalanceError)
   })
@@ -792,7 +778,6 @@ describe("UserWallet - Lightning Pay", () => {
       memo: null,
       senderWalletId: walletIdA,
       senderAccount: accountA,
-      logger: baseLogger,
     })
     expect(paymentResult).toBeInstanceOf(LightningServiceError)
   })
@@ -805,7 +790,6 @@ describe("UserWallet - Lightning Pay", () => {
       memo: null,
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     expect(paymentResult).toBeInstanceOf(ValidationError)
   })
@@ -817,7 +801,6 @@ describe("UserWallet - Lightning Pay", () => {
       amount: toSats(1000),
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     expect(res).not.toBeInstanceOf(Error)
     if (res instanceof Error) return res
@@ -830,7 +813,6 @@ describe("UserWallet - Lightning Pay", () => {
       memo: null,
       senderWalletId: walletIdH,
       senderAccount: accountH,
-      logger: baseLogger,
     })
     expect(paymentResult).toBeInstanceOf(DomainInsufficientBalanceError)
   })
@@ -842,7 +824,6 @@ describe("UserWallet - Lightning Pay", () => {
       amount: toSats(1000),
       senderWalletId: walletIdB,
       senderAccount: accountB,
-      logger: baseLogger,
     })
     expect(res).not.toBeInstanceOf(Error)
     if (res instanceof Error) return res
@@ -864,7 +845,6 @@ describe("UserWallet - Lightning Pay", () => {
       memo: null,
       senderWalletId: walletIdH,
       senderAccount: accountH,
-      logger: baseLogger,
     })
     if (paymentResult instanceof Error) return paymentResult
     expect(paymentResult).not.toBeInstanceOf(Error)
@@ -906,7 +886,6 @@ describe("UserWallet - Lightning Pay", () => {
             senderWalletId: walletId,
             senderAccount: account,
             twoFAToken: input.twoFAToken || null,
-            logger: baseLogger,
           })
           return paymentResult
         }
@@ -923,7 +902,6 @@ describe("UserWallet - Lightning Pay", () => {
             memo: input.memo,
             senderWalletId: walletId,
             twoFAToken: input.twoFAToken || null,
-            logger: baseLogger,
           })
           return paymentResult
         }
@@ -1055,8 +1033,8 @@ describe("UserWallet - Lightning Pay", () => {
           const { title, body } = createPushNotificationContent({
             type: NotificationType.LnInvoicePaid,
             userLanguage: locale as UserLanguage,
-            paymentAmount,
-            displayPaymentAmount,
+            amount: paymentAmount,
+            displayAmount: displayPaymentAmount,
           })
 
           expect(sendNotification.mock.calls.length).toBe(1)
@@ -1463,7 +1441,6 @@ describe("USD Wallets - Lightning Pay", () => {
         memo: null,
         senderWalletId: walletIdUsdB,
         senderAccount: accountB,
-        logger: baseLogger,
       })
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
@@ -1493,7 +1470,6 @@ describe("USD Wallets - Lightning Pay", () => {
         memo: null,
         senderWalletId: walletIdUsdB,
         senderAccount: accountB,
-        logger: baseLogger,
       })
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
@@ -1523,7 +1499,6 @@ describe("USD Wallets - Lightning Pay", () => {
         memo: null,
         senderWalletId: walletIdUsdB,
         senderAccount: accountB,
-        logger: baseLogger,
       })
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
@@ -1557,7 +1532,6 @@ describe("USD Wallets - Lightning Pay", () => {
         memo: null,
         senderWalletId: walletIdA,
         senderAccount: accountA,
-        logger: baseLogger,
       })
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
@@ -1594,7 +1568,6 @@ describe("USD Wallets - Lightning Pay", () => {
         senderWalletId: walletIdA,
         senderAccount: accountA,
         amount: amountPayment,
-        logger: baseLogger,
       })
       expect(paymentResult).toBeInstanceOf(ZeroAmountForUsdRecipientError)
 
@@ -1621,7 +1594,6 @@ describe("USD Wallets - Lightning Pay", () => {
         amount: amountPayment,
         senderWalletId: walletIdUsdB,
         senderAccount: accountB,
-        logger: baseLogger,
       })
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
@@ -1653,7 +1625,6 @@ describe("USD Wallets - Lightning Pay", () => {
         memo: null,
         senderWalletId: walletIdUsdB,
         senderAccount: accountB,
-        logger: baseLogger,
         amount: amountPayment,
       })
       if (paymentResult instanceof Error) throw paymentResult
@@ -1683,7 +1654,6 @@ describe("USD Wallets - Lightning Pay", () => {
         memo: null,
         senderWalletId: walletIdUsdB,
         senderAccount: accountB,
-        logger: baseLogger,
         amount: amountPayment,
       })
       if (paymentResult instanceof Error) throw paymentResult
@@ -1717,7 +1687,6 @@ describe("USD Wallets - Lightning Pay", () => {
         memo: null,
         senderWalletId: walletIdA,
         senderAccount: accountA,
-        logger: baseLogger,
         amount: amountPayment,
       })
       if (paymentResult instanceof Error) throw paymentResult
@@ -1757,7 +1726,6 @@ describe("USD Wallets - Lightning Pay", () => {
         amount: senderAmountInvoice,
         senderWalletId: senderWalletId,
         senderAccount,
-        logger: baseLogger,
       })
       if (res instanceof Error) return res
       expect(res).toBe(PaymentSendStatus.Success)

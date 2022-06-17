@@ -23,11 +23,9 @@ const rewardsConfig = getRewardsConfig()
 export const addEarn = async ({
   quizQuestionId,
   accountId,
-  logger,
 }: {
   quizQuestionId: QuizQuestionId
   accountId: AccountId /* AccountId: aid validation */
-  logger: Logger
 }): Promise<QuizQuestion | ApplicationError> => {
   const amount = onboardingEarn[quizQuestionId]
   if (!amount) return new InvalidQuizQuestionIdError()
@@ -77,7 +75,6 @@ export const addEarn = async ({
     recipientWalletId,
     amount,
     memo: quizQuestionId,
-    logger,
     senderAccount: funderAccount,
   })
   if (payment instanceof Error) return payment

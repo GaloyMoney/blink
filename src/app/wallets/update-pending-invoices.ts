@@ -208,7 +208,7 @@ const updatePendingInvoice = async ({
       amount = BigInt(cents)
     }
 
-    const notificationsService = NotificationsService(logger)
+    const notificationsService = NotificationsService()
     notificationsService.lightningTxReceived({
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId: recipientWallet.id,

@@ -40,7 +40,6 @@ type PaymentSendArgs = {
   senderWalletId: WalletId
   senderAccount: Account
   memo: string | null
-  logger: Logger
 }
 
 type PayInvoiceByWalletIdArgs = PaymentSendArgs & {

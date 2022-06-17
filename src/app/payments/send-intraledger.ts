@@ -45,7 +45,6 @@ export const intraledgerPaymentSendWalletId = async ({
   amount: uncheckedAmount,
   memo,
   senderWalletId: uncheckedSenderWalletId,
-  logger,
 }: IntraLedgerPaymentSendWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
   const validatedPaymentInputs = await validateIntraledgerPaymentInputs({
     uncheckedSenderWalletId,
@@ -107,7 +106,6 @@ export const intraledgerPaymentSendWalletId = async ({
     senderWallet,
     recipientAccount,
     recipientWallet,
-    logger,
     memo,
   })
   if (paymentSendStatus instanceof Error) return paymentSendStatus
@@ -178,7 +176,6 @@ const executePaymentViaIntraledger = async ({
   senderWallet,
   recipientAccount,
   recipientWallet,
-  logger,
   memo,
 }: {
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
@@ -186,7 +183,6 @@ const executePaymentViaIntraledger = async ({
   senderWallet: Wallet
   recipientAccount: Account
   recipientWallet: Wallet
-  logger: Logger
   memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -271,7 +267,7 @@ const executePaymentViaIntraledger = async ({
       amount = totalSendAmounts.usd.amount
     }
 
-    const notificationsService = NotificationsService(logger)
+    const notificationsService = NotificationsService()
     notificationsService.intraLedgerTxReceived({
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId: recipientWallet.id,

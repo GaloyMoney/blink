@@ -4,7 +4,6 @@ import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
 import { sendDefaultWalletBalanceToUsers } from "@app/accounts/send-default-wallet-balance-to-users"
 import { toSats } from "@domain/bitcoin"
 import * as serviceLedger from "@services/ledger"
-import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
@@ -44,15 +43,24 @@ describe("notification", () => {
         .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
         .mockImplementation(() => ({ sendNotification }))
 
-      await sendDefaultWalletBalanceToUsers(baseLogger)
+      await sendDefaultWalletBalanceToUsers()
       const activeAccounts = await getRecentlyActiveAccounts()
       if (activeAccounts instanceof Error) throw activeAccounts
 
       expect(activeAccounts.length).toBeGreaterThan(0)
       expect(sendNotification.mock.calls.length).toBeGreaterThan(0)
-      expect(sendNotification.mock.calls.length).toBe(activeAccounts.length)
 
-      for (let i = 0; i < activeAccounts.length; i++) {
+      let usersWithDeviceTokens = 0
+      for (const { ownerId } of activeAccounts) {
+        const user = await UsersRepository().findById(ownerId)
+        if (user instanceof Error) throw user
+
+        if (user.deviceTokens && user.deviceTokens.length > 0) usersWithDeviceTokens++
+      }
+
+      expect(sendNotification.mock.calls.length).toBe(usersWithDeviceTokens)
+
+      for (let i = 0; i < sendNotification.mock.calls.length; i++) {
         const [call] = sendNotification.mock.calls[i]
         const { defaultWalletId, ownerId } = activeAccounts[i]
 
@@ -74,8 +82,8 @@ describe("notification", () => {
         const { title, body } = createPushNotificationContent({
           type: "balance",
           userLanguage: user.language,
-          paymentAmount,
-          displayPaymentAmount,
+          amount: paymentAmount,
+          displayAmount: displayPaymentAmount,
         })
 
         expect(call.title).toBe(title)

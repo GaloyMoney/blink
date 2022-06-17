@@ -258,7 +258,7 @@ const executePaymentViaIntraledger = async ({
       currency: DisplayCurrency.Usd,
     }
 
-    const notificationsService = NotificationsService(logger)
+    const notificationsService = NotificationsService()
     notificationsService.intraLedgerTxReceived({
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId: recipientWallet.id,

@@ -6,19 +6,18 @@ import { PriceRatio } from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import * as LedgerFacade from "@services/ledger/facade"
+import { baseLogger } from "@services/logger"
 
 export const reimburseFee = async <S extends WalletCurrency, R extends WalletCurrency>({
   paymentFlow,
   journalId,
   actualFee,
   revealedPreImage,
-  logger,
 }: {
   paymentFlow: PaymentFlow<S, R>
   journalId: LedgerJournalId
   actualFee: Satoshis
   revealedPreImage?: RevealedPreImage
-  logger: Logger
 }): Promise<true | ApplicationError> => {
   const actualFeeAmount = paymentAmountFromNumber({
     amount: actualFee,
@@ -39,7 +38,7 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
     priceRatio,
   }).getReimbursement(actualFeeAmount)
   if (feeDifference instanceof Error) {
-    logger.warn(
+    baseLogger.warn(
       { maxFee: maxFeeAmounts, actualFee: actualFeeAmount },
       `Invalid reimbursement fee`,
     )
@@ -82,7 +81,7 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
     revealedPreImage,
   }
 
-  logger.info(
+  baseLogger.info(
     {
       feeDifference,
       maxFee: maxFeeAmounts,

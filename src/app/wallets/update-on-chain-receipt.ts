@@ -105,14 +105,7 @@ const processTxForWallet = async (
   tx: IncomingOnChainTransaction,
   logger: Logger,
 ): Promise<void | ApplicationError> => {
-  const notifications = NotificationsService(
-    logger.child({
-      topic: "payment",
-      protocol: "onchain",
-      transactionType: "receipt",
-      onUs: false,
-    }),
-  )
+  const notifications = NotificationsService()
   const ledger = LedgerService()
 
   const walletAddresses = wallet.onChainAddresses()
