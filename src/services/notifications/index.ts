@@ -9,11 +9,7 @@ import {
 } from "@domain/notifications"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 import { WalletCurrency } from "@domain/shared"
-import {
-  AccountsRepository,
-  UsersRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+import { UsersRepository } from "@services/mongoose"
 import { PubSubService } from "@services/pubsub"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
@@ -141,114 +137,127 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
 
   const sendOnChainNotification = async ({
     type,
-    sats,
+    accountId,
     walletId,
+    paymentAmount,
+    displayPaymentAmount,
+    deviceTokens,
+    language,
     txHash,
-    displayCurrencyPerSat,
   }: {
     type: NotificationType
+    accountId: AccountId
     walletId: WalletId
-    sats: Satoshis
+    paymentAmount: PaymentAmount<WalletCurrency>
+    displayPaymentAmount?: DisplayPaymentAmount<DisplayCurrency>
+    deviceTokens?: DeviceToken[]
+    language?: UserLanguage
     txHash: OnChainTxHash
-    displayCurrencyPerSat?: DisplayCurrencyPerSat
   }): Promise<void | NotificationsServiceError> => {
-    // FIXME: this try/catch is probably a no-op
-    // because the error would not be awaited if they arise
-    // see if this is safe to delete
     try {
-      const wallet = await WalletsRepository().findById(walletId)
-      if (wallet instanceof Error) throw wallet
-
-      const account = await AccountsRepository().findById(wallet.accountId)
-      if (account instanceof Error) return account
-
-      const user = await UsersRepository().findById(account.ownerId)
-      if (user instanceof Error) return user
-
-      const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
-      const displayPaymentAmount = displayCurrencyPerSat
-        ? {
-            amount: sats * (displayCurrencyPerSat || 0),
-            currency: DefaultDisplayCurrency,
-          }
-        : undefined
-
-      const { title, body } = createPushNotificationContent({
-        type,
-        userLanguage: user.language,
-        paymentAmount,
-        displayPaymentAmount,
-      })
-
-      // Do not await this call for quicker processing
-      pushNotification.sendNotification({
-        deviceToken: user.deviceTokens,
-        title,
-        body,
-      })
-
       // Notify the recipient (via GraphQL subscription if any)
       const accountUpdatedTrigger = customPubSubTrigger({
         event: PubSubDefaultTriggers.AccountUpdate,
-        suffix: account.id,
+        suffix: accountId,
       })
+      const data = {
+        walletId,
+        txNotificationType: type,
+        amount: paymentAmount.amount,
+        currency: paymentAmount.currency,
+        displayAmount: displayPaymentAmount?.amount,
+        displayCurrency: displayPaymentAmount?.currency,
+        txHash,
+      }
+
+      // TODO: remove deprecated fields
+      if (displayPaymentAmount)
+        data["displayCurrencyPerSat"] =
+          displayPaymentAmount.amount / Number(paymentAmount.amount)
+
       pubsub.publish({
         trigger: accountUpdatedTrigger,
-        payload: {
-          transaction: {
-            walletId,
-            txNotificationType: type,
-            amount: sats,
-            txHash,
-            displayCurrencyPerSat,
-          },
-        },
+        payload: { transaction: data },
       })
+
+      if (deviceTokens && deviceTokens.length > 0) {
+        const { title, body } = createPushNotificationContent({
+          type,
+          userLanguage: language,
+          paymentAmount,
+          displayPaymentAmount,
+        })
+
+        // Do not await this call for quicker processing
+        pushNotification.sendNotification({
+          deviceToken: deviceTokens,
+          title,
+          body,
+        })
+      }
     } catch (err) {
-      return new NotificationsServiceError(err)
+      return new UnknownNotificationsServiceError(err.message || err)
     }
   }
 
-  const onChainTransactionReceived = async ({
-    amount,
-    walletId,
+  const onChainTxReceived = async ({
+    recipientAccountId,
+    recipientWalletId,
+    paymentAmount,
+    displayPaymentAmount,
+    recipientDeviceTokens,
+    recipientLanguage,
     txHash,
-    displayCurrencyPerSat,
   }: OnChainTxReceivedArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainReceipt,
-      sats: amount,
-      walletId,
+      accountId: recipientAccountId,
+      walletId: recipientWalletId,
+      paymentAmount,
+      displayPaymentAmount,
+      deviceTokens: recipientDeviceTokens,
+      language: recipientLanguage,
       txHash,
-      displayCurrencyPerSat,
     })
 
-  const onChainTransactionReceivedPending = async ({
-    amount,
-    walletId,
+  const onChainTxReceivedPending = async ({
+    recipientAccountId,
+    recipientWalletId,
+    paymentAmount,
+    displayPaymentAmount,
+    recipientDeviceTokens,
+    recipientLanguage,
     txHash,
-    displayCurrencyPerSat,
   }: OnChainTxReceivedPendingArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainReceiptPending,
-      sats: amount,
-      walletId,
+      accountId: recipientAccountId,
+      walletId: recipientWalletId,
+      paymentAmount,
+      displayPaymentAmount,
+      deviceTokens: recipientDeviceTokens,
+      language: recipientLanguage,
       txHash,
-      displayCurrencyPerSat,
     })
 
-  const onChainTransactionPayment = async ({
-    amount,
-    walletId,
+  const onChainTxSent = async ({
+    senderAccountId,
+    senderWalletId,
+    paymentAmount,
+    displayPaymentAmount,
+    senderDeviceTokens,
+    senderLanguage,
     txHash,
-    displayCurrencyPerSat,
-  }: OnChainTxPaymentArgs) =>
+  }: OnChainTxSentArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainPayment,
-      sats: amount,
-      walletId,
+      accountId: senderAccountId,
+      walletId: senderWalletId,
+      paymentAmount,
+      displayPaymentAmount,
+      deviceTokens: senderDeviceTokens,
+      language: senderLanguage,
       txHash,
-      displayCurrencyPerSat,
     })
 
   const priceUpdate = (displayCurrencyPerSat: DisplayCurrencyPerSat) => {
@@ -310,9 +319,9 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
       fns: {
         lightningTxReceived,
         intraLedgerTxReceived,
-        onChainTransactionReceived,
-        onChainTransactionReceivedPending,
-        onChainTransactionPayment,
+        onChainTxReceived,
+        onChainTxReceivedPending,
+        onChainTxSent,
         sendBalance,
       },
     }),

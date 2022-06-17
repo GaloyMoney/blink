@@ -5,30 +5,38 @@ type NotificationType =
   typeof import("./index").NotificationType[keyof typeof import("./index").NotificationType]
 
 type TransactionNotificationBaseArgs = {
-  recipientAccountId: AccountId
-  recipientWalletId: WalletId
   paymentAmount: PaymentAmount<WalletCurrency>
   displayPaymentAmount?: DisplayPaymentAmount<DisplayCurrency>
+}
+
+type TransactionReceivedNotificationBaseArgs = TransactionNotificationBaseArgs & {
+  recipientAccountId: AccountId
+  recipientWalletId: WalletId
   recipientDeviceTokens?: DeviceToken[]
   recipientLanguage?: UserLanguage
 }
 
-type OnChainTxBaseArgs = {
-  walletId: WalletId
-  amount: Satoshis
-  txHash: OnChainTxHash
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
+type TransactionSentNotificationBaseArgs = TransactionNotificationBaseArgs & {
+  senderAccountId: AccountId
+  senderWalletId: WalletId
+  senderDeviceTokens?: DeviceToken[]
+  senderLanguage?: UserLanguage
 }
 
-type OnChainTxReceivedArgs = OnChainTxBaseArgs
-type OnChainTxReceivedPendingArgs = OnChainTxBaseArgs
-type OnChainTxPaymentArgs = OnChainTxBaseArgs
+type IntraLedgerTxReceivedArgs = TransactionReceivedNotificationBaseArgs
 
-type LightningTxReceivedArgs = TransactionNotificationBaseArgs & {
+type LightningTxReceivedArgs = TransactionReceivedNotificationBaseArgs & {
   paymentHash: PaymentHash
 }
 
-type IntraLedgerTxReceivedArgs = TransactionNotificationBaseArgs
+type OnChainTxBaseArgs = {
+  txHash: OnChainTxHash
+}
+
+type OnChainTxReceivedArgs = TransactionReceivedNotificationBaseArgs & OnChainTxBaseArgs
+type OnChainTxReceivedPendingArgs = TransactionReceivedNotificationBaseArgs &
+  OnChainTxBaseArgs
+type OnChainTxSentArgs = TransactionSentNotificationBaseArgs & OnChainTxBaseArgs
 
 type SendBalanceArgs = {
   balance: CurrencyBaseAmount
@@ -46,15 +54,14 @@ interface INotificationsService {
     args: IntraLedgerTxReceivedArgs,
   ) => Promise<void | NotificationsServiceError>
 
-  onChainTransactionReceived(
+  onChainTxReceived(
     args: OnChainTxReceivedArgs,
   ): Promise<void | NotificationsServiceError>
-  onChainTransactionReceivedPending(
+  onChainTxReceivedPending(
     args: OnChainTxReceivedPendingArgs,
   ): Promise<void | NotificationsServiceError>
-  onChainTransactionPayment(
-    args: OnChainTxPaymentArgs,
-  ): Promise<void | NotificationsServiceError>
+  onChainTxSent(args: OnChainTxSentArgs): Promise<void | NotificationsServiceError>
+
   priceUpdate: (DisplayCurrencyPerSat: DisplayCurrencyPerSat) => void
   sendBalance(args: SendBalanceArgs): Promise<void | NotImplementedError>
 }

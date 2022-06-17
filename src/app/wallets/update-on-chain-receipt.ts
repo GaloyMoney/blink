@@ -161,11 +161,23 @@ const processTxForWallet = async (
             return result
           }
 
-          await notifications.onChainTransactionReceived({
-            walletId: wallet.id,
-            amount: sats,
+          const recipientAccount = await AccountsRepository().findById(wallet.accountId)
+          if (recipientAccount instanceof Error) return recipientAccount
+
+          const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+          if (recipientUser instanceof Error) return recipientUser
+
+          await notifications.onChainTxReceived({
+            recipientAccountId: wallet.accountId,
+            recipientWalletId: wallet.id,
+            paymentAmount: { amount: BigInt(sats), currency: wallet.currency },
+            displayPaymentAmount: {
+              amount: amountDisplayCurrency,
+              currency: DisplayCurrency.Usd,
+            },
             txHash: tx.rawTx.txHash,
-            displayCurrencyPerSat,
+            recipientDeviceTokens: recipientUser.deviceTokens,
+            recipientLanguage: recipientUser.language,
           })
         }
       }
