@@ -20,7 +20,7 @@ const SafeInt = GT.Scalar({
   },
 })
 
-function coerceSafeInt(value) {
+function coerceSafeInt(value: unknown) {
   if (value === "") {
     throw new Error(
       "SafeInt cannot represent non 53-bit signed integer value: (empty string)",

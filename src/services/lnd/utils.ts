@@ -285,9 +285,9 @@ export const updateEscrows = async () => {
   const selfInitiatedChannels = channels.filter(
     ({ is_partner_initiated }) => is_partner_initiated === false,
   )
-  const escrowInLnd = sumBy(selfInitiatedChannels, "commit_transaction_fee")
+  const escrowInLnd = toSats(sumBy(selfInitiatedChannels, "commit_transaction_fee"))
 
-  const result = await updateLndEscrow({ amount: escrowInLnd })
+  const result = await updateLndEscrow(escrowInLnd)
 
   baseLogger.info({ ...result, channels }, "escrow recording")
 }
@@ -330,7 +330,7 @@ export const onChannelUpdated = async ({
     return
   }
 
-  const fee = tx.fee
+  const fee = toSats(tx.fee)
 
   // let tx
   // try {
@@ -347,7 +347,7 @@ export const onChannelUpdated = async ({
 
   const data = {
     description: `channel ${stateChange} onchain fee`,
-    amount: fee,
+    fee,
     metadata: { txid },
   }
 

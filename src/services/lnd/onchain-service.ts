@@ -25,6 +25,8 @@ import { SECS_PER_5_MINS } from "@config"
 
 import { getActiveOnchainLnd, getLndFromPubkey, getLnds } from "./utils"
 
+import { parseLndErrorDetails } from "."
+
 export const OnChainService = (
   decoder: TxDecoder,
 ): IOnChainService | OnChainServiceError => {
@@ -197,9 +199,6 @@ export const OnChainService = (
     },
   })
 }
-
-const parseLndErrorDetails = (err) =>
-  err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details || err[1]
 
 const KnownLndErrorDetails = {
   InsufficientFunds: "insufficient funds available to construct transaction",

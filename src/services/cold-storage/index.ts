@@ -74,7 +74,7 @@ export const ColdStorageService = async (): Promise<
       const client = await getBitcoindClient(walletName)
       if (client instanceof Error) return client
 
-      const output0 = {}
+      const output0: { [onchainaddress: OnChainAddress]: number } = {}
       output0[onChainAddress] = sat2btc(amount)
 
       const fundedPsbt = await client.walletCreateFundedPsbt({

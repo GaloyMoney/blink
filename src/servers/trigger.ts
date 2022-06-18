@@ -123,7 +123,7 @@ export async function onchainTransactionEventHandler(
   }
 }
 
-export async function onchainBlockEventhandler({ height }) {
+export async function onchainBlockEventhandler(height: number) {
   const scanDepth = (ONCHAIN_MIN_CONFIRMATIONS + 1) as ScanDepth
   const txNumber = await Wallets.updateOnChainReceipt({ scanDepth, logger })
   if (txNumber instanceof Error) {
@@ -163,7 +163,7 @@ const publishCurrentPrice = () => {
   }, interval)
 }
 
-const listenerOnchain = ({ lnd }) => {
+const listenerOnchain = (lnd: AuthenticatedLnd) => {
   const subTransactions = subscribeToTransactions({ lnd })
   subTransactions.on("chain_transaction", onchainTransactionEventHandler)
 
@@ -172,7 +172,7 @@ const listenerOnchain = ({ lnd }) => {
   })
 
   const subBlocks = subscribeToBlocks({ lnd })
-  subBlocks.on("block", async ({ height }) =>
+  subBlocks.on("block", async ({ height }: { height: number }) =>
     asyncRunInSpan(
       "servers.trigger.onchainBlockEventhandler",
       {
@@ -184,7 +184,7 @@ const listenerOnchain = ({ lnd }) => {
         },
       },
       async () => {
-        onchainBlockEventhandler({ height })
+        onchainBlockEventhandler(height)
       },
     ),
   )
@@ -194,7 +194,7 @@ const listenerOnchain = ({ lnd }) => {
   })
 }
 
-const listenerOffchain = ({ lnd, pubkey }) => {
+const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubkey }) => {
   const subInvoices = subscribeToInvoices({ lnd })
   subInvoices.on("invoice_updated", onInvoiceUpdate)
   subInvoices.on("error", (err) => {
@@ -237,11 +237,11 @@ const listenerOffchain = ({ lnd, pubkey }) => {
 }
 
 const main = () => {
-  lndStatusEvent.on("started", ({ lnd, pubkey, socket, type }) => {
+  lndStatusEvent.on("started", ({ lnd, pubkey, socket, type }: LndParamsAuthed) => {
     baseLogger.info({ socket }, "lnd started")
 
     if (type.indexOf("onchain") !== -1) {
-      listenerOnchain({ lnd })
+      listenerOnchain(lnd)
     }
 
     if (type.indexOf("offchain") !== -1) {

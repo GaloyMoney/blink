@@ -8,6 +8,9 @@ type ExternalLang = UserLanguage
 const Language = GT.Scalar<InternalLang | InputValidationError, ExternalLang>({
   name: "Language",
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for OnChainTxHash" })
+    }
     return validLanguageValue(value)
   },
   parseLiteral(valueNode) {
@@ -18,7 +21,7 @@ const Language = GT.Scalar<InternalLang | InputValidationError, ExternalLang>({
   },
 })
 
-function validLanguageValue(value): InternalLang | InputValidationError {
+function validLanguageValue(value: string): InternalLang | InputValidationError {
   if (value === "" || value === "DEFAULT") {
     return ""
   }

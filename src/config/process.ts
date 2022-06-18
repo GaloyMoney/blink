@@ -39,13 +39,13 @@ export const getGaloyBuildInformation = () => {
 }
 
 export const getGeetestConfig = () => {
+  // FIXME: Geetest should be optional.
+  if (!process.env.GEETEST_ID || !process.env.GEETEST_KEY) {
+    throw new ConfigError("Geetest config not found")
+  }
   const config = {
     id: process.env.GEETEST_ID,
     key: process.env.GEETEST_KEY,
-  }
-  // FIXME: Geetest should be optional.
-  if (!config.id || !config.key) {
-    throw new ConfigError("Geetest config not found")
   }
   return config
 }

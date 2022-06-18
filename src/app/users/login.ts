@@ -11,11 +11,7 @@ import {
 } from "@domain/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import {
-  checkedToEmailAddress,
-  checkedToKratosUserId,
-  checkedToPhoneNumber,
-} from "@domain/users"
+import { checkedToEmailAddress, checkedToKratosUserId } from "@domain/users"
 import { createToken } from "@services/jwt"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
@@ -29,14 +25,11 @@ export const login = async ({
   logger,
   ip,
 }: {
-  phone: string
+  phone: PhoneNumber
   code: PhoneCode
   logger: Logger
   ip: IpAddress
 }): Promise<JwtToken | ApplicationError> => {
-  const phoneNumberValid = checkedToPhoneNumber(phone)
-  if (phoneNumberValid instanceof Error) return phoneNumberValid
-
   const subLogger = logger.child({ topic: "login" })
 
   {
@@ -45,7 +38,7 @@ export const login = async ({
   }
 
   {
-    const limitOk = await checkFailedLoginAttemptPerPhoneLimits(phoneNumberValid)
+    const limitOk = await checkFailedLoginAttemptPerPhoneLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -54,17 +47,17 @@ export const login = async ({
   // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
 
   const age = MAX_AGE_TIME_CODE
-  const validCode = await isCodeValid({ phone: phoneNumberValid, code, age })
+  const validCode = await isCodeValid({ phone, code, age })
   if (validCode instanceof Error) return validCode
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
 
   const userRepo = UsersRepository()
-  let user = await userRepo.findByPhone(phoneNumberValid)
+  let user = await userRepo.findByPhone(phone)
 
   if (user instanceof CouldNotFindUserFromPhoneError) {
     subLogger.info({ phone }, "new user signup")
-    const userRaw: NewUserInfo = { phone: phoneNumberValid }
+    const userRaw: NewUserInfo = { phone }
     user = await createUser(userRaw)
     if (user instanceof Error) return user
   } else if (user instanceof Error) {

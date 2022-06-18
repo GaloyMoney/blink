@@ -98,10 +98,10 @@ describe("onchainBlockEventhandler", () => {
     let isFinalBlock = false
     let lastHeight = initialBlock
     const subBlocks = subscribeToBlocks({ lnd: lnd1 })
-    subBlocks.on("block", async ({ height }) => {
+    subBlocks.on("block", async ({ height }: { height: number }) => {
       if (height > lastHeight) {
         lastHeight = height
-        await onchainBlockEventhandler({ height })
+        await onchainBlockEventhandler(height)
       }
       isFinalBlock = lastHeight >= initialBlock + blocksToMine
     })

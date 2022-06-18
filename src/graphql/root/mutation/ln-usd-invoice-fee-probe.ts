@@ -9,6 +9,8 @@ import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { mapError } from "@graphql/error-map"
 import { validateIsUsdWalletForMutation } from "@graphql/helpers"
 
+import { checkedToWalletId } from "@domain/wallets"
+
 import { normalizePaymentAmount } from "."
 
 const LnUsdInvoiceFeeProbeInput = GT.Input({
@@ -19,7 +21,12 @@ const LnUsdInvoiceFeeProbeInput = GT.Input({
   }),
 })
 
-const LnUsdInvoiceFeeProbeMutation = GT.Field({
+const LnUsdInvoiceFeeProbeMutation = GT.Field<{
+  input: {
+    walletId: WalletId | InputValidationError
+    paymentRequest: EncodedPaymentRequest | InputValidationError
+  }
+}>({
   type: GT.NonNull(CentAmountPayload),
   args: {
     input: { type: GT.NonNull(LnUsdInvoiceFeeProbeInput) },
@@ -27,13 +34,19 @@ const LnUsdInvoiceFeeProbeMutation = GT.Field({
   resolve: async (_, args) => {
     const { walletId, paymentRequest } = args.input
 
-    for (const input of [walletId, paymentRequest]) {
-      if (input instanceof Error) {
-        return { errors: [{ message: input.message }] }
-      }
+    if (walletId instanceof Error) {
+      return { errors: [{ message: walletId.message }] }
     }
 
-    const usdWalletValidated = await validateIsUsdWalletForMutation(walletId)
+    if (paymentRequest instanceof Error) {
+      return { errors: [{ message: paymentRequest.message }] }
+    }
+
+    const walletIdChecked = checkedToWalletId(walletId)
+    if (walletIdChecked instanceof Error)
+      return { errors: [{ message: walletIdChecked.message }] }
+
+    const usdWalletValidated = await validateIsUsdWalletForMutation(walletIdChecked)
     if (usdWalletValidated != true) return usdWalletValidated
 
     const { result: feeSatAmount, error } = await Payments.getLightningFeeEstimation({

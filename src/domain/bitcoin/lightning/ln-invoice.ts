@@ -6,14 +6,6 @@ import { LnInvoiceDecodeError } from "./errors"
 
 import { LnInvoiceMissingPaymentSecretError, UnknownLnInvoiceDecodeError } from "."
 
-const safeDecode = (bolt11EncodedInvoice: EncodedPaymentRequest) => {
-  try {
-    return parsePaymentRequest({ request: bolt11EncodedInvoice })
-  } catch (err) {
-    return new UnknownLnInvoiceDecodeError(err)
-  }
-}
-
 export const decodeInvoice = (
   bolt11EncodedInvoice: EncodedPaymentRequest,
 ): LnInvoice | LnInvoiceDecodeError => {
@@ -65,5 +57,13 @@ export const decodeInvoice = (
     destination: decodedInvoice.destination as Pubkey,
     milliSatsAmount: toMilliSatsFromNumber(amount ? amount * 1000 : 0),
     features: (decodedInvoice.features || []) as LnInvoiceFeature[],
+  }
+}
+
+const safeDecode = (bolt11EncodedInvoice: EncodedPaymentRequest) => {
+  try {
+    return parsePaymentRequest({ request: bolt11EncodedInvoice })
+  } catch (err) {
+    return new UnknownLnInvoiceDecodeError(err)
   }
 }

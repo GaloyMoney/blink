@@ -35,7 +35,7 @@ const fields = {
 const addTracing = (fields) => {
   for (const key in fields) {
     const original = fields[key].resolve
-    fields[key].resolve = (_, args, context) => {
+    fields[key].resolve = (source, args, context, info) => {
       const { ip, domainAccount, domainUser } = context
       return addAttributesToCurrentSpanAndPropagate(
         {
@@ -43,7 +43,7 @@ const addTracing = (fields) => {
           [ACCOUNT_USERNAME]: domainAccount?.username,
           [SemanticAttributes.HTTP_CLIENT_IP]: ip,
         },
-        () => original(_, args, context),
+        () => original(source, args, context, info),
       )
     }
   }
