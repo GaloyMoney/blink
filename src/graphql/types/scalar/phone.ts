@@ -23,7 +23,7 @@ function validPhoneValue(value: string) {
   const phoneNumberValid = checkedToPhoneNumber(value)
   if (phoneNumberValid instanceof Error)
     return new InputValidationError({ message: "Invalid value for Phone" })
-  return value as PhoneNumber
+  return phoneNumberValid
 }
 
 export default Phone
