@@ -1,15 +1,3 @@
-import { Prices } from "@app"
-import { uploadBackup } from "@app/admin/backup"
-import * as Wallets from "@app/wallets"
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
-import { toSats } from "@domain/bitcoin"
-import { LedgerService } from "@services/ledger"
-import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
-import { onChannelUpdated } from "@services/lnd/utils"
-import { baseLogger } from "@services/logger"
-import { setupMongoConnection } from "@services/mongodb"
-import { WalletsRepository } from "@services/mongoose"
-import { NotificationsService } from "@services/notifications"
 import express from "express"
 import {
   GetInvoiceResult,
@@ -20,10 +8,29 @@ import {
   subscribeToTransactions,
   SubscribeToTransactionsChainTransactionEvent,
 } from "lightning"
+
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+
+import { Prices } from "@app"
+import * as Wallets from "@app/wallets"
+import { uploadBackup } from "@app/admin/backup"
+
+import { toSats } from "@domain/bitcoin"
+import { CacheKeys } from "@domain/cache"
+
+import { baseLogger } from "@services/logger"
+import { LedgerService } from "@services/ledger"
+import { RedisCacheService } from "@services/cache"
+import { onChannelUpdated } from "@services/lnd/utils"
+import { WalletsRepository } from "@services/mongoose"
+import { setupMongoConnection } from "@services/mongodb"
+import { NotificationsService } from "@services/notifications"
 import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"
+import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 
 import healthzHandler from "./middlewares/healthz"
 
+const redisCache = RedisCacheService()
 const logger = baseLogger.child({ module: "trigger" })
 
 export async function onchainTransactionEventHandler(
@@ -83,6 +90,8 @@ export async function onchainTransactionEventHandler(
     })
   } else {
     // incoming transaction
+
+    redisCache.clear(CacheKeys.LastOnChainTransactions)
 
     const walletsRepo = WalletsRepository()
 

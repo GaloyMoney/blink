@@ -66,4 +66,10 @@ redisCacheInstance.on("error", (err) =>
 
 export const redisCache = new RedisCache(redisCacheInstance)
 
+export const disconnectAll = () => {
+  redis.disconnect()
+  redisSub.disconnect()
+  redisCacheInstance.disconnect()
+}
+
 export * from "./routes"
