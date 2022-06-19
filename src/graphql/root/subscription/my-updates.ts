@@ -70,6 +70,8 @@ const MyUpdatesPayload = GT.Object({
   }),
 })
 
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 const userPayload = (domainUser) => (updateData) => ({
   errors: [],
   me: domainUser,
@@ -78,6 +80,7 @@ const userPayload = (domainUser) => (updateData) => ({
 
 const MeSubscription = {
   type: GT.NonNull(MyUpdatesPayload),
+  // @ts-ignore-next-line no-implicit-any error
   resolve: (source, args, ctx) => {
     if (!ctx.uid) {
       throw new Error("Not Authenticated")
@@ -120,6 +123,7 @@ const MeSubscription = {
     }
   },
 
+  // @ts-ignore-next-line no-implicit-any error
   subscribe: async (source, args, ctx) => {
     if (!ctx.uid) {
       throw new Error("Not Authenticated")

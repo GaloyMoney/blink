@@ -22,6 +22,8 @@ const LnInvoicePaymentStatusSubscription = {
     input: { type: GT.NonNull(LnInvoicePaymentStatusInput) },
   },
 
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   resolve: (source) => {
     if (source.errors) {
       return { errors: source.errors }
@@ -32,6 +34,7 @@ const LnInvoicePaymentStatusSubscription = {
     }
   },
 
+  // @ts-ignore-next-line no-implicit-any error
   subscribe: async (_, args) => {
     const { paymentRequest } = args.input
     if (paymentRequest instanceof Error) throw paymentRequest

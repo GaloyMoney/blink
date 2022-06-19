@@ -30,13 +30,16 @@ const fields = {
   btcPrice: BtcPriceQuery,
   btcPriceList: BtcPriceListQuery,
   onChainTxFee: OnChainTxFeeQuery,
-}
+} as const
 
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 const addTracing = (fields) => {
   for (const key in fields) {
     const original = fields[key].resolve
+    // @ts-ignore-next-line no-implicit-any error
     fields[key].resolve = (source, args, context, info) => {
-      const { ip, domainAccount, domainUser } = context
+      const { ip, domainAccount, domainUser } = context as GraphQLContextForUser
       return addAttributesToCurrentSpanAndPropagate(
         {
           [SemanticAttributes.ENDUSER_ID]: domainUser?.id,

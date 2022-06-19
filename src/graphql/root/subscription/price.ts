@@ -27,6 +27,8 @@ const PriceSubscription = {
   args: {
     input: { type: GT.NonNull(PriceInput) },
   },
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   resolve: (source, args) => {
     if (source.errors) {
       return { errors: source.errors }
@@ -42,6 +44,7 @@ const PriceSubscription = {
       },
     }
   },
+  // @ts-ignore-next-line no-implicit-any error
   subscribe: async (_, args) => {
     const { amount, amountCurrencyUnit, priceCurrencyUnit } = args.input
 

@@ -69,6 +69,8 @@ const sessionContext = ({
 }: {
   tokenPayload: jwt.JwtPayload | null
   ip: IpAddress | undefined
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   body
 }): Promise<GraphQLContext> => {
   const userId = tokenPayload?.uid ?? null
@@ -115,7 +117,9 @@ const sessionContext = ({
 }
 
 export const startApolloServer = async ({
+  // @ts-ignore-next-line no-implicit-any error
   schema,
+  // @ts-ignore-next-line no-implicit-any error
   port,
   startSubscriptionServer = false,
   enableApolloUsageReporting = false,
@@ -264,6 +268,7 @@ export const startApolloServer = async ({
             execute: execute as unknown as ExecuteFunction,
             subscribe: subscribe as unknown as SubscribeFunction,
             schema,
+            // @ts-ignore-next-line no-implicit-any error
             async onConnect(connectionParams, webSocket, connectionContext) {
               const { request } = connectionContext
 

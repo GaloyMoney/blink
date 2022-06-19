@@ -23,8 +23,11 @@ const allFunctions = {
 let subModule: keyof typeof allFunctions
 for (subModule in allFunctions) {
   for (const fn in allFunctions[subModule]) {
+    /* eslint @typescript-eslint/ban-ts-comment: "off" */
+    // @ts-ignore-next-line no-implicit-any error
     allFunctions[subModule][fn] = wrapAsyncToRunInSpan({
       namespace: `app.${subModule.toLowerCase()}`,
+      // @ts-ignore-next-line no-implicit-any error
       fn: allFunctions[subModule][fn],
     })
   }

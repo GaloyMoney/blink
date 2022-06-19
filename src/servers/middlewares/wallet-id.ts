@@ -1,6 +1,8 @@
 import { Accounts } from "@app"
 import { mapError } from "@graphql/error-map"
 
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 const validateWalletId = async (resolve, parent, args, context, info) => {
   const { walletId } = args.input || args || {}
   if (!walletId) return new Error("Invalid wallet")
@@ -13,12 +15,14 @@ const validateWalletId = async (resolve, parent, args, context, info) => {
   return resolve(parent, args, context, info)
 }
 
+// @ts-ignore-next-line no-implicit-any error
 const validateWalletIdQuery = async (resolve, parent, args, context, info) => {
   const result = await validateWalletId(resolve, parent, args, context, info)
   if (result instanceof Error) throw result
   return result
 }
 
+// @ts-ignore-next-line no-implicit-any error
 const validateWalletIdMutation = async (resolve, parent, args, context, info) => {
   const result = await validateWalletId(resolve, parent, args, context, info)
   if (result instanceof Error) return { errors: [{ message: result.message }] }
