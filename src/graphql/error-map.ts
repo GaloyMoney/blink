@@ -349,10 +349,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CouldNotFindTransactionMetadataError":
     case "InvalidLedgerTransactionId":
     case "CacheError":
-    case "LocalCacheNotAvailableError":
-    case "LocalCacheServiceError":
-    case "LocalCacheUndefinedError":
-    case "UnknownLocalCacheServiceError":
+    case "CacheNotAvailableError":
+    case "CacheServiceError":
+    case "CacheUndefinedError":
+    case "UnknownCacheServiceError":
     case "UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError":
     case "PhoneProviderServiceError":
     case "UnknownPhoneProviderServiceError":

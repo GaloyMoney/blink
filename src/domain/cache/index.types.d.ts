@@ -1,4 +1,4 @@
-type LocalCacheServiceError = import("./errors").LocalCacheServiceError
+type CacheServiceError = import("./errors").CacheServiceError
 
 type CacheKeys =
   typeof import("./index").CacheKeys[keyof typeof import("./index").CacheKeys]
@@ -15,11 +15,11 @@ type LocalCacheGetOrSetArgs<F extends () => ReturnType<F>> = {
   ttlSecs: Seconds
 }
 
-interface ILocalCacheService {
-  set<T>(args: LocalCacheSetArgs<T>): Promise<T | LocalCacheServiceError>
-  get<T>(key: CacheKeys | string): Promise<T | LocalCacheServiceError>
+interface ICacheService {
+  set<T>(args: LocalCacheSetArgs<T>): Promise<T | CacheServiceError>
+  get<T>(key: CacheKeys | string): Promise<T | CacheServiceError>
   getOrSet<F extends () => ReturnType<F>>(
     args: LocalCacheGetOrSetArgs<F>,
   ): Promise<ReturnType<F>>
-  clear(key: CacheKeys | string): Promise<true | LocalCacheServiceError>
+  clear(key: CacheKeys | string): Promise<true | CacheServiceError>
 }
