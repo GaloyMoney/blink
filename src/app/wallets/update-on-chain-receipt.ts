@@ -2,14 +2,13 @@ import {
   ONCHAIN_SCAN_DEPTH,
   ONCHAIN_MIN_CONFIRMATIONS,
   BTC_NETWORK,
-  SECS_PER_5_MINS,
+  SECS_PER_10_MINS,
 } from "@config"
 
 import { getCurrentPrice } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
 import { CacheKeys } from "@domain/cache"
-import { toSeconds } from "@domain/primitives"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
@@ -43,7 +42,7 @@ export const updateOnChainReceipt = async ({
   redisCache.set({
     key: CacheKeys.LastOnChainTransactions,
     value: onChainTxs,
-    ttlSecs: toSeconds(SECS_PER_5_MINS * 2),
+    ttlSecs: SECS_PER_10_MINS,
   })
 
   const walletRepo = WalletsRepository()

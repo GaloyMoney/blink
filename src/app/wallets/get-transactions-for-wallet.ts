@@ -1,11 +1,10 @@
-import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS, SECS_PER_5_MINS } from "@config"
+import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS, SECS_PER_10_MINS } from "@config"
 
 import { getCurrentPrice } from "@app/prices"
 import { PartialResult } from "@app/partial-result"
 
 import { CacheKeys } from "@domain/cache"
 import { LedgerError } from "@domain/ledger"
-import { toSeconds } from "@domain/primitives"
 import { RepositoryError } from "@domain/errors"
 import { WalletTransactionHistory } from "@domain/wallets"
 import { OnChainError, TxDecoder, TxFilter } from "@domain/bitcoin/onchain"
@@ -52,7 +51,7 @@ export const getTransactionsForWallets = async (
   // have been mined by not yet credited because they haven't reached enough confirmations
   const onChainTxs = await redisCache.getOrSet({
     key: CacheKeys.LastOnChainTransactions,
-    ttlSecs: toSeconds(SECS_PER_5_MINS * 2),
+    ttlSecs: SECS_PER_10_MINS,
     fn: () => onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS),
   })
   if (onChainTxs instanceof Error) {
