@@ -1,3 +1,27 @@
+import {
+  createInvoice,
+  getInvoice,
+  getPayment,
+  cancelHodlInvoice,
+  payViaRoutes,
+  payViaPaymentDetails,
+  GetPaymentResult,
+  PayViaPaymentDetailsArgs,
+  PayViaRoutesResult,
+  PayViaPaymentDetailsResult,
+  GetInvoiceResult,
+  getPayments,
+  getFailedPayments,
+  getClosedChannels,
+  getWalletInfo,
+  getPendingPayments,
+  getChannelBalance,
+} from "lightning"
+import lnService from "ln-service"
+
+import { SECS_PER_5_MINS } from "@config"
+
+import { CacheKeys } from "@domain/cache"
 import { toMilliSatsFromString, toSats, FEECAP_PERCENT } from "@domain/bitcoin"
 import {
   decodeInvoice,
@@ -19,35 +43,16 @@ import {
   ProbeForRouteTimedOutError,
   PaymentInTransitionError,
 } from "@domain/bitcoin/lightning"
-import lnService from "ln-service"
-import {
-  createInvoice,
-  getInvoice,
-  getPayment,
-  cancelHodlInvoice,
-  payViaRoutes,
-  payViaPaymentDetails,
-  GetPaymentResult,
-  PayViaPaymentDetailsArgs,
-  PayViaRoutesResult,
-  PayViaPaymentDetailsResult,
-  GetInvoiceResult,
-  getPayments,
-  getFailedPayments,
-  getClosedChannels,
-  getWalletInfo,
-  getPendingPayments,
-} from "lightning"
-
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
-import { timeout } from "@utils"
 
 import { LocalCacheService } from "@services/cache"
-import { SECS_PER_5_MINS } from "@config"
-import { CacheKeys } from "@domain/cache"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
-import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
+import { timeout } from "@utils"
+
+import sumBy from "lodash.sumby"
+
 import { TIMEOUT_PAYMENT } from "./auth"
+import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
 
 export const LndService = (
   { feeCapPercent }: LightningServiceConfig = { feeCapPercent: FEECAP_PERCENT },
@@ -66,6 +71,49 @@ export const LndService = (
 
   const listAllPubkeys = (): Pubkey[] =>
     getLnds({ type: "offchain" }).map((lndAuth) => lndAuth.pubkey as Pubkey)
+
+  const getBalance = async (): Promise<Satoshis | LightningServiceError> => {
+    try {
+      const { channel_balance } = await getChannelBalance({ lnd: defaultLnd })
+      return toSats(channel_balance)
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      return new UnknownLightningServiceError(errDetails)
+    }
+  }
+
+  const getOpeningChannelsBalance = async (): Promise<
+    Satoshis | LightningServiceError
+  > => {
+    try {
+      const { pending_balance } = await getChannelBalance({ lnd: defaultLnd })
+      return toSats(pending_balance)
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      return new UnknownLightningServiceError(errDetails)
+    }
+  }
+
+  const getClosingChannelsBalance = async (): Promise<
+    Satoshis | LightningServiceError
+  > => {
+    try {
+      const { channels } = await getClosedChannels({ lnd: defaultLnd })
+
+      // FIXME: there can be issue with channel not closed completely from lnd
+      // https://github.com/alexbosworth/ln-service/issues/139
+      const closingChannelBalance = sumBy(channels, (channel) =>
+        sumBy(channel.close_payments, (payment) =>
+          payment.is_pending ? payment.tokens : 0,
+        ),
+      )
+
+      return toSats(closingChannelBalance)
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      return new UnknownLightningServiceError(errDetails)
+    }
+  }
 
   const findRouteForInvoice = async ({
     invoice,
@@ -447,6 +495,9 @@ export const LndService = (
       defaultPubkey: (): Pubkey => defaultPubkey,
       listActivePubkeys,
       listAllPubkeys,
+      getBalance,
+      getOpeningChannelsBalance,
+      getClosingChannelsBalance,
       findRouteForInvoice,
       findRouteForNoAmountInvoice,
       registerInvoice,

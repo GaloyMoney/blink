@@ -4,6 +4,7 @@ import {
   CouldNotFindOnChainTransactionError,
   OutgoingOnChainTransaction,
   InsufficientOnChainFundsError,
+  OnChainServiceUnavailableError,
 } from "@domain/bitcoin/onchain"
 import { toSats } from "@domain/bitcoin"
 import {
@@ -14,6 +15,7 @@ import {
   getWalletInfo,
   getChainBalance,
   sendToChainAddress,
+  getPendingChainBalance,
 } from "lightning"
 
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -38,7 +40,17 @@ export const OnChainService = (
       return toSats(chain_balance)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      return new UnknownOnChainServiceError(errDetails)
+      return new OnChainServiceUnavailableError(errDetails)
+    }
+  }
+
+  const getPendingBalance = async (): Promise<Satoshis | OnChainServiceError> => {
+    try {
+      const { pending_chain_balance } = await getPendingChainBalance({ lnd })
+      return toSats(pending_chain_balance)
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      return new OnChainServiceUnavailableError(errDetails)
     }
   }
 
@@ -164,6 +176,7 @@ export const OnChainService = (
     namespace: "services.lnd.onchain",
     fns: {
       getBalance,
+      getPendingBalance,
       listIncomingTransactions,
       lookupOnChainFee,
       createOnChainAddress,
