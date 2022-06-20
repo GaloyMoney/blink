@@ -7,12 +7,12 @@ import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
 import Memo from "../scalar/memo"
 
-import SatAmount from "../scalar/sat-amount"
 import InitiationVia from "../abstract/initiation-via"
 import SettlementVia from "../abstract/settlement-via"
 import Timestamp from "../scalar/timestamp"
 import TxDirection, { txDirectionValues } from "../scalar/tx-direction"
 import TxStatus from "../scalar/tx-status"
+import SignedAmount from "../scalar/signed-amount"
 import WalletCurrency from "../scalar/wallet-currency"
 
 import Price from "./price"
@@ -37,27 +37,28 @@ const Transaction = GT.Object<WalletTransaction>({
       description: "To which protocol the payment has settled on.",
     },
     settlementAmount: {
-      type: GT.NonNull(SatAmount),
-      description: "Amount of sats sent or received.",
+      type: GT.NonNull(SignedAmount),
+      description: "Amount of the settlement currency sent or received.",
     },
     settlementFee: {
-      type: GT.NonNull(SatAmount),
+      type: GT.NonNull(SignedAmount),
     },
     settlementPrice: {
       type: GT.NonNull(Price),
       resolve: (source) => {
-        const settlementDisplayCurrencyPerSatInCents =
-          source.settlementDisplayCurrencyPerSat * 100
+        const displayCurrencyPerSettlementCurrencyUnitInCents =
+          source.displayCurrencyPerSettlementCurrencyUnit * 100
         return {
-          formattedAmount: settlementDisplayCurrencyPerSatInCents.toString(),
+          formattedAmount: displayCurrencyPerSettlementCurrencyUnitInCents.toString(),
           base: Math.round(
-            settlementDisplayCurrencyPerSatInCents * 10 ** SAT_PRICE_PRECISION_OFFSET,
+            displayCurrencyPerSettlementCurrencyUnitInCents *
+              10 ** SAT_PRICE_PRECISION_OFFSET,
           ),
           offset: SAT_PRICE_PRECISION_OFFSET,
           currencyUnit: "USDCENT",
         }
       },
-      description: "Price in USDCENT/SATS at time of settlement.",
+      description: "Price in USDCENT/SETTLEMENTUNIT at time of settlement.",
     },
     settlementCurrency: {
       type: GT.NonNull(WalletCurrency),

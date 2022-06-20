@@ -105,10 +105,10 @@ describe("WalletTransactionHistory.fromLedger", () => {
     }): WalletTransaction[] => {
       const settlementFee =
         currency === WalletCurrency.Btc ? toSats(fee) : toCents(Math.floor(feeUsd * 100))
-      const settlementDisplayCurrencyPerSat = Math.abs(usd / settlementAmount)
+      const displayCurrencyPerSettlementCurrencyUnit = Math.abs(usd / settlementAmount)
 
       if (currency === WalletCurrency.Usd) {
-        expect(settlementDisplayCurrencyPerSat).toEqual(0.01)
+        expect(displayCurrencyPerSettlementCurrencyUnit).toEqual(0.01)
       }
 
       const currencyBaseWalletTxns = {
@@ -118,7 +118,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
 
         settlementAmount,
         settlementFee,
-        settlementDisplayCurrencyPerSat,
+        displayCurrencyPerSettlementCurrencyUnit,
       }
 
       return [
@@ -307,7 +307,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
         settlementCurrency: WalletCurrency.Btc,
-        settlementDisplayCurrencyPerSat: 1,
+        displayCurrencyPerSettlementCurrencyUnit: 1,
         status: TxStatus.Pending,
         createdAt: timestamp,
       },
@@ -326,7 +326,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementCurrency: WalletCurrency.Btc,
         memo: null,
         settlementFee: toSats(0),
-        settlementDisplayCurrencyPerSat: 1,
+        displayCurrencyPerSettlementCurrencyUnit: 1,
 
         status: TxStatus.Pending,
         createdAt: timestamp,
@@ -379,7 +379,7 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
         settlementAmount: toSats(25000),
         settlementFee: toSats(0),
         settlementCurrency: WalletCurrency.Btc,
-        settlementDisplayCurrencyPerSat: NaN,
+        displayCurrencyPerSettlementCurrencyUnit: NaN,
         status: TxStatus.Pending,
         createdAt: timestamp,
       },

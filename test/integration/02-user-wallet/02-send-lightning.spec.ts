@@ -296,7 +296,7 @@ describe("UserWallet - Lightning Pay", () => {
     }
     const userBTxn = txResultB.result.filter(matchTx)[0]
     expect(userBTxn.memo).toBe(memo)
-    expect(userBTxn.settlementDisplayCurrencyPerSat).toBe(0.0005)
+    expect(userBTxn.displayCurrencyPerSettlementCurrencyUnit).toBe(0.0005)
     expect(userBTxn.settlementVia.type).toBe("intraledger")
     // expect(userBTxn.recipientUsername).toBe("lily")
 
@@ -308,7 +308,7 @@ describe("UserWallet - Lightning Pay", () => {
     }
     const userCTxn = txResultC.result.filter(matchTx)[0]
     expect(userCTxn.memo).toBe(memo)
-    expect(userCTxn.settlementDisplayCurrencyPerSat).toBe(0.0005)
+    expect(userCTxn.displayCurrencyPerSettlementCurrencyUnit).toBe(0.0005)
     expect(userCTxn.settlementVia.type).toBe("intraledger")
   })
 
