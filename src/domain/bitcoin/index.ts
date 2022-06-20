@@ -56,6 +56,7 @@ export const isSha256Hash = (value: string): boolean => !!value.match(/^[a-f0-9]
 export const BtcNetwork = {
   mainnet: "mainnet",
   testnet: "testnet",
+  signet: "signet",
   regtest: "regtest",
 } as const
 

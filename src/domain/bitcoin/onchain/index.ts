@@ -15,6 +15,7 @@ export const checkedToOnChainAddress = ({
   const regexes = {
     mainnet: [/^[13]{1}[a-km-zA-HJ-NP-Z1-9]{26,34}$/, /^bc1[a-z0-9]{39,59}$/i],
     testnet: [/^[mn2]{1}[a-km-zA-HJ-NP-Z1-9]{26,34}$/, /^tb1[a-z0-9]{39,59}$/i],
+    signet: [/^[mn2]{1}[a-km-zA-HJ-NP-Z1-9]{26,34}$/, /^tb1[a-z0-9]{39,59}$/i],
     regtest: [/^bcrt1[a-z0-9]{39,59}$/i],
   }
 
