@@ -6,6 +6,7 @@ export * from "./schema"
 export const MS_PER_HOUR = (60 * 60 * 1000) as MilliSeconds
 export const MS_PER_DAY = (24 * MS_PER_HOUR) as MilliSeconds
 
+export const SECS_PER_MIN = 60 as Seconds
 export const SECS_PER_5_MINS = (60 * 5) as Seconds
 
 export const MAX_AGE_TIME_CODE = (20 * 60) as Seconds

@@ -12,7 +12,7 @@ import {
 } from "@services/tracing"
 import { User } from "@services/mongoose/schema"
 import { LedgerService } from "@services/ledger"
-import { getBosScore, lndsBalances } from "@services/lnd/utils"
+import { getBosScore } from "@services/lnd/utils"
 import { getBalance as getBitcoindBalance } from "@services/bitcoind"
 import {
   getBankOwnerWalletId,
@@ -20,7 +20,7 @@ import {
   getDealerUsdWalletId,
   getFunderWalletId,
 } from "@services/ledger/caching"
-import { ColdStorage } from "@app"
+import { ColdStorage, Lightning } from "@app"
 
 import { SECS_PER_5_MINS } from "@config"
 import { LocalCacheService } from "@services/cache"
@@ -62,8 +62,10 @@ const main = async () => {
     name: "lnd",
     description: "how much money in our node",
     collect: async () => {
-      const { total } = await lndsBalances()
-      return total
+      const balance = await Lightning.getTotalBalance()
+      if (balance instanceof Error) return 0
+
+      return balance
     },
   })
 
@@ -71,8 +73,10 @@ const main = async () => {
     name: "lnd_onchain",
     description: "how much fund is onChain in lnd",
     collect: async () => {
-      const { onChain } = await lndsBalances()
-      return onChain
+      const balance = await Lightning.getOnChainBalance()
+      if (balance instanceof Error) return 0
+
+      return balance
     },
   })
 
@@ -80,8 +84,10 @@ const main = async () => {
     name: "lnd_offchain",
     description: "how much fund is offChain in our node",
     collect: async () => {
-      const { offChain } = await lndsBalances()
-      return offChain
+      const balance = await Lightning.getOffChainBalance()
+      if (balance instanceof Error) return 0
+
+      return balance
     },
   })
 
@@ -89,8 +95,10 @@ const main = async () => {
     name: "lnd_openingchannelbalance",
     description: "how much fund is pending following opening channel",
     collect: async () => {
-      const { opening_channel_balance } = await lndsBalances()
-      return opening_channel_balance
+      const balance = await Lightning.getOpeningChannelBalance()
+      if (balance instanceof Error) return 0
+
+      return balance
     },
   })
 
@@ -98,8 +106,10 @@ const main = async () => {
     name: "lnd_closingchannelbalance",
     description: "how much fund is closing following force closed channel",
     collect: async () => {
-      const { closing_channel_balance } = await lndsBalances()
-      return closing_channel_balance
+      const balance = await Lightning.getClosingChannelBalance()
+      if (balance instanceof Error) return 0
+
+      return balance
     },
   })
 
@@ -293,14 +303,14 @@ const getAssetsLiabilitiesDifference = async () => {
 }
 
 export const getBookingVersusRealWorldAssets = async () => {
-  const [lightning, bitcoin, lndBalances, bitcoind] = await Promise.all([
+  const [lightning, bitcoin, lndBalance, bitcoind] = await Promise.all([
     ledgerAdmin.getLndBalance(),
     ledgerAdmin.getBitcoindBalance(),
-    lndsBalances(),
+    Lightning.getTotalBalance(),
     getBitcoindBalance(),
   ])
 
-  const { total: lnd } = lndBalances
+  const lnd = lndBalance instanceof Error ? 0 : lndBalance
 
   return (
     lnd + // physical assets

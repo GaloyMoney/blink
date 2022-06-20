@@ -6,8 +6,8 @@ import { RebalanceChecker } from "@domain/cold-storage"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { ColdStorageService } from "@services/cold-storage"
 import { LedgerService } from "@services/ledger"
+import { LndService } from "@services/lnd"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { lndsBalances } from "@services/lnd/utils"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationError> => {
@@ -20,10 +20,17 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
 
+  const offChainService = LndService()
+  if (offChainService instanceof Error) return offChainService
+
   const displayCurrencyPerSat = await getCurrentPrice()
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
-  const { offChain, onChain } = await lndsBalances()
+  const onChain = await onChainService.getBalance()
+  if (onChain instanceof Error) return onChain
+
+  const offChain = await offChainService.getBalance()
+  if (offChain instanceof Error) return offChain
 
   const rebalanceAmount = RebalanceChecker(
     coldStorageConfig,
