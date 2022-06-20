@@ -82,6 +82,9 @@ export const isRunningJest = typeof jest !== "undefined"
 
 export const DropboxAccessToken = process.env.DROPBOX_ACCESS_TOKEN
 export const GcsApplicationCredentials = process.env.GCS_APPLICATION_CREDENTIALS
+export const Nextcloudurl = process.env.NEXTCLOUD_URL
+export const Nextclouduser = process.env.NEXTCLOUD_USER
+export const Nextcloudpassword = process.env.NEXTCLOUD_PASSWORD
 
 export const getBitcoinCoreRPCConfig = () => {
   return {

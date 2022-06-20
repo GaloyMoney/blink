@@ -206,7 +206,21 @@ const listenerOffchain = ({ lnd, pubkey }) => {
   })
 
   const subBackups = subscribeToBackups({ lnd })
-  subBackups.on("backup", ({ backup }) => uploadBackup(logger)({ backup, pubkey }))
+  subBackups.on("backup", ({ backup }) =>
+    asyncRunInSpan(
+      "servers.trigger.uploadBackup",
+      {
+        root: true,
+        attributes: {
+          [SemanticAttributes.CODE_FUNCTION]: "uploadBackup",
+          [SemanticAttributes.CODE_NAMESPACE]: "servers.trigger",
+        },
+      },
+      async () => {
+        uploadBackup(logger)({ backup, pubkey })
+      },
+    ),
+  )
   subBackups.on("error", (err) => {
     baseLogger.info({ err }, "error subBackups")
     subBackups.removeAllListeners()
