@@ -22,6 +22,9 @@ const UsdWallet = GT.Object<Wallet>({
     id: {
       type: GT.NonNullID,
     },
+    accountId: {
+      type: GT.NonNullID,
+    },
     walletCurrency: {
       type: GT.NonNull(WalletCurrency),
       resolve: (source) => source.currency,

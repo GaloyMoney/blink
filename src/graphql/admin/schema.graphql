@@ -13,6 +13,7 @@ type Account {
   status: AccountStatus!
   title: String
   username: Username
+  wallets: [Wallet!]!
 }
 
 type AccountDetailPayload {
@@ -43,6 +44,10 @@ input AccountUpdateStatusInput {
   uid: ID!
 }
 
+input AccountsAddUsdWalletInput {
+  accountIds: [ID!]!
+}
+
 """
 An authentication code valid for a single use
 """
@@ -51,6 +56,45 @@ scalar AuthToken
 type AuthTokenPayload {
   authToken: AuthToken
   errors: [Error!]!
+}
+
+"""
+A wallet belonging to an account which contains a BTC balance and a list of transactions.
+"""
+type BTCWallet implements Wallet {
+  accountId: ID!
+
+  """
+  A balance stored in BTC.
+  """
+  balance: SignedAmount!
+  id: ID!
+
+  """
+  A list of BTC transactions associated with this wallet.
+  """
+  transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
+  walletCurrency: WalletCurrency!
 }
 
 input BusinessUpdateMapInfoInput {
@@ -177,6 +221,7 @@ scalar Memo
 type Mutation {
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
+  accountsAddUsdWallet(input: AccountsAddUsdWalletInput!): WalletDetailsPayload
   businessUpdateMapInfo(input: BusinessUpdateMapInfoInput!): AccountDetailPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
@@ -198,6 +243,31 @@ scalar OnChainTxHash
 An authentication code valid for a single use
 """
 scalar OneTimeAuthCode
+
+"""
+Information about pagination in a connection.
+"""
+type PageInfo {
+  """
+  When paginating forwards, the cursor to continue.
+  """
+  endCursor: String
+
+  """
+  When paginating forwards, are there more items?
+  """
+  hasNextPage: Boolean!
+
+  """
+  When paginating backwards, are there more items?
+  """
+  hasPreviousPage: Boolean!
+
+  """
+  When paginating backwards, the cursor to continue.
+  """
+  startCursor: String
+}
 
 scalar PaymentHash
 
@@ -268,6 +338,11 @@ type SettlementViaOnChain {
   transactionHash: OnChainTxHash!
 }
 
+"""
+An amount (of a currency) that can be negative (e.g. in a transaction)
+"""
+scalar SignedAmount
+
 type SuccessPayload {
   errors: [Error!]!
   success: Boolean
@@ -324,6 +399,36 @@ type Transaction {
   status: TxStatus!
 }
 
+"""
+A connection to a list of items.
+"""
+type TransactionConnection {
+  """
+  A list of edges.
+  """
+  edges: [TransactionEdge!]
+
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+}
+
+"""
+An edge in a connection.
+"""
+type TransactionEdge {
+  """
+  A cursor for use in pagination
+  """
+  cursor: String!
+
+  """
+  The item at the end of the edge
+  """
+  node: Transaction!
+}
+
 enum TxDirection {
   RECEIVE
   SEND
@@ -333,6 +438,37 @@ enum TxStatus {
   FAILURE
   PENDING
   SUCCESS
+}
+
+"""
+A wallet belonging to an account which contains a USD balance and a list of transactions.
+"""
+type UsdWallet implements Wallet {
+  accountId: ID!
+  balance: SignedAmount!
+  id: ID!
+  transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
+  walletCurrency: WalletCurrency!
 }
 
 type User {
@@ -357,9 +493,50 @@ Unique identifier of a user
 """
 scalar Username
 
+"""
+A generic wallet which stores value in one of our supported currencies.
+"""
+interface Wallet {
+  accountId: ID!
+  balance: SignedAmount!
+  id: ID!
+
+  """
+  Transactions are ordered anti-chronologically,
+  ie: the newest transaction will be first
+  """
+  transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
+  walletCurrency: WalletCurrency!
+}
+
 enum WalletCurrency {
   BTC
   USD
+}
+
+type WalletDetailsPayload {
+  errors: [Error!]!
+  walletDetails: [Wallet!]!
 }
 
 """

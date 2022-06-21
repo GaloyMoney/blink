@@ -10,6 +10,8 @@ import AccountUpdateStatusMutation from "@graphql/admin/root/mutation/account-up
 import BusinessUpdateMapInfoMutation from "@graphql/admin/root/mutation/business-update-map-info"
 import ColdStorageRebalanceToHotWalletMutation from "@graphql/admin/root/mutation/cold-storage-rebalance-to-hot-wallet"
 
+import AccountsAddUsdWalletMutation from "./root/mutation/account-add-usd-wallet"
+
 const MutationType = GT.Object({
   name: "Mutation",
   fields: () => ({
@@ -21,6 +23,7 @@ const MutationType = GT.Object({
 
     accountUpdateLevel: AccountUpdateLevelMutation,
     accountUpdateStatus: AccountUpdateStatusMutation,
+    accountsAddUsdWallet: AccountsAddUsdWalletMutation,
 
     businessUpdateMapInfo: BusinessUpdateMapInfoMutation,
 

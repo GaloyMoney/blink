@@ -1,6 +1,10 @@
-import { User } from "@services/mongoose/schema"
+import { WalletCurrency } from "@domain/shared"
 
-import { graphqlAdmin } from "test/helpers"
+import {
+  createUserAndWalletFromUserRef,
+  getUserRecordByTestUserRef,
+  graphqlAdmin,
+} from "test/helpers"
 
 let user: UserRecord
 
@@ -42,6 +46,18 @@ type AccountUpdateStatusMutation = GraphQLResult<{
   }
 }>
 
+type AccountsAddUsdWalletMutation = GraphQLResult<{
+  accountsAddUsdWallet: {
+    errors: IError[]
+    walletDetails?: {
+      id: string
+      accountId: string
+      walletCurrency: string
+      balance: number
+    }[]
+  }
+}>
+
 type BusinessUpdateMapInfoQuery = GraphQLResult<{
   businessUpdateMapInfo: {
     errors: IError[]
@@ -60,12 +76,8 @@ type BusinessUpdateMapInfoQuery = GraphQLResult<{
 }>
 
 beforeAll(async () => {
-  const user_ = await User.findOne({ username: "tester", phone: "+19876543210" })
-  if (!user_) {
-    user = await User.create({ username: "tester", phone: "+19876543210" })
-  } else {
-    user = user_
-  }
+  await createUserAndWalletFromUserRef("H")
+  user = await getUserRecordByTestUserRef("H")
 })
 
 describe("GraphQLMutationRoot", () => {
@@ -210,5 +222,44 @@ describe("GraphQLMutationRoot", () => {
       longitude: 1,
       latitude: -1,
     })
+  })
+
+  it("exposes accountsAddUsdWallet", async () => {
+    const mutation = `
+      mutation {
+        accountsAddUsdWallet(input: { accountIds: ["${user._id}"]}) {
+          errors {
+            message
+          }
+          walletDetails {
+            id
+            accountId
+            walletCurrency
+            balance
+          }
+        }
+      }
+    `
+
+    const result = await graphqlAdmin<AccountsAddUsdWalletMutation>({
+      source: mutation,
+      contextValue: { domainUser: { id: user._id } },
+    })
+    const { data: dataMutation, errors } = result
+
+    expect(errors).toBeUndefined()
+    expect(dataMutation.accountsAddUsdWallet).toEqual(
+      expect.objectContaining({
+        errors: [],
+        walletDetails: [
+          expect.objectContaining({
+            walletCurrency: WalletCurrency.Usd,
+            id: expect.any(String),
+            accountId: user._id.toString(),
+            balance: 0,
+          }),
+        ],
+      }),
+    )
   })
 })

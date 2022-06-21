@@ -4,6 +4,12 @@ import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 
+import {
+  createUserAndWalletFromUserRef,
+  getAccountByTestUserRef,
+  getUsdWalletIdByTestUserRef,
+} from "test/helpers"
+
 it("change default walletId of account", async () => {
   const user = await Users.createUser({ phone: "+123456789" })
   if (user instanceof Error) throw user
@@ -40,4 +46,20 @@ it("fail to create an invalid account", async () => {
   })
 
   expect(newWallet).toBeInstanceOf(Error)
+})
+
+it("does not add a usd wallet if one exists", async () => {
+  await createUserAndWalletFromUserRef("A")
+  const account = await getAccountByTestUserRef("A")
+  const usdWalletId = await getUsdWalletIdByTestUserRef("A")
+  expect(usdWalletId).toBeDefined()
+
+  const newWallet = await Accounts.addWalletIfNonexistent({
+    accountId: account.id,
+    type: WalletType.Checking,
+    currency: WalletCurrency.Usd,
+  })
+  if (newWallet instanceof Error) throw newWallet
+
+  expect(newWallet.id).toBe(usdWalletId)
 })

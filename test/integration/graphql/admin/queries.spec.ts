@@ -1,6 +1,4 @@
-import { User } from "@services/mongoose/schema"
-
-import { graphqlAdmin } from "test/helpers"
+import { createUserAndWalletFromUserRef, graphqlAdmin } from "test/helpers"
 
 // TODO?: use generated types
 
@@ -13,6 +11,7 @@ type AccountDetailsQuery = GraphQLResult<{
     id?: string
     username?: string
     level?: string
+    wallets?: Wallet[]
     status?: string
     title?: string
     owner?: {
@@ -33,10 +32,7 @@ type AccountDetailsQuery = GraphQLResult<{
 }>
 
 beforeAll(async () => {
-  let user = await User.findOne({ username: "tester", phone: "+19876543210" })
-  if (!user) {
-    user = await User.create({ username: "tester", phone: "+19876543210" })
-  }
+  await createUserAndWalletFromUserRef("H")
 })
 
 describe("GraphQLQueryRoot", () => {
@@ -60,6 +56,10 @@ describe("GraphQLQueryRoot", () => {
           username
           level
           status
+          wallets {
+            id
+            walletCurrency
+          }
           title
           owner {
             id
@@ -84,6 +84,14 @@ describe("GraphQLQueryRoot", () => {
     expect(data?.accountDetails.createdAt).toBeDefined()
     expect(data?.accountDetails?.owner?.phone).toBe(phone)
     expect(data?.accountDetails?.owner?.defaultAccount?.id).toBe(data?.accountDetails.id)
+    expect(data?.accountDetails?.wallets).toEqual(
+      expect.objectContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          walletCurrency: expect.any(String),
+        }),
+      ]),
+    )
   })
 
   it("exposes accountDetails by username", async () => {

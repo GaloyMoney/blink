@@ -1,9 +1,10 @@
-import { Users } from "@app"
+import { Users, Wallets } from "@app"
 import { GT } from "@graphql/index"
 import Coordinates from "@graphql/types/object/coordinates"
 import Timestamp from "@graphql/types/scalar/timestamp"
 import Username from "@graphql/types/scalar/username"
 import { GraphQLObjectType } from "graphql"
+import Wallet from "@graphql/types/abstract/wallet"
 
 import AccountLevel from "../scalar/account-level"
 import AccountStatus from "../scalar/account-status"
@@ -20,6 +21,12 @@ const Account: GraphQLObjectType<Account> = GT.Object<Account>({
     level: { type: GT.NonNull(AccountLevel) },
     status: { type: GT.NonNull(AccountStatus) },
     title: { type: GT.String },
+    wallets: {
+      type: GT.NonNullList(Wallet),
+      resolve: async (source) => {
+        return Wallets.listWalletsByAccountId(source.id)
+      },
+    },
     owner: {
       // should be used for individual account only,
       // ie: when there are no multiple users
