@@ -2,8 +2,6 @@ import { configSchema, getAccountLimits, yamlConfig } from "@config"
 import { toCents } from "@domain/fiat"
 import Ajv from "ajv"
 
-import merge from "test/unit/helpers/merge"
-
 const ajv = new Ajv()
 let validate
 
@@ -39,19 +37,6 @@ describe("config.ts", () => {
       delete clonedConfig.apollo.playgroundUrl
 
       const valid = validate(clonedConfig)
-      expect(valid).toBeTruthy()
-    })
-
-    it("passes with custom yaml", () => {
-      const customYamlConfig = {
-        lnds: [
-          { name: "LND1", type: ["onchain"], priority: 2 },
-          { name: "LND2", type: ["offchain"], priority: 1 },
-        ],
-      }
-
-      const updatedYamlConfig = merge(yamlConfig, customYamlConfig)
-      const valid = validate(updatedYamlConfig)
       expect(valid).toBeTruthy()
     })
 

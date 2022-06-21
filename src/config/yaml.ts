@@ -4,6 +4,7 @@ import path from "path"
 
 import Ajv from "ajv"
 import yaml from "js-yaml"
+import merge from "lodash.merge"
 import { I18n } from "i18n"
 
 import { baseLogger } from "@services/logger"
@@ -17,8 +18,6 @@ import { toDays, toSeconds } from "@domain/primitives"
 
 import { configSchema } from "./schema"
 import { ConfigError } from "./error"
-
-import { merge } from "./utils"
 
 const defaultContent = fs.readFileSync("./default.yaml", "utf8")
 const defaultConfig = yaml.load(defaultContent)
