@@ -1,16 +1,28 @@
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import {
+  ONCHAIN_SCAN_DEPTH,
+  ONCHAIN_MIN_CONFIRMATIONS,
+  BTC_NETWORK,
+  SECS_PER_10_MINS,
+} from "@config"
+
+import { getCurrentPrice } from "@app/prices"
+
+import { toSats } from "@domain/bitcoin"
+import { CacheKeys } from "@domain/cache"
+import { DepositFeeCalculator } from "@domain/wallets"
+import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
+
+import { LockService } from "@services/lock"
+import { LedgerService } from "@services/ledger"
+import { RedisCacheService } from "@services/cache"
+import { ColdStorageService } from "@services/cold-storage"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { NotificationsService } from "@services/notifications"
-import { LedgerService } from "@services/ledger"
-import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
-import { DepositFeeCalculator } from "@domain/wallets"
-import { LockService } from "@services/lock"
-import { ONCHAIN_SCAN_DEPTH, ONCHAIN_MIN_CONFIRMATIONS, BTC_NETWORK } from "@config"
-import { getCurrentPrice } from "@app/prices"
-import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
-import { toSats } from "@domain/bitcoin"
-import { ColdStorageService } from "@services/cold-storage"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+
+const redisCache = RedisCacheService()
 
 export const updateOnChainReceipt = async ({
   scanDepth = ONCHAIN_SCAN_DEPTH,
@@ -25,9 +37,13 @@ export const updateOnChainReceipt = async ({
   }
 
   const onChainTxs = await onChain.listIncomingTransactions(scanDepth)
-  if (onChainTxs instanceof OnChainError) {
-    return onChainTxs
-  }
+  if (onChainTxs instanceof Error) return onChainTxs
+
+  redisCache.set({
+    key: CacheKeys.LastOnChainTransactions,
+    value: onChainTxs,
+    ttlSecs: SECS_PER_10_MINS,
+  })
 
   const walletRepo = WalletsRepository()
   const logError = ({

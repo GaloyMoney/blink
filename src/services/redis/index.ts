@@ -1,5 +1,6 @@
 import Redis from "ioredis"
 import { RedisPubSub } from "graphql-redis-subscriptions"
+import RedisCache from "ioredis-cache"
 
 import { baseLogger } from "@services/logger"
 
@@ -57,5 +58,18 @@ export const redisPubSub = new RedisPubSub({
   publisher: redis,
   subscriber: redisSub,
 })
+
+export const redisCacheInstance = new Redis(connectionObj)
+redisCacheInstance.on("error", (err) =>
+  baseLogger.error({ err }, "redisCacheInstance error"),
+)
+
+export const redisCache = new RedisCache(redisCacheInstance)
+
+export const disconnectAll = () => {
+  redis.disconnect()
+  redisSub.disconnect()
+  redisCacheInstance.disconnect()
+}
 
 export * from "./routes"

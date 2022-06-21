@@ -1,14 +1,21 @@
-import { PartialResult } from "@app/partial-result"
+import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS, SECS_PER_10_MINS } from "@config"
+
 import { getCurrentPrice } from "@app/prices"
-import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
-import { OnChainError, TxDecoder, TxFilter } from "@domain/bitcoin/onchain"
-import { RepositoryError } from "@domain/errors"
+import { PartialResult } from "@app/partial-result"
+
+import { CacheKeys } from "@domain/cache"
 import { LedgerError } from "@domain/ledger"
+import { RepositoryError } from "@domain/errors"
 import { WalletTransactionHistory } from "@domain/wallets"
-import { LedgerService } from "@services/ledger"
-import { OnChainService } from "@services/lnd/onchain-service"
+import { OnChainError, TxDecoder, TxFilter } from "@domain/bitcoin/onchain"
+
 import { baseLogger } from "@services/logger"
+import { LedgerService } from "@services/ledger"
+import { RedisCacheService } from "@services/cache"
 import { WalletsRepository } from "@services/mongoose"
+import { OnChainService } from "@services/lnd/onchain-service"
+
+const redisCache = RedisCacheService()
 
 // FIXME(nicolas): remove only used in tests
 export const getTransactionsForWalletId = async ({
@@ -42,8 +49,12 @@ export const getTransactionsForWallets = async (
 
   // we are getting both the transactions in the mempool and the transaction that
   // have been mined by not yet credited because they haven't reached enough confirmations
-  const onChainTxs = await onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS)
-  if (onChainTxs instanceof OnChainError) {
+  const onChainTxs = await redisCache.getOrSet({
+    key: CacheKeys.LastOnChainTransactions,
+    ttlSecs: SECS_PER_10_MINS,
+    fn: () => onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS),
+  })
+  if (onChainTxs instanceof Error) {
     baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
     return PartialResult.partial(confirmedHistory.transactions, onChainTxs)
   }

@@ -7,6 +7,7 @@ export const CacheKeys = {
   ClosingChannelBalance: "lnd:closingChannelBalance",
   CurrentPrice: "price:current",
   PriceHistory: "price:history",
+  LastOnChainTransactions: "bitcoin:lastOnChainTxs",
   BlockHeight: "bitcoin:blockHeight",
   ClosedChannels: "lnd:closedChannels",
 } as const

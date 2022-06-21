@@ -1,4 +1,4 @@
-const { redis, redisSub } = require("@services/redis")
+const { disconnectAll } = require("@services/redis")
 const { setupMongoConnection } = require("@services/mongodb")
 
 jest.mock("@services/lnd/auth", () => {
@@ -23,8 +23,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   // avoids to use --forceExit
-  redis.disconnect()
-  redisSub.disconnect()
+  disconnectAll()
   if (mongoose) {
     await mongoose.connection.close()
   }
