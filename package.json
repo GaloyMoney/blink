@@ -126,7 +126,7 @@
     "@types/lodash.last": "^3.0.6",
     "@types/lodash.map": "^4.6.13",
     "@types/lodash.mapvalues": "^4.6.6",
-    "@types/lodash.merge": "^4.6.6",
+    "@types/lodash.mergewith": "^4.6.7",
     "@types/lodash.sortby": "^4.7.6",
     "@types/lodash.sumby": "^4.6.6",
     "@types/migrate-mongo": "^8.1.2",
