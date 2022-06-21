@@ -17,7 +17,7 @@ if (!jwtSecret) {
 export const JWT_SECRET = jwtSecret
 
 const btcNetwork = process.env.NETWORK
-const networks = ["mainnet", "testnet", "regtest"]
+const networks = ["mainnet", "testnet", "signet", "regtest"]
 if (!!btcNetwork && !networks.includes(btcNetwork)) {
   throw new ConfigError(`missing or invalid NETWORK: ${btcNetwork}`)
 }

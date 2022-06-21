@@ -16,6 +16,24 @@ const addresses = [
     network: "testnet",
     address: "tb1p84x2taadgovgnlpnxt9f39gm7r68gwtvllxqe5w2n5ru00s9aquslzggwq",
   },
+  { network: "testnet", address: "mipcBbFg9gLiKh81Kj8taadgoZiY1ZJRfn" },
+  { network: "testnet", address: "tb1qw508d6qejxtdg4y5r3aadgory0c5xw7kxpjzsx" },
+  {
+    network: "testnet",
+    address: "tb1p84x2taadgovgnlpnxt9f39gm7r68gwtvllxqe5w2n5ru00s9aquslzggwq",
+  },
+  { network: "signet", address: "mipcBbFg9gLiKh81Kj8taadgoZiY1ZJRfn" },
+  { network: "signet", address: "tb1qw508d6qejxtdg4y5r3aadgory0c5xw7kxpjzsx" },
+  {
+    network: "signet",
+    address: "tb1p84x2taadgovgnlpnxt9f39gm7r68gwtvllxqe5w2n5ru00s9aquslzggwq",
+  },
+  { network: "signet", address: "mipcBbFg9gLiKh81Kj8taadgoZiY1ZJRfn" },
+  { network: "signet", address: "tb1qw508d6qejxtdg4y5r3aadgory0c5xw7kxpjzsx" },
+  {
+    network: "signet",
+    address: "tb1p84x2taadgovgnlpnxt9f39gm7r68gwtvllxqe5w2n5ru00s9aquslzggwq",
+  },
   { network: "regtest", address: "bcrt1q6z64a43mjgkcq0ul2zaqusq3spghrlau9slefp" },
   {
     network: "regtest",
@@ -36,9 +54,14 @@ describe("checkedToOnChainAddress", () => {
   test.each(addresses)(
     "$address is invalid for other networks",
     ({ network, address }) => {
-      let networksToCheck: Array<BtcNetwork> = [BtcNetwork.testnet, BtcNetwork.regtest]
+      let networksToCheck: Array<BtcNetwork> = [
+        BtcNetwork.testnet,
+        BtcNetwork.signet,
+        BtcNetwork.regtest,
+      ]
       if (network === "testnet")
         networksToCheck = [BtcNetwork.mainnet, BtcNetwork.regtest]
+      if (network === "signet") networksToCheck = [BtcNetwork.mainnet, BtcNetwork.regtest]
       if (network === "regtest")
         networksToCheck = [BtcNetwork.mainnet, BtcNetwork.testnet]
 
