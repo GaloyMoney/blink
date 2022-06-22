@@ -2,6 +2,8 @@ import { configSchema, getAccountLimits, yamlConfig } from "@config"
 import { toCents } from "@domain/fiat"
 import Ajv from "ajv"
 
+import merge from "test/unit/helpers/merge"
+
 const ajv = new Ajv()
 let validate
 
@@ -38,6 +40,46 @@ describe("config.ts", () => {
 
       const valid = validate(clonedConfig)
       expect(valid).toBeTruthy()
+    })
+
+    it("passes with custom yaml", () => {
+      const freshYamlConfig = JSON.parse(JSON.stringify(yamlConfig))
+      const customYamlConfig = {
+        lnds: [
+          { name: "LND1", type: ["onchain"], priority: 2 },
+          { name: "LND2", type: ["offchain"], priority: 1 },
+        ],
+        test_accounts: [
+          {
+            ref: "A",
+            phone: "+50365055543",
+            code: "182731",
+            needUsdWallet: true,
+            currency: "BTC",
+          },
+        ],
+      }
+
+      const updatedYamlConfig = merge(freshYamlConfig, customYamlConfig)
+      const valid = validate(updatedYamlConfig)
+      expect(valid).toBeTruthy()
+    })
+
+    it("fails with incomplete custom yaml", () => {
+      const freshYamlConfig = JSON.parse(JSON.stringify(yamlConfig))
+      const customYamlConfig = {
+        test_accounts: [
+          {
+            phone: "+50365055543",
+            code: "182731",
+            currency: "BTC",
+          },
+        ],
+      }
+
+      const updatedYamlConfig = merge(freshYamlConfig, customYamlConfig)
+      const valid = validate(updatedYamlConfig)
+      expect(valid).toBeFalsy()
     })
 
     it("fails validation missing required property", () => {
