@@ -20,15 +20,7 @@ export const getTotalBalance = async (): Promise<Satoshis | ApplicationError> =>
     getClosingChannelBalance(),
   ])
 
-  const total = balances.reduce((total, b) => {
-    if (b instanceof Error) {
-      recordExceptionInCurrentSpan({ error: b, level: ErrorLevel.Critical })
-      return total
-    }
-    return total + b
-  }, 0)
-
-  return toSats(total)
+  return sumBalances(balances)
 }
 
 export const getOffChainBalance = async (): Promise<Satoshis | ApplicationError> =>
@@ -39,7 +31,13 @@ export const getOffChainBalance = async (): Promise<Satoshis | ApplicationError>
       const offChainService = LndService()
       if (offChainService instanceof Error) return offChainService
 
-      return offChainService.getBalance()
+      const balances = await Promise.all(
+        offChainService
+          .listActivePubkeys()
+          .map((pubkey) => offChainService.getBalance(pubkey)),
+      )
+
+      return sumBalances(balances)
     },
   })
 
@@ -51,7 +49,13 @@ export const getOpeningChannelBalance = async (): Promise<Satoshis | Application
       const offChainService = LndService()
       if (offChainService instanceof Error) return offChainService
 
-      return offChainService.getOpeningChannelsBalance()
+      const balances = await Promise.all(
+        offChainService
+          .listActivePubkeys()
+          .map((pubkey) => offChainService.getOpeningChannelsBalance(pubkey)),
+      )
+
+      return sumBalances(balances)
     },
   })
 
@@ -63,7 +67,13 @@ export const getClosingChannelBalance = async (): Promise<Satoshis | Application
       const offChainService = LndService()
       if (offChainService instanceof Error) return offChainService
 
-      return offChainService.getClosingChannelsBalance()
+      const balances = await Promise.all(
+        offChainService
+          .listActivePubkeys()
+          .map((pubkey) => offChainService.getClosingChannelsBalance(pubkey)),
+      )
+
+      return sumBalances(balances)
     },
   })
 
@@ -75,12 +85,32 @@ export const getOnChainBalance = async (): Promise<Satoshis | ApplicationError> 
       const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
       if (onChainService instanceof Error) return onChainService
 
-      const onChain = await onChainService.getBalance()
-      if (onChain instanceof Error) return onChain
+      const onChainBalances = await Promise.all(
+        onChainService
+          .listActivePubkeys()
+          .map((pubkey) => onChainService.getBalance(pubkey)),
+      )
+      const onChain = sumBalances(onChainBalances)
 
-      const onChainPending = await onChainService.getPendingBalance()
-      if (onChainPending instanceof Error) return onChainPending
+      const onChainPendingBalances = await Promise.all(
+        onChainService
+          .listActivePubkeys()
+          .map((pubkey) => onChainService.getPendingBalance(pubkey)),
+      )
+      const onChainPending = sumBalances(onChainPendingBalances)
 
       return toSats(onChain + onChainPending)
     },
   })
+
+const sumBalances = (balances: (Satoshis | Error)[]): Satoshis => {
+  const total = balances.reduce((total, b) => {
+    if (b instanceof Error) {
+      recordExceptionInCurrentSpan({ error: b, level: ErrorLevel.Critical })
+      return total
+    }
+    return total + b
+  }, 0)
+
+  return toSats(total)
+}

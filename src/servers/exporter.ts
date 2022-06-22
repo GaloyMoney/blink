@@ -71,7 +71,7 @@ const main = async () => {
 
   createGauge({
     name: "lnd_onchain",
-    description: "how much fund is onChain in lnd",
+    description: "how much fund is onChain in our nodes",
     collect: async () => {
       const balance = await Lightning.getOnChainBalance()
       if (balance instanceof Error) return 0
@@ -82,7 +82,7 @@ const main = async () => {
 
   createGauge({
     name: "lnd_offchain",
-    description: "how much fund is offChain in our node",
+    description: "how much fund is offChain in our nodes",
     collect: async () => {
       const balance = await Lightning.getOffChainBalance()
       if (balance instanceof Error) return 0

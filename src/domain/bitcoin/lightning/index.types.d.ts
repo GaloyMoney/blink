@@ -159,9 +159,9 @@ interface ILightningService {
 
   listAllPubkeys(): Pubkey[]
 
-  getBalance(): Promise<Satoshis | LightningServiceError>
-  getOpeningChannelsBalance(): Promise<Satoshis | LightningServiceError>
-  getClosingChannelsBalance(): Promise<Satoshis | LightningServiceError>
+  getBalance(pubkey?: Pubkey): Promise<Satoshis | LightningServiceError>
+  getOpeningChannelsBalance(pubkey?: Pubkey): Promise<Satoshis | LightningServiceError>
+  getClosingChannelsBalance(pubkey?: Pubkey): Promise<Satoshis | LightningServiceError>
 
   findRouteForInvoice({
     invoice,
