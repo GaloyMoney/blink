@@ -23,7 +23,7 @@ import { LocalCacheService } from "@services/cache"
 import { CacheKeys } from "@domain/cache"
 import { SECS_PER_5_MINS } from "@config"
 
-import { getActiveOnchainLnd } from "./utils"
+import { getActiveOnchainLnd, getLndFromPubkey, getLnds } from "./utils"
 
 export const OnChainService = (
   decoder: TxDecoder,
@@ -34,9 +34,15 @@ export const OnChainService = (
   const lnd = activeNode.lnd
   const pubkey = activeNode.pubkey as Pubkey
 
-  const getBalance = async (): Promise<Satoshis | OnChainServiceError> => {
+  const listActivePubkeys = (): Pubkey[] =>
+    getLnds({ active: true, type: "onchain" }).map((lndAuth) => lndAuth.pubkey as Pubkey)
+
+  const getBalance = async (pubkey?: Pubkey): Promise<Satoshis | OnChainServiceError> => {
     try {
-      const { chain_balance } = await getChainBalance({ lnd })
+      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : lnd
+      if (lndInstance instanceof Error) return lndInstance
+
+      const { chain_balance } = await getChainBalance({ lnd: lndInstance })
       return toSats(chain_balance)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
@@ -44,9 +50,14 @@ export const OnChainService = (
     }
   }
 
-  const getPendingBalance = async (): Promise<Satoshis | OnChainServiceError> => {
+  const getPendingBalance = async (
+    pubkey?: Pubkey,
+  ): Promise<Satoshis | OnChainServiceError> => {
     try {
-      const { pending_chain_balance } = await getPendingChainBalance({ lnd })
+      const lndInstance = pubkey ? getLndFromPubkey({ pubkey }) : lnd
+      if (lndInstance instanceof Error) return lndInstance
+
+      const { pending_chain_balance } = await getPendingChainBalance({ lnd: lndInstance })
       return toSats(pending_chain_balance)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
@@ -175,6 +186,7 @@ export const OnChainService = (
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.lnd.onchain",
     fns: {
+      listActivePubkeys,
       getBalance,
       getPendingBalance,
       listIncomingTransactions,

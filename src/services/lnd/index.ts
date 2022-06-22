@@ -72,9 +72,14 @@ export const LndService = (
   const listAllPubkeys = (): Pubkey[] =>
     getLnds({ type: "offchain" }).map((lndAuth) => lndAuth.pubkey as Pubkey)
 
-  const getBalance = async (): Promise<Satoshis | LightningServiceError> => {
+  const getBalance = async (
+    pubkey?: Pubkey,
+  ): Promise<Satoshis | LightningServiceError> => {
     try {
-      const { channel_balance } = await getChannelBalance({ lnd: defaultLnd })
+      const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
+      if (lnd instanceof Error) return lnd
+
+      const { channel_balance } = await getChannelBalance({ lnd })
       return toSats(channel_balance)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
@@ -82,11 +87,14 @@ export const LndService = (
     }
   }
 
-  const getOpeningChannelsBalance = async (): Promise<
-    Satoshis | LightningServiceError
-  > => {
+  const getOpeningChannelsBalance = async (
+    pubkey?: Pubkey,
+  ): Promise<Satoshis | LightningServiceError> => {
     try {
-      const { pending_balance } = await getChannelBalance({ lnd: defaultLnd })
+      const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
+      if (lnd instanceof Error) return lnd
+
+      const { pending_balance } = await getChannelBalance({ lnd })
       return toSats(pending_balance)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
@@ -94,11 +102,14 @@ export const LndService = (
     }
   }
 
-  const getClosingChannelsBalance = async (): Promise<
-    Satoshis | LightningServiceError
-  > => {
+  const getClosingChannelsBalance = async (
+    pubkey?: Pubkey,
+  ): Promise<Satoshis | LightningServiceError> => {
     try {
-      const { channels } = await getClosedChannels({ lnd: defaultLnd })
+      const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
+      if (lnd instanceof Error) return lnd
+
+      const { channels } = await getClosedChannels({ lnd })
 
       // FIXME: there can be issue with channel not closed completely from lnd
       // https://github.com/alexbosworth/ln-service/issues/139

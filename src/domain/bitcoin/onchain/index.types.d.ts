@@ -65,9 +65,11 @@ type PayToAddressArgs = {
 }
 
 interface IOnChainService {
-  getBalance(): Promise<Satoshis | OnChainServiceError>
+  listActivePubkeys(): Pubkey[]
 
-  getPendingBalance(): Promise<Satoshis | OnChainServiceError>
+  getBalance(pubkey?: Pubkey): Promise<Satoshis | OnChainServiceError>
+
+  getPendingBalance(pubkey?: Pubkey): Promise<Satoshis | OnChainServiceError>
 
   listIncomingTransactions(
     scanDepth: ScanDepth,
