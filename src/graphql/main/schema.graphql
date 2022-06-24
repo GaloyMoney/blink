@@ -926,18 +926,18 @@ type Transaction {
   memo: Memo
 
   """
-  Amount of sats sent or received.
+  Amount of the settlement currency sent or received.
   """
-  settlementAmount: SatAmount!
+  settlementAmount: SignedAmount!
 
   """
   Wallet currency for transaction.
   """
   settlementCurrency: WalletCurrency!
-  settlementFee: SatAmount!
+  settlementFee: SignedAmount!
 
   """
-  Price in USDCENT/SATS at time of settlement.
+  Price in USDCENT/SETTLEMENTUNIT at time of settlement.
   """
   settlementPrice: Price!
 
