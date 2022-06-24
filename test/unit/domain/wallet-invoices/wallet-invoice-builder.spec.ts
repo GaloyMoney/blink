@@ -3,6 +3,9 @@ import { BtcPaymentAmount, WalletCurrency } from "@domain/shared"
 import { WalletInvoiceBuilder } from "@domain/wallet-invoices/wallet-invoice-builder"
 
 describe("WalletInvoiceBuilder", () => {
+  const secret = "secret" as SecretPreImage
+  const paymentHash = "paymentHash" as PaymentHash
+
   const recipientBtcWallet = {
     id: "recipientWalletId" as WalletId,
     currency: WalletCurrency.Btc,
@@ -27,7 +30,7 @@ describe("WalletInvoiceBuilder", () => {
 
     const lnInvoice = {
       destination: "pubkey" as Pubkey,
-      paymentHash: "paymenthash" as PaymentHash,
+      paymentHash,
       paymentRequest: "paymentRequest" as EncodedPaymentRequest,
       milliSatsAmount: (amount * 1000) as MilliSatoshis,
       description: args.description,
@@ -47,7 +50,7 @@ describe("WalletInvoiceBuilder", () => {
       descriptionHash: args.descriptionHash,
     }
 
-    return Promise.resolve(invoice)
+    return invoice
   }
 
   const WIB = WalletInvoiceBuilder({
@@ -55,8 +58,18 @@ describe("WalletInvoiceBuilder", () => {
     lnRegisterInvoice: registerInvoice,
   })
 
+  const WIBWithSecretAndHash = WIB.withSecretAndHash({ secret, paymentHash })
+  const checkSecretAndHash = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
+    expect(walletInvoice.secret).toEqual(secret)
+    expect(walletInvoice.paymentHash).toEqual(paymentHash)
+    expect(lnInvoice).not.toHaveProperty("secret")
+    expect(lnInvoice.paymentHash).toEqual(paymentHash)
+  }
+
   const testDescription = "testdescription"
-  const WIBWithDescription = WIB.withDescription({ description: testDescription })
+  const WIBWithDescription = WIBWithSecretAndHash.withDescription({
+    description: testDescription,
+  })
   const checkDescription = ({ lnInvoice }: LnAndWalletInvoice) => {
     expect(lnInvoice.description).toEqual(testDescription)
   }
@@ -97,6 +110,7 @@ describe("WalletInvoiceBuilder", () => {
 
           if (invoices instanceof Error) throw invoices
 
+          checkSecretAndHash(invoices)
           checkAmount(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
@@ -128,6 +142,7 @@ describe("WalletInvoiceBuilder", () => {
 
           if (invoices instanceof Error) throw invoices
 
+          checkSecretAndHash(invoices)
           checkAmount(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
@@ -170,6 +185,7 @@ describe("WalletInvoiceBuilder", () => {
 
           if (invoices instanceof Error) throw invoices
 
+          checkSecretAndHash(invoices)
           checkAmount(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
@@ -202,6 +218,7 @@ describe("WalletInvoiceBuilder", () => {
 
           if (invoices instanceof Error) throw invoices
 
+          checkSecretAndHash(invoices)
           checkAmount(invoices)
           checkDescription(invoices)
           checkCreator(invoices)

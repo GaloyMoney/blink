@@ -2,9 +2,29 @@ import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 import { WalletCurrency, ZERO_SATS } from "@domain/shared"
 
+import { InvalidWalletInvoiceBuilderStateError } from "./errors"
+
 export const WalletInvoiceBuilder = (
   config: WalletInvoiceBuilderConfig,
 ): WalletInvoiceBuilder => {
+  const withSecretAndHash = ({
+    secret,
+    paymentHash,
+  }: {
+    secret: SecretPreImage
+    paymentHash: PaymentHash
+  }) => {
+    return WIBWithSecretAndHash({ ...config, secret, paymentHash })
+  }
+
+  return {
+    withSecretAndHash,
+  }
+}
+
+export const WIBWithSecretAndHash = (
+  state: WIBWithSecretAndHashState,
+): WIBWithSecretAndHash => {
   const withDescription = ({
     description,
     descriptionHash,
@@ -12,7 +32,7 @@ export const WalletInvoiceBuilder = (
     description: string
     descriptionHash?: string
   }) => {
-    return WIBWithDescription({ ...config, description, descriptionHash })
+    return WIBWithDescription({ ...state, description, descriptionHash })
   }
 
   return {
@@ -90,16 +110,20 @@ export const WIBWithRecipient = (state: WIBWithRecipientState): WIBWithRecipient
 export const WIBWithAmount = (state: WIBWithAmountState): WIBWithAmount => {
   const registerInvoice = async () => {
     const registeredInvoice = await state.lnRegisterInvoice({
+      paymentHash: state.paymentHash,
       description: state.description,
       descriptionHash: state.descriptionHash,
       btcPaymentAmount: state.btcAmount,
       expiresAt: state.invoiceExpiration,
     })
-
     if (registeredInvoice instanceof Error) return registeredInvoice
+    if (state.paymentHash !== registeredInvoice.invoice.paymentHash) {
+      return new InvalidWalletInvoiceBuilderStateError()
+    }
 
     const walletInvoice: WalletInvoice = {
-      paymentHash: registeredInvoice.invoice.paymentHash,
+      paymentHash: state.paymentHash,
+      secret: state.secret,
       selfGenerated: state.selfGenerated,
       pubkey: registeredInvoice.pubkey,
       usdAmount: state.usdAmount,

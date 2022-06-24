@@ -10,6 +10,21 @@ type WalletInvoiceBuilderConfig = {
 }
 
 type WalletInvoiceBuilder = {
+  withSecretAndHash: ({
+    secret,
+    paymentHash,
+  }: {
+    secret: SecretPreImage
+    paymentHash: PaymentHash
+  }) => WIBWithSecretAndHash
+}
+
+type WIBWithSecretAndHashState = WalletInvoiceBuilderConfig & {
+  secret: SecretPreImage
+  paymentHash: PaymentHash
+}
+
+type WIBWithSecretAndHash = {
   withDescription: ({
     description,
     descriptionHash,
@@ -19,7 +34,7 @@ type WalletInvoiceBuilder = {
   }) => WIBWithDescription
 }
 
-type WIBWithDescriptionState = WalletInvoiceBuilderConfig & {
+type WIBWithDescriptionState = WIBWithSecretAndHashState & {
   description: string
   descriptionHash?: string
 }
