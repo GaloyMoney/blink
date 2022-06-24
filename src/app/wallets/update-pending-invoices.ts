@@ -46,23 +46,6 @@ export const updatePendingInvoices = async (logger: Logger): Promise<void> => {
   logger.info("finish updating pending invoices")
 }
 
-export const updatePendingInvoicesByWalletId = async ({
-  walletId,
-  logger,
-}: {
-  walletId: WalletId
-  logger: Logger
-}) => {
-  const invoicesRepo = WalletInvoicesRepository()
-
-  const invoices = invoicesRepo.findPendingByWalletId(walletId)
-  if (invoices instanceof Error) return invoices
-
-  for await (const walletInvoice of invoices) {
-    await updatePendingInvoice({ walletInvoice, logger })
-  }
-}
-
 export const updatePendingInvoiceByPaymentHash = async ({
   paymentHash,
   logger,
