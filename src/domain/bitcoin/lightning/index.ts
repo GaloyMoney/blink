@@ -1,4 +1,4 @@
-import { ValidationError } from "@domain/shared"
+import { InvalidPubKeyError } from "@domain/errors"
 
 export { decodeInvoice } from "./ln-invoice"
 export {
@@ -22,10 +22,9 @@ export const PaymentSendStatus = {
 } as const
 
 const pubkeyRegex = /^[a-f0-9]{66}$/i
-export const checkedToPubkey = (pubkey: string): Pubkey | ValidationError => {
+export const checkedToPubkey = (pubkey: string): Pubkey | InvalidPubKeyError => {
   if (pubkey.match(pubkeyRegex)) {
     return pubkey as Pubkey
-  } else {
-    return new ValidationError("Pubkey conversion error")
   }
+  return new InvalidPubKeyError("Pubkey conversion error")
 }
