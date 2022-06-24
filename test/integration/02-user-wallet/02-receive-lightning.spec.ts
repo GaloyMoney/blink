@@ -72,21 +72,32 @@ describe("UserWallet - Lightning", () => {
 
     const hash = getHash(invoice)
 
-    await pay({ lnd: lndOutside1, request: invoice })
+    const updateInvoice = () =>
+      Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash as PaymentHash,
+        logger: baseLogger,
+      })
 
-    expect(
-      await Wallets.updatePendingInvoiceByPaymentHash({
-        paymentHash: hash as PaymentHash,
-        logger: baseLogger,
-      }),
-    ).not.toBeInstanceOf(Error)
+    const promises = Promise.all([
+      pay({ lnd: lndOutside1, request: invoice }),
+      (async () => {
+        // TODO: we could use event instead of a sleep to lower test latency
+        await sleep(500)
+        return updateInvoice()
+      })(),
+    ])
+
+    {
+      // first arg is the outsideLndpayResult
+      const [, result] = await promises
+      expect(result).not.toBeInstanceOf(Error)
+    }
+
     // should be idempotent (not return error when called again)
-    expect(
-      await Wallets.updatePendingInvoiceByPaymentHash({
-        paymentHash: hash as PaymentHash,
-        logger: baseLogger,
-      }),
-    ).not.toBeInstanceOf(Error)
+    {
+      const result = await updateInvoice()
+      expect(result).not.toBeInstanceOf(Error)
+    }
 
     const ledger = LedgerService()
     const ledgerMetadata = TransactionsMetadataRepository()
@@ -168,7 +179,10 @@ describe("UserWallet - Lightning", () => {
 
     expect(amount).toBe(sats)
 
-    await pay({ lnd: lndOutside1, request: invoice })
+    pay({ lnd: lndOutside1, request: invoice })
+
+    // TODO: we could use an event instead of a sleep
+    await sleep(500)
 
     expect(
       await Wallets.updatePendingInvoiceByPaymentHash({
@@ -234,7 +248,10 @@ describe("UserWallet - Lightning", () => {
 
     const hash = getHash(invoice)
 
-    await pay({ lnd: lndOutside1, request: invoice, tokens: sats })
+    pay({ lnd: lndOutside1, request: invoice, tokens: sats })
+
+    // TODO: we could use an event instead of a sleep
+    await sleep(500)
 
     expect(
       await Wallets.updatePendingInvoiceByPaymentHash({
@@ -297,7 +314,10 @@ describe("UserWallet - Lightning", () => {
 
     const hash = getHash(invoice)
 
-    await pay({ lnd: lndOutside1, request: invoice, tokens: sats })
+    pay({ lnd: lndOutside1, request: invoice, tokens: sats })
+
+    // TODO: we could use an event instead of a sleep
+    await sleep(500)
 
     expect(
       await Wallets.updatePendingInvoiceByPaymentHash({
@@ -355,7 +375,11 @@ describe("UserWallet - Lightning", () => {
     const { paymentRequest: invoice } = lnInvoice
 
     const hash = getHash(invoice)
-    await pay({ lnd: lndOutside1, request: invoice })
+    pay({ lnd: lndOutside1, request: invoice })
+
+    // TODO: we could use an event instead of a sleep
+    await sleep(500)
+
     expect(
       await Wallets.updatePendingInvoiceByPaymentHash({
         paymentHash: hash as PaymentHash,
