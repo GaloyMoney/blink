@@ -26,9 +26,6 @@ export const sendDefaultWalletBalanceToUsers = async () => {
     : undefined
 
   const notifyUser = async (account: Account) => {
-    const balance = await LedgerService().getWalletBalance(account.defaultWalletId)
-    if (balance instanceof Error) return balance
-
     const wallet = await WalletsRepository().findById(account.defaultWalletId)
     if (wallet instanceof Error) return wallet
 
@@ -38,14 +35,12 @@ export const sendDefaultWalletBalanceToUsers = async () => {
     const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
     if (recipientUser instanceof Error) return recipientUser
 
-    const balanceAmount: BalanceAmount<WalletCurrency> = {
-      amount: BigInt(balance),
-      currency: wallet.currency,
-    }
+    const balanceAmount = await LedgerService().getWalletBalanceAmount(wallet)
+    if (balanceAmount instanceof Error) return balanceAmount
 
     let displayBalanceAmount: DisplayBalanceAmount<DisplayCurrency> | undefined
     if (converter && wallet.currency === WalletCurrency.Btc) {
-      const amount = converter.fromSats(toSats(balance))
+      const amount = converter.fromSats(toSats(balanceAmount.amount))
       displayBalanceAmount = { amount, currency: DisplayCurrency.Usd }
     }
 
