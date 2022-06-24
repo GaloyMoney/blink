@@ -31,7 +31,6 @@ function loopClient() {
     },
     httpsAgent: new https.Agent({
       keepAlive: true,
-      rejectUnauthorized: false,
       cert,
       key,
     }),
