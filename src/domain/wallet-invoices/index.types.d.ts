@@ -124,13 +124,7 @@ interface IWalletInvoicesRepository {
     paymentHash: PaymentHash,
   ) => Promise<WalletInvoice | RepositoryError>
 
-  findPendingByWalletId: (
-    walletId: WalletId,
-  ) => AsyncGenerator<WalletInvoice> | RepositoryError
-
   yieldPending: () => AsyncGenerator<WalletInvoice> | RepositoryError
-
-  listWalletIdsWithPendingInvoices: () => AsyncGenerator<WalletId> | RepositoryError
 
   deleteByPaymentHash: (paymentHash: PaymentHash) => Promise<boolean | RepositoryError>
 

@@ -68,23 +68,6 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
-  async function* findPendingByWalletId(
-    walletId: WalletId,
-  ): AsyncGenerator<WalletInvoice> | RepositoryError {
-    let pending
-    try {
-      pending = WalletInvoice.find({ walletId, paid: false }).cursor({
-        batchSize: 100,
-      })
-    } catch (error) {
-      return new RepositoryError(error)
-    }
-
-    for await (const walletInvoice of pending) {
-      yield walletInvoiceFromRaw(walletInvoice)
-    }
-  }
-
   async function* yieldPending(): AsyncGenerator<WalletInvoice> | RepositoryError {
     let pending
     try {
@@ -97,25 +80,6 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
 
     for await (const walletInvoice of pending) {
       yield walletInvoiceFromRaw(walletInvoice)
-    }
-  }
-
-  async function* listWalletIdsWithPendingInvoices():
-    | AsyncGenerator<WalletId>
-    | RepositoryError {
-    let pending
-    try {
-      // select distinct user ids from pending invoices
-      pending = WalletInvoice.aggregate([
-        { $match: { paid: false } },
-        { $group: { _id: "$walletId" } },
-      ]).cursor({ batchSize: 100 })
-    } catch (error) {
-      return new RepositoryError(error)
-    }
-
-    for await (const { _id } of pending) {
-      yield _id as WalletId
     }
   }
 
@@ -151,9 +115,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     persistNew,
     markAsPaid,
     findByPaymentHash,
-    findPendingByWalletId,
     yieldPending,
-    listWalletIdsWithPendingInvoices,
     deleteByPaymentHash,
     deleteUnpaidOlderThan,
   }
