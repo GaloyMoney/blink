@@ -71,7 +71,7 @@ export const WIBWithRecipient = (state: WIBWithRecipientState): WIBWithRecipient
     return WIBWithAmount({ ...state, hasAmount: true, btcAmount, invoiceExpiration })
   }
 
-  const withoutAmount = () => {
+  const withoutAmount = async () => {
     const invoiceExpiration = invoiceExpirationForCurrency(WalletCurrency.Btc, new Date())
     return WIBWithAmount({
       ...state,

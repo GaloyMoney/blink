@@ -17,15 +17,12 @@ export const addInvoiceForSelf = async ({
   const buildWIBWithAmountFn = ({
     walletInvoiceBuilder,
     recipientWalletDescriptor,
-  }: BuildWIBWithAmountFnArgs) => {
-    return Promise.resolve(
-      walletInvoiceBuilder
-        .withDescription({ description: memo })
-        .generatedForSelf()
-        .withRecipientWallet(recipientWalletDescriptor)
-        .withAmount(amount),
-    )
-  }
+  }: BuildWIBWithAmountFnArgs) =>
+    walletInvoiceBuilder
+      .withDescription({ description: memo })
+      .generatedForSelf()
+      .withRecipientWallet(recipientWalletDescriptor)
+      .withAmount(amount)
 
   const lnInvoice = await addInvoice({ walletId, limitCheckFn, buildWIBWithAmountFn })
 
@@ -42,15 +39,12 @@ export const addInvoiceNoAmountForSelf = async ({
   const buildWIBWithAmountFn = ({
     walletInvoiceBuilder,
     recipientWalletDescriptor,
-  }: BuildWIBWithAmountFnArgs) => {
-    return Promise.resolve(
-      walletInvoiceBuilder
-        .withDescription({ description: memo })
-        .generatedForSelf()
-        .withRecipientWallet(recipientWalletDescriptor)
-        .withoutAmount(),
-    )
-  }
+  }: BuildWIBWithAmountFnArgs) =>
+    walletInvoiceBuilder
+      .withDescription({ description: memo })
+      .generatedForSelf()
+      .withRecipientWallet(recipientWalletDescriptor)
+      .withoutAmount()
 
   const lnInvoice = await addInvoice({ walletId, limitCheckFn, buildWIBWithAmountFn })
 
@@ -96,15 +90,12 @@ export const addInvoiceNoAmountForRecipient = async ({
   const buildWIBWithAmountFn = ({
     walletInvoiceBuilder,
     recipientWalletDescriptor,
-  }: BuildWIBWithAmountFnArgs) => {
-    return Promise.resolve(
-      walletInvoiceBuilder
-        .withDescription({ description: memo })
-        .generatedForRecipient()
-        .withRecipientWallet(recipientWalletDescriptor)
-        .withoutAmount(),
-    )
-  }
+  }: BuildWIBWithAmountFnArgs) =>
+    walletInvoiceBuilder
+      .withDescription({ description: memo })
+      .generatedForRecipient()
+      .withRecipientWallet(recipientWalletDescriptor)
+      .withoutAmount()
 
   const lnInvoice = await addInvoice({
     walletId: recipientWalletId,

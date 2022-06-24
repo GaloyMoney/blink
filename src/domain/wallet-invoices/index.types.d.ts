@@ -47,7 +47,7 @@ type WIBWithRecipient = {
   withAmount: (
     uncheckedAmount: number,
   ) => Promise<WIBWithAmount | ValidationError | DealerPriceServiceError>
-  withoutAmount: () => WIBWithAmount
+  withoutAmount: () => Promise<WIBWithAmount>
 }
 
 type WIBWithAmountState = WIBWithRecipientState & {
