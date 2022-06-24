@@ -9,9 +9,15 @@ import { LockService } from "@services/lock"
 import { DealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
-import { WalletInvoicesRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletInvoicesRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { runInParallel } from "@utils"
+import { DisplayCurrency } from "@domain/fiat"
 
 export const updatePendingInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -164,8 +170,12 @@ const updatePendingInvoice = async ({
     const feeInboundLiquidity = DepositFeeCalculator().lnDepositFee()
 
     const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
-    const amountDisplayCurrency = dCConverter.fromSats(roundedDownReceived)
     const feeInboundLiquidityDisplayCurrency = dCConverter.fromSats(feeInboundLiquidity)
+
+    const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {
+      amount: dCConverter.fromSats(roundedDownReceived),
+      currency: DisplayCurrency.Usd,
+    }
 
     const ledgerService = LedgerService()
     const result = await ledgerService.addLnTxReceive({
@@ -175,31 +185,39 @@ const updatePendingInvoice = async ({
       description,
       sats: roundedDownReceived,
       cents,
-      amountDisplayCurrency,
+      amountDisplayCurrency: displayPaymentAmount.amount as DisplayCurrencyBaseAmount,
+      //TODO: add displayCurrency: displayPaymentAmount.currency,
       feeInboundLiquidity,
       feeInboundLiquidityDisplayCurrency,
     })
     if (result instanceof Error) return result
 
-    const notificationsService = NotificationsService(logger)
+    const recipientWallet = await WalletsRepository().findById(walletId)
+    if (recipientWallet instanceof Error) return recipientWallet
 
-    if (walletCurrency === WalletCurrency.Btc) {
-      notificationsService.lnInvoiceBitcoinWalletPaid({
-        paymentHash,
-        recipientWalletId: walletId,
-        sats: roundedDownReceived,
-        displayCurrencyPerSat,
-      })
-      return true
+    const recipientAccount = await AccountsRepository().findById(
+      recipientWallet.accountId,
+    )
+    if (recipientAccount instanceof Error) return recipientAccount
+
+    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+    if (recipientUser instanceof Error) return recipientUser
+
+    let amount = BigInt(roundedDownReceived)
+    if (recipientWallet.currency === WalletCurrency.Usd && cents) {
+      amount = BigInt(cents)
     }
 
-    if (cents) {
-      notificationsService.lnInvoiceUsdWalletPaid({
-        paymentHash,
-        recipientWalletId: walletId,
-        cents,
-      })
-    }
+    const notificationsService = NotificationsService()
+    notificationsService.lightningTxReceived({
+      recipientAccountId: recipientWallet.accountId,
+      recipientWalletId: recipientWallet.id,
+      paymentAmount: { amount, currency: recipientWallet.currency },
+      displayPaymentAmount,
+      paymentHash,
+      recipientDeviceTokens: recipientUser.deviceTokens,
+      recipientLanguage: recipientUser.language,
+    })
 
     return true
   })

@@ -1,266 +1,260 @@
-import { getDisplayCurrencyConfig } from "@config"
-import { toSats } from "@domain/bitcoin"
-import { NotImplementedError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
-import { NotificationsServiceError, NotificationType } from "@domain/notifications"
-import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
+import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
+import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 import {
-  AccountsRepository,
-  UsersRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+  NotificationsServiceError,
+  NotificationType,
+  UnknownNotificationsServiceError,
+} from "@domain/notifications"
+
 import { PubSubService } from "@services/pubsub"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { PushNotificationsService } from "./push-notifications"
 import { createPushNotificationContent } from "./create-push-notification-content"
 
-const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
-
-export const NotificationsService = (logger: Logger): INotificationsService => {
+export const NotificationsService = (): INotificationsService => {
   const pubsub = PubSubService()
   const pushNotification = PushNotificationsService()
 
-  const sendOnChainNotification = async ({
-    type,
-    sats,
-    walletId,
-    txHash,
-    displayCurrencyPerSat,
-  }: {
-    type: NotificationType
-    walletId: WalletId
-    sats: Satoshis
-    txHash: OnChainTxHash
-    displayCurrencyPerSat?: DisplayCurrencyPerSat
-  }): Promise<void | NotificationsServiceError> => {
-    // FIXME: this try/catch is probably a no-op
-    // because the error would not be awaited if they arise
-    // see if this is safe to delete
+  const lightningTxReceived = async ({
+    recipientAccountId,
+    recipientWalletId,
+    paymentAmount,
+    displayPaymentAmount,
+    paymentHash,
+    recipientDeviceTokens,
+    recipientLanguage,
+  }: LightningTxReceivedArgs): Promise<void | NotificationsServiceError> => {
     try {
-      const wallet = await WalletsRepository().findById(walletId)
-      if (wallet instanceof Error) throw wallet
-
-      const account = await AccountsRepository().findById(wallet.accountId)
-      if (account instanceof Error) return account
-
-      const user = await UsersRepository().findById(account.ownerId)
-      if (user instanceof Error) return user
-
-      const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
-      const displayPaymentAmount = displayCurrencyPerSat
-        ? {
-            amount: sats * (displayCurrencyPerSat || 0),
-            currency: DefaultDisplayCurrency,
-          }
-        : undefined
-
-      const { title, body } = createPushNotificationContent({
-        type,
-        userLanguage: user.language,
-        paymentAmount,
-        displayPaymentAmount,
+      // Notify public subscribers (via GraphQL subscription if any)
+      const lnPaymentStatusTrigger = customPubSubTrigger({
+        event: PubSubDefaultTriggers.LnPaymentStatus,
+        suffix: paymentHash,
       })
-
-      // Do not await this call for quicker processing
-      pushNotification.sendNotification({
-        deviceToken: user.deviceTokens,
-        title,
-        body,
+      pubsub.publish({
+        trigger: lnPaymentStatusTrigger,
+        payload: { status: "PAID" },
       })
 
       // Notify the recipient (via GraphQL subscription if any)
       const accountUpdatedTrigger = customPubSubTrigger({
         event: PubSubDefaultTriggers.AccountUpdate,
-        suffix: account.id,
+        suffix: recipientAccountId,
       })
       pubsub.publish({
         trigger: accountUpdatedTrigger,
         payload: {
-          transaction: {
-            walletId,
-            txNotificationType: type,
-            amount: sats,
-            txHash,
-            displayCurrencyPerSat,
+          invoice: {
+            walletId: recipientWalletId,
+            paymentHash,
+            status: "PAID",
           },
         },
       })
+
+      if (recipientDeviceTokens && recipientDeviceTokens.length > 0) {
+        const { title, body } = createPushNotificationContent({
+          type: NotificationType.LnInvoicePaid,
+          userLanguage: recipientLanguage,
+          amount: paymentAmount,
+          displayAmount: displayPaymentAmount,
+        })
+
+        // Do not await this call for quicker processing
+        pushNotification.sendNotification({
+          deviceToken: recipientDeviceTokens,
+          title,
+          body,
+        })
+      }
     } catch (err) {
-      return new NotificationsServiceError(err)
+      return new UnknownNotificationsServiceError(err.message || err)
     }
   }
 
-  const onChainTransactionReceived = async ({
-    amount,
+  const intraLedgerTxReceived = async ({
+    recipientAccountId,
+    recipientWalletId,
+    paymentAmount,
+    displayPaymentAmount,
+    recipientDeviceTokens,
+    recipientLanguage,
+  }: IntraLedgerTxReceivedArgs): Promise<void | NotificationsServiceError> => {
+    try {
+      // Notify the recipient (via GraphQL subscription if any)
+      const accountUpdatedTrigger = customPubSubTrigger({
+        event: PubSubDefaultTriggers.AccountUpdate,
+        suffix: recipientAccountId,
+      })
+      const data = {
+        walletId: recipientWalletId,
+        txNotificationType: NotificationType.IntraLedgerReceipt,
+        amount: paymentAmount.amount,
+        currency: paymentAmount.currency,
+        displayAmount: displayPaymentAmount?.amount,
+        displayCurrency: displayPaymentAmount?.currency,
+      }
+
+      // TODO: remove deprecated fields
+      if (displayPaymentAmount)
+        data["displayCurrencyPerSat"] =
+          displayPaymentAmount.amount / Number(paymentAmount.amount)
+      if (paymentAmount.currency === WalletCurrency.Btc)
+        data["sats"] = toSats(paymentAmount.amount)
+      if (paymentAmount.currency === WalletCurrency.Usd)
+        data["cents"] = toCents(paymentAmount.amount)
+
+      pubsub.publish({
+        trigger: accountUpdatedTrigger,
+        payload: { intraLedger: data },
+      })
+
+      if (recipientDeviceTokens && recipientDeviceTokens.length > 0) {
+        const { title, body } = createPushNotificationContent({
+          type: NotificationType.IntraLedgerReceipt,
+          userLanguage: recipientLanguage,
+          amount: paymentAmount,
+          displayAmount: displayPaymentAmount,
+        })
+
+        // Do not await this call for quicker processing
+        pushNotification.sendNotification({
+          deviceToken: recipientDeviceTokens,
+          title,
+          body,
+        })
+      }
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err.message || err)
+    }
+  }
+
+  const sendOnChainNotification = async ({
+    type,
+    accountId,
     walletId,
+    paymentAmount,
+    displayPaymentAmount,
+    deviceTokens,
+    language,
     txHash,
-    displayCurrencyPerSat,
+  }: {
+    type: NotificationType
+    accountId: AccountId
+    walletId: WalletId
+    paymentAmount: PaymentAmount<WalletCurrency>
+    displayPaymentAmount?: DisplayPaymentAmount<DisplayCurrency>
+    deviceTokens?: DeviceToken[]
+    language?: UserLanguage
+    txHash: OnChainTxHash
+  }): Promise<void | NotificationsServiceError> => {
+    try {
+      // Notify the recipient (via GraphQL subscription if any)
+      const accountUpdatedTrigger = customPubSubTrigger({
+        event: PubSubDefaultTriggers.AccountUpdate,
+        suffix: accountId,
+      })
+      const data = {
+        walletId,
+        txNotificationType: type,
+        amount: paymentAmount.amount,
+        currency: paymentAmount.currency,
+        displayAmount: displayPaymentAmount?.amount,
+        displayCurrency: displayPaymentAmount?.currency,
+        txHash,
+      }
+
+      // TODO: remove deprecated fields
+      if (displayPaymentAmount)
+        data["displayCurrencyPerSat"] =
+          displayPaymentAmount.amount / Number(paymentAmount.amount)
+
+      pubsub.publish({
+        trigger: accountUpdatedTrigger,
+        payload: { transaction: data },
+      })
+
+      if (deviceTokens && deviceTokens.length > 0) {
+        const { title, body } = createPushNotificationContent({
+          type,
+          userLanguage: language,
+          amount: paymentAmount,
+          displayAmount: displayPaymentAmount,
+        })
+
+        // Do not await this call for quicker processing
+        pushNotification.sendNotification({
+          deviceToken: deviceTokens,
+          title,
+          body,
+        })
+      }
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err.message || err)
+    }
+  }
+
+  const onChainTxReceived = async ({
+    recipientAccountId,
+    recipientWalletId,
+    paymentAmount,
+    displayPaymentAmount,
+    recipientDeviceTokens,
+    recipientLanguage,
+    txHash,
   }: OnChainTxReceivedArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainReceipt,
-      sats: amount,
-      walletId,
+      accountId: recipientAccountId,
+      walletId: recipientWalletId,
+      paymentAmount,
+      displayPaymentAmount,
+      deviceTokens: recipientDeviceTokens,
+      language: recipientLanguage,
       txHash,
-      displayCurrencyPerSat,
     })
 
-  const onChainTransactionReceivedPending = async ({
-    amount,
-    walletId,
+  const onChainTxReceivedPending = async ({
+    recipientAccountId,
+    recipientWalletId,
+    paymentAmount,
+    displayPaymentAmount,
+    recipientDeviceTokens,
+    recipientLanguage,
     txHash,
-    displayCurrencyPerSat,
   }: OnChainTxReceivedPendingArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainReceiptPending,
-      sats: amount,
-      walletId,
+      accountId: recipientAccountId,
+      walletId: recipientWalletId,
+      paymentAmount,
+      displayPaymentAmount,
+      deviceTokens: recipientDeviceTokens,
+      language: recipientLanguage,
       txHash,
-      displayCurrencyPerSat,
     })
 
-  const onChainTransactionPayment = async ({
-    amount,
-    walletId,
+  const onChainTxSent = async ({
+    senderAccountId,
+    senderWalletId,
+    paymentAmount,
+    displayPaymentAmount,
+    senderDeviceTokens,
+    senderLanguage,
     txHash,
-    displayCurrencyPerSat,
-  }: OnChainTxPaymentArgs) =>
+  }: OnChainTxSentArgs) =>
     sendOnChainNotification({
       type: NotificationType.OnchainPayment,
-      sats: amount,
-      walletId,
+      accountId: senderAccountId,
+      walletId: senderWalletId,
+      paymentAmount,
+      displayPaymentAmount,
+      deviceTokens: senderDeviceTokens,
+      language: senderLanguage,
       txHash,
-      displayCurrencyPerSat,
     })
-
-  const lnInvoiceBitcoinWalletPaid = async ({
-    paymentHash,
-    recipientWalletId,
-    sats,
-    displayCurrencyPerSat,
-  }: LnInvoicePaidBitcoinWalletArgs) => {
-    try {
-      const wallet = await WalletsRepository().findById(recipientWalletId)
-      if (wallet instanceof Error) throw wallet
-
-      const account = await AccountsRepository().findById(wallet.accountId)
-      if (account instanceof Error) return account
-
-      const user = await UsersRepository().findById(account.ownerId)
-      if (user instanceof Error) return user
-
-      const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
-      const displayPaymentAmount = displayCurrencyPerSat
-        ? {
-            amount: Number(paymentAmount.amount) * (displayCurrencyPerSat || 0),
-            currency: DefaultDisplayCurrency,
-          }
-        : undefined
-
-      const { title, body } = createPushNotificationContent({
-        type: NotificationType.LnInvoicePaid,
-        userLanguage: user.language,
-        paymentAmount,
-        displayPaymentAmount,
-      })
-
-      // Do not await this call for quicker processing
-      pushNotification.sendNotification({
-        deviceToken: user.deviceTokens,
-        title,
-        body,
-      })
-
-      // Notify public subscribers (via GraphQL subscription if any)
-      const lnPaymentStatusTrigger = customPubSubTrigger({
-        event: PubSubDefaultTriggers.LnPaymentStatus,
-        suffix: paymentHash,
-      })
-      pubsub.publish({
-        trigger: lnPaymentStatusTrigger,
-        payload: { status: "PAID" },
-      })
-
-      // Notify the recipient (via GraphQL subscription if any)
-      const accountUpdatedTrigger = customPubSubTrigger({
-        event: PubSubDefaultTriggers.AccountUpdate,
-        suffix: account.id,
-      })
-      pubsub.publish({
-        trigger: accountUpdatedTrigger,
-        payload: {
-          invoice: {
-            walletId: recipientWalletId,
-            paymentHash,
-            status: "PAID",
-          },
-        },
-      })
-    } catch (err) {
-      return new NotificationsServiceError(err)
-    }
-  }
-
-  const lnInvoiceUsdWalletPaid = async ({
-    paymentHash,
-    recipientWalletId,
-    cents,
-  }: LnInvoicePaidUsdWalletArgs) => {
-    try {
-      const wallet = await WalletsRepository().findById(recipientWalletId)
-      if (wallet instanceof Error) throw wallet
-
-      const account = await AccountsRepository().findById(wallet.accountId)
-      if (account instanceof Error) return account
-
-      const user = await UsersRepository().findById(account.ownerId)
-      if (user instanceof Error) return user
-
-      const paymentAmount = { amount: BigInt(cents), currency: WalletCurrency.Usd }
-
-      const { title, body } = createPushNotificationContent({
-        type: NotificationType.LnInvoicePaid,
-        userLanguage: user.language,
-        paymentAmount,
-      })
-
-      // Do not await this call for quicker processing
-      pushNotification.sendNotification({
-        deviceToken: user.deviceTokens,
-        title,
-        body,
-      })
-
-      // Notify public subscribers (via GraphQL subscription if any)
-      const lnPaymentStatusTrigger = customPubSubTrigger({
-        event: PubSubDefaultTriggers.LnPaymentStatus,
-        suffix: paymentHash,
-      })
-      pubsub.publish({
-        trigger: lnPaymentStatusTrigger,
-        payload: { status: "PAID" },
-      })
-
-      // Notify the recipient (via GraphQL subscription if any)
-      const accountUpdatedTrigger = customPubSubTrigger({
-        event: PubSubDefaultTriggers.AccountUpdate,
-        suffix: account.id,
-      })
-      pubsub.publish({
-        trigger: accountUpdatedTrigger,
-        payload: {
-          invoice: {
-            walletId: recipientWalletId,
-            paymentHash,
-            status: "PAID",
-          },
-        },
-      })
-    } catch (err) {
-      return new NotificationsServiceError(err)
-    }
-  }
 
   const priceUpdate = (displayCurrencyPerSat: DisplayCurrencyPerSat) => {
     const payload = { satUsdCentPrice: 100 * displayCurrencyPerSat }
@@ -273,272 +267,32 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     })
   }
 
-  const intraLedgerPaid = async ({
-    senderWalletId,
-    recipientWalletId,
-    amount,
-    displayCurrencyPerSat,
-  }: IntraLedgerArgs): Promise<void | NotificationsServiceError> => {
-    try {
-      const publish = async ({
-        walletId,
-        type,
-      }: {
-        walletId: WalletId
-        type: NotificationType
-      }) => {
-        const wallet = await WalletsRepository().findById(walletId)
-        if (wallet instanceof Error) return wallet
-
-        const account = await AccountsRepository().findById(wallet.accountId)
-        if (account instanceof Error) return account
-
-        // Notify the recipient (via GraphQL subscription if any)
-        const accountUpdatedTrigger = customPubSubTrigger({
-          event: PubSubDefaultTriggers.AccountUpdate,
-          suffix: account.id,
-        })
-        pubsub.publish({
-          trigger: accountUpdatedTrigger,
-          payload: {
-            intraLedger: {
-              walletId,
-              txNotificationType: type,
-              amount,
-              displayCurrencyPerSat,
-            },
-          },
-        })
-
-        const user = await UsersRepository().findById(account.ownerId)
-        if (user instanceof Error) return user
-
-        const paymentAmount = {
-          amount: BigInt(amount),
-          currency: WalletCurrency.Btc,
-        }
-
-        const displayPaymentAmount = displayCurrencyPerSat
-          ? {
-              amount: amount * (displayCurrencyPerSat || 0),
-              currency: DefaultDisplayCurrency,
-            }
-          : undefined
-
-        const { title, body } = createPushNotificationContent({
-          type,
-          userLanguage: user.language,
-          paymentAmount,
-          displayPaymentAmount,
-        })
-
-        // Do not await this call for quicker processing
-        pushNotification.sendNotification({
-          deviceToken: user.deviceTokens,
-          title,
-          body,
-        })
-      }
-
-      publish({
-        walletId: senderWalletId,
-        type: NotificationType.IntraLedgerPayment,
-      })
-
-      publish({
-        walletId: recipientWalletId,
-        type: NotificationType.IntraLedgerReceipt,
-      })
-    } catch (err) {
-      return new NotificationsServiceError(err)
-    }
-  }
-
-  const intraLedgerBtcWalletPaid = async ({
-    senderWalletId,
-    recipientWalletId,
-    sats,
-    displayCurrencyPerSat,
-  }: IntraLedgerPaidBitcoinWalletArgs): Promise<void | NotificationsServiceError> => {
-    try {
-      const publish = async ({
-        walletId,
-        type,
-      }: {
-        walletId: WalletId
-        type: NotificationType
-      }) => {
-        const wallet = await WalletsRepository().findById(walletId)
-        if (wallet instanceof Error) return wallet
-
-        const account = await AccountsRepository().findById(wallet.accountId)
-        if (account instanceof Error) return account
-
-        // Notify the recipient (via GraphQL subscription if any)
-        const accountUpdatedTrigger = customPubSubTrigger({
-          event: PubSubDefaultTriggers.AccountUpdate,
-          suffix: account.id,
-        })
-        pubsub.publish({
-          trigger: accountUpdatedTrigger,
-          payload: {
-            intraLedger: {
-              walletId,
-              txNotificationType: type,
-              sats: toSats(Number(sats)),
-              displayCurrencyPerSat,
-            },
-          },
-        })
-
-        const user = await UsersRepository().findById(account.ownerId)
-        if (user instanceof Error) return user
-
-        const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }
-        const displayPaymentAmount = displayCurrencyPerSat
-          ? {
-              amount: Number(paymentAmount.amount) * (displayCurrencyPerSat || 0),
-              currency: DefaultDisplayCurrency,
-            }
-          : undefined
-
-        const { title, body } = createPushNotificationContent({
-          type,
-          userLanguage: user.language,
-          paymentAmount,
-          displayPaymentAmount,
-        })
-
-        // Do not await this call for quicker processing
-        pushNotification.sendNotification({
-          deviceToken: user.deviceTokens,
-          title,
-          body,
-        })
-      }
-
-      publish({
-        walletId: senderWalletId,
-        type: NotificationType.IntraLedgerPayment,
-      })
-
-      publish({
-        walletId: recipientWalletId,
-        type: NotificationType.IntraLedgerReceipt,
-      })
-    } catch (err) {
-      return new NotificationsServiceError(err)
-    }
-  }
-
-  const intraLedgerUsdWalletPaid = async ({
-    senderWalletId,
-    recipientWalletId,
-    cents,
-    displayCurrencyPerSat,
-  }: IntraLedgerPaidUsdWalletArgs): Promise<void | NotificationsServiceError> => {
-    try {
-      const publish = async ({
-        walletId,
-        type,
-      }: {
-        walletId: WalletId
-        type: NotificationType
-      }) => {
-        const wallet = await WalletsRepository().findById(walletId)
-        if (wallet instanceof Error) return wallet
-
-        const account = await AccountsRepository().findById(wallet.accountId)
-        if (account instanceof Error) return account
-
-        // Notify the recipient (via GraphQL subscription if any)
-        const accountUpdatedTrigger = customPubSubTrigger({
-          event: PubSubDefaultTriggers.AccountUpdate,
-          suffix: account.id,
-        })
-        pubsub.publish({
-          trigger: accountUpdatedTrigger,
-          payload: {
-            intraLedger: {
-              walletId,
-              txNotificationType: type,
-              cents: toCents(Number(cents)),
-              displayCurrencyPerSat,
-            },
-          },
-        })
-
-        const user = await UsersRepository().findById(account.ownerId)
-        if (user instanceof Error) return user
-
-        const paymentAmount = { amount: BigInt(cents), currency: WalletCurrency.Usd }
-
-        const { title, body } = createPushNotificationContent({
-          type,
-          userLanguage: user.language,
-          paymentAmount,
-        })
-
-        // Do not await this call for quicker processing
-        pushNotification.sendNotification({
-          deviceToken: user.deviceTokens,
-          title,
-          body,
-        })
-      }
-
-      publish({
-        walletId: senderWalletId,
-        type: NotificationType.IntraLedgerPayment,
-      })
-
-      publish({
-        walletId: recipientWalletId,
-        type: NotificationType.IntraLedgerReceipt,
-      })
-    } catch (err) {
-      return new NotificationsServiceError(err)
-    }
-  }
-
   const sendBalance = async ({
-    balance,
-    walletCurrency,
-    userId,
-    displayCurrencyPerSat,
-  }: SendBalanceArgs): Promise<void | NotImplementedError> => {
-    const user = await UsersRepository().findById(userId)
-    if (user instanceof Error) {
-      logger.warn({ user }, "impossible to fetch user to send transaction")
-      return
+    balanceAmount,
+    recipientDeviceTokens,
+    displayBalanceAmount,
+    recipientLanguage,
+  }: SendBalanceArgs): Promise<void | NotificationsServiceError> => {
+    const hasDeviceTokens = recipientDeviceTokens && recipientDeviceTokens.length > 0
+    if (!hasDeviceTokens) return
+
+    try {
+      const { title, body } = createPushNotificationContent({
+        type: "balance",
+        userLanguage: recipientLanguage,
+        amount: balanceAmount,
+        displayAmount: displayBalanceAmount,
+      })
+
+      // Do not await this call for quicker processing
+      pushNotification.sendNotification({
+        deviceToken: recipientDeviceTokens,
+        title,
+        body,
+      })
+    } catch (err) {
+      return new UnknownNotificationsServiceError(err.message || err)
     }
-
-    const paymentAmount = { amount: BigInt(balance), currency: walletCurrency }
-    const displayPaymentAmount = displayCurrencyPerSat
-      ? {
-          amount: balance * (displayCurrencyPerSat || 0),
-          currency: DefaultDisplayCurrency,
-        }
-      : undefined
-
-    const { title, body } = createPushNotificationContent({
-      type: "balance",
-      userLanguage: user.language,
-      paymentAmount,
-      displayPaymentAmount,
-    })
-
-    logger.info(
-      { userId, locale: user.language, balance, title, body },
-      `sending balance notification to user`,
-    )
-
-    // Do not await this call for quicker processing
-    pushNotification.sendNotification({
-      deviceToken: user.deviceTokens,
-      title,
-      body,
-    })
   }
 
   // trace everything except price update because it runs every 30 seconds
@@ -547,14 +301,11 @@ export const NotificationsService = (logger: Logger): INotificationsService => {
     ...wrapAsyncFunctionsToRunInSpan({
       namespace: "services.notifications",
       fns: {
-        onChainTransactionReceived,
-        onChainTransactionReceivedPending,
-        onChainTransactionPayment,
-        lnInvoiceBitcoinWalletPaid,
-        lnInvoiceUsdWalletPaid,
-        intraLedgerPaid,
-        intraLedgerBtcWalletPaid,
-        intraLedgerUsdWalletPaid,
+        lightningTxReceived,
+        intraLedgerTxReceived,
+        onChainTxReceived,
+        onChainTxReceivedPending,
+        onChainTxSent,
         sendBalance,
       },
     }),

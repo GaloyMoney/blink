@@ -194,8 +194,8 @@ describe("UserWallet - onChainPay", () => {
     const { title, body } = createPushNotificationContent({
       type: NotificationType.OnchainPayment,
       userLanguage: locale as UserLanguage,
-      paymentAmount,
-      displayPaymentAmount,
+      amount: paymentAmount,
+      displayAmount: displayPaymentAmount,
     })
 
     expect(sendNotification.mock.calls.length).toBe(1)

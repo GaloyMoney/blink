@@ -6,20 +6,20 @@ const defaultLocale = getLocale()
 
 export const createPushNotificationContent = ({
   type,
-  paymentAmount,
-  displayPaymentAmount,
+  amount,
+  displayAmount,
   userLanguage,
 }: {
   type: NotificationType | "balance"
-  paymentAmount: PaymentAmount<WalletCurrency>
-  displayPaymentAmount?: DisplayPaymentAmount<DisplayCurrency>
+  amount: Amount<WalletCurrency>
+  displayAmount?: DisplayAmount<DisplayCurrency>
   userLanguage?: UserLanguage
 }): {
   title: string
   body: string
 } => {
   const locale = userLanguage || defaultLocale
-  const baseCurrency = paymentAmount.currency
+  const baseCurrency = amount.currency
   const notificationType = type === "balance" ? type : `transaction.${type}`
   const title = i18n.__(
     { phrase: `notification.${notificationType}.title`, locale },
@@ -28,9 +28,7 @@ export const createPushNotificationContent = ({
   const baseCurrencyName = baseCurrency === WalletCurrency.Btc ? "sats" : ""
   const baseCurrencySymbol = baseCurrency === WalletCurrency.Usd ? "$" : ""
   const displayedBaseAmount =
-    baseCurrency === WalletCurrency.Usd
-      ? paymentAmount.amount / 100n
-      : paymentAmount.amount
+    baseCurrency === WalletCurrency.Usd ? amount.amount / 100n : amount.amount
   const baseCurrencyAmount = displayedBaseAmount.toLocaleString(locale, {
     maximumFractionDigits: 2,
   })
@@ -45,19 +43,19 @@ export const createPushNotificationContent = ({
   )
 
   if (
-    displayPaymentAmount &&
-    displayPaymentAmount.amount > 0 &&
-    displayPaymentAmount.currency !== baseCurrency
+    displayAmount &&
+    displayAmount.amount > 0 &&
+    displayAmount.currency !== baseCurrency
   ) {
     const displayCurrencyName = i18n.__({
-      phrase: `currency.${displayPaymentAmount.currency}.name`,
+      phrase: `currency.${displayAmount.currency}.name`,
       locale,
     })
     const displayCurrencySymbol = i18n.__({
-      phrase: `currency.${displayPaymentAmount.currency}.symbol`,
+      phrase: `currency.${displayAmount.currency}.symbol`,
       locale,
     })
-    const displayCurrencyAmount = displayPaymentAmount.amount.toLocaleString(locale, {
+    const displayCurrencyAmount = displayAmount.amount.toLocaleString(locale, {
       maximumFractionDigits: 2,
     })
     body = i18n.__(

@@ -22,11 +22,17 @@ import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 import { RedisCacheService } from "@services/cache"
 import { onChannelUpdated } from "@services/lnd/utils"
-import { WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { setupMongoConnection } from "@services/mongodb"
 import { NotificationsService } from "@services/notifications"
 import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"
 import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
+
+import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -79,14 +85,34 @@ export async function onchainTransactionEventHandler(
       return
     }
 
+    let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
+
     const price = await Prices.getCurrentPrice()
     const displayCurrencyPerSat = price instanceof Error ? undefined : price
+    if (displayCurrencyPerSat) {
+      const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
+      const amount = converter.fromSats(toSats(tx.tokens - fee))
+      displayPaymentAmount = { amount, currency: DisplayCurrency.Usd }
+    }
 
-    await NotificationsService(onchainLogger).onChainTransactionPayment({
-      walletId,
-      amount: toSats(Number(tx.tokens) - fee),
+    const senderWallet = await WalletsRepository().findById(walletId)
+    if (senderWallet instanceof Error) return senderWallet
+
+    const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
+    if (senderAccount instanceof Error) return senderAccount
+
+    const senderUser = await UsersRepository().findById(senderAccount.ownerId)
+    if (senderUser instanceof Error) return senderUser
+
+    await NotificationsService().onChainTxSent({
+      senderAccountId: senderWallet.accountId,
+      senderWalletId: senderWallet.id,
+      // TODO: tx.tokens represent the total sum, need to segregate amount by address
+      paymentAmount: { amount: BigInt(tx.tokens - fee), currency: senderWallet.currency },
+      displayPaymentAmount,
       txHash,
-      displayCurrencyPerSat,
+      senderDeviceTokens: senderUser.deviceTokens,
+      senderLanguage: senderUser.language,
     })
   } else {
     // incoming transaction
@@ -107,18 +133,35 @@ export async function onchainTransactionEventHandler(
         "mempool appearance",
       )
 
+      let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
+
       const price = await Prices.getCurrentPrice()
       const displayCurrencyPerSat = price instanceof Error ? undefined : price
+      if (displayCurrencyPerSat) {
+        const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
+        // TODO: tx.tokens represent the total sum, need to segregate amount by address
+        const amount = converter.fromSats(toSats(tx.tokens))
+        displayPaymentAmount = { amount, currency: DisplayCurrency.Usd }
+      }
 
-      wallets.forEach((wallet) =>
-        NotificationsService(onchainLogger).onChainTransactionReceivedPending({
-          walletId: wallet.id,
+      wallets.forEach(async (wallet) => {
+        const recipientAccount = await AccountsRepository().findById(wallet.accountId)
+        if (recipientAccount instanceof Error) return recipientAccount
+
+        const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+        if (recipientUser instanceof Error) return recipientUser
+
+        NotificationsService().onChainTxReceivedPending({
+          recipientAccountId: wallet.accountId,
+          recipientWalletId: wallet.id,
           // TODO: tx.tokens represent the total sum, need to segregate amount by address
-          amount: toSats(Number(tx.tokens)),
+          paymentAmount: { amount: BigInt(tx.tokens), currency: wallet.currency },
+          displayPaymentAmount,
           txHash,
-          displayCurrencyPerSat,
-        }),
-      )
+          recipientDeviceTokens: recipientUser.deviceTokens,
+          recipientLanguage: recipientUser.language,
+        })
+      })
     }
   }
 }
@@ -153,7 +196,7 @@ export const publishSingleCurrentPrice = async () => {
   if (displayCurrencyPerSat instanceof Error) {
     return logger.error({ err: displayCurrencyPerSat }, "can't publish the price")
   }
-  NotificationsService(logger).priceUpdate(displayCurrencyPerSat)
+  NotificationsService().priceUpdate(displayCurrencyPerSat)
 }
 
 const publishCurrentPrice = () => {

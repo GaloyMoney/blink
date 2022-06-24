@@ -69,3 +69,19 @@ export const paymentAmountFromNumber = <T extends WalletCurrency>({
     currency,
   }
 }
+
+export const balanceAmountFromNumber = <T extends WalletCurrency>({
+  amount,
+  currency,
+}: {
+  amount: number
+  currency: T
+}): BalanceAmount<T> | ValidationError => {
+  const safeAmount = safeBigInt(amount)
+  if (safeAmount instanceof Error) return safeAmount
+
+  return {
+    amount: safeAmount,
+    currency,
+  }
+}

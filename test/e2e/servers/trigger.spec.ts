@@ -232,8 +232,8 @@ describe("onchainBlockEventhandler", () => {
     const { title, body } = createPushNotificationContent({
       type: NotificationType.LnInvoicePaid,
       userLanguage: locale as UserLanguage,
-      paymentAmount,
-      displayPaymentAmount,
+      amount: paymentAmount,
+      displayAmount: displayPaymentAmount,
     })
 
     expect(sendNotification.mock.calls.length).toBe(1)

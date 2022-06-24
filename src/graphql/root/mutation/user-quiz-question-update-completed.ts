@@ -16,17 +16,12 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserQuizQuestionUpdateCompletedInput) },
   },
-  resolve: async (
-    _,
-    args,
-    { domainAccount, logger }: { domainAccount: Account; logger: Logger },
-  ) => {
+  resolve: async (_, args, { domainAccount }: { domainAccount: Account }) => {
     const { id } = args.input
 
     const question = await Accounts.addEarn({
       quizQuestionId: id,
       accountId: domainAccount.id,
-      logger,
     })
     if (question instanceof Error) {
       const appErr = mapError(question)

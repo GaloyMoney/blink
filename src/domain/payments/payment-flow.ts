@@ -81,7 +81,7 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
       : undefined
 
   const checkBalanceForSend = (
-    balanceAmount: PaymentAmount<S>,
+    balanceAmount: BalanceAmount<S>,
   ): true | ValidationError => {
     if (state.senderWalletCurrency !== balanceAmount.currency)
       return new InvalidCurrencyForWalletError()

@@ -1,7 +1,7 @@
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
 import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
 import { AccountValidator } from "@domain/accounts"
-import { CENTS_PER_USD, DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
+import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
@@ -16,7 +16,11 @@ import {
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
 import { NewDealerPriceService } from "@services/dealer-price"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
@@ -41,7 +45,6 @@ export const intraledgerPaymentSendWalletId = async ({
   amount: uncheckedAmount,
   memo,
   senderWalletId: uncheckedSenderWalletId,
-  logger,
 }: IntraLedgerPaymentSendWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
   const validatedPaymentInputs = await validateIntraledgerPaymentInputs({
     uncheckedSenderWalletId,
@@ -99,9 +102,10 @@ export const intraledgerPaymentSendWalletId = async ({
 
   const paymentSendStatus = await executePaymentViaIntraledger({
     paymentFlow,
+    senderAccount,
     senderWallet,
-    logger,
-    senderUsername: senderAccount.username,
+    recipientAccount,
+    recipientWallet,
     memo,
   })
   if (paymentSendStatus instanceof Error) return paymentSendStatus
@@ -168,15 +172,17 @@ const validateIntraledgerPaymentInputs = async ({
 
 const executePaymentViaIntraledger = async ({
   paymentFlow,
+  senderAccount,
   senderWallet,
-  logger,
-  senderUsername,
+  recipientAccount,
+  recipientWallet,
   memo,
 }: {
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
+  senderAccount: Account
   senderWallet: Wallet
-  logger: Logger
-  senderUsername: Username | undefined
+  recipientAccount: Account
+  recipientWallet: Wallet
   memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -200,8 +206,6 @@ const executePaymentViaIntraledger = async ({
       "Expected recipient details missing",
     )
   }
-  const recipientWallet = await WalletsRepository().findById(recipientWalletId)
-  if (recipientWallet instanceof Error) return recipientWallet
 
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
     const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
@@ -230,7 +234,7 @@ const executePaymentViaIntraledger = async ({
       displayCurrency: DisplayCurrency.Usd,
 
       memoOfPayer: memo || undefined,
-      senderUsername,
+      senderUsername: senderAccount.username,
       recipientUsername,
     })
     const { metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
@@ -255,23 +259,23 @@ const executePaymentViaIntraledger = async ({
 
     const totalSendAmounts = paymentFlow.totalAmountsForPayment()
 
-    const notificationsService = NotificationsService(logger)
-    if (recipientWalletCurrency === WalletCurrency.Btc) {
-      notificationsService.intraLedgerBtcWalletPaid({
-        senderWalletId: senderWallet.id,
-        recipientWalletId,
-        sats: totalSendAmounts.btc.amount,
-        displayCurrencyPerSat: (displayCentsPerSat /
-          CENTS_PER_USD) as DisplayCurrencyPerSat,
-      })
-    } else {
-      notificationsService.intraLedgerUsdWalletPaid({
-        senderWalletId: senderWallet.id,
-        recipientWalletId,
-        cents: totalSendAmounts.usd.amount,
-        displayCurrencyPerSat: priceRatio.usdPerSat() as unknown as DisplayCurrencyPerSat,
-      })
+    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+    if (recipientUser instanceof Error) return recipientUser
+
+    let amount = totalSendAmounts.btc.amount
+    if (recipientWalletCurrency === WalletCurrency.Usd) {
+      amount = totalSendAmounts.usd.amount
     }
+
+    const notificationsService = NotificationsService()
+    notificationsService.intraLedgerTxReceived({
+      recipientAccountId: recipientWallet.accountId,
+      recipientWalletId: recipientWallet.id,
+      recipientDeviceTokens: recipientUser.deviceTokens,
+      recipientLanguage: recipientUser.language,
+      paymentAmount: { amount, currency: recipientWallet.currency },
+      displayPaymentAmount: { amount: metadata.usd, currency: DisplayCurrency.Usd },
+    })
 
     return PaymentSendStatus.Success
   })

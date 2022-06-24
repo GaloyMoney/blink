@@ -34,6 +34,8 @@ import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 
+import { DisplayCurrency } from "@domain/fiat"
+
 import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
@@ -248,12 +250,22 @@ const executePaymentViaIntraledger = async ({
 
     if (journal instanceof Error) return journal
 
-    const notificationsService = NotificationsService(logger)
-    notificationsService.intraLedgerPaid({
-      senderWalletId: senderWallet.id,
+    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+    if (recipientUser instanceof Error) return recipientUser
+
+    const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {
+      amount: amountDisplayCurrency,
+      currency: DisplayCurrency.Usd,
+    }
+
+    const notificationsService = NotificationsService()
+    notificationsService.intraLedgerTxReceived({
+      recipientAccountId: recipientWallet.accountId,
       recipientWalletId: recipientWallet.id,
-      amount: amountSats,
-      displayCurrencyPerSat,
+      recipientDeviceTokens: recipientUser.deviceTokens,
+      recipientLanguage: recipientUser.language,
+      paymentAmount: { amount: BigInt(amountSats), currency: recipientWallet.currency },
+      displayPaymentAmount,
     })
 
     onchainLoggerOnUs.info(
