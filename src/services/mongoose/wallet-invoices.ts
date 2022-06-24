@@ -85,6 +85,21 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
+  async function* yieldPending(): AsyncGenerator<WalletInvoice> | RepositoryError {
+    let pending
+    try {
+      pending = WalletInvoice.find({ paid: false }).cursor({
+        batchSize: 100,
+      })
+    } catch (error) {
+      return new RepositoryError(error)
+    }
+
+    for await (const walletInvoice of pending) {
+      yield walletInvoiceFromRaw(walletInvoice)
+    }
+  }
+
   async function* listWalletIdsWithPendingInvoices():
     | AsyncGenerator<WalletId>
     | RepositoryError {
@@ -137,6 +152,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     markAsPaid,
     findByPaymentHash,
     findPendingByWalletId,
+    yieldPending,
     listWalletIdsWithPendingInvoices,
     deleteByPaymentHash,
     deleteUnpaidOlderThan,
