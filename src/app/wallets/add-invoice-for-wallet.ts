@@ -12,101 +12,76 @@ export const addInvoiceForSelf = async ({
   walletId,
   amount,
   memo = "",
-}: AddInvoiceForSelfArgs): Promise<LnInvoice | ApplicationError> => {
-  const limitCheckFn = checkSelfWalletIdRateLimits
-  const buildWIBWithAmountFn = ({
-    walletInvoiceBuilder,
-    recipientWalletDescriptor,
-  }: BuildWIBWithAmountFnArgs) =>
-    walletInvoiceBuilder
-      .withDescription({ description: memo })
-      .generatedForSelf()
-      .withRecipientWallet(recipientWalletDescriptor)
-      .withAmount(amount)
-
-  const lnInvoice = await addInvoice({ walletId, limitCheckFn, buildWIBWithAmountFn })
-
-  if (lnInvoice instanceof Error) return lnInvoice
-
-  return lnInvoice
-}
+}: AddInvoiceForSelfArgs): Promise<LnInvoice | ApplicationError> =>
+  addInvoice({
+    walletId,
+    limitCheckFn: checkSelfWalletIdRateLimits,
+    buildWIBWithAmountFn: ({
+      walletInvoiceBuilder,
+      recipientWalletDescriptor,
+    }: BuildWIBWithAmountFnArgs) =>
+      walletInvoiceBuilder
+        .withDescription({ description: memo })
+        .generatedForSelf()
+        .withRecipientWallet(recipientWalletDescriptor)
+        .withAmount(amount),
+  })
 
 export const addInvoiceNoAmountForSelf = async ({
   walletId,
   memo = "",
-}: AddInvoiceNoAmountForSelfArgs): Promise<LnInvoice | ApplicationError> => {
-  const limitCheckFn = checkSelfWalletIdRateLimits
-  const buildWIBWithAmountFn = ({
-    walletInvoiceBuilder,
-    recipientWalletDescriptor,
-  }: BuildWIBWithAmountFnArgs) =>
-    walletInvoiceBuilder
-      .withDescription({ description: memo })
-      .generatedForSelf()
-      .withRecipientWallet(recipientWalletDescriptor)
-      .withoutAmount()
-
-  const lnInvoice = await addInvoice({ walletId, limitCheckFn, buildWIBWithAmountFn })
-
-  if (lnInvoice instanceof Error) return lnInvoice
-
-  return lnInvoice
-}
+}: AddInvoiceNoAmountForSelfArgs): Promise<LnInvoice | ApplicationError> =>
+  addInvoice({
+    walletId,
+    limitCheckFn: checkSelfWalletIdRateLimits,
+    buildWIBWithAmountFn: ({
+      walletInvoiceBuilder,
+      recipientWalletDescriptor,
+    }: BuildWIBWithAmountFnArgs) =>
+      walletInvoiceBuilder
+        .withDescription({ description: memo })
+        .generatedForSelf()
+        .withRecipientWallet(recipientWalletDescriptor)
+        .withoutAmount(),
+  })
 
 export const addInvoiceForRecipient = async ({
   recipientWalletId,
   amount,
   memo = "",
   descriptionHash,
-}: AddInvoiceForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  const limitCheckFn = checkRecipientWalletIdRateLimits
-  const buildWIBWithAmountFn = ({
-    walletInvoiceBuilder,
-    recipientWalletDescriptor,
-  }: BuildWIBWithAmountFnArgs) => {
-    return walletInvoiceBuilder
-      .withDescription({ description: memo, descriptionHash })
-      .generatedForRecipient()
-      .withRecipientWallet(recipientWalletDescriptor)
-      .withAmount(amount)
-  }
-
-  const lnInvoice = await addInvoice({
+}: AddInvoiceForRecipientArgs): Promise<LnInvoice | ApplicationError> =>
+  addInvoice({
     walletId: recipientWalletId,
-    limitCheckFn,
-    buildWIBWithAmountFn,
+    limitCheckFn: checkRecipientWalletIdRateLimits,
+    buildWIBWithAmountFn: ({
+      walletInvoiceBuilder,
+      recipientWalletDescriptor,
+    }: BuildWIBWithAmountFnArgs) =>
+      walletInvoiceBuilder
+        .withDescription({ description: memo, descriptionHash })
+        .generatedForRecipient()
+        .withRecipientWallet(recipientWalletDescriptor)
+        .withAmount(amount),
   })
-
-  if (lnInvoice instanceof Error) return lnInvoice
-
-  return lnInvoice
-}
 
 export const addInvoiceNoAmountForRecipient = async ({
   recipientWalletId,
   memo = "",
-}: AddInvoiceNoAmountForRecipientArgs): Promise<LnInvoice | ApplicationError> => {
-  const limitCheckFn = checkRecipientWalletIdRateLimits
-  const buildWIBWithAmountFn = ({
-    walletInvoiceBuilder,
-    recipientWalletDescriptor,
-  }: BuildWIBWithAmountFnArgs) =>
-    walletInvoiceBuilder
-      .withDescription({ description: memo })
-      .generatedForRecipient()
-      .withRecipientWallet(recipientWalletDescriptor)
-      .withoutAmount()
-
-  const lnInvoice = await addInvoice({
+}: AddInvoiceNoAmountForRecipientArgs): Promise<LnInvoice | ApplicationError> =>
+  addInvoice({
     walletId: recipientWalletId,
-    limitCheckFn,
-    buildWIBWithAmountFn,
+    limitCheckFn: checkRecipientWalletIdRateLimits,
+    buildWIBWithAmountFn: ({
+      walletInvoiceBuilder,
+      recipientWalletDescriptor,
+    }: BuildWIBWithAmountFnArgs) =>
+      walletInvoiceBuilder
+        .withDescription({ description: memo })
+        .generatedForRecipient()
+        .withRecipientWallet(recipientWalletDescriptor)
+        .withoutAmount(),
   })
-
-  if (lnInvoice instanceof Error) return lnInvoice
-
-  return lnInvoice
-}
 
 const addInvoice = async ({
   walletId,
@@ -116,49 +91,36 @@ const addInvoice = async ({
   const walletIdChecked = checkedToWalletId(walletId)
   if (walletIdChecked instanceof Error) return walletIdChecked
 
-  const wallets = WalletsRepository()
-  const wallet = await wallets.findById(walletIdChecked)
+  const wallet = await WalletsRepository().findById(walletIdChecked)
   if (wallet instanceof Error) return wallet
   const limitOk = await limitCheckFn(wallet.accountId)
   if (limitOk instanceof Error) return limitOk
 
-  const walletInvoiceBuilder = createWalletInvoiceBuilder()
-
-  if (walletInvoiceBuilder instanceof Error) return walletInvoiceBuilder
-
-  const walletInvoiceBuilderWithAmount = await buildWIBWithAmountFn({
-    walletInvoiceBuilder,
-    recipientWalletDescriptor: wallet,
-  })
-
-  if (walletInvoiceBuilderWithAmount instanceof Error)
-    return walletInvoiceBuilderWithAmount
-
-  const invoiceObjects = await walletInvoiceBuilderWithAmount.registerInvoice()
-
-  if (invoiceObjects instanceof Error) return invoiceObjects
-
-  const walletInvoicesRepo = WalletInvoicesRepository()
-
-  const persistedInvoice = await walletInvoicesRepo.persistNew(
-    invoiceObjects.walletInvoice,
-  )
-
-  if (persistedInvoice instanceof Error) return persistedInvoice
-
-  return invoiceObjects.lnInvoice
-}
-
-const createWalletInvoiceBuilder = () => {
-  const dealer = NewDealerPriceService()
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
 
-  return WalletInvoiceBuilder({
+  const dealer = NewDealerPriceService()
+  const walletInvoiceBuilder = WalletInvoiceBuilder({
     dealerBtcFromUsd: dealer.getSatsFromCentsForFutureBuy,
     lnRegisterInvoice: (args) =>
       lndService.registerInvoice({ ...args, sats: toSats(args.btcPaymentAmount.amount) }),
   })
+  if (walletInvoiceBuilder instanceof Error) return walletInvoiceBuilder
+
+  const walletIBWithAmount = await buildWIBWithAmountFn({
+    walletInvoiceBuilder,
+    recipientWalletDescriptor: wallet,
+  })
+  if (walletIBWithAmount instanceof Error) return walletIBWithAmount
+
+  const invoice = await walletIBWithAmount.registerInvoice()
+  if (invoice instanceof Error) return invoice
+  const { walletInvoice, lnInvoice } = invoice
+
+  const persistedInvoice = await WalletInvoicesRepository().persistNew(walletInvoice)
+  if (persistedInvoice instanceof Error) return persistedInvoice
+
+  return lnInvoice
 }
 
 const checkSelfWalletIdRateLimits = async (
