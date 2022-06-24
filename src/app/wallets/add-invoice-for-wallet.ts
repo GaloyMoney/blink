@@ -1,3 +1,4 @@
+import { toSats } from "@domain/bitcoin"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToWalletId } from "@domain/wallets"
@@ -164,7 +165,8 @@ const createWalletInvoiceBuilder = () => {
 
   return WalletInvoiceBuilder({
     dealerBtcFromUsd: dealer.getSatsFromCentsForFutureBuy,
-    lnRegisterInvoice: lndService.registerInvoice,
+    lnRegisterInvoice: (args) =>
+      lndService.registerInvoice({ ...args, sats: toSats(args.btcPaymentAmount.amount) }),
   })
 }
 

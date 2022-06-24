@@ -1,4 +1,5 @@
-import { BtcPaymentAmount, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { toSats } from "@domain/bitcoin"
+import { BtcPaymentAmount, WalletCurrency } from "@domain/shared"
 import { WalletInvoiceBuilder } from "@domain/wallet-invoices/wallet-invoice-builder"
 
 describe("WalletInvoiceBuilder", () => {
@@ -21,22 +22,18 @@ describe("WalletInvoiceBuilder", () => {
     })
   }
 
-  const registerInvoice = async (args: RegisterInvoiceArgs) => {
-    const paymentAmount = paymentAmountFromNumber({
-      amount: args.sats,
-      currency: WalletCurrency.Btc,
-    })
-    if (paymentAmount instanceof Error) return paymentAmount
+  const registerInvoice = async (args: NewRegisterInvoiceArgs) => {
+    const amount = toSats(args.btcPaymentAmount.amount)
 
     const lnInvoice = {
       destination: "pubkey" as Pubkey,
       paymentHash: "paymenthash" as PaymentHash,
       paymentRequest: "paymentRequest" as EncodedPaymentRequest,
-      milliSatsAmount: (args.sats * 1000) as MilliSatoshis,
+      milliSatsAmount: (amount * 1000) as MilliSatoshis,
       description: args.description,
       cltvDelta: null,
-      amount: args.sats,
-      paymentAmount,
+      amount,
+      paymentAmount: args.btcPaymentAmount,
       routeHints: [[]],
       paymentSecret: null,
       features: [],

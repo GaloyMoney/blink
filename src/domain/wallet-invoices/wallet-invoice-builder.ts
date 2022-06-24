@@ -1,4 +1,3 @@
-import { toSats } from "@domain/bitcoin"
 import { invoiceExpirationForCurrency } from "@domain/bitcoin/lightning"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 import { WalletCurrency, ZERO_SATS } from "@domain/shared"
@@ -93,7 +92,7 @@ export const WIBWithAmount = (state: WIBWithAmountState): WIBWithAmount => {
     const registeredInvoice = await state.lnRegisterInvoice({
       description: state.description,
       descriptionHash: state.descriptionHash,
-      sats: toSats(state.btcAmount.amount),
+      btcPaymentAmount: state.btcAmount,
       expiresAt: state.invoiceExpiration,
     })
 

@@ -13,7 +13,6 @@ import {
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { runInParallel } from "@utils"
-import { DisplayCurrency } from "@domain/fiat"
 import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
 import * as LedgerFacade from "@services/ledger/facade"
 import { usdFromBtcMidPriceFn } from "@app/shared"
