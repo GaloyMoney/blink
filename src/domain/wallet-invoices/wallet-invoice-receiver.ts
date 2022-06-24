@@ -1,4 +1,4 @@
-import { WalletCurrency, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
+import { WalletCurrency, ZERO_BANK_FEE } from "@domain/shared"
 
 export const WalletInvoiceReceiver = async ({
   walletInvoice,
@@ -8,10 +8,6 @@ export const WalletInvoiceReceiver = async ({
 }: WalletInvoiceReceiverArgs): Promise<
   WalletInvoiceReceiver | DealerPriceServiceError | ValidationError
 > => {
-  const zeroBankFee = {
-    usdBankFee: ZERO_CENTS,
-    btcBankFee: ZERO_SATS,
-  }
   const btcToCreditReceiver = receivedBtc
 
   if (walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc) {
@@ -23,7 +19,7 @@ export const WalletInvoiceReceiver = async ({
       btcToCreditReceiver,
       usdToCreditReceiver,
       recipientWalletDescriptor: walletInvoice.recipientWalletDescriptor,
-      ...zeroBankFee,
+      ...ZERO_BANK_FEE,
       receivedAmount: () =>
         walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
           ? btcToCreditReceiver
@@ -38,7 +34,7 @@ export const WalletInvoiceReceiver = async ({
       btcToCreditReceiver,
       usdToCreditReceiver,
       recipientWalletDescriptor: walletInvoice.recipientWalletDescriptor,
-      ...zeroBankFee,
+      ...ZERO_BANK_FEE,
       receivedAmount: () =>
         walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
           ? btcToCreditReceiver
@@ -54,7 +50,7 @@ export const WalletInvoiceReceiver = async ({
     usdToCreditReceiver,
     btcToCreditReceiver,
     recipientWalletDescriptor: walletInvoice.recipientWalletDescriptor,
-    ...zeroBankFee,
+    ...ZERO_BANK_FEE,
     receivedAmount: () =>
       walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
         ? btcToCreditReceiver
