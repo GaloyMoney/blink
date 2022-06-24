@@ -22,7 +22,11 @@ import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 import { RedisCacheService } from "@services/cache"
 import { onChannelUpdated } from "@services/lnd/utils"
-import { WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 import { setupMongoConnection } from "@services/mongodb"
 import { NotificationsService } from "@services/notifications"
 import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"

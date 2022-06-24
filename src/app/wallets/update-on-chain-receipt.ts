@@ -9,6 +9,7 @@ import { getCurrentPrice } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
 import { CacheKeys } from "@domain/cache"
+import { DisplayCurrency } from "@domain/fiat"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
@@ -20,7 +21,11 @@ import { RedisCacheService } from "@services/cache"
 import { ColdStorageService } from "@services/cold-storage"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { NotificationsService } from "@services/notifications"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 
 const redisCache = RedisCacheService()
 
