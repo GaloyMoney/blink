@@ -35,7 +35,6 @@ const transactionSchema = new Schema({
     required: true,
   },
 
-  err: String,
   currency: {
     type: String,
     enum: ["USD", "BTC"],
