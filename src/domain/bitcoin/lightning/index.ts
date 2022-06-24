@@ -21,9 +21,6 @@ export const PaymentSendStatus = {
   AlreadyPaid: { value: "already_paid" },
 } as const
 
-export const lnPaymentStatusEvent = (paymentHash: PaymentHash) =>
-  `LN-PAYMENT-STATUS-${paymentHash}`
-
 const sha256 = (buffer: Buffer) => createHash("sha256").update(buffer).digest("hex")
 const randomSecret = () => randomBytes(32)
 
