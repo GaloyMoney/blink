@@ -23,6 +23,10 @@ start-cron: start-deps
 	. ./.envrc && yarn tsnd --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/cron.ts | yarn pino-pretty -c -l
 
+start-loop:
+	chmod +x ./scripts/start-loop.sh
+	./scripts/start-loop.sh
+
 start: start-deps
 	make start-main & make start-admin & make start-trigger
 
@@ -108,3 +112,7 @@ create-tmp-env-ci:
 # 16 is exit code for critical https://classic.yarnpkg.com/lang/en/docs/cli/audit
 audit:
 	bash -c 'yarn audit --level critical; [[ $$? -ge 16 ]] && exit 1 || exit 0'
+
+mine:
+	docker exec -it galoy-bitcoind-1 /bin/sh -c 'ADDR=$$(bitcoin-cli getnewaddress "") && bitcoin-cli generatetoaddress 6 $$ADDR '
+	

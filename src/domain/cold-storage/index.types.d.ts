@@ -13,6 +13,12 @@ type RebalanceCheckerConfig = {
   minRebalanceSize: Satoshis
 }
 
+type LoopConfig = {
+  maxOutboundLiquidityBalance: Satoshis
+  loopoutAmount: Satoshis
+  loopUrl: string
+}
+
 type ColdStorageConfig = RebalanceCheckerConfig & {
   walletPattern: string
   onChainWallet: string

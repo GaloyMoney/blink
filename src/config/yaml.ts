@@ -289,3 +289,12 @@ export const getRewardsConfig = () => {
 export const getAccountsConfig = (config = yamlConfig): AccountsConfig => ({
   initialStatus: config.accounts.initialStatus as AccountStatus,
 })
+
+export const getLoopConfig = (): LoopConfig => {
+  const config = yamlConfig.loop
+  return {
+    maxOutboundLiquidityBalance: toSats(config.maxOutboundLiquidityBalance),
+    loopoutAmount: toSats(config.loopoutAmount),
+    loopUrl: config.loopUrl,
+  }
+}

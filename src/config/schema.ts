@@ -304,6 +304,14 @@ export const configSchema = {
       ],
       additionalProperties: false,
     },
+    loop: {
+      type: "object",
+      properties: {
+        maxOutboundLiquidityBalance: { type: "number" },
+        loopUrl: { type: "string" },
+        loopoutAmount: { type: "number" },
+      },
+    },
     apollo: {
       type: "object",
       properties: {
