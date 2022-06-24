@@ -68,6 +68,7 @@ type WIBWithAmount = {
 
 type WalletInvoice = {
   paymentHash: PaymentHash
+  secret: SecretPreImage
   selfGenerated: boolean
   pubkey: Pubkey
   usdAmount?: UsdPaymentAmount
