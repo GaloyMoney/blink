@@ -48,6 +48,9 @@ export const getAmount = (request: EncodedPaymentRequest) => {
   return parsePaymentRequest({ request }).tokens as Satoshis
 }
 
+export const getPubKey = (request: EncodedPaymentRequest) => {
+  return parsePaymentRequest({ request }).destination as Pubkey
+}
 export const getInvoiceAttempt = async ({ lnd, id }) => {
   try {
     const result = await getInvoice({ lnd, id })
