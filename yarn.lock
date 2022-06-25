@@ -2285,7 +2285,7 @@
   dependencies:
     "@types/lodash" "*"
 
-"@types/lodash@*":
+"@types/lodash@*", "@types/lodash@^4.14.180":
   version "4.14.182"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.182.tgz#05301a4d5e62963227eaafe0ce04dd77c54ea5c2"
   integrity sha512-/THyiqyQAP9AfARo4pF+aCGcyiQ94tX/Is2I7HofNRqoYLgN1PBoOWu2/zTA5zMxzP5EFutMtWtGAFRKUe961Q==
@@ -3305,11 +3305,12 @@ bip66@1.1.5, bip66@^1.1.5:
   dependencies:
     safe-buffer "^5.0.1"
 
-bitcoin-core@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/bitcoin-core/-/bitcoin-core-3.0.0.tgz#3ad59a16b6748d8b60937affae6c5f1df2db770d"
-  integrity sha512-fdh8V/5lxDXwbq6KUCd9PjbTDe1kPGFM1brSFByuzMb+VSArr1qF422qbAJvW0dLQSaRhVDb7WC+a602QM70FQ==
+bitcoin-core-ts@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/bitcoin-core-ts/-/bitcoin-core-ts-3.0.3.tgz#e22586b8349a2ad9efe40b758c6ffeed9171acfb"
+  integrity sha512-zVYy2n6m51vQHiipp0QmmH96nYsXxAE81Y+C8amdx0vkK9SLioaE/xFPG//g88iw5e8MMdkQLILpEEQUVdDD9w==
   dependencies:
+    "@types/lodash" "^4.14.180"
     "@uphold/request-logger" "^2.0.0"
     debugnyan "^1.0.0"
     json-bigint "^0.2.0"
@@ -4459,9 +4460,9 @@ ee-first@1.1.1:
   integrity sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==
 
 electron-to-chromium@^1.4.164:
-  version "1.4.169"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.169.tgz#d4b8cf9816566c7e9518128f1a97f39de9c7af9d"
-  integrity sha512-Yb7UFva1sLlAaRyCkgoFF3qWvwZacFDtsGKi44rZsk8vnhL0DMhsUdhI4Dz9CCJQfftncDMGSI3AYiDtg8mD/w==
+  version "1.4.170"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.170.tgz#0415fc489402e09bfbe1f0c99bbf4d73f31d48d4"
+  integrity sha512-rZ8PZLhK4ORPjFqLp9aqC4/S1j4qWFsPPz13xmWdrbBkU/LlxMcok+f+6f8YnQ57MiZwKtOaW15biZZsY5Igvw==
 
 emittery@^0.10.2:
   version "0.10.2"

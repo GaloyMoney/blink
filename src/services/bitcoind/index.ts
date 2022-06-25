@@ -1,6 +1,6 @@
 import { btc2sat } from "@domain/bitcoin"
 
-import Client from "bitcoin-core"
+import Client from "bitcoin-core-ts"
 import sumBy from "lodash.sumby"
 
 const connection_obj = {

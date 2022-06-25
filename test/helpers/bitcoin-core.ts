@@ -1,4 +1,4 @@
-import BitcoindClient from "bitcoin-core"
+import BitcoindClient from "bitcoin-core-ts"
 import {
   addInvoiceForSelf,
   createOnChainAddress,

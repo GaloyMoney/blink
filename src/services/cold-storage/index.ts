@@ -1,4 +1,4 @@
-import BitcoindClient from "bitcoin-core"
+import BitcoindClient from "bitcoin-core-ts"
 import { btc2sat, sat2btc } from "@domain/bitcoin"
 import { BTC_NETWORK, getBitcoinCoreRPCConfig, getColdStorageConfig } from "@config"
 import {

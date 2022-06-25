@@ -1,1 +1,1 @@
-declare module "bitcoin-core"
+declare module "bitcoin-core-ts"
