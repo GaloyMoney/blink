@@ -114,5 +114,6 @@ audit:
 	bash -c 'yarn audit --level critical; [[ $$? -ge 16 ]] && exit 1 || exit 0'
 
 mine:
-	docker exec -it galoy-bitcoind-1 /bin/sh -c 'ADDR=$$(bitcoin-cli getnewaddress "") && bitcoin-cli generatetoaddress 6 $$ADDR '
+	container_id=$$(docker ps -q -f status=running -f name="bitcoind"); \
+	docker exec -it "$$container_id" /bin/sh -c 'ADDR=$$(bitcoin-cli getnewaddress "") && bitcoin-cli generatetoaddress 6 $$ADDR '
 	
