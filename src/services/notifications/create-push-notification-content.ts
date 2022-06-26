@@ -28,7 +28,7 @@ export const createPushNotificationContent = ({
   const baseCurrencyName = baseCurrency === WalletCurrency.Btc ? "sats" : ""
   const baseCurrencySymbol = baseCurrency === WalletCurrency.Usd ? "$" : ""
   const displayedBaseAmount =
-    baseCurrency === WalletCurrency.Usd ? amount.amount / 100n : amount.amount
+    baseCurrency === WalletCurrency.Usd ? Number(amount.amount) / 100 : amount.amount
   const baseCurrencyAmount = displayedBaseAmount.toLocaleString(locale, {
     maximumFractionDigits: 2,
   })

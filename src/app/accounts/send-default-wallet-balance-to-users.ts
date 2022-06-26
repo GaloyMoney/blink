@@ -25,37 +25,37 @@ export const sendDefaultWalletBalanceToUsers = async () => {
     ? DisplayCurrencyConverter(displayCurrencyPerSat)
     : undefined
 
-  const notifyUser = async (account: Account) => {
-    const wallet = await WalletsRepository().findById(account.defaultWalletId)
-    if (wallet instanceof Error) return wallet
+  const notifyUser = wrapAsyncToRunInSpan({
+    namespace: "daily-balance-notification",
+    fn: async (account: Account): Promise<void | ApplicationError> => {
+      const wallet = await WalletsRepository().findById(account.defaultWalletId)
+      if (wallet instanceof Error) return wallet
 
-    const recipientAccount = await AccountsRepository().findById(wallet.accountId)
-    if (recipientAccount instanceof Error) return recipientAccount
+      const recipientAccount = await AccountsRepository().findById(wallet.accountId)
+      if (recipientAccount instanceof Error) return recipientAccount
 
-    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
-    if (recipientUser instanceof Error) return recipientUser
+      const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+      if (recipientUser instanceof Error) return recipientUser
 
-    const balanceAmount = await LedgerService().getWalletBalanceAmount(wallet)
-    if (balanceAmount instanceof Error) return balanceAmount
+      const balanceAmount = await LedgerService().getWalletBalanceAmount(wallet)
+      if (balanceAmount instanceof Error) return balanceAmount
 
-    let displayBalanceAmount: DisplayBalanceAmount<DisplayCurrency> | undefined
-    if (converter && wallet.currency === WalletCurrency.Btc) {
-      const amount = converter.fromSats(toSats(balanceAmount.amount))
-      displayBalanceAmount = { amount, currency: DisplayCurrency.Usd }
-    }
+      let displayBalanceAmount: DisplayBalanceAmount<DisplayCurrency> | undefined
+      if (converter && wallet.currency === WalletCurrency.Btc) {
+        const amount = converter.fromSats(toSats(balanceAmount.amount))
+        displayBalanceAmount = { amount, currency: DisplayCurrency.Usd }
+      }
 
-    await NotificationsService().sendBalance({
-      balanceAmount,
-      recipientDeviceTokens: recipientUser.deviceTokens,
-      displayBalanceAmount,
-      recipientLanguage: recipientUser.language,
-    })
-  }
+      return NotificationsService().sendBalance({
+        balanceAmount,
+        recipientDeviceTokens: recipientUser.deviceTokens,
+        displayBalanceAmount,
+        recipientLanguage: recipientUser.language,
+      })
+    },
+  })
 
   for (const account of accounts) {
-    await wrapAsyncToRunInSpan({
-      namespace: "daily-balance-notification",
-      fn: async () => notifyUser(account),
-    })()
+    await notifyUser(account)
   }
 }
