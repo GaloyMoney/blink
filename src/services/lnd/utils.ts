@@ -285,9 +285,9 @@ export const updateEscrows = async () => {
   const selfInitiatedChannels = channels.filter(
     ({ is_partner_initiated }) => is_partner_initiated === false,
   )
-  const escrowInLnd = sumBy(selfInitiatedChannels, "commit_transaction_fee")
+  const escrowInLnd = toSats(sumBy(selfInitiatedChannels, "commit_transaction_fee"))
 
-  const result = await updateLndEscrow({ amount: escrowInLnd })
+  const result = await updateLndEscrow(escrowInLnd)
 
   baseLogger.info({ ...result, channels }, "escrow recording")
 }
@@ -330,7 +330,7 @@ export const onChannelUpdated = async ({
     return
   }
 
-  const fee = tx.fee
+  const fee = toSats(tx.fee)
 
   // let tx
   // try {
@@ -347,7 +347,7 @@ export const onChannelUpdated = async ({
 
   const data = {
     description: `channel ${stateChange} onchain fee`,
-    amount: fee,
+    fee,
     metadata: { txid },
   }
 
@@ -415,3 +415,29 @@ export const getLndFromPubkey = ({
     new NoValidNodeForPubkeyError(`lnd with pubkey:${pubkey} is offline`)
   )
 }
+
+// A rough description of the error type we get back from the
+// 'lightning' library can be described as:
+//
+// [
+//   0: <Error Classification Code Number>
+//   1: <Error Type String>
+//   2: {
+//     err?: <Error Code Details Object>
+//     failures?: [
+//       [
+//         0: <Error Code Number>
+//         1: <Error Code Message String>
+//         2: {
+//           err?: <Error Code Details Object>
+//         }
+//       ]
+//     ]
+//   }
+// ]
+//
+// where '<Error Code Details Object>' is an Error object with
+// the usual 'message', 'stack' etc. properties and additional
+// properties: 'code', 'details', 'metadata'.
+export const parseLndErrorDetails = (err) =>
+  err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details || err[1]

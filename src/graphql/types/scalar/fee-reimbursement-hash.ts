@@ -1,3 +1,4 @@
+import { isSha256Hash } from "@domain/bitcoin"
 import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
 
@@ -5,6 +6,11 @@ const FeeReimbursementHash = GT.Scalar({
   name: "FeeReimbursementHash",
   description: "A LN hash used for fee reimbursement",
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({
+        message: "Invalid type for FeeReimbursementHash",
+      })
+    }
     return validFeeReimbursementHashValue(value)
   },
   parseLiteral(ast) {
@@ -15,12 +21,10 @@ const FeeReimbursementHash = GT.Scalar({
   },
 })
 
-function validFeeReimbursementHashValue(value) {
-  // TODO: verify/improve.
-  if (value.match(/^[A-Fa-f0-9]+$/i)) {
-    return value.toLowerCase()
-  }
-  return new InputValidationError({ message: "Invalid value for FeeReimbursementHash" })
+function validFeeReimbursementHashValue(value: string) {
+  return isSha256Hash(value)
+    ? value
+    : new InputValidationError({ message: "Invalid value for FeeReimbursementHash" })
 }
 
 export default FeeReimbursementHash

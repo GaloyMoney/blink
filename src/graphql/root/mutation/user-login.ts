@@ -18,7 +18,12 @@ const UserLoginInput = GT.Input({
   }),
 })
 
-const UserLoginMutation = GT.Field({
+const UserLoginMutation = GT.Field<{
+  input: {
+    phone: PhoneNumber | InputValidationError
+    code: PhoneCode | InputValidationError
+  }
+}>({
   type: GT.NonNull(AuthTokenPayload),
   args: {
     input: { type: GT.NonNull(UserLoginInput) },
@@ -26,10 +31,12 @@ const UserLoginMutation = GT.Field({
   resolve: async (_, args, { logger, ip }) => {
     const { phone, code } = args.input
 
-    for (const input of [phone, code]) {
-      if (input instanceof Error) {
-        return { errors: [{ message: input.message }] }
-      }
+    if (phone instanceof Error) {
+      return { errors: [{ message: phone.message }] }
+    }
+
+    if (code instanceof Error) {
+      return { errors: [{ message: code.message }] }
     }
 
     if (ip === undefined) {

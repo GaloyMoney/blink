@@ -1,26 +1,23 @@
-import { InputValidationError } from "@graphql/error"
+import { OutputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
 
 const AuthToken = GT.Scalar({
   name: "AuthToken",
-  description: "An authentication code valid for a single use",
-  parseValue(value) {
-    return validAuthTokenValue(value)
-  },
-  parseLiteral(ast) {
-    if (ast.kind === GT.Kind.STRING) {
-      return validAuthTokenValue(ast.value)
+  description: "An JWT-formatted authentication token",
+  serialize(value) {
+    if (typeof value !== "string") {
+      return new OutputValidationError({ message: "Invalid type for AuthToken" })
     }
-    return new InputValidationError({ message: "Invalid type for AuthToken" })
+    return validAuthTokenValue(value)
   },
 })
 
-function validAuthTokenValue(value) {
-  // TODO: verify/improve
-  if (value.match(/^[a-z0-9]+/i)) {
+function validAuthTokenValue(value: string) {
+  const jwtRegex = /^([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-+/=]*)/gi
+  if (value.match(jwtRegex)) {
     return value
   }
-  return new InputValidationError({ message: "Invalid value for AuthToken" })
+  return new OutputValidationError({ message: "Invalid value for AuthToken" })
 }
 
 export default AuthToken

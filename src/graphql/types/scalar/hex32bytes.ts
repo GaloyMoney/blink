@@ -5,6 +5,9 @@ const Hex32Bytes = GT.Scalar({
   name: "Hex32Bytes",
   description: "Hex-encoded string of 32 bytes",
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for Hex32Bytes" })
+    }
     return validHex32Bytes(value)
   },
   parseLiteral(ast) {
@@ -15,7 +18,7 @@ const Hex32Bytes = GT.Scalar({
   },
 })
 
-function validHex32Bytes(value) {
+function validHex32Bytes(value: string) {
   const bytes = Buffer.from(value, "hex")
 
   if (bytes.toString("hex") !== value) {

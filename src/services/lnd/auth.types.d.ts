@@ -6,7 +6,7 @@ type LndParams = {
   node: string
   port: string | number
   type: NodeType[]
-  pubkey: string
+  pubkey: Pubkey
   priority: number
 }
 

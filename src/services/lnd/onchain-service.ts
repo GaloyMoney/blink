@@ -1,29 +1,34 @@
-import {
-  UnknownOnChainServiceError,
-  IncomingOnChainTransaction,
-  CouldNotFindOnChainTransactionError,
-  OutgoingOnChainTransaction,
-  InsufficientOnChainFundsError,
-  OnChainServiceUnavailableError,
-} from "@domain/bitcoin/onchain"
 import { toSats } from "@domain/bitcoin"
 import {
+  CouldNotFindOnChainTransactionError,
+  IncomingOnChainTransaction,
+  InsufficientOnChainFundsError,
+  OnChainServiceUnavailableError,
+  OutgoingOnChainTransaction,
+  UnknownOnChainServiceError,
+} from "@domain/bitcoin/onchain"
+import {
+  createChainAddress,
+  getChainBalance,
+  getChainFeeEstimate,
   getChainTransactions,
   GetChainTransactionsResult,
-  createChainAddress,
-  getChainFeeEstimate,
-  getWalletInfo,
-  getChainBalance,
-  sendToChainAddress,
   getPendingChainBalance,
+  getWalletInfo,
+  sendToChainAddress,
 } from "lightning"
 
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
-import { LocalCacheService } from "@services/cache"
-import { CacheKeys } from "@domain/cache"
 import { SECS_PER_5_MINS } from "@config"
+import { CacheKeys } from "@domain/cache"
+import { LocalCacheService } from "@services/cache"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
-import { getActiveOnchainLnd, getLndFromPubkey, getLnds } from "./utils"
+import {
+  getActiveOnchainLnd,
+  getLndFromPubkey,
+  getLnds,
+  parseLndErrorDetails,
+} from "./utils"
 
 export const OnChainService = (
   decoder: TxDecoder,
@@ -197,9 +202,6 @@ export const OnChainService = (
     },
   })
 }
-
-const parseLndErrorDetails = (err) =>
-  err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details || err[1]
 
 const KnownLndErrorDetails = {
   InsufficientFunds: "insufficient funds available to construct transaction",

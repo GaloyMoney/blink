@@ -1,48 +1,48 @@
 import {
-  createInvoice,
-  getInvoice,
-  getPayment,
   cancelHodlInvoice,
-  payViaRoutes,
-  payViaPaymentDetails,
-  GetPaymentResult,
-  PayViaPaymentDetailsArgs,
-  PayViaRoutesResult,
-  PayViaPaymentDetailsResult,
-  GetInvoiceResult,
-  getPayments,
-  getFailedPayments,
-  getClosedChannels,
-  getWalletInfo,
-  getPendingPayments,
+  createInvoice,
   getChannelBalance,
+  getClosedChannels,
+  getFailedPayments,
+  getInvoice,
+  GetInvoiceResult,
+  getPayment,
+  GetPaymentResult,
+  getPayments,
+  getPendingPayments,
+  getWalletInfo,
+  payViaPaymentDetails,
+  PayViaPaymentDetailsArgs,
+  PayViaPaymentDetailsResult,
+  payViaRoutes,
+  PayViaRoutesResult,
 } from "lightning"
 import lnService from "ln-service"
 
 import { SECS_PER_5_MINS } from "@config"
 
-import { CacheKeys } from "@domain/cache"
-import { toMilliSatsFromString, toSats, FEECAP_PERCENT } from "@domain/bitcoin"
+import { FEECAP_PERCENT, toMilliSatsFromString, toSats } from "@domain/bitcoin"
 import {
-  decodeInvoice,
-  CouldNotDecodeReturnedPaymentRequest,
-  UnknownLightningServiceError,
-  LightningServiceError,
-  InvoiceNotFoundError,
-  PaymentStatus,
-  LnPaymentPendingError,
-  LnAlreadyPaidError,
-  PaymentNotFoundError,
-  RouteNotFoundError,
-  UnknownRouteNotFoundError,
-  InsufficientBalanceForRoutingError,
   BadPaymentDataError,
   CorruptLndDbError,
+  CouldNotDecodeReturnedPaymentRequest,
+  decodeInvoice,
+  InsufficientBalanceForRoutingError,
   InvoiceExpiredOrBadPaymentHashError,
+  InvoiceNotFoundError,
+  LightningServiceError,
+  LnAlreadyPaidError,
+  LnPaymentPendingError,
   PaymentAttemptsTimedOutError,
-  ProbeForRouteTimedOutError,
   PaymentInTransitionError,
+  PaymentNotFoundError,
+  PaymentStatus,
+  ProbeForRouteTimedOutError,
+  RouteNotFoundError,
+  UnknownLightningServiceError,
+  UnknownRouteNotFoundError,
 } from "@domain/bitcoin/lightning"
+import { CacheKeys } from "@domain/cache"
 
 import { LocalCacheService } from "@services/cache"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -52,7 +52,7 @@ import { timeout } from "@utils"
 import sumBy from "lodash.sumby"
 
 import { TIMEOUT_PAYMENT } from "./auth"
-import { getActiveLnd, getLndFromPubkey, getLnds } from "./utils"
+import { getActiveLnd, getLndFromPubkey, getLnds, parseLndErrorDetails } from "./utils"
 
 export const LndService = (
   { feeCapPercent }: LightningServiceConfig = { feeCapPercent: FEECAP_PERCENT },
@@ -587,32 +587,6 @@ const lookupPaymentByPubkeyAndHash = async ({
     }
   }
 }
-
-// A rough description of the error type we get back from the
-// 'lightning' library can be described as:
-//
-// [
-//   0: <Error Classification Code Number>
-//   1: <Error Type String>
-//   2: {
-//     err?: <Error Code Details Object>
-//     failures?: [
-//       [
-//         0: <Error Code Number>
-//         1: <Error Code Message String>
-//         2: {
-//           err?: <Error Code Details Object>
-//         }
-//       ]
-//     ]
-//   }
-// ]
-//
-// where '<Error Code Details Object>' is an Error object with
-// the usual 'message', 'stack' etc. properties and additional
-// properties: 'code', 'details', 'metadata'.
-export const parseLndErrorDetails = (err) =>
-  err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details || err[1]
 
 const KnownLndErrorDetails = {
   InsufficientBalance: "insufficient local balance",

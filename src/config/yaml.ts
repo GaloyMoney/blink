@@ -15,6 +15,8 @@ import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
 import { toDays, toSeconds } from "@domain/primitives"
 
+import { checkedToPubkey } from "@domain/bitcoin/lightning"
+
 import { configSchema } from "./schema"
 import { ConfigError } from "./error"
 
@@ -118,11 +120,15 @@ export const getLndParams = (): LndParams[] => {
     const node = process.env[`${input.name}_DNS`]
     if (!node) throw new ConfigError(`missing DNS for ${input.name}`)
 
-    const pubkey = process.env[`${input.name}_PUBKEY`]
-    if (!pubkey) throw new ConfigError(`missing PUBKEY for ${input.name}`)
+    const pubkey_ = process.env[`${input.name}_PUBKEY`]
+    if (!pubkey_) throw new ConfigError(`missing PUBKEY for ${input.name}`)
+
+    const pubkey = checkedToPubkey(pubkey_)
+    if (pubkey instanceof Error)
+      throw new ConfigError(`wrong PUBKEY formatting for ${input.name}`)
 
     const port = process.env[`${input.name}_RPCPORT`] ?? 10009
-    const type = input.type.map((item) => item as NodeType)
+    const type = input.type.map((item) => item as NodeType) // TODO: verify if validation is done from yaml.ts
     const priority = input.priority
 
     return {

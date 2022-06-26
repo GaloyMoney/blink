@@ -18,9 +18,10 @@ const allFunctions = {
   Users: { ...UsersMod },
   Wallets: { ...WalletsMod },
   Payments: { ...PaymentsMod },
-}
+} as const
 
-for (const subModule in allFunctions) {
+let subModule: keyof typeof allFunctions
+for (subModule in allFunctions) {
   for (const fn in allFunctions[subModule]) {
     allFunctions[subModule][fn] = wrapAsyncToRunInSpan({
       namespace: `app.${subModule.toLowerCase()}`,

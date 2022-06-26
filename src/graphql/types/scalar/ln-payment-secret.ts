@@ -5,6 +5,9 @@ import { GT } from "@graphql/index"
 const LnPaymentSecret = GT.Scalar({
   name: "LnPaymentSecret",
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for LnPaymentSecret" })
+    }
     return validLnPaymentSecret(value)
   },
   parseLiteral(ast) {
@@ -15,7 +18,7 @@ const LnPaymentSecret = GT.Scalar({
   },
 })
 
-function validLnPaymentSecret(value) {
+function validLnPaymentSecret(value: string) {
   return isSha256Hash(value)
     ? value
     : new InputValidationError({ message: "Invalid value for LnPaymentSecret" })

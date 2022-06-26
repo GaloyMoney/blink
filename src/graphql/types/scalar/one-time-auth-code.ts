@@ -4,7 +4,12 @@ import { GT } from "@graphql/index"
 const OneTimeAuthCode = GT.Scalar({
   name: "OneTimeAuthCode",
   description: "An authentication code valid for a single use",
+  // FIXME: OneTimeAuthCode is being used for graphql, but PhoneCode is the domain type
+  // this is confusing, as OneTimeAuthCode may suggest a google authenticator code.
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for OneTimeAuthCode" })
+    }
     return validOneTimeAuthCodeValue(value)
   },
   parseLiteral(ast) {
@@ -15,10 +20,9 @@ const OneTimeAuthCode = GT.Scalar({
   },
 })
 
-function validOneTimeAuthCodeValue(value) {
-  // TODO: verify/improve
-  if (value.match(/^[0-9_]{6}/i)) {
-    return value.toLowerCase()
+function validOneTimeAuthCodeValue(value: string) {
+  if (value.match(/^[0-9]{6}/i)) {
+    return value.toLowerCase() as PhoneCode
   }
   return new InputValidationError({ message: "Invalid value for OneTimeAuthCode" })
 }

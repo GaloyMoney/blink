@@ -16,3 +16,5 @@ type GeetestType = {
     seccode: string,
   ) => Promise<true | CaptchaError>
 }
+
+declare module "gt3-server-node-express-sdk/sdk/geetest_lib"

@@ -38,7 +38,7 @@ export const getBankOwnerBalance = async (currency = "BTC") => {
   return getWalletBalance(bankOwnerPath, { currency })
 }
 
-export const updateLndEscrow = async ({ amount }) => {
+export const updateLndEscrow = async (amount: Satoshis) => {
   const ledgerEscrow = await getLndEscrowBalance()
 
   // ledgerEscrow is negative
@@ -75,8 +75,12 @@ export const updateLndEscrow = async ({ amount }) => {
 
 export const addLndChannelOpeningOrClosingFee = async ({
   description,
-  amount,
+  fee,
   metadata,
+}: {
+  description: string
+  fee: Satoshis
+  metadata: { txid: string }
 }) => {
   const txMetadata = {
     currency: WalletCurrency.Btc,
@@ -89,8 +93,8 @@ export const addLndChannelOpeningOrClosingFee = async ({
 
   try {
     await MainBook.entry(description)
-      .debit(bankOwnerPath, amount, txMetadata)
-      .credit(lndAccountingPath, amount, txMetadata)
+      .debit(bankOwnerPath, fee, txMetadata)
+      .credit(lndAccountingPath, fee, txMetadata)
       .commit()
 
     return true

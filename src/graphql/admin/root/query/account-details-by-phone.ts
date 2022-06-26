@@ -5,7 +5,10 @@ import Phone from "@graphql/types/scalar/phone"
 
 import { Admin } from "@app"
 
-const AccountDetailsByUserPhoneQuery = GT.Field({
+const AccountDetailsByUserPhoneQuery = GT.Field<{
+  // FIXME: doesn't respect the input: {} pattern
+  phone: PhoneNumber | ValidationError
+}>({
   type: GT.NonNull(GraphQLAccount),
   args: {
     phone: { type: GT.NonNull(Phone) },
