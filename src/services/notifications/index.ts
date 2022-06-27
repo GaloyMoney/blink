@@ -88,7 +88,7 @@ export const NotificationsService = (): INotificationsService => {
         event: PubSubDefaultTriggers.AccountUpdate,
         suffix: recipientAccountId,
       })
-      const data = {
+      const data: NotificationsDataObject = {
         walletId: recipientWalletId,
         txNotificationType: NotificationType.IntraLedgerReceipt,
         amount: paymentAmount.amount,
@@ -156,7 +156,7 @@ export const NotificationsService = (): INotificationsService => {
         event: PubSubDefaultTriggers.AccountUpdate,
         suffix: accountId,
       })
-      const data = {
+      const data: NotificationsDataObject = {
         walletId,
         txNotificationType: type,
         amount: paymentAmount.amount,
