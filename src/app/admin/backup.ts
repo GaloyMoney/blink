@@ -87,7 +87,7 @@ export const uploadBackup =
               keyFilename: GcsApplicationCredentials,
             })
             const bucket = storage.bucket(LND_SCB_BACKUP_BUCKET_NAME)
-            const file = bucket.file(`${filename}`)
+            const file = bucket.file(`lnd_scb/${filename}`)
             await file.save(backup)
             logger.info({ backup }, "Static channel backup to GoogleCloud successful.")
             addEventToCurrentSpan("Static channel backup to GoogleCloud successful.")
