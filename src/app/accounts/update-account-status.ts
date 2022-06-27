@@ -1,5 +1,12 @@
 import { checkedAccountStatus } from "@domain/accounts"
+import {
+  subjectIdFromUserId,
+  resourceFromAccountId,
+  // AccountPermission,
+  AuthorizationError,
+} from "@domain/authorization"
 import { AccountsRepository } from "@services/mongoose"
+import { CasbinService } from "@services/casbin"
 
 export const updateAccountStatus = async ({
   id,
@@ -12,8 +19,15 @@ export const updateAccountStatus = async ({
   updatedByUserId: UserId
   comment?: string
 }): Promise<Account | ApplicationError> => {
-  const accountsRepo = AccountsRepository()
+  // const permission = await CasbinService().checkPermission({
+  //   subjectId: subjectIdFromUserId(updatedByUserId),
+  //   resourceId: resourceFromAccountId(id as AccountId),
+  //   permission: AccountPermission.StatusUpdate,
+  // })
+  // if (permission instanceof Error) return permission
+  // if (!permission) return new AuthorizationError()
 
+  const accountsRepo = AccountsRepository()
   const account = await accountsRepo.findById(id as AccountId)
   if (account instanceof Error) return account
 

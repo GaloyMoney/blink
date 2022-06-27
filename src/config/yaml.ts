@@ -143,6 +143,16 @@ export const getLndParams = (): LndParams[] => {
   })
 }
 
+export const getCasbinPgCreds = () => {
+  return {
+    database: process.env.POSTGRES_DB ?? "casbin",
+    user: process.env.POSTGRES_USER ?? "postgres",
+    password: process.env.POSTGRES_PASSWORD ?? "postgres",
+    host: process.env.POSTGRES_HOST ?? "127.0.0.1",
+    port: parseInt(process.env.POSTGRES_PORT ?? "5433"),
+  }
+}
+
 export const getFeesConfig = (feesConfig = yamlConfig.fees): FeesConfig => {
   const method = feesConfig.withdraw.method as WithdrawalFeePriceMethod
   const withdrawRatio =

@@ -15,6 +15,7 @@ import {
   InvalidBusinessTitleLengthError,
   PhoneCodeError,
   UsernameError,
+  PermissionError,
   RebalanceNeededError,
   DealerOfflineError,
   InsufficientLiquidityError,
@@ -271,6 +272,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invalid walletId for account."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "AuthorizationError":
+      return new PermissionError({ logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -293,7 +297,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LnAlreadyPaidError":
     case "PaymentNotFoundError":
     case "InconsistentDataError":
-    case "AuthorizationError":
+    case "AuthorizationServiceError":
+    case "UnknownAuthorizationServiceError":
     case "RepositoryError":
     case "PersistError":
     case "DuplicateError":

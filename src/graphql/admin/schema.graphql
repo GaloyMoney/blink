@@ -348,6 +348,11 @@ type SuccessPayload {
   success: Boolean
 }
 
+enum SupportRole {
+  LEVEL1
+  LEVEL2
+}
+
 """
 (Positive) Number of blocks in which the transaction is expected to be confirmed
 """
@@ -477,6 +482,7 @@ type User {
   id: ID!
   language: Language!
   phone: Phone!
+  supportRole: SupportRole
 }
 
 input UserLoginInput {
