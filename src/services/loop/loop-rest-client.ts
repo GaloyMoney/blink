@@ -1,17 +1,19 @@
 // https://lightning.engineering/loopapi/#loop-rest-api-reference
-import fs from "fs"
 import https from "https"
 
 import axios, { AxiosResponse } from "axios"
 
 import { getLoopConfig } from "@config"
 
-// @todo - get from yaml or .envrc
-const loopMacaroon = convertMacaroonToHexString(
-  fs.readFileSync("./dev/lnd/loop.macaroon"),
-)
-const cert = fs.readFileSync("./dev/lnd/tls.cert")
-const key = fs.readFileSync("./dev/lnd/tls.key")
+const loopMacaroon = process.env.LOOP_MACAROON
+  ? convertMacaroonToHexString(Buffer.from(process.env.LOOP_MACAROON, "base64"))
+  : ""
+
+const cert = process.env.LND1_TLS ? Buffer.from(process.env.LND1_TLS, "base64") : ""
+
+const key = process.env.LND1_TLS_KEY
+  ? Buffer.from(process.env.LND1_TLS_KEY, "base64")
+  : ""
 
 export const loopRestClient = {
   loopOut,
@@ -24,12 +26,16 @@ export const loopRestClient = {
 }
 
 function loopClient() {
+  if (!loopMacaroon && !key && !cert) {
+    throw Error("need loopMacaroon and tls cert and key")
+  }
   const loopClientInstance = axios.create({
     headers: {
       "Content-Type": "application/json",
       "Grpc-Metadata-macaroon": loopMacaroon,
     },
     httpsAgent: new https.Agent({
+      rejectUnauthorized: false,
       keepAlive: true,
       cert,
       key,

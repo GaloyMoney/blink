@@ -24,7 +24,6 @@ start-cron: start-deps
 		src/servers/cron.ts | yarn pino-pretty -c -l
 
 start-loop:
-	chmod +x ./scripts/start-loop.sh
 	./scripts/start-loop.sh
 
 start: start-deps
