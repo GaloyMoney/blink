@@ -1,17 +1,12 @@
-import { wrapAsyncToRunInSpan } from "@services/tracing"
-import { getCurrentPrice } from "@app/prices"
-import { NotificationsService } from "@services/notifications"
-import { LedgerService } from "@services/ledger"
-
-import {
-  AccountsRepository,
-  UsersRepository,
-  WalletsRepository,
-} from "@services/mongoose"
-
-import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
 import { toSats } from "@domain/bitcoin"
+import { WalletCurrency } from "@domain/shared"
+import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
+
+import { getCurrentPrice } from "@app/prices"
+import { LedgerService } from "@services/ledger"
+import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { NotificationsService } from "@services/notifications"
+import { UsersRepository, WalletsRepository } from "@services/mongoose"
 
 import { getRecentlyActiveAccounts } from "./active-accounts"
 
@@ -28,14 +23,12 @@ export const sendDefaultWalletBalanceToUsers = async () => {
   const notifyUser = wrapAsyncToRunInSpan({
     namespace: "daily-balance-notification",
     fn: async (account: Account): Promise<void | ApplicationError> => {
+      const recipientUser = await UsersRepository().findById(account.ownerId)
+      if (recipientUser instanceof Error) return recipientUser
+      if (!recipientUser.deviceTokens || recipientUser.deviceTokens.length === 0) return
+
       const wallet = await WalletsRepository().findById(account.defaultWalletId)
       if (wallet instanceof Error) return wallet
-
-      const recipientAccount = await AccountsRepository().findById(wallet.accountId)
-      if (recipientAccount instanceof Error) return recipientAccount
-
-      const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
-      if (recipientUser instanceof Error) return recipientUser
 
       const balanceAmount = await LedgerService().getWalletBalanceAmount(wallet)
       if (balanceAmount instanceof Error) return balanceAmount
