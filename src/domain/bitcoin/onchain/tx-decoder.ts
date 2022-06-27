@@ -2,8 +2,13 @@ import { toSats } from "@domain/bitcoin"
 import { Transaction, networks, address, Network, TxOutput } from "bitcoinjs-lib"
 
 export const TxDecoder = (networkName: BtcNetwork): TxDecoder => {
-  const libNetworkName = networkName === "mainnet" ? "bitcoin" : networkName
-  const network = networks[libNetworkName]
+  const mapping: { [input in BtcNetwork]: keyof typeof networks } = {
+    mainnet: "bitcoin",
+    testnet: "testnet",
+    signet: "testnet",
+    regtest: "regtest",
+  }
+  const network = networks[mapping[networkName]]
 
   const decode = (txHex: string): OnChainTransaction => {
     const tx = Transaction.fromHex(txHex)
