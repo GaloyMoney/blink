@@ -17,6 +17,7 @@ type LoopConfig = {
   maxOutboundLiquidityBalance: Satoshis
   loopoutAmount: Satoshis
   loopUrl: string
+  loopProvider: string
 }
 
 type ColdStorageConfig = RebalanceCheckerConfig & {

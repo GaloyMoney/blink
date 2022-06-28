@@ -296,5 +296,6 @@ export const getLoopConfig = (): LoopConfig => {
     maxOutboundLiquidityBalance: toSats(config.maxOutboundLiquidityBalance),
     loopoutAmount: toSats(config.loopoutAmount),
     loopUrl: config.loopUrl,
+    loopProvider: config.loopProvider,
   }
 }

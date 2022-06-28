@@ -310,6 +310,7 @@ export const configSchema = {
         maxOutboundLiquidityBalance: { type: "number" },
         loopUrl: { type: "string" },
         loopoutAmount: { type: "number" },
+        loopProvider: { type: "string" },
       },
     },
     apollo: {

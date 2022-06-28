@@ -119,6 +119,7 @@ type YamlSchema = {
     maxOutboundLiquidityBalance: number
     loopUrl: string
     loopoutAmount: number
+    loopProvider: string
   }
   apollo: {
     playground: boolean
