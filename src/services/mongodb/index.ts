@@ -62,13 +62,7 @@ const path = `mongodb://${user}:${password}@${address}/${db}`
 
 export const setupMongoConnection = async (syncIndexes = false) => {
   try {
-    await mongoose.connect(path, {
-      autoIndex: false,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      useCreateIndex: true,
-      useFindAndModify: false,
-    })
+    await mongoose.connect(path)
   } catch (err) {
     baseLogger.fatal({ err, user, address, db }, `error connecting to mongodb`)
     throw err

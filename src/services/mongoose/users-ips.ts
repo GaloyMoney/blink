@@ -18,11 +18,11 @@ export const UsersIpRepository = (): IUsersIPsRepository => {
         { $set: { lastConnection: new Date(), lastIPs: userIp.lastIPs } },
       )
 
-      if (result.n === 0) {
+      if (result.matchedCount === 0) {
         return new CouldNotFindError("Couldn't find user")
       }
 
-      if (result.nModified !== 1) {
+      if (result.modifiedCount !== 1) {
         return new PersistError("Couldn't update ip for user")
       }
 
@@ -57,6 +57,6 @@ export const UsersIpRepository = (): IUsersIPsRepository => {
 const userIPsFromRaw = (result: UserRecord): UserIPs => {
   return {
     id: fromObjectId<UserId>(result._id),
-    lastIPs: result.lastIPs as IPType[],
+    lastIPs: (result.lastIPs || []) as IPType[],
   }
 }

@@ -139,7 +139,7 @@ export const settlePendingLnSend = async (
 ): Promise<true | LedgerServiceError> => {
   try {
     const result = await Transaction.updateMany({ hash: paymentHash }, { pending: false })
-    const success = result.nModified > 0
+    const success = result.modifiedCount > 0
     if (!success) {
       return new NoTransactionToSettleError()
     }

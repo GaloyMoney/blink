@@ -227,7 +227,7 @@ describe("UserWallet", () => {
       const result = await delete2fa({ token, userId: userIdA })
       expect(result).toBeTruthy()
       userRecordA = await getUserRecordByTestUserRef("A")
-      expect(userRecordA.twoFA.secret).toBeNull()
+      expect(userRecordA.twoFA.secret).toBeUndefined()
     })
   })
 })

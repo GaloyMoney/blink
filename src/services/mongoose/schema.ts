@@ -16,13 +16,13 @@ import { WalletRecord } from "./wallets"
 
 const Schema = mongoose.Schema
 
-const dbMetadataSchema = new Schema({
+const dbMetadataSchema = new Schema<DbMetadataRecord>({
   routingFeeLastEntry: Date, // TODO: rename to routingRevenueLastEntry
 })
 export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
 
 const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
-  _id: String, // hash of invoice
+  id: String, // hash of invoice
   walletId: {
     required: true,
     type: String,

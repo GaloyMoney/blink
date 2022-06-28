@@ -81,7 +81,7 @@ const txVolumeSince = async ({
     const [result]: (TxBaseVolume & { _id: null })[] = await Transaction.aggregate([
       {
         $match: {
-          accounts: liabilitiesWalletId,
+          account: liabilitiesWalletId,
           $or: txnTypesObj,
           $and: [{ timestamp: { $gte: timestamp } }],
         },
