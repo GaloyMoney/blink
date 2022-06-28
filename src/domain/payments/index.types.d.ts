@@ -11,17 +11,12 @@ type XorPaymentHashProperty = XOR<
   { intraLedgerHash: IntraLedgerHash }
 >
 
-type PaymentFlowState<
-  S extends WalletCurrency,
-  R extends WalletCurrency,
-> = XorPaymentHashProperty & {
+type PaymentFlowBaseState<S extends WalletCurrency, R extends WalletCurrency> = {
   senderWalletId: WalletId
   senderWalletCurrency: S
   senderAccountId: AccountId
   settlementMethod: SettlementMethod
   paymentInitiationMethod: PaymentInitiationMethod
-  descriptionFromInvoice: string
-  skipProbeForDestination: boolean
   createdAt: Date
   paymentSentAndPending: boolean
 
@@ -42,15 +37,24 @@ type PaymentFlowState<
   cachedRoute?: RawRoute
 }
 
+type PaymentFlowState<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = XorPaymentHashProperty & {
+  descriptionFromInvoice: string
+  skipProbeForDestination: boolean
+} & PaymentFlowBaseState<S, R>
+
+type OnChainPaymentFlowState<S extends WalletCurrency, R extends WalletCurrency> = {
+  address: OnChainAddress
+} & PaymentFlowBaseState<S, R>
+
 type PaymentFlowStateIndex = XorPaymentHashProperty & {
   walletId: WalletId
   inputAmount: bigint
 }
 
-type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFlowState<
-  S,
-  R
-> & {
+type PaymentFlowBase<S extends WalletCurrency, R extends WalletCurrency> = {
   protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
   paymentAmounts(): { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
   totalAmountsForPayment(): { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
@@ -67,9 +71,24 @@ type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFl
   senderWalletDescriptor(): WalletDescriptor<S>
   recipientWalletDescriptor(): WalletDescriptor<R> | undefined
   checkBalanceForSend(balanceAmount: BalanceAmount<S>): true | ValidationError
-  paymentHashForFlow(): PaymentHash | ValidationError
-  intraLedgerHashForFlow(): IntraLedgerHash | ValidationError
 }
+
+type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFlowState<
+  S,
+  R
+> &
+  PaymentFlowBase<S, R> & {
+    paymentHashForFlow(): PaymentHash | ValidationError
+    intraLedgerHashForFlow(): IntraLedgerHash | ValidationError
+  }
+
+type OnChainPaymentFlow<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = OnChainPaymentFlowState<S, R> &
+  PaymentFlowBase<S, R> & {
+    addressForFlow(): OnChainAddress | ValidationError
+  }
 
 type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
   withInvoice(invoice: LnInvoice): LPFBWithInvoice<S> | LPFBWithError
@@ -89,10 +108,20 @@ type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
   }): LPFBWithInvoice<S> | LPFBWithError
 }
 
+type OnChainPaymentFlowBuilder<S extends WalletCurrency> = {
+  withAddress(address: OnChainAddress): OPFBWithAddress<S> | OPFBWithError
+}
+
 type LPFBWithInvoice<S extends WalletCurrency> = {
   withSenderWallet(
     senderWallet: WalletDescriptor<S>,
   ): LPFBWithSenderWallet<S> | LPFBWithError
+}
+
+type OPFBWithAddress<S extends WalletCurrency> = {
+  withSenderWallet(
+    senderWallet: WalletDescriptor<S>,
+  ): OPFBWithSenderWallet<S> | OPFBWithError
 }
 
 type LPFBWithSenderWallet<S extends WalletCurrency> = {
@@ -124,8 +153,39 @@ type WithConversionArgs = {
   mid: ConversionFns
 }
 
+type OPFBWithSenderWallet<S extends WalletCurrency> = {
+  withAmount(uncheckedAmount: number): OPFBWithAmount<S> | OPFBWithError
+}
+
+type OPFBWithAmount<S extends WalletCurrency> = {
+  withoutRecipientWallet<R extends WalletCurrency>():
+    | OPFBWithRecipientWallet<S, R>
+    | OPFBWithError
+  withRecipientWallet<R extends WalletCurrency>({
+    id: recipientWalletId,
+    currency: recipientWalletCurrency,
+    usdPaymentAmount,
+  }: WalletDescriptor<R> & {
+    usdPaymentAmount?: UsdPaymentAmount
+  }): OPFBWithRecipientWallet<S, R> | OPFBWithError
+}
+
 type LPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {
   withConversion(args: WithConversionArgs): LPFBWithConversion<S, R> | LPFBWithError
+}
+
+type OPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {
+  withConversion({
+    usdFromBtc,
+    btcFromUsd,
+  }: {
+    usdFromBtc(
+      amount: BtcPaymentAmount,
+    ): Promise<UsdPaymentAmount | DealerPriceServiceError>
+    btcFromUsd(
+      amount: UsdPaymentAmount,
+    ): Promise<BtcPaymentAmount | DealerPriceServiceError>
+  }): Promise<OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
 }
 
 type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
@@ -146,6 +206,22 @@ type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
   isTradeIntraAccount(): Promise<boolean | DealerPriceServiceError>
 }
 
+type OPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
+  withRoute({
+    pubkey,
+    rawRoute,
+  }: {
+    pubkey: Pubkey
+    rawRoute: RawRoute
+  }): Promise<PaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
+  withoutRoute(): Promise<PaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
+
+  btcPaymentAmount(): Promise<BtcPaymentAmount | DealerPriceServiceError>
+  usdPaymentAmount(): Promise<UsdPaymentAmount | DealerPriceServiceError>
+
+  isIntraLedger(): Promise<boolean | DealerPriceServiceError>
+}
+
 type LPFBTest = {
   withSenderWallet(): LPFBTest
 }
@@ -163,6 +239,17 @@ type LPFBWithError = {
   isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
   isTradeIntraAccount(): Promise<ValidationError | DealerPriceServiceError>
 }
+
+type OPFBWithError = {
+  withSenderWallet(): OPFBWithError
+  withoutRecipientWallet(): OPFBWithError
+  withRecipientWallet(): OPFBWithError
+  withConversion(): OPFBWithError
+  btcPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
+  usdPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
+  isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
+}
+
 interface IPaymentFlowRepository {
   persistNew<S extends WalletCurrency>(
     payment: PaymentFlow<S, WalletCurrency>,
@@ -192,6 +279,11 @@ type LightningPaymentFlowBuilderConfig = {
   flaggedPubkeys: Pubkey[]
 }
 
+type OnChainPaymentFlowBuilderConfig = {
+  usdFromBtcMidPriceFn: UsdFromBtcMidPriceFn
+  btcFromUsdMidPriceFn: BtcFromUsdMidPriceFn
+}
+
 type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &
   XorPaymentHashProperty & {
     settlementMethod: SettlementMethod
@@ -205,6 +297,11 @@ type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &
     skipProbeForDestination: boolean
   }
 
+type OPFBWithAddressState = OnChainPaymentFlowBuilderConfig & {
+  paymentInitiationMethod: PaymentInitiationMethod
+  address: OnChainAddress
+}
+
 type LPFBWithSenderWalletState<S extends WalletCurrency> = RequireField<
   LPFBWithInvoiceState,
   "inputAmount"
@@ -214,6 +311,21 @@ type LPFBWithSenderWalletState<S extends WalletCurrency> = RequireField<
   senderAccountId: AccountId
   usdPaymentAmount?: UsdPaymentAmount
 }
+
+type OPFBWithSenderWalletState<S extends WalletCurrency> = OPFBWithAddressState & {
+  senderWalletId: WalletId
+  senderWalletCurrency: S
+}
+
+type OPFBWithAmountState<S extends WalletCurrency> = OPFBWithSenderWalletState<S> &
+  XOR<
+    {
+      btcPaymentAmount: BtcPaymentAmount
+    },
+    {
+      usdPaymentAmount: UsdPaymentAmount
+    }
+  > & { inputAmount: bigint }
 
 type LPFBWithRecipientWalletState<
   S extends WalletCurrency,
@@ -226,11 +338,33 @@ type LPFBWithRecipientWalletState<
   recipientAccountId?: AccountId
 }
 
+type OPFBWithRecipientWalletState<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = OPFBWithAmountState<S> & {
+  settlementMethod: SettlementMethod
+  btcProtocolFee: BtcPaymentAmount | undefined
+  usdProtocolFee: UsdPaymentAmount | undefined
+
+  recipientWalletId?: WalletId
+  recipientWalletCurrency?: R
+  recipientPubkey?: Pubkey
+  recipientUsername?: Username
+}
+
 type LPFBWithConversionState<
   S extends WalletCurrency,
   R extends WalletCurrency,
 > = RequireField<
   LPFBWithRecipientWalletState<S, R>,
+  "btcPaymentAmount" | "btcProtocolFee" | "usdProtocolFee" | "usdPaymentAmount"
+> & { createdAt: Date }
+
+type OPFBWithConversionState<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = RequireField<
+  OPFBWithRecipientWalletState<S, R>,
   "btcPaymentAmount" | "btcProtocolFee" | "usdProtocolFee" | "usdPaymentAmount"
 > & { createdAt: Date }
 

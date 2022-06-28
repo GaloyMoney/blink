@@ -420,6 +420,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "MissingPhoneError":
     case "InvalidUserId":
     case "InvalidLightningPaymentFlowBuilderStateError":
+    case "InvalidOnChainPaymentFlowBuilderStateError":
     case "NonLnPaymentTransactionForPaymentFlowError":
     case "MissingPropsInTransactionForPaymentFlowError":
     case "InvalidZeroAmountPriceRatioInputError":
