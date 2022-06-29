@@ -5,6 +5,7 @@ import { Transaction } from "@services/ledger/schema"
 import { WalletsRepository } from "@services/mongoose"
 import { fromObjectId } from "@services/mongoose/utils"
 import mongoose from "mongoose"
+import { mongoose as mongooseMedici } from "medici"
 
 import { baseLogger } from "../logger"
 import { User, WalletInvoice } from "../mongoose/schema"
@@ -62,7 +63,17 @@ const path = `mongodb://${user}:${password}@${address}/${db}`
 
 export const setupMongoConnection = async (syncIndexes = false) => {
   try {
-    await mongoose.connect(path)
+    await mongoose.connect(path, {
+      bufferCommands: false,
+    })
+    await mongooseMedici.connect(path, {
+      bufferCommands: false,
+    })
+    // mongoose.set("debug", true)
+    // mongooseMedici.set("debug", true)
+    // console.warn("create models", mongoose.connection.readyState)
+    // console.warn("create models", mongooseMedici.connection.readyState) // // await initModels()
+    // // console.warn("end create models")
   } catch (err) {
     baseLogger.fatal({ err, user, address, db }, `error connecting to mongodb`)
     throw err
