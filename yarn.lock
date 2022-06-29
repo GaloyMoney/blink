@@ -7928,10 +7928,9 @@ media-typer@0.3.0:
   resolved "https://registry.yarnpkg.com/media-typer/-/media-typer-0.3.0.tgz#8710d7af0aa626f8fffa1ce00168545263255748"
   integrity sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==
 
-medici@^5.1.0:
+"medici@https://github.com/GaloyMoney/medici#b26b567464051f6db4202b55efe08225f6049bdd":
   version "5.1.0"
-  resolved "https://registry.yarnpkg.com/medici/-/medici-5.1.0.tgz#1b9b73953595f5b2e58c4ac54172dc4d1d937925"
-  integrity sha512-SSVbFZCrnXB9RhyHt+E6tRBqjF8j+y8fPfM+Un4GMN5/lYbczF0IsyjOiTINWUAptzBN5O5nvhMNgns9DHf85Q==
+  resolved "https://github.com/GaloyMoney/medici#b26b567464051f6db4202b55efe08225f6049bdd"
   dependencies:
     mongoose "5 - 6"
 

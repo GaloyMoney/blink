@@ -88,7 +88,7 @@
     "lodash.mergewith": "^4.6.2",
     "lodash.sortby": "^4.7.0",
     "lodash.sumby": "^4.6.0",
-    "medici": "^5.1.0",
+    "medici": "https://github.com/GaloyMoney/medici#b26b567464051f6db4202b55efe08225f6049bdd",
     "mongoose": "^6.4.1",
     "node-2fa": "^2.0.2",
     "node-cache": "^5.1.2",
