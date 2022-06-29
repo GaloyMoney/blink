@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 import { LedgerTransactionType } from "@domain/ledger"
-import { setTransactionSchema, ITransaction as ITransactionMedici } from "medici"
+import { setTransactionSchema } from "medici"
 
 // TODO migration:
 // rename type: on_us to intraledger
@@ -9,34 +9,7 @@ const Schema = mongoose.Schema
 
 const ledgerTransactionTypes = Object.values(LedgerTransactionType)
 
-interface ITransaction extends ITransactionMedici {
-  hash?: string
-  txid?: string
-  type: LedgerTransactionType
-  pending: boolean
-  err?: string
-  currency: WalletCurrency
-  fee: number
-  feeKnownInAdvance?: boolean
-  related_journal?: mongoose.Types.ObjectId
-  payee_addresses?: string[]
-  memoPayer?: string
-  usd?: number
-  sats?: number
-  feeUsd?: number
-  username?: string
-  pubkey?: string
-
-  satsAmount: number
-  centsAmount: number
-  satsFee: number
-  centsFee: number
-  displayAmount: number
-  displayFee: number
-  displayCurrency: string
-}
-
-const transactionSchema = new Schema<ITransaction>(
+const transactionSchema = new Schema<ILedgerTransaction>(
   {
     hash: {
       type: Schema.Types.String,
@@ -89,6 +62,8 @@ const transactionSchema = new Schema<ITransaction>(
 
     // for onchain transactions.
     payee_addresses: [String],
+
+    memoPayer: String,
 
     satsAmount: Number,
     centsAmount: Number,
@@ -180,7 +155,7 @@ transactionSchema.index({ hash: 1 })
 
 setTransactionSchema(transactionSchema, undefined, { defaultIndexes: true })
 
-export const Transaction = mongoose.model("Medici_Transaction", transactionSchema)
+export const Transaction = mongoose.model<ILedgerTransaction>("Medici_Transaction", transactionSchema)
 
 const transactionMetadataSchema = new Schema<TransactionMetadataRecord>(
   {

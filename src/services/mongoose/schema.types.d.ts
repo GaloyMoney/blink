@@ -62,7 +62,7 @@ interface DbMetadataRecord {
 }
 
 interface WalletInvoiceRecord {
-  id: string
+  _id: string
   walletId: string
   cents: number
   currency: string

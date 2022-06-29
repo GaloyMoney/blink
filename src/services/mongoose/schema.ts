@@ -22,7 +22,7 @@ const dbMetadataSchema = new Schema<DbMetadataRecord>({
 export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
 
 const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
-  id: String, // hash of invoice
+  _id: { type: String }, // hash of invoice
   walletId: {
     required: true,
     type: String,
@@ -73,7 +73,7 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
 
 walletInvoiceSchema.index({ walletId: 1, paid: 1 })
 
-export const WalletInvoice = mongoose.model("InvoiceUser", walletInvoiceSchema)
+export const WalletInvoice = mongoose.model<WalletInvoiceRecord>("InvoiceUser", walletInvoiceSchema)
 
 const feesConfig = getFeesConfig()
 
@@ -118,7 +118,7 @@ const WalletSchema = new Schema<WalletRecord>({
   },
 })
 
-export const Wallet = mongoose.model("Wallet", WalletSchema)
+export const Wallet = mongoose.model<WalletRecord>("Wallet", WalletSchema)
 
 const UserSchema = new Schema<UserRecord>(
   {
