@@ -46,12 +46,14 @@ export class InvalidNegativeAmountError extends DomainError {}
 export class MissingPhoneError extends DomainError {}
 
 export class ContactNotExistentError extends DomainError {}
+
 export class InvalidWithdrawFeeError extends ValidationError {}
 export class InvalidCurrencyBaseAmountError extends ValidationError {}
 export class InvalidSatoshiAmountError extends ValidationError {}
 export class InvalidUsdCents extends ValidationError {}
 export class NonIntegerError extends ValidationError {}
 export class InvalidOnChainAddress extends ValidationError {}
+export class InvalidPubKeyError extends ValidationError {}
 export class InvalidScanDepthAmount extends ValidationError {}
 export class SatoshiAmountRequiredError extends ValidationError {}
 export class InvalidUsername extends ValidationError {}

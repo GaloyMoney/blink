@@ -57,7 +57,12 @@ const updateLnPaymentsByFunction = async ({
   let after: PagingStartToken | PagingContinueToken | PagingStopToken = undefined
   let updatedProcessedHashes = processedLnPaymentsHashes
   while (updatedProcessedHashes.length < incompleteLnPayments.length && after !== false) {
-    const results = await asyncRunInSpan(
+    const results:
+      | LightningError
+      | {
+          after: PagingContinueToken | PagingStopToken
+          processedLnPaymentsHashes: PaymentHash[]
+        } = await asyncRunInSpan(
       "app.lightning.updateLnPaymentsPaginated",
       {
         attributes: {

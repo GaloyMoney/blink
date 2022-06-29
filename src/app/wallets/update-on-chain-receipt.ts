@@ -9,6 +9,7 @@ import { getCurrentPrice } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
 import { CacheKeys } from "@domain/cache"
+import { DisplayCurrency } from "@domain/fiat"
 import { DepositFeeCalculator } from "@domain/wallets"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
@@ -20,7 +21,11 @@ import { RedisCacheService } from "@services/cache"
 import { ColdStorageService } from "@services/cold-storage"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { NotificationsService } from "@services/notifications"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  UsersRepository,
+  WalletsRepository,
+} from "@services/mongoose"
 
 const redisCache = RedisCacheService()
 
@@ -105,14 +110,7 @@ const processTxForWallet = async (
   tx: IncomingOnChainTransaction,
   logger: Logger,
 ): Promise<void | ApplicationError> => {
-  const notifications = NotificationsService(
-    logger.child({
-      topic: "payment",
-      protocol: "onchain",
-      transactionType: "receipt",
-      onUs: false,
-    }),
-  )
+  const notifications = NotificationsService()
   const ledger = LedgerService()
 
   const walletAddresses = wallet.onChainAddresses()
@@ -161,11 +159,23 @@ const processTxForWallet = async (
             return result
           }
 
-          await notifications.onChainTransactionReceived({
-            walletId: wallet.id,
-            amount: sats,
+          const recipientAccount = await AccountsRepository().findById(wallet.accountId)
+          if (recipientAccount instanceof Error) return recipientAccount
+
+          const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+          if (recipientUser instanceof Error) return recipientUser
+
+          await notifications.onChainTxReceived({
+            recipientAccountId: wallet.accountId,
+            recipientWalletId: wallet.id,
+            paymentAmount: { amount: BigInt(sats), currency: wallet.currency },
+            displayPaymentAmount: {
+              amount: amountDisplayCurrency,
+              currency: DisplayCurrency.Usd,
+            },
             txHash: tx.rawTx.txHash,
-            displayCurrencyPerSat,
+            recipientDeviceTokens: recipientUser.deviceTokens,
+            recipientLanguage: recipientUser.language,
           })
         }
       }

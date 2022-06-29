@@ -4,77 +4,64 @@ type NotificationsServiceError = import("./errors").NotificationsServiceError
 type NotificationType =
   typeof import("./index").NotificationType[keyof typeof import("./index").NotificationType]
 
+type TransactionNotificationBaseArgs = {
+  paymentAmount: PaymentAmount<WalletCurrency>
+  displayPaymentAmount?: DisplayPaymentAmount<DisplayCurrency>
+}
+
+type TransactionReceivedNotificationBaseArgs = TransactionNotificationBaseArgs & {
+  recipientAccountId: AccountId
+  recipientWalletId: WalletId
+  recipientDeviceTokens?: DeviceToken[]
+  recipientLanguage?: UserLanguage
+}
+
+type TransactionSentNotificationBaseArgs = TransactionNotificationBaseArgs & {
+  senderAccountId: AccountId
+  senderWalletId: WalletId
+  senderDeviceTokens?: DeviceToken[]
+  senderLanguage?: UserLanguage
+}
+
+type IntraLedgerTxReceivedArgs = TransactionReceivedNotificationBaseArgs
+
+type LightningTxReceivedArgs = TransactionReceivedNotificationBaseArgs & {
+  paymentHash: PaymentHash
+}
+
 type OnChainTxBaseArgs = {
-  walletId: WalletId
-  amount: Satoshis
   txHash: OnChainTxHash
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
 }
 
-type OnChainTxReceivedArgs = OnChainTxBaseArgs
-type OnChainTxReceivedPendingArgs = OnChainTxBaseArgs
-type OnChainTxPaymentArgs = OnChainTxBaseArgs
-
-type LnInvoicePaidBitcoinWalletArgs = {
-  paymentHash: PaymentHash
-  recipientWalletId: WalletId
-  sats: Satoshis | bigint
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
-}
-
-type LnInvoicePaidUsdWalletArgs = {
-  paymentHash: PaymentHash
-  recipientWalletId: WalletId
-  cents: UsdCents | bigint
-}
-
-type IntraLedgerArgs = {
-  senderWalletId: WalletId
-  recipientWalletId: WalletId
-  amount: Satoshis
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
-}
-
-type IntraLedgerPaidBitcoinWalletArgs = {
-  senderWalletId: WalletId
-  recipientWalletId: WalletId
-  sats: Satoshis | bigint
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
-}
-
-type IntraLedgerPaidUsdWalletArgs = {
-  senderWalletId: WalletId
-  recipientWalletId: WalletId
-  cents: UsdCents | bigint
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
-}
+type OnChainTxReceivedArgs = TransactionReceivedNotificationBaseArgs & OnChainTxBaseArgs
+type OnChainTxReceivedPendingArgs = TransactionReceivedNotificationBaseArgs &
+  OnChainTxBaseArgs
+type OnChainTxSentArgs = TransactionSentNotificationBaseArgs & OnChainTxBaseArgs
 
 type SendBalanceArgs = {
-  balance: CurrencyBaseAmount
-  walletCurrency: WalletCurrency
-  userId: UserId
-  displayCurrencyPerSat?: DisplayCurrencyPerSat
+  balanceAmount: BalanceAmount<WalletCurrency>
+  recipientDeviceTokens: DeviceToken[]
+  displayBalanceAmount?: DisplayBalanceAmount<DisplayCurrency>
+  recipientLanguage?: UserLanguage
 }
 
 interface INotificationsService {
-  onChainTransactionReceived(
+  lightningTxReceived: (
+    args: LightningTxReceivedArgs,
+  ) => Promise<void | NotificationsServiceError>
+
+  intraLedgerTxReceived: (
+    args: IntraLedgerTxReceivedArgs,
+  ) => Promise<void | NotificationsServiceError>
+
+  onChainTxReceived(
     args: OnChainTxReceivedArgs,
   ): Promise<void | NotificationsServiceError>
-  onChainTransactionReceivedPending(
+  onChainTxReceivedPending(
     args: OnChainTxReceivedPendingArgs,
   ): Promise<void | NotificationsServiceError>
-  onChainTransactionPayment(
-    args: OnChainTxPaymentArgs,
-  ): Promise<void | NotificationsServiceError>
+  onChainTxSent(args: OnChainTxSentArgs): Promise<void | NotificationsServiceError>
+
   priceUpdate: (DisplayCurrencyPerSat: DisplayCurrencyPerSat) => void
-  lnInvoiceBitcoinWalletPaid: (args: LnInvoicePaidBitcoinWalletArgs) => void
-  lnInvoiceUsdWalletPaid: (args: LnInvoicePaidUsdWalletArgs) => void
-  intraLedgerBtcWalletPaid(
-    args: IntraLedgerPaidBitcoinWalletArgs,
-  ): Promise<void | NotificationsServiceError>
-  intraLedgerUsdWalletPaid(
-    args: IntraLedgerPaidUsdWalletArgs,
-  ): Promise<void | NotificationsServiceError>
-  intraLedgerPaid(args: IntraLedgerArgs): Promise<void | NotificationsServiceError>
-  sendBalance(args: SendBalanceArgs): Promise<void | NotImplementedError>
+  sendBalance(args: SendBalanceArgs): Promise<void | NotificationsServiceError>
 }

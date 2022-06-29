@@ -1,6 +1,5 @@
 import { decodeInvoice } from "@domain/bitcoin/lightning"
-import { parseLndErrorDetails } from "@services/lnd"
-import { getActiveLnd } from "@services/lnd/utils"
+import { getActiveLnd, parseLndErrorDetails } from "@services/lnd/utils"
 
 import { createInvoice, payViaPaymentDetails, payViaRoutes } from "lightning"
 
@@ -121,7 +120,7 @@ describe("'lightning' library error handling", () => {
       expect(nestedErrObj).toHaveProperty("metadata")
       expect(nestedErrObj).toHaveProperty("details")
 
-      const expectedDetails = "invalid magic in compressed pubkey string: 0"
+      const expectedDetails = "invalid public key: unsupported format: 0"
       expect(nestedErrObj.details).toBe(expectedDetails)
 
       const parsedErr = parseLndErrorDetails(err)

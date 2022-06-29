@@ -11,7 +11,7 @@ describe("Notifications - createPushNotificationContent", () => {
   test.each(btcTransactions)(
     "content is valid for BTC $type transaction",
     ({ type, paymentAmount, body, title }) => {
-      const result = createPushNotificationContent({ type, paymentAmount })
+      const result = createPushNotificationContent({ type, amount: paymentAmount })
       expect(result).toEqual(expect.objectContaining({ body, title }))
     },
   )
@@ -21,8 +21,8 @@ describe("Notifications - createPushNotificationContent", () => {
     ({ type, paymentAmount, displayPaymentAmount, body, title }) => {
       const result = createPushNotificationContent({
         type,
-        paymentAmount,
-        displayPaymentAmount,
+        amount: paymentAmount,
+        displayAmount: displayPaymentAmount,
       })
       expect(result).toEqual(expect.objectContaining({ body, title }))
     },
@@ -31,7 +31,7 @@ describe("Notifications - createPushNotificationContent", () => {
   test.each(usdTransactions)(
     "content is valid for USD $type transaction",
     ({ type, paymentAmount, body, title }) => {
-      const result = createPushNotificationContent({ type, paymentAmount })
+      const result = createPushNotificationContent({ type, amount: paymentAmount })
       expect(result).toEqual(expect.objectContaining({ body, title }))
     },
   )
@@ -41,8 +41,8 @@ describe("Notifications - createPushNotificationContent", () => {
     ({ type, paymentAmount, displayPaymentAmount, body, title }) => {
       const result = createPushNotificationContent({
         type,
-        paymentAmount,
-        displayPaymentAmount,
+        amount: paymentAmount,
+        displayAmount: displayPaymentAmount,
       })
       expect(result).toEqual(expect.objectContaining({ body, title }))
     },

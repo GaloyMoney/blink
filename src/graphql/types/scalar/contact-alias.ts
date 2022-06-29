@@ -6,6 +6,9 @@ const ContactAlias = GT.Scalar({
   description:
     "An alias name that a user can set for a wallet (with which they have transactions)",
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for AuthToken" })
+    }
     return validContactAliasValue(value)
   },
   parseLiteral(ast) {
@@ -16,7 +19,7 @@ const ContactAlias = GT.Scalar({
   },
 })
 
-function validContactAliasValue(value) {
+function validContactAliasValue(value: string) {
   if (value.match(/^[\p{Alpha}][\p{Alpha} -]{3,}/u)) {
     return value
   }

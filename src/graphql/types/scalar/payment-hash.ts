@@ -5,6 +5,9 @@ import { GT } from "@graphql/index"
 const PaymentHash = GT.Scalar({
   name: "PaymentHash",
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for PaymentHash" })
+    }
     return validPaymentHash(value)
   },
   parseLiteral(ast) {
@@ -15,7 +18,7 @@ const PaymentHash = GT.Scalar({
   },
 })
 
-function validPaymentHash(value) {
+function validPaymentHash(value: string) {
   return isSha256Hash(value)
     ? value
     : new InputValidationError({ message: "Invalid value for PaymentHash" })

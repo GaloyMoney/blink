@@ -98,10 +98,10 @@ describe("onchainBlockEventhandler", () => {
     let isFinalBlock = false
     let lastHeight = initialBlock
     const subBlocks = subscribeToBlocks({ lnd: lnd1 })
-    subBlocks.on("block", async ({ height }) => {
+    subBlocks.on("block", async ({ height }: { height: number }) => {
       if (height > lastHeight) {
         lastHeight = height
-        await onchainBlockEventhandler({ height })
+        await onchainBlockEventhandler(height)
       }
       isFinalBlock = lastHeight >= initialBlock + blocksToMine
     })
@@ -232,8 +232,8 @@ describe("onchainBlockEventhandler", () => {
     const { title, body } = createPushNotificationContent({
       type: NotificationType.LnInvoicePaid,
       userLanguage: locale as UserLanguage,
-      paymentAmount,
-      displayPaymentAmount,
+      amount: paymentAmount,
+      displayAmount: displayPaymentAmount,
     })
 
     expect(sendNotification.mock.calls.length).toBe(1)

@@ -18,9 +18,9 @@ import {
   UnknownLedgerError,
 } from "@domain/ledger/errors"
 import {
+  balanceAmountFromNumber,
   BigIntFloatConversionError,
   ErrorLevel,
-  paymentAmountFromNumber,
 } from "@domain/shared"
 import { toObjectId } from "@services/mongoose/utils"
 import {
@@ -221,7 +221,7 @@ export const LedgerService = (): ILedgerService => {
 
   const getWalletBalanceAmount = async <S extends WalletCurrency>(
     walletDescriptor: WalletDescriptor<S>,
-  ): Promise<PaymentAmount<S> | LedgerError> => {
+  ): Promise<BalanceAmount<S> | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletDescriptor.id)
     try {
       const { balance } = await MainBook.balance({
@@ -241,7 +241,7 @@ export const LedgerService = (): ILedgerService => {
         }
       }
 
-      const balanceAmount = paymentAmountFromNumber({
+      const balanceAmount = balanceAmountFromNumber({
         amount: balance,
         currency: walletDescriptor.currency,
       })
@@ -254,7 +254,7 @@ export const LedgerService = (): ILedgerService => {
             ["error.message"]: `Inconsistent float balance from db: ${balance}`,
           },
         })
-        return paymentAmountFromNumber({
+        return balanceAmountFromNumber({
           amount: Math.floor(balance),
           currency: walletDescriptor.currency,
         })

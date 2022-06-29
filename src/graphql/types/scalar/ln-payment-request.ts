@@ -22,7 +22,7 @@ function validLnPaymentRequest(value: string) {
   // TODO: add network type
   // TODO: limit length of the invoice
   if (value.match(/^ln[a-z0-9]+$/i)) {
-    return value
+    return value as EncodedPaymentRequest
   }
   return new InputValidationError({ message: "Invalid value for LnPaymentRequest" })
 }

@@ -6,6 +6,9 @@ const Username = GT.Scalar({
   name: "Username",
   description: "Unique identifier of a user",
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for Username" })
+    }
     return validUsernameValue(value)
   },
   parseLiteral(ast) {
@@ -16,7 +19,7 @@ const Username = GT.Scalar({
   },
 })
 
-function validUsernameValue(value) {
+function validUsernameValue(value: string) {
   if (value.match(UsernameRegex)) {
     return value.toLowerCase()
   }

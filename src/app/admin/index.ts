@@ -1,5 +1,4 @@
 import { checkedToUsername } from "@domain/accounts"
-import { checkedToPhoneNumber } from "@domain/users"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 
 export const getAccountByUsername = async (username: string) => {
@@ -10,12 +9,9 @@ export const getAccountByUsername = async (username: string) => {
   return accounts.findByUsername(usernameValid)
 }
 
-export const getAccountByUserPhone = async (phone: string) => {
-  const phoneNumberValid = checkedToPhoneNumber(phone)
-  if (phoneNumberValid instanceof Error) return phoneNumberValid
-
+export const getAccountByUserPhone = async (phone: PhoneNumber) => {
   const users = UsersRepository()
-  const user = await users.findByPhone(phoneNumberValid)
+  const user = await users.findByPhone(phone)
   if (user instanceof Error) return user
 
   const accounts = AccountsRepository()

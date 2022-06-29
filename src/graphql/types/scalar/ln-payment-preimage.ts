@@ -5,6 +5,9 @@ import { GT } from "@graphql/index"
 const LnPaymentPreImage = GT.Scalar({
   name: "LnPaymentPreImage",
   parseValue(value) {
+    if (typeof value !== "string") {
+      return new InputValidationError({ message: "Invalid type for LnPaymentPreImage" })
+    }
     return validLnPaymentPreImage(value)
   },
   parseLiteral(ast) {
@@ -15,7 +18,7 @@ const LnPaymentPreImage = GT.Scalar({
   },
 })
 
-function validLnPaymentPreImage(value) {
+function validLnPaymentPreImage(value: string) {
   return isSha256Hash(value)
     ? value
     : new InputValidationError({ message: "Invalid value for LnPaymentPreImage" })

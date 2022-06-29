@@ -181,7 +181,6 @@ const updatePendingPayment = async ({
           journalId: pendingPayment.journalId,
           actualFee: roundedUpFee,
           revealedPreImage,
-          logger,
         })
       } else if (status === PaymentStatus.Failed) {
         paymentLogger.warn(

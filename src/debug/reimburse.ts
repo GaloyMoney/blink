@@ -16,7 +16,6 @@ import { Payments } from "@app"
 import { checkedToSats } from "@domain/bitcoin"
 import { checkedToWalletId } from "@domain/wallets"
 import { getBankOwnerWalletId } from "@services/ledger/caching"
-import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
@@ -54,7 +53,6 @@ const reimburse = async (reimbursements: Array<reimbursement>) => {
     const reimburseResult = await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId,
       amount,
-      logger: baseLogger,
       senderWalletId: bankOwnerWalletId,
       senderAccount: bankOwnerAccount,
       memo: reimbursement.memo,

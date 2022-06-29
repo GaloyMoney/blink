@@ -1,3 +1,5 @@
+import { EventEmitter } from "events"
+
 import { getWalletStatus } from "lightning"
 import { baseLogger } from "@services/logger"
 
@@ -7,17 +9,12 @@ import { params as unauthParams } from "./unauth"
 import { params as authParams } from "./auth"
 
 /*
-
 	Check the status of the wallet and emit current state
-
 */
-
-/* eslint-disable @typescript-eslint/no-var-requires */
-const EventEmitter = require("events")
 
 const intervals: NodeJS.Timer[] = []
 
-const isUpLoop = async (param: LndParamsUnAuthed) => {
+const isUpLoop = async (param: LndParamsUnAuthed): Promise<void> => {
   await isUp(param)
   const interval = setInterval(async () => {
     await isUp(param)
@@ -27,7 +24,7 @@ const isUpLoop = async (param: LndParamsUnAuthed) => {
 
 const isLndUp = async (param: LndParamsUnAuthed): Promise<void> => {
   let active = false
-  const { lnd, socket, active: isParamActive } = param
+  const { lnd, socket, active: pastStateActive } = param
 
   try {
     // will throw if there is an error
@@ -39,17 +36,19 @@ const isLndUp = async (param: LndParamsUnAuthed): Promise<void> => {
   }
 
   const authParam = authParams.find((p) => p.socket === socket)
-  if (authParam) {
-    authParam.active = active
+  if (!authParam) {
+    throw new Error("unreachable: this should not happen, authParam should not be null")
   }
+
+  authParam.active = active
   param.active = active
 
-  if (active && !isParamActive) {
-    lndStatusEvent.emit("started", authParam || param)
+  if (active && !pastStateActive) {
+    lndStatusEvent.emit("started", authParam)
   }
 
-  if (!active && isParamActive) {
-    lndStatusEvent.emit("stopped", authParam || param)
+  if (!active && pastStateActive) {
+    lndStatusEvent.emit("stopped", authParam)
   }
 
   baseLogger.debug({ socket, active }, "lnd pulse")

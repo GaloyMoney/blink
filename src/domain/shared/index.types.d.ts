@@ -9,14 +9,28 @@ type WalletCurrency =
 type ExchangeCurrencyUnit =
   typeof import("./primitives").ExchangeCurrencyUnit[keyof typeof import("./primitives").ExchangeCurrencyUnit]
 
-type PaymentAmount<T extends WalletCurrency> = {
+type Amount<T extends WalletCurrency> = {
   currency: T
   amount: bigint
 }
 
-type DisplayPaymentAmount<T extends DisplayCurrency> = {
+type DisplayAmount<T extends DisplayCurrency> = {
   currency: T
   amount: number
+}
+
+type PaymentAmount<T extends WalletCurrency> = Amount<T> & {
+  readonly brand?: unique symbol
+}
+type DisplayPaymentAmount<T extends DisplayCurrency> = DisplayAmount<T> & {
+  readonly brand?: unique symbol
+}
+
+type BalanceAmount<T extends WalletCurrency> = Amount<T> & {
+  readonly brand?: unique symbol
+}
+type DisplayBalanceAmount<T extends DisplayCurrency> = DisplayAmount<T> & {
+  readonly brand?: unique symbol
 }
 
 type WalletDescriptor<T extends WalletCurrency> = {

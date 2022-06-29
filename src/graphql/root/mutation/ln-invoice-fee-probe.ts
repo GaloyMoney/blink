@@ -19,7 +19,12 @@ const LnInvoiceFeeProbeInput = GT.Input({
   }),
 })
 
-const LnInvoiceFeeProbeMutation = GT.Field({
+const LnInvoiceFeeProbeMutation = GT.Field<{
+  input: {
+    walletId: WalletId | InputValidationError
+    paymentRequest: EncodedPaymentRequest | InputValidationError
+  }
+}>({
   type: GT.NonNull(SatAmountPayload),
   args: {
     input: { type: GT.NonNull(LnInvoiceFeeProbeInput) },
@@ -27,14 +32,13 @@ const LnInvoiceFeeProbeMutation = GT.Field({
   resolve: async (_, args) => {
     const { walletId, paymentRequest } = args.input
 
-    for (const input of [walletId, paymentRequest]) {
-      if (input instanceof Error) {
-        return { errors: [{ message: input.message }] }
-      }
-    }
+    if (walletId instanceof Error) return { errors: [{ message: walletId.message }] }
+
+    if (paymentRequest instanceof Error)
+      return { errors: [{ message: paymentRequest.message }] }
 
     const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
-    if (btcWalletValidated != true) return btcWalletValidated
+    if (btcWalletValidated !== true) return btcWalletValidated
 
     const { result: feeSatAmount, error } = await Payments.getLightningFeeEstimation({
       walletId,

@@ -1,4 +1,4 @@
-import BitcoindClient from "bitcoin-core"
+import BitcoindClient from "bitcoin-core-ts"
 import { btc2sat, sat2btc } from "@domain/bitcoin"
 import { BTC_NETWORK, getBitcoinCoreRPCConfig, getColdStorageConfig } from "@config"
 import {
@@ -74,7 +74,7 @@ export const ColdStorageService = async (): Promise<
       const client = await getBitcoindClient(walletName)
       if (client instanceof Error) return client
 
-      const output0 = {}
+      const output0: { [onchainaddress: OnChainAddress]: number } = {}
       output0[onChainAddress] = sat2btc(amount)
 
       const fundedPsbt = await client.walletCreateFundedPsbt({

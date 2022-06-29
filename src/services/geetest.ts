@@ -7,7 +7,7 @@ import { CaptchaUserFailToPassError, UnknownCaptchaError } from "@domain/captcha
 import axios from "axios"
 import GeetestLib from "gt3-server-node-express-sdk/sdk/geetest_lib" // galoy fork
 
-async function sendRequest(params) {
+async function sendRequest(params: { gt: string }) {
   const requestUrl = "https://bypass.geetest.com/v1/bypass_status.php"
   let bypassRes
   try {
@@ -15,7 +15,7 @@ async function sendRequest(params) {
       url: requestUrl,
       method: "GET",
       timeout: 5000,
-      params: params,
+      params,
     })
     const resBody = res.status === 200 ? res.data : ""
     bypassRes = resBody["status"]
@@ -25,7 +25,7 @@ async function sendRequest(params) {
   return bypassRes
 }
 
-const Geetest = (config): GeetestType => {
+const Geetest = (config: { id: string; key: string }): GeetestType => {
   const getBypassStatus = async () => {
     return sendRequest({ gt: config.id })
   }
@@ -59,9 +59,8 @@ const Geetest = (config): GeetestType => {
       const gtLib = new GeetestLib(config.id, config.key)
       const bypasscache = await getBypassStatus() // not a cache
       let result
-      const params = []
       if (bypasscache === "success") {
-        result = await gtLib.successValidate(challenge, validate, seccode, params)
+        result = await gtLib.successValidate(challenge, validate, seccode, [])
       } else {
         result = gtLib.failValidate(challenge, validate, seccode)
       }

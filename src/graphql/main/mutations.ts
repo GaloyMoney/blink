@@ -47,6 +47,11 @@ const fields = {
   captchaCreateChallenge: CaptchaCreateChallengeMutation,
   captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
 
+  lnInvoiceCreateOnBehalfOfRecipient: LnInvoiceCreateOnBehalfOfRecipientMutation,
+  lnUsdInvoiceCreateOnBehalfOfRecipient: LnUsdInvoiceCreateOnBehalfOfRecipientMutation,
+  lnNoAmountInvoiceCreateOnBehalfOfRecipient:
+    LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation,
+
   // authed
   twoFAGenerate: TwoFAGenerateMutation,
   twoFASave: TwoFASaveMutation,
@@ -69,11 +74,6 @@ const fields = {
   lnUsdInvoiceCreate: LnUsdInvoiceCreateMutation,
   lnNoAmountInvoiceCreate: LnNoAmountInvoiceCreateMutation,
 
-  lnInvoiceCreateOnBehalfOfRecipient: LnInvoiceCreateOnBehalfOfRecipientMutation,
-  lnUsdInvoiceCreateOnBehalfOfRecipient: LnUsdInvoiceCreateOnBehalfOfRecipientMutation,
-  lnNoAmountInvoiceCreateOnBehalfOfRecipient:
-    LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation,
-
   lnInvoicePaymentSend: LnInvoicePaymentSendMutation,
   lnNoAmountInvoicePaymentSend: LnNoAmountInvoicePaymentSendMutation,
   lnNoAmountUsdInvoicePaymentSend: LnNoAmountUsdInvoicePaymentSendMutation,
@@ -87,10 +87,10 @@ const fields = {
   onChainPaymentSendAll: OnChainPaymentSendAllMutation,
 }
 
-const addTracing = (fields) => {
+const addTracing = () => {
   for (const key in fields) {
     const original = fields[key].resolve
-    fields[key].resolve = (_, args, context) => {
+    fields[key].resolve = (source, args, context, info) => {
       const { ip, domainAccount, domainUser } = context
       return addAttributesToCurrentSpanAndPropagate(
         {
@@ -98,7 +98,7 @@ const addTracing = (fields) => {
           [ACCOUNT_USERNAME]: domainAccount?.username,
           [SemanticAttributes.HTTP_CLIENT_IP]: ip,
         },
-        () => original(_, args, context),
+        () => original(source, args, context, info),
       )
     }
   }
@@ -107,7 +107,7 @@ const addTracing = (fields) => {
 
 const MutationType = GT.Object({
   name: "Mutation",
-  fields: () => addTracing(fields),
+  fields: () => addTracing(),
 })
 
 export default MutationType

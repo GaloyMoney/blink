@@ -3,13 +3,12 @@ import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 
 const main = async () => {
-  const logger = baseLogger.child({ module: "dailyBalanceNotification" })
   const mongoose = await setupMongoConnection()
 
   // We're not using the Accounts.sendDefaultWalletBalanceToUsers() call pattern
   // because the root span becomes much too large. By calling the function directly
   // we bypass the wrapper.
-  await sendDefaultWalletBalanceToUsers(logger)
+  await sendDefaultWalletBalanceToUsers()
 
   await mongoose.connection.close()
 }

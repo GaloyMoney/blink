@@ -57,14 +57,24 @@ export const isEditor = rule({ cache: "contextual" })(
   },
 )
 
+const jwtAlgorithms: jwt.Algorithm[] = ["HS256"]
+
 const geeTestConfig = getGeetestConfig()
 const geetest = Geetest(geeTestConfig)
 
-const sessionContext = ({ token, ip, body }): Promise<GraphQLContext> => {
-  const userId = token?.uid ?? null
+const sessionContext = ({
+  tokenPayload,
+  ip,
+  body,
+}: {
+  tokenPayload: jwt.JwtPayload | null
+  ip: IpAddress | undefined
+  body
+}): Promise<GraphQLContext> => {
+  const userId = tokenPayload?.uid ?? null
 
   // TODO move from crypto.randomUUID() to a Jaeger standard
-  const logger = graphqlLogger.child({ token, id: crypto.randomUUID(), body })
+  const logger = graphqlLogger.child({ tokenPayload, id: crypto.randomUUID(), body })
 
   let domainUser: User | null = null
   let domainAccount: Account | undefined
@@ -145,7 +155,7 @@ export const startApolloServer = async ({
     plugins: apolloPulgins,
     context: async (context) => {
       // @ts-expect-error: TODO
-      const token = context.req?.token ?? null
+      const tokenPayload = context.req?.token ?? null
 
       const body = context.req?.body ?? null
 
@@ -156,7 +166,7 @@ export const startApolloServer = async ({
       const ip = parseIps(ipString)
 
       return sessionContext({
-        token,
+        tokenPayload,
         ip,
         body,
       })
@@ -226,7 +236,7 @@ export const startApolloServer = async ({
   app.use(
     expressjwt({
       secret: JWT_SECRET,
-      algorithms: ["HS256"],
+      algorithms: jwtAlgorithms,
       credentialsRequired: false,
       requestProperty: "token",
     }),
@@ -257,16 +267,22 @@ export const startApolloServer = async ({
             async onConnect(connectionParams, webSocket, connectionContext) {
               const { request } = connectionContext
 
-              let token: string | jwt.JwtPayload | null = null
+              let tokenPayload: string | jwt.JwtPayload | null = null
               const authz =
                 connectionParams.authorization || connectionParams.Authorization
               if (authz) {
                 const rawToken = authz.slice(7)
-                token = jwt.verify(rawToken, JWT_SECRET, { algorithms: ["HS256"] })
+                tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
+                  algorithms: jwtAlgorithms,
+                })
+
+                if (typeof tokenPayload === "string") {
+                  throw new Error("tokenPayload should be an object")
+                }
               }
 
               return sessionContext({
-                token,
+                tokenPayload,
                 ip: request?.socket?.remoteAddress,
 
                 // TODO: Resolve what's needed here

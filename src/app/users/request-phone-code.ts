@@ -4,7 +4,6 @@ import { getGaloyInstanceName, getTestAccounts } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import { checkedToPhoneNumber } from "@domain/users"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { consumeLimiter } from "@services/rate-limit"
 import { TwilioClient } from "@services/twilio"
@@ -18,7 +17,7 @@ export const requestPhoneCodeWithCaptcha = async ({
   logger,
   ip,
 }: {
-  phone: string
+  phone: PhoneNumber
   geetest: GeetestType
   geetestChallenge: string
   geetestValidate: string
@@ -28,9 +27,6 @@ export const requestPhoneCodeWithCaptcha = async ({
 }): Promise<true | ApplicationError> => {
   logger.info({ phone, ip }, "RequestPhoneCodeGeetest called")
 
-  const phoneNumberValid = checkedToPhoneNumber(phone)
-  if (phoneNumberValid instanceof Error) return phoneNumberValid
-
   const verifySuccess = await geetest.validate(
     geetestChallenge,
     geetestValidate,
@@ -39,7 +35,7 @@ export const requestPhoneCodeWithCaptcha = async ({
   if (verifySuccess instanceof Error) return verifySuccess
 
   return requestPhoneCode({
-    phone: phoneNumberValid,
+    phone,
     logger,
     ip,
   })
@@ -50,14 +46,11 @@ export const requestPhoneCode = async ({
   logger,
   ip,
 }: {
-  phone: string
+  phone: PhoneNumber
   logger: Logger
   ip: IpAddress
 }): Promise<true | PhoneProviderServiceError> => {
   logger.info({ phone, ip }, "RequestPhoneCode called")
-
-  const phoneNumberValid = checkedToPhoneNumber(phone)
-  if (phoneNumberValid instanceof Error) return phoneNumberValid
 
   {
     const limitOk = await checkPhoneCodeAttemptPerIpLimits(ip)
@@ -65,17 +58,17 @@ export const requestPhoneCode = async ({
   }
 
   {
-    const limitOk = await checkPhoneCodeAttemptPerPhoneLimits(phoneNumberValid)
+    const limitOk = await checkPhoneCodeAttemptPerPhoneLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
 
   {
-    const limitOk = await checkPhoneCodeAttemptPerPhoneMinIntervalLimits(phoneNumberValid)
+    const limitOk = await checkPhoneCodeAttemptPerPhoneMinIntervalLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
 
   const testAccounts = getTestAccounts()
-  if (TestAccountsChecker(testAccounts).isPhoneValid(phoneNumberValid)) {
+  if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
     return true
   }
 
@@ -84,12 +77,12 @@ export const requestPhoneCode = async ({
   const body = `${code} is your verification code for ${galoyInstanceName}`
 
   const result = await PhoneCodesRepository().persistNew({
-    phone: phoneNumberValid,
+    phone,
     code,
   })
   if (result instanceof Error) return result
 
-  const sendTextArguments = { body, to: phoneNumberValid, logger }
+  const sendTextArguments = { body, to: phone, logger }
 
   return TwilioClient().sendText(sendTextArguments)
 }

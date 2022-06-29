@@ -22,11 +22,12 @@ import {
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
 import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
-import { CENTS_PER_USD, DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
+import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
 
 import { LndService } from "@services/lnd"
 import {
+  AccountsRepository,
   LnPaymentsRepository,
   UsersRepository,
   WalletInvoicesRepository,
@@ -63,7 +64,6 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
   senderWalletId: uncheckedSenderWalletId,
   senderAccount,
   twoFAToken,
-  logger,
 }: PayInvoiceByWalletIdWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.initiation_method": PaymentInitiationMethod.Lightning,
@@ -110,9 +110,8 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
         senderWallet,
         senderUsername: senderAccount.username,
         memo,
-        logger,
       })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, logger })
+    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet })
 }
 
 export const payInvoiceByWalletId = async ({
@@ -120,7 +119,6 @@ export const payInvoiceByWalletId = async ({
   memo,
   senderWalletId: uncheckedSenderWalletId,
   senderAccount,
-  logger,
 }: PayInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.initiation_method": PaymentInitiationMethod.Lightning,
@@ -149,9 +147,8 @@ export const payInvoiceByWalletId = async ({
         senderWallet,
         senderUsername: senderAccount.username,
         memo,
-        logger,
       })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, logger })
+    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet })
 }
 
 export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
@@ -161,7 +158,6 @@ export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
   senderWalletId: uncheckedSenderWalletId,
   senderAccount,
   twoFAToken,
-  logger,
 }: PayNoAmountInvoiceByWalletIdWithTwoFAArgs): Promise<
   PaymentSendStatus | ApplicationError
 > => {
@@ -211,9 +207,8 @@ export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
         senderWallet,
         senderUsername: senderAccount.username,
         memo,
-        logger,
       })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, logger })
+    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet })
 }
 
 export const payNoAmountInvoiceByWalletId = async ({
@@ -222,7 +217,6 @@ export const payNoAmountInvoiceByWalletId = async ({
   memo,
   senderWalletId: uncheckedSenderWalletId,
   senderAccount,
-  logger,
 }: PayNoAmountInvoiceByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.initiation_method": PaymentInitiationMethod.Lightning,
@@ -252,9 +246,8 @@ export const payNoAmountInvoiceByWalletId = async ({
         senderWallet,
         senderUsername: senderAccount.username,
         memo,
-        logger,
       })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet, logger })
+    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet })
 }
 
 const validateInvoicePaymentInputs = async ({
@@ -448,13 +441,11 @@ const newCheckAndVerifyTwoFA = async ({
 const executePaymentViaIntraledger = async ({
   paymentFlow,
   senderWallet,
-  logger,
   senderUsername,
   memo,
 }: {
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
   senderWallet: Wallet
-  logger: Logger
   senderUsername: Username | undefined
   memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {
@@ -554,22 +545,29 @@ const executePaymentViaIntraledger = async ({
     const newWalletInvoice = await WalletInvoicesRepository().markAsPaid(paymentHash)
     if (newWalletInvoice instanceof Error) return newWalletInvoice
 
-    const notificationsService = NotificationsService(logger)
-    if (recipientWalletCurrency === WalletCurrency.Btc) {
-      notificationsService.lnInvoiceBitcoinWalletPaid({
-        paymentHash,
-        recipientWalletId,
-        sats: paymentFlow.btcPaymentAmount.amount,
-        displayCurrencyPerSat: (displayCentsPerSat /
-          CENTS_PER_USD) as DisplayCurrencyPerSat,
-      })
-    } else {
-      notificationsService.lnInvoiceUsdWalletPaid({
-        paymentHash,
-        recipientWalletId,
-        cents: paymentFlow.usdPaymentAmount.amount,
-      })
+    const recipientAccount = await AccountsRepository().findById(
+      recipientWallet.accountId,
+    )
+    if (recipientAccount instanceof Error) return recipientAccount
+
+    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+    if (recipientUser instanceof Error) return recipientUser
+
+    let amount = paymentFlow.btcPaymentAmount.amount
+    if (recipientWalletCurrency === WalletCurrency.Usd) {
+      amount = paymentFlow.usdPaymentAmount.amount
     }
+
+    const notificationsService = NotificationsService()
+    notificationsService.lightningTxReceived({
+      recipientAccountId: recipientWallet.accountId,
+      recipientWalletId,
+      paymentAmount: { amount, currency: recipientWalletCurrency },
+      displayPaymentAmount: { amount: metadata.usd, currency: DisplayCurrency.Usd },
+      paymentHash,
+      recipientDeviceTokens: recipientUser.deviceTokens,
+      recipientLanguage: recipientUser.language,
+    })
 
     return PaymentSendStatus.Success
   })
@@ -579,12 +577,10 @@ const executePaymentViaLn = async ({
   decodedInvoice,
   paymentFlow,
   senderWallet,
-  logger,
 }: {
   decodedInvoice: LnInvoice
   paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
   senderWallet: Wallet
-  logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
     "payment.settlement_method": SettlementMethod.Lightning,
@@ -718,7 +714,6 @@ const executePaymentViaLn = async ({
         journalId,
         actualFee: payResult.roundedUpFee,
         revealedPreImage: payResult.revealedPreImage,
-        logger,
       })
       if (reimbursed instanceof Error) return reimbursed
     }

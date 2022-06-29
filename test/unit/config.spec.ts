@@ -1,8 +1,6 @@
-import { configSchema, getAccountLimits, yamlConfig } from "@config"
+import { configSchema, getAccountLimits, yamlConfig, merge } from "@config"
 import { toCents } from "@domain/fiat"
 import Ajv from "ajv"
-
-import merge from "test/unit/helpers/merge"
 
 const ajv = new Ajv()
 let validate

@@ -18,7 +18,6 @@ import { WalletCurrency } from "@domain/shared"
 import { createToken } from "@services/jwt"
 import { isUp } from "@services/lnd/health"
 import { params as unauthParams } from "@services/lnd/unauth"
-import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 import {
   AccountsRepository,
@@ -111,7 +110,6 @@ const disburseFunds = async (
     await Payments.intraledgerPaymentSendWalletId({
       recipientWalletId: wallet.btcWalletId,
       amount: sats,
-      logger: baseLogger,
       senderWalletId: disburserWalletId,
       senderAccount: disburserAccount,
       memo: null,
@@ -128,7 +126,6 @@ const disburseFunds = async (
       memo: null,
       senderWalletId: disburserWalletId,
       senderAccount: disburserAccount,
-      logger: baseLogger,
     })
   }
 }

@@ -285,8 +285,8 @@ describe("UserWallet - On chain", () => {
     const pendingNotification = createPushNotificationContent({
       type: NotificationType.OnchainReceiptPending,
       userLanguage: locale as UserLanguage,
-      paymentAmount,
-      displayPaymentAmount,
+      amount: paymentAmount,
+      displayAmount: displayPaymentAmount,
     })
 
     expect(sendNotification.mock.calls.length).toBe(1)
