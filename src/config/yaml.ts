@@ -290,12 +290,12 @@ export const getAccountsConfig = (config = yamlConfig): AccountsConfig => ({
   initialStatus: config.accounts.initialStatus as AccountStatus,
 })
 
-export const getLoopConfig = (): LoopConfig => {
-  const config = yamlConfig.loop
+export const getSwapConfig = (): SwapConfig => {
+  const config = yamlConfig.swap
   return {
-    maxOutboundLiquidityBalance: toSats(config.maxOutboundLiquidityBalance),
-    loopoutAmount: toSats(config.loopoutAmount),
-    loopUrl: config.loopUrl,
-    loopProvider: config.loopProvider,
+    minOnChainBalance: toSats(config.minOnChainBalance),
+    swapOutAmount: toSats(config.swapOutAmount),
+    swapUrl: config.swapUrl,
+    swapProviders: config.swapProviders,
   }
 }

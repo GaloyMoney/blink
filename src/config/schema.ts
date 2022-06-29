@@ -304,13 +304,17 @@ export const configSchema = {
       ],
       additionalProperties: false,
     },
-    loop: {
+    swap: {
       type: "object",
       properties: {
-        maxOutboundLiquidityBalance: { type: "number" },
-        loopUrl: { type: "string" },
-        loopoutAmount: { type: "number" },
-        loopProvider: { type: "string" },
+        minOnChainBalance: { type: "number" },
+        swapUrl: { type: "string" },
+        swapOutAmount: { type: "number" },
+        swapProviders: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+        },
       },
     },
     apollo: {

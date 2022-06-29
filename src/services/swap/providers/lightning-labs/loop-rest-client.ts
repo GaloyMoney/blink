@@ -3,7 +3,7 @@ import https from "https"
 
 import axios, { AxiosResponse } from "axios"
 
-import { getLoopConfig } from "@config"
+import { getSwapConfig } from "@config"
 
 const loopMacaroon = process.env.LOOP_MACAROON
   ? convertMacaroonToHexString(Buffer.from(process.env.LOOP_MACAROON, "base64"))
@@ -63,7 +63,7 @@ async function loopOut(amt, swap_fee?): Promise<AxiosResponse> {
   }
   let resp
   try {
-    resp = await loopClient().post(`${getLoopConfig().loopUrl}/v1/loop/out`, body)
+    resp = await loopClient().post(`${getSwapConfig().swapUrl}/v1/loop/out`, body)
   } catch (e) {
     resp = e
   }
@@ -77,7 +77,7 @@ async function swapStatus(swapId) {
     // The swap identifier which currently is the hash that locks the HTLCs.
     // When using REST, this field must be encoded as URL safe base64.
     const id = swapId.replaceAll("+", "-").replaceAll("/", "_")
-    resp = await loopClient().get(`${getLoopConfig().loopUrl}/v1/loop/swap/${id}`)
+    resp = await loopClient().get(`${getSwapConfig().swapUrl}/v1/loop/swap/${id}`)
   } catch (e) {
     resp = e
   }
@@ -88,7 +88,7 @@ async function swapStatus(swapId) {
 async function swapStatusAll() {
   let resp: AxiosResponse
   try {
-    resp = await loopClient().get(`${getLoopConfig().loopUrl}/v1/loop/swaps`)
+    resp = await loopClient().get(`${getSwapConfig().swapUrl}/v1/loop/swaps`)
   } catch (e) {
     resp = e
   }
@@ -99,7 +99,7 @@ async function swapStatusAll() {
 async function liquidityParams() {
   let resp: AxiosResponse
   try {
-    resp = await loopClient().get(`${getLoopConfig().loopUrl}/v1/liquidity/params`)
+    resp = await loopClient().get(`${getSwapConfig().swapUrl}/v1/liquidity/params`)
   } catch (e) {
     resp = e
   }
@@ -110,7 +110,7 @@ async function liquidityParams() {
 async function loopOutTerms() {
   let resp: AxiosResponse
   try {
-    resp = await loopClient().get(`${getLoopConfig().loopUrl}/v1/loop/out/terms`)
+    resp = await loopClient().get(`${getSwapConfig().swapUrl}/v1/loop/out/terms`)
   } catch (e) {
     resp = e
   }
@@ -121,7 +121,7 @@ async function loopOutTerms() {
 async function loopOutQuote(amt) {
   let resp: AxiosResponse
   try {
-    resp = await loopClient().get(`${getLoopConfig().loopUrl}/v1/loop/out/quote/${amt}`)
+    resp = await loopClient().get(`${getSwapConfig().swapUrl}/v1/loop/out/quote/${amt}`)
   } catch (e) {
     resp = e
   }

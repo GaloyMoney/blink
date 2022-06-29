@@ -167,11 +167,11 @@ onChainWallet:
   scanDepthOutgoing: 2
   scanDepthChannelUpdate: 8
 
-loop:
-  maxOutboundLiquidityBalance: 2835916 # 0.03 ($600)
-  loopUrl: "https://localhost:8081"
-  loopoutAmount: 945305 # 0.009 ($200)
-  loopProvider: "@services/loop/providers/lightning-labs/loop-swap-provider" # or another custom provider, like Boltz
+swap:
+  minOnChainBalance: 20000000 # 0.2
+  swapUrl: "https://localhost:8081"
+  swapOutAmount: 945305 # 0.009
+  swapProviders: ["loop"] 
 
 # TODO
 # carrierRegexFilter: ""

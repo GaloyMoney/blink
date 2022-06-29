@@ -115,11 +115,11 @@ type YamlSchema = {
     scanDepthOutgoing: number
     scanDepthChannelUpdate: number
   }
-  loop: {
-    maxOutboundLiquidityBalance: number
-    loopUrl: string
-    loopoutAmount: number
-    loopProvider: string
+  swap: {
+    minOnChainBalance: number
+    swapUrl: string
+    swapOutAmount: number
+    swapProviders: Array<string>
   }
   apollo: {
     playground: boolean

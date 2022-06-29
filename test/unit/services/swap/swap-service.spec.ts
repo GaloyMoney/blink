@@ -1,4 +1,4 @@
-import { loopOut } from "@services/loop/loop-service"
+import { swapOut } from "@services/swap/swap-service"
 
 jest.mock("@services/redis", () => ({}))
 
@@ -12,9 +12,9 @@ afterAll(async () => {
   jest.restoreAllMocks()
 })
 
-describe("loop", () => {
-  it("loop out should return data", async () => {
-    const data = await loopOut()
+describe("swap", () => {
+  it("out should return data", async () => {
+    const data = await swapOut()
     expect(data).toBeTruthy
   })
 })
