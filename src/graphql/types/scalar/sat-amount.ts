@@ -21,7 +21,7 @@ const SatAmount = GT.Scalar({
 function validSatAmount(value: string | number) {
   let intValue: number
   if (typeof value === "number") {
-    intValue = value
+    intValue = Math.trunc(value)
   } else {
     intValue = Number.parseInt(value, 10)
   }
