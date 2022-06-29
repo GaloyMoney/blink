@@ -196,9 +196,6 @@
                 <a href="#definition-AuthTokenPayload">AuthTokenPayload</a>
               </li>
               <li>
-                <a href="#definition-BTCWallet">BTCWallet</a>
-              </li>
-              <li>
                 <a href="#definition-Boolean">Boolean</a>
               </li>
               <li>
@@ -260,12 +257,6 @@
               </li>
               <li>
                 <a href="#definition-InitiationViaOnChain">InitiationViaOnChain</a>
-              </li>
-              <li>
-                <a href="#definition-InputError">InputError</a>
-              </li>
-              <li>
-                <a href="#definition-InputErrorCode">InputErrorCode</a>
               </li>
               <li>
                 <a href="#definition-Int">Int</a>
@@ -403,12 +394,6 @@
                 <a href="#definition-PageInfo">PageInfo</a>
               </li>
               <li>
-                <a href="#definition-PaymentError">PaymentError</a>
-              </li>
-              <li>
-                <a href="#definition-PaymentErrorCode">PaymentErrorCode</a>
-              </li>
-              <li>
                 <a href="#definition-PaymentHash">PaymentHash</a>
               </li>
               <li>
@@ -506,9 +491,6 @@
               </li>
               <li>
                 <a href="#definition-TxStatus">TxStatus</a>
-              </li>
-              <li>
-                <a href="#definition-UsdWallet">UsdWallet</a>
               </li>
               <li>
                 <a href="#definition-User">User</a>
@@ -785,14 +767,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Response</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">"data"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-    <span class="hljs-attr">"accountDefaultWallet"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-      <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"4"</span><span class="hljs-punctuation">,</span>
-      <span class="hljs-attr">"walletCurrency"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"BTC"</span>
-    <span class="hljs-punctuation">}</span>
-  <span class="hljs-punctuation">}</span>
-<span class="hljs-punctuation">}</span>
+                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span><span class="hljs-attr">"data"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span><span class="hljs-attr">"accountDefaultWallet"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span><span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">4</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"walletCurrency"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"BTC"</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">}</span>
 </code></pre> </body>
                   </html>
                 </div>
@@ -840,7 +815,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
       <span class="hljs-attr">"base"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9007199254740991</span><span class="hljs-punctuation">,</span>
       <span class="hljs-attr">"currencyUnit"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"BTCSAT"</span><span class="hljs-punctuation">,</span>
       <span class="hljs-attr">"formattedAmount"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span><span class="hljs-punctuation">,</span>
-      <span class="hljs-attr">"offset"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">987</span>
+      <span class="hljs-attr">"offset"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">123</span>
     <span class="hljs-punctuation">}</span>
   <span class="hljs-punctuation">}</span>
 <span class="hljs-punctuation">}</span>
@@ -1137,8 +1112,8 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"data"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
     <span class="hljs-attr">"mobileVersions"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
       <span class="hljs-punctuation">{</span>
-        <span class="hljs-attr">"currentSupported"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">123</span><span class="hljs-punctuation">,</span>
-        <span class="hljs-attr">"minSupported"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">123</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">"currentSupported"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">987</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">"minSupported"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">987</span><span class="hljs-punctuation">,</span>
         <span class="hljs-attr">"platform"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span>
       <span class="hljs-punctuation">}</span>
     <span class="hljs-punctuation">]</span>
@@ -1304,7 +1279,12 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
   <span class="hljs-attr">"data"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-    <span class="hljs-attr">"quizQuestions"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">{</span><span class="hljs-attr">"earnAmount"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">SatAmount</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">4</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">]</span>
+    <span class="hljs-attr">"quizQuestions"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+      <span class="hljs-punctuation">{</span>
+        <span class="hljs-attr">"earnAmount"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">SatAmount</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"4"</span>
+      <span class="hljs-punctuation">}</span>
+    <span class="hljs-punctuation">]</span>
   <span class="hljs-punctuation">}</span>
 <span class="hljs-punctuation">}</span>
 </code></pre> </body>
@@ -1732,7 +1712,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"data"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
     <span class="hljs-attr">"deviceNotificationTokenCreate"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
       <span class="hljs-attr">"errors"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">Error</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
-      <span class="hljs-attr">"success"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">false</span>
+      <span class="hljs-attr">"success"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">true</span>
     <span class="hljs-punctuation">}</span>
   <span class="hljs-punctuation">}</span>
 <span class="hljs-punctuation">}</span>
@@ -3410,7 +3390,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
   <span class="hljs-attr">"data"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-    <span class="hljs-attr">"twoFADelete"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span><span class="hljs-attr">"errors"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">Error</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"success"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">true</span><span class="hljs-punctuation">}</span>
+    <span class="hljs-attr">"twoFADelete"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span><span class="hljs-attr">"errors"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">Error</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"success"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">false</span><span class="hljs-punctuation">}</span>
   <span class="hljs-punctuation">}</span>
 <span class="hljs-punctuation">}</span>
 </code></pre> </body>
@@ -3863,7 +3843,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"data"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
     <span class="hljs-attr">"userRequestAuthCode"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
       <span class="hljs-attr">"errors"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">Error</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
-      <span class="hljs-attr">"success"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">true</span>
+      <span class="hljs-attr">"success"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">false</span>
     <span class="hljs-punctuation">}</span>
   <span class="hljs-punctuation">}</span>
 <span class="hljs-punctuation">}</span>
@@ -4201,7 +4181,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">"csvTransactions"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"csvTransactions"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"defaultWalletId"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">WalletId</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">4</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"transactions"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">TransactionConnection</span><span class="hljs-punctuation">,</span>
@@ -4387,139 +4367,6 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
               </div>
             </div>
           </section>
-          <section id="definition-BTCWallet" class="definition definition-object" data-traverse-target="definition-BTCWallet">
-            <div class="definition-group-name">
-              <a href="#group-Types">Types</a>
-            </div>
-            <h2 class="definition-heading">BTCWallet</h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <div class="definition-description doc-copy-section">
-                  <h5>Description</h5>
-                  <p>A wallet belonging to an account which contains a BTC balance and a list of transactions.</p>
-                </div>
-                <div class="definition-properties doc-copy-section">
-                  <h5>Fields</h5>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Field Name</th>
-                        <th>Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>accountId</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-ID"><code>ID!</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>balance</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-SignedAmount"><code>SignedAmount!</code></a>
-                          </span>
-                        </td>
-                        <td> A balance stored in BTC. </td>
-                      </tr>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>id</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-ID"><code>ID!</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr class="row-has-field-arguments">
-                        <td data-property-name="">
-                          <span class="property-name"><code>transactions</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-TransactionConnection"><code>TransactionConnection</code></a>
-                          </span>
-                        </td>
-                        <td> A list of BTC transactions associated with this wallet. </td>
-                      </tr>
-                      <tr class="row-field-arguments">
-                        <td colspan="2">
-                          <div class="field-arguments">
-                            <h5 class="field-arguments-heading"> Arguments </h5>
-                            <div class="field-argument-list">
-                              <div class="field-argument">
-                                <h6 class="field-argument-name">
-                                  <span class="property-name"><code>after</code></span> -
-                                  <span class="property-type">
-                                    <a href="#definition-String"><code>String</code></a>
-                                  </span>
-                                </h6>
-                                <p>Returns the items in the list that come after the specified cursor.</p>
-                              </div>
-                              <div class="field-argument">
-                                <h6 class="field-argument-name">
-                                  <span class="property-name"><code>before</code></span> -
-                                  <span class="property-type">
-                                    <a href="#definition-String"><code>String</code></a>
-                                  </span>
-                                </h6>
-                                <p>Returns the items in the list that come before the specified cursor.</p>
-                              </div>
-                              <div class="field-argument">
-                                <h6 class="field-argument-name">
-                                  <span class="property-name"><code>first</code></span> -
-                                  <span class="property-type">
-                                    <a href="#definition-Int"><code>Int</code></a>
-                                  </span>
-                                </h6>
-                                <p>Returns the first n items from the list.</p>
-                              </div>
-                              <div class="field-argument">
-                                <h6 class="field-argument-name">
-                                  <span class="property-name"><code>last</code></span> -
-                                  <span class="property-type">
-                                    <a href="#definition-Int"><code>Int</code></a>
-                                  </span>
-                                </h6>
-                                <p>Returns the last n items from the list.</p>
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>walletCurrency</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-WalletCurrency"><code>WalletCurrency!</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="doc-examples">
-                <div class="example-section example-section-is-code">
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">"accountId"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">4</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"balance"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">SignedAmount</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">4</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"transactions"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">TransactionConnection</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"walletCurrency"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"BTC"</span>
-<span class="hljs-punctuation">}</span>
-</code></pre> </body>
-                  </html>
-                </div>
-              </div>
-            </div>
-          </section>
           <section id="definition-Boolean" class="definition definition-scalar" data-traverse-target="definition-Boolean">
             <div class="definition-group-name">
               <a href="#group-Types">Types</a>
@@ -4600,7 +4447,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
   <span class="hljs-attr">"buildTime"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1592577642</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"commitHash"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"helmRevision"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">123</span>
+  <span class="hljs-attr">"helmRevision"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">987</span>
 <span class="hljs-punctuation">}</span>
 </code></pre> </body>
                   </html>
@@ -4727,8 +4574,8 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
   <span class="hljs-attr">"challengeCode"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"failbackMode"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">false</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"newCaptcha"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">true</span>
+  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"newCaptcha"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">false</span>
 <span class="hljs-punctuation">}</span>
 </code></pre> </body>
                   </html>
@@ -4799,7 +4646,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">"challengeCode"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"challengeCode"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"phone"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Phone</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"secCode"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"validationCode"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span>
@@ -5030,9 +4877,9 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">"csvTransactions"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"csvTransactions"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"defaultWalletId"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">WalletId</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"4"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">4</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"transactions"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">TransactionConnection</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"wallets"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">Wallet</span><span class="hljs-punctuation">]</span>
 <span class="hljs-punctuation">}</span>
@@ -5110,7 +4957,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span><span class="hljs-attr">"latitude"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">123.45</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"longitude"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">987.65</span><span class="hljs-punctuation">}</span>
+                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span><span class="hljs-attr">"latitude"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">987.65</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"longitude"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">987.65</span><span class="hljs-punctuation">}</span>
 </code></pre> </body>
                   </html>
                 </div>
@@ -5152,7 +4999,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span><span class="hljs-attr">"deviceToken"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span><span class="hljs-punctuation">}</span>
+                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span><span class="hljs-attr">"deviceToken"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span><span class="hljs-punctuation">}</span>
 </code></pre> </body>
                   </html>
                 </div>
@@ -5197,32 +5044,6 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                     </tbody>
                   </table>
                 </div>
-                <div class="definition-properties definition-possible-types doc-copy-section">
-                  <h5>Possible Types</h5>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Error Types</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <p>
-                            <a href="#definition-InputError"><code>InputError</code></a>
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <p>
-                            <a href="#definition-PaymentError"><code>PaymentError</code></a>
-                          </p>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
               </div>
               <div class="doc-examples">
                 <div class="example-section example-section-is-code">
@@ -5231,7 +5052,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
   <span class="hljs-attr">"message"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"path"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"xyz789"</span><span class="hljs-punctuation">]</span>
+  <span class="hljs-attr">"path"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"abc123"</span><span class="hljs-punctuation">]</span>
 <span class="hljs-punctuation">}</span>
 </code></pre> </body>
                   </html>
@@ -5302,7 +5123,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json"><span class="hljs-number">123.45</span>
+                  <body><pre><code class="hljs language-json"><span class="hljs-number">987.65</span>
 </code></pre> </body>
                   </html>
                 </div>
@@ -5606,127 +5427,6 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
               </div>
             </div>
           </section>
-          <section id="definition-InputError" class="definition definition-object" data-traverse-target="definition-InputError">
-            <div class="definition-group-name">
-              <a href="#group-Types">Types</a>
-            </div>
-            <h2 class="definition-heading">InputError</h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <div class="definition-properties doc-copy-section">
-                  <h5>Fields</h5>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Field Name</th>
-                        <th>Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>code</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-InputErrorCode"><code>InputErrorCode!</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>message</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-String"><code>String!</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>path</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-String"><code>[String]</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="doc-examples">
-                <div class="example-section example-section-is-code">
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">"code"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"INVALID_INPUT"</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"message"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"path"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"abc123"</span><span class="hljs-punctuation">]</span>
-<span class="hljs-punctuation">}</span>
-</code></pre> </body>
-                  </html>
-                </div>
-              </div>
-            </div>
-          </section>
-          <section id="definition-InputErrorCode" class="definition definition-enum" data-traverse-target="definition-InputErrorCode">
-            <div class="definition-group-name">
-              <a href="#group-Types">Types</a>
-            </div>
-            <h2 class="definition-heading">InputErrorCode</h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <div class="definition-properties doc-copy-section">
-                  <h5>Values</h5>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Enum Value</th>
-                        <th>Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <p><code>INVALID_INPUT</code></p>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <p><code>VALUE_NOT_ALLOWED</code></p>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <p><code>VALUE_TOO_LONG</code></p>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <p><code>VALUE_TOO_SHORT</code></p>
-                        </td>
-                        <td> </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="doc-examples">
-                <div class="example-section example-section-is-code">
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">"INVALID_INPUT"</span>
-</code></pre> </body>
-                  </html>
-                </div>
-              </div>
-            </div>
-          </section>
           <section id="definition-Int" class="definition definition-scalar" data-traverse-target="definition-Int">
             <div class="definition-group-name">
               <a href="#group-Types">Types</a>
@@ -5744,7 +5444,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json"><span class="hljs-number">123</span>
+                  <body><pre><code class="hljs language-json"><span class="hljs-number">987</span>
 </code></pre> </body>
                   </html>
                 </div>
@@ -7455,7 +7155,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
   <span class="hljs-attr">"coordinates"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Coordinates</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"title"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span>
+  <span class="hljs-attr">"title"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span>
 <span class="hljs-punctuation">}</span>
 </code></pre> </body>
                   </html>
@@ -7596,7 +7296,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <head></head>
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
   <span class="hljs-attr">"currentSupported"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">987</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"minSupported"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">987</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"minSupported"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">123</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"platform"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span>
 <span class="hljs-punctuation">}</span>
 </code></pre> </body>
@@ -8249,144 +7949,11 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">"endCursor"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"endCursor"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"hasNextPage"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">false</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"hasPreviousPage"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">true</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"startCursor"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span>
+  <span class="hljs-attr">"startCursor"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span>
 <span class="hljs-punctuation">}</span>
-</code></pre> </body>
-                  </html>
-                </div>
-              </div>
-            </div>
-          </section>
-          <section id="definition-PaymentError" class="definition definition-object" data-traverse-target="definition-PaymentError">
-            <div class="definition-group-name">
-              <a href="#group-Types">Types</a>
-            </div>
-            <h2 class="definition-heading">PaymentError</h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <div class="definition-properties doc-copy-section">
-                  <h5>Fields</h5>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Field Name</th>
-                        <th>Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>code</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-PaymentErrorCode"><code>PaymentErrorCode!</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>message</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-String"><code>String!</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>path</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-String"><code>[String]</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="doc-examples">
-                <div class="example-section example-section-is-code">
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">"code"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"ACCOUNT_LOCKED"</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"message"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"path"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">"abc123"</span><span class="hljs-punctuation">]</span>
-<span class="hljs-punctuation">}</span>
-</code></pre> </body>
-                  </html>
-                </div>
-              </div>
-            </div>
-          </section>
-          <section id="definition-PaymentErrorCode" class="definition definition-enum" data-traverse-target="definition-PaymentErrorCode">
-            <div class="definition-group-name">
-              <a href="#group-Types">Types</a>
-            </div>
-            <h2 class="definition-heading">PaymentErrorCode</h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <div class="definition-properties doc-copy-section">
-                  <h5>Values</h5>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Enum Value</th>
-                        <th>Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <p><code>ACCOUNT_LOCKED</code></p>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <p><code>INSUFFICIENT_BALANCE</code></p>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <p><code>INVOICE_PAID</code></p>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <p><code>LIMIT_EXCEEDED</code></p>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <p><code>NO_LIQUIDITY</code></p>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <p><code>NO_ROUTE</code></p>
-                        </td>
-                        <td> </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="doc-examples">
-                <div class="example-section example-section-is-code">
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-gql"><span class="hljs-symbol">"ACCOUNT_LOCKED"</span>
 </code></pre> </body>
                   </html>
                 </div>
@@ -8613,8 +8180,8 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
   <span class="hljs-attr">"base"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">9007199254740991</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"currencyUnit"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"BTCSAT"</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"formattedAmount"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"offset"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">987</span>
+  <span class="hljs-attr">"formattedAmount"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"offset"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">123</span>
 <span class="hljs-punctuation">}</span>
 </code></pre> </body>
                   </html>
@@ -8954,10 +8521,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">"earnAmount"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">SatAmount</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"4"</span>
-<span class="hljs-punctuation">}</span>
+                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span><span class="hljs-attr">"earnAmount"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">SatAmount</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">4</span><span class="hljs-punctuation">}</span>
 </code></pre> </body>
                   </html>
                 </div>
@@ -9550,7 +9114,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
   <span class="hljs-attr">"createdAt"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1592577642</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"direction"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"RECEIVE"</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">4</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"4"</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"initiationVia"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">InitiationViaIntraLedger</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"memo"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Memo</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"settlementAmount"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">SignedAmount</span><span class="hljs-punctuation">,</span>
@@ -9717,7 +9281,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span><span class="hljs-attr">"token"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span><span class="hljs-punctuation">}</span>
+                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span><span class="hljs-attr">"token"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span><span class="hljs-punctuation">}</span>
 </code></pre> </body>
                   </html>
                 </div>
@@ -9877,7 +9441,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <html>
                   <head></head>
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">"secret"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"secret"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"xyz789"</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"uri"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"abc123"</span>
 <span class="hljs-punctuation">}</span>
 </code></pre> </body>
@@ -10051,139 +9615,6 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
               </div>
             </div>
           </section>
-          <section id="definition-UsdWallet" class="definition definition-object" data-traverse-target="definition-UsdWallet">
-            <div class="definition-group-name">
-              <a href="#group-Types">Types</a>
-            </div>
-            <h2 class="definition-heading">UsdWallet</h2>
-            <div class="doc-row">
-              <div class="doc-copy">
-                <div class="definition-description doc-copy-section">
-                  <h5>Description</h5>
-                  <p>A wallet belonging to an account which contains a USD balance and a list of transactions.</p>
-                </div>
-                <div class="definition-properties doc-copy-section">
-                  <h5>Fields</h5>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Field Name</th>
-                        <th>Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>accountId</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-ID"><code>ID!</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>balance</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-SignedAmount"><code>SignedAmount!</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>id</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-ID"><code>ID!</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr class="row-has-field-arguments">
-                        <td data-property-name="">
-                          <span class="property-name"><code>transactions</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-TransactionConnection"><code>TransactionConnection</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                      <tr class="row-field-arguments">
-                        <td colspan="2">
-                          <div class="field-arguments">
-                            <h5 class="field-arguments-heading"> Arguments </h5>
-                            <div class="field-argument-list">
-                              <div class="field-argument">
-                                <h6 class="field-argument-name">
-                                  <span class="property-name"><code>after</code></span> -
-                                  <span class="property-type">
-                                    <a href="#definition-String"><code>String</code></a>
-                                  </span>
-                                </h6>
-                                <p>Returns the items in the list that come after the specified cursor.</p>
-                              </div>
-                              <div class="field-argument">
-                                <h6 class="field-argument-name">
-                                  <span class="property-name"><code>before</code></span> -
-                                  <span class="property-type">
-                                    <a href="#definition-String"><code>String</code></a>
-                                  </span>
-                                </h6>
-                                <p>Returns the items in the list that come before the specified cursor.</p>
-                              </div>
-                              <div class="field-argument">
-                                <h6 class="field-argument-name">
-                                  <span class="property-name"><code>first</code></span> -
-                                  <span class="property-type">
-                                    <a href="#definition-Int"><code>Int</code></a>
-                                  </span>
-                                </h6>
-                                <p>Returns the first n items from the list.</p>
-                              </div>
-                              <div class="field-argument">
-                                <h6 class="field-argument-name">
-                                  <span class="property-name"><code>last</code></span> -
-                                  <span class="property-type">
-                                    <a href="#definition-Int"><code>Int</code></a>
-                                  </span>
-                                </h6>
-                                <p>Returns the last n items from the list.</p>
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td data-property-name="">
-                          <span class="property-name"><code>walletCurrency</code></span> -
-                          <span class="property-type">
-                            <a href="#definition-WalletCurrency"><code>WalletCurrency!</code></a>
-                          </span>
-                        </td>
-                        <td> </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="doc-examples">
-                <div class="example-section example-section-is-code">
-                  <h5>Example</h5>
-                  <html>
-                  <head></head>
-                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">"accountId"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"4"</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"balance"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">SignedAmount</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"4"</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"transactions"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">TransactionConnection</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"walletCurrency"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"BTC"</span>
-<span class="hljs-punctuation">}</span>
-</code></pre> </body>
-                  </html>
-                </div>
-              </div>
-            </div>
-          </section>
           <section id="definition-User" class="definition definition-object" data-traverse-target="definition-User">
             <div class="definition-group-name">
               <a href="#group-Types">Types</a>
@@ -10330,11 +9761,11 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"contacts"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">UserContact</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"createdAt"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1592577642</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"defaultAccount"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Account</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">4</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"4"</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"language"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Language</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"phone"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Phone</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"quizQuestions"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">UserQuizQuestion</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"twoFAEnabled"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">true</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"twoFAEnabled"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">false</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"username"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Username</span>
 <span class="hljs-punctuation">}</span>
 </code></pre> </body>
@@ -10463,7 +9894,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
   <span class="hljs-attr">"alias"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">ContactAlias</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Username</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"transactions"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">TransactionConnection</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"transactionsCount"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">123</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"transactionsCount"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">987</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"username"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Username</span>
 <span class="hljs-punctuation">}</span>
 </code></pre> </body>
@@ -10678,7 +10109,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <h5>Example</h5>
                   <html>
                   <head></head>
-                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span><span class="hljs-attr">"completed"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">true</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"question"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">QuizQuestion</span><span class="hljs-punctuation">}</span>
+                  <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span><span class="hljs-attr">"completed"</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">false</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"question"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">QuizQuestion</span><span class="hljs-punctuation">}</span>
 </code></pre> </body>
                   </html>
                 </div>
@@ -11207,32 +10638,6 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                     </tbody>
                   </table>
                 </div>
-                <div class="definition-properties definition-possible-types doc-copy-section">
-                  <h5>Possible Types</h5>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Wallet Types</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <p>
-                            <a href="#definition-BTCWallet"><code>BTCWallet</code></a>
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <p>
-                            <a href="#definition-UsdWallet"><code>UsdWallet</code></a>
-                          </p>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
               </div>
               <div class="doc-examples">
                 <div class="example-section example-section-is-code">
@@ -11242,7 +10647,7 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
                   <body><pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
   <span class="hljs-attr">"accountId"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"4"</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"balance"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">SignedAmount</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">4</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"4"</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"transactions"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">TransactionConnection</span><span class="hljs-punctuation">,</span>
   <span class="hljs-attr">"walletCurrency"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"BTC"</span>
 <span class="hljs-punctuation">}</span>
@@ -11426,9 +10831,22 @@ curl --location --request POST <span class="hljs-variable">$URI</span> --header 
     <span class="hljs-symbol">me <span class="hljs-tag">{
       <span class="hljs-type">...UserFragment</span>
     }</span></span>
-    <span class="hljs-symbol">update</span>
+    <span class="hljs-symbol">update <span class="hljs-tag">{
+     <span class="hljs-type"> ... on IntraLedgerUpdate <span class="hljs-tag">{
+        <span class="hljs-type">...IntraLedgerUpdateFragment</span>
+      }</span>
+      ... on LnUpdate <span class="hljs-tag">{
+        <span class="hljs-type">...LnUpdateFragment</span>
+      }</span>
+      ... on OnChainUpdate <span class="hljs-tag">{
+        <span class="hljs-type">...OnChainUpdateFragment</span>
+      }</span>
+      ... on Price <span class="hljs-tag">{
+        <span class="hljs-type">...PriceFragment</span>
+      }</span>
+    }</span>
   }</span></span>
-}</span></span>
+}</span></span></span></span>
 </code></pre> </body>
                   </html>
                 </div>
