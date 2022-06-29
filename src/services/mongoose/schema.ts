@@ -5,7 +5,7 @@ import { AccountStatus, UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import { Languages } from "@domain/users"
-import * as mongoose from "mongoose"
+import mongoose from "mongoose"
 
 import { WalletRecord } from "./wallets"
 

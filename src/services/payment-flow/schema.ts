@@ -1,4 +1,4 @@
-import * as mongoose from "mongoose"
+import mongoose from "mongoose"
 
 // TODO migration:
 // rename type: on_us to intraledger

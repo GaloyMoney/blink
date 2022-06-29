@@ -1,4 +1,4 @@
-import * as mongoose from "mongoose"
+import mongoose from "mongoose"
 import { LedgerTransactionType } from "@domain/ledger"
 import { setTransactionSchema, ITransaction as ITransactionMedici } from "medici"
 
