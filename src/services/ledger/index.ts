@@ -29,6 +29,8 @@ import {
   wrapAsyncFunctionsToRunInSpan,
 } from "@services/tracing"
 
+import { toCents, toDisplayCurrencyBaseAmount } from "@domain/fiat"
+
 import { admin } from "./admin"
 import * as adminLegacy from "./admin-legacy"
 import { MainBook, Transaction } from "./books"
@@ -38,7 +40,6 @@ import { intraledger } from "./intraledger"
 import { receive } from "./receive"
 import { send } from "./send"
 import { volume } from "./volume"
-import { toCents, toDisplayCurrencyBaseAmount } from "@domain/fiat"
 
 export const lazyLoadLedgerAdmin = ({
   bankOwnerWalletResolver,
@@ -100,7 +101,9 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
-      const { results } = await MainBook.ledger<ILedgerTransaction>({ account: liabilitiesWalletId })
+      const { results } = await MainBook.ledger<ILedgerTransaction>({
+        account: liabilitiesWalletId,
+      })
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -112,7 +115,9 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
     try {
-      const { results } = await MainBook.ledger<ILedgerTransaction>({ account: liabilitiesWalletIds })
+      const { results } = await MainBook.ledger<ILedgerTransaction>({
+        account: liabilitiesWalletIds,
+      })
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -361,7 +366,9 @@ export const LedgerService = (): ILedgerService => {
   })
 }
 
-export const translateToLedgerTx = (tx: ILedgerTransaction): LedgerTransaction<WalletCurrency> => ({
+export const translateToLedgerTx = (
+  tx: ILedgerTransaction,
+): LedgerTransaction<WalletCurrency> => ({
   id: fromObjectId<LedgerTransactionId>(tx._id + ""),
   walletId: toWalletId(tx.accounts as LiabilitiesWalletId),
   type: tx.type,
@@ -381,7 +388,7 @@ export const translateToLedgerTx = (tx: ILedgerTransaction): LedgerTransaction<W
   pubkey: tx.pubkey as Pubkey,
   address:
     tx.payee_addresses && tx.payee_addresses.length > 0
-      ? tx.payee_addresses[0] as OnChainAddress
+      ? (tx.payee_addresses[0] as OnChainAddress)
       : undefined,
   txHash: tx.hash as OnChainTxHash,
   feeKnownInAdvance: tx.feeKnownInAdvance || false,

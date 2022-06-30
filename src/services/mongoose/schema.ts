@@ -73,7 +73,10 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
 
 walletInvoiceSchema.index({ walletId: 1, paid: 1 })
 
-export const WalletInvoice = mongoose.model<WalletInvoiceRecord>("InvoiceUser", walletInvoiceSchema)
+export const WalletInvoice = mongoose.model<WalletInvoiceRecord>(
+  "InvoiceUser",
+  walletInvoiceSchema,
+)
 
 const feesConfig = getFeesConfig()
 
