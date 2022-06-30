@@ -129,6 +129,7 @@ services:
       - "--lnd.host=lnd-outside-1:10009"
       - "--lnd.macaroondir=/root/.lnd/data/chain/bitcoin/regtest"
       - "--lnd.tlspath=/root/.lnd/tls.cert"
+  # @todo - rename to loopd
   loopclient:
     image: lightninglabs/loop:v0.19.1-beta
     restart: unless-stopped

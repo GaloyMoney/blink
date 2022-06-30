@@ -171,7 +171,7 @@ swap:
   minOnChainBalance: 20000000 # 0.2
   swapUrl: "https://localhost:8081"
   swapOutAmount: 945305 # 0.009
-  swapProviders: ["loop"] 
+  swapProviders: ["loop"]
 
 # TODO
 # carrierRegexFilter: ""
