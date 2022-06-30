@@ -10,10 +10,10 @@ info:
   title: GraphQL API Reference
   description: Welcome to the Galoy API reference!
   contact:
-    name: Galoy slack developer community
-    url: https://join.slack.com/t/galoymoney-workspace/shared_invite/zt-rvnhsdb5-72AZCD_jzw6_Q05aCs0SgA
+    name: Galoy developer community
+    url: https://chat.galoy.io/
   license:
-    name: MIT 
+    name: MIT
     url: https://opensource.org/licenses/MIT
   x-introItems:
   - title: Galoy API Tutorial
