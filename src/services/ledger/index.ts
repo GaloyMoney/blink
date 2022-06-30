@@ -367,7 +367,7 @@ export const translateToLedgerTx = (tx: ILedgerTransaction): LedgerTransaction<W
   type: tx.type,
   debit: toSats(tx.debit),
   credit: toSats(tx.credit),
-  fee: toSats(tx.fee),
+  fee: toSats(tx.fee || 0),
   usd: tx.usd || 0,
   feeUsd: tx.feeUsd || 0,
   currency: tx.currency,

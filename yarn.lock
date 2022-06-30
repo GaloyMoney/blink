@@ -7928,9 +7928,9 @@ media-typer@0.3.0:
   resolved "https://registry.yarnpkg.com/media-typer/-/media-typer-0.3.0.tgz#8710d7af0aa626f8fffa1ce00168545263255748"
   integrity sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==
 
-"medici@https://github.com/GaloyMoney/medici#b26b567464051f6db4202b55efe08225f6049bdd":
+medici@GaloyMoney/medici#remove-post-install:
   version "5.1.0"
-  resolved "https://github.com/GaloyMoney/medici#b26b567464051f6db4202b55efe08225f6049bdd"
+  resolved "https://codeload.github.com/GaloyMoney/medici/tar.gz/7bba5bb2d584e0443840d58763557db2fbc6e9bd"
   dependencies:
     mongoose "5 - 6"
 
