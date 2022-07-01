@@ -177,6 +177,11 @@ const updatePendingInvoice = async ({
       currency: DisplayCurrency.Usd,
     }
 
+    let amountDisplayCurrency = displayPaymentAmount.amount
+    if (displayPaymentAmount.currency === walletCurrency && cents) {
+      amountDisplayCurrency = cents / 100
+    }
+
     const ledgerService = LedgerService()
     const result = await ledgerService.addLnTxReceive({
       walletId,
@@ -185,7 +190,7 @@ const updatePendingInvoice = async ({
       description,
       sats: roundedDownReceived,
       cents,
-      amountDisplayCurrency: displayPaymentAmount.amount as DisplayCurrencyBaseAmount,
+      amountDisplayCurrency: amountDisplayCurrency as DisplayCurrencyBaseAmount,
       //TODO: add displayCurrency: displayPaymentAmount.currency,
       feeInboundLiquidity,
       feeInboundLiquidityDisplayCurrency,

@@ -192,6 +192,7 @@ describe("UserWallet - Lightning", () => {
     if (ledgerTx === undefined) throw Error("ledgerTx needs to be defined")
 
     expect(ledgerTx.credit).toBe(cents)
+    expect(ledgerTx.usd).toBe(cents / 100)
     expect(ledgerTx.currency).toBe(WalletCurrency.Usd)
     expect(ledgerTx.lnMemo).toBe(memo)
     expect(ledgerTx.pendingConfirmation).toBe(false)
@@ -261,6 +262,7 @@ describe("UserWallet - Lightning", () => {
     if (cents instanceof Error) throw cents
 
     expect(ledgerTx.credit).toBe(cents)
+    expect(ledgerTx.usd).toBe(cents / 100)
     expect(ledgerTx.currency).toBe(WalletCurrency.Usd)
     expect(ledgerTx.lnMemo).toBe(memo)
     expect(ledgerTx.pendingConfirmation).toBe(false)
