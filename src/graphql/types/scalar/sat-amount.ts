@@ -1,5 +1,7 @@
+import { ErrorLevel } from "@domain/shared"
 import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
+import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 const SatAmount = GT.Scalar({
   name: "SatAmount",
@@ -21,7 +23,14 @@ const SatAmount = GT.Scalar({
 function validSatAmount(value: string | number) {
   let intValue: number
   if (typeof value === "number") {
+    // TODO: remove trunc and recordExceptionInCurrentSpan once mobile app is fixed
     intValue = Math.trunc(value)
+    if (!Number.isInteger(value)) {
+      recordExceptionInCurrentSpan({
+        error: new InputValidationError({ message: "Float value for SatAmount" }),
+        level: ErrorLevel.Warn,
+      })
+    }
   } else {
     intValue = Number.parseInt(value, 10)
   }
