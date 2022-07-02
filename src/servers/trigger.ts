@@ -17,31 +17,30 @@ import { uploadBackup } from "@app/admin/backup"
 
 import { toSats } from "@domain/bitcoin"
 import { CacheKeys } from "@domain/cache"
+import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
 
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 import { RedisCacheService } from "@services/cache"
 import { onChannelUpdated } from "@services/lnd/utils"
+import { setupMongoConnection } from "@services/mongodb"
+import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { NotificationsService } from "@services/notifications"
+import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import {
   AccountsRepository,
   UsersRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { setupMongoConnection } from "@services/mongodb"
-import { NotificationsService } from "@services/notifications"
-import { asyncRunInSpan, SemanticAttributes } from "@services/tracing"
-import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
-
-import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
 
 import healthzHandler from "./middlewares/healthz"
 
 const redisCache = RedisCacheService()
 const logger = baseLogger.child({ module: "trigger" })
 
-export async function onchainTransactionEventHandler(
+export const onchainTransactionEventHandler = async (
   tx: SubscribeToTransactionsChainTransactionEvent,
-) {
+) => {
   logger.info({ tx }, "received new onchain tx event")
   const onchainLogger = logger.child({
     topic: "payment",
@@ -166,7 +165,7 @@ export async function onchainTransactionEventHandler(
   }
 }
 
-export async function onchainBlockEventhandler(height: number) {
+export const onchainBlockEventHandler = async (height: number) => {
   const scanDepth = (ONCHAIN_MIN_CONFIRMATIONS + 1) as ScanDepth
   const txNumber = await Wallets.updateOnChainReceipt({ scanDepth, logger })
   if (txNumber instanceof Error) {
@@ -179,8 +178,8 @@ export async function onchainBlockEventhandler(height: number) {
   logger.info(`finish block ${height} handler with ${txNumber} transactions`)
 }
 
-export const onInvoiceUpdate = async (invoice: GetInvoiceResult) => {
-  logger.info({ invoice }, "onInvoiceUpdate")
+export const invoiceUpdateEventHandler = async (invoice: GetInvoiceResult) => {
+  logger.info({ invoice }, "invoiceUpdateEventHandler")
 
   if (!invoice.is_confirmed) {
     return
@@ -208,29 +207,25 @@ const publishCurrentPrice = () => {
 
 const listenerOnchain = (lnd: AuthenticatedLnd) => {
   const subTransactions = subscribeToTransactions({ lnd })
-  subTransactions.on("chain_transaction", onchainTransactionEventHandler)
+  const onChainTxHandler = wrapAsyncToRunInSpan({
+    root: true,
+    namespace: "servers.trigger",
+    fn: onchainTransactionEventHandler,
+  })
+  subTransactions.on("chain_transaction", onChainTxHandler)
 
   subTransactions.on("error", (err) => {
     baseLogger.error({ err }, "error subTransactions")
   })
 
   const subBlocks = subscribeToBlocks({ lnd })
-  subBlocks.on("block", async ({ height }: { height: number }) =>
-    asyncRunInSpan(
-      "servers.trigger.onchainBlockEventhandler",
-      {
-        root: true,
-        attributes: {
-          [SemanticAttributes.CODE_FUNCTION]: "onchainBlockEventhandler",
-          [SemanticAttributes.CODE_NAMESPACE]: "servers.trigger",
-          [`${SemanticAttributes.CODE_FUNCTION}.params.height`]: height,
-        },
-      },
-      async () => {
-        onchainBlockEventhandler(height)
-      },
-    ),
-  )
+  const onChainBlockHandler = wrapAsyncToRunInSpan({
+    root: true,
+    namespace: "servers.trigger",
+    fnName: "onchainBlockEventHandler",
+    fn: ({ height }: { height: number }) => onchainBlockEventHandler(height),
+  })
+  subBlocks.on("block", onChainBlockHandler)
 
   subBlocks.on("error", (err) => {
     baseLogger.error({ err }, "error subBlocks")
@@ -239,7 +234,12 @@ const listenerOnchain = (lnd: AuthenticatedLnd) => {
 
 const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubkey }) => {
   const subInvoices = subscribeToInvoices({ lnd })
-  subInvoices.on("invoice_updated", onInvoiceUpdate)
+  const invoiceUpdateHandler = wrapAsyncToRunInSpan({
+    root: true,
+    namespace: "servers.trigger",
+    fn: invoiceUpdateEventHandler,
+  })
+  subInvoices.on("invoice_updated", invoiceUpdateHandler)
   subInvoices.on("error", (err) => {
     baseLogger.info({ err }, "error subInvoices")
     subInvoices.removeAllListeners()
@@ -258,21 +258,14 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
   })
 
   const subBackups = subscribeToBackups({ lnd })
-  subBackups.on("backup", ({ backup }) =>
-    asyncRunInSpan(
-      "servers.trigger.uploadBackup",
-      {
-        root: true,
-        attributes: {
-          [SemanticAttributes.CODE_FUNCTION]: "uploadBackup",
-          [SemanticAttributes.CODE_NAMESPACE]: "servers.trigger",
-        },
-      },
-      async () => {
-        uploadBackup(logger)({ backup, pubkey })
-      },
-    ),
-  )
+  const newBackupHandler = wrapAsyncToRunInSpan({
+    root: true,
+    namespace: "servers.trigger",
+    fnName: "uploadBackup",
+    fn: ({ backup }: { backup: string }) => uploadBackup(logger)({ backup, pubkey }),
+  })
+  subBackups.on("backup", newBackupHandler)
+
   subBackups.on("error", (err) => {
     baseLogger.info({ err }, "error subBackups")
     subBackups.removeAllListeners()
