@@ -307,9 +307,9 @@ export const configSchema = {
     swap: {
       type: "object",
       properties: {
-        minOnChainBalance: { type: "number" },
+        minOutboundLiquidityBalance: { type: "integer" },
         swapUrl: { type: "string" },
-        swapOutAmount: { type: "number" },
+        swapOutAmount: { type: "integer" },
         swapProviders: {
           type: "array",
           items: { type: "string" },

@@ -13,13 +13,6 @@ type RebalanceCheckerConfig = {
   minRebalanceSize: Satoshis
 }
 
-type SwapConfig = {
-  minOnChainBalance: Satoshis
-  swapOutAmount: Satoshis
-  swapUrl: string
-  swapProviders: Array<string>
-}
-
 type ColdStorageConfig = RebalanceCheckerConfig & {
   walletPattern: string
   onChainWallet: string

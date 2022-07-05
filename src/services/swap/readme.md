@@ -24,10 +24,10 @@ A successful loop server start returns this
 
 ```yaml
 swap:
-  minOnChainBalance: 2000000
+  minOutboundLiquidityBalance: 2000000
   swapUrl: "https://localhost:8081"
   swapOutAmount: 500000 
-  swapProviders: ["loop"] 
+  swapProviders: ["LOOP"] 
 ```
 
 (3) Choose the swap provider

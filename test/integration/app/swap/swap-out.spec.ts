@@ -1,13 +1,11 @@
-import { BTC_NETWORK, getSwapConfig } from "@config"
-
-import { Lightning, Swap } from "@app"
-
-import { OnChainService } from "@services/lnd/onchain-service"
-import { TxDecoder } from "@domain/bitcoin/onchain"
+import { SwapService } from "@services/swap"
 
 import { toSats } from "@domain/bitcoin"
 
-import { checkIsBalanced, mineBlockAndSyncAll } from "test/helpers"
+import { lndsBalances } from "@services/lnd/utils"
+import { getSwapConfig } from "@config"
+
+// import { mineBlockAndSyncAll } from "test/helpers"
 
 // beforeAll(async () => {
 
@@ -18,20 +16,37 @@ import { checkIsBalanced, mineBlockAndSyncAll } from "test/helpers"
 // })
 
 describe("Swap", () => {
-  it("out returns SwapResult", async () => {
-    const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
-    if (onChainService instanceof Error) throw onChainService
-    await mineBlockAndSyncAll()
-    const onChainBalance = await onChainService.getBalance()
-    if (onChainBalance instanceof Error) throw onChainBalance
-    const lightningBalance = await Lightning.getOnChainBalance()
-    const minOnChainBalance = getSwapConfig().minOnChainBalance
-    const swapResult = await Swap.swapOut({ amount: toSats(500000) })
+  it("Swap out returns successful SwapResult", async () => {
+    const swapResult = await SwapService.swapOut(toSats(500000))
     expect(swapResult).not.toBeInstanceOf(Error)
     expect(swapResult).toEqual(
       expect.objectContaining({
         swapId: expect.any(String),
       }),
     )
+  })
+
+  it("Swap out without enough funds returns an Error", async () => {
+    const swapResult = await SwapService.swapOut(toSats(5000000000))
+    expect(swapResult).toBeInstanceOf(Error)
+  })
+
+  it("Swap out if some threshheld it met", async () => {
+    const { onChain } = await lndsBalances()
+    // @todo should get the average outbound liquity per channel and do something with min outbound liquidty???
+    const minOnChainBalance = getSwapConfig().minOutboundLiquidityBalance
+    let swapResult
+    if (onChain < minOnChainBalance) {
+      const swapOutAmount = getSwapConfig().swapOutAmount
+      swapResult = await SwapService.swapOut(toSats(swapOutAmount))
+      expect(swapResult).not.toBeInstanceOf(Error)
+      expect(swapResult).toEqual(
+        expect.objectContaining({
+          swapId: expect.any(String),
+        }),
+      )
+    } else {
+      expect("No swap Needed").toEqual("No swap Needed")
+    }
   })
 })

@@ -168,10 +168,10 @@ onChainWallet:
   scanDepthChannelUpdate: 8
 
 swap:
-  minOnChainBalance: 20000000 # 0.2
+  minOutboundLiquidityBalance: 30000000
   swapUrl: "https://localhost:8081"
-  swapOutAmount: 945305 # 0.009
-  swapProviders: ["loop"]
+  swapOutAmount: 25000000
+  swapProviders: ["LOOP"]
 
 # TODO
 # carrierRegexFilter: ""

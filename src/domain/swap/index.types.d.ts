@@ -1,7 +1,7 @@
-type SwapServiceError = import("./errors").SwapServiceError
+export type SwapServiceError = import("./errors").SwapServiceError
 
 // @todo - make this more robust and generic
-interface ISwapService {
+export interface ISwapService {
   swapOut: (amount: Satoshis) => Promise<SwapOutResult | SwapServiceError>
   swapOutTerms?: () => Promise<string>
   swapOutQuote?: () => Promise<string>
@@ -12,7 +12,7 @@ interface ISwapService {
   default?: unknown
 }
 
-type SwapOutResult = {
+export type SwapOutResult = {
   swapId: string
   swapIdBytes: string
   // swapIdBytes: string
@@ -20,9 +20,9 @@ type SwapOutResult = {
   // "htlc_address_np2wsh": <string>
   // "htlc_address_p2wsh": <string>
   serverMessage: string
-}
+} | null
 
-type SwapStatusResult = {
+export type SwapStatusResult = {
   amt: string
   id: string
   // "id_bytes": <byte>
@@ -42,6 +42,13 @@ type SwapStatusResult = {
   // "label": <string>
 }
 
+export type SwapConfig = {
+  minOutboundLiquidityBalance: Satoshis
+  swapOutAmount: Satoshis
+  swapUrl: string
+  swapProviders: Array<SwapProvider>
+}
+
 export enum SwapState {
   INITIATED,
   PREIMAGE_REVEALED,
@@ -49,4 +56,9 @@ export enum SwapState {
   SUCCESS,
   FAILED,
   INVOICE_SETTLED,
+}
+
+export enum SwapProvider {
+  LOOP,
+  PEERSWAP,
 }

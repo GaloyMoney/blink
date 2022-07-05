@@ -1,4 +1,4 @@
-import { BTC_NETWORK } from "@config"
+import { BTC_NETWORK, getSwapConfig } from "@config"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { SwapServiceError } from "@domain/swap/errors"
 import { SwapOutResult } from "@domain/swap/index.types"
@@ -10,15 +10,15 @@ export const swapOut = async ({
 }: SwapOutArgs): Promise<SwapOutResult | SwapServiceError> => {
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
-  const balance = await onChainService.getBalance()
-  if (balance instanceof Error) return balance
 
-  // const minOnChainBalance = getSwapConfig().minOnChainBalance
-  // const onChainBalance = await Lightning.getOnChainBalance()
-  // if (onChainBalance < minOnChainBalance ) { @todo perform swap out }
-  // @todo - add double entry book-keeping code for fees
+  const onChainBalance = await onChainService.getBalance()
+  if (onChainBalance instanceof Error) return onChainBalance
 
-  const swapResult = await SwapService.swapOut(amount)
-
-  return swapResult
+  const minOutboundLiquidityBalance = getSwapConfig().minOutboundLiquidityBalance
+  if (onChainBalance < minOutboundLiquidityBalance) {
+    const swapResult = await SwapService.swapOut(amount)
+    return swapResult
+  } else {
+    return null
+  }
 }
