@@ -4,7 +4,7 @@ import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
 import { WalletCurrency } from "@domain/shared"
 import { TxStatus } from "@domain/wallets"
-import { onchainBlockEventhandler, onInvoiceUpdate } from "@servers/trigger"
+import { onchainBlockEventHandler, invoiceUpdateEventHandler } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
@@ -80,7 +80,7 @@ const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
   }
 }
 
-describe("onchainBlockEventhandler", () => {
+describe("onchainBlockEventHandler", () => {
   it("should process block for incoming transactions", async () => {
     const amount = toSats(10_000)
     const amount2 = toSats(20_000)
@@ -101,7 +101,7 @@ describe("onchainBlockEventhandler", () => {
     subBlocks.on("block", async ({ height }: { height: number }) => {
       if (height > lastHeight) {
         lastHeight = height
-        await onchainBlockEventhandler(height)
+        await onchainBlockEventHandler(height)
       }
       isFinalBlock = lastHeight >= initialBlock + blocksToMine
     })
@@ -206,7 +206,7 @@ describe("onchainBlockEventhandler", () => {
 
     const hash = getHash(request)
     const invoice = await getInvoice({ id: hash, lnd: lnd1 })
-    await onInvoiceUpdate(invoice)
+    await invoiceUpdateEventHandler(invoice)
 
     // notification are not been awaited, so explicit sleep is necessary
     await sleep(250)
