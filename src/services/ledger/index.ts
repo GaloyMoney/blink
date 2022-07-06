@@ -70,8 +70,8 @@ export const LedgerService = (): ILedgerService => {
     try {
       const _id = toObjectId<LedgerTransactionId>(id)
       const { results } = await MainBook.ledger<ILedgerTransaction>({
-        _id,
         account: liabilitiesMainAccount,
+        _id,
       })
       if (results.length === 1) {
         return translateToLedgerTx(results[0])
@@ -180,7 +180,7 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<number | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     return Transaction.countDocuments({
-      account: liabilitiesWalletId,
+      accounts: liabilitiesWalletId,
       type: LedgerTransactionType.Payment,
       pending: true,
     })
@@ -301,7 +301,8 @@ export const LedgerService = (): ILedgerService => {
     const bankOwnerWalletId = await caching.getBankOwnerWalletId()
     const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
     const entry = await Transaction.findOne({
-      accounts: { $eq: liabilitiesMainAccount, $ne: bankOwnerPath },
+      account_path: liabilitiesMainAccount,
+      accounts: { $ne: bankOwnerPath },
       hash,
     })
 

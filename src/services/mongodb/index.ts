@@ -64,7 +64,7 @@ const path = `mongodb://${user}:${password}@${address}/${db}`
 export const setupMongoConnection = async (syncIndexes = false) => {
   try {
     await mongoose.connect(path)
-    mongoose.set('bufferCommands', false);
+    mongoose.set("bufferCommands", false)
     // mongoose.set("debug", true)
     // mongooseMedici.set("debug", true)
     // console.warn("create models", mongoose.connection.readyState)
