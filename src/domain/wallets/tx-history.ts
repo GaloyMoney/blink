@@ -50,28 +50,7 @@ const filterPendingIncoming = ({
 const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
   txn: LedgerTransaction<S>,
 ) => {
-  const {
-    id,
-    walletId,
-    recipientWalletId,
-    memoFromPayer,
-    lnMemo,
-    type,
-    credit,
-    debit,
-    fee,
-    usd,
-    feeUsd,
-    paymentHash,
-    txHash,
-    pubkey,
-    username,
-    address,
-    pendingConfirmation,
-    timestamp,
-    currency,
-  } = txn
-
+  const { credit, debit, currency, fee, feeUsd } = txn
   const settlementAmount =
     currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
   const settlementFee =
@@ -79,35 +58,38 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
       ? toSats(fee || 0)
       : toCents(feeUsd ? Math.floor(feeUsd * 100) : 0)
 
+  const { lnMemo, memoFromPayer } = txn
   const memo = translateMemo({
     memoFromPayer,
     lnMemo,
     credit,
   })
 
-  const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
+  const status = txn.pendingConfirmation ? TxStatus.Pending : TxStatus.Success
 
   const baseTransaction = {
-    id,
-    walletId,
+    id: txn.id,
+    walletId: txn.walletId,
     settlementAmount,
     settlementFee,
-    settlementCurrency: currency,
+    settlementCurrency: txn.currency,
     displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerBaseUnitFromAmounts({
-      displayAmountAsNumber: usd,
+      displayAmountAsNumber: txn.usd,
       settlementAmountInBaseAsNumber: settlementAmount,
     }),
     status,
     memo,
-    createdAt: timestamp,
+    createdAt: txn.timestamp,
   }
 
-  let txType: ExtendedLedgerTransactionType = type
-  if (type == LedgerTransactionType.IntraLedger && paymentHash) {
+  let txType: ExtendedLedgerTransactionType = txn.type
+  if (txn.type == LedgerTransactionType.IntraLedger && txn.paymentHash) {
     txType = ExtendedLedgerTransactionType.LnIntraLedger
   }
 
   const defaultOnChainAddress = "<no-address>" as OnChainAddress
+
+  const { recipientWalletId, username, pubkey, paymentHash, txHash, address } = txn
 
   let walletTransaction: WalletTransaction
   switch (txType) {
