@@ -4,7 +4,7 @@ import { checkedToLedgerTransactionId } from "@domain/ledger"
 
 export const getTransactionById = async (
   id: string,
-): Promise<WalletTransaction | ApplicationError> => {
+): Promise<WalletTransactionWithMetadata | ApplicationError> => {
   const ledger = LedgerService()
 
   const ledgerTxId = checkedToLedgerTransactionId(id)

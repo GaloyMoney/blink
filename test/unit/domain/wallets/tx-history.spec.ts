@@ -55,7 +55,6 @@ describe("WalletTransactionHistory.fromLedger", () => {
           paymentHash: "paymentHash" as PaymentHash,
           pubkey: "pubkey" as Pubkey,
           memoFromPayer: "SomeMemo",
-          revealedPreImage: "revealedPreImage" as RevealedPreImage,
         },
         {
           ...currencyBaseLedgerTxns,
@@ -132,7 +131,7 @@ describe("WalletTransactionHistory.fromLedger", () => {
           },
           settlementVia: {
             type: SettlementMethod.Lightning,
-            revealedPreImage: "revealedPreImage" as RevealedPreImage,
+            revealedPreImage: undefined,
           },
           memo: "SomeMemo",
         },

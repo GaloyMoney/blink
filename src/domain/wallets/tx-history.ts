@@ -191,6 +191,32 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
   return walletTransaction
 }
 
+const translateWithMetadataLedgerTxnToWalletTxn = <S extends WalletCurrency>(
+  txn: LedgerTransactionWithMetadata<S>,
+): WalletTransactionWithMetadata => {
+  const walletTxn = translateLedgerTxnToWalletTxn(txn)
+
+  let walletTxnWithMetadata: WalletTransactionWithMetadata = {
+    hasMetadata: true,
+    ...walletTxn,
+  }
+  if (txn.revealedPreImage) {
+    if (walletTxnWithMetadata.settlementVia.type !== SettlementMethod.Lightning) {
+      // TODO: return invalid-state error here and remove cast to 'WalletLnTransactionWithMetadata' just below
+    }
+
+    walletTxnWithMetadata = {
+      ...walletTxn,
+      settlementVia: {
+        ...walletTxn.settlementVia,
+        revealedPreImage: txn.revealedPreImage,
+      },
+    } as WalletLnTransactionWithMetadata
+  }
+
+  return walletTxnWithMetadata
+}
+
 export const fromLedger = <S extends WalletCurrency>(
   ledgerTransactions: LedgerTransaction<S>[],
 ): ConfirmedTransactionHistory => {
@@ -201,6 +227,31 @@ export const fromLedger = <S extends WalletCurrency>(
     addPendingIncoming: (args) => ({
       transactions: [...filterPendingIncoming(args), ...transactions],
     }),
+  }
+}
+
+export const fromLedgerWithMetadata = <S extends WalletCurrency>(
+  ledgerTransactions: LedgerTransactionWithMetadata<S>[],
+): ConfirmedTransactionHistoryWithMetadata => {
+  const transactions = ledgerTransactions.map(translateWithMetadataLedgerTxnToWalletTxn)
+
+  const addPendingIncoming = (args) => {
+    const pendingTxns = filterPendingIncoming(args)
+    const pendingTxnsWithMetadata = pendingTxns.map(
+      (txn: WalletTransaction): WalletTransactionWithMetadata => ({
+        ...txn,
+        hasMetadata: true,
+      }),
+    )
+
+    return {
+      transactions: [...pendingTxnsWithMetadata, ...transactions],
+    }
+  }
+
+  return {
+    transactions,
+    addPendingIncoming,
   }
 }
 
@@ -240,6 +291,7 @@ export const translateMemo = ({
 
 export const WalletTransactionHistory = {
   fromLedger,
+  fromLedgerWithMetadata,
 } as const
 
 // TODO: refactor this to use PriceRatio eventually instead after

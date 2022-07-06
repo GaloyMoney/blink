@@ -8,7 +8,6 @@ import WalletId from "../scalar/wallet-id"
 import Username from "../scalar/username"
 import OnChainTxHash from "../scalar/onchain-tx-hash"
 import LnPaymentPreImage from "../scalar/ln-payment-preimage"
-import LnPaymentSecret from "../scalar/ln-payment-secret"
 
 const SettlementViaIntraLedger = GT.Object({
   name: "SettlementViaIntraLedger",
@@ -26,21 +25,14 @@ const SettlementViaIntraLedger = GT.Object({
   }),
 })
 
-const SettlementViaLn = GT.Object({
-  name: "SettlementViaLn",
-  isTypeOf: (source: SettlementViaLn) => source.type === SettlementMethod.Lightning,
+const SettlementViaLnWithMetadata = GT.Object({
+  name: "SettlementViaLnWithMetadata",
+  isTypeOf: (source: SettlementViaLnWithMetadata) =>
+    source.type === SettlementMethod.Lightning,
   fields: () => ({
-    paymentSecret: {
-      type: LnPaymentSecret,
-      resolve: () => undefined,
-      deprecationReason:
-        "Moving this property over to the TransactionWithMetadata object type.",
-    },
     preImage: {
       type: LnPaymentPreImage,
-      resolve: () => undefined,
-      deprecationReason:
-        "Moving this property over to the TransactionWithMetadata object type.",
+      resolve: (source: SettlementViaLnWithMetadata) => source.revealedPreImage,
     },
   }),
 })
@@ -55,9 +47,13 @@ const SettlementViaOnChain = GT.Object({
   }),
 })
 
-const SettlementVia = GT.Union({
-  name: "SettlementVia",
-  types: () => [SettlementViaIntraLedger, SettlementViaLn, SettlementViaOnChain],
+const SettlementViaWithMetadata = GT.Union({
+  name: "SettlementViaWithMetadata",
+  types: () => [
+    SettlementViaIntraLedger,
+    SettlementViaLnWithMetadata,
+    SettlementViaOnChain,
+  ],
 })
 
-export default SettlementVia
+export default SettlementViaWithMetadata

@@ -25,47 +25,51 @@ type PartialLedgerTransactionFromMetadata = {
 }
 
 // Differentiate fields depending on what 'type' we have (see domain/wallets/index.types.d.ts)
-type LedgerTransaction<S extends WalletCurrency> =
-  PartialLedgerTransactionFromMetadata & {
-    readonly id: LedgerTransactionId
-    readonly walletId: WalletId | undefined // FIXME create a subclass so that this field is always set for liabilities wallets
-    readonly type: LedgerTransactionType
-    readonly debit: Satoshis | UsdCents
-    readonly credit: Satoshis | UsdCents
-    readonly fee: Satoshis
-    readonly currency: S
-    readonly timestamp: Date
-    readonly pendingConfirmation: boolean
-    readonly journalId: LedgerJournalId
+type LedgerTransaction<S extends WalletCurrency> = {
+  readonly id: LedgerTransactionId
+  readonly walletId: WalletId | undefined // FIXME create a subclass so that this field is always set for liabilities wallets
+  readonly type: LedgerTransactionType
+  readonly debit: Satoshis | UsdCents
+  readonly credit: Satoshis | UsdCents
+  readonly fee: Satoshis
+  readonly currency: S
+  readonly timestamp: Date
+  readonly pendingConfirmation: boolean
+  readonly journalId: LedgerJournalId
 
-    readonly lnMemo?: string
+  readonly lnMemo?: string
 
-    readonly usd: number
-    readonly feeUsd: number
+  readonly usd: number
+  readonly feeUsd: number
 
-    // for IntraLedger
-    readonly recipientWalletId?: WalletId
-    readonly username?: Username
-    readonly memoFromPayer?: string
+  // for IntraLedger
+  readonly recipientWalletId?: WalletId
+  readonly username?: Username
+  readonly memoFromPayer?: string
 
-    // for ln
-    readonly paymentHash?: PaymentHash
-    readonly pubkey?: Pubkey
-    readonly feeKnownInAdvance: boolean
+  // for ln
+  readonly paymentHash?: PaymentHash
+  readonly pubkey?: Pubkey
+  readonly feeKnownInAdvance: boolean
 
-    readonly satsAmount?: Satoshis
-    readonly centsAmount?: UsdCents
-    readonly satsFee?: Satoshis
-    readonly centsFee?: UsdCents
+  readonly satsAmount?: Satoshis
+  readonly centsAmount?: UsdCents
+  readonly satsFee?: Satoshis
+  readonly centsFee?: UsdCents
 
-    readonly displayAmount?: DisplayCurrencyBaseAmount
-    readonly displayFee?: DisplayCurrencyBaseAmount
-    readonly displayCurrency?: DisplayCurrency
+  readonly displayAmount?: DisplayCurrencyBaseAmount
+  readonly displayFee?: DisplayCurrencyBaseAmount
+  readonly displayCurrency?: DisplayCurrency
 
-    // for onchain
-    readonly address?: OnChainAddress
-    readonly txHash?: OnChainTxHash
-  }
+  // for onchain
+  readonly address?: OnChainAddress
+  readonly txHash?: OnChainTxHash
+}
+
+type LedgerTransactionWithMetadata<S extends WalletCurrency> = {
+  hasMetadata: true
+} & PartialLedgerTransactionFromMetadata &
+  LedgerTransaction<S>
 
 type ReceiveOnChainTxArgs = {
   walletId: WalletId

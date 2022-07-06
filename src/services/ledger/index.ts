@@ -80,7 +80,7 @@ export const LedgerService = (): ILedgerService => {
       if (results.length !== 1) {
         return new CouldNotFindTransactionError()
       }
-      return translateTxRecordsToLedgerTxs([txnRecord])[0]
+      return translateTxRecordsToLedgerTxsWithMetadata([txnRecord])[0]
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -95,7 +95,7 @@ export const LedgerService = (): ILedgerService => {
         account_path: liabilitiesMainAccount,
         hash,
       }))
-      return translateTxRecordsToLedgerTxs(txnRecords)
+      return translateTxRecordsToLedgerTxsWithMetadata(txnRecords)
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -396,7 +396,7 @@ const translateToLedgerTx = <S extends WalletCurrency>({
 }: {
   txnRecord: TransactionRecord
   txnMetadata: LedgerTransactionMetadata | undefined
-}): LedgerTransaction<S> => {
+}): LedgerTransaction<S> | LedgerTransactionWithMetadata<S> => {
   const currency = txnRecord.currency as S
 
   const fromTxnRecord: LedgerTransaction<S> = {
@@ -456,12 +456,19 @@ const translateToLedgerTx = <S extends WalletCurrency>({
   if ("revealedPreImage" in txnMetadata) {
     fromTxnMetadata = { revealedPreImage: txnMetadata.revealedPreImage }
   }
-  return { ...fromTxnRecord, ...fromTxnMetadata }
+  const txnWithMetadata: LedgerTransactionWithMetadata<S> = {
+    hasMetadata: true,
+    ...fromTxnRecord,
+    ...fromTxnMetadata,
+  }
+
+  return txnWithMetadata
 }
 
-const translateTxRecordsToLedgerTxs = async (
+// TODO: return only `LedgerTransactionWithMetadata` type once all db entries have been migrated
+const translateTxRecordsToLedgerTxsWithMetadata = async <S extends WalletCurrency>(
   txnRecords: TransactionRecord[],
-): Promise<LedgerTransaction<WalletCurrency>[]> => {
+): Promise<(LedgerTransaction<S> | LedgerTransactionWithMetadata<S>)[]> => {
   const txnsMetadata = await Promise.all(
     txnRecords.map(async (tx): Promise<LedgerTransactionMetadata | undefined> => {
       const txnMetadataResult = await txnMetadataRepo.findById(
@@ -486,6 +493,17 @@ const translateTxRecordsToLedgerTxs = async (
     translateToLedgerTx({
       txnRecord,
       txnMetadata: txnsMetadata[i],
+    }),
+  )
+}
+
+const translateTxRecordsToLedgerTxs = async <S extends WalletCurrency>(
+  txnRecords: TransactionRecord[],
+): Promise<LedgerTransaction<S>[]> => {
+  return txnRecords.map((txnRecord) =>
+    translateToLedgerTx({
+      txnRecord,
+      txnMetadata: undefined,
     }),
   )
 }
