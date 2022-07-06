@@ -7,14 +7,14 @@ import { WalletCurrency } from "@domain/shared"
 import { PaymentInitiationMethod, SettlementMethod } from "./tx-methods"
 import { TxStatus } from "./tx-status"
 
-const filterPendingIncoming = (
-  pendingTransactions: IncomingOnChainTransaction[],
-  addressesByWalletId: { [key: WalletId]: OnChainAddress[] },
-  walletDetailsByWalletId: { [key: WalletId]: { currency: WalletCurrency } },
-  displayCurrencyPerSat: DisplayCurrencyPerSat,
-): WalletOnChainTransaction[] => {
+const filterPendingIncoming = ({
+  pendingIncoming,
+  addressesByWalletId,
+  walletDetailsByWalletId,
+  displayCurrencyPerSat,
+}: AddPendingIncomingArgs): WalletOnChainTransaction[] => {
   const walletTransactions: WalletOnChainTransaction[] = []
-  pendingTransactions.forEach(({ rawTx, createdAt }) => {
+  pendingIncoming.forEach(({ rawTx, createdAt }) => {
     rawTx.outs.forEach(({ sats, address }) => {
       if (address) {
         for (const walletIdString in addressesByWalletId) {
@@ -209,21 +209,8 @@ export const fromLedger = (
 
   return {
     transactions,
-    addPendingIncoming: ({
-      pendingIncoming,
-      addressesByWalletId,
-      walletDetailsByWalletId,
-      displayCurrencyPerSat,
-    }: AddPendingIncomingArgs): WalletTransactionHistoryWithPending => ({
-      transactions: [
-        ...filterPendingIncoming(
-          pendingIncoming,
-          addressesByWalletId,
-          walletDetailsByWalletId,
-          displayCurrencyPerSat,
-        ),
-        ...transactions,
-      ],
+    addPendingIncoming: (args) => ({
+      transactions: [...filterPendingIncoming(args), ...transactions],
     }),
   }
 }

@@ -115,12 +115,7 @@ type AddPendingIncomingArgs = {
 
 type ConfirmedTransactionHistory = {
   readonly transactions: WalletTransaction[]
-  addPendingIncoming({
-    pendingIncoming,
-    addressesByWalletId,
-    walletDetailsByWalletId,
-    displayCurrencyPerSat,
-  }: AddPendingIncomingArgs): WalletTransactionHistoryWithPending
+  addPendingIncoming(args: AddPendingIncomingArgs): WalletTransactionHistoryWithPending
 }
 
 type WalletTransactionHistoryWithPending = {
