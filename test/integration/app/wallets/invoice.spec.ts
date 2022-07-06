@@ -1,6 +1,6 @@
 import { Wallets } from "@app"
 import { addWallet } from "@app/accounts/add-wallet"
-import { getCurrentPriceInCentsPerSat } from "@app/payments/helpers"
+import { getCurrentPriceInCentsPerSat } from "@app/shared"
 import {
   getInvoiceCreateAttemptLimits,
   getInvoiceCreateForRecipientAttemptLimits,
@@ -70,7 +70,11 @@ describe("Wallet - addInvoice BTC", () => {
     expect(request.startsWith("lnbcrt10")).toBeTruthy()
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, currency } = result
+
+    const {
+      recipientWalletDescriptor: { id: walletId, currency },
+    } = result
+
     expect(walletId).toBe(walletIdBtc)
     expect(currency).toBe(WalletCurrency.Btc)
 
@@ -90,7 +94,11 @@ describe("Wallet - addInvoice BTC", () => {
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, currency } = result
+
+    const {
+      recipientWalletDescriptor: { id: walletId, currency },
+    } = result
+
     expect(walletId).toBe(walletIdBtc)
     expect(currency).toBe(WalletCurrency.Btc)
   })
@@ -108,7 +116,12 @@ describe("Wallet - addInvoice BTC", () => {
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, selfGenerated } = result
+
+    const {
+      recipientWalletDescriptor: { id: walletId },
+      selfGenerated,
+    } = result
+
     expect(String(walletId)).toBe(String(walletIdBtc))
     expect(selfGenerated).toBe(false)
 
@@ -129,7 +142,10 @@ describe("Wallet - addInvoice BTC", () => {
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, selfGenerated } = result
+    const {
+      recipientWalletDescriptor: { id: walletId },
+      selfGenerated,
+    } = result
     expect(String(walletId)).toBe(String(walletIdBtc))
     expect(selfGenerated).toBe(false)
   })
@@ -154,7 +170,7 @@ describe("Wallet - addInvoice USD", () => {
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletIdUsd,
-      amount: centsInput,
+      amount: toCents(centsInput),
     })
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
@@ -162,9 +178,13 @@ describe("Wallet - addInvoice USD", () => {
     expect(request.startsWith("lnbcrt")).toBeTruthy()
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, cents, currency } = result
+    const {
+      recipientWalletDescriptor: { id: walletId, currency },
+      usdAmount,
+    } = result
+
     expect(String(walletId)).toBe(String(walletIdUsd))
-    expect(cents).toBe(centsInput)
+    expect(usdAmount?.amount).toBe(BigInt(centsInput))
     expect(currency).toBe(WalletCurrency.Usd)
 
     const decodedInvoice = decodeInvoice(request)
@@ -183,9 +203,12 @@ describe("Wallet - addInvoice USD", () => {
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, cents } = result
+    const {
+      recipientWalletDescriptor: { id: walletId },
+      usdAmount,
+    } = result
     expect(String(walletId)).toBe(String(walletIdUsd))
-    expect(cents).toBe(undefined)
+    expect(usdAmount?.amount).toBe(undefined)
   })
 
   it("adds a public with amount invoice", async () => {
@@ -200,7 +223,7 @@ describe("Wallet - addInvoice USD", () => {
 
     const lnInvoice = await Wallets.addInvoiceForRecipient({
       recipientWalletId: walletIdUsd,
-      amount: centsInput,
+      amount: toCents(centsInput),
     })
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: request } = lnInvoice
@@ -208,8 +231,12 @@ describe("Wallet - addInvoice USD", () => {
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, selfGenerated, cents } = result
-    expect(cents).toBe(centsInput)
+    const {
+      recipientWalletDescriptor: { id: walletId },
+      usdAmount,
+      selfGenerated,
+    } = result
+    expect(usdAmount?.amount).toBe(BigInt(centsInput))
 
     expect(String(walletId)).toBe(String(walletIdUsd))
     expect(selfGenerated).toBe(false)
@@ -231,10 +258,14 @@ describe("Wallet - addInvoice USD", () => {
 
     const result = await walletInvoices.findByPaymentHash(getHash(request))
     if (result instanceof Error) throw result
-    const { walletId, selfGenerated, cents } = result
+    const {
+      recipientWalletDescriptor: { id: walletId },
+      usdAmount,
+      selfGenerated,
+    } = result
     expect(String(walletId)).toBe(String(walletIdUsd))
     expect(selfGenerated).toBe(false)
-    expect(cents).toBe(undefined)
+    expect(usdAmount?.amount).toBe(undefined)
   })
 })
 

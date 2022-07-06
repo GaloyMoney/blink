@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "crypto"
 
 import { Lightning, Payments, Prices, Wallets } from "@app"
-import { getMidPriceRatio } from "@app/payments/helpers"
+import { getMidPriceRatio } from "@app/shared"
 
 import { delete2fa } from "@app/users"
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"

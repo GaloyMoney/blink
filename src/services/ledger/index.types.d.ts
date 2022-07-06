@@ -48,9 +48,9 @@ type LedgerMetadata = {
 }
 
 type NonIntraledgerLedgerMetadata = LedgerMetadata & {
-  usd: DisplayCurrencyBaseAmount // to be renamed amountDisplayCurrency
+  usd: number // to be removed when "centAmount" takes over
   fee: Satoshis
-  feeUsd: DisplayCurrencyBaseAmount // to be renamed feeDisplayCurrency
+  feeUsd: number // to be removed when "centFee" takes over
 }
 
 type LnReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {

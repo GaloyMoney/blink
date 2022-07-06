@@ -1,13 +1,9 @@
 import { getCurrentPrice } from "@app/prices"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
-import { DealerPriceServiceError } from "@domain/dealer-price"
 import { CouldNotFindError } from "@domain/errors"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
-import { DepositFeeCalculator } from "@domain/wallets"
-import { WalletCurrency } from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { LockService } from "@services/lock"
-import { DealerPriceService } from "@services/dealer-price"
-import { LedgerService } from "@services/ledger"
+import { NewDealerPriceService } from "@services/dealer-price"
 import { LndService } from "@services/lnd"
 import {
   AccountsRepository,
@@ -17,7 +13,9 @@ import {
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { runInParallel } from "@utils"
-import { DisplayCurrency } from "@domain/fiat"
+import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
+import * as LedgerFacade from "@services/ledger/facade"
+import { usdFromBtcMidPriceFn } from "@app/shared"
 
 export const updatePendingInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -82,6 +80,8 @@ export const updatePendingInvoiceByPaymentHash = async ({
   return updatePendingInvoice({ walletInvoice, logger })
 }
 
+const dealer = NewDealerPriceService()
+
 const updatePendingInvoice = async ({
   walletInvoice,
   logger,
@@ -94,8 +94,7 @@ const updatePendingInvoice = async ({
 
   const walletInvoicesRepo = WalletInvoicesRepository()
 
-  const { pubkey, paymentHash, walletId, currency: walletCurrency } = walletInvoice
-  let { cents } = walletInvoice
+  const { pubkey, paymentHash, recipientWalletDescriptor } = walletInvoice
 
   const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
   if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
@@ -123,7 +122,7 @@ const updatePendingInvoice = async ({
 
   const pendingInvoiceLogger = logger.child({
     hash: paymentHash,
-    walletId,
+    walletId: recipientWalletDescriptor.id,
     topic: "payment",
     protocol: "lightning",
     transactionType: "receipt",
@@ -135,12 +134,19 @@ const updatePendingInvoice = async ({
     return true
   }
 
-  if (walletCurrency === WalletCurrency.Usd && !cents) {
-    const dealerPrice = DealerPriceService()
-    const cents_ = await dealerPrice.getCentsFromSatsForImmediateBuy(roundedDownReceived)
-    if (cents_ instanceof DealerPriceServiceError) return cents_
-    cents = cents_
-  }
+  const receivedBtc = paymentAmountFromNumber({
+    amount: roundedDownReceived,
+    currency: WalletCurrency.Btc,
+  })
+  if (receivedBtc instanceof Error) return receivedBtc
+
+  const walletInvoiceReceiver = await WalletInvoiceReceiver({
+    walletInvoice,
+    receivedBtc,
+    usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+    usdFromBtcMidPrice: usdFromBtcMidPriceFn,
+  })
+  if (walletInvoiceReceiver instanceof Error) return walletInvoiceReceiver
 
   const lockService = LockService()
   return lockService.lockPaymentHash(paymentHash, async () => {
@@ -167,38 +173,48 @@ const updatePendingInvoice = async ({
     const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
     if (invoicePaid instanceof Error) return invoicePaid
 
-    const feeInboundLiquidity = DepositFeeCalculator().lnDepositFee()
-
-    const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
-    const feeInboundLiquidityDisplayCurrency = dCConverter.fromSats(feeInboundLiquidity)
-
-    const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {
-      amount: dCConverter.fromSats(roundedDownReceived),
-      currency: DisplayCurrency.Usd,
-    }
-
-    let amountDisplayCurrency = displayPaymentAmount.amount
-    if (displayPaymentAmount.currency === walletCurrency && cents) {
-      amountDisplayCurrency = cents / 100
-    }
-
-    const ledgerService = LedgerService()
-    const result = await ledgerService.addLnTxReceive({
-      walletId,
-      walletCurrency,
+    const metadata = LedgerFacade.LnReceiveLedgerMetadata({
       paymentHash,
-      description,
-      sats: roundedDownReceived,
-      cents,
-      amountDisplayCurrency: amountDisplayCurrency as DisplayCurrencyBaseAmount,
-      //TODO: add displayCurrency: displayPaymentAmount.currency,
-      feeInboundLiquidity,
-      feeInboundLiquidityDisplayCurrency,
+      fee: walletInvoiceReceiver.btcBankFee,
+      feeDisplayCurrency: Number(
+        walletInvoiceReceiver.usdBankFee.amount,
+      ) as DisplayCurrencyBaseAmount,
+      amountDisplayCurrency: Number(
+        walletInvoiceReceiver.usdToCreditReceiver.amount,
+      ) as DisplayCurrencyBaseAmount,
+      pubkey: walletInvoiceReceiver.pubkey,
     })
+
+    //TODO: add displayCurrency: displayPaymentAmount.currency,
+    const result = await LedgerFacade.recordReceive({
+      description,
+      recipientWalletDescriptor: walletInvoiceReceiver.recipientWalletDescriptor,
+      amountToCreditReceiver: {
+        usd: walletInvoiceReceiver.usdToCreditReceiver,
+        btc: walletInvoiceReceiver.btcToCreditReceiver,
+      },
+      bankFee: {
+        usd: walletInvoiceReceiver.usdBankFee,
+        btc: walletInvoiceReceiver.btcBankFee,
+      },
+      metadata,
+      txMetadata: {
+        hash: metadata.hash,
+      },
+    })
+
     if (result instanceof Error) return result
 
-    const recipientWallet = await WalletsRepository().findById(walletId)
+    const recipientWallet = await WalletsRepository().findById(
+      recipientWalletDescriptor.id,
+    )
     if (recipientWallet instanceof Error) return recipientWallet
+
+    const { usdToCreditReceiver: displayAmount } = walletInvoiceReceiver
+    const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {
+      amount: Number((Number(displayAmount.amount) / 100).toFixed(2)),
+      currency: displayAmount.currency,
+    } as DisplayPaymentAmount<DisplayCurrency>
 
     const recipientAccount = await AccountsRepository().findById(
       recipientWallet.accountId,
@@ -208,16 +224,11 @@ const updatePendingInvoice = async ({
     const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
     if (recipientUser instanceof Error) return recipientUser
 
-    let amount = BigInt(roundedDownReceived)
-    if (recipientWallet.currency === WalletCurrency.Usd && cents) {
-      amount = BigInt(cents)
-    }
-
     const notificationsService = NotificationsService()
     notificationsService.lightningTxReceived({
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId: recipientWallet.id,
-      paymentAmount: { amount, currency: recipientWallet.currency },
+      paymentAmount: walletInvoiceReceiver.receivedAmount(),
       displayPaymentAmount,
       paymentHash,
       recipientDeviceTokens: recipientUser.deviceTokens,

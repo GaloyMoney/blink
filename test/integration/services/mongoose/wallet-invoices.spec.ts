@@ -2,7 +2,6 @@ import crypto from "crypto"
 
 import { Wallets } from "@app"
 import { toSats } from "@domain/bitcoin"
-import { toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
 import { WalletInvoicesRepository } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
@@ -24,13 +23,18 @@ const createTestWalletInvoice = () => {
   const randomPaymentHash = crypto.randomBytes(32).toString("hex") as PaymentHash
   return {
     paymentHash: randomPaymentHash,
-    walletId: crypto.randomUUID() as WalletId,
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
     paid: false,
-    cents: toCents(10),
-    currency: WalletCurrency.Btc,
-  }
+    recipientWalletDescriptor: {
+      currency: WalletCurrency.Btc,
+      id: crypto.randomUUID() as WalletId,
+    },
+    usdAmount: {
+      currency: WalletCurrency.Usd,
+      amount: 10n,
+    },
+  } as WalletInvoice
 }
 
 describe("WalletInvoices", () => {

@@ -115,6 +115,13 @@ type RegisterInvoiceArgs = {
   expiresAt: InvoiceExpiration
 }
 
+type NewRegisterInvoiceArgs = {
+  description: string
+  descriptionHash?: string
+  btcPaymentAmount: BtcPaymentAmount
+  expiresAt: InvoiceExpiration
+}
+
 type RegisteredInvoice = {
   invoice: LnInvoice
   pubkey: Pubkey
