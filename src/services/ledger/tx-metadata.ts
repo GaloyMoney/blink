@@ -116,13 +116,16 @@ export const LnReceiveLedgerMetadata = ({
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   pubkey: Pubkey
 }) => {
+  const convertCentsToUsdAsDollars = (cents: DisplayCurrencyBaseAmount) =>
+    Number((Number(cents) / 100).toFixed(2))
+
   const metadata: LnReceiveLedgerMetadata = {
     type: LedgerTransactionType.Invoice,
     pending: false,
     hash: paymentHash,
     fee: Number(fee.amount) as Satoshis,
-    feeUsd: feeDisplayCurrency,
-    usd: amountDisplayCurrency,
+    feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
+    usd: convertCentsToUsdAsDollars(amountDisplayCurrency),
   }
   return metadata
 }
