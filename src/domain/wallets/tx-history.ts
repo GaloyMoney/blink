@@ -47,149 +47,71 @@ const filterPendingIncoming = ({
   return walletTransactions
 }
 
-export const fromLedger = (
-  ledgerTransactions: LedgerTransaction<WalletCurrency>[],
-): ConfirmedTransactionHistory => {
-  const transactions: WalletTransaction[] = ledgerTransactions.map(
-    ({
-      id,
-      walletId,
-      recipientWalletId,
-      memoFromPayer,
-      lnMemo,
-      type,
-      credit,
-      debit,
-      fee,
-      usd,
-      feeUsd,
-      paymentHash,
-      txHash,
-      pubkey,
-      username,
-      address,
-      pendingConfirmation,
-      timestamp,
-      currency,
-    }) => {
-      const settlementAmount =
-        currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
-      const settlementFee =
-        currency === WalletCurrency.Btc
-          ? toSats(fee || 0)
-          : toCents(feeUsd ? Math.floor(feeUsd * 100) : 0)
+const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
+  txn: LedgerTransaction<S>,
+) => {
+  const {
+    id,
+    walletId,
+    recipientWalletId,
+    memoFromPayer,
+    lnMemo,
+    type,
+    credit,
+    debit,
+    fee,
+    usd,
+    feeUsd,
+    paymentHash,
+    txHash,
+    pubkey,
+    username,
+    address,
+    pendingConfirmation,
+    timestamp,
+    currency,
+  } = txn
 
-      const memo = translateMemo({
-        memoFromPayer,
-        lnMemo,
-        credit,
-      })
+  const settlementAmount =
+    currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
+  const settlementFee =
+    currency === WalletCurrency.Btc
+      ? toSats(fee || 0)
+      : toCents(feeUsd ? Math.floor(feeUsd * 100) : 0)
 
-      const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
+  const memo = translateMemo({
+    memoFromPayer,
+    lnMemo,
+    credit,
+  })
 
-      const baseTransaction = {
-        id,
-        walletId,
-        settlementAmount,
-        settlementFee,
-        settlementCurrency: currency,
-        displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerBaseUnitFromAmounts({
-          displayAmountAsNumber: usd,
-          settlementAmountInBaseAsNumber: settlementAmount,
-        }),
-        status,
-        memo,
-        createdAt: timestamp,
-      }
+  const status = pendingConfirmation ? TxStatus.Pending : TxStatus.Success
 
-      let txType: ExtendedLedgerTransactionType = type
-      if (type == LedgerTransactionType.IntraLedger && paymentHash) {
-        txType = ExtendedLedgerTransactionType.LnIntraLedger
-      }
+  const baseTransaction = {
+    id,
+    walletId,
+    settlementAmount,
+    settlementFee,
+    settlementCurrency: currency,
+    displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerBaseUnitFromAmounts({
+      displayAmountAsNumber: usd,
+      settlementAmountInBaseAsNumber: settlementAmount,
+    }),
+    status,
+    memo,
+    createdAt: timestamp,
+  }
 
-      const defaultOnChainAddress = "<no-address>" as OnChainAddress
+  let txType: ExtendedLedgerTransactionType = type
+  if (type == LedgerTransactionType.IntraLedger && paymentHash) {
+    txType = ExtendedLedgerTransactionType.LnIntraLedger
+  }
 
-      let walletTransaction: WalletTransaction
-      switch (txType) {
-        case ExtendedLedgerTransactionType.IntraLedger:
-          walletTransaction = {
-            ...baseTransaction,
-            initiationVia: {
-              type: PaymentInitiationMethod.IntraLedger,
-              counterPartyWalletId: recipientWalletId as WalletId,
-              counterPartyUsername: username as Username,
-            },
-            settlementVia: {
-              type: SettlementMethod.IntraLedger,
-              counterPartyWalletId: recipientWalletId as WalletId,
-              counterPartyUsername: username as Username,
-            },
-          }
-          return walletTransaction
+  const defaultOnChainAddress = "<no-address>" as OnChainAddress
 
-        case ExtendedLedgerTransactionType.OnchainIntraLedger:
-          walletTransaction = {
-            ...baseTransaction,
-            initiationVia: {
-              type: PaymentInitiationMethod.OnChain,
-              address: address || defaultOnChainAddress,
-            },
-            settlementVia: {
-              type: SettlementMethod.IntraLedger,
-              counterPartyWalletId: recipientWalletId as WalletId,
-              counterPartyUsername: username || null,
-            },
-          }
-          return walletTransaction
-
-        case ExtendedLedgerTransactionType.OnchainPayment:
-        case ExtendedLedgerTransactionType.OnchainReceipt:
-          walletTransaction = {
-            ...baseTransaction,
-            initiationVia: {
-              type: PaymentInitiationMethod.OnChain,
-              address: address || defaultOnChainAddress,
-            },
-            settlementVia: {
-              type: SettlementMethod.OnChain,
-              transactionHash: txHash as OnChainTxHash,
-            },
-          }
-          return walletTransaction
-
-        case ExtendedLedgerTransactionType.LnIntraLedger:
-          walletTransaction = {
-            ...baseTransaction,
-            initiationVia: {
-              type: PaymentInitiationMethod.Lightning,
-              paymentHash: paymentHash as PaymentHash,
-              pubkey: pubkey as Pubkey,
-            },
-            settlementVia: {
-              type: SettlementMethod.IntraLedger,
-              counterPartyWalletId: recipientWalletId as WalletId,
-              counterPartyUsername: username || null,
-            },
-          }
-          return walletTransaction
-
-        case ExtendedLedgerTransactionType.Payment:
-        case ExtendedLedgerTransactionType.Invoice:
-          walletTransaction = {
-            ...baseTransaction,
-            initiationVia: {
-              type: PaymentInitiationMethod.Lightning,
-              paymentHash: paymentHash as PaymentHash,
-              pubkey: pubkey as Pubkey,
-            },
-            settlementVia: {
-              type: SettlementMethod.Lightning,
-              revealedPreImage: null,
-            },
-          }
-          return walletTransaction
-      }
-
+  let walletTransaction: WalletTransaction
+  switch (txType) {
+    case ExtendedLedgerTransactionType.IntraLedger:
       walletTransaction = {
         ...baseTransaction,
         initiationVia: {
@@ -200,12 +122,94 @@ export const fromLedger = (
         settlementVia: {
           type: SettlementMethod.IntraLedger,
           counterPartyWalletId: recipientWalletId as WalletId,
+          counterPartyUsername: username as Username,
+        },
+      }
+      return walletTransaction
+
+    case ExtendedLedgerTransactionType.OnchainIntraLedger:
+      walletTransaction = {
+        ...baseTransaction,
+        initiationVia: {
+          type: PaymentInitiationMethod.OnChain,
+          address: address || defaultOnChainAddress,
+        },
+        settlementVia: {
+          type: SettlementMethod.IntraLedger,
+          counterPartyWalletId: recipientWalletId as WalletId,
           counterPartyUsername: username || null,
         },
       }
       return walletTransaction
+
+    case ExtendedLedgerTransactionType.OnchainPayment:
+    case ExtendedLedgerTransactionType.OnchainReceipt:
+      walletTransaction = {
+        ...baseTransaction,
+        initiationVia: {
+          type: PaymentInitiationMethod.OnChain,
+          address: address || defaultOnChainAddress,
+        },
+        settlementVia: {
+          type: SettlementMethod.OnChain,
+          transactionHash: txHash as OnChainTxHash,
+        },
+      }
+      return walletTransaction
+
+    case ExtendedLedgerTransactionType.LnIntraLedger:
+      walletTransaction = {
+        ...baseTransaction,
+        initiationVia: {
+          type: PaymentInitiationMethod.Lightning,
+          paymentHash: paymentHash as PaymentHash,
+          pubkey: pubkey as Pubkey,
+        },
+        settlementVia: {
+          type: SettlementMethod.IntraLedger,
+          counterPartyWalletId: recipientWalletId as WalletId,
+          counterPartyUsername: username || null,
+        },
+      }
+      return walletTransaction
+
+    case ExtendedLedgerTransactionType.Payment:
+    case ExtendedLedgerTransactionType.Invoice:
+      walletTransaction = {
+        ...baseTransaction,
+        initiationVia: {
+          type: PaymentInitiationMethod.Lightning,
+          paymentHash: paymentHash as PaymentHash,
+          pubkey: pubkey as Pubkey,
+        },
+        settlementVia: {
+          type: SettlementMethod.Lightning,
+          revealedPreImage: null,
+        },
+      }
+      return walletTransaction
+  }
+
+  walletTransaction = {
+    ...baseTransaction,
+    initiationVia: {
+      type: PaymentInitiationMethod.IntraLedger,
+      counterPartyWalletId: recipientWalletId as WalletId,
+      counterPartyUsername: username as Username,
     },
-  )
+    settlementVia: {
+      type: SettlementMethod.IntraLedger,
+      counterPartyWalletId: recipientWalletId as WalletId,
+      counterPartyUsername: username || null,
+    },
+  }
+  return walletTransaction
+}
+
+export const fromLedger = (
+  ledgerTransactions: LedgerTransaction<WalletCurrency>[],
+): ConfirmedTransactionHistory => {
+  const transactions = ledgerTransactions.map(translateLedgerTxnToWalletTxn)
 
   return {
     transactions,
