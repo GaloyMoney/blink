@@ -2,9 +2,10 @@ import { SwapService } from "@services/swap"
 
 import { toSats } from "@domain/bitcoin"
 
-import { lndsBalances } from "@services/lnd/utils"
-import { getSwapConfig } from "@config"
+import { getSwapConfig, getColdStorageConfig } from "@config"
 import { SwapClientNotResponding } from "@domain/swap/errors"
+import { SwapOutChecker } from "@domain/swap"
+import { lndsBalances } from "@services/lnd/utils"
 
 describe("Swap", () => {
   it("Swap out returns successful SwapResult", async () => {
@@ -29,17 +30,25 @@ describe("Swap", () => {
     expect(swapResult).toBeInstanceOf(Error)
   })
 
-  it("Swap out if some threshheld it met", async () => {
+  it("Swap out if on chain wallet is depleted", async () => {
+    // thresholds
     const { onChain } = await lndsBalances()
-    // @todo should get the average outbound liquity per channel and do something with min outbound liquidty???
-    const minOnChainBalance = getSwapConfig().minOutboundLiquidityBalance
-    let swapResult
-    if (onChain < minOnChainBalance) {
+    const minOnChainHotWalletBalanceConfig =
+      getColdStorageConfig().minOnChainHotWalletBalance
+
+    // check if wallet is depleted
+    const isOnChainWalletDepleted = SwapOutChecker({
+      currentOnChainHotWalletBalance: onChain,
+      minOnChainHotWalletBalanceConfig,
+    }).isOnChainWalletDepleted()
+
+    if (isOnChainWalletDepleted) {
       const swapOutAmount = getSwapConfig().swapOutAmount
-      swapResult = await SwapService.swapOut(toSats(swapOutAmount))
+      const swapResult = await SwapService.swapOut(toSats(swapOutAmount))
       if (swapResult instanceof SwapClientNotResponding) {
         return
       }
+
       expect(swapResult).not.toBeInstanceOf(Error)
       expect(swapResult).toEqual(
         expect.objectContaining({

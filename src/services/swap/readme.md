@@ -46,6 +46,7 @@ const resp = await SwapProvider.swapOut(swapOutAmount)
 (4) Test a Loop Out
 ---------------------------------------
 ```sh
+TEST="swap-out-checker" make unit
 TEST="swap-out" make integration
 ```
 
