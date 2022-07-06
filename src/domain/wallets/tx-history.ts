@@ -107,7 +107,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
           counterPartyUsername: username as Username,
         },
       }
-      return walletTransaction
+      break
 
     case ExtendedLedgerTransactionType.OnchainIntraLedger:
       walletTransaction = {
@@ -122,7 +122,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
           counterPartyUsername: username || null,
         },
       }
-      return walletTransaction
+      break
 
     case ExtendedLedgerTransactionType.OnchainPayment:
     case ExtendedLedgerTransactionType.OnchainReceipt:
@@ -137,7 +137,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
           transactionHash: txHash as OnChainTxHash,
         },
       }
-      return walletTransaction
+      break
 
     case ExtendedLedgerTransactionType.LnIntraLedger:
       walletTransaction = {
@@ -153,7 +153,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
           counterPartyUsername: username || null,
         },
       }
-      return walletTransaction
+      break
 
     case ExtendedLedgerTransactionType.Payment:
     case ExtendedLedgerTransactionType.Invoice:
@@ -169,22 +169,24 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
           revealedPreImage: null,
         },
       }
-      return walletTransaction
+      break
+
+    default:
+      walletTransaction = {
+        ...baseTransaction,
+        initiationVia: {
+          type: PaymentInitiationMethod.IntraLedger,
+          counterPartyWalletId: recipientWalletId as WalletId,
+          counterPartyUsername: username as Username,
+        },
+        settlementVia: {
+          type: SettlementMethod.IntraLedger,
+          counterPartyWalletId: recipientWalletId as WalletId,
+          counterPartyUsername: username || null,
+        },
+      }
   }
 
-  walletTransaction = {
-    ...baseTransaction,
-    initiationVia: {
-      type: PaymentInitiationMethod.IntraLedger,
-      counterPartyWalletId: recipientWalletId as WalletId,
-      counterPartyUsername: username as Username,
-    },
-    settlementVia: {
-      type: SettlementMethod.IntraLedger,
-      counterPartyWalletId: recipientWalletId as WalletId,
-      counterPartyUsername: username || null,
-    },
-  }
   return walletTransaction
 }
 
