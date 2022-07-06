@@ -65,7 +65,9 @@ async function loopOut(amt, swap_fee?): Promise<AxiosResponse> {
   try {
     resp = await loopClient().post(`${getSwapConfig().swapUrl}/v1/loop/out`, body)
   } catch (e) {
-    resp = e
+    resp = {}
+    resp.status = 500
+    resp.statusText = e.stack
   }
   return resp
 }

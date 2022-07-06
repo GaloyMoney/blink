@@ -170,7 +170,7 @@ onChainWallet:
 swap:
   minOutboundLiquidityBalance: 30000000
   swapUrl: "https://localhost:8081"
-  swapOutAmount: 25000000
+  swapOutAmount: 500000 # 25000000
   swapProviders: ["LOOP"]
 
 # TODO

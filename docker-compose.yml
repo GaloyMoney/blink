@@ -129,8 +129,7 @@ services:
       - "--lnd.host=lnd-outside-1:10009"
       - "--lnd.macaroondir=/root/.lnd/data/chain/bitcoin/regtest"
       - "--lnd.tlspath=/root/.lnd/tls.cert"
-  # @todo - rename to loopd
-  loopclient:
+  loopd:
     image: lightninglabs/loop:v0.19.1-beta
     restart: unless-stopped
     volumes:
@@ -140,13 +139,16 @@ services:
       - ${PWD}/dev/lnd/lnd1.macaroon:/root/.lnd/data/chain/bitcoin/regtest/lnd1.macaroon
     depends_on:
       - lnd1
+      - loopserver
     ports:
       - "8081:8081"
+    environment:
+      - LOOP_SERVER_INTERNAL_IP=${LOOP_SERVER_INTERNAL_IP}
     command: 
       - "loopd"
       - "--network=regtest"
       - "--debuglevel=debug"
-      - "--server.host=galoy-loopserver-1:11009"
+      - "--server.host=${LOOP_SERVER_INTERNAL_IP}:11009"
       - "--server.notls"
       - "--lnd.host=lnd1:10009"
       - "--lnd.macaroonpath=/root/.lnd/data/chain/bitcoin/regtest/lnd1.macaroon"

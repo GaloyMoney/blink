@@ -1,7 +1,7 @@
 Swap Service 
 ============
 
-(1) Start the loopserver (Mock Swap Server) and loopclient (Rest API)
+(1) Start the loopserver (Mock Swap Server) and loopd (Rest API)
 ---------------------------------------
 ```sh
 make start-loop
@@ -43,10 +43,10 @@ const resp = await SwapProvider.swapOut(swapOutAmount)
 ```
 
 
-(4) Unit test a Loop Out
+(4) Test a Loop Out
 ---------------------------------------
 ```sh
-TEST=swap-service make unit
+TEST="swap-out" make integration
 ```
 
 (5) Monitor Status of the swap
