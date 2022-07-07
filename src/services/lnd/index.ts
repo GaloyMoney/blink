@@ -313,6 +313,10 @@ export const LndService = (): ILightningService | LightningServiceError => {
         confirmedAt: invoice.confirmed_at ? new Date(invoice.confirmed_at) : undefined,
         isSettled: !!invoice.is_confirmed,
         isHeld: !!invoice.is_held,
+        heldAt:
+          invoice.payments && invoice.payments.length
+            ? new Date(invoice.payments[0].created_at)
+            : undefined,
         roundedDownReceived: toSats(invoice.received),
         milliSatsReceived: toMilliSatsFromString(invoice.received_mtokens),
         secretPreImage: invoice.secret as SecretPreImage,

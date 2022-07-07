@@ -51,6 +51,7 @@ type LnInvoiceLookup = {
   readonly confirmedAt: Date | undefined
   readonly isSettled: boolean
   readonly isHeld: boolean
+  readonly heldAt: Date | undefined
   readonly roundedDownReceived: Satoshis
   readonly milliSatsReceived: MilliSatoshis
   readonly secretPreImage: SecretPreImage
