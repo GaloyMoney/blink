@@ -12,7 +12,7 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
-import { runInParallel } from "@utils"
+import { elapsedSinceTimestamp, runInParallel } from "@utils"
 import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
 import * as LedgerFacade from "@services/ledger/facade"
 import { usdFromBtcMidPriceFn } from "@app/shared"
@@ -106,7 +106,7 @@ const updatePendingInvoice = async ({
   }
 
   if (!lnInvoiceLookup.isHeld) {
-    pendingInvoiceLogger.info("invoice is not been held")
+    pendingInvoiceLogger.info("invoice has not been paid yet")
     return false
   }
 
@@ -255,13 +255,17 @@ const declineHeldInvoice = async ({
   if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
 
   if (!lnInvoiceLookup.isHeld) {
-    pendingInvoiceLogger.info({ lnInvoiceLookup }, "invoice is not been held")
+    pendingInvoiceLogger.info({ lnInvoiceLookup }, "invoice has not been paid yet")
     return false
   }
 
+  let heldForMsg = ""
+  if (lnInvoiceLookup.heldAt) {
+    heldForMsg = `for ${elapsedSinceTimestamp(lnInvoiceLookup.heldAt)}s `
+  }
   pendingInvoiceLogger.error(
     { lnInvoiceLookup },
-    "invoice has been held and is now been cancelled",
+    `invoice has been held ${heldForMsg}and is now been cancelled`,
   )
 
   const invoiceSettled = await lndService.cancelInvoice({ pubkey, paymentHash })
