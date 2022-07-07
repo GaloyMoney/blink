@@ -376,7 +376,7 @@ export const LedgerService = (): ILedgerService => {
 }
 
 export const translateToLedgerTx = (
-  tx: TransactionRecord,
+  tx: ILedgerTransaction,
 ): LedgerTransaction<WalletCurrency> => ({
   id: tx.id as LedgerTransactionId,
   walletId: toWalletId(tx.accounts as LiabilitiesWalletId),
@@ -384,8 +384,8 @@ export const translateToLedgerTx = (
   debit: toSats(tx.debit),
   credit: toSats(tx.credit),
   fee: toSats(tx.fee),
-  usd: tx.usd,
-  feeUsd: tx.feeUsd,
+  usd: tx.usd || 0,
+  feeUsd: tx.feeUsd || 0,
   currency: tx.currency as WalletCurrency,
   timestamp: tx.timestamp,
   pendingConfirmation: tx.pending,
