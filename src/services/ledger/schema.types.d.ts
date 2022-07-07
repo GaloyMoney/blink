@@ -1,34 +1,35 @@
-interface TransactionRecord {
-  _id: ObjectId
-  _journal: ObjectId
-  _original_journal: ObjectId
-  id: string
-  hash?: string
-  txid?: string
-  type: string
-  pending: boolean
-  currency: string
-  fee: number
-  feeKnownInAdvance?: boolean
-  related_journal: string
-  payee_addresses?: string[]
-  memoPayer?: string
-  usd: number
-  sats?: number
-  feeUsd: number
-  username?: string
-  pubkey?: string
+interface ILedgerTransaction {
+  _id?: ObjectId
   credit: number
   debit: number
+  meta?: { [k: string]: unknown }
   datetime: Date
   account_path: string[]
   accounts: string
   book: string
   memo: string
+  _journal: ObjectId
   timestamp: Date
-  voided: boolean
+  voided?: boolean
   void_reason?: string
-  approved: boolean
+  _original_journal?: ObjectId
+
+  hash?: string
+  txid?: string
+  type: LedgerTransactionType
+  pending: boolean
+  err?: string
+  currency: WalletCurrency
+  fee: number
+  feeKnownInAdvance?: boolean
+  related_journal?: ObjectId
+  payee_addresses?: string[]
+  memoPayer?: string
+  usd?: number
+  sats?: number
+  feeUsd?: number
+  username?: string
+  pubkey?: string
 
   satsAmount: number
   centsAmount: number
