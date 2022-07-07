@@ -81,7 +81,7 @@ describe("UserWallet - Lightning", () => {
       amount: toSats(sats),
       memo,
     })
-    if (lnInvoice instanceof Error) return lnInvoice
+    if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: invoice } = lnInvoice
 
     const checker = await Lightning.PaymentStatusChecker(invoice)
@@ -108,7 +108,7 @@ describe("UserWallet - Lightning", () => {
         // make sure invoice is held
 
         const lndService = LndService()
-        if (lndService instanceof Error) return lndService
+        if (lndService instanceof Error) throw lndService
 
         {
           const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })

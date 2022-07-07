@@ -264,7 +264,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }: RegisterInvoiceArgs): Promise<RegisteredInvoice | LightningServiceError> => {
     const input = {
       lnd: defaultLnd,
-      paymentHash,
+      id: paymentHash,
       description,
       description_hash: descriptionHash,
       tokens: sats as number,
