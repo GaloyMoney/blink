@@ -1,8 +1,8 @@
 import crypto from "crypto"
 
 import { WalletCurrency } from "@domain/shared"
+import { getSecretAndPaymentHash } from "@domain/bitcoin/lightning"
 import { WalletInvoicesRepository } from "@services/mongoose"
-import { WalletInvoice } from "@services/mongoose/schema"
 
 import { createUserAndWalletFromUserRef } from "test/helpers"
 
@@ -10,10 +10,9 @@ beforeAll(async () => {
   await createUserAndWalletFromUserRef("B")
 })
 
-const createTestWalletInvoice = () => {
-  const randomPaymentHash = crypto.randomBytes(32).toString("hex") as PaymentHash
+const createTestWalletInvoice = (): WalletInvoice => {
   return {
-    paymentHash: randomPaymentHash,
+    ...getSecretAndPaymentHash(),
     selfGenerated: false,
     pubkey: "pubkey" as Pubkey,
     paid: false,
@@ -25,7 +24,7 @@ const createTestWalletInvoice = () => {
       currency: WalletCurrency.Usd,
       amount: 10n,
     },
-  } as WalletInvoice
+  }
 }
 
 describe("WalletInvoices", () => {
