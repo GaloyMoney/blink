@@ -202,15 +202,15 @@ const translateLedgerTxnToWalletTxnWithMetadata = <S extends WalletCurrency>(
   if ("revealedPreImage" in txn) {
     if (walletTxnWithMetadata.settlementVia.type !== SettlementMethod.Lightning) {
       // TODO: return invalid-state error here and remove cast to 'WalletLnTransactionWithMetadata' just below
+    } else {
+      walletTxnWithMetadata = {
+        ...walletTxnWithMetadata,
+        settlementVia: {
+          ...walletTxnWithMetadata.settlementVia,
+          revealedPreImage: txn.revealedPreImage,
+        },
+      } as WalletLnTransactionWithMetadata
     }
-
-    walletTxnWithMetadata = {
-      ...walletTxnWithMetadata,
-      settlementVia: {
-        ...walletTxnWithMetadata.settlementVia,
-        revealedPreImage: txn.revealedPreImage,
-      },
-    } as WalletLnTransactionWithMetadata
   }
 
   return walletTxnWithMetadata
