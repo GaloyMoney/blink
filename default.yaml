@@ -91,9 +91,9 @@ rateLimits:
     duration: 15
     blockDuration: 15
   requestPhoneCodePerIp:
-    points: 4
-    duration: 3600 # 60 * 60 * 3 s
-    blockDuration: 86400 # 60 * 60 s
+    points: 8
+    duration: 3600 # 60 * 60 s
+    blockDuration: 86400 # 60 * 60 * 24 s
   failedLoginAttemptPerPhone:
     points: 8
     duration: 1200 # 60 * 20 s
