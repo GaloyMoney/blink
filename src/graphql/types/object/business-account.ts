@@ -70,7 +70,7 @@ const BusinessAccount = GT.Object({
         if (walletIds === undefined) {
           const wallets = await WalletsRepository().listByAccountId(source.id)
           if (wallets instanceof Error) {
-            return { errors: [{ message: walletIds.message }] }
+            return { errors: [{ message: wallets.message }] }
           }
           walletIds = wallets.map((wallet) => wallet.id)
         }
