@@ -602,6 +602,7 @@ const KnownLndErrorDetails = {
   UnableToFindRoute: "PaymentPathfindingFailedToFindPossibleRoute",
   LndDbCorruption: "payment isn't initiated",
   PaymentRejectedByDestination: "PaymentRejectedByDestination",
+  UnknownPaymentHash: "UnknownPaymentHash",
   PaymentAttemptsTimedOut: "PaymentAttemptsTimedOut",
   ProbeForRouteTimedOut: "ProbeForRouteTimedOut",
   SentPaymentNotFound: "SentPaymentNotFound",
@@ -690,6 +691,7 @@ const handleSendPaymentLndErrors = ({
     case KnownLndErrorDetails.UnableToFindRoute:
       return new RouteNotFoundError()
     case KnownLndErrorDetails.PaymentRejectedByDestination:
+    case KnownLndErrorDetails.UnknownPaymentHash:
       return new InvoiceExpiredOrBadPaymentHashError(paymentHash)
     case KnownLndErrorDetails.PaymentAttemptsTimedOut:
       return new PaymentAttemptsTimedOutError()
