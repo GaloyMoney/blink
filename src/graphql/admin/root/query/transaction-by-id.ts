@@ -1,10 +1,10 @@
 import { GT } from "@graphql/index"
 
 import { Wallets } from "@app"
-import Transaction from "@graphql/types/object/transaction"
+import TransactionWithMetadata from "@graphql/types/object/transaction-with-metadata"
 
 const TransactionByIdQuery = GT.Field({
-  type: Transaction,
+  type: TransactionWithMetadata,
   args: {
     id: { type: GT.NonNullID },
   },

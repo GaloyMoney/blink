@@ -49,7 +49,7 @@ input AccountsAddUsdWalletInput {
 }
 
 """
-An authentication code valid for a single use
+An JWT-formatted authentication token
 """
 scalar AuthToken
 
@@ -302,8 +302,8 @@ type Query {
   allLevels: [AccountLevel!]!
   lightningInvoice(hash: PaymentHash!): LightningInvoice!
   lightningPayment(hash: PaymentHash!): LightningPayment!
-  transactionById(id: ID!): Transaction
-  transactionsByHash(hash: PaymentHash!): [Transaction]
+  transactionById(id: ID!): TransactionWithMetadata
+  transactionsByHash(hash: PaymentHash!): [TransactionWithMetadata]
 }
 
 """
@@ -326,17 +326,41 @@ type SettlementViaIntraLedger {
   counterPartyWalletId: WalletId
 }
 
+type SettlementViaIntraLedgerWithMetadata {
+  """
+  Settlement destination: Could be null if the payee does not have a username
+  """
+  counterPartyUsername: Username
+  counterPartyWalletId: WalletId
+}
+
 type SettlementViaLn {
   paymentSecret: LnPaymentSecret
     @deprecated(
-      reason: "Shifting property to 'preImage' to improve granularity of the LnPaymentSecret type"
+      reason: "Moving this property over to the TransactionWithMetadata object type."
     )
+  preImage: LnPaymentPreImage
+    @deprecated(
+      reason: "Moving this property over to the TransactionWithMetadata object type."
+    )
+}
+
+type SettlementViaLnWithMetadata {
   preImage: LnPaymentPreImage
 }
 
 type SettlementViaOnChain {
   transactionHash: OnChainTxHash!
 }
+
+type SettlementViaOnChainWithMetadata {
+  transactionHash: OnChainTxHash!
+}
+
+union SettlementViaWithMetadata =
+    SettlementViaIntraLedgerWithMetadata
+  | SettlementViaLnWithMetadata
+  | SettlementViaOnChainWithMetadata
 
 """
 An amount (of a currency) that can be negative (e.g. in a transaction)
@@ -427,6 +451,47 @@ type TransactionEdge {
   The item at the end of the edge
   """
   node: Transaction!
+}
+
+"""
+Give details about an individual transaction.
+Galoy have a smart routing system which is automatically
+settling intraledger when both the payer and payee use the same wallet
+therefore it's possible the transactions is being initiated onchain
+or with lightning but settled intraledger.
+"""
+type TransactionWithMetadata {
+  createdAt: Timestamp!
+  direction: TxDirection!
+  id: ID!
+
+  """
+  From which protocol the payment has been initiated.
+  """
+  initiationVia: InitiationVia!
+  memo: Memo
+
+  """
+  Amount of the settlement currency sent or received.
+  """
+  settlementAmount: SignedAmount!
+
+  """
+  Wallet currency for transaction.
+  """
+  settlementCurrency: WalletCurrency!
+  settlementFee: SignedAmount!
+
+  """
+  Price in USDCENT/SETTLEMENTUNIT at time of settlement.
+  """
+  settlementPrice: Price!
+
+  """
+  To which protocol the payment has settled on.
+  """
+  settlementVia: SettlementViaWithMetadata!
+  status: TxStatus!
 }
 
 enum TxDirection {

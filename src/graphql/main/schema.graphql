@@ -37,7 +37,7 @@ type AccountUpdateDefaultWalletIdPayload {
 }
 
 """
-An authentication code valid for a single use
+An JWT-formatted authentication token
 """
 scalar AuthToken
 
@@ -870,9 +870,12 @@ type SettlementViaIntraLedger {
 type SettlementViaLn {
   paymentSecret: LnPaymentSecret
     @deprecated(
-      reason: "Shifting property to 'preImage' to improve granularity of the LnPaymentSecret type"
+      reason: "Moving this property over to the TransactionWithMetadata object type."
     )
   preImage: LnPaymentPreImage
+    @deprecated(
+      reason: "Moving this property over to the TransactionWithMetadata object type."
+    )
 }
 
 type SettlementViaOnChain {

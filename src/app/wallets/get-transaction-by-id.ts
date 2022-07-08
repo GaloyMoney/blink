@@ -4,7 +4,7 @@ import { checkedToLedgerTransactionId } from "@domain/ledger"
 
 export const getTransactionById = async (
   id: string,
-): Promise<WalletTransaction | ApplicationError> => {
+): Promise<WalletTransactionWithMetadata | ApplicationError> => {
   const ledger = LedgerService()
 
   const ledgerTxId = checkedToLedgerTransactionId(id)
@@ -13,5 +13,6 @@ export const getTransactionById = async (
   const ledgerTransaction = await ledger.getTransactionById(ledgerTxId)
   if (ledgerTransaction instanceof Error) return ledgerTransaction
 
-  return WalletTransactionHistory.fromLedger([ledgerTransaction]).transactions[0]
+  return WalletTransactionHistory.fromLedgerWithMetadata([ledgerTransaction])
+    .transactions[0]
 }

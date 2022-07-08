@@ -1,11 +1,11 @@
 import { GT } from "@graphql/index"
 
 import { Wallets } from "@app"
-import Transaction from "@graphql/types/object/transaction"
 import PaymentHash from "@graphql/types/scalar/payment-hash"
+import TransactionWithMetadata from "@graphql/types/object/transaction-with-metadata"
 
 const TransactionsByHashQuery = GT.Field({
-  type: GT.List(Transaction),
+  type: GT.List(TransactionWithMetadata),
   args: {
     hash: { type: GT.NonNull(PaymentHash) },
   },

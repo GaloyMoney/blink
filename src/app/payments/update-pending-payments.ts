@@ -210,7 +210,7 @@ const reconstructPendingPaymentFlow = async <
 >(
   paymentHash: PaymentHash,
 ): Promise<PaymentFlow<S, R> | ApplicationError> => {
-  const ledgerTxns = await LedgerService().getTransactionsByHash(paymentHash)
+  const ledgerTxns = await LedgerService().getTransactionsByHash<S>(paymentHash)
   if (ledgerTxns instanceof Error) return ledgerTxns
 
   const payment = ledgerTxns.find(
@@ -218,7 +218,7 @@ const reconstructPendingPaymentFlow = async <
       tx.pendingConfirmation === true &&
       tx.type === LedgerTransactionType.Payment &&
       tx.debit > 0,
-  ) as LedgerTransaction<S> | undefined
+  )
   if (!payment) return new CouldNotFindTransactionError()
 
   return PaymentFlowFromLedgerTransaction(payment)
