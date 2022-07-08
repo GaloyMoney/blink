@@ -4,6 +4,7 @@
  */
 
 import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
 import {
   LedgerTransactionType,
   liabilitiesMainAccount,
@@ -374,38 +375,49 @@ export const LedgerService = (): ILedgerService => {
   })
 }
 
-export const translateToLedgerTx = (tx): LedgerTransaction<WalletCurrency> => ({
-  id: tx.id,
-  walletId: toWalletId(tx.accounts),
-  type: tx.type,
+export const translateToLedgerTx = (
+  tx: ILedgerTransaction,
+): LedgerTransaction<WalletCurrency> => ({
+  id: tx.id as LedgerTransactionId,
+  walletId: toWalletId(tx.accounts as LiabilitiesWalletId),
+  type: tx.type as LedgerTransactionType,
   debit: toSats(tx.debit),
   credit: toSats(tx.credit),
   fee: toSats(tx.fee),
-  usd: tx.usd,
-  feeUsd: tx.feeUsd,
-  currency: tx.currency,
+  usd: tx.usd || 0,
+  feeUsd: tx.feeUsd || 0,
+  currency: tx.currency as WalletCurrency,
   timestamp: tx.timestamp,
   pendingConfirmation: tx.pending,
-  journalId: tx._journal.toString(),
+  journalId: tx._journal.toString() as LedgerJournalId,
   lnMemo: tx.memo,
-  username: tx.username,
+  username: (tx.username as Username) || undefined,
   memoFromPayer: tx.memoPayer,
-  paymentHash: tx.hash,
-  pubkey: tx.pubkey,
+  paymentHash: (tx.hash as PaymentHash) || undefined,
+  pubkey: (tx.pubkey as Pubkey) || undefined,
   address:
     tx.payee_addresses && tx.payee_addresses.length > 0
-      ? tx.payee_addresses[0]
+      ? (tx.payee_addresses[0] as OnChainAddress)
       : undefined,
-  txHash: tx.hash,
+  txHash: (tx.hash as OnChainTxHash) || undefined,
   feeKnownInAdvance: tx.feeKnownInAdvance || false,
 
-  satsAmount: tx?.satsAmount,
-  centsAmount: tx?.centsAmount,
-  satsFee: tx?.satsFee,
-  centsFee: tx?.centsFee,
-  displayAmount: tx?.displayAmount,
-  displayFee: tx?.displayFee,
-  displayCurrency: tx?.displayCurrency,
+  satsAmount: tx.satsAmount !== undefined ? toSats(tx.satsAmount) : undefined,
+  centsAmount: tx.centsAmount !== undefined ? toCents(tx.centsAmount) : undefined,
+  satsFee: tx.satsFee !== undefined ? toSats(tx.satsFee) : undefined,
+  centsFee: tx.centsFee !== undefined ? toCents(tx.centsFee) : undefined,
+  displayAmount:
+    tx.displayAmount !== undefined
+      ? (tx.displayAmount as DisplayCurrencyBaseAmount)
+      : undefined,
+  displayFee:
+    tx.displayFee !== undefined
+      ? (tx.displayFee as DisplayCurrencyBaseAmount)
+      : undefined,
+  displayCurrency:
+    tx.displayCurrency !== undefined
+      ? (tx.displayCurrency as DisplayCurrency)
+      : undefined,
 })
 
 export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
