@@ -61,6 +61,11 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly txHash?: OnChainTxHash
 }
 
+type LedgerTransactionWithMetadata<S extends WalletCurrency> = {
+  hasMetadata: true
+} & LedgerTransaction<S> &
+  LedgerTransactionMetadata
+
 type ReceiveOnChainTxArgs = {
   walletId: WalletId
   walletCurrency: WalletCurrency
