@@ -23,6 +23,7 @@ import {
   BigIntFloatConversionError,
   ErrorLevel,
 } from "@domain/shared"
+import { baseLogger } from "@services/logger"
 import { toObjectId } from "@services/mongoose/utils"
 import {
   recordExceptionInCurrentSpan,
@@ -62,9 +63,9 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<true | LedgerServiceError | RepositoryError> =>
     TransactionsMetadataRepository().updateByHash(ledgerTxMetadata)
 
-  const getTransactionById = async (
+  const getTransactionById = async <S extends WalletCurrency>(
     id: LedgerTransactionId,
-  ): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError> => {
+  ): Promise<LedgerTransactionWithMetadata<S> | LedgerServiceError> => {
     try {
       const _id = toObjectId<LedgerTransactionId>(id)
       const { results } = await MainBook.ledger({
@@ -72,7 +73,7 @@ export const LedgerService = (): ILedgerService => {
         _id,
       })
       if (results.length === 1) {
-        return translateToLedgerTx(results[0])
+        return translateToLedgerTxWithMetadataFetch(results[0])
       }
       return new CouldNotFindTransactionError()
     } catch (err) {
@@ -80,15 +81,17 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const getTransactionsByHash = async (
+  const getTransactionsByHash = async <S extends WalletCurrency>(
     hash: PaymentHash | OnChainTxHash,
-  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
+  ): Promise<LedgerTransactionWithMetadata<S>[] | LedgerServiceError> => {
+    let results: ILedgerTransaction[]
     try {
-      const { results } = await MainBook.ledger({
+      ;({ results } = await MainBook.ledger({
         account_path: liabilitiesMainAccount,
         hash,
-      })
-      return results.map((tx) => translateToLedgerTx(tx))
+      }))
+
+      return Promise.all(results.map((tx) => translateToLedgerTxWithMetadataFetch<S>(tx)))
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -419,6 +422,39 @@ export const translateToLedgerTx = <S extends WalletCurrency>(
       ? (tx.displayCurrency as DisplayCurrency)
       : undefined,
 })
+
+export const translateToLedgerTxWithMetadataFetch = async <S extends WalletCurrency>(
+  tx: ILedgerTransaction,
+): Promise<LedgerTransactionWithMetadata<S>> => {
+  const txMetadata = await TransactionsMetadataRepository().findById(
+    tx.id as LedgerTransactionId,
+  )
+
+  if (txMetadata instanceof Error) {
+    if (!(txMetadata instanceof CouldNotFindTransactionError)) {
+      baseLogger.error(
+        { error: txMetadata },
+        `could not fetch transaction metadata for id '${tx.id}'`,
+      )
+      recordExceptionInCurrentSpan({ error: txMetadata, level: ErrorLevel.Critical })
+    }
+
+    return {
+      hasMetadata: true,
+      ...translateToLedgerTx<S>(tx),
+
+      revealedPreImage: undefined,
+    }
+  }
+
+  return {
+    hasMetadata: true,
+    ...translateToLedgerTx<S>(tx),
+
+    revealedPreImage:
+      "revealedPreImage" in txMetadata ? txMetadata.revealedPreImage : undefined,
+  }
+}
 
 export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
   journalId: savedEntry._id.toString(),

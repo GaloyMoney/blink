@@ -245,13 +245,13 @@ interface ILedgerService {
       | LnLedgerTransactionMetadataUpdate,
   ): Promise<true | LedgerServiceError>
 
-  getTransactionById(
+  getTransactionById<S extends WalletCurrency>(
     id: LedgerTransactionId,
-  ): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError>
+  ): Promise<LedgerTransactionWithMetadata<S> | LedgerServiceError>
 
-  getTransactionsByHash(
+  getTransactionsByHash<S extends WalletCurrency>(
     paymentHash: PaymentHash | OnChainTxHash,
-  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
+  ): Promise<LedgerTransactionWithMetadata<S>[] | LedgerServiceError>
 
   getTransactionsByWalletId(
     walletId: WalletId,
