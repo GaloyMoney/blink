@@ -38,6 +38,7 @@ import {
   PaymentNotFoundError,
   PaymentStatus,
   ProbeForRouteTimedOutError,
+  ProbeForRouteTimedOutFromApplicationError,
   RouteNotFoundError,
   UnknownLightningServiceError,
   UnknownRouteNotFoundError,
@@ -223,10 +224,16 @@ export const LndService = (
           : undefined,
         tokens: amount,
       }
-      const { route } = await lnService.probeForRoute(probeForRouteArgs)
+      const routePromise = lnService.probeForRoute(probeForRouteArgs)
+      const timeoutPromise = timeout(TIMEOUT_PAYMENT, "Timeout")
+      const { route } = await Promise.race([routePromise, timeoutPromise])
       if (!route) return new RouteNotFoundError()
       return route
     } catch (err) {
+      if (err.message === "Timeout") {
+        return new ProbeForRouteTimedOutFromApplicationError()
+      }
+
       const errDetails = parseLndErrorDetails(err)
       switch (errDetails) {
         case KnownLndErrorDetails.InsufficientBalance:
