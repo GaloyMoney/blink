@@ -18,6 +18,7 @@ import {
   RebalanceNeededError,
   DealerOfflineError,
   InsufficientLiquidityError,
+  NotAuthorizedError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -272,6 +273,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invalid walletId for account."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "NotAuthorizedForTransactionError":
+      message = "Invalid transaction id for account."
+      return new NotAuthorizedError({ message, logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -349,6 +354,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CouldNotFindTransactionError":
     case "CouldNotFindTransactionMetadataError":
     case "InvalidLedgerTransactionId":
+    case "InvalidLedgerTransaction":
     case "CacheError":
     case "CacheNotAvailableError":
     case "CacheServiceError":

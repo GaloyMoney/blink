@@ -829,6 +829,7 @@ type Query {
     walletId: WalletId!
   ): OnChainTxFee!
   quizQuestions: [QuizQuestion]
+  transactionById(id: ID!): TransactionWithMetadata
   userDefaultWalletId(username: Username!): WalletId!
     @deprecated(reason: "will be migrated to AccountDefaultWalletId")
   usernameAvailable(username: Username!): Boolean
@@ -867,6 +868,14 @@ type SettlementViaIntraLedger {
   counterPartyWalletId: WalletId
 }
 
+type SettlementViaIntraLedgerWithMetadata {
+  """
+  Settlement destination: Could be null if the payee does not have a username
+  """
+  counterPartyUsername: Username
+  counterPartyWalletId: WalletId
+}
+
 type SettlementViaLn {
   paymentSecret: LnPaymentSecret
     @deprecated(
@@ -878,9 +887,22 @@ type SettlementViaLn {
     )
 }
 
+type SettlementViaLnWithMetadata {
+  preImage: LnPaymentPreImage
+}
+
 type SettlementViaOnChain {
   transactionHash: OnChainTxHash!
 }
+
+type SettlementViaOnChainWithMetadata {
+  transactionHash: OnChainTxHash!
+}
+
+union SettlementViaWithMetadata =
+    SettlementViaIntraLedgerWithMetadata
+  | SettlementViaLnWithMetadata
+  | SettlementViaOnChainWithMetadata
 
 """
 An amount (of a currency) that can be negative (e.g. in a transaction)
@@ -979,6 +1001,47 @@ type TransactionEdge {
   The item at the end of the edge
   """
   node: Transaction!
+}
+
+"""
+Give details about an individual transaction.
+Galoy have a smart routing system which is automatically
+settling intraledger when both the payer and payee use the same wallet
+therefore it's possible the transactions is being initiated onchain
+or with lightning but settled intraledger.
+"""
+type TransactionWithMetadata {
+  createdAt: Timestamp!
+  direction: TxDirection!
+  id: ID!
+
+  """
+  From which protocol the payment has been initiated.
+  """
+  initiationVia: InitiationVia!
+  memo: Memo
+
+  """
+  Amount of the settlement currency sent or received.
+  """
+  settlementAmount: SignedAmount!
+
+  """
+  Wallet currency for transaction.
+  """
+  settlementCurrency: WalletCurrency!
+  settlementFee: SignedAmount!
+
+  """
+  Price in USDCENT/SETTLEMENTUNIT at time of settlement.
+  """
+  settlementPrice: Price!
+
+  """
+  To which protocol the payment has settled on.
+  """
+  settlementVia: SettlementViaWithMetadata!
+  status: TxStatus!
 }
 
 input TwoFADeleteInput {

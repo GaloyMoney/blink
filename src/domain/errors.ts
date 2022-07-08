@@ -66,6 +66,7 @@ export class InvalidKratosUserId extends ValidationError {}
 export class InvalidEmailAddress extends ValidationError {}
 export class InvalidWalletId extends ValidationError {}
 export class InvalidLedgerTransactionId extends ValidationError {}
+export class InvalidLedgerTransaction extends ValidationError {}
 export class AlreadyPaidError extends ValidationError {}
 export class SelfPaymentError extends ValidationError {}
 export class LessThanDustThresholdError extends ValidationError {}
@@ -99,3 +100,5 @@ export class TwoFALimitsExceededError extends LimitsExceededError {}
 
 export class LnRouteValidationError extends ValidationError {}
 export class BadAmountForRouteError extends LnRouteValidationError {}
+
+export class NotAuthorizedForTransactionError extends AuthorizationError {}

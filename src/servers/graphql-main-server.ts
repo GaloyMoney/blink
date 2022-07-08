@@ -23,6 +23,7 @@ export async function startApolloServerForCoreSchema() {
       Query: {
         me: isAuthenticated,
         onChainTxFee: isAuthenticated,
+        transactionById: isAuthenticated,
       },
       Mutation: {
         twoFAGenerate: isAuthenticated,

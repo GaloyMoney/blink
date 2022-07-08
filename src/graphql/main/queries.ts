@@ -11,6 +11,7 @@ import QuizQuestionsQuery from "@graphql/root/query/quiz-questions"
 import BtcPriceListQuery from "@graphql/root/query/btc-price-list"
 import OnChainTxFeeQuery from "@graphql/root/query/on-chain-tx-fee-query"
 import BtcPriceQuery from "@graphql/root/query/btc-price"
+import TransactionByIdQuery from "@graphql/root/query/transaction-by-id"
 
 import {
   addAttributesToCurrentSpanAndPropagate,
@@ -30,6 +31,7 @@ const fields = {
   btcPrice: BtcPriceQuery,
   btcPriceList: BtcPriceListQuery,
   onChainTxFee: OnChainTxFeeQuery,
+  transactionById: TransactionByIdQuery,
 }
 
 const addTracing = (fields) => {

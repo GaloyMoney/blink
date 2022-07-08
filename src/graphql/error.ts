@@ -92,6 +92,12 @@ export class NotFoundError extends CustomApolloError {
   }
 }
 
+export class NotAuthorizedError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({ code: "NOT_AUTHORIZED", forwardToClient: true, ...errData })
+  }
+}
+
 export class NewAccountWithdrawalError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
