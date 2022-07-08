@@ -142,7 +142,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
 }
 
 const walletInvoiceFromRaw = (result: WalletInvoiceRecord): WalletInvoice => ({
-  paymentHash: result.id as PaymentHash,
+  paymentHash: result._id as PaymentHash,
   recipientWalletDescriptor: {
     id: result.walletId as WalletId,
     currency: result.currency as WalletCurrency,
