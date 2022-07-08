@@ -375,9 +375,9 @@ export const LedgerService = (): ILedgerService => {
   })
 }
 
-export const translateToLedgerTx = (
+export const translateToLedgerTx = <S extends WalletCurrency>(
   tx: ILedgerTransaction,
-): LedgerTransaction<WalletCurrency> => ({
+): LedgerTransaction<S> => ({
   id: tx.id as LedgerTransactionId,
   walletId: toWalletId(tx.accounts as LiabilitiesWalletId),
   type: tx.type as LedgerTransactionType,
@@ -386,7 +386,7 @@ export const translateToLedgerTx = (
   fee: toSats(tx.fee),
   usd: tx.usd || 0,
   feeUsd: tx.feeUsd || 0,
-  currency: tx.currency as WalletCurrency,
+  currency: tx.currency as S,
   timestamp: tx.timestamp,
   pendingConfirmation: tx.pending,
   journalId: tx._journal.toString() as LedgerJournalId,
