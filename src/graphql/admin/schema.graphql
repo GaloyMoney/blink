@@ -49,7 +49,7 @@ input AccountsAddUsdWalletInput {
 }
 
 """
-An authentication code valid for a single use
+An JWT-formatted authentication token
 """
 scalar AuthToken
 
