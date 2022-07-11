@@ -4,11 +4,15 @@ import { Lightning, Payments, Prices, Wallets } from "@app"
 import { getMidPriceRatio } from "@app/shared"
 
 import { delete2fa } from "@app/users"
+
+import { getDisplayCurrencyConfig, getLocale } from "@config"
+
 import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
 import {
   defaultTimeToExpiryInSeconds,
   InvalidFeeProbeStateError,
   LightningServiceError,
+  PaymentNotFoundError,
   PaymentSendStatus,
   PaymentStatus,
 } from "@domain/bitcoin/lightning"
@@ -31,6 +35,9 @@ import {
 } from "@domain/shared"
 import { TwoFAError } from "@domain/twoFA"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
+import { toCents } from "@domain/fiat"
+import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+
 import { LedgerService } from "@services/ledger"
 import { getDealerUsdWalletId } from "@services/ledger/caching"
 import { TransactionsMetadataRepository } from "@services/ledger/services"
@@ -46,13 +53,8 @@ import { WalletInvoice } from "@services/mongoose/schema"
 
 import { sleep } from "@utils"
 
-import { toCents } from "@domain/fiat"
-
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
-
 import { PaymentFlowStateRepository } from "@services/payment-flow"
 
-import { getDisplayCurrencyConfig, getLocale } from "@config"
 import { NotificationType } from "@domain/notifications"
 
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
@@ -1578,6 +1580,7 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(finalBalanceA).toBe(initBalanceA)
     })
   })
+
   describe("No amount lightning invoices", () => {
     it("pay external amountless invoice from usd wallet", async () => {
       const dealerUsdWalletId = await getDealerUsdWalletId()
@@ -1856,6 +1859,48 @@ describe("USD Wallets - Lightning Pay", () => {
       })
       expect(res).toBeInstanceOf(ZeroAmountForUsdRecipientError)
     })
+  })
+})
+
+describe("Delete payments from Lnd - Lightning Pay", () => {
+  it("deletes payment", async () => {
+    const { request, secret, id } = await createInvoice({ lnd: lndOutside1 })
+    const paymentHash = id as PaymentHash
+    const revealedPreImage = secret as RevealedPreImage
+
+    // Test payment is successful
+    const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
+      amount: amountInvoice,
+      senderWalletId: walletIdB,
+      senderAccount: accountB,
+    })
+    if (paymentResult instanceof Error) throw paymentResult
+    expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
+
+    // Confirm payment exists in lnd
+    const retrievedPayment = await lndService.lookupPayment({ paymentHash })
+    expect(retrievedPayment).not.toBeInstanceOf(Error)
+    if (retrievedPayment instanceof Error) return retrievedPayment
+    expect(retrievedPayment.status).toBe(PaymentStatus.Settled)
+    if (retrievedPayment.status !== PaymentStatus.Settled) return
+    expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
+
+    // Delete payment
+    const deleted = await lndService.deletePaymentByHash({ paymentHash })
+    expect(deleted).not.toBeInstanceOf(Error)
+
+    // Check that payment no longer exists
+    const retrievedDeletedPayment = await lndService.lookupPayment({ paymentHash })
+    expect(retrievedDeletedPayment).toBeInstanceOf(PaymentNotFoundError)
+
+    // Check that deleting missing payment doesn't return error
+    const deletedAttempt = await lndService.deletePaymentByHash({ paymentHash })
+    expect(deletedAttempt).not.toBeInstanceOf(Error)
   })
 })
 
