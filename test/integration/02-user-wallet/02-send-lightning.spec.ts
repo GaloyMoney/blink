@@ -520,7 +520,8 @@ describe("UserWallet - Lightning Pay", () => {
     if (paymentResult instanceof Error) throw paymentResult
     expect(paymentResult).toBe(PaymentSendStatus.Success)
 
-    const txns = await LedgerService().getTransactionsByHash(paymentHash)
+    const ledger = LedgerService()
+    const txns = await ledger.getTransactionsByHash(paymentHash)
     if (txns instanceof Error) throw txns
 
     // Test fee reimbursement amounts
@@ -607,6 +608,30 @@ describe("UserWallet - Lightning Pay", () => {
     expect(paymentHashes.size).toEqual(1)
     expect(paymentHashes.has(paymentHash)).toBeTruthy()
 
+    // Test metadata is added back to ledger transactions correctly
+    // => via 'getTransactionById'
+    const txnById = await ledger.getTransactionById(txnPayment.id)
+    if (txnById instanceof Error) throw txnById
+    if (!("revealedPreImage" in txnById)) {
+      throw new Error("Missing 'revealedPreImage' property")
+    }
+    expect(txnById.revealedPreImage).toBe(revealedPreImage)
+
+    // => via 'getTransactionsByHash'
+    const revealedPreImagesByHash = new Set(
+      txns.map((txn) => ("revealedPreImage" in txn ? txn.revealedPreImage : undefined)),
+    )
+    expect(revealedPreImagesByHash.size).toEqual(1)
+    expect(revealedPreImagesByHash.has(revealedPreImage)).toBeTruthy()
+
+    // Test metadata is not present in 'getTransactionsByWalletId'
+    const txnsByWalletId = await ledger.getTransactionsByWalletId(walletIdB)
+    if (txnsByWalletId instanceof Error) throw txnsByWalletId
+    const txnByIdFromWalletId = txnsByWalletId.find((txn) => txn.id === txnById.id)
+    if (txnByIdFromWalletId === undefined) throw new Error("txnById missing")
+    expect(txnByIdFromWalletId).not.toHaveProperty("revealedPreImage")
+
+    // Check final balances
     const finalBalance = await getBalanceHelper(walletIdB)
     expect(finalBalance).toBe(initBalanceB - amountInvoice)
 
