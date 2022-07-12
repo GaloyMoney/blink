@@ -34,6 +34,10 @@ import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 
 import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
 
+import { SwapService } from "@services/swap"
+
+import { handleSwapOutCompleted } from "@app/swap/swap-listener"
+
 import healthzHandler from "./middlewares/healthz"
 
 const redisCache = RedisCacheService()
@@ -279,8 +283,22 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
   })
 }
 
-const listenerSwapMonitor = () => {
-  // @todo SwapService.swapListener()
+const listenerSwapMonitor = async () => {
+  try {
+    const isSwapServerUp = await SwapService.isSwapServerUp()
+    if (isSwapServerUp) {
+      const listener = SwapService.swapListener()
+      listener.on("data", (response) => {
+        logger.info(`Swap Listener ====> ${JSON.stringify(response)}`)
+        // @todo typecheck
+        handleSwapOutCompleted(response)
+      })
+    } else {
+      // @todo swap server is not running, insert trace
+    }
+  } catch (e) {
+    // @todo SwapServiceUnknownError trace
+  }
 }
 
 const main = () => {
@@ -303,7 +321,6 @@ const main = () => {
   activateLndHealthCheck()
   publishCurrentPrice()
 
-  // @todo might need to check if swap grpc server is up
   listenerSwapMonitor()
 }
 

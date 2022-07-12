@@ -69,6 +69,14 @@ curl -k \
     | yarn pino-pretty -c -l
 ```
 
+Event Listeners
+============
+There is an event listeners for swaps called `listenerSwapMonitor` in the `src/servers/trigger.ts` server. It listens for swap events, like "Swap Out Success" or failure. This listerner triggers a `handleSwapOutCompleted` event in the `src/app/swap/swap-listener.ts` file
+
+
+Cron Job
+=====
+There is a cron job that checks if the onChain wallet is depleted. If it is depleted, it proceeds to do a `swap out` based on the swap config from the `default.yaml` file.   
 
 Generate GRPC Types
 ====================

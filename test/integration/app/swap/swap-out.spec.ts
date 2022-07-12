@@ -6,8 +6,24 @@ import { getSwapConfig, getColdStorageConfig } from "@config"
 import { SwapClientNotResponding } from "@domain/swap/errors"
 import { SwapOutChecker } from "@domain/swap"
 import { lndsBalances } from "@services/lnd/utils"
+import { Swap } from "@app"
 
 describe("Swap", () => {
+  it("Swap cron job", async () => {
+    const amount = getSwapConfig().swapOutAmount
+    const swapResult = await Swap.swapOut({ amount })
+    if (swapResult instanceof SwapClientNotResponding) {
+      console.log("Swap Client is not running, skipping")
+      return
+    }
+    expect(swapResult).not.toBeInstanceOf(Error)
+    expect(swapResult).toEqual(
+      expect.objectContaining({
+        swapId: expect.any(String),
+      }),
+    )
+  })
+
   it("Swap out returns successful SwapResult", async () => {
     const swapResult = await SwapService.swapOut(toSats(500000))
     if (swapResult instanceof SwapClientNotResponding) {

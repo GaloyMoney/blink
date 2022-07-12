@@ -11,8 +11,8 @@ import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 
 import { activateLndHealthCheck } from "@services/lnd/health"
-import { ColdStorage, Lightning, Wallets, Payments } from "@app"
-import { getCronConfig } from "@config"
+import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
+import { getCronConfig, getSwapConfig } from "@config"
 
 const logger = baseLogger.child({ module: "cron" })
 
@@ -25,8 +25,6 @@ const main = async () => {
     const result = await ColdStorage.rebalanceToColdWallet()
     if (result instanceof Error) throw result
   }
-
-  // @todo call SwapOutChecker code here
 
   const updatePendingLightningInvoices = () => Wallets.updatePendingInvoices(logger)
 
@@ -50,6 +48,13 @@ const main = async () => {
     if (result instanceof Error) throw result
   }
 
+  const swapOutJob = async () => {
+    const amount = getSwapConfig().swapOutAmount
+    const swapResult = await Swap.swapOut({ amount })
+    if (swapResult instanceof Error) throw swapResult
+    logger.info("SwapOutJob Completed")
+  }
+
   const tasks = [
     updateEscrows,
     updatePendingLightningInvoices,
@@ -61,6 +66,7 @@ const main = async () => {
     updateOnChainReceipt,
     ...(cronConfig.rebalanceEnabled ? [rebalance] : []),
     deleteExpiredPaymentFlows,
+    swapOutJob,
   ]
 
   for (const task of tasks) {
