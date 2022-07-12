@@ -119,7 +119,8 @@ type YamlSchema = {
   }
   swap: {
     minOutboundLiquidityBalance: number
-    swapUrl: string
+    loopRestEndpoint: string
+    loopRpcEndpoint: string
     swapOutAmount: number
     swapProviders: Array<SwapProvider>
   }

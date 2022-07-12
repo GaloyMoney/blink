@@ -308,7 +308,8 @@ export const configSchema = {
       type: "object",
       properties: {
         minOutboundLiquidityBalance: { type: "integer" },
-        swapUrl: { type: "string" },
+        loopRestEndpoint: { type: "string" },
+        loopRpcEndpoint: { type: "string" },
         swapOutAmount: { type: "integer" },
         swapProviders: {
           type: "array",

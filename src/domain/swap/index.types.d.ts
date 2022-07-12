@@ -1,8 +1,13 @@
+import { ClientReadableStream } from "@grpc/grpc-js"
+import { SwapStatus__Output as SwapStatusOutput } from "@services/swap/providers/lightning-labs/protos/generated/looprpc/SwapStatus"
+
 export type SwapServiceError = import("./errors").SwapServiceError
 
 // @todo - make this more robust and generic
 export interface ISwapService {
+  isSwapServerUp: () => Promise<boolean>
   swapOut: (amount: Satoshis) => Promise<SwapOutResult | SwapServiceError>
+  swapListener: () => ClientReadableStream<SwapStatusOutput | SwapServiceError>
   swapOutTerms?: () => Promise<string>
   swapOutQuote?: () => Promise<string>
   swapIn?: () => Promise<string>
@@ -45,7 +50,8 @@ export type SwapStatusResult = {
 export type SwapConfig = {
   minOutboundLiquidityBalance: Satoshis
   swapOutAmount: Satoshis
-  swapUrl: string
+  loopRestEndpoint: string
+  loopRpcEndpoint: string
   swapProviders: Array<SwapProvider>
 }
 

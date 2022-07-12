@@ -142,6 +142,7 @@ services:
       - loopserver
     ports:
       - "8081:8081"
+      - "11010:11010"
     environment:
       - LOOP_SERVER_INTERNAL_IP=${LOOP_SERVER_INTERNAL_IP}
     command: 
@@ -155,6 +156,7 @@ services:
       - "--lnd.tlspath=/root/.lnd/tls.cert"
       - "--tlsautorefresh"
       - "--restlisten=0.0.0.0:8081"
+      - "--rpclisten=0.0.0.0:11010"
   e2e-tests:
     image: us.gcr.io/galoy-org/galoy-app-pipeline
     depends_on:

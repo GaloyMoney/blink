@@ -169,7 +169,8 @@ onChainWallet:
 
 swap:
   minOutboundLiquidityBalance: 30000000
-  swapUrl: "https://localhost:8081"
+  loopRestEndpoint: "https://localhost:8081"
+  loopRpcEndpoint: "localhost:11010"
   swapOutAmount: 500000 # 25000000
   swapProviders: ["LOOP"]
 

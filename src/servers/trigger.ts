@@ -279,6 +279,10 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
   })
 }
 
+const listenerSwapMonitor = () => {
+  // @todo SwapService.swapListener()
+}
+
 const main = () => {
   lndStatusEvent.on("started", ({ lnd, pubkey, socket, type }: LndParamsAuthed) => {
     baseLogger.info({ socket }, "lnd started")
@@ -298,6 +302,9 @@ const main = () => {
 
   activateLndHealthCheck()
   publishCurrentPrice()
+
+  // @todo might need to check if swap grpc server is up
+  listenerSwapMonitor()
 }
 
 const healthCheck = () => {

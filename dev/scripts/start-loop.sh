@@ -23,21 +23,23 @@ export LOOP_SERVER_INTERNAL_IP=$(docker inspect $(docker ps -q -f name="loopserv
 echo "LOOP_SERVER_INTERNAL_IP is $LOOP_SERVER_INTERNAL_IP"
 docker compose up loopd -d 
 
-# copy loop macaroon to consume by the galoy app
+# copy loop macaroon and tls.cert to consume by the galoy app
 loopd_id=$(docker ps -q -f name="loopd")
-sleep 5 && docker cp "$loopd_id:/root/.loop/regtest/loop.macaroon" "./dev/lnd"
+sleep 5 && docker cp "$loopd_id:/root/.loop/regtest/loop.macaroon" "./dev/lnd" && \
+docker cp "$loopd_id:/root/.loop/regtest/tls.cert" "./dev/lnd/loop-tls.cert"
+
 
 # test the Loop REST API with a quote request
 echo "Loop macaroon:"
-# convert macaroon to hex string
-LOOP_MACAROON=$(cat dev/lnd/loop.macaroon | xxd -p |  awk '{print}' ORS='')
-echo $LOOP_MACAROON
+LOOP_MACAROON_HEXSTR=$(cat dev/lnd/loop.macaroon | xxd -p |  awk '{print}' ORS='')
+echo $LOOP_MACAROON_HEXSTR
 # test loop rest api
 curl -k \
     --request GET \
     --url     https://localhost:8081/v1/loop/out/quote/500000 \
-    --cert     dev/lnd/tls.cert \
-    --key      dev/lnd/tls.key \
     --header  'Content-Type: application/json' \
-    --header  "Grpc-Metadata-macaroon: $LOOP_MACAROON" \
+    --header  "Grpc-Metadata-macaroon: $LOOP_MACAROON_HEXSTR" \
     --verbose
+
+# reload env vars
+direnv reload

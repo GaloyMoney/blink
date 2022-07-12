@@ -304,7 +304,8 @@ export const getSwapConfig = (): SwapConfig => {
   return {
     minOutboundLiquidityBalance: toSats(config.minOutboundLiquidityBalance),
     swapOutAmount: toSats(config.swapOutAmount),
-    swapUrl: config.swapUrl,
+    loopRestEndpoint: config.loopRestEndpoint,
+    loopRpcEndpoint: config.loopRpcEndpoint,
     swapProviders: config.swapProviders,
   }
 }

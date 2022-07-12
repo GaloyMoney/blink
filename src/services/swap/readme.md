@@ -1,7 +1,7 @@
 Swap Service 
 ============
 
-(1) Start the loopserver (Mock Swap Server) and loopd (Rest API)
+(1) Start the loopserver (regtest LL loop server) and loopd (Rest API)
 ---------------------------------------
 ```sh
 make start-loop
@@ -25,7 +25,8 @@ A successful loop server start returns this
 ```yaml
 swap:
   minOutboundLiquidityBalance: 2000000
-  swapUrl: "https://localhost:8081"
+  loopRestEndpoint: "https://localhost:8081"
+  loopRpcEndpoint: "localhost:11010"
   swapOutAmount: 500000 
   swapProviders: ["LOOP"] 
 ```
@@ -47,6 +48,7 @@ const resp = await SwapProvider.swapOut(swapOutAmount)
 ---------------------------------------
 ```sh
 TEST="swap-out-checker" make unit
+TEST="swap-listener" make integration
 TEST="swap-out" make integration
 ```
 
@@ -66,3 +68,19 @@ curl -k \
     --verbose \
     | yarn pino-pretty -c -l
 ```
+
+
+Generate GRPC Types
+====================
+```
+cd src/services/swap/providers/lightning-labs/protos/generated
+$(npm bin)/proto-loader-gen-types --longs=String --enums=String --defaults --oneofs --grpcLib=@grpc/grpc-js --outDir=./ ../loop.proto
+```
+
+Troubleshooting
+=============
+If you get the error
+```
+Waiting for lnd to be fully synced to its chain backend, this might take a while
+```
+Then the chain is not synced. Try running `make mine`
