@@ -150,4 +150,15 @@ describe("AmountCalculator", () => {
       })
     }
   })
+
+  describe("multiplies", () => {
+    it("correctly applies basis points to an amount", () => {
+      const amount = { amount: 20_000n, currency: WalletCurrency.Btc }
+      const basisPoints = 50n // 0.5% or 0.005
+      const expectedAmount = 100n // 0.5% of 20_000
+
+      const percentageOfAmount = calc.applyBasisPoints(amount, basisPoints)
+      expect(percentageOfAmount.amount).toEqual(expectedAmount)
+    })
+  })
 })
