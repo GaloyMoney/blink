@@ -19,7 +19,7 @@ const QueryType = GT.Object({
     transactionsByHash: TransactionsByHashQuery,
     lightningInvoice: LightningInvoiceQuery,
     lightningPayment: LightningPaymentQuery,
-    wallets: WalletsQuery,
+    allWallets: WalletsQuery,
   }),
 })
 
