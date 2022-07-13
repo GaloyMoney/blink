@@ -9,7 +9,7 @@ type LedgerAccountDescriptor<T extends WalletCurrency> = {
   currency: T
 }
 
-type MediciEntry = import("../books").MediciEntryFromPackage
+type MediciEntry = import("../books").MediciEntryFromPackage<ILedgerTransaction>
 
 type StaticAccountIds = {
   bankOwnerAccountId: LedgerAccountId
