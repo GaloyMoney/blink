@@ -50,7 +50,7 @@ const main = async () => {
 
   const deleteLndPaymentsBefore2Months = async () => {
     const timestamp2Months = new Date(Date.now() - TWO_MONTHS_IN_MS)
-    const result = Lightning.deleteLnPaymentsBefore(timestamp2Months)
+    const result = await Lightning.deleteLnPaymentsBefore(timestamp2Months)
     if (result instanceof Error) throw result
   }
 
@@ -59,13 +59,13 @@ const main = async () => {
     updatePendingLightningInvoices,
     updatePendingLightningPayments,
     updateLnPaymentsCollection,
-    deleteExpiredInvoices,
-    deleteLndPaymentsBefore2Months,
-    deleteFailedPaymentsAttemptAllLnds,
     updateRoutingRevenues,
     updateOnChainReceipt,
     ...(cronConfig.rebalanceEnabled ? [rebalance] : []),
     deleteExpiredPaymentFlows,
+    deleteExpiredInvoices,
+    deleteLndPaymentsBefore2Months,
+    deleteFailedPaymentsAttemptAllLnds,
   ]
 
   for (const task of tasks) {
