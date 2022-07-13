@@ -6,17 +6,17 @@ import {
   AmountCalculator,
 } from "@domain/shared"
 
-export const FEECAP_PERCENT = 2n
+export const FEECAP_BASIS_POINTS = 50n // 100 basis points == 1%
 
 const calc = AmountCalculator()
 
 export const LnFees = (
   {
-    feeCapPercent,
+    feeCapBasisPoints,
   }: {
-    feeCapPercent: bigint
+    feeCapBasisPoints: bigint
   } = {
-    feeCapPercent: FEECAP_PERCENT,
+    feeCapBasisPoints: FEECAP_BASIS_POINTS,
   },
 ) => {
   const maxProtocolFee = <T extends WalletCurrency>(amount: PaymentAmount<T>) => {
@@ -24,10 +24,7 @@ export const LnFees = (
       return amount
     }
 
-    const maxFee = calc.divRound(
-      { amount: amount.amount * feeCapPercent, currency: amount.currency },
-      100n,
-    )
+    const maxFee = calc.applyBasisPoints(amount, feeCapBasisPoints)
 
     return {
       amount: maxFee.amount === 0n ? 1n : maxFee.amount,
