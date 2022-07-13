@@ -77,6 +77,7 @@ type LnPaymentConfirmedDetails = {
 }
 
 type LnPaymentLookup = {
+  readonly index?: string
   readonly createdAt: Date
   readonly status: PaymentStatus
   readonly paymentHash: PaymentHash

@@ -658,6 +658,7 @@ const KnownLndErrorDetails = {
 } as const
 
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({
+  index: p.index,
   createdAt: new Date(p.created_at),
   status: p.is_confirmed ? PaymentStatus.Settled : PaymentStatus.Pending,
   paymentHash: p.id as PaymentHash,
