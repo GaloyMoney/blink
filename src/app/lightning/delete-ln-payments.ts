@@ -7,16 +7,21 @@ import {
   asyncRunInSpan,
   SemanticAttributes,
 } from "@services/tracing"
+import { elapsedSinceTimestamp } from "@utils"
 
 export const deleteLnPaymentsBefore = async (
   timestamp: Date,
 ): Promise<true | ApplicationError> => {
   const paymentHashesBefore = await listAllPaymentsBefore(timestamp)
 
+  const start = new Date(Date.now())
+  baseLogger.info({ start }, "start of delete loop")
   for await (const paymentHash of paymentHashesBefore) {
     if (paymentHash instanceof Error) return paymentHash
     await checkAndDeletePaymentForHash(paymentHash)
   }
+  const end = new Date(Date.now())
+  baseLogger.info({ end, elapsed: elapsedSinceTimestamp(start) }, "end of delete loop")
 
   return true
 }
@@ -72,6 +77,10 @@ const listAllPaymentsBefore = async function* (
     lndService.listFailedPayments,
   ]
 
+  baseLogger.info(
+    { pubkeys, listFns: listFns.map((fn) => fn.name) },
+    "listAllPayments start of loop",
+  )
   for (const pubkey of pubkeys) {
     for (const listFn of listFns) {
       let after: PagingStartToken | PagingContinueToken | PagingStopToken = undefined
@@ -92,7 +101,7 @@ const listAllPaymentsBefore = async function* (
         after = result.endCursor
 
         baseLogger.info(
-          { length: result.lnPayments.length, timestamp },
+          { length: result.lnPayments.length, timestamp, pubkey, listFn: listFn.name },
           "lnPayments start of loop",
         )
         let iteration = 0
@@ -112,6 +121,7 @@ const listAllPaymentsBefore = async function* (
             yield { paymentHash: payment.paymentHash, pubkey }
           }
         }
+        baseLogger.info({ pubkey, listFn: listFn.name }, "lnPayments end of loop")
       }
     }
   }
