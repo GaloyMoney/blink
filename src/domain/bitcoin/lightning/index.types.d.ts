@@ -128,10 +128,6 @@ type RegisteredInvoice = {
   descriptionHash?: string // TODO: proper type
 }
 
-type LnFeeCalculator = {
-  max<T extends UsdCents | Satoshis>(amount: T): T
-}
-
 type PayInvoiceResult = {
   roundedUpFee: Satoshis
   revealedPreImage: RevealedPreImage
