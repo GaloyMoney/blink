@@ -5,6 +5,7 @@ import {
   CouldNotListWalletsFromAccountIdError,
   RepositoryError,
   UnknownRepositoryError,
+  CouldNotListWalletFromWalletCurrencyError,
 } from "@domain/errors"
 import { Types } from "mongoose"
 
@@ -104,11 +105,15 @@ export const WalletsRepository = (): IWalletsRepository => {
   }
   const listAll = async (
     walletCurrency: WalletCurrency,
+    limit: number,
+    offset: number,
   ): Promise<Wallet[] | RepositoryError> => {
     try {
       const result: WalletRecord[] = await Wallet.find({ currency: walletCurrency })
+        .limit(limit)
+        .skip(offset)
       if (!result || result.length === 0) {
-        return new CouldNotListWalletsFromAccountIdError()
+        return new CouldNotListWalletFromWalletCurrencyError()
       }
       return result.map(resultToWallet)
     } catch (err) {
