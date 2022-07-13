@@ -1,5 +1,6 @@
 import { UnknownLightningServiceError } from "@domain/bitcoin/lightning"
 import { LndService } from "@services/lnd"
+import { baseLogger } from "@services/logger"
 import { LnPaymentsRepository } from "@services/mongoose"
 import {
   addAttributesToCurrentSpan,
@@ -51,6 +52,7 @@ const checkAndDeletePaymentForHash = async ({
       const deleted = lndService.deletePaymentByHash({ paymentHash, pubkey })
       if (deleted instanceof Error) return deleted
       addAttributesToCurrentSpan({ deleted: true })
+      baseLogger.info({ paymentHash }, "successfully deleted")
 
       return true
     },
@@ -89,7 +91,23 @@ const listAllPaymentsBefore = async function* (
         }
         after = result.endCursor
 
+        baseLogger.info(
+          { length: result.lnPayments.length, timestamp },
+          "lnPayments start of loop",
+        )
+        let iteration = 0
         for (const payment of result.lnPayments) {
+          baseLogger.info(
+            {
+              iteration,
+              index: payment.index,
+              paymentHash: payment.paymentHash,
+              createdAt: payment.createdAt,
+              yield: payment.createdAt < timestamp,
+            },
+            "payment in loop",
+          )
+          iteration++
           if (payment.createdAt < timestamp) {
             yield { paymentHash: payment.paymentHash, pubkey }
           }
