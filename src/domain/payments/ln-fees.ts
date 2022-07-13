@@ -1,3 +1,4 @@
+import { FEECAP_BASIS_POINTS } from "@domain/bitcoin"
 import {
   WalletCurrency,
   ZERO_SATS,
@@ -5,8 +6,6 @@ import {
   paymentAmountFromNumber,
   AmountCalculator,
 } from "@domain/shared"
-
-export const FEECAP_BASIS_POINTS = 50n // 100 basis points == 1%
 
 const calc = AmountCalculator()
 

@@ -7,7 +7,7 @@ import { delete2fa } from "@app/users"
 
 import { getDisplayCurrencyConfig, getLocale } from "@config"
 
-import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
+import { toSats } from "@domain/bitcoin"
 import {
   defaultTimeToExpiryInSeconds,
   InvalidFeeProbeStateError,
@@ -23,6 +23,7 @@ import {
 } from "@domain/errors"
 import { LedgerTransactionType } from "@domain/ledger"
 import {
+  LnFees,
   LnPaymentRequestInTransitError,
   PriceRatio,
   ZeroAmountForUsdRecipientError,
@@ -548,12 +549,10 @@ describe("UserWallet - Lightning Pay", () => {
     const priceRatio = PriceRatio(paymentAmounts)
     if (priceRatio instanceof Error) throw priceRatio
 
-    const feeSats = toSats(amountInvoice * FEECAP_PERCENT)
-    const feeAmountSats = paymentAmountFromNumber({
-      amount: feeSats,
+    const feeAmountSats = LnFees().maxProtocolFee({
+      amount: BigInt(amountInvoice),
       currency: WalletCurrency.Btc,
     })
-    if (feeAmountSats instanceof Error) return feeAmountSats
     const feeAmountCents = priceRatio.convertFromBtc(feeAmountSats)
     const feeCents = toCents(feeAmountCents.amount)
 
@@ -564,13 +563,13 @@ describe("UserWallet - Lightning Pay", () => {
     expect(txnFeeReimburse).toEqual(
       expect.objectContaining({
         debit: 0,
-        credit: feeSats,
+        credit: toSats(feeAmountSats.amount),
 
         fee: 0,
         feeUsd: 0,
         usd: feeCents / 100,
 
-        satsAmount: feeSats,
+        satsAmount: toSats(feeAmountSats.amount),
         satsFee: 0,
         centsAmount: feeCents,
         centsFee: 0,
@@ -867,7 +866,7 @@ describe("UserWallet - Lightning Pay", () => {
   const functionToTests = [
     {
       name: "getFeeAndPay",
-      initialFee: 0,
+      applyMaxFee: false,
       fn: function fn({ walletId, account }: { walletId: WalletId; account: Account }) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           const wallet = await WalletsRepository().findById(walletId)
@@ -895,7 +894,7 @@ describe("UserWallet - Lightning Pay", () => {
     },
     {
       name: "directPay",
-      initialFee: FEECAP_PERCENT,
+      applyMaxFee: true,
       fn: function fn({ walletId, account }: { walletId: WalletId; account: Account }) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           const paymentResult = await Payments.payInvoiceByWalletIdWithTwoFA({
@@ -911,7 +910,7 @@ describe("UserWallet - Lightning Pay", () => {
     },
   ]
 
-  functionToTests.forEach(({ fn, name, initialFee }) => {
+  functionToTests.forEach(({ fn, name, applyMaxFee }) => {
     describe(`${name}`, () => {
       it("pay invoice", async () => {
         const { request } = await createInvoice({
@@ -1171,9 +1170,16 @@ describe("UserWallet - Lightning Pay", () => {
         expect(resultPendingPayment).toBeInstanceOf(LnPaymentRequestInTransitError)
 
         const balanceBeforeSettlement = await getBalanceHelper(walletIdB)
-        expect(balanceBeforeSettlement).toBe(
-          initBalanceB - amountInvoice * (1 + initialFee),
-        )
+
+        const feeAmount = LnFees().maxProtocolFee({
+          amount: BigInt(amountInvoice),
+          currency: WalletCurrency.Btc,
+        })
+        const amountInvoiceWithFee = applyMaxFee
+          ? amountInvoice + Number(feeAmount.amount)
+          : amountInvoice
+
+        expect(balanceBeforeSettlement).toEqual(initBalanceB - amountInvoiceWithFee)
 
         const lnPaymentsRepo = LnPaymentsRepository()
 
@@ -1305,7 +1311,16 @@ describe("UserWallet - Lightning Pay", () => {
         expect(result).toBe(PaymentSendStatus.Pending)
         baseLogger.info("payment has timeout. status is pending.")
         const intermediateBalance = await getBalanceHelper(walletIdB)
-        expect(intermediateBalance).toBe(initBalanceB - amountInvoice * (1 + initialFee))
+
+        const feeAmount = LnFees().maxProtocolFee({
+          amount: BigInt(amountInvoice),
+          currency: WalletCurrency.Btc,
+        })
+        const amountInvoiceWithFee = applyMaxFee
+          ? amountInvoice + Number(feeAmount.amount)
+          : amountInvoice
+
+        expect(intermediateBalance).toBe(initBalanceB - amountInvoiceWithFee)
 
         await cancelHodlInvoice({ id, lnd: lndOutside1 })
 

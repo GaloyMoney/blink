@@ -22,7 +22,7 @@ import lnService from "ln-service"
 
 import { SECS_PER_5_MINS } from "@config"
 
-import { FEECAP_PERCENT, toMilliSatsFromString, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromString, toSats } from "@domain/bitcoin"
 import {
   BadPaymentDataError,
   CorruptLndDbError,
@@ -45,6 +45,8 @@ import {
   UnknownRouteNotFoundError,
 } from "@domain/bitcoin/lightning"
 import { CacheKeys } from "@domain/cache"
+import { LnFees } from "@domain/payments"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import { LocalCacheService } from "@services/cache"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -56,9 +58,7 @@ import sumBy from "lodash.sumby"
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds, parseLndErrorDetails } from "./utils"
 
-export const LndService = (
-  { feeCapPercent }: LightningServiceConfig = { feeCapPercent: FEECAP_PERCENT },
-): ILightningService | LightningServiceError => {
+export const LndService = (): ILightningService | LightningServiceError => {
   const activeNode = getActiveLnd()
   if (activeNode instanceof Error) return activeNode
 
@@ -145,10 +145,16 @@ export const LndService = (
         )
       sats = invoice.amount
     }
-    const maxFee = toSats(Math.floor(sats * feeCapPercent))
+    const btcAmount = paymentAmountFromNumber({
+      amount: sats,
+      currency: WalletCurrency.Btc,
+    })
+    if (btcAmount instanceof Error) return btcAmount
+    const maxFeeAmount = LnFees().maxProtocolFee(btcAmount)
+
     const rawRoute = await probeForRoute({
       decodedInvoice: invoice,
-      maxFee,
+      maxFee: toSats(maxFeeAmount.amount),
       amount: sats,
     })
     if (rawRoute instanceof Error) return rawRoute
