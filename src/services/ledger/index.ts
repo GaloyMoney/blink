@@ -29,8 +29,6 @@ import {
   wrapAsyncFunctionsToRunInSpan,
 } from "@services/tracing"
 
-import { toCents, toDisplayCurrencyBaseAmount } from "@domain/fiat"
-
 import { admin } from "./admin"
 import * as adminLegacy from "./admin-legacy"
 import { MainBook, Transaction } from "./books"
@@ -69,7 +67,7 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<LedgerTransaction<WalletCurrency> | LedgerServiceError> => {
     try {
       const _id = toObjectId<LedgerTransactionId>(id)
-      const { results } = await MainBook.ledger<ILedgerTransaction>({
+      const { results } = await MainBook.ledger({
         account: liabilitiesMainAccount,
         _id,
       })
@@ -86,7 +84,7 @@ export const LedgerService = (): ILedgerService => {
     hash: PaymentHash | OnChainTxHash,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
     try {
-      const { results } = await MainBook.ledger<ILedgerTransaction>({
+      const { results } = await MainBook.ledger({
         hash,
         account: liabilitiesMainAccount,
       })
@@ -101,7 +99,7 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
-      const { results } = await MainBook.ledger<ILedgerTransaction>({
+      const { results } = await MainBook.ledger({
         account: liabilitiesWalletId,
       })
       return results.map((tx) => translateToLedgerTx(tx))
@@ -115,7 +113,7 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
     try {
-      const { results } = await MainBook.ledger<ILedgerTransaction>({
+      const { results } = await MainBook.ledger({
         account: liabilitiesWalletIds,
       })
       return results.map((tx) => translateToLedgerTx(tx))
@@ -130,7 +128,7 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
-      const { results } = await MainBook.ledger<ILedgerTransaction>({
+      const { results } = await MainBook.ledger({
         account: liabilitiesWalletId,
         username: contactUsername,
       })
@@ -145,7 +143,7 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
-      const { results } = await MainBook.ledger<ILedgerTransaction>({
+      const { results } = await MainBook.ledger({
         account: liabilitiesWalletId,
         type: LedgerTransactionType.Payment,
         pending: true,
@@ -383,24 +381,33 @@ export const translateToLedgerTx = (
   pendingConfirmation: tx.pending,
   journalId: tx._journal.toString() as LedgerJournalId,
   lnMemo: tx.memo,
-  username: tx.username as Username,
+  username: (tx.username as Username) || undefined,
   memoFromPayer: tx.memoPayer,
-  paymentHash: tx.hash as PaymentHash,
-  pubkey: tx.pubkey as Pubkey,
+  paymentHash: (tx.hash as PaymentHash) || undefined,
+  pubkey: (tx.pubkey as Pubkey) || undefined,
   address:
     tx.payee_addresses && tx.payee_addresses.length > 0
       ? (tx.payee_addresses[0] as OnChainAddress)
       : undefined,
-  txHash: tx.hash as OnChainTxHash,
+  txHash: (tx.hash as OnChainTxHash) || undefined,
   feeKnownInAdvance: tx.feeKnownInAdvance || false,
 
-  satsAmount: toSats(tx.satsAmount),
-  centsAmount: toCents(tx.centsAmount),
-  satsFee: toSats(tx.satsFee),
-  centsFee: toCents(tx.centsFee),
-  displayAmount: toDisplayCurrencyBaseAmount(tx.displayAmount),
-  displayFee: toDisplayCurrencyBaseAmount(tx.displayFee),
-  displayCurrency: tx.displayCurrency as DisplayCurrency,
+  satsAmount: tx.satsAmount !== undefined ? toSats(tx.satsAmount) : undefined,
+  centsAmount: tx.centsAmount !== undefined ? toCents(tx.centsAmount) : undefined,
+  satsFee: tx.satsFee !== undefined ? toSats(tx.satsFee) : undefined,
+  centsFee: tx.centsFee !== undefined ? toCents(tx.centsFee) : undefined,
+  displayAmount:
+    tx.displayAmount !== undefined
+      ? (tx.displayAmount as DisplayCurrencyBaseAmount)
+      : undefined,
+  displayFee:
+    tx.displayFee !== undefined
+      ? (tx.displayFee as DisplayCurrencyBaseAmount)
+      : undefined,
+  displayCurrency:
+    tx.displayCurrency !== undefined
+      ? (tx.displayCurrency as DisplayCurrency)
+      : undefined,
 })
 
 export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({

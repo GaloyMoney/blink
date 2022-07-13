@@ -10,7 +10,6 @@ describe("LedgerService", () => {
 
     const rawTx: ILedgerTransaction = {
       _id: toObjectId(sampleId),
-      id: sampleId,
       credit: 0,
       debit: 1000,
       datetime: timestamp,
