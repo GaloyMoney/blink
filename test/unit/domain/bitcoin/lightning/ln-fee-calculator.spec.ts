@@ -22,10 +22,4 @@ describe("LnFeeCalculator", () => {
     // expect(maxFee).not.toEqual(expectedMaxFee)
     // expect(maxFee).toEqual(FEEMIN)
   })
-  it("returns inverse properly", () => {
-    const amount = toSats(minAmount + 1000)
-    const maxFee = LnFeeCalculator().max(amount)
-    const amountRevert = LnFeeCalculator().inverseMax(maxFee)
-    expect(amountRevert).toEqual(amount)
-  })
 })

@@ -16,9 +16,6 @@ export const LnFeeCalculator = (
   max: <T extends UsdCents | Satoshis>(amount: T) =>
     Math.floor(feeCapPercent * amount) as T,
 
-  inverseMax: <T extends UsdCents | Satoshis>(amount: T) =>
-    Math.floor(amount / feeCapPercent) as T,
-
   // FIXME: temporarily removing the feeMin to make the max function compatible with UsdCents
   // toSats(Math.floor(Math.max(feeCapPercent * amount, feeMin))),
   // max: (amount: Satoshis): Satoshis =>
