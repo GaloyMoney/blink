@@ -30,6 +30,8 @@ import { ErrorLevel } from "@domain/shared"
 
 import type * as graphqlTypes from "graphql"
 
+import { baseLogger } from "./logger"
+
 propagation.setGlobalPropagator(new W3CTraceContextPropagator())
 
 // FYI this hook is executed BEFORE the `formatError` hook from apollo
@@ -238,6 +240,12 @@ const recordException = (span: Span, exception: Exception, level?: ErrorLevel) =
   span.setAttribute("error.name", exception["name"])
   span.recordException(exception)
   span.setStatus({ code: SpanStatusCode.ERROR })
+
+  const error = { exception, errorLevel, attributes: span["attributes"] }
+  const errorMsg = span["name"] + " -> " + exception["name"]
+  if (errorLevel === ErrorLevel.Warn) return baseLogger.warn(error, errorMsg)
+  if (errorLevel === ErrorLevel.Critical) return baseLogger.error(error, errorMsg)
+  baseLogger.info(error, errorMsg)
 }
 
 export const asyncRunInSpan = <F extends () => ReturnType<F>>(
