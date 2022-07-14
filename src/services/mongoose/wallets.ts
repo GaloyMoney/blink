@@ -103,11 +103,11 @@ export const WalletsRepository = (): IWalletsRepository => {
       return new UnknownRepositoryError(err)
     }
   }
-  const listAll = async (
-    walletCurrency: WalletCurrency,
-    limit: number,
-    offset: number,
-  ): Promise<Wallet[] | RepositoryError> => {
+  const listAll = async ({
+    walletCurrency,
+    limit,
+    offset,
+  }: GetAllWalletsArgs): Promise<Wallet[] | RepositoryError> => {
     try {
       const result: WalletRecord[] = await Wallet.find({ currency: walletCurrency })
         .limit(limit)

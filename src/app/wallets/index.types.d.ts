@@ -92,3 +92,9 @@ type PayOnChainByWalletIdArgs = {
 type PayOnChainByWalletIdWithTwoFAArgs = PayOnChainByWalletIdArgs & {
   twoFAToken: TwoFAToken
 }
+
+type GetAllWalletsArgs = {
+  walletCurrency: WalletCurrency
+  limit?: number
+  offset?: number
+}

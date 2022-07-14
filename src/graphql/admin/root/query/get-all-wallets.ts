@@ -10,7 +10,7 @@ const WalletsQuery = GT.Field({
   },
   resolve: async (_, { walletCurrency }) => {
     if (walletCurrency instanceof Error) throw walletCurrency
-    const wallets = await Wallets.getAllWallets(walletCurrency)
+    const wallets = await Wallets.getAllWallets({ walletCurrency })
     if (wallets instanceof Error) {
       throw wallets
     }
