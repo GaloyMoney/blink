@@ -55,7 +55,7 @@ type AmountCalculator = {
   divRound: <T extends WalletCurrency>(a: PaymentAmount<T>, b: bigint) => PaymentAmount<T>
   divFloor: <T extends WalletCurrency>(a: PaymentAmount<T>, b: bigint) => PaymentAmount<T>
   divCeil: <T extends WalletCurrency>(a: PaymentAmount<T>, b: bigint) => PaymentAmount<T>
-  applyBasisPoints: <T extends WalletCurrency>(
+  mulBasisPoints: <T extends WalletCurrency>(
     amount: PaymentAmount<T>,
     basisPoints: bigint,
   ) => PaymentAmount<T>

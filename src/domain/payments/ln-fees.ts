@@ -23,7 +23,7 @@ export const LnFees = (
       return amount
     }
 
-    const maxFee = calc.applyBasisPoints(amount, feeCapBasisPoints)
+    const maxFee = calc.mulBasisPoints(amount, feeCapBasisPoints)
 
     return {
       amount: maxFee.amount === 0n ? 1n : maxFee.amount,

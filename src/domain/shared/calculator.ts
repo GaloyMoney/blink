@@ -47,7 +47,7 @@ export const AmountCalculator = (): AmountCalculator => {
       : { amount: quotient, currency: a.currency }
   }
 
-  const applyBasisPoints = <T extends WalletCurrency>(
+  const mulBasisPoints = <T extends WalletCurrency>(
     amount: PaymentAmount<T>,
     basisPoints: bigint,
   ) =>
@@ -59,6 +59,6 @@ export const AmountCalculator = (): AmountCalculator => {
     divRound,
     divFloor,
     divCeil,
-    applyBasisPoints,
+    mulBasisPoints,
   }
 }
