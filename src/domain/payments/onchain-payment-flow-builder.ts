@@ -50,36 +50,6 @@ const OPFBWithAddress = <S extends WalletCurrency>(
 const OPFBWithSenderWallet = <S extends WalletCurrency>(
   state: OPFBWithSenderWalletState<S>,
 ): OPFBWithSenderWallet<S> | OPFBWithError => {
-  const withAmount = (uncheckedAmount: number): OPFBWithAmount<S> | OPFBWithError => {
-    const paymentAmount =
-      state.senderWalletCurrency === WalletCurrency.Btc
-        ? checkedToBtcPaymentAmount(uncheckedAmount)
-        : checkedToUsdPaymentAmount(uncheckedAmount)
-    if (paymentAmount instanceof ValidationError) {
-      return OPFBWithError(paymentAmount)
-    }
-
-    return paymentAmount.currency === WalletCurrency.Btc
-      ? OPFBWithAmount({
-          ...state,
-          inputAmount: paymentAmount.amount,
-          btcPaymentAmount: paymentAmount,
-        })
-      : OPFBWithAmount({
-          ...state,
-          inputAmount: paymentAmount.amount,
-          usdPaymentAmount: paymentAmount,
-        })
-  }
-
-  return {
-    withAmount,
-  }
-}
-
-const OPFBWithAmount = <S extends WalletCurrency>(
-  state: OPFBWithAmountState<S>,
-): OPFBWithAmount<S> | OPFBWithError => {
   const settlementMethodFromRecipientWallet = (
     walletId: WalletId | undefined,
   ): {
@@ -143,6 +113,36 @@ const OPFBWithAmount = <S extends WalletCurrency>(
 const OPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurrency>(
   state: OPFBWithRecipientWalletState<S, R>,
 ): OPFBWithRecipientWallet<S, R> | OPFBWithError => {
+  const withAmount = (uncheckedAmount: number): OPFBWithAmount<S, R> | OPFBWithError => {
+    const paymentAmount =
+      state.senderWalletCurrency === WalletCurrency.Btc
+        ? checkedToBtcPaymentAmount(uncheckedAmount)
+        : checkedToUsdPaymentAmount(uncheckedAmount)
+    if (paymentAmount instanceof ValidationError) {
+      return OPFBWithError(paymentAmount)
+    }
+
+    return paymentAmount.currency === WalletCurrency.Btc
+      ? OPFBWithAmount({
+          ...state,
+          inputAmount: paymentAmount.amount,
+          btcPaymentAmount: paymentAmount,
+        })
+      : OPFBWithAmount({
+          ...state,
+          inputAmount: paymentAmount.amount,
+          usdPaymentAmount: paymentAmount,
+        })
+  }
+
+  return {
+    withAmount,
+  }
+}
+
+const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
+  state: OPFBWithAmountState<S, R>,
+): OPFBWithAmount<S, R> | OPFBWithError => {
   const withConversion = ({
     usdFromBtc,
     btcFromUsd,

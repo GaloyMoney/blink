@@ -154,10 +154,6 @@ type WithConversionArgs = {
 }
 
 type OPFBWithSenderWallet<S extends WalletCurrency> = {
-  withAmount(uncheckedAmount: number): OPFBWithAmount<S> | OPFBWithError
-}
-
-type OPFBWithAmount<S extends WalletCurrency> = {
   withoutRecipientWallet<R extends WalletCurrency>():
     | OPFBWithRecipientWallet<S, R>
     | OPFBWithError
@@ -175,6 +171,10 @@ type LPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency>
 }
 
 type OPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {
+  withAmount(uncheckedAmount: number): OPFBWithAmount<S, R> | OPFBWithError
+}
+
+type OPFBWithAmount<S extends WalletCurrency, R extends WalletCurrency> = {
   withConversion({
     usdFromBtc,
     btcFromUsd,
@@ -296,11 +296,6 @@ type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &
     skipProbeForDestination: boolean
   }
 
-type OPFBWithAddressState = OnChainPaymentFlowBuilderConfig & {
-  paymentInitiationMethod: PaymentInitiationMethod
-  address: OnChainAddress
-}
-
 type LPFBWithSenderWalletState<S extends WalletCurrency> = RequireField<
   LPFBWithInvoiceState,
   "inputAmount"
@@ -310,16 +305,6 @@ type LPFBWithSenderWalletState<S extends WalletCurrency> = RequireField<
   senderAccountId: AccountId
   usdPaymentAmount?: UsdPaymentAmount
 }
-
-type OPFBWithSenderWalletState<S extends WalletCurrency> = OPFBWithAddressState & {
-  senderWalletId: WalletId
-  senderWalletCurrency: S
-}
-
-type OPFBWithAmountState<S extends WalletCurrency> = OPFBWithSenderWalletState<S> & {
-  btcPaymentAmount?: BtcPaymentAmount
-  usdPaymentAmount?: UsdPaymentAmount
-} & { inputAmount: bigint }
 
 type LPFBWithRecipientWalletState<
   S extends WalletCurrency,
@@ -332,10 +317,28 @@ type LPFBWithRecipientWalletState<
   recipientAccountId?: AccountId
 }
 
+type LPFBWithConversionState<
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+> = RequireField<
+  LPFBWithRecipientWalletState<S, R>,
+  "btcPaymentAmount" | "btcProtocolFee" | "usdProtocolFee" | "usdPaymentAmount"
+> & { createdAt: Date }
+
+type OPFBWithAddressState = OnChainPaymentFlowBuilderConfig & {
+  paymentInitiationMethod: PaymentInitiationMethod
+  address: OnChainAddress
+}
+
+type OPFBWithSenderWalletState<S extends WalletCurrency> = OPFBWithAddressState & {
+  senderWalletId: WalletId
+  senderWalletCurrency: S
+}
+
 type OPFBWithRecipientWalletState<
   S extends WalletCurrency,
   R extends WalletCurrency,
-> = OPFBWithAmountState<S> & {
+> = OPFBWithSenderWalletState<S> & {
   settlementMethod: SettlementMethod
   btcProtocolFee?: BtcPaymentAmount
   usdProtocolFee?: UsdPaymentAmount
@@ -346,19 +349,19 @@ type OPFBWithRecipientWalletState<
   recipientUsername?: Username
 }
 
-type LPFBWithConversionState<
+type OPFBWithAmountState<
   S extends WalletCurrency,
   R extends WalletCurrency,
-> = RequireField<
-  LPFBWithRecipientWalletState<S, R>,
-  "btcPaymentAmount" | "btcProtocolFee" | "usdProtocolFee" | "usdPaymentAmount"
-> & { createdAt: Date }
+> = OPFBWithRecipientWalletState<S, R> & {
+  btcPaymentAmount?: BtcPaymentAmount
+  usdPaymentAmount?: UsdPaymentAmount
+} & { inputAmount: bigint }
 
 type OPFBWithConversionState<
   S extends WalletCurrency,
   R extends WalletCurrency,
 > = RequireField<
-  OPFBWithRecipientWalletState<S, R>,
+  OPFBWithAmountState<S, R>,
   "btcPaymentAmount" | "btcProtocolFee" | "usdProtocolFee" | "usdPaymentAmount"
 > & { createdAt: Date }
 
