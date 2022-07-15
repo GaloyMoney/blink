@@ -1,3 +1,4 @@
+import { FEECAP_BASIS_POINTS } from "@domain/bitcoin"
 import {
   WalletCurrency,
   ZERO_SATS,
@@ -6,17 +7,15 @@ import {
   AmountCalculator,
 } from "@domain/shared"
 
-export const FEECAP_PERCENT = 2n
-
 const calc = AmountCalculator()
 
 export const LnFees = (
   {
-    feeCapPercent,
+    feeCapBasisPoints,
   }: {
-    feeCapPercent: bigint
+    feeCapBasisPoints: bigint
   } = {
-    feeCapPercent: FEECAP_PERCENT,
+    feeCapBasisPoints: FEECAP_BASIS_POINTS,
   },
 ) => {
   const maxProtocolFee = <T extends WalletCurrency>(amount: PaymentAmount<T>) => {
@@ -24,10 +23,7 @@ export const LnFees = (
       return amount
     }
 
-    const maxFee = calc.divRound(
-      { amount: amount.amount * feeCapPercent, currency: amount.currency },
-      100n,
-    )
+    const maxFee = calc.mulBasisPoints(amount, feeCapBasisPoints)
 
     return {
       amount: maxFee.amount === 0n ? 1n : maxFee.amount,
