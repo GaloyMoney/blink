@@ -62,4 +62,6 @@ type AmountCalculator = {
     amount: PaymentAmount<T>,
     basisPoints: bigint,
   ) => PaymentAmount<T>
+  min: <T extends WalletCurrency>(...args: PaymentAmount<T>[]) => PaymentAmount<T>
+  max: <T extends WalletCurrency>(...args: PaymentAmount<T>[]) => PaymentAmount<T>
 }
