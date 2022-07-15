@@ -174,6 +174,12 @@ type Wallet = NewWalletInfo & {
   onChainAddresses(): OnChainAddress[]
 }
 
+type ListAllWalletsArgs = {
+  walletCurrency: WalletCurrency
+  limit?: number
+  offset?: number
+}
+
 interface IWalletsRepository {
   persistNew({
     accountId,
@@ -190,7 +196,7 @@ interface IWalletsRepository {
     walletCurrency,
     limit,
     offset,
-  }: GetAllWalletsArgs): Promise<Wallet[] | RepositoryError>
+  }: ListAllWalletsArgs): Promise<Wallet[] | RepositoryError>
 }
 
 type onChainDepositFeeArgs = {
