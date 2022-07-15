@@ -185,7 +185,7 @@ type OPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency>
     btcFromUsd(
       amount: UsdPaymentAmount,
     ): Promise<BtcPaymentAmount | DealerPriceServiceError>
-  }): Promise<OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
+  }): OPFBWithConversion<S, R> | OPFBWithError
 }
 
 type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
@@ -207,14 +207,12 @@ type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
 }
 
 type OPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
-  withRoute({
-    pubkey,
-    rawRoute,
-  }: {
-    pubkey: Pubkey
-    rawRoute: RawRoute
-  }): Promise<PaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
-  withoutRoute(): Promise<PaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
+  withMinerFee(
+    minerFee: BtcPaymentAmount,
+  ): Promise<OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
+  withoutMinerFee(): Promise<
+    OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError
+  >
 
   btcPaymentAmount(): Promise<BtcPaymentAmount | DealerPriceServiceError>
   usdPaymentAmount(): Promise<UsdPaymentAmount | DealerPriceServiceError>
@@ -242,6 +240,7 @@ type LPFBWithError = {
 
 type OPFBWithError = {
   withSenderWallet(): OPFBWithError
+  withAmount(): OPFBWithError
   withoutRecipientWallet(): OPFBWithError
   withRecipientWallet(): OPFBWithError
   withConversion(): OPFBWithError
@@ -317,15 +316,10 @@ type OPFBWithSenderWalletState<S extends WalletCurrency> = OPFBWithAddressState 
   senderWalletCurrency: S
 }
 
-type OPFBWithAmountState<S extends WalletCurrency> = OPFBWithSenderWalletState<S> &
-  XOR<
-    {
-      btcPaymentAmount: BtcPaymentAmount
-    },
-    {
-      usdPaymentAmount: UsdPaymentAmount
-    }
-  > & { inputAmount: bigint }
+type OPFBWithAmountState<S extends WalletCurrency> = OPFBWithSenderWalletState<S> & {
+  btcPaymentAmount?: BtcPaymentAmount
+  usdPaymentAmount?: UsdPaymentAmount
+} & { inputAmount: bigint }
 
 type LPFBWithRecipientWalletState<
   S extends WalletCurrency,
@@ -343,8 +337,8 @@ type OPFBWithRecipientWalletState<
   R extends WalletCurrency,
 > = OPFBWithAmountState<S> & {
   settlementMethod: SettlementMethod
-  btcProtocolFee: BtcPaymentAmount | undefined
-  usdProtocolFee: UsdPaymentAmount | undefined
+  btcProtocolFee?: BtcPaymentAmount
+  usdProtocolFee?: UsdPaymentAmount
 
   recipientWalletId?: WalletId
   recipientWalletCurrency?: R
