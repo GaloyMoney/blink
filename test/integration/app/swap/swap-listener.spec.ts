@@ -6,9 +6,9 @@ import { mineBlockAndSyncAll } from "test/helpers"
 
 describe("Swap", () => {
   jest.setTimeout(10000)
-  // @todo - maybe mock this or move to e2e test
+  // TODO - maybe mock this or move to e2e test
   it("Initiate Swap out, then listen for events", async () => {
-    const isSwapServerUp = await SwapService.isSwapServerUp()
+    const isSwapServerUp = await SwapService.healthCheck()
     // console.log("isSwapServerUp:", isSwapServerUp)
     if (isSwapServerUp) {
       const msg = "Swap Monitor Listening...closing in a few seconds"

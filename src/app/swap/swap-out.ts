@@ -1,12 +1,12 @@
 import { BTC_NETWORK, getColdStorageConfig } from "@config"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { SwapServiceError } from "@domain/swap/errors"
-import { SwapOutResult } from "@domain/swap/index.types"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { toSats } from "@domain/bitcoin"
 import { SwapOutChecker } from "@domain/swap"
 import { baseLogger } from "@services/logger"
 import { SwapService } from "@services/swap"
+import { SwapOutResult } from "@domain/swap/index.types"
 
 const logger = baseLogger.child({ module: "swap" })
 

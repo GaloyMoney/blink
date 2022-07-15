@@ -1,5 +1,5 @@
 export function handleSwapOutCompleted(data) {
-  // @todo save fees to the accounting ledger
+  // TODO save fees to the accounting ledger
   return data
 }
 

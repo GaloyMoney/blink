@@ -37,7 +37,7 @@ function loopClient() {
       "Grpc-Metadata-macaroon": loopMacaroon,
     },
     httpsAgent: new https.Agent({
-      rejectUnauthorized: false, // @todo figure out how to remove this for a CA cert
+      rejectUnauthorized: false, // TODO figure out how to remove this for a CA cert
       cert,
       key,
     }),
@@ -61,7 +61,7 @@ async function loopOut(amt, swap_fee?): Promise<AxiosResponse> {
     max_miner_fee: fee,
     sweep_conf_target: "2",
     htlc_confirmations: "1",
-    swap_publication_deadline: "600", // @todo - play with these params --fast
+    swap_publication_deadline: "600", // TODO - play with these params --fast
   }
   let resp
   try {

@@ -1,4 +1,4 @@
-Swap Service 
+Swap Service (regtest)
 ============
 
 (1) Start the loopserver (regtest LL loop server) and loopd (Rest API)
@@ -34,13 +34,13 @@ swap:
 (3) Choose the swap provider
 ---------------------------------------
 
-By default we use the lightning-labs `loop` swap provider, but there is an `ISwapProvider` interface that third party contributors can code against. For example, they could create a Boltz swap provider by configuring the `loopProvider` parameter in the `default.yaml` file, then follow the lightning-labs provider as an example here `src/services/swap/providers/lightning-labs`. 
+By default we use the lightning-labs `loop` swap provider, but there is an `ISwapProvider` interface that third party contributors can code against. For example, you could create a PeerSwap swap provider by configuring the `swapProviders` parameter in the `default.yaml` file. Use the lightning-labs provider as an example here `src/services/swap/providers/lightning-labs`. 
 
 ```typescript
-import SwapProvider from "./providers/lightning-labs/loop-swap-provider"
+import { LoopService } from "./providers/lightning-labs/loop-service"
 
 // do swap out
-const resp = await SwapProvider.swapOut(swapOutAmount)
+const resp = await LoopService().swapOut(amount)
 ```
 
 
@@ -54,7 +54,7 @@ TEST="swap-out" make integration
 
 (5) Monitor Status of the swap
 ----------------------------
-@todo rest call
+TODO rest call
 
 ```
 LOOP_MACAROON=$(cat dev/lnd/loop.macaroon | xxd -p |  awk '{print}' ORS='')
@@ -73,16 +73,25 @@ Event Listeners
 ============
 There is an event listeners for swaps called `listenerSwapMonitor` in the `src/servers/trigger.ts` server. It listens for swap events, like "Swap Out Success" or failure. This listerner triggers a `handleSwapOutCompleted` event in the `src/app/swap/swap-listener.ts` file
 
+```
+make start-trigger
+```
+
 
 Cron Job
 =====
-There is a cron job that checks if the onChain wallet is depleted. If it is depleted, it proceeds to do a `swap out` based on the swap config from the `default.yaml` file.   
+There is a cron job that checks if the onChain wallet is depleted. If it is depleted, it proceeds to do a `swap out` based on the swap config from the `default.yaml` file.  
+
+```
+make start-cron
+```
 
 Generate GRPC Types
 ====================
+TODO automate via CI
 ```
-cd src/services/swap/providers/lightning-labs/protos/generated
-$(npm bin)/proto-loader-gen-types --longs=String --enums=String --defaults --oneofs --grpcLib=@grpc/grpc-js --outDir=./ ../loop.proto
+cd src/services/swap/providers/lightning-labs/protos
+buf generate
 ```
 
 Troubleshooting

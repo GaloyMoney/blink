@@ -131,7 +131,7 @@ type YamlSchema = {
   userActivenessMonthlyVolumeThreshold: number
   cronConfig: {
     rebalanceEnabled: boolean
-    // @todo swapEnabled: boolean
+    // TODO swapEnabled: boolean
   }
   kratosConfig: {
     serverURL: string
