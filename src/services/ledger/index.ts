@@ -368,7 +368,7 @@ export const LedgerService = (): ILedgerService => {
 export const translateToLedgerTx = (
   tx: ILedgerTransaction,
 ): LedgerTransaction<WalletCurrency> => ({
-  id: fromObjectId<LedgerTransactionId>(tx._id + ""),
+  id: fromObjectId<LedgerTransactionId>(tx._id || ""),
   walletId: toWalletId(tx.accounts as LiabilitiesWalletId),
   type: tx.type,
   debit: toSats(tx.debit),
