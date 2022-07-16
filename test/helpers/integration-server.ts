@@ -5,7 +5,9 @@ import kill from "tree-kill"
 
 export type PID = number & { readonly brand: unique symbol }
 
-export const startServer = async (serverStartMessage = "Server ready"): Promise<PID> => {
+export const startServer = async (
+  serverStartMessage = "server ready at",
+): Promise<PID> => {
   return new Promise<PID>((resolve) => {
     const serverProcess = childProcess.spawn("make", ["start-api-ci"], {
       killSignal: "SIGKILL",

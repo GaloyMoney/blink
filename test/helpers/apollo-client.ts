@@ -28,7 +28,7 @@ export const defaultTestClientConfig = (authToken?: string): ApolloTestClientCon
     authToken,
     port: GALOY_API_PORT,
     graphqlPath: "/graphql",
-    graphqlSubscriptionPath: "/graphql",
+    graphqlSubscriptionPath: "/graphqlws", // FIXME after migration to new subscription
   }
 }
 
