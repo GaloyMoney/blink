@@ -49,6 +49,10 @@ To start the GraphQL server and its dependencies:
 $ make start
 ```
 
+After running `make start-deps` or `make reset-deps`, the lightning network - running on regtest - will not have any channel, and the mongodb database - that includes some mandatory accounts for Galoy to work - will be empty. 
+
+To seed the channels and accounts, run: `TEST="01|02" make reset-integration`
+
 Alernatively, to start the GraphQL server in watch mode (with automatic restart on changes):
 ```
 $ make watch
@@ -63,16 +67,20 @@ You can load GraphiQL, a web GUI for GraphQL. Start the server and open the foll
 
 ### Docker compose
 
-The docker compose file is split into  `docker-compose.yml` and `docker-compose.override.yml`. By default the override file is merged in and exposes ports on your host machine to various containers. During CI testing we ignore the override file in order to contain tests within a docker network. This is achieved by specifically calling out the docker compose file to use ex: `docker compose -f docker-compose.yml ...`.
+The docker compose files are split into `docker-compose.yml` and `docker-compose.override.yml`.
+
+By default, with `docker compose up`, docker will merge both files. The `docker-compose.override.yml` will expose ports on your host machine to various containers.
+
+During CI testing we ignore the override file in order to contain tests within a docker network. This is achieved by specifically calling out the docker compose file to use ex: `docker compose -f docker-compose.yml up`.
 
 ## Testing
 
-To run the test suite you can run:
+To run the full test suite you can run:
 
 ```bash
 $ make test
 ```
-To execute the test suite [runtime dependencies](#runtime-dependencies) must be running.
+Executing the full test suite requires [runtime dependencies](#runtime-dependencies).
 
 ### Run unit tests
 
@@ -82,7 +90,7 @@ $ yarn test:unit
 $ make unit
 ```
 
-Runtime dependencies are not required
+Runtime dependencies are not required for unit tests
 
 ### Run integration tests
 
