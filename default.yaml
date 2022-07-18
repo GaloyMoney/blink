@@ -1,5 +1,7 @@
 name: "Galoy Banking"
 
+lightningAddressDomain: "pay.bbw.sv"
+
 locale: "en"
 
 displayCurrency:

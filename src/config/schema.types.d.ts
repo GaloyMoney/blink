@@ -19,6 +19,7 @@ type AccountLimitsConfig = {
 type YamlSchema = {
   PROXY_CHECK_APIKEY: string
   name: string
+  lightningAddressDomain: string
   locale: string
   displayCurrency: {
     symbol: string

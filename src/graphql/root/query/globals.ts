@@ -1,4 +1,4 @@
-import { getGaloyBuildInformation } from "@config"
+import { getGaloyBuildInformation, getLightningAddressDomain } from "@config"
 
 import { Lightning } from "@app"
 
@@ -13,6 +13,7 @@ const GlobalsQuery = GT.Field({
 
     return {
       nodesIds,
+      lightningAddressDomain: getLightningAddressDomain(),
       buildInformation: getGaloyBuildInformation(),
     }
   },
