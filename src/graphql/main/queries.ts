@@ -1,3 +1,5 @@
+import { GraphQLResolveInfo } from "graphql"
+
 import { GT } from "@graphql/index"
 
 import MeQuery from "@graphql/root/query/me"
@@ -32,25 +34,30 @@ const fields = {
   onChainTxFee: OnChainTxFeeQuery,
 } as const
 
-/* eslint @typescript-eslint/ban-ts-comment: "off" */
-// @ts-ignore-next-line no-implicit-any error
-const addTracing = (fields) => {
-  for (const key in fields) {
-    const original = fields[key].resolve
-    // @ts-ignore-next-line no-implicit-any error
-    fields[key].resolve = (source, args, context, info) => {
-      const { ip, domainAccount, domainUser } = context as GraphQLContextForUser
-      return addAttributesToCurrentSpanAndPropagate(
-        {
-          [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
-          [ACCOUNT_USERNAME]: domainAccount?.username,
-          [SemanticAttributes.HTTP_CLIENT_IP]: ip,
-        },
-        () => original(source, args, context, info),
-      )
+const addTracing = (trcFields: typeof fields) => {
+  let key: keyof typeof trcFields
+  for (key in trcFields) {
+    const original = trcFields[key].resolve
+    if (original) {
+      trcFields[key].resolve = (
+        source: unknown,
+        args: unknown,
+        context: GraphQLContext | GraphQLContextForUser,
+        info: GraphQLResolveInfo,
+      ) => {
+        const { ip, domainAccount, domainUser } = context
+        return addAttributesToCurrentSpanAndPropagate(
+          {
+            [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
+            [ACCOUNT_USERNAME]: domainAccount?.username,
+            [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+          },
+          () => original(source, args, context, info),
+        )
+      }
     }
   }
-  return fields
+  return trcFields
 }
 
 const QueryType = GT.Object({

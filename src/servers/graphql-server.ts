@@ -69,9 +69,7 @@ const sessionContext = ({
 }: {
   tokenPayload: jwt.JwtPayload | null
   ip: IpAddress | undefined
-  /* eslint @typescript-eslint/ban-ts-comment: "off" */
-  // @ts-ignore-next-line no-implicit-any error
-  body
+  body: unknown
 }): Promise<GraphQLContext> => {
   const userId = tokenPayload?.uid ?? null
 

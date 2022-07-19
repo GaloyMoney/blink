@@ -11,9 +11,7 @@ export const priceRangeValues = [
 const PriceGraphRange = GT.Enum({
   name: "PriceGraphRange",
   description: "The range for the X axis in the BTC price graph",
-  values: priceRangeValues.reduce((acc, curr) => {
-    /* eslint @typescript-eslint/ban-ts-comment: "off" */
-    // @ts-ignore-next-line no-implicit-any error
+  values: priceRangeValues.reduce<Record<string, {}>>((acc, curr) => {
     acc[curr] = {}
     return acc
   }, {}),

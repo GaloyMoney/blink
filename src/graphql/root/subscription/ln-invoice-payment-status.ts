@@ -15,6 +15,17 @@ const LnInvoicePaymentStatusInput = GT.Input({
   }),
 })
 
+type LnInvoicePaymentSubscribeArgs = {
+  input: {
+    paymentRequest: string | Error
+  }
+}
+
+type LnInvoicePaymentResolveSource = {
+  errors?: IError[]
+  status?: string
+}
+
 const LnInvoicePaymentStatusSubscription = {
   type: GT.NonNull(LnInvoicePaymentStatusPayload),
 
@@ -22,9 +33,7 @@ const LnInvoicePaymentStatusSubscription = {
     input: { type: GT.NonNull(LnInvoicePaymentStatusInput) },
   },
 
-  /* eslint @typescript-eslint/ban-ts-comment: "off" */
-  // @ts-ignore-next-line no-implicit-any error
-  resolve: (source) => {
+  resolve: (source: LnInvoicePaymentResolveSource) => {
     if (source.errors) {
       return { errors: source.errors }
     }
@@ -34,8 +43,7 @@ const LnInvoicePaymentStatusSubscription = {
     }
   },
 
-  // @ts-ignore-next-line no-implicit-any error
-  subscribe: async (_, args) => {
+  subscribe: async (_source: unknown, args: LnInvoicePaymentSubscribeArgs) => {
     const { paymentRequest } = args.input
     if (paymentRequest instanceof Error) throw paymentRequest
 
