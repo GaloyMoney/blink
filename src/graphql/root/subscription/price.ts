@@ -44,11 +44,14 @@ const PriceSubscription = {
     input: { type: GT.NonNull(PriceInput) },
   },
   resolve: (
-    source: { errors: IError[]; satUsdCentPrice: number },
+    source: { errors: IError[]; satUsdCentPrice?: number },
     args: PriceResolveArgs,
   ) => {
     if (source.errors) {
       return { errors: source.errors }
+    }
+    if (!source.satUsdCentPrice) {
+      return { errors: [{ message: "No price info" }] }
     }
     const amountPriceInCents = args.input.amount * source.satUsdCentPrice
     return {
