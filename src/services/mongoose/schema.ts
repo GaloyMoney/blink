@@ -5,7 +5,7 @@ import { AccountStatus, UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import { Languages } from "@domain/users"
-import * as mongoose from "mongoose"
+import mongoose from "mongoose"
 
 import { WalletRecord } from "./wallets"
 
@@ -16,13 +16,13 @@ import { WalletRecord } from "./wallets"
 
 const Schema = mongoose.Schema
 
-const dbMetadataSchema = new Schema({
+const dbMetadataSchema = new Schema<DbMetadataRecord>({
   routingFeeLastEntry: Date, // TODO: rename to routingRevenueLastEntry
 })
 export const DbMetadata = mongoose.model("DbMetadata", dbMetadataSchema)
 
 const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
-  _id: String, // hash of invoice
+  _id: { type: String }, // hash of invoice
   walletId: {
     required: true,
     type: String,
@@ -73,7 +73,10 @@ const walletInvoiceSchema = new Schema<WalletInvoiceRecord>({
 
 walletInvoiceSchema.index({ walletId: 1, paid: 1 })
 
-export const WalletInvoice = mongoose.model("InvoiceUser", walletInvoiceSchema)
+export const WalletInvoice = mongoose.model<WalletInvoiceRecord>(
+  "InvoiceUser",
+  walletInvoiceSchema,
+)
 
 const feesConfig = getFeesConfig()
 
@@ -118,7 +121,7 @@ const WalletSchema = new Schema<WalletRecord>({
   },
 })
 
-export const Wallet = mongoose.model("Wallet", WalletSchema)
+export const Wallet = mongoose.model<WalletRecord>("Wallet", WalletSchema)
 
 const UserSchema = new Schema<UserRecord>(
   {

@@ -1,13 +1,17 @@
+import mongoose from "mongoose"
+import * as Medici from "medici"
+
 import { ConfigError } from "@config"
 import { WalletCurrency } from "@domain/shared"
+import { LnPayment } from "@services/lnd/schema"
 import { lazyLoadLedgerAdmin } from "@services/ledger"
-import { Transaction } from "@services/ledger/schema"
 import { WalletsRepository } from "@services/mongoose"
 import { fromObjectId } from "@services/mongoose/utils"
-import mongoose from "mongoose"
+import { TransactionMetadata } from "@services/ledger/schema"
+import { PaymentFlowState } from "@services/payment-flow/schema"
 
 import { baseLogger } from "../logger"
-import { User, WalletInvoice } from "../mongoose/schema"
+import { DbMetadata, PhoneCode, User, Wallet, WalletInvoice } from "../mongoose/schema"
 
 export const ledgerAdmin = lazyLoadLedgerAdmin({
   bankOwnerWalletResolver: async () => {
@@ -62,13 +66,7 @@ const path = `mongodb://${user}:${password}@${address}/${db}`
 
 export const setupMongoConnection = async (syncIndexes = false) => {
   try {
-    await mongoose.connect(path, {
-      autoIndex: false,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      useCreateIndex: true,
-      useFindAndModify: false,
-    })
+    await mongoose.connect(path, { autoIndex: false })
   } catch (err) {
     baseLogger.fatal({ err, user, address, db }, `error connecting to mongodb`)
     throw err
@@ -77,8 +75,14 @@ export const setupMongoConnection = async (syncIndexes = false) => {
   try {
     mongoose.set("runValidators", true)
     if (syncIndexes) {
+      await DbMetadata.syncIndexes()
+      await LnPayment.syncIndexes()
+      await Medici.syncIndexes()
+      await PaymentFlowState.syncIndexes()
+      await PhoneCode.syncIndexes()
+      await TransactionMetadata.syncIndexes()
       await User.syncIndexes()
-      await Transaction.syncIndexes()
+      await Wallet.syncIndexes()
       await WalletInvoice.syncIndexes()
     }
   } catch (err) {

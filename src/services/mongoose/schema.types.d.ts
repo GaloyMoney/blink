@@ -56,8 +56,13 @@ type OnChainMongooseType = {
   address: string
 }
 
+interface DbMetadataRecord {
+  _id: ObjectId
+  routingFeeLastEntry: Date
+}
+
 interface WalletInvoiceRecord {
-  id: string
+  _id: string
   walletId: string
   cents: number
   currency: string
