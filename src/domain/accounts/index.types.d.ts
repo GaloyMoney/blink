@@ -176,6 +176,7 @@ type FeesConfig = {
   depositFeeFixed: CurrencyBaseAmount
   withdrawMethod: WithdrawalFeePriceMethod
   withdrawRatio: number
+  withdrawRatioAsBasisPoints: bigint
   withdrawThreshold: Satoshis
   withdrawDaysLookback: Days
   withdrawDefaultMin: Satoshis
