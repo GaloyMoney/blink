@@ -17,7 +17,7 @@ describe("EntryBuilder", () => {
     expect(entry.currency).toEqual(amount.currency)
   }
 
-  const expectJournalToBeBalanced = (journal) => {
+  const expectJournalToBeBalanced = (journal: MediciEntry) => {
     let usdCredits = 0
     let btcCredits = 0
     let usdDebits = 0
@@ -25,6 +25,9 @@ describe("EntryBuilder", () => {
 
     const credits = journal.transactions.filter((t) => t.credit > 0)
     const debits = journal.transactions.filter((t) => t.debit > 0)
+    const zeroAmounts = journal.transactions.filter(
+      (t) => t.debit === 0 && t.credit === 0,
+    )
 
     // eslint-disable-next-line
     Object.values<any>(debits).forEach((entry) =>
@@ -41,6 +44,7 @@ describe("EntryBuilder", () => {
 
     expect(usdCredits).toEqual(usdDebits)
     expect(btcCredits).toEqual(btcDebits)
+    expect(zeroAmounts.length).toBe(0)
   }
 
   const calc = AmountCalculator()
