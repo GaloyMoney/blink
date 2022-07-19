@@ -5,27 +5,6 @@ import { MainBook } from "@services/ledger/books"
 
 const createEntry = () => MainBook.entry("")
 
-const reconstructEntryFromTransactions = (entry: MediciEntry): MediciEntry => {
-  const result = createEntry()
-
-  for (const txn of entry.transactions) {
-    let accountPath, amount, metadata, credit, debit
-    if (txn.debit > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      ;({ debit: amount, credit, accounts: accountPath, ...metadata } = txn)
-      result.debit(accountPath, amount, metadata)
-    }
-
-    if (txn.credit > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      ;({ credit: amount, debit, accounts: accountPath, ...metadata } = txn)
-      result.credit(accountPath, amount, metadata)
-    }
-  }
-
-  return result
-}
-
 describe("EntryBuilder", () => {
   const findEntry = (txs: ILedgerTransaction[], account: string): ILedgerTransaction => {
     const entry = txs.find((tx) => tx.accounts === account)
@@ -46,7 +25,7 @@ describe("EntryBuilder", () => {
 
     const credits = journal.transactions.filter((t) => t.credit > 0)
     const debits = journal.transactions.filter((t) => t.debit > 0)
-    console.warn({ credits, debits })
+
     // eslint-disable-next-line
     Object.values<any>(debits).forEach((entry) =>
       entry.currency === WalletCurrency.Usd
@@ -376,12 +355,11 @@ describe("EntryBuilder", () => {
             metadata,
           })
 
-          const initialResult = builder
+          const result = builder
             .withTotalAmount(amount)
             .withBankFee(ZERO_BANK_FEE)
             .debitLnd()
             .creditAccount(usdCreditorAccountDescriptor)
-          const result = reconstructEntryFromTransactions(initialResult)
 
           const credits = result.transactions.filter((t) => t.credit > 0)
           const debits = result.transactions.filter((t) => t.debit > 0)
