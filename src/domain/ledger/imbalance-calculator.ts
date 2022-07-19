@@ -1,4 +1,5 @@
 import { toSats } from "@domain/bitcoin"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
 const MS_PER_HOUR = (60 * 60 * 1000) as MilliSeconds
@@ -50,7 +51,17 @@ export const ImbalanceCalculator = ({
     return (lnNetInbound - onChainNetInbound) as SwapOutImbalance
   }
 
+  const getSwapOutImbalanceAmount = async (
+    walletId: WalletId,
+  ): Promise<BtcPaymentAmount | LedgerServiceError | ValidationError> => {
+    const imbalance = await getSwapOutImbalance(walletId)
+    if (imbalance instanceof Error) return imbalance
+
+    return paymentAmountFromNumber({ amount: imbalance, currency: WalletCurrency.Btc })
+  }
+
   return {
     getSwapOutImbalance,
+    getSwapOutImbalanceAmount,
   }
 }
