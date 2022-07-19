@@ -20,7 +20,7 @@ import {
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import express from "express"
 import { expressjwt } from "express-jwt"
-import { execute, GraphQLError, subscribe } from "graphql"
+import { execute, GraphQLError, GraphQLSchema, subscribe } from "graphql"
 import { rule } from "graphql-shield"
 import helmet from "helmet"
 import * as jwt from "jsonwebtoken"
@@ -115,12 +115,15 @@ const sessionContext = ({
 }
 
 export const startApolloServer = async ({
-  // @ts-ignore-next-line no-implicit-any error
   schema,
-  // @ts-ignore-next-line no-implicit-any error
   port,
   startSubscriptionServer = false,
   enableApolloUsageReporting = false,
+}: {
+  schema: GraphQLSchema
+  port: string | number
+  startSubscriptionServer?: boolean
+  enableApolloUsageReporting?: boolean
 }): Promise<Record<string, unknown>> => {
   const app = express()
   const httpServer = createServer(app)
@@ -266,13 +269,17 @@ export const startApolloServer = async ({
             execute: execute as unknown as ExecuteFunction,
             subscribe: subscribe as unknown as SubscribeFunction,
             schema,
-            // @ts-ignore-next-line no-implicit-any error
-            async onConnect(connectionParams, webSocket, connectionContext) {
+            async onConnect(
+              connectionParams: Record<string, unknown>,
+              webSocket: unknown,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              connectionContext: any,
+            ) {
               const { request } = connectionContext
 
               let tokenPayload: string | jwt.JwtPayload | null = null
-              const authz =
-                connectionParams.authorization || connectionParams.Authorization
+              const authz = (connectionParams.authorization ||
+                connectionParams.Authorization) as string
               if (authz) {
                 const rawToken = authz.slice(7)
                 tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
