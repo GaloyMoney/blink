@@ -37,7 +37,7 @@ function loopClient() {
       "Grpc-Metadata-macaroon": loopMacaroon,
     },
     httpsAgent: new https.Agent({
-      rejectUnauthorized: false, // TODO figure out how to remove this for a CA cert
+      // rejectUnauthorized: false, // TODO figure out how to remove this
       cert,
       key,
     }),

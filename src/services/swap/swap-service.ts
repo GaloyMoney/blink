@@ -24,17 +24,6 @@ export const SwapService = (): ISwapService => {
 
   const swapListener = () => {
     const listener = LoopService().swapListener()
-    // listener.on("data", (response) => {
-    //   // TODO A response was received from the server.
-    //   console.log(response)
-    // })
-    // listener.on("status", (status) => {
-    //   // TODO The current status of the stream.
-    //   console.log(status)
-    // })
-    // listener.on("end", () => {
-    //   // TODO The server has closed the stream.
-    // })
     return listener
   }
 

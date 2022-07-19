@@ -1,3 +1,4 @@
+// https://lightning.engineering/loopapi/index.html#service-swapclient
 import util from "util"
 
 import * as grpc from "@grpc/grpc-js"
@@ -5,6 +6,8 @@ import { getSwapConfig } from "@config"
 import { SwapClientNotResponding, SwapServiceError } from "@domain/swap/errors"
 
 import { SwapState as SwapStateType } from "@domain/swap/index"
+
+import { SwapType as DomainSwapType } from "@domain/swap"
 
 import { SwapClientClient } from "./protos/loop_grpc_pb"
 import {
@@ -14,9 +17,9 @@ import {
   LoopOutRequest,
   SwapResponse,
   MonitorRequest,
-  SwapStatus,
   SwapState,
   SwapType,
+  SwapStatus,
 } from "./protos/loop_pb"
 
 const loopMacaroon = process.env.LOOP_MACAROON
@@ -106,11 +109,12 @@ export const LoopService = () => {
     }
   }
 
-  const swapListener = function (): grpc.ClientReadableStream<SwapStatus> {
+  const swapListener = function (): SwapClientReadableStream<SwapListenerResponse> {
     try {
       const request = new MonitorRequest()
       const listener = swapClient.monitor(request)
-      listener.on("data", (data) => {
+      // listener.on("data" | "status" | "end")
+      listener.on("data", (data: SwapStatus & SwapStatusResultWrapper) => {
         listener.pause()
         // parse data to our interface
         const stateVal = data.getState()
@@ -129,22 +133,24 @@ export const LoopService = () => {
         } catch (e) {}
         let swapType
         try {
-          let type = data.getType()
-          type = Object.keys(SwapType).find((key) => SwapType[key] === type)
-          if (type === "LOOP_OUT") {
-            swapType = "SWAP_OUT"
-          }
-          if (type === "LOOP_IN") {
-            swapType = "SWAP_IN"
+          const type = data.getType()
+          const parsedType = Object.keys(SwapType).find((key) => SwapType[key] === type)
+          if (parsedType) {
+            if (parsedType === "LOOP_OUT") {
+              swapType = DomainSwapType.SWAP_OUT
+            }
+            if (parsedType === "LOOP_IN") {
+              swapType = DomainSwapType.SWAP_IN
+            }
           }
         } catch (e) {}
         const parsedSwapData: SwapStatusResult = {
           id: data.getId(),
-          amt: data.getAmt(),
+          amt: BigInt(data.getAmt()),
           htlcAddress: data.getHtlcAddress(),
-          offchainRoutingFee: data.getCostOffchain(),
-          onchainMinerFee: data.getCostOnchain(),
-          serviceProviderFee: data.getCostServer(),
+          offchainRoutingFee: BigInt(data.getCostOffchain()),
+          onchainMinerFee: BigInt(data.getCostOnchain()),
+          serviceProviderFee: BigInt(data.getCostServer()),
           state: state as SwapStateType,
           message: message ? message : "",
           swapType,

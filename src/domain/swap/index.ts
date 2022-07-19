@@ -17,20 +17,20 @@ export const SwapOutChecker = ({
 }
 
 export enum SwapProvider {
-  LOOP,
-  PEERSWAP,
+  LOOP = "LOOP",
+  PEERSWAP = "PEERSWAP",
 }
 
 export enum SwapType {
-  SWAP_IN,
-  SWAP_OUT,
+  SWAP_IN = "SWAP_IN",
+  SWAP_OUT = "SWAP_OUT",
 }
 
 export enum SwapState {
-  INITIATED,
-  PREIMAGE_REVEALED,
-  HTLC_PUBLISHED,
-  SUCCESS,
-  FAILED,
-  INVOICE_SETTLED,
+  INITIATED = "INITIATED",
+  PREIMAGE_REVEALED = "PREIMAGE_REVEALED",
+  HTLC_PUBLISHED = "HTLC_PUBLISHED",
+  SUCCESS = "SUCCESS",
+  FAILED = "FAILED",
+  INVOICE_SETTLED = "INVOICE_SETTLED",
 }

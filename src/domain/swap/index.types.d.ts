@@ -1,14 +1,14 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-type ClientReadableStream<T> = any
-
+type SwapClientReadableStream<T> = import("@grpc/grpc-js").ClientReadableStream<T>
 type SwapServiceError = import("./errors").SwapServiceError
 type SwapType = import("./index").SwapType
 type SwapProvider = import("./index").SwapProvider
 type SwapState = import("./index").SwapState
+type LoopSwapStatus =
+  import("@services/swap/providers/lightning-labs/protos/loop_pb").SwapStatus
 interface ISwapService {
   healthCheck: () => Promise<boolean>
   swapOut: (amount: Satoshis) => Promise<SwapOutResult | SwapServiceError>
-  swapListener: () => ClientReadableStream<unknown | SwapServiceError> // TODO: type for different providers (LOOP, PEERSWAP etc)
+  swapListener: () => SwapClientReadableStream<SwapListenerResponse>
   swapOutTerms?: () => Promise<string> // TODO: Implement these
   swapOutQuote?: () => Promise<string>
   swapIn?: () => Promise<string>
@@ -24,8 +24,13 @@ type SwapOutResult = {
   serverMessage: string
 }
 
+type SwapListenerResponse =
+  | (LoopSwapStatus & SwapStatusResultWrapper)
+  | (SwapStatusResult & SwapStatusResultWrapper)
+  | SwapServiceError
+
 type SwapStatusResultWrapper = {
-  parsedSwapData: SwapStatusResult
+  parsedSwapData?: SwapStatusResult
 }
 
 type SwapStatusResult = {

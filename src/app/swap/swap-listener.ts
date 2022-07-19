@@ -3,28 +3,30 @@ import { toSats } from "@domain/bitcoin"
 import { admin as LedgerAdmin } from "@services/ledger/admin"
 import { WalletCurrency } from "@domain/shared"
 import { LedgerTransactionType } from "@domain/ledger"
-// import { SwapType } from "@domain/swap"
+import { SwapType } from "@domain/swap"
 
 export async function handleSwapOutCompleted(swapStatus: SwapStatusResultWrapper) {
-  const type = swapStatus.parsedSwapData.swapType
-  const onchainMinerFee = toSats(swapStatus.parsedSwapData.onchainMinerFee)
-  const offchainRoutingFee = toSats(swapStatus.parsedSwapData.offchainRoutingFee)
-  const serviceProviderFee = toSats(swapStatus.parsedSwapData.serviceProviderFee)
-  const totalFees = onchainMinerFee + offchainRoutingFee + serviceProviderFee
-  if (type.toString() === "SWAP_OUT" && totalFees > 0) {
-    const swapFeeMetadata: SwapFeeLedgerMetadata = {
-      swapId: swapStatus.parsedSwapData.id,
-      swapAmount: toSats(swapStatus.parsedSwapData.amt),
-      htlcAddress: swapStatus.parsedSwapData.htlcAddress,
-      onchainMinerFee,
-      offchainRoutingFee,
-      serviceProviderFee,
-      serviceProvider: "LOOP",
-      currency: WalletCurrency.Btc,
-      type: LedgerTransactionType.Fee,
-      pending: false,
+  if (swapStatus.parsedSwapData) {
+    const type = swapStatus.parsedSwapData.swapType
+    const onchainMinerFee = toSats(swapStatus.parsedSwapData.onchainMinerFee)
+    const offchainRoutingFee = toSats(swapStatus.parsedSwapData.offchainRoutingFee)
+    const serviceProviderFee = toSats(swapStatus.parsedSwapData.serviceProviderFee)
+    const totalFees = onchainMinerFee + offchainRoutingFee + serviceProviderFee
+    if (type === SwapType.SWAP_OUT && totalFees > 0) {
+      const swapFeeMetadata: SwapFeeLedgerMetadata = {
+        swapId: swapStatus.parsedSwapData.id,
+        swapAmount: toSats(swapStatus.parsedSwapData.amt),
+        htlcAddress: swapStatus.parsedSwapData.htlcAddress,
+        onchainMinerFee,
+        offchainRoutingFee,
+        serviceProviderFee,
+        serviceProvider: "LOOP",
+        currency: WalletCurrency.Btc,
+        type: LedgerTransactionType.Fee,
+        pending: false,
+      }
+      recordSwapFeeToLedger(swapFeeMetadata)
     }
-    recordSwapFeeToLedger(swapFeeMetadata)
   }
 }
 
