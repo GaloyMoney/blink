@@ -57,6 +57,19 @@ type LnReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {
   hash: PaymentHash
 }
 
+type SwapFeeLedgerMetadata = {
+  swapAmount: Satoshis
+  swapId: string
+  htlcAddress: string
+  onchainMinerFee: Satoshis
+  offchainRoutingFee: Satoshis
+  serviceProviderFee: Satoshis
+  serviceProvider: string
+  currency: WalletCurrency
+  type: LedgerTransactionType
+  pending: boolean
+}
+
 type OnChainReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {
   hash: OnChainTxHash
   payee_addresses: OnChainAddress[]

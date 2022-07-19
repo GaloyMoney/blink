@@ -1,5 +1,3 @@
-import { SwapProvider } from "@domain/swap/index.types"
-
 type BuildNumberInput = {
   minBuildNumber: number
   lastBuildNumber: number

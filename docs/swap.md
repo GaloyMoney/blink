@@ -50,6 +50,7 @@ const resp = await LoopService().swapOut(amount)
 TEST="swap-out-checker" make unit
 TEST="swap-listener" make integration
 TEST="swap-out" make integration
+TEST="swap-record-ledger-fee" make integration
 ```
 
 (5) Monitor Status of the swap

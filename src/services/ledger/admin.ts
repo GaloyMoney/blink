@@ -97,4 +97,30 @@ export const admin = {
       return new UnknownLedgerError(err)
     }
   },
+
+  addSwapFeeTxSend: async ({
+    swapFeeMetadata,
+    description,
+  }: {
+    swapFeeMetadata: SwapFeeLedgerMetadata
+    description: string
+  }): Promise<LedgerJournal | LedgerServiceError> => {
+    const metadata = swapFeeMetadata
+    const totalSwapFee =
+      swapFeeMetadata.offchainRoutingFee +
+      swapFeeMetadata.onchainMinerFee +
+      swapFeeMetadata.serviceProviderFee
+
+    try {
+      const bankOwnerWalletId = await getBankOwnerWalletId()
+      const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
+      const entry = MainBook.entry(description)
+        .credit(lndAccountingPath, totalSwapFee, metadata)
+        .debit(bankOwnerPath, totalSwapFee, metadata)
+      const saved = await entry.commit()
+      return translateToLedgerJournal(saved)
+    } catch (error) {
+      return new UnknownLedgerError(error)
+    }
+  },
 }

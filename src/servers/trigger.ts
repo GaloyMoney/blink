@@ -285,12 +285,13 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
 
 const listenerSwapMonitor = async () => {
   try {
-    const isSwapServerUp = await SwapService.healthCheck()
+    const swapService = SwapService()
+    const isSwapServerUp = await swapService.healthCheck()
     if (isSwapServerUp) {
-      const listener = SwapService.swapListener()
+      const listener = swapService.swapListener()
       listener.on("data", (response) => {
-        logger.info(`Swap Listener ====> ${JSON.stringify(response)}`)
-        // TODO typecheck
+        const swapData = response.parsedSwapData
+        logger.info({ swapData }, "listenerSwapMonitor")
         handleSwapOutCompleted(response)
       })
     } else {

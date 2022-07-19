@@ -1,3 +1,4 @@
+import { handleSwapOutCompleted } from "@app/swap/swap-listener"
 import { toSats } from "@domain/bitcoin"
 import { SwapService } from "@services/swap"
 import { sleep } from "@utils"
@@ -5,21 +6,23 @@ import { sleep } from "@utils"
 import { mineBlockAndSyncAll } from "test/helpers"
 
 describe("Swap", () => {
-  jest.setTimeout(10000)
+  jest.setTimeout(30000)
   // TODO - maybe mock this or move to e2e test
   it("Initiate Swap out, then listen for events", async () => {
-    const isSwapServerUp = await SwapService.healthCheck()
+    const swapService = SwapService()
+    const isSwapServerUp = await swapService.healthCheck()
     // console.log("isSwapServerUp:", isSwapServerUp)
     if (isSwapServerUp) {
       const msg = "Swap Monitor Listening...closing in a few seconds"
       new Promise(async (resolve) => {
         // 1) Start Swap Listener
-        const listener = SwapService.swapListener()
+        const listener = swapService.swapListener()
         listener.on("data", (response) => {
-          console.log(response)
+          // console.log(response)
+          handleSwapOutCompleted(response)
         })
         // 2) Trigger Swap Out
-        await SwapService.swapOut(toSats(500000))
+        await swapService.swapOut(toSats(500000))
         // 3) Mine blocks
         await mineBlockAndSyncAll()
         // 4) Wait a few seconds

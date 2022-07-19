@@ -9,8 +9,10 @@ import { lndsBalances } from "@services/lnd/utils"
 import { Swap } from "@app"
 
 describe("Swap", () => {
+  const swapService = SwapService()
+
   it("Swap cron job", async () => {
-    if (await SwapService.healthCheck()) {
+    if (await swapService.healthCheck()) {
       const amount = getSwapConfig().swapOutAmount
       const swapResult = await Swap.swapOut({ amount })
       expect(swapResult).not.toBeInstanceOf(Error)
@@ -23,8 +25,8 @@ describe("Swap", () => {
   })
 
   it("Swap out returns successful SwapResult", async () => {
-    if (await SwapService.healthCheck()) {
-      const swapResult = await SwapService.swapOut(toSats(500000))
+    if (await swapService.healthCheck()) {
+      const swapResult = await swapService.swapOut(toSats(500000))
       if (swapResult instanceof SwapClientNotResponding) {
         console.log("Swap Client is not running, skipping")
         return
@@ -39,8 +41,8 @@ describe("Swap", () => {
   })
 
   it("Swap out without enough funds returns an Error", async () => {
-    if (await SwapService.healthCheck()) {
-      const swapResult = await SwapService.swapOut(toSats(5000000000))
+    if (await swapService.healthCheck()) {
+      const swapResult = await swapService.swapOut(toSats(5000000000))
       if (swapResult instanceof SwapClientNotResponding) {
         return
       }
@@ -49,7 +51,7 @@ describe("Swap", () => {
   })
 
   it("Swap out if on chain wallet is depleted", async () => {
-    if (await SwapService.healthCheck()) {
+    if (await swapService.healthCheck()) {
       // thresholds
       const { onChain } = await lndsBalances()
       const minOnChainHotWalletBalanceConfig =
@@ -63,7 +65,7 @@ describe("Swap", () => {
 
       if (isOnChainWalletDepleted) {
         const swapOutAmount = getSwapConfig().swapOutAmount
-        const swapResult = await SwapService.swapOut(toSats(swapOutAmount))
+        const swapResult = await swapService.swapOut(toSats(swapOutAmount))
         if (swapResult instanceof SwapClientNotResponding) {
           return
         }
