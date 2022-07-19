@@ -102,7 +102,7 @@ type YamlSchema = {
     deposit: number
     withdraw: {
       method: string
-      ratio: number
+      ratioAsBasisPoints: number
       threshold: number
       daysLookback: number
       defaultMin: number
