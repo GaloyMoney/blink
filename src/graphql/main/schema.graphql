@@ -190,6 +190,7 @@ type Globals {
   The domain name for lightning addresses accepted by this Galoy instance
   """
   lightningAddressDomain: String!
+  lightningAddressDomainAliases: [String!]!
 
   """
   A list of public keys for the running lightning nodes.

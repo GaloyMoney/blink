@@ -18,6 +18,9 @@ const Globals = GT.Object({
       type: GT.NonNull(GT.String),
       description: dedent`The domain name for lightning addresses accepted by this Galoy instance`,
     },
+    lightningAddressDomainAliases: {
+      type: GT.NonNullList(GT.String),
+    },
   }),
 })
 
