@@ -22,7 +22,7 @@ describe("Swap", () => {
           handleSwapOutCompleted(response)
         })
         // 2) Trigger Swap Out
-        await swapService.swapOut(toSats(500000))
+        await swapService.swapOut(toSats(50000))
         // 3) Mine blocks
         await mineBlockAndSyncAll()
         // 4) Wait a few seconds

@@ -1,3 +1,0 @@
-type SwapOutArgs = {
-  amount: Satoshis
-}

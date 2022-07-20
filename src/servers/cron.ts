@@ -13,6 +13,7 @@ import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
 import { getCronConfig, getSwapConfig } from "@config"
+import { toSats } from "@domain/bitcoin"
 
 const logger = baseLogger.child({ module: "cron" })
 
@@ -49,8 +50,8 @@ const main = async () => {
   }
 
   const swapOutJob = async () => {
-    const amount = getSwapConfig().swapOutAmount
-    const swapResult = await Swap.swapOut({ amount })
+    const amount = toSats(getSwapConfig().swapOutAmount)
+    const swapResult = await Swap.swapOut(amount)
     if (swapResult instanceof Error) throw swapResult
     logger.info("SwapOutJob Completed")
   }

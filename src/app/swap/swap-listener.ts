@@ -12,6 +12,7 @@ export async function handleSwapOutCompleted(swapStatus: SwapStatusResultWrapper
     const offchainRoutingFee = toSats(swapStatus.parsedSwapData.offchainRoutingFee)
     const serviceProviderFee = toSats(swapStatus.parsedSwapData.serviceProviderFee)
     const totalFees = onchainMinerFee + offchainRoutingFee + serviceProviderFee
+    // TODO log parsedSwapData.message
     if (type === SwapType.SWAP_OUT && totalFees > 0) {
       const swapFeeMetadata: SwapFeeLedgerMetadata = {
         swapId: swapStatus.parsedSwapData.id,

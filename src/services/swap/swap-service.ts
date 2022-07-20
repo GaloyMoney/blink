@@ -1,4 +1,5 @@
 import { SwapServiceError } from "@domain/swap/errors"
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { LoopService } from "./providers/lightning-labs/loop-service"
 
@@ -27,9 +28,12 @@ export const SwapService = (): ISwapService => {
     return listener
   }
 
-  return {
-    healthCheck,
-    swapOut,
-    swapListener,
-  }
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.swap",
+    fns: {
+      healthCheck,
+      swapOut,
+      swapListener,
+    },
+  })
 }

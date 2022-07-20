@@ -9,9 +9,9 @@ import { SwapService } from "@services/swap"
 
 const logger = baseLogger.child({ module: "swap" })
 
-export const swapOut = async ({
-  amount,
-}: SwapOutArgs): Promise<SwapOutResult | SwapServiceError> => {
+export const swapOut = async (
+  amount: Satoshis,
+): Promise<SwapOutResult | SwapServiceError> => {
   const swapService = SwapService()
   logger.info("SwapApp: Started")
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
