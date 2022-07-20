@@ -2,6 +2,8 @@
 export const SwapOutChecker = ({
   currentOnChainHotWalletBalance,
   minOnChainHotWalletBalanceConfig,
+  currentOutboundLiquidityBalance,
+  minOutboundLiquidityBalance,
 }) => {
   const isOnChainWalletDepleted = () => {
     if (currentOnChainHotWalletBalance < minOnChainHotWalletBalanceConfig) {
@@ -10,9 +12,16 @@ export const SwapOutChecker = ({
       return false
     }
   }
-
+  const isOutboundLiquidityDepleted = () => {
+    if (currentOutboundLiquidityBalance < minOutboundLiquidityBalance) {
+      return true
+    } else {
+      return false
+    }
+  }
   return {
     isOnChainWalletDepleted,
+    isOutboundLiquidityDepleted,
   }
 }
 

@@ -6,23 +6,23 @@ import { toSats } from "@domain/bitcoin"
 import { SwapClientNotResponding } from "@domain/swap/errors"
 import { SwapOutChecker } from "@domain/swap"
 import { lndsBalances } from "@services/lnd/utils"
-// import { Swap } from "@app"
+import { Swap } from "@app"
 
 describe("Swap", () => {
   const swapService = SwapService()
   const amount = toSats(250000)
 
-  // it("Swap cron job", async () => {
-  //   if (await swapService.healthCheck()) {
-  //     const swapResult = await Swap.swapOut(amount) //getSwapConfig().swapOutAmount
-  //     expect(swapResult).not.toBeInstanceOf(Error)
-  //     expect(swapResult).toEqual(
-  //       expect.objectContaining({
-  //         swapId: expect.any(String),
-  //       }),
-  //     )
-  //   }
-  // })
+  it("Swap cron job", async () => {
+    if (await swapService.healthCheck()) {
+      const swapResult = await Swap.swapOut(amount) //getSwapConfig().swapOutAmount
+      expect(swapResult).not.toBeInstanceOf(Error)
+      expect(swapResult).toEqual(
+        expect.objectContaining({
+          swapId: expect.any(String),
+        }),
+      )
+    }
+  })
 
   it("Swap out returns successful SwapResult", async () => {
     if (await swapService.healthCheck()) {
@@ -57,12 +57,17 @@ describe("Swap", () => {
       const minOnChainHotWalletBalanceConfig = onChain + 50000
 
       // check if wallet is depleted
-      const isOnChainWalletDepleted = SwapOutChecker({
+      const swapOutChecker = SwapOutChecker({
         currentOnChainHotWalletBalance: onChain,
         minOnChainHotWalletBalanceConfig,
-      }).isOnChainWalletDepleted()
+        currentOutboundLiquidityBalance: 50000,
+        minOutboundLiquidityBalance: 60000,
+      })
 
-      if (isOnChainWalletDepleted) {
+      if (
+        swapOutChecker.isOnChainWalletDepleted() &&
+        swapOutChecker.isOutboundLiquidityDepleted()
+      ) {
         // const swapOutAmount = getSwapConfig().swapOutAmount
         const swapResult = await swapService.swapOut(toSats(amount))
         if (swapResult instanceof SwapClientNotResponding) {
