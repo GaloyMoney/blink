@@ -7,7 +7,7 @@ directories:
   - path: .
     git:
       url: https://github.com/GaloyMoney/concourse-shared.git
-      ref: fc36c9834e4da8374728298ffd362b7bc1280bc5
+      ref: a761122f771b42316c31abd81adb1f10e5999509
     includePaths:
     - tasks/**/*
     newRootPath: tasks
@@ -17,7 +17,7 @@ directories:
   - path: .
     git:
       url: https://github.com/GaloyMoney/concourse-shared.git
-      ref: fc36c9834e4da8374728298ffd362b7bc1280bc5
+      ref: a761122f771b42316c31abd81adb1f10e5999509
     includePaths:
     - config/**/*
     newRootPath: config
