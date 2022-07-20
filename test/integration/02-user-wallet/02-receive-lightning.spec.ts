@@ -47,6 +47,7 @@ import {
 } from "test/helpers"
 
 let walletIdB: WalletId
+let walletDescriptorB: WalletDescriptor<WalletCurrency>
 let walletIdUsdB: WalletId
 let walletIdF: WalletId
 let walletIdUsdF: WalletId
@@ -60,6 +61,7 @@ beforeAll(async () => {
   await createUserAndWalletFromUserRef("B")
   await createUserAndWalletFromUserRef("F")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
+  walletDescriptorB = { id: walletIdB, currency: WalletCurrency.Btc }
   walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
   walletIdF = await getDefaultWalletIdByTestUserRef("F")
   walletIdUsdF = await getUsdWalletIdByTestUserRef("F")
@@ -178,7 +180,7 @@ describe("UserWallet - Lightning", () => {
     })
 
     // FIXME: Needs to be in the first test so that previous volume for wallet is 0.
-    const imbalance = await imbalanceCalc.getSwapOutImbalance(walletIdB)
+    const imbalance = await imbalanceCalc.getSwapOutImbalance(walletDescriptorB)
     if (imbalance instanceof Error) throw imbalance
 
     expect(imbalance).toBe(sats)

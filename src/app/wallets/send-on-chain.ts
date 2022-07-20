@@ -336,7 +336,7 @@ const executePaymentViaOnChain = async ({
       sinceDaysAgo: feeConfig.withdrawDaysLookback,
     })
 
-    const imbalance = await imbalanceCalculator.getSwapOutImbalance(senderWallet.id)
+    const imbalance = await imbalanceCalculator.getSwapOutImbalance(senderWallet)
     if (imbalance instanceof Error) return imbalance
 
     const minerFee = await onChainService.getOnChainFeeEstimate({
