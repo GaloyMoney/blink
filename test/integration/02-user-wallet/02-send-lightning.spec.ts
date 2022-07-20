@@ -148,6 +148,8 @@ let walletIdUsdB: WalletId
 let walletIdUsdA: WalletId
 let walletIdC: WalletId
 
+let walletDescriptorB: WalletDescriptor<WalletCurrency>
+
 let usernameA: Username
 let usernameB: Username
 let usernameC: Username
@@ -173,6 +175,12 @@ beforeAll(async () => {
   walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
   walletIdC = await getDefaultWalletIdByTestUserRef("C")
   walletIdH = await getDefaultWalletIdByTestUserRef("H")
+
+  walletDescriptorB = {
+    id: walletIdB,
+    currency: WalletCurrency.Btc,
+    accountId: accountB.id,
+  }
 
   accountRecordA = await getAccountRecordByTestUserRef("A")
   usernameA = accountRecordA.username as Username
@@ -450,7 +458,7 @@ describe("UserWallet - Lightning Pay", () => {
       volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
     })
 
-    const imbalanceInit = await imbalanceCalc.getSwapOutImbalance(walletIdB)
+    const imbalanceInit = await imbalanceCalc.getSwapOutImbalance(walletDescriptorB)
     if (imbalanceInit instanceof Error) throw imbalanceInit
 
     const { request, secret, id } = await createInvoice({ lnd: lndOutside1 })
@@ -556,7 +564,7 @@ describe("UserWallet - Lightning Pay", () => {
     const finalBalance = await getBalanceHelper(walletIdB)
     expect(finalBalance).toBe(initBalanceB - amountInvoice)
 
-    const imbalanceFinal = await imbalanceCalc.getSwapOutImbalance(walletIdB)
+    const imbalanceFinal = await imbalanceCalc.getSwapOutImbalance(walletDescriptorB)
     if (imbalanceFinal instanceof Error) throw imbalanceFinal
 
     // imbalance is reduced with lightning payment
@@ -571,7 +579,7 @@ describe("UserWallet - Lightning Pay", () => {
       volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
     })
 
-    const imbalanceInit = await imbalanceCalc.getSwapOutImbalance(walletIdB)
+    const imbalanceInit = await imbalanceCalc.getSwapOutImbalance(walletDescriptorB)
     if (imbalanceInit instanceof Error) throw imbalanceInit
 
     const { request } = await createInvoice({ lnd: lndOutside1 })
