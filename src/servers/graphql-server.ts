@@ -119,11 +119,13 @@ export const startApolloServer = async ({
   port,
   startSubscriptionServer = false,
   enableApolloUsageReporting = false,
+  type,
 }: {
   schema: GraphQLSchema
   port: string | number
   startSubscriptionServer?: boolean
   enableApolloUsageReporting?: boolean
+  type: string
 }): Promise<Record<string, unknown>> => {
   const app = express()
   const httpServer = createServer(app)
@@ -311,7 +313,7 @@ export const startApolloServer = async ({
       }
 
       console.log(
-        `🚀 Server ready at http://localhost:${port}${apolloServer.graphqlPath}`,
+        `🚀 "${type}" server ready at http://localhost:${port}${apolloServer.graphqlPath}`,
       )
       resolve({ app, httpServer, apolloServer })
     })
