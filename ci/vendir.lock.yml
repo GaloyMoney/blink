@@ -2,14 +2,14 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: git cliff config should be pulled from pipeline-tasks (#4)'
-      sha: fc36c9834e4da8374728298ffd362b7bc1280bc5
+      commitTitle: 'ci: add building of nodejs-concourse'
+      sha: 97cc66f91bc95db9971173cb15e97954cef766f6
     path: .
   path: tasks/vendor
 - contents:
   - git:
-      commitTitle: 'fix: git cliff config should be pulled from pipeline-tasks (#4)'
-      sha: fc36c9834e4da8374728298ffd362b7bc1280bc5
+      commitTitle: 'ci: add building of nodejs-concourse'
+      sha: 97cc66f91bc95db9971173cb15e97954cef766f6
     path: .
   path: config/vendor
 kind: LockConfig
