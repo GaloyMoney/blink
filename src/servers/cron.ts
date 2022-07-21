@@ -53,7 +53,6 @@ const main = async () => {
     const amount = toSats(getSwapConfig().swapOutAmount)
     const swapResult = await Swap.swapOut(amount)
     if (swapResult instanceof Error) throw swapResult
-    logger.info("SwapOutJob Completed")
   }
 
   const tasks = [
@@ -66,8 +65,8 @@ const main = async () => {
     updateRoutingRevenues,
     updateOnChainReceipt,
     ...(cronConfig.rebalanceEnabled ? [rebalance] : []),
+    ...(cronConfig.swapEnabled ? [swapOutJob] : []),
     deleteExpiredPaymentFlows,
-    swapOutJob,
   ]
 
   for (const task of tasks) {

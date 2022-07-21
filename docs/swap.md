@@ -83,8 +83,28 @@ Cron Job
 =====
 There is a cron job that checks if the onChain wallet is depleted. If it is depleted, it proceeds to do a `swap out` based on the swap config from the `default.yaml` file.  
 
+To Enable 
+
+default.yaml
+```
+cronConfig:
+  swapEnabled: true
+```
+
 ```
 make start-cron
+```
+
+Tracing
+=======
+In Honeycomb you can query the following:
+
+```
+swap.error exists
+swap.submitted exists
+swap.success exists
+swap.isOnChainWalletDepleted = true
+swap.isOutboundLiquidityDepleted = true
 ```
 
 Generate GRPC Types

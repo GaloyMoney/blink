@@ -336,8 +336,9 @@ export const configSchema = {
       type: "object",
       properties: {
         rebalanceEnabled: { type: "boolean" },
+        swapEnabled: { type: "boolean" },
       },
-      required: ["rebalanceEnabled"],
+      required: ["rebalanceEnabled", "swapEnabled"],
       additionalProperties: false,
     },
     kratosConfig: {

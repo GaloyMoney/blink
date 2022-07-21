@@ -14,7 +14,7 @@ const logger = baseLogger.child({ module: "swap" })
 
 export const swapOut = async (
   amount: Satoshis,
-): Promise<SwapOutResult | SwapServiceError> => {
+): Promise<SwapOutResult | SwapServiceError | null> => {
   const swapService = SwapService()
   logger.info("SwapApp: Started")
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
@@ -45,10 +45,18 @@ export const swapOut = async (
 
   if (isOnChainWalletDepleted && isOutboundLiquidityDepleted) {
     const swapResult = await swapService.swapOut(toSats(amount))
+    if (swapResult instanceof Error) {
+      addAttributesToCurrentSpan({
+        "swap.error": JSON.stringify(swapResult),
+      })
+    } else {
+      addAttributesToCurrentSpan({
+        "swap.submitted": JSON.stringify(swapResult),
+      })
+    }
     return swapResult
-  } else {
-    return new SwapServiceError("No Swap Out needed")
   }
+  return null // no swap needed
 }
 
 async function getChannelLiquidityBalance(): Promise<Satoshis | Error> {

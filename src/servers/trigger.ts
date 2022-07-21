@@ -36,7 +36,7 @@ import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
 
 import { SwapService } from "@services/swap"
 
-import { handleSwapOutCompleted } from "@app/swap/swap-listener"
+import { handleSwapOutCompleted } from "@app/swap"
 
 import healthzHandler from "./middlewares/healthz"
 

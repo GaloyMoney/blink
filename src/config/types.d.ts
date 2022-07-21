@@ -7,6 +7,7 @@ type Levels = number[]
 
 type CronConfig = {
   rebalanceEnabled: boolean
+  swapEnabled: boolean
 }
 
 type KratosConfig = {

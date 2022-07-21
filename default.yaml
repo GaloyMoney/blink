@@ -185,6 +185,7 @@ userActivenessMonthlyVolumeThreshold: 100 # cents
 
 cronConfig:
   rebalanceEnabled: true
+  swapEnabled: true
 
 kratosConfig:
   serverURL: "http://localhost:4433"

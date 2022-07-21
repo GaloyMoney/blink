@@ -1,4 +1,4 @@
-import { handleSwapOutCompleted } from "@app/swap/swap-listener"
+import { handleSwapOutCompleted } from "@app/swap"
 import { toSats } from "@domain/bitcoin"
 import { SwapService } from "@services/swap"
 import { sleep } from "@utils"
@@ -7,30 +7,30 @@ import { mineBlockAndSyncAll } from "test/helpers"
 
 describe("Swap", () => {
   jest.setTimeout(30000)
-  // TODO - maybe mock this or move to e2e test
+  const amount = 250000
   it("Initiate Swap out, then listen for events", async () => {
     const swapService = SwapService()
     const isSwapServerUp = await swapService.healthCheck()
-    // console.log("isSwapServerUp:", isSwapServerUp)
     if (isSwapServerUp) {
-      const msg = "Swap Monitor Listening...closing in a few seconds"
-      new Promise(async (resolve) => {
+      await new Promise(async (resolve) => {
         // 1) Start Swap Listener
         const listener = swapService.swapListener()
-        listener.on("data", (response) => {
-          // console.log(response)
-          handleSwapOutCompleted(response)
+        listener.on("data", async (response) => {
+          await handleSwapOutCompleted(response)
+          expect(response).toBeDefined()
+          resolve(true)
         })
         // 2) Trigger Swap Out
-        await swapService.swapOut(toSats(50000))
+        await swapService.swapOut(toSats(amount))
+        await sleep(1000)
         // 3) Mine blocks
         await mineBlockAndSyncAll()
         // 4) Wait a few seconds
-        await sleep(5000)
+        await sleep(2000)
         // 5) Cancel listencer
         listener.cancel()
+        expect.assertions(1)
         resolve(true)
-        expect(msg).toEqual(msg)
       })
     } else {
       const msg = "Swap Server not running...skipping"

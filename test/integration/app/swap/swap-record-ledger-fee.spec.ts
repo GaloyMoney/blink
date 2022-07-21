@@ -1,4 +1,4 @@
-import { recordSwapFeeToLedger } from "@app/swap/swap-listener"
+import { recordSwapFeeToLedger } from "@app/swap"
 import { toSats } from "@domain/bitcoin"
 import { LedgerTransactionType } from "@domain/ledger"
 import { WalletCurrency } from "@domain/shared"
