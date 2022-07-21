@@ -187,6 +187,12 @@ type Globals {
   buildInformation: BuildInformation!
 
   """
+  The domain name for lightning addresses accepted by this Galoy instance
+  """
+  lightningAddressDomain: String!
+  lightningAddressDomainAliases: [String!]!
+
+  """
   A list of public keys for the running lightning nodes.
   This can be used to know if an invoice belongs to one of our nodes.
   """
