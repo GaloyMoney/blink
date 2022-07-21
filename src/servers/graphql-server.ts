@@ -115,6 +115,12 @@ const sessionContext = ({
 }
 
 export const startApolloServer = async ({
+  schema,
+  port,
+  startSubscriptionServer = false,
+  enableApolloUsageReporting = false,
+  type,
+}: {
   schema: GraphQLSchema
   port: string | number
   startSubscriptionServer?: boolean
