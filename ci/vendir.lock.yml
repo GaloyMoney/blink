@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: path to helpers in test-integration'
-      sha: 2515ee1e3459439910daa552164d8aa4d31a1a38
+      commitTitle: 'fix: add TMP_ENV_CI to test-integration'
+      sha: 4d51b09040a3fe9ab403d4ea07464cdaf2af7979
     path: .
   path: vendor
 kind: LockConfig

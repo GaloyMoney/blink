@@ -46,7 +46,7 @@ rsync --delete -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
 echo "Done!"
 
 ssh ${ADDITIONAL_SSH_OPTS} ${DOCKER_HOST_USER}@${DOCKER_HOST_IP} \
-  "cd ${REPO_PATH}; docker compose -f docker-compose.yml up integration-tests"
+  "cd ${REPO_PATH}; TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests"
 
 container_id=$(docker ps -q -f status=exited -f name="${PWD##*/}-integration-tests-")
 test_status=$(docker inspect $container_id --format='{{.State.ExitCode}}')
