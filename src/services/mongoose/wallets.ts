@@ -3,6 +3,7 @@ import {
   CouldNotFindWalletFromOnChainAddressError,
   CouldNotFindWalletFromOnChainAddressesError,
   CouldNotListWalletsFromAccountIdError,
+  CouldNotListWalletIdError,
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
@@ -102,6 +103,18 @@ export const WalletsRepository = (): IWalletsRepository => {
       return new UnknownRepositoryError(err)
     }
   }
+  const listAllWalletIds = async (): Promise<WalletId[] | RepositoryError> => {
+    try {
+      const result: WalletRecord[] = await Wallet.find({})
+      if (!result || result.length === 0) {
+        return new CouldNotListWalletIdError()
+      }
+      const walletIds = result.map(({ id }) => id as WalletId)
+      return walletIds
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
 
   return {
     findById,
@@ -109,6 +122,7 @@ export const WalletsRepository = (): IWalletsRepository => {
     findByAddress,
     listByAddresses,
     persistNew,
+    listAllWalletIds,
   }
 }
 
