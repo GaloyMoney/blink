@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: path in prep-release-src'
-      sha: 8049e04d4c5de76d1c9b34ee8c9e978e1ca97ccf
+      commitTitle: 'fix: path to helpers in test-integration'
+      sha: 2515ee1e3459439910daa552164d8aa4d31a1a38
     path: .
   path: vendor
 kind: LockConfig
