@@ -1,8 +1,20 @@
 #@ load("@ytt:data", "data")
 
-#@ def pipeline_image():
-#@   return data.values.docker_registry + "/galoy-app-pipeline"
-#@ end
+#@ load("vendor/pipeline-fragments.lib.yml",
+#@   "nodejs_task_image_config",
+#@   "nodejs_concourse_image",
+#@   "slack_failure_notification",
+#@   "install_yarn_deps",
+#@   "nodejs_check_code",
+#@   "nodejs_integration_test",
+#@   "nodejs_deps_resource",
+#@   "deps_version_resource",
+#@   "bundled_deps_resource",
+#@   "repo_resource",
+#@   "pipeline_tasks_resource",
+#@   "slack_resource",
+#@   "gcr_resource_type",
+#@   "slack_resource_type")
 
 #@ def galoy_image():
 #@   return data.values.docker_registry + "/galoy-app"
@@ -20,30 +32,12 @@
 #@   return data.values.docker_registry + "/release-pipeline"
 #@ end
 
-#@ def task_image_config():
-type: registry-image
-source:
-  username: #@ data.values.docker_registry_user
-  password: #@ data.values.docker_registry_password
-  repository: #@ pipeline_image()
-#@ end
-
 #@ def release_task_image_config():
 type: registry-image
 source:
   username: #@ data.values.docker_registry_user
   password: #@ data.values.docker_registry_password
   repository: #@ release_pipeline_image()
-#@ end
-
-#@ def slack_failure_notification():
-#@ fail_url = "<$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME| :face_with_symbols_on_mouth: $BUILD_JOB_NAME> failed!"
-put: slack
-params:
-  channel:  #@ data.values.slack_channel
-  username: #@ data.values.slack_username
-  icon_url: https://cl.ly/2F421Y300u07/concourse-logo-blue-transparent.png
-  text:    #@ fail_url
 #@ end
 
 groups:
@@ -60,60 +54,15 @@ groups:
   - install-deps
   - bump-image-in-chart
   - release
-- name: image
-  jobs: [ build-pipeline-image ]
 - name: sync-proto
   jobs:
   - sync-dealer-proto
   - sync-price-history-proto
 
 jobs:
-- name: build-pipeline-image
-  serial: true
-  plan:
-  - {get: pipeline-image-def, trigger: true}
-  - task: build
-    privileged: true
-    config:
-      platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: vito/oci-build-task
-      inputs:
-      - name: pipeline-image-def
-      outputs:
-      - name: image
-      params:
-        CONTEXT: pipeline-image-def/ci/image
-      run:
-        path: build
-  - put: pipeline-image
-    params:
-      image: image/image.tar
-
-- name: install-deps
-  plan:
-  - in_parallel:
-    - {get: deps, trigger: true}
-    - {get: pipeline-tasks}
-    - {put: deps-version, params: {bump: patch}}
-  - task: install-deps
-    config:
-      platform: linux
-      image_resource: #@ task_image_config()
-      inputs:
-      - name: pipeline-tasks
-      - name: deps
-      - name: deps-version
-      outputs:
-      - name: bundled-deps
-      run:
-        path: pipeline-tasks/ci/tasks/install-deps.sh
-  - put: bundled-deps
-    params:
-      file: bundled-deps/bundled-deps-*.tgz
-  on_failure: #@ slack_failure_notification()
+- #@ install_yarn_deps()
+- #@ nodejs_check_code()
+- #@ nodejs_integration_test()
 
 - name: test-e2e
   serial: true
@@ -127,7 +76,7 @@ jobs:
     tags: ["galoy-staging"]
     config:
       platform: linux
-      image_resource: #@ task_image_config()
+      image_resource: #@ nodejs_task_image_config()
       inputs:
       - name: bundled-deps
       - name: pipeline-tasks
@@ -144,35 +93,6 @@ jobs:
         path: pipeline-tasks/ci/tasks/test-e2e.sh
   on_failure: #@ slack_failure_notification()
 
-- name: test-integration
-  serial: true
-  plan:
-  - in_parallel:
-    - { get: repo, trigger: true }
-    - { get: pipeline-tasks }
-    - { get: bundled-deps, tags: ["galoy-staging"], trigger: true}
-  - task: test-integration
-    timeout: 12m
-    tags: ["galoy-staging"]
-    config:
-      platform: linux
-      image_resource: #@ task_image_config()
-      inputs:
-      - name: bundled-deps
-      - name: pipeline-tasks
-      - name: repo
-        path: galoy-integration
-      params:
-        REPO_PATH: galoy-integration
-        DOCKER_HOST_IP: #@ data.values.docker_host_ip
-        GOOGLE_CREDENTIALS: #@ data.values.staging_inception_creds
-        SSH_PRIVATE_KEY: #@ data.values.staging_ssh_private_key
-        SSH_PUB_KEY: #@ data.values.staging_ssh_pub_key
-        JEST_TIMEOUT: 90000
-      run:
-        path: pipeline-tasks/ci/tasks/test-integration.sh
-  on_failure: #@ slack_failure_notification()
-
 - name: test-unit
   serial: true
   plan:
@@ -183,32 +103,13 @@ jobs:
   - task: test-unit
     config:
       platform: linux
-      image_resource: #@ task_image_config()
+      image_resource: #@ nodejs_task_image_config()
       inputs:
       - name: bundled-deps
       - name: pipeline-tasks
       - name: repo
       run:
         path: pipeline-tasks/ci/tasks/test-unit.sh
-  on_failure: #@ slack_failure_notification()
-
-- name: check-code
-  serial: true
-  plan:
-  - in_parallel:
-    - { get: repo, trigger: true }
-    - { get: pipeline-tasks }
-    - { get: bundled-deps, trigger: true}
-  - task: check-code
-    config:
-      platform: linux
-      image_resource: #@ task_image_config()
-      inputs:
-      - name: bundled-deps
-      - name: pipeline-tasks
-      - name: repo
-      run:
-        path: pipeline-tasks/ci/tasks/check-code.sh
   on_failure: #@ slack_failure_notification()
 
 - name: audit
@@ -220,7 +121,7 @@ jobs:
   - task: audit
     config:
       platform: linux
-      image_resource: #@ task_image_config()
+      image_resource: #@ nodejs_task_image_config()
       inputs:
       - name: pipeline-tasks
       - name: repo
@@ -237,7 +138,7 @@ jobs:
   - task: prepare-docker-build
     config:
       platform: linux
-      image_resource: #@ task_image_config()
+      image_resource: #@ nodejs_task_image_config()
       inputs:
       - name: pipeline-tasks
       - name: repo
@@ -397,7 +298,7 @@ jobs:
   - task: bump-image-digest-in-values
     config:
       platform: linux
-      image_resource: #@ task_image_config()
+      image_resource: #@ nodejs_task_image_config()
       inputs:
       - name: repo
       - name: edge-image
@@ -418,7 +319,7 @@ jobs:
   - task: open-charts-pr
     config:
       platform: linux
-      image_resource: #@ task_image_config()
+      image_resource: #@ nodejs_task_image_config()
       inputs:
       - name: pipeline-tasks
       - name: edge-image
@@ -441,7 +342,7 @@ jobs:
   - task: sync-proto
     config:
       platform: linux
-      image_resource: #@ task_image_config()
+      image_resource: #@ nodejs_task_image_config()
       inputs:
       - name: repo
       - name: pipeline-tasks
@@ -464,7 +365,7 @@ jobs:
   - task: open-bump-proto-pr
     config:
       platform: linux
-      image_resource: #@ task_image_config()
+      image_resource: #@ nodejs_task_image_config()
       inputs:
       - name: pipeline-tasks
       - name: repo
@@ -486,7 +387,7 @@ jobs:
   - task: sync-proto
     config:
       platform: linux
-      image_resource: #@ task_image_config()
+      image_resource: #@ nodejs_task_image_config()
       inputs:
       - name: repo
       - name: pipeline-tasks
@@ -509,7 +410,7 @@ jobs:
   - task: open-bump-proto-pr
     config:
       platform: linux
-      image_resource: #@ task_image_config()
+      image_resource: #@ nodejs_task_image_config()
       inputs:
       - name: pipeline-tasks
       - name: repo
@@ -522,14 +423,13 @@ jobs:
         path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
 
 resources:
-- name: repo
-  type: git
-  source:
-    ignore_paths: ["ci/*[^md]"]
-    fetch_tags: true
-    uri: #@ data.values.git_uri
-    branch: #@ data.values.git_branch
-    private_key: #@ data.values.github_private_key
+- #@ repo_resource()
+- #@ pipeline_tasks_resource()
+
+- #@ nodejs_deps_resource()
+- #@ deps_version_resource()
+- #@ bundled_deps_resource()
+- #@ slack_resource()
 
 - name: charts-repo-bot-branch
   type: git
@@ -597,56 +497,6 @@ resources:
     password: #@ data.values.docker_registry_password
     repository: #@ migrate_galoy_image()
 
-- name: deps
-  type: git
-  source:
-    paths: [yarn.lock]
-    uri: #@ data.values.git_uri
-    branch: #@ data.values.git_branch
-    private_key: #@ data.values.github_private_key
-
-- name: pipeline-tasks
-  type: git
-  source:
-    paths: [ci/tasks/*, ci/config/*, Makefile]
-    uri: #@ data.values.git_uri
-    branch: #@ data.values.git_branch
-    private_key: #@ data.values.github_private_key
-- name: pipeline-image
-  type: registry-image
-  source:
-    tag: latest
-    username: #@ data.values.docker_registry_user
-    password: #@ data.values.docker_registry_password
-    repository: #@ pipeline_image()
-- name: pipeline-image-def
-  type: git
-  source:
-    paths: [ci/image/Dockerfile]
-    uri: #@ data.values.git_uri
-    branch: #@ data.values.git_branch
-    private_key: #@ data.values.github_private_key
-
-- name: deps-version
-  type: semver
-  source:
-    initial_version: 0.1.0
-    driver: gcs
-    bucket: #@ data.values.artifacts_bucket_name
-    key: galoy-app-artifacts/versions/deps
-    json_key: #@ data.values.staging_inception_creds
-- name: bundled-deps
-  type: gcs-resource
-  source:
-    bucket: #@ data.values.artifacts_bucket_name
-    json_key: #@ data.values.staging_inception_creds
-    regexp: galoy-app-artifacts/deps/bundled-deps-v(.*)-.*.tgz
-
-- name: slack
-  type: slack-notification
-  source:
-    url: #@ data.values.slack_webhook_url
-
 - name: version
   type: semver
   source:
@@ -681,12 +531,5 @@ resources:
     private_key: #@ data.values.github_private_key
 
 resource_types:
-- name: gcs-resource
-  type: docker-image
-  source:
-    repository: frodenas/gcs-resource
-
-- name: slack-notification
-  type: docker-image
-  source:
-    repository: cfcommunity/slack-notification-resource
+- #@ gcr_resource_type()
+- #@ slack_resource_type()
