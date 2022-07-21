@@ -23,7 +23,7 @@ import {
   BigIntFloatConversionError,
   ErrorLevel,
 } from "@domain/shared"
-import { toObjectId } from "@services/mongoose/utils"
+import { fromObjectId, toObjectId } from "@services/mongoose/utils"
 import {
   recordExceptionInCurrentSpan,
   wrapAsyncFunctionsToRunInSpan,
@@ -68,7 +68,7 @@ export const LedgerService = (): ILedgerService => {
     try {
       const _id = toObjectId<LedgerTransactionId>(id)
       const { results } = await MainBook.ledger({
-        account_path: liabilitiesMainAccount,
+        account: liabilitiesMainAccount,
         _id,
       })
       if (results.length === 1) {
@@ -85,9 +85,11 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError> => {
     try {
       const { results } = await MainBook.ledger({
-        account_path: liabilitiesMainAccount,
         hash,
+        account: liabilitiesMainAccount,
       })
+      /* eslint @typescript-eslint/ban-ts-comment: "off" */
+      // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -99,7 +101,10 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
     try {
-      const { results } = await MainBook.ledger({ account: liabilitiesWalletId })
+      const { results } = await MainBook.ledger({
+        account: liabilitiesWalletId,
+      })
+      // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -111,7 +116,10 @@ export const LedgerService = (): ILedgerService => {
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
     try {
-      const { results } = await MainBook.ledger({ account: liabilitiesWalletIds })
+      const { results } = await MainBook.ledger({
+        account: liabilitiesWalletIds,
+      })
+      // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -120,6 +128,7 @@ export const LedgerService = (): ILedgerService => {
 
   const getTransactionsByWalletIdAndContactUsername = async (
     walletId: WalletId,
+    // @ts-ignore-next-line no-implicit-any error
     contactUsername,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
@@ -128,6 +137,7 @@ export const LedgerService = (): ILedgerService => {
         account: liabilitiesWalletId,
         username: contactUsername,
       })
+      // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -144,6 +154,8 @@ export const LedgerService = (): ILedgerService => {
         type: LedgerTransactionType.Payment,
         pending: true,
       })
+
+      // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
       return new UnknownLedgerError(err)
@@ -151,29 +163,15 @@ export const LedgerService = (): ILedgerService => {
   }
 
   async function* listAllPaymentHashes(): AsyncGenerator<PaymentHash | LedgerError> {
-    const aggregationParams = [
-      {
-        $match: {
-          type: LedgerTransactionType.Payment,
-        },
-      },
-      {
-        $group: {
+    try {
+      const agg = Transaction.aggregate()
+        .match({ type: LedgerTransactionType.Payment })
+        .group({
           _id: "$hash",
           createdAt: { $first: "$timestamp" },
-        },
-      },
-      {
-        $sort: {
-          createdAt: -1,
-        },
-      },
-    ]
-
-    try {
-      const agg = Transaction.aggregate(aggregationParams)
+        })
+        .sort({ createdAt: -1 })
         .cursor({ batchSize: 100 })
-        .exec()
       for await (const { _id } of agg) {
         yield _id
       }
@@ -206,7 +204,7 @@ export const LedgerService = (): ILedgerService => {
 
         if (walletId !== dealerUsdWalletId) {
           recordExceptionInCurrentSpan({
-            error: new BalanceLessThanZeroError(balance),
+            error: new BalanceLessThanZeroError(balance.toString()),
             attributes: {
               "getWalletBalance.error.invalidBalance": `${balance}`,
             },
@@ -233,7 +231,7 @@ export const LedgerService = (): ILedgerService => {
 
         if (walletDescriptor.id !== dealerUsdWalletId) {
           recordExceptionInCurrentSpan({
-            error: new BalanceLessThanZeroError(balance),
+            error: new BalanceLessThanZeroError(balance.toString()),
             attributes: {
               "getWalletBalance.error.invalidBalance": `${balance}`,
             },
@@ -312,6 +310,7 @@ export const LedgerService = (): ILedgerService => {
       accounts: { $ne: bankOwnerPath },
       hash,
     })
+
     if (!entry) {
       return new CouldNotFindTransactionError()
     }
@@ -336,9 +335,7 @@ export const LedgerService = (): ILedgerService => {
           },
         },
         { $group: { _id: "$accounts" } },
-      ])
-        .cursor({ batchSize: 100 })
-        .exec()
+      ]).cursor({ batchSize: 100 })
     } catch (error) {
       return new UnknownLedgerError(error)
     }
@@ -378,15 +375,15 @@ export const LedgerService = (): ILedgerService => {
 export const translateToLedgerTx = (
   tx: ILedgerTransaction,
 ): LedgerTransaction<WalletCurrency> => ({
-  id: tx.id as LedgerTransactionId,
+  id: fromObjectId<LedgerTransactionId>(tx._id || ""),
   walletId: toWalletId(tx.accounts as LiabilitiesWalletId),
-  type: tx.type as LedgerTransactionType,
+  type: tx.type,
   debit: toSats(tx.debit),
   credit: toSats(tx.credit),
-  fee: toSats(tx.fee),
+  fee: toSats(tx.fee || 0),
   usd: tx.usd || 0,
   feeUsd: tx.feeUsd || 0,
-  currency: tx.currency as WalletCurrency,
+  currency: tx.currency,
   timestamp: tx.timestamp,
   pendingConfirmation: tx.pending,
   journalId: tx._journal.toString() as LedgerJournalId,
@@ -420,8 +417,10 @@ export const translateToLedgerTx = (
       : undefined,
 })
 
+// @ts-ignore-next-line no-implicit-any error
 export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
   journalId: savedEntry._id.toString(),
   voided: savedEntry.voided,
+  // @ts-ignore-next-line no-implicit-any error
   transactionIds: savedEntry._transactions.map((id) => id.toString()),
 })

@@ -439,5 +439,7 @@ export const getLndFromPubkey = ({
 // where '<Error Code Details Object>' is an Error object with
 // the usual 'message', 'stack' etc. properties and additional
 // properties: 'code', 'details', 'metadata'.
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 export const parseLndErrorDetails = (err) =>
   err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details || err[1]

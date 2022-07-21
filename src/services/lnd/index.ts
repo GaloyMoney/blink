@@ -663,6 +663,8 @@ const KnownLndErrorDetails = {
   PaymentForDeleteNotFound: "non bucket element in payments bucket",
 } as const
 
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({
   createdAt: new Date(p.created_at),
   status: p.is_confirmed ? PaymentStatus.Settled : PaymentStatus.Pending,

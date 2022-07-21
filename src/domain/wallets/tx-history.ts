@@ -234,7 +234,7 @@ const fromLedgerWithMetadata = <S extends WalletCurrency>(
 ): ConfirmedTransactionHistoryWithMetadata => {
   const transactions = ledgerTransactions.map(translateLedgerTxnToWalletTxnWithMetadata)
 
-  const addPendingIncoming = (args) => {
+  const addPendingIncoming = (args: AddPendingIncomingArgs) => {
     const pendingTxnsWithMetadata = filterPendingIncoming(args).map(
       (txn: WalletTransaction): WalletTransactionWithMetadata => ({
         ...txn,

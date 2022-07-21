@@ -1,11 +1,7 @@
-// we have to import schema before medici
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Book, Entry as MediciEntryFromPackage } from "medici"
+
 import { Transaction, TransactionMetadata } from "./schema"
 
-// eslint-disable-next-line
-import { book } from "medici"
+export const MainBook = new Book<ILedgerTransaction>("MainBook")
 
-// we have to import schema before medici
-export const MainBook = new book("MainBook")
-
-export { Transaction, TransactionMetadata }
+export { Transaction, TransactionMetadata, MediciEntryFromPackage }

@@ -77,6 +77,9 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toCents(
 )
 
 export const getGaloyInstanceName = (): string => yamlConfig.name
+export const getLightningAddressDomain = (): string => yamlConfig.lightningAddressDomain
+export const getLightningAddressDomainAliases = (): string[] =>
+  yamlConfig.lightningAddressDomainAliases
 export const getLocale = (): string => yamlConfig.locale || "en"
 
 const i18n = new I18n()

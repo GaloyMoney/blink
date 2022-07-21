@@ -92,9 +92,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       pending = WalletInvoice.aggregate([
         { $match: { paid: false } },
         { $group: { _id: "$walletId" } },
-      ])
-        .cursor({ batchSize: 100 })
-        .exec()
+      ]).cursor({ batchSize: 100 })
     } catch (error) {
       return new RepositoryError(error)
     }
@@ -144,7 +142,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
 }
 
 const walletInvoiceFromRaw = (result: WalletInvoiceRecord): WalletInvoice => ({
-  paymentHash: result.id as PaymentHash,
+  paymentHash: result._id as PaymentHash,
   recipientWalletDescriptor: {
     id: result.walletId as WalletId,
     currency: result.currency as WalletCurrency,

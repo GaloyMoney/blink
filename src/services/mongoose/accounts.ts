@@ -64,7 +64,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     BusinessMapMarker[] | RepositoryError
   > => {
     try {
-      const accounts: UserRecord[] = await User.find(
+      const accounts = await User.find(
         {
           title: { $exists: true, $ne: undefined },
           coordinates: { $exists: true, $ne: undefined },

@@ -9,24 +9,7 @@ type LedgerAccountDescriptor<T extends WalletCurrency> = {
   currency: T
 }
 
-interface MediciEntry {
-  credit: (
-    LedgerAccountId: LedgerAccountId,
-    amount: number,
-    extra?: TxMetadata,
-  ) => MediciEntry
-  debit: (
-    LedgerAccountId: LedgerAccountId,
-    amount: number,
-    extra?: TxMetadata,
-  ) => MediciEntry
-  transactions: {
-    credit: number
-    debit: number
-    currency: WalletCurrency
-    accounts: LedgerAccountId
-  }[]
-}
+type MediciEntry = import("../books").MediciEntryFromPackage<ILedgerTransaction>
 
 type StaticAccountIds = {
   bankOwnerAccountId: LedgerAccountId

@@ -1,5 +1,8 @@
 name: "Galoy Banking"
 
+lightningAddressDomain: "pay.domain.com"
+lightningAddressDomainAliases: ["pay1.domain.com", "pay2.domain.com"]
+
 locale: "en"
 
 displayCurrency:

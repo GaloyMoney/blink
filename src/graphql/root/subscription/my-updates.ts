@@ -70,7 +70,45 @@ const MyUpdatesPayload = GT.Object({
   }),
 })
 
-const userPayload = (domainUser) => (updateData) => ({
+type MePayloadPrice = {
+  satUsdCentPrice: number
+}
+
+type MeResolvePrice = {
+  resolveType: "Price"
+  base: number
+  offset: number
+  currencyUnit: string
+  formattedAmount: string
+}
+
+type MeResolveLn = {
+  [key: string]: unknown
+}
+
+type MeResolveOnChain = {
+  [key: string]: unknown
+}
+
+type MeResolveIntraLedger = {
+  [key: string]: unknown
+}
+
+type MeResolveSource = {
+  errors: IError[]
+  price?: MePayloadPrice
+  invoice?: MeResolveLn
+  transaction?: MeResolveOnChain
+  intraLedger?: MeResolveIntraLedger
+}
+
+type MeResolveUpdate =
+  | MeResolvePrice
+  | MeResolveLn
+  | MeResolveOnChain
+  | MeResolveIntraLedger
+
+const userPayload = (domainUser: User | null) => (updateData: MeResolveUpdate) => ({
   errors: [],
   me: domainUser,
   update: updateData,
@@ -78,7 +116,7 @@ const userPayload = (domainUser) => (updateData) => ({
 
 const MeSubscription = {
   type: GT.NonNull(MyUpdatesPayload),
-  resolve: (source, args, ctx) => {
+  resolve: (source: MeResolveSource, _args: unknown, ctx: GraphQLContextForUser) => {
     if (!ctx.uid) {
       throw new Error("Not Authenticated")
     }
@@ -120,7 +158,7 @@ const MeSubscription = {
     }
   },
 
-  subscribe: async (source, args, ctx) => {
+  subscribe: async (_source: unknown, _args: unknown, ctx: GraphQLContextForUser) => {
     if (!ctx.uid) {
       throw new Error("Not Authenticated")
     }
