@@ -4,8 +4,7 @@ import RedisCache from "ioredis-cache"
 
 import { baseLogger } from "@services/logger"
 
-let connectionObj = {},
-  natMap = {}
+let connectionObj = {}
 
 if (process.env.LOCAL === "docker-compose") {
   connectionObj = {
@@ -15,17 +14,6 @@ if (process.env.LOCAL === "docker-compose") {
     password: process.env.REDIS_PASSWORD,
   }
 } else {
-  if (process.env.LOCAL === "true") {
-    const REDIS_0_INTERNAL_IP = `${process.env.REDIS_0_INTERNAL_IP}:6379`
-
-    natMap = {
-      [REDIS_0_INTERNAL_IP]: {
-        host: process.env.REDIS_0_DNS,
-        port: process.env.REDIS_0_PORT,
-      },
-    }
-  }
-
   connectionObj = {
     sentinelPassword: process.env.REDIS_PASSWORD,
     sentinels: [
@@ -44,7 +32,6 @@ if (process.env.LOCAL === "docker-compose") {
     ],
     name: process.env.REDIS_MASTER_NAME ?? "mymaster",
     password: process.env.REDIS_PASSWORD,
-    natMap,
   }
 }
 
