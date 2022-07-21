@@ -2,7 +2,7 @@
 
 set -eu
 
-. pipeline-tasks/ci/tasks/vendor/helpers.sh
+. pipeline-tasks/ci/vendor/tasks/helpers.sh
 
 CI_ROOT=$(pwd)
 
