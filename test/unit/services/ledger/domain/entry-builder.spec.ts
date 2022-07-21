@@ -109,6 +109,66 @@ describe("EntryBuilder", () => {
     more: "more",
   }
 
+  describe("truthy/falsy entry memo", () => {
+    // The mobile app uses a falsy memo to overwrite memos for certain types
+    // of transactions (e.g. usd/btc conversion)
+
+    it("adds a falsy memo when empty string is passed to entry constructor", () => {
+      const entry = MainBook.entry("")
+      expect(entry.journal.memo).toBeFalsy()
+
+      entry.credit("liabilitiesMainAccount", 100)
+      const credit = entry.transactions.find((tx) => tx.credit > 0)
+      if (credit === undefined) throw new Error("Expected credit not found")
+      expect(credit.memo).toBeFalsy()
+
+      entry.debit("liabilitiesMainAccount", 100)
+      const debit = entry.transactions.find((tx) => tx.debit > 0)
+      if (debit === undefined) throw new Error("Expected debit not found")
+      expect(debit.memo).toBeFalsy()
+    })
+
+    it("adds a truthy memo when undefined is passed to entry constructor", () => {
+      const entry = MainBook.entry(undefined as unknown as string)
+      expect(entry.journal.memo).toBeTruthy()
+
+      entry.credit("liabilitiesMainAccount", 100)
+      const credit = entry.transactions.find((tx) => tx.credit > 0)
+      if (credit === undefined) throw new Error("Expected credit not found")
+      expect(credit.memo).toBeTruthy()
+
+      entry.debit("liabilitiesMainAccount", 100)
+      const debit = entry.transactions.find((tx) => tx.debit > 0)
+      if (debit === undefined) throw new Error("Expected debit not found")
+      expect(debit.memo).toBeTruthy()
+    })
+
+    it("can build entry with falsy memo for undefined/null entry description", () => {
+      const entry = MainBook.entry(undefined as unknown as string)
+      const builder = EntryBuilder({
+        staticAccountIds,
+        entry,
+        metadata,
+      })
+
+      const result = builder
+        .withTotalAmount(amount)
+        .withBankFee(ZERO_BANK_FEE)
+        .debitAccount({ accountDescriptor: btcDebitorAccountDescriptor })
+        .creditLnd()
+
+      const credit = result.transactions.find((t) => t.credit > 0)
+      expect(credit).not.toBeUndefined()
+      if (credit === undefined) throw new Error("Expected credit not found")
+      expect(credit.memo).toBeFalsy()
+
+      const debit = result.transactions.find((t) => t.debit > 0)
+      expect(debit).not.toBeUndefined()
+      if (debit === undefined) throw new Error("Expected debit not found")
+      expect(debit.memo).toBeFalsy()
+    })
+  })
+
   describe("Btc account", () => {
     describe("send", () => {
       it("without fee", () => {

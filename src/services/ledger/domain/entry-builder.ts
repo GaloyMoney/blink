@@ -9,6 +9,10 @@ export const EntryBuilder = <M extends MediciEntry>({
   entry,
   metadata,
 }: EntryBuilderConfig<M>) => {
+  if (entry.journal.memo === "undefined" || entry.journal.memo === "null") {
+    entry.journal.memo = ""
+  }
+
   const withTotalAmount = ({
     usdWithFees,
     btcWithFees,
