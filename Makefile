@@ -96,7 +96,7 @@ unit-in-ci:
 check-implicit:
 	yarn tsc-check-noimplicitany
 
-check-code:
+check-code: check-implicit
 	yarn tsc-check
 	yarn eslint-check
 	yarn build

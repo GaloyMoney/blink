@@ -1,3 +1,6 @@
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-nocheck
+
 import {
   SemanticAttributes,
   SemanticResourceAttributes,
@@ -59,7 +62,8 @@ const recordGqlErrors = ({
   span,
   subPathName,
 }: {
-  errors
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  errors: any
   span: Span
   subPathName: string
 }) => {
@@ -100,6 +104,8 @@ const recordGqlErrors = ({
       )
     }
   }
+
+  // @ts-ignore-next-line no-implicit-any error
   errors.forEach((err, idx) => {
     if (err.message != "") {
       span.setAttribute(`graphql.${subPath}error.${idx}.message`, err.message)
@@ -233,8 +239,10 @@ export const recordExceptionInCurrentSpan = ({
 }
 
 const recordException = (span: Span, exception: Exception, level?: ErrorLevel) => {
+  // @ts-ignore-next-line no-implicit-any error
   const errorLevel = level || exception["level"] || ErrorLevel.Warn
   span.setAttribute("error.level", errorLevel)
+  // @ts-ignore-next-line no-implicit-any error
   span.setAttribute("error.name", exception["name"])
   span.recordException(exception)
   span.setStatus({ code: SpanStatusCode.ERROR })
@@ -284,6 +292,7 @@ const resolveFunctionSpanOptions = ({
     const params =
       typeof functionArgs[0] === "object" ? functionArgs[0] : { "0": functionArgs[0] }
     for (const key in params) {
+      // @ts-ignore-next-line no-implicit-any error
       const value = params[key]
       attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = value
       attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}.null`] =
@@ -387,7 +396,7 @@ export const wrapAsyncToRunInSpan = <
   }
 }
 
-export const wrapAsyncFunctionsToRunInSpan = <F>({
+export const wrapAsyncFunctionsToRunInSpan = <F extends object>({
   namespace,
   fns,
 }: {
@@ -396,10 +405,13 @@ export const wrapAsyncFunctionsToRunInSpan = <F>({
 }): F => {
   const functions = { ...fns }
   for (const fn of Object.keys(functions)) {
+    // @ts-ignore-next-line no-implicit-any error
     const fnType = fns[fn].constructor.name
     if (fnType === "Function") {
+      // @ts-ignore-next-line no-implicit-any error
       functions[fn] = wrapToRunInSpan({
         namespace,
+        // @ts-ignore-next-line no-implicit-any error
         fn: fns[fn],
         fnName: fn,
       })
@@ -407,14 +419,16 @@ export const wrapAsyncFunctionsToRunInSpan = <F>({
     }
 
     if (fnType === "AsyncFunction") {
+      // @ts-ignore-next-line no-implicit-any error
       functions[fn] = wrapAsyncToRunInSpan({
         namespace,
+        // @ts-ignore-next-line no-implicit-any error
         fn: fns[fn],
         fnName: fn,
       })
       continue
     }
-
+    // @ts-ignore-next-line no-implicit-any error
     functions[fn] = fns[fn]
   }
   return functions

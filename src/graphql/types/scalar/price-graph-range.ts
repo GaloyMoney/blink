@@ -1,3 +1,5 @@
+import { GraphQLEnumValueConfigMap } from "graphql"
+
 import { GT } from "@graphql/index"
 
 export const priceRangeValues = [
@@ -11,7 +13,7 @@ export const priceRangeValues = [
 const PriceGraphRange = GT.Enum({
   name: "PriceGraphRange",
   description: "The range for the X axis in the BTC price graph",
-  values: priceRangeValues.reduce((acc, curr) => {
+  values: priceRangeValues.reduce<GraphQLEnumValueConfigMap>((acc, curr) => {
     acc[curr] = {}
     return acc
   }, {}),

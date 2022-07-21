@@ -39,6 +39,7 @@ import {
   ACCOUNT_USERNAME,
 } from "@services/tracing"
 
+// TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLContext> }
 const fields = {
   // unauthed
   userRequestAuthCode: UserRequestAuthCodeMutation,
@@ -89,7 +90,10 @@ const fields = {
 
 const addTracing = () => {
   for (const key in fields) {
+    // @ts-ignore-next-line no-implicit-any error
     const original = fields[key].resolve
+    /* eslint @typescript-eslint/ban-ts-comment: "off" */
+    // @ts-ignore-next-line no-implicit-any error
     fields[key].resolve = (source, args, context, info) => {
       const { ip, domainAccount, domainUser } = context
       return addAttributesToCurrentSpanAndPropagate(
@@ -98,6 +102,7 @@ const addTracing = () => {
           [ACCOUNT_USERNAME]: domainAccount?.username,
           [SemanticAttributes.HTTP_CLIENT_IP]: ip,
         },
+        // @ts-ignore-next-line no-implicit-any error
         () => original(source, args, context, info),
       )
     }

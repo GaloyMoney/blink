@@ -433,6 +433,8 @@ export const NewDealerPriceService = (
   }
 }
 
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 const parseDealerErrors = (error): DealerPriceServiceError => {
   if (error.details === "No connection established") {
     return new NoConnectionToDealerError()
