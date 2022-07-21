@@ -1,0 +1,176 @@
+#@ load("@ytt:data", "data")
+
+#@ def public_docker_registry():
+#@  return "us.gcr.io/galoy-org"
+#@ end
+
+#@ def nodejs_concourse_image():
+#@   return public_docker_registry() + "/nodejs-concourse"
+#@ end
+
+#@ def nodejs_task_image_config():
+type: registry-image
+source:
+  username: ((docker-creds.username))
+  password: ((docker-creds.password))
+  repository: #@ nodejs_concourse_image()
+#@ end
+
+#@ def slack_failure_notification():
+#@ fail_url = "<$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME| :face_with_symbols_on_mouth: $BUILD_JOB_NAME> failed!"
+put: slack
+params:
+  channel:  #@ data.values.slack_channel
+  username: concourse
+  icon_url: https://cl.ly/2F421Y300u07/concourse-logo-blue-transparent.png
+  text:    #@ fail_url
+#@ end
+
+#@ def nodejs_check_code():
+name: check-code
+serial: true
+plan:
+- in_parallel:
+  - { get: repo, trigger: true }
+  - { get: pipeline-tasks }
+  - { get: bundled-deps, trigger: true}
+- task: check-code
+  config:
+    platform: linux
+    image_resource: #@ nodejs_task_image_config()
+    inputs:
+    - name: bundled-deps
+    - name: pipeline-tasks
+    - name: repo
+    run:
+      path: pipeline-tasks/ci/vendor/tasks/check-code.sh
+on_failure: #@ slack_failure_notification()
+#@ end
+
+#@ def install_yarn_deps():
+name: install-deps
+plan:
+- in_parallel:
+  - {get: deps, trigger: true}
+  - {get: pipeline-tasks}
+  - {put: deps-version, params: {bump: patch}}
+- task: install-deps
+  config:
+    platform: linux
+    image_resource: #@ nodejs_task_image_config()
+    inputs:
+    - name: pipeline-tasks
+    - name: deps
+    - name: deps-version
+    outputs:
+    - name: bundled-deps
+    run:
+      path: pipeline-tasks/ci/vendor/tasks/cache-yarn-deps.sh
+- put: bundled-deps
+  params:
+    file: bundled-deps/bundled-deps-*.tgz
+on_failure: #@ slack_failure_notification()
+#@ end
+
+#@ def nodejs_integration_test():
+name: test-integration
+serial: true
+plan:
+- in_parallel:
+  - { get: repo, trigger: true }
+  - { get: pipeline-tasks }
+  - { get: bundled-deps, tags: ["galoy-staging"], trigger: true}
+- task: test-integration
+  timeout: 12m
+  tags: ["galoy-staging"]
+  config:
+    platform: linux
+    image_resource: #@ nodejs_task_image_config()
+    inputs:
+    - name: bundled-deps
+    - name: pipeline-tasks
+    - name: repo
+      path: #@ data.values.gh_repository + "-integration"
+    params:
+      REPO_PATH: #@ data.values.gh_repository + "-integration"
+      DOCKER_HOST_IP: ((staging-ssh.docker_host_ip))
+      GOOGLE_CREDENTIALS: ((staging-gcp-creds.creds_json))
+      SSH_PRIVATE_KEY: ((staging-ssh.ssh_private_key))
+      SSH_PUB_KEY: ((staging-ssh.ssh_public_key))
+      JEST_TIMEOUT: 90000
+    run:
+      path: pipeline-tasks/ci/vendor/tasks/test-integration.sh
+on_failure: #@ slack_failure_notification()
+#@ end
+
+#@ def repo_resource():
+name: repo
+type: git
+source:
+  ignore_paths: ["ci/*[^md]"]
+  fetch_tags: true
+  uri: #@ data.values.git_uri
+  branch: #@ data.values.git_branch
+  private_key: #@ data.values.github_private_key
+#@ end
+
+#@ def pipeline_tasks_resource():
+name: pipeline-tasks
+type: git
+source:
+  paths: [ci/vendor/*, ci/tasks/*, ci/config/*, Makefile]
+  uri: #@ data.values.git_uri
+  branch: #@ data.values.git_branch
+  private_key: #@ data.values.github_private_key
+#@ end
+
+#@ def nodejs_deps_resource():
+name: deps
+type: git
+source:
+  paths: [yarn.lock]
+  uri: #@ data.values.git_uri
+  branch: #@ data.values.git_branch
+  private_key: #@ data.values.github_private_key
+#@ end
+
+#@ def deps_version_resource():
+name: deps-version
+type: semver
+source:
+  initial_version: 0.1.0
+  driver: gcs
+  bucket: ((staging-gcp-creds.bucket_name))
+  json_key: ((staging-gcp-creds.creds_json))
+  key: #@ data.values.gh_repository + "-artifacts/versions/deps"
+#@ end
+
+#@ def bundled_deps_resource():
+name: bundled-deps
+type: gcs-resource
+source:
+  bucket: ((staging-gcp-creds.bucket_name))
+  json_key: ((staging-gcp-creds.creds_json))
+  regexp: #@ data.values.gh_repository + "-artifacts/deps/bundled-deps-v(.*)-.*.tgz"
+#@ end
+
+#@ def slack_resource():
+name: slack
+type: slack-notification
+source:
+  url: #@ data.values.slack_webhook_url
+#@ end
+
+#@ def gcr_resource_type():
+name: gcs-resource
+type: docker-image
+source:
+  repository: frodenas/gcs-resource
+#@ end
+
+#@ def slack_resource_type():
+name: slack-notification
+type: docker-image
+source:
+  repository: cfcommunity/slack-notification-resource
+#@ end
