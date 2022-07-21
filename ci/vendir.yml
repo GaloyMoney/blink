@@ -2,22 +2,13 @@ apiVersion: vendir.k14s.io/v1alpha1
 kind: Config
 
 directories:
-- path: tasks/vendor
+- path: vendor
   contents:
   - path: .
     git:
       url: https://github.com/GaloyMoney/concourse-shared.git
-      ref: fc36c9834e4da8374728298ffd362b7bc1280bc5
+      ref: 25ec81b7aa3e23608a1c1137c8d1f348e4d814b1
     includePaths:
     - tasks/**/*
-    newRootPath: tasks
-
-- path: config/vendor
-  contents:
-  - path: .
-    git:
-      url: https://github.com/GaloyMoney/concourse-shared.git
-      ref: fc36c9834e4da8374728298ffd362b7bc1280bc5
-    includePaths:
     - config/**/*
-    newRootPath: config
+    - pipeline-fragments.lib.yml

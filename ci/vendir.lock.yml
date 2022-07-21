@@ -2,14 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: git cliff config should be pulled from pipeline-tasks (#4)'
-      sha: fc36c9834e4da8374728298ffd362b7bc1280bc5
+      commitTitle: 'fix: remove newRootPath from vendir.tmpl.yml'
+      sha: 25ec81b7aa3e23608a1c1137c8d1f348e4d814b1
     path: .
-  path: tasks/vendor
-- contents:
-  - git:
-      commitTitle: 'fix: git cliff config should be pulled from pipeline-tasks (#4)'
-      sha: fc36c9834e4da8374728298ffd362b7bc1280bc5
-    path: .
-  path: config/vendor
+  path: vendor
 kind: LockConfig
