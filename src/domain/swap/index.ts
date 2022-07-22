@@ -5,20 +5,10 @@ export const SwapOutChecker = ({
   currentOutboundLiquidityBalance,
   minOutboundLiquidityBalance,
 }) => {
-  const isOnChainWalletDepleted = () => {
-    if (currentOnChainHotWalletBalance < minOnChainHotWalletBalanceConfig) {
-      return true
-    } else {
-      return false
-    }
-  }
-  const isOutboundLiquidityDepleted = () => {
-    if (currentOutboundLiquidityBalance < minOutboundLiquidityBalance) {
-      return true
-    } else {
-      return false
-    }
-  }
+  const isOnChainWalletDepleted = () =>
+    currentOnChainHotWalletBalance < minOnChainHotWalletBalanceConfig
+  const isOutboundLiquidityDepleted = () =>
+    currentOutboundLiquidityBalance < minOutboundLiquidityBalance
   return {
     isOnChainWalletDepleted,
     isOutboundLiquidityDepleted,
@@ -27,11 +17,9 @@ export const SwapOutChecker = ({
 
 export enum SwapProvider {
   LOOP = "LOOP",
-  PEERSWAP = "PEERSWAP",
 }
 
 export enum SwapType {
-  SWAP_IN = "SWAP_IN",
   SWAP_OUT = "SWAP_OUT",
 }
 

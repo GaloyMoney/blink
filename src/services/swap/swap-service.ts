@@ -23,10 +23,7 @@ export const SwapService = (): ISwapService => {
     }
   }
 
-  const swapListener = () => {
-    const listener = LoopService().swapListener()
-    return listener
-  }
+  const swapListener = () => LoopService().swapListener()
 
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.swap",

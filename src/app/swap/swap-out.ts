@@ -35,8 +35,10 @@ export const swapOut = async (
   })
   const isOnChainWalletDepleted = swapChecker.isOnChainWalletDepleted()
   const isOutboundLiquidityDepleted = swapChecker.isOutboundLiquidityDepleted()
-  logger.info(`SwapApp: isOnChainWalletDepleted: ${isOnChainWalletDepleted},
-    isOutboundLiquidityDepleted: ${isOutboundLiquidityDepleted}`)
+  logger.info(
+    { isOnChainWalletDepleted, isOutboundLiquidityDepleted },
+    "wallet depletion status",
+  )
 
   addAttributesToCurrentSpan({
     "swap.isOutboundLiquidityDepleted": isOutboundLiquidityDepleted,

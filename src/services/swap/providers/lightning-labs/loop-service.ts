@@ -87,6 +87,8 @@ export const LoopService = () => {
     const fee = maxSwapFee ? maxSwapFee : 20000
     try {
       const request = new LoopOutRequest()
+      // --fast is about 30 min or 1800 seconds
+      const swapPublicationDeadline = 1800
       request.setAmt(amount)
       request.setMaxSwapFee(fee)
       request.setMaxPrepayRoutingFee(fee)
@@ -95,7 +97,7 @@ export const LoopService = () => {
       request.setMaxMinerFee(fee)
       request.setSweepConfTarget(2)
       request.setHtlcConfirmations(1)
-      request.setSwapPublicationDeadline(600) // TODO - play with these params --fast
+      request.setSwapPublicationDeadline(swapPublicationDeadline)
       const resp = await clientSwapOut(request)
       const swapOutResult: SwapOutResult = {
         htlcAddress: resp.getHtlcAddress(),
@@ -130,20 +132,17 @@ export const LoopService = () => {
           message = Object.keys(FailureReason).find(
             (key) => FailureReason[key] === failureReason,
           )
-        } catch (e) {}
+        } catch (e) {
+          message = ""
+        }
         let swapType
-        try {
-          const type = data.getType()
-          const parsedType = Object.keys(SwapType).find((key) => SwapType[key] === type)
-          if (parsedType) {
-            if (parsedType === "LOOP_OUT") {
-              swapType = DomainSwapType.SWAP_OUT
-            }
-            if (parsedType === "LOOP_IN") {
-              swapType = DomainSwapType.SWAP_IN
-            }
+        const type = data.getType()
+        const parsedType = Object.keys(SwapType).find((key) => SwapType[key] === type)
+        if (parsedType) {
+          if (parsedType === "LOOP_OUT") {
+            swapType = DomainSwapType.SWAP_OUT
           }
-        } catch (e) {}
+        }
         const parsedSwapData: SwapStatusResult = {
           id: data.getId(),
           amt: BigInt(data.getAmt()),
