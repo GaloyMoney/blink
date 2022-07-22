@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: add TMP_ENV_CI to test-integration'
-      sha: 4d51b09040a3fe9ab403d4ea07464cdaf2af7979
+      commitTitle: 'fix: down old containers and set DOCKER_HOST'
+      sha: 685c880ef27e32e71c912412c63df2937a39f8d0
     path: .
   path: vendor
 kind: LockConfig
