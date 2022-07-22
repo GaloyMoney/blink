@@ -30,4 +30,5 @@ type TwoFAConfig = {
 type AccountsConfig = {
   initialStatus: AccountStatus
   initialWallets: WalletCurrency[]
+  information: DynamicField[]
 }

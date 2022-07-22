@@ -227,6 +227,24 @@ export const configSchema = {
             enum: Object.values(WalletCurrency),
           },
         },
+        information: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              type: {
+                type: "string",
+                enum: ["string", "integer", "float", "boolean"],
+                default: "string",
+              },
+              required: { type: "boolean", default: false },
+            },
+            required: ["name"],
+            additionalProperties: false,
+          },
+          uniqueItems: true,
+        },
       },
       required: ["initialStatus", "initialWallets"],
       additionalProperties: false,

@@ -1,6 +1,9 @@
-import { WalletsRepository } from "@services/mongoose"
-import { WalletCurrency } from "@domain/shared"
+import { GraphQLFieldConfig, GraphQLScalarType, ThunkObjMap } from "graphql"
 
+import { WalletCurrency } from "@domain/shared"
+import { WalletsRepository } from "@services/mongoose"
+
+import { GT } from "./index"
 import { mapError } from "./error-map"
 
 const QueryDoesNotMatchWalletCurrencyError = "QueryDoesNotMatchWalletCurrencyError"
@@ -32,4 +35,31 @@ export const validateIsUsdWalletForMutation = async (
 
 export const notBtcWalletForQueryError: { errors: [{ message: string }] } = {
   errors: [{ message: QueryDoesNotMatchWalletCurrencyError }],
+}
+
+export const parseDynamicFieldSchema = <TSource, TContext>(
+  fields: DynamicField[],
+): ThunkObjMap<GraphQLFieldConfig<TSource, TContext>> => {
+  const result: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>> = {}
+  for (const field of fields) {
+    if (result[field.name]) continue
+    const type = getGT(field.type)
+    result[field.name] = {
+      type: field.required ? GT.NonNull(type) : type,
+    }
+  }
+  return result
+}
+
+const getGT = (type?: string): GraphQLScalarType => {
+  switch (type) {
+    case "integer":
+      return GT.Int
+    case "float":
+      return GT.Float
+    case "boolean":
+      return GT.Boolean
+    default:
+      return GT.String
+  }
 }
