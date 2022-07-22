@@ -201,8 +201,9 @@ export const LedgerService = (): ILedgerService => {
       })
       if (balance < 0) {
         const dealerUsdWalletId = await caching.getDealerUsdWalletId()
+        const dealerBtcWalletId = await caching.getDealerBtcWalletId()
 
-        if (walletId !== dealerUsdWalletId) {
+        if (walletId !== dealerUsdWalletId && walletId !== dealerBtcWalletId) {
           recordExceptionInCurrentSpan({
             error: new BalanceLessThanZeroError(balance.toString()),
             attributes: {
@@ -228,8 +229,12 @@ export const LedgerService = (): ILedgerService => {
       })
       if (balance < 0) {
         const dealerUsdWalletId = await caching.getDealerUsdWalletId()
+        const dealerBtcWalletId = await caching.getDealerBtcWalletId()
 
-        if (walletDescriptor.id !== dealerUsdWalletId) {
+        if (
+          walletDescriptor.id !== dealerUsdWalletId &&
+          walletDescriptor.id !== dealerBtcWalletId
+        ) {
           recordExceptionInCurrentSpan({
             error: new BalanceLessThanZeroError(balance.toString()),
             attributes: {
