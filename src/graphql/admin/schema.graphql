@@ -300,7 +300,7 @@ type Query {
   accountDetailsByUserPhone(phone: Phone!): Account!
   accountDetailsByUsername(username: Username!): Account!
   allLevels: [AccountLevel!]!
-  allWalletIds: [WalletId!]!
+  allWalletIds(walletCurrency: WalletCurrency!): [WalletId!]!
   lightningInvoice(hash: PaymentHash!): LightningInvoice!
   lightningPayment(hash: PaymentHash!): LightningPayment!
   transactionById(id: ID!): Transaction

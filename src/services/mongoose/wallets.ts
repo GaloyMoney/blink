@@ -103,10 +103,12 @@ export const WalletsRepository = (): IWalletsRepository => {
       return new UnknownRepositoryError(err)
     }
   }
-  const listAllWalletIds = async (): Promise<WalletId[] | RepositoryError> => {
+  const listAllWalletIds = async (
+    walletCurrency: WalletCurrency,
+  ): Promise<WalletId[] | RepositoryError> => {
     try {
-      const result: WalletRecord[] = await Wallet.find({})
-      if (!result || result.length === 0) {
+      const result: WalletRecord[] = await Wallet.find({ currency: walletCurrency })
+      if (!result) {
         return new CouldNotListWalletIdError()
       }
       const walletIds = result.map(({ id }) => id as WalletId)

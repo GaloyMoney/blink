@@ -9,8 +9,7 @@ const WalletQuery = GT.Field({
     walletId: { type: GT.NonNull(WalletId) },
   },
   resolve: async (_, { walletId }) => {
-    const wallet = await Wallets.getWallet(walletId)
-    return wallet
+    return Wallets.getWallet(walletId)
   },
 })
 
