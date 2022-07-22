@@ -80,9 +80,6 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
   const withoutInvoice = ({
     uncheckedAmount,
     description,
-  }: {
-    uncheckedAmount: number
-    description: string
   }): LPFBWithInvoice<S> | LPFBWithError => {
     return LPFBWithInvoice({
       ...config,
@@ -90,6 +87,8 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
       paymentInitiationMethod: PaymentInitiationMethod.IntraLedger,
       intraLedgerHash: generateIntraLedgerHash(),
       uncheckedAmount,
+      // @Samer why does this compile? description can be null
+      // descriptionFromInvoice: string
       descriptionFromInvoice: description,
     })
   }
