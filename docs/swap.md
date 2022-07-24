@@ -24,10 +24,10 @@ A successful loop server start returns this
 
 ```yaml
 swap:
-  minOutboundLiquidityBalance: 2000000
+  minOnChainHotWalletBalance: 30000000
   loopRestEndpoint: "https://localhost:8081"
   loopRpcEndpoint: "localhost:11010"
-  swapOutAmount: 500000 
+  swapOutAmount: 250000 
   swapProviders: ["LOOP"] 
 ```
 
@@ -103,8 +103,6 @@ In Honeycomb you can query the following:
 swap.error exists
 swap.submitted exists
 swap.success exists
-swap.isOnChainWalletDepleted = true
-swap.isOutboundLiquidityDepleted = true
 ```
 
 Generate GRPC Types
@@ -121,4 +119,4 @@ If you get the error
 ```
 Waiting for lnd to be fully synced to its chain backend, this might take a while
 ```
-Then the chain is not synced. Try running `make mine`
+Then the chain is not synced. Try running `make mine-block`

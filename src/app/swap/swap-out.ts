@@ -1,4 +1,4 @@
-import { BTC_NETWORK, getColdStorageConfig, getSwapConfig } from "@config"
+import { BTC_NETWORK, getSwapConfig } from "@config"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { SwapServiceError } from "@domain/swap/errors"
 import { OnChainService } from "@services/lnd/onchain-service"
@@ -6,15 +6,12 @@ import { toSats } from "@domain/bitcoin"
 import { SwapOutChecker } from "@domain/swap"
 import { baseLogger } from "@services/logger"
 import { SwapService } from "@services/swap"
-import { getActiveLnd } from "@services/lnd/utils"
-import { getChannelBalance } from "lightning"
 import { addAttributesToCurrentSpan } from "@services/tracing"
+import { getOffChainChannelBalances } from "@app/lightning"
 
 const logger = baseLogger.child({ module: "swap" })
 
-export const swapOut = async (
-  amount: Satoshis,
-): Promise<SwapOutResult | SwapServiceError | null> => {
+export const swapOut = async (): Promise<SwapOutResult | SwapServiceError | null> => {
   const swapService = SwapService()
   logger.info("SwapApp: Started")
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
@@ -22,31 +19,30 @@ export const swapOut = async (
 
   const onChainBalance = await onChainService.getBalance()
   if (onChainBalance instanceof Error) return onChainBalance
-  const outbound = await getChannelLiquidityBalance()
-  const minOnChainHotWalletBalanceConfig =
-    getColdStorageConfig().minOnChainHotWalletBalance
-  const minOutboundLiquidityBalance = getSwapConfig().minOutboundLiquidityBalance
+
+  const offChainChannelBalances = await getOffChainChannelBalances()
+  if (offChainChannelBalances instanceof Error) return offChainChannelBalances
+  const outbound = offChainChannelBalances.outbound
+
+  const minOnChainHotWalletBalanceConfig = getSwapConfig().minOnChainHotWalletBalance
 
   const swapChecker = SwapOutChecker({
-    currentOnChainHotWalletBalance: onChainBalance,
     minOnChainHotWalletBalanceConfig,
-    currentOutboundLiquidityBalance: outbound,
-    minOutboundLiquidityBalance,
+    swapOutAmount: toSats(getSwapConfig().swapOutAmount),
   })
-  const isOnChainWalletDepleted = swapChecker.isOnChainWalletDepleted()
-  const isOutboundLiquidityDepleted = swapChecker.isOutboundLiquidityDepleted()
-  logger.info(
-    { isOnChainWalletDepleted, isOutboundLiquidityDepleted },
-    "wallet depletion status",
-  )
+  const swapOutAmount = swapChecker.getSwapOutAmount({
+    currentOnChainHotWalletBalance: onChainBalance,
+    currentOutboundLiquidityBalance: outbound,
+  })
+  if (swapOutAmount instanceof Error) return swapOutAmount
+  logger.info({ swapOutAmount }, "SwapOutChecker amount")
 
   addAttributesToCurrentSpan({
-    "swap.isOutboundLiquidityDepleted": isOutboundLiquidityDepleted,
-    "swap.isOnChainWalletDepleted": isOnChainWalletDepleted,
+    "swap.amount": swapOutAmount,
   })
 
-  if (isOnChainWalletDepleted && isOutboundLiquidityDepleted) {
-    const swapResult = await swapService.swapOut(toSats(amount))
+  if (swapOutAmount > 0) {
+    const swapResult = await swapService.swapOut(swapOutAmount)
     if (swapResult instanceof Error) {
       addAttributesToCurrentSpan({
         "swap.error": JSON.stringify(swapResult),
@@ -57,23 +53,7 @@ export const swapOut = async (
       })
     }
     return swapResult
-  }
-  return null // no swap needed
-}
-
-async function getChannelLiquidityBalance(): Promise<Satoshis | Error> {
-  try {
-    const activeNode = getActiveLnd()
-    if (activeNode instanceof Error) return activeNode
-    const lnd = activeNode.lnd
-    const { channel_balance, inbound } = await getChannelBalance({ lnd })
-    let outbound = 0
-    const inboundBal = inbound ? inbound : 0
-    if (inbound) {
-      outbound = channel_balance - inboundBal
-    }
-    return toSats(outbound)
-  } catch (err) {
-    return new Error(err)
+  } else {
+    return null // no swap out needed
   }
 }

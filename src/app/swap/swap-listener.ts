@@ -52,6 +52,7 @@ export function handleSwapOutFailure(data) {
 
 export async function recordSwapFeeToLedger(swapFeeMetadata: SwapFeeLedgerMetadata) {
   const description = `Swap out fee for swapId ${swapFeeMetadata.swapId}`
+  // TODO - Check if swapId is already recorded in the ledger to avoid dups
   const journalResponse = await LedgerAdmin.addSwapFeeTxSend({
     swapFeeMetadata,
     description,

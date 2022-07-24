@@ -1,19 +1,4 @@
-// checks if swap out is needed
-export const SwapOutChecker = ({
-  currentOnChainHotWalletBalance,
-  minOnChainHotWalletBalanceConfig,
-  currentOutboundLiquidityBalance,
-  minOutboundLiquidityBalance,
-}) => {
-  const isOnChainWalletDepleted = () =>
-    currentOnChainHotWalletBalance < minOnChainHotWalletBalanceConfig
-  const isOutboundLiquidityDepleted = () =>
-    currentOutboundLiquidityBalance < minOutboundLiquidityBalance
-  return {
-    isOnChainWalletDepleted,
-    isOutboundLiquidityDepleted,
-  }
-}
+export * from "./swap-out-checker"
 
 export enum SwapProvider {
   LOOP = "LOOP",

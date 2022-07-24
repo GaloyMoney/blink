@@ -25,8 +25,10 @@ describe("Swap", () => {
         await sleep(1000)
         // 3) Mine blocks
         await mineBlockAndSyncAll()
+        await sleep(1000)
+        await mineBlockAndSyncAll()
         // 4) Wait a few seconds
-        await sleep(2000)
+        await sleep(1000)
         // 5) Cancel listencer
         listener.cancel()
         expect.assertions(1)

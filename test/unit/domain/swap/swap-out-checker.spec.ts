@@ -1,14 +1,44 @@
+import { toSats } from "@domain/bitcoin"
 import { SwapOutChecker } from "@domain/swap"
+import { SwapServiceError } from "@domain/swap/errors"
 
 describe("SwapOutChecker", () => {
-  it("checks if a Swap Out is needed", () => {
+  it("returns the amount that should be swapped", () => {
     const checker = SwapOutChecker({
-      currentOnChainHotWalletBalance: 10000,
-      minOnChainHotWalletBalanceConfig: 50000,
-      currentOutboundLiquidityBalance: 60000,
-      minOutboundLiquidityBalance: 70000,
+      minOnChainHotWalletBalanceConfig: toSats(50000),
+      swapOutAmount: toSats(250000),
     })
-    expect(checker.isOnChainWalletDepleted()).toEqual(true)
-    expect(checker.isOutboundLiquidityDepleted()).toEqual(true)
+    expect(
+      checker.getSwapOutAmount({
+        currentOnChainHotWalletBalance: toSats(40000),
+        currentOutboundLiquidityBalance: toSats(300000),
+      }),
+    ).toEqual(toSats(250000))
+  })
+
+  it("returns 0 amount when we don't need a swap out", () => {
+    const checker = SwapOutChecker({
+      minOnChainHotWalletBalanceConfig: toSats(50000),
+      swapOutAmount: toSats(250000),
+    })
+    expect(
+      checker.getSwapOutAmount({
+        currentOnChainHotWalletBalance: toSats(100000),
+        currentOutboundLiquidityBalance: toSats(300000),
+      }),
+    ).toEqual(toSats(0))
+  })
+
+  it("returns an error when we don't have enough outbound liquidity to perform a swap out", () => {
+    const checker = SwapOutChecker({
+      minOnChainHotWalletBalanceConfig: toSats(50000),
+      swapOutAmount: toSats(250000),
+    })
+    expect(
+      checker.getSwapOutAmount({
+        currentOnChainHotWalletBalance: toSats(10000),
+        currentOutboundLiquidityBalance: toSats(500),
+      }),
+    ).toBeInstanceOf(SwapServiceError)
   })
 })

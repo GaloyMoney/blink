@@ -46,7 +46,7 @@ type SwapStatusResult = {
 }
 
 type SwapConfig = {
-  minOutboundLiquidityBalance: Satoshis
+  minOnChainHotWalletBalance: Satoshis
   swapOutAmount: Satoshis
   loopRestEndpoint: string
   loopRpcEndpoint: string

@@ -299,7 +299,7 @@ export const getAccountsConfig = (config = yamlConfig): AccountsConfig => ({
 export const getSwapConfig = (): SwapConfig => {
   const config = yamlConfig.swap
   return {
-    minOutboundLiquidityBalance: toSats(config.minOutboundLiquidityBalance),
+    minOnChainHotWalletBalance: toSats(config.minOnChainHotWalletBalance),
     swapOutAmount: toSats(config.swapOutAmount),
     loopRestEndpoint: config.loopRestEndpoint,
     loopRpcEndpoint: config.loopRpcEndpoint,

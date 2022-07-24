@@ -87,6 +87,27 @@ export const LndService = (
     }
   }
 
+  const getChannelBalances = async (pubkey?: Pubkey) => {
+    try {
+      const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
+      if (lnd instanceof Error) return lnd
+      const { channel_balance, inbound } = await getChannelBalance({ lnd })
+      let outbound = 0
+      const inboundBal = inbound ? inbound : 0
+      if (inbound) {
+        outbound = channel_balance - inboundBal
+      }
+      return {
+        channel_balance: toSats(channel_balance),
+        inbound: toSats(inboundBal),
+        outbound: toSats(outbound),
+      }
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      return new UnknownLightningServiceError(errDetails)
+    }
+  }
+
   const getOpeningChannelsBalance = async (
     pubkey?: Pubkey,
   ): Promise<Satoshis | LightningServiceError> => {
@@ -507,6 +528,7 @@ export const LndService = (
       listActivePubkeys,
       listAllPubkeys,
       getBalance,
+      getChannelBalances,
       getOpeningChannelsBalance,
       getClosingChannelsBalance,
       findRouteForInvoice,

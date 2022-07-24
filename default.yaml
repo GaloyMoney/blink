@@ -168,10 +168,10 @@ onChainWallet:
   scanDepthChannelUpdate: 8
 
 swap:
-  minOutboundLiquidityBalance: 30000000
+  minOnChainHotWalletBalance: 30000000
   loopRestEndpoint: "https://localhost:8081"
   loopRpcEndpoint: "localhost:11010"
-  swapOutAmount: 25000000
+  swapOutAmount:  25000000
   swapProviders: ["LOOP"]
 
 # TODO
