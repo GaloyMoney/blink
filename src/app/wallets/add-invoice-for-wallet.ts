@@ -7,7 +7,6 @@ import { LndService } from "@services/lnd"
 import { WalletInvoicesRepository, WalletsRepository } from "@services/mongoose"
 import { consumeLimiter } from "@services/rate-limit"
 import { WalletInvoiceBuilder } from "@domain/wallet-invoices/wallet-invoice-builder"
-import { getSecretAndPaymentHash } from "@domain/bitcoin/lightning"
 
 export const addInvoiceForSelf = async ({
   walletId,
@@ -22,7 +21,6 @@ export const addInvoiceForSelf = async ({
       recipientWalletDescriptor,
     }: BuildWIBWithAmountFnArgs) =>
       walletInvoiceBuilder
-        .withSecretAndHash(getSecretAndPaymentHash())
         .withDescription({ description: memo })
         .generatedForSelf()
         .withRecipientWallet(recipientWalletDescriptor)
@@ -41,7 +39,6 @@ export const addInvoiceNoAmountForSelf = async ({
       recipientWalletDescriptor,
     }: BuildWIBWithAmountFnArgs) =>
       walletInvoiceBuilder
-        .withSecretAndHash(getSecretAndPaymentHash())
         .withDescription({ description: memo })
         .generatedForSelf()
         .withRecipientWallet(recipientWalletDescriptor)
@@ -62,7 +59,6 @@ export const addInvoiceForRecipient = async ({
       recipientWalletDescriptor,
     }: BuildWIBWithAmountFnArgs) =>
       walletInvoiceBuilder
-        .withSecretAndHash(getSecretAndPaymentHash())
         .withDescription({ description: memo, descriptionHash })
         .generatedForRecipient()
         .withRecipientWallet(recipientWalletDescriptor)
@@ -81,7 +77,6 @@ export const addInvoiceNoAmountForRecipient = async ({
       recipientWalletDescriptor,
     }: BuildWIBWithAmountFnArgs) =>
       walletInvoiceBuilder
-        .withSecretAndHash(getSecretAndPaymentHash())
         .withDescription({ description: memo })
         .generatedForRecipient()
         .withRecipientWallet(recipientWalletDescriptor)

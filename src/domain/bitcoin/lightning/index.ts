@@ -30,7 +30,8 @@ export const checkedToPubkey = (pubkey: string): Pubkey | InvalidPubKeyError => 
   return new InvalidPubKeyError("Pubkey conversion error")
 }
 
-const sha256 = (buffer: Buffer) => createHash("sha256").update(buffer).digest("hex")
+export const sha256 = (buffer: Buffer) =>
+  createHash("sha256").update(buffer).digest("hex")
 const randomSecret = () => randomBytes(32)
 
 export const getSecretAndPaymentHash = () => {
