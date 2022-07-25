@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: add TMP_ENV_CI to test-integration'
-      sha: 4d51b09040a3fe9ab403d4ea07464cdaf2af7979
+      commitTitle: 'feat: add shared/* structure and check-code action'
+      sha: e733720e34936644816d4b7a12a98b9db1236071
     path: .
   path: vendor
 kind: LockConfig

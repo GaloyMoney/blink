@@ -7,8 +7,7 @@ directories:
   - path: .
     git:
       url: https://github.com/GaloyMoney/concourse-shared.git
-      ref: 4d51b09040a3fe9ab403d4ea07464cdaf2af7979
+      ref: e733720e34936644816d4b7a12a98b9db1236071
     includePaths:
-    - tasks/**/*
-    - config/**/*
-    - pipeline-fragments.lib.yml
+    - shared/**/*
+    newRootPath: shared
