@@ -2,10 +2,7 @@ import { getFeesConfig } from "@config"
 
 import { SettlementMethod, PaymentInitiationMethod, OnChainFees } from "@domain/wallets"
 import { SelfPaymentError } from "@domain/errors"
-import {
-  LightningPaymentFlowBuilder,
-  InvalidLightningPaymentFlowBuilderStateError,
-} from "@domain/payments"
+import { InvalidOnChainPaymentFlowBuilderStateError } from "@domain/payments"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
@@ -16,6 +13,7 @@ import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow
 import { LedgerService } from "@services/ledger"
 import { toSats } from "@domain/bitcoin"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+import { WalletsRepository } from "@services/mongoose"
 
 const calc = AmountCalculator()
 const feeConfig = getFeesConfig()
@@ -86,14 +84,17 @@ describe("OnChainPaymentFlowBuilder", () => {
     })
   }
 
-  describe("onchain initiated", () => {
-    const ledger = LedgerService()
+  const ledger = LedgerService()
+  const wallets = WalletsRepository()
 
+  describe("onchain initiated", () => {
     const onChainBuilder = OnChainPaymentFlowBuilder({
       usdFromBtcMidPriceFn,
       btcFromUsdMidPriceFn,
       volumeLightningFn: ledger.lightningTxBaseVolumeSince,
       volumeOnChainFn: ledger.onChainTxBaseVolumeSince,
+      isExternalAddress: async (address: OnChainAddress) =>
+        !!(await wallets.findByAddress(address)),
     })
     const checkSettlementMethod = (payment) => {
       expect(payment).toEqual(
@@ -581,143 +582,141 @@ describe("OnChainPaymentFlowBuilder", () => {
     })
   })
 
-  // TODO: REACHED HERE
   describe("error states", () => {
-    describe("pass a NoAmount invoice to withInvoice", () => {
+    describe("pass an empty value to withAddress", () => {
       it("returns a ValidationError", async () => {
-        const payment = await LightningPaymentFlowBuilder({
-          localNodeIds: [],
+        const isIntraLedger = false
+        const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
+
+        const payment = await OnChainPaymentFlowBuilder({
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
+          volumeLightningFn: ledger.lightningTxBaseVolumeSince,
+          volumeOnChainFn: ledger.onChainTxBaseVolumeSince,
+          isExternalAddress: async () => Promise.resolve(!isIntraLedger),
         })
-          .withInvoice(invoiceWithNoAmount)
-          .withSenderWallet(senderBtcWallet)
+          .withAddress("" as OnChainAddress)
+          .withSenderWalletAndAccount({
+            wallet: senderBtcWallet,
+            account: senderAccount,
+          })
           .withoutRecipientWallet()
+          .withAmount(uncheckedAmount)
           .withConversion({
             usdFromBtc,
             btcFromUsd,
           })
-          .withoutRoute()
+          .withMinerFee(minerFee)
 
-        expect(payment).toBeInstanceOf(InvalidLightningPaymentFlowBuilderStateError)
+        expect(payment).toBeInstanceOf(InvalidOnChainPaymentFlowBuilderStateError)
       })
     })
     describe("non-integer uncheckedAmount", () => {
       it("returns a ValidationError", async () => {
-        const payment = await LightningPaymentFlowBuilder({
-          localNodeIds: [],
+        const isIntraLedger = false
+        const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
+
+        const payment = await OnChainPaymentFlowBuilder({
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
+          volumeLightningFn: ledger.lightningTxBaseVolumeSince,
+          volumeOnChainFn: ledger.onChainTxBaseVolumeSince,
+          isExternalAddress: async () => Promise.resolve(!isIntraLedger),
         })
-          .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 0.4 })
-          .withSenderWallet(senderBtcWallet)
+          .withAddress("address" as OnChainAddress)
+          .withSenderWalletAndAccount({
+            wallet: senderBtcWallet,
+            account: senderAccount,
+          })
           .withoutRecipientWallet()
+          .withAmount(0.4)
           .withConversion({
             usdFromBtc,
             btcFromUsd,
           })
-          .withoutRoute()
+          .withMinerFee(minerFee)
 
         expect(payment).toBeInstanceOf(ValidationError)
       })
     })
     describe("zero-value uncheckedAmount", () => {
       it("returns a ValidationError", async () => {
-        const payment = await LightningPaymentFlowBuilder({
-          localNodeIds: [],
+        const isIntraLedger = false
+        const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
+
+        const payment = await OnChainPaymentFlowBuilder({
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
+          volumeLightningFn: ledger.lightningTxBaseVolumeSince,
+          volumeOnChainFn: ledger.onChainTxBaseVolumeSince,
+          isExternalAddress: async () => Promise.resolve(!isIntraLedger),
         })
-          .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 0 })
-          .withSenderWallet(senderBtcWallet)
+          .withAddress("address" as OnChainAddress)
+          .withSenderWalletAndAccount({
+            wallet: senderBtcWallet,
+            account: senderAccount,
+          })
           .withoutRecipientWallet()
+          .withAmount(0)
           .withConversion({
             usdFromBtc,
             btcFromUsd,
           })
-          .withoutRoute()
+          .withMinerFee(minerFee)
 
         expect(payment).toBeInstanceOf(ValidationError)
       })
     })
+
     describe("no recipient wallet despite IntraLedger", () => {
       it("returns InvalidLightningPaymentFlowBuilderStateError", async () => {
-        const payment = await LightningPaymentFlowBuilder({
-          localNodeIds: [invoiceWithAmount.destination],
+        const isIntraLedger = false
+        const payment = await OnChainPaymentFlowBuilder({
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
+          volumeLightningFn: ledger.lightningTxBaseVolumeSince,
+          volumeOnChainFn: ledger.onChainTxBaseVolumeSince,
+          isExternalAddress: async () => Promise.resolve(isIntraLedger),
         })
-          .withInvoice(invoiceWithAmount)
-          .withSenderWallet(senderBtcWallet)
+          .withAddress("address" as OnChainAddress)
+          .withSenderWalletAndAccount({
+            wallet: senderBtcWallet,
+            account: senderAccount,
+          })
           .withoutRecipientWallet()
+          .withAmount(uncheckedAmount)
           .withConversion({
             usdFromBtc,
             btcFromUsd,
           })
-          .withoutRoute()
+          .withoutMinerFee()
 
-        expect(payment).toBeInstanceOf(InvalidLightningPaymentFlowBuilderStateError)
-      })
-    })
-
-    describe("recipient is usd wallet but no usd amount specified", () => {
-      it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
-        const payment = await LightningPaymentFlowBuilder({
-          localNodeIds: [invoiceWithAmount.destination],
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
-        })
-          .withInvoice(invoiceWithAmount)
-          .withSenderWallet(senderBtcWallet)
-          .withRecipientWallet(senderUsdWallet)
-          .withConversion({
-            usdFromBtc,
-            btcFromUsd,
-          })
-          .withoutRoute()
-
-        expect(payment).toBeInstanceOf(InvalidLightningPaymentFlowBuilderStateError)
-      })
-    })
-
-    describe("recipient is usd wallet and amount is specifies (for no amount invoice)", () => {
-      it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
-        const payment = await LightningPaymentFlowBuilder({
-          localNodeIds: [invoiceWithNoAmount.destination],
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
-        })
-          .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 1000 })
-          .withSenderWallet(senderBtcWallet)
-          .withRecipientWallet({
-            ...senderUsdWallet,
-            usdPaymentAmount: { amount: 1000n, currency: WalletCurrency.Usd },
-          })
-          .withConversion({
-            usdFromBtc,
-            btcFromUsd,
-          })
-          .withoutRoute()
-
-        expect(payment).toBeInstanceOf(InvalidLightningPaymentFlowBuilderStateError)
+        expect(payment).toBeInstanceOf(InvalidOnChainPaymentFlowBuilderStateError)
       })
     })
 
     describe("sender and recipient are identical", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
-        const payment = await LightningPaymentFlowBuilder({
-          localNodeIds: [invoiceWithAmount.destination],
+        const isIntraLedger = false
+        const payment = await OnChainPaymentFlowBuilder({
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
+          volumeLightningFn: ledger.lightningTxBaseVolumeSince,
+          volumeOnChainFn: ledger.onChainTxBaseVolumeSince,
+          isExternalAddress: async () => Promise.resolve(!isIntraLedger),
         })
-          .withInvoice(invoiceWithAmount)
-          .withSenderWallet(senderBtcWallet)
+          .withAddress("address" as OnChainAddress)
+          .withSenderWalletAndAccount({
+            wallet: senderBtcWallet,
+            account: senderAccount,
+          })
           .withRecipientWallet(senderBtcWallet)
+          .withAmount(uncheckedAmount)
           .withConversion({
             usdFromBtc,
             btcFromUsd,
           })
-          .withoutRoute()
+          .withoutMinerFee()
 
         expect(payment).toBeInstanceOf(SelfPaymentError)
       })
