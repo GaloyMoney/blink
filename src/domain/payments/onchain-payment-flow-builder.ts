@@ -21,6 +21,13 @@ const onChainFees = OnChainFees({
 export const OnChainPaymentFlowBuilder = <S extends WalletCurrency>(
   config: OnChainPaymentFlowBuilderConfig,
 ): OnChainPaymentFlowBuilder<S> => {
+  const settlementMethodFromAddress = async (
+    address: OnChainAddress,
+  ): Promise<SettlementMethod> => {
+    const isExternal = await config.isExternalAddress(address)
+    return isExternal ? SettlementMethod.OnChain : SettlementMethod.IntraLedger
+  }
+
   const withAddress = (address: OnChainAddress): OPFBWithAddress<S> | OPFBWithError => {
     // TODO: validate onchain address?
     if (!address) {
@@ -28,9 +35,12 @@ export const OnChainPaymentFlowBuilder = <S extends WalletCurrency>(
         new InvalidOnChainPaymentFlowBuilderStateError("invalid address"),
       )
     }
+
     return OPFBWithAddress({
       ...config,
+
       paymentInitiationMethod: PaymentInitiationMethod.OnChain,
+      settlementMethodPromise: settlementMethodFromAddress(address),
       address,
     })
   }
@@ -290,13 +300,27 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
 const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   statePromise: Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError>,
 ): OPFBWithConversion<S, R> | OPFBWithError => {
-  const withoutMinerFee = async (): Promise<
-    OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError
-  > => {
+  const stateFromPromise = async (
+    statePromise: Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError>,
+  ) => {
     const state = await statePromise
     if (state instanceof Error) return state
 
-    state
+    const settlementMethod = await state.settlementMethodPromise
+    if (settlementMethod === SettlementMethod.IntraLedger && !state.recipientWalletId) {
+      return new InvalidOnChainPaymentFlowBuilderStateError(
+        "withoutRecipientWallet called but settlementMethod is IntraLedger",
+      )
+    }
+    return state
+  }
+
+  const withoutMinerFee = async (): Promise<
+    OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError
+  > => {
+    const state = await stateFromPromise(statePromise)
+    if (state instanceof Error) return state
+
     return OnChainPaymentFlow({
       ...state,
       outgoingNodePubkey: undefined,
@@ -309,7 +333,7 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   const withMinerFee = async (
     minerFee: BtcPaymentAmount,
   ): Promise<OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError> => {
-    const state = await statePromise
+    const state = await stateFromPromise(statePromise)
     if (state instanceof Error) return state
 
     const priceRatio = PriceRatio({
@@ -356,21 +380,21 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   }
 
   const btcPaymentAmount = async () => {
-    const state = await Promise.resolve(statePromise)
+    const state = await stateFromPromise(statePromise)
     if (state instanceof Error) return state
 
     return state.btcPaymentAmount
   }
 
   const usdPaymentAmount = async () => {
-    const state = await Promise.resolve(statePromise)
+    const state = await stateFromPromise(statePromise)
     if (state instanceof Error) return state
 
     return state.usdPaymentAmount
   }
 
   const isIntraLedger = async () => {
-    const state = await Promise.resolve(statePromise)
+    const state = await stateFromPromise(statePromise)
     if (state instanceof Error) return state
 
     return state.settlementMethod === SettlementMethod.IntraLedger

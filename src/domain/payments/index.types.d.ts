@@ -289,6 +289,7 @@ type OnChainPaymentFlowBuilderConfig = {
   btcFromUsdMidPriceFn: BtcFromUsdMidPriceFn
   volumeLightningFn
   volumeOnChainFn
+  isExternalAddress: (address: OnChainAddress) => Promise<boolean>
 }
 
 type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &
@@ -335,6 +336,7 @@ type LPFBWithConversionState<
 
 type OPFBWithAddressState = OnChainPaymentFlowBuilderConfig & {
   paymentInitiationMethod: PaymentInitiationMethod
+  settlementMethodPromise: Promise<SettlementMethod>
   address: OnChainAddress
 }
 
