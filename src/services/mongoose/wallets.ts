@@ -103,6 +103,8 @@ export const WalletsRepository = (): IWalletsRepository => {
       return new UnknownRepositoryError(err)
     }
   }
+  // TODO: future performance improvement might be needed
+  // add pagination for instance which would have millions of wallets
   const listByWalletCurrency = async (
     walletCurrency: WalletCurrency,
   ): Promise<Wallet[] | RepositoryError> => {
