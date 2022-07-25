@@ -7,7 +7,7 @@ import TransactionByIdQuery from "./root/query/transaction-by-id"
 import TransactionsByHashQuery from "./root/query/transactions-by-hash"
 import AccountDetailsByUserPhoneQuery from "./root/query/account-details-by-phone"
 import AccountDetailsByUsernameQuery from "./root/query/account-details-by-username"
-import AllWalletIdsQuery from "./root/query/all-walletids"
+import ListWalletIdsQuery from "./root/query/all-walletids"
 import WalletQuery from "./root/query/wallet"
 
 const QueryType = GT.Object({
@@ -20,7 +20,7 @@ const QueryType = GT.Object({
     transactionsByHash: TransactionsByHashQuery,
     lightningInvoice: LightningInvoiceQuery,
     lightningPayment: LightningPaymentQuery,
-    allWalletIds: AllWalletIdsQuery,
+    listWalletIds: ListWalletIdsQuery,
     wallet: WalletQuery,
   }),
 })

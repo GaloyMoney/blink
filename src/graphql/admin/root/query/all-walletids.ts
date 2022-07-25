@@ -3,14 +3,12 @@ import { Wallets } from "@app"
 import WalletCurrency from "@graphql/types/scalar/wallet-currency"
 import WalletId from "@graphql/types/scalar/wallet-id"
 
-const AllWalletIdsQuery = GT.Field({
+const ListWalletIdsQuery = GT.Field({
   type: GT.NonNullList(WalletId),
   args: {
     walletCurrency: { type: GT.NonNull(WalletCurrency) },
   },
-  resolve: async (_, { walletCurrency }) => {
-    return Wallets.getAllWalletIds(walletCurrency)
-  },
+  resolve: async (_, { walletCurrency }) => Wallets.listWalletIds(walletCurrency),
 })
 
-export default AllWalletIdsQuery
+export default ListWalletIdsQuery
