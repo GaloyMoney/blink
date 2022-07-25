@@ -28,6 +28,7 @@ export class CouldNotFindWalletFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindWalletFromUsernameAndCurrencyError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressesError extends CouldNotFindError {}
+export class CouldNotListWalletsFromWalletCurrencyError extends CouldNotFindError {}
 export class CouldNotFindLnPaymentFromHashError extends CouldNotFindError {}
 export class NoTransactionToUpdateError extends CouldNotFindError {}
 export class CouldNotFindLightningPaymentFlowError extends CouldNotFindError {}
