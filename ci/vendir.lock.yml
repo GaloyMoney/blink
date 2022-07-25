@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: add TMP_ENV_CI to test-integration'
-      sha: 4d51b09040a3fe9ab403d4ea07464cdaf2af7979
+      commitTitle: 'feat: add bulid-edge-image fragments'
+      sha: 7a751655dab581bbcc1775a466caf0590a0290ee
     path: .
   path: vendor
 kind: LockConfig
