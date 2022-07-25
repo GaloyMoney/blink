@@ -37,8 +37,8 @@ export const notBtcWalletForQueryError: { errors: [{ message: string }] } = {
   errors: [{ message: QueryDoesNotMatchWalletCurrencyError }],
 }
 
-export const parseDynamicFieldSchema = <TSource, TContext>(
-  fields: DynamicField[],
+export const parseCustomFieldsSchema = <TSource, TContext>(
+  fields: CustomField[],
 ): ThunkObjMap<GraphQLFieldConfig<TSource, TContext>> => {
   const result: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>> = {}
   for (const field of fields) {

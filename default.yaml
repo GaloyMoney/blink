@@ -132,7 +132,7 @@ accounts:
   initialStatus: active
   initialWallets:
     - "BTC"
-  information:
+  customFields:
     - name: "firstName"
       type: "string"
       required: true

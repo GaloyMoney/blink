@@ -16,7 +16,7 @@ type AccountLimitsConfig = {
   }
 }
 
-type DynamicField = {
+type CustomField = {
   name: string
   type?: "string" | "integer" | "float" | "boolean"
   required?: boolean
@@ -85,7 +85,7 @@ type YamlSchema = {
   accounts: {
     initialStatus: string
     initialWallets: WalletCurrency[]
-    information: DynamicField[]
+    customFields: CustomField[]
   }
   accountLimits: {
     withdrawal: AccountLimitsConfig

@@ -227,7 +227,7 @@ export const configSchema = {
             enum: Object.values(WalletCurrency),
           },
         },
-        information: {
+        customFields: {
           type: "array",
           items: {
             type: "object",
@@ -236,11 +236,10 @@ export const configSchema = {
               type: {
                 type: "string",
                 enum: ["string", "integer", "float", "boolean"],
-                default: "string",
               },
               required: { type: "boolean", default: false },
             },
-            required: ["name"],
+            required: ["name", "type"],
             additionalProperties: false,
           },
           uniqueItems: true,
