@@ -6,3 +6,4 @@ export class SwapClientNotResponding extends SwapServiceError {}
 export class UnknownSwapServiceError extends SwapServiceError {
   level = ErrorLevel.Critical
 }
+export class NoSwapAction extends Object {}

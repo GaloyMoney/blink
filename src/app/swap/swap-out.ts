@@ -1,6 +1,6 @@
 import { BTC_NETWORK, getSwapConfig } from "@config"
 import { TxDecoder } from "@domain/bitcoin/onchain"
-import { SwapServiceError } from "@domain/swap/errors"
+import { SwapServiceError, NoSwapAction } from "@domain/swap/errors"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { toSats } from "@domain/bitcoin"
 import { SwapOutChecker } from "@domain/swap"
@@ -11,7 +11,9 @@ import { getOffChainChannelBalances } from "@app/lightning"
 
 const logger = baseLogger.child({ module: "swap" })
 
-export const swapOut = async (): Promise<SwapOutResult | SwapServiceError | null> => {
+export const swapOut = async (): Promise<
+  SwapOutResult | SwapServiceError | NoSwapAction
+> => {
   const swapService = SwapService()
   logger.info("SwapApp: Started")
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
@@ -54,6 +56,6 @@ export const swapOut = async (): Promise<SwapOutResult | SwapServiceError | null
     }
     return swapResult
   } else {
-    return null // no swap out needed
+    return new NoSwapAction()
   }
 }
