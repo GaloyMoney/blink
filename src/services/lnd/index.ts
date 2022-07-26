@@ -1,6 +1,6 @@
 import {
   cancelHodlInvoice,
-  createHodlInvoice,
+  createInvoice,
   getChannelBalance,
   getClosedChannels,
   getFailedPayments,
@@ -17,7 +17,6 @@ import {
   payViaRoutes,
   PayViaRoutesResult,
   deletePayment,
-  settleHodlInvoice,
 } from "lightning"
 import lnService from "ln-service"
 
@@ -42,7 +41,6 @@ import {
   ProbeForRouteTimedOutError,
   ProbeForRouteTimedOutFromApplicationError,
   RouteNotFoundError,
-  SecretDoesNotMatchAnyExistingHodlInvoiceError,
   UnknownLightningServiceError,
   UnknownRouteNotFoundError,
 } from "@domain/bitcoin/lightning"
@@ -256,7 +254,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }
 
   const registerInvoice = async ({
-    paymentHash,
     sats,
     description,
     descriptionHash,
@@ -264,7 +261,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
   }: RegisterInvoiceArgs): Promise<RegisteredInvoice | LightningServiceError> => {
     const input = {
       lnd: defaultLnd,
-      id: paymentHash,
       description,
       description_hash: descriptionHash,
       tokens: sats as number,
@@ -272,7 +268,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
 
     try {
-      const result = await createHodlInvoice(input)
+      const result = await createInvoice(input)
       const request = result.request as EncodedPaymentRequest
       const returnedInvoice = decodeInvoice(request)
       if (returnedInvoice instanceof Error) {
@@ -312,11 +308,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
         createdAt: new Date(invoice.created_at),
         confirmedAt: invoice.confirmed_at ? new Date(invoice.confirmed_at) : undefined,
         isSettled: !!invoice.is_confirmed,
-        isHeld: !!invoice.is_held,
-        heldAt:
-          invoice.payments && invoice.payments.length
-            ? new Date(invoice.payments[0].created_at)
-            : undefined,
         roundedDownReceived: toSats(invoice.received),
         milliSatsReceived: toMilliSatsFromString(invoice.received_mtokens),
         secretPreImage: invoice.secret as SecretPreImage,
@@ -443,31 +434,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
           return false
         default:
           return new UnknownRouteNotFoundError(err)
-      }
-    }
-  }
-
-  const settleInvoice = async ({
-    pubkey,
-    secret,
-  }: {
-    pubkey: Pubkey
-    secret: SecretPreImage
-  }): Promise<true | LightningServiceError> => {
-    try {
-      const lnd = getLndFromPubkey({ pubkey })
-      if (lnd instanceof Error) return lnd
-
-      // Use the secret to claim the funds
-      await settleHodlInvoice({ lnd, secret })
-      return true
-    } catch (err) {
-      const errDetails = parseLndErrorDetails(err)
-      switch (errDetails) {
-        case KnownLndErrorDetails.SecretDoesNotMatchAnyExistingHodlInvoice:
-          return new SecretDoesNotMatchAnyExistingHodlInvoiceError(err)
-        default:
-          return new UnknownLightningServiceError(err)
       }
     }
   }
@@ -611,7 +577,6 @@ export const LndService = (): ILightningService | LightningServiceError => {
       listPendingPayments: listPaymentsFactory(getPendingPayments),
       listFailedPayments,
       deletePaymentByHash,
-      settleInvoice,
       cancelInvoice,
       payInvoiceViaRoutes,
       payInvoiceViaPaymentDetails,
@@ -696,7 +661,6 @@ const KnownLndErrorDetails = {
   SentPaymentNotFound: "SentPaymentNotFound",
   PaymentInTransition: "payment is in transition",
   PaymentForDeleteNotFound: "non bucket element in payments bucket",
-  SecretDoesNotMatchAnyExistingHodlInvoice: "SecretDoesNotMatchAnyExistingHodlInvoice",
 } as const
 
 /* eslint @typescript-eslint/ban-ts-comment: "off" */

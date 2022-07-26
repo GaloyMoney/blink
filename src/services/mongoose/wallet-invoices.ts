@@ -10,7 +10,6 @@ import { WalletInvoice } from "./schema"
 export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   const persistNew = async ({
     paymentHash,
-    secret,
     recipientWalletDescriptor,
     selfGenerated,
     pubkey,
@@ -20,7 +19,6 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     try {
       const walletInvoice = await new WalletInvoice({
         _id: paymentHash,
-        secret,
         walletId: recipientWalletDescriptor.id,
         selfGenerated,
         pubkey,
@@ -68,10 +66,12 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     }
   }
 
-  async function* yieldPending(): AsyncGenerator<WalletInvoice> | RepositoryError {
+  async function* findPendingByWalletId(
+    walletId: WalletId,
+  ): AsyncGenerator<WalletInvoice> | RepositoryError {
     let pending
     try {
-      pending = WalletInvoice.find({ paid: false }).cursor({
+      pending = WalletInvoice.find({ walletId, paid: false }).cursor({
         batchSize: 100,
       })
     } catch (error) {
@@ -80,6 +80,25 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
 
     for await (const walletInvoice of pending) {
       yield walletInvoiceFromRaw(walletInvoice)
+    }
+  }
+
+  async function* listWalletIdsWithPendingInvoices():
+    | AsyncGenerator<WalletId>
+    | RepositoryError {
+    let pending
+    try {
+      // select distinct user ids from pending invoices
+      pending = WalletInvoice.aggregate([
+        { $match: { paid: false } },
+        { $group: { _id: "$walletId" } },
+      ]).cursor({ batchSize: 100 })
+    } catch (error) {
+      return new RepositoryError(error)
+    }
+
+    for await (const { _id } of pending) {
+      yield _id as WalletId
     }
   }
 
@@ -115,7 +134,8 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
     persistNew,
     markAsPaid,
     findByPaymentHash,
-    yieldPending,
+    findPendingByWalletId,
+    listWalletIdsWithPendingInvoices,
     deleteByPaymentHash,
     deleteUnpaidOlderThan,
   }
@@ -123,7 +143,6 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
 
 const walletInvoiceFromRaw = (result: WalletInvoiceRecord): WalletInvoice => ({
   paymentHash: result._id as PaymentHash,
-  secret: result.secret as SecretPreImage,
   recipientWalletDescriptor: {
     id: result.walletId as WalletId,
     currency: result.currency as WalletCurrency,
