@@ -1,4 +1,5 @@
 import { UnknownLightningServiceError } from "@domain/bitcoin/lightning"
+import { CouldNotFindLnPaymentFromHashError } from "@domain/errors"
 import { LndService } from "@services/lnd"
 import { LnPaymentsRepository } from "@services/mongoose"
 import {
@@ -40,7 +41,22 @@ const checkAndDeletePaymentForHash = async ({
     },
     async () => {
       const lnPayment = await LnPaymentsRepository().findByPaymentHash(paymentHash)
-      if (lnPayment instanceof Error) return lnPayment
+      if (lnPayment instanceof Error) {
+        if (lnPayment instanceof CouldNotFindLnPaymentFromHashError) {
+          const lnd = LndService()
+          if (lnd instanceof Error) return lnd
+          const lnPaymentLookup = await lnd.lookupPayment({ pubkey, paymentHash })
+          if (lnPaymentLookup instanceof Error) return lnPaymentLookup
+
+          await LnPaymentsRepository().persistNew({
+            paymentHash,
+            paymentRequest:
+              "createdAt" in lnPaymentLookup ? lnPaymentLookup.paymentRequest : undefined,
+            sentFromPubkey: pubkey,
+          })
+        }
+        return lnPayment
+      }
 
       addAttributesToCurrentSpan({ isCompleteRecord: lnPayment.isCompleteRecord })
       if (!lnPayment.isCompleteRecord) return false
