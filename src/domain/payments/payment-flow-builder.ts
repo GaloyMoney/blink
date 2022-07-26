@@ -257,49 +257,54 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
             ),
           )
         }
-        return LPFBWithConversion(
-          state.usdFromBtcMidPriceFn(btcPaymentAmount).then((convertedAmount) => {
-            if (convertedAmount instanceof Error) {
-              return convertedAmount
-            }
-            const priceRatio = PriceRatio({
-              usd: convertedAmount,
-              btc: btcPaymentAmount,
-            })
-            if (priceRatio instanceof Error) return priceRatio
 
-            const usdProtocolFee = priceRatio.convertFromBtcToCeil(btcProtocolFee)
-            return {
-              ...stateWithCreatedAt,
-              btcPaymentAmount,
-              usdPaymentAmount: convertedAmount,
-              btcProtocolFee,
-              usdProtocolFee,
-            }
-          }),
-        )
+        const updatedStateFromBtcPaymentAmount = async (
+          btcPaymentAmount: BtcPaymentAmount,
+        ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
+          const convertedAmount = await state.usdFromBtcMidPriceFn(btcPaymentAmount)
+          if (convertedAmount instanceof Error) return convertedAmount
+
+          const priceRatio = PriceRatio({
+            usd: convertedAmount,
+            btc: btcPaymentAmount,
+          })
+          if (priceRatio instanceof Error) return priceRatio
+
+          const usdProtocolFee = priceRatio.convertFromBtcToCeil(btcProtocolFee)
+          return {
+            ...stateWithCreatedAt,
+            btcPaymentAmount,
+            usdPaymentAmount: convertedAmount,
+            btcProtocolFee,
+            usdProtocolFee,
+          }
+        }
+
+        return LPFBWithConversion(updatedStateFromBtcPaymentAmount(btcPaymentAmount))
       } else if (usdPaymentAmount && usdProtocolFee) {
-        return LPFBWithConversion(
-          state.btcFromUsdMidPriceFn(usdPaymentAmount).then((convertedAmount) => {
-            if (convertedAmount instanceof Error) {
-              return convertedAmount
-            }
-            const priceRatio = PriceRatio({
-              btc: convertedAmount,
-              usd: usdPaymentAmount,
-            })
-            if (priceRatio instanceof Error) return priceRatio
+        const updatedStateFromUsdPaymentAmount = async (
+          usdPaymentAmount: UsdPaymentAmount,
+        ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
+          const convertedAmount = await state.btcFromUsdMidPriceFn(usdPaymentAmount)
+          if (convertedAmount instanceof Error) return convertedAmount
 
-            const btcProtocolFee = priceRatio.convertFromUsd(usdProtocolFee)
-            return {
-              ...stateWithCreatedAt,
-              btcPaymentAmount: convertedAmount,
-              usdPaymentAmount,
-              btcProtocolFee,
-              usdProtocolFee,
-            }
-          }),
-        )
+          const priceRatio = PriceRatio({
+            btc: convertedAmount,
+            usd: usdPaymentAmount,
+          })
+          if (priceRatio instanceof Error) return priceRatio
+
+          const btcProtocolFee = priceRatio.convertFromUsd(usdProtocolFee)
+          return {
+            ...stateWithCreatedAt,
+            btcPaymentAmount: convertedAmount,
+            usdPaymentAmount,
+            btcProtocolFee,
+            usdProtocolFee,
+          }
+        }
+
+        return LPFBWithConversion(updatedStateFromUsdPaymentAmount(usdPaymentAmount))
       } else {
         return LPFBWithError(
           new InvalidLightningPaymentFlowBuilderStateError(
@@ -327,51 +332,56 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
           }),
         )
       }
-      return LPFBWithConversion(
-        usdFromBtc(btcPaymentAmount).then((convertedAmount) => {
-          if (convertedAmount instanceof Error) {
-            return convertedAmount
-          }
-          const priceRatio = PriceRatio({
-            usd: convertedAmount,
-            btc: btcPaymentAmount,
-          })
-          if (priceRatio instanceof Error) return priceRatio
 
-          const usdProtocolFee = priceRatio.convertFromBtcToCeil(btcProtocolFee)
-          return {
-            ...stateWithCreatedAt,
-            btcPaymentAmount,
-            usdPaymentAmount: convertedAmount,
-            btcProtocolFee,
-            usdProtocolFee,
-          }
-        }),
-      )
+      const updatedStateFromBtcPaymentAmount = async (
+        btcPaymentAmount: BtcPaymentAmount,
+      ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
+        const convertedAmount = await usdFromBtc(btcPaymentAmount)
+        if (convertedAmount instanceof Error) return convertedAmount
+
+        const priceRatio = PriceRatio({
+          usd: convertedAmount,
+          btc: btcPaymentAmount,
+        })
+        if (priceRatio instanceof Error) return priceRatio
+
+        const usdProtocolFee = priceRatio.convertFromBtcToCeil(btcProtocolFee)
+        return {
+          ...stateWithCreatedAt,
+          btcPaymentAmount,
+          usdPaymentAmount: convertedAmount,
+          btcProtocolFee,
+          usdProtocolFee,
+        }
+      }
+
+      return LPFBWithConversion(updatedStateFromBtcPaymentAmount(btcPaymentAmount))
     }
 
     if (usdPaymentAmount && usdProtocolFee) {
-      return LPFBWithConversion(
-        btcFromUsd(usdPaymentAmount).then((convertedAmount) => {
-          if (convertedAmount instanceof Error) {
-            return convertedAmount
-          }
-          const priceRatio = PriceRatio({
-            btc: convertedAmount,
-            usd: usdPaymentAmount,
-          })
-          if (priceRatio instanceof Error) return priceRatio
+      const updatedStateFromUsdPaymentAmount = async (
+        usdPaymentAmount: UsdPaymentAmount,
+      ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
+        const convertedAmount = await btcFromUsd(usdPaymentAmount)
+        if (convertedAmount instanceof Error) return convertedAmount
 
-          const btcProtocolFee = priceRatio.convertFromUsd(usdProtocolFee)
-          return {
-            ...stateWithCreatedAt,
-            btcPaymentAmount: convertedAmount,
-            usdPaymentAmount,
-            btcProtocolFee,
-            usdProtocolFee,
-          }
-        }),
-      )
+        const priceRatio = PriceRatio({
+          btc: convertedAmount,
+          usd: usdPaymentAmount,
+        })
+        if (priceRatio instanceof Error) return priceRatio
+
+        const btcProtocolFee = priceRatio.convertFromUsd(usdProtocolFee)
+        return {
+          ...stateWithCreatedAt,
+          btcPaymentAmount: convertedAmount,
+          usdPaymentAmount,
+          btcProtocolFee,
+          usdProtocolFee,
+        }
+      }
+
+      return LPFBWithConversion(updatedStateFromUsdPaymentAmount(usdPaymentAmount))
     }
 
     return LPFBWithError(
