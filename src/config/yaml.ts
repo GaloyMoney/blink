@@ -301,5 +301,5 @@ export const getRewardsConfig = () => {
 export const getDefaultAccountsConfig = (config = yamlConfig): AccountsConfig => ({
   initialStatus: config.accounts.initialStatus as AccountStatus,
   initialWallets: config.accounts.initialWallets,
-  customFields: config.accounts.customFields,
+  customFields: config.accounts.customFields || [],
 })

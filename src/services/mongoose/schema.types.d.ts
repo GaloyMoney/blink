@@ -128,3 +128,9 @@ interface UserRecord {
   // mongoose in-built functions
   save: () => Promise<UserRecord>
 }
+
+interface AccountDataRecord {
+  _id: ObjectId
+  transactionsCallback: string
+  customFields: { [k: string]: string | number | boolean }
+}
