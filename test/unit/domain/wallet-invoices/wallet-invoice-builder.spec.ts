@@ -1,5 +1,4 @@
 import { toSats } from "@domain/bitcoin"
-import { sha256 } from "@domain/bitcoin/lightning"
 import { BtcPaymentAmount, WalletCurrency } from "@domain/shared"
 import { WalletInvoiceBuilder } from "@domain/wallet-invoices/wallet-invoice-builder"
 
@@ -28,7 +27,7 @@ describe("WalletInvoiceBuilder", () => {
 
     const lnInvoice = {
       destination: "pubkey" as Pubkey,
-      paymentHash: args.paymentHash,
+      paymentHash: "paymenthash" as PaymentHash,
       paymentRequest: "paymentRequest" as EncodedPaymentRequest,
       milliSatsAmount: (amount * 1000) as MilliSatoshis,
       description: args.description,
@@ -48,7 +47,7 @@ describe("WalletInvoiceBuilder", () => {
       descriptionHash: args.descriptionHash,
     }
 
-    return invoice
+    return Promise.resolve(invoice)
   }
 
   const WIB = WalletInvoiceBuilder({
@@ -56,18 +55,8 @@ describe("WalletInvoiceBuilder", () => {
     lnRegisterInvoice: registerInvoice,
   })
 
-  const checkSecretAndHash = ({ lnInvoice, walletInvoice }: LnAndWalletInvoice) => {
-    const { secret } = walletInvoice
-    const hashFromSecret = sha256(Buffer.from(secret, "hex"))
-    expect(hashFromSecret).toEqual(walletInvoice.paymentHash)
-    expect(walletInvoice.paymentHash).toEqual(lnInvoice.paymentHash)
-    expect(lnInvoice).not.toHaveProperty("secret")
-  }
-
   const testDescription = "testdescription"
-  const WIBWithDescription = WIB.withDescription({
-    description: testDescription,
-  })
+  const WIBWithDescription = WIB.withDescription({ description: testDescription })
   const checkDescription = ({ lnInvoice }: LnAndWalletInvoice) => {
     expect(lnInvoice.description).toEqual(testDescription)
   }
@@ -108,7 +97,6 @@ describe("WalletInvoiceBuilder", () => {
 
           if (invoices instanceof Error) throw invoices
 
-          checkSecretAndHash(invoices)
           checkAmount(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
@@ -140,7 +128,6 @@ describe("WalletInvoiceBuilder", () => {
 
           if (invoices instanceof Error) throw invoices
 
-          checkSecretAndHash(invoices)
           checkAmount(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
@@ -183,7 +170,6 @@ describe("WalletInvoiceBuilder", () => {
 
           if (invoices instanceof Error) throw invoices
 
-          checkSecretAndHash(invoices)
           checkAmount(invoices)
           checkDescription(invoices)
           checkCreator(invoices)
@@ -216,7 +202,6 @@ describe("WalletInvoiceBuilder", () => {
 
           if (invoices instanceof Error) throw invoices
 
-          checkSecretAndHash(invoices)
           checkAmount(invoices)
           checkDescription(invoices)
           checkCreator(invoices)

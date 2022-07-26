@@ -1,8 +1,5 @@
 import { once } from "events"
 
-import { Wallets } from "@app"
-import { addInvoiceForSelf, getBalanceForWallet } from "@app/wallets"
-
 import {
   offchainLnds,
   onchainLnds,
@@ -10,8 +7,6 @@ import {
   updateEscrows,
 } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
-import { sleep } from "@utils"
-
 import {
   authenticatedLndGrpc,
   closeChannel,
@@ -22,7 +17,6 @@ import {
   getInvoice,
   getWalletInfo,
   openChannel,
-  pay,
   sendToChainAddress,
   subscribeToChannels,
   subscribeToGraph,
@@ -30,6 +24,8 @@ import {
 } from "lightning"
 
 import { parsePaymentRequest } from "invoices"
+
+import { sleep } from "@utils"
 
 import {
   bitcoindClient,
@@ -52,9 +48,6 @@ export const getAmount = (request: EncodedPaymentRequest) => {
   return parsePaymentRequest({ request }).tokens as Satoshis
 }
 
-export const getPubKey = (request: EncodedPaymentRequest) => {
-  return parsePaymentRequest({ request }).destination as Pubkey
-}
 export const getInvoiceAttempt = async ({ lnd, id }) => {
   try {
     const result = await getInvoice({ lnd, id })
@@ -298,32 +291,4 @@ export const waitFor = async (f) => {
   let res
   while (!(res = await f())) await sleep(500)
   return res
-}
-
-export const fundWalletIdFromLightning = async ({
-  walletId,
-  amount,
-}: {
-  walletId: WalletId
-  amount: number
-}) => {
-  const invoice = await addInvoiceForSelf({ walletId, amount })
-  if (invoice instanceof Error) return invoice
-
-  pay({ lnd: lndOutside1, request: invoice.paymentRequest })
-
-  // TODO: we could use an event instead of a sleep
-  await sleep(500)
-
-  const hash = getHash(invoice.paymentRequest)
-
-  expect(
-    await Wallets.updatePendingInvoiceByPaymentHash({
-      paymentHash: hash as PaymentHash,
-      logger: baseLogger,
-    }),
-  ).not.toBeInstanceOf(Error)
-
-  const balance = await getBalanceForWallet({ walletId, logger: baseLogger })
-  if (balance instanceof Error) throw balance
 }
