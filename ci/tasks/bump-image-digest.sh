@@ -9,6 +9,12 @@ export app_version=$(cat version/version)
 
 pushd charts-repo
 
+yq -i e '.galoy.images.app.digest = strenv(digest)' ./charts/galoy/values.yaml
+yq -i e '.galoy.images.app.git_ref = strenv(ref)' ./charts/galoy/values.yaml
+yq -i e '.galoy.images.mongodbMigrate.digest = strenv(migrate_digest)' ./charts/galoy/values.yaml
+yq -i e '.galoy.images.mongodbMigrate.git_ref = strenv(app_version)' ./charts/galoy/Chart.yaml
+
+# For the older contents
 yq -i e '.image.digest = strenv(digest)' ./charts/galoy/values.yaml
 yq -i e '.image.git_ref = strenv(ref)' ./charts/galoy/values.yaml
 yq -i e '.mongodbMigrateImage.digest = strenv(migrate_digest)' ./charts/galoy/values.yaml
