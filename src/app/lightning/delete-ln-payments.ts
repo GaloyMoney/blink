@@ -54,6 +54,7 @@ const checkAndDeletePaymentForHash = async ({
               "createdAt" in lnPaymentLookup ? lnPaymentLookup.paymentRequest : undefined,
             sentFromPubkey: pubkey,
           })
+          return false
         }
         return lnPayment
       }
