@@ -54,11 +54,18 @@ const checkAndDeletePaymentForHash = async ({
               "createdAt" in lnPaymentLookup ? lnPaymentLookup.paymentRequest : undefined,
             sentFromPubkey: pubkey,
           })
+
+          addAttributesToCurrentSpan({ existedInRepository: false })
+          return false
         }
+        addAttributesToCurrentSpan({ ["existedInRepository.undefined"]: true })
         return lnPayment
       }
 
-      addAttributesToCurrentSpan({ isCompleteRecord: lnPayment.isCompleteRecord })
+      addAttributesToCurrentSpan({
+        existedInRepository: true,
+        isCompleteRecord: lnPayment.isCompleteRecord,
+      })
       if (!lnPayment.isCompleteRecord) return false
 
       const lndService = LndService()
