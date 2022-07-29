@@ -1,0 +1,14 @@
+name: "Integration Tests"
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  integration:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run integration tests
+        run: docker compose -f docker-compose.yml run integration-tests
