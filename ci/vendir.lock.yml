@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'feat: add npm_resource_type'
-      sha: 38febc2008e907e7888085df52f0a00bb3c8ebb2
+      commitTitle: 'fix: also test level for high'
+      sha: 74747914d2bf4fd68896faf60211c9fc5f7d29dc
     path: .
   path: vendor
 kind: LockConfig
