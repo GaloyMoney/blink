@@ -6,6 +6,7 @@
 #@   "slack_failure_notification",
 #@   "install_yarn_deps",
 #@   "nodejs_check_code",
+#@   "nodejs_audit",
 #@   "nodejs_integration_test",
 #@   "nodejs_deps_resource",
 #@   "deps_version_resource",
@@ -62,6 +63,7 @@ groups:
 jobs:
 - #@ install_yarn_deps()
 - #@ nodejs_check_code()
+- #@ nodejs_audit()
 
 - name: test-e2e
   serial: true
@@ -138,23 +140,6 @@ jobs:
       - name: repo
       run:
         path: pipeline-tasks/ci/tasks/test-unit.sh
-  on_failure: #@ slack_failure_notification()
-
-- name: audit
-  serial: true
-  plan:
-  - in_parallel:
-    - { get: repo, trigger: true }
-    - { get: pipeline-tasks }
-  - task: audit
-    config:
-      platform: linux
-      image_resource: #@ nodejs_task_image_config()
-      inputs:
-      - name: pipeline-tasks
-      - name: repo
-      run:
-        path: pipeline-tasks/ci/tasks/audit.sh
   on_failure: #@ slack_failure_notification()
 
 - name: build-edge-image
@@ -254,6 +239,7 @@ jobs:
       trigger: true
       passed:
       - check-code
+      - audit
       - test-unit
       - test-integration
       - test-e2e
