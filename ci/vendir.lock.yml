@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: add TMP_ENV_CI to test-integration'
-      sha: 4d51b09040a3fe9ab403d4ea07464cdaf2af7979
+      commitTitle: 'feat: add rust-dependabot.yml'
+      sha: 8eefeec5d26ab37b59d128d3522f4563e05a2a9a
     path: .
   path: vendor
 kind: LockConfig
