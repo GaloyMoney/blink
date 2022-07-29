@@ -82,7 +82,7 @@ export const getLightningAddressDomainAliases = (): string[] =>
   yamlConfig.lightningAddressDomainAliases
 export const getLocale = (): string => yamlConfig.locale || "en"
 
-export const pubkeysSkipProbe = (): Pubkey[] => {
+export const getPubkeysToSkipProbe = (): Pubkey[] => {
   const pubkeys = [] as Pubkey[]
   for (const keys of Object.values(yamlConfig.skipFeeProbe)) {
     pubkeys.push(...keys)
