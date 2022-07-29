@@ -1,0 +1,16 @@
+name: 'Nodejs Check Code'
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-code:
+    name: Nodejs Check Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - run: yarn install
+      - name: Run check code
+        run: make check-code
