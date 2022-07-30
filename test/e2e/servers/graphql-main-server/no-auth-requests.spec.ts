@@ -40,7 +40,7 @@ const { phone, code } = getPhoneAndCodeFromRef("G")
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
   correctCode = `${code}` as PhoneCode
-  serverPid = await startServer()
+  serverPid = await startServer("start-main-ci")
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
 })
 

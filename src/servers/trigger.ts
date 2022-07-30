@@ -46,7 +46,7 @@ export const onchainTransactionEventHandler = async (
     topic: "payment",
     protocol: "onchain",
     tx,
-    onUs: false,
+    intraledger: false,
   })
 
   const fee = tx.fee || 0
@@ -291,6 +291,8 @@ const main = () => {
 
   activateLndHealthCheck()
   publishCurrentPrice()
+
+  console.log("trigger server ready")
 }
 
 const healthCheck = () => {

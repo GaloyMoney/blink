@@ -5,6 +5,10 @@ import { LnFees } from "@domain/payments"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
+import { baseLogger } from "@services/logger"
+
+import { sleep } from "@utils"
+
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
@@ -14,6 +18,7 @@ import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-
 import USER_LOGIN from "./mutations/user-login.gql"
 import MAIN from "./queries/main.gql"
 import ME from "./queries/me.gql"
+import MY_UPDATES_LN from "./subscriptions/my-updates-ln.gql"
 import TRANSACTIONS_BY_WALLET_IDS from "./queries/transactions-by-wallet-ids.gql"
 
 import {
@@ -27,9 +32,12 @@ import {
   fundWalletIdFromLightning,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
+  promisifiedSubscription,
   initializeTestingState,
   killServer,
+  lndOutside1,
   lndOutside2,
+  pay,
   PID,
   startServer,
 } from "test/helpers"
@@ -37,7 +45,8 @@ import {
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,
   walletId: WalletId,
-  serverPid: PID
+  serverPid: PID,
+  triggerPid: PID
 const userRef = "D"
 
 const { phone, code } = getPhoneAndCodeFromRef(userRef)
@@ -50,7 +59,8 @@ beforeAll(async () => {
   walletId = await getDefaultWalletIdByTestUserRef(userRef)
 
   await fundWalletIdFromLightning({ walletId, amount: satsAmount })
-  serverPid = await startServer()
+  serverPid = await startServer("start-main-ci")
+  triggerPid = await startServer("start-trigger-ci")
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
   const input = { phone, code }
   const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
@@ -72,6 +82,7 @@ afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
   disposeClient()
   await killServer(serverPid)
+  await killServer(triggerPid)
 })
 
 describe("graphql", () => {
@@ -537,6 +548,57 @@ describe("graphql", () => {
       expect(errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
+    })
+  })
+
+  describe("Trigger + receiving payment", () => {
+    const mutation = LN_INVOICE_CREATE
+
+    afterAll(async () => {
+      jest.restoreAllMocks()
+    })
+
+    it("receive a payment and subscription update", async () => {
+      const input = { walletId, amount: 1000, memo: "This is a lightning invoice" }
+      const result1 = await apolloClient.mutate({ mutation, variables: { input } })
+      const { invoice } = result1.data.lnInvoiceCreate
+
+      const subscriptionQuery = MY_UPDATES_LN
+
+      const subscription = apolloClient.subscribe({
+        query: subscriptionQuery,
+      })
+
+      const promisePay = pay({
+        lnd: lndOutside1,
+        request: invoice.paymentRequest,
+      })
+
+      let status = ""
+      let hash = ""
+      let i = 0
+      while (i < 5) {
+        try {
+          const result_sub = (await promisifiedSubscription(subscription)) as { data }
+          if (result_sub.data.myUpdates.update.type === "Price") i += 1
+          else {
+            status = result_sub.data.myUpdates.update.status
+            hash = result_sub.data.myUpdates.update.paymentHash
+            i = 5
+          }
+        } catch (err) {
+          baseLogger.warn({ err }, "error with subscription")
+        }
+
+        // we need to wait here because other promisifiedSubscription
+        // would give back the same event and not wait for the next event
+        // so if Price were to be the event that came back at first, it would fail
+        await sleep(100)
+      }
+
+      expect(status).toBe("PAID")
+      const result2 = await promisePay
+      expect(hash).toBe(result2.id)
     })
   })
 })
