@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: also test level for high'
-      sha: 74747914d2bf4fd68896faf60211c9fc5f7d29dc
+      commitTitle: 'revert: no need to cargo install in unpack_deps()'
+      sha: 21f61dd069d26270a870c870e02ad9f841e95d00
     path: .
   path: vendor
 kind: LockConfig

@@ -32,7 +32,7 @@ export ADDITIONAL_SSH_OPTS="-o StrictHostKeyChecking=no -i ${CI_ROOT}/login.ssh"
 pushd ${REPO_PATH}
 
 echo "Syncing repo to docker-host... "
-rsync --delete -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
+rsync --delete --exclude target -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
   ./ ${DOCKER_HOST_IP}:${REPO_PATH} > /dev/null
 echo "Done!"
 
