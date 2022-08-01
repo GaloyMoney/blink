@@ -492,14 +492,14 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   }
 
   const btcPaymentAmount = async () => {
-    const state = await Promise.resolve(statePromise)
+    const state = await statePromise
     if (state instanceof Error) return state
 
     return state.btcPaymentAmount
   }
 
   const usdPaymentAmount = async () => {
-    const state = await Promise.resolve(statePromise)
+    const state = await statePromise
     if (state instanceof Error) return state
 
     return state.usdPaymentAmount
@@ -513,7 +513,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   }
 
   const isIntraLedger = async () => {
-    const state = await Promise.resolve(statePromise)
+    const state = await statePromise
     if (state instanceof Error) return state
 
     return state.settlementMethod === SettlementMethod.IntraLedger
