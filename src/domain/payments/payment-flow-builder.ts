@@ -1,4 +1,4 @@
-import { getPubkeysToSkipProbe, intersect } from "@config"
+import { getPubkeysToSkipProbe, ModifiedSet } from "@config"
 
 import { ValidationError, WalletCurrency } from "@domain/shared"
 import { SelfPaymentError } from "@domain/errors"
@@ -44,6 +44,13 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     }
   }
 
+  const skipProbeFromInvoice = (invoice: LnInvoice): boolean => {
+    const invoicePubkeySet = new ModifiedSet(parseFinalHopsFromInvoice(invoice))
+    const flaggedPubkeySet = new ModifiedSet(getPubkeysToSkipProbe())
+
+    return invoicePubkeySet.intersect(flaggedPubkeySet).size > 0
+  }
+
   const withInvoice = (invoice: LnInvoice): LPFBWithInvoice<S> | LPFBWithError => {
     if (invoice.paymentAmount === null) {
       return LPFBWithError(
@@ -60,8 +67,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
       btcPaymentAmount: invoice.paymentAmount,
       inputAmount: invoice.paymentAmount.amount,
       descriptionFromInvoice: invoice.description,
-      skipProbeForDestination:
-        intersect(parseFinalHopsFromInvoice(invoice), getPubkeysToSkipProbe()).length > 0,
+      skipProbeForDestination: skipProbeFromInvoice(invoice),
     })
   }
 
@@ -79,8 +85,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
       paymentHash: invoice.paymentHash,
       uncheckedAmount,
       descriptionFromInvoice: invoice.description,
-      skipProbeForDestination:
-        intersect(parseFinalHopsFromInvoice(invoice), getPubkeysToSkipProbe()).length > 0,
+      skipProbeForDestination: skipProbeFromInvoice(invoice),
     })
   }
 
