@@ -9,6 +9,7 @@ import { getDisplayCurrencyConfig, getLocale } from "@config"
 
 import { toSats } from "@domain/bitcoin"
 import {
+  decodeInvoice,
   defaultTimeToExpiryInSeconds,
   InvalidFeeProbeStateError,
   LightningServiceError,
@@ -26,6 +27,7 @@ import {
   LnFees,
   LnPaymentRequestInTransitError,
   PriceRatio,
+  SkipProbeForPubkeyError,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import {
@@ -121,6 +123,38 @@ jest.mock("@config", () => {
         intraLedgerLimit: 100_000 as UsdCents,
         withdrawalLimit: 100_000 as UsdCents,
       }),
+  }
+})
+
+const lndService = LndService()
+const lndServiceCallCount: { [key: string]: number } = {}
+if (lndService instanceof Error) throw lndService
+for (const key of Object.keys(lndService)) {
+  lndServiceCallCount[key] = 0
+}
+
+jest.mock("@services/lnd", () => {
+  const module = jest.requireActual("@services/lnd")
+  const { LndService } = module
+
+  const LndServiceWithCounts = () => {
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
+
+    const newLndService = {} as ILightningService
+    for (const key of Object.keys(lndService)) {
+      const fn = lndService[key]
+      newLndService[key] = (args) => {
+        lndServiceCallCount[key]++
+        return fn(args)
+      }
+    }
+    return newLndService
+  }
+
+  return {
+    ...module,
+    LndService: LndServiceWithCounts,
   }
 })
 
@@ -853,6 +887,40 @@ describe("UserWallet - Lightning Pay", () => {
 
     const balanceAfter = await getBalanceHelper(walletIdH)
     expect(balanceAfter).toBe(0)
+  })
+
+  it("skips fee probe for flagged pubkeys", async () => {
+    const sats = toSats(1000)
+    const feeProbeCallCount = () => lndServiceCallCount.findRouteForInvoice
+
+    // Test that non-flagged destination calls feeProbe lightning service method
+    const { request } = await createInvoice({ lnd: lndOutside1, tokens: sats })
+    let feeProbeCallsBefore = feeProbeCallCount()
+    const { result: fee, error } = await Payments.getLightningFeeEstimation({
+      walletId: walletIdH,
+      paymentRequest: request as EncodedPaymentRequest,
+    })
+    expect(feeProbeCallCount()).toEqual(feeProbeCallsBefore + 1)
+    expect(error).not.toBeInstanceOf(Error)
+    expect(fee).toStrictEqual({ amount: 0n, currency: WalletCurrency.Btc })
+
+    // Test that flagged destination skips feeProbe lightning service method
+    const muunRequest =
+      "lnbc10u1p3w0mf7pp5v9xg3eksnsyrsa3vk5uv00rvye4wf9n0744xgtx0kcrafeanvx7sdqqcqzzgxqyz5vqrzjqwnvuc0u4txn35cafc7w94gxvq5p3cu9dd95f7hlrh0fvs46wpvhddrwgrqy63w5eyqqqqryqqqqthqqpyrzjqw8c7yfutqqy3kz8662fxutjvef7q2ujsxtt45csu0k688lkzu3lddrwgrqy63w5eyqqqqryqqqqthqqpysp53n0sc9hvqgdkrv4ppwrm2pa0gcysa8r2swjkrkjnxkcyrsjmxu4s9qypqsq5zvh7glzpas4l9ptxkdhgefyffkn8humq6amkrhrh2gq02gv8emxrynkwke3uwgf4cfevek89g4020lgldxgusmse79h4caqg30qq2cqmyrc7d" as EncodedPaymentRequest
+    const muunInvoice = decodeInvoice(muunRequest)
+    if (muunInvoice instanceof Error) throw muunInvoice
+    if (!muunInvoice.paymentAmount) throw new Error("No-amount Invoice")
+    expect(muunInvoice.paymentAmount.amount).toEqual(BigInt(sats))
+
+    feeProbeCallsBefore = feeProbeCallCount()
+    const { result: feeMuun, error: errorMuun } =
+      await Payments.getLightningFeeEstimation({
+        walletId: walletIdH,
+        paymentRequest: muunRequest,
+      })
+    expect(feeProbeCallCount()).toEqual(feeProbeCallsBefore)
+    expect(errorMuun).toBeInstanceOf(SkipProbeForPubkeyError)
+    expect(feeMuun).toStrictEqual(LnFees().maxProtocolFee(muunInvoice.paymentAmount))
   })
 
   const createInvoiceHash = () => {

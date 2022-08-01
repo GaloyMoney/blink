@@ -20,6 +20,7 @@ type PaymentFlowState<
   settlementMethod: SettlementMethod
   paymentInitiationMethod: PaymentInitiationMethod
   descriptionFromInvoice: string
+  skipProbeForDestination: boolean
   createdAt: Date
   paymentSentAndPending: boolean
 
@@ -132,6 +133,7 @@ type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
 
   btcPaymentAmount(): Promise<BtcPaymentAmount | DealerPriceServiceError>
   usdPaymentAmount(): Promise<UsdPaymentAmount | DealerPriceServiceError>
+  skipProbeForDestination(): Promise<boolean | DealerPriceServiceError>
 
   isIntraLedger(): Promise<boolean | DealerPriceServiceError>
 }
@@ -149,6 +151,7 @@ type LPFBWithError = {
   withoutRoute(): Promise<ValidationError | DealerPriceServiceError>
   btcPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
   usdPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
+  skipProbeForDestination(): Promise<ValidationError | DealerPriceServiceError>
   isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
 }
 interface IPaymentFlowRepository {
@@ -177,6 +180,7 @@ type BtcFromUsdMidPriceFn = (
 
 type LightningPaymentFlowBuilderConfig = {
   localNodeIds: Pubkey[]
+  flaggedPubkeys: Pubkey[]
   usdFromBtcMidPriceFn: UsdFromBtcMidPriceFn
   btcFromUsdMidPriceFn: BtcFromUsdMidPriceFn
 }
@@ -191,6 +195,7 @@ type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &
     uncheckedAmount?: number
     btcProtocolFee?: BtcPaymentAmount
     usdProtocolFee?: UsdPaymentAmount
+    skipProbeForDestination: boolean
   }
 
 type LPFBWithSenderWalletState<S extends WalletCurrency> = RequireField<

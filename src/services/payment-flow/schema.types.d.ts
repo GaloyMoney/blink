@@ -13,6 +13,7 @@ type PaymentFlowStateRecordPartial = XOR<
   createdAt: Date
   paymentSentAndPending: boolean
   descriptionFromInvoice: string
+  skipProbeForDestination: boolean
 
   btcPaymentAmount: number
   usdPaymentAmount: number

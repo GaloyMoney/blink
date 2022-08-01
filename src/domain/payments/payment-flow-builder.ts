@@ -3,6 +3,9 @@ import { SelfPaymentError } from "@domain/errors"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 import { generateIntraLedgerHash } from "@domain/payments/get-intraledger-hash"
+import { parseFinalHopsFromInvoice } from "@domain/bitcoin/lightning"
+
+import { ModifiedSet } from "@utils"
 
 import {
   InvalidLightningPaymentFlowBuilderStateError,
@@ -41,6 +44,13 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
     }
   }
 
+  const skipProbeFromInvoice = (invoice: LnInvoice): boolean => {
+    const invoicePubkeySet = new ModifiedSet(parseFinalHopsFromInvoice(invoice))
+    const flaggedPubkeySet = new ModifiedSet(config.flaggedPubkeys)
+
+    return invoicePubkeySet.intersect(flaggedPubkeySet).size > 0
+  }
+
   const withInvoice = (invoice: LnInvoice): LPFBWithInvoice<S> | LPFBWithError => {
     if (invoice.paymentAmount === null) {
       return LPFBWithError(
@@ -57,6 +67,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
       btcPaymentAmount: invoice.paymentAmount,
       inputAmount: invoice.paymentAmount.amount,
       descriptionFromInvoice: invoice.description,
+      skipProbeForDestination: skipProbeFromInvoice(invoice),
     })
   }
 
@@ -74,6 +85,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
       paymentHash: invoice.paymentHash,
       uncheckedAmount,
       descriptionFromInvoice: invoice.description,
+      skipProbeForDestination: skipProbeFromInvoice(invoice),
     })
   }
 
@@ -91,6 +103,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
       intraLedgerHash: generateIntraLedgerHash(),
       uncheckedAmount,
       descriptionFromInvoice: description,
+      skipProbeForDestination: false,
     })
   }
 
@@ -420,6 +433,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       recipientUsername: state.recipientUsername,
 
       descriptionFromInvoice: state.descriptionFromInvoice,
+      skipProbeForDestination: state.skipProbeForDestination,
       btcPaymentAmount: state.btcPaymentAmount,
       usdPaymentAmount: state.usdPaymentAmount,
       inputAmount: state.inputAmount,
@@ -478,21 +492,28 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   }
 
   const btcPaymentAmount = async () => {
-    const state = await Promise.resolve(statePromise)
+    const state = await statePromise
     if (state instanceof Error) return state
 
     return state.btcPaymentAmount
   }
 
   const usdPaymentAmount = async () => {
-    const state = await Promise.resolve(statePromise)
+    const state = await statePromise
     if (state instanceof Error) return state
 
     return state.usdPaymentAmount
   }
 
+  const skipProbeForDestination = async () => {
+    const state = await statePromise
+    if (state instanceof Error) return state
+
+    return state.skipProbeForDestination
+  }
+
   const isIntraLedger = async () => {
-    const state = await Promise.resolve(statePromise)
+    const state = await statePromise
     if (state instanceof Error) return state
 
     return state.settlementMethod === SettlementMethod.IntraLedger
@@ -503,6 +524,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     withoutRoute,
     btcPaymentAmount,
     usdPaymentAmount,
+    skipProbeForDestination,
     isIntraLedger,
   }
 }
@@ -532,6 +554,9 @@ const LPFBWithError = (
   const withoutRoute = async () => {
     return Promise.resolve(error)
   }
+  const skipProbeForDestination = async () => {
+    return Promise.resolve(error)
+  }
   const isIntraLedger = async () => {
     return Promise.resolve(error)
   }
@@ -548,6 +573,7 @@ const LPFBWithError = (
     withoutRecipientWallet,
     withRecipientWallet,
     withConversion,
+    skipProbeForDestination,
     isIntraLedger,
     withRoute,
     withoutRoute,

@@ -10,10 +10,16 @@ import { AmountCalculator, ValidationError, WalletCurrency } from "@domain/share
 
 const calc = AmountCalculator()
 
+const muunPubkey =
+  "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6" as Pubkey
+
 describe("LightningPaymentFlowBuilder", () => {
   const paymentRequestWithAmount =
     "lnbc210u1p32zq9xpp5dpzhj6e7y6d4ggs6awh7m4eupuemas0gq06pqjgy9tq35740jlfsdqqcqzpgxqyz5vqsp58t3zalj5sc563g0xpcgx9lfkeqrx7m7xw53v2txc2pr60jcwn0vq9qyyssqkatadajwt0n285teummg4urul9t3shddnf05cfxzsfykvscxm4zqz37j87sahvz3kul0lzgz2svltdm933yr96du84zpyn8rx6fst4sp43jh32" as EncodedPaymentRequest
   const invoiceWithAmount = decodeInvoice(paymentRequestWithAmount) as LnInvoice
+  const muunPaymentRequestWithAmount =
+    "lnbc10u1p3w0mf7pp5v9xg3eksnsyrsa3vk5uv00rvye4wf9n0744xgtx0kcrafeanvx7sdqqcqzzgxqyz5vqrzjqwnvuc0u4txn35cafc7w94gxvq5p3cu9dd95f7hlrh0fvs46wpvhddrwgrqy63w5eyqqqqryqqqqthqqpyrzjqw8c7yfutqqy3kz8662fxutjvef7q2ujsxtt45csu0k688lkzu3lddrwgrqy63w5eyqqqqryqqqqthqqpysp53n0sc9hvqgdkrv4ppwrm2pa0gcysa8r2swjkrkjnxkcyrsjmxu4s9qypqsq5zvh7glzpas4l9ptxkdhgefyffkn8humq6amkrhrh2gq02gv8emxrynkwke3uwgf4cfevek89g4020lgldxgusmse79h4caqg30qq2cqmyrc7d" as EncodedPaymentRequest
+  const muunInvoiceWithAmount = decodeInvoice(muunPaymentRequestWithAmount) as LnInvoice
   const paymentRequestWithNoAmount =
     "lnbc1p3zn402pp54skf32qeal5jnfm73u5e3d9h5448l4yutszy0kr9l56vdsy8jefsdqqcqzpuxqyz5vqsp5c6z7a4lrey4ejvhx5q4l83jm9fhy34dsqgxnceem4dgz6fmh456s9qyyssqkxkg6ke6nt39dusdhpansu8j0r5f7gadwcampnw2g8ap0fccteer7hzjc8tgat9m5wxd98nxjxhwx0ha6g95v9edmgd30f0m8kujslgpxtzt6w" as EncodedPaymentRequest
   const invoiceWithNoAmount = decodeInvoice(paymentRequestWithNoAmount) as LnInvoice
@@ -82,6 +88,7 @@ describe("LightningPaymentFlowBuilder", () => {
   describe("ln initiated, ln settled", () => {
     const lightningBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [],
+      flaggedPubkeys: [muunPubkey],
       usdFromBtcMidPriceFn,
       btcFromUsdMidPriceFn,
     })
@@ -96,6 +103,7 @@ describe("LightningPaymentFlowBuilder", () => {
 
     describe("invoice with amount", () => {
       const withAmountBuilder = lightningBuilder.withInvoice(invoiceWithAmount)
+      const withMuunAmountBuilder = lightningBuilder.withInvoice(muunInvoiceWithAmount)
       const checkInvoice = (payment) => {
         expect(payment).toEqual(
           expect.objectContaining({
@@ -110,6 +118,10 @@ describe("LightningPaymentFlowBuilder", () => {
           .withSenderWallet(senderBtcWallet)
           .withoutRecipientWallet()
 
+        const withMuunBtcWalletBuilder = withMuunAmountBuilder
+          .withSenderWallet(senderBtcWallet)
+          .withoutRecipientWallet()
+
         const checkSenderWallet = (payment) => {
           expect(payment).toEqual(
             expect.objectContaining({
@@ -118,6 +130,14 @@ describe("LightningPaymentFlowBuilder", () => {
             }),
           )
         }
+
+        it("sets 'skipProbe' property to true for flagged destination invoice", async () => {
+          const muunBuilder = await withMuunBtcWalletBuilder.withConversion({
+            usdFromBtc,
+            btcFromUsd,
+          })
+          expect(muunBuilder.skipProbeForDestination()).toBeTruthy()
+        })
 
         it("uses mid price and max btc fees", async () => {
           const payment = await withBtcWalletBuilder
@@ -153,6 +173,7 @@ describe("LightningPaymentFlowBuilder", () => {
               usdPaymentAmount,
               btcProtocolFee,
               usdProtocolFee,
+              skipProbeForDestination: false,
             }),
           )
         })
@@ -193,6 +214,7 @@ describe("LightningPaymentFlowBuilder", () => {
               },
               outgoingNodePubkey: pubkey,
               cachedRoute: rawRoute,
+              skipProbeForDestination: false,
             }),
           )
 
@@ -213,6 +235,7 @@ describe("LightningPaymentFlowBuilder", () => {
             expect.objectContaining({
               senderWalletId: senderUsdWallet.id,
               senderWalletCurrency: senderUsdWallet.currency,
+              skipProbeForDestination: false,
             }),
           )
         }
@@ -251,6 +274,7 @@ describe("LightningPaymentFlowBuilder", () => {
               usdPaymentAmount,
               btcProtocolFee,
               usdProtocolFee,
+              skipProbeForDestination: false,
             }),
           )
         })
@@ -291,6 +315,7 @@ describe("LightningPaymentFlowBuilder", () => {
               },
               outgoingNodePubkey: pubkey,
               cachedRoute: rawRoute,
+              skipProbeForDestination: false,
             }),
           )
 
@@ -312,6 +337,7 @@ describe("LightningPaymentFlowBuilder", () => {
         expect(payment).toEqual(
           expect.objectContaining({
             inputAmount: uncheckedAmount,
+            skipProbeForDestination: false,
           }),
         )
       }
@@ -330,6 +356,7 @@ describe("LightningPaymentFlowBuilder", () => {
                 amount: uncheckedAmount,
                 currency: WalletCurrency.Btc,
               },
+              skipProbeForDestination: false,
             }),
           )
         }
@@ -371,6 +398,7 @@ describe("LightningPaymentFlowBuilder", () => {
               usdPaymentAmount,
               btcProtocolFee,
               usdProtocolFee,
+              skipProbeForDestination: false,
             }),
           )
         })
@@ -390,6 +418,7 @@ describe("LightningPaymentFlowBuilder", () => {
                 amount: uncheckedAmount,
                 currency: WalletCurrency.Usd,
               },
+              skipProbeForDestination: false,
             }),
           )
         }
@@ -415,6 +444,7 @@ describe("LightningPaymentFlowBuilder", () => {
             expect.objectContaining({
               btcPaymentAmount,
               btcProtocolFee: LnFees().maxProtocolFee(btcPaymentAmount),
+              skipProbeForDestination: false,
             }),
           )
         })
@@ -425,6 +455,7 @@ describe("LightningPaymentFlowBuilder", () => {
   describe("ln initiated, intraledger settled", () => {
     const intraledgerBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [invoiceWithAmount.destination, invoiceWithNoAmount.destination],
+      flaggedPubkeys: [muunPubkey],
       usdFromBtcMidPriceFn,
       btcFromUsdMidPriceFn,
     })
@@ -829,6 +860,7 @@ describe("LightningPaymentFlowBuilder", () => {
   describe("intraledger initiated, intraledger settled", () => {
     const intraledgerBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [],
+      flaggedPubkeys: [muunPubkey],
       usdFromBtcMidPriceFn,
       btcFromUsdMidPriceFn,
     })
@@ -1050,6 +1082,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns a ValidationError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })
@@ -1069,6 +1102,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns a ValidationError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })
@@ -1088,6 +1122,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns a ValidationError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })
@@ -1107,6 +1142,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns InvalidLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })
@@ -1127,6 +1163,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })
@@ -1147,6 +1184,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithNoAmount.destination],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })
@@ -1170,6 +1208,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })

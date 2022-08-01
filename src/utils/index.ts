@@ -58,3 +58,9 @@ export const mapObj = <T, R>(
 export const elapsedSinceTimestamp = (date: Date): Seconds => {
   return ((Date.now() - Number(date)) / 1000) as Seconds
 }
+
+export class ModifiedSet extends Set {
+  intersect<T>(otherSet: Set<T>): Set<T> {
+    return new ModifiedSet(Array.from(this).filter((i) => otherSet.has(i)))
+  }
+}

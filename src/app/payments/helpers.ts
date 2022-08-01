@@ -3,6 +3,7 @@ import {
   getAccountLimits,
   MS_PER_DAY,
   MIN_SATS_FOR_PRICE_RATIO_PRECISION,
+  getPubkeysToSkipProbe,
 } from "@config"
 import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
 import {
@@ -44,6 +45,7 @@ export const constructPaymentFlowBuilder = async <
   if (lndService instanceof Error) return lndService
   const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: lndService.listAllPubkeys(),
+    flaggedPubkeys: getPubkeysToSkipProbe(),
     usdFromBtcMidPriceFn,
     btcFromUsdMidPriceFn,
   })

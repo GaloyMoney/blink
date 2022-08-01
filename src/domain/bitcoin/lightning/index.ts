@@ -27,3 +27,15 @@ export const checkedToPubkey = (pubkey: string): Pubkey | InvalidPubKeyError => 
   }
   return new InvalidPubKeyError("Pubkey conversion error")
 }
+
+export const parseFinalHopsFromInvoice = (invoice: LnInvoice): Pubkey[] => {
+  const pubkeys = [] as Pubkey[]
+  const routes = invoice.routeHints
+  for (const route of routes) {
+    const lastIdx = route.length - 1
+    const penUltIndex = route.length > 1 ? lastIdx - 1 : lastIdx
+    const lastHop = route[penUltIndex]
+    pubkeys.push(lastHop.nodePubkey)
+  }
+  return Array.from(new Set(pubkeys))
+}

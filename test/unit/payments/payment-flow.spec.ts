@@ -19,6 +19,7 @@ describe("PaymentFlowFromLedgerTransaction", () => {
 
     paymentHash: "paymentHash" as PaymentHash,
     descriptionFromInvoice: "",
+    skipProbeForDestination: false,
     createdAt: timestamp,
     paymentSentAndPending: true,
 
