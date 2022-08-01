@@ -1,10 +1,4 @@
-import { getPubkeysToSkipProbe, intersect } from "@config"
-
-import {
-  decodeInvoice,
-  defaultTimeToExpiryInSeconds,
-  parseFinalHopsFromInvoice,
-} from "@domain/bitcoin/lightning"
+import { decodeInvoice, defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 import { checkedToWalletId } from "@domain/wallets"
 import {
   LnPaymentRequestNonZeroAmountRequiredError,
@@ -136,10 +130,7 @@ const estimateLightningFee = async ({
       return PartialResult.err(lndService)
     }
 
-    const skipProbe =
-      intersect(parseFinalHopsFromInvoice(invoice), getPubkeysToSkipProbe()).length > 0
-
-    const routeResult = skipProbe
+    const routeResult = (await builder.skipProbeForDestination())
       ? new SkipProbeForPubkeyError()
       : await lndService.findRouteForInvoice({
           invoice,
