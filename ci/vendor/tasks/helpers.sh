@@ -19,12 +19,6 @@ function unpack_deps() {
 
     popd
   else
-    pushd ${REPO_PATH:-repo} > /dev/null
-
-    cargo build --locked
-    echo "Copying from ${CARGO_TARGET_DIR}"
-    cp -r ${CARGO_TARGET_DIR} ./target
-
-    popd
+    echo "Skipping unpack deps"
   fi
 }
