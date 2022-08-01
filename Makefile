@@ -26,8 +26,11 @@ start-cron: start-deps
 start: start-deps
 	make start-main & make start-admin & make start-trigger
 
-start-api-ci:
+start-main-ci:
 	node lib/servers/graphql-main-server.js
+
+start-trigger-ci:
+	node lib/servers/trigger.js
 
 exporter: start-deps
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \

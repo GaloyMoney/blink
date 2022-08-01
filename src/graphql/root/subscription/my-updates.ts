@@ -14,6 +14,8 @@ import InvoicePaymentStatus from "@graphql/types/scalar/invoice-payment-status"
 import { Prices } from "@app"
 import { PubSubService } from "@services/pubsub"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
+import { AuthenticationError } from "@graphql/error"
+import { baseLogger } from "@services/logger"
 
 const pubsub = PubSubService()
 
@@ -118,7 +120,10 @@ const MeSubscription = {
   type: GT.NonNull(MyUpdatesPayload),
   resolve: (source: MeResolveSource, _args: unknown, ctx: GraphQLContextForUser) => {
     if (!ctx.uid) {
-      throw new Error("Not Authenticated")
+      throw new AuthenticationError({
+        message: "Not Authenticated for subscription",
+        logger: baseLogger,
+      })
     }
 
     if (source.errors) {
@@ -160,7 +165,10 @@ const MeSubscription = {
 
   subscribe: async (_source: unknown, _args: unknown, ctx: GraphQLContextForUser) => {
     if (!ctx.uid) {
-      throw new Error("Not Authenticated")
+      throw new AuthenticationError({
+        message: "Not Authenticated for subscription",
+        logger: baseLogger,
+      })
     }
     const accountUpdatedTrigger = customPubSubTrigger({
       event: PubSubDefaultTriggers.AccountUpdate,
