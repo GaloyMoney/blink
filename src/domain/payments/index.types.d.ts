@@ -180,6 +180,7 @@ type BtcFromUsdMidPriceFn = (
 
 type LightningPaymentFlowBuilderConfig = {
   localNodeIds: Pubkey[]
+  flaggedPubkeys: Pubkey[]
   usdFromBtcMidPriceFn: UsdFromBtcMidPriceFn
   btcFromUsdMidPriceFn: BtcFromUsdMidPriceFn
 }

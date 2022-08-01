@@ -1,3 +1,5 @@
+import { getPubkeysToSkipProbe } from "@config"
+
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
 import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
 import { AccountValidator } from "@domain/accounts"
@@ -56,6 +58,7 @@ export const intraledgerPaymentSendWalletId = async ({
 
   const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: [],
+    flaggedPubkeys: getPubkeysToSkipProbe(),
     usdFromBtcMidPriceFn,
     btcFromUsdMidPriceFn,
   })

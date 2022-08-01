@@ -10,6 +10,9 @@ import { AmountCalculator, ValidationError, WalletCurrency } from "@domain/share
 
 const calc = AmountCalculator()
 
+const muunPubkey =
+  "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6" as Pubkey
+
 describe("LightningPaymentFlowBuilder", () => {
   const paymentRequestWithAmount =
     "lnbc210u1p32zq9xpp5dpzhj6e7y6d4ggs6awh7m4eupuemas0gq06pqjgy9tq35740jlfsdqqcqzpgxqyz5vqsp58t3zalj5sc563g0xpcgx9lfkeqrx7m7xw53v2txc2pr60jcwn0vq9qyyssqkatadajwt0n285teummg4urul9t3shddnf05cfxzsfykvscxm4zqz37j87sahvz3kul0lzgz2svltdm933yr96du84zpyn8rx6fst4sp43jh32" as EncodedPaymentRequest
@@ -85,6 +88,7 @@ describe("LightningPaymentFlowBuilder", () => {
   describe("ln initiated, ln settled", () => {
     const lightningBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [],
+      flaggedPubkeys: [muunPubkey],
       usdFromBtcMidPriceFn,
       btcFromUsdMidPriceFn,
     })
@@ -451,6 +455,7 @@ describe("LightningPaymentFlowBuilder", () => {
   describe("ln initiated, intraledger settled", () => {
     const intraledgerBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [invoiceWithAmount.destination, invoiceWithNoAmount.destination],
+      flaggedPubkeys: [muunPubkey],
       usdFromBtcMidPriceFn,
       btcFromUsdMidPriceFn,
     })
@@ -855,6 +860,7 @@ describe("LightningPaymentFlowBuilder", () => {
   describe("intraledger initiated, intraledger settled", () => {
     const intraledgerBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [],
+      flaggedPubkeys: [muunPubkey],
       usdFromBtcMidPriceFn,
       btcFromUsdMidPriceFn,
     })
@@ -1076,6 +1082,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns a ValidationError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })
@@ -1095,6 +1102,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns a ValidationError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })
@@ -1114,6 +1122,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns a ValidationError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })
@@ -1133,6 +1142,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns InvalidLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })
@@ -1153,6 +1163,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })
@@ -1173,6 +1184,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithNoAmount.destination],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })
@@ -1196,6 +1208,7 @@ describe("LightningPaymentFlowBuilder", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
+          flaggedPubkeys: [muunPubkey],
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
         })

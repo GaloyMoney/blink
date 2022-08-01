@@ -1,11 +1,11 @@
-import { getPubkeysToSkipProbe, ModifiedSet } from "@config"
-
 import { ValidationError, WalletCurrency } from "@domain/shared"
 import { SelfPaymentError } from "@domain/errors"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 import { generateIntraLedgerHash } from "@domain/payments/get-intraledger-hash"
 import { parseFinalHopsFromInvoice } from "@domain/bitcoin/lightning"
+
+import { ModifiedSet } from "@utils"
 
 import {
   InvalidLightningPaymentFlowBuilderStateError,
@@ -46,7 +46,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
 
   const skipProbeFromInvoice = (invoice: LnInvoice): boolean => {
     const invoicePubkeySet = new ModifiedSet(parseFinalHopsFromInvoice(invoice))
-    const flaggedPubkeySet = new ModifiedSet(getPubkeysToSkipProbe())
+    const flaggedPubkeySet = new ModifiedSet(config.flaggedPubkeys)
 
     return invoicePubkeySet.intersect(flaggedPubkeySet).size > 0
   }
