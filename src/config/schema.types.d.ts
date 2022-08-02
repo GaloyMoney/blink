@@ -132,7 +132,5 @@ type YamlSchema = {
   captcha: {
     mandatory: boolean
   }
-  skipFeeProbe: {
-    [key: string]: Pubkey[]
-  }
+  skipFeeProbe: Pubkey[]
 }
