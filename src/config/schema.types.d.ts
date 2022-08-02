@@ -117,8 +117,10 @@ type YamlSchema = {
   }
   swap: {
     minOnChainHotWalletBalance: number
-    loopRestEndpoint: string
-    loopRpcEndpoint: string
+    lnd1loopRestEndpoint: string
+    lnd2loopRestEndpoint: string
+    lnd1loopRpcEndpoint: string
+    lnd2loopRpcEndpoint: string
     swapOutAmount: number
     swapProviders: Array<SwapProvider>
   }

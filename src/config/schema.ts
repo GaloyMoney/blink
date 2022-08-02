@@ -308,8 +308,10 @@ export const configSchema = {
       type: "object",
       properties: {
         minOnChainHotWalletBalance: { type: "integer" },
-        loopRestEndpoint: { type: "string" },
-        loopRpcEndpoint: { type: "string" },
+        lnd1loopRestEndpoint: { type: "string" },
+        lnd2loopRestEndpoint: { type: "string" },
+        lnd1loopRpcEndpoint: { type: "string" },
+        lnd2loopRpcEndpoint: { type: "string" },
         swapOutAmount: { type: "integer" },
         swapProviders: {
           type: "array",

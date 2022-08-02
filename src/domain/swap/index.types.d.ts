@@ -9,12 +9,8 @@ interface ISwapService {
   healthCheck: () => Promise<boolean>
   swapOut: (amount: Satoshis) => Promise<SwapOutResult | SwapServiceError>
   swapListener: () => SwapClientReadableStream<SwapListenerResponse>
-  swapOutTerms?: () => Promise<string> // TODO: Implement these
-  swapOutQuote?: () => Promise<string>
-  swapIn?: () => Promise<string>
-  swapInTerms?: () => Promise<string>
-  swapInQuote?: () => Promise<string>
-  swapStatus?: () => Promise<string>
+  swapOutTerms?: () => Promise<string> // TODO: Implement this
+  swapOutQuote?: () => Promise<string> // TODO: Implement this
 }
 
 type SwapOutResult = {
@@ -48,7 +44,9 @@ type SwapStatusResult = {
 type SwapConfig = {
   minOnChainHotWalletBalance: Satoshis
   swapOutAmount: Satoshis
-  loopRestEndpoint: string
-  loopRpcEndpoint: string
+  lnd1loopRestEndpoint: string
+  lnd2loopRestEndpoint: string
+  lnd1loopRpcEndpoint: string
+  lnd2loopRpcEndpoint: string
   swapProviders: Array<SwapProvider>
 }

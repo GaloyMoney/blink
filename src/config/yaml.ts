@@ -301,8 +301,10 @@ export const getSwapConfig = (): SwapConfig => {
   return {
     minOnChainHotWalletBalance: toSats(config.minOnChainHotWalletBalance),
     swapOutAmount: toSats(config.swapOutAmount),
-    loopRestEndpoint: config.loopRestEndpoint,
-    loopRpcEndpoint: config.loopRpcEndpoint,
+    lnd1loopRestEndpoint: config.lnd1loopRestEndpoint,
+    lnd2loopRestEndpoint: config.lnd2loopRestEndpoint,
+    lnd1loopRpcEndpoint: config.lnd1loopRpcEndpoint,
+    lnd2loopRpcEndpoint: config.lnd2loopRpcEndpoint,
     swapProviders: config.swapProviders,
   }
 }

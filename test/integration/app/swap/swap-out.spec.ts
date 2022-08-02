@@ -4,12 +4,13 @@ import { toSats } from "@domain/bitcoin"
 import { SwapClientNotResponding } from "@domain/swap/errors"
 import { SwapOutChecker } from "@domain/swap"
 import { lndsBalances } from "@services/lnd/utils"
+import { getSwapConfig } from "@config"
 
 describe("Swap", () => {
   const swapService = SwapService()
   const amount = toSats(250000)
 
-  it("swap out returns successful swap result", async () => {
+  it("Swap out returns successful swap result for default lnd1-loop server", async () => {
     if (await swapService.healthCheck()) {
       const swapResult = await swapService.swapOut(amount)
       if (swapResult instanceof SwapClientNotResponding) {
@@ -22,6 +23,34 @@ describe("Swap", () => {
           swapId: expect.any(String),
         }),
       )
+    }
+  })
+
+  it("Swap out returns successful swap result for lnd2-loop server", async () => {
+    if (await swapService.healthCheck()) {
+      if (process.env.LND2_LOOP_MACAROON && process.env.LND2_LOOP_TLS) {
+        const swapServiceLnd2 = SwapService(
+          process.env.LND2_LOOP_MACAROON.toString(),
+          process.env.LND2_LOOP_TLS,
+          getSwapConfig().lnd2loopRpcEndpoint,
+        )
+        if (await swapServiceLnd2.healthCheck()) {
+          // TODO this might fail in not enough funds in LND2
+          const swapResult = await swapServiceLnd2.swapOut(amount)
+          if (swapResult instanceof SwapClientNotResponding) {
+            console.log("Swap Client is not running, skipping")
+            return
+          }
+          expect(swapResult).not.toBeInstanceOf(Error)
+          expect(swapResult).toEqual(
+            expect.objectContaining({
+              swapId: expect.any(String),
+            }),
+          )
+        }
+      } else {
+        throw Error("no process.env.LND2_LOOP_MACAROON && process.env.LND2_LOOP_TLS")
+      }
     }
   })
 

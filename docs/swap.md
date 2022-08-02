@@ -1,5 +1,15 @@
 Swap Service (regtest)
-============
+=======================
+
+This docs shows you how to get the swap service up and running in your local dev environment. 
+
+The high level steps are:
+
+1. Start the loop server
+2. Configure the swap params in default.yaml
+3. Choose the swap provider in your code
+4. Test a swap out
+5. Monitor the status of a swap
 
 (1) Start the loopserver (regtest LL loop server) and loopd (Rest API)
 ---------------------------------------
@@ -7,7 +17,7 @@ Swap Service (regtest)
 make start-loop
 ```
 
-A successful loop server start returns this
+Successfully starting the loop server returns this:
 ```json
 {
   "swap_fee_sat":"50", 
@@ -25,10 +35,32 @@ A successful loop server start returns this
 ```yaml
 swap:
   minOnChainHotWalletBalance: 30000000
-  loopRestEndpoint: "https://localhost:8081"
-  loopRpcEndpoint: "localhost:11010"
-  swapOutAmount: 250000 
-  swapProviders: ["LOOP"] 
+  swapOutAmount:  25000000
+  swapProviders: ["LOOP"]
+  lnd1loopRestEndpoint: "https://localhost:8081"
+  lnd1loopRpcEndpoint: "localhost:11010"
+  lnd2loopRestEndpoint: "https://localhost:8082"
+  lnd2loopRpcEndpoint: "localhost:11011"
+```
+
+When testing in dev you want to override this config by creating a `/var/yaml/custom.yaml` file 
+
+create `/var/yaml/custom.yaml` and set permissions:
+```
+sudo touch /var/yaml/custom.yaml
+sudo chmod 755 /var/yaml/custom.yaml
+```
+
+Add the following config (you might need to 'retry as sudo' on mac+vscode):
+```
+swap:
+  minOnChainHotWalletBalance: 350000
+  swapOutAmount:  250000
+  swapProviders: ["LOOP"]
+  lnd1loopRestEndpoint: "https://localhost:8081"
+  lnd1loopRpcEndpoint: "localhost:11010"
+  lnd2loopRestEndpoint: "https://localhost:8082"
+  lnd2loopRpcEndpoint: "localhost:11011"
 ```
 
 (3) Choose the swap provider
@@ -43,20 +75,16 @@ import { LoopService } from "./providers/lightning-labs/loop-service"
 const resp = await LoopService().swapOut(amount)
 ```
 
-
-(4) Test a Loop Out
----------------------------------------
-```sh
-TEST="swap-out-checker" make unit
-TEST="swap-listener" make integration
-TEST="swap-out" make integration
-TEST="swap-record-ledger-fee" make integration
-```
-
-(5) Monitor Status of the swap
+(4) Monitor Status of the swap
 ----------------------------
-TODO rest call
+The easiest way to monitor the status of a loop out in dev is to remote into loopd. 
+```
+loopd1_id=$(docker ps -q -f name="loopd1-1")
+docker exec -it $loopd1_id loop -n regtest monitor
+```
+This command will keep an open listener for any loop events.
 
+Also, here is a REST call you can make to check the status of swaps
 ```
 LOOP_MACAROON=$(cat dev/lnd/loop.macaroon | xxd -p |  awk '{print}' ORS='')
 curl -k \
@@ -70,14 +98,28 @@ curl -k \
     | yarn pino-pretty -c -l
 ```
 
+(5) Test a Loop Out
+---------------------------------------
+The easiest test to run to see if the swap service is up and working is `TEST="swap-out" make integration`
+
+But you can also run these tests:
+```sh
+TEST="swap-out-checker" make unit
+TEST="swap-listener" make integration
+TEST="swap-out" make integration
+TEST="swap-record-ledger-fee" make integration
+```
+
 Event Listeners
 ============
-There is an event listeners for swaps called `listenerSwapMonitor` in the `src/servers/trigger.ts` server. It listens for swap events, like "Swap Out Success" or failure. This listerner triggers a `handleSwapOutCompleted` event in the `src/app/swap/swap-listener.ts` file
+There is an event listener for swaps called `listenerSwapMonitor` in the `src/servers/trigger.ts` server. It listens for swap events, like "Swap Out Success" or failure. This listener triggers a `handleSwapOutCompleted` event in the `src/app/swap/swap-listener.ts` file.
 
 ```
 make start-trigger
 ```
 
+In dev, you can monitoring the output of this listener in the console. You should see blocks being mined, as well as
+succefully loop outs, preimage revealed messages, etc...
 
 Cron Job
 =====
@@ -115,7 +157,7 @@ buf generate
 
 Troubleshooting
 =============
-If you get the error
+If you get the error:
 ```
 Waiting for lnd to be fully synced to its chain backend, this might take a while
 ```

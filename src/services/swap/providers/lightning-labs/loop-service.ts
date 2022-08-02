@@ -22,51 +22,37 @@ import {
   SwapStatus,
 } from "./protos/loop_pb"
 
-const loopMacaroon = process.env.LOOP_MACAROON
-  ? convertMacaroonToHexString(Buffer.from(process.env.LOOP_MACAROON, "base64"))
+const loopMacaroon = process.env.LND1_LOOP_MACAROON
+  ? Buffer.from(process.env.LND1_LOOP_MACAROON, "base64").toString("hex")
   : ""
+const loopTls = Buffer.from(
+  process.env.LND1_LOOP_TLS ? process.env.LND1_LOOP_TLS : "",
+  "base64",
+)
+const loopUrl = getSwapConfig().lnd1loopRpcEndpoint
 
-const loopTls = Buffer.from(process.env.LOOP_TLS ? process.env.LOOP_TLS : "", "base64")
-
-function createClient(macaroon, tls): SwapClientClient {
-  const loopUrl = getSwapConfig().loopRpcEndpoint
-  const grpcOptions = {
-    "grpc.max_receive_message_length": -1,
-    "grpc.max_send_message_length": -1,
+export const LoopService = (
+  macaroon?: string,
+  tlsCert?: string,
+  grpcEndpoint?: string,
+  swapAddress?: string,
+) => {
+  let swapClient
+  if (macaroon && tlsCert && grpcEndpoint) {
+    const mac = Buffer.from(macaroon, "base64").toString("hex")
+    const tls = Buffer.from(tlsCert, "base64")
+    swapClient = createClient(mac, tls, grpcEndpoint)
+  } else {
+    swapClient = createClient(loopMacaroon, loopTls, loopUrl)
   }
-  const sslCreds = grpc.credentials.createSsl(tls)
-  const metadata = new grpc.Metadata()
-  metadata.add("macaroon", macaroon)
-  const macaroonCreds = grpc.credentials.createFromMetadataGenerator(
-    (_args, callback) => {
-      callback(null, metadata)
-    },
+
+  const clientHealthCheck = util.promisify<QuoteRequest, OutQuoteResponse>(
+    swapClient.loopOutQuote.bind(swapClient),
   )
-  const credentials = grpc.credentials.combineChannelCredentials(sslCreds, macaroonCreds)
-  try {
-    const client = new SwapClientClient(loopUrl, credentials, grpcOptions)
-    return client
-  } catch (e) {
-    throw SwapClientNotResponding
-  }
-}
+  const clientSwapOut = util.promisify<LoopOutRequest, SwapResponse>(
+    swapClient.loopOut.bind(swapClient),
+  )
 
-const swapClient = createClient(loopMacaroon, loopTls)
-
-function convertMacaroonToHexString(macaroon) {
-  const macaroonHexStr = macaroon.toString("hex")
-  return macaroonHexStr
-}
-
-const clientHealthCheck = util.promisify<QuoteRequest, OutQuoteResponse>(
-  swapClient.loopOutQuote.bind(swapClient),
-)
-
-const clientSwapOut = util.promisify<LoopOutRequest, SwapResponse>(
-  swapClient.loopOut.bind(swapClient),
-)
-
-export const LoopService = () => {
   const healthCheck = async (): Promise<boolean> => {
     try {
       const request = new QuoteRequest()
@@ -89,6 +75,7 @@ export const LoopService = () => {
       const request = new LoopOutRequest()
       // --fast is about 30 min or 1800 seconds
       const swapPublicationDeadline = 1800
+      if (swapAddress) request.setDest(swapAddress)
       request.setAmt(amount)
       request.setMaxSwapFee(fee)
       request.setMaxPrepayRoutingFee(fee)
@@ -160,6 +147,31 @@ export const LoopService = () => {
       return listener
     } catch (error) {
       throw new SwapServiceError(error)
+    }
+  }
+
+  function createClient(macaroon, tls, grpcEndpoint): SwapClientClient {
+    const grpcOptions = {
+      "grpc.max_receive_message_length": -1,
+      "grpc.max_send_message_length": -1,
+    }
+    const sslCreds = grpc.credentials.createSsl(tls)
+    const metadata = new grpc.Metadata()
+    metadata.add("macaroon", macaroon)
+    const macaroonCreds = grpc.credentials.createFromMetadataGenerator(
+      (_args, callback) => {
+        callback(null, metadata)
+      },
+    )
+    const credentials = grpc.credentials.combineChannelCredentials(
+      sslCreds,
+      macaroonCreds,
+    )
+    try {
+      const client = new SwapClientClient(grpcEndpoint, credentials, grpcOptions)
+      return client
+    } catch (e) {
+      throw SwapClientNotResponding
     }
   }
 

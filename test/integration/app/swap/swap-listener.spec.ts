@@ -6,9 +6,8 @@ import { sleep } from "@utils"
 import { mineBlockAndSyncAll } from "test/helpers"
 
 describe("Swap", () => {
-  jest.setTimeout(30000)
-  const amount = 250000
   it("Initiate Swap out, then listen for events", async () => {
+    const amount = 250000
     const swapService = SwapService()
     const isSwapServerUp = await swapService.healthCheck()
     if (isSwapServerUp) {
@@ -23,20 +22,21 @@ describe("Swap", () => {
         // 2) Trigger Swap Out
         await swapService.swapOut(toSats(amount))
         await sleep(1000)
-        // 3) Mine blocks
+        // 3) Mine blocks and wait a few seconds between rounds
         await mineBlockAndSyncAll()
         await sleep(1000)
         await mineBlockAndSyncAll()
-        // 4) Wait a few seconds
         await sleep(1000)
-        // 5) Cancel listencer
+        await mineBlockAndSyncAll()
+        // 4) The swap out should have been picked up by the listener by now
+        // and triggered the handleSwapOutCompleted above
+        // 5) Cancel the listener
         listener.cancel()
         expect.assertions(1)
         resolve(true)
       })
     } else {
       const msg = "Swap Server not running...skipping"
-      // console.log(msg)
       expect(msg).toEqual(msg)
     }
   })

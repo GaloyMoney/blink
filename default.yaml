@@ -169,10 +169,13 @@ onChainWallet:
 
 swap:
   minOnChainHotWalletBalance: 30000000
-  loopRestEndpoint: "https://localhost:8081"
-  loopRpcEndpoint: "localhost:11010"
   swapOutAmount:  25000000
   swapProviders: ["LOOP"]
+  lnd1loopRestEndpoint: "https://localhost:8081"
+  lnd1loopRpcEndpoint: "localhost:11010"
+  lnd2loopRestEndpoint: "https://localhost:8082"
+  lnd2loopRpcEndpoint: "localhost:11011"
+  
 
 # TODO
 # carrierRegexFilter: ""
