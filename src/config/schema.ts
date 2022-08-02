@@ -354,15 +354,9 @@ export const configSchema = {
       additionalProperties: false,
     },
     skipFeeProbe: {
-      type: "object",
-      patternProperties: {
-        "^.*$": {
-          type: "array",
-          items: { type: "string", maxLength: 66 },
-          uniqueItems: true,
-        },
-      },
-      additionalProperties: false,
+      type: "array",
+      items: { type: "string", maxLength: 66, minLength: 66 },
+      uniqueItems: true,
     },
   },
   required: [
