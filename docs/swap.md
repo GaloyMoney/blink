@@ -79,8 +79,12 @@ const resp = await LoopService().swapOut(amount)
 ----------------------------
 The easiest way to monitor the status of a loop out in dev is to remote into loopd. 
 ```
+# loop 1
 loopd1_id=$(docker ps -q -f name="loopd1-1")
 docker exec -it $loopd1_id loop -n regtest monitor
+# loop 2
+loopd2_id=$(docker ps -q -f name="loopd2-1")
+docker exec -it $loopd2_id loop -n regtest monitor
 ```
 This command will keep an open listener for any loop events.
 

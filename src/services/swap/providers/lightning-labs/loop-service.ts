@@ -31,12 +31,15 @@ const loopTls = Buffer.from(
 )
 const loopUrl = getSwapConfig().lnd1loopRpcEndpoint
 
-export const LoopService = (
-  macaroon?: string,
-  tlsCert?: string,
-  grpcEndpoint?: string,
-  swapAddress?: string,
-) => {
+export const LoopService = ({
+  macaroon,
+  tlsCert,
+  grpcEndpoint,
+}: {
+  macaroon?: string
+  tlsCert?: string
+  grpcEndpoint?: string
+}) => {
   let swapClient
   if (macaroon && tlsCert && grpcEndpoint) {
     const mac = Buffer.from(macaroon, "base64").toString("hex")
@@ -66,16 +69,21 @@ export const LoopService = (
     return false
   }
 
-  const swapOut = async function (
+  const swapOut = async function ({
     amount,
-    maxSwapFee?,
-  ): Promise<SwapOutResult | SwapServiceError> {
+    maxSwapFee,
+    swapDestAddress,
+  }: {
+    amount: Satoshis
+    maxSwapFee?: Satoshis
+    swapDestAddress?: string
+  }): Promise<SwapOutResult | SwapServiceError> {
     const fee = maxSwapFee ? maxSwapFee : 20000
     try {
       const request = new LoopOutRequest()
-      // --fast is about 30 min or 1800 seconds
-      const swapPublicationDeadline = 1800
-      if (swapAddress) request.setDest(swapAddress)
+      // if swap out does not occur in 2 hours (7200 sec) than it will fail
+      const swapPublicationDeadline = 7200
+      if (swapDestAddress) request.setDest(swapDestAddress)
       request.setAmt(amount)
       request.setMaxSwapFee(fee)
       request.setMaxPrepayRoutingFee(fee)

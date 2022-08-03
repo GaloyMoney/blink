@@ -4,6 +4,7 @@ import { toSats } from "@domain/bitcoin"
 import { SwapClientNotResponding } from "@domain/swap/errors"
 import { SwapOutChecker } from "@domain/swap"
 import { lndsBalances } from "@services/lnd/utils"
+import { LoopUtils } from "@services/swap/swap-utils"
 import { getSwapConfig } from "@config"
 
 describe("Swap", () => {
@@ -26,30 +27,44 @@ describe("Swap", () => {
     }
   })
 
-  it("Swap out returns successful swap result for lnd2-loop server", async () => {
+  it("Swap out returns successful swap result for lnd2loop service", async () => {
     if (await swapService.healthCheck()) {
-      if (process.env.LND2_LOOP_MACAROON && process.env.LND2_LOOP_TLS) {
-        const swapServiceLnd2 = SwapService(
-          process.env.LND2_LOOP_MACAROON.toString(),
-          process.env.LND2_LOOP_TLS,
-          getSwapConfig().lnd2loopRpcEndpoint,
-        )
-        if (await swapServiceLnd2.healthCheck()) {
-          // TODO this might fail in not enough funds in LND2
-          const swapResult = await swapServiceLnd2.swapOut(amount)
-          if (swapResult instanceof SwapClientNotResponding) {
-            console.log("Swap Client is not running, skipping")
-            return
+      const loopUtils = LoopUtils()
+      const macaroon = process.env.LND2_LOOP_MACAROON?.toString()
+      const tlsCert = process.env.LND2_LOOP_TLS
+      const grpcEndpoint = getSwapConfig().lnd2loopRpcEndpoint
+      const loopService = loopUtils.getLoopService({
+        macaroon,
+        tlsCert,
+        grpcEndpoint,
+      })
+      const swapServiceLnd2 = loopService
+      if (await swapServiceLnd2.healthCheck()) {
+        const swapDestAddress = await loopUtils.getSwapDestAddress()
+        let params
+        if (swapDestAddress instanceof String) {
+          params = {
+            amount,
+            swapDestAddress,
           }
-          expect(swapResult).not.toBeInstanceOf(Error)
-          expect(swapResult).toEqual(
-            expect.objectContaining({
-              swapId: expect.any(String),
-            }),
-          )
+        } else {
+          params = { amount }
         }
-      } else {
-        throw Error("no process.env.LND2_LOOP_MACAROON && process.env.LND2_LOOP_TLS")
+        // TODO this might fail in not enough funds in LND2
+        const swapResult = await swapServiceLnd2.swapOut(params)
+        if (swapResult instanceof SwapClientNotResponding) {
+          console.log("Swap Client is not running, skipping")
+          return
+        }
+        if (swapResult instanceof Error) {
+          throw swapResult
+        }
+        expect(swapResult).not.toBeInstanceOf(Error)
+        expect(swapResult).toEqual(
+          expect.objectContaining({
+            swapId: expect.any(String),
+          }),
+        )
       }
     }
   })
