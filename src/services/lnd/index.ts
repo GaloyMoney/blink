@@ -375,7 +375,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
         const errDetails = parseLndErrorDetails(err)
         switch (errDetails) {
           case KnownLndErrorDetails.LndDbCorruption:
-            return new CorruptLndDbError()
+            return new CorruptLndDbError(
+              `Corrupted DB error for node with pubkey: ${pubkey}`,
+            )
           default:
             return new UnknownRouteNotFoundError(err)
         }

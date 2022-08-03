@@ -244,6 +244,7 @@ const recordException = (span: Span, exception: Exception, level?: ErrorLevel) =
   span.setAttribute("error.level", errorLevel)
   // @ts-ignore-next-line no-implicit-any error
   span.setAttribute("error.name", exception["name"])
+  span.setAttribute("error.message", exception["message"])
   span.recordException(exception)
   span.setStatus({ code: SpanStatusCode.ERROR })
 }
