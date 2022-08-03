@@ -6,6 +6,7 @@ import { connectionArgs, connectionFromArray } from "@graphql/connections"
 import { TransactionConnection } from "../object/transaction"
 import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"
+import OnChainAddress from "../scalar/on-chain-address"
 
 const IWallet = GT.Interface({
   name: "Wallet",
@@ -27,7 +28,7 @@ const IWallet = GT.Interface({
       description: dedent`Transactions are ordered anti-chronologically,
       ie: the newest transaction will be first`,
       type: TransactionConnection,
-      args: connectionArgs,
+      args: { ...connectionArgs, addresses: { type: GT.List(OnChainAddress) } },
       resolve: (source, args) => {
         return connectionFromArray<WalletTransaction>(source.transactions, args)
       },

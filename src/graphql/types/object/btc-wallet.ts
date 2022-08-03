@@ -6,10 +6,13 @@ import { Wallets } from "@app"
 
 import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
 
+import { InputValidationError } from "@graphql/error"
+
 import IWallet from "../abstract/wallet"
 
 import SignedAmount from "../scalar/signed-amount"
 import WalletCurrency from "../scalar/wallet-currency"
+import OnChainAddress from "../scalar/on-chain-address"
 
 import { TransactionConnection } from "./transaction"
 
@@ -44,8 +47,24 @@ const BtcWallet = GT.Object<Wallet>({
     },
     transactions: {
       type: TransactionConnection,
-      args: connectionArgs,
+      args: { ...connectionArgs, addresses: { type: GT.List(OnChainAddress) } },
       resolve: async (source, args) => {
+        const { addresses } = args
+        if (addresses && addresses.length) {
+          for (const address of addresses) {
+            if (address instanceof InputValidationError) throw address
+          }
+
+          const { result: transactions, error } =
+            await Wallets.getTransactionsForWalletsByAddresses({
+              wallets: [source],
+              addresses,
+            })
+          if (error instanceof Error) throw mapError(error)
+          if (transactions === null) throw error
+          return connectionFromArray<WalletTransaction>(transactions, args)
+        }
+
         const { result: transactions, error } = await Wallets.getTransactionsForWallets([
           source,
         ])
