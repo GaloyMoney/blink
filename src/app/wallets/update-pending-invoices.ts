@@ -263,6 +263,14 @@ export const declineHeldInvoice = async ({
   }
   if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
 
+  // FIXME: This is just to support transition to hodl invoices
+  // TODO: REMOVE THIS after hodl invoices has been deployed for 24 hours.
+  if (lnInvoiceLookup.isSettled) {
+    const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(paymentHash)
+    if (walletInvoice instanceof Error) return walletInvoice
+    return updatePendingInvoice({ walletInvoice, logger })
+  }
+
   if (!lnInvoiceLookup.isHeld) {
     pendingInvoiceLogger.info({ lnInvoiceLookup }, "invoice has not been paid yet")
     return false
