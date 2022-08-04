@@ -112,7 +112,7 @@ const updatePendingInvoice = async ({
     return true
   }
 
-  if (!lnInvoiceLookup.isHeld) {
+  if (!lnInvoiceLookup.isHeld && !lnInvoiceLookup.isSettled) {
     pendingInvoiceLogger.info("invoice has not been paid yet")
     return false
   }
@@ -148,8 +148,10 @@ const updatePendingInvoice = async ({
     const displayCurrencyPerSat = await getCurrentPrice()
     if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
-    const invoiceSettled = await lndService.settleInvoice({ pubkey, secret })
-    if (invoiceSettled instanceof Error) return invoiceSettled
+    if (!lnInvoiceLookup.isSettled) {
+      const invoiceSettled = await lndService.settleInvoice({ pubkey, secret })
+      if (invoiceSettled instanceof Error) return invoiceSettled
+    }
 
     const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
     if (invoicePaid instanceof Error) return invoicePaid
