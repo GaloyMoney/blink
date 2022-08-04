@@ -604,6 +604,11 @@ async function testTxnsByAddressWrapper({
   const commonAddressPendingSet = txnAddressesWithPendingSet.intersect(new Set(addresses))
   expect(commonAddressPendingSet.size).toEqual(addresses.length)
 
+  // Test pending onchain transactions balance use-case
+  const pendingBalances = await Wallets.getPendingOnChainBalanceForWallet([wallet])
+  const expectedPendingBalance = amountSats * addresses.length
+  expect(pendingBalances[walletId]).toEqual(expectedPendingBalance)
+
   // Confirm pending onchain transactions
   await confirmSent({
     walletClient: bitcoindOutside,
