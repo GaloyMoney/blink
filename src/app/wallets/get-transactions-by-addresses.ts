@@ -1,15 +1,19 @@
-import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS, SECS_PER_10_MINS } from "@config"
 
 import { getCurrentPrice } from "@app/prices"
 import { PartialResult } from "@app/partial-result"
 
+import { CacheKeys } from "@domain/cache"
 import { LedgerError } from "@domain/ledger"
 import { WalletTransactionHistory } from "@domain/wallets"
 import { OnChainError, TxDecoder, TxFilter } from "@domain/bitcoin/onchain"
 
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
+import { RedisCacheService } from "@services/cache"
 import { OnChainService } from "@services/lnd/onchain-service"
+
+const redisCache = RedisCacheService()
 
 export const getTransactionsForWalletsByAddresses = async ({
   wallets,
@@ -47,6 +51,11 @@ export const getTransactionsForWalletsByAddresses = async ({
     baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
     return PartialResult.partial(confirmedHistory.transactions, onChainTxs)
   }
+  redisCache.set({
+    key: CacheKeys.LastOnChainTransactions,
+    value: onChainTxs,
+    ttlSecs: SECS_PER_10_MINS,
+  })
 
   const allAddresses: OnChainAddress[] = []
   const addressesByWalletId: { [walletid: string]: OnChainAddress[] } = {}
