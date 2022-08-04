@@ -48,8 +48,9 @@ const UsdWallet = GT.Object<Wallet>({
       type: TransactionConnection,
       args: { ...connectionArgs, addresses: { type: GT.List(OnChainAddress) } },
       resolve: async (source, args) => {
-        const { addresses } = args
-        if (addresses && addresses.length) {
+        let { addresses } = args
+        if (addresses) {
+          addresses = addresses.length ? addresses : source.onChainAddresses()
           for (const address of addresses) {
             if (address instanceof InputValidationError) throw address
           }
