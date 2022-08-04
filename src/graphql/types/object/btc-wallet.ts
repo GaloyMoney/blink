@@ -43,6 +43,15 @@ const BtcWallet = GT.Object<Wallet>({
         return balanceSats
       },
     },
+    pendingIncomingBalance: {
+      type: GT.NonNull(SignedAmount),
+      description: "An unconfirmed incoming onchain balance stored in BTC.",
+      resolve: async (source) => {
+        const balanceSats = await Wallets.getPendingOnChainBalanceForWallet([source])
+        if (balanceSats instanceof Error) throw mapError(balanceSats)
+        return balanceSats[source.id]
+      },
+    },
     transactions: {
       type: TransactionConnection,
       args: connectionArgs,

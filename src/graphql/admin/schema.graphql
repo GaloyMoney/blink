@@ -71,6 +71,11 @@ type BTCWallet implements Wallet {
   id: ID!
 
   """
+  An unconfirmed incoming onchain balance stored in BTC.
+  """
+  pendingIncomingBalance: SignedAmount!
+
+  """
   A list of BTC transactions associated with this wallet.
   """
   transactions(
@@ -475,6 +480,11 @@ type UsdWallet implements Wallet {
   accountId: ID!
   balance: SignedAmount!
   id: ID!
+
+  """
+  An unconfirmed incoming onchain balance stored in BTC.
+  """
+  pendingIncomingBalance: SignedAmount!
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -554,6 +564,7 @@ interface Wallet {
   accountId: ID!
   balance: SignedAmount!
   id: ID!
+  pendingIncomingBalance: SignedAmount!
 
   """
   Transactions are ordered anti-chronologically,
