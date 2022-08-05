@@ -3,6 +3,7 @@ import { IncomingOnChainTxHandler } from "@domain/bitcoin/onchain/incoming-tx-ha
 
 describe("handleIncomingOnChainTransactions", () => {
   const incomingTxns: IncomingOnChainTransaction[] = [
+    // walletId0 1st txn
     {
       confirmations: 0,
       rawTx: {
@@ -22,6 +23,8 @@ describe("handleIncomingOnChainTransactions", () => {
       createdAt: new Date(Date.now()),
       uniqueAddresses: () => [] as OnChainAddress[],
     },
+
+    // walletId0 2nd txn
     {
       confirmations: 0,
       rawTx: {
@@ -41,6 +44,8 @@ describe("handleIncomingOnChainTransactions", () => {
       createdAt: new Date(Date.now()),
       uniqueAddresses: () => [] as OnChainAddress[],
     },
+
+    // walletId1 1st txn
     {
       confirmations: 0,
       rawTx: {
@@ -60,6 +65,31 @@ describe("handleIncomingOnChainTransactions", () => {
       createdAt: new Date(Date.now()),
       uniqueAddresses: () => [] as OnChainAddress[],
     },
+
+    // Tx with multiple outputs from walletId0 & walletId1
+    {
+      confirmations: 0,
+      rawTx: {
+        txHash: "txHash4" as OnChainTxHash,
+        outs: [
+          {
+            sats: toSats(700),
+            address: "walletId0-address1" as OnChainAddress,
+          },
+          {
+            sats: toSats(800),
+            address: "walletId0-address2" as OnChainAddress,
+          },
+          {
+            sats: toSats(900),
+            address: "walletId1-address1" as OnChainAddress,
+          },
+        ],
+      },
+      fee: toSats(0),
+      createdAt: new Date(Date.now()),
+      uniqueAddresses: () => [] as OnChainAddress[],
+    },
   ]
 
   const handler = IncomingOnChainTxHandler(incomingTxns)
@@ -67,11 +97,11 @@ describe("handleIncomingOnChainTransactions", () => {
   describe("balance by address", () => {
     it("calculates balances by addresses in txns", () => {
       const expectedBalancesByAddress = {
-        ["walletId0-address1"]: 100n,
+        ["walletId0-address1"]: 800n,
         ["change-address1"]: 200n,
-        ["walletId0-address2"]: 300n,
+        ["walletId0-address2"]: 1100n,
         ["change-address2"]: 400n,
-        ["walletId1-address1"]: 500n,
+        ["walletId1-address1"]: 1400n,
         ["change-address3"]: 600n,
       }
       const balancesByAddress = handler.balanceByAddress()
@@ -108,8 +138,8 @@ describe("handleIncomingOnChainTransactions", () => {
 
     it("calculates balances for a set of wallets", () => {
       const expectedBalancesByWallet = {
-        walletId0: 400n,
-        walletId1: 500n,
+        walletId0: 1900n,
+        walletId1: 1400n,
         walletId2: 0n,
       }
 
