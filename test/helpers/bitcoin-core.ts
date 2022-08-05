@@ -35,17 +35,13 @@ export const sendToAddress = async ({
   walletClient: BitcoindWalletClient
   address: OnChainAddress
   amount: number
-}) => {
-  await walletClient.sendToAddress({ address, amount })
-}
+}) => walletClient.sendToAddress({ address, amount })
 
 export const confirmSent = async ({
   walletClient,
 }: {
   walletClient: BitcoindWalletClient
-}) => {
-  await walletClient.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
-}
+}) => walletClient.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
 
 export async function mineAndConfirm({
   walletClient,
