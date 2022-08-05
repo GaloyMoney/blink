@@ -38,7 +38,11 @@ export const getTransactionsForWalletsByAddresses = async ({
 
   // we are getting both the transactions in the mempool and the transaction that
   // have been mined by not yet credited because they haven't reached enough confirmations
-  const onChainTxs = await onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS)
+  const onChainTxs = await redisCache.getOrSet({
+    key: CacheKeys.LastOnChainTransactions,
+    ttlSecs: SECS_PER_10_MINS,
+    fn: () => onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS),
+  })
   if (onChainTxs instanceof Error) {
     baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
     return PartialResult.partial(confirmedHistory.transactions, onChainTxs)

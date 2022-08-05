@@ -17,7 +17,7 @@ import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
-import { ModifiedSet, sleep } from "@utils"
+import { elapsedSinceTimestamp, ModifiedSet, sleep } from "@utils"
 import { WalletsRepository } from "@services/mongoose"
 
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
@@ -529,6 +529,18 @@ async function testTxnsByAddressWrapper({
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
 
+  // Send payments to addresses
+  const subTransactions = subscribeToTransactions({ lnd })
+  const addressesForReceivedTxns = [] as OnChainAddress[]
+  const onChainTxHandler = (tx) => {
+    for (const address of tx.output_addresses) {
+      if (addresses.includes(address)) {
+        addressesForReceivedTxns.push(address)
+      }
+    }
+    return onchainTransactionEventHandler(tx)
+  }
+  subTransactions.on("chain_transaction", onChainTxHandler)
   // just to improve performance
   const blockNumber = await bitcoindClient.getBlockCount()
   for (const address of addresses) {
@@ -538,6 +550,23 @@ async function testTxnsByAddressWrapper({
       amount: sat2btc(amountSats),
     })
   }
+
+  // Wait for subscription events
+  const TIME_TO_WAIT = 1000
+  const checkReceived = async () => {
+    const start = new Date(Date.now())
+    while (addressesForReceivedTxns.length != addresses.length) {
+      const elapsed = elapsedSinceTimestamp(start) * 1000
+      if (elapsed > TIME_TO_WAIT) return new Error("Timed out")
+      await sleep(100)
+    }
+    return true
+  }
+  const waitForTxns = await checkReceived()
+  expect(waitForTxns).not.toBeInstanceOf(Error)
+
+  // Expected pending transactions have been received
+  subTransactions.removeAllListeners()
 
   // Fetch txns with pending
   const txnsWithPendingResult = await Wallets.getTransactionsForWalletsByAddresses({
