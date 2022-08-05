@@ -21,6 +21,7 @@ type AccountCustomFields {
   firstName: String!
   lastName: String
   onlyAdminField: Int
+  otherField2: [Boolean]
 }
 
 type AccountCustomFieldsPayload {
@@ -33,6 +34,7 @@ input AccountCustomFieldsUpdateInput {
   firstName: String!
   lastName: String
   onlyAdminField: Int
+  otherField2: [Boolean]
 }
 
 type AccountDetailPayload {

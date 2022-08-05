@@ -30,7 +30,7 @@ describe("parseCustomFieldsSchema", () => {
     expect(result).toEqual(expect.objectContaining({ fieldName: { type: GT.String } }))
   })
 
-  test.each(customFieldsInfo.filter((s) => s.schema.required))(
+  test.each(customFieldsInfo.filter((s) => s.schema.required && !s.schema.array))(
     "returns non-null $schema.type schema field",
     ({ schema, field }) => {
       const result = parseCustomFieldsSchema({ fields: [schema] })
@@ -38,8 +38,24 @@ describe("parseCustomFieldsSchema", () => {
     },
   )
 
-  test.each(customFieldsInfo.filter((s) => !s.schema.required))(
+  test.each(customFieldsInfo.filter((s) => !s.schema.required && !s.schema.array))(
     "returns null $schema.type schema field",
+    ({ schema, field }) => {
+      const result = parseCustomFieldsSchema({ fields: [schema] })
+      expect(result).toEqual(expect.objectContaining(field))
+    },
+  )
+
+  test.each(customFieldsInfo.filter((s) => s.schema.required && s.schema.array))(
+    "returns non-null $schema.type array schema field",
+    ({ schema, field }) => {
+      const result = parseCustomFieldsSchema({ fields: [schema] })
+      expect(result).toEqual(expect.objectContaining(field))
+    },
+  )
+
+  test.each(customFieldsInfo.filter((s) => !s.schema.required && s.schema.array))(
+    "returns null $schema.type array schema field",
     ({ schema, field }) => {
       const result = parseCustomFieldsSchema({ fields: [schema] })
       expect(result).toEqual(expect.objectContaining(field))

@@ -8,7 +8,7 @@ export const updateAccountCustomFields = async ({
 }: {
   accountId: AccountId
   modifiedByUserId: UserId
-  customFields: { [k: string]: string | number | boolean }
+  customFields: { [k: string]: AccountCustomFieldValues }
 }): Promise<AccountCustomFields | ApplicationError> => {
   const accountCustomFieldsRepo = AccountCustomFieldsRepository()
 

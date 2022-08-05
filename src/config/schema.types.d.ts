@@ -19,6 +19,7 @@ type AccountLimitsConfig = {
 type CustomField = {
   name: string
   type?: "string" | "integer" | "float" | "boolean"
+  array?: boolean
   required?: boolean
   editable?: boolean
   index?: boolean

@@ -146,9 +146,10 @@ accounts:
       type: "integer"
       required: false
       index: true
-    # - name: "otherField2"
-    #   type: "boolean"
-    #   required: false
+    - name: "otherField2"
+      type: "boolean"
+      array: true
+      required: false
 
 accountLimits:
   withdrawal:

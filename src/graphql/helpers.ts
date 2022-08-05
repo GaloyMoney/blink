@@ -1,4 +1,4 @@
-import { GraphQLFieldConfig, GraphQLScalarType, ThunkObjMap } from "graphql"
+import { GraphQLFieldConfig, ThunkObjMap } from "graphql"
 
 import { WalletCurrency } from "@domain/shared"
 import { WalletsRepository } from "@services/mongoose"
@@ -47,23 +47,28 @@ export const parseCustomFieldsSchema = <TSource, TContext>({
   const result: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>> = {}
   for (const field of fields) {
     if (result[field.name] || (onlyEditable && !field.editable)) continue
-    const type = getGT(field.type)
-    result[field.name] = {
-      type: field.required ? GT.NonNull(type) : type,
-    }
+    result[field.name] = { type: getGT(field) }
   }
   return result
 }
 
-const getGT = (type?: string): GraphQLScalarType => {
-  switch (type) {
-    case "integer":
-      return GT.Int
-    case "float":
-      return GT.Float
-    case "boolean":
-      return GT.Boolean
-    default:
-      return GT.String
+const getGT = (field: CustomField) => {
+  let baseType = GT.String
+  if (field.type === "integer") {
+    baseType = GT.Int
   }
+
+  if (field.type === "float") {
+    baseType = GT.Float
+  }
+
+  if (field.type === "boolean") {
+    baseType = GT.Boolean
+  }
+
+  if (field.array) {
+    return field.required ? GT.NonNullList(baseType) : GT.List(baseType)
+  }
+
+  return field.required ? GT.NonNull(baseType) : baseType
 }

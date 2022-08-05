@@ -134,5 +134,5 @@ interface AccountCustomFieldsRecord {
   accountId: ObjectId
   modifiedByUserId: ObjectId
   createdAt: Date
-  customFields: { [k: string]: string | number | boolean }
+  customFields: { [k: string]: AccountCustomFieldValues }
 }
