@@ -1,4 +1,7 @@
-import { Users, Wallets } from "@app"
+import { Accounts, Users, Wallets } from "@app"
+
+import { CouldNotFindError } from "@domain/errors"
+
 import { GT } from "@graphql/index"
 import Coordinates from "@graphql/types/object/coordinates"
 import Timestamp from "@graphql/types/scalar/timestamp"
@@ -10,6 +13,7 @@ import AccountLevel from "../scalar/account-level"
 import AccountStatus from "../scalar/account-status"
 
 import GraphQLUser from "./user"
+import AccountCustomFields from "./account-custom-fields"
 
 const Account: GraphQLObjectType<Account> = GT.Object<Account>({
   name: "Account",
@@ -48,6 +52,16 @@ const Account: GraphQLObjectType<Account> = GT.Object<Account>({
       type: Coordinates,
       description:
         "GPS coordinates for the account that can be used to place the related business on a map",
+    },
+    data: {
+      type: AccountCustomFields,
+      resolve: async (source) => {
+        const accountCustomFields = await Accounts.getAccountCustomFields(source.id)
+        if (accountCustomFields instanceof CouldNotFindError) return null
+        if (accountCustomFields instanceof Error) throw accountCustomFields
+
+        return accountCustomFields.customFields
+      },
     },
     createdAt: {
       type: GT.NonNull(Timestamp),
