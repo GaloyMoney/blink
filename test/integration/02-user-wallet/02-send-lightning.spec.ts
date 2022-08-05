@@ -93,10 +93,6 @@ import { DealerPriceService } from "test/mocks/dealer-price"
 
 const dealerFns = DealerPriceService()
 
-const date = Date.now() + 1000 * 60 * 60 * 24 * 8
-// required to avoid withdrawal limits validation
-jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
-
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
 jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
@@ -1059,10 +1055,12 @@ describe("UserWallet - Lightning Pay", () => {
 
         const paymentOtherGaloyUser = async ({
           walletIdPayer,
+          twoFASecretPayer,
           accountPayer,
           walletIdPayee,
         }: {
           walletIdPayer: WalletId
+          twoFASecretPayer?: TwoFASecret
           accountPayer: Account
           walletIdPayee: WalletId
         }) => {
@@ -1078,6 +1076,9 @@ describe("UserWallet - Lightning Pay", () => {
           const result = await fn({ account: accountPayer, walletId: walletIdPayer })({
             invoice: request,
             memo,
+            twoFAToken: twoFASecretPayer
+              ? generateTokenHelper(twoFASecretPayer)
+              : undefined,
           })
           if (result instanceof Error) throw result
 
@@ -1151,6 +1152,7 @@ describe("UserWallet - Lightning Pay", () => {
           ).not.toBeInstanceOf(Error)
         }
 
+        const userRecordA = await getUserRecordByTestUserRef("A")
         await paymentOtherGaloyUser({
           walletIdPayee: walletIdC,
           walletIdPayer: walletIdB,
@@ -1159,6 +1161,7 @@ describe("UserWallet - Lightning Pay", () => {
         await paymentOtherGaloyUser({
           walletIdPayee: walletIdC,
           walletIdPayer: walletIdA,
+          twoFASecretPayer: userRecordA.twoFA.secret,
           accountPayer: accountA,
         })
         await paymentOtherGaloyUser({
@@ -1174,7 +1177,6 @@ describe("UserWallet - Lightning Pay", () => {
         //     .mockReturnValueOnce(addProps(inputs.shift()))
         // }))
         // await paymentOtherGaloyUser({walletPayee: userWalletB, walletPayer: userwalletC})
-        const userRecordA = await getUserRecordByTestUserRef("A")
         expect(userRecordA.contacts).toEqual(
           expect.not.arrayContaining([expect.objectContaining({ id: usernameC })]),
         )
