@@ -6,8 +6,6 @@ import { Wallets } from "@app"
 
 import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
 
-import { InputValidationError } from "@graphql/error"
-
 import IWallet from "../abstract/wallet"
 
 import WalletCurrency from "../scalar/wallet-currency"
@@ -52,7 +50,7 @@ const UsdWallet = GT.Object<Wallet>({
         if (addresses) {
           addresses = addresses.length ? addresses : source.onChainAddresses()
           for (const address of addresses) {
-            if (address instanceof InputValidationError) throw address
+            if (address instanceof Error) throw address
           }
 
           const { result: transactions, error } =
