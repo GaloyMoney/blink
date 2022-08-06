@@ -1,10 +1,12 @@
 import { GT } from "@graphql/index"
 import { connectionArgs, connectionFromArray } from "@graphql/connections"
+import { InputValidationError } from "@graphql/error"
 import { mapError } from "@graphql/error-map"
 
 import { Wallets } from "@app"
 
 import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
+import { baseLogger } from "@services/logger"
 
 import IWallet from "../abstract/wallet"
 
@@ -46,9 +48,12 @@ const UsdWallet = GT.Object<Wallet>({
       type: TransactionConnection,
       args: { ...connectionArgs, addresses: { type: GT.List(OnChainAddress) } },
       resolve: async (source, args) => {
-        let { addresses } = args
+        const { addresses } = args
         if (addresses) {
-          addresses = addresses.length ? addresses : source.onChainAddresses()
+          if (addresses.length === 0) {
+            const message = "Invalid empty addresses list passed."
+            throw new InputValidationError({ message, logger: baseLogger })
+          }
           for (const address of addresses) {
             if (address instanceof Error) throw address
           }
