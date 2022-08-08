@@ -723,6 +723,7 @@ describe("UserWallet - onChainPay", () => {
 
     it("sends a successful large payment with a 2fa code", async () => {
       await enable2FA(userIdA)
+      userA = await getUserRecordByTestUserRef("A")
 
       const initialBalance = await getBalanceHelper(walletIdA)
       const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
