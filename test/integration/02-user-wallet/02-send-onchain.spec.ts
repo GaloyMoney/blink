@@ -18,12 +18,11 @@ import {
   LimitsExceededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { toLiabilitiesWalletId } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
-import { Transaction } from "@services/ledger/schema"
+import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
 import { sleep } from "@utils"
 
@@ -638,19 +637,15 @@ describe("UserWallet - onChainPay", () => {
       format: "p2wpkh",
     })
 
-    const timestampYesterday = new Date(Date.now() - MS_PER_DAY)
-    const [result] = await Transaction.aggregate([
-      {
-        $match: {
-          accounts: toLiabilitiesWalletId(walletIdA),
-          type: { $ne: "on_us" },
-          timestamp: { $gte: timestampYesterday },
-        },
-      },
-      { $group: { _id: null, outgoingBaseAmount: { $sum: "$debit" } } },
-    ])
+    const ledgerService = LedgerService()
+    const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
+    const walletVolume = await ledgerService.externalPaymentVolumeSince({
+      walletId: walletIdA,
+      timestamp: timestamp1DayAgo,
+    })
+    if (walletVolume instanceof Error) return walletVolume
 
-    const outgoingBaseAmount = toSats(result?.outgoingBaseAmount || 0)
+    const { outgoingBaseAmount } = walletVolume
 
     if (!userA.level) throw new Error("Invalid or non existent user level")
 
@@ -664,7 +659,7 @@ describe("UserWallet - onChainPay", () => {
       dCConverter.fromCentsToSats(withdrawalLimit),
       outgoingBaseAmount,
     )
-    if (subResult instanceof Error) return subResult
+    if (subResult instanceof Error) throw subResult
 
     const amount = add(subResult, toSats(100))
 
