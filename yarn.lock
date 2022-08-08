@@ -7732,7 +7732,7 @@ media-typer@0.3.0:
   resolved "https://registry.yarnpkg.com/media-typer/-/media-typer-0.3.0.tgz#8710d7af0aa626f8fffa1ce00168545263255748"
   integrity sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==
 
-medici@^5.2.1:
+medici@^5.2.2:
   version "5.2.2"
   resolved "https://registry.yarnpkg.com/medici/-/medici-5.2.2.tgz#2b369bf84ca4866119513d5fb4fcfd5466b7ed2e"
   integrity sha512-x54u/6IWT8WnWEMN2YRaLO7cRYL5wr2KX78FlcpJVVmYWjS3p3KK74EyX0n2lNJRaF0YMs0apcMj3xa/3ifQNg==
@@ -7944,7 +7944,7 @@ mongodb@4.8.1, mongodb@^4.0.1, mongodb@^4.4.1:
   optionalDependencies:
     saslprep "^1.0.3"
 
-"mongoose@5 - 6", mongoose@^6.4.1:
+"mongoose@5 - 6", mongoose@^6.5.1:
   version "6.5.1"
   resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-6.5.1.tgz#bcf28700ce3552fcdd4d6d4078d0127290020928"
   integrity sha512-8C0213y279nrSp6Au+WB+l/VczcotMU65jalTJJxU6KYf/Kd8gNW9+B3giWNJOVd8VvKvUQG0suWv/Vngp/83A==
