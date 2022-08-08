@@ -59,9 +59,6 @@ import {
 } from "test/helpers"
 import { getBalanceHelper, getRemainingTwoFALimit } from "test/helpers/wallet"
 
-const date = Date.now() + 1000 * 60 * 60 * 24 * 8
-jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
-
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
 let initialBalanceUserA: Satoshis
