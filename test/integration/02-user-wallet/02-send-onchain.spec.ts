@@ -26,7 +26,6 @@ import { onchainTransactionEventHandler } from "@servers/trigger"
 import { Transaction } from "@services/ledger/schema"
 import { baseLogger } from "@services/logger"
 import { sleep } from "@utils"
-import last from "lodash.last"
 
 import { getCurrentPrice } from "@app/prices"
 
@@ -83,6 +82,8 @@ let userIdA: UserId
 
 const locale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
+
+const last = <T>(arr: T[]): T | undefined => arr[arr.length - 1]
 
 beforeAll(async () => {
   await createMandatoryUsers()
