@@ -1,5 +1,6 @@
 import { GT } from "@graphql/index"
 import { connectionArgs, connectionFromArray } from "@graphql/connections"
+import { mapError } from "@graphql/error-map"
 
 import { Wallets } from "@app"
 
@@ -36,7 +37,7 @@ const UsdWallet = GT.Object<Wallet>({
           walletId: source.id,
           logger,
         })
-        if (balanceCents instanceof Error) throw balanceCents
+        if (balanceCents instanceof Error) throw mapError(balanceCents)
         return Math.floor(balanceCents)
       },
     },
@@ -47,9 +48,8 @@ const UsdWallet = GT.Object<Wallet>({
         const { result: transactions, error } = await Wallets.getTransactionsForWallets([
           source,
         ])
-        if (error instanceof Error || transactions === null) {
-          throw error
-        }
+        if (error instanceof Error) throw mapError(error)
+        if (transactions === null) throw error
         return connectionFromArray<WalletTransaction>(transactions, args)
       },
     },

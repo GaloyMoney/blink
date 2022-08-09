@@ -1,5 +1,6 @@
 import { GT } from "@graphql/index"
 import { connectionArgs, connectionFromArray } from "@graphql/connections"
+import { mapError } from "@graphql/error-map"
 
 import { Wallets } from "@app"
 
@@ -37,7 +38,7 @@ const BtcWallet = GT.Object<Wallet>({
           walletId: source.id,
           logger,
         })
-        if (balanceSats instanceof Error) throw balanceSats
+        if (balanceSats instanceof Error) throw mapError(balanceSats)
         return balanceSats
       },
     },
@@ -48,9 +49,8 @@ const BtcWallet = GT.Object<Wallet>({
         const { result: transactions, error } = await Wallets.getTransactionsForWallets([
           source,
         ])
-        if (error instanceof Error || transactions === null) {
-          throw error
-        }
+        if (error instanceof Error) throw mapError(error)
+        if (transactions === null) throw error
         return connectionFromArray<WalletTransaction>(transactions, args)
       },
       description: "A list of BTC transactions associated with this wallet.",
