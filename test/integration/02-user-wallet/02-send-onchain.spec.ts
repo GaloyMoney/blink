@@ -18,15 +18,13 @@ import {
   LimitsExceededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { toLiabilitiesWalletId } from "@domain/ledger"
 import { NotificationType } from "@domain/notifications"
 import { TwoFANewCodeNeededError } from "@domain/twoFA"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
-import { Transaction } from "@services/ledger/schema"
+import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
 import { sleep } from "@utils"
-import last from "lodash.last"
 
 import { getCurrentPrice } from "@app/prices"
 
@@ -61,9 +59,6 @@ import {
 } from "test/helpers"
 import { getBalanceHelper, getRemainingTwoFALimit } from "test/helpers/wallet"
 
-const date = Date.now() + 1000 * 60 * 60 * 24 * 8
-jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
-
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
 let initialBalanceUserA: Satoshis
@@ -83,6 +78,8 @@ let userIdA: UserId
 
 const locale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
+
+const last = <T>(arr: T[]): T | undefined => arr[arr.length - 1]
 
 beforeAll(async () => {
   await createMandatoryUsers()
@@ -637,19 +634,15 @@ describe("UserWallet - onChainPay", () => {
       format: "p2wpkh",
     })
 
-    const timestampYesterday = new Date(Date.now() - MS_PER_DAY)
-    const [result] = await Transaction.aggregate([
-      {
-        $match: {
-          accounts: toLiabilitiesWalletId(walletIdA),
-          type: { $ne: "on_us" },
-          timestamp: { $gte: timestampYesterday },
-        },
-      },
-      { $group: { _id: null, outgoingBaseAmount: { $sum: "$debit" } } },
-    ])
+    const ledgerService = LedgerService()
+    const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
+    const walletVolume = await ledgerService.externalPaymentVolumeSince({
+      walletId: walletIdA,
+      timestamp: timestamp1DayAgo,
+    })
+    if (walletVolume instanceof Error) return walletVolume
 
-    const outgoingBaseAmount = toSats(result?.outgoingBaseAmount || 0)
+    const { outgoingBaseAmount } = walletVolume
 
     if (!userA.level) throw new Error("Invalid or non existent user level")
 
@@ -663,7 +656,7 @@ describe("UserWallet - onChainPay", () => {
       dCConverter.fromCentsToSats(withdrawalLimit),
       outgoingBaseAmount,
     )
-    if (subResult instanceof Error) return subResult
+    if (subResult instanceof Error) throw subResult
 
     const amount = add(subResult, toSats(100))
 
@@ -727,6 +720,7 @@ describe("UserWallet - onChainPay", () => {
 
     it("sends a successful large payment with a 2fa code", async () => {
       await enable2FA(userIdA)
+      userA = await getUserRecordByTestUserRef("A")
 
       const initialBalance = await getBalanceHelper(walletIdA)
       const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
