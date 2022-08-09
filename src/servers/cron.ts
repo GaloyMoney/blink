@@ -62,8 +62,8 @@ const main = async () => {
     const lndService = LndService()
     if (lndService instanceof Error) throw lndService
 
-    const lnds = getLnds({ type: "offchain" })
-    for (const lnd of lnds) {
+    const lndsParamsAuth = getLnds({ type: "offchain" })
+    for (const { lnd } of lndsParamsAuth) {
       await reconnect({ lnd })
     }
   }
