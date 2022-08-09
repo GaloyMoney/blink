@@ -1,1 +1,1 @@
-declare module "balanceofsatoshis"
+declare module "balanceofsatoshis/network"
