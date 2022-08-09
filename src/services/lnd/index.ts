@@ -85,7 +85,10 @@ export const LndService = (): ILightningService | LightningServiceError => {
       return toSats(channel_balance)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      return new UnknownLightningServiceError(errDetails)
+      switch (errDetails) {
+        default:
+          return new UnknownLightningServiceError(msgForUnknown(err))
+      }
     }
   }
 
@@ -100,7 +103,10 @@ export const LndService = (): ILightningService | LightningServiceError => {
       return toSats(pending_balance)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      return new UnknownLightningServiceError(errDetails)
+      switch (errDetails) {
+        default:
+          return new UnknownLightningServiceError(msgForUnknown(err))
+      }
     }
   }
 
@@ -124,7 +130,10 @@ export const LndService = (): ILightningService | LightningServiceError => {
       return toSats(closingChannelBalance)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      return new UnknownLightningServiceError(errDetails)
+      switch (errDetails) {
+        default:
+          return new UnknownLightningServiceError(msgForUnknown(err))
+      }
     }
   }
 
@@ -283,7 +292,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       const errDetails = parseLndErrorDetails(err)
       switch (errDetails) {
         default:
-          return new UnknownLightningServiceError(JSON.stringify(err))
+          return new UnknownLightningServiceError(msgForUnknown(err))
       }
     }
   }
@@ -324,7 +333,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         case KnownLndErrorDetails.InvoiceNotFound:
           return new InvoiceNotFoundError()
         default:
-          return new UnknownLightningServiceError(JSON.stringify(err))
+          return new UnknownLightningServiceError(msgForUnknown(err))
       }
     }
   }
@@ -459,7 +468,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         case KnownLndErrorDetails.InvoiceNotFound:
           return true
         default:
-          return new UnknownLightningServiceError(JSON.stringify(err))
+          return new UnknownLightningServiceError(msgForUnknown(err))
       }
     }
   }
@@ -645,7 +654,7 @@ const lookupPaymentByPubkeyAndHash = async ({
       case KnownLndErrorDetails.SentPaymentNotFound:
         return new PaymentNotFoundError(JSON.stringify({ paymentHash, pubkey }))
       default:
-        return new UnknownLightningServiceError(JSON.stringify(err))
+        return new UnknownLightningServiceError(msgForUnknown(err))
     }
   }
 }
@@ -756,6 +765,12 @@ const handleSendPaymentLndErrors = ({
     case KnownLndErrorDetails.PaymentInTransition:
       return new PaymentInTransitionError(paymentHash)
     default:
-      return new UnknownLightningServiceError(JSON.stringify(err))
+      return new UnknownLightningServiceError(msgForUnknown(err))
   }
 }
+
+const msgForUnknown = (err: Error) =>
+  JSON.stringify({
+    parsedLndErrorDetails: parseLndErrorDetails(err),
+    detailsFromLnd: err,
+  })
