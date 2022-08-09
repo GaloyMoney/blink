@@ -1,7 +1,11 @@
 import { getCurrentPrice } from "@app/prices"
+import { usdFromBtcMidPriceFn } from "@app/shared"
+
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { CouldNotFindError } from "@domain/errors"
+import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+
 import { LockService } from "@services/lock"
 import { NewDealerPriceService } from "@services/dealer-price"
 import { LndService } from "@services/lnd"
@@ -12,10 +16,10 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
-import { elapsedSinceTimestamp, runInParallel } from "@utils"
-import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
 import * as LedgerFacade from "@services/ledger/facade"
-import { usdFromBtcMidPriceFn } from "@app/shared"
+import { addAttributesToCurrentSpan } from "@services/tracing"
+
+import { elapsedSinceTimestamp, runInParallel } from "@utils"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -266,10 +270,12 @@ export const declineHeldInvoice = async ({
   // FIXME: This is just to support transition to hodl invoices
   // TODO: REMOVE THIS after hodl invoices has been deployed for 24 hours.
   if (lnInvoiceLookup.isSettled) {
+    addAttributesToCurrentSpan({ ["isHodlInvoice"]: false })
     const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(paymentHash)
     if (walletInvoice instanceof Error) return walletInvoice
     return updatePendingInvoice({ walletInvoice, logger })
   }
+  addAttributesToCurrentSpan({ ["isHodlInvoice"]: true })
 
   if (!lnInvoiceLookup.isHeld) {
     pendingInvoiceLogger.info({ lnInvoiceLookup }, "invoice has not been paid yet")
