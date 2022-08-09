@@ -120,10 +120,8 @@ export const lndBalances = async (lnd: AuthenticatedLnd) => {
   const selfInitiatedChannels = channels.filter(
     ({ is_partner_initiated }) => is_partner_initiated === false,
   )
-  let anchorBalance = 0
-  for (let selfInitiatedChannel of selfInitiatedChannels) {
-    anchorBalance += 330
-  }
+  const satsAnchorOutput = 330
+  const anchorBalance = selfInitiatedChannels.length * satsAnchorOutput
 
   const total =
     chain_balance +
