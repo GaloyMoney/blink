@@ -27,7 +27,7 @@ const assertUnreachable = (x: never): never => {
 
 export const mapError = (error: ApplicationError): CustomApolloError => {
   const errorName = error.name as ApplicationErrorKey
-  let message: string = errorName || ""
+  let message = ""
   switch (errorName) {
     case "WithdrawalLimitsExceededError":
       message = error.message
@@ -97,9 +97,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "User tried to pay themselves"
       return new SelfPaymentError({ message, logger: baseLogger })
 
-    case "InsufficientBalanceError":
-      return new InsufficientBalanceError({ message, logger: baseLogger })
-
     case "LnInvoiceMissingPaymentSecretError":
       message = "Invoice is missing its 'payment secret' value"
       return new InvoiceDecodeError({ message, logger: baseLogger })
@@ -119,6 +116,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidBtcPaymentAmountError":
       message = "A valid satoshi amount is required"
       return new ValidationInternalError({ message, logger: baseLogger })
+
     case "InvalidUsdPaymentAmountError":
       message = "A valid usd amount is required"
       return new ValidationInternalError({ message, logger: baseLogger })
@@ -227,21 +225,33 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invalid lightning request, couldn't decode."
       return new InvoiceDecodeError({ message, logger: baseLogger })
 
-    case "UnknownRepositoryError":
-      return new DbError({ message, logger: baseLogger, level: "fatal" })
-
-    case "UnknownLedgerError":
-      return new DbError({ message, logger: baseLogger, level: "fatal" })
-
     case "PaymentInTransitionError":
       message = "Payment was sent and is still in transition."
       return new LightningPaymentError({ message, logger: baseLogger })
 
-    case "UnknownLightningServiceError":
-      return new LightningPaymentError({ message, logger: baseLogger })
+    case "UsernameNotAvailableError":
+      message = "username not available"
+      return new UsernameError({ message, logger: baseLogger })
 
-    case "UnknownTwoFAError":
+    case "UsernameIsImmutableError":
+      message = "username is immutable"
+      return new UsernameError({ message, logger: baseLogger })
+
+    case "TwoFANeedToBeSetBeforeDeletionError":
+      message = "TwoFA need to be set before removal"
       return new TwoFAError({ message, logger: baseLogger })
+
+    case "TwoFAAlreadySetError":
+      message = "TwoFA is already set"
+      return new TwoFAError({ message, logger: baseLogger })
+
+    case "InvalidWalletId":
+      message = "Invalid walletId for account."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "InsufficientBalanceError":
+      message = error.message
+      return new InsufficientBalanceError({ message, logger: baseLogger })
 
     case "InvalidCoordinatesError":
       return new InvalidCoordinatesError({ logger: baseLogger })
@@ -249,32 +259,25 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidBusinessTitleLengthError":
       return new InvalidBusinessTitleLengthError({ logger: baseLogger })
 
-    case "UsernameNotAvailableError":
-      message = "username not available"
-      return new UsernameError({ logger: baseLogger, message })
-
-    case "UsernameIsImmutableError":
-      message = "username is immutable"
-      return new UsernameError({ logger: baseLogger, message })
-
-    case "TwoFANeedToBeSetBeforeDeletionError":
-      message = "TwoFA need to be set before removal"
-      return new TwoFAError({ logger: baseLogger, message })
-
-    case "TwoFAAlreadySetError":
-      message = "TwoFA is already set"
-      return new TwoFAError({ logger: baseLogger, message })
-
     case "RebalanceNeededError":
       return new RebalanceNeededError({ logger: baseLogger })
-
-    case "InvalidWalletId":
-      message = "Invalid walletId for account."
-      return new ValidationInternalError({ message, logger: baseLogger })
 
     // ----------
     // Unhandled below here
     // ----------
+    case "UnknownRepositoryError":
+    case "UnknownLedgerError":
+      message = `Unknown error occurred (code: ${error.name})`
+      return new DbError({ message, logger: baseLogger, level: "fatal" })
+
+    case "UnknownLightningServiceError":
+      message = `Unknown error occurred (code: ${error.name})`
+      return new LightningPaymentError({ message, logger: baseLogger })
+
+    case "UnknownTwoFAError":
+      message = `Unknown error occurred (code: ${error.name})`
+      return new TwoFAError({ message, logger: baseLogger })
+
     case "RateLimiterExceededError":
     case "RateLimitError":
     case "RateLimitServiceError":
