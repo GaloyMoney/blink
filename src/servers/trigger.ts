@@ -24,14 +24,14 @@ import { uploadBackup } from "@app/admin/backup"
 import { toSats } from "@domain/bitcoin"
 import { CacheKeys } from "@domain/cache"
 import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
+import { ErrorLevel, WalletCurrency } from "@domain/shared"
 
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 import { RedisCacheService } from "@services/cache"
 import { onChannelUpdated } from "@services/lnd/utils"
 import { setupMongoConnection } from "@services/mongodb"
-import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 import { NotificationsService } from "@services/notifications"
 import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import {
@@ -225,6 +225,11 @@ const listenerOnchain = (lnd: AuthenticatedLnd) => {
 
   subTransactions.on("error", (err) => {
     baseLogger.error({ err }, "error subTransactions")
+    recordExceptionInCurrentSpan({
+      error: err,
+      level: ErrorLevel.Warn,
+      attributes: { ["error.subscription"]: "subTransactions" },
+    })
   })
 
   const subBlocks = subscribeToBlocks({ lnd })
@@ -238,6 +243,11 @@ const listenerOnchain = (lnd: AuthenticatedLnd) => {
 
   subBlocks.on("error", (err) => {
     baseLogger.error({ err }, "error subBlocks")
+    recordExceptionInCurrentSpan({
+      error: err,
+      level: ErrorLevel.Warn,
+      attributes: { ["error.subscription"]: "subBlocks" },
+    })
   })
 }
 
@@ -266,6 +276,11 @@ const listenerHodlInvoice = ({
   )
   subInvoice.on("error", (err) => {
     baseLogger.info({ err }, "error subChannels")
+    recordExceptionInCurrentSpan({
+      error: err,
+      level: ErrorLevel.Warn,
+      attributes: { ["error.subscription"]: "subChannels" },
+    })
     subInvoice.removeAllListeners()
   })
 }
@@ -318,6 +333,11 @@ export const setupInvoiceSubscribe = ({
   )
   subInvoices.on("error", (err) => {
     baseLogger.info({ err }, "error subInvoices")
+    recordExceptionInCurrentSpan({
+      error: err,
+      level: ErrorLevel.Warn,
+      attributes: { ["error.subscription"]: "subInvoices" },
+    })
     subInvoices.removeAllListeners()
   })
 
@@ -338,6 +358,11 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
   )
   subChannels.on("error", (err) => {
     baseLogger.info({ err }, "error subChannels")
+    recordExceptionInCurrentSpan({
+      error: err,
+      level: ErrorLevel.Warn,
+      attributes: { ["error.subscription"]: "subChannels" },
+    })
     subChannels.removeAllListeners()
   })
 
@@ -352,6 +377,11 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
 
   subBackups.on("error", (err) => {
     baseLogger.info({ err }, "error subBackups")
+    recordExceptionInCurrentSpan({
+      error: err,
+      level: ErrorLevel.Warn,
+      attributes: { ["error.subscription"]: "subBackups" },
+    })
     subBackups.removeAllListeners()
   })
 }
