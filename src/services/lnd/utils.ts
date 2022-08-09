@@ -115,8 +115,17 @@ export const lndBalances = async (lnd: AuthenticatedLnd) => {
     sumBy(channel.close_payments, (payment) => (payment.is_pending ? payment.tokens : 0)),
   )
 
+  // adds 330 sats for every selfInitiatedChannel even if not all channels use anchor
+  const { channels } = await getChannels({ lnd })
+  const selfInitiatedChannels = channels.filter(
+    ({ is_partner_initiated }) => is_partner_initiated === false,
+  )
+  const satsAnchorOutput = 330
+  const anchorBalance = selfInitiatedChannels.length * satsAnchorOutput
+
   const total =
     chain_balance +
+    anchorBalance +
     channel_balance +
     pending_chain_balance +
     opening_channel_balance +
