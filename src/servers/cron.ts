@@ -15,7 +15,7 @@ import { activateLndHealthCheck } from "@services/lnd/health"
 import { ColdStorage, Lightning, Wallets, Payments } from "@app"
 import { getCronConfig, TWO_MONTHS_IN_MS } from "@config"
 
-import { network } from "balanceofsatoshis"
+import { reconnect } from "balanceofsatoshis/network"
 import { LndService } from "@services/lnd"
 
 const logger = baseLogger.child({ module: "cron" })
@@ -64,7 +64,7 @@ const main = async () => {
 
     const lnds = getLnds({ type: "offchain" })
     for (const lnd of lnds) {
-      await network.reconnect({ lnd })
+      await reconnect({ lnd })
     }
   }
 
