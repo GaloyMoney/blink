@@ -278,10 +278,24 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `Unknown error occurred (code: ${error.name})`
       return new TwoFAError({ message, logger: baseLogger })
 
+    case "UnknownRateLimitServiceError":
+    case "UnknownLockServiceError":
+    case "UnknownPriceServiceError":
+    case "UnknownOnChainServiceError":
+    case "UnknownNotificationsServiceError":
+    case "UnknownIpFetcherServiceError":
+    case "UnknownCacheServiceError":
+    case "UnknownPhoneProviderServiceError":
+    case "UnknownColdStorageServiceError":
+    case "UnknownDealerPriceServiceError":
+    case "UnknownPubSubError":
+    case "UnknownBigIntConversionError":
+      message = `Unknown error occurred (code: ${error.name})`
+      return new UnknownClientError({ message, logger: baseLogger })
+
     case "RateLimiterExceededError":
     case "RateLimitError":
     case "RateLimitServiceError":
-    case "UnknownRateLimitServiceError":
     case "CouldNotFindUserError":
     case "TwoFAError":
     case "LedgerError":
@@ -329,27 +343,22 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LockServiceError":
     case "ResourceAttemptsLockServiceError":
     case "ResourceExpiredLockServiceError":
-    case "UnknownLockServiceError":
     case "PriceError":
     case "PriceServiceError":
     case "PriceNotAvailableError":
     case "DealerPriceNotAvailableError":
     case "PriceHistoryNotAvailableError":
-    case "UnknownPriceServiceError":
     case "OnChainError":
     case "TransactionDecodeError":
     case "OnChainServiceError":
-    case "UnknownOnChainServiceError":
     case "CouldNotFindOnChainTransactionError":
     case "OnChainServiceUnavailableError":
     case "NotificationsError":
     case "NotificationsServiceError":
     case "InvalidDeviceNotificationsServiceError":
-    case "UnknownNotificationsServiceError":
     case "AccountError":
     case "IpFetcherError":
     case "IpFetcherServiceError":
-    case "UnknownIpFetcherServiceError":
     case "CouldNotFindTransactionError":
     case "CouldNotFindTransactionMetadataError":
     case "InvalidLedgerTransactionId":
@@ -357,10 +366,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CacheNotAvailableError":
     case "CacheServiceError":
     case "CacheUndefinedError":
-    case "UnknownCacheServiceError":
     case "UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError":
     case "PhoneProviderServiceError":
-    case "UnknownPhoneProviderServiceError":
     case "MissingPhoneMetadataError":
     case "InvalidPhoneMetadataTypeError":
     case "InvalidPhoneMetadataCountryError":
@@ -382,7 +389,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidCurrentColdStorageWalletServiceError":
     case "InsufficientBalanceForRebalanceError":
     case "InvalidOrNonWalletTransactionError":
-    case "UnknownColdStorageServiceError":
     case "FeeDifferenceError":
     case "NoTransactionToSettleError":
     case "CorruptLndDbError":
@@ -390,7 +396,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "NotReachableError":
     case "DealerPriceError":
     case "DealerPriceServiceError":
-    case "UnknownDealerPriceServiceError":
     case "InvalidNegativeAmountError":
     case "DomainError":
     case "ErrorLevel":
@@ -411,10 +416,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "IntraLedgerHashPresentInLnFlowError":
     case "PubSubError":
     case "PubSubServiceError":
-    case "UnknownPubSubError":
     case "BigIntConversionError":
     case "BigIntFloatConversionError":
-    case "UnknownBigIntConversionError":
     case "SafeWrapperError":
     case "InvalidFeeProbeStateError":
     case "InvalidPubKeyError":
