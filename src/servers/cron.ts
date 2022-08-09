@@ -4,6 +4,7 @@ import {
   deleteExpiredLightningPaymentFlows,
   deleteExpiredWalletInvoice,
   deleteFailedPaymentsAttemptAllLnds,
+  getLnds,
   updateEscrows,
   updateRoutingRevenues,
 } from "@services/lnd/utils"
@@ -13,6 +14,9 @@ import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { ColdStorage, Lightning, Wallets, Payments } from "@app"
 import { getCronConfig, TWO_MONTHS_IN_MS } from "@config"
+
+import { network } from "balanceofsatoshis"
+import { LndService } from "@services/lnd"
 
 const logger = baseLogger.child({ module: "cron" })
 
@@ -54,7 +58,18 @@ const main = async () => {
     if (result instanceof Error) throw result
   }
 
+  const reconnectNodes = async () => {
+    const lndService = LndService()
+    if (lndService instanceof Error) throw lndService
+
+    const lnds = getLnds({ type: "offchain" })
+    for (const lnd of lnds) {
+      await network.reconnect({ lnd })
+    }
+  }
+
   const tasks = [
+    reconnectNodes,
     updateEscrows,
     updatePendingLightningInvoices,
     updatePendingLightningPayments,
