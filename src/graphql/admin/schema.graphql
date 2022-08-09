@@ -7,7 +7,6 @@ type Account {
   """
   coordinates: Coordinates
   createdAt: Timestamp!
-  data: AccountCustomFields
   id: ID!
   level: AccountLevel!
   owner: User!
@@ -15,26 +14,6 @@ type Account {
   title: String
   username: Username
   wallets: [Wallet!]!
-}
-
-type AccountCustomFields {
-  firstName: String!
-  lastName: String
-  onlyAdminField: Int
-  otherField2: [Boolean]
-}
-
-type AccountCustomFieldsPayload {
-  accountCustomFields: AccountCustomFields
-  errors: [Error!]!
-}
-
-input AccountCustomFieldsUpdateInput {
-  accountId: ID!
-  firstName: String!
-  lastName: String
-  onlyAdminField: Int
-  otherField2: [Boolean]
 }
 
 type AccountDetailPayload {
@@ -271,9 +250,6 @@ Text field in a lightning payment transaction
 scalar Memo
 
 type Mutation {
-  accountCustomFieldsUpdate(
-    input: AccountCustomFieldsUpdateInput!
-  ): AccountCustomFieldsPayload!
   accountUpdateLevel(input: AccountUpdateLevelInput!): AccountDetailPayload!
   accountUpdateStatus(input: AccountUpdateStatusInput!): AccountDetailPayload!
   accountsAddUsdWallet(input: AccountsAddUsdWalletInput!): WalletDetailsPayload

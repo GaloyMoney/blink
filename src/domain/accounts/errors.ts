@@ -7,4 +7,5 @@ export class UsernameIsImmutableError extends AccountError {}
 
 export class AccountCustomFieldsError extends DomainError {}
 
+export class NoAccountCustomFieldsError extends AccountCustomFieldsError {}
 export class AccountCustomFieldsUpdateError extends AccountCustomFieldsError {}

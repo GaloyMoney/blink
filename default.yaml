@@ -132,24 +132,29 @@ accounts:
   initialStatus: active
   initialWallets:
     - "BTC"
-  customFields:
-    - name: "firstName"
-      type: "string"
-      required: true
-      editable: true
-      index: true
-    - name: "lastName"
-      type: "string"
-      editable: true
-      required: false
-    - name: "onlyAdminField"
-      type: "integer"
-      required: false
-      index: true
-    - name: "otherField2"
-      type: "boolean"
-      array: true
-      required: false
+  # customFields:
+  #   - name: "firstName"
+  #     type: "string"
+  #     required: true
+  #     editable: true
+  #     index: true
+  #   - name: "lastName"
+  #     type: "string"
+  #     editable: true
+  #     required: false
+  #   - name: "responses"
+  #     type: "string"
+  #     array: true
+  #     editable: true
+  #     required: false
+  #   - name: "onlyAdminField"
+  #     type: "integer"
+  #     required: false
+  #     index: true
+  #   - name: "otherField2"
+  #     type: "boolean"
+  #     array: true
+  #     required: false
 
 accountLimits:
   withdrawal:

@@ -1,6 +1,5 @@
 interface Account {
   csvTransactions(walletIds: [WalletId!]!): String!
-  data: AccountCustomFields
   defaultWalletId: WalletId!
   id: ID!
   transactions(
@@ -26,21 +25,6 @@ interface Account {
     walletIds: [WalletId]
   ): TransactionConnection
   wallets: [Wallet!]!
-}
-
-type AccountCustomFields {
-  firstName: String!
-  lastName: String
-}
-
-type AccountCustomFieldsPayload {
-  accountCustomFields: AccountCustomFields
-  errors: [Error!]!
-}
-
-input AccountCustomFieldsUpdateInput {
-  firstName: String!
-  lastName: String
 }
 
 input AccountUpdateDefaultWalletIdInput {
@@ -172,11 +156,6 @@ type ConsumerAccount implements Account {
   return CSV stream, base64 encoded, of the list of transactions in the wallet
   """
   csvTransactions(walletIds: [WalletId!]!): String!
-
-  """
-  Additional account information
-  """
-  data: AccountCustomFields
   defaultWalletId: WalletId!
   id: ID!
 
@@ -581,9 +560,6 @@ type MobileVersions {
 }
 
 type Mutation {
-  accountCustomFieldsUpdate(
-    input: AccountCustomFieldsUpdateInput!
-  ): AccountCustomFieldsPayload!
   accountUpdateDefaultWalletId(
     input: AccountUpdateDefaultWalletIdInput!
   ): AccountUpdateDefaultWalletIdPayload!

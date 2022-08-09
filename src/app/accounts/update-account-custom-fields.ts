@@ -1,5 +1,11 @@
+import { getAccountsConfig } from "@config"
+
 import { CouldNotFindError } from "@domain/errors"
+import { NoAccountCustomFieldsError } from "@domain/accounts"
+
 import { AccountCustomFieldsRepository, AccountsRepository } from "@services/mongoose"
+
+const { customFields: customFieldsSchema } = getAccountsConfig()
 
 export const updateAccountCustomFields = async ({
   accountId,
@@ -10,6 +16,9 @@ export const updateAccountCustomFields = async ({
   modifiedByUserId: UserId
   customFields: { [k: string]: AccountCustomFieldValues }
 }): Promise<AccountCustomFields | ApplicationError> => {
+  if (!customFieldsSchema || customFieldsSchema.length <= 0)
+    return new NoAccountCustomFieldsError()
+
   const accountCustomFieldsRepo = AccountCustomFieldsRepository()
 
   const account = await AccountsRepository().findById(accountId)

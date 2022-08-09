@@ -1,3 +1,5 @@
+import { getAccountsConfig } from "@config"
+
 import { GT } from "@graphql/index"
 
 import DeviceNotificationTokenCreateMutation from "@graphql/root/mutation/device-notification-token-create"
@@ -66,7 +68,6 @@ const fields = {
   userUpdateUsername: UserUpdateUsernameMutation,
   userContactUpdateAlias: UserContactUpdateAliasMutation,
 
-  accountCustomFieldsUpdate: AccountCustomFieldsUpdateMutation,
   accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdMutation,
 
   lnInvoiceFeeProbe: LnInvoiceFeeProbeMutation,
@@ -89,6 +90,11 @@ const fields = {
   onChainAddressCurrent: OnChainAddressCurrentMutation,
   onChainPaymentSend: OnChainPaymentSendMutation,
   onChainPaymentSendAll: OnChainPaymentSendAllMutation,
+}
+
+const { customFields } = getAccountsConfig()
+if (customFields && customFields.length > 0) {
+  Object.assign(fields, { accountCustomFieldsUpdate: AccountCustomFieldsUpdateMutation })
 }
 
 const addTracing = () => {

@@ -463,6 +463,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownCaptchaError":
     case "InvalidNonHodlInvoiceError":
     case "AccountCustomFieldsError":
+    case "NoAccountCustomFieldsError":
     case "AccountCustomFieldsUpdateError":
       message = `Unknown error occurred (code: ${error.name}${
         error.message ? ": " + error.message : ""
