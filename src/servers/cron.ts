@@ -4,7 +4,9 @@ import {
   deleteExpiredLightningPaymentFlows,
   deleteExpiredWalletInvoice,
   deleteFailedPaymentsAttemptAllLnds,
+  getDirectChannels,
   getLnds,
+  nodesPubKey,
   updateEscrows,
   updateRoutingRevenues,
 } from "@services/lnd/utils"
@@ -15,7 +17,7 @@ import { activateLndHealthCheck } from "@services/lnd/health"
 import { ColdStorage, Lightning, Wallets, Payments } from "@app"
 import { getCronConfig, TWO_MONTHS_IN_MS } from "@config"
 
-import { reconnect } from "balanceofsatoshis/network"
+import { reconnect, pushPayment } from "balanceofsatoshis/network"
 import { LndService } from "@services/lnd"
 
 const logger = baseLogger.child({ module: "cron" })
@@ -68,8 +70,39 @@ const main = async () => {
     }
   }
 
+  const rebalancingInternalChannels = async () => {
+    const lndService = LndService()
+    if (lndService instanceof Error) throw lndService
+
+    const lnds = getLnds({ type: "offchain", active: true })
+
+    if (lnds.length !== 2 || nodesPubKey.length !== 2) {
+      // TODO: rebalancing for more nodes
+      baseLogger.warn("rebalancing needs 2 active internal nodes")
+      return
+    }
+
+    const selfLnd = lnds[0].lnd
+    const otherLnd = lnds[1].lnd
+    const selfPubkey = lnds[0].pubkey
+    const otherPubkey = lnds[1].pubkey
+
+    const { channels } = await getDirectChannels({ lnd: selfLnd, otherPubkey })
+    for (const channel of channels) {
+      const diff = channel.capacity / 2 /* half point */ - channel.local_balance
+      if (diff > 0) {
+        // there is more liquidity on the other node
+        pushPayment({ lnd: otherLnd, amount: diff, destination: selfPubkey })
+      } else {
+        // there is more liquidity on the local node
+        pushPayment({ lnd: selfLnd, amount: diff, destination: otherPubkey })
+      }
+    }
+  }
+
   const tasks = [
     reconnectNodes,
+    rebalancingInternalChannels,
     updateEscrows,
     updatePendingLightningInvoices,
     updatePendingLightningPayments,
