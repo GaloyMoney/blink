@@ -33,7 +33,6 @@ import {
   getWalletInfo,
   SubscribeToChannelsChannelClosedEvent,
   SubscribeToChannelsChannelOpenedEvent,
-  GetChannelsResult,
 } from "lightning"
 import groupBy from "lodash.groupby"
 import map from "lodash.map"
@@ -41,14 +40,6 @@ import mapValues from "lodash.mapvalues"
 import sumBy from "lodash.sumby"
 
 import { params } from "./auth"
-
-export const getDirectChannels = async ({
-  lnd,
-  otherPubkey,
-}: {
-  lnd: AuthenticatedLnd
-  otherPubkey: Pubkey
-}): Promise<GetChannelsResult> => getChannels({ lnd, partner_public_key: otherPubkey })
 
 export const deleteExpiredWalletInvoice = async (): Promise<number> => {
   const walletInvoicesRepo = WalletInvoicesRepository()
