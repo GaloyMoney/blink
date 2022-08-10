@@ -74,8 +74,6 @@ type BTCWallet implements Wallet {
   A list of BTC transactions associated with this wallet.
   """
   transactions(
-    addresses: [OnChainAddress]
-
     """
     Returns the items in the list that come after the specified cursor.
     """
@@ -452,8 +450,6 @@ type UsdWallet implements Wallet {
   balance: SignedAmount!
   id: ID!
   transactions(
-    addresses: [OnChainAddress]
-
     """
     Returns the items in the list that come after the specified cursor.
     """
@@ -512,8 +508,6 @@ interface Wallet {
   ie: the newest transaction will be first
   """
   transactions(
-    addresses: [OnChainAddress]
-
     """
     Returns the items in the list that come after the specified cursor.
     """

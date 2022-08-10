@@ -1,18 +1,15 @@
 import { GT } from "@graphql/index"
 import { connectionArgs, connectionFromArray } from "@graphql/connections"
-import { InputValidationError } from "@graphql/error"
 import { mapError } from "@graphql/error-map"
 
 import { Wallets } from "@app"
 
 import { WalletCurrency as WalletCurrencyDomain } from "@domain/shared"
-import { baseLogger } from "@services/logger"
 
 import IWallet from "../abstract/wallet"
 
 import SignedAmount from "../scalar/signed-amount"
 import WalletCurrency from "../scalar/wallet-currency"
-import OnChainAddress from "../scalar/on-chain-address"
 
 import { TransactionConnection } from "./transaction"
 
@@ -47,29 +44,8 @@ const BtcWallet = GT.Object<Wallet>({
     },
     transactions: {
       type: TransactionConnection,
-      args: { ...connectionArgs, addresses: { type: GT.List(OnChainAddress) } },
+      args: connectionArgs,
       resolve: async (source, args) => {
-        const { addresses } = args
-        if (addresses) {
-          if (addresses.length === 0) {
-            const message = "Invalid empty addresses list passed."
-            throw new InputValidationError({ message, logger: baseLogger })
-          }
-
-          for (const address of addresses) {
-            if (address instanceof Error) throw address
-          }
-
-          const { result: transactions, error } =
-            await Wallets.getTransactionsForWalletsByAddresses({
-              wallets: [source],
-              addresses,
-            })
-          if (error instanceof Error) throw mapError(error)
-          if (transactions === null) throw error
-          return connectionFromArray<WalletTransaction>(transactions, args)
-        }
-
         const { result: transactions, error } = await Wallets.getTransactionsForWallets([
           source,
         ])
