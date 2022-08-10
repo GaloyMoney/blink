@@ -51,6 +51,8 @@ const BtcWallet = GT.Object<Wallet>({
           source,
         ])
         if (error instanceof Error) throw mapError(error)
+
+        // Non-null signal to type checker; consider fixing in PartialResult type
         if (transactions === null) throw error
         return connectionFromArray<WalletTransaction>(transactions, args)
       },
@@ -75,6 +77,8 @@ const BtcWallet = GT.Object<Wallet>({
             addresses: [address],
           })
         if (error instanceof Error) throw mapError(error)
+
+        // Non-null signal to type checker; consider fixing in PartialResult type
         if (transactions === null) throw error
         return connectionFromArray<WalletTransaction>(transactions, args)
       },
