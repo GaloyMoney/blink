@@ -68,6 +68,32 @@ type BTCWallet implements Wallet {
   A balance stored in BTC.
   """
   balance: SignedAmount!
+  filterTransactionsByAddress(
+    """
+    Returns the items that include this address.
+    """
+    address: OnChainAddress!
+
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
   id: ID!
 
   """
@@ -448,6 +474,32 @@ A wallet belonging to an account which contains a USD balance and a list of tran
 type UsdWallet implements Wallet {
   accountId: ID!
   balance: SignedAmount!
+  filterTransactionsByAddress(
+    """
+    Returns the items that include this address.
+    """
+    address: OnChainAddress!
+
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
   id: ID!
   transactions(
     """
@@ -501,6 +553,37 @@ A generic wallet which stores value in one of our supported currencies.
 interface Wallet {
   accountId: ID!
   balance: SignedAmount!
+
+  """
+  Transactions are ordered anti-chronologically,
+  ie: the newest transaction will be first
+  """
+  filterTransactionsByAddress(
+    """
+    Returns the items that include this address.
+    """
+    address: OnChainAddress!
+
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
   id: ID!
 
   """

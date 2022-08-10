@@ -10,6 +10,7 @@ import IWallet from "../abstract/wallet"
 
 import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"
+import OnChainAddress from "../scalar/on-chain-address"
 
 import { TransactionConnection } from "./transaction"
 
@@ -48,6 +49,29 @@ const UsdWallet = GT.Object<Wallet>({
         const { result: transactions, error } = await Wallets.getTransactionsForWallets([
           source,
         ])
+        if (error instanceof Error) throw mapError(error)
+        if (transactions === null) throw error
+        return connectionFromArray<WalletTransaction>(transactions, args)
+      },
+    },
+    filterTransactionsByAddress: {
+      type: TransactionConnection,
+      args: {
+        ...connectionArgs,
+        address: {
+          type: GT.NonNull(OnChainAddress),
+          description: "Returns the items that include this address.",
+        },
+      },
+      resolve: async (source, args) => {
+        const { address } = args
+        if (address instanceof Error) throw address
+
+        const { result: transactions, error } =
+          await Wallets.getTransactionsForWalletsByAddresses({
+            wallets: [source],
+            addresses: [address],
+          })
         if (error instanceof Error) throw mapError(error)
         if (transactions === null) throw error
         return connectionFromArray<WalletTransaction>(transactions, args)
