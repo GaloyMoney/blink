@@ -36,7 +36,7 @@ try {
 
 export const yamlConfigInit = merge(defaultConfig, customConfig)
 
-const ajv = new Ajv()
+const ajv = new Ajv({ allowUnionTypes: true })
 
 // TODO: fix errors
 // const ajv = new Ajv({ allErrors: true, strict: "log" })

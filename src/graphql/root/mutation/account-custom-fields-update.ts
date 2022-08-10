@@ -4,7 +4,7 @@ import { Accounts } from "@app"
 
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
-import { parseCustomFieldsSchema } from "@graphql/helpers"
+import { parseCustomFieldsInputSchema } from "@graphql/helpers"
 import AccountCustomFieldsUpdatePayload from "@graphql/types/payload/account-custom-fields"
 
 const customFieldsSchema = getAccountsConfig().customFields
@@ -12,7 +12,7 @@ const customFieldsSchema = getAccountsConfig().customFields
 const AccountCustomFieldsUpdateInput = GT.Input({
   name: "AccountCustomFieldsUpdateInput",
   fields: () => {
-    const customFields = parseCustomFieldsSchema({
+    const customFields = parseCustomFieldsInputSchema({
       fields: customFieldsSchema,
       onlyEditable: true,
     })

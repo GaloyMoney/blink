@@ -152,6 +152,7 @@ accounts:
   #     required: false
   #     index: true
   #   - name: "otherField2"
+  #     defaultValue: [false]
   #     type: "boolean"
   #     array: true
   #     required: false

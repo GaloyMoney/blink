@@ -7,6 +7,13 @@ import { AccountCustomFieldsRepository, AccountsRepository } from "@services/mon
 
 const { customFields: customFieldsSchema } = getAccountsConfig()
 
+const defaultValues = customFieldsSchema.reduce((acc, val) => {
+  if (val.defaultValue !== undefined) {
+    acc[val.name] = val.defaultValue
+  }
+  return acc
+}, {} as { [k: string]: AccountCustomFieldValues })
+
 export const updateAccountCustomFields = async ({
   accountId,
   modifiedByUserId,
@@ -36,6 +43,6 @@ export const updateAccountCustomFields = async ({
   return accountCustomFieldsRepo.persistNew({
     accountId: account.id,
     modifiedByUserId,
-    customFields: data,
+    customFields: { ...defaultValues, ...data },
   })
 }
