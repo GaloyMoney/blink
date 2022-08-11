@@ -5,7 +5,7 @@ import * as LedgerFacade from "@services/ledger/facade"
 
 import {
   recordLnIntraLedgerPayment,
-  recordReceivePayment,
+  recordReceiveLnPayment,
   recordSendLnPayment,
 } from "./helpers"
 
@@ -27,7 +27,7 @@ describe("Facade", () => {
 
   describe("recordReceive", () => {
     it("receives to btc wallet", async () => {
-      await recordReceivePayment({
+      await recordReceiveLnPayment({
         walletDescriptor: walletDescriptor1,
         paymentAmount: receiveAmount,
         bankFee,
