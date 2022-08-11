@@ -68,12 +68,12 @@ type BTCWallet implements Wallet {
   A balance stored in BTC.
   """
   balance: SignedAmount!
-  filterTransactionsByAddress(
-    """
-    Returns the items that include this address.
-    """
-    address: OnChainAddress!
+  id: ID!
 
+  """
+  A list of BTC transactions associated with this wallet.
+  """
+  transactions(
     """
     Returns the items in the list that come after the specified cursor.
     """
@@ -94,12 +94,12 @@ type BTCWallet implements Wallet {
     """
     last: Int
   ): TransactionConnection
-  id: ID!
+  transactionsByAddress(
+    """
+    Returns the items that include this address.
+    """
+    address: OnChainAddress!
 
-  """
-  A list of BTC transactions associated with this wallet.
-  """
-  transactions(
     """
     Returns the items in the list that come after the specified cursor.
     """
@@ -474,12 +474,8 @@ A wallet belonging to an account which contains a USD balance and a list of tran
 type UsdWallet implements Wallet {
   accountId: ID!
   balance: SignedAmount!
-  filterTransactionsByAddress(
-    """
-    Returns the items that include this address.
-    """
-    address: OnChainAddress!
-
+  id: ID!
+  transactions(
     """
     Returns the items in the list that come after the specified cursor.
     """
@@ -500,8 +496,12 @@ type UsdWallet implements Wallet {
     """
     last: Int
   ): TransactionConnection
-  id: ID!
-  transactions(
+  transactionsByAddress(
+    """
+    Returns the items that include this address.
+    """
+    address: OnChainAddress!
+
     """
     Returns the items in the list that come after the specified cursor.
     """
@@ -553,17 +553,13 @@ A generic wallet which stores value in one of our supported currencies.
 interface Wallet {
   accountId: ID!
   balance: SignedAmount!
+  id: ID!
 
   """
   Transactions are ordered anti-chronologically,
   ie: the newest transaction will be first
   """
-  filterTransactionsByAddress(
-    """
-    Returns the items that include this address.
-    """
-    address: OnChainAddress!
-
+  transactions(
     """
     Returns the items in the list that come after the specified cursor.
     """
@@ -584,13 +580,17 @@ interface Wallet {
     """
     last: Int
   ): TransactionConnection
-  id: ID!
 
   """
   Transactions are ordered anti-chronologically,
   ie: the newest transaction will be first
   """
-  transactions(
+  transactionsByAddress(
+    """
+    Returns the items that include this address.
+    """
+    address: OnChainAddress!
+
     """
     Returns the items in the list that come after the specified cursor.
     """

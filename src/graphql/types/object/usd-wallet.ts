@@ -56,7 +56,7 @@ const UsdWallet = GT.Object<Wallet>({
         return connectionFromArray<WalletTransaction>(transactions, args)
       },
     },
-    filterTransactionsByAddress: {
+    transactionsByAddress: {
       type: TransactionConnection,
       args: {
         ...connectionArgs,

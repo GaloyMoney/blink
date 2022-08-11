@@ -33,7 +33,7 @@ const IWallet = GT.Interface({
         return connectionFromArray<WalletTransaction>(source.transactions, args)
       },
     },
-    filterTransactionsByAddress: {
+    transactionsByAddress: {
       description: dedent`Transactions are ordered anti-chronologically,
       ie: the newest transaction will be first`,
       type: TransactionConnection,

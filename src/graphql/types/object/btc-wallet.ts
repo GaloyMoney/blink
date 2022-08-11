@@ -58,7 +58,7 @@ const BtcWallet = GT.Object<Wallet>({
       },
       description: "A list of BTC transactions associated with this wallet.",
     },
-    filterTransactionsByAddress: {
+    transactionsByAddress: {
       type: TransactionConnection,
       args: {
         ...connectionArgs,
