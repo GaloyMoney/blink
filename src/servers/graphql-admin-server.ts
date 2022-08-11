@@ -19,6 +19,17 @@ dotenv.config()
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
 export async function startApolloServerForAdminSchema() {
+  const queries: Record<string, ILogicRule> = {
+    allLevels: and(isAuthenticated, isEditor),
+    accountDetailsByUserPhone: and(isAuthenticated, isEditor),
+    accountDetailsByUsername: and(isAuthenticated, isEditor),
+    transactionById: and(isAuthenticated, isEditor),
+    transactionsByHash: and(isAuthenticated, isEditor),
+    lightningInvoice: and(isAuthenticated, isEditor),
+    lightningPayment: and(isAuthenticated, isEditor),
+    wallet: and(isAuthenticated, isEditor),
+    listWalletIds: and(isAuthenticated, isEditor),
+  }
   const mutations: Record<string, ILogicRule> = {
     accountUpdateLevel: and(isAuthenticated, isEditor),
     accountUpdateStatus: and(isAuthenticated, isEditor),
@@ -29,24 +40,11 @@ export async function startApolloServerForAdminSchema() {
 
   const { customFields } = getAccountsConfig()
   if (customFields && customFields.length > 0) {
+    queries["accountsDetailsByCustomField"] = and(isAuthenticated, isEditor)
     mutations["accountCustomFieldsUpdate"] = and(isAuthenticated, isEditor)
   }
 
-  const ruleTree = {
-    Query: {
-      allLevels: and(isAuthenticated, isEditor),
-      accountDetailsByUserPhone: and(isAuthenticated, isEditor),
-      accountDetailsByUsername: and(isAuthenticated, isEditor),
-      transactionById: and(isAuthenticated, isEditor),
-      transactionsByHash: and(isAuthenticated, isEditor),
-      lightningInvoice: and(isAuthenticated, isEditor),
-      lightningPayment: and(isAuthenticated, isEditor),
-      wallet: and(isAuthenticated, isEditor),
-      listWalletIds: and(isAuthenticated, isEditor),
-    },
-    Mutation: mutations,
-  }
-
+  const ruleTree = { Query: queries, Mutation: mutations }
   const permissions = shield(ruleTree, { allowExternalErrors: true })
   const schema = applyMiddleware(gqlAdminSchema, permissions)
   return startApolloServer({ schema, port: GALOY_ADMIN_PORT, type: "admin" })

@@ -90,6 +90,24 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
+  const listByIds = async (
+    accountIds: AccountId[],
+  ): Promise<Account[] | RepositoryError> => {
+    try {
+      const ids = accountIds.map((accountId) => toObjectId<AccountId>(accountId))
+      const result:
+        | UserRecord[]
+        | null /* UserRecord actually not correct with {projection} */ = await User.find(
+        { _id: { $in: ids } },
+        projection,
+      )
+      if (!result) return new CouldNotFindError()
+      return result.map(translateToAccount)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   // currently only used by Admin
   const update = async ({
     id,
@@ -143,6 +161,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     findByUserId,
     findByUsername,
     listBusinessesForMap,
+    listByIds,
     update,
   }
 }

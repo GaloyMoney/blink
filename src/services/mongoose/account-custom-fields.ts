@@ -24,22 +24,22 @@ export const AccountCustomFieldsRepository = (): IAccountCustomFieldsRepository 
     }
   }
 
-  const listByCustomField = async ({
-    key,
+  const listAccountIdsByCustomField = async ({
+    field,
     value,
-  }: ListByCustomFieldArgs): Promise<AccountCustomFields[] | RepositoryError> => {
+  }: listAccountIdsByCustomFieldArgs): Promise<AccountId[] | RepositoryError> => {
     try {
       const result = await AccountCustomFields.aggregate()
-        .match({ [`customFields.${key}`]: value })
-        .sort({ accountId: 1, createdAt: -1 })
-        .group({
-          _id: "$accountId",
-          createdAt: { $first: "$createdAt" },
+        .addFields({ filterField: { $toString: `$customFields.${field}` } })
+        .match({
+          filterField: { $regex: new RegExp("^" + `${value}`.toLowerCase(), "i") },
         })
+        .sort({ accountId: 1, createdAt: -1 })
+        .group({ _id: "$accountId", createdAt: { $first: "$createdAt" } })
 
       if (!result || result.length === 0) return new CouldNotFindError()
 
-      return result.map(translateToAccountCustomFields)
+      return result.map((r) => r._id as AccountId)
     } catch (err) {
       return new UnknownRepositoryError(err.message || err)
     }
@@ -65,7 +65,7 @@ export const AccountCustomFieldsRepository = (): IAccountCustomFieldsRepository 
     }
   }
 
-  return { findById, listByCustomField, persistNew }
+  return { findById, listAccountIdsByCustomField, persistNew }
 }
 
 const translateToAccountCustomFields = (

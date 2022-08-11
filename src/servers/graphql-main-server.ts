@@ -63,7 +63,6 @@ export async function startApolloServerForCoreSchema() {
     },
     Mutation: mutations,
   }
-
   const permissions = shield(ruleTree, { allowExternalErrors: true })
   const schema = applyMiddleware(gqlMainSchema, permissions, walletIdMiddleware)
   return startApolloServer({

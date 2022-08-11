@@ -130,8 +130,8 @@ type AccountValidator = {
   validateWalletForAccount(wallet: Wallet): true | ValidationError
 }
 
-type ListByCustomFieldArgs = {
-  key: string
+type listAccountIdsByCustomFieldArgs = {
+  field: string
   value: AccountCustomFieldValues
 }
 
@@ -147,14 +147,15 @@ interface IAccountsRepository {
   findByUserId(userId: UserId): Promise<Account | RepositoryError>
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
+  listByIds(accountIds: AccountId[]): Promise<Account[] | RepositoryError>
   update(account: Account): Promise<Account | RepositoryError>
 }
 
 interface IAccountCustomFieldsRepository {
   findById(accountId: AccountId): Promise<AccountCustomFields | RepositoryError>
-  listByCustomField(
-    args: ListByCustomFieldArgs,
-  ): Promise<AccountCustomFields[] | RepositoryError>
+  listAccountIdsByCustomField(
+    args: listAccountIdsByCustomFieldArgs,
+  ): Promise<AccountId[] | RepositoryError>
   persistNew(
     data: PersistNewCustomFieldsArgs,
   ): Promise<AccountCustomFields | RepositoryError>
