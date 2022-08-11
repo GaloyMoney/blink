@@ -133,29 +133,17 @@ accounts:
   initialWallets:
     - "BTC"
   # customFields:
-  #   - name: "firstName"
-  #     type: "string"
-  #     required: true
-  #     editable: true
-  #     index: true
-  #   - name: "lastName"
-  #     type: "string"
-  #     editable: true
-  #     required: false
-  #   - name: "responses"
-  #     type: "string"
-  #     array: true
-  #     editable: true
-  #     required: false
-  #   - name: "onlyAdminField"
-  #     type: "integer"
-  #     required: false
-  #     index: true
-  #   - name: "otherField2"
-  #     defaultValue: [false]
-  #     type: "boolean"
-  #     array: true
-  #     required: false
+  #   - name: "customField"
+  #     type: <"string" | "integer" | "float" | "boolean">
+  #     defaultValue: <value> # optional
+  #     # default: false - true if field is an array of type
+  #     array: <true | false> # optional
+  #     # default: false - true if field can be updated by the user
+  #     editable: <true | false> # optional
+  #     # default: false - true if field is required by mutations
+  #     required: <true | false> # optional
+  #     # default: false - true if field should have an index in db
+  #     index: <true | false> # optional
 
 accountLimits:
   withdrawal:
