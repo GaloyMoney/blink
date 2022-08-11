@@ -1,4 +1,5 @@
 import { checkedToKratosUserId, checkedToPhoneNumber } from "@domain/users"
+import { getTestAccounts } from "@config"
 import { baseLogger } from "@services/logger"
 import {
   WalletsRepository,
@@ -38,7 +39,11 @@ export const createUser = async ({
   const phoneNumberValid = checkedToPhoneNumber(phone)
   if (phoneNumberValid instanceof Error) return phoneNumberValid
 
-  const userRaw: NewUserInfo = { phone: phoneNumberValid, phoneMetadata }
+  const userRaw: NewUserInfo = {
+    phone: phoneNumberValid,
+    phoneMetadata,
+    role: getTestAccounts().find(({ phone }) => phone === phoneNumberValid)?.role,
+  }
 
   // FIXME: this is only used from tests. should be refactored with a mock
   if (!phoneMetadata) {
