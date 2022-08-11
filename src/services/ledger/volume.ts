@@ -1,6 +1,6 @@
 import { LedgerTransactionType, toLiabilitiesWalletId } from "@domain/ledger"
 import { LedgerServiceError, UnknownLedgerError } from "@domain/ledger/errors"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { paymentAmountFromNumber } from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { Transaction } from "./books"
@@ -40,9 +40,12 @@ const volumeFn =
     txVolumeSince({ ...args, txnGroup })
 
 const volumeAmountFn =
-  (txnGroup: TxnGroup): GetVolumeAmountSinceFn<WalletCurrency> =>
+  (txnGroup: TxnGroup): GetVolumeAmountSinceFn =>
   async (args) => {
-    const { walletId, timestamp, walletCurrency } = args
+    const {
+      walletDescriptor: { id: walletId, currency: walletCurrency },
+      timestamp,
+    } = args
     const volume = await txVolumeSince({ walletId, timestamp, txnGroup })
     if (volume instanceof Error) return volume
 
