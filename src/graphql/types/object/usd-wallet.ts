@@ -1,5 +1,6 @@
 import { GT } from "@graphql/index"
 import { connectionArgs, connectionFromArray } from "@graphql/connections"
+import { mapError } from "@graphql/error-map"
 
 import { Wallets } from "@app"
 
@@ -9,6 +10,7 @@ import IWallet from "../abstract/wallet"
 
 import WalletCurrency from "../scalar/wallet-currency"
 import SignedAmount from "../scalar/signed-amount"
+import OnChainAddress from "../scalar/on-chain-address"
 
 import { TransactionConnection } from "./transaction"
 
@@ -36,7 +38,7 @@ const UsdWallet = GT.Object<Wallet>({
           walletId: source.id,
           logger,
         })
-        if (balanceCents instanceof Error) throw balanceCents
+        if (balanceCents instanceof Error) throw mapError(balanceCents)
         return Math.floor(balanceCents)
       },
     },
@@ -47,9 +49,35 @@ const UsdWallet = GT.Object<Wallet>({
         const { result: transactions, error } = await Wallets.getTransactionsForWallets([
           source,
         ])
-        if (error instanceof Error || transactions === null) {
-          throw error
-        }
+        if (error instanceof Error) throw mapError(error)
+
+        // Non-null signal to type checker; consider fixing in PartialResult type
+        if (transactions === null) throw error
+        return connectionFromArray<WalletTransaction>(transactions, args)
+      },
+    },
+    transactionsByAddress: {
+      type: TransactionConnection,
+      args: {
+        ...connectionArgs,
+        address: {
+          type: GT.NonNull(OnChainAddress),
+          description: "Returns the items that include this address.",
+        },
+      },
+      resolve: async (source, args) => {
+        const { address } = args
+        if (address instanceof Error) throw address
+
+        const { result: transactions, error } =
+          await Wallets.getTransactionsForWalletsByAddresses({
+            wallets: [source],
+            addresses: [address],
+          })
+        if (error instanceof Error) throw mapError(error)
+
+        // Non-null signal to type checker; consider fixing in PartialResult type
+        if (transactions === null) throw error
         return connectionFromArray<WalletTransaction>(transactions, args)
       },
     },

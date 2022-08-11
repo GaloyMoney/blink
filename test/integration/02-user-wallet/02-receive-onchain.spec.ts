@@ -17,7 +17,8 @@ import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
-import { sleep } from "@utils"
+import { elapsedSinceTimestamp, ModifiedSet, sleep } from "@utils"
+import { WalletsRepository } from "@services/mongoose"
 
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
@@ -38,7 +39,9 @@ import {
   getUserRecordByTestUserRef,
   lndonchain,
   RANDOM_ADDRESS,
+  sendToAddress,
   sendToAddressAndConfirm,
+  confirmSent,
   subscribeToChainAddress,
   subscribeToTransactions,
   waitUntilBlockHeight,
@@ -49,6 +52,7 @@ import { getBalanceHelper } from "test/helpers/wallet"
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
 let walletIdA: WalletId
+let walletIdB: WalletId
 let accountIdA: AccountId
 
 const accountLimits = getAccountLimits({ level: 1 })
@@ -62,6 +66,7 @@ beforeAll(async () => {
   await bitcoindClient.loadWallet({ filename: "outside" })
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
+  walletIdB = await getDefaultWalletIdByTestUserRef("B")
   accountIdA = await getAccountIdByTestUserRef("A")
 
   await createUserAndWalletFromUserRef("C")
@@ -135,6 +140,56 @@ describe("UserWallet - On chain", () => {
       walletId: walletIdA,
       amountSats: getRandomAmountOfSats(),
     })
+  })
+
+  it("retrieves on-chain transactions by address", async () => {
+    const address1 = await Wallets.createOnChainAddress(walletIdA)
+    if (address1 instanceof Error) throw address1
+    expect(address1.substr(0, 4)).toBe("bcrt")
+    await testTxnsByAddressWrapper({
+      walletId: walletIdA,
+      addresses: [address1],
+      amountSats: getRandomAmountOfSats(),
+    })
+
+    const address2 = await Wallets.createOnChainAddress(walletIdA)
+    if (address2 instanceof Error) throw address2
+    expect(address2.substr(0, 4)).toBe("bcrt")
+    await testTxnsByAddressWrapper({
+      walletId: walletIdA,
+      addresses: [address2],
+      amountSats: getRandomAmountOfSats(),
+    })
+
+    await testTxnsByAddressWrapper({
+      walletId: walletIdA,
+      addresses: [address1, address2],
+      amountSats: getRandomAmountOfSats(),
+    })
+
+    const walletA = await WalletsRepository().findById(walletIdA)
+    if (walletA instanceof Error) throw walletA
+    const walletB = await WalletsRepository().findById(walletIdB)
+    if (walletB instanceof Error) throw walletB
+
+    // Confirm that another wallet can't retrieve transactions for a wallet
+    const txnsForARequestedFromA = await Wallets.getTransactionsForWalletsByAddresses({
+      wallets: [walletA],
+      addresses: [address1, address2],
+    })
+    const { result: txnsA } = txnsForARequestedFromA
+    expect(txnsA).not.toBeNull()
+    if (!txnsA) throw new Error()
+    expect(txnsA.length).toBeGreaterThan(0)
+
+    const txnsForARequestedFromB = await Wallets.getTransactionsForWalletsByAddresses({
+      wallets: [walletB],
+      addresses: [address1, address2],
+    })
+    const { result: txnsB } = txnsForARequestedFromB
+    expect(txnsB).not.toBeNull()
+    if (!txnsB) throw new Error()
+    expect(txnsB.length).toEqual(0)
   })
 
   it("receives on-chain transaction with max limit for withdrawal level1", async () => {
@@ -399,6 +454,193 @@ async function sendToWalletTestWrapper({
     amount: sat2btc(amountSats),
   })
   await checkBalance(blockNumber)
+}
+
+async function testTxnsByAddressWrapper({
+  amountSats,
+  walletId,
+  addresses,
+  depositFeeRatio = getFeesConfig().depositFeeVariable as DepositFeeRatio,
+}: {
+  amountSats: Satoshis
+  walletId: WalletId
+  addresses: OnChainAddress[]
+  depositFeeRatio?: DepositFeeRatio
+}) {
+  const lnd = lndonchain
+
+  const currentBalance = await getBalanceHelper(walletId)
+  const { result: initTransactions, error } = await Wallets.getTransactionsForWalletId({
+    walletId,
+  })
+  if (error instanceof Error || initTransactions === null) {
+    throw error
+  }
+
+  const checkBalance = async (addresses, minBlockToWatch = 1) => {
+    for (const address of addresses) {
+      const sub = subscribeToChainAddress({
+        lnd,
+        bech32_address: address,
+        min_height: minBlockToWatch,
+      })
+      await once(sub, "confirmation")
+      sub.removeAllListeners()
+    }
+
+    await waitUntilBlockHeight({ lnd })
+    // this is done by trigger and/or cron in prod
+    const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })
+    if (result instanceof Error) {
+      throw result
+    }
+
+    const balance = await getBalanceHelper(walletId)
+    expect(balance).toBe(
+      currentBalance +
+        amountAfterFeeDeduction({
+          amount: amountSats,
+          depositFeeRatio,
+        }) *
+          addresses.length,
+    )
+
+    const { result: transactions, error } = await Wallets.getTransactionsForWalletId({
+      walletId,
+    })
+    if (error instanceof Error || transactions === null) {
+      throw error
+    }
+
+    expect(transactions.length).toBe(initTransactions.length + addresses.length)
+
+    const txn = transactions[0] as WalletOnChainTransaction
+    expect(txn.settlementVia.type).toBe("onchain")
+    expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
+    expect(txn.settlementAmount).toBe(
+      amountAfterFeeDeduction({
+        amount: amountSats,
+        depositFeeRatio: depositFeeRatio,
+      }),
+    )
+    expect(addresses.includes(txn.initiationVia.address)).toBeTruthy()
+  }
+
+  const wallet = await WalletsRepository().findById(walletId)
+  if (wallet instanceof Error) return wallet
+
+  // Send payments to addresses
+  const subTransactions = subscribeToTransactions({ lnd })
+  const addressesForReceivedTxns = [] as OnChainAddress[]
+  const onChainTxHandler = (tx) => {
+    for (const address of tx.output_addresses) {
+      if (addresses.includes(address)) {
+        addressesForReceivedTxns.push(address)
+      }
+    }
+    return onchainTransactionEventHandler(tx)
+  }
+  subTransactions.on("chain_transaction", onChainTxHandler)
+  // just to improve performance
+  const blockNumber = await bitcoindClient.getBlockCount()
+  for (const address of addresses) {
+    await sendToAddress({
+      walletClient: bitcoindOutside,
+      address,
+      amount: sat2btc(amountSats),
+    })
+  }
+
+  // Wait for subscription events
+  const TIME_TO_WAIT = 1000
+  const checkReceived = async () => {
+    const start = new Date(Date.now())
+    while (addressesForReceivedTxns.length != addresses.length) {
+      const elapsed = elapsedSinceTimestamp(start) * 1000
+      if (elapsed > TIME_TO_WAIT) return new Error("Timed out")
+      await sleep(100)
+    }
+    return true
+  }
+  const waitForTxns = await checkReceived()
+  expect(waitForTxns).not.toBeInstanceOf(Error)
+
+  // Expected pending transactions have been received
+  subTransactions.removeAllListeners()
+
+  // Fetch txns with pending
+  const txnsWithPendingResult = await Wallets.getTransactionsForWalletsByAddresses({
+    wallets: [wallet],
+    addresses: addresses,
+  })
+  const txnsWithPending = txnsWithPendingResult.result
+  expect(txnsWithPending).not.toBeNull()
+  if (txnsWithPending === null) throw new Error()
+  const pendingTxn = txnsWithPending[0]
+  expect(pendingTxn.initiationVia.type).toEqual("onchain")
+  if (
+    pendingTxn.initiationVia.type !== "onchain" ||
+    pendingTxn.settlementVia.type !== "onchain"
+  ) {
+    throw new Error()
+  }
+
+  // Test pending txn
+  expect(pendingTxn.status).toEqual(TxStatus.Pending)
+  expect(pendingTxn.initiationVia.address).not.toBeUndefined()
+  if (!pendingTxn.initiationVia.address) throw new Error()
+  expect(addresses.includes(pendingTxn.initiationVia.address)).toBeTruthy()
+
+  // Test all txns
+  const txnAddressesWithPendingSet = new ModifiedSet(
+    txnsWithPending.map((txn) => {
+      if (txn.initiationVia.type !== "onchain" || !txn.initiationVia.address) {
+        return new Error()
+      }
+      return txn.initiationVia.address
+    }),
+  )
+  expect(txnAddressesWithPendingSet.size).toEqual(addresses.length)
+  const commonAddressPendingSet = txnAddressesWithPendingSet.intersect(new Set(addresses))
+  expect(commonAddressPendingSet.size).toEqual(addresses.length)
+
+  // Confirm pending onchain transactions
+  await confirmSent({
+    walletClient: bitcoindOutside,
+  })
+  await checkBalance(addresses, blockNumber)
+
+  // Fetch txns with confirmed
+  const txnsWithConfirmedResult = await Wallets.getTransactionsForWalletsByAddresses({
+    wallets: [wallet],
+    addresses,
+  })
+  const txnsWithConfirmed = txnsWithConfirmedResult.result
+  expect(txnsWithConfirmed).not.toBeNull()
+  if (txnsWithConfirmed === null) throw new Error()
+
+  // Test confirmed txn
+  const confirmedTxn = txnsWithConfirmed.find(
+    (txn) =>
+      (txn.settlementVia as SettlementViaOnChain).transactionHash ===
+      (pendingTxn.settlementVia as SettlementViaOnChain).transactionHash,
+  )
+  expect(confirmedTxn).not.toBeUndefined()
+  if (confirmedTxn === undefined) throw new Error()
+  expect(confirmedTxn.status).toEqual(TxStatus.Success)
+
+  // Test all txns
+  const txnAddressesWithConfirmedSet = new ModifiedSet(
+    txnsWithConfirmed.map((txn) => {
+      if (txn.initiationVia.type !== "onchain" || !txn.initiationVia.address) {
+        return new Error()
+      }
+      return txn.initiationVia.address
+    }),
+  )
+  expect(txnAddressesWithConfirmedSet.size).toEqual(addresses.length)
+  const commonAddressSet = txnAddressesWithConfirmedSet.intersect(new Set(addresses))
+  expect(commonAddressSet.size).toEqual(addresses.length)
 }
 
 const getRandomAmountOfSats = () =>
