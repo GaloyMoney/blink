@@ -321,8 +321,9 @@ export const wrapToRunInSpan = <
   spanAttributes?: SpanAttributes
   root?: boolean
 }) => {
-  return (...args: A): R => {
-    const functionName = fnName || fn.name || "unknown"
+  const functionName = fnName || fn.name || "unknown"
+
+  const wrappedFn = (...args: A): R => {
     const spanName = `${namespace}.${functionName}`
     const spanOptions = resolveFunctionSpanOptions({
       namespace,
@@ -348,6 +349,14 @@ export const wrapToRunInSpan = <
     })
     return ret
   }
+
+  // Re-add the original name to the wrapped function
+  Object.defineProperty(wrappedFn, "name", {
+    value: functionName,
+    configurable: true,
+  })
+
+  return wrappedFn
 }
 
 type PromiseReturnType<T> = T extends Promise<infer Return> ? Return : T
@@ -368,8 +377,9 @@ export const wrapAsyncToRunInSpan = <
   spanAttributes?: SpanAttributes
   root?: boolean
 }) => {
-  return (...args: A): Promise<PromiseReturnType<R>> => {
-    const functionName = fnName || fn.name || "unknown"
+  const functionName = fnName || fn.name || "unknown"
+
+  const wrappedFn = (...args: A): Promise<PromiseReturnType<R>> => {
     const spanName = `${namespace}.${functionName}`
     const spanOptions = resolveFunctionSpanOptions({
       namespace,
@@ -395,6 +405,14 @@ export const wrapAsyncToRunInSpan = <
     })
     return ret
   }
+
+  // Re-add the original name to the wrapped function
+  Object.defineProperty(wrappedFn, "name", {
+    value: functionName,
+    configurable: true,
+  })
+
+  return wrappedFn
 }
 
 export const wrapAsyncFunctionsToRunInSpan = <F extends object>({
