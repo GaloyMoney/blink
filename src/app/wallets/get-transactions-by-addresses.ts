@@ -51,11 +51,6 @@ export const getTransactionsForWalletsByAddresses = async ({
     baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
     return PartialResult.partial(confirmedHistory.transactions, onChainTxs)
   }
-  redisCache.set({
-    key: CacheKeys.LastOnChainTransactions,
-    value: onChainTxs,
-    ttlSecs: SECS_PER_10_MINS,
-  })
 
   const allAddresses: OnChainAddress[] = []
   const addressesByWalletId: { [walletid: string]: OnChainAddress[] } = {}
