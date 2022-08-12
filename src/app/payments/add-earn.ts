@@ -1,4 +1,3 @@
-import { Payments } from "@app"
 import { getRewardsConfig, onboardingEarn } from "@config"
 import {
   InvalidIPMetadataForRewardError,
@@ -17,6 +16,8 @@ import {
   UsersRepository,
 } from "@services/mongoose"
 import { UsersIpRepository } from "@services/mongoose/users-ips"
+
+import { intraledgerPaymentSendWalletId } from "./send-intraledger"
 
 const rewardsConfig = getRewardsConfig()
 
@@ -70,7 +71,7 @@ export const addEarn = async ({
   const shouldGiveReward = await RewardsRepository(accountId).add(quizQuestionId)
   if (shouldGiveReward instanceof Error) return shouldGiveReward
 
-  const payment = await Payments.intraledgerPaymentSendWalletId({
+  const payment = await intraledgerPaymentSendWalletId({
     senderWalletId: funderWalletId,
     recipientWalletId,
     amount,

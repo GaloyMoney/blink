@@ -22,7 +22,16 @@ const allFunctions = {
 
 let subModule: keyof typeof allFunctions
 for (subModule in allFunctions) {
+  console.log("HERE 10:", allFunctions[subModule])
+  if (Object.values(allFunctions[subModule]).includes(undefined)) {
+    const fns = Object.keys(allFunctions[subModule]).filter(
+      (key) => allFunctions[subModule][key] === undefined,
+    )
+    console.log(`UNDEFINED!!! ${subModule}: ${JSON.stringify(fns, null, 2)}`)
+  }
   for (const fn in allFunctions[subModule]) {
+    // console.log("HERE 11:", fn)
+    // console.log("HERE 12:", allFunctions[subModule][fn])
     /* eslint @typescript-eslint/ban-ts-comment: "off" */
     // @ts-ignore-next-line no-implicit-any error
     allFunctions[subModule][fn] = wrapAsyncToRunInSpan({
@@ -30,6 +39,7 @@ for (subModule in allFunctions) {
       // @ts-ignore-next-line no-implicit-any error
       fn: allFunctions[subModule][fn],
     })
+    // if (fn === "addEarn") throw new Error()
   }
 }
 

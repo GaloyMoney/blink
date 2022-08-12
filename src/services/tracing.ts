@@ -377,9 +377,15 @@ export const wrapAsyncToRunInSpan = <
   spanAttributes?: SpanAttributes
   root?: boolean
 }) => {
-  const functionName = fnName || fn.name || "unknown"
+  return (...args: A): Promise<PromiseReturnType<R>> => {
+    // if (fnName === "addEarn") {
+    //   console.log("HERE 0:", fnName)
+    //   console.log("HERE 1:", fn)
+    //   console.log("HERE 2:", fn.name)
+    // }
+    const functionName = fnName || fn.name || "unknown"
+    // console.log("HERE 3:", functionName)
 
-  const wrappedFn = (...args: A): Promise<PromiseReturnType<R>> => {
     const spanName = `${namespace}.${functionName}`
     const spanOptions = resolveFunctionSpanOptions({
       namespace,
@@ -405,14 +411,6 @@ export const wrapAsyncToRunInSpan = <
     })
     return ret
   }
-
-  // Re-add the original name to the wrapped function
-  Object.defineProperty(wrappedFn, "name", {
-    value: functionName,
-    configurable: true,
-  })
-
-  return wrappedFn
 }
 
 export const wrapAsyncFunctionsToRunInSpan = <F extends object>({

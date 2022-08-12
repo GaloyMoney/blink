@@ -1,4 +1,4 @@
-import { addEarn } from "@app/accounts/add-earn"
+import { addEarn } from "@app/payments/add-earn"
 import { getTransactionsForWalletId } from "@app/wallets"
 import { Payments } from "@app"
 import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
@@ -57,7 +57,7 @@ afterAll(async () => {
 })
 
 describe("UserWallet - addEarn", () => {
-  it("adds balance only once", async () => {
+  it.only("adds balance only once", async () => {
     const resetOk = await resetSelfAccountIdLimits(accountIdB)
     if (resetOk instanceof Error) throw resetOk
 
