@@ -17,7 +17,7 @@ import {
 
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
-import { Prices } from "@app"
+import { Prices as PricesWithSpans, Wallets as WalletWithSpans } from "@app"
 import * as Wallets from "@app/wallets"
 import { uploadBackup } from "@app/admin/backup"
 
@@ -95,7 +95,7 @@ export const onchainTransactionEventHandler = async (
 
     let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-    const price = await Prices.getCurrentPrice()
+    const price = await PricesWithSpans.getCurrentPrice()
     const displayCurrencyPerSat = price instanceof Error ? undefined : price
     if (displayCurrencyPerSat) {
       const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
@@ -143,7 +143,7 @@ export const onchainTransactionEventHandler = async (
 
       let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-      const price = await Prices.getCurrentPrice()
+      const price = await PricesWithSpans.getCurrentPrice()
       const displayCurrencyPerSat = price instanceof Error ? undefined : price
       if (displayCurrencyPerSat) {
         const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
@@ -176,7 +176,7 @@ export const onchainTransactionEventHandler = async (
 
 export const onchainBlockEventHandler = async (height: number) => {
   const scanDepth = (ONCHAIN_MIN_CONFIRMATIONS + 1) as ScanDepth
-  const txNumber = await Wallets.updateOnChainReceipt({ scanDepth, logger })
+  const txNumber = await WalletWithSpans.updateOnChainReceipt({ scanDepth, logger })
   if (txNumber instanceof Error) {
     logger.error(
       { error: txNumber },
@@ -192,7 +192,7 @@ export const invoiceUpdateEventHandler = async (
 ): Promise<boolean | ApplicationError> => {
   logger.info({ invoice }, "invoiceUpdateEventHandler")
   return invoice.is_held
-    ? Wallets.updatePendingInvoiceByPaymentHash({
+    ? WalletWithSpans.updatePendingInvoiceByPaymentHash({
         paymentHash: invoice.id as PaymentHash,
         logger,
       })
@@ -200,7 +200,7 @@ export const invoiceUpdateEventHandler = async (
 }
 
 export const publishSingleCurrentPrice = async () => {
-  const displayCurrencyPerSat = await Prices.getCurrentPrice()
+  const displayCurrencyPerSat = await PricesWithSpans.getCurrentPrice()
   if (displayCurrencyPerSat instanceof Error) {
     return logger.error({ err: displayCurrencyPerSat }, "can't publish the price")
   }
