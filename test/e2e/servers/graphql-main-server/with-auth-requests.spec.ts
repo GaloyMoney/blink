@@ -1,3 +1,5 @@
+import { Accounts } from "@app"
+import { WalletType } from "@domain/wallets"
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
@@ -10,6 +12,7 @@ import { baseLogger } from "@services/logger"
 import { sleep } from "@utils"
 
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
+import LN_USD_INVOICE_CREATE from "./mutations/ln-usd-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
 import LN_NO_AMOUNT_INVOICE_CREATE from "./mutations/ln-no-amount-invoice-create.gql"
@@ -23,6 +26,7 @@ import TRANSACTIONS_BY_WALLET_IDS from "./queries/transactions-by-wallet-ids.gql
 
 import {
   bitcoindClient,
+  cancelOkexPricePublish,
   clearAccountLocks,
   clearLimiters,
   createApolloClient,
@@ -30,6 +34,7 @@ import {
   defaultStateConfig,
   defaultTestClientConfig,
   fundWalletIdFromLightning,
+  getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
   promisifiedSubscription,
@@ -38,6 +43,7 @@ import {
   lndOutside1,
   lndOutside2,
   pay,
+  publishOkexPrice,
   PID,
   startServer,
 } from "test/helpers"
@@ -45,6 +51,7 @@ import {
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,
   walletId: WalletId,
+  usdWalletId: WalletId,
   serverPid: PID,
   triggerPid: PID
 const userRef = "D"
@@ -55,7 +62,16 @@ const satsAmount = toSats(50_000)
 const centsAmount = toCents(10_000)
 
 beforeAll(async () => {
+  await publishOkexPrice()
   await initializeTestingState(defaultStateConfig())
+  const account = await getAccountByTestUserRef(userRef)
+  const usdWallet = await Accounts.addWalletIfNonexistent({
+    accountId: account.id,
+    type: WalletType.Checking,
+    currency: WalletCurrency.Usd,
+  })
+  if (usdWallet instanceof Error) throw usdWallet
+  usdWalletId = usdWallet.id
   walletId = await getDefaultWalletIdByTestUserRef(userRef)
 
   await fundWalletIdFromLightning({ walletId, amount: satsAmount })
@@ -81,6 +97,7 @@ beforeEach(async () => {
 afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
   disposeClient()
+  cancelOkexPricePublish()
   await killServer(serverPid)
   await killServer(triggerPid)
 })
@@ -333,6 +350,25 @@ describe("graphql", () => {
       expect(errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
+    })
+  })
+
+  describe("lnUsdInvoiceCreate", () => {
+    const mutation = LN_USD_INVOICE_CREATE
+
+    it("returns a valid lightning invoice", async () => {
+      const input = {
+        walletId: usdWalletId,
+        amount: 1000,
+        memo: "This is a lightning invoice",
+      }
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
+      const { invoice, errors } = result.data.lnUsdInvoiceCreate
+      expect(errors).toHaveLength(0)
+      expect(invoice).toHaveProperty("paymentRequest")
+      expect(invoice.paymentRequest.startsWith("lnbcrt4")).toBeTruthy()
+      expect(invoice).toHaveProperty("paymentHash")
+      expect(invoice).toHaveProperty("paymentSecret")
     })
   })
 
