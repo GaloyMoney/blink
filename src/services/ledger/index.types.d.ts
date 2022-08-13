@@ -123,7 +123,7 @@ type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata
 type NewAddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
   SendAmountsMetadata
 
-type FeeReimbursementLedgerMetadata = SendAmountsMetadata & {
+type ReimbursementLedgerMetadata = SendAmountsMetadata & {
   hash: PaymentHash
   type: LedgerTransactionType
   pending: boolean
@@ -147,7 +147,7 @@ type LoadLedgerParams = {
 }
 
 type ReceiveLedgerMetadata =
-  | FeeReimbursementLedgerMetadata
+  | ReimbursementLedgerMetadata
   | LnReceiveLedgerMetadata
   | OnChainReceiveLedgerMetadata
 
