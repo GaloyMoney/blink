@@ -58,7 +58,7 @@ export const reimburseFee = async <S extends WalletCurrency, R extends WalletCur
   const paymentHash = paymentFlow.paymentHashForFlow()
   if (paymentHash instanceof Error) return paymentHash
 
-  const metadata: FeeReimbursementLedgerMetadata = {
+  const metadata: ReimbursementLedgerMetadata = {
     hash: paymentHash,
     type: LedgerTransactionType.LnFeeReimbursement,
     pending: false,
