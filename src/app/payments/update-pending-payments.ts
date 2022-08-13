@@ -7,6 +7,7 @@ import {
   LedgerTransactionType,
   UnknownLedgerError,
 } from "@domain/ledger"
+import { WalletCurrency } from "@domain/shared"
 
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
@@ -187,15 +188,27 @@ const updatePendingPayment = async ({
           { success: false, id: paymentHash, payment: pendingPayment },
           "payment has failed. reverting transaction",
         )
-
-        const voided = await ledgerService.revertLightningPayment({
-          journalId: pendingPayment.journalId,
-          paymentHash,
-        })
-        if (voided instanceof Error) {
-          const error = `error voiding payment entry`
-          logger.fatal({ success: false, result: lnPaymentLookup }, error)
-          return voided
+        if (paymentFlow.senderWalletCurrency === WalletCurrency.Btc) {
+          const voided = await ledgerService.revertLightningPayment({
+            journalId: pendingPayment.journalId,
+            paymentHash,
+          })
+          if (voided instanceof Error) {
+            const error = `error voiding payment entry`
+            logger.fatal({ success: false, result: lnPaymentLookup }, error)
+            return voided
+          }
+        } else {
+          const reimbursed = await Wallets.reimburseFailedUsdPayment({
+            journalId: pendingPayment.journalId,
+            paymentFlow,
+            accountId: wallet.accountId,
+          })
+          if (reimbursed instanceof Error) {
+            const error = `error reimbursing usd payment entry`
+            logger.fatal({ success: false, result: lnPaymentLookup }, error)
+            return reimbursed
+          }
         }
       }
       return true
