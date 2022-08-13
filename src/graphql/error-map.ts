@@ -337,6 +337,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CouldNotFindWalletFromUsernameAndCurrencyError":
     case "CouldNotFindWalletFromOnChainAddressError":
     case "CouldNotFindWalletFromOnChainAddressesError":
+    case "CouldNotFindWalletForWalletCurrencyError":
     case "CouldNotListWalletsFromWalletCurrencyError":
     case "CouldNotFindLnPaymentFromHashError":
     case "LockError":
@@ -383,6 +384,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidAccountLevelError":
     case "InvalidWithdrawFeeError":
     case "InvalidUsdCents":
+    case "InvalidAccountForWalletIdError":
     case "NonIntegerError":
     case "ColdStorageError":
     case "ColdStorageServiceError":
