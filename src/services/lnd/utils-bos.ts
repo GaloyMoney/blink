@@ -41,8 +41,15 @@ export const rebalancingInternalChannels = async () => {
   const otherPubkey = lnds[1].pubkey
 
   const { channels } = await getDirectChannels({ lnd: selfLnd, otherPubkey })
-  for (const channel of channels) {
-    console.log({ channel })
+
+  // TODO:
+  // we currently only rebalancing the biggest channel between both peers.
+
+  // we need to be able to specify the channel for when we have many direct channels
+  // but pushPayment doesn't take a channelId currently
+  const largestChannel = [channels.sort((a, b) => (a.capacity > b.capacity ? -1 : 1))[0]]
+
+  for (const channel of largestChannel) {
     const diff = channel.capacity / 2 /* half point */ - channel.local_balance
 
     const settings = {
@@ -53,10 +60,7 @@ export const rebalancingInternalChannels = async () => {
       quiz_answers: [],
       request: simpleRequest,
       amount: String(Math.abs(diff)),
-      is_omitting_message_from: false,
     }
-
-    console.log({ selfPubkey, otherPubkey })
 
     if (diff > 0) {
       // there is more liquidity on the other node
@@ -65,15 +69,15 @@ export const rebalancingInternalChannels = async () => {
         destination: selfPubkey,
         ...settings,
       })
-    } else {
-      console.log({ otherPubkey, settings })
-
+    } else if (diff < 0) {
       // there is more liquidity on the local node
       await pushPayment({
         lnd: selfLnd,
         destination: otherPubkey,
         ...settings,
       })
+    } else {
+      baseLogger.info("no rebalancing needed")
     }
   }
 }
