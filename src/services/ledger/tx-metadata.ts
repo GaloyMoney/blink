@@ -344,7 +344,7 @@ export const LnRoutingRevenue = (collectedOn: Date) => {
   return metadata
 }
 
-export const ColdStorageReceiveLedgerMetada = ({
+export const ColdStorageReceiveLedgerMetadata = ({
   onChainTxHash,
   fee,
   feeDisplayCurrency,
@@ -373,7 +373,7 @@ export const ColdStorageReceiveLedgerMetada = ({
   return metadata
 }
 
-export const ColdStorageSendLedgerMetada = ({
+export const ColdStorageSendLedgerMetadata = ({
   onChainTxHash,
   fee,
   feeDisplayCurrency,
