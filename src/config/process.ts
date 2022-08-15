@@ -68,7 +68,7 @@ export const getTwilioConfig = (): TwilioConfig => {
 
 export const getDealerPriceConfig = () => {
   return {
-    port: process.env.PRICE_SERVER_PORT ?? "50055",
+    port: process.env.PRICE_SERVER_PORT ?? "3325",
     host: process.env.PRICE_SERVER_HOST ?? "localhost",
   }
 }

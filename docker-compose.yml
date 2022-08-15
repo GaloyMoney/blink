@@ -6,6 +6,7 @@ services:
     - price
     - price-history
     - price-history-migrate
+    - stablesats
     - redis
     - mongodb
     - postgres-price-history
@@ -129,5 +130,14 @@ services:
     working_dir: /repo
     env_file:
       - ${TMP_ENV_CI:-.env.ci}
+    volumes:
+      - ./:/repo
+  stablesats:
+    image: us.gcr.io/galoy-org/stablesats-rs:edge
+    command: ["stablesats", "run"]
+    working_dir: /repo/dev
+    depends_on:
+    - otel-agent
+    - redis
     volumes:
       - ./:/repo
