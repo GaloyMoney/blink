@@ -61,6 +61,7 @@ type User = {
 
 type NewUserInfo = {
   phone: PhoneNumber
+  role?: string
   phoneMetadata?: PhoneMetadata
 }
 
