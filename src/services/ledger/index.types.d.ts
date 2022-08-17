@@ -131,6 +131,8 @@ type ReimbursementLedgerMetadata = SendAmountsMetadata & {
   related_journal: LedgerJournalId
 }
 
+type FailedPaymentLedgerMetadata = ReimbursementLedgerMetadata
+
 type LnRoutingRevenueLedgerMetadata = LedgerMetadata & {
   feesCollectedOn: string
 }
