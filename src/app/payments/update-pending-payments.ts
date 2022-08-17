@@ -9,7 +9,7 @@ import {
 } from "@domain/ledger"
 import { WalletCurrency } from "@domain/shared"
 
-import { LedgerService } from "@services/ledger"
+import { LedgerService, getDealerWalletIds } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
 import { WalletsRepository } from "@services/mongoose"
@@ -226,11 +226,15 @@ const reconstructPendingPaymentFlow = async <
   const ledgerTxns = await LedgerService().getTransactionsByHash(paymentHash)
   if (ledgerTxns instanceof Error) return ledgerTxns
 
+  const dealerWalletIds = Object.values(await getDealerWalletIds())
+
   const payment = ledgerTxns.find(
     (tx) =>
       tx.pendingConfirmation === true &&
       tx.type === LedgerTransactionType.Payment &&
-      tx.debit > 0,
+      tx.debit > 0 &&
+      tx.walletId !== undefined &&
+      !dealerWalletIds.includes(tx.walletId),
   ) as LedgerTransaction<S> | undefined
   if (!payment) return new CouldNotFindTransactionError()
 
