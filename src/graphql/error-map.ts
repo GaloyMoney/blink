@@ -413,6 +413,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidZeroAmountPriceRatioInputError":
     case "InvalidCurrencyForWalletError":
     case "InvalidLightningPaymentFlowStateError":
+    case "InvalidLedgerTransactionStateError":
     case "BadInputsForFindError":
     case "LnHashPresentInIntraLedgerFlowError":
     case "IntraLedgerHashPresentInLnFlowError":
