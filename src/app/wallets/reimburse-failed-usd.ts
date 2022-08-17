@@ -27,9 +27,9 @@ export const reimburseFailedUsdPayment = async <
   const paymentHash = paymentFlow.paymentHashForFlow()
   if (paymentHash instanceof Error) return paymentHash
 
-  const metadata: ReimbursementLedgerMetadata = {
+  const metadata: FailedPaymentLedgerMetadata = {
     hash: paymentHash,
-    type: LedgerTransactionType.LnFeeReimbursement,
+    type: LedgerTransactionType.Payment,
     pending: false,
     related_journal: journalId,
 
