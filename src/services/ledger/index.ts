@@ -54,6 +54,11 @@ export const lazyLoadLedgerAdmin = ({
   }
 }
 
+export const getDealerWalletIds = async () => ({
+  btc: await caching.getDealerBtcWalletId(),
+  usd: await caching.getDealerUsdWalletId(),
+})
+
 export const LedgerService = (): ILedgerService => {
   const updateMetadataByHash = async (
     ledgerTxMetadata:
@@ -345,8 +350,11 @@ export const LedgerService = (): ILedgerService => {
       return new UnknownLedgerError(error)
     }
 
+    const dealerWalletIds = Object.values(await getDealerWalletIds())
     for await (const { _id } of transactions) {
-      yield toWalletId(_id)
+      const walletId = toWalletId(_id)
+      if (walletId === undefined || dealerWalletIds.includes(walletId)) continue
+      yield walletId
     }
   }
 
