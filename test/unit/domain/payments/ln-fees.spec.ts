@@ -9,7 +9,7 @@ describe("LnFees", () => {
         currency: WalletCurrency.Btc,
       }
       expect(LnFees().maxProtocolFee(btcAmount)).toEqual({
-        amount: 200n,
+        amount: 50n,
         currency: WalletCurrency.Btc,
       })
     })
@@ -20,7 +20,7 @@ describe("LnFees", () => {
         currency: WalletCurrency.Btc,
       }
       expect(LnFees().maxProtocolFee(btcAmount)).toEqual({
-        amount: 517n,
+        amount: 129n,
         currency: WalletCurrency.Btc,
       })
     })

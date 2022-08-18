@@ -22,14 +22,36 @@ const PriceInput = GT.Input({
   }),
 })
 
+type PriceSubscribeArgs = {
+  input: {
+    amount: number | Error
+    amountCurrencyUnit: string | Error
+    priceCurrencyUnit: string | Error
+  }
+}
+
+type PriceResolveArgs = {
+  input: {
+    amount: number
+    amountCurrencyUnit: string
+    priceCurrencyUnit: string
+  }
+}
+
 const PriceSubscription = {
   type: GT.NonNull(PricePayload),
   args: {
     input: { type: GT.NonNull(PriceInput) },
   },
-  resolve: (source, args) => {
+  resolve: (
+    source: { errors: IError[]; satUsdCentPrice?: number },
+    args: PriceResolveArgs,
+  ) => {
     if (source.errors) {
       return { errors: source.errors }
+    }
+    if (!source.satUsdCentPrice) {
+      return { errors: [{ message: "No price info" }] }
     }
     const amountPriceInCents = args.input.amount * source.satUsdCentPrice
     return {
@@ -42,7 +64,7 @@ const PriceSubscription = {
       },
     }
   },
-  subscribe: async (_, args) => {
+  subscribe: async (_: unknown, args: PriceSubscribeArgs) => {
     const { amount, amountCurrencyUnit, priceCurrencyUnit } = args.input
 
     const immediateTrigger = customPubSubTrigger({

@@ -1,15 +1,18 @@
 import { yamlConfig } from "@config"
 import { setupMongoConnection } from "@services/mongodb"
 
-import { getFunderWalletId } from "@services/ledger/caching"
 import { adminUsers } from "@domain/admin-users"
+import { getFunderWalletId } from "@services/ledger/caching"
 
 import { baseLogger } from "@services/logger"
+
+import { getActiveLnd } from "@services/lnd/utils"
 
 import {
   fundLnd,
   getChainBalance,
   mineBlockAndSyncAll,
+  waitUntilGraphIsReady,
   waitUntilSyncAll,
 } from "./lightning"
 
@@ -17,6 +20,8 @@ import { clearAccountLocks, clearLimiters } from "./redis"
 
 import {
   bitcoindClient,
+  bitcoindOutside,
+  checkIsBalanced,
   createUserAndWallet,
   fundWalletIdFromOnchain,
   lnd1,
@@ -24,11 +29,9 @@ import {
   lndOutside1,
   lndOutside2,
   mineAndConfirm,
-  bitcoindOutside,
+  openChannelTesting,
   resetDatabase,
   resetLnds,
-  openChannelTesting,
-  checkIsBalanced,
 } from "test/helpers"
 
 export type TestingStateConfig = {
@@ -182,4 +185,9 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
   }
 
   await checkIsBalanced()
+
+  const activeLnd = getActiveLnd()
+  if (activeLnd instanceof Error) throw activeLnd
+
+  await waitUntilGraphIsReady({ lnd: activeLnd.lnd })
 }

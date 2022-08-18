@@ -1,10 +1,18 @@
-import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
+import { Accounts } from "@app"
+import { WalletType } from "@domain/wallets"
+import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { WalletCurrency } from "@domain/shared"
+import { LnFees } from "@domain/payments"
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
+import { baseLogger } from "@services/logger"
+
+import { sleep } from "@utils"
+
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
+import LN_USD_INVOICE_CREATE from "./mutations/ln-usd-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
 import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
 import LN_NO_AMOUNT_INVOICE_CREATE from "./mutations/ln-no-amount-invoice-create.gql"
@@ -13,10 +21,12 @@ import LN_NO_AMOUNT_INVOICE_PAYMENT_SEND from "./mutations/ln-no-amount-invoice-
 import USER_LOGIN from "./mutations/user-login.gql"
 import MAIN from "./queries/main.gql"
 import ME from "./queries/me.gql"
+import MY_UPDATES_LN from "./subscriptions/my-updates-ln.gql"
 import TRANSACTIONS_BY_WALLET_IDS from "./queries/transactions-by-wallet-ids.gql"
 
 import {
   bitcoindClient,
+  cancelOkexPricePublish,
   clearAccountLocks,
   clearLimiters,
   createApolloClient,
@@ -24,11 +34,16 @@ import {
   defaultStateConfig,
   defaultTestClientConfig,
   fundWalletIdFromLightning,
+  getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
+  promisifiedSubscription,
   initializeTestingState,
   killServer,
+  lndOutside1,
   lndOutside2,
+  pay,
+  publishOkexPrice,
   PID,
   startServer,
 } from "test/helpers"
@@ -36,7 +51,9 @@ import {
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,
   walletId: WalletId,
-  serverPid: PID
+  usdWalletId: WalletId,
+  serverPid: PID,
+  triggerPid: PID
 const userRef = "D"
 
 const { phone, code } = getPhoneAndCodeFromRef(userRef)
@@ -45,11 +62,21 @@ const satsAmount = toSats(50_000)
 const centsAmount = toCents(10_000)
 
 beforeAll(async () => {
+  await publishOkexPrice()
   await initializeTestingState(defaultStateConfig())
+  const account = await getAccountByTestUserRef(userRef)
+  const usdWallet = await Accounts.addWalletIfNonexistent({
+    accountId: account.id,
+    type: WalletType.Checking,
+    currency: WalletCurrency.Usd,
+  })
+  if (usdWallet instanceof Error) throw usdWallet
+  usdWalletId = usdWallet.id
   walletId = await getDefaultWalletIdByTestUserRef(userRef)
 
   await fundWalletIdFromLightning({ walletId, amount: satsAmount })
-  serverPid = await startServer()
+  serverPid = await startServer("start-main-ci")
+  triggerPid = await startServer("start-trigger-ci")
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
   const input = { phone, code }
   const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
@@ -70,7 +97,9 @@ beforeEach(async () => {
 afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
   disposeClient()
+  cancelOkexPricePublish()
   await killServer(serverPid)
+  await killServer(triggerPid)
 })
 
 describe("graphql", () => {
@@ -324,6 +353,25 @@ describe("graphql", () => {
     })
   })
 
+  describe("lnUsdInvoiceCreate", () => {
+    const mutation = LN_USD_INVOICE_CREATE
+
+    it("returns a valid lightning invoice", async () => {
+      const input = {
+        walletId: usdWalletId,
+        amount: 1000,
+        memo: "This is a lightning invoice",
+      }
+      const result = await apolloClient.mutate({ mutation, variables: { input } })
+      const { invoice, errors } = result.data.lnUsdInvoiceCreate
+      expect(errors).toHaveLength(0)
+      expect(invoice).toHaveProperty("paymentRequest")
+      expect(invoice.paymentRequest.startsWith("lnbcrt4")).toBeTruthy()
+      expect(invoice).toHaveProperty("paymentHash")
+      expect(invoice).toHaveProperty("paymentSecret")
+    })
+  })
+
   describe("lnInvoiceFeeProbe", () => {
     const mutation = LN_INVOICE_FEE_PROBE
 
@@ -361,13 +409,16 @@ describe("graphql", () => {
       const messageRegex = /^Unable to find a route for payment.$/
       const unreachable10kSatPaymentRequest =
         "lnbc100u1p3fj2qlpp5gnp23luuectecrlqddwkh7n7flj6zrnna8eqm8h9ws4ecweucqzsdqqcqzpgxqyz5vqsp5gue9tr3djq08kw6286tzk948ys69pphyd6xmwyut0xyn6fqt2zfs9qyyssq043fsndfudcjt05m7pyeusgpdlegm8kcstc5xywc2zws35tmlpsxdyed8jg8vk4erdxpwwap8akc9vm769qw2zqq86u63mqpa22fu6cpqjuudj"
-      const expectedFee = 10_000 * FEECAP_PERCENT
+      const expectedFeeAmount = LnFees().maxProtocolFee({
+        amount: 10_000n,
+        currency: WalletCurrency.Btc,
+      })
 
       const input = { walletId, paymentRequest: unreachable10kSatPaymentRequest }
       const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { amount, errors } = result.data.lnInvoiceFeeProbe
       expect(errors).toHaveLength(1)
-      expect(amount).toBe(expectedFee)
+      expect(amount).toBe(Number(expectedFeeAmount.amount))
       expect(errors).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
@@ -414,7 +465,10 @@ describe("graphql", () => {
         "lnbcrt1p39jaempp58sazckz8cce377ry7cle7k6rwafsjzkuqg022cp2vhxvccyss3csdqqcqzpuxqr23ssp509fhyjxf4utxetalmjett6xvwrm3g7datl6sted2w2m3qdnlq7ps9qyyssqg49tguulzccdtfdl07ltep8294d60tcryxl0tcau0uzwpre6mmxq7mc6737ffctl59fxv32a9g0ul63gx304862fuuwslnr2cd3ghuqq2rsxaz"
 
       const paymentAmount = 10_000
-      const expectedFee = paymentAmount * FEECAP_PERCENT
+      const expectedFeeAmount = LnFees().maxProtocolFee({
+        amount: BigInt(paymentAmount),
+        currency: WalletCurrency.Btc,
+      })
 
       const input = {
         walletId,
@@ -424,7 +478,7 @@ describe("graphql", () => {
       const result = await apolloClient.mutate({ mutation, variables: { input } })
       const { amount, errors } = result.data.lnNoAmountInvoiceFeeProbe
       expect(errors).toHaveLength(1)
-      expect(amount).toBe(expectedFee)
+      expect(amount).toEqual(Number(expectedFeeAmount.amount))
       expect(errors).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ message: expect.stringMatching(messageRegex) }),
@@ -530,6 +584,57 @@ describe("graphql", () => {
       expect(errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
+    })
+  })
+
+  describe("Trigger + receiving payment", () => {
+    const mutation = LN_INVOICE_CREATE
+
+    afterAll(async () => {
+      jest.restoreAllMocks()
+    })
+
+    it("receive a payment and subscription update", async () => {
+      const input = { walletId, amount: 1000, memo: "This is a lightning invoice" }
+      const result1 = await apolloClient.mutate({ mutation, variables: { input } })
+      const { invoice } = result1.data.lnInvoiceCreate
+
+      const subscriptionQuery = MY_UPDATES_LN
+
+      const subscription = apolloClient.subscribe({
+        query: subscriptionQuery,
+      })
+
+      const promisePay = pay({
+        lnd: lndOutside1,
+        request: invoice.paymentRequest,
+      })
+
+      let status = ""
+      let hash = ""
+      let i = 0
+      while (i < 5) {
+        try {
+          const result_sub = (await promisifiedSubscription(subscription)) as { data }
+          if (result_sub.data.myUpdates.update.type === "Price") i += 1
+          else {
+            status = result_sub.data.myUpdates.update.status
+            hash = result_sub.data.myUpdates.update.paymentHash
+            i = 5
+          }
+        } catch (err) {
+          baseLogger.warn({ err }, "error with subscription")
+        }
+
+        // we need to wait here because other promisifiedSubscription
+        // would give back the same event and not wait for the next event
+        // so if Price were to be the event that came back at first, it would fail
+        await sleep(100)
+      }
+
+      expect(status).toBe("PAID")
+      const result2 = await promisePay
+      expect(hash).toBe(result2.id)
     })
   })
 })

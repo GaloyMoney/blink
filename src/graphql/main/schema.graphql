@@ -37,7 +37,7 @@ type AccountUpdateDefaultWalletIdPayload {
 }
 
 """
-An authentication code valid for a single use
+An JWT-formatted authentication token
 """
 scalar AuthToken
 
@@ -62,6 +62,32 @@ type BTCWallet implements Wallet {
   A list of BTC transactions associated with this wallet.
   """
   transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
+  transactionsByAddress(
+    """
+    Returns the items that include this address.
+    """
+    address: OnChainAddress!
+
     """
     Returns the items in the list that come after the specified cursor.
     """
@@ -185,6 +211,12 @@ Provides global settings for the application which might have an impact for the 
 """
 type Globals {
   buildInformation: BuildInformation!
+
+  """
+  The domain name for lightning addresses accepted by this Galoy instance
+  """
+  lightningAddressDomain: String!
+  lightningAddressDomainAliases: [String!]!
 
   """
   A list of public keys for the running lightning nodes.
@@ -1045,6 +1077,32 @@ type UsdWallet implements Wallet {
     """
     last: Int
   ): TransactionConnection
+  transactionsByAddress(
+    """
+    Returns the items that include this address.
+    """
+    address: OnChainAddress!
+
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
   walletCurrency: WalletCurrency!
 }
 
@@ -1199,6 +1257,37 @@ interface Wallet {
   ie: the newest transaction will be first
   """
   transactions(
+    """
+    Returns the items in the list that come after the specified cursor.
+    """
+    after: String
+
+    """
+    Returns the items in the list that come before the specified cursor.
+    """
+    before: String
+
+    """
+    Returns the first n items from the list.
+    """
+    first: Int
+
+    """
+    Returns the last n items from the list.
+    """
+    last: Int
+  ): TransactionConnection
+
+  """
+  Transactions are ordered anti-chronologically,
+  ie: the newest transaction will be first
+  """
+  transactionsByAddress(
+    """
+    Returns the items that include this address.
+    """
+    address: OnChainAddress!
+
     """
     Returns the items in the list that come after the specified cursor.
     """

@@ -229,6 +229,7 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
     paymentInitiationMethod:
       paymentFlowState.paymentInitiationMethod as PaymentInitiationMethod,
     descriptionFromInvoice: paymentFlowState.descriptionFromInvoice,
+    skipProbeForDestination: paymentFlowState.skipProbeForDestination,
     createdAt: paymentFlowState.createdAt,
     paymentSentAndPending: paymentFlowState.paymentSentAndPending,
 
@@ -270,6 +271,7 @@ const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
     settlementMethod: paymentFlow.settlementMethod,
     paymentInitiationMethod: paymentFlow.paymentInitiationMethod,
     descriptionFromInvoice: paymentFlow.descriptionFromInvoice,
+    skipProbeForDestination: paymentFlow.skipProbeForDestination,
     createdAt: paymentFlow.createdAt,
     paymentSentAndPending: paymentFlow.paymentSentAndPending,
 

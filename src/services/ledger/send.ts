@@ -71,7 +71,7 @@ export const send = {
         { hash: paymentHash },
         { pending: false },
       )
-      const success = result.nModified > 0
+      const success = result.modifiedCount > 0
       if (!success) {
         return new NoTransactionToSettleError()
       }
@@ -86,7 +86,7 @@ export const send = {
   ): Promise<true | LedgerServiceError> => {
     try {
       const result = await Transaction.updateMany({ hash }, { pending: false })
-      const success = result.nModified > 0
+      const success = result.modifiedCount > 0
       if (!success) {
         return new NoTransactionToSettleError()
       }

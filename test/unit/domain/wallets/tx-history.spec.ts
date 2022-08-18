@@ -9,175 +9,175 @@ import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { toCents } from "@domain/fiat"
 
-describe("WalletTransactionHistory.fromLedger", () => {
-  describe("translates ledger txs to wallet txs", () => {
-    const timestamp = new Date(Date.now())
-    const fee = toSats(2)
-    const feeUsd = 0.1
+describe("translates ledger txs to wallet txs", () => {
+  const timestamp = new Date(Date.now())
+  const fee = toSats(2)
+  const feeUsd = 0.1
 
-    const baseLedgerTransaction = {
-      id: "id" as LedgerTransactionId,
-      fee,
-      feeUsd,
-      pendingConfirmation: false,
-      journalId: "journalId" as LedgerJournalId,
-      timestamp,
-      feeKnownInAdvance: false,
+  const baseLedgerTransaction = {
+    id: "id" as LedgerTransactionId,
+    fee,
+    feeUsd,
+    pendingConfirmation: false,
+    journalId: "journalId" as LedgerJournalId,
+    timestamp,
+    feeKnownInAdvance: false,
+  }
+
+  const baseWalletTransaction = {
+    id: "id" as LedgerTransactionId,
+    status: TxStatus.Success,
+    createdAt: timestamp,
+  }
+
+  const ledgerTxnsInputs = ({
+    walletId,
+    settlementAmount,
+    usd,
+    currency,
+  }: {
+    walletId: WalletId
+    settlementAmount: Satoshis | UsdCents
+    usd: number
+    currency: WalletCurrency
+  }): LedgerTransaction<WalletCurrency>[] => {
+    const currencyBaseLedgerTxns = { ...baseLedgerTransaction, walletId, usd, currency }
+
+    return [
+      {
+        ...currencyBaseLedgerTxns,
+        type: LedgerTransactionType.Invoice,
+
+        debit: toSats(0),
+        credit: settlementAmount,
+
+        paymentHash: "paymentHash" as PaymentHash,
+        pubkey: "pubkey" as Pubkey,
+        memoFromPayer: "SomeMemo",
+      },
+      {
+        ...currencyBaseLedgerTxns,
+        recipientWalletId: "walletIdRecipient" as WalletId,
+        type: LedgerTransactionType.IntraLedger,
+
+        debit: toSats(0),
+        credit: settlementAmount,
+
+        paymentHash: "paymentHash" as PaymentHash,
+        pubkey: "pubkey" as Pubkey,
+        username: "username" as Username,
+      },
+      {
+        ...currencyBaseLedgerTxns,
+        recipientWalletId: "walletIdRecipient" as WalletId,
+        type: LedgerTransactionType.OnchainIntraLedger,
+
+        debit: toSats(0),
+        credit: settlementAmount,
+
+        address: "address" as OnChainAddress,
+        txHash: "txHash" as OnChainTxHash,
+      },
+      {
+        ...currencyBaseLedgerTxns,
+        type: LedgerTransactionType.OnchainReceipt,
+
+        debit: toSats(0),
+        credit: settlementAmount,
+
+        address: "address" as OnChainAddress,
+        txHash: "txHash" as OnChainTxHash,
+      },
+    ]
+  }
+
+  const expectedWalletTxns = ({
+    walletId,
+    settlementAmount,
+    usd,
+    currency,
+  }: {
+    walletId: WalletId
+    settlementAmount: Satoshis | UsdCents
+    usd: number
+    currency: WalletCurrency
+  }): WalletTransaction[] => {
+    const settlementFee =
+      currency === WalletCurrency.Btc ? toSats(fee) : toCents(Math.floor(feeUsd * 100))
+    const displayCurrencyPerSettlementCurrencyUnit = Math.abs(usd / settlementAmount)
+
+    if (currency === WalletCurrency.Usd) {
+      expect(displayCurrencyPerSettlementCurrencyUnit).toEqual(0.01)
     }
 
-    const baseWalletTransaction = {
-      id: "id" as LedgerTransactionId,
-      status: TxStatus.Success,
-      createdAt: timestamp,
-    }
-
-    const ledgerTxnsInputs = ({
+    const currencyBaseWalletTxns = {
+      ...baseWalletTransaction,
       walletId,
+      settlementCurrency: currency,
+
       settlementAmount,
-      usd,
-      currency,
-    }: {
-      walletId: WalletId
-      settlementAmount: Satoshis | UsdCents
-      usd: number
-      currency: WalletCurrency
-    }): LedgerTransaction<WalletCurrency>[] => {
-      const currencyBaseLedgerTxns = { ...baseLedgerTransaction, walletId, usd, currency }
+      settlementFee,
+      displayCurrencyPerSettlementCurrencyUnit,
+    }
 
-      return [
-        {
-          ...currencyBaseLedgerTxns,
-          type: LedgerTransactionType.Invoice,
-
-          debit: toSats(0),
-          credit: settlementAmount,
-
+    return [
+      {
+        ...currencyBaseWalletTxns,
+        initiationVia: {
+          type: PaymentInitiationMethod.Lightning,
           paymentHash: "paymentHash" as PaymentHash,
           pubkey: "pubkey" as Pubkey,
-          memoFromPayer: "SomeMemo",
         },
-        {
-          ...currencyBaseLedgerTxns,
-          recipientWalletId: "walletIdRecipient" as WalletId,
-          type: LedgerTransactionType.IntraLedger,
+        settlementVia: {
+          type: SettlementMethod.Lightning,
+          revealedPreImage: undefined,
+        },
+        memo: "SomeMemo",
+      },
 
-          debit: toSats(0),
-          credit: settlementAmount,
-
+      {
+        ...currencyBaseWalletTxns,
+        initiationVia: {
+          type: PaymentInitiationMethod.Lightning,
           paymentHash: "paymentHash" as PaymentHash,
           pubkey: "pubkey" as Pubkey,
-          username: "username" as Username,
         },
-        {
-          ...currencyBaseLedgerTxns,
-          recipientWalletId: "walletIdRecipient" as WalletId,
-          type: LedgerTransactionType.OnchainIntraLedger,
-
-          debit: toSats(0),
-          credit: settlementAmount,
-
+        settlementVia: {
+          type: SettlementMethod.IntraLedger,
+          counterPartyWalletId: "walletIdRecipient" as WalletId,
+          counterPartyUsername: "username" as Username,
+        },
+        memo: null,
+      },
+      {
+        ...currencyBaseWalletTxns,
+        initiationVia: {
+          type: PaymentInitiationMethod.OnChain,
           address: "address" as OnChainAddress,
-          txHash: "txHash" as OnChainTxHash,
         },
-        {
-          ...currencyBaseLedgerTxns,
-          type: LedgerTransactionType.OnchainReceipt,
-
-          debit: toSats(0),
-          credit: settlementAmount,
-
+        settlementVia: {
+          type: SettlementMethod.IntraLedger,
+          counterPartyWalletId: "walletIdRecipient" as WalletId,
+          counterPartyUsername: null,
+        },
+        memo: null,
+      },
+      {
+        ...currencyBaseWalletTxns,
+        initiationVia: {
+          type: PaymentInitiationMethod.OnChain,
           address: "address" as OnChainAddress,
-          txHash: "txHash" as OnChainTxHash,
         },
-      ]
-    }
-
-    const expectedWalletTxns = ({
-      walletId,
-      settlementAmount,
-      usd,
-      currency,
-    }: {
-      walletId: WalletId
-      settlementAmount: Satoshis | UsdCents
-      usd: number
-      currency: WalletCurrency
-    }): WalletTransaction[] => {
-      const settlementFee =
-        currency === WalletCurrency.Btc ? toSats(fee) : toCents(Math.floor(feeUsd * 100))
-      const displayCurrencyPerSettlementCurrencyUnit = Math.abs(usd / settlementAmount)
-
-      if (currency === WalletCurrency.Usd) {
-        expect(displayCurrencyPerSettlementCurrencyUnit).toEqual(0.01)
-      }
-
-      const currencyBaseWalletTxns = {
-        ...baseWalletTransaction,
-        walletId,
-        settlementCurrency: currency,
-
-        settlementAmount,
-        settlementFee,
-        displayCurrencyPerSettlementCurrencyUnit,
-      }
-
-      return [
-        {
-          ...currencyBaseWalletTxns,
-          initiationVia: {
-            type: PaymentInitiationMethod.Lightning,
-            paymentHash: "paymentHash" as PaymentHash,
-            pubkey: "pubkey" as Pubkey,
-          },
-          settlementVia: {
-            type: SettlementMethod.Lightning,
-            revealedPreImage: null,
-          },
-          memo: "SomeMemo",
+        settlementVia: {
+          type: SettlementMethod.OnChain,
+          transactionHash: "txHash" as OnChainTxHash,
         },
+        memo: null,
+      },
+    ]
+  }
 
-        {
-          ...currencyBaseWalletTxns,
-          initiationVia: {
-            type: PaymentInitiationMethod.Lightning,
-            paymentHash: "paymentHash" as PaymentHash,
-            pubkey: "pubkey" as Pubkey,
-          },
-          settlementVia: {
-            type: SettlementMethod.IntraLedger,
-            counterPartyWalletId: "walletIdRecipient" as WalletId,
-            counterPartyUsername: "username" as Username,
-          },
-          memo: null,
-        },
-        {
-          ...currencyBaseWalletTxns,
-          initiationVia: {
-            type: PaymentInitiationMethod.OnChain,
-            address: "address" as OnChainAddress,
-          },
-          settlementVia: {
-            type: SettlementMethod.IntraLedger,
-            counterPartyWalletId: "walletIdRecipient" as WalletId,
-            counterPartyUsername: null,
-          },
-          memo: null,
-        },
-        {
-          ...currencyBaseWalletTxns,
-          initiationVia: {
-            type: PaymentInitiationMethod.OnChain,
-            address: "address" as OnChainAddress,
-          },
-          settlementVia: {
-            type: SettlementMethod.OnChain,
-            transactionHash: "txHash" as OnChainTxHash,
-          },
-          memo: null,
-        },
-      ]
-    }
-
+  describe("WalletTransactionHistory.fromLedger", () => {
     it("translates btc ledger txs", () => {
       const currency = WalletCurrency.Btc
       const settlementAmount = toSats(100000)
@@ -216,6 +216,108 @@ describe("WalletTransactionHistory.fromLedger", () => {
 
       const expected = expectedWalletTxns(txnsArgs)
       expect(result.transactions).toEqual(expected)
+    })
+  })
+
+  describe("WalletTransactionHistory.fromLedgerWithMetadata", () => {
+    it("translates btc ledger txs", () => {
+      const currency = WalletCurrency.Btc
+      const settlementAmount = toSats(100000)
+      const usd = 20
+
+      const txnsArgs = {
+        walletId: crypto.randomUUID() as WalletId,
+        settlementAmount,
+        usd,
+        feeUsd,
+        currency,
+      }
+
+      const ledgerTxnsWithMetadata = ledgerTxnsInputs(txnsArgs).map(
+        <S extends WalletCurrency>(
+          txn: LedgerTransaction<S>,
+        ): LedgerTransactionWithMetadata<S> => ({
+          ...txn,
+          hasMetadata: true,
+        }),
+      )
+
+      // Add metadata to inputs
+      ledgerTxnsWithMetadata[0] = {
+        ...ledgerTxnsWithMetadata[0],
+        revealedPreImage: "revealedPreImage" as RevealedPreImage,
+      }
+
+      const result =
+        WalletTransactionHistory.fromLedgerWithMetadata(ledgerTxnsWithMetadata)
+
+      const expectedWithMetadata = expectedWalletTxns(txnsArgs).map(
+        (txn: WalletTransaction): WalletTransactionWithMetadata => ({
+          ...txn,
+          hasMetadata: true,
+        }),
+      )
+
+      // Add metadata to expected outputs
+      expectedWithMetadata[0] = {
+        ...expectedWithMetadata[0],
+        settlementVia: {
+          ...expectedWithMetadata[0].settlementVia,
+          revealedPreImage: "revealedPreImage" as RevealedPreImage,
+        },
+      } as WalletLnTransactionWithMetadata
+
+      expect(result.transactions).toEqual(expectedWithMetadata)
+    })
+
+    it("translates usd ledger txs", () => {
+      const currency = WalletCurrency.Usd
+      const settlementAmount = toCents(2000)
+      const usd = 20
+
+      const txnsArgs = {
+        walletId: crypto.randomUUID() as WalletId,
+        settlementAmount,
+        usd,
+        feeUsd,
+        currency,
+      }
+
+      const ledgerTxnsWithMetadata = ledgerTxnsInputs(txnsArgs).map(
+        <S extends WalletCurrency>(
+          txn: LedgerTransaction<S>,
+        ): LedgerTransactionWithMetadata<S> => ({
+          ...txn,
+          hasMetadata: true,
+        }),
+      )
+
+      // Add metadata to inputs
+      ledgerTxnsWithMetadata[0] = {
+        ...ledgerTxnsWithMetadata[0],
+        revealedPreImage: "revealedPreImage" as RevealedPreImage,
+      }
+
+      const result =
+        WalletTransactionHistory.fromLedgerWithMetadata(ledgerTxnsWithMetadata)
+
+      const expectedWithMetadata = expectedWalletTxns(txnsArgs).map(
+        (txn: WalletTransaction): WalletTransactionWithMetadata => ({
+          ...txn,
+          hasMetadata: true,
+        }),
+      )
+
+      // Add metadata to expected outputs
+      expectedWithMetadata[0] = {
+        ...expectedWithMetadata[0],
+        settlementVia: {
+          ...expectedWithMetadata[0].settlementVia,
+          revealedPreImage: "revealedPreImage" as RevealedPreImage,
+        },
+      } as WalletLnTransactionWithMetadata
+
+      expect(result.transactions).toEqual(expectedWithMetadata)
     })
   })
 })

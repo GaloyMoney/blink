@@ -29,8 +29,11 @@ start-loop:
 start: start-deps
 	make start-main & make start-admin & make start-trigger
 
-start-api-ci:
+start-main-ci:
 	node lib/servers/graphql-main-server.js
+
+start-trigger-ci:
+	node lib/servers/trigger.js
 
 exporter: start-deps
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
@@ -88,8 +91,11 @@ integration-in-ci:
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests
 
+# NODE_OPTIONS line should be removed whenever we upgrade yarn.lock to see if
+# heap allocation issue has been resolved in dependencies (fails at 2048).
 execute-integration-from-within-container:
 	yarn install && \
+	NODE_OPTIONS="--max-old-space-size=3072" \
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 unit-in-ci:
@@ -99,7 +105,7 @@ unit-in-ci:
 check-implicit:
 	yarn tsc-check-noimplicitany
 
-check-code:
+check-code: check-implicit
 	yarn tsc-check
 	yarn eslint-check
 	yarn build

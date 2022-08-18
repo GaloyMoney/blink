@@ -28,11 +28,15 @@ export class CouldNotFindWalletFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindWalletFromUsernameAndCurrencyError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressError extends CouldNotFindError {}
 export class CouldNotFindWalletFromOnChainAddressesError extends CouldNotFindError {}
-export class CouldNotFindLnPaymentFromHashError extends CouldNotFindError {}
+export class CouldNotFindWalletForWalletCurrencyError extends CouldNotFindError {}
+export class CouldNotListWalletsFromWalletCurrencyError extends CouldNotFindError {}
 export class NoTransactionToUpdateError extends CouldNotFindError {}
 export class CouldNotFindLightningPaymentFlowError extends CouldNotFindError {}
 export class CouldNotUpdateLightningPaymentFlowError extends CouldNotFindError {}
 export class NoExpiredLightningPaymentFlowsError extends CouldNotFindError {}
+export class CouldNotFindLnPaymentFromHashError extends CouldNotFindError {
+  level = ErrorLevel.Critical
+}
 
 export class CouldNotFindAccountFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
@@ -65,7 +69,9 @@ export class InvalidPhoneNumber extends ValidationError {}
 export class InvalidKratosUserId extends ValidationError {}
 export class InvalidEmailAddress extends ValidationError {}
 export class InvalidWalletId extends ValidationError {}
+export class InvalidAccountForWalletIdError extends ValidationError {}
 export class InvalidLedgerTransactionId extends ValidationError {}
+export class InvalidLedgerTransactionStateError extends ValidationError {}
 export class AlreadyPaidError extends ValidationError {}
 export class SelfPaymentError extends ValidationError {}
 export class LessThanDustThresholdError extends ValidationError {}

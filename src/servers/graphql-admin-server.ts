@@ -28,6 +28,8 @@ export async function startApolloServerForAdminSchema() {
         transactionsByHash: and(isAuthenticated, isEditor),
         lightningInvoice: and(isAuthenticated, isEditor),
         lightningPayment: and(isAuthenticated, isEditor),
+        wallet: and(isAuthenticated, isEditor),
+        listWalletIds: and(isAuthenticated, isEditor),
       },
       Mutation: {
         accountUpdateStatus: and(isAuthenticated, isEditor),
@@ -40,7 +42,7 @@ export async function startApolloServerForAdminSchema() {
   )
 
   const schema = applyMiddleware(gqlAdminSchema, permissions)
-  return startApolloServer({ schema, port: GALOY_ADMIN_PORT })
+  return startApolloServer({ schema, port: GALOY_ADMIN_PORT, type: "admin" })
 }
 
 if (require.main === module) {

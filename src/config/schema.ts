@@ -128,6 +128,12 @@ export const configSchema = {
   properties: {
     PROXY_CHECK_APIKEY: { type: "string" }, // TODO: move out of yaml and to env
     name: { type: "string" },
+    lightningAddressDomain: { type: "string" },
+    lightningAddressDomainAliases: {
+      type: "array",
+      items: { type: "string" },
+      uniqueItems: true,
+    },
     locale: { type: "string", enum: ["en", "es"], default: "en" },
     displayCurrency: displayCurrencyConfigSchema,
     funder: { type: "string" },
@@ -363,6 +369,11 @@ export const configSchema = {
       },
       required: ["mandatory"],
       additionalProperties: false,
+    },
+    skipFeeProbe: {
+      type: "array",
+      items: { type: "string", maxLength: 66, minLength: 66 },
+      uniqueItems: true,
     },
   },
   required: [

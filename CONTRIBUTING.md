@@ -1,6 +1,6 @@
 # Contributing
 
-This repo is built and maintained by the Galoy team. We welcome and appreciate new contributions and encourage you to check out the repo and [join our community Slack](https://join.slack.com/t/galoymoney-workspace/shared_invite/zt-rvnhsdb5-72AZCD_jzw6_Q05aCs0SgA) to get started.
+This repo is built and maintained by the Galoy team. We welcome and appreciate new contributions and encourage you to check out the repo and [join our community](https://chat.galoy.io/) to get started.
 
 To help get you started, we will explain a bit about how we've laid out the code here and some of the practices we use. Our layout details fall mostly into two categories:
 - [Working with Types](#working-with-types)

@@ -9,6 +9,7 @@ export class LnPaymentRequestZeroAmountRequiredError extends ValidationError {}
 export class LnPaymentRequestInTransitError extends ValidationError {}
 export class LnHashPresentInIntraLedgerFlowError extends ValidationError {}
 export class IntraLedgerHashPresentInLnFlowError extends ValidationError {}
+export class SkipProbeForPubkeyError extends ValidationError {}
 export class NonLnPaymentTransactionForPaymentFlowError extends ValidationError {
   level = ErrorLevel.Critical
 }

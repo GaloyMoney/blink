@@ -13,6 +13,10 @@ export class CouldNotDecodeReturnedPaymentRequest extends LightningServiceError 
 export class UnknownLightningServiceError extends LightningServiceError {
   level = ErrorLevel.Critical
 }
+export class SecretDoesNotMatchAnyExistingHodlInvoiceError extends LightningServiceError {
+  level = ErrorLevel.Critical
+}
+
 export class InvoiceNotFoundError extends LightningServiceError {}
 export class LnPaymentPendingError extends LightningServiceError {}
 export class LnAlreadyPaidError extends LightningServiceError {}
@@ -28,6 +32,7 @@ export class InsufficientBalanceForRoutingError extends LightningServiceError {}
 export class InvoiceExpiredOrBadPaymentHashError extends LightningServiceError {}
 export class PaymentAttemptsTimedOutError extends LightningServiceError {}
 export class ProbeForRouteTimedOutError extends LightningServiceError {}
+export class ProbeForRouteTimedOutFromApplicationError extends LightningServiceError {}
 export class PaymentInTransitionError extends LightningServiceError {}
 export class InvalidFeeProbeStateError extends LightningServiceError {
   level = ErrorLevel.Critical

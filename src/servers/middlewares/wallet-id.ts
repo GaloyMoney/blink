@@ -1,25 +1,54 @@
+import { GraphQLResolveInfo, GraphQLFieldResolver } from "graphql"
+
 import { Accounts } from "@app"
 import { mapError } from "@graphql/error-map"
 
-const validateWalletId = async (resolve, parent, args, context, info) => {
-  const { walletId } = args.input || args || {}
+type InputArgs = Record<"input", Record<string, unknown>>
+
+const validateWalletId = async (
+  resolve: GraphQLFieldResolver<unknown, GraphQLContext | GraphQLContextForUser>,
+  parent: unknown,
+  args: unknown,
+  context: GraphQLContext | GraphQLContextForUser,
+  info: GraphQLResolveInfo,
+) => {
+  const { walletId } = (args as InputArgs).input || args || {}
   if (!walletId) return new Error("Invalid wallet")
   if (walletId instanceof Error) return walletId
 
-  const hasPermissions = await Accounts.hasPermissions(context.domainUser.id, walletId)
+  if (!context.domainUser) {
+    return new Error("Invalid wallet")
+  }
+
+  const hasPermissions = await Accounts.hasPermissions(
+    context.domainUser.id,
+    walletId as WalletId,
+  )
   if (hasPermissions instanceof Error) return mapError(hasPermissions)
   if (!hasPermissions) return new Error("Invalid wallet")
 
   return resolve(parent, args, context, info)
 }
 
-const validateWalletIdQuery = async (resolve, parent, args, context, info) => {
+const validateWalletIdQuery = async (
+  resolve: GraphQLFieldResolver<unknown, GraphQLContext | GraphQLContextForUser>,
+  parent: unknown,
+  args: unknown,
+  context: GraphQLContext | GraphQLContextForUser,
+  info: GraphQLResolveInfo,
+) => {
   const result = await validateWalletId(resolve, parent, args, context, info)
   if (result instanceof Error) throw result
   return result
 }
 
-const validateWalletIdMutation = async (resolve, parent, args, context, info) => {
+const validateWalletIdMutation = async (
+  resolve: GraphQLFieldResolver<unknown, GraphQLContext | GraphQLContextForUser>,
+  parent: unknown,
+  args: unknown,
+  context: GraphQLContext | GraphQLContextForUser,
+  info: GraphQLResolveInfo,
+) => {
   const result = await validateWalletId(resolve, parent, args, context, info)
   if (result instanceof Error) return { errors: [{ message: result.message }] }
   return result

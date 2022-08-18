@@ -1,3 +1,5 @@
+import { getPubkeysToSkipProbe } from "@config"
+
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
 import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
 import { AccountValidator } from "@domain/accounts"
@@ -29,13 +31,9 @@ import { NotificationsService } from "@services/notifications"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 
 import { Accounts } from "@app"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 
-import {
-  newCheckIntraledgerLimits,
-  btcFromUsdMidPriceFn,
-  usdFromBtcMidPriceFn,
-  getPriceRatioForLimits,
-} from "./helpers"
+import { newCheckIntraledgerLimits, getPriceRatioForLimits } from "./helpers"
 
 const dealer = NewDealerPriceService()
 
@@ -60,12 +58,13 @@ export const intraledgerPaymentSendWalletId = async ({
 
   const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: [],
+    flaggedPubkeys: getPubkeysToSkipProbe(),
     usdFromBtcMidPriceFn,
     btcFromUsdMidPriceFn,
   })
   const builderWithInvoice = paymentBuilder.withoutInvoice({
     uncheckedAmount,
-    description: memo,
+    description: memo || "",
   })
 
   const builderWithSenderWallet = builderWithInvoice.withSenderWallet(senderWallet)

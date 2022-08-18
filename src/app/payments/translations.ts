@@ -74,6 +74,7 @@ export const PaymentFlowFromLedgerTransaction = <
 
     paymentHash,
     descriptionFromInvoice: "",
+    skipProbeForDestination: false,
     createdAt,
     paymentSentAndPending: true,
 

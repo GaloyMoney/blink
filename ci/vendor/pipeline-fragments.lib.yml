@@ -1,0 +1,476 @@
+#@ load("@ytt:data", "data")
+
+#@ def public_docker_registry():
+#@  return "us.gcr.io/galoy-org"
+#@ end
+
+#@ def nodejs_concourse_image():
+#@   return public_docker_registry() + "/nodejs-concourse"
+#@ end
+
+#@ def rust_concourse_image():
+#@   return public_docker_registry() + "/rust-concourse"
+#@ end
+
+#@ def release_concourse_image():
+#@   return public_docker_registry() + "/release-pipeline"
+#@ end
+
+#@ def nodejs_task_image_config():
+type: registry-image
+source:
+  username: ((docker-creds.username))
+  password: ((docker-creds.password))
+  repository: #@ nodejs_concourse_image()
+#@ end
+
+#@ def rust_task_image_config():
+type: registry-image
+source:
+  username: ((docker-creds.username))
+  password: ((docker-creds.password))
+  repository: #@ rust_concourse_image()
+#@ end
+
+#@ def release_task_image_config():
+type: registry-image
+source:
+  username: ((docker-creds.username))
+  password: ((docker-creds.password))
+  repository: #@ release_concourse_image()
+#@ end
+
+#@ def slack_failure_notification():
+#@ fail_url = "<$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME| :face_with_symbols_on_mouth: $BUILD_JOB_NAME> failed!"
+put: slack
+params:
+  channel:  #@ data.values.slack_channel
+  username: concourse
+  icon_url: https://cl.ly/2F421Y300u07/concourse-logo-blue-transparent.png
+  text:    #@ fail_url
+#@ end
+
+#@ def nodejs_check_code():
+name: check-code
+serial: true
+plan:
+- in_parallel:
+  - { get: repo, trigger: true }
+  - { get: pipeline-tasks }
+  - { get: bundled-deps, trigger: true}
+- task: check-code
+  config:
+    platform: linux
+    image_resource: #@ nodejs_task_image_config()
+    inputs:
+    - name: bundled-deps
+    - name: pipeline-tasks
+    - name: repo
+    run:
+      path: pipeline-tasks/ci/vendor/tasks/check-code.sh
+on_failure: #@ slack_failure_notification()
+#@ end
+
+#@ def rust_check_code():
+name: check-code
+serial: true
+plan:
+- in_parallel:
+  - { get: repo, trigger: true }
+  - { get: pipeline-tasks }
+- task: check-code
+  config:
+    platform: linux
+    image_resource: #@ rust_task_image_config()
+    inputs:
+    - name: pipeline-tasks
+    - name: repo
+    caches:
+    - path: cargo-home
+    - path: cargo-target-dir
+    run:
+      path: pipeline-tasks/ci/vendor/tasks/check-code.sh
+on_failure: #@ slack_failure_notification()
+#@ end
+
+#@ def install_yarn_deps():
+name: install-deps
+plan:
+- in_parallel:
+  - {get: deps, trigger: true}
+  - {get: pipeline-tasks}
+  - {put: deps-version, params: {bump: patch}}
+- task: install-deps
+  config:
+    platform: linux
+    image_resource: #@ nodejs_task_image_config()
+    inputs:
+    - name: pipeline-tasks
+    - name: deps
+    - name: deps-version
+    outputs:
+    - name: bundled-deps
+    run:
+      path: pipeline-tasks/ci/vendor/tasks/cache-yarn-deps.sh
+- put: bundled-deps
+  params:
+    file: bundled-deps/bundled-deps-*.tgz
+on_failure: #@ slack_failure_notification()
+#@ end
+
+#@ def nodejs_integration_test():
+name: test-integration
+serial: true
+plan:
+- in_parallel:
+  - { get: repo, trigger: true }
+  - { get: pipeline-tasks }
+  - { get: bundled-deps, tags: ["galoy-staging"], trigger: true}
+- task: test-integration
+  timeout: 12m
+  tags: ["galoy-staging"]
+  config:
+    platform: linux
+    image_resource: #@ nodejs_task_image_config()
+    inputs:
+    - name: bundled-deps
+    - name: pipeline-tasks
+    - name: repo
+      path: #@ data.values.gh_repository + "-integration"
+    params:
+      REPO_PATH: #@ data.values.gh_repository + "-integration"
+      DOCKER_HOST_IP: ((staging-ssh.docker_host_ip))
+      GOOGLE_CREDENTIALS: ((staging-gcp-creds.creds_json))
+      SSH_PRIVATE_KEY: ((staging-ssh.ssh_private_key))
+      SSH_PUB_KEY: ((staging-ssh.ssh_public_key))
+      JEST_TIMEOUT: 90000
+    run:
+      path: pipeline-tasks/ci/vendor/tasks/test-integration.sh
+on_failure: #@ slack_failure_notification()
+#@ end
+
+#@ def rust_integration_test():
+name: test-integration
+serial: true
+plan:
+- in_parallel:
+  - { get: repo, trigger: true }
+  - { get: pipeline-tasks }
+- task: test-integration
+  timeout: 12m
+  tags: ["galoy-staging"]
+  config:
+    platform: linux
+    image_resource: #@ rust_task_image_config()
+    inputs:
+    - name: pipeline-tasks
+    - name: repo
+      path: #@ data.values.gh_repository + "-integration"
+    caches:
+    - path: cargo-home
+    - path: cargo-target-dir
+    params:
+      REPO_PATH: #@ data.values.gh_repository + "-integration"
+      DOCKER_HOST_IP: ((staging-ssh.docker_host_ip))
+      GOOGLE_CREDENTIALS: ((staging-gcp-creds.creds_json))
+      SSH_PRIVATE_KEY: ((staging-ssh.ssh_private_key))
+      SSH_PUB_KEY: ((staging-ssh.ssh_public_key))
+    run:
+      path: pipeline-tasks/ci/vendor/tasks/test-integration.sh
+on_failure: #@ slack_failure_notification()
+#@ end
+
+#@ def nodejs_audit(level = "high"):
+name: audit
+serial: true
+plan:
+- in_parallel:
+  - { get: repo, trigger: true }
+  - { get: pipeline-tasks }
+- task: audit
+  config:
+    platform: linux
+    image_resource: #@ nodejs_task_image_config()
+    inputs:
+    - name: pipeline-tasks
+    - name: repo
+    params:
+      LEVEL: #@ level
+      REPO_ROOT: repo
+    run:
+      path: pipeline-tasks/ci/vendor/tasks/nodejs-audit.sh
+on_failure: #@ slack_failure_notification()
+#@ end
+
+#@ def build_edge_image():
+name: build-edge-image
+serial: true
+plan:
+- in_parallel:
+  - { get: repo, trigger: true }
+  - { get: pipeline-tasks }
+- task: prepare-docker-build
+  config:
+    platform: linux
+    image_resource: #@ nodejs_task_image_config()
+    inputs:
+    - name: pipeline-tasks
+    - name: repo
+    outputs:
+    - name: repo
+    run:
+      path: pipeline-tasks/ci/vendor/tasks/prep-docker-build-env.sh
+- task: build
+  privileged: true
+  config:
+    platform: linux
+    image_resource:
+      type: registry-image
+      source:
+        repository: vito/oci-build-task
+    inputs:
+    - name: repo
+    outputs:
+    - name: image
+    params:
+      CONTEXT: repo
+    run:
+      path: build
+- put: edge-image
+  params:
+    image: image/image.tar
+#@ end
+
+#@ def release():
+name: release
+serial: true
+plan:
+- in_parallel:
+  - get: repo
+    trigger: true
+    passed: [ build-edge-image, audit, check-code ]
+  - get: edge-image
+    passed: [ build-edge-image ]
+    params:
+      format: oci
+  - get: pipeline-tasks
+  - get: version
+- task: prep-release
+  config:
+    platform: linux
+    image_resource: #@ release_task_image_config()
+    inputs:
+    - name: repo
+    - name: pipeline-tasks
+    - name: edge-image
+    - name: version
+    outputs:
+    - name: version
+    - name: artifacts
+    run:
+      path: pipeline-tasks/ci/vendor/tasks/prep-release-src.sh
+- in_parallel:
+  - put: versioned-image
+    params:
+      image: edge-image/image.tar
+      additional_tags: artifacts/gh-release-tag
+  - put: gh-release
+    params:
+      name: artifacts/gh-release-name
+      tag: artifacts/gh-release-tag
+      body: artifacts/gh-release-notes.md
+  - put: version
+    params:
+      file: version/version
+#@ end
+
+#@ def open_charts_pr():
+name: bump-image-in-chart
+plan:
+  - in_parallel:
+      - get: edge-image
+        passed: [ release ]
+        params: { skip_download: true }
+      - get: repo
+        trigger: true
+        passed: [ release ]
+      - get: version
+        trigger: true
+        passed: [ release ]
+      - get: charts-repo
+        params: { skip_download: true }
+      - get: pipeline-tasks
+  - task: bump-image-digest-in-values
+    config:
+      platform: linux
+      image_resource: #@ nodejs_task_image_config()
+      inputs:
+        - name: repo
+        - name: edge-image
+        - name: pipeline-tasks
+        - name: charts-repo
+        - name: version
+      outputs:
+        - name: charts-repo
+      params:
+        BRANCH: #@ data.values.git_charts_branch
+        CHARTS_SUBDIR: #@ data.values.gh_repository
+      run:
+        path: pipeline-tasks/ci/vendor/tasks/bump-image-digest.sh
+  - put: charts-repo-bot-branch
+    params:
+      repository: charts-repo
+      force: true
+  - task: open-charts-pr
+    config:
+      platform: linux
+      image_resource: #@ nodejs_task_image_config()
+      inputs:
+        - name: pipeline-tasks
+        - name: edge-image
+        - name: charts-repo
+      params:
+        GH_TOKEN: #@ data.values.github_token
+        BRANCH: #@ data.values.git_charts_branch
+        BOT_BRANCH: #@ data.values.git_charts_bot_branch
+        CHARTS_SUBDIR: #@ data.values.gh_repository
+      run:
+        path: pipeline-tasks/ci/vendor/tasks/open-charts-pr.sh
+#@ end
+
+#@ def repo_resource():
+name: repo
+type: git
+source:
+  ignore_paths: ["ci/*[^md]"]
+  fetch_tags: true
+  uri: #@ data.values.git_uri
+  branch: #@ data.values.git_branch
+  private_key: #@ data.values.github_private_key
+#@ end
+
+#@ def pipeline_tasks_resource():
+name: pipeline-tasks
+type: git
+source:
+  paths: [ci/vendor/*, ci/tasks/*, ci/config/*, Makefile]
+  uri: #@ data.values.git_uri
+  branch: #@ data.values.git_branch
+  private_key: #@ data.values.github_private_key
+#@ end
+
+#@ def edge_image_resource():
+name: edge-image
+type: registry-image
+source:
+  tag: edge
+  username: #@ data.values.docker_registry_user
+  password: #@ data.values.docker_registry_password
+  repository: #@ public_docker_registry() + "/" + data.values.gh_repository
+#@ end
+
+#@ def nodejs_deps_resource():
+name: deps
+type: git
+source:
+  paths: [yarn.lock]
+  uri: #@ data.values.git_uri
+  branch: #@ data.values.git_branch
+  private_key: #@ data.values.github_private_key
+#@ end
+
+#@ def deps_version_resource():
+name: deps-version
+type: semver
+source:
+  initial_version: 0.1.0
+  driver: gcs
+  bucket: ((staging-gcp-creds.bucket_name))
+  json_key: ((staging-gcp-creds.creds_json))
+  key: #@ data.values.gh_repository + "-artifacts/versions/deps"
+#@ end
+
+#@ def bundled_deps_resource():
+name: bundled-deps
+type: gcs-resource
+source:
+  bucket: ((staging-gcp-creds.bucket_name))
+  json_key: ((staging-gcp-creds.creds_json))
+  regexp: #@ data.values.gh_repository + "-artifacts/deps/bundled-deps-v(.*)-.*.tgz"
+#@ end
+
+#@ def slack_resource():
+name: slack
+type: slack-notification
+source:
+  url: #@ data.values.slack_webhook_url
+#@ end
+
+#@ def version_resource():
+name: version
+type: semver
+source:
+  initial_version: 0.0.0
+  driver: git
+  file: version
+  uri: #@ data.values.git_uri
+  branch: #@ data.values.git_version_branch
+  private_key: #@ data.values.github_private_key
+#@ end
+
+#@ def charts_repo_resource():
+name: charts-repo
+type: git
+source:
+  uri: #@ data.values.git_charts_uri
+  branch: #@ data.values.git_charts_branch
+  private_key: #@ data.values.github_private_key
+#@ end
+
+#@ def versioned_image_resource():
+name: versioned-image
+type: registry-image
+source:
+  username: #@ data.values.docker_registry_user
+  password: #@ data.values.docker_registry_password
+  repository: #@ public_docker_registry() + "/" + data.values.gh_repository
+#@ end
+
+#@ def gh_release_resource():
+name: gh-release
+type: github-release
+source:
+  owner: #@ data.values.gh_org
+  repository: #@ data.values.gh_repository
+  access_token: #@ data.values.github_token
+#@ end
+
+#@ def charts_repo_bot_branch():
+name: charts-repo-bot-branch
+type: git
+source:
+  uri: #@ data.values.git_charts_uri
+  branch: #@ "bot-bump-" + data.values.gh_repository + "-image"
+  private_key: #@ data.values.github_private_key
+#@ end
+
+#@ def gcr_resource_type():
+name: gcs-resource
+type: docker-image
+source:
+  repository: frodenas/gcs-resource
+#@ end
+
+#@ def slack_resource_type():
+name: slack-notification
+type: docker-image
+source:
+  repository: cfcommunity/slack-notification-resource
+#@ end
+
+#@ def npm_resource_type():
+name: npm
+type: docker-image
+source:
+  repository: timotto/concourse-npm-resource
+#@ end

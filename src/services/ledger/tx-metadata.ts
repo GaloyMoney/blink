@@ -116,13 +116,16 @@ export const LnReceiveLedgerMetadata = ({
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   pubkey: Pubkey
 }) => {
+  const convertCentsToUsdAsDollars = (cents: DisplayCurrencyBaseAmount) =>
+    Number((Number(cents) / 100).toFixed(2))
+
   const metadata: LnReceiveLedgerMetadata = {
     type: LedgerTransactionType.Invoice,
     pending: false,
     hash: paymentHash,
     fee: Number(fee.amount) as Satoshis,
-    feeUsd: feeDisplayCurrency,
-    usd: amountDisplayCurrency,
+    feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
+    usd: convertCentsToUsdAsDollars(amountDisplayCurrency),
   }
   return metadata
 }
@@ -336,64 +339,6 @@ export const LnRoutingRevenue = (collectedOn: Date) => {
     type: LedgerTransactionType.RoutingRevenue,
     feesCollectedOn: collectedOn.toDateString(),
     pending: false,
-  }
-
-  return metadata
-}
-
-export const ColdStorageReceiveLedgerMetada = ({
-  onChainTxHash,
-  fee,
-  feeDisplayCurrency,
-  amountDisplayCurrency,
-  payeeAddresses,
-  currency,
-}: {
-  onChainTxHash: OnChainTxHash
-  fee: BtcPaymentAmount
-  feeDisplayCurrency: DisplayCurrencyBaseAmount
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
-  payeeAddresses: OnChainAddress[]
-  currency: WalletCurrency
-}) => {
-  const metadata: AddColdStorageReceiveLedgerMetadata = {
-    type: LedgerTransactionType.ToColdStorage,
-    currency,
-    pending: false,
-    hash: onChainTxHash,
-    payee_addresses: payeeAddresses,
-    fee: Number(fee.amount) as Satoshis,
-    feeUsd: feeDisplayCurrency,
-    usd: amountDisplayCurrency,
-  }
-
-  return metadata
-}
-
-export const ColdStorageSendLedgerMetada = ({
-  onChainTxHash,
-  fee,
-  feeDisplayCurrency,
-  amountDisplayCurrency,
-  payeeAddress,
-  currency,
-}: {
-  onChainTxHash: OnChainTxHash
-  fee: BtcPaymentAmount
-  feeDisplayCurrency: DisplayCurrencyBaseAmount
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
-  payeeAddress: OnChainAddress
-  currency: WalletCurrency
-}) => {
-  const metadata: AddColdStorageSendLedgerMetadata = {
-    type: LedgerTransactionType.ToHotWallet,
-    currency,
-    pending: false,
-    hash: onChainTxHash,
-    payee_addresses: [payeeAddress],
-    fee: Number(fee.amount) as Satoshis,
-    feeUsd: feeDisplayCurrency,
-    usd: amountDisplayCurrency,
   }
 
   return metadata

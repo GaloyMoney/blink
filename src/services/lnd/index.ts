@@ -1,6 +1,6 @@
 import {
   cancelHodlInvoice,
-  createInvoice,
+  createHodlInvoice,
   getChannelBalance,
   getClosedChannels,
   getFailedPayments,
@@ -16,12 +16,16 @@ import {
   PayViaPaymentDetailsResult,
   payViaRoutes,
   PayViaRoutesResult,
+  deletePayment,
+  settleHodlInvoice,
+  getInvoices,
+  GetInvoicesResult,
 } from "lightning"
 import lnService from "ln-service"
 
 import { SECS_PER_5_MINS } from "@config"
 
-import { FEECAP_PERCENT, toMilliSatsFromString, toSats } from "@domain/bitcoin"
+import { toMilliSatsFromString, toSats } from "@domain/bitcoin"
 import {
   BadPaymentDataError,
   CorruptLndDbError,
@@ -38,11 +42,15 @@ import {
   PaymentNotFoundError,
   PaymentStatus,
   ProbeForRouteTimedOutError,
+  ProbeForRouteTimedOutFromApplicationError,
   RouteNotFoundError,
+  SecretDoesNotMatchAnyExistingHodlInvoiceError,
   UnknownLightningServiceError,
   UnknownRouteNotFoundError,
 } from "@domain/bitcoin/lightning"
 import { CacheKeys } from "@domain/cache"
+import { LnFees } from "@domain/payments"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import { LocalCacheService } from "@services/cache"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
@@ -54,9 +62,7 @@ import sumBy from "lodash.sumby"
 import { TIMEOUT_PAYMENT } from "./auth"
 import { getActiveLnd, getLndFromPubkey, getLnds, parseLndErrorDetails } from "./utils"
 
-export const LndService = (
-  { feeCapPercent }: LightningServiceConfig = { feeCapPercent: FEECAP_PERCENT },
-): ILightningService | LightningServiceError => {
+export const LndService = (): ILightningService | LightningServiceError => {
   const activeNode = getActiveLnd()
   if (activeNode instanceof Error) return activeNode
 
@@ -83,7 +89,10 @@ export const LndService = (
       return toSats(channel_balance)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      return new UnknownLightningServiceError(errDetails)
+      switch (errDetails) {
+        default:
+          return new UnknownLightningServiceError(msgForUnknown(err))
+      }
     }
   }
 
@@ -119,7 +128,10 @@ export const LndService = (
       return toSats(pending_balance)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      return new UnknownLightningServiceError(errDetails)
+      switch (errDetails) {
+        default:
+          return new UnknownLightningServiceError(msgForUnknown(err))
+      }
     }
   }
 
@@ -143,7 +155,10 @@ export const LndService = (
       return toSats(closingChannelBalance)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      return new UnknownLightningServiceError(errDetails)
+      switch (errDetails) {
+        default:
+          return new UnknownLightningServiceError(msgForUnknown(err))
+      }
     }
   }
 
@@ -164,10 +179,16 @@ export const LndService = (
         )
       sats = invoice.amount
     }
-    const maxFee = toSats(Math.floor(sats * feeCapPercent))
+    const btcAmount = paymentAmountFromNumber({
+      amount: sats,
+      currency: WalletCurrency.Btc,
+    })
+    if (btcAmount instanceof Error) return btcAmount
+    const maxFeeAmount = LnFees().maxProtocolFee(btcAmount)
+
     const rawRoute = await probeForRoute({
       decodedInvoice: invoice,
-      maxFee,
+      maxFee: toSats(maxFeeAmount.amount),
       amount: sats,
     })
     if (rawRoute instanceof Error) return rawRoute
@@ -244,10 +265,16 @@ export const LndService = (
           : undefined,
         tokens: amount,
       }
-      const { route } = await lnService.probeForRoute(probeForRouteArgs)
+      const routePromise = lnService.probeForRoute(probeForRouteArgs)
+      const timeoutPromise = timeout(TIMEOUT_PAYMENT, "Timeout")
+      const { route } = await Promise.race([routePromise, timeoutPromise])
       if (!route) return new RouteNotFoundError()
       return route
     } catch (err) {
+      if (err.message === "Timeout") {
+        return new ProbeForRouteTimedOutFromApplicationError()
+      }
+
       const errDetails = parseLndErrorDetails(err)
       switch (errDetails) {
         case KnownLndErrorDetails.InsufficientBalance:
@@ -261,6 +288,7 @@ export const LndService = (
   }
 
   const registerInvoice = async ({
+    paymentHash,
     sats,
     description,
     descriptionHash,
@@ -268,6 +296,7 @@ export const LndService = (
   }: RegisterInvoiceArgs): Promise<RegisteredInvoice | LightningServiceError> => {
     const input = {
       lnd: defaultLnd,
+      id: paymentHash,
       description,
       description_hash: descriptionHash,
       tokens: sats as number,
@@ -275,7 +304,7 @@ export const LndService = (
     }
 
     try {
-      const result = await createInvoice(input)
+      const result = await createHodlInvoice(input)
       const request = result.request as EncodedPaymentRequest
       const returnedInvoice = decodeInvoice(request)
       if (returnedInvoice instanceof Error) {
@@ -290,7 +319,7 @@ export const LndService = (
       const errDetails = parseLndErrorDetails(err)
       switch (errDetails) {
         default:
-          return new UnknownLightningServiceError(JSON.stringify(err))
+          return new UnknownLightningServiceError(msgForUnknown(err))
       }
     }
   }
@@ -311,27 +340,14 @@ export const LndService = (
         id: paymentHash,
       })
 
-      return {
-        createdAt: new Date(invoice.created_at),
-        confirmedAt: invoice.confirmed_at ? new Date(invoice.confirmed_at) : undefined,
-        isSettled: !!invoice.is_confirmed,
-        roundedDownReceived: toSats(invoice.received),
-        milliSatsReceived: toMilliSatsFromString(invoice.received_mtokens),
-        secretPreImage: invoice.secret as SecretPreImage,
-        lnInvoice: {
-          description: invoice.description,
-          paymentRequest: (invoice.request as EncodedPaymentRequest) || undefined,
-          expiresAt: new Date(invoice.expires_at),
-          roundedDownAmount: toSats(invoice.tokens),
-        },
-      }
+      return translateLnInvoiceLookup(invoice)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
       switch (errDetails) {
         case KnownLndErrorDetails.InvoiceNotFound:
           return new InvoiceNotFoundError()
         default:
-          return new UnknownLightningServiceError(JSON.stringify(err))
+          return new UnknownLightningServiceError(msgForUnknown(err))
       }
     }
   }
@@ -382,7 +398,9 @@ export const LndService = (
         const errDetails = parseLndErrorDetails(err)
         switch (errDetails) {
           case KnownLndErrorDetails.LndDbCorruption:
-            return new CorruptLndDbError()
+            return new CorruptLndDbError(
+              `Corrupted DB error for node with pubkey: ${pubkey}`,
+            )
           default:
             return new UnknownRouteNotFoundError(err)
         }
@@ -397,6 +415,100 @@ export const LndService = (
     return {
       lnPayments: lnPayments.map((p) => ({ ...p, status: PaymentStatus.Failed })),
       endCursor,
+    }
+  }
+
+  const listInvoices = async (
+    lnd: AuthenticatedLnd,
+  ): Promise<LnInvoiceLookup[] | LightningServiceError> => {
+    try {
+      let after: PagingStartToken | PagingContinueToken | PagingStopToken = undefined
+      let rawInvoices = [] as GetInvoicesResult["invoices"]
+      while (after !== false) {
+        const pagingArgs: {
+          token?: PagingStartToken | PagingContinueToken
+        } = after ? { token: after } : {}
+        const { invoices, next } = await getInvoices({ lnd, ...pagingArgs })
+        rawInvoices = [...rawInvoices, ...invoices]
+        after = (next as PagingContinueToken) || false
+      }
+      return rawInvoices.map(translateLnInvoiceLookup)
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        default:
+          return new UnknownLightningServiceError(err)
+      }
+    }
+  }
+
+  const deletePaymentByHash = async ({
+    paymentHash,
+    pubkey,
+  }: {
+    paymentHash: PaymentHash
+    pubkey?: Pubkey
+  }): Promise<true | LightningServiceError> => {
+    const offchainLnds = pubkey ? [{ pubkey }] : getLnds({ type: "offchain" })
+    for (const { pubkey } of offchainLnds) {
+      const payment = await deletePaymentByPubkeyAndHash({
+        pubkey: pubkey as Pubkey,
+        paymentHash,
+      })
+      if (payment instanceof Error) return payment
+      if (!payment) continue
+      return payment
+    }
+
+    return true
+  }
+
+  const deletePaymentByPubkeyAndHash = async ({
+    paymentHash,
+    pubkey,
+  }: {
+    paymentHash: PaymentHash
+    pubkey: Pubkey
+  }): Promise<boolean | LightningServiceError> => {
+    const lnd = getLndFromPubkey({ pubkey })
+    if (lnd instanceof Error) return lnd
+
+    try {
+      await deletePayment({ id: paymentHash, lnd })
+      return true
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.PaymentForDeleteNotFound:
+          return false
+        default:
+          return new UnknownRouteNotFoundError(err)
+      }
+    }
+  }
+
+  const settleInvoice = async ({
+    pubkey,
+    secret,
+  }: {
+    pubkey: Pubkey
+    secret: SecretPreImage
+  }): Promise<true | LightningServiceError> => {
+    try {
+      const lnd = getLndFromPubkey({ pubkey })
+      if (lnd instanceof Error) return lnd
+
+      // Use the secret to claim the funds
+      await settleHodlInvoice({ lnd, secret })
+      return true
+    } catch (err) {
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.SecretDoesNotMatchAnyExistingHodlInvoice:
+          return new SecretDoesNotMatchAnyExistingHodlInvoiceError(err)
+        default:
+          return new UnknownLightningServiceError(err)
+      }
     }
   }
 
@@ -419,7 +531,7 @@ export const LndService = (
         case KnownLndErrorDetails.InvoiceNotFound:
           return true
         default:
-          return new UnknownLightningServiceError(JSON.stringify(err))
+          return new UnknownLightningServiceError(msgForUnknown(err))
       }
     }
   }
@@ -539,6 +651,9 @@ export const LndService = (
       listSettledPayments: listPaymentsFactory(getPayments),
       listPendingPayments: listPaymentsFactory(getPendingPayments),
       listFailedPayments,
+      listInvoices,
+      deletePaymentByHash,
+      settleInvoice,
       cancelInvoice,
       payInvoiceViaRoutes,
       payInvoiceViaPaymentDetails,
@@ -605,24 +720,29 @@ const lookupPaymentByPubkeyAndHash = async ({
       case KnownLndErrorDetails.SentPaymentNotFound:
         return new PaymentNotFoundError(JSON.stringify({ paymentHash, pubkey }))
       default:
-        return new UnknownLightningServiceError(JSON.stringify(err))
+        return new UnknownLightningServiceError(msgForUnknown(err))
     }
   }
 }
 
-const KnownLndErrorDetails = {
+export const KnownLndErrorDetails = {
   InsufficientBalance: "insufficient local balance",
   InvoiceNotFound: "unable to locate invoice",
   InvoiceAlreadyPaid: "invoice is already paid",
   UnableToFindRoute: "PaymentPathfindingFailedToFindPossibleRoute",
   LndDbCorruption: "payment isn't initiated",
   PaymentRejectedByDestination: "PaymentRejectedByDestination",
+  UnknownPaymentHash: "UnknownPaymentHash",
   PaymentAttemptsTimedOut: "PaymentAttemptsTimedOut",
   ProbeForRouteTimedOut: "ProbeForRouteTimedOut",
   SentPaymentNotFound: "SentPaymentNotFound",
   PaymentInTransition: "payment is in transition",
+  PaymentForDeleteNotFound: "non bucket element in payments bucket",
+  SecretDoesNotMatchAnyExistingHodlInvoice: "SecretDoesNotMatchAnyExistingHodlInvoice",
 } as const
 
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 const translateLnPaymentLookup = (p): LnPaymentLookup => ({
   createdAt: new Date(p.created_at),
   status: p.is_confirmed ? PaymentStatus.Settled : PaymentStatus.Pending,
@@ -641,6 +761,29 @@ const translateLnPaymentLookup = (p): LnPaymentLookup => ({
       }
     : undefined,
   attempts: p.attempts,
+})
+
+const translateLnInvoiceLookup = (
+  invoice: GetInvoiceResult | GetInvoicesResult["invoices"][number],
+): LnInvoiceLookup => ({
+  paymentHash: invoice.id as PaymentHash,
+  createdAt: new Date(invoice.created_at),
+  confirmedAt: invoice.confirmed_at ? new Date(invoice.confirmed_at) : undefined,
+  isSettled: !!invoice.is_confirmed,
+  isHeld: !!invoice.is_held,
+  heldAt:
+    invoice.payments && invoice.payments.length
+      ? new Date(invoice.payments[0].created_at)
+      : undefined,
+  roundedDownReceived: toSats(invoice.received),
+  milliSatsReceived: toMilliSatsFromString(invoice.received_mtokens),
+  secretPreImage: invoice.secret as SecretPreImage,
+  lnInvoice: {
+    description: invoice.description,
+    paymentRequest: (invoice.request as EncodedPaymentRequest) || undefined,
+    expiresAt: new Date(invoice.expires_at),
+    roundedDownAmount: toSats(invoice.tokens),
+  },
 })
 
 const resolvePaymentStatus = async ({
@@ -705,12 +848,19 @@ const handleSendPaymentLndErrors = ({
     case KnownLndErrorDetails.UnableToFindRoute:
       return new RouteNotFoundError()
     case KnownLndErrorDetails.PaymentRejectedByDestination:
+    case KnownLndErrorDetails.UnknownPaymentHash:
       return new InvoiceExpiredOrBadPaymentHashError(paymentHash)
     case KnownLndErrorDetails.PaymentAttemptsTimedOut:
       return new PaymentAttemptsTimedOutError()
     case KnownLndErrorDetails.PaymentInTransition:
       return new PaymentInTransitionError(paymentHash)
     default:
-      return new UnknownLightningServiceError(JSON.stringify(err))
+      return new UnknownLightningServiceError(msgForUnknown(err))
   }
 }
+
+const msgForUnknown = (err: Error) =>
+  JSON.stringify({
+    parsedLndErrorDetails: parseLndErrorDetails(err),
+    detailsFromLnd: err,
+  })

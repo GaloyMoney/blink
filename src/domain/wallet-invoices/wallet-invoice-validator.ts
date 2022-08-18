@@ -5,7 +5,8 @@ export const WalletInvoiceValidator = (
 ): WalletInvoiceValidator => {
   const validateToSend = (fromWalletId: WalletId): true | ValidationError => {
     if (walletInvoice.paid) return new AlreadyPaidError(walletInvoice.paymentHash)
-    if (walletInvoice.walletId === fromWalletId) return new SelfPaymentError()
+    if (walletInvoice.recipientWalletDescriptor.id === fromWalletId)
+      return new SelfPaymentError()
     return true
   }
 

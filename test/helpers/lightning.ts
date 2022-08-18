@@ -1,5 +1,8 @@
 import { once } from "events"
 
+import { Wallets } from "@app"
+import { addInvoiceForSelf, getBalanceForWallet } from "@app/wallets"
+
 import {
   offchainLnds,
   onchainLnds,
@@ -7,6 +10,8 @@ import {
   updateEscrows,
 } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
+import { sleep } from "@utils"
+
 import {
   authenticatedLndGrpc,
   closeChannel,
@@ -15,8 +20,10 @@ import {
   getChannelBalance,
   getChannels,
   getInvoice,
+  getNetworkGraph,
   getWalletInfo,
   openChannel,
+  pay,
   sendToChainAddress,
   subscribeToChannels,
   subscribeToGraph,
@@ -24,8 +31,6 @@ import {
 } from "lightning"
 
 import { parsePaymentRequest } from "invoices"
-
-import { sleep } from "@utils"
 
 import {
   bitcoindClient,
@@ -48,6 +53,9 @@ export const getAmount = (request: EncodedPaymentRequest) => {
   return parsePaymentRequest({ request }).tokens as Satoshis
 }
 
+export const getPubKey = (request: EncodedPaymentRequest) => {
+  return parsePaymentRequest({ request }).destination as Pubkey
+}
 export const getInvoiceAttempt = async ({ lnd, id }) => {
   try {
     const result = await getInvoice({ lnd, id })
@@ -177,6 +185,9 @@ export const fundLnd = async (lnd, amount = 1) => {
 }
 
 export const resetLnds = async () => {
+  const block = await bitcoindClient.getBlockCount()
+  if (!block) return // skip if we are just getting started
+
   // just in case pending transactions
   await mineBlockAndSync({ lnds })
 
@@ -204,11 +215,22 @@ export const resetLnds = async () => {
 }
 
 export const closeAllChannels = async ({ lnd }) => {
+  let channels
   try {
-    const { channels } = await getChannels({ lnd })
+    ;({ channels } = await getChannels({ lnd }))
+  } catch (err) {
+    baseLogger.error({ err }, "Impossible to get channels")
+    throw err
+  }
+
+  try {
     for (const channel of channels) {
       if (channel.is_partner_initiated === false) {
-        await closeChannel({ lnd, id: channel.id })
+        await closeChannel({
+          lnd,
+          transaction_id: channel.transaction_id,
+          transaction_vout: channel.transaction_vout,
+        })
       }
     }
   } catch (error) {
@@ -291,4 +313,48 @@ export const waitFor = async (f) => {
   let res
   while (!(res = await f())) await sleep(500)
   return res
+}
+
+export const waitUntilGraphIsReady = async ({ lnd, numNodes = 4 }) => {
+  await waitFor(async () => {
+    const graph = await getNetworkGraph({ lnd })
+    if (graph.nodes.length < numNodes) {
+      baseLogger.warn({ nodeLength: graph.nodes.length }, "missing nodes in graph")
+      return false
+    }
+    if (graph.nodes.every((node) => node.updated_at === "")) {
+      const nodesUpdated = graph.nodes.filter((node) => node.updated_at === "").length
+      baseLogger.warn({ nodesUpdated }, "graph metadata not ready")
+      return false
+    }
+    return true
+  })
+}
+
+export const fundWalletIdFromLightning = async ({
+  walletId,
+  amount,
+}: {
+  walletId: WalletId
+  amount: number
+}) => {
+  const invoice = await addInvoiceForSelf({ walletId, amount })
+  if (invoice instanceof Error) return invoice
+
+  pay({ lnd: lndOutside1, request: invoice.paymentRequest })
+
+  // TODO: we could use an event instead of a sleep
+  await sleep(500)
+
+  const hash = getHash(invoice.paymentRequest)
+
+  expect(
+    await Wallets.updatePendingInvoiceByPaymentHash({
+      paymentHash: hash as PaymentHash,
+      logger: baseLogger,
+    }),
+  ).not.toBeInstanceOf(Error)
+
+  const balance = await getBalanceForWallet({ walletId, logger: baseLogger })
+  if (balance instanceof Error) throw balance
 }

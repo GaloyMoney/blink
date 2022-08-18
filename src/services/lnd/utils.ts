@@ -115,8 +115,17 @@ export const lndBalances = async (lnd: AuthenticatedLnd) => {
     sumBy(channel.close_payments, (payment) => (payment.is_pending ? payment.tokens : 0)),
   )
 
+  // adds 330 sats for every selfInitiatedChannel even if not all channels use anchor
+  const { channels } = await getChannels({ lnd })
+  const selfInitiatedChannels = channels.filter(
+    ({ is_partner_initiated }) => is_partner_initiated === false,
+  )
+  const satsAnchorOutput = 330
+  const anchorBalance = selfInitiatedChannels.length * satsAnchorOutput
+
   const total =
     chain_balance +
+    anchorBalance +
     channel_balance +
     pending_chain_balance +
     opening_channel_balance +
@@ -439,5 +448,7 @@ export const getLndFromPubkey = ({
 // where '<Error Code Details Object>' is an Error object with
 // the usual 'message', 'stack' etc. properties and additional
 // properties: 'code', 'details', 'metadata'.
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-ignore-next-line no-implicit-any error
 export const parseLndErrorDetails = (err) =>
   err[2]?.err?.details || err[2]?.failures?.[0]?.[2]?.err?.details || err[1]

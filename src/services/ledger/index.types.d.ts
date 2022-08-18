@@ -48,9 +48,9 @@ type LedgerMetadata = {
 }
 
 type NonIntraledgerLedgerMetadata = LedgerMetadata & {
-  usd: DisplayCurrencyBaseAmount // to be renamed amountDisplayCurrency
+  usd: number // to be removed when "centAmount" takes over
   fee: Satoshis
-  feeUsd: DisplayCurrencyBaseAmount // to be renamed feeDisplayCurrency
+  feeUsd: number // to be removed when "centFee" takes over
 }
 
 type LnReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {
@@ -136,12 +136,19 @@ type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata
 type NewAddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
   SendAmountsMetadata
 
-type FeeReimbursementLedgerMetadata = SendAmountsMetadata & {
+type ReimbursementLedgerMetadata = SendAmountsMetadata & {
   hash: PaymentHash
-  type: LedgerTransactionType
   pending: boolean
   usd: DisplayCurrencyBaseAmount
   related_journal: LedgerJournalId
+}
+
+type FeeReimbursementLedgerMetadata = ReimbursementLedgerMetadata & {
+  type: LedgerTransactionTypeObject["LnFeeReimbursement"]
+}
+
+type FailedPaymentLedgerMetadata = ReimbursementLedgerMetadata & {
+  type: LedgerTransactionTypeObject["Payment"]
 }
 
 type LnRoutingRevenueLedgerMetadata = LedgerMetadata & {
@@ -161,6 +168,7 @@ type LoadLedgerParams = {
 
 type ReceiveLedgerMetadata =
   | FeeReimbursementLedgerMetadata
+  | FailedPaymentLedgerMetadata
   | LnReceiveLedgerMetadata
   | OnChainReceiveLedgerMetadata
 

@@ -1,5 +1,8 @@
 name: "Galoy Banking"
 
+lightningAddressDomain: "pay.domain.com"
+lightningAddressDomainAliases: ["pay1.domain.com", "pay2.domain.com"]
+
 locale: "en"
 
 displayCurrency:
@@ -72,6 +75,7 @@ test_accounts:
 - ref: F
   phone: "+16505554333"
   code: "321321"
+  needUsdWallet: true
 - ref: "G"
   phone: "+16505554335"
   code: "321321"
@@ -80,6 +84,11 @@ test_accounts:
   phone: "+19876543210"
   code: "321321"
   username: "tester"
+- ref: "I"
+  phone: "+19876543336"
+  code: "321321"
+  role: "editor"
+  username: "editor"
 
 rateLimits:
   requestPhoneCodePerPhone:
@@ -91,9 +100,9 @@ rateLimits:
     duration: 15
     blockDuration: 15
   requestPhoneCodePerIp:
-    points: 4
-    duration: 3600 # 60 * 60 * 3 s
-    blockDuration: 86400 # 60 * 60 s
+    points: 8
+    duration: 3600 # 60 * 60 s
+    blockDuration: 86400 # 60 * 60 * 24 s
   failedLoginAttemptPerPhone:
     points: 8
     duration: 1200 # 60 * 20 s
@@ -196,3 +205,6 @@ kratosConfig:
 
 captcha:
   mandatory: false
+
+skipFeeProbe:
+  - "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6" # Muun

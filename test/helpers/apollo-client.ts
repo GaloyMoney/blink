@@ -54,9 +54,7 @@ export const createApolloClient = (
   const subscriptionClient = new SubscriptionClient(
     `ws://localhost:${port}${graphqlSubscriptionPath}`,
     {
-      connectionParams: {
-        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
-      },
+      connectionParams: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
     },
     ws,
   )
@@ -103,7 +101,7 @@ export const createApolloClient = (
   }
 }
 
-export const getSubscriptionNext = (subscription) => {
+export const promisifiedSubscription = (subscription) => {
   return new Promise((resolve, reject) => {
     subscription.subscribe({ next: resolve, error: reject })
   })

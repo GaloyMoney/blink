@@ -1,14 +1,19 @@
 import { createHash, randomBytes } from "crypto"
 
 import { Lightning, Payments, Prices, Wallets } from "@app"
-import { getMidPriceRatio } from "@app/payments/helpers"
+import { getMidPriceRatio } from "@app/shared"
 
 import { delete2fa } from "@app/users"
-import { FEECAP_PERCENT, toSats } from "@domain/bitcoin"
+
+import { getDealerConfig, getDisplayCurrencyConfig, getLocale } from "@config"
+
+import { toSats } from "@domain/bitcoin"
 import {
+  decodeInvoice,
   defaultTimeToExpiryInSeconds,
   InvalidFeeProbeStateError,
   LightningServiceError,
+  PaymentNotFoundError,
   PaymentSendStatus,
   PaymentStatus,
 } from "@domain/bitcoin/lightning"
@@ -19,8 +24,10 @@ import {
 } from "@domain/errors"
 import { LedgerTransactionType } from "@domain/ledger"
 import {
+  LnFees,
   LnPaymentRequestInTransitError,
   PriceRatio,
+  SkipProbeForPubkeyError,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import {
@@ -28,9 +35,13 @@ import {
   paymentAmountFromNumber,
   ValidationError,
   WalletCurrency,
+  ZERO_SATS,
 } from "@domain/shared"
 import { TwoFAError } from "@domain/twoFA"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
+import { toCents } from "@domain/fiat"
+import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+
 import { LedgerService } from "@services/ledger"
 import { getDealerUsdWalletId } from "@services/ledger/caching"
 import { TransactionsMetadataRepository } from "@services/ledger/services"
@@ -46,13 +57,8 @@ import { WalletInvoice } from "@services/mongoose/schema"
 
 import { sleep } from "@utils"
 
-import { toCents } from "@domain/fiat"
-
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
-
 import { PaymentFlowStateRepository } from "@services/payment-flow"
 
-import { getDisplayCurrencyConfig, getLocale } from "@config"
 import { NotificationType } from "@domain/notifications"
 
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
@@ -84,13 +90,11 @@ import {
   waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
 
-import { DealerPriceService } from "test/mocks/dealer-price"
+import { DealerPriceService, NewDealerPriceService } from "test/mocks/dealer-price"
 
 const dealerFns = DealerPriceService()
-
-const date = Date.now() + 1000 * 60 * 60 * 24 * 8
-// required to avoid withdrawal limits validation
-jest.spyOn(global.Date, "now").mockImplementation(() => new Date(date).valueOf())
+const newDealerFns = NewDealerPriceService()
+const calc = AmountCalculator()
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
@@ -121,7 +125,41 @@ jest.mock("@config", () => {
   }
 })
 
-let initBalanceA: Satoshis, initBalanceB: Satoshis
+const lndService = LndService()
+const lndServiceCallCount: { [key: string]: number } = {}
+if (lndService instanceof Error) throw lndService
+for (const key of Object.keys(lndService)) {
+  lndServiceCallCount[key] = 0
+}
+
+jest.mock("@services/lnd", () => {
+  const module = jest.requireActual("@services/lnd")
+  const { LndService } = module
+
+  const LndServiceWithCounts = () => {
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
+
+    const newLndService = {} as ILightningService
+    for (const key of Object.keys(lndService)) {
+      const fn = lndService[key]
+      newLndService[key] = (args) => {
+        lndServiceCallCount[key]++
+        return fn(args)
+      }
+    }
+    return newLndService
+  }
+
+  return {
+    ...module,
+    LndService: LndServiceWithCounts,
+  }
+})
+
+const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
+
+let initBalanceA: Satoshis, initBalanceB: Satoshis, initBalanceUsdB: UsdCents
 const amountInvoice = toSats(1000)
 
 const invoicesRepo = WalletInvoicesRepository()
@@ -162,7 +200,9 @@ beforeAll(async () => {
   accountH = await getAccountByTestUserRef("H")
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
+  walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
+  walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
   walletIdC = await getDefaultWalletIdByTestUserRef("C")
   walletIdH = await getDefaultWalletIdByTestUserRef("H")
 
@@ -179,9 +219,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   initBalanceA = toSats(await getBalanceHelper(walletIdA))
   initBalanceB = toSats(await getBalanceHelper(walletIdB))
-
-  walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
-  walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
+  initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 })
 
 afterEach(async () => {
@@ -201,7 +239,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(usdAmountAboveThreshold).not.toBeInstanceOf(Error)
     if (usdAmountAboveThreshold instanceof Error) throw usdAmountAboveThreshold
 
-    const midPriceRatio = await getMidPriceRatio()
+    const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
     if (midPriceRatio instanceof Error) throw midPriceRatio
     const btcThresholdAmount = midPriceRatio.convertFromUsd(usdAmountAboveThreshold)
 
@@ -229,7 +267,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(usdAmountAboveThreshold).not.toBeInstanceOf(Error)
     if (usdAmountAboveThreshold instanceof Error) throw usdAmountAboveThreshold
 
-    const midPriceRatio = await getMidPriceRatio()
+    const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
     if (midPriceRatio instanceof Error) throw midPriceRatio
     const btcThresholdAmount = midPriceRatio.convertFromUsd(usdAmountAboveThreshold)
 
@@ -546,12 +584,10 @@ describe("UserWallet - Lightning Pay", () => {
     const priceRatio = PriceRatio(paymentAmounts)
     if (priceRatio instanceof Error) throw priceRatio
 
-    const feeSats = toSats(amountInvoice * FEECAP_PERCENT)
-    const feeAmountSats = paymentAmountFromNumber({
-      amount: feeSats,
+    const feeAmountSats = LnFees().maxProtocolFee({
+      amount: BigInt(amountInvoice),
       currency: WalletCurrency.Btc,
     })
-    if (feeAmountSats instanceof Error) return feeAmountSats
     const feeAmountCents = priceRatio.convertFromBtc(feeAmountSats)
     const feeCents = toCents(feeAmountCents.amount)
 
@@ -562,13 +598,13 @@ describe("UserWallet - Lightning Pay", () => {
     expect(txnFeeReimburse).toEqual(
       expect.objectContaining({
         debit: 0,
-        credit: feeSats,
+        credit: toSats(feeAmountSats.amount),
 
         fee: 0,
         feeUsd: 0,
         usd: feeCents / 100,
 
-        satsAmount: feeSats,
+        satsAmount: toSats(feeAmountSats.amount),
         satsFee: 0,
         centsAmount: feeCents,
         centsFee: 0,
@@ -854,6 +890,40 @@ describe("UserWallet - Lightning Pay", () => {
     expect(balanceAfter).toBe(0)
   })
 
+  it("skips fee probe for flagged pubkeys", async () => {
+    const sats = toSats(1000)
+    const feeProbeCallCount = () => lndServiceCallCount.findRouteForInvoice
+
+    // Test that non-flagged destination calls feeProbe lightning service method
+    const { request } = await createInvoice({ lnd: lndOutside1, tokens: sats })
+    let feeProbeCallsBefore = feeProbeCallCount()
+    const { result: fee, error } = await Payments.getLightningFeeEstimation({
+      walletId: walletIdH,
+      paymentRequest: request as EncodedPaymentRequest,
+    })
+    expect(feeProbeCallCount()).toEqual(feeProbeCallsBefore + 1)
+    expect(error).not.toBeInstanceOf(Error)
+    expect(fee).toStrictEqual({ amount: 0n, currency: WalletCurrency.Btc })
+
+    // Test that flagged destination skips feeProbe lightning service method
+    const muunRequest =
+      "lnbc10u1p3w0mf7pp5v9xg3eksnsyrsa3vk5uv00rvye4wf9n0744xgtx0kcrafeanvx7sdqqcqzzgxqyz5vqrzjqwnvuc0u4txn35cafc7w94gxvq5p3cu9dd95f7hlrh0fvs46wpvhddrwgrqy63w5eyqqqqryqqqqthqqpyrzjqw8c7yfutqqy3kz8662fxutjvef7q2ujsxtt45csu0k688lkzu3lddrwgrqy63w5eyqqqqryqqqqthqqpysp53n0sc9hvqgdkrv4ppwrm2pa0gcysa8r2swjkrkjnxkcyrsjmxu4s9qypqsq5zvh7glzpas4l9ptxkdhgefyffkn8humq6amkrhrh2gq02gv8emxrynkwke3uwgf4cfevek89g4020lgldxgusmse79h4caqg30qq2cqmyrc7d" as EncodedPaymentRequest
+    const muunInvoice = decodeInvoice(muunRequest)
+    if (muunInvoice instanceof Error) throw muunInvoice
+    if (!muunInvoice.paymentAmount) throw new Error("No-amount Invoice")
+    expect(muunInvoice.paymentAmount.amount).toEqual(BigInt(sats))
+
+    feeProbeCallsBefore = feeProbeCallCount()
+    const { result: feeMuun, error: errorMuun } =
+      await Payments.getLightningFeeEstimation({
+        walletId: walletIdH,
+        paymentRequest: muunRequest,
+      })
+    expect(feeProbeCallCount()).toEqual(feeProbeCallsBefore)
+    expect(errorMuun).toBeInstanceOf(SkipProbeForPubkeyError)
+    expect(feeMuun).toStrictEqual(LnFees().maxProtocolFee(muunInvoice.paymentAmount))
+  })
+
   const createInvoiceHash = () => {
     const randomSecret = () => randomBytes(32)
     const sha256 = (buffer) => createHash("sha256").update(buffer).digest("hex")
@@ -865,7 +935,7 @@ describe("UserWallet - Lightning Pay", () => {
   const functionToTests = [
     {
       name: "getFeeAndPay",
-      initialFee: 0,
+      applyMaxFee: false,
       fn: function fn({ walletId, account }: { walletId: WalletId; account: Account }) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           const wallet = await WalletsRepository().findById(walletId)
@@ -893,7 +963,7 @@ describe("UserWallet - Lightning Pay", () => {
     },
     {
       name: "directPay",
-      initialFee: FEECAP_PERCENT,
+      applyMaxFee: true,
       fn: function fn({ walletId, account }: { walletId: WalletId; account: Account }) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
           const paymentResult = await Payments.payInvoiceByWalletIdWithTwoFA({
@@ -909,7 +979,7 @@ describe("UserWallet - Lightning Pay", () => {
     },
   ]
 
-  functionToTests.forEach(({ fn, name, initialFee }) => {
+  functionToTests.forEach(({ fn, name, applyMaxFee }) => {
     describe(`${name}`, () => {
       it("pay invoice", async () => {
         const { request } = await createInvoice({
@@ -990,10 +1060,12 @@ describe("UserWallet - Lightning Pay", () => {
 
         const paymentOtherGaloyUser = async ({
           walletIdPayer,
+          twoFASecretPayer,
           accountPayer,
           walletIdPayee,
         }: {
           walletIdPayer: WalletId
+          twoFASecretPayer?: TwoFASecret
           accountPayer: Account
           walletIdPayee: WalletId
         }) => {
@@ -1009,6 +1081,9 @@ describe("UserWallet - Lightning Pay", () => {
           const result = await fn({ account: accountPayer, walletId: walletIdPayer })({
             invoice: request,
             memo,
+            twoFAToken: twoFASecretPayer
+              ? generateTokenHelper(twoFASecretPayer)
+              : undefined,
           })
           if (result instanceof Error) throw result
 
@@ -1082,6 +1157,7 @@ describe("UserWallet - Lightning Pay", () => {
           ).not.toBeInstanceOf(Error)
         }
 
+        const userRecordA = await getUserRecordByTestUserRef("A")
         await paymentOtherGaloyUser({
           walletIdPayee: walletIdC,
           walletIdPayer: walletIdB,
@@ -1090,6 +1166,7 @@ describe("UserWallet - Lightning Pay", () => {
         await paymentOtherGaloyUser({
           walletIdPayee: walletIdC,
           walletIdPayer: walletIdA,
+          twoFASecretPayer: userRecordA.twoFA.secret,
           accountPayer: accountA,
         })
         await paymentOtherGaloyUser({
@@ -1105,7 +1182,6 @@ describe("UserWallet - Lightning Pay", () => {
         //     .mockReturnValueOnce(addProps(inputs.shift()))
         // }))
         // await paymentOtherGaloyUser({walletPayee: userWalletB, walletPayer: userwalletC})
-        const userRecordA = await getUserRecordByTestUserRef("A")
         expect(userRecordA.contacts).toEqual(
           expect.not.arrayContaining([expect.objectContaining({ id: usernameC })]),
         )
@@ -1169,9 +1245,16 @@ describe("UserWallet - Lightning Pay", () => {
         expect(resultPendingPayment).toBeInstanceOf(LnPaymentRequestInTransitError)
 
         const balanceBeforeSettlement = await getBalanceHelper(walletIdB)
-        expect(balanceBeforeSettlement).toBe(
-          initBalanceB - amountInvoice * (1 + initialFee),
-        )
+
+        const feeAmount = LnFees().maxProtocolFee({
+          amount: BigInt(amountInvoice),
+          currency: WalletCurrency.Btc,
+        })
+        const amountInvoiceWithFee = applyMaxFee
+          ? amountInvoice + Number(feeAmount.amount)
+          : amountInvoice
+
+        expect(balanceBeforeSettlement).toEqual(initBalanceB - amountInvoiceWithFee)
 
         const lnPaymentsRepo = LnPaymentsRepository()
 
@@ -1303,7 +1386,16 @@ describe("UserWallet - Lightning Pay", () => {
         expect(result).toBe(PaymentSendStatus.Pending)
         baseLogger.info("payment has timeout. status is pending.")
         const intermediateBalance = await getBalanceHelper(walletIdB)
-        expect(intermediateBalance).toBe(initBalanceB - amountInvoice * (1 + initialFee))
+
+        const feeAmount = LnFees().maxProtocolFee({
+          amount: BigInt(amountInvoice),
+          currency: WalletCurrency.Btc,
+        })
+        const amountInvoiceWithFee = applyMaxFee
+          ? amountInvoice + Number(feeAmount.amount)
+          : amountInvoice
+
+        expect(intermediateBalance).toBe(initBalanceB - amountInvoiceWithFee)
 
         await cancelHodlInvoice({ id, lnd: lndOutside1 })
 
@@ -1355,6 +1447,113 @@ describe("UserWallet - Lightning Pay", () => {
         expect(finalBalance).toBe(initBalanceB)
       }, 60000)
 
+      it("reimburse failed USD payment", async () => {
+        const { id } = createInvoiceHash()
+
+        const btcInvoiceAmount = paymentAmountFromNumber({
+          amount: amountInvoice,
+          currency: WalletCurrency.Btc,
+        })
+        if (btcInvoiceAmount instanceof Error) throw btcInvoiceAmount
+        const usdInvoiceAmount = await newDealerFns.getCentsFromSatsForImmediateBuy(
+          btcInvoiceAmount,
+        )
+        if (usdInvoiceAmount instanceof Error) throw usdInvoiceAmount
+
+        const { request } = await createHodlInvoice({
+          id,
+          lnd: lndOutside1,
+          tokens: amountInvoice,
+        })
+        const result = await fn({ account: accountB, walletId: walletIdUsdB })({
+          invoice: request,
+        })
+        if (result instanceof Error) throw result
+
+        expect(result).toBe(PaymentSendStatus.Pending)
+        baseLogger.info("payment has timeout. status is pending.")
+        const intermediateBalance = await getBalanceHelper(walletIdUsdB)
+
+        const priceRatio = PriceRatio({
+          btc: btcInvoiceAmount,
+          usd: usdInvoiceAmount,
+        })
+        if (priceRatio instanceof Error) return priceRatio
+        const btcProtocolFee = applyMaxFee
+          ? LnFees().maxProtocolFee({
+              amount: btcInvoiceAmount.amount,
+              currency: WalletCurrency.Btc,
+            })
+          : ZERO_SATS
+        const usdProtocolFee = priceRatio.convertFromBtc(btcProtocolFee)
+
+        const amountInvoiceWithFee = calc.add(usdInvoiceAmount, usdProtocolFee)
+
+        expect(intermediateBalance).toBe(
+          initBalanceUsdB - Number(amountInvoiceWithFee.amount),
+        )
+
+        await cancelHodlInvoice({ id, lnd: lndOutside1 })
+
+        await waitFor(async () => {
+          const updatedPayments = await Payments.updatePendingPaymentsByWalletId({
+            walletId: walletIdUsdB,
+            logger: baseLogger,
+          })
+          if (updatedPayments instanceof Error) throw updatedPayments
+
+          const count = await LedgerService().getPendingPaymentsCount(walletIdUsdB)
+          if (count instanceof Error) throw count
+
+          return count === 0
+        })
+
+        // Test 'lnpayment' is failed
+        const lnPaymentUpdateOnSettled = await Lightning.updateLnPayments()
+        if (lnPaymentUpdateOnSettled instanceof Error) throw lnPaymentUpdateOnSettled
+
+        const lnPaymentOnSettled = await LnPaymentsRepository().findByPaymentHash(
+          id as PaymentHash,
+        )
+        expect(lnPaymentOnSettled).not.toBeInstanceOf(Error)
+        if (lnPaymentOnSettled instanceof Error) throw lnPaymentOnSettled
+
+        const lndService = LndService()
+        if (lndService instanceof Error) throw lndService
+        const payments = await lndService.listFailedPayments({
+          pubkey: lnPaymentOnSettled.sentFromPubkey,
+          after: undefined,
+        })
+        if (payments instanceof Error) throw payments
+
+        const payment = payments.lnPayments.find((p) => p.paymentHash === id)
+        expect(payment).not.toBeUndefined()
+        if (payment === undefined) throw new Error("Could not find payment in lnd")
+
+        expect(lnPaymentOnSettled.status).toBe(PaymentStatus.Failed)
+
+        // Check for invoice
+        const invoice = await getInvoiceAttempt({ lnd: lndOutside1, id })
+        expect(invoice).toBeNull()
+
+        // wait for balance updates because invoice event
+        // arrives before wallet balances updates in lnd
+        await waitUntilChannelBalanceSyncAll()
+
+        // Check BTC wallet balance
+        const btcAmountInvoiceWithFee = calc.add(btcInvoiceAmount, btcProtocolFee)
+        const finalBalanceBtc = await getBalanceHelper(walletIdB)
+        expect(finalBalanceBtc).toBe(
+          initBalanceB + Number(btcAmountInvoiceWithFee.amount),
+        )
+
+        // Check USD wallet balance
+        const finalBalanceUsd = await getBalanceHelper(walletIdUsdB)
+        expect(finalBalanceUsd).toBe(
+          initBalanceUsdB - Number(amountInvoiceWithFee.amount),
+        )
+      }, 60000)
+
       it(`fails to pay above 2fa limit without 2fa token`, async () => {
         if (userRecordA.twoFA.secret) {
           await delete2fa({
@@ -1367,7 +1566,7 @@ describe("UserWallet - Lightning Pay", () => {
         userRecordA = await getUserRecordByTestUserRef("A")
         expect(secret).toBe(userRecordA.twoFA.secret)
 
-        const midPriceRatio = await getMidPriceRatio()
+        const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
         if (midPriceRatio instanceof Error) return midPriceRatio
 
         const remainingLimitAmount = await newGetRemainingTwoFALimit({
@@ -1578,6 +1777,7 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(finalBalanceA).toBe(initBalanceA)
     })
   })
+
   describe("No amount lightning invoices", () => {
     it("pay external amountless invoice from usd wallet", async () => {
       const dealerUsdWalletId = await getDealerUsdWalletId()
@@ -1856,6 +2056,48 @@ describe("USD Wallets - Lightning Pay", () => {
       })
       expect(res).toBeInstanceOf(ZeroAmountForUsdRecipientError)
     })
+  })
+})
+
+describe("Delete payments from Lnd - Lightning Pay", () => {
+  it("deletes payment", async () => {
+    const { request, secret, id } = await createInvoice({ lnd: lndOutside1 })
+    const paymentHash = id as PaymentHash
+    const revealedPreImage = secret as RevealedPreImage
+
+    // Test payment is successful
+    const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+      paymentRequest: request as EncodedPaymentRequest,
+      memo: null,
+      amount: amountInvoice,
+      senderWalletId: walletIdB,
+      senderAccount: accountB,
+    })
+    if (paymentResult instanceof Error) throw paymentResult
+    expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
+
+    // Confirm payment exists in lnd
+    const retrievedPayment = await lndService.lookupPayment({ paymentHash })
+    expect(retrievedPayment).not.toBeInstanceOf(Error)
+    if (retrievedPayment instanceof Error) return retrievedPayment
+    expect(retrievedPayment.status).toBe(PaymentStatus.Settled)
+    if (retrievedPayment.status !== PaymentStatus.Settled) return
+    expect(retrievedPayment.confirmedDetails?.revealedPreImage).toBe(revealedPreImage)
+
+    // Delete payment
+    const deleted = await lndService.deletePaymentByHash({ paymentHash })
+    expect(deleted).not.toBeInstanceOf(Error)
+
+    // Check that payment no longer exists
+    const retrievedDeletedPayment = await lndService.lookupPayment({ paymentHash })
+    expect(retrievedDeletedPayment).toBeInstanceOf(PaymentNotFoundError)
+
+    // Check that deleting missing payment doesn't return error
+    const deletedAttempt = await lndService.deletePaymentByHash({ paymentHash })
+    expect(deletedAttempt).not.toBeInstanceOf(Error)
   })
 })
 

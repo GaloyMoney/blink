@@ -16,7 +16,7 @@ import {
   mineAndConfirm,
 } from "test/helpers"
 
-let bitcoindOutside
+let bitcoindOutside: BitcoindWalletClient
 
 beforeAll(async () => {
   await createMandatoryUsers()

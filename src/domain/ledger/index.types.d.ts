@@ -7,8 +7,9 @@ type LiabilitiesWalletId = string & { [liabilitiesWalletId]: never }
 
 type LedgerTransactionId = string & { readonly brand: unique symbol }
 type LedgerJournalId = string & { readonly brand: unique symbol }
-type LedgerTransactionType =
-  typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
+type LedgerTransactionTypeObject = typeof import("./index").LedgerTransactionType
+type LedgerTransactionTypeKey = keyof typeof import("./index").LedgerTransactionType
+type LedgerTransactionType = LedgerTransactionTypeObject[LedgerTransactionTypeKey]
 
 type ExtendedLedgerTransactionType =
   typeof import("./index").ExtendedLedgerTransactionType[keyof typeof import("./index").ExtendedLedgerTransactionType]
@@ -60,6 +61,11 @@ type LedgerTransaction<S extends WalletCurrency> = {
   readonly address?: OnChainAddress
   readonly txHash?: OnChainTxHash
 }
+
+type LedgerTransactionWithMetadata<S extends WalletCurrency> = {
+  hasMetadata: true
+} & LedgerTransaction<S> &
+  LedgerTransactionMetadata
 
 type ReceiveOnChainTxArgs = {
   walletId: WalletId

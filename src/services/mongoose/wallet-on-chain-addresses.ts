@@ -22,11 +22,11 @@ export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepos
         { $push: { onchain: { address, pubkey } } },
       )
 
-      if (result.n === 0) {
+      if (result.matchedCount === 0) {
         return new CouldNotFindError("Couldn't find wallet")
       }
 
-      if (result.nModified !== 1) {
+      if (result.modifiedCount !== 1) {
         return new PersistError("Couldn't add onchain address for wallet")
       }
 

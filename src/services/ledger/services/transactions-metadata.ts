@@ -13,7 +13,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
     const { hash, ...metadata } = ledgerTxMetadata
     try {
       const result = await TransactionMetadata.updateMany({ hash }, metadata)
-      const success = result.nModified > 0
+      const success = result.modifiedCount > 0
       if (!success) {
         return new NoTransactionToUpdateError()
       }

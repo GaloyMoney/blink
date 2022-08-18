@@ -2,14 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'fix: git cliff config should be pulled from pipeline-tasks (#4)'
-      sha: fc36c9834e4da8374728298ffd362b7bc1280bc5
+      commitTitle: 'fix: REPO_PATH initialization'
+      sha: 70728a1b62e43be803a337bfae5968b2324f7ea8
     path: .
-  path: tasks/vendor
-- contents:
-  - git:
-      commitTitle: 'fix: git cliff config should be pulled from pipeline-tasks (#4)'
-      sha: fc36c9834e4da8374728298ffd362b7bc1280bc5
-    path: .
-  path: config/vendor
+  path: vendor
 kind: LockConfig

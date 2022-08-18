@@ -161,7 +161,7 @@ const LegacyEntryBuilderCreditWithBtcDebit = <M extends MediciEntry>({
       ...metadata,
       currency: creditAmount.currency,
     })
-    return entry
+    return removeZeroAmountEntries(entry)
   }
   const creditAccount = ({
     accountId,
@@ -184,7 +184,7 @@ const LegacyEntryBuilderCreditWithBtcDebit = <M extends MediciEntry>({
       ...metadata,
       currency: creditAmount.currency,
     })
-    return entry
+    return removeZeroAmountEntries(entry)
   }
 
   return {

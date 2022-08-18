@@ -29,8 +29,9 @@ let customContent: string, customConfig
 try {
   customContent = fs.readFileSync("/var/yaml/custom.yaml", "utf8")
   customConfig = yaml.load(customContent)
+  baseLogger.info("loading custom.yaml")
 } catch (err) {
-  baseLogger.info({ err }, "no custom.yaml available. using default values")
+  baseLogger.debug({ err }, "no custom.yaml available. using default values")
 }
 
 export const yamlConfigInit = merge(defaultConfig, customConfig)
@@ -76,7 +77,12 @@ export const USER_ACTIVENESS_MONTHLY_VOLUME_THRESHOLD = toCents(
 )
 
 export const getGaloyInstanceName = (): string => yamlConfig.name
+export const getLightningAddressDomain = (): string => yamlConfig.lightningAddressDomain
+export const getLightningAddressDomainAliases = (): string[] =>
+  yamlConfig.lightningAddressDomainAliases
 export const getLocale = (): string => yamlConfig.locale || "en"
+
+export const getPubkeysToSkipProbe = (): Pubkey[] => yamlConfig.skipFeeProbe
 
 const i18n = new I18n()
 i18n.configure({

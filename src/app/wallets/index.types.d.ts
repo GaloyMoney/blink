@@ -4,13 +4,6 @@ type AddInvoiceForSelfArgs = {
   memo?: string
 }
 
-type AddInvoiceArgs = {
-  walletInvoiceCreateFn: (args: WalletInvoiceFactoryArgs) => WalletInvoice
-  amount: number
-  memo?: string
-  descriptionHash?: string
-}
-
 type AddInvoiceNoAmountForSelfArgs = {
   walletId: string
   memo?: string
@@ -26,6 +19,19 @@ type AddInvoiceForRecipientArgs = {
 type AddInvoiceNoAmountForRecipientArgs = {
   recipientWalletId: string
   memo?: string
+}
+
+type BuildWIBWithAmountFnArgs = {
+  walletInvoiceBuilder: WalletInvoiceBuilder
+  recipientWalletDescriptor: WalletDescriptor<WalletCurrency>
+}
+
+type AddInvoiceArgs = {
+  walletId: string
+  limitCheckFn: (accountId: AccountId) => Promise<true | RateLimitServiceError>
+  buildWIBWithAmountFn: (
+    buildWIBWithAmountFnArgs: BuildWIBWithAmountFnArgs,
+  ) => Promise<ValidationError | DealerPriceServiceError | WIBWithAmount>
 }
 
 type GetOnChainFeeArgs = {

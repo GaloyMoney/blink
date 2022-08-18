@@ -8,6 +8,8 @@ export const persistAndReturnEntry = async ({
   hash,
   revealedPreImage,
 }: {
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
   entry
   hash?: PaymentHash | OnChainTxHash
   revealedPreImage?: RevealedPreImage
@@ -29,8 +31,10 @@ export const persistAndReturnEntry = async ({
   }
 }
 
+// @ts-ignore-next-line no-implicit-any error
 export const translateToLedgerJournal = (savedEntry): LedgerJournal => ({
   journalId: savedEntry._id.toString(),
   voided: savedEntry.voided,
+  // @ts-ignore-next-line no-implicit-any error
   transactionIds: savedEntry._transactions.map((id) => id.toString()),
 })

@@ -274,3 +274,14 @@ export class InsufficientLiquidityError extends CustomApolloError {
     })
   }
 }
+
+export class AuthenticationError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Not authenticated",
+      forwardToClient: true,
+      code: "NOT_AUTHENTICATED",
+      ...errData,
+    })
+  }
+}

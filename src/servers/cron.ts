@@ -12,59 +12,72 @@ import { setupMongoConnection } from "@services/mongodb"
 
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
-import { getCronConfig } from "@config"
+import { getCronConfig, TWO_MONTHS_IN_MS } from "@config"
+
+import { rebalancingInternalChannels, reconnectNodes } from "@services/lnd/utils-bos"
 
 const logger = baseLogger.child({ module: "cron" })
 
+const rebalance = async () => {
+  const result = await ColdStorage.rebalanceToColdWallet()
+  if (result instanceof Error) throw result
+}
+
+const updatePendingLightningInvoices = () => Wallets.handleHeldInvoices(logger)
+
+const updatePendingLightningPayments = () => Payments.updatePendingPayments(logger)
+
+const updateOnChainReceipt = async () => {
+  const txNumber = await Wallets.updateOnChainReceipt({ logger })
+  if (txNumber instanceof Error) throw txNumber
+}
+
+const deleteExpiredInvoices = async () => {
+  await deleteExpiredWalletInvoice()
+}
+
+const deleteExpiredPaymentFlows = async () => {
+  await deleteExpiredLightningPaymentFlows()
+}
+
+const updateLnPaymentsCollection = async () => {
+  const result = await Lightning.updateLnPayments()
+  if (result instanceof Error) throw result
+}
+
+const deleteLndPaymentsBefore2Months = async () => {
+  const timestamp2Months = new Date(Date.now() - TWO_MONTHS_IN_MS)
+  const result = await Lightning.deleteLnPaymentsBefore(timestamp2Months)
+  if (result instanceof Error) throw result
+}
+
+const swapOutJob = async () => {
+  const swapResult = await Swap.swapOut()
+  if (swapResult instanceof Error) throw swapResult
+}
+
 const main = async () => {
+  console.log("cronjob started")
+
   const cronConfig = getCronConfig()
   const results: Array<boolean> = []
   const mongoose = await setupMongoConnection()
 
-  const rebalance = async () => {
-    const result = await ColdStorage.rebalanceToColdWallet()
-    if (result instanceof Error) throw result
-  }
-
-  const updatePendingLightningInvoices = () => Wallets.updatePendingInvoices(logger)
-
-  const updatePendingLightningPayments = () => Payments.updatePendingPayments(logger)
-
-  const updateOnChainReceipt = async () => {
-    const txNumber = await Wallets.updateOnChainReceipt({ logger })
-    if (txNumber instanceof Error) throw txNumber
-  }
-
-  const deleteExpiredInvoices = async () => {
-    await deleteExpiredWalletInvoice()
-  }
-
-  const deleteExpiredPaymentFlows = async () => {
-    await deleteExpiredLightningPaymentFlows()
-  }
-
-  const updateLnPaymentsCollection = async () => {
-    const result = await Lightning.updateLnPayments()
-    if (result instanceof Error) throw result
-  }
-
-  const swapOutJob = async () => {
-    const swapResult = await Swap.swapOut()
-    if (swapResult instanceof Error) throw swapResult
-  }
-
   const tasks = [
+    reconnectNodes,
+    rebalancingInternalChannels,
     updateEscrows,
     updatePendingLightningInvoices,
     updatePendingLightningPayments,
     updateLnPaymentsCollection,
-    deleteExpiredInvoices,
-    deleteFailedPaymentsAttemptAllLnds,
     updateRoutingRevenues,
     updateOnChainReceipt,
     ...(cronConfig.rebalanceEnabled ? [rebalance] : []),
     ...(cronConfig.swapEnabled ? [swapOutJob] : []),
     deleteExpiredPaymentFlows,
+    deleteExpiredInvoices,
+    deleteLndPaymentsBefore2Months,
+    deleteFailedPaymentsAttemptAllLnds,
   ]
 
   for (const task of tasks) {

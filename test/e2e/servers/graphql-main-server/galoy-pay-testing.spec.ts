@@ -23,7 +23,7 @@ import {
   fundWalletIdFromLightning,
   getDefaultWalletIdByTestUserRef,
   getPhoneAndCodeFromRef,
-  getSubscriptionNext,
+  promisifiedSubscription,
   initializeTestingState,
   killServer,
   PID,
@@ -46,7 +46,7 @@ beforeAll(async () => {
   await fundWalletIdFromLightning({ walletId: sendingWalletId, amount: toSats(50_000) })
   receivingWalletId = await getDefaultWalletIdByTestUserRef(receivingUserRef)
 
-  serverPid = await startServer()
+  serverPid = await startServer("start-main-ci")
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
   const input = { phone, code }
   const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
@@ -205,7 +205,7 @@ describe("galoy-pay", () => {
 
       const pricePublish = setTimeout(publishSingleCurrentPrice, 1000)
 
-      const result = (await getSubscriptionNext(subscription)) as { data }
+      const result = (await promisifiedSubscription(subscription)) as { data }
       clearTimeout(pricePublish)
       const price_ = result.data?.price
       const { price, errors } = price_
@@ -253,7 +253,7 @@ describe("galoy-pay", () => {
       })
       expect(makePayment.data.lnInvoicePaymentSend.status).toEqual("SUCCESS")
 
-      const result = (await getSubscriptionNext(subscription)) as { data }
+      const result = (await promisifiedSubscription(subscription)) as { data }
 
       // Assert the the invoice is paid
       expect(result.data.lnInvoicePaymentStatus.status).toEqual("PAID")

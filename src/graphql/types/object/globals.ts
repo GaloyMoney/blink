@@ -14,7 +14,13 @@ const Globals = GT.Object({
         This can be used to know if an invoice belongs to one of our nodes.`,
     },
     buildInformation: { type: GT.NonNull(BuildInformation) },
-    // TODO: include GlobalSettings
+    lightningAddressDomain: {
+      type: GT.NonNull(GT.String),
+      description: dedent`The domain name for lightning addresses accepted by this Galoy instance`,
+    },
+    lightningAddressDomainAliases: {
+      type: GT.NonNullList(GT.String),
+    },
   }),
 })
 

@@ -1,6 +1,4 @@
-import { addEarn } from "@app/accounts/add-earn"
-import { getTransactionsForWalletId } from "@app/wallets"
-import { Payments } from "@app"
+import { Accounts, Payments, Wallets } from "@app"
 import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
@@ -67,7 +65,7 @@ describe("UserWallet - addEarn", () => {
 
     const getAndVerifyRewards = async () => {
       const promises = onBoardingEarnIds.map((onBoardingEarnId) =>
-        addEarn({
+        Accounts.addEarn({
           quizQuestionId: onBoardingEarnId as QuizQuestionId,
           accountId: accountIdB,
         }),
@@ -95,7 +93,7 @@ describe("UserWallet - addEarn", () => {
     const onboardingEarnIds = Object.keys(onboardingEarn)
     expect(onboardingEarnIds.length).toBeGreaterThanOrEqual(1)
 
-    const { result: transactionsBefore } = await getTransactionsForWalletId({
+    const { result: transactionsBefore } = await Wallets.getTransactionsForWalletId({
       walletId: walletIdB,
     })
 
@@ -124,7 +122,7 @@ describe("UserWallet - addEarn", () => {
     })
     if (payment instanceof Error) return payment
 
-    const { result: transactionsAfter } = await getTransactionsForWalletId({
+    const { result: transactionsAfter } = await Wallets.getTransactionsForWalletId({
       walletId: walletIdB,
     })
     const rewardTx = transactionsAfter?.find((tx) => tx.memo === onboardingEarnId)

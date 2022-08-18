@@ -3,9 +3,11 @@ import { checkedToWalletId } from "@domain/wallets"
 import {
   LnPaymentRequestNonZeroAmountRequiredError,
   LnPaymentRequestZeroAmountRequiredError,
+  SkipProbeForPubkeyError,
   PriceRatio,
 } from "@domain/payments"
 import { LndService } from "@services/lnd"
+
 import { PaymentFlowStateRepository } from "@services/payment-flow"
 import { WalletsRepository } from "@services/mongoose"
 import { NewDealerPriceService } from "@services/dealer-price"
@@ -128,10 +130,12 @@ const estimateLightningFee = async ({
       return PartialResult.err(lndService)
     }
 
-    const routeResult = await lndService.findRouteForInvoice({
-      invoice,
-      amount: btcPaymentAmount,
-    })
+    const routeResult = (await builder.skipProbeForDestination())
+      ? new SkipProbeForPubkeyError()
+      : await lndService.findRouteForInvoice({
+          invoice,
+          amount: btcPaymentAmount,
+        })
     if (routeResult instanceof Error) {
       paymentFlow = await builder.withoutRoute()
       if (paymentFlow instanceof Error) {
@@ -152,7 +156,11 @@ const estimateLightningFee = async ({
   const persistedPayment = await PaymentFlowStateRepository(
     defaultTimeToExpiryInSeconds,
   ).persistNew(paymentFlow)
-  if (persistedPayment instanceof Error) return PartialResult.err(persistedPayment)
+  if (persistedPayment instanceof Error)
+    return PartialResult.partial(
+      paymentFlow.protocolFeeInSenderWalletCurrency(),
+      persistedPayment,
+    )
 
   return PartialResult.ok(persistedPayment.protocolFeeInSenderWalletCurrency())
 }

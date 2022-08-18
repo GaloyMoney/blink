@@ -150,4 +150,43 @@ describe("AmountCalculator", () => {
       })
     }
   })
+
+  describe("applies basis point fraction to an amount", () => {
+    const basisPoints = 50n // 0.5% or 0.005
+
+    it("correctly applies basis points to an amount", () => {
+      const amount = { amount: 20_000n, currency: WalletCurrency.Btc }
+      const expectedAmount = 100n // 0.5% of 20_000
+      const percentageOfAmount = calc.mulBasisPoints(amount, basisPoints)
+      expect(percentageOfAmount.amount).toEqual(expectedAmount)
+    })
+
+    it("correctly applies basis points with rounding down from x.50", () => {
+      const amount = { amount: 17_500n, currency: WalletCurrency.Btc }
+      const expectedAmount = 87n // 0.5% of 17_500, rounded down from 87.5
+      const percentageOfAmount = calc.mulBasisPoints(amount, basisPoints)
+      expect(percentageOfAmount.amount).toEqual(expectedAmount)
+    })
+
+    it("correctly applies basis points with rounding up from x.5x", () => {
+      const amount = { amount: 17_501n, currency: WalletCurrency.Btc }
+      const expectedAmount = 88n // 0.5% of 17_501, rounded up from 87.505
+      const percentageOfAmount = calc.mulBasisPoints(amount, basisPoints)
+      expect(percentageOfAmount.amount).toEqual(expectedAmount)
+    })
+
+    it("correctly applies basis points to a small amount down to 0n", () => {
+      const amount = { amount: 100n, currency: WalletCurrency.Btc }
+      const expectedAmount = 0n // 0.5% of 100, rounded down from 0.5
+      const percentageOfAmount = calc.mulBasisPoints(amount, basisPoints)
+      expect(percentageOfAmount.amount).toEqual(expectedAmount)
+    })
+
+    it("correctly applies basis points to a small amount up  to 1n", () => {
+      const amount = { amount: 101n, currency: WalletCurrency.Btc }
+      const expectedAmount = 1n // 0.5% of 101, rounded up from 0.505
+      const percentageOfAmount = calc.mulBasisPoints(amount, basisPoints)
+      expect(percentageOfAmount.amount).toEqual(expectedAmount)
+    })
+  })
 })

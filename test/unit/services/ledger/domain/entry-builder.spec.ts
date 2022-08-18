@@ -1,91 +1,50 @@
-import { lndLedgerAccountId, EntryBuilder } from "@services/ledger/domain"
-
 import { WalletCurrency, AmountCalculator, ZERO_BANK_FEE } from "@domain/shared"
 
-class TestMediciEntry {
-  credits: any // eslint-disable-line
-  debits: any // eslint-disable-line
-  transactions: any // eslint-disable-line
+import { lndLedgerAccountId, EntryBuilder } from "@services/ledger/domain"
+import { MainBook } from "@services/ledger/books"
 
-  credit(accountPath, amount, metadata = null) {
-    this.credits = this.credits || {}
-    this.transactions = this.transactions || []
-    this.credits[accountPath] = { amount, metadata }
-
-    const metadataObj = metadata === null ? {} : metadata
-    this.transactions.push({
-      debit: 0,
-      credit: amount,
-      accounts: accountPath,
-      ...metadataObj,
-    })
-    return this
-  }
-
-  debit(accountPath, amount, metadata = null) {
-    this.debits = this.debits || {}
-    this.transactions = this.transactions || []
-    this.debits[accountPath] = { amount, metadata }
-
-    const metadataObj = metadata === null ? {} : metadata
-    this.transactions.push({
-      debit: amount,
-      credit: 0,
-      accounts: accountPath,
-      ...metadataObj,
-    })
-    return this
-  }
-}
-
-const reconstructEntryFromTransactions = (entry: TestMediciEntry): TestMediciEntry => {
-  const result = new TestMediciEntry()
-
-  for (const txn of entry.transactions) {
-    let accountPath, amount, metadata, credit, debit
-    if (txn.debit > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      ;({ debit: amount, credit, accounts: accountPath, ...metadata } = txn)
-      result.debit(accountPath, amount, metadata)
-    }
-
-    if (txn.credit > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      ;({ credit: amount, debit, accounts: accountPath, ...metadata } = txn)
-      result.credit(accountPath, amount, metadata)
-    }
-  }
-
-  return result
-}
+const createEntry = () => MainBook.entry("")
 
 describe("EntryBuilder", () => {
-  const expectEntryToEqual = (entry, amount) => {
-    expect(entry.amount).toEqual(Number(amount.amount))
-    expect(entry.metadata.currency).toEqual(amount.currency)
+  const findEntry = (txs: ILedgerTransaction[], account: string): ILedgerTransaction => {
+    const entry = txs.find((tx) => tx.accounts === account)
+    if (!entry) throw new Error("Invalid entry")
+    return entry
   }
 
-  const expectJournalToBeBalanced = (journal) => {
+  const expectEntryToEqual = (entry: ILedgerTransaction, amount) => {
+    expect(entry.debit + entry.credit).toEqual(Number(amount.amount))
+    expect(entry.currency).toEqual(amount.currency)
+  }
+
+  const expectJournalToBeBalanced = (journal: MediciEntry) => {
     let usdCredits = 0
     let btcCredits = 0
     let usdDebits = 0
     let btcDebits = 0
 
+    const credits = journal.transactions.filter((t) => t.credit > 0)
+    const debits = journal.transactions.filter((t) => t.debit > 0)
+    const zeroAmounts = journal.transactions.filter(
+      (t) => t.debit === 0 && t.credit === 0,
+    )
+
     // eslint-disable-next-line
-    Object.values<any>(journal.debits).forEach((entry) =>
-      entry.metadata.currency === WalletCurrency.Usd
+    Object.values<any>(debits).forEach((entry) =>
+      entry.currency === WalletCurrency.Usd
         ? (usdDebits += entry.amount)
         : (btcDebits += entry.amount),
     )
     // eslint-disable-next-line
-    Object.values<any>(journal.credits).forEach((entry) =>
-      entry.metadata.currency === WalletCurrency.Usd
+    Object.values<any>(credits).forEach((entry) =>
+      entry.currency === WalletCurrency.Usd
         ? (usdCredits += entry.amount)
         : (btcCredits += entry.amount),
     )
 
     expect(usdCredits).toEqual(usdDebits)
     expect(btcCredits).toEqual(btcDebits)
+    expect(zeroAmounts.length).toBe(0)
   }
 
   const calc = AmountCalculator()
@@ -153,7 +112,7 @@ describe("EntryBuilder", () => {
   describe("Btc account", () => {
     describe("send", () => {
       it("without fee", () => {
-        const entry = new TestMediciEntry()
+        const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
           entry,
@@ -165,14 +124,19 @@ describe("EntryBuilder", () => {
           .debitAccount({ accountDescriptor: btcDebitorAccountDescriptor })
           .creditLnd()
 
+        const credits = result.transactions.filter((t) => t.credit > 0)
+        const debits = result.transactions.filter((t) => t.debit > 0)
+
         expectJournalToBeBalanced(result)
-        expectEntryToEqual(result.credits[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.debits[debitorAccountId], btcAmount)
-        expect(result.debits[staticAccountIds.bankOwnerAccountId]).toBeUndefined()
+        expectEntryToEqual(findEntry(credits, lndLedgerAccountId), btcAmount)
+        expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
+        expect(
+          debits.find((tx) => tx.accounts === staticAccountIds.bankOwnerAccountId),
+        ).toBeUndefined()
       })
 
       it("with fee", () => {
-        const entry = new TestMediciEntry()
+        const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
           entry,
@@ -184,19 +148,25 @@ describe("EntryBuilder", () => {
           .debitAccount({ accountDescriptor: btcDebitorAccountDescriptor })
           .creditLnd()
 
+        const credits = result.transactions.filter((t) => t.credit > 0)
+        const debits = result.transactions.filter((t) => t.debit > 0)
+
         expectJournalToBeBalanced(result)
-        expectEntryToEqual(result.credits[staticAccountIds.bankOwnerAccountId], btcFee)
         expectEntryToEqual(
-          result.credits[lndLedgerAccountId],
+          findEntry(credits, staticAccountIds.bankOwnerAccountId),
+          btcFee,
+        )
+        expectEntryToEqual(
+          findEntry(credits, lndLedgerAccountId),
           calc.sub(btcAmount, btcFee),
         )
-        expectEntryToEqual(result.debits[debitorAccountId], btcAmount)
+        expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
       })
     })
 
     describe("receive", () => {
       it("without fee", () => {
-        const entry = new TestMediciEntry()
+        const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
           entry,
@@ -208,13 +178,16 @@ describe("EntryBuilder", () => {
           .debitLnd()
           .creditAccount(btcCreditorAccountDescriptor)
 
+        const credits = result.transactions.filter((t) => t.credit > 0)
+        const debits = result.transactions.filter((t) => t.debit > 0)
+
         expectJournalToBeBalanced(result)
-        expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.credits[creditorAccountId], btcAmount)
+        expectEntryToEqual(findEntry(debits, lndLedgerAccountId), btcAmount)
+        expectEntryToEqual(findEntry(credits, creditorAccountId), btcAmount)
       })
 
       it("with fee", () => {
-        const entry = new TestMediciEntry()
+        const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
           entry,
@@ -226,12 +199,17 @@ describe("EntryBuilder", () => {
           .debitLnd()
           .creditAccount(btcCreditorAccountDescriptor)
 
+        const credits = result.transactions.filter((t) => t.credit > 0)
+        const debits = result.transactions.filter((t) => t.debit > 0)
         expectJournalToBeBalanced(result)
-        expect(result.credits[staticAccountIds.bankOwnerAccountId].amount).toEqual(
+        expect(findEntry(credits, staticAccountIds.bankOwnerAccountId).credit).toEqual(
           Number(btcFee.amount),
         )
-        expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.credits[creditorAccountId], calc.sub(btcAmount, btcFee))
+        expectEntryToEqual(findEntry(debits, lndLedgerAccountId), btcAmount)
+        expectEntryToEqual(
+          findEntry(credits, creditorAccountId),
+          calc.sub(btcAmount, btcFee),
+        )
       })
     })
   })
@@ -239,7 +217,7 @@ describe("EntryBuilder", () => {
   describe("Usd account", () => {
     describe("send", () => {
       it("without fee", () => {
-        const entry = new TestMediciEntry()
+        const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
           entry,
@@ -253,17 +231,30 @@ describe("EntryBuilder", () => {
           })
           .creditLnd()
 
+        const credits = result.transactions.filter((t) => t.credit > 0)
+        const debits = result.transactions.filter((t) => t.debit > 0)
+
         expectJournalToBeBalanced(result)
-        expectEntryToEqual(result.credits[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.debits[debitorAccountId], usdAmount)
-        expectEntryToEqual(result.debits[staticAccountIds.dealerBtcAccountId], btcAmount)
-        expect(result.credits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
-        expectEntryToEqual(result.credits[staticAccountIds.dealerUsdAccountId], usdAmount)
-        expect(result.debits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+        expectEntryToEqual(findEntry(credits, lndLedgerAccountId), btcAmount)
+        expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
+        expectEntryToEqual(
+          findEntry(debits, staticAccountIds.dealerBtcAccountId),
+          btcAmount,
+        )
+        expect(
+          credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+        ).toBeUndefined()
+        expectEntryToEqual(
+          findEntry(credits, staticAccountIds.dealerUsdAccountId),
+          usdAmount,
+        )
+        expect(
+          debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+        ).toBeUndefined()
       })
 
       it("with fee", () => {
-        const entry = new TestMediciEntry()
+        const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
           entry,
@@ -277,24 +268,40 @@ describe("EntryBuilder", () => {
           })
           .creditLnd()
 
+        const credits = result.transactions.filter((t) => t.credit > 0)
+        const debits = result.transactions.filter((t) => t.debit > 0)
+
         expectJournalToBeBalanced(result)
         expectEntryToEqual(
-          result.credits[lndLedgerAccountId],
+          findEntry(credits, lndLedgerAccountId),
           calc.sub(btcAmount, btcFee),
         )
-        expectEntryToEqual(result.credits[staticAccountIds.bankOwnerAccountId], btcFee)
-        expectEntryToEqual(result.debits[debitorAccountId], usdAmount)
-        expectEntryToEqual(result.debits[staticAccountIds.dealerBtcAccountId], btcAmount)
-        expect(result.credits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
-        expectEntryToEqual(result.credits[staticAccountIds.dealerUsdAccountId], usdAmount)
-        expect(result.debits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+        expectEntryToEqual(
+          findEntry(credits, staticAccountIds.bankOwnerAccountId),
+          btcFee,
+        )
+        expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
+        expectEntryToEqual(
+          findEntry(debits, staticAccountIds.dealerBtcAccountId),
+          btcAmount,
+        )
+        expect(
+          credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+        ).toBeUndefined()
+        expectEntryToEqual(
+          findEntry(credits, staticAccountIds.dealerUsdAccountId),
+          usdAmount,
+        )
+        expect(
+          debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+        ).toBeUndefined()
       })
     })
 
     describe("receive", () => {
       describe("without fee", () => {
         it("handles txn with btc amount & usd amount", () => {
-          const entry = new TestMediciEntry()
+          const entry = createEntry()
           const builder = EntryBuilder({
             staticAccountIds,
             entry,
@@ -307,19 +314,26 @@ describe("EntryBuilder", () => {
             .debitLnd()
             .creditAccount(usdCreditorAccountDescriptor)
 
+          const credits = result.transactions.filter((t) => t.credit > 0)
+          const debits = result.transactions.filter((t) => t.debit > 0)
+
           expectJournalToBeBalanced(result)
-          expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
-          expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
+          expectEntryToEqual(findEntry(debits, lndLedgerAccountId), btcAmount)
+          expectEntryToEqual(findEntry(credits, creditorAccountId), usdAmount)
           expectEntryToEqual(
-            result.credits[staticAccountIds.dealerBtcAccountId],
+            findEntry(credits, staticAccountIds.dealerBtcAccountId),
             btcAmount,
           )
-          expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
+          expect(
+            debits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+          ).toBeUndefined()
           expectEntryToEqual(
-            result.debits[staticAccountIds.dealerUsdAccountId],
+            findEntry(debits, staticAccountIds.dealerUsdAccountId),
             usdAmount,
           )
-          expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+          expect(
+            credits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+          ).toBeUndefined()
         })
 
         // e.g. a `recordReceive' fee-reimbursement with low sats amount
@@ -338,35 +352,42 @@ describe("EntryBuilder", () => {
             usdWithFees: usdAmount,
           }
 
-          const entry = new TestMediciEntry()
+          const entry = createEntry()
           const builder = EntryBuilder({
             staticAccountIds,
             entry,
             metadata,
           })
 
-          const initialResult = builder
+          const result = builder
             .withTotalAmount(amount)
             .withBankFee(ZERO_BANK_FEE)
             .debitLnd()
             .creditAccount(usdCreditorAccountDescriptor)
-          const result = reconstructEntryFromTransactions(initialResult)
 
+          const credits = result.transactions.filter((t) => t.credit > 0)
+          const debits = result.transactions.filter((t) => t.debit > 0)
           expectJournalToBeBalanced(result)
-          expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
-          expect(result.credits[creditorAccountId]).toBeUndefined()
+          expectEntryToEqual(findEntry(debits, lndLedgerAccountId), btcAmount)
+          expect(credits.find((tx) => tx.accounts === creditorAccountId)).toBeUndefined()
           expectEntryToEqual(
-            result.credits[staticAccountIds.dealerBtcAccountId],
+            findEntry(credits, staticAccountIds.dealerBtcAccountId),
             btcAmount,
           )
-          expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
-          expect(result.debits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
-          expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+          expect(
+            debits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+          ).toBeUndefined()
+          expect(
+            debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+          ).toBeUndefined()
+          expect(
+            credits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+          ).toBeUndefined()
         })
       })
 
       it("with fee", () => {
-        const entry = new TestMediciEntry()
+        const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
           entry,
@@ -378,19 +399,29 @@ describe("EntryBuilder", () => {
           .debitLnd()
           .creditAccount(usdCreditorAccountDescriptor)
 
+        const credits = result.transactions.filter((t) => t.credit > 0)
+        const debits = result.transactions.filter((t) => t.debit > 0)
+
         expectJournalToBeBalanced(result)
-        expectEntryToEqual(result.debits[lndLedgerAccountId], btcAmount)
-        expectEntryToEqual(result.credits[creditorAccountId], calc.sub(usdAmount, usdFee))
+        expectEntryToEqual(findEntry(debits, lndLedgerAccountId), btcAmount)
         expectEntryToEqual(
-          result.credits[staticAccountIds.dealerBtcAccountId],
-          calc.sub(btcAmount, btcFee),
-        )
-        expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
-        expectEntryToEqual(
-          result.debits[staticAccountIds.dealerUsdAccountId],
+          findEntry(credits, creditorAccountId),
           calc.sub(usdAmount, usdFee),
         )
-        expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+        expectEntryToEqual(
+          findEntry(credits, staticAccountIds.dealerBtcAccountId),
+          calc.sub(btcAmount, btcFee),
+        )
+        expect(
+          debits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+        ).toBeUndefined()
+        expectEntryToEqual(
+          findEntry(debits, staticAccountIds.dealerUsdAccountId),
+          calc.sub(usdAmount, usdFee),
+        )
+        expect(
+          credits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+        ).toBeUndefined()
       })
     })
   })
@@ -398,7 +429,7 @@ describe("EntryBuilder", () => {
   describe("intra ledger", () => {
     describe("from btc", () => {
       it("to btc", () => {
-        const entry = new TestMediciEntry()
+        const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
           entry,
@@ -412,12 +443,14 @@ describe("EntryBuilder", () => {
           })
           .creditAccount(btcCreditorAccountDescriptor)
 
-        expectEntryToEqual(result.credits[creditorAccountId], btcAmount)
-        expectEntryToEqual(result.debits[debitorAccountId], btcAmount)
+        const credits = result.transactions.filter((t) => t.credit > 0)
+        const debits = result.transactions.filter((t) => t.debit > 0)
+        expectEntryToEqual(findEntry(credits, creditorAccountId), btcAmount)
+        expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
       })
 
       it("to usd", () => {
-        const entry = new TestMediciEntry()
+        const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
           entry,
@@ -431,18 +464,31 @@ describe("EntryBuilder", () => {
           })
           .creditAccount(usdCreditorAccountDescriptor)
 
+        const credits = result.transactions.filter((t) => t.credit > 0)
+        const debits = result.transactions.filter((t) => t.debit > 0)
+
         expectJournalToBeBalanced(result)
-        expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
-        expectEntryToEqual(result.debits[debitorAccountId], btcAmount)
-        expectEntryToEqual(result.credits[staticAccountIds.dealerBtcAccountId], btcAmount)
-        expect(result.debits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
-        expectEntryToEqual(result.debits[staticAccountIds.dealerUsdAccountId], usdAmount)
-        expect(result.credits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+        expectEntryToEqual(findEntry(credits, creditorAccountId), usdAmount)
+        expectEntryToEqual(findEntry(debits, debitorAccountId), btcAmount)
+        expectEntryToEqual(
+          findEntry(credits, staticAccountIds.dealerBtcAccountId),
+          btcAmount,
+        )
+        expect(
+          debits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+        ).toBeUndefined()
+        expectEntryToEqual(
+          findEntry(debits, staticAccountIds.dealerUsdAccountId),
+          usdAmount,
+        )
+        expect(
+          credits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+        ).toBeUndefined()
       })
     })
     describe("from usd", () => {
       it("to btc", () => {
-        const entry = new TestMediciEntry()
+        const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
           entry,
@@ -455,17 +501,31 @@ describe("EntryBuilder", () => {
             accountDescriptor: usdDebitorAccountDescriptor,
           })
           .creditAccount(btcCreditorAccountDescriptor)
+
+        const credits = result.transactions.filter((t) => t.credit > 0)
+        const debits = result.transactions.filter((t) => t.debit > 0)
+
         expectJournalToBeBalanced(result)
-        expectEntryToEqual(result.credits[creditorAccountId], btcAmount)
-        expectEntryToEqual(result.debits[debitorAccountId], usdAmount)
-        expectEntryToEqual(result.debits[staticAccountIds.dealerBtcAccountId], btcAmount)
-        expect(result.credits[staticAccountIds.dealerBtcAccountId]).toBeUndefined()
-        expectEntryToEqual(result.credits[staticAccountIds.dealerUsdAccountId], usdAmount)
-        expect(result.debits[staticAccountIds.dealerUsdAccountId]).toBeUndefined()
+        expectEntryToEqual(findEntry(credits, creditorAccountId), btcAmount)
+        expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
+        expectEntryToEqual(
+          findEntry(debits, staticAccountIds.dealerBtcAccountId),
+          btcAmount,
+        )
+        expect(
+          credits.find((tx) => tx.accounts === staticAccountIds.dealerBtcAccountId),
+        ).toBeUndefined()
+        expectEntryToEqual(
+          findEntry(credits, staticAccountIds.dealerUsdAccountId),
+          usdAmount,
+        )
+        expect(
+          debits.find((tx) => tx.accounts === staticAccountIds.dealerUsdAccountId),
+        ).toBeUndefined()
       })
 
       it("to usd", () => {
-        const entry = new TestMediciEntry()
+        const entry = createEntry()
         const builder = EntryBuilder({
           staticAccountIds,
           entry,
@@ -478,16 +538,20 @@ describe("EntryBuilder", () => {
             accountDescriptor: usdDebitorAccountDescriptor,
           })
           .creditAccount(usdCreditorAccountDescriptor)
+
+        const credits = result.transactions.filter((t) => t.credit > 0)
+        const debits = result.transactions.filter((t) => t.debit > 0)
+
         expectJournalToBeBalanced(result)
-        expectEntryToEqual(result.credits[creditorAccountId], usdAmount)
-        expectEntryToEqual(result.debits[debitorAccountId], usdAmount)
+        expectEntryToEqual(findEntry(credits, creditorAccountId), usdAmount)
+        expectEntryToEqual(findEntry(debits, debitorAccountId), usdAmount)
       })
     })
   })
 
   describe("metadata", () => {
     it("debitor can take additional metadata", () => {
-      const entry = new TestMediciEntry()
+      const entry = createEntry()
       const builder = EntryBuilder({
         staticAccountIds,
         entry,
@@ -504,13 +568,17 @@ describe("EntryBuilder", () => {
           },
         })
         .creditLnd()
+
+      const debits = result.transactions.filter((t) => t.debit > 0)
       expectJournalToBeBalanced(result)
-      expect(result.debits[debitorAccountId].metadata).toEqual(
+
+      const resultEntry = findEntry(debits, debitorAccountId)
+      expect(resultEntry.currency).toEqual(WalletCurrency.Btc)
+      expect(resultEntry.meta).toEqual(
         expect.objectContaining({
           some: "some",
           more: "yes",
           muchMore: "muchMore",
-          currency: WalletCurrency.Btc,
         }),
       )
     })

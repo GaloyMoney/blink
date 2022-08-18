@@ -1,13 +1,13 @@
 import { getCurrentPrice } from "@app/prices"
+import { usdFromBtcMidPriceFn } from "@app/shared"
+
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
-import { DealerPriceServiceError } from "@domain/dealer-price"
 import { CouldNotFindError } from "@domain/errors"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
-import { DepositFeeCalculator } from "@domain/wallets"
-import { WalletCurrency } from "@domain/shared"
+import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+
 import { LockService } from "@services/lock"
-import { DealerPriceService } from "@services/dealer-price"
-import { LedgerService } from "@services/ledger"
+import { NewDealerPriceService } from "@services/dealer-price"
 import { LndService } from "@services/lnd"
 import {
   AccountsRepository,
@@ -16,53 +16,41 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
-import { runInParallel } from "@utils"
-import { DisplayCurrency } from "@domain/fiat"
+import * as LedgerFacade from "@services/ledger/facade"
+import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
-export const updatePendingInvoices = async (logger: Logger): Promise<void> => {
+import { elapsedSinceTimestamp, runInParallel } from "@utils"
+
+export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
 
-  const walletIdsWithPendingInvoices = invoicesRepo.listWalletIdsWithPendingInvoices()
+  const pendingInvoices = invoicesRepo.yieldPending()
 
-  if (walletIdsWithPendingInvoices instanceof Error) {
+  if (pendingInvoices instanceof Error) {
     logger.error(
-      { error: walletIdsWithPendingInvoices },
+      { error: pendingInvoices },
       "finish updating pending invoices with error",
     )
     return
   }
 
   await runInParallel({
-    iterator: walletIdsWithPendingInvoices,
+    iterator: pendingInvoices,
     logger,
-    processor: async (walletId: WalletId, index: number) => {
-      logger.trace(
-        "updating pending invoices for wallet %s in worker %d",
-        walletId,
-        index,
-      )
-      await updatePendingInvoicesByWalletId({ walletId, logger })
+    processor: async (walletInvoice: WalletInvoice, index: number) => {
+      logger.trace("updating pending invoices %s in worker %d", index)
+
+      walletInvoice.recipientWalletDescriptor.currency === WalletCurrency.Btc
+        ? await updatePendingInvoice({ walletInvoice, logger })
+        : await declineHeldInvoice({
+            pubkey: walletInvoice.pubkey,
+            paymentHash: walletInvoice.paymentHash,
+            logger,
+          })
     },
   })
 
   logger.info("finish updating pending invoices")
-}
-
-export const updatePendingInvoicesByWalletId = async ({
-  walletId,
-  logger,
-}: {
-  walletId: WalletId
-  logger: Logger
-}) => {
-  const invoicesRepo = WalletInvoicesRepository()
-
-  const invoices = invoicesRepo.findPendingByWalletId(walletId)
-  if (invoices instanceof Error) return invoices
-
-  for await (const walletInvoice of invoices) {
-    await updatePendingInvoice({ walletInvoice, logger })
-  }
 }
 
 export const updatePendingInvoiceByPaymentHash = async ({
@@ -82,143 +70,251 @@ export const updatePendingInvoiceByPaymentHash = async ({
   return updatePendingInvoice({ walletInvoice, logger })
 }
 
-const updatePendingInvoice = async ({
-  walletInvoice,
-  logger,
-}: {
-  walletInvoice: WalletInvoice
-  logger: Logger
-}): Promise<boolean | ApplicationError> => {
-  const lndService = LndService()
-  if (lndService instanceof Error) return lndService
+const dealer = NewDealerPriceService()
 
-  const walletInvoicesRepo = WalletInvoicesRepository()
+const updatePendingInvoice = wrapAsyncToRunInSpan({
+  namespace: "app.invoices",
+  fnName: "updatePendingInvoice",
+  fn: async ({
+    walletInvoice,
+    logger,
+  }: {
+    walletInvoice: WalletInvoice
+    logger: Logger
+  }): Promise<boolean | ApplicationError> => {
+    addAttributesToCurrentSpan({
+      paymentHash: walletInvoice.paymentHash,
+      pubkey: walletInvoice.pubkey,
+    })
 
-  const { pubkey, paymentHash, walletId, currency: walletCurrency } = walletInvoice
-  let { cents } = walletInvoice
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
 
-  const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
-  if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
-    const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
-    if (isDeleted instanceof Error) {
-      logger.error(
-        { walletInvoice, error: isDeleted },
-        "impossible to delete WalletInvoice entry",
-      )
-      return isDeleted
-    }
-    return false
-  }
-  if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
+    const walletInvoicesRepo = WalletInvoicesRepository()
 
-  if (!lnInvoiceLookup.isSettled) {
-    logger.debug({ invoice: lnInvoiceLookup }, "invoice has not been paid")
-    return false
-  }
+    const { pubkey, paymentHash, secret, recipientWalletDescriptor } = walletInvoice
 
-  const {
-    lnInvoice: { description },
-    roundedDownReceived,
-  } = lnInvoiceLookup
+    const pendingInvoiceLogger = logger.child({
+      hash: paymentHash,
+      walletId: recipientWalletDescriptor.id,
+      topic: "payment",
+      protocol: "lightning",
+      transactionType: "receipt",
+      onUs: false,
+    })
 
-  const pendingInvoiceLogger = logger.child({
-    hash: paymentHash,
-    walletId,
-    topic: "payment",
-    protocol: "lightning",
-    transactionType: "receipt",
-    onUs: false,
-  })
-
-  if (walletInvoice.paid) {
-    pendingInvoiceLogger.info("invoice has already been processed")
-    return true
-  }
-
-  if (walletCurrency === WalletCurrency.Usd && !cents) {
-    const dealerPrice = DealerPriceService()
-    const cents_ = await dealerPrice.getCentsFromSatsForImmediateBuy(roundedDownReceived)
-    if (cents_ instanceof DealerPriceServiceError) return cents_
-    cents = cents_
-  }
-
-  const lockService = LockService()
-  return lockService.lockPaymentHash(paymentHash, async () => {
-    // we're getting the invoice another time, now behind the lock, to avoid potential race condition
-    const invoiceToUpdate = await walletInvoicesRepo.findByPaymentHash(paymentHash)
-    if (invoiceToUpdate instanceof CouldNotFindError) {
-      pendingInvoiceLogger.error({ paymentHash }, "WalletInvoice doesn't exist")
+    const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
+    if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
+      const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
+      if (isDeleted instanceof Error) {
+        pendingInvoiceLogger.error("impossible to delete WalletInvoice entry")
+        return isDeleted
+      }
       return false
     }
-    if (invoiceToUpdate instanceof Error) return invoiceToUpdate
-    if (invoiceToUpdate.paid) {
+    if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
+
+    const {
+      lnInvoice: { description },
+      roundedDownReceived,
+    } = lnInvoiceLookup
+
+    if (walletInvoice.paid) {
       pendingInvoiceLogger.info("invoice has already been processed")
       return true
     }
 
-    const displayCurrencyPerSat = await getCurrentPrice()
-    if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
-
-    // TODO: this should be a in a mongodb transaction session with the ledger transaction below
-    // markAsPaid could be done after the transaction, but we should in that case not only look
-    // for walletInvoicesRepo, but also in the ledger to make sure in case the process crash in this
-    // loop that an eventual consistency doesn't lead to a double credit
-
-    const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
-    if (invoicePaid instanceof Error) return invoicePaid
-
-    const feeInboundLiquidity = DepositFeeCalculator().lnDepositFee()
-
-    const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
-    const feeInboundLiquidityDisplayCurrency = dCConverter.fromSats(feeInboundLiquidity)
-
-    const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {
-      amount: dCConverter.fromSats(roundedDownReceived),
-      currency: DisplayCurrency.Usd,
+    if (!lnInvoiceLookup.isHeld && !lnInvoiceLookup.isSettled) {
+      pendingInvoiceLogger.info("invoice has not been paid yet")
+      return false
     }
 
-    const ledgerService = LedgerService()
-    const result = await ledgerService.addLnTxReceive({
-      walletId,
-      walletCurrency,
-      paymentHash,
-      description,
-      sats: roundedDownReceived,
-      cents,
-      amountDisplayCurrency: displayPaymentAmount.amount as DisplayCurrencyBaseAmount,
+    const receivedBtc = paymentAmountFromNumber({
+      amount: roundedDownReceived,
+      currency: WalletCurrency.Btc,
+    })
+    if (receivedBtc instanceof Error) return receivedBtc
+
+    const walletInvoiceReceiver = await WalletInvoiceReceiver({
+      walletInvoice,
+      receivedBtc,
+      usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+      usdFromBtcMidPrice: usdFromBtcMidPriceFn,
+    })
+    if (walletInvoiceReceiver instanceof Error) return walletInvoiceReceiver
+
+    const lockService = LockService()
+    return lockService.lockPaymentHash(paymentHash, async () => {
+      // we're getting the invoice another time, now behind the lock, to avoid potential race condition
+      const invoiceToUpdate = await walletInvoicesRepo.findByPaymentHash(paymentHash)
+      if (invoiceToUpdate instanceof CouldNotFindError) {
+        pendingInvoiceLogger.error({ paymentHash }, "WalletInvoice doesn't exist")
+        return false
+      }
+      if (invoiceToUpdate instanceof Error) return invoiceToUpdate
+      if (walletInvoice.paid) {
+        pendingInvoiceLogger.info("invoice has already been processed")
+        return true
+      }
+
+      const displayCurrencyPerSat = await getCurrentPrice()
+      if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+
+      if (!lnInvoiceLookup.isSettled) {
+        const invoiceSettled = await lndService.settleInvoice({ pubkey, secret })
+        if (invoiceSettled instanceof Error) return invoiceSettled
+      }
+
+      const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
+      if (invoicePaid instanceof Error) return invoicePaid
+
+      // TODO: this should be a in a mongodb transaction session with the ledger transaction below
+      // markAsPaid could be done after the transaction, but we should in that case not only look
+      // for walletInvoicesRepo, but also in the ledger to make sure in case the process crash in this
+      // loop that an eventual consistency doesn't lead to a double credit
+
+      const metadata = LedgerFacade.LnReceiveLedgerMetadata({
+        paymentHash,
+        fee: walletInvoiceReceiver.btcBankFee,
+        feeDisplayCurrency: Number(
+          walletInvoiceReceiver.usdBankFee.amount,
+        ) as DisplayCurrencyBaseAmount,
+        amountDisplayCurrency: Number(
+          walletInvoiceReceiver.usdToCreditReceiver.amount,
+        ) as DisplayCurrencyBaseAmount,
+        pubkey: walletInvoiceReceiver.pubkey,
+      })
+
       //TODO: add displayCurrency: displayPaymentAmount.currency,
-      feeInboundLiquidity,
-      feeInboundLiquidityDisplayCurrency,
+      const result = await LedgerFacade.recordReceive({
+        description,
+        recipientWalletDescriptor: walletInvoiceReceiver.recipientWalletDescriptor,
+        amountToCreditReceiver: {
+          usd: walletInvoiceReceiver.usdToCreditReceiver,
+          btc: walletInvoiceReceiver.btcToCreditReceiver,
+        },
+        bankFee: {
+          usd: walletInvoiceReceiver.usdBankFee,
+          btc: walletInvoiceReceiver.btcBankFee,
+        },
+        metadata,
+        txMetadata: {
+          hash: metadata.hash,
+        },
+      })
+
+      if (result instanceof Error) return result
+
+      const recipientWallet = await WalletsRepository().findById(
+        recipientWalletDescriptor.id,
+      )
+      if (recipientWallet instanceof Error) return recipientWallet
+
+      const { usdToCreditReceiver: displayAmount } = walletInvoiceReceiver
+      const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {
+        amount: Number((Number(displayAmount.amount) / 100).toFixed(2)),
+        currency: displayAmount.currency,
+      } as DisplayPaymentAmount<DisplayCurrency>
+
+      const recipientAccount = await AccountsRepository().findById(
+        recipientWallet.accountId,
+      )
+      if (recipientAccount instanceof Error) return recipientAccount
+
+      const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+      if (recipientUser instanceof Error) return recipientUser
+
+      const notificationsService = NotificationsService()
+      notificationsService.lightningTxReceived({
+        recipientAccountId: recipientWallet.accountId,
+        recipientWalletId: recipientWallet.id,
+        paymentAmount: walletInvoiceReceiver.receivedAmount(),
+        displayPaymentAmount,
+        paymentHash,
+        recipientDeviceTokens: recipientUser.deviceTokens,
+        recipientLanguage: recipientUser.language,
+      })
+
+      return true
     })
-    if (result instanceof Error) return result
+  },
+})
 
-    const recipientWallet = await WalletsRepository().findById(walletId)
-    if (recipientWallet instanceof Error) return recipientWallet
+export const declineHeldInvoice = wrapAsyncToRunInSpan({
+  namespace: "app.invoices",
+  fnName: "declineHeldInvoice",
+  fn: async ({
+    pubkey,
+    paymentHash,
+    logger,
+  }: {
+    pubkey: Pubkey
+    paymentHash: PaymentHash
+    logger: Logger
+  }): Promise<boolean | ApplicationError> => {
+    addAttributesToCurrentSpan({ paymentHash, pubkey })
 
-    const recipientAccount = await AccountsRepository().findById(
-      recipientWallet.accountId,
-    )
-    if (recipientAccount instanceof Error) return recipientAccount
+    const lndService = LndService()
+    if (lndService instanceof Error) return lndService
 
-    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
-    if (recipientUser instanceof Error) return recipientUser
+    const walletInvoicesRepo = WalletInvoicesRepository()
 
-    let amount = BigInt(roundedDownReceived)
-    if (recipientWallet.currency === WalletCurrency.Usd && cents) {
-      amount = BigInt(cents)
+    const lnInvoiceLookup = await lndService.lookupInvoice({ pubkey, paymentHash })
+
+    const pendingInvoiceLogger = logger.child({
+      hash: paymentHash,
+      pubkey,
+      lnInvoiceLookup,
+      topic: "payment",
+      protocol: "lightning",
+      transactionType: "receipt",
+      onUs: false,
+    })
+
+    if (lnInvoiceLookup instanceof InvoiceNotFoundError) {
+      const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
+      if (isDeleted instanceof Error) {
+        pendingInvoiceLogger.error("impossible to delete WalletInvoice entry")
+        return isDeleted
+      }
+      return false
+    }
+    if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
+
+    // FIXME: This is just to support transition to hodl invoices
+    // TODO: REMOVE THIS after hodl invoices has been deployed for 24 hours.
+    if (lnInvoiceLookup.isSettled) {
+      addAttributesToCurrentSpan({ ["isHodlInvoice"]: false })
+      const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(
+        paymentHash,
+      )
+      if (walletInvoice instanceof Error) return walletInvoice
+      return updatePendingInvoice({ walletInvoice, logger })
+    }
+    addAttributesToCurrentSpan({ ["isHodlInvoice"]: true })
+
+    if (!lnInvoiceLookup.isHeld) {
+      pendingInvoiceLogger.info({ lnInvoiceLookup }, "invoice has not been paid yet")
+      return false
     }
 
-    const notificationsService = NotificationsService()
-    notificationsService.lightningTxReceived({
-      recipientAccountId: recipientWallet.accountId,
-      recipientWalletId: recipientWallet.id,
-      paymentAmount: { amount, currency: recipientWallet.currency },
-      displayPaymentAmount,
-      paymentHash,
-      recipientDeviceTokens: recipientUser.deviceTokens,
-      recipientLanguage: recipientUser.language,
-    })
+    let heldForMsg = ""
+    if (lnInvoiceLookup.heldAt) {
+      heldForMsg = `for ${elapsedSinceTimestamp(lnInvoiceLookup.heldAt)}s `
+    }
+    pendingInvoiceLogger.error(
+      { lnInvoiceLookup },
+      `invoice has been held ${heldForMsg}and is now been cancelled`,
+    )
+
+    const invoiceSettled = await lndService.cancelInvoice({ pubkey, paymentHash })
+    if (invoiceSettled instanceof Error) return invoiceSettled
+
+    const isDeleted = await walletInvoicesRepo.deleteByPaymentHash(paymentHash)
+    if (isDeleted instanceof Error) {
+      pendingInvoiceLogger.error("impossible to delete WalletInvoice entry")
+    }
 
     return true
-  })
-}
+  },
+})

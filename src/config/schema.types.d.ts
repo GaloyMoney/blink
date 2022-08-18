@@ -19,6 +19,8 @@ type AccountLimitsConfig = {
 type YamlSchema = {
   PROXY_CHECK_APIKEY: string
   name: string
+  lightningAddressDomain: string
+  lightningAddressDomainAliases: string[]
   locale: string
   displayCurrency: {
     symbol: string
@@ -140,4 +142,5 @@ type YamlSchema = {
   captcha: {
     mandatory: boolean
   }
+  skipFeeProbe: Pubkey[]
 }

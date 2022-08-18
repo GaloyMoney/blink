@@ -1,20 +1,14 @@
 import BitcoindClient from "bitcoin-core-ts"
-import {
-  addInvoiceForSelf,
-  createOnChainAddress,
-  getBalanceForWallet,
-} from "@app/wallets"
+import { createOnChainAddress } from "@app/wallets"
 import { getBitcoinCoreRPCConfig } from "@config"
 import { bitcoindDefaultClient, BitcoindWalletClient } from "@services/bitcoind"
-import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
-import { pay } from "lightning"
 
 import { toSats } from "@domain/bitcoin"
 
 import { descriptors } from "./multisig-wallet"
 
-import { checkIsBalanced, lndOutside1, waitUntilBlockHeight } from "."
+import { checkIsBalanced, waitUntilBlockHeight } from "."
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet
@@ -32,6 +26,22 @@ export async function sendToAddressAndConfirm({
   await walletClient.sendToAddress({ address, amount })
   await walletClient.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
 }
+
+export const sendToAddress = async ({
+  walletClient,
+  address,
+  amount,
+}: {
+  walletClient: BitcoindWalletClient
+  address: OnChainAddress
+  amount: number
+}) => walletClient.sendToAddress({ address, amount })
+
+export const confirmSent = async ({
+  walletClient,
+}: {
+  walletClient: BitcoindWalletClient
+}) => walletClient.generateToAddress({ nblocks: 6, address: RANDOM_ADDRESS })
 
 export async function mineAndConfirm({
   walletClient,
@@ -100,22 +110,6 @@ export const fundWalletIdFromOnchain = async ({
   const balance = await LedgerService().getWalletBalance(walletId)
   if (balance instanceof Error) throw balance
   return toSats(balance)
-}
-
-export const fundWalletIdFromLightning = async ({
-  walletId,
-  amount,
-}: {
-  walletId: WalletId
-  amount: Satoshis | UsdCents
-}) => {
-  const invoice = await addInvoiceForSelf({ walletId, amount })
-  if (invoice instanceof Error) return invoice
-
-  await pay({ lnd: lndOutside1, request: invoice.paymentRequest })
-
-  const balance = await getBalanceForWallet({ walletId, logger: baseLogger })
-  if (balance instanceof Error) throw balance
 }
 
 export const createColdStorageWallet = async (walletName: string) => {
