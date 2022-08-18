@@ -1,4 +1,3 @@
-// import BusinessAccount from "./object/business-account"
 import BtcWallet from "./object/btc-wallet"
 import ConsumerAccount from "./object/consumer-account"
 import UsdWallet from "./object/usd-wallet"
@@ -12,7 +11,6 @@ export const ALL_INTERFACE_TYPES = [
   InputError,
   PaymentError,
   ConsumerAccount,
-  // BusinessAccount,
   BtcWallet,
   UsdWallet,
 ]
