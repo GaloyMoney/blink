@@ -132,4 +132,5 @@ const walletInvoiceFromRaw = (result: WalletInvoiceRecord): WalletInvoice => ({
   pubkey: result.pubkey as Pubkey,
   paid: result.paid as boolean,
   usdAmount: result.cents ? UsdPaymentAmount(BigInt(result.cents)) : undefined,
+  callback: result.callback as Url,
 })

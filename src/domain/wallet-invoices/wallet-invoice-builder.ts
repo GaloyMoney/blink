@@ -3,7 +3,7 @@ import {
   invoiceExpirationForCurrency,
 } from "@domain/bitcoin/lightning"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
-import { WalletCurrency, ZERO_SATS } from "@domain/shared"
+import { checkedToUrl, WalletCurrency, ZERO_SATS } from "@domain/shared"
 
 import { InvalidWalletInvoiceBuilderStateError } from "./errors"
 
@@ -97,6 +97,18 @@ export const WIBWithRecipient = (state: WIBWithRecipientState): WIBWithRecipient
 }
 
 export const WIBWithAmount = (state: WIBWithAmountState): WIBWithAmount => {
+  const withCallback = (uncheckedCallback: string): WIBWithCallback | ValidationError => {
+    const url = checkedToUrl(uncheckedCallback)
+    if (url instanceof Error) return url
+    return WIBWithCallback({ ...state, callback: uncheckedCallback as Url })
+  }
+
+  const withoutCallback = (): WIBWithCallback => WIBWithCallback(state)
+
+  return { withCallback, withoutCallback }
+}
+
+export const WIBWithCallback = (state: WIBWithCallbackState): WIBWithCallback => {
   const registerInvoice = async () => {
     const { secret, paymentHash } = getSecretAndPaymentHash()
 
@@ -120,6 +132,7 @@ export const WIBWithAmount = (state: WIBWithAmountState): WIBWithAmount => {
       usdAmount: state.usdAmount,
       recipientWalletDescriptor: state.recipientWalletDescriptor,
       paid: false,
+      callback: state.callback,
     }
     return {
       walletInvoice,

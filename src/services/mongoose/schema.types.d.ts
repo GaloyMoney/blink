@@ -71,6 +71,7 @@ interface WalletInvoiceRecord {
   selfGenerated: boolean
   pubkey: string
   paid: boolean
+  callback?: string
 }
 
 interface UserRecord {

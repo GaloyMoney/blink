@@ -1,14 +1,16 @@
-import { Wallets } from "@app"
-import { mapError } from "@graphql/error-map"
-import { GT } from "@graphql/index"
+import dedent from "dedent"
 
-import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
+import { Wallets } from "@app"
+
+import { GT } from "@graphql/index"
+import { mapError } from "@graphql/error-map"
 import Memo from "@graphql/types/scalar/memo"
+import Callback from "@graphql/types/scalar/callback"
+import WalletId from "@graphql/types/scalar/wallet-id"
 import Hex32Bytes from "@graphql/types/scalar/hex32bytes"
 import CentAmount from "@graphql/types/scalar/cent-amount"
-import WalletId from "@graphql/types/scalar/wallet-id"
+import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
 import { validateIsUsdWalletForMutation } from "@graphql/helpers"
-import dedent from "dedent"
 
 const LnUsdInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
   name: "LnUsdInvoiceCreateOnBehalfOfRecipientInput",
@@ -24,6 +26,10 @@ const LnUsdInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
         "Optional memo for the lightning invoice. Acts as a note to the recipient.",
     },
     descriptionHash: { type: Hex32Bytes },
+    callback: {
+      type: Callback,
+      description: "Optional callback for the lightning invoice updates.",
+    },
   }),
 })
 
@@ -37,8 +43,8 @@ const LnUsdInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     input: { type: GT.NonNull(LnUsdInvoiceCreateOnBehalfOfRecipientInput) },
   },
   resolve: async (_, args) => {
-    const { recipientWalletId, amount, memo, descriptionHash } = args.input
-    for (const input of [recipientWalletId, amount, memo, descriptionHash]) {
+    const { recipientWalletId, amount, memo, descriptionHash, callback } = args.input
+    for (const input of [recipientWalletId, amount, memo, descriptionHash, callback]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -52,6 +58,7 @@ const LnUsdInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
       amount,
       memo,
       descriptionHash,
+      callback,
     })
 
     if (invoice instanceof Error) {

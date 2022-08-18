@@ -1,12 +1,15 @@
+import dedent from "dedent"
+
+import { Wallets } from "@app"
+
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
 import Memo from "@graphql/types/scalar/memo"
+import Callback from "@graphql/types/scalar/callback"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import CentAmount from "@graphql/types/scalar/cent-amount"
 import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
 import { validateIsUsdWalletForMutation } from "@graphql/helpers"
-import { Wallets } from "@app"
-import dedent from "dedent"
 
 const LnUsdInvoiceCreateInput = GT.Input({
   name: "LnUsdInvoiceCreateInput",
@@ -17,6 +20,10 @@ const LnUsdInvoiceCreateInput = GT.Input({
     },
     amount: { type: GT.NonNull(CentAmount), description: "Amount in USD cents." },
     memo: { type: Memo, description: "Optional memo for the lightning invoice." },
+    callback: {
+      type: Callback,
+      description: "Optional callback for the lightning invoice updates.",
+    },
   }),
 })
 
@@ -30,9 +37,9 @@ const LnUsdInvoiceCreateMutation = GT.Field({
     input: { type: GT.NonNull(LnUsdInvoiceCreateInput) },
   },
   resolve: async (_, args) => {
-    const { walletId, memo, amount } = args.input
+    const { walletId, memo, amount, callback } = args.input
 
-    for (const input of [walletId, memo, amount]) {
+    for (const input of [walletId, memo, amount, callback]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -45,6 +52,7 @@ const LnUsdInvoiceCreateMutation = GT.Field({
       walletId,
       amount,
       memo,
+      callback,
     })
 
     if (lnInvoice instanceof Error) {

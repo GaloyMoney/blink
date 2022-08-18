@@ -12,10 +12,12 @@ export const addInvoiceForSelf = async ({
   walletId,
   amount,
   memo = "",
+  callback,
 }: AddInvoiceForSelfArgs): Promise<LnInvoice | ApplicationError> =>
   addInvoice({
     walletId,
     limitCheckFn: checkSelfWalletIdRateLimits,
+    callback,
     buildWIBWithAmountFn: ({
       walletInvoiceBuilder,
       recipientWalletDescriptor,
@@ -30,10 +32,12 @@ export const addInvoiceForSelf = async ({
 export const addInvoiceNoAmountForSelf = async ({
   walletId,
   memo = "",
+  callback,
 }: AddInvoiceNoAmountForSelfArgs): Promise<LnInvoice | ApplicationError> =>
   addInvoice({
     walletId,
     limitCheckFn: checkSelfWalletIdRateLimits,
+    callback,
     buildWIBWithAmountFn: ({
       walletInvoiceBuilder,
       recipientWalletDescriptor,
@@ -50,10 +54,12 @@ export const addInvoiceForRecipient = async ({
   amount,
   memo = "",
   descriptionHash,
+  callback,
 }: AddInvoiceForRecipientArgs): Promise<LnInvoice | ApplicationError> =>
   addInvoice({
     walletId: recipientWalletId,
     limitCheckFn: checkRecipientWalletIdRateLimits,
+    callback,
     buildWIBWithAmountFn: ({
       walletInvoiceBuilder,
       recipientWalletDescriptor,
@@ -68,10 +74,12 @@ export const addInvoiceForRecipient = async ({
 export const addInvoiceNoAmountForRecipient = async ({
   recipientWalletId,
   memo = "",
+  callback,
 }: AddInvoiceNoAmountForRecipientArgs): Promise<LnInvoice | ApplicationError> =>
   addInvoice({
     walletId: recipientWalletId,
     limitCheckFn: checkRecipientWalletIdRateLimits,
+    callback,
     buildWIBWithAmountFn: ({
       walletInvoiceBuilder,
       recipientWalletDescriptor,
@@ -87,6 +95,7 @@ const addInvoice = async ({
   walletId,
   limitCheckFn,
   buildWIBWithAmountFn,
+  callback,
 }: AddInvoiceArgs): Promise<LnInvoice | ApplicationError> => {
   const walletIdChecked = checkedToWalletId(walletId)
   if (walletIdChecked instanceof Error) return walletIdChecked
@@ -113,7 +122,14 @@ const addInvoice = async ({
   })
   if (walletIBWithAmount instanceof Error) return walletIBWithAmount
 
-  const invoice = await walletIBWithAmount.registerInvoice()
+  let walletIBWithCallback = walletIBWithAmount.withoutCallback()
+  if (callback) {
+    const wibCallback = walletIBWithAmount.withCallback(callback)
+    if (wibCallback instanceof Error) return wibCallback
+    walletIBWithCallback = wibCallback
+  }
+
+  const invoice = await walletIBWithCallback.registerInvoice()
   if (invoice instanceof Error) return invoice
   const { walletInvoice, lnInvoice } = invoice
 

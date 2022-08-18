@@ -62,7 +62,16 @@ type LnAndWalletInvoice = {
   lnInvoice: LnInvoice
 }
 
+type WIBWithCallbackState = WIBWithAmountState & {
+  callback?: Url
+}
+
 type WIBWithAmount = {
+  withCallback: (uncheckedCallback: string) => WIBWithCallback | ValidationError
+  withoutCallback: () => WIBWithCallback
+}
+
+type WIBWithCallback = {
   registerInvoice: () => Promise<LnAndWalletInvoice | LightningServiceError>
 }
 
@@ -74,6 +83,7 @@ type WalletInvoice = {
   usdAmount?: UsdPaymentAmount
   recipientWalletDescriptor: WalletDescriptor<WalletCurrency>
   paid: boolean
+  callback?: Url
 }
 
 type WalletInvoiceReceiver = WalletInvoice & {

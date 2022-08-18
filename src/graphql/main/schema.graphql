@@ -117,6 +117,11 @@ type BuildInformation {
   helmRevision: Int
 }
 
+"""
+Callback URL to report lightning invoice updates
+"""
+scalar Callback
+
 type CaptchaCreateChallengePayload {
   errors: [Error!]!
   result: CaptchaCreateChallengeResult
@@ -323,6 +328,11 @@ input LnInvoiceCreateInput {
   amount: SatAmount!
 
   """
+  Optional callback for the lightning invoice updates.
+  """
+  callback: Callback
+
+  """
   Optional memo for the lightning invoice.
   """
   memo: Memo
@@ -338,6 +348,11 @@ input LnInvoiceCreateOnBehalfOfRecipientInput {
   Amount in satoshis.
   """
   amount: SatAmount!
+
+  """
+  Optional callback for the lightning invoice updates.
+  """
+  callback: Callback
   descriptionHash: Hex32Bytes
 
   """
@@ -395,6 +410,11 @@ type LnNoAmountInvoice {
 
 input LnNoAmountInvoiceCreateInput {
   """
+  Optional callback for the lightning invoice updates.
+  """
+  callback: Callback
+
+  """
   Optional memo for the lightning invoice.
   """
   memo: Memo
@@ -406,6 +426,11 @@ input LnNoAmountInvoiceCreateInput {
 }
 
 input LnNoAmountInvoiceCreateOnBehalfOfRecipientInput {
+  """
+  Optional callback for the lightning invoice updates.
+  """
+  callback: Callback
+
   """
   Optional memo for the lightning invoice.
   """
@@ -500,6 +525,11 @@ input LnUsdInvoiceCreateInput {
   amount: CentAmount!
 
   """
+  Optional callback for the lightning invoice updates.
+  """
+  callback: Callback
+
+  """
   Optional memo for the lightning invoice.
   """
   memo: Memo
@@ -515,6 +545,11 @@ input LnUsdInvoiceCreateOnBehalfOfRecipientInput {
   Amount in USD cents.
   """
   amount: CentAmount!
+
+  """
+  Optional callback for the lightning invoice updates.
+  """
+  callback: Callback
   descriptionHash: Hex32Bytes
 
   """

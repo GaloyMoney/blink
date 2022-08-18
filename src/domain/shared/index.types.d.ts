@@ -3,6 +3,8 @@ type ErrorLevel =
 type ValidationError = import("./errors").ValidationError
 type BigIntConversionError = import("./errors").BigIntConversionError
 
+type Url = string & { readonly brand: unique symbol }
+
 type WalletCurrency =
   typeof import("./primitives").WalletCurrency[keyof typeof import("./primitives").WalletCurrency]
 

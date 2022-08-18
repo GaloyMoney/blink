@@ -2,11 +2,13 @@ type AddInvoiceForSelfArgs = {
   walletId: string
   amount: number
   memo?: string
+  callback?: string
 }
 
 type AddInvoiceNoAmountForSelfArgs = {
   walletId: string
   memo?: string
+  callback?: string
 }
 
 type AddInvoiceForRecipientArgs = {
@@ -14,11 +16,13 @@ type AddInvoiceForRecipientArgs = {
   amount: number
   memo?: string
   descriptionHash?: string
+  callback?: string
 }
 
 type AddInvoiceNoAmountForRecipientArgs = {
   recipientWalletId: string
   memo?: string
+  callback?: string
 }
 
 type BuildWIBWithAmountFnArgs = {
@@ -32,6 +36,7 @@ type AddInvoiceArgs = {
   buildWIBWithAmountFn: (
     buildWIBWithAmountFnArgs: BuildWIBWithAmountFnArgs,
   ) => Promise<ValidationError | DealerPriceServiceError | WIBWithAmount>
+  callback?: string
 }
 
 type GetOnChainFeeArgs = {

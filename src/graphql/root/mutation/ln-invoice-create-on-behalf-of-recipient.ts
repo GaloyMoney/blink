@@ -1,14 +1,16 @@
-import { Wallets } from "@app"
-import { mapError } from "@graphql/error-map"
-import { GT } from "@graphql/index"
+import dedent from "dedent"
 
-import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
+import { Wallets } from "@app"
+
+import { GT } from "@graphql/index"
+import { mapError } from "@graphql/error-map"
 import Memo from "@graphql/types/scalar/memo"
+import Callback from "@graphql/types/scalar/callback"
+import WalletId from "@graphql/types/scalar/wallet-id"
 import Hex32Bytes from "@graphql/types/scalar/hex32bytes"
 import SatAmount from "@graphql/types/scalar/sat-amount"
-import WalletId from "@graphql/types/scalar/wallet-id"
+import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
 import { validateIsBtcWalletForMutation } from "@graphql/helpers"
-import dedent from "dedent"
 
 const LnInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
   name: "LnInvoiceCreateOnBehalfOfRecipientInput",
@@ -20,6 +22,10 @@ const LnInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
     amount: { type: GT.NonNull(SatAmount), description: "Amount in satoshis." },
     memo: { type: Memo, description: "Optional memo for the lightning invoice." },
     descriptionHash: { type: Hex32Bytes },
+    callback: {
+      type: Callback,
+      description: "Optional callback for the lightning invoice updates.",
+    },
   }),
 })
 
@@ -32,8 +38,8 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     input: { type: GT.NonNull(LnInvoiceCreateOnBehalfOfRecipientInput) },
   },
   resolve: async (_, args) => {
-    const { recipientWalletId, amount, memo, descriptionHash } = args.input
-    for (const input of [recipientWalletId, amount, memo, descriptionHash]) {
+    const { recipientWalletId, amount, memo, descriptionHash, callback } = args.input
+    for (const input of [recipientWalletId, amount, memo, descriptionHash, callback]) {
       if (input instanceof Error) {
         return { errors: [{ message: input.message }] }
       }
@@ -47,6 +53,7 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
       amount,
       memo,
       descriptionHash,
+      callback,
     })
 
     if (invoice instanceof Error) {
