@@ -56,9 +56,9 @@ type AccountCustomFieldValues =
 
 type AccountCustomFields = {
   readonly accountId: AccountId
-  createdByUserId: UserId
+  readonly createdByUserId: UserId
   customFields: { [k: string]: AccountCustomFieldValues }
-  createdAt: Date
+  readonly createdAt: Date
 }
 
 type Account = {
