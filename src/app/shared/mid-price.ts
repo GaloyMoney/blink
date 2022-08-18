@@ -12,7 +12,6 @@ import {
 } from "@services/tracing"
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
-
 const dealer = NewDealerPriceService()
 
 export const usdFromBtcMidPriceFn = async (
@@ -27,7 +26,7 @@ export const usdFromBtcMidPriceFn = async (
       },
     },
     async () => {
-      const midPriceRatio = await getMidPriceRatio()
+      const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
       if (midPriceRatio instanceof Error) return midPriceRatio
 
       const usdPaymentAmount = midPriceRatio.convertFromBtc(amount)
@@ -62,7 +61,7 @@ export const btcFromUsdMidPriceFn = async (
       },
     },
     async () => {
-      const midPriceRatio = await getMidPriceRatio()
+      const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
       if (midPriceRatio instanceof Error) return midPriceRatio
 
       const btcPaymentAmount = midPriceRatio.convertFromUsd(amount)
@@ -94,7 +93,9 @@ export const getCurrentPriceInCentsPerSat = async (): Promise<
   return toPriceRatio(price * CENTS_PER_USD)
 }
 
-export const getMidPriceRatio = async (): Promise<PriceRatio | PriceServiceError> => {
+export const getMidPriceRatio = async (
+  usdHedgeEnabled: YamlSchema["dealer"][keyof YamlSchema["dealer"]]["hedgingEnabled"],
+): Promise<PriceRatio | PriceServiceError> => {
   if (usdHedgeEnabled) {
     const priceRatio = await dealer.getCentsPerSatsExchangeMidRate()
     if (priceRatio instanceof Error) {
@@ -104,6 +105,7 @@ export const getMidPriceRatio = async (): Promise<PriceRatio | PriceServiceError
       })
       return getCurrentPriceInCentsPerSat()
     }
+    return priceRatio
   }
 
   return getCurrentPriceInCentsPerSat()

@@ -5,7 +5,7 @@ import { getMidPriceRatio } from "@app/shared"
 
 import { delete2fa } from "@app/users"
 
-import { getDisplayCurrencyConfig, getLocale } from "@config"
+import { getDealerConfig, getDisplayCurrencyConfig, getLocale } from "@config"
 
 import { toSats } from "@domain/bitcoin"
 import {
@@ -154,6 +154,8 @@ jest.mock("@services/lnd", () => {
   }
 })
 
+const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
+
 let initBalanceA: Satoshis, initBalanceB: Satoshis
 const amountInvoice = toSats(1000)
 
@@ -234,7 +236,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(usdAmountAboveThreshold).not.toBeInstanceOf(Error)
     if (usdAmountAboveThreshold instanceof Error) throw usdAmountAboveThreshold
 
-    const midPriceRatio = await getMidPriceRatio()
+    const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
     if (midPriceRatio instanceof Error) throw midPriceRatio
     const btcThresholdAmount = midPriceRatio.convertFromUsd(usdAmountAboveThreshold)
 
@@ -262,7 +264,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(usdAmountAboveThreshold).not.toBeInstanceOf(Error)
     if (usdAmountAboveThreshold instanceof Error) throw usdAmountAboveThreshold
 
-    const midPriceRatio = await getMidPriceRatio()
+    const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
     if (midPriceRatio instanceof Error) throw midPriceRatio
     const btcThresholdAmount = midPriceRatio.convertFromUsd(usdAmountAboveThreshold)
 
@@ -1454,7 +1456,7 @@ describe("UserWallet - Lightning Pay", () => {
         userRecordA = await getUserRecordByTestUserRef("A")
         expect(secret).toBe(userRecordA.twoFA.secret)
 
-        const midPriceRatio = await getMidPriceRatio()
+        const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
         if (midPriceRatio instanceof Error) return midPriceRatio
 
         const remainingLimitAmount = await newGetRemainingTwoFALimit({
