@@ -107,7 +107,7 @@ const BusinessAccount = GT.Object({
 
     if (customFields && customFields.length > 0) {
       return Object.assign(fields, {
-        data: {
+        customFields: {
           description: "Additional account information",
           type: AccountCustomFields,
           resolve: async (source: Account) => {

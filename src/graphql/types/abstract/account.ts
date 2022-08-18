@@ -47,7 +47,7 @@ const IAccount = GT.Interface({
 
     if (customFields && customFields.length > 0) {
       return Object.assign(fields, {
-        data: {
+        customFields: {
           type: AccountCustomFields,
         },
       })

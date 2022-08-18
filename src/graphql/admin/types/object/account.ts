@@ -67,7 +67,7 @@ const Account: GraphQLObjectType<Account> = GT.Object<Account>({
 
     if (customFields && customFields.length > 0) {
       return Object.assign(fields, {
-        data: {
+        customFields: {
           type: AccountCustomFields,
           resolve: async (source: Account) => {
             const accountCustomFields = await Accounts.getAccountCustomFields(source.id)
