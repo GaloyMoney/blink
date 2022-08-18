@@ -16,9 +16,10 @@ export const reconnectNodes = async () => {
   const lndService = LndService()
   if (lndService instanceof Error) throw lndService
 
-  const lnds = getLnds({ type: "offchain", active: true })
+  const lndsParamsAuth = getLnds({ type: "offchain", active: true })
 
-  for (const lnd of lnds) {
+  for (const lndParamsAuth of lndsParamsAuth) {
+    const { lnd } = lndParamsAuth
     await reconnect({ lnd })
   }
 }
@@ -27,18 +28,18 @@ export const rebalancingInternalChannels = async () => {
   const lndService = LndService()
   if (lndService instanceof Error) throw lndService
 
-  const lnds = getLnds({ type: "offchain", active: true })
+  const lndsParamsAuth = getLnds({ type: "offchain", active: true })
 
-  if (lnds.length !== 2) {
+  if (lndsParamsAuth.length !== 2) {
     // TODO: rebalancing algo for more than 2 internal nodes
     baseLogger.warn("rebalancing needs 2 active internal nodes")
     return
   }
 
-  const selfLnd = lnds[0].lnd
-  const otherLnd = lnds[1].lnd
-  const selfPubkey = lnds[0].pubkey
-  const otherPubkey = lnds[1].pubkey
+  const selfLnd = lndsParamsAuth[0].lnd
+  const otherLnd = lndsParamsAuth[1].lnd
+  const selfPubkey = lndsParamsAuth[0].pubkey
+  const otherPubkey = lndsParamsAuth[1].pubkey
 
   const { channels } = await getDirectChannels({ lnd: selfLnd, otherPubkey })
 
