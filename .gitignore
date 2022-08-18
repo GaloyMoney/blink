@@ -26,7 +26,3 @@ public/*
 coverage
 lib
 artifacts
-
-tls.cert
-macaroon1
-macaroon2
