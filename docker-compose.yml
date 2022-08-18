@@ -112,7 +112,6 @@ services:
     - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd-outside-1.wallet.db:/root/.lnd/data/chain/bitcoin/regtest/wallet.db
     - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd-outside-1.macaroons.db:/root/.lnd/data/chain/bitcoin/regtest/macaroons.db
     - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
-
     depends_on: [bitcoind]
   lnd-outside-2:
     image: lightninglabs/lnd:v0.15.0-beta
