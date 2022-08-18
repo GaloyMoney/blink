@@ -41,16 +41,11 @@ export const getOffChainBalance = async (): Promise<Satoshis | ApplicationError>
     },
   })
 
-export const getOffChainChannelBalances = async () =>
-  cache.getOrSet({
-    key: CacheKeys.OffChainChannelBalances,
-    ttlSecs: SECS_PER_MIN,
-    fn: async () => {
-      const offChainService = LndService()
-      if (offChainService instanceof Error) return offChainService
-      return offChainService.getChannelBalances()
-    },
-  })
+export const getOffChainChannelBalances = async () => {
+  const offChainService = LndService()
+  if (offChainService instanceof Error) return offChainService
+  return offChainService.getChannelBalances()
+}
 
 export const getOpeningChannelBalance = async (): Promise<Satoshis | ApplicationError> =>
   cache.getOrSet({
