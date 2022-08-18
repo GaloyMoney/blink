@@ -233,13 +233,9 @@ export const LedgerService = (): ILedgerService => {
         account: liabilitiesWalletId,
       })
       if (balance < 0) {
-        const dealerUsdWalletId = await caching.getDealerUsdWalletId()
-        const dealerBtcWalletId = await caching.getDealerBtcWalletId()
+        const dealerWalletIds = Object.values(await getDealerWalletIds())
 
-        if (
-          walletDescriptor.id !== dealerUsdWalletId &&
-          walletDescriptor.id !== dealerBtcWalletId
-        ) {
+        if (!dealerWalletIds.includes(walletDescriptor.id)) {
           recordExceptionInCurrentSpan({
             error: new BalanceLessThanZeroError(balance.toString()),
             attributes: {
