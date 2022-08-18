@@ -47,13 +47,13 @@ export const AccountCustomFieldsRepository = (): IAccountCustomFieldsRepository 
 
   const persistNew = async ({
     accountId,
-    modifiedByUserId,
+    createdByUserId,
     customFields,
   }: PersistNewCustomFieldsArgs): Promise<AccountCustomFields | RepositoryError> => {
     try {
       const result = await AccountCustomFields.create({
         accountId: toObjectId<AccountId>(accountId),
-        modifiedByUserId: toObjectId(modifiedByUserId),
+        createdByUserId: toObjectId(createdByUserId),
         customFields,
       })
 
@@ -73,6 +73,6 @@ const translateToAccountCustomFields = (
 ): AccountCustomFields => ({
   accountId: fromObjectId<AccountId>(result.accountId),
   customFields: result.customFields,
-  modifiedByUserId: fromObjectId<UserId>(result.modifiedByUserId),
+  createdByUserId: fromObjectId<UserId>(result.createdByUserId),
   createdAt: new Date(result.createdAt),
 })

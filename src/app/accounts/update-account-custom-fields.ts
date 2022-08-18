@@ -16,11 +16,11 @@ const defaultValues = customFieldsSchema.reduce((acc, val) => {
 
 export const updateAccountCustomFields = async ({
   accountId,
-  modifiedByUserId,
+  createdByUserId,
   customFields,
 }: {
   accountId: AccountId
-  modifiedByUserId: UserId
+  createdByUserId: UserId
   customFields: { [k: string]: AccountCustomFieldValues }
 }): Promise<AccountCustomFields | ApplicationError> => {
   if (!customFieldsSchema || customFieldsSchema.length <= 0)
@@ -42,7 +42,7 @@ export const updateAccountCustomFields = async ({
 
   return accountCustomFieldsRepo.persistNew({
     accountId: account.id,
-    modifiedByUserId,
+    createdByUserId,
     customFields: { ...defaultValues, ...data },
   })
 }

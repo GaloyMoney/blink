@@ -41,7 +41,7 @@ const AccountCustomFieldsUpdateMutation = GT.Field({
 
     const result = await Accounts.updateAccountCustomFields({
       accountId: domainAccount.id,
-      modifiedByUserId: domainUser.id,
+      createdByUserId: domainUser.id,
       customFields,
     })
 

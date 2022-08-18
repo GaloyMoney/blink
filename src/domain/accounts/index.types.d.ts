@@ -56,7 +56,7 @@ type AccountCustomFieldValues =
 
 type AccountCustomFields = {
   readonly accountId: AccountId
-  modifiedByUserId: UserId
+  createdByUserId: UserId
   customFields: { [k: string]: AccountCustomFieldValues }
   createdAt: Date
 }
@@ -137,7 +137,7 @@ type listAccountIdsByCustomFieldArgs = {
 
 type PersistNewCustomFieldsArgs = {
   accountId: AccountId
-  modifiedByUserId: UserId
+  createdByUserId: UserId
   customFields: { [k: string]: AccountCustomFieldValues }
 }
 
