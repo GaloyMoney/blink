@@ -105,6 +105,7 @@ export const getMidPriceRatio = async (
       })
       return getCurrentPriceInCentsPerSat()
     }
+    return priceRatio
   }
 
   return getCurrentPriceInCentsPerSat()
