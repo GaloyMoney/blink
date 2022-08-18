@@ -10,6 +10,7 @@ export * from "./update-on-chain-receipt"
 export * from "./update-pending-invoices"
 export * from "./add-invoice-for-wallet"
 export * from "./reimburse-fee"
+export * from "./reimburse-failed-usd"
 export * from "./send-on-chain"
 
 import { WalletsRepository } from "@services/mongoose"
