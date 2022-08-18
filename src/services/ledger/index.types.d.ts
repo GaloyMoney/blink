@@ -125,13 +125,18 @@ type NewAddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
 
 type ReimbursementLedgerMetadata = SendAmountsMetadata & {
   hash: PaymentHash
-  type: LedgerTransactionType
   pending: boolean
   usd: DisplayCurrencyBaseAmount
   related_journal: LedgerJournalId
 }
 
-type FailedPaymentLedgerMetadata = ReimbursementLedgerMetadata
+type FeeReimbursementLedgerMetadata = ReimbursementLedgerMetadata & {
+  type: LedgerTransactionTypeObject["LnFeeReimbursement"]
+}
+
+type FailedPaymentLedgerMetadata = ReimbursementLedgerMetadata & {
+  type: LedgerTransactionTypeObject["Payment"]
+}
 
 type LnRoutingRevenueLedgerMetadata = LedgerMetadata & {
   feesCollectedOn: string
@@ -149,7 +154,8 @@ type LoadLedgerParams = {
 }
 
 type ReceiveLedgerMetadata =
-  | ReimbursementLedgerMetadata
+  | FeeReimbursementLedgerMetadata
+  | FailedPaymentLedgerMetadata
   | LnReceiveLedgerMetadata
   | OnChainReceiveLedgerMetadata
 

@@ -126,7 +126,7 @@ export const receive = {
       usdProtocolFee: { amount: centsFee },
     } = paymentFlow
 
-    const metadata: ReimbursementLedgerMetadata = {
+    const metadata: FeeReimbursementLedgerMetadata = {
       type: LedgerTransactionType.LnFeeReimbursement,
       hash: paymentHash,
       related_journal: journalId,
