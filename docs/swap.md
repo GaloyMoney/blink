@@ -11,6 +11,21 @@ The high level steps are:
 4. Test a swap out
 5. Monitor the status of a swap
 
+Quickstart
+----------
+```
+# 1. Start loop server
+make start-loop
+# 2. Monitor loop outs
+loopd1_id=$(docker ps -q -f name="loopd1-1")
+docker exec -it $loopd1_id loop -n regtest monitor
+# 3. Loop out
+TEST="swap-out" make integration
+# 4. Mine a block (or a few) to finish loop out
+make mine-block
+make mine-block
+```
+
 (1) Start the loopserver (regtest LL loop server) and loopd (Rest API)
 ---------------------------------------
 ```sh

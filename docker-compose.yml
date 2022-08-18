@@ -130,7 +130,7 @@ services:
       - "--lnd.macaroondir=/root/.lnd/data/chain/bitcoin/regtest"
       - "--lnd.tlspath=/root/.lnd/tls.cert"
   loopd1:
-    image: lightninglabs/loop:v0.19.1-beta
+    image: lightninglabs/loop:v0.20.1-beta
     restart: unless-stopped
     volumes:
       - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
@@ -149,6 +149,7 @@ services:
       - "loopd"
       - "--network=regtest"
       - "--debuglevel=debug"
+      - "--experimental"
       - "--server.host=${LOOP_SERVER_INTERNAL_IP}:11009"
       - "--server.notls"
       - "--lnd.host=lnd1:10009"
@@ -158,7 +159,7 @@ services:
       - "--restlisten=0.0.0.0:8081"
       - "--rpclisten=0.0.0.0:11010"
   loopd2:
-    image: lightninglabs/loop:v0.19.1-beta
+    image: lightninglabs/loop:v0.20.1-beta
     restart: unless-stopped
     volumes:
       - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
@@ -177,6 +178,7 @@ services:
       - "loopd"
       - "--network=regtest"
       - "--debuglevel=debug"
+      - "--experimental"
       - "--server.host=${LOOP_SERVER_INTERNAL_IP}:11009"
       - "--server.notls"
       - "--lnd.host=lnd2:10009"
