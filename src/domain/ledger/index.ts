@@ -73,7 +73,7 @@ export const checkedToLedgerTransactionId = (
 export const inputAmountFromLedgerTransaction = (
   txn: LedgerTransaction<WalletCurrency>,
 ) => {
-  const fee = txn.currency == WalletCurrency.Usd ? txn.centsFee : txn.satsFee
+  const fee = txn.currency === WalletCurrency.Usd ? txn.centsFee : txn.satsFee
   if (fee === undefined) return new InvalidLedgerTransactionStateError()
   return safeBigInt(txn.debit - fee)
 }
