@@ -7,13 +7,14 @@ import {
   LedgerTransactionType,
   UnknownLedgerError,
 } from "@domain/ledger"
-import { WalletCurrency } from "@domain/shared"
+import { ErrorLevel, WalletCurrency } from "@domain/shared"
 
 import { LedgerService, getDealerWalletIds } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
 import { WalletsRepository } from "@services/mongoose"
 import { PaymentFlowStateRepository } from "@services/payment-flow"
+import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 import { Wallets } from "@app"
 import { runInParallel } from "@utils"
@@ -199,6 +200,7 @@ const updatePendingPayment = async ({
           if (voided instanceof Error) {
             const error = `error voiding payment entry`
             logger.fatal({ success: false, result: lnPaymentLookup }, error)
+            recordExceptionInCurrentSpan({ error: voided, level: ErrorLevel.Critical })
             return voided
           }
         } else {
@@ -210,6 +212,10 @@ const updatePendingPayment = async ({
           if (reimbursed instanceof Error) {
             const error = `error reimbursing usd payment entry`
             logger.fatal({ success: false, result: lnPaymentLookup }, error)
+            recordExceptionInCurrentSpan({
+              error: reimbursed,
+              level: ErrorLevel.Critical,
+            })
             return reimbursed
           }
         }
