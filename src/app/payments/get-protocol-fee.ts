@@ -156,7 +156,11 @@ const estimateLightningFee = async ({
   const persistedPayment = await PaymentFlowStateRepository(
     defaultTimeToExpiryInSeconds,
   ).persistNew(paymentFlow)
-  if (persistedPayment instanceof Error) return PartialResult.err(persistedPayment)
+  if (persistedPayment instanceof Error)
+    return PartialResult.partial(
+      paymentFlow.protocolFeeInSenderWalletCurrency(),
+      persistedPayment,
+    )
 
   return PartialResult.ok(persistedPayment.protocolFeeInSenderWalletCurrency())
 }
