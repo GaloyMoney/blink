@@ -54,6 +54,11 @@ export const lazyLoadLedgerAdmin = ({
   }
 }
 
+export const getDealerWalletIds = async () => ({
+  btc: await caching.getDealerBtcWalletId(),
+  usd: await caching.getDealerUsdWalletId(),
+})
+
 export const LedgerService = (): ILedgerService => {
   const updateMetadataByHash = async (
     ledgerTxMetadata:
@@ -228,13 +233,9 @@ export const LedgerService = (): ILedgerService => {
         account: liabilitiesWalletId,
       })
       if (balance < 0) {
-        const dealerUsdWalletId = await caching.getDealerUsdWalletId()
-        const dealerBtcWalletId = await caching.getDealerBtcWalletId()
+        const dealerWalletIds = Object.values(await getDealerWalletIds())
 
-        if (
-          walletDescriptor.id !== dealerUsdWalletId &&
-          walletDescriptor.id !== dealerBtcWalletId
-        ) {
+        if (!dealerWalletIds.includes(walletDescriptor.id)) {
           recordExceptionInCurrentSpan({
             error: new BalanceLessThanZeroError(balance.toString()),
             attributes: {
@@ -345,8 +346,11 @@ export const LedgerService = (): ILedgerService => {
       return new UnknownLedgerError(error)
     }
 
+    const dealerWalletIds = Object.values(await getDealerWalletIds())
     for await (const { _id } of transactions) {
-      yield toWalletId(_id)
+      const walletId = toWalletId(_id)
+      if (walletId === undefined || dealerWalletIds.includes(walletId)) continue
+      yield walletId
     }
   }
 

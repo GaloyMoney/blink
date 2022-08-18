@@ -31,7 +31,7 @@ export const DealerPriceService = (): IDealerPriceService => ({
     timeToExpiryInSeconds: Seconds,
   ): Promise<UsdCents> =>
     toCents(
-      (Math.floor(Number(amount) * getBuyUsdQuoteFromSats) * timeToExpiryInSeconds) /
+      (Math.floor(Number(amount) / getBuyUsdQuoteFromSats) * timeToExpiryInSeconds) /
         timeToExpiryInSeconds,
     ),
   getCentsFromSatsForFutureSell: async (
@@ -39,7 +39,7 @@ export const DealerPriceService = (): IDealerPriceService => ({
     timeToExpiryInSeconds: Seconds,
   ): Promise<UsdCents> =>
     toCents(
-      (Math.floor(Number(amount) * getSellUsdQuoteFromSats) * timeToExpiryInSeconds) /
+      (Math.floor(Number(amount) / getSellUsdQuoteFromSats) * timeToExpiryInSeconds) /
         timeToExpiryInSeconds,
     ),
 
@@ -94,7 +94,7 @@ export const NewDealerPriceService = (
     amount: BtcPaymentAmount,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError> => {
     const amountForPayment =
-      (Math.floor(Number(amount.amount) * getBuyUsdQuoteFromSats) *
+      (Math.floor(Number(amount.amount) / getBuyUsdQuoteFromSats) *
         timeToExpiryInSeconds) /
       timeToExpiryInSeconds
 
@@ -107,7 +107,7 @@ export const NewDealerPriceService = (
     amount: BtcPaymentAmount,
   ): Promise<UsdPaymentAmount | DealerPriceServiceError> => {
     const amountForPayment =
-      (Math.floor(Number(amount.amount) * getSellUsdQuoteFromSats) *
+      (Math.floor(Number(amount.amount) / getSellUsdQuoteFromSats) *
         timeToExpiryInSeconds) /
       timeToExpiryInSeconds
 

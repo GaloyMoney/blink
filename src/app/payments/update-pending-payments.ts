@@ -7,12 +7,14 @@ import {
   LedgerTransactionType,
   UnknownLedgerError,
 } from "@domain/ledger"
+import { ErrorLevel, WalletCurrency } from "@domain/shared"
 
-import { LedgerService } from "@services/ledger"
+import { LedgerService, getDealerWalletIds } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
 import { WalletsRepository } from "@services/mongoose"
 import { PaymentFlowStateRepository } from "@services/payment-flow"
+import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 import { Wallets } from "@app"
 import { runInParallel } from "@utils"
@@ -102,13 +104,16 @@ const updatePendingPayment = async ({
     paymentHash,
   })
   if (lnPaymentLookup instanceof Error) {
-    const lightningLogger = logger.child({
-      topic: "payment",
-      protocol: "lightning",
-      transactionType: "payment",
-      onUs: false,
-    })
-    lightningLogger.error({ err: lnPaymentLookup }, "issue fetching payment")
+    logger.error(
+      {
+        err: lnPaymentLookup,
+        topic: "payment",
+        protocol: "lightning",
+        transactionType: "payment",
+        onUs: false,
+      },
+      "issue fetching payment",
+    )
     return lnPaymentLookup
   }
 
@@ -119,8 +124,8 @@ const updatePendingPayment = async ({
   }
 
   if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {
-    const ledgerService = LedgerService()
     return LockService().lockPaymentHash(paymentHash, async () => {
+      const ledgerService = LedgerService()
       const recorded = await ledgerService.isLnTxRecorded(paymentHash)
       if (recorded instanceof Error) {
         paymentLogger.error({ error: recorded }, "we couldn't query pending transaction")
@@ -187,15 +192,32 @@ const updatePendingPayment = async ({
           { success: false, id: paymentHash, payment: pendingPayment },
           "payment has failed. reverting transaction",
         )
-
-        const voided = await ledgerService.revertLightningPayment({
-          journalId: pendingPayment.journalId,
-          paymentHash,
-        })
-        if (voided instanceof Error) {
-          const error = `error voiding payment entry`
-          logger.fatal({ success: false, result: lnPaymentLookup }, error)
-          return voided
+        if (paymentFlow.senderWalletCurrency === WalletCurrency.Btc) {
+          const voided = await ledgerService.revertLightningPayment({
+            journalId: pendingPayment.journalId,
+            paymentHash,
+          })
+          if (voided instanceof Error) {
+            const error = `error voiding payment entry`
+            logger.fatal({ success: false, result: lnPaymentLookup }, error)
+            recordExceptionInCurrentSpan({ error: voided, level: ErrorLevel.Critical })
+            return voided
+          }
+        } else {
+          const reimbursed = await Wallets.reimburseFailedUsdPayment({
+            journalId: pendingPayment.journalId,
+            paymentFlow,
+            accountId: wallet.accountId,
+          })
+          if (reimbursed instanceof Error) {
+            const error = `error reimbursing usd payment entry`
+            logger.fatal({ success: false, result: lnPaymentLookup }, error)
+            recordExceptionInCurrentSpan({
+              error: reimbursed,
+              level: ErrorLevel.Critical,
+            })
+            return reimbursed
+          }
         }
       }
       return true
@@ -213,11 +235,15 @@ const reconstructPendingPaymentFlow = async <
   const ledgerTxns = await LedgerService().getTransactionsByHash(paymentHash)
   if (ledgerTxns instanceof Error) return ledgerTxns
 
+  const dealerWalletIds = Object.values(await getDealerWalletIds())
+
   const payment = ledgerTxns.find(
     (tx) =>
       tx.pendingConfirmation === true &&
       tx.type === LedgerTransactionType.Payment &&
-      tx.debit > 0,
+      tx.debit > 0 &&
+      tx.walletId !== undefined &&
+      !dealerWalletIds.includes(tx.walletId),
   ) as LedgerTransaction<S> | undefined
   if (!payment) return new CouldNotFindTransactionError()
 
