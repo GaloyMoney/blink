@@ -1,6 +1,14 @@
+import { GraphQLResolveInfo } from "graphql"
+
 import { getAccountsConfig } from "@config"
 
 import { GT } from "@graphql/index"
+
+import {
+  ACCOUNT_USERNAME,
+  addAttributesToCurrentSpanAndPropagate,
+  SemanticAttributes,
+} from "@services/tracing"
 
 import AllLevelsQuery from "./root/query/all-levels"
 import LightningInvoiceQuery from "./root/query/lightning-invoice"
@@ -32,9 +40,36 @@ if (customFields && customFields.length > 0) {
   })
 }
 
+const addTracing = (trcFields: typeof fields) => {
+  let key: keyof typeof trcFields
+  for (key in trcFields) {
+    const original = trcFields[key].resolve
+    if (original) {
+      type originalParamsTypes = Parameters<typeof original>
+      trcFields[key].resolve = (
+        source: originalParamsTypes[0],
+        args: originalParamsTypes[1],
+        context: GraphQLContext | GraphQLContextForUser,
+        info: GraphQLResolveInfo,
+      ) => {
+        const { ip, domainAccount, domainUser } = context
+        return addAttributesToCurrentSpanAndPropagate(
+          {
+            [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
+            [ACCOUNT_USERNAME]: domainAccount?.username,
+            [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+          },
+          () => original(source, args, context, info),
+        )
+      }
+    }
+  }
+  return trcFields
+}
+
 const QueryType = GT.Object({
   name: "Query",
-  fields: () => fields,
+  fields: () => addTracing(fields),
 })
 
 export default QueryType

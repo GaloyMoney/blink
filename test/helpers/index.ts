@@ -5,6 +5,8 @@ import { ExecutionResult, graphql, Source } from "graphql"
 import { ObjMap } from "graphql/jsutils/ObjMap"
 import { generateToken } from "node-2fa"
 
+import { localIpAddress } from "./apollo-client"
+
 export * from "./apollo-client"
 export * from "./bitcoin-core"
 export * from "./integration-server"
@@ -69,7 +71,7 @@ export const graphqlAdmin = <
   T = Promise<ExecutionResult<ObjMap<unknown>, ObjMap<unknown>>>,
 >({
   source,
-  contextValue,
+  contextValue = { ip: localIpAddress },
 }: {
   source: string | Source
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
