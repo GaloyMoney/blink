@@ -1,0 +1,4 @@
+# ignore all folders
+/*/*
+# except regtest
+!/regtest/*
