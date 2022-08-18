@@ -103,13 +103,16 @@ const updatePendingPayment = async ({
     paymentHash,
   })
   if (lnPaymentLookup instanceof Error) {
-    const lightningLogger = logger.child({
-      topic: "payment",
-      protocol: "lightning",
-      transactionType: "payment",
-      onUs: false,
-    })
-    lightningLogger.error({ err: lnPaymentLookup }, "issue fetching payment")
+    logger.error(
+      {
+        err: lnPaymentLookup,
+        topic: "payment",
+        protocol: "lightning",
+        transactionType: "payment",
+        onUs: false,
+      },
+      "issue fetching payment",
+    )
     return lnPaymentLookup
   }
 
@@ -120,8 +123,8 @@ const updatePendingPayment = async ({
   }
 
   if (status === PaymentStatus.Settled || status === PaymentStatus.Failed) {
-    const ledgerService = LedgerService()
     return LockService().lockPaymentHash(paymentHash, async () => {
+      const ledgerService = LedgerService()
       const recorded = await ledgerService.isLnTxRecorded(paymentHash)
       if (recorded instanceof Error) {
         paymentLogger.error({ error: recorded }, "we couldn't query pending transaction")
