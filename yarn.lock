@@ -2892,10 +2892,10 @@ apollo-reporting-protobuf@^3.3.1, apollo-reporting-protobuf@^3.3.2:
   dependencies:
     "@apollo/protobufjs" "1.2.4"
 
-apollo-server-core@^3.10.0, apollo-server-core@^3.8.2:
-  version "3.10.0"
-  resolved "https://registry.yarnpkg.com/apollo-server-core/-/apollo-server-core-3.10.0.tgz#6680b4eb4699829ed50d8a592721ee5e5e11e041"
-  integrity sha512-ln5drIk3oW/ycYhcYL9TvM7vRf7OZwJrgHWlnjnMakozBQIBSumdMi4pN001DhU9mVBWTfnmBv3CdcxJdGXIvA==
+apollo-server-core@^3.10.0, apollo-server-core@^3.10.1:
+  version "3.10.1"
+  resolved "https://registry.yarnpkg.com/apollo-server-core/-/apollo-server-core-3.10.1.tgz#01f9ffc57c7d15c27bd7f89d65f45522aa3f3c3d"
+  integrity sha512-UFFziv6h15QbKRZOA6wLyr1Sle9kns3JuQ5DEB7OYe5AIoOJNjZkWXX/tmLFUrSmlnDDryi6Sf5pDzpYmUC/UA==
   dependencies:
     "@apollo/utils.keyvaluecache" "^1.0.1"
     "@apollo/utils.logger" "^1.0.0"
@@ -8858,10 +8858,10 @@ mongodb@4.8.1, mongodb@^4.0.1, mongodb@^4.4.1:
   optionalDependencies:
     saslprep "^1.0.3"
 
-"mongoose@5 - 6", mongoose@^6.5.1:
-  version "6.5.1"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-6.5.1.tgz#bcf28700ce3552fcdd4d6d4078d0127290020928"
-  integrity sha512-8C0213y279nrSp6Au+WB+l/VczcotMU65jalTJJxU6KYf/Kd8gNW9+B3giWNJOVd8VvKvUQG0suWv/Vngp/83A==
+"mongoose@5 - 6", mongoose@^6.5.2:
+  version "6.5.2"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-6.5.2.tgz#630ae67c4d2576635ba1f859b2840560b27b7775"
+  integrity sha512-3CFDrSLtK2qjM1pZeZpLTUyqPRkc11Iuh74ZrwS4IwEJ3K2PqGnmyPLw7ex4Kzu37ujIMp3MAuiBlUjfrcb6hw==
   dependencies:
     bson "^4.6.5"
     kareem "2.4.1"
