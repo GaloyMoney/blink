@@ -1,9 +1,8 @@
 import { toSats } from "@domain/bitcoin"
 import { InsufficientBalanceError, InvalidCurrencyForWalletError } from "@domain/errors"
 import { toCents } from "@domain/fiat"
-import { inputAmountFromLedgerTransaction } from "@domain/ledger"
 import { PaymentFlow } from "@domain/payments"
-import { WalletCurrency, safeBigInt } from "@domain/shared"
+import { WalletCurrency } from "@domain/shared"
 import { PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 
 describe("PaymentFlowFromLedgerTransaction", () => {
@@ -111,55 +110,5 @@ describe("PaymentFlowFromLedgerTransaction", () => {
         })
       })
     }
-  })
-
-  describe("inputAmountFromLedgerTransaction", () => {
-    const baseLedgerTransaction = {
-      fee: toSats(1),
-      usd: 0.2,
-      feeUsd: 0.01,
-
-      satsAmount: toSats(1000),
-      centsAmount: toCents(20),
-      satsFee: toSats(1),
-      centsFee: toCents(1),
-      displayAmount: 20 as DisplayCurrencyBaseAmount,
-      displayFee: 1 as DisplayCurrencyBaseAmount,
-      displayCurrency: "USD",
-    }
-
-    const btcLedgerTransaction = {
-      debit: toSats(1001),
-      credit: toSats(0),
-      currency: "BTC",
-      ...baseLedgerTransaction,
-    } as LedgerTransaction<"BTC">
-
-    const usdLedgerTransaction = {
-      debit: toCents(21),
-      credit: toCents(0),
-      currency: "USD",
-      ...baseLedgerTransaction,
-    } as LedgerTransaction<"USD">
-
-    it("calculates the correct input amount given a BTC LedgerTransaction", () => {
-      const inputAmount = inputAmountFromLedgerTransaction(btcLedgerTransaction)
-      expect(inputAmount).not.toBeInstanceOf(Error)
-
-      const satsAmount = safeBigInt(baseLedgerTransaction.satsAmount)
-      expect(satsAmount).not.toBeInstanceOf(Error)
-
-      expect(inputAmount).toEqual(satsAmount)
-    })
-
-    it("calculates the correct input amount given a USD LedgerTransaction", () => {
-      const inputAmount = inputAmountFromLedgerTransaction(usdLedgerTransaction)
-      expect(inputAmount).not.toBeInstanceOf(Error)
-
-      const centsAmount = safeBigInt(baseLedgerTransaction.centsAmount)
-      expect(centsAmount).not.toBeInstanceOf(Error)
-
-      expect(inputAmount).toEqual(centsAmount)
-    })
   })
 })
