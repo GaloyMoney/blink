@@ -24,7 +24,6 @@ import { execute, GraphQLError, GraphQLSchema, subscribe } from "graphql"
 import { rule } from "graphql-shield"
 import helmet from "helmet"
 import * as jwt from "jsonwebtoken"
-import pino from "pino"
 import PinoHttp from "pino-http"
 import {
   ExecuteFunction,
@@ -222,20 +221,8 @@ export const startApolloServer = async ({
     PinoHttp({
       logger: graphqlLogger,
       wrapSerializers: false,
-
-      // Define custom serializers
-      serializers: {
-        // TODO: sanitize
-        err: pino.stdSerializers.err,
-        req: pino.stdSerializers.req,
-        res: (res) => ({
-          // FIXME: kind of a hack. body should be in in req. but have not being able to do it.
-          body: res.req.body,
-          ...pino.stdSerializers.res(res),
-        }),
-      },
       autoLogging: {
-        ignorePaths: ["/healthz"],
+        ignore: (req) => req.url === "/healthz",
       },
     }),
   )
