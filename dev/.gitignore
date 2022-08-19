@@ -1,8 +1,1 @@
-# ignore lnd data files
 *.macaroon
-*.db
-*.base64
-# ignore all folders with lnd data
-/*/*/*
-# except regtest
-!/*/regtest/*
