@@ -45,7 +45,7 @@
     "@ory/client": "^0.0.1-alpha.123",
     "@ory/kratos-client": "^0.10.1",
     "ajv": "^8.10.0",
-    "apollo-server-core": "^3.8.2",
+    "apollo-server-core": "^3.10.1",
     "apollo-server-errors": "^3.3.1",
     "apollo-server-express": "^3.8.2",
     "axios": "^0.27.2",
