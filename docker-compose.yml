@@ -90,6 +90,9 @@ services:
     - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
     - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
     - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+    - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd1.wallet.db:/root/.lnd/data/chain/bitcoin/regtest/wallet.db
+    - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd1.macaroons.db:/root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+    - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
     depends_on: [bitcoind]
   lnd2:
     image: lightninglabs/lnd:v0.15.0-beta
@@ -97,6 +100,9 @@ services:
     - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
     - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
     - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+    - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd2.wallet.db:/root/.lnd/data/chain/bitcoin/regtest/wallet.db
+    - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd2.macaroons.db:/root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+    - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd2.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
     depends_on: [bitcoind]
   lnd-outside-1:
     image: lightninglabs/lnd:v0.15.0-beta
@@ -104,6 +110,9 @@ services:
     - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
     - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
     - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+    - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd-outside-1.wallet.db:/root/.lnd/data/chain/bitcoin/regtest/wallet.db
+    - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd-outside-1.macaroons.db:/root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+    - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
     depends_on: [bitcoind]
   lnd-outside-2:
     image: lightninglabs/lnd:v0.15.0-beta
@@ -111,6 +120,9 @@ services:
     - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
     - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
     - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+    - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd-outside-2.wallet.db:/root/.lnd/data/chain/bitcoin/regtest/wallet.db
+    - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd-outside-2.macaroons.db:/root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+    - ${PWD}/dev/lnd/local-regtest-lnd-data/lnd-outside-2.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
     depends_on: [bitcoind]
   e2e-tests:
     image: us.gcr.io/galoy-org/galoy-app-pipeline
