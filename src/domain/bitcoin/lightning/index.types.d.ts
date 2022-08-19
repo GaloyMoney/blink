@@ -167,7 +167,7 @@ interface ILightningService {
   listAllPubkeys(): Pubkey[]
 
   getBalance(pubkey?: Pubkey): Promise<Satoshis | LightningServiceError>
-  getChannelBalances(
+  getInboundOutboundBalance(
     pubkey?: Pubkey,
   ): Promise<
     | { channel_balance: Satoshis; inbound: Satoshis; outbound: Satoshis }

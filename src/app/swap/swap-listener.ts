@@ -35,7 +35,7 @@ export const handleSwapOutCompleted = async (swapStatus: SwapStatusResultWrapper
     if (state === SwapState.FAILED) {
       addAttributesToCurrentSpan({
         "swap.error": JSON.stringify({
-          swapiId: swapStatus.parsedSwapData.id,
+          swapId: swapStatus.parsedSwapData.id,
           message: swapStatus.parsedSwapData.message,
           amt: swapStatus.parsedSwapData.amt.toString(),
         }),
@@ -43,11 +43,6 @@ export const handleSwapOutCompleted = async (swapStatus: SwapStatusResultWrapper
     }
   }
   return true
-}
-
-// TODO handle
-export function handleSwapOutFailure(data) {
-  return data
 }
 
 export async function recordSwapFeeToLedger(swapFeeMetadata: SwapFeeLedgerMetadata) {

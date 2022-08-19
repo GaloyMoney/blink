@@ -83,7 +83,7 @@ describe("Swap", () => {
     if (await swapService.healthCheck()) {
       // thresholds
       const { onChain } = await lndsBalances()
-      const minOnChainHotWalletBalanceConfig = onChain + 50000
+      const minOnChainHotWalletBalanceConfig = toSats(onChain + 50000)
 
       // check if wallet is depleted
       const swapOutChecker = SwapOutChecker({

@@ -96,7 +96,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
     }
   }
 
-  const getChannelBalances = async (pubkey?: Pubkey) => {
+  const getInboundOutboundBalance = async (pubkey?: Pubkey) => {
     try {
       const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
       if (lnd instanceof Error) return lnd
@@ -640,7 +640,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       listActivePubkeys,
       listAllPubkeys,
       getBalance,
-      getChannelBalances,
+      getInboundOutboundBalance,
       getOpeningChannelsBalance,
       getClosingChannelsBalance,
       findRouteForInvoice,

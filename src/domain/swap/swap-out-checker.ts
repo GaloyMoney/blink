@@ -7,10 +7,19 @@ import { SwapServiceError } from "./errors"
 // if return an "amount" then swapout needed
 // if return "error" then we don't have enough outbound
 //   liquidity to perform a swap out.
-export const SwapOutChecker = ({ minOnChainHotWalletBalanceConfig, swapOutAmount }) => {
+export const SwapOutChecker = ({
+  minOnChainHotWalletBalanceConfig,
+  swapOutAmount,
+}: {
+  minOnChainHotWalletBalanceConfig: Satoshis
+  swapOutAmount: Satoshis
+}) => {
   const getSwapOutAmount = ({
     currentOnChainHotWalletBalance,
     currentOutboundLiquidityBalance,
+  }: {
+    currentOnChainHotWalletBalance: Satoshis
+    currentOutboundLiquidityBalance: Satoshis
   }): Satoshis | SwapServiceError => {
     const isOnChainWalletDepleted =
       currentOnChainHotWalletBalance < minOnChainHotWalletBalanceConfig
