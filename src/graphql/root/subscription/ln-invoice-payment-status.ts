@@ -1,19 +1,14 @@
-import { GT } from "@graphql/index"
-import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
-import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
-
 import { Lightning } from "@app"
-import { PubSubService } from "@services/pubsub"
+
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 
-const pubsub = PubSubService()
+import { PubSubService } from "@services/pubsub"
 
-const LnInvoicePaymentStatusInput = GT.Input({
-  name: "LnInvoicePaymentStatusInput",
-  fields: () => ({
-    paymentRequest: { type: GT.NonNull(LnPaymentRequest) },
-  }),
-})
+import { GT } from "@graphql/index"
+import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
+import LnInvoicePaymentStatusInput from "@graphql/types/object/ln-invoice-payment-status-input"
+
+const pubsub = PubSubService()
 
 type LnInvoicePaymentSubscribeArgs = {
   input: {

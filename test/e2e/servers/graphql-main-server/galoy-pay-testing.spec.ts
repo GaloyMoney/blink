@@ -11,7 +11,8 @@ import USER_LOGIN from "./mutations/user-login.gql"
 import ME from "./queries/me.gql"
 import NODE_IDS from "./queries/node-ids.gql"
 import USER_DEFAULT_WALLET_ID from "./queries/user-default-walletid.gql"
-import LN_INVOICE_PAYMENT_STATUS from "./subscriptions/ln-invoice-payment-status.gql"
+import LN_INVOICE_PAYMENT_STATUS_QUERY from "./queries/ln-invoice-payment-status.gql"
+import LN_INVOICE_PAYMENT_STATUS_SUBSCRIPTION from "./subscriptions/ln-invoice-payment-status.gql"
 import PRICE from "./subscriptions/price.gql"
 
 import {
@@ -219,7 +220,7 @@ describe("galoy-pay", () => {
   })
 
   describe("lnInvoicePaymentStatus", () => {
-    const subscriptionQuery = LN_INVOICE_PAYMENT_STATUS
+    const subscriptionQuery = LN_INVOICE_PAYMENT_STATUS_SUBSCRIPTION
 
     it("returns payment status when paid", async () => {
       // Create an invoice on behalf of userA
@@ -257,6 +258,13 @@ describe("galoy-pay", () => {
 
       // Assert the the invoice is paid
       expect(result.data.lnInvoicePaymentStatus.status).toEqual("PAID")
+
+      const statusQueryResult = await apolloClient.query({
+        query: LN_INVOICE_PAYMENT_STATUS_QUERY,
+        variables: { input: subscribeToPaymentInput },
+      })
+
+      expect(statusQueryResult.data.status).toEqual("PAID")
     })
   })
 

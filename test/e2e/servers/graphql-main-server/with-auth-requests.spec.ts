@@ -366,7 +366,7 @@ describe("graphql", () => {
       const { invoice, errors } = result.data.lnUsdInvoiceCreate
       expect(errors).toHaveLength(0)
       expect(invoice).toHaveProperty("paymentRequest")
-      expect(invoice.paymentRequest.startsWith("lnbcrt4")).toBeTruthy()
+      expect(invoice.paymentRequest.startsWith("lnbcrt")).toBeTruthy()
       expect(invoice).toHaveProperty("paymentHash")
       expect(invoice).toHaveProperty("paymentSecret")
     })
