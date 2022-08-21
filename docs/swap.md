@@ -138,7 +138,7 @@ make start-trigger
 ```
 
 In dev, you can monitoring the output of this listener in the console. You should see blocks being mined, as well as
-succefully loop outs, preimage revealed messages, etc...
+successfully loop outs, preimage revealed messages, etc...
 
 Cron Job
 =====

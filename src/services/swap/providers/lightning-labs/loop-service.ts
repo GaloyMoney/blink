@@ -10,6 +10,7 @@ import { SwapState as SwapStateType } from "@domain/swap/index"
 import { SwapType as DomainSwapType } from "@domain/swap"
 
 import { SwapClientClient } from "./protos/loop_grpc_pb"
+
 import {
   FailureReason,
   QuoteRequest,
@@ -158,7 +159,7 @@ export const LoopService = ({
     }
   }
 
-  function createClient(macaroon, tls, grpcEndpoint): SwapClientClient {
+  function createClient(macaroon, tls, grpcEndpoint) {
     const grpcOptions = {
       "grpc.max_receive_message_length": -1,
       "grpc.max_send_message_length": -1,

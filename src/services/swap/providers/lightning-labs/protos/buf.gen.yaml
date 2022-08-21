@@ -15,3 +15,5 @@ plugins:
     out: .
     opt: grpc_js
     path: protoc-gen-ts
+
+# tsc ./src/services/swap/providers/lightning-labs/protos/loop_grpc_pb.js --declaration --allowJs --emitDeclarationOnly --outDir types
