@@ -9,6 +9,8 @@ import { SwapState as SwapStateType } from "@domain/swap/index"
 
 import { SwapType as DomainSwapType } from "@domain/swap"
 
+import { ServiceClient } from "@grpc/grpc-js/build/src/make-client"
+
 import { SwapClientClient } from "./protos/loop_grpc_pb"
 
 import {
@@ -41,7 +43,7 @@ export const LoopService = ({
   tlsCert?: string
   grpcEndpoint?: string
 }) => {
-  let swapClient
+  let swapClient: ServiceClient
   if (macaroon && tlsCert && grpcEndpoint) {
     const mac = Buffer.from(macaroon, "base64").toString("hex")
     const tls = Buffer.from(tlsCert, "base64")
@@ -159,7 +161,7 @@ export const LoopService = ({
     }
   }
 
-  function createClient(macaroon, tls, grpcEndpoint) {
+  function createClient(macaroon, tls, grpcEndpoint): ServiceClient {
     const grpcOptions = {
       "grpc.max_receive_message_length": -1,
       "grpc.max_send_message_length": -1,
@@ -177,7 +179,11 @@ export const LoopService = ({
       macaroonCreds,
     )
     try {
-      const client = new SwapClientClient(grpcEndpoint, credentials, grpcOptions)
+      const client: ServiceClient = new SwapClientClient(
+        grpcEndpoint,
+        credentials,
+        grpcOptions,
+      )
       return client
     } catch (e) {
       throw SwapClientNotResponding
