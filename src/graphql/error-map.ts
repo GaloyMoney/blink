@@ -384,7 +384,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidAccountLevelError":
     case "InvalidWithdrawFeeError":
     case "InvalidUsdCents":
-    case "InvalidAccountForWalletIdError":
     case "NonIntegerError":
     case "ColdStorageError":
     case "ColdStorageServiceError":

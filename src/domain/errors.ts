@@ -69,7 +69,6 @@ export class InvalidPhoneNumber extends ValidationError {}
 export class InvalidKratosUserId extends ValidationError {}
 export class InvalidEmailAddress extends ValidationError {}
 export class InvalidWalletId extends ValidationError {}
-export class InvalidAccountForWalletIdError extends ValidationError {}
 export class InvalidLedgerTransactionId extends ValidationError {}
 export class InvalidLedgerTransactionStateError extends ValidationError {}
 export class AlreadyPaidError extends ValidationError {}

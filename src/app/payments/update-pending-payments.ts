@@ -12,7 +12,6 @@ import { ErrorLevel, WalletCurrency } from "@domain/shared"
 import { LedgerService, getNonEndUserWalletIds } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
-import { WalletsRepository } from "@services/mongoose"
 import { PaymentFlowStateRepository } from "@services/payment-flow"
 import {
   addAttributesToCurrentSpan,
@@ -180,9 +179,6 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           return settled
         }
 
-        const wallet = await WalletsRepository().findById(walletId)
-        if (wallet instanceof Error) return wallet
-
         if (status === PaymentStatus.Settled) {
           paymentLogger.info(
             { success: true, id: paymentHash, payment: pendingPayment },
@@ -227,7 +223,6 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
             const reimbursed = await Wallets.reimburseFailedUsdPayment({
               journalId: pendingPayment.journalId,
               paymentFlow,
-              accountId: wallet.accountId,
             })
             if (reimbursed instanceof Error) {
               const error = `error reimbursing usd payment entry`
