@@ -64,3 +64,14 @@ export const getFunderWalletId = async () => {
   cacheFunderWalletId = funderId
   return cacheFunderWalletId
 }
+
+export const getDealerWalletIds = async () => ({
+  dealerBtc: await getDealerBtcWalletId(),
+  dealerUsd: await getDealerUsdWalletId(),
+})
+
+export const getNonEndUserWalletIds = async () => ({
+  ...(await getDealerWalletIds()),
+  bankOwner: await getBankOwnerWalletId(),
+  funder: await getFunderWalletId(),
+})

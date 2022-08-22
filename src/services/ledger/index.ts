@@ -39,6 +39,8 @@ import { receive } from "./receive"
 import { send } from "./send"
 import { volume } from "./volume"
 
+export { getNonEndUserWalletIds } from "./caching"
+
 export const lazyLoadLedgerAdmin = ({
   bankOwnerWalletResolver,
   dealerBtcWalletResolver,
@@ -228,13 +230,9 @@ export const LedgerService = (): ILedgerService => {
         account: liabilitiesWalletId,
       })
       if (balance < 0) {
-        const dealerUsdWalletId = await caching.getDealerUsdWalletId()
-        const dealerBtcWalletId = await caching.getDealerBtcWalletId()
+        const dealerWalletIds = Object.values(await caching.getDealerWalletIds())
 
-        if (
-          walletDescriptor.id !== dealerUsdWalletId &&
-          walletDescriptor.id !== dealerBtcWalletId
-        ) {
+        if (!dealerWalletIds.includes(walletDescriptor.id)) {
           recordExceptionInCurrentSpan({
             error: new BalanceLessThanZeroError(balance.toString()),
             attributes: {
@@ -326,7 +324,7 @@ export const LedgerService = (): ILedgerService => {
     return walletId
   }
 
-  const listWalletIdsWithPendingPayments = async function* ():
+  const listEndUserWalletIdsWithPendingPayments = async function* ():
     | AsyncGenerator<WalletId>
     | LedgerServiceError {
     let transactions
@@ -345,8 +343,11 @@ export const LedgerService = (): ILedgerService => {
       return new UnknownLedgerError(error)
     }
 
+    const nonEndUserWalletIds = Object.values(await caching.getNonEndUserWalletIds())
     for await (const { _id } of transactions) {
-      yield toWalletId(_id)
+      const walletId = toWalletId(_id)
+      if (walletId === undefined || nonEndUserWalletIds.includes(walletId)) continue
+      yield walletId
     }
   }
 
@@ -367,7 +368,7 @@ export const LedgerService = (): ILedgerService => {
       isOnChainTxRecorded,
       isLnTxRecorded,
       getWalletIdByTransactionHash,
-      listWalletIdsWithPendingPayments,
+      listEndUserWalletIdsWithPendingPayments,
       ...admin,
       ...intraledger,
       ...volume,

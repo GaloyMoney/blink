@@ -7,8 +7,9 @@ type LiabilitiesWalletId = string & { [liabilitiesWalletId]: never }
 
 type LedgerTransactionId = string & { readonly brand: unique symbol }
 type LedgerJournalId = string & { readonly brand: unique symbol }
-type LedgerTransactionType =
-  typeof import("./index").LedgerTransactionType[keyof typeof import("./index").LedgerTransactionType]
+type LedgerTransactionTypeObject = typeof import("./index").LedgerTransactionType
+type LedgerTransactionTypeKey = keyof typeof import("./index").LedgerTransactionType
+type LedgerTransactionType = LedgerTransactionTypeObject[LedgerTransactionTypeKey]
 
 type ExtendedLedgerTransactionType =
   typeof import("./index").ExtendedLedgerTransactionType[keyof typeof import("./index").ExtendedLedgerTransactionType]
@@ -348,7 +349,9 @@ interface ILedgerService {
     hash: OnChainTxHash,
   ): Promise<WalletId | LedgerServiceError>
 
-  listWalletIdsWithPendingPayments: () => AsyncGenerator<WalletId> | LedgerServiceError
+  listEndUserWalletIdsWithPendingPayments: () =>
+    | AsyncGenerator<WalletId>
+    | LedgerServiceError
 
   addColdStorageTxReceive(
     args: AddColdStorageTxReceiveArgs,
