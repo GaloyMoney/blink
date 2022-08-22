@@ -337,7 +337,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CouldNotFindWalletFromUsernameAndCurrencyError":
     case "CouldNotFindWalletFromOnChainAddressError":
     case "CouldNotFindWalletFromOnChainAddressesError":
-    case "CouldNotFindWalletForWalletCurrencyError":
+    case "CouldNotFindBtcWalletForAccountError":
     case "CouldNotListWalletsFromWalletCurrencyError":
     case "CouldNotFindLnPaymentFromHashError":
     case "LockError":

@@ -1,5 +1,5 @@
 import { toSats } from "@domain/bitcoin"
-import { CouldNotFindWalletForWalletCurrencyError } from "@domain/errors"
+import { CouldNotFindBtcWalletForAccountError } from "@domain/errors"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
@@ -62,8 +62,11 @@ export const reimburseFailedUsdPayment = async <
     recipientBtcWallet = recipientWallets.find(
       (wallet) => wallet.currency === WalletCurrency.Btc,
     )
-    if (recipientBtcWallet === undefined)
-      return new CouldNotFindWalletForWalletCurrencyError()
+    if (recipientBtcWallet === undefined) {
+      return new CouldNotFindBtcWalletForAccountError(
+        JSON.stringify({ accountId: recipientWallet.accountId }),
+      )
+    }
   }
   const btcWalletDescriptor = {
     id: recipientBtcWallet.id,
