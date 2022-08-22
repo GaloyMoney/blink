@@ -9,7 +9,7 @@ import {
 } from "@domain/ledger"
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
 
-import { LedgerService, getDealerWalletIds } from "@services/ledger"
+import { LedgerService, getNonEndUserWalletIds } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
 import { WalletsRepository } from "@services/mongoose"
@@ -23,7 +23,8 @@ import { PaymentFlowFromLedgerTransaction } from "./translations"
 
 export const updatePendingPayments = async (logger: Logger): Promise<void> => {
   const ledgerService = LedgerService()
-  const walletIdsWithPendingPayments = ledgerService.listWalletIdsWithPendingPayments()
+  const walletIdsWithPendingPayments =
+    ledgerService.listEndUserWalletIdsWithPendingPayments()
 
   if (walletIdsWithPendingPayments instanceof Error) {
     logger.error(
@@ -235,7 +236,7 @@ const reconstructPendingPaymentFlow = async <
   const ledgerTxns = await LedgerService().getTransactionsByHash(paymentHash)
   if (ledgerTxns instanceof Error) return ledgerTxns
 
-  const dealerWalletIds = Object.values(await getDealerWalletIds())
+  const nonEndUserWalletIds = Object.values(await getNonEndUserWalletIds())
 
   const payment = ledgerTxns.find(
     (tx) =>
@@ -243,7 +244,7 @@ const reconstructPendingPaymentFlow = async <
       tx.type === LedgerTransactionType.Payment &&
       tx.debit > 0 &&
       tx.walletId !== undefined &&
-      !dealerWalletIds.includes(tx.walletId),
+      !nonEndUserWalletIds.includes(tx.walletId),
   ) as LedgerTransaction<S> | undefined
   if (!payment) return new CouldNotFindTransactionError()
 

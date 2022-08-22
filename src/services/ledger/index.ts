@@ -54,9 +54,15 @@ export const lazyLoadLedgerAdmin = ({
   }
 }
 
-export const getDealerWalletIds = async () => ({
-  btc: await caching.getDealerBtcWalletId(),
-  usd: await caching.getDealerUsdWalletId(),
+const getDealerWalletIds = async () => ({
+  dealerBtc: await caching.getDealerBtcWalletId(),
+  dealerUsd: await caching.getDealerUsdWalletId(),
+})
+
+export const getNonEndUserWalletIds = async () => ({
+  ...(await getDealerWalletIds()),
+  bankOwner: await caching.getBankOwnerWalletId(),
+  funder: await caching.getFunderWalletId(),
 })
 
 export const LedgerService = (): ILedgerService => {
@@ -327,7 +333,7 @@ export const LedgerService = (): ILedgerService => {
     return walletId
   }
 
-  const listWalletIdsWithPendingPayments = async function* ():
+  const listEndUserWalletIdsWithPendingPayments = async function* ():
     | AsyncGenerator<WalletId>
     | LedgerServiceError {
     let transactions
@@ -346,10 +352,10 @@ export const LedgerService = (): ILedgerService => {
       return new UnknownLedgerError(error)
     }
 
-    const dealerWalletIds = Object.values(await getDealerWalletIds())
+    const nonEndUserWalletIds = Object.values(await getNonEndUserWalletIds())
     for await (const { _id } of transactions) {
       const walletId = toWalletId(_id)
-      if (walletId === undefined || dealerWalletIds.includes(walletId)) continue
+      if (walletId === undefined || nonEndUserWalletIds.includes(walletId)) continue
       yield walletId
     }
   }
@@ -371,7 +377,7 @@ export const LedgerService = (): ILedgerService => {
       isOnChainTxRecorded,
       isLnTxRecorded,
       getWalletIdByTransactionHash,
-      listWalletIdsWithPendingPayments,
+      listEndUserWalletIdsWithPendingPayments,
       ...admin,
       ...intraledger,
       ...volume,
