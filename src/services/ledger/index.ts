@@ -324,7 +324,7 @@ export const LedgerService = (): ILedgerService => {
     return walletId
   }
 
-  const listEndUserWalletIdsWithPendingPayments = async function* ():
+  const listWalletIdsWithPendingPayments = async function* ():
     | AsyncGenerator<WalletId>
     | LedgerServiceError {
     let transactions
@@ -343,11 +343,8 @@ export const LedgerService = (): ILedgerService => {
       return new UnknownLedgerError(error)
     }
 
-    const nonEndUserWalletIds = Object.values(await caching.getNonEndUserWalletIds())
     for await (const { _id } of transactions) {
-      const walletId = toWalletId(_id)
-      if (walletId === undefined || nonEndUserWalletIds.includes(walletId)) continue
-      yield walletId
+      yield toWalletId(_id)
     }
   }
 
@@ -368,7 +365,7 @@ export const LedgerService = (): ILedgerService => {
       isOnChainTxRecorded,
       isLnTxRecorded,
       getWalletIdByTransactionHash,
-      listEndUserWalletIdsWithPendingPayments,
+      listWalletIdsWithPendingPayments,
       ...admin,
       ...intraledger,
       ...volume,

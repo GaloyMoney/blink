@@ -26,8 +26,7 @@ import { PaymentFlowFromLedgerTransaction } from "./translations"
 
 export const updatePendingPayments = async (logger: Logger): Promise<void> => {
   const ledgerService = LedgerService()
-  const walletIdsWithPendingPayments =
-    ledgerService.listEndUserWalletIdsWithPendingPayments()
+  const walletIdsWithPendingPayments = ledgerService.listWalletIdsWithPendingPayments()
 
   if (walletIdsWithPendingPayments instanceof Error) {
     logger.error(
