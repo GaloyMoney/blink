@@ -68,7 +68,7 @@ export const updatePendingPaymentsByWalletId = wrapAsyncToRunInSpan({
     const count = await ledgerService.getPendingPaymentsCount(walletId)
     if (count instanceof Error) return count
 
-    addAttributesToCurrentSpan({ walletId, pendingPaymentsCount: count })
+    addAttributesToCurrentSpan({ pendingPaymentsCount: count })
     if (count === 0) return
 
     const pendingPayments = await ledgerService.listPendingPayments(walletId)
