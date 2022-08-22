@@ -8,6 +8,7 @@ import { LedgerTransactionType } from "@domain/ledger"
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import { WalletsRepository } from "@services/mongoose"
+import { getNonEndUserWalletIds } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
 
 const calc = AmountCalculator()
@@ -58,7 +59,11 @@ export const reimburseFailedUsdPayment = async <
   if (recipientWallets instanceof Error) return recipientWallets
   if (!recipientWallets.map((wallet) => wallet.id).includes(senderWalletId)) {
     return new InvalidAccountForWalletIdError(
-      JSON.stringify({ accountId, walletId: senderWalletId }),
+      JSON.stringify({
+        accountId,
+        walletId: senderWalletId,
+        nonEndUserWalletIds: await getNonEndUserWalletIds(),
+      }),
     )
   }
   const btcWallet = recipientWallets.find(
