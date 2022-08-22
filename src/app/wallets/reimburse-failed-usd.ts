@@ -1,14 +1,10 @@
 import { toSats } from "@domain/bitcoin"
-import {
-  CouldNotFindWalletForWalletCurrencyError,
-  InvalidAccountForWalletIdError,
-} from "@domain/errors"
+import { CouldNotFindBtcWalletForAccountError } from "@domain/errors"
 import { DisplayCurrency, toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import { WalletsRepository } from "@services/mongoose"
-import { getNonEndUserWalletIds } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
 
 const calc = AmountCalculator()
@@ -19,11 +15,9 @@ export const reimburseFailedUsdPayment = async <
 >({
   paymentFlow,
   journalId,
-  accountId,
 }: {
   paymentFlow: PaymentFlow<S, R>
   journalId: LedgerJournalId
-  accountId: AccountId
 }): Promise<true | ApplicationError> => {
   const paymentHash = paymentFlow.paymentHashForFlow()
   if (paymentHash instanceof Error) return paymentHash
@@ -54,23 +48,30 @@ export const reimburseFailedUsdPayment = async <
     hash: paymentHash,
   }
 
-  const { id: senderWalletId } = paymentFlow.senderWalletDescriptor()
-  const recipientWallets = await WalletsRepository().listByAccountId(accountId)
-  if (recipientWallets instanceof Error) return recipientWallets
-  if (!recipientWallets.map((wallet) => wallet.id).includes(senderWalletId)) {
-    return new InvalidAccountForWalletIdError(
-      JSON.stringify({
-        accountId,
-        walletId: senderWalletId,
-        nonEndUserWalletIds: await getNonEndUserWalletIds(),
-      }),
+  const walletsRepo = WalletsRepository()
+  const { id: recipientWalletId } = paymentFlow.senderWalletDescriptor()
+  const recipientWallet = await walletsRepo.findById(recipientWalletId)
+  if (recipientWallet instanceof Error) return recipientWallet
+
+  let recipientBtcWallet =
+    recipientWallet.currency === WalletCurrency.Btc ? recipientWallet : undefined
+  if (recipientBtcWallet === undefined) {
+    const recipientWallets = await walletsRepo.listByAccountId(recipientWallet.accountId)
+    if (recipientWallets instanceof Error) return recipientWallets
+
+    recipientBtcWallet = recipientWallets.find(
+      (wallet) => wallet.currency === WalletCurrency.Btc,
     )
+    if (recipientBtcWallet === undefined) {
+      return new CouldNotFindBtcWalletForAccountError(
+        JSON.stringify({ accountId: recipientWallet.accountId }),
+      )
+    }
   }
-  const btcWallet = recipientWallets.find(
-    (wallet) => wallet.currency === WalletCurrency.Btc,
-  )
-  if (btcWallet === undefined) return new CouldNotFindWalletForWalletCurrencyError()
-  const btcWalletDescriptor = { id: btcWallet.id, currency: btcWallet.currency }
+  const btcWalletDescriptor = {
+    id: recipientBtcWallet.id,
+    currency: recipientBtcWallet.currency,
+  }
 
   const result = await LedgerFacade.recordReceive({
     description: "usd failed payment reimburse",

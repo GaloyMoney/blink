@@ -349,9 +349,7 @@ interface ILedgerService {
     hash: OnChainTxHash,
   ): Promise<WalletId | LedgerServiceError>
 
-  listEndUserWalletIdsWithPendingPayments: () =>
-    | AsyncGenerator<WalletId>
-    | LedgerServiceError
+  listWalletIdsWithPendingPayments: () => AsyncGenerator<WalletId> | LedgerServiceError
 
   addColdStorageTxReceive(
     args: AddColdStorageTxReceiveArgs,
