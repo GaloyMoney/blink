@@ -39,6 +39,8 @@ import { receive } from "./receive"
 import { send } from "./send"
 import { volume } from "./volume"
 
+export { getNonEndUserWalletIds } from "./caching"
+
 export const lazyLoadLedgerAdmin = ({
   bankOwnerWalletResolver,
   dealerBtcWalletResolver,
@@ -53,17 +55,6 @@ export const lazyLoadLedgerAdmin = ({
     ...adminLegacy,
   }
 }
-
-const getDealerWalletIds = async () => ({
-  dealerBtc: await caching.getDealerBtcWalletId(),
-  dealerUsd: await caching.getDealerUsdWalletId(),
-})
-
-export const getNonEndUserWalletIds = async () => ({
-  ...(await getDealerWalletIds()),
-  bankOwner: await caching.getBankOwnerWalletId(),
-  funder: await caching.getFunderWalletId(),
-})
 
 export const LedgerService = (): ILedgerService => {
   const updateMetadataByHash = async (
@@ -239,7 +230,7 @@ export const LedgerService = (): ILedgerService => {
         account: liabilitiesWalletId,
       })
       if (balance < 0) {
-        const dealerWalletIds = Object.values(await getDealerWalletIds())
+        const dealerWalletIds = Object.values(await caching.getDealerWalletIds())
 
         if (!dealerWalletIds.includes(walletDescriptor.id)) {
           recordExceptionInCurrentSpan({
@@ -352,7 +343,7 @@ export const LedgerService = (): ILedgerService => {
       return new UnknownLedgerError(error)
     }
 
-    const nonEndUserWalletIds = Object.values(await getNonEndUserWalletIds())
+    const nonEndUserWalletIds = Object.values(await caching.getNonEndUserWalletIds())
     for await (const { _id } of transactions) {
       const walletId = toWalletId(_id)
       if (walletId === undefined || nonEndUserWalletIds.includes(walletId)) continue
