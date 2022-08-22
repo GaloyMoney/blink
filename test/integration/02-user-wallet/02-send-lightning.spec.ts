@@ -35,6 +35,7 @@ import {
   paymentAmountFromNumber,
   ValidationError,
   WalletCurrency,
+  ZERO_SATS,
 } from "@domain/shared"
 import { TwoFAError } from "@domain/twoFA"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
@@ -89,9 +90,11 @@ import {
   waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
 
-import { DealerPriceService } from "test/mocks/dealer-price"
+import { DealerPriceService, NewDealerPriceService } from "test/mocks/dealer-price"
 
 const dealerFns = DealerPriceService()
+const newDealerFns = NewDealerPriceService()
+const calc = AmountCalculator()
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
@@ -156,7 +159,7 @@ jest.mock("@services/lnd", () => {
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
-let initBalanceA: Satoshis, initBalanceB: Satoshis
+let initBalanceA: Satoshis, initBalanceB: Satoshis, initBalanceUsdB: UsdCents
 const amountInvoice = toSats(1000)
 
 const invoicesRepo = WalletInvoicesRepository()
@@ -197,7 +200,9 @@ beforeAll(async () => {
   accountH = await getAccountByTestUserRef("H")
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
+  walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
+  walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
   walletIdC = await getDefaultWalletIdByTestUserRef("C")
   walletIdH = await getDefaultWalletIdByTestUserRef("H")
 
@@ -214,9 +219,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   initBalanceA = toSats(await getBalanceHelper(walletIdA))
   initBalanceB = toSats(await getBalanceHelper(walletIdB))
-
-  walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
-  walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
+  initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 })
 
 afterEach(async () => {
@@ -1442,6 +1445,113 @@ describe("UserWallet - Lightning Pay", () => {
 
         const finalBalance = await getBalanceHelper(walletIdB)
         expect(finalBalance).toBe(initBalanceB)
+      }, 60000)
+
+      it("reimburse failed USD payment", async () => {
+        const { id } = createInvoiceHash()
+
+        const btcInvoiceAmount = paymentAmountFromNumber({
+          amount: amountInvoice,
+          currency: WalletCurrency.Btc,
+        })
+        if (btcInvoiceAmount instanceof Error) throw btcInvoiceAmount
+        const usdInvoiceAmount = await newDealerFns.getCentsFromSatsForImmediateBuy(
+          btcInvoiceAmount,
+        )
+        if (usdInvoiceAmount instanceof Error) throw usdInvoiceAmount
+
+        const { request } = await createHodlInvoice({
+          id,
+          lnd: lndOutside1,
+          tokens: amountInvoice,
+        })
+        const result = await fn({ account: accountB, walletId: walletIdUsdB })({
+          invoice: request,
+        })
+        if (result instanceof Error) throw result
+
+        expect(result).toBe(PaymentSendStatus.Pending)
+        baseLogger.info("payment has timeout. status is pending.")
+        const intermediateBalance = await getBalanceHelper(walletIdUsdB)
+
+        const priceRatio = PriceRatio({
+          btc: btcInvoiceAmount,
+          usd: usdInvoiceAmount,
+        })
+        if (priceRatio instanceof Error) return priceRatio
+        const btcProtocolFee = applyMaxFee
+          ? LnFees().maxProtocolFee({
+              amount: btcInvoiceAmount.amount,
+              currency: WalletCurrency.Btc,
+            })
+          : ZERO_SATS
+        const usdProtocolFee = priceRatio.convertFromBtc(btcProtocolFee)
+
+        const amountInvoiceWithFee = calc.add(usdInvoiceAmount, usdProtocolFee)
+
+        expect(intermediateBalance).toBe(
+          initBalanceUsdB - Number(amountInvoiceWithFee.amount),
+        )
+
+        await cancelHodlInvoice({ id, lnd: lndOutside1 })
+
+        await waitFor(async () => {
+          const updatedPayments = await Payments.updatePendingPaymentsByWalletId({
+            walletId: walletIdUsdB,
+            logger: baseLogger,
+          })
+          if (updatedPayments instanceof Error) throw updatedPayments
+
+          const count = await LedgerService().getPendingPaymentsCount(walletIdUsdB)
+          if (count instanceof Error) throw count
+
+          return count === 0
+        })
+
+        // Test 'lnpayment' is failed
+        const lnPaymentUpdateOnSettled = await Lightning.updateLnPayments()
+        if (lnPaymentUpdateOnSettled instanceof Error) throw lnPaymentUpdateOnSettled
+
+        const lnPaymentOnSettled = await LnPaymentsRepository().findByPaymentHash(
+          id as PaymentHash,
+        )
+        expect(lnPaymentOnSettled).not.toBeInstanceOf(Error)
+        if (lnPaymentOnSettled instanceof Error) throw lnPaymentOnSettled
+
+        const lndService = LndService()
+        if (lndService instanceof Error) throw lndService
+        const payments = await lndService.listFailedPayments({
+          pubkey: lnPaymentOnSettled.sentFromPubkey,
+          after: undefined,
+        })
+        if (payments instanceof Error) throw payments
+
+        const payment = payments.lnPayments.find((p) => p.paymentHash === id)
+        expect(payment).not.toBeUndefined()
+        if (payment === undefined) throw new Error("Could not find payment in lnd")
+
+        expect(lnPaymentOnSettled.status).toBe(PaymentStatus.Failed)
+
+        // Check for invoice
+        const invoice = await getInvoiceAttempt({ lnd: lndOutside1, id })
+        expect(invoice).toBeNull()
+
+        // wait for balance updates because invoice event
+        // arrives before wallet balances updates in lnd
+        await waitUntilChannelBalanceSyncAll()
+
+        // Check BTC wallet balance
+        const btcAmountInvoiceWithFee = calc.add(btcInvoiceAmount, btcProtocolFee)
+        const finalBalanceBtc = await getBalanceHelper(walletIdB)
+        expect(finalBalanceBtc).toBe(
+          initBalanceB + Number(btcAmountInvoiceWithFee.amount),
+        )
+
+        // Check USD wallet balance
+        const finalBalanceUsd = await getBalanceHelper(walletIdUsdB)
+        expect(finalBalanceUsd).toBe(
+          initBalanceUsdB - Number(amountInvoiceWithFee.amount),
+        )
       }, 60000)
 
       it(`fails to pay above 2fa limit without 2fa token`, async () => {
