@@ -134,17 +134,11 @@ accounts:
     - "BTC"
   # customFields:
   #   - name: "customField"
-  #     # default: "string"
-  #     type: <"string" | "integer" | "float" | "boolean"> # optional
+  #     type: <"string" | "integer" | "float" | "boolean"> # optional (default: "string")
   #     defaultValue: <value> # optional
-  #     # default: false - true if field is an array of type
-  #     array: <true | false> # optional
-  #     # default: false - true if field can be updated by the user
-  #     editable: <true | false> # optional
-  #     # default: false - true if field is required by mutations
-  #     required: <true | false> # optional
-  #     # default: false - true if field should have an index in db
-  #     index: <true | false> # optional
+  #     editable: <true | false> # optional (default: false) - true if field can be updated by the user
+  #     required: <true | false> # optional (default: false) - true if field is required by mutations
+  #     index: <true | false> # optional (default: false) - true if field should have an index in db
 
 accountLimits:
   withdrawal:

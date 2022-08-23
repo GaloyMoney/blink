@@ -12,9 +12,7 @@ const { customFields: customFieldsSchema } = getAccountsConfig()
 
 const fields: Readonly<GraphQLEnumValueConfigMap> = customFieldsSchema.reduce(
   (acc, val) => {
-    if (!val.array) {
-      acc[val.name] = { value: val.name }
-    }
+    acc[val.name] = { value: val.name }
     return acc
   },
   {} as GraphQLEnumValueConfigMap,

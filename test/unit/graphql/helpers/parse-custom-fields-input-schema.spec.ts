@@ -30,7 +30,7 @@ describe("parseCustomFieldsInputSchema", () => {
     expect(result).toEqual(expect.objectContaining({ fieldName: { type: GT.String } }))
   })
 
-  test.each(customFieldsInputInfo.filter((s) => s.schema.required && !s.schema.array))(
+  test.each(customFieldsInputInfo.filter((s) => s.schema.required))(
     "returns non-null $schema.type schema field",
     ({ schema, field }) => {
       const result = parseCustomFieldsInputSchema({ fields: [schema] })
@@ -38,7 +38,7 @@ describe("parseCustomFieldsInputSchema", () => {
     },
   )
 
-  test.each(customFieldsInputInfo.filter((s) => !s.schema.required && !s.schema.array))(
+  test.each(customFieldsInputInfo.filter((s) => !s.schema.required))(
     "returns null $schema.type schema field",
     ({ schema, field }) => {
       const result = parseCustomFieldsInputSchema({ fields: [schema] })
@@ -46,44 +46,14 @@ describe("parseCustomFieldsInputSchema", () => {
     },
   )
 
-  test.each(customFieldsInputInfo.filter((s) => s.schema.required && s.schema.array))(
-    "returns non-null $schema.type array schema field",
+  test.each(customFieldsInputInfo.filter((s) => s.schema.defaultValue !== undefined))(
+    "returns default values for $schema.type",
     ({ schema, field }) => {
       const result = parseCustomFieldsInputSchema({ fields: [schema] })
       expect(result).toEqual(expect.objectContaining(field))
+      expect(result[schema.name].defaultValue).toBe(field[schema.name].defaultValue)
     },
   )
-
-  test.each(customFieldsInputInfo.filter((s) => !s.schema.required && s.schema.array))(
-    "returns null $schema.type array schema field",
-    ({ schema, field }) => {
-      const result = parseCustomFieldsInputSchema({ fields: [schema] })
-      expect(result).toEqual(expect.objectContaining(field))
-    },
-  )
-
-  test.each(
-    customFieldsInputInfo.filter(
-      (s) => s.schema.defaultValue !== undefined && !s.schema.array,
-    ),
-  )("returns default values for $schema.type", ({ schema, field }) => {
-    const result = parseCustomFieldsInputSchema({ fields: [schema] })
-    expect(result).toEqual(expect.objectContaining(field))
-    expect(result[schema.name].defaultValue).toBe(field[schema.name].defaultValue)
-  })
-
-  test.each(
-    customFieldsInputInfo.filter(
-      (s) => s.schema.defaultValue !== undefined && s.schema.array,
-    ),
-  )("returns default values for $schema.type array", ({ schema, field }) => {
-    const result = parseCustomFieldsInputSchema({ fields: [schema] })
-    expect(result).toEqual(expect.objectContaining(field))
-    expect(result[schema.name].defaultValue.length).toBeGreaterThan(0)
-    expect(result[schema.name].defaultValue).toStrictEqual(
-      field[schema.name].defaultValue,
-    )
-  })
 
   it("returns multiple fields", () => {
     const schema = customFieldsInputInfo.map((s) => s.schema)

@@ -84,9 +84,5 @@ const translateCustomFieldToGT = (field: CustomField) => {
     baseType = GT.Boolean
   }
 
-  if (field.array) {
-    return field.required ? GT.NonNullList(baseType) : GT.List(baseType)
-  }
-
   return field.required ? GT.NonNull(baseType) : baseType
 }

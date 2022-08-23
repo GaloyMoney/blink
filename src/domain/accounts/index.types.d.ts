@@ -46,13 +46,7 @@ type AccountStatusHistory = Array<{
   comment?: string
 }>
 
-type AccountCustomFieldValues =
-  | string
-  | number
-  | boolean
-  | string[]
-  | number[]
-  | boolean[]
+type AccountCustomFieldValues = string | number | boolean
 
 type AccountCustomFields = {
   readonly accountId: AccountId
