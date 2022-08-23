@@ -3,7 +3,7 @@
  * yarn ts-node --files -r tsconfig-paths/register src/debug/create-usd-wallets.ts
  */
 
-import { addWalletIfNonexistent } from "@app/accounts"
+import { Accounts as AccountsWithSpans } from "@app"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { isUp } from "@services/lnd/health"
@@ -18,7 +18,7 @@ const createUsdWallets = async () => {
   if (accounts instanceof Error) return accounts
 
   for (const account of accounts) {
-    await addWalletIfNonexistent({
+    await AccountsWithSpans.addWalletIfNonexistent({
       accountId: account.id,
       type: WalletType.Checking,
       currency: WalletCurrency.Usd,
