@@ -29,7 +29,7 @@ export DOCKER_HOST_USER="sa_$(cat ${CI_ROOT}/gcloud-creds.json  | jq -r '.client
 export ADDITIONAL_SSH_OPTS="-o StrictHostKeyChecking=no -i ${CI_ROOT}/login.ssh"
 
 echo "Syncing repo to docker-host... "
-rsync --delete --exclude dev/lnd/local-regtest-lnd-data -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
+rsync --delete -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
   ${REPO_PATH}/ ${DOCKER_HOST_IP}:${REPO_PATH} > /dev/null
 echo "Done!"
 
@@ -42,7 +42,7 @@ pushd ${REPO_PATH}
 
 make create-tmp-env-ci
 echo "Syncing repo to docker-host... "
-rsync --delete --exclude dev/lnd/local-regtest-lnd-data -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
+rsync --delete -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
   ./ ${DOCKER_HOST_IP}:${REPO_PATH} > /dev/null
 echo "Done!"
 
