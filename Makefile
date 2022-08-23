@@ -2,7 +2,7 @@ BIN_DIR=node_modules/.bin
 
 start-deps:
 	rm -rf dev/lnd/local-regtest-lnd-data && mkdir dev/lnd/local-regtest-lnd-data && \
-	cp dev/lnd/regtest/* dev/lnd/local-regtest-lnd-data/ && chmod -R 777 dev/lnd/local-regtest-lnd-data
+	cp dev/lnd/regtest/* dev/lnd/local-regtest-lnd-data/
 	docker compose up integration-deps -d
 	direnv reload
 
@@ -69,7 +69,7 @@ e2e:
 
 e2e-in-ci:
 	rm -rf dev/lnd/local-regtest-lnd-data && mkdir dev/lnd/local-regtest-lnd-data && \
-	cp dev/lnd/regtest/* dev/lnd/local-regtest-lnd-data/ && chmod -R 777 dev/lnd/local-regtest-lnd-data
+	cp dev/lnd/regtest/* dev/lnd/local-regtest-lnd-data/
 	docker compose -f docker-compose.yml up integration-deps -d && \
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up e2e-tests
@@ -89,7 +89,7 @@ reset-e2e: reset-deps e2e
 
 integration-in-ci:
 	rm -rf dev/lnd/local-regtest-lnd-data && mkdir dev/lnd/local-regtest-lnd-data && \
-	cp dev/lnd/regtest/* dev/lnd/local-regtest-lnd-data/ && chmod -R 777 dev/lnd/local-regtest-lnd-data
+	cp dev/lnd/regtest/* dev/lnd/local-regtest-lnd-data/
 	docker compose -f docker-compose.yml up integration-deps -d && \
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests
