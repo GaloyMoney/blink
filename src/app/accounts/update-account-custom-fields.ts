@@ -8,7 +8,7 @@ import { AccountCustomFieldsRepository, AccountsRepository } from "@services/mon
 const { customFields: customFieldsSchema } = getAccountsConfig()
 
 const defaultValues = customFieldsSchema.reduce((acc, val) => {
-  if (val.defaultValue !== undefined) {
+  if (!val.unique && val.defaultValue !== undefined) {
     acc[val.name] = val.defaultValue
   }
   return acc

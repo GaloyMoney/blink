@@ -1,10 +1,13 @@
 import { AccountCustomFieldsUpdateError } from "@domain/accounts"
 import {
   CouldNotFindError,
+  DuplicateError,
   PersistError,
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
+
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { AccountCustomFields } from "./schema"
 import { toObjectId, fromObjectId } from "./utils"
@@ -63,6 +66,7 @@ export const AccountCustomFieldsRepository = (): IAccountCustomFieldsRepository 
 
       return translateToAccountCustomFields(result)
     } catch (err) {
+      if (err && err.code === 11000) return new DuplicateError()
       return new UnknownRepositoryError(err.message || err)
     }
   }
@@ -89,11 +93,15 @@ export const AccountCustomFieldsRepository = (): IAccountCustomFieldsRepository 
 
       return accountCustomFields
     } catch (err) {
+      if (err && err.code === 11000) return new DuplicateError()
       return new UnknownRepositoryError(err.message || err)
     }
   }
 
-  return { findById, listByCustomField, persistNew, update }
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.notifications",
+    fns: { findById, listByCustomField, persistNew, update },
+  })
 }
 
 const translateToAccountCustomFields = (

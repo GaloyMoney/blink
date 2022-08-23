@@ -25,7 +25,6 @@ const AccountsDetailsByCustomFieldQuery = GT.Field({
     value: { type: GT.NonNull(GT.String) },
   },
   resolve: async (_, { field, value }) => {
-    console.warn({ field, value })
     if (field instanceof Error) throw field
     if (value instanceof Error) throw value
 

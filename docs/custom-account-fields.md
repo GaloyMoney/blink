@@ -12,6 +12,7 @@ customFields:
     editable: <true | false> # optional (default: false) - true if field can be updated by the user
     required: <true | false> # optional (default: false) - true if field is required by mutations
     index: <true | false> # optional (default: false) - true if field should have an index in db
+    unique: <true | false> # optional (default: false) - true if field should have a unique index in db
 ```
 
 ## Example

@@ -23,6 +23,7 @@ type CustomField = {
   required?: boolean
   editable?: boolean
   index?: boolean
+  unique?: boolean
 }
 
 type YamlSchema = {

@@ -297,6 +297,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "RebalanceNeededError":
       return new RebalanceNeededError({ logger: baseLogger })
 
+    case "DuplicateError":
+      message = `Duplicate key error`
+      return new DbError({ message, logger: baseLogger, level: "fatal" })
+
     // ----------
     // Unhandled below here
     // ----------
@@ -349,7 +353,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "AuthorizationError":
     case "RepositoryError":
     case "PersistError":
-    case "DuplicateError":
     case "CouldNotFindError":
     case "ValidationError":
     case "LnRouteValidationError":

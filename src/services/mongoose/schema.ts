@@ -370,12 +370,15 @@ const AccountCustomFieldsSchema = new Schema<AccountCustomFieldsRecord>({
 
 AccountCustomFieldsSchema.index({ accountId: 1, createdAt: -1 })
 
-const customFieldsIndexes = getAccountsConfig()
-  .customFields.filter((cf) => !!cf.index)
-  .map((cf) => ({ [`customFields.${cf.name}`]: 1 as IndexDirection }))
+const customFieldsIndexes = getAccountsConfig().customFields.filter(
+  (cf) => !!cf.index || !!cf.unique,
+)
 
-for (const index of customFieldsIndexes) {
-  AccountCustomFieldsSchema.index(index)
+for (const indexField of customFieldsIndexes) {
+  AccountCustomFieldsSchema.index(
+    { [`customFields.${indexField.name}`]: 1 as IndexDirection },
+    { unique: !!indexField.unique },
+  )
 }
 
 export const AccountCustomFields = mongoose.model<AccountCustomFieldsRecord>(
