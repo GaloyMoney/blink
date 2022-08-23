@@ -16,11 +16,11 @@ const defaultValues = customFieldsSchema.reduce((acc, val) => {
 
 export const updateAccountCustomFields = async ({
   accountId,
-  createdByUserId,
+  updatedByUserId,
   customFields,
 }: {
   accountId: AccountId
-  createdByUserId: UserId
+  updatedByUserId: UserId
   customFields: { [k: string]: AccountCustomFieldValues }
 }): Promise<AccountCustomFields | ApplicationError> => {
   if (!customFieldsSchema || customFieldsSchema.length <= 0)
@@ -32,17 +32,20 @@ export const updateAccountCustomFields = async ({
   if (account instanceof Error) return account
 
   const accountCustomFields = await accountCustomFieldsRepo.findById(account.id)
-  const isEmpty = accountCustomFields instanceof CouldNotFindError
-  if (accountCustomFields instanceof Error && !isEmpty) return accountCustomFields
+  if (accountCustomFields instanceof CouldNotFindError) {
+    return accountCustomFieldsRepo.persistNew({
+      accountId: account.id,
+      updatedByUserId,
+      customFields: { ...defaultValues, ...customFields },
+    })
+  }
+  if (accountCustomFields instanceof Error) return accountCustomFields
 
-  let data = customFields
-  if (!isEmpty) {
-    data = { ...accountCustomFields.customFields, ...customFields }
+  accountCustomFields.updatedByUserId = updatedByUserId
+  accountCustomFields.customFields = {
+    ...accountCustomFields.customFields,
+    ...customFields,
   }
 
-  return accountCustomFieldsRepo.persistNew({
-    accountId: account.id,
-    createdByUserId,
-    customFields: { ...defaultValues, ...data },
-  })
+  return accountCustomFieldsRepo.update(accountCustomFields)
 }

@@ -132,13 +132,6 @@ accounts:
   initialStatus: active
   initialWallets:
     - "BTC"
-  # customFields:
-  #   - name: "customField"
-  #     type: <"string" | "integer" | "float" | "boolean"> # optional (default: "string")
-  #     defaultValue: <value> # optional
-  #     editable: <true | false> # optional (default: false) - true if field can be updated by the user
-  #     required: <true | false> # optional (default: false) - true if field is required by mutations
-  #     index: <true | false> # optional (default: false) - true if field should have an index in db
 
 accountLimits:
   withdrawal:

@@ -357,8 +357,12 @@ export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
 const AccountCustomFieldsSchema = new Schema<AccountCustomFieldsRecord>({
   accountId: Schema.Types.ObjectId,
   customFields: Schema.Types.Mixed,
-  createdByUserId: Schema.Types.ObjectId,
+  updatedByUserId: Schema.Types.ObjectId,
   createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
     type: Date,
     default: Date.now,
   },

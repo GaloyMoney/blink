@@ -16,11 +16,12 @@ export const getAccountsByCustomFields = async ({
   const fieldSchema = customFieldsSchema.find((s) => s.name === field)
   if (!fieldSchema) return new InvalidCustomFieldError()
 
-  const accountIds = await AccountCustomFieldsRepository().listAccountIdsByCustomField({
+  const customAccountFields = await AccountCustomFieldsRepository().listByCustomField({
     field,
     value,
   })
-  if (accountIds instanceof Error) return accountIds
+  if (customAccountFields instanceof Error) return customAccountFields
 
+  const accountIds = customAccountFields.map((f) => f.accountId)
   return AccountsRepository().listByIds(accountIds)
 }

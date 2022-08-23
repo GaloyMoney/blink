@@ -132,7 +132,8 @@ interface UserRecord {
 interface AccountCustomFieldsRecord {
   _id: ObjectId
   accountId: ObjectId
-  createdByUserId: ObjectId
-  createdAt: Date
+  updatedByUserId: ObjectId
   customFields: { [k: string]: AccountCustomFieldValues }
+  createdAt: Date
+  updatedAt: Date
 }
