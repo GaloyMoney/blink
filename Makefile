@@ -121,4 +121,3 @@ audit:
 mine-block:
 	container_id=$$(docker ps -q -f status=running -f name="bitcoind"); \
 	docker exec -it "$$container_id" /bin/sh -c 'ADDR=$$(bitcoin-cli getnewaddress "") && bitcoin-cli generatetoaddress 6 $$ADDR '
-	
