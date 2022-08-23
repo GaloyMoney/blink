@@ -84,11 +84,11 @@ export const AccountCustomFieldsRepository = (): IAccountCustomFieldsRepository 
       if (!result) return new AccountCustomFieldsUpdateError()
 
       if (result.matchedCount === 0) {
-        return new CouldNotFindError("Couldn't find user")
+        return new CouldNotFindError("Couldn't find account custom fields")
       }
 
       if (result.modifiedCount !== 1) {
-        return new PersistError("Couldn't update ip for user")
+        return new PersistError("Couldn't update custom fields for account")
       }
 
       return accountCustomFields
@@ -99,7 +99,7 @@ export const AccountCustomFieldsRepository = (): IAccountCustomFieldsRepository 
   }
 
   return wrapAsyncFunctionsToRunInSpan({
-    namespace: "services.notifications",
+    namespace: "services.mongoose.customFields",
     fns: { findById, listByCustomField, persistNew, update },
   })
 }

@@ -3,8 +3,9 @@ import { GraphQLFieldConfig, GraphQLInputFieldConfig, ThunkObjMap } from "graphq
 import { WalletCurrency } from "@domain/shared"
 import { WalletsRepository } from "@services/mongoose"
 
-import { GT } from "./index"
 import { mapError } from "./error-map"
+
+import { GT } from "./index"
 
 const QueryDoesNotMatchWalletCurrencyError = "QueryDoesNotMatchWalletCurrencyError"
 const MutationDoesNotMatchWalletCurrencyError = "MutationDoesNotMatchWalletCurrencyError"
