@@ -33,7 +33,7 @@ ssh ${ADDITIONAL_SSH_OPTS} ${DOCKER_HOST_USER}@${DOCKER_HOST_IP} \
   "cd ${REPO_PATH}; sudo rm -rf lib"
 
 echo "Syncing repo to docker-host... "
-rsync --delete -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
+rsync --delete --exclude dev/lnd/local-regtest-lnd-data -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
   ${REPO_PATH}/ ${DOCKER_HOST_IP}:${REPO_PATH} > /dev/null
 echo "Done!"
 
@@ -46,7 +46,7 @@ pushd ${REPO_PATH}
 
 make create-tmp-env-ci
 echo "Syncing repo to docker-host... "
-rsync --delete -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
+rsync --delete --exclude dev/lnd/local-regtest-lnd-data -avr -e "ssh -l ${DOCKER_HOST_USER} ${ADDITIONAL_SSH_OPTS}" \
   ./ ${DOCKER_HOST_IP}:${REPO_PATH} > /dev/null
 echo "Done!"
 
