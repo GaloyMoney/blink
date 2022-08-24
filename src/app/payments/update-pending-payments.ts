@@ -7,17 +7,13 @@ import {
   LedgerTransactionType,
   UnknownLedgerError,
 } from "@domain/ledger"
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
+import { setErrorCritical, WalletCurrency } from "@domain/shared"
 
 import { LedgerService, getNonEndUserWalletIds } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
 import { PaymentFlowStateRepository } from "@services/payment-flow"
-import {
-  addAttributesToCurrentSpan,
-  recordExceptionInCurrentSpan,
-  wrapAsyncToRunInSpan,
-} from "@services/tracing"
+import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { Wallets } from "@app"
 import { runInParallel } from "@utils"
@@ -215,8 +211,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
             if (voided instanceof Error) {
               const error = `error voiding payment entry`
               logger.fatal({ success: false, result: lnPaymentLookup }, error)
-              recordExceptionInCurrentSpan({ error: voided, level: ErrorLevel.Critical })
-              return voided
+              return setErrorCritical(voided)
             }
           } else {
             const reimbursed = await Wallets.reimburseFailedUsdPayment({
@@ -226,11 +221,7 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
             if (reimbursed instanceof Error) {
               const error = `error reimbursing usd payment entry`
               logger.fatal({ success: false, result: lnPaymentLookup }, error)
-              recordExceptionInCurrentSpan({
-                error: reimbursed,
-                level: ErrorLevel.Critical,
-              })
-              return reimbursed
+              return setErrorCritical(reimbursed)
             }
           }
         }
