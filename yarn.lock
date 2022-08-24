@@ -2050,7 +2050,7 @@
   dependencies:
     "@opentelemetry/core" "1.5.0"
 
-"@opentelemetry/resources@1.4.0", "@opentelemetry/resources@^1.4.0":
+"@opentelemetry/resources@1.4.0":
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/resources/-/resources-1.4.0.tgz#5e23b0d7976158861059dec17e0ee36a35a5ab85"
   integrity sha512-Q3pI5+pCM+Ur7YwK9GbG89UBipwJbfmuzSPAXTw964ZHFzSrz+JAgrETC9rqsUOYdUlj/V7LbRMG5bo72xE0Xw==
@@ -2058,7 +2058,7 @@
     "@opentelemetry/core" "1.4.0"
     "@opentelemetry/semantic-conventions" "1.4.0"
 
-"@opentelemetry/resources@1.5.0":
+"@opentelemetry/resources@1.5.0", "@opentelemetry/resources@^1.5.0":
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/resources/-/resources-1.5.0.tgz#ce7fbdaec3494e41bc279ddbed3c478ee2570b03"
   integrity sha512-YeEfC6IY54U3xL3P2+UAiom+r50ZF2jM0J47RV5uTFGF19Xjd5zazSwDPgmxtAd6DwLX0/5S5iqrsH4nEXMYoA==
