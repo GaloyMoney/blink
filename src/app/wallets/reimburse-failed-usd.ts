@@ -74,7 +74,7 @@ export const reimburseFailedUsdPayment = async <
   }
 
   const result = await LedgerFacade.recordReceive({
-    description: "usd failed payment reimburse",
+    description: "Usd payment canceled",
     recipientWalletDescriptor: btcWalletDescriptor,
     amountToCreditReceiver: paymentFlow.totalAmountsForPayment(),
     metadata,
