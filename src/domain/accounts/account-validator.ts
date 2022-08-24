@@ -1,6 +1,6 @@
 import { InvalidAccountStatusError, InvalidWalletId } from "@domain/errors"
 
-import { AccountStatus } from "."
+import { AccountStatus } from "./primitives"
 
 export const AccountValidator = (
   account: Account,
