@@ -852,7 +852,9 @@ type Query {
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker]
   globals: Globals
-  lnInvoicePaymentStatus(input: LnInvoicePaymentStatusInput!): InvoicePaymentStatus!
+  lnInvoicePaymentStatus(
+    input: LnInvoicePaymentStatusInput!
+  ): LnInvoicePaymentStatusPayload!
   me: User
   mobileVersions: [MobileVersions]
   onChainTxFee(

@@ -264,7 +264,7 @@ describe("galoy-pay", () => {
         variables: { input: subscribeToPaymentInput },
       })
 
-      expect(statusQueryResult.data.status).toEqual("PAID")
+      expect(statusQueryResult.data.lnInvoicePaymentStatus.status).toEqual("PAID")
     })
   })
 
