@@ -1,8 +1,4 @@
-export const ErrorLevel = {
-  Info: "info",
-  Warn: "warn",
-  Critical: "critical",
-} as const
+import { ErrorLevel } from "."
 
 export class DomainError extends Error {
   name: string
