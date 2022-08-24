@@ -52,7 +52,7 @@
     "balanceofsatoshis": "^12.18.0",
     "bip32": "^3.0.1",
     "bitcoin-core-ts": "^3.0.3",
-    "bitcoinjs-lib": "^6.0.1",
+    "bitcoinjs-lib": "^6.0.2",
     "cors": "^2.8.5",
     "csv-writer": "^1.6.0",
     "dedent": "^0.7.0",
