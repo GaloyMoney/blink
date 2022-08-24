@@ -1,4 +1,10 @@
-import { ErrorLevel } from "."
+export const ErrorLevel = {
+  Info: "info",
+  Warn: "warn",
+  Critical: "critical",
+} as const
+
+export const RankedErrorLevel = [ErrorLevel.Info, ErrorLevel.Warn, ErrorLevel.Critical]
 
 export class DomainError extends Error {
   name: string

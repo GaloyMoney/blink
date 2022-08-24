@@ -1,4 +1,5 @@
-type ErrorLevel = typeof import(".").ErrorLevel[keyof typeof import(".").ErrorLevel]
+type ErrorLevel =
+  typeof import("./errors").ErrorLevel[keyof typeof import("./errors").ErrorLevel]
 type ValidationError = import("./errors").ValidationError
 type BigIntConversionError = import("./errors").BigIntConversionError
 

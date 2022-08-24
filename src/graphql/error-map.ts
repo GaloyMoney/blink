@@ -417,6 +417,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "DealerPriceServiceError":
     case "InvalidNegativeAmountError":
     case "DomainError":
+    case "ErrorLevel":
+    case "RankedErrorLevel":
     case "InvalidCurrencyBaseAmountError":
     case "NoTransactionToUpdateError":
     case "BalanceLessThanZeroError":
