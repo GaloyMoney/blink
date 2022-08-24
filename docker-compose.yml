@@ -90,20 +90,53 @@ services:
     - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
     - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
     - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+    - ${PWD}/dev/lnd/regtest/lnd1.wallet.db:/root/.lnd/wallet.db
+    - ${PWD}/dev/lnd/regtest/lnd1.macaroons.db:/root/.lnd/macaroons.db
+    - ${PWD}/dev/lnd/regtest/lnd1.admin.macaroon:/root/.lnd/admin.macaroon
     depends_on: [bitcoind]
+    entrypoint: ["/bin/sh","-c"]
+    command:
+    - |
+      mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+      cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+      cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+      cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+      /bin/lnd
   lnd2:
     image: lightninglabs/lnd:v0.15.0-beta
     volumes:
     - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
     - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
     - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+    - ${PWD}/dev/lnd/regtest/lnd2.wallet.db:/root/.lnd/wallet.db
+    - ${PWD}/dev/lnd/regtest/lnd2.macaroons.db:/root/.lnd/macaroons.db
+    - ${PWD}/dev/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/admin.macaroon
     depends_on: [bitcoind]
+    entrypoint: ["/bin/sh","-c"]
+    command:
+    - |
+      mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+      cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+      cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+      cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+      /bin/lnd
   lnd-outside-1:
     image: lightninglabs/lnd:v0.15.0-beta
     volumes:
     - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
     - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
     - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+    - ${PWD}/dev/lnd/regtest/lnd-outside-1.wallet.db:/root/.lnd/wallet.db
+    - ${PWD}/dev/lnd/regtest/lnd-outside-1.macaroons.db:/root/.lnd/macaroons.db
+    - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/admin.macaroon
+    entrypoint: ["/bin/sh","-c"]
+    command:
+    - |
+      mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+      cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+      cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+      cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+      /bin/lnd
     depends_on: [bitcoind]
   lnd-outside-2:
     image: lightninglabs/lnd:v0.15.0-beta
@@ -111,7 +144,18 @@ services:
     - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
     - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
     - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+    - ${PWD}/dev/lnd/regtest/lnd-outside-2.wallet.db:/root/.lnd/wallet.db
+    - ${PWD}/dev/lnd/regtest/lnd-outside-2.macaroons.db:/root/.lnd/macaroons.db
+    - ${PWD}/dev/lnd/regtest/lnd-outside-2.admin.macaroon:/root/.lnd/admin.macaroon
     depends_on: [bitcoind]
+    entrypoint: ["/bin/sh","-c"]
+    command:
+    - |
+      mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+      cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+      cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+      cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+      /bin/lnd
   e2e-tests:
     image: us.gcr.io/galoy-org/galoy-app-pipeline
     depends_on:

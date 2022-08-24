@@ -1,1 +1,7 @@
+# ignore lnd data files
 *.macaroon
+*.db
+# ignore all folders with lnd data
+/dev/lnd/*
+# except regtest
+!/dev/lnd/regtest/*
