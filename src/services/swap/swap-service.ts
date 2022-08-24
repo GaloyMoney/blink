@@ -3,6 +3,7 @@ import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 
 import { LoopUtils } from "./swap-utils"
 
+// TODO rename to LoopService
 export const SwapService = (): ISwapService => {
   const loopUtils = LoopUtils()
   const loopService = loopUtils.getActiveLoopService()
@@ -16,9 +17,10 @@ export const SwapService = (): ISwapService => {
     }
   }
 
-  const swapOut = async (amount) => {
+  const swapOut = async (amount: Satoshis) => {
     try {
       const swapDestAddress = await loopUtils.getSwapDestAddress()
+      if (swapDestAddress instanceof Error) return swapDestAddress
       const resp = await loopService.swapOut({ amount, swapDestAddress })
       return resp
     } catch (e) {

@@ -3,6 +3,7 @@ type SwapServiceError = import("./errors").SwapServiceError
 type SwapType = import("./index").SwapType
 type SwapProvider = import("./index").SwapProvider
 type SwapState = import("./index").SwapState
+// TODO remove dependency and create SwapStatus Type
 type LoopSwapStatus =
   import("@services/swap/providers/lightning-labs/protos/loop_pb").SwapStatus
 interface ISwapService {

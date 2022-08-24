@@ -14,6 +14,7 @@ const logger = baseLogger.child({ module: "swap" })
 export const swapOut = async (): Promise<
   SwapOutResult | SwapServiceError | NoSwapAction
 > => {
+  // TODO insert logic to get active LND service and active Loop node here
   const swapService = SwapService()
   logger.info("SwapApp: Started")
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))

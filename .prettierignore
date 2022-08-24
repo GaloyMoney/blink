@@ -2,6 +2,7 @@ coverage
 lib
 tmp
 charts
+protos
 .vscode
 
 **/*.yaml

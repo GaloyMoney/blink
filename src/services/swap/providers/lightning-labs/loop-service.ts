@@ -79,7 +79,7 @@ export const LoopService = ({
   }: {
     amount: Satoshis
     maxSwapFee?: Satoshis
-    swapDestAddress?: string
+    swapDestAddress?: OnChainAddress
   }): Promise<SwapOutResult | SwapServiceError> {
     const fee = maxSwapFee ? maxSwapFee : 20000
     try {
@@ -120,7 +120,11 @@ export const LoopService = ({
         const stateVal = data.getState()
         let state
         try {
-          state = Object.keys(SwapState).find((key) => SwapState[key] === stateVal)
+          state = Object.keys(SwapState).find((key) => {
+            // eslint-disable-next-line
+            // @ts-ignore
+            return SwapState[key] === stateVal
+          })
         } catch (e) {
           state = SwapState.FAILED
         }
@@ -128,18 +132,28 @@ export const LoopService = ({
         try {
           const failureReason = data.getFailureReason()
           message = Object.keys(FailureReason).find(
+            // eslint-disable-next-line
+            // @ts-ignore
             (key) => FailureReason[key] === failureReason,
           )
         } catch (e) {
           message = ""
         }
-        let swapType
-        const type = data.getType()
-        const parsedType = Object.keys(SwapType).find((key) => SwapType[key] === type)
-        if (parsedType) {
-          if (parsedType === "LOOP_OUT") {
-            swapType = DomainSwapType.SWAP_OUT
+        let swapType = DomainSwapType.SWAP_OUT
+        try {
+          const dataType = data.getType()
+          const parsedType = Object.keys(SwapType).find(
+            // eslint-disable-next-line
+            // @ts-ignore
+            (key) => SwapType[key] === dataType,
+          )
+          if (parsedType) {
+            if (parsedType === "LOOP_OUT") {
+              swapType = DomainSwapType.SWAP_OUT
+            }
           }
+        } catch (e) {
+          swapType = DomainSwapType.SWAP_OUT
         }
         const parsedSwapData: SwapStatusResult = {
           id: data.getId(),
@@ -161,7 +175,11 @@ export const LoopService = ({
     }
   }
 
-  function createClient(macaroon, tls, grpcEndpoint): ServiceClient {
+  function createClient(
+    macaroon: string,
+    tls: Buffer,
+    grpcEndpoint: string,
+  ): ServiceClient {
     const grpcOptions = {
       "grpc.max_receive_message_length": -1,
       "grpc.max_send_message_length": -1,

@@ -37,7 +37,15 @@ export const LoopUtils = () => {
     return loopService
   }
 
-  const getLoopService = ({ macaroon, tlsCert, grpcEndpoint }) => {
+  const getLoopService = ({
+    macaroon,
+    tlsCert,
+    grpcEndpoint,
+  }: {
+    macaroon?: string
+    tlsCert?: string
+    grpcEndpoint?: string
+  }) => {
     return LoopService({ macaroon, tlsCert, grpcEndpoint })
   }
 
@@ -47,7 +55,8 @@ export const LoopUtils = () => {
     const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
     if (onChainService instanceof Error) return onChainService
     const onChainAddress = await onChainService.createOnChainAddress()
-    return onChainAddress
+    if (onChainAddress instanceof Error) return onChainAddress
+    return onChainAddress.address
   }
 
   return {
