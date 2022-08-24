@@ -1,6 +1,8 @@
+# ignore lnd data files
 *.macaroon
-lnd-outside-1
-lnd1-loop-tls.cert
-lnd1-loop-tls.key
-lnd2-loop-tls.cert
-lnd2-loop-tls.key
+*.db
+# ignore all folders with lnd data
+/dev/lnd/*
+# except regtest
+!/dev/lnd/regtest/*
+lnd/loop/*

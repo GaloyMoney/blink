@@ -7,18 +7,13 @@ import {
   LedgerTransactionType,
   UnknownLedgerError,
 } from "@domain/ledger"
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
+import { setErrorCritical, WalletCurrency } from "@domain/shared"
 
 import { LedgerService, getNonEndUserWalletIds } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
-import { WalletsRepository } from "@services/mongoose"
 import { PaymentFlowStateRepository } from "@services/payment-flow"
-import {
-  addAttributesToCurrentSpan,
-  recordExceptionInCurrentSpan,
-  wrapAsyncToRunInSpan,
-} from "@services/tracing"
+import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { Wallets } from "@app"
 import { runInParallel } from "@utils"
@@ -27,8 +22,7 @@ import { PaymentFlowFromLedgerTransaction } from "./translations"
 
 export const updatePendingPayments = async (logger: Logger): Promise<void> => {
   const ledgerService = LedgerService()
-  const walletIdsWithPendingPayments =
-    ledgerService.listEndUserWalletIdsWithPendingPayments()
+  const walletIdsWithPendingPayments = ledgerService.listWalletIdsWithPendingPayments()
 
   if (walletIdsWithPendingPayments instanceof Error) {
     logger.error(
@@ -68,7 +62,7 @@ export const updatePendingPaymentsByWalletId = wrapAsyncToRunInSpan({
     const count = await ledgerService.getPendingPaymentsCount(walletId)
     if (count instanceof Error) return count
 
-    addAttributesToCurrentSpan({ walletId, pendingPaymentsCount: count })
+    addAttributesToCurrentSpan({ pendingPaymentsCount: count })
     if (count === 0) return
 
     const pendingPayments = await ledgerService.listPendingPayments(walletId)
@@ -180,9 +174,6 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
           return settled
         }
 
-        const wallet = await WalletsRepository().findById(walletId)
-        if (wallet instanceof Error) return wallet
-
         if (status === PaymentStatus.Settled) {
           paymentLogger.info(
             { success: true, id: paymentHash, payment: pendingPayment },
@@ -220,23 +211,17 @@ const updatePendingPayment = wrapAsyncToRunInSpan({
             if (voided instanceof Error) {
               const error = `error voiding payment entry`
               logger.fatal({ success: false, result: lnPaymentLookup }, error)
-              recordExceptionInCurrentSpan({ error: voided, level: ErrorLevel.Critical })
-              return voided
+              return setErrorCritical(voided)
             }
           } else {
             const reimbursed = await Wallets.reimburseFailedUsdPayment({
               journalId: pendingPayment.journalId,
               paymentFlow,
-              accountId: wallet.accountId,
             })
             if (reimbursed instanceof Error) {
               const error = `error reimbursing usd payment entry`
               logger.fatal({ success: false, result: lnPaymentLookup }, error)
-              recordExceptionInCurrentSpan({
-                error: reimbursed,
-                level: ErrorLevel.Critical,
-              })
-              return reimbursed
+              return setErrorCritical(reimbursed)
             }
           }
         }

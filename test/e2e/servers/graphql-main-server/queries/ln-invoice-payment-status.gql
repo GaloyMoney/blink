@@ -1,3 +1,5 @@
 query LnInvoicePaymentStatus($input: LnInvoicePaymentStatusInput!) {
-  status: lnInvoicePaymentStatus(input: $input)
+  lnInvoicePaymentStatus(input: $input) {
+    status
+  }
 }
