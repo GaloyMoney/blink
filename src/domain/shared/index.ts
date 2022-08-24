@@ -9,6 +9,8 @@ export const ErrorLevel = {
   Critical: "critical",
 } as const
 
+export const RankedErrorLevel = [ErrorLevel.Info, ErrorLevel.Warn, ErrorLevel.Critical]
+
 export const setErrorWarn = (error: DomainError): DomainError => {
   error.level = ErrorLevel.Warn
   return error

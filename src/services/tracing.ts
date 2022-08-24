@@ -29,7 +29,7 @@ import {
   Context,
 } from "@opentelemetry/api"
 import { tracingConfig } from "@config"
-import { ErrorLevel } from "@domain/shared"
+import { ErrorLevel, RankedErrorLevel } from "@domain/shared"
 
 import type * as graphqlTypes from "graphql"
 
@@ -238,13 +238,28 @@ export const recordExceptionInCurrentSpan = ({
   recordException(span, error, level)
 }
 
+const updateErrorForSpan = ({
+  span,
+  errorLevel,
+}: {
+  span: Span
+  errorLevel: ErrorLevel
+}): boolean => {
+  const spanErrorRank = RankedErrorLevel.indexOf(span.attributes["error.level"])
+  const errorRank = RankedErrorLevel.indexOf(errorLevel)
+
+  return errorRank >= spanErrorRank
+}
+
 const recordException = (span: Span, exception: Exception, level?: ErrorLevel) => {
   // @ts-ignore-next-line no-implicit-any error
   const errorLevel = level || exception["level"] || ErrorLevel.Warn
-  span.setAttribute("error.level", errorLevel)
-  // @ts-ignore-next-line no-implicit-any error
-  span.setAttribute("error.name", exception["name"])
-  span.setAttribute("error.message", exception["message"])
+  if (updateErrorForSpan({ span, errorLevel })) {
+    span.setAttribute("error.level", errorLevel)
+    // @ts-ignore-next-line no-implicit-any error
+    span.setAttribute("error.name", exception["name"])
+    span.setAttribute("error.message", exception["message"])
+  }
   span.recordException(exception)
   span.setStatus({ code: SpanStatusCode.ERROR })
 }
