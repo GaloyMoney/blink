@@ -671,6 +671,9 @@ type Mutation {
     input: UserQuizQuestionUpdateCompletedInput!
   ): UserQuizQuestionUpdateCompletedPayload!
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
+    @deprecated(
+      reason: "remove User from `RequestAuthCodeInput` and `UserRequestAuthCodeInput`"
+    )
   userUpdateLanguage(input: UserUpdateLanguageInput!): UserUpdateLanguagePayload!
   userUpdateUsername(input: UserUpdateUsernameInput!): UserUpdateUsernamePayload!
     @deprecated(

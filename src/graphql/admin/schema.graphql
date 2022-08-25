@@ -256,6 +256,9 @@ type Mutation {
   ): PsbtDetailPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
   userRequestAuthCode(input: UserRequestAuthCodeInput!): SuccessPayload!
+    @deprecated(
+      reason: "remove User from `RequestAuthCodeInput` and `UserRequestAuthCodeInput`"
+    )
 }
 
 """

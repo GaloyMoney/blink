@@ -20,6 +20,8 @@ const UserRequestAuthCodeMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserRequestAuthCodeInput) },
   },
+  deprecationReason:
+    "remove User from `RequestAuthCodeInput` and `UserRequestAuthCodeInput`",
   resolve: async (_, args, { logger, ip }) => {
     const isCaptchaMandatory = getCaptcha().mandatory
     if (isCaptchaMandatory) {
