@@ -1,4 +1,4 @@
-import { CENTS_PER_USD } from "."
+export const CENTS_PER_USD = 100
 
 export const toDisplayCurrencyBaseAmount = (amount: number) =>
   amount as DisplayCurrencyBaseAmount

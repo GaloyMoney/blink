@@ -12,10 +12,6 @@ import { User } from "@services/mongoose/schema"
 
 import { fromObjectId, toObjectId } from "./utils"
 
-export const caseInsensitiveRegex = (input: string) => {
-  return new RegExp(`^${input}$`, "i")
-}
-
 export const UsersRepository = (): IUsersRepository => {
   const findById = async (userId: UserId): Promise<User | RepositoryError> => {
     try {
