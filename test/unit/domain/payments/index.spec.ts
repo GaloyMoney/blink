@@ -4,11 +4,24 @@ import {
   InvalidBtcPaymentAmountError,
   InvalidUsdPaymentAmountError,
 } from "@domain/payments"
-import { WalletCurrency } from "@domain/shared"
+import {
+  MAX_CENTS,
+  MAX_SATS,
+  WalletCurrency,
+  BtcAmountTooLargeError,
+  UsdAmountTooLargeError,
+} from "@domain/shared"
 
 describe("checkedToBtcPaymentAmount", () => {
   it("errors on null", () => {
     expect(checkedToBtcPaymentAmount(null)).toBeInstanceOf(InvalidBtcPaymentAmountError)
+  })
+
+  it("errors on amount greater than max value", () => {
+    expect(checkedToBtcPaymentAmount(Number(MAX_SATS.amount + 1n))).toBeInstanceOf(
+      BtcAmountTooLargeError,
+    )
+    expect(checkedToBtcPaymentAmount(Number(MAX_SATS.amount))).toStrictEqual(MAX_SATS)
   })
 
   it("ensures integer amount", () => {
@@ -28,6 +41,13 @@ describe("checkedToBtcPaymentAmount", () => {
 describe("checkedToUsdPaymentAmount", () => {
   it("errors on null", () => {
     expect(checkedToUsdPaymentAmount(null)).toBeInstanceOf(InvalidUsdPaymentAmountError)
+  })
+
+  it("errors on amount greater than max value", () => {
+    expect(checkedToUsdPaymentAmount(Number(MAX_CENTS.amount + 1n))).toBeInstanceOf(
+      UsdAmountTooLargeError,
+    )
+    expect(checkedToUsdPaymentAmount(Number(MAX_CENTS.amount))).toStrictEqual(MAX_CENTS)
   })
 
   it("ensures integer amount", () => {

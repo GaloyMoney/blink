@@ -3,6 +3,7 @@ import {
   InvalidSatoshiAmountError,
   InvalidTargetConfirmations,
 } from "@domain/errors"
+import { MAX_SATS, BtcAmountTooLargeError } from "@domain/shared"
 
 export const SATS_PER_BTC = 10 ** 8
 
@@ -38,7 +39,14 @@ export const checkedToCurrencyBaseAmount = (
 }
 
 export const checkedToSats = (amount: number): Satoshis | ValidationError => {
-  if (!(amount && amount > 0)) return new InvalidSatoshiAmountError()
+  if (!(amount && amount > 0)) {
+    return new InvalidSatoshiAmountError()
+  }
+
+  if (amount > MAX_SATS.amount) {
+    return new BtcAmountTooLargeError()
+  }
+
   return toSats(amount)
 }
 
