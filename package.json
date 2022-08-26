@@ -26,7 +26,7 @@
     "node": "16"
   },
   "dependencies": {
-    "@google-cloud/storage": "^6.0.1",
+    "@google-cloud/storage": "^6.4.1",
     "@grpc/grpc-js": "^1.6.10",
     "@grpc/proto-loader": "^0.6.13",
     "@opentelemetry/api": "^1.1.0",
