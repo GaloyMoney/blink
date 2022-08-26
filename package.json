@@ -102,7 +102,7 @@
     "@apollo/client": "^3.6.6",
     "@babel/core": "^7.18.2",
     "@babel/preset-env": "^7.18.10",
-    "@graphql-tools/jest-transform": "^1.1.5",
+    "@graphql-tools/jest-transform": "^1.2.1",
     "@jest/test-sequencer": "^28.1.3",
     "@types/babel__core": "^7.1.15",
     "@types/babel__preset-env": "^7.9.2",

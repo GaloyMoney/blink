@@ -1421,12 +1421,12 @@
     tslib "~2.4.0"
     value-or-promise "1.0.11"
 
-"@graphql-tools/jest-transform@^1.1.5":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@graphql-tools/jest-transform/-/jest-transform-1.2.0.tgz#bdc0b5e28f9f094377aef7e0215541c8c521f8a6"
-  integrity sha512-i4C+WuTpLd32GiYS5NrAGYnF4lbYK8Acylz4npFByw1MSeYqiwyVY0y1UmHdLmOQbLSQu/kOcsaO3ZKjgcF4Zg==
+"@graphql-tools/jest-transform@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@graphql-tools/jest-transform/-/jest-transform-1.2.1.tgz#2b171236a5337e54b70efc0335b799d1c0401b66"
+  integrity sha512-N/+UmQXxKtnFu9vynST+BeNRvxglDMXv4et7/G3tjIOd4G4FNSnyq3LheZtoBeLHVyI4zO3eSuqWfDK/LFu0HQ==
   dependencies:
-    "@graphql-tools/webpack-loader" "6.7.0"
+    "@graphql-tools/webpack-loader" "6.7.1"
     "@jest/transform" "^28.0.0"
     "@jest/types" "^28.0.0"
     tslib "^2.4.0"
@@ -1474,10 +1474,10 @@
     fast-json-stable-stringify "^2.1.0"
     tslib "^2.4.0"
 
-"@graphql-tools/optimize@1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@graphql-tools/optimize/-/optimize-1.3.0.tgz#11ea27ac73e857d882ccfd7a3a981d8d6fb521e2"
-  integrity sha512-30QOWJoMJEt1De7tAFtWJ6VPrP6SLq+tSQrA3x+WMvCW3q2exq5wPDpvAXOakVKu0y8L2E+YkipC0hcQPBQdLg==
+"@graphql-tools/optimize@1.3.1":
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/@graphql-tools/optimize/-/optimize-1.3.1.tgz#29407991478dbbedc3e7deb8c44f46acb4e9278b"
+  integrity sha512-5j5CZSRGWVobt4bgRRg7zhjPiSimk+/zIuColih8E8DxuFOaJ+t0qu7eZS5KXWBkjcd4BPNuhUPpNlEmHPqVRQ==
   dependencies:
     tslib "^2.4.0"
 
@@ -1532,18 +1532,18 @@
   dependencies:
     tslib "^2.4.0"
 
-"@graphql-tools/webpack-loader-runtime@6.4.0":
-  version "6.4.0"
-  resolved "https://registry.yarnpkg.com/@graphql-tools/webpack-loader-runtime/-/webpack-loader-runtime-6.4.0.tgz#da293395f7ba1832e118075e2e7d6a247ad92755"
-  integrity sha512-oLREyA3nHewHpm9oPkmcFkbyXyVOpLyGf092LfdEmEwVqBO1Els1bsmJVfjDqzr/DiIiSnKIqzfgmYjfYNMUGQ==
+"@graphql-tools/webpack-loader-runtime@6.4.1":
+  version "6.4.1"
+  resolved "https://registry.yarnpkg.com/@graphql-tools/webpack-loader-runtime/-/webpack-loader-runtime-6.4.1.tgz#4242e7d9f72095634de8cc11ace030f2dd84cc6a"
+  integrity sha512-7UhI4fXeqYBbyhLR3mQEwNqXqq6SvhrMTt17j89oneOUeUEHLb5yqgvPs47LUq9XNHdojVaHF5OaxwCCWnJjjw==
 
-"@graphql-tools/webpack-loader@6.7.0":
-  version "6.7.0"
-  resolved "https://registry.yarnpkg.com/@graphql-tools/webpack-loader/-/webpack-loader-6.7.0.tgz#bb7f762bf889ec4f8842f3a4a798e13253f587d0"
-  integrity sha512-Us3hGWOPbzj0vf7XKY7oaLb1LhfRFS20sX/Id4u/CazBCFbRW+XJ5uWBHAAgnqwvhajbt/D6Jr3Ln+4SLFLPmw==
+"@graphql-tools/webpack-loader@6.7.1":
+  version "6.7.1"
+  resolved "https://registry.yarnpkg.com/@graphql-tools/webpack-loader/-/webpack-loader-6.7.1.tgz#078a2d3c7261296b4ade0eb75ddf3de8097254c0"
+  integrity sha512-KG8LgfrXyQVVSaK49ofTVl4k1jVBELwFYnzeZ+1aojM120Z+U3yk85/29EPIGKEtw3vJm4ejs2E5j86hqbBMuw==
   dependencies:
-    "@graphql-tools/optimize" "1.3.0"
-    "@graphql-tools/webpack-loader-runtime" "6.4.0"
+    "@graphql-tools/optimize" "1.3.1"
+    "@graphql-tools/webpack-loader-runtime" "6.4.1"
     tslib "^2.4.0"
 
 "@graphql-typed-document-node/core@^3.1.1":
@@ -1856,19 +1856,7 @@
     slash "^3.0.0"
     write-file-atomic "^4.0.1"
 
-"@jest/types@^28.0.0", "@jest/types@^28.1.1":
-  version "28.1.1"
-  resolved "https://registry.yarnpkg.com/@jest/types/-/types-28.1.1.tgz#d059bbc80e6da6eda9f081f293299348bd78ee0b"
-  integrity sha512-vRXVqSg1VhDnB8bWcmvLzmg0Bt9CRKVgHPXqYwvWMX3TvAjeO+nRuK6+VdTKCtWOvYlmkF/HqNAL/z+N3B53Kw==
-  dependencies:
-    "@jest/schemas" "^28.0.2"
-    "@types/istanbul-lib-coverage" "^2.0.0"
-    "@types/istanbul-reports" "^3.0.0"
-    "@types/node" "*"
-    "@types/yargs" "^17.0.8"
-    chalk "^4.0.0"
-
-"@jest/types@^28.1.3":
+"@jest/types@^28.0.0", "@jest/types@^28.1.1", "@jest/types@^28.1.3":
   version "28.1.3"
   resolved "https://registry.yarnpkg.com/@jest/types/-/types-28.1.3.tgz#b05de80996ff12512bc5ceb1d208285a7d11748b"
   integrity sha512-RyjiyMUZrKz/c+zlMFO1pm70DcIlST8AeWTkoUdZevew44wcNZQHsEVOiCVtgVnlFFD82FPaXycys58cf2muVQ==
