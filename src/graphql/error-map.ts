@@ -253,6 +253,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = error.message
       return new InsufficientBalanceError({ message, logger: baseLogger })
 
+    case "CaptchaUserFailToPassError":
+      message = "Captcha validation failed."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "InvalidCoordinatesError":
       return new InvalidCoordinatesError({ logger: baseLogger })
 
@@ -425,6 +429,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidPubKeyError":
     case "SkipProbeForPubkeyError":
     case "SecretDoesNotMatchAnyExistingHodlInvoiceError":
+    case "CaptchaError":
+    case "UnknownCaptchaError":
       message = `Unknown error occurred (code: ${error.name}${
         error.message ? ": " + error.message : ""
       })`
