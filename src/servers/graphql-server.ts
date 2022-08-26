@@ -32,6 +32,7 @@ import {
 } from "subscriptions-transport-ws"
 
 import { mapError } from "@graphql/error-map"
+import { AuthenticationError, AuthorizationError } from "@graphql/error"
 
 import { parseIps } from "@domain/users-ips"
 
@@ -47,12 +48,12 @@ const graphqlLogger = baseLogger.child({
 const apolloConfig = getApolloConfig()
 
 export const isAuthenticated = rule({ cache: "contextual" })((parent, args, ctx) => {
-  return ctx.uid !== null ? true : "NOT_AUTHENTICATED"
+  return ctx.uid !== null ? true : new AuthenticationError({ logger: baseLogger })
 })
 
 export const isEditor = rule({ cache: "contextual" })(
   (parent, args, ctx: GraphQLContextForUser) => {
-    return ctx.domainUser.isEditor ? true : "NOT_AUTHORIZED"
+    return ctx.domainUser.isEditor ? true : new AuthorizationError({ logger: baseLogger })
   },
 )
 
@@ -179,20 +180,14 @@ export const startApolloServer = async ({
     },
     formatError: (err) => {
       try {
-        // GraphQL shield seems to have a bug around throwing a custom ApolloError
-        // This is a workaround for now
-        const isShieldError = ["NOT_AUTHENTICATED", "NOT_AUTHORIZED"].includes(
-          err.message,
-        )
-
         const reportErrorToClient =
-          isShieldError || err instanceof ApolloError || err instanceof GraphQLError
+          err instanceof ApolloError || err instanceof GraphQLError
 
         const reportedError = {
           message: err.message,
           locations: err.locations,
           path: err.path,
-          code: isShieldError ? err.message : err.extensions?.code,
+          code: err.extensions?.code,
         }
 
         return reportErrorToClient
