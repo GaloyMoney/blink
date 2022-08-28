@@ -11,6 +11,8 @@ import { SwapType as DomainSwapType } from "@domain/swap"
 
 import { ServiceClient } from "@grpc/grpc-js/build/src/make-client"
 
+import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
+
 import { SwapClientClient } from "./protos/loop_grpc_pb"
 
 import {
@@ -38,11 +40,7 @@ export const LoopService = ({
   macaroon,
   tlsCert,
   grpcEndpoint,
-}: {
-  macaroon?: string
-  tlsCert?: string
-  grpcEndpoint?: string
-}) => {
+}: LoopdConfig): ISwapService => {
   let swapClient: ServiceClient
   if (macaroon && tlsCert && grpcEndpoint) {
     const mac = Buffer.from(macaroon, "base64").toString("hex")
@@ -76,11 +74,7 @@ export const LoopService = ({
     amount,
     maxSwapFee,
     swapDestAddress,
-  }: {
-    amount: Satoshis
-    maxSwapFee?: Satoshis
-    swapDestAddress?: OnChainAddress
-  }): Promise<SwapOutResult | SwapServiceError> {
+  }: SwapOutArgs): Promise<SwapOutResult | SwapServiceError> {
     const fee = maxSwapFee ? maxSwapFee : 20000
     try {
       const request = new LoopOutRequest()
@@ -208,9 +202,12 @@ export const LoopService = ({
     }
   }
 
-  return {
-    healthCheck,
-    swapOut,
-    swapListener,
-  }
+  return wrapAsyncFunctionsToRunInSpan({
+    namespace: "services.swap",
+    fns: {
+      healthCheck,
+      swapOut,
+      swapListener,
+    },
+  })
 }

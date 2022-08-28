@@ -42,9 +42,9 @@ import {
 } from "@services/mongoose"
 import { LndService } from "@services/lnd"
 
-import { SwapService } from "@services/swap"
+import { LoopService } from "@services/loopd"
 
-import { handleSwapOutCompleted } from "@app/swap"
+import { handleSwapOutCompleted, loopdConfig } from "@app/swap"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -392,7 +392,7 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
 
 const listenerSwapMonitor = async () => {
   try {
-    const swapService = SwapService()
+    const swapService = LoopService(loopdConfig)
     const isSwapServerUp = await swapService.healthCheck()
     if (isSwapServerUp) {
       const listener = swapService.swapListener()

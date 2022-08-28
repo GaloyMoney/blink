@@ -1,19 +1,22 @@
-import { SwapService } from "@services/swap"
+import { LoopService } from "@services/loopd"
 
 import { toSats } from "@domain/bitcoin"
 import { SwapClientNotResponding } from "@domain/swap/errors"
 import { SwapOutChecker } from "@domain/swap"
 import { lndsBalances } from "@services/lnd/utils"
-import { LoopUtils } from "@services/swap/swap-utils"
+import { LoopUtils, loopdConfig } from "@app/swap"
 import { getSwapConfig } from "@config"
 
 describe("Swap", () => {
-  const swapService = SwapService()
+  const loopConfig: LoopdConfig = loopdConfig
+  const swapService = LoopService(loopConfig)
   const amount = toSats(250000)
 
   it("Swap out returns successful swap result for default lnd1-loop server", async () => {
     if (await swapService.healthCheck()) {
-      const swapResult = await swapService.swapOut(amount)
+      const swapResult = await swapService.swapOut({
+        amount,
+      })
       if (swapResult instanceof SwapClientNotResponding) {
         console.log("Swap Client is not running, skipping")
         return
@@ -71,7 +74,7 @@ describe("Swap", () => {
 
   it("swap out without enough funds returns an error", async () => {
     if (await swapService.healthCheck()) {
-      const swapResult = await swapService.swapOut(toSats(5000000000))
+      const swapResult = await swapService.swapOut({ amount: toSats(5000000000) })
       if (swapResult instanceof SwapClientNotResponding) {
         return
       }
@@ -97,7 +100,7 @@ describe("Swap", () => {
 
       if (amountToSwapOut > 0) {
         // const swapOutAmount = getSwapConfig().swapOutAmount
-        const swapResult = await swapService.swapOut(toSats(amount))
+        const swapResult = await swapService.swapOut({ amount: toSats(amount) })
         if (swapResult instanceof SwapClientNotResponding) {
           return
         }

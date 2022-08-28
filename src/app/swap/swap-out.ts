@@ -5,9 +5,11 @@ import { OnChainService } from "@services/lnd/onchain-service"
 import { toSats } from "@domain/bitcoin"
 import { SwapOutChecker } from "@domain/swap"
 import { baseLogger } from "@services/logger"
-import { SwapService } from "@services/swap"
+import { LoopService } from "@services/loopd"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 import { getOffChainChannelBalances } from "@app/lightning"
+
+import { loopdConfig } from "./swap-utils"
 
 const logger = baseLogger.child({ module: "swap" })
 
@@ -15,7 +17,7 @@ export const swapOut = async (): Promise<
   SwapOutResult | SwapServiceError | NoSwapAction
 > => {
   // TODO insert logic to get active LND service and active Loop node here
-  const swapService = SwapService()
+  const swapService = LoopService(loopdConfig)
   logger.info("SwapApp: Started")
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
@@ -45,7 +47,7 @@ export const swapOut = async (): Promise<
   })
 
   if (swapOutAmount > 0) {
-    const swapResult = await swapService.swapOut(swapOutAmount)
+    const swapResult = await swapService.swapOut({ amount: swapOutAmount })
     if (swapResult instanceof Error) {
       addAttributesToCurrentSpan({
         "swap.error": JSON.stringify(swapResult),

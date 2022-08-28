@@ -4,14 +4,19 @@ type SwapType = import("./index").SwapType
 type SwapProvider = import("./index").SwapProvider
 type SwapState = import("./index").SwapState
 // TODO remove dependency and create SwapStatus Type
-type LoopSwapStatus =
-  import("@services/swap/providers/lightning-labs/protos/loop_pb").SwapStatus
+type LoopSwapStatus = import("@services/loopd/protos/loop_pb").SwapStatus
 interface ISwapService {
   healthCheck: () => Promise<boolean>
-  swapOut: (amount: Satoshis) => Promise<SwapOutResult | SwapServiceError>
+  swapOut: (swapOutArgs: SwapOutArgs) => Promise<SwapOutResult | SwapServiceError>
   swapListener: () => SwapClientReadableStream<SwapListenerResponse>
   swapOutTerms?: () => Promise<string> // TODO: Implement this
   swapOutQuote?: () => Promise<string> // TODO: Implement this
+}
+
+type SwapOutArgs = {
+  amount: Satoshis
+  maxSwapFee?: Satoshis
+  swapDestAddress?: OnChainAddress
 }
 
 type SwapOutResult = {
@@ -50,4 +55,10 @@ type SwapConfig = {
   lnd1loopRpcEndpoint: string
   lnd2loopRpcEndpoint: string
   swapProviders: Array<SwapProvider>
+}
+
+type LoopdConfig = {
+  macaroon?: string
+  tlsCert?: string
+  grpcEndpoint?: string
 }
