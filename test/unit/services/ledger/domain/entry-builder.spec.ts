@@ -1,4 +1,11 @@
-import { WalletCurrency, AmountCalculator, ZERO_BANK_FEE } from "@domain/shared"
+import {
+  WalletCurrency,
+  AmountCalculator,
+  ZERO_BANK_FEE,
+  ZERO_SATS,
+  ZERO_CENTS,
+} from "@domain/shared"
+import { NoTransactionsForEntryError } from "@services/ledger/domain/errors"
 
 import { lndLedgerAccountId, EntryBuilder } from "@services/ledger/domain"
 import { MainBook } from "@services/ledger/books"
@@ -89,6 +96,10 @@ describe("EntryBuilder", () => {
     btcWithFees: btcAmount,
     usdWithFees: usdAmount,
   }
+  const zeroAmount = {
+    btcWithFees: ZERO_SATS,
+    usdWithFees: ZERO_CENTS,
+  }
   const btcFee = {
     currency: WalletCurrency.Btc,
     amount: 110n,
@@ -124,6 +135,7 @@ describe("EntryBuilder", () => {
           .debitAccount({ accountDescriptor: btcDebitorAccountDescriptor })
           .creditLnd()
 
+        if (result instanceof Error) throw result
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
 
@@ -148,6 +160,7 @@ describe("EntryBuilder", () => {
           .debitAccount({ accountDescriptor: btcDebitorAccountDescriptor })
           .creditLnd()
 
+        if (result instanceof Error) throw result
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
 
@@ -165,6 +178,22 @@ describe("EntryBuilder", () => {
     })
 
     describe("receive", () => {
+      it("without amount", () => {
+        const entry = createEntry()
+        const builder = EntryBuilder({
+          staticAccountIds,
+          entry,
+          metadata,
+        })
+        const result = builder
+          .withTotalAmount(zeroAmount)
+          .withBankFee(ZERO_BANK_FEE)
+          .debitLnd()
+          .creditAccount(btcCreditorAccountDescriptor)
+
+        expect(result).toBeInstanceOf(NoTransactionsForEntryError)
+      })
+
       it("without fee", () => {
         const entry = createEntry()
         const builder = EntryBuilder({
@@ -178,6 +207,7 @@ describe("EntryBuilder", () => {
           .debitLnd()
           .creditAccount(btcCreditorAccountDescriptor)
 
+        if (result instanceof Error) throw result
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
 
@@ -199,6 +229,7 @@ describe("EntryBuilder", () => {
           .debitLnd()
           .creditAccount(btcCreditorAccountDescriptor)
 
+        if (result instanceof Error) throw result
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
         expectJournalToBeBalanced(result)
@@ -231,6 +262,7 @@ describe("EntryBuilder", () => {
           })
           .creditLnd()
 
+        if (result instanceof Error) throw result
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
 
@@ -268,6 +300,7 @@ describe("EntryBuilder", () => {
           })
           .creditLnd()
 
+        if (result instanceof Error) throw result
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
 
@@ -314,6 +347,7 @@ describe("EntryBuilder", () => {
             .debitLnd()
             .creditAccount(usdCreditorAccountDescriptor)
 
+          if (result instanceof Error) throw result
           const credits = result.transactions.filter((t) => t.credit > 0)
           const debits = result.transactions.filter((t) => t.debit > 0)
 
@@ -365,6 +399,7 @@ describe("EntryBuilder", () => {
             .debitLnd()
             .creditAccount(usdCreditorAccountDescriptor)
 
+          if (result instanceof Error) throw result
           const credits = result.transactions.filter((t) => t.credit > 0)
           const debits = result.transactions.filter((t) => t.debit > 0)
           expectJournalToBeBalanced(result)
@@ -399,6 +434,7 @@ describe("EntryBuilder", () => {
           .debitLnd()
           .creditAccount(usdCreditorAccountDescriptor)
 
+        if (result instanceof Error) throw result
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
 
@@ -443,6 +479,7 @@ describe("EntryBuilder", () => {
           })
           .creditAccount(btcCreditorAccountDescriptor)
 
+        if (result instanceof Error) throw result
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
         expectEntryToEqual(findEntry(credits, creditorAccountId), btcAmount)
@@ -464,6 +501,7 @@ describe("EntryBuilder", () => {
           })
           .creditAccount(usdCreditorAccountDescriptor)
 
+        if (result instanceof Error) throw result
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
 
@@ -502,6 +540,7 @@ describe("EntryBuilder", () => {
           })
           .creditAccount(btcCreditorAccountDescriptor)
 
+        if (result instanceof Error) throw result
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
 
@@ -539,6 +578,7 @@ describe("EntryBuilder", () => {
           })
           .creditAccount(usdCreditorAccountDescriptor)
 
+        if (result instanceof Error) throw result
         const credits = result.transactions.filter((t) => t.credit > 0)
         const debits = result.transactions.filter((t) => t.debit > 0)
 
@@ -569,6 +609,7 @@ describe("EntryBuilder", () => {
         })
         .creditLnd()
 
+      if (result instanceof Error) throw result
       const debits = result.transactions.filter((t) => t.debit > 0)
       expectJournalToBeBalanced(result)
 

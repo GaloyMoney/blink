@@ -1,4 +1,3 @@
-import { NoTransactionsForEntryError } from "@domain/ledger"
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import { NoTransactionsForEntryError } from "@services/ledger/domain/errors"
