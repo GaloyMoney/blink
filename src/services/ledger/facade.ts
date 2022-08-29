@@ -46,7 +46,7 @@ export const recordSend = async ({
     metadata,
   })
 
-  entry = builder
+  const builtEntry = builder
     .withTotalAmount({
       usdWithFees: amountToDebitSender.usd,
       btcWithFees: amountToDebitSender.btc,
@@ -56,6 +56,11 @@ export const recordSend = async ({
       accountDescriptor: toLedgerAccountDescriptor(senderWalletDescriptor),
     })
     .creditLnd()
+
+  if (builtEntry instanceof Error) {
+    return builtEntry
+  }
+  entry = builtEntry
 
   return persistAndReturnEntry({ entry, hash: metadata.hash })
 }
@@ -82,11 +87,15 @@ export const recordReceive = async ({
     btcWithFees: calc.add(amountToCreditReceiver.btc, actualFee.btc),
   }
 
-  entry = builder
+  const builtEntry = builder
     .withTotalAmount(amountWithFees)
     .withBankFee({ usdBankFee: actualFee.usd, btcBankFee: actualFee.btc })
     .debitLnd()
     .creditAccount(toLedgerAccountDescriptor(recipientWalletDescriptor))
+  if (builtEntry instanceof Error) {
+    return builtEntry
+  }
+  entry = builtEntry
 
   return persistAndReturnEntry({ entry, ...txMetadata })
 }
@@ -120,7 +129,7 @@ export const recordIntraledger = async ({
     metadata,
   })
 
-  entry = builder
+  const builtEntry = builder
     .withTotalAmount({ usdWithFees: amount.usd, btcWithFees: amount.btc })
     .withBankFee(ZERO_BANK_FEE)
     .debitAccount({
@@ -128,6 +137,10 @@ export const recordIntraledger = async ({
       additionalMetadata,
     })
     .creditAccount(toLedgerAccountDescriptor(recipientWalletDescriptor))
+  if (builtEntry instanceof Error) {
+    return builtEntry
+  }
+  entry = builtEntry
 
   return persistAndReturnEntry({
     entry,
