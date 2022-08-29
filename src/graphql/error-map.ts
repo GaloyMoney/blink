@@ -18,6 +18,7 @@ import {
   RebalanceNeededError,
   DealerOfflineError,
   InsufficientLiquidityError,
+  LndOfflineError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -261,6 +262,14 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = error.message
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "OffChainServiceUnavailableError":
+    case "OnChainServiceUnavailableError":
+      /* eslint-disable-next-line no-case-declarations */
+      const serviceType =
+        errorName === "OffChainServiceUnavailableError" ? "Offchain" : "Onchain"
+      message = `${serviceType} action failed, please try again in a few minutes. If the problem persists, please contact support.`
+      return new LndOfflineError({ message, logger: baseLogger })
+
     case "InvalidCoordinatesError":
       return new InvalidCoordinatesError({ logger: baseLogger })
 
@@ -312,7 +321,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "BadPaymentDataError":
     case "LnInvoiceDecodeError":
     case "LightningServiceError":
-    case "OffChainServiceUnavailableError":
     case "CouldNotDecodeReturnedPaymentRequest":
     case "InvoiceNotFoundError":
     case "LnPaymentPendingError":
@@ -360,7 +368,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "TransactionDecodeError":
     case "OnChainServiceError":
     case "CouldNotFindOnChainTransactionError":
-    case "OnChainServiceUnavailableError":
     case "NotificationsError":
     case "NotificationsServiceError":
     case "InvalidDeviceNotificationsServiceError":
