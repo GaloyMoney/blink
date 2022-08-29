@@ -1,3 +1,4 @@
+import { NoTransactionsForEntryError } from "@domain/ledger"
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import { coldStorageAccountDescriptor, lndLedgerAccountDescriptor } from "./accounts"
@@ -140,7 +141,7 @@ const EntryBuilderCredit = <M extends MediciEntry>({
 
   const creditAccount = <T extends WalletCurrency>(
     accountDescriptor: LedgerAccountDescriptor<T>,
-  ) => {
+  ): M | ValidationError => {
     let entryToReturn = entry
     const usdWithOutFee = calc.sub(usdWithFees, usdBankFee)
     const btcWithOutFee = calc.sub(btcWithFees, btcBankFee)
@@ -257,10 +258,15 @@ const addUsdToBtcConversionToEntry = <M extends MediciEntry>({
   return entry
 }
 
-const removeZeroAmountEntries = <M extends MediciEntry>(entry: M): M => {
+const removeZeroAmountEntries = <M extends MediciEntry>(
+  entry: M,
+): M | ValidationError => {
   const updatedTransactions = entry.transactions.filter(
     (txn) => !(txn.debit === 0 && txn.credit === 0),
   )
+  if (updatedTransactions.length === 0) {
+    return new NoTransactionsForEntryError()
+  }
 
   entry.transactions = updatedTransactions
 

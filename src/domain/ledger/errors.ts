@@ -1,4 +1,4 @@
-import { DomainError, ErrorLevel } from "@domain/shared"
+import { DomainError, ValidationError, ErrorLevel } from "@domain/shared"
 
 export class LedgerError extends DomainError {}
 
@@ -11,3 +11,5 @@ export class UnknownLedgerError extends LedgerServiceError {
 
 export class CouldNotFindTransactionError extends LedgerError {}
 export class CouldNotFindTransactionMetadataError extends CouldNotFindTransactionError {}
+
+export class NoTransactionsForEntryError extends ValidationError {}

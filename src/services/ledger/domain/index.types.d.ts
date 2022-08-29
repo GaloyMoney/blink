@@ -87,12 +87,13 @@ type EntryBuilderCreditState<M extends MediciEntry> = {
   }
 }
 
+type CreditAccountResult<M extends MediciEntry> = M | ValidationError
 type EntryBuilderCredit<M extends MediciEntry> = {
-  creditLnd: () => M
-  creditColdStorage: () => M
+  creditLnd: () => CreditAccountResult<M>
+  creditColdStorage: () => CreditAccountResult<M>
   creditAccount: <C extends WalletCurrency>(
     accountDescriptor: LedgerAccountDescriptor<C>,
-  ) => M
+  ) => CreditAccountResult<M>
 }
 
 type LegacyEntryBuilderConfig<M extends MediciEntry> = {
