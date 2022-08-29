@@ -1,4 +1,5 @@
-import { UnknownLedgerError } from "./domain/errors"
+import { UnknownLedgerError } from "@domain/ledger"
+
 import { TransactionsMetadataRepository } from "./services"
 
 const txMetadataRepo = TransactionsMetadataRepository()
