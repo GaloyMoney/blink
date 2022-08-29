@@ -37,6 +37,7 @@ import {
   LightningServiceError,
   LnAlreadyPaidError,
   LnPaymentPendingError,
+  OffChainServiceUnavailableError,
   PaymentAttemptsTimedOutError,
   PaymentInTransitionError,
   PaymentNotFoundError,
@@ -697,6 +698,7 @@ export const KnownLndErrorDetails = {
   PaymentInTransition: "payment is in transition",
   PaymentForDeleteNotFound: "non bucket element in payments bucket",
   SecretDoesNotMatchAnyExistingHodlInvoice: "SecretDoesNotMatchAnyExistingHodlInvoice",
+  ConnectionDropped: "Connection dropped",
 } as const
 
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
@@ -820,6 +822,8 @@ const handleSendPaymentLndErrors = ({
 const handleCommonLightningServiceErrors = (err: Error) => {
   const errDetails = parseLndErrorDetails(err)
   switch (errDetails) {
+    case KnownLndErrorDetails.ConnectionDropped:
+      return new OffChainServiceUnavailableError()
     default:
       return new UnknownLightningServiceError(msgForUnknown(err))
   }
@@ -828,6 +832,8 @@ const handleCommonLightningServiceErrors = (err: Error) => {
 const handleCommonRouteNotFoundErrors = (err: Error) => {
   const errDetails = parseLndErrorDetails(err)
   switch (errDetails) {
+    case KnownLndErrorDetails.ConnectionDropped:
+      return new OffChainServiceUnavailableError()
     default:
       return new UnknownRouteNotFoundError(msgForUnknown(err))
   }
