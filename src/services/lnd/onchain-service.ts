@@ -202,6 +202,7 @@ export const OnChainService = (
 
 const KnownLndErrorDetails = {
   InsufficientFunds: "insufficient funds available to construct transaction",
+  ConnectionDropped: "Connection dropped",
 } as const
 
 export const extractIncomingTransactions = ({
@@ -253,6 +254,8 @@ const getCachedHeight = async (): Promise<number> => {
 const handleCommonOnChainServiceErrors = (err: Error) => {
   const errDetails = parseLndErrorDetails(err)
   switch (errDetails) {
+    case KnownLndErrorDetails.ConnectionDropped:
+      return new OnChainServiceUnavailableError()
     default:
       return new UnknownOnChainServiceError(msgForUnknown(err))
   }
