@@ -257,6 +257,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Captcha validation failed."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "LessThanDustThresholdError":
+      message = error.message
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "InvalidCoordinatesError":
       return new InvalidCoordinatesError({ logger: baseLogger })
 
@@ -326,7 +330,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidUsername":
     case "InvalidPhoneNumber":
     case "InvalidEmailAddress":
-    case "LessThanDustThresholdError":
     case "InvalidTargetConfirmations":
     case "NoContactForUsernameError":
     case "NoWalletExistsForUserError":
