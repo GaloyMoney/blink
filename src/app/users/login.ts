@@ -1,6 +1,7 @@
 import {
   BTC_NETWORK,
   getFailedLoginAttemptPerIpLimits,
+  getFailedLoginAttemptPerPhoneLimits,
   getTestAccounts,
   MAX_AGE_TIME_CODE,
 } from "@config"
@@ -51,6 +52,7 @@ export const login = async ({
   if (validCode instanceof Error) return validCode
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
+  await rewardFailedLoginAttemptPerPhoneLimits(phone)
 
   const userRepo = UsersRepository()
   let user = await userRepo.findByPhone(phone)
@@ -151,6 +153,17 @@ const checkFailedLoginAttemptPerPhoneLimits = async (
     rateLimitConfig: RateLimitConfig.failedLoginAttemptPerPhone,
     keyToConsume: phone,
   })
+
+const rewardFailedLoginAttemptPerPhoneLimits = async (
+  phone: PhoneNumber,
+): Promise<true | RateLimiterExceededError> => {
+  const limiter = RedisRateLimitService({
+    keyPrefix: RateLimitPrefix.failedLoginAttemptPerPhone,
+    limitOptions: getFailedLoginAttemptPerPhoneLimits(),
+  })
+
+  return limiter.reward(phone)
+}
 
 const checkfailedLoginAttemptPerEmailAddressLimits = async (
   emailAddress: EmailAddress,
