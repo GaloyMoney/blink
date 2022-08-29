@@ -39,7 +39,7 @@
     "@opentelemetry/instrumentation-ioredis": "^0.30.0",
     "@opentelemetry/instrumentation-mongodb": "^0.31.0",
     "@opentelemetry/resources": "^1.6.0",
-    "@opentelemetry/sdk-trace-base": "^1.4.0",
+    "@opentelemetry/sdk-trace-base": "^1.6.0",
     "@opentelemetry/sdk-trace-node": "^1.5.0",
     "@opentelemetry/semantic-conventions": "^1.4.0",
     "@ory/client": "^0.0.1-alpha.123",
