@@ -270,6 +270,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = `${serviceType} action failed, please try again in a few minutes. If the problem persists, please contact support.`
       return new LndOfflineError({ message, logger: baseLogger })
 
+    case "InactiveAccountError":
+      message = "Account is inactive."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "InvalidCoordinatesError":
       return new InvalidCoordinatesError({ logger: baseLogger })
 

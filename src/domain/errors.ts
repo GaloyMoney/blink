@@ -66,7 +66,6 @@ export class InvalidUsername extends ValidationError {}
 export class InvalidContactAlias extends ValidationError {}
 export class InvalidCoordinatesError extends ValidationError {}
 export class InvalidBusinessTitleLengthError extends ValidationError {}
-export class InvalidAccountStatusError extends ValidationError {}
 export class InvalidPhoneNumber extends ValidationError {}
 export class InvalidKratosUserId extends ValidationError {}
 export class InvalidEmailAddress extends ValidationError {}
@@ -106,3 +105,6 @@ export class TwoFALimitsExceededError extends LimitsExceededError {}
 
 export class LnRouteValidationError extends ValidationError {}
 export class BadAmountForRouteError extends LnRouteValidationError {}
+
+export class InvalidAccountStatusError extends ValidationError {}
+export class InactiveAccountError extends InvalidAccountStatusError {}
