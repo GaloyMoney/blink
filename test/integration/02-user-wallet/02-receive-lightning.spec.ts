@@ -22,12 +22,14 @@ import { parseLndErrorDetails } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { setupInvoiceSubscribe } from "@servers/trigger"
 
+import { NoTransactionsForEntryError } from "@domain/ledger"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
 import { sleep } from "@utils"
 
 import {
   checkIsBalanced,
+  createInvoice,
   createUserAndWalletFromUserRef,
   getAmount,
   getBalanceHelper,
@@ -544,6 +546,54 @@ describe("UserWallet - Lightning", () => {
 
     const finalBalance = await getBalanceHelper(walletIdB)
     expect(finalBalance).toBe(initBalanceB + sats)
+  })
+
+  it("receives 'less than 1 sat amount' invoice", async () => {
+    const mtokens = "995"
+    const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+      walletId: walletIdB as WalletId,
+    })
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentRequest: invoice } = lnInvoice
+
+    const hash = getHash(invoice)
+
+    pay({ lnd: lndOutside1, request: invoice, mtokens })
+
+    // TODO: we could use an event instead of a sleep
+    await sleep(500)
+
+    expect(
+      await Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash as PaymentHash,
+        logger: baseLogger,
+      }),
+    ).toBeInstanceOf(NoTransactionsForEntryError)
+    // should be idempotent (not return error when called again)
+    expect(
+      await Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash as PaymentHash,
+        logger: baseLogger,
+      }),
+    ).not.toBeInstanceOf(Error)
+
+    // Check that new txns are added
+    const ledgerTxs = await LedgerService().getTransactionsByHash(hash)
+    if (ledgerTxs instanceof Error) throw ledgerTxs
+    expect(ledgerTxs).toHaveLength(0)
+
+    // Check that wallet invoice is marked as settled
+    const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(hash)
+    if (walletInvoice instanceof Error) throw walletInvoice
+    expect(walletInvoice.paid).toBeTruthy()
+
+    // Check that wallet balance is unchanged
+    const finalBalance = await getBalanceHelper(walletIdB)
+    expect(finalBalance).toBe(initBalanceB)
+
+    // Return msats to balance overall accounting
+    const { request } = await createInvoice({ lnd: lndOutside1 })
+    await pay({ lnd: lnd1, request, mtokens })
   })
 
   it("receives spam invoice", async () => {
