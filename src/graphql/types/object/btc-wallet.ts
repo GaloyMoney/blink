@@ -1,4 +1,5 @@
 import { GT } from "@graphql/index"
+import { normalizePaymentAmount } from "@graphql/root/mutation"
 import { connectionArgs, connectionFromArray } from "@graphql/connections"
 import { mapError } from "@graphql/error-map"
 
@@ -49,7 +50,7 @@ const BtcWallet = GT.Object<Wallet>({
       resolve: async (source) => {
         const balanceSats = await Wallets.getPendingOnChainBalanceForWallet([source])
         if (balanceSats instanceof Error) throw mapError(balanceSats)
-        return balanceSats[source.id]
+        return normalizePaymentAmount(balanceSats[source.id]).amount
       },
     },
     transactions: {

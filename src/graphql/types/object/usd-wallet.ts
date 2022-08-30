@@ -1,5 +1,6 @@
 import { GT } from "@graphql/index"
 import { connectionArgs, connectionFromArray } from "@graphql/connections"
+import { notBtcWalletForQueryError } from "@graphql/helpers"
 import { mapError } from "@graphql/error-map"
 
 import { Wallets } from "@app"
@@ -45,11 +46,7 @@ const UsdWallet = GT.Object<Wallet>({
     pendingIncomingBalance: {
       type: GT.NonNull(SignedAmount),
       description: "An unconfirmed incoming onchain balance stored in BTC.",
-      resolve: async (source) => {
-        const balanceSats = await Wallets.getPendingOnChainBalanceForWallet([source])
-        if (balanceSats instanceof Error) throw mapError(balanceSats)
-        return balanceSats[source.id]
-      },
+      resolve: () => notBtcWalletForQueryError,
     },
     transactions: {
       type: TransactionConnection,

@@ -606,8 +606,9 @@ async function testTxnsByAddressWrapper({
 
   // Test pending onchain transactions balance use-case
   const pendingBalances = await Wallets.getPendingOnChainBalanceForWallet([wallet])
+  if (pendingBalances instanceof Error) throw pendingBalances
   const expectedPendingBalance = amountSats * addresses.length
-  expect(pendingBalances[walletId]).toEqual(expectedPendingBalance)
+  expect(Number(pendingBalances[walletId].amount)).toEqual(expectedPendingBalance)
 
   // Confirm pending onchain transactions
   await confirmSent({

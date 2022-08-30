@@ -65,8 +65,10 @@ type PayToAddressArgs = {
 }
 
 type IncomingOnChainTxHandler = {
-  balanceByAddress(): { [key: OnChainAddress]: bigint } | ValidationError
-  balanceByWallet(wallets: Wallet[]): { [key: WalletId]: bigint } | ValidationError
+  balanceByAddress(): { [key: OnChainAddress]: BtcPaymentAmount } | ValidationError
+  balanceByWallet(
+    wallets: Wallet[],
+  ): { [key: WalletId]: BtcPaymentAmount } | ValidationError
 }
 
 interface IOnChainService {

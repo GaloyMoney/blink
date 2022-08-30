@@ -1,7 +1,25 @@
 import { toSats } from "@domain/bitcoin"
 import { IncomingOnChainTxHandler } from "@domain/bitcoin/onchain/incoming-tx-handler"
+import { WalletCurrency } from "@domain/shared"
 
 describe("handleIncomingOnChainTransactions", () => {
+  const balancesByKey = (amountsByKey: {
+    [key: string]: bigint
+  }): {
+    [key: string]: BtcPaymentAmount
+  } => {
+    const balances: {
+      [key: string]: BtcPaymentAmount
+    } = {}
+    for (const key of Object.keys(amountsByKey)) {
+      balances[key] = {
+        amount: amountsByKey[key],
+        currency: WalletCurrency.Btc,
+      }
+    }
+    return balances
+  }
+
   const incomingTxns: IncomingOnChainTransaction[] = [
     // walletId0 1st txn
     {
@@ -96,7 +114,7 @@ describe("handleIncomingOnChainTransactions", () => {
 
   describe("balance by address", () => {
     it("calculates balances by addresses in txns", () => {
-      const expectedBalancesByAddress = {
+      const expectedAmountsByAddress = {
         ["walletId0-address1"]: 800n,
         ["change-address1"]: 200n,
         ["walletId0-address2"]: 1100n,
@@ -104,8 +122,9 @@ describe("handleIncomingOnChainTransactions", () => {
         ["walletId1-address1"]: 1400n,
         ["change-address3"]: 600n,
       }
+
       const balancesByAddress = handler.balanceByAddress()
-      expect(balancesByAddress).toStrictEqual(expectedBalancesByAddress)
+      expect(balancesByAddress).toStrictEqual(balancesByKey(expectedAmountsByAddress))
     })
   })
 
@@ -137,11 +156,12 @@ describe("handleIncomingOnChainTransactions", () => {
     )
 
     it("calculates balances for a set of wallets", () => {
-      const expectedBalancesByWallet = {
+      const expectedAmountsByWallet = {
         walletId0: 1900n,
         walletId1: 1400n,
         walletId2: 0n,
       }
+      const expectedBalancesByWallet = balancesByKey(expectedAmountsByWallet)
 
       // Handles multiple wallets
       const balancesByWallets = handler.balanceByWallet(wallets)
