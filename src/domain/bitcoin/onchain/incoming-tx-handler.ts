@@ -15,7 +15,7 @@ export const IncomingOnChainTxHandler = (
     | ValidationError => {
     const pendingBalances = txns.map(balanceFromIncomingTx)
 
-    const balancesByAddress = {} as { [key: OnChainAddress]: BtcPaymentAmount }
+    const balancesByAddress: { [key: OnChainAddress]: BtcPaymentAmount } = {}
     for (const balances of pendingBalances) {
       if (balances instanceof Error) return balances
       for (const key of Object.keys(balances)) {
@@ -35,7 +35,7 @@ export const IncomingOnChainTxHandler = (
     const balancesByAddress = balanceByAddress()
     if (balancesByAddress instanceof Error) return balancesByAddress
 
-    const balancesByWallet = {} as { [key: WalletId]: BtcPaymentAmount }
+    const balancesByWallet: { [key: WalletId]: BtcPaymentAmount } = {}
     for (const wallet of wallets) {
       balancesByWallet[wallet.id] = ZERO_SATS
       for (const key of Object.keys(balancesByAddress)) {
@@ -55,7 +55,7 @@ export const IncomingOnChainTxHandler = (
   const balanceFromIncomingTx = (
     tx: IncomingOnChainTransaction,
   ): { [key: OnChainAddress]: BtcPaymentAmount } | ValidationError => {
-    const balanceByAddress = {} as { [key: OnChainAddress]: BtcPaymentAmount }
+    const balanceByAddress: { [key: OnChainAddress]: BtcPaymentAmount } = {}
     const {
       rawTx: { outs },
     } = tx
