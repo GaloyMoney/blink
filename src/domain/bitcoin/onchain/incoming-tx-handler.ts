@@ -61,14 +61,16 @@ export const IncomingOnChainTxHandler = (
     } = tx
     for (const out of outs) {
       if (!out.address) continue
-      balanceByAddress[out.address] = balanceByAddress[out.address] || ZERO_SATS
       const outAmount = paymentAmountFromNumber({
         amount: out.sats,
         currency: WalletCurrency.Btc,
       })
       if (outAmount instanceof Error) return outAmount
 
-      balanceByAddress[out.address] = calc.add(balanceByAddress[out.address], outAmount)
+      balanceByAddress[out.address] = calc.add(
+        balanceByAddress[out.address] || ZERO_SATS,
+        outAmount,
+      )
     }
     return balanceByAddress
   }
