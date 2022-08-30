@@ -7,15 +7,13 @@ import {
   paymentAmountFromNumber,
 } from "@domain/shared"
 
-import { MainBook, Transaction } from "./books"
-import { toLedgerAccountDescriptor, toLedgerAccountId, EntryBuilder } from "./domain"
-import { persistAndReturnEntry } from "./helpers"
-import * as caching from "./caching"
-import { TransactionsMetadataRepository } from "./services"
+import { MainBook, Transaction } from "../books"
+import { toLedgerAccountDescriptor, toLedgerAccountId, EntryBuilder } from "../domain"
+import { persistAndReturnEntry } from "../helpers"
+import * as caching from "../caching"
+import { TransactionsMetadataRepository } from "../services"
 
-import { translateToLedgerJournal } from "."
-
-export * from "./tx-metadata"
+import { translateToLedgerJournal } from ".."
 
 const calc = AmountCalculator()
 
