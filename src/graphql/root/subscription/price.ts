@@ -6,9 +6,12 @@ import { GT } from "@graphql/index"
 import PricePayload from "@graphql/types/payload/price"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import ExchangeCurrencyUnit from "@graphql/types/scalar/exchange-currency-unit"
+import { UnknownClientError } from "@graphql/error"
 
 import { Prices } from "@app"
 import { PubSubService } from "@services/pubsub"
+import { baseLogger } from "@services/logger"
+
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 
 const pubsub = PubSubService()
@@ -47,6 +50,14 @@ const PriceSubscription = {
     source: { errors: IError[]; satUsdCentPrice?: number },
     args: PriceResolveArgs,
   ) => {
+    if (source === undefined) {
+      throw new UnknownClientError({
+        message: "Got 'undefined' payload",
+        level: "fatal",
+        logger: baseLogger,
+      })
+    }
+
     if (source.errors) {
       return { errors: source.errors }
     }
