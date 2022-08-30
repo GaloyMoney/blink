@@ -5,7 +5,7 @@ import { LedgerTransactionType } from "@domain/ledger"
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
 import { WalletsRepository } from "@services/mongoose"
-import * as LedgerFacade from "@services/ledger/facade"
+import LedgerFacade from "@services/ledger/facade"
 
 const calc = AmountCalculator()
 

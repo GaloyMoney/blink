@@ -5,7 +5,7 @@ import { FeeReimbursement } from "@domain/ledger/fee-reimbursement"
 import { PriceRatio } from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
-import * as LedgerFacade from "@services/ledger/facade"
+import LedgerFacade from "@services/ledger/facade"
 import { baseLogger } from "@services/logger"
 
 export const reimburseFee = async <S extends WalletCurrency, R extends WalletCurrency>({

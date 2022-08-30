@@ -25,7 +25,7 @@ import {
 } from "@services/mongoose"
 import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
-import * as LedgerFacade from "@services/ledger/facade"
+import LedgerFacade from "@services/ledger/facade"
 import { NotificationsService } from "@services/notifications"
 
 import { ResourceExpiredLockServiceError } from "@domain/lock"

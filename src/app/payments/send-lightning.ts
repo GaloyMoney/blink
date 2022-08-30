@@ -40,7 +40,7 @@ import { LedgerService } from "@services/ledger"
 import { NotificationsService } from "@services/notifications"
 import { NewDealerPriceService } from "@services/dealer-price"
 
-import * as LedgerFacade from "@services/ledger/facade"
+import LedgerFacade from "@services/ledger/facade"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { Wallets } from "@app"

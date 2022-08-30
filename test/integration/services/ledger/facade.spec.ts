@@ -8,7 +8,7 @@ import {
   ZERO_CENTS,
   ZERO_SATS,
 } from "@domain/shared"
-import * as LedgerFacade from "@services/ledger/facade"
+import LedgerFacade from "@services/ledger/facade"
 import { DisplayCurrency } from "@domain/fiat"
 
 describe("Facade", () => {

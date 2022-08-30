@@ -16,7 +16,7 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
-import * as LedgerFacade from "@services/ledger/facade"
+import LedgerFacade from "@services/ledger/facade"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { elapsedSinceTimestamp, runInParallel } from "@utils"
