@@ -92,8 +92,7 @@ export const OnChainService = (
         after,
       })
     } catch (err) {
-      const errDetails = parseLndErrorDetails(err)
-      return new UnknownOnChainServiceError(errDetails)
+      return handleCommonOnChainServiceErrors(err)
     }
   }
 
@@ -126,8 +125,7 @@ export const OnChainService = (
 
       return { address: address as OnChainAddress, pubkey }
     } catch (err) {
-      const errDetails = parseLndErrorDetails(err)
-      return new UnknownOnChainServiceError(errDetails)
+      return handleCommonOnChainServiceErrors(err)
     }
   }
 
@@ -162,7 +160,7 @@ export const OnChainService = (
         case KnownLndErrorDetails.InsufficientFunds:
           return new InsufficientOnChainFundsError()
         default:
-          return new UnknownOnChainServiceError(err)
+          return handleCommonOnChainServiceErrors(err)
       }
     }
   }
@@ -183,8 +181,7 @@ export const OnChainService = (
 
       return id as OnChainTxHash
     } catch (err) {
-      const errDetails = parseLndErrorDetails(err)
-      return new UnknownOnChainServiceError(errDetails)
+      return handleCommonOnChainServiceErrors(err)
     }
   }
 
@@ -205,6 +202,7 @@ export const OnChainService = (
 
 const KnownLndErrorDetails = {
   InsufficientFunds: "insufficient funds available to construct transaction",
+  ConnectionDropped: "Connection dropped",
 } as const
 
 export const extractIncomingTransactions = ({
@@ -252,3 +250,19 @@ const getCachedHeight = async (): Promise<number> => {
   if (cachedHeight instanceof Error) return 0
   return cachedHeight
 }
+
+const handleCommonOnChainServiceErrors = (err: Error) => {
+  const errDetails = parseLndErrorDetails(err)
+  switch (errDetails) {
+    case KnownLndErrorDetails.ConnectionDropped:
+      return new OnChainServiceUnavailableError()
+    default:
+      return new UnknownOnChainServiceError(msgForUnknown(err))
+  }
+}
+
+const msgForUnknown = (err: Error) =>
+  JSON.stringify({
+    parsedLndErrorDetails: parseLndErrorDetails(err),
+    detailsFromLnd: err,
+  })
