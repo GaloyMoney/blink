@@ -34,10 +34,13 @@ export const getTransactionsForWalletsByAddresses = async ({
 
   const confirmedHistory = WalletTransactionHistory.fromLedger(ledgerTransactions)
 
-  const onChain = OnChainService(TxDecoder(BTC_NETWORK))
-  if (onChain instanceof OnChainError) {
-    baseLogger.warn({ onChain }, "impossible to create OnChainService")
-    return PartialResult.partial(confirmedHistory.transactions, onChain)
+  const listIncomingToUpdateCache = async () => {
+    const onChain = OnChainService(TxDecoder(BTC_NETWORK))
+    if (onChain instanceof OnChainError) {
+      baseLogger.warn({ onChain }, "impossible to create OnChainService")
+      return onChain
+    }
+    return onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS)
   }
 
   // we are getting both the transactions in the mempool and the transaction that
@@ -45,7 +48,7 @@ export const getTransactionsForWalletsByAddresses = async ({
   const onChainTxs = await redisCache.getOrSet({
     key: CacheKeys.LastOnChainTransactions,
     ttlSecs: SECS_PER_10_MINS,
-    fn: () => onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS),
+    fn: listIncomingToUpdateCache,
   })
   if (onChainTxs instanceof Error) {
     baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")

@@ -13,10 +13,13 @@ const redisCache = RedisCacheService()
 export const getPendingOnChainBalanceForWallet = async (
   wallets: Wallet[],
 ): Promise<{ [key: WalletId]: CurrencyBaseAmount } | ApplicationError> => {
-  const onChain = OnChainService(TxDecoder(BTC_NETWORK))
-  if (onChain instanceof OnChainError) {
-    baseLogger.warn({ onChain }, "impossible to create OnChainService")
-    return onChain
+  const listIncomingToUpdateCache = async () => {
+    const onChain = OnChainService(TxDecoder(BTC_NETWORK))
+    if (onChain instanceof OnChainError) {
+      baseLogger.warn({ onChain }, "impossible to create OnChainService")
+      return onChain
+    }
+    return onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS)
   }
 
   // we are getting both the transactions in the mempool and the transaction that
@@ -24,7 +27,7 @@ export const getPendingOnChainBalanceForWallet = async (
   const onChainTxs = await redisCache.getOrSet({
     key: CacheKeys.LastOnChainTransactions,
     ttlSecs: SECS_PER_10_MINS,
-    fn: () => onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS),
+    fn: listIncomingToUpdateCache,
   })
   if (onChainTxs instanceof Error) {
     baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
