@@ -10065,10 +10065,10 @@ pino-http@^8.2.0:
     pino-std-serializers "^6.0.0"
     process-warning "^2.0.0"
 
-pino-pretty@^9.0.1:
-  version "9.0.1"
-  resolved "https://registry.yarnpkg.com/pino-pretty/-/pino-pretty-9.0.1.tgz#25711c49a874950a894f5953929da11b9845cce6"
-  integrity sha512-5gFIIeDu1niFlL0pBACerwDR8Ts+i4gO0W9S0jRoHVvaQluvGOW4cUaDmC+/dSTCoG4VqfOQhP0dwuDLd0qJ6A==
+pino-pretty@^9.1.0:
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/pino-pretty/-/pino-pretty-9.1.0.tgz#162f525944d7eede154db8055cb0ab5e00bde0c4"
+  integrity sha512-IM6NY9LLo/dVgY7/prJhCh4rAJukafdt0ibxeNOWc2fxKMyTk90SOB9Ao2HfbtShT9QPeP0ePpJktksMhSQMYA==
   dependencies:
     colorette "^2.0.7"
     dateformat "^4.6.3"
