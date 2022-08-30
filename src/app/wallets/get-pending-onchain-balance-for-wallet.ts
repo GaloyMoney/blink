@@ -7,7 +7,7 @@ import { IncomingOnChainTxHandler } from "@domain/bitcoin/onchain/incoming-tx-ha
 
 import getOnChainTxs from "./get-on-chain-txs"
 
-export const getPendingOnChainBalanceForWallet = async (
+export const getPendingOnChainBalanceForWallets = async (
   wallets: Wallet[],
 ): Promise<{ [key: WalletId]: BtcPaymentAmount } | ApplicationError> => {
   const onChainTxs = await getOnChainTxs()
