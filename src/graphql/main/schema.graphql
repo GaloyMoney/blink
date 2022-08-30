@@ -59,7 +59,7 @@ type BTCWallet implements Wallet {
   id: ID!
 
   """
-  An unconfirmed incoming onchain balance stored in BTC.
+  An unconfirmed incoming onchain balance.
   """
   pendingIncomingBalance: SignedAmount!
 
@@ -1066,7 +1066,7 @@ type UsdWallet implements Wallet {
   id: ID!
 
   """
-  An unconfirmed incoming onchain balance stored in BTC.
+  An unconfirmed incoming onchain balance.
   """
   pendingIncomingBalance: SignedAmount!
   transactions(

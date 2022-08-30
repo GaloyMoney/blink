@@ -45,7 +45,7 @@ const UsdWallet = GT.Object<Wallet>({
     },
     pendingIncomingBalance: {
       type: GT.NonNull(SignedAmount),
-      description: "An unconfirmed incoming onchain balance stored in BTC.",
+      description: "An unconfirmed incoming onchain balance.",
       resolve: () => notBtcWalletForQueryError,
     },
     transactions: {
