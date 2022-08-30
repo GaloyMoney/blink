@@ -285,3 +285,14 @@ export class AuthenticationError extends CustomApolloError {
     })
   }
 }
+
+export class AuthorizationError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Not authorized",
+      forwardToClient: true,
+      code: "NOT_AUTHORIZED",
+      ...errData,
+    })
+  }
+}
