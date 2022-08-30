@@ -1,34 +1,16 @@
-import { BTC_NETWORK, ONCHAIN_MIN_CONFIRMATIONS, SECS_PER_10_MINS } from "@config"
+import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
-import { CacheKeys } from "@domain/cache"
-import { OnChainError, TxDecoder, TxFilter } from "@domain/bitcoin/onchain"
+import { TxFilter } from "@domain/bitcoin/onchain"
 
 import { baseLogger } from "@services/logger"
-import { RedisCacheService } from "@services/cache"
-import { OnChainService } from "@services/lnd/onchain-service"
 import { IncomingOnChainTxHandler } from "@domain/bitcoin/onchain/incoming-tx-handler"
 
-const redisCache = RedisCacheService()
+import getOnChainTxs from "./get-on-chain-txs"
 
 export const getPendingOnChainBalanceForWallet = async (
   wallets: Wallet[],
 ): Promise<{ [key: WalletId]: CurrencyBaseAmount } | ApplicationError> => {
-  const listIncomingToUpdateCache = async () => {
-    const onChain = OnChainService(TxDecoder(BTC_NETWORK))
-    if (onChain instanceof OnChainError) {
-      baseLogger.warn({ onChain }, "impossible to create OnChainService")
-      return onChain
-    }
-    return onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS)
-  }
-
-  // we are getting both the transactions in the mempool and the transaction that
-  // have been mined by not yet credited because they haven't reached enough confirmations
-  const onChainTxs = await redisCache.getOrSet({
-    key: CacheKeys.LastOnChainTransactions,
-    ttlSecs: SECS_PER_10_MINS,
-    fn: listIncomingToUpdateCache,
-  })
+  const onChainTxs = await getOnChainTxs()
   if (onChainTxs instanceof Error) {
     baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
     return onChainTxs
