@@ -142,7 +142,7 @@
     "jest-junit": "^14.0.0",
     "migrate-mongo": "^9.0.0",
     "nodemon": "^2.0.15",
-    "pino-pretty": "^9.0.1",
+    "pino-pretty": "^9.1.0",
     "prettier": "^2.5.1",
     "spectaql": "^1.5.3",
     "tiny-secp256k1": "^2.2.1",
