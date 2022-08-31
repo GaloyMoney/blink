@@ -321,6 +321,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "TwoFAError":
     case "LedgerError":
     case "LedgerServiceError":
+    case "LedgerFacadeError":
     case "LightningError":
     case "BadPaymentDataError":
     case "LnInvoiceDecodeError":

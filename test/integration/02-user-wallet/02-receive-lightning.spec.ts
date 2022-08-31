@@ -22,7 +22,7 @@ import { parseLndErrorDetails } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { setupInvoiceSubscribe } from "@servers/trigger"
 
-import { NoTransactionsForEntryError } from "@domain/ledger"
+import { NoTransactionsForEntryError } from "@services/ledger/domain/errors"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
 import { sleep } from "@utils"

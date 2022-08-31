@@ -1,5 +1,7 @@
 import { AmountCalculator, WalletCurrency } from "@domain/shared"
 
+import { NoTransactionsForEntryError } from "@services/ledger/domain/errors"
+
 import { coldStorageAccountDescriptor, lndLedgerAccountDescriptor } from "./accounts"
 
 const calc = AmountCalculator()

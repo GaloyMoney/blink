@@ -1,4 +1,4 @@
-import { UnknownLedgerError } from "@domain/ledger"
+import { UnknownLedgerError } from "./domain/errors"
 
 import { TransactionsMetadataRepository } from "./services"
 
