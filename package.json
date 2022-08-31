@@ -126,7 +126,7 @@
     "@types/migrate-mongo": "^8.2.0",
     "@types/node": "^16.0.0",
     "@types/nodemon": "^1.19.1",
-    "@types/prettier": "^2.6.3",
+    "@types/prettier": "^2.7.0",
     "@typescript-eslint/eslint-plugin": "^5.33.1",
     "@typescript-eslint/parser": "^5.36.1",
     "axios-mock-adapter": "^1.21.1",
