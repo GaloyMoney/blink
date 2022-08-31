@@ -4,15 +4,19 @@ import { toSats } from "@domain/bitcoin"
 import { SwapClientNotResponding } from "@domain/swap/errors"
 import { SwapOutChecker } from "@domain/swap"
 import { lndsBalances } from "@services/lnd/utils"
-import { LoopUtils, loopdConfig } from "@app/swap"
-import { getSwapConfig } from "@config"
+import {
+  // getActiveLoopd,
+  getSwapDestAddress,
+  LND1_LOOP_CONFIG,
+  LND2_LOOP_CONFIG,
+} from "@app/swap"
 
 describe("Swap", () => {
-  const loopConfig: LoopdConfig = loopdConfig
-  const swapService = LoopService(loopConfig)
+  // const activeLoopd = getActiveLoopd()
+  const swapService = LoopService(LND1_LOOP_CONFIG)
   const amount = toSats(250000)
 
-  it("Swap out returns successful swap result for default lnd1-loop server", async () => {
+  it("Swap out returns successful swap result for default lnd1-loop node", async () => {
     if (await swapService.healthCheck()) {
       const swapResult = await swapService.swapOut({
         amount,
@@ -30,20 +34,12 @@ describe("Swap", () => {
     }
   })
 
-  it("Swap out returns successful swap result for lnd2loop service", async () => {
+  it("Swap out returns successful swap result for lnd2-loop node", async () => {
     if (await swapService.healthCheck()) {
-      const loopUtils = LoopUtils()
-      const macaroon = process.env.LND2_LOOP_MACAROON?.toString()
-      const tlsCert = process.env.LND2_LOOP_TLS
-      const grpcEndpoint = getSwapConfig().lnd2loopRpcEndpoint
-      const loopService = loopUtils.getLoopService({
-        macaroon,
-        tlsCert,
-        grpcEndpoint,
-      })
+      const loopService = LoopService(LND2_LOOP_CONFIG)
       const swapServiceLnd2 = loopService
       if (await swapServiceLnd2.healthCheck()) {
-        const swapDestAddress = await loopUtils.getSwapDestAddress()
+        const swapDestAddress = await getSwapDestAddress()
         let params
         if (swapDestAddress instanceof String) {
           params = {

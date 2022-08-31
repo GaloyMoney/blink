@@ -9,15 +9,14 @@ import { LoopService } from "@services/loopd"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 import { getOffChainChannelBalances } from "@app/lightning"
 
-import { loopdConfig } from "./swap-utils"
+import { LND1_LOOP_CONFIG } from "./get-active-loopd"
 
 const logger = baseLogger.child({ module: "swap" })
 
 export const swapOut = async (): Promise<
   SwapOutResult | SwapServiceError | NoSwapAction
 > => {
-  // TODO insert logic to get active LND service and active Loop node here
-  const swapService = LoopService(loopdConfig)
+  const swapService = LoopService(LND1_LOOP_CONFIG)
   logger.info("SwapApp: Started")
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService

@@ -1,4 +1,4 @@
-import { handleSwapOutCompleted, loopdConfig } from "@app/swap"
+import { handleSwapOutCompleted, LND1_LOOP_CONFIG } from "@app/swap"
 import { toSats } from "@domain/bitcoin"
 import { LoopService } from "@services/loopd"
 import { sleep } from "@utils"
@@ -8,7 +8,7 @@ import { mineBlockAndSyncAll } from "test/helpers"
 describe("Swap", () => {
   it("Initiate Swap out, then listen for events", async () => {
     const amount = 250000
-    const swapService = LoopService(loopdConfig)
+    const swapService = LoopService(LND1_LOOP_CONFIG)
     const isSwapServerUp = await swapService.healthCheck()
     if (isSwapServerUp) {
       await new Promise(async (resolve) => {

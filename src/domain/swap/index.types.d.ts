@@ -3,8 +3,7 @@ type SwapServiceError = import("./errors").SwapServiceError
 type SwapType = import("./index").SwapType
 type SwapProvider = import("./index").SwapProvider
 type SwapState = import("./index").SwapState
-// TODO remove dependency and create SwapStatus Type
-type LoopSwapStatus = import("@services/loopd/protos/loop_pb").SwapStatus
+
 interface ISwapService {
   healthCheck: () => Promise<boolean>
   swapOut: (swapOutArgs: SwapOutArgs) => Promise<SwapOutResult | SwapServiceError>
@@ -27,7 +26,7 @@ type SwapOutResult = {
 }
 
 type SwapListenerResponse =
-  | (LoopSwapStatus & SwapStatusResultWrapper)
+  | SwapStatusResultWrapper
   | (SwapStatusResult & SwapStatusResultWrapper)
   | SwapServiceError
 
@@ -58,7 +57,8 @@ type SwapConfig = {
 }
 
 type LoopdConfig = {
-  macaroon?: string
-  tlsCert?: string
-  grpcEndpoint?: string
+  macaroon: string
+  tlsCert: string
+  grpcEndpoint: string
+  btcNetwork: BtcNetwork
 }

@@ -44,7 +44,9 @@ import { LndService } from "@services/lnd"
 
 import { LoopService } from "@services/loopd"
 
-import { handleSwapOutCompleted, loopdConfig } from "@app/swap"
+import { handleSwapOutCompleted } from "@app/swap"
+
+import { LND1_LOOP_CONFIG } from "@app/swap/get-active-loopd"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -392,7 +394,7 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
 
 const listenerSwapMonitor = async () => {
   try {
-    const swapService = LoopService(loopdConfig)
+    const swapService = LoopService(LND1_LOOP_CONFIG) // default to LND1 for now, also add listener for LND2
     const isSwapServerUp = await swapService.healthCheck()
     if (isSwapServerUp) {
       const listener = swapService.swapListener()
@@ -406,6 +408,7 @@ const listenerSwapMonitor = async () => {
     }
   } catch (e) {
     // TODO SwapServiceUnknownError trace
+    console.log("SWAP trigger error", e)
   }
 }
 

@@ -2,19 +2,14 @@
 import util from "util"
 
 import * as grpc from "@grpc/grpc-js"
-import { getSwapConfig } from "@config"
 import { SwapClientNotResponding, SwapServiceError } from "@domain/swap/errors"
-
 import { SwapState as SwapStateType } from "@domain/swap/index"
-
 import { SwapType as DomainSwapType } from "@domain/swap"
-
 import { ServiceClient } from "@grpc/grpc-js/build/src/make-client"
-
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
+import { BtcNetwork } from "@domain/bitcoin"
 
 import { SwapClientClient } from "./protos/loop_grpc_pb"
-
 import {
   FailureReason,
   QuoteRequest,
@@ -27,28 +22,15 @@ import {
   SwapStatus,
 } from "./protos/loop_pb"
 
-const loopMacaroon = process.env.LND1_LOOP_MACAROON
-  ? Buffer.from(process.env.LND1_LOOP_MACAROON, "base64").toString("hex")
-  : ""
-const loopTls = Buffer.from(
-  process.env.LND1_LOOP_TLS ? process.env.LND1_LOOP_TLS : "",
-  "base64",
-)
-const loopUrl = getSwapConfig().lnd1loopRpcEndpoint
-
 export const LoopService = ({
   macaroon,
   tlsCert,
   grpcEndpoint,
+  btcNetwork,
 }: LoopdConfig): ISwapService => {
-  let swapClient: ServiceClient
-  if (macaroon && tlsCert && grpcEndpoint) {
-    const mac = Buffer.from(macaroon, "base64").toString("hex")
-    const tls = Buffer.from(tlsCert, "base64")
-    swapClient = createClient(mac, tls, grpcEndpoint)
-  } else {
-    swapClient = createClient(loopMacaroon, loopTls, loopUrl)
-  }
+  const mac = Buffer.from(macaroon, "base64").toString("hex")
+  const tls = Buffer.from(tlsCert, "base64")
+  const swapClient: ServiceClient = createClient(mac, tls, grpcEndpoint)
 
   const clientHealthCheck = util.promisify<QuoteRequest, OutQuoteResponse>(
     swapClient.loopOutQuote.bind(swapClient),
@@ -78,8 +60,10 @@ export const LoopService = ({
     const fee = maxSwapFee ? maxSwapFee : 20000
     try {
       const request = new LoopOutRequest()
-      // if swap out does not occur in 2 hours (7200 sec) than it will fail
-      const swapPublicationDeadline = 7200
+      // on regtest, set the publication deadline to 0 for faster swaps, otherwise
+      // set it to 30 minutes in the future to reduce swap fees
+      const thirtyMins = 30 * 60 * 1000
+      const swapPublicationDeadline = btcNetwork === BtcNetwork.regtest ? 0 : thirtyMins
       if (swapDestAddress) request.setDest(swapDestAddress)
       request.setAmt(amount)
       request.setMaxSwapFee(fee)
@@ -87,9 +71,8 @@ export const LoopService = ({
       request.setMaxSwapFee(fee)
       request.setMaxPrepayAmt(fee)
       request.setMaxMinerFee(fee)
-      request.setSweepConfTarget(2)
-      request.setHtlcConfirmations(1)
       request.setSwapPublicationDeadline(swapPublicationDeadline)
+      request.setInitiator("galoy-backend")
       const resp = await clientSwapOut(request)
       const swapOutResult: SwapOutResult = {
         htlcAddress: resp.getHtlcAddress(),

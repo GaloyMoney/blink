@@ -1,7 +1,7 @@
 files.extend-exclude = [
   "dev",
   "src/domain/users/languages.ts",
-  "src/services/swap/providers/lightning-labs/protos"
+  "src/services/loopd/protos"
 ]
 
 [default.extend-words]

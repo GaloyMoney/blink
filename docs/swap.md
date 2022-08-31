@@ -49,8 +49,8 @@ Successfully starting the loop server returns this:
 
 ```yaml
 swap:
-  minOnChainHotWalletBalance: 30000000
-  swapOutAmount:  25000000
+  minOnChainHotWalletBalance: 75000000
+  swapOutAmount:  50000000
   swapProviders: ["LOOP"]
   lnd1loopRestEndpoint: "https://localhost:8081"
   lnd1loopRpcEndpoint: "localhost:11010"
