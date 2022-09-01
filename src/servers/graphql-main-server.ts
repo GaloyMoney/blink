@@ -10,7 +10,7 @@ import { GALOY_API_PORT } from "@config"
 
 import { gqlMainSchema } from "../graphql"
 
-import { isAuthenticated, startApolloServer } from "./graphql-server"
+import { isAuthenticated, serverPath } from "./helper"
 import { walletIdMiddleware } from "./middlewares/wallet-id"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
@@ -60,6 +60,9 @@ export async function startApolloServerForCoreSchema() {
   )
 
   const schema = applyMiddleware(gqlMainSchema, permissions, walletIdMiddleware)
+
+  const { startApolloServer } = await import(serverPath)
+
   return startApolloServer({
     schema,
     port: GALOY_API_PORT,
