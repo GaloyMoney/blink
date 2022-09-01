@@ -7142,7 +7142,7 @@ invoices@2.0.6:
     bolt09 "0.2.3"
     tiny-secp256k1 "2.2.1"
 
-invoices@2.0.7, invoices@^2.0.7:
+invoices@2.0.7:
   version "2.0.7"
   resolved "https://registry.yarnpkg.com/invoices/-/invoices-2.0.7.tgz#226cb6e68b58102af8e2cb702ac0a98feac4675a"
   integrity sha512-2kpjok/83zOTnb4tbV+RbJz7LuGVzj/GZ+jwsC7FxMqwLAf4Sf6OESNM3uuamX9oeFRo44Vip3wn1aX+9D2m8w==
@@ -7161,6 +7161,18 @@ invoices@2.1.0:
   dependencies:
     bech32 "2.0.0"
     bitcoinjs-lib "6.0.1"
+    bn.js "5.2.1"
+    bolt07 "1.8.2"
+    bolt09 "0.2.3"
+    tiny-secp256k1 "2.2.1"
+
+invoices@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/invoices/-/invoices-2.2.0.tgz#6c223fe95b5d53bc9be4b2de6fc139dcb9bda416"
+  integrity sha512-uVe0WdHGdhkKubfrH1rSC/RpFREC7D0dh1IHxEgmUhV1lhn2+1UFVUxhri4dGyklBgIi+DNzE8q3665PF8z5Vw==
+  dependencies:
+    bech32 "2.0.0"
+    bitcoinjs-lib "6.0.2"
     bn.js "5.2.1"
     bolt07 "1.8.2"
     bolt09 "0.2.3"
