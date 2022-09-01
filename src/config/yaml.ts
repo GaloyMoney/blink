@@ -136,6 +136,7 @@ export const getLndParams = (): LndParams[] => {
     const port = process.env[`${input.name}_RPCPORT`] ?? 10009
     const type = input.type.map((item) => item as NodeType) // TODO: verify if validation is done from yaml.ts
     const priority = input.priority
+    const name = input.name
 
     return {
       cert,
@@ -145,6 +146,7 @@ export const getLndParams = (): LndParams[] => {
       pubkey,
       type,
       priority,
+      name,
     }
   })
 }

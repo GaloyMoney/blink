@@ -8,6 +8,7 @@ type LndParams = {
   type: NodeType[]
   pubkey: Pubkey
   priority: number
+  name: string
 }
 
 type LndParamsAuthed = LndParams & {

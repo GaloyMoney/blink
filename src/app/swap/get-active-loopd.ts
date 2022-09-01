@@ -13,11 +13,11 @@ import { LoopdInstanceName } from "@domain/swap"
 export const getActiveLoopd = (): LoopdConfig => {
   const activeNode = getActiveOnchainLnd()
   if (activeNode instanceof Error) throw SwapErrorNoActiveLoopdNode
-  switch (activeNode.macaroon) {
-    case process.env.LND1_MACAROON: {
+  switch (activeNode.name) {
+    case "LND1": {
       return LND1_LOOP_CONFIG
     }
-    case process.env.LND2_MACAROON: {
+    case "LND2": {
       return LND2_LOOP_CONFIG
     }
     default: {

@@ -6,14 +6,14 @@ import { SwapOutChecker } from "@domain/swap"
 import { lndsBalances } from "@services/lnd/utils"
 import { getSwapDestAddress } from "@app/swap/get-swap-dest-address"
 import {
-  // getActiveLoopd,
+  getActiveLoopd,
   LND1_LOOP_CONFIG,
   LND2_LOOP_CONFIG,
 } from "@app/swap/get-active-loopd"
 
 describe("Swap", () => {
-  // const activeLoopd = getActiveLoopd()
-  const swapService = LoopService(LND1_LOOP_CONFIG)
+  const activeLoopd = getActiveLoopd()
+  const swapService = LoopService(activeLoopd ?? LND1_LOOP_CONFIG)
   const amount = toSats(250000)
 
   it("Swap out returns successful swap result for default lnd1-loop node", async () => {
