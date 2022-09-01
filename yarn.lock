@@ -1513,6 +1513,14 @@
   resolved "https://registry.yarnpkg.com/@graphql-typed-document-node/core/-/core-3.1.1.tgz#076d78ce99822258cf813ecc1e7fa460fa74d052"
   integrity sha512-NQ17ii0rK1b34VZonlmT2QMJFI70m0TRwbknO/ihlbatXyaktDhN/98vBiUU6kNBPljqGqyIrl2T4nY2RpFANg==
 
+"@grpc/grpc-js@1.6.12":
+  version "1.6.12"
+  resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.6.12.tgz#20f710d8a8c5c396b2ae9530ba6c06b984614fdf"
+  integrity sha512-JmvQ03OTSpVd9JTlj/K3IWHSz4Gk/JMLUTtW7Zb0KvO1LcOYGATh5cNuRYzCAeDR3O8wq+q8FZe97eO9MBrkUw==
+  dependencies:
+    "@grpc/proto-loader" "^0.7.0"
+    "@types/node" ">=12.12.47"
+
 "@grpc/grpc-js@1.6.7":
   version "1.6.7"
   resolved "https://registry.yarnpkg.com/@grpc/grpc-js/-/grpc-js-1.6.7.tgz#4c4fa998ff719fe859ac19fe977fdef097bb99aa"
@@ -1570,7 +1578,7 @@
     protobufjs "^7.0.0"
     yargs "^16.2.0"
 
-"@grpc/proto-loader@^0.7.0", "@grpc/proto-loader@^0.7.2":
+"@grpc/proto-loader@0.7.2", "@grpc/proto-loader@^0.7.0", "@grpc/proto-loader@^0.7.2":
   version "0.7.2"
   resolved "https://registry.yarnpkg.com/@grpc/proto-loader/-/proto-loader-0.7.2.tgz#fa63178853afe1473c50cff89fe572f7c8b20154"
   integrity sha512-jCdyLIT/tdQ1zhrbTQnJNK5nbDf0GoBpy5jVNywBzzMDF+Vs6uEaHnfz46dMtDxkvwrF2hzk5Z67goliceH0sA==
@@ -2718,6 +2726,11 @@
   version "18.6.3"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.6.3.tgz#4e4a95b6fe44014563ceb514b2598b3e623d1c98"
   integrity sha512-6qKpDtoaYLM+5+AFChLhHermMQxc3TOEFIDzrZLPRGHPrLEwqFkkT5Kx3ju05g6X7uDPazz3jHbKPX0KzCjntg==
+
+"@types/node@18.7.14":
+  version "18.7.14"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.7.14.tgz#0fe081752a3333392d00586d815485a17c2cf3c9"
+  integrity sha512-6bbDaETVi8oyIARulOE9qF1/Qdi/23z6emrUh0fNJRUmjznqrixD4MpGDdgOFk5Xb0m2H6Xu42JGdvAxaJR/wA==
 
 "@types/node@^10.0.3", "@types/node@^10.1.0":
   version "10.17.60"
@@ -7166,7 +7179,7 @@ invoices@2.1.0:
     bolt09 "0.2.3"
     tiny-secp256k1 "2.2.1"
 
-invoices@^2.2.0:
+invoices@2.2.0, invoices@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/invoices/-/invoices-2.2.0.tgz#6c223fe95b5d53bc9be4b2de6fc139dcb9bda416"
   integrity sha512-uVe0WdHGdhkKubfrH1rSC/RpFREC7D0dh1IHxEgmUhV1lhn2+1UFVUxhri4dGyklBgIi+DNzE8q3665PF8z5Vw==
@@ -8431,7 +8444,7 @@ lightning@5.16.3:
     tiny-secp256k1 "2.2.1"
     type-fest "2.13.0"
 
-lightning@5.16.6, lightning@^5.16.6:
+lightning@5.16.6:
   version "5.16.6"
   resolved "https://registry.yarnpkg.com/lightning/-/lightning-5.16.6.tgz#82074344d927ecd8529ee3606325ff1411a56fb3"
   integrity sha512-WDlE2UzaDXuzOXm5/INUnvTMxWdJGOMYqqfLI/RUfwu7U0w3CLIBqT8PE20Y4elx8BTYwbG7HU4/etnj5hybvw==
@@ -8456,6 +8469,32 @@ lightning@5.16.6, lightning@^5.16.6:
     psbt "2.7.1"
     tiny-secp256k1 "2.2.1"
     type-fest "2.18.0"
+
+lightning@^5.21.0:
+  version "5.21.0"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-5.21.0.tgz#01366e2f9a7db4c52f912e2f46c1a2bf0f0d38b2"
+  integrity sha512-Rha4U1yZS/SHwW/GJ+IeEaxI6vqJ1bx/upQkY5RIZNCn4YoMvqd4inQUt9GNtuLy/pXus8Bms4DL2B9DkujBKQ==
+  dependencies:
+    "@grpc/grpc-js" "1.6.12"
+    "@grpc/proto-loader" "0.7.2"
+    "@types/express" "4.17.13"
+    "@types/node" "18.7.14"
+    "@types/request" "2.48.8"
+    "@types/ws" "8.5.3"
+    async "3.2.4"
+    asyncjs-util "1.2.10"
+    bitcoinjs-lib "6.0.2"
+    bn.js "5.2.1"
+    body-parser "1.20.0"
+    bolt07 "1.8.2"
+    bolt09 "0.2.3"
+    cbor "8.1.0"
+    ecpair "2.0.1"
+    express "4.18.1"
+    invoices "2.2.0"
+    psbt "2.7.1"
+    tiny-secp256k1 "2.2.1"
+    type-fest "2.19.0"
 
 limiter@^1.1.5:
   version "1.1.5"
@@ -12139,6 +12178,11 @@ type-fest@2.18.0:
   version "2.18.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-2.18.0.tgz#fdef3a74e0a9e68ebe46054836650fb91ac3881e"
   integrity sha512-pRS+/yrW5TjPPHNOvxhbNZexr2bS63WjrMU8a+VzEBhUi9Tz1pZeD+vQz3ut0svZ46P+SRqMEPnJmk2XnvNzTw==
+
+type-fest@2.19.0:
+  version "2.19.0"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-2.19.0.tgz#88068015bb33036a598b952e55e9311a60fd3a9b"
+  integrity sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==
 
 type-fest@^0.20.2:
   version "0.20.2"
