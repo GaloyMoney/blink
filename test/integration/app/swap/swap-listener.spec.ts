@@ -11,7 +11,7 @@ describe("Swap", () => {
     const amount = 250000
     const swapService = LoopService(LND1_LOOP_CONFIG)
     const isSwapServerUp = await swapService.healthCheck()
-    if (isSwapServerUp) {
+    if (isSwapServerUp instanceof Error === false) {
       await new Promise(async (resolve) => {
         // 1) Start Swap Listener
         const listener = swapService.swapListener()

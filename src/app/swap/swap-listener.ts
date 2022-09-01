@@ -9,7 +9,7 @@ import { SwapErrorNoActiveLoopdNode } from "@domain/swap/errors"
 
 export const startSwapMonitor = async (swapService: ISwapService) => {
   const isSwapServerUp = await swapService.healthCheck()
-  if (isSwapServerUp) {
+  if (isSwapServerUp instanceof Error === false) {
     const listener = swapService.swapListener()
     listener.on("data", (response) => {
       // const swapData = response.parsedSwapData

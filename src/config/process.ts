@@ -101,3 +101,8 @@ export const LND_HEALTH_REFRESH_TIME_MS = parseInt(
   process.env.LND_HEALTH_REFRESH_TIME_MS || "20000",
   10,
 )
+
+export const LND1_LOOP_TLS = process.env.LND1_LOOP_TLS ?? ""
+export const LND1_LOOP_MACAROON = process.env.LND1_LOOP_MACAROON ?? ""
+export const LND2_LOOP_TLS = process.env.LND2_LOOP_TLS ?? ""
+export const LND2_LOOP_MACAROON = process.env.LND2_LOOP_MACAROON ?? ""

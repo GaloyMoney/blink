@@ -5,7 +5,11 @@ import { SwapClientNotResponding } from "@domain/swap/errors"
 import { SwapOutChecker } from "@domain/swap"
 import { lndsBalances } from "@services/lnd/utils"
 import { getSwapDestAddress } from "@app/swap/get-swap-dest-address"
-import { LND1_LOOP_CONFIG, LND2_LOOP_CONFIG } from "@app/swap/get-active-loopd"
+import {
+  // getActiveLoopd,
+  LND1_LOOP_CONFIG,
+  LND2_LOOP_CONFIG,
+} from "@app/swap/get-active-loopd"
 
 describe("Swap", () => {
   // const activeLoopd = getActiveLoopd()
@@ -13,7 +17,8 @@ describe("Swap", () => {
   const amount = toSats(250000)
 
   it("Swap out returns successful swap result for default lnd1-loop node", async () => {
-    if (await swapService.healthCheck()) {
+    const isSwapServerUp = await swapService.healthCheck()
+    if (isSwapServerUp instanceof Error === false) {
       const swapResult = await swapService.swapOut({
         amount,
       })
@@ -31,10 +36,12 @@ describe("Swap", () => {
   })
 
   it("Swap out returns successful swap result for lnd2-loop node", async () => {
-    if (await swapService.healthCheck()) {
+    const isSwapServerUp = await swapService.healthCheck()
+    if (isSwapServerUp instanceof Error === false) {
       const loopService = LoopService(LND2_LOOP_CONFIG)
       const swapServiceLnd2 = loopService
-      if (await swapServiceLnd2.healthCheck()) {
+      const isSwapServerUp2 = await swapServiceLnd2.healthCheck()
+      if (isSwapServerUp2 instanceof Error === false) {
         const swapDestAddress = await getSwapDestAddress()
         let params
         if (swapDestAddress instanceof String) {
@@ -65,7 +72,8 @@ describe("Swap", () => {
   })
 
   it("swap out without enough funds returns an error", async () => {
-    if (await swapService.healthCheck()) {
+    const isSwapServerUp = await swapService.healthCheck()
+    if (isSwapServerUp instanceof Error === false) {
       const swapResult = await swapService.swapOut({ amount: toSats(5000000000) })
       if (swapResult instanceof SwapClientNotResponding) {
         return
@@ -75,7 +83,8 @@ describe("Swap", () => {
   })
 
   it("Swap out if on chain wallet is depleted returns a swap result", async () => {
-    if (await swapService.healthCheck()) {
+    const isSwapServerUp = await swapService.healthCheck()
+    if (isSwapServerUp instanceof Error === false) {
       // thresholds
       const { onChain } = await lndsBalances()
       const minOnChainHotWalletBalanceConfig = toSats(onChain + 50000)
