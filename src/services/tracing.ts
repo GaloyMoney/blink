@@ -79,29 +79,47 @@ const recordGqlErrors = ({
   )
   const firstErr = errors[0]
   if (firstErr.message != "") {
-    span.setAttribute(`graphql.${subPath}error.message`, firstErr.message)
+    const value = firstErr.message
+    span.setAttribute(`graphql.${subPath}error.message`, value)
+    if (span.attributes[`graphql.error.message`] === undefined) {
+      span.setAttribute(`graphql.error.message`, value)
+    }
   }
   if (firstErr.constructor?.name) {
-    span.setAttribute(`graphql.${subPath}error.type`, firstErr.constructor.name)
+    const value = firstErr.constructor.name
+    span.setAttribute(`graphql.${subPath}error.type`, value)
+    if (span.attributes[`graphql.error.type`] === undefined) {
+      span.setAttribute(`graphql.error.type`, value)
+    }
   }
   if (firstErr.path) {
-    span.setAttribute(`graphql.${subPath}error.path`, firstErr.path.join("."))
+    const value = firstErr.path.join(".")
+    span.setAttribute(`graphql.${subPath}error.path`, value)
+    if (span.attributes[`graphql.error.path`] === undefined) {
+      span.setAttribute(`graphql.error.path`, value)
+    }
   }
   if (firstErr.extensions?.code) {
-    span.setAttribute(`graphql.${subPath}error.code`, firstErr.extensions.code)
+    const value = firstErr.extensions.code
+    span.setAttribute(`graphql.${subPath}error.code`, value)
+    if (span.attributes[`graphql.error.code`] === undefined) {
+      span.setAttribute(`graphql.error.code`, value)
+    }
   }
   if (firstErr.originalError) {
     if (firstErr.originalError.constructor?.name) {
-      span.setAttribute(
-        `graphql.${subPath}error.original.type`,
-        firstErr.originalError.constructor.name,
-      )
+      const value = firstErr.originalError.constructor.name
+      span.setAttribute(`graphql.${subPath}error.original.type`, value)
+      if (span.attributes[`graphql.error.original.type`] === undefined) {
+        span.setAttribute(`graphql.error.original.type`, value)
+      }
     }
     if (firstErr.originalError.message != "") {
-      span.setAttribute(
-        `graphql.${subPath}error.original.message`,
-        firstErr.originalError.message,
-      )
+      const value = firstErr.originalError.message
+      span.setAttribute(`graphql.${subPath}error.original.message`, value)
+      if (span.attributes[`graphql.error.original.message`] === undefined) {
+        span.setAttribute(`graphql.error.original.message`, value)
+      }
     }
   }
 
