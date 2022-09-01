@@ -107,7 +107,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
         outbound = channel_balance - inboundBal
       }
       return {
-        channel_balance: toSats(channel_balance),
+        channelBalance: toSats(channel_balance),
         inbound: toSats(inboundBal),
         outbound: toSats(outbound),
       }

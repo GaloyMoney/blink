@@ -16,3 +16,8 @@ export enum SwapState {
   FAILED = "FAILED",
   INVOICE_SETTLED = "INVOICE_SETTLED",
 }
+
+export enum LoopdInstanceName {
+  "LND1_LOOP" = "LND1_LOOP",
+  "LND2_LOOP" = "LND2_LOOP",
+}

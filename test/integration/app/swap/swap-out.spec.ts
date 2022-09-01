@@ -4,12 +4,8 @@ import { toSats } from "@domain/bitcoin"
 import { SwapClientNotResponding } from "@domain/swap/errors"
 import { SwapOutChecker } from "@domain/swap"
 import { lndsBalances } from "@services/lnd/utils"
-import {
-  // getActiveLoopd,
-  getSwapDestAddress,
-  LND1_LOOP_CONFIG,
-  LND2_LOOP_CONFIG,
-} from "@app/swap"
+import { getSwapDestAddress } from "@app/swap/get-swap-dest-address"
+import { LND1_LOOP_CONFIG, LND2_LOOP_CONFIG } from "@app/swap/get-active-loopd"
 
 describe("Swap", () => {
   // const activeLoopd = getActiveLoopd()

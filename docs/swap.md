@@ -81,13 +81,15 @@ swap:
 (3) Choose the swap provider
 ---------------------------------------
 
-By default we use the lightning-labs `loop` swap provider, but there is an `ISwapProvider` interface that third party contributors can code against. For example, you could create a PeerSwap swap provider by configuring the `swapProviders` parameter in the `default.yaml` file. Use the lightning-labs provider as an example here `src/services/swap/providers/lightning-labs`. 
+By default we use the lightning-labs `loop` swap provider, but there is an `ISwapProvider` interface that third party contributors can code against. For example, you could create a PeerSwap swap provider by configuring the `swapProviders` parameter in the `default.yaml` file. Use the lightning-labs provider as an example here `src/services/loopd`. 
 
 ```typescript
-import { LoopService } from "./providers/lightning-labs/loop-service"
+import { LoopService } from "@services/loopd"
+import { LND1_LOOP_CONFIG } from "./get-active-loopd"
 
 // do swap out
-const resp = await LoopService().swapOut(amount)
+const loopService = LoopService(LND1_LOOP_CONFIG)
+const loopResult = await loopService.swapOut({ amount: swapOutAmount })
 ```
 
 (4) Monitor Status of the swap
@@ -170,7 +172,7 @@ Generate GRPC Types
 ====================
 TODO automate via CI
 ```
-cd src/services/swap/providers/lightning-labs/protos
+cd src/services/loopd/protos
 buf generate
 ```
 

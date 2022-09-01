@@ -7,7 +7,7 @@ import { SwapOutChecker } from "@domain/swap"
 import { baseLogger } from "@services/logger"
 import { LoopService } from "@services/loopd"
 import { addAttributesToCurrentSpan } from "@services/tracing"
-import { getOffChainChannelBalances } from "@app/lightning"
+import { LndService } from "@services/lnd"
 
 import { LND1_LOOP_CONFIG } from "./get-active-loopd"
 
@@ -24,7 +24,9 @@ export const swapOut = async (): Promise<
   const onChainBalance = await onChainService.getBalance()
   if (onChainBalance instanceof Error) return onChainBalance
 
-  const offChainChannelBalances = await getOffChainChannelBalances()
+  const offChainService = LndService()
+  if (offChainService instanceof Error) return offChainService
+  const offChainChannelBalances = await offChainService.getInboundOutboundBalance()
   if (offChainChannelBalances instanceof Error) return offChainChannelBalances
   const outbound = offChainChannelBalances.outbound
 

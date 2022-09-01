@@ -1,4 +1,5 @@
-import { handleSwapOutCompleted, LND1_LOOP_CONFIG } from "@app/swap"
+import { handleSwapOutCompleted } from "@app/swap"
+import { LND1_LOOP_CONFIG } from "@app/swap/get-active-loopd"
 import { toSats } from "@domain/bitcoin"
 import { LoopService } from "@services/loopd"
 import { sleep } from "@utils"

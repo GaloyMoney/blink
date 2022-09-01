@@ -41,12 +41,10 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { LndService } from "@services/lnd"
-
 import { LoopService } from "@services/loopd"
-
-import { handleSwapOutCompleted } from "@app/swap"
-
-import { LND1_LOOP_CONFIG } from "@app/swap/get-active-loopd"
+import { startSwapMonitor } from "@app/swap"
+import { LND1_LOOP_CONFIG, LND2_LOOP_CONFIG } from "@app/swap/get-active-loopd"
+import { SwapTriggerError } from "@domain/swap/errors"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -394,21 +392,12 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
 
 const listenerSwapMonitor = async () => {
   try {
-    const swapService = LoopService(LND1_LOOP_CONFIG) // default to LND1 for now, also add listener for LND2
-    const isSwapServerUp = await swapService.healthCheck()
-    if (isSwapServerUp) {
-      const listener = swapService.swapListener()
-      listener.on("data", (response) => {
-        const swapData = response.parsedSwapData
-        logger.info({ swapData }, "listenerSwapMonitor")
-        handleSwapOutCompleted(response)
-      })
-    } else {
-      // TODO swap server is not running, insert trace
-    }
+    const loopServiceLnd1 = LoopService(LND1_LOOP_CONFIG)
+    const loopServiceLnd2 = LoopService(LND2_LOOP_CONFIG)
+    startSwapMonitor(loopServiceLnd1)
+    startSwapMonitor(loopServiceLnd2)
   } catch (e) {
-    // TODO SwapServiceUnknownError trace
-    console.log("SWAP trigger error", e)
+    return new SwapTriggerError(e)
   }
 }
 

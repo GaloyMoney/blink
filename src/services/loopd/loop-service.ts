@@ -27,6 +27,7 @@ export const LoopService = ({
   tlsCert,
   grpcEndpoint,
   btcNetwork,
+  loopdInstanceName,
 }: LoopdConfig): ISwapService => {
   const mac = Buffer.from(macaroon, "base64").toString("hex")
   const tls = Buffer.from(tlsCert, "base64")
@@ -39,7 +40,7 @@ export const LoopService = ({
     swapClient.loopOut.bind(swapClient),
   )
 
-  const healthCheck = async (): Promise<boolean> => {
+  const healthCheck = async (): Promise<boolean | SwapServiceError> => {
     try {
       const request = new QuoteRequest()
       request.setAmt(500000)
@@ -47,7 +48,7 @@ export const LoopService = ({
       const fee = resp.getSwapFeeSat()
       if (fee) return true
     } catch (error) {
-      console.log(error)
+      return new SwapServiceError(error)
     }
     return false
   }
@@ -63,7 +64,8 @@ export const LoopService = ({
       // on regtest, set the publication deadline to 0 for faster swaps, otherwise
       // set it to 30 minutes in the future to reduce swap fees
       const thirtyMins = 30 * 60 * 1000
-      const swapPublicationDeadline = btcNetwork === BtcNetwork.regtest ? 0 : thirtyMins
+      const swapPublicationDeadline =
+        btcNetwork === BtcNetwork.regtest ? 0 : Date.now() + thirtyMins
       if (swapDestAddress) request.setDest(swapDestAddress)
       request.setAmt(amount)
       request.setMaxSwapFee(fee)
@@ -72,7 +74,7 @@ export const LoopService = ({
       request.setMaxPrepayAmt(fee)
       request.setMaxMinerFee(fee)
       request.setSwapPublicationDeadline(swapPublicationDeadline)
-      request.setInitiator("galoy-backend")
+      request.setInitiator(`galoy-${loopdInstanceName}`)
       const resp = await clientSwapOut(request)
       const swapOutResult: SwapOutResult = {
         htlcAddress: resp.getHtlcAddress(),

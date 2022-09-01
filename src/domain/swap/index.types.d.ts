@@ -3,9 +3,10 @@ type SwapServiceError = import("./errors").SwapServiceError
 type SwapType = import("./index").SwapType
 type SwapProvider = import("./index").SwapProvider
 type SwapState = import("./index").SwapState
+type LoopdInstanceName = import("./index").LoopdInstanceName
 
 interface ISwapService {
-  healthCheck: () => Promise<boolean>
+  healthCheck: () => Promise<boolean | SwapServiceError>
   swapOut: (swapOutArgs: SwapOutArgs) => Promise<SwapOutResult | SwapServiceError>
   swapListener: () => SwapClientReadableStream<SwapListenerResponse>
   swapOutTerms?: () => Promise<string> // TODO: Implement this
@@ -61,4 +62,5 @@ type LoopdConfig = {
   tlsCert: string
   grpcEndpoint: string
   btcNetwork: BtcNetwork
+  loopdInstanceName: LoopdInstanceName
 }

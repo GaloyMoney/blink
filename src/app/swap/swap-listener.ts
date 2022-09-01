@@ -5,6 +5,21 @@ import { WalletCurrency } from "@domain/shared"
 import { LedgerTransactionType } from "@domain/ledger"
 import { SwapState, SwapType } from "@domain/swap"
 import { addAttributesToCurrentSpan } from "@services/tracing"
+import { SwapErrorNoActiveLoopdNode } from "@domain/swap/errors"
+
+export const startSwapMonitor = async (swapService: ISwapService) => {
+  const isSwapServerUp = await swapService.healthCheck()
+  if (isSwapServerUp) {
+    const listener = swapService.swapListener()
+    listener.on("data", (response) => {
+      // const swapData = response.parsedSwapData
+      // logger.info({ swapData }, "listenerSwapMonitor")
+      handleSwapOutCompleted(response)
+    })
+  } else {
+    return SwapErrorNoActiveLoopdNode
+  }
+}
 
 export const handleSwapOutCompleted = async (swapStatus: SwapStatusResultWrapper) => {
   if (swapStatus.parsedSwapData) {
