@@ -254,12 +254,25 @@ const updateErrorForSpan = ({
 const recordException = (span: Span, exception: Exception, level?: ErrorLevel) => {
   // @ts-ignore-next-line no-implicit-any error
   const errorLevel = level || exception["level"] || ErrorLevel.Warn
+
+  // Write error attributes if update checks pass
   if (updateErrorForSpan({ span, errorLevel })) {
     span.setAttribute("error.level", errorLevel)
     // @ts-ignore-next-line no-implicit-any error
     span.setAttribute("error.name", exception["name"])
     span.setAttribute("error.message", exception["message"])
   }
+
+  // Append error with next index
+  let nextIdx = 0
+  while (span.attributes[`error.${nextIdx}.level`] !== undefined) {
+    nextIdx++
+  }
+  span.setAttribute(`error.${nextIdx}.level`, errorLevel)
+  // @ts-ignore-next-line no-implicit-any error
+  span.setAttribute(`error.${nextIdx}.name`, exception["name"])
+  span.setAttribute(`error.${nextIdx}.message`, exception["message"])
+
   span.recordException(exception)
   span.setStatus({ code: SpanStatusCode.ERROR })
 }
