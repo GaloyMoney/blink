@@ -130,7 +130,7 @@ export const startApolloServer = async ({
   const app = express()
   const httpServer = createServer(app)
 
-  const apolloPulgins = [
+  const apolloPlugins = [
     ApolloServerPluginDrainHttpServer({ httpServer }),
     apolloConfig.playground
       ? ApolloServerPluginLandingPageGraphQLPlayground({
@@ -146,7 +146,7 @@ export const startApolloServer = async ({
   ]
 
   if (isProd && enableApolloUsageReporting) {
-    apolloPulgins.push(
+    apolloPlugins.push(
       ApolloServerPluginUsageReporting({
         rewriteError(err) {
           graphqlLogger.error(err, "Error caught in rewriteError")
@@ -159,7 +159,7 @@ export const startApolloServer = async ({
   const apolloServer = new ApolloServer({
     schema,
     introspection: apolloConfig.playground,
-    plugins: apolloPulgins,
+    plugins: apolloPlugins,
     context: async (context) => {
       // @ts-expect-error: TODO
       const tokenPayload = context.req?.token ?? null
