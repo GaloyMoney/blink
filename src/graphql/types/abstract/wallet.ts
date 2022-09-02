@@ -24,6 +24,9 @@ const IWallet = GT.Interface({
     balance: {
       type: GT.NonNull(SignedAmount),
     },
+    pendingIncomingBalance: {
+      type: GT.NonNull(SignedAmount),
+    },
     transactions: {
       description: dedent`Transactions are ordered anti-chronologically,
       ie: the newest transaction will be first`,

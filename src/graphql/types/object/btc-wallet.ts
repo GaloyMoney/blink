@@ -1,4 +1,5 @@
 import { GT } from "@graphql/index"
+import { normalizePaymentAmount } from "@graphql/root/mutation"
 import { connectionArgs, connectionFromArray } from "@graphql/connections"
 import { mapError } from "@graphql/error-map"
 
@@ -41,6 +42,15 @@ const BtcWallet = GT.Object<Wallet>({
         })
         if (balanceSats instanceof Error) throw mapError(balanceSats)
         return balanceSats
+      },
+    },
+    pendingIncomingBalance: {
+      type: GT.NonNull(SignedAmount),
+      description: "An unconfirmed incoming onchain balance.",
+      resolve: async (source) => {
+        const balanceSats = await Wallets.getPendingOnChainBalanceForWallets([source])
+        if (balanceSats instanceof Error) throw mapError(balanceSats)
+        return normalizePaymentAmount(balanceSats[source.id]).amount
       },
     },
     transactions: {
