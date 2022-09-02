@@ -40,7 +40,7 @@ export const IncomingOnChainTxHandler = (
       balancesByWallet[wallet.id] = ZERO_SATS
       for (const key of Object.keys(balancesByAddress)) {
         const address = key as OnChainAddress
-        if (wallet.onChainAddresses().includes(address as OnChainAddress)) {
+        if (wallet.onChainAddresses().includes(address)) {
           balancesByWallet[wallet.id] = calc.add(
             balancesByWallet[wallet.id],
             balancesByAddress[address],
