@@ -10,7 +10,7 @@ const calc = AmountCalculator()
 export const IncomingOnChainTxHandler = (
   txns: IncomingOnChainTransaction[],
 ): IncomingOnChainTxHandler => {
-  const balanceByAddress = ():
+  const balanceByTxnsAddresses = ():
     | { [key: OnChainAddress]: BtcPaymentAmount }
     | ValidationError => {
     const pendingBalances = txns.map(balanceFromIncomingTx)
@@ -32,7 +32,7 @@ export const IncomingOnChainTxHandler = (
   const balanceByWallet = (
     wallets: Wallet[],
   ): { [key: WalletId]: BtcPaymentAmount } | ValidationError => {
-    const balancesByAddress = balanceByAddress()
+    const balancesByAddress = balanceByTxnsAddresses()
     if (balancesByAddress instanceof Error) return balancesByAddress
 
     const balancesByWallet: { [key: WalletId]: BtcPaymentAmount } = {}
@@ -76,7 +76,7 @@ export const IncomingOnChainTxHandler = (
   }
 
   return {
-    balanceByAddress,
+    balanceByTxnsAddresses,
     balanceByWallet,
   }
 }

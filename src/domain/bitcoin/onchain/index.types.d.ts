@@ -65,7 +65,7 @@ type PayToAddressArgs = {
 }
 
 type IncomingOnChainTxHandler = {
-  balanceByAddress(): { [key: OnChainAddress]: BtcPaymentAmount } | ValidationError
+  balanceByTxnsAddresses(): { [key: OnChainAddress]: BtcPaymentAmount } | ValidationError
   balanceByWallet(
     wallets: Wallet[],
   ): { [key: WalletId]: BtcPaymentAmount } | ValidationError
