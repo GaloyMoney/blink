@@ -123,7 +123,7 @@ describe("handleIncomingOnChainTransactions", () => {
         ["change-address3"]: 600n,
       }
 
-      const balancesByAddress = handler.balanceByTxnsAddresses()
+      const balancesByAddress = handler.balancesByAddresses()
       expect(balancesByAddress).toStrictEqual(balancesByKey(expectedAmountsByAddress))
     })
   })
