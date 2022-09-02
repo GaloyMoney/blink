@@ -40,7 +40,7 @@ import {
   checkAndVerifyTwoFA,
   checkIntraledgerLimits,
   checkWithdrawalLimits,
-} from "./check-limit-helpers"
+} from "./private"
 import { getOnChainFee } from "./get-on-chain-fee"
 
 const { dustThreshold } = getOnChainWalletConfig()

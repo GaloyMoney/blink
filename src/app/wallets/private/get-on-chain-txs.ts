@@ -9,7 +9,7 @@ import { baseLogger } from "@services/logger"
 
 // we are getting both the transactions in the mempool and the transaction that
 // have been mined by not yet credited because they haven't reached enough confirmations
-export default async () =>
+export const getOnChainTxs = async () =>
   RedisCacheService().getOrSet({
     key: CacheKeys.LastOnChainTransactions,
     ttlSecs: SECS_PER_10_MINS,
