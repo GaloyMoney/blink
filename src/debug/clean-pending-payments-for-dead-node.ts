@@ -1,6 +1,7 @@
 /**
  * how to run:
- *	. ./.envrc && yarn ts-node \
+ *	. ./.envrc && PUBKEY="" \
+ *    yarn ts-node \
  *		--files \
  *			-r tsconfig-paths/register \
  *			-r src/services/tracing.ts \
@@ -19,9 +20,7 @@ import { baseLogger } from "@services/logger"
 
 import { MainBook } from "@services/ledger/books"
 
-const DEAD_LND_PUBKEYS = [
-  "02ae3c066e67cf3951bb5230cf4e13aee053bc06465cd25f870988b691469140b0", // dead node in hack environment
-]
+const PUBKEY = process.env.PUBKEY
 
 const listAllPendingPayments = async (): Promise<
   LedgerTransaction<WalletCurrency>[] | LedgerError
@@ -47,7 +46,8 @@ const main = async (): Promise<true | ApplicationError> => {
     if (pubkey === undefined) continue
     if (paymentHash === undefined) continue
 
-    if (DEAD_LND_PUBKEYS.includes(pubkey)) {
+    if (PUBKEY && PUBKEY === pubkey) {
+      console.log("HERE 0:", `deleting ${paymentHash}`)
       await LockService().lockPaymentHash(
         paymentHash,
         async (): Promise<true | LedgerServiceError> => {
