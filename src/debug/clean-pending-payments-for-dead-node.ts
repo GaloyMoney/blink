@@ -1,11 +1,10 @@
 /**
  * how to run:
- *	. ./.envrc && PUBKEY="" \
- *    yarn ts-node \
+ *	. ./.envrc && yarn ts-node \
  *		--files \
  *			-r tsconfig-paths/register \
  *			-r src/services/tracing.ts \
- *		src/debug/clean-pending-payments-for-dead-node.ts
+ *		src/debug/clean-pending-payments-for-dead-node.ts <pubkey>
  */
 
 import { LedgerTransactionType, UnknownLedgerError } from "@domain/ledger"
@@ -20,7 +19,7 @@ import { baseLogger } from "@services/logger"
 
 import { MainBook } from "@services/ledger/books"
 
-const PUBKEY = process.env.PUBKEY
+const PUBKEY = process.argv[2]
 
 const listAllPendingPayments = async (): Promise<
   LedgerTransaction<WalletCurrency>[] | LedgerError
@@ -38,6 +37,7 @@ const listAllPendingPayments = async (): Promise<
 }
 
 const main = async (): Promise<true | ApplicationError> => {
+  baseLogger.info(`Started script for pubkey: ${PUBKEY}`)
   const pendingPayments = await listAllPendingPayments()
   if (pendingPayments instanceof Error) return pendingPayments
 
@@ -47,7 +47,7 @@ const main = async (): Promise<true | ApplicationError> => {
     if (paymentHash === undefined) continue
 
     if (PUBKEY && PUBKEY === pubkey) {
-      console.log("HERE 0:", `deleting ${paymentHash}`)
+      baseLogger.info(`deleting ${paymentHash}`)
       await LockService().lockPaymentHash(
         paymentHash,
         async (): Promise<true | LedgerServiceError> => {
@@ -73,6 +73,7 @@ const main = async (): Promise<true | ApplicationError> => {
     }
   }
 
+  baseLogger.info(`Finished script for pubkey: ${PUBKEY}`)
   return true
 }
 
