@@ -108,3 +108,6 @@ export class BadAmountForRouteError extends LnRouteValidationError {}
 
 export class InvalidAccountStatusError extends ValidationError {}
 export class InactiveAccountError extends InvalidAccountStatusError {}
+export class InvalidNonHodlInvoiceError extends ValidationError {
+  level = ErrorLevel.Critical
+}

@@ -2,7 +2,7 @@ import { getCurrentPrice } from "@app/prices"
 import { usdFromBtcMidPriceFn } from "@app/shared"
 
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
-import { CouldNotFindError } from "@domain/errors"
+import { CouldNotFindError, InvalidNonHodlInvoiceError } from "@domain/errors"
 import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
@@ -281,17 +281,11 @@ export const declineHeldInvoice = wrapAsyncToRunInSpan({
     }
     if (lnInvoiceLookup instanceof Error) return lnInvoiceLookup
 
-    // FIXME: This is just to support transition to hodl invoices
-    // TODO: REMOVE THIS after hodl invoices has been deployed for 24 hours.
     if (lnInvoiceLookup.isSettled) {
-      addAttributesToCurrentSpan({ ["isHodlInvoice"]: false })
-      const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(
-        paymentHash,
+      return new InvalidNonHodlInvoiceError(
+        JSON.stringify({ paymentHash: lnInvoiceLookup.paymentHash }),
       )
-      if (walletInvoice instanceof Error) return walletInvoice
-      return updatePendingInvoice({ walletInvoice, logger })
     }
-    addAttributesToCurrentSpan({ ["isHodlInvoice"]: true })
 
     if (!lnInvoiceLookup.isHeld) {
       pendingInvoiceLogger.info({ lnInvoiceLookup }, "invoice has not been paid yet")
