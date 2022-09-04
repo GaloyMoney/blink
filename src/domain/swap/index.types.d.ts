@@ -9,8 +9,8 @@ interface ISwapService {
   healthCheck: () => Promise<boolean | SwapServiceError>
   swapOut: (swapOutArgs: SwapOutArgs) => Promise<SwapOutResult | SwapServiceError>
   swapListener: () => SwapClientReadableStream<SwapListenerResponse>
-  swapOutTerms?: () => Promise<string> // TODO: Implement this
-  swapOutQuote?: () => Promise<string> // TODO: Implement this
+  swapOutTerms: () => Promise<SwapOutTermsResult | SwapServiceError>
+  swapOutQuote: (amt: Satoshis) => Promise<SwapOutQuoteResult | SwapServiceError>
 }
 
 type SwapOutArgs = {
@@ -45,6 +45,22 @@ type SwapStatusResult = {
   offchainRoutingFee: bigint
   message: string
   swapType: SwapType
+}
+
+type SwapOutTermsResult = {
+  minSwapAmount: number
+  maxSwapAmount: number
+  minCltvDelta: number
+  maxCltvDelta: number
+}
+
+type SwapOutQuoteResult = {
+  swapFeeSat: number
+  prepayAmtSat: number
+  htlcSweepFeeSat: number
+  swapPaymentDest: string
+  cltvDelta: number
+  confTarget: number
 }
 
 type SwapConfig = {

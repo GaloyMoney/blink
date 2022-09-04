@@ -2,7 +2,11 @@
 import util from "util"
 
 import * as grpc from "@grpc/grpc-js"
-import { SwapClientNotResponding, SwapServiceError } from "@domain/swap/errors"
+import {
+  SwapClientNotResponding,
+  SwapServiceError,
+  SwapErrorHealthCheckFailed,
+} from "@domain/swap/errors"
 import { SwapState as SwapStateType } from "@domain/swap/index"
 import { SwapType as DomainSwapType } from "@domain/swap"
 import { ServiceClient } from "@grpc/grpc-js/build/src/make-client"
@@ -20,6 +24,10 @@ import {
   SwapState,
   SwapType,
   SwapStatus,
+  TokensResponse,
+  TokensRequest,
+  TermsRequest,
+  OutTermsResponse,
 } from "./protos/loop_pb"
 
 export const LoopService = ({
@@ -33,22 +41,27 @@ export const LoopService = ({
   const tls = Buffer.from(tlsCert, "base64")
   const swapClient: ServiceClient = createClient(mac, tls, grpcEndpoint)
 
-  const clientHealthCheck = util.promisify<QuoteRequest, OutQuoteResponse>(
-    swapClient.loopOutQuote.bind(swapClient),
+  // helpers
+  const clientHealthCheck = util.promisify<TokensRequest, TokensResponse>(
+    swapClient.getLsatTokens.bind(swapClient),
   )
   const clientSwapOut = util.promisify<LoopOutRequest, SwapResponse>(
     swapClient.loopOut.bind(swapClient),
   )
+  const clientSwapOutQuote = util.promisify<QuoteRequest, OutQuoteResponse>(
+    swapClient.loopOutQuote.bind(swapClient),
+  )
+  const clientSwapOutTerms = util.promisify<TermsRequest, OutTermsResponse>(
+    swapClient.loopOutTerms.bind(swapClient),
+  )
 
   const healthCheck = async (): Promise<boolean | SwapServiceError> => {
     try {
-      const request = new QuoteRequest()
-      request.setAmt(500000)
+      const request = new TokensRequest()
       const resp = await clientHealthCheck(request)
-      const fee = resp.getSwapFeeSat()
-      if (fee) return true
+      if (resp) return true
     } catch (error) {
-      return new SwapServiceError(error)
+      return new SwapErrorHealthCheckFailed(error)
     }
     return false
   }
@@ -154,6 +167,41 @@ export const LoopService = ({
     }
   }
 
+  const swapOutQuote = async (
+    amt: Satoshis,
+  ): Promise<SwapOutQuoteResult | SwapServiceError> => {
+    try {
+      const request = new QuoteRequest()
+      request.setAmt(amt)
+      const resp = await clientSwapOutQuote(request)
+      return {
+        cltvDelta: resp.getCltvDelta(),
+        confTarget: resp.getConfTarget(),
+        htlcSweepFeeSat: resp.getHtlcSweepFeeSat(),
+        prepayAmtSat: resp.getPrepayAmtSat(),
+        swapFeeSat: resp.getSwapFeeSat(),
+        swapPaymentDest: resp.getSwapPaymentDest(),
+      } as SwapOutQuoteResult
+    } catch (error) {
+      return new SwapServiceError(error)
+    }
+  }
+
+  const swapOutTerms = async (): Promise<SwapOutTermsResult | SwapServiceError> => {
+    try {
+      const request = new TermsRequest()
+      const resp = await clientSwapOutTerms(request)
+      return {
+        maxCltvDelta: resp.getMaxCltvDelta(),
+        maxSwapAmount: resp.getMaxSwapAmount(),
+        minCltvDelta: resp.getMinCltvDelta(),
+        minSwapAmount: resp.getMinSwapAmount(),
+      } as SwapOutTermsResult
+    } catch (error) {
+      return new SwapServiceError(error)
+    }
+  }
+
   function createClient(
     macaroon: string,
     tls: Buffer,
@@ -193,6 +241,8 @@ export const LoopService = ({
       healthCheck,
       swapOut,
       swapListener,
+      swapOutQuote,
+      swapOutTerms,
     },
   })
 }

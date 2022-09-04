@@ -71,7 +71,7 @@ describe("Swap", () => {
     }
   })
 
-  it("swap out without enough funds returns an error", async () => {
+  it("Swap out without enough funds returns an error", async () => {
     const isSwapServerUp = await swapService.healthCheck()
     if (isSwapServerUp instanceof Error === false) {
       const swapResult = await swapService.swapOut({ amount: toSats(5000000000) })
@@ -115,6 +115,36 @@ describe("Swap", () => {
       } else {
         expect("No swap Needed").toEqual("No swap Needed")
       }
+    }
+  })
+
+  it("Swap out quote return quote result", async () => {
+    const isSwapServerUp = await swapService.healthCheck()
+    if (isSwapServerUp instanceof Error === false) {
+      const quoteResult = await swapService.swapOutQuote(toSats(250000))
+      expect(quoteResult).not.toBeInstanceOf(Error)
+      expect(quoteResult).toEqual(
+        expect.objectContaining({
+          swapFeeSat: expect.any(Number),
+        }),
+      )
+    } else {
+      expect("No swap Needed").toEqual("No swap Needed")
+    }
+  })
+
+  it("Swap out terms return terms result", async () => {
+    const isSwapServerUp = await swapService.healthCheck()
+    if (isSwapServerUp instanceof Error === false) {
+      const termsResult = await swapService.swapOutTerms()
+      expect(termsResult).not.toBeInstanceOf(Error)
+      expect(termsResult).toEqual(
+        expect.objectContaining({
+          minSwapAmount: expect.any(Number),
+        }),
+      )
+    } else {
+      expect("No swap Needed").toEqual("No swap Needed")
     }
   })
 })

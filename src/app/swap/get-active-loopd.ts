@@ -21,7 +21,7 @@ export const getActiveLoopd = (): LoopdConfig => {
       return LND2_LOOP_CONFIG
     }
     default: {
-      return LND1_LOOP_CONFIG
+      throw SwapErrorNoActiveLoopdNode
     }
   }
 }
