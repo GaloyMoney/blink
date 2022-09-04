@@ -81,7 +81,7 @@ services:
       - POSTGRES_PASSWORD=galoy-price-pwd
       - POSTGRES_DB=galoy-price-history
   bitcoind:
-    image: lncm/bitcoind:v22.0
+    image: lncm/bitcoind:v23.0
     volumes:
     - ${PWD}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   lnd1:
