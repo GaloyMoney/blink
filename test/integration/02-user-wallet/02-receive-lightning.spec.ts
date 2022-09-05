@@ -9,7 +9,7 @@ import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
 import { defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning/invoice-expiration"
 import { toCents } from "@domain/fiat"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
-import { ValidationError, WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletInvoiceError } from "@domain/errors"
 
 import { WalletInvoicesRepository } from "@services/mongoose"
@@ -28,12 +28,12 @@ import { sleep } from "@utils"
 
 import {
   checkIsBalanced,
-  createInvoice,
   createUserAndWalletFromUserRef,
   getAmount,
   getBalanceHelper,
   getDefaultWalletIdByTestUserRef,
   getHash,
+  getInvoice,
   getPubKey,
   getUsdWalletIdByTestUserRef,
   lnd1,
@@ -553,25 +553,29 @@ describe("UserWallet - Lightning", () => {
       walletId: walletIdB as WalletId,
     })
     if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentRequest: invoice } = lnInvoice
+    const { paymentRequest: invoice, paymentHash: hash } = lnInvoice
 
-    const hash = getHash(invoice)
-
-    pay({ lnd: lndOutside1, request: invoice, mtokens })
-
+    const safePay = async (args) => {
+      try {
+        return await pay(args) // 'await' is explicitly needed here
+      } catch (err) {
+        return err
+      }
+    }
+    safePay({ lnd: lndOutside1, request: invoice, mtokens })
     // TODO: we could use an event instead of a sleep
     await sleep(500)
 
     expect(
       await Wallets.updatePendingInvoiceByPaymentHash({
-        paymentHash: hash as PaymentHash,
+        paymentHash: hash,
         logger: baseLogger,
       }),
-    ).toBeInstanceOf(ValidationError)
+    ).not.toBeInstanceOf(Error)
     // should be idempotent (not return error when called again)
     expect(
       await Wallets.updatePendingInvoiceByPaymentHash({
-        paymentHash: hash as PaymentHash,
+        paymentHash: hash,
         logger: baseLogger,
       }),
     ).not.toBeInstanceOf(Error)
@@ -581,18 +585,24 @@ describe("UserWallet - Lightning", () => {
     if (ledgerTxs instanceof Error) throw ledgerTxs
     expect(ledgerTxs).toHaveLength(0)
 
-    // Check that wallet invoice is marked as settled
+    // Check that wallet invoice is deleted (was declined)
     const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(hash)
-    if (walletInvoice instanceof Error) throw walletInvoice
-    expect(walletInvoice.paid).toBeTruthy()
+    expect(walletInvoice).toBeInstanceOf(CouldNotFindWalletInvoiceError)
+
+    // Check that invoice is deleted in lnd
+    let getInvoiceErr
+    try {
+      await getInvoice({ lnd: lnd1, id: hash })
+    } catch (err) {
+      getInvoiceErr = err
+    }
+    expect(parseLndErrorDetails(getInvoiceErr)).toEqual(
+      KnownLndErrorDetails.InvoiceNotFound,
+    )
 
     // Check that wallet balance is unchanged
     const finalBalance = await getBalanceHelper(walletIdB)
     expect(finalBalance).toBe(initBalanceB)
-
-    // Return msats to balance overall accounting
-    const { request } = await createInvoice({ lnd: lndOutside1 })
-    await pay({ lnd: lnd1, request, mtokens })
   })
 
   it("receives spam invoice", async () => {
