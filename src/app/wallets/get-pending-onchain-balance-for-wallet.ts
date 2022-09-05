@@ -5,7 +5,7 @@ import { TxFilter } from "@domain/bitcoin/onchain"
 import { baseLogger } from "@services/logger"
 import { IncomingOnChainTxHandler } from "@domain/bitcoin/onchain/incoming-tx-handler"
 
-import { getOnChainTxs } from "./private"
+import { getOnChainTxs } from "./private/get-on-chain-txs"
 
 export const getPendingOnChainBalanceForWallets = async (
   wallets: Wallet[],
