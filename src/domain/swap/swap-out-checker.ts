@@ -2,11 +2,6 @@ import { toSats } from "@domain/bitcoin"
 
 import { SwapServiceError } from "./errors"
 
-// checks the amount of "swap out" that is need
-// if return "0" then no swap out needed
-// if return an "amount" then swapout needed
-// if return "error" then we don't have enough outbound
-//   liquidity to perform a swap out.
 export const SwapOutChecker = ({
   minOnChainHotWalletBalanceConfig,
   swapOutAmount,
@@ -14,6 +9,11 @@ export const SwapOutChecker = ({
   minOnChainHotWalletBalanceConfig: Satoshis
   swapOutAmount: Satoshis
 }) => {
+  // checks the amount of "swap out" that is need
+  // if return "0" then no swap out needed
+  // if return an "amount" then swapout needed
+  // if return "error" then we don't have enough outbound
+  //   liquidity to perform a swap out.
   const getSwapOutAmount = ({
     currentOnChainHotWalletBalance,
     currentOutboundLiquidityBalance,

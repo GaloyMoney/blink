@@ -6,6 +6,7 @@ import {
   SwapClientNotResponding,
   SwapServiceError,
   SwapErrorHealthCheckFailed,
+  UnknownSwapServiceError,
 } from "@domain/swap/errors"
 import { SwapState as SwapStateType } from "@domain/swap/index"
 import { SwapType as DomainSwapType } from "@domain/swap"
@@ -163,7 +164,7 @@ export const LoopService = ({
       })
       return listener
     } catch (error) {
-      throw new SwapServiceError(error)
+      throw new UnknownSwapServiceError(error)
     }
   }
 
@@ -183,7 +184,7 @@ export const LoopService = ({
         swapPaymentDest: resp.getSwapPaymentDest(),
       } as SwapOutQuoteResult
     } catch (error) {
-      return new SwapServiceError(error)
+      return new UnknownSwapServiceError(error)
     }
   }
 
@@ -198,7 +199,7 @@ export const LoopService = ({
         minSwapAmount: resp.getMinSwapAmount(),
       } as SwapOutTermsResult
     } catch (error) {
-      return new SwapServiceError(error)
+      return new UnknownSwapServiceError(error)
     }
   }
 
