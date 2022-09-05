@@ -35,7 +35,7 @@ export const MAX_SATS = {
 // Assumes optimistic price under sat-cent parity
 export const MAX_CENTS = {
   currency: WalletCurrency.Usd,
-  amount: 10_000_000_000_000n,
+  amount: 100_000_000_000_00n,
 }
 
 export const BtcWalletDescriptor = (walletId: WalletId) => {
