@@ -1,8 +1,12 @@
-import { getCurrentPrice } from "@app/prices"
 import { usdFromBtcMidPriceFn } from "@app/shared"
 
+import { checkedToSats } from "@domain/bitcoin"
 import { InvoiceNotFoundError } from "@domain/bitcoin/lightning"
-import { CouldNotFindError, InvalidNonHodlInvoiceError } from "@domain/errors"
+import {
+  CouldNotFindError,
+  CouldNotFindWalletInvoiceError,
+  InvalidNonHodlInvoiceError,
+} from "@domain/errors"
 import { WalletInvoiceReceiver } from "@domain/wallet-invoices/wallet-invoice-receiver"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
@@ -17,7 +21,11 @@ import {
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import * as LedgerFacade from "@services/ledger/facade"
-import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+  wrapAsyncToRunInSpan,
+} from "@services/tracing"
 
 import { elapsedSinceTimestamp, runInParallel } from "@utils"
 
@@ -113,10 +121,22 @@ const updatePendingInvoiceBeforeFinally = async ({
 
   const {
     lnInvoice: { description },
-    roundedDownReceived,
+    roundedDownReceived: uncheckedRoundedDownReceived,
   } = lnInvoiceLookup
 
   // TODO: validate roundedDownReceived as user input
+  const roundedDownReceived = checkedToSats(uncheckedRoundedDownReceived)
+  if (roundedDownReceived instanceof Error) {
+    recordExceptionInCurrentSpan({
+      error: roundedDownReceived,
+      level: roundedDownReceived.level,
+    })
+    return declineHeldInvoice({
+      pubkey: walletInvoice.pubkey,
+      paymentHash: walletInvoice.paymentHash,
+      logger,
+    })
+  }
 
   if (walletInvoice.paid) {
     pendingInvoiceLogger.info("invoice has already been processed")
@@ -255,7 +275,10 @@ const updatePendingInvoice = wrapAsyncToRunInSpan({
       if (!walletInvoice.paid) {
         const walletInvoices = WalletInvoicesRepository()
         const invoicePaid = await walletInvoices.markAsPaid(walletInvoice.paymentHash)
-        if (invoicePaid instanceof Error) {
+        if (
+          invoicePaid instanceof Error &&
+          !(invoicePaid instanceof CouldNotFindWalletInvoiceError)
+        ) {
           return invoicePaid
         }
       }

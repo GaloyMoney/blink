@@ -46,7 +46,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
         },
       )
       if (!walletInvoice) {
-        return new RepositoryError("Couldn't update invoice for payment hash")
+        return new CouldNotFindWalletInvoiceError()
       }
       return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {

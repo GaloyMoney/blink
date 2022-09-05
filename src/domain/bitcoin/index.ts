@@ -40,7 +40,7 @@ export const checkedToCurrencyBaseAmount = (
 
 export const checkedToSats = (amount: number): Satoshis | ValidationError => {
   if (!(amount && amount > 0)) {
-    return new InvalidSatoshiAmountError()
+    return new InvalidSatoshiAmountError(`${amount}`)
   }
 
   if (amount > MAX_SATS.amount) {
