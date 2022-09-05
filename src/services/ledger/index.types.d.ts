@@ -67,7 +67,7 @@ type SwapFeeLedgerMetadata = {
   serviceProvider: string
   currency: WalletCurrency
   type: LedgerTransactionType
-  pending: boolean
+  pending: false
 }
 
 type OnChainReceiveLedgerMetadata = NonIntraledgerLedgerMetadata & {

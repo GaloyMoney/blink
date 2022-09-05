@@ -101,11 +101,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
       const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
       if (lnd instanceof Error) return lnd
       const { channel_balance, inbound } = await getChannelBalance({ lnd })
-      let outbound = 0
-      const inboundBal = inbound ? inbound : 0
-      if (inbound) {
-        outbound = channel_balance - inboundBal
-      }
+      const inboundBal = inbound ?? 0
+      const outbound = channel_balance - inboundBal
+
       return {
         channelBalance: toSats(channel_balance),
         inbound: toSats(inboundBal),
