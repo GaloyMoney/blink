@@ -7,3 +7,4 @@ files.extend-exclude = [
 [default.extend-words]
 # returned from twilio API referenced in src/debug/text-sms.ts
 Ons = "Ons"
+Lsat = "Lsat"
