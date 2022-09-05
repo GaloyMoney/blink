@@ -176,9 +176,6 @@ onChainWallet:
   scanDepthOutgoing: 2
   scanDepthChannelUpdate: 8
 
-# TODO
-# carrierRegexFilter: ""
-
 apollo:
   playground: true
   playgroundUrl: "https://api.staging.galoy.io/graphql"
