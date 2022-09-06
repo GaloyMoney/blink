@@ -11,8 +11,8 @@ import { baseLogger } from "@services/logger"
 // have been mined by not yet credited because they haven't reached enough confirmations
 export const getOnChainTxs = async (): Promise<
   IncomingOnChainTransaction[] | OnChainServiceError
-> => {
-  const txns = await RedisCacheService().getOrSet({
+> =>
+  RedisCacheService().getOrSet({
     key: CacheKeys.LastOnChainTransactions,
     ttlSecs: SECS_PER_10_MINS,
     fn: async () => {
@@ -23,18 +23,18 @@ export const getOnChainTxs = async (): Promise<
       }
       return onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS)
     },
+    inflateFn: async (txnsPromise: Promise<IncomingOnChainTransactionFromCache[]>) => {
+      const txns = await txnsPromise
+      if (txns instanceof Error) return txns
+
+      return txns.map(inflateIncomingOnChainTxFromCache)
+    },
   })
 
-  return txns instanceof Error ? txns : IncomingOnChainTransactionsFromCache(txns)
-}
-
-const IncomingOnChainTransactionsFromCache = (
-  txns: (IncomingOnChainTransactionFromCache | IncomingOnChainTransaction)[],
-) =>
-  txns.map(
-    (txn): IncomingOnChainTransaction => ({
-      ...txn,
-      createdAt: new Date(txn.createdAt),
-      uniqueAddresses: () => uniqueAddressesForTxn(txn.rawTx),
-    }),
-  )
+const inflateIncomingOnChainTxFromCache = (
+  txn: IncomingOnChainTransactionFromCache | IncomingOnChainTransaction,
+): IncomingOnChainTransaction => ({
+  ...txn,
+  createdAt: new Date(txn.createdAt),
+  uniqueAddresses: () => uniqueAddressesForTxn(txn.rawTx),
+})

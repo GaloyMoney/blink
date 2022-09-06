@@ -33,13 +33,14 @@ export const LocalCacheService = (): ICacheService => {
     }
   }
 
-  const getOrSet = async <F extends () => ReturnType<F>>({
+  const getOrSet = async <C, F extends () => ReturnType<F>>({
     key,
     fn,
     ttlSecs,
-  }: LocalCacheGetOrSetArgs<F>): Promise<ReturnType<F>> => {
-    const cachedData = await get<ReturnType<F>>(key)
-    if (!(cachedData instanceof Error)) return cachedData
+    inflateFn,
+  }: LocalCacheGetOrSetArgs<C, F>): Promise<ReturnType<F>> => {
+    const cachedData = await get<C>(key)
+    if (!(cachedData instanceof Error)) return inflateFn(cachedData)
 
     const data = await fn()
     set<ReturnType<F>>({ key, value: data, ttlSecs })

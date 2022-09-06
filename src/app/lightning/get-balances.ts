@@ -39,6 +39,7 @@ export const getOffChainBalance = async (): Promise<Satoshis | ApplicationError>
 
       return sumBalances(balances)
     },
+    inflateFn: async (arg: Promise<Satoshis>) => arg,
   })
 
 export const getOpeningChannelBalance = async (): Promise<Satoshis | ApplicationError> =>
@@ -57,6 +58,7 @@ export const getOpeningChannelBalance = async (): Promise<Satoshis | Application
 
       return sumBalances(balances)
     },
+    inflateFn: async (arg: Promise<Satoshis>) => arg,
   })
 
 export const getClosingChannelBalance = async (): Promise<Satoshis | ApplicationError> =>
@@ -75,6 +77,7 @@ export const getClosingChannelBalance = async (): Promise<Satoshis | Application
 
       return sumBalances(balances)
     },
+    inflateFn: async (arg: Promise<Satoshis>) => arg,
   })
 
 export const getOnChainBalance = async (): Promise<Satoshis | ApplicationError> =>
@@ -101,6 +104,7 @@ export const getOnChainBalance = async (): Promise<Satoshis | ApplicationError> 
 
       return toSats(onChain + onChainPending)
     },
+    inflateFn: async (arg: Promise<Satoshis>) => arg,
   })
 
 const sumBalances = (balances: (Satoshis | Error)[]): Satoshis => {

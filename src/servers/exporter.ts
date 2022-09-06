@@ -259,6 +259,7 @@ const createWalletGauge = ({
           key: name,
           ttlSecs: toSeconds(SECS_PER_5_MINS * 3),
           fn: getWalletBalancePromise,
+          inflateFn: async (arg: Promise<number>) => arg,
         })
       }
     },
