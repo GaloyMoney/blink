@@ -1,7 +1,7 @@
 import { CouldNotFindTransactionsForAccountError } from "@domain/errors"
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
-import { connectionArgs, connectionFromArray } from "graphql-relay"
+import { connectionArgs, connectionFromArray } from "@graphql/connections"
 
 import { WalletsRepository } from "@services/mongoose"
 
