@@ -24,3 +24,6 @@ export class BigIntFloatConversionError extends BigIntConversionError {}
 export class UnknownBigIntConversionError extends BigIntConversionError {
   level = ErrorLevel.Critical
 }
+
+export class BtcAmountTooLargeError extends ValidationError {}
+export class UsdAmountTooLargeError extends ValidationError {}

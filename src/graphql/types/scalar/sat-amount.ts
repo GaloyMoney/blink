@@ -1,4 +1,4 @@
-import { ErrorLevel } from "@domain/shared"
+import { ErrorLevel, MAX_SATS } from "@domain/shared"
 import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
@@ -34,10 +34,16 @@ function validSatAmount(value: string | number) {
   } else {
     intValue = Number.parseInt(value, 10)
   }
-  if (Number.isInteger(intValue) && intValue >= 0) {
-    return intValue
+
+  if (!(Number.isInteger(intValue) && intValue >= 0)) {
+    return new InputValidationError({ message: "Invalid value for SatAmount" })
   }
-  return new InputValidationError({ message: "Invalid value for SatAmount" })
+
+  if (intValue > MAX_SATS.amount) {
+    return new InputValidationError({ message: "Value too big for SatAmount" })
+  }
+
+  return intValue
 }
 
 export default SatAmount

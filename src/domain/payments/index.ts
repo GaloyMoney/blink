@@ -4,7 +4,14 @@ export * from "./payment-flow-builder"
 export * from "./price-ratio"
 export * from "./ln-fees"
 
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  MAX_CENTS,
+  MAX_SATS,
+  paymentAmountFromNumber,
+  WalletCurrency,
+  BtcAmountTooLargeError,
+  UsdAmountTooLargeError,
+} from "@domain/shared"
 
 import { InvalidBtcPaymentAmountError, InvalidUsdPaymentAmountError } from "./errors"
 
@@ -14,6 +21,11 @@ export const checkedToBtcPaymentAmount = (
   if (amount === null) {
     return new InvalidBtcPaymentAmountError()
   }
+
+  if (amount > MAX_SATS.amount) {
+    return new BtcAmountTooLargeError()
+  }
+
   if (Math.floor(amount) != amount) {
     return new InvalidBtcPaymentAmountError()
   }
@@ -27,6 +39,11 @@ export const checkedToUsdPaymentAmount = (
   if (amount === null) {
     return new InvalidUsdPaymentAmountError()
   }
+
+  if (amount > MAX_CENTS.amount) {
+    return new UsdAmountTooLargeError()
+  }
+
   if (Math.floor(amount) != amount) {
     return new InvalidUsdPaymentAmountError()
   }

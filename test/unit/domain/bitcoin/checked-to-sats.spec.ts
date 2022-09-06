@@ -1,4 +1,5 @@
 import { checkedToSats } from "@domain/bitcoin"
+import { MAX_SATS } from "@domain/shared"
 
 describe("sats-amount-check", () => {
   it("Positive amount value for satoshis passes", () => {
@@ -13,6 +14,11 @@ describe("sats-amount-check", () => {
 
   it("Negative amount value for satoshis fails", () => {
     const sats = checkedToSats(-100)
+    expect(sats).toBeInstanceOf(Error)
+  })
+
+  it("Large amount value for satoshis fails", () => {
+    const sats = checkedToSats(Number(MAX_SATS.amount + 1n))
     expect(sats).toBeInstanceOf(Error)
   })
 })

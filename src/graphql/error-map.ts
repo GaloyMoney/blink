@@ -122,6 +122,14 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "A valid usd amount is required"
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "BtcAmountTooLargeError":
+      message = "Sats amount passed is too large"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "UsdAmountTooLargeError":
+      message = "Usd cents amount passed is too large"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "LnPaymentRequestNonZeroAmountRequiredError":
       message = "Invoice does not have a valid amount to pay"
       return new ValidationInternalError({ message, logger: baseLogger })
