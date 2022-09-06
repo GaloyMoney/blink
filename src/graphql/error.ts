@@ -125,6 +125,12 @@ export class LightningPaymentError extends CustomApolloError {
   }
 }
 
+export class OnChainPaymentError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({ code: "ONCHAIN_PAYMENT_ERROR", forwardToClient: true, ...errData })
+  }
+}
+
 export class RouteFindingError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({

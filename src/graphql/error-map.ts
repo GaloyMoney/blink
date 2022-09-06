@@ -19,6 +19,7 @@ import {
   DealerOfflineError,
   InsufficientLiquidityError,
   LndOfflineError,
+  OnChainPaymentError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -224,6 +225,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message =
         "Onchain service temporarily unavailable. Withdraw via Lightning until service is restored."
       return new InsufficientLiquidityError({ message, logger: baseLogger })
+
+    case "CPFPAncestorLimitReachedError":
+      message =
+        "Onchain payments temporarily unavailable because of busy mempool queue. Withdraw via Lightning until queue is cleared."
+      return new OnChainPaymentError({ message, logger: baseLogger })
 
     case "UnknownRouteNotFoundError":
       message = "Unknown error occurred when trying to find a route for payment."

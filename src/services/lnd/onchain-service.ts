@@ -1,6 +1,7 @@
 import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindOnChainTransactionError,
+  CPFPAncestorLimitReachedError,
   IncomingOnChainTransaction,
   InsufficientOnChainFundsError,
   OnChainServiceUnavailableError,
@@ -182,7 +183,13 @@ export const OnChainService = (
 
       return id as OnChainTxHash
     } catch (err) {
-      return handleCommonOnChainServiceErrors(err)
+      const errDetails = parseLndErrorDetails(err)
+      switch (errDetails) {
+        case KnownLndErrorDetails.CPFPAncestorLimitReached:
+          return new CPFPAncestorLimitReachedError()
+        default:
+          return handleCommonOnChainServiceErrors(err)
+      }
     }
   }
 
@@ -204,6 +211,8 @@ export const OnChainService = (
 const KnownLndErrorDetails = {
   InsufficientFunds: "insufficient funds available to construct transaction",
   ConnectionDropped: "Connection dropped",
+  CPFPAncestorLimitReached:
+    "unmatched backend error: -26: too-long-mempool-chain, too many unconfirmed ancestors [limit: 25]",
 } as const
 
 export const extractIncomingTransactions = ({
