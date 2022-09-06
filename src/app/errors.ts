@@ -18,6 +18,8 @@ import * as DealerPriceErrors from "@domain/dealer-price/errors"
 import * as PubSubErrors from "@domain/pubsub/errors"
 import * as CaptchaErrors from "@domain/captcha/errors"
 
+import * as LedgerFacadeErrors from "@services/ledger/domain/errors"
+
 export const ApplicationErrors = {
   ...SharedErrors,
   ...DomainErrors,
@@ -38,4 +40,5 @@ export const ApplicationErrors = {
   ...DealerPriceErrors,
   ...PubSubErrors,
   ...CaptchaErrors,
+  ...LedgerFacadeErrors,
 } as const

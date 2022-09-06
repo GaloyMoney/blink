@@ -33,6 +33,7 @@ import {
   getBalanceHelper,
   getDefaultWalletIdByTestUserRef,
   getHash,
+  getInvoice,
   getPubKey,
   getUsdWalletIdByTestUserRef,
   lnd1,
@@ -544,6 +545,64 @@ describe("UserWallet - Lightning", () => {
 
     const finalBalance = await getBalanceHelper(walletIdB)
     expect(finalBalance).toBe(initBalanceB + sats)
+  })
+
+  it("receives 'less than 1 sat amount' invoice", async () => {
+    const mtokens = "995"
+    const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
+      walletId: walletIdB as WalletId,
+    })
+    if (lnInvoice instanceof Error) throw lnInvoice
+    const { paymentRequest: invoice, paymentHash: hash } = lnInvoice
+
+    const safePay = async (args) => {
+      try {
+        return await pay(args) // 'await' is explicitly needed here
+      } catch (err) {
+        return err
+      }
+    }
+    safePay({ lnd: lndOutside1, request: invoice, mtokens })
+    // TODO: we could use an event instead of a sleep
+    await sleep(500)
+
+    expect(
+      await Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash,
+        logger: baseLogger,
+      }),
+    ).not.toBeInstanceOf(Error)
+    // should be idempotent (not return error when called again)
+    expect(
+      await Wallets.updatePendingInvoiceByPaymentHash({
+        paymentHash: hash,
+        logger: baseLogger,
+      }),
+    ).not.toBeInstanceOf(Error)
+
+    // Check that no new txns are added
+    const ledgerTxs = await LedgerService().getTransactionsByHash(hash)
+    if (ledgerTxs instanceof Error) throw ledgerTxs
+    expect(ledgerTxs).toHaveLength(0)
+
+    // Check that wallet invoice is deleted (was declined)
+    const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(hash)
+    expect(walletInvoice).toBeInstanceOf(CouldNotFindWalletInvoiceError)
+
+    // Check that invoice is deleted in lnd
+    let getInvoiceErr
+    try {
+      await getInvoice({ lnd: lnd1, id: hash })
+    } catch (err) {
+      getInvoiceErr = err
+    }
+    expect(parseLndErrorDetails(getInvoiceErr)).toEqual(
+      KnownLndErrorDetails.InvoiceNotFound,
+    )
+
+    // Check that wallet balance is unchanged
+    const finalBalance = await getBalanceHelper(walletIdB)
+    expect(finalBalance).toBe(initBalanceB)
   })
 
   it("receives spam invoice", async () => {
