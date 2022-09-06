@@ -12,7 +12,7 @@ import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 import { WalletsRepository } from "@services/mongoose"
 
-import getOnChainTxs from "./get-on-chain-txs"
+import { getOnChainTxs } from "./private/get-on-chain-txs"
 
 // FIXME(nicolas): remove only used in tests
 export const getTransactionsForWalletId = async ({

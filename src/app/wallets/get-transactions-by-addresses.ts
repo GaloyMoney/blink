@@ -10,7 +10,7 @@ import { TxFilter } from "@domain/bitcoin/onchain"
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 
-import getOnChainTxs from "./get-on-chain-txs"
+import { getOnChainTxs } from "./private/get-on-chain-txs"
 
 export const getTransactionsForWalletsByAddresses = async ({
   wallets,
