@@ -35,14 +35,19 @@ export const RedisCacheService = (): ICacheService => {
 
   const getOrSet = async <C, F extends () => ReturnType<F>>({
     key,
-    fn,
     ttlSecs,
-    inflateFn,
+    getForCaching,
+    inflate,
   }: LocalCacheGetOrSetArgs<C, F>): Promise<ReturnType<F>> => {
-    const cachedData = await get<C>(key)
-    if (!(cachedData instanceof Error)) return inflateFn(cachedData)
+    if (inflate) {
+      const cachedData = await get<C>(key)
+      if (!(cachedData instanceof Error)) return inflate(cachedData)
+    } else {
+      const cachedData = await get<ReturnType<F>>(key)
+      if (!(cachedData instanceof Error)) return cachedData
+    }
 
-    const data = await fn()
+    const data = await getForCaching()
     set<ReturnType<F>>({ key, value: data, ttlSecs })
     return data
   }

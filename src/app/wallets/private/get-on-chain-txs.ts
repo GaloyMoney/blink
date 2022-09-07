@@ -15,7 +15,7 @@ export const getOnChainTxs = async (): Promise<
   RedisCacheService().getOrSet({
     key: CacheKeys.LastOnChainTransactions,
     ttlSecs: SECS_PER_10_MINS,
-    fn: async () => {
+    getForCaching: async () => {
       const onChain = OnChainService(TxDecoder(BTC_NETWORK))
       if (onChain instanceof OnChainError) {
         baseLogger.warn({ onChain }, "impossible to create OnChainService")
@@ -23,7 +23,7 @@ export const getOnChainTxs = async (): Promise<
       }
       return onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS)
     },
-    inflateFn: async (txnsPromise: Promise<IncomingOnChainTransactionFromCache[]>) => {
+    inflate: async (txnsPromise: Promise<IncomingOnChainTransactionFromCache[]>) => {
       const txns = await txnsPromise
       if (txns instanceof Error) return txns
 

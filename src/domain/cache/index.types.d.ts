@@ -11,9 +11,9 @@ type LocalCacheSetArgs<T> = {
 
 type LocalCacheGetOrSetArgs<C, F extends () => ReturnType<F>> = {
   key: CacheKeys | string
-  fn: F
   ttlSecs: Seconds
-  inflateFn: (arg: C) => ReturnType<F>
+  getForCaching: F
+  inflate?: (arg: C) => ReturnType<F>
 }
 
 interface ICacheService {

@@ -27,7 +27,7 @@ export const getOffChainBalance = async (): Promise<Satoshis | ApplicationError>
   cache.getOrSet({
     key: CacheKeys.OffChainBalance,
     ttlSecs: SECS_PER_MIN,
-    fn: async () => {
+    getForCaching: async () => {
       const offChainService = LndService()
       if (offChainService instanceof Error) return offChainService
 
@@ -39,14 +39,13 @@ export const getOffChainBalance = async (): Promise<Satoshis | ApplicationError>
 
       return sumBalances(balances)
     },
-    inflateFn: async (arg: Promise<Satoshis>) => arg,
   })
 
 export const getOpeningChannelBalance = async (): Promise<Satoshis | ApplicationError> =>
   cache.getOrSet({
     key: CacheKeys.OpeningChannelBalance,
     ttlSecs: SECS_PER_MIN,
-    fn: async () => {
+    getForCaching: async () => {
       const offChainService = LndService()
       if (offChainService instanceof Error) return offChainService
 
@@ -58,14 +57,13 @@ export const getOpeningChannelBalance = async (): Promise<Satoshis | Application
 
       return sumBalances(balances)
     },
-    inflateFn: async (arg: Promise<Satoshis>) => arg,
   })
 
 export const getClosingChannelBalance = async (): Promise<Satoshis | ApplicationError> =>
   cache.getOrSet({
     key: CacheKeys.ClosingChannelBalance,
     ttlSecs: SECS_PER_MIN,
-    fn: async () => {
+    getForCaching: async () => {
       const offChainService = LndService()
       if (offChainService instanceof Error) return offChainService
 
@@ -77,14 +75,13 @@ export const getClosingChannelBalance = async (): Promise<Satoshis | Application
 
       return sumBalances(balances)
     },
-    inflateFn: async (arg: Promise<Satoshis>) => arg,
   })
 
 export const getOnChainBalance = async (): Promise<Satoshis | ApplicationError> =>
   cache.getOrSet({
     key: CacheKeys.OnChainBalance,
     ttlSecs: SECS_PER_MIN,
-    fn: async () => {
+    getForCaching: async () => {
       const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
       if (onChainService instanceof Error) return onChainService
 
@@ -104,7 +101,6 @@ export const getOnChainBalance = async (): Promise<Satoshis | ApplicationError> 
 
       return toSats(onChain + onChainPending)
     },
-    inflateFn: async (arg: Promise<Satoshis>) => arg,
   })
 
 const sumBalances = (balances: (Satoshis | Error)[]): Satoshis => {
