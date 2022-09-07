@@ -15,7 +15,7 @@ Quickstart
 ----------
 ```
 # 1. Start loop server
-make start-loop
+make start-loopd
 # 2. Monitor loop outs
 loopd1_id=$(docker ps -q -f name="loopd1-1")
 docker exec -it $loopd1_id loop -n regtest monitor
@@ -29,7 +29,7 @@ make mine-block
 (1) Start the loopserver (regtest LL loop server) and loopd (Rest API)
 ---------------------------------------
 ```sh
-make start-loop
+make start-loopd
 ```
 
 Successfully starting the loop server returns this:

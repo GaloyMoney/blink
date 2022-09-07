@@ -89,6 +89,8 @@ export const LoopService = ({
       request.setMaxMinerFee(fee)
       request.setSwapPublicationDeadline(swapPublicationDeadline)
       request.setInitiator(`galoy-${loopdInstanceName}`)
+      if (btcNetwork === BtcNetwork.regtest) request.setHtlcConfirmations(1)
+      if (btcNetwork === BtcNetwork.regtest) request.setSweepConfTarget(2)
       const resp = await clientSwapOut(request)
       const swapOutResult: SwapOutResult = {
         htlcAddress: resp.getHtlcAddress(),
