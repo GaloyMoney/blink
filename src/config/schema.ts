@@ -219,8 +219,9 @@ export const configSchema = {
       type: "object",
       properties: {
         initialStatus: { type: "string", enum: Object.values(AccountStatus) },
+        hasUsdWallet: { type: "boolean" },
       },
-      required: ["initialStatus"],
+      required: ["initialStatus", "hasUsdWallet"],
       additionalProperties: false,
     },
     accountLimits: {

@@ -130,6 +130,7 @@ rateLimits:
 
 accounts:
   initialStatus: active
+  hasUsdWallet: false
 
 accountLimits:
   withdrawal:

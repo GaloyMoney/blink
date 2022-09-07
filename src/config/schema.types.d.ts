@@ -78,6 +78,7 @@ type YamlSchema = {
   }
   accounts: {
     initialStatus: string
+    hasUsdWallet: boolean
   }
   accountLimits: {
     withdrawal: AccountLimitsConfig
