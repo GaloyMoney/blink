@@ -39,7 +39,7 @@ import { parseIps } from "@domain/users-ips"
 import { playgroundTabs } from "../graphql/playground"
 
 import healthzHandler from "./middlewares/healthz"
-import authRouter from "./auth-router"
+import authRouter from "./middlewares/auth-router"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
