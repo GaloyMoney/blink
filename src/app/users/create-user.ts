@@ -29,7 +29,8 @@ const setupAccount = async (userId: UserId): Promise<Account | ApplicationError>
   return updatedAccount
 }
 
-export const createUser = async ({
+// no kratos user is been added (currently with PhoneSchema)
+export const createUserForPhoneSchema = async ({
   phone,
   phoneMetadata,
 }: {
@@ -65,7 +66,12 @@ export const createUser = async ({
   return user
 }
 
-export const createKratosUser = async ({ kratosUserId }: { kratosUserId: string }) => {
+// kratos user already exist, as he has been using self registration
+export const createUserForEmailSchema = async ({
+  kratosUserId,
+}: {
+  kratosUserId: string
+}) => {
   const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
   if (kratosUserIdValid instanceof Error) return kratosUserIdValid
 

@@ -166,9 +166,14 @@ export const startApolloServer = async ({
 
       const body = context.req?.body ?? null
 
+      console.log({ body }, "body123")
+
       const ipString = isDev
         ? context.req?.ip
         : context.req?.headers["x-real-ip"] || context.req?.headers["x-forwarded-for"]
+
+      const accountId = context.req?.headers["ACCOUNT_ID"]
+      console.log({ accountId }, "accountId")
 
       const ip = parseIps(ipString)
 

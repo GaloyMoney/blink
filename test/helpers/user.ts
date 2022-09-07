@@ -1,4 +1,4 @@
-import { createUser } from "@app/users"
+import { createUserForPhoneSchema } from "@app/users"
 import { yamlConfig } from "@config"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import {
@@ -125,7 +125,7 @@ export const createUserAndWallet = async (entry) => {
           countryCode: "US",
         }
       : undefined
-    userRepo = await createUser({ phone, phoneMetadata })
+    userRepo = await createUserForPhoneSchema({ phone, phoneMetadata })
     if (userRepo instanceof Error) throw userRepo
 
     const lastConnection = new Date()

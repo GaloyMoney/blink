@@ -1,0 +1,47 @@
+
+- id: galoy-backend
+  upstream: 
+    url: "http://localhost:4002"
+  match: 
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/<.*>"
+    methods: ["GET", "POST"]
+  authenticators:
+  - handler: bearer_token
+    config: 
+      check_session_url: "http://localhost:4002/auth/validatejwt"
+      preserve_path: true
+      preserve_query: true
+  authorizer:
+    handler: allow
+  mutators: 
+  - handler: id_token
+    config: 
+      claims: '{"aid": "{{ print .Extra.aid }}"}'
+
+
+#  {
+#     "id": "public-kratos",
+#     "upstream": {
+#       "url": "http://kratos:4433"
+#     },
+#     "match": {
+#       "url": "<(http|https)>://<[a-zA-Z0-9-.:]+>/<(self-service/.*)|sessions/whoami|(.well-known/.*)>",
+#       "methods": [
+#         "GET",
+#         "POST"
+#       ]
+#     },
+#     "authenticators": [
+#       {
+#         "handler": "anonymous"
+#       }
+#     ],
+#     "authorizer": {
+#       "handler": "allow"
+#     },
+#     "mutators": [
+#       {
+#         "handler": "noop"
+#       }
+#     ]
+#   }

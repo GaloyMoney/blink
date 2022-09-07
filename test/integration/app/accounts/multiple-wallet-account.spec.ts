@@ -11,7 +11,7 @@ import {
 } from "test/helpers"
 
 it("change default walletId of account", async () => {
-  const user = await Users.createUser({ phone: "+123456789" })
+  const user = await Users.createUserForPhoneSchema({ phone: "+123456789" })
   if (user instanceof Error) throw user
 
   const accountId = user.defaultAccountId
