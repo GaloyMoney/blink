@@ -10,21 +10,35 @@ import {
 } from "@services/mongoose"
 import { TwilioClient } from "@services/twilio"
 
-const setupAccount = async (
-  userId: UserId,
-  phoneNumberValid?: PhoneNumber,
-): Promise<Account | ApplicationError> => {
+const setupAccount = async ({
+  userId,
+  config,
+  phoneNumberValid,
+}: {
+  userId: UserId
+  config: AccountsConfig
+  phoneNumberValid?: PhoneNumber
+}): Promise<Account | ApplicationError> => {
   const account = await AccountsRepository().findByUserId(userId)
   if (account instanceof Error) return account
 
-  const wallet = await WalletsRepository().persistNew({
+  const btcWallet = await WalletsRepository().persistNew({
     accountId: account.id,
     type: WalletType.Checking,
     currency: WalletCurrency.Btc,
   })
-  if (wallet instanceof Error) return wallet
+  if (btcWallet instanceof Error) return btcWallet
 
-  account.defaultWalletId = wallet.id
+  if (config.hasUsdWallet) {
+    const usdWallet = await WalletsRepository().persistNew({
+      accountId: account.id,
+      type: WalletType.Checking,
+      currency: WalletCurrency.Usd,
+    })
+    if (usdWallet instanceof Error) return usdWallet
+  }
+
+  account.defaultWalletId = btcWallet.id
 
   // FIXME: to remove when Casbin is been introduced
   const role = getTestAccounts().find(({ phone }) => phone === phoneNumberValid)?.role
@@ -38,11 +52,11 @@ const setupAccount = async (
 
 // no kratos user is been added (currently with PhoneSchema)
 export const createUserForPhoneSchema = async ({
-  phone,
-  phoneMetadata,
+  newUserInfo: { phone, phoneMetadata },
+  config,
 }: {
-  phone: string
-  phoneMetadata?: PhoneMetadata
+  newUserInfo: NewUserInfo
+  config: AccountsConfig
 }) => {
   const phoneNumberValid = checkedToPhoneNumber(phone)
   if (phoneNumberValid instanceof Error) return phoneNumberValid
@@ -66,7 +80,7 @@ export const createUserForPhoneSchema = async ({
   const user = await UsersRepository().persistNew(userRaw)
   if (user instanceof Error) return user
 
-  const account = await setupAccount(user.id, phoneNumberValid)
+  const account = await setupAccount({ userId: user.id, config, phoneNumberValid })
   if (account instanceof Error) return account
 
   return user
@@ -75,8 +89,10 @@ export const createUserForPhoneSchema = async ({
 // kratos user already exist, as he has been using self registration
 export const createUserForEmailSchema = async ({
   kratosUserId,
+  config,
 }: {
   kratosUserId: string
+  config: AccountsConfig
 }) => {
   const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
   if (kratosUserIdValid instanceof Error) return kratosUserIdValid
@@ -86,7 +102,7 @@ export const createUserForEmailSchema = async ({
   })
   if (user instanceof Error) return user
 
-  const account = await setupAccount(user.id)
+  const account = await setupAccount({ userId: user.id, config })
   if (account instanceof Error) return account
 
   return user
