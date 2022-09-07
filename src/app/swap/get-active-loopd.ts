@@ -1,4 +1,4 @@
-import { getActiveOnchainLnd } from "@services/lnd/utils"
+import { getActiveLnd } from "@services/lnd/utils"
 import { SwapErrorNoActiveLoopdNode } from "@domain/swap/errors"
 import {
   BTC_NETWORK,
@@ -11,9 +11,9 @@ import {
 import { LoopdInstanceName } from "@domain/swap"
 
 export const getActiveLoopd = (): LoopdConfig => {
-  const activeNode = getActiveOnchainLnd()
-  if (activeNode instanceof Error) throw SwapErrorNoActiveLoopdNode
-  switch (activeNode.name) {
+  const activeOffChainNode = getActiveLnd()
+  if (activeOffChainNode instanceof Error) throw SwapErrorNoActiveLoopdNode
+  switch (activeOffChainNode.name) {
     case "LND1": {
       return LND1_LOOP_CONFIG
     }
