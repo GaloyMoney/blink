@@ -2254,17 +2254,10 @@
   resolved "https://registry.yarnpkg.com/@opentelemetry/semantic-conventions/-/semantic-conventions-1.6.0.tgz#ed410c9eb0070491cff9fe914246ce41f88d6f74"
   integrity sha512-aPfcBeLErM/PPiAuAbNFLN5sNbZLc3KZlar27uohllN8Zs6jJbHyJU1y7cMA6W/zuq+thkaG8mujiS+3iD/FWQ==
 
-"@ory/client@^0.0.1-alpha.123":
-  version "0.0.1-alpha.189"
-  resolved "https://registry.yarnpkg.com/@ory/client/-/client-0.0.1-alpha.189.tgz#6f045aac60a9750dc437c3ea543106f19f60a126"
-  integrity sha512-Z6J7HF25kw6PJ55pA7Ex5VgUY2jQ1m26XiWQpicqNu2DHyQT5ZmZOfftcxftB2945ebfL9mBWP6j1qOzPUdf1g==
-  dependencies:
-    axios "^0.21.4"
-
-"@ory/kratos-client@^0.10.1":
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/@ory/kratos-client/-/kratos-client-0.10.1.tgz#4957233e4ef6e1845e28765d32244ef89e69b93b"
-  integrity sha512-WfoEW1HKeKUkG+57oShb6D3xENM3DpRbUxvVxbPZkJUKzFlXpBzbX71k2oQ6ajv6cy0ULVEKFLNcHpAoGjraNA==
+"@ory/client@^0.2.0-alpha.30":
+  version "0.2.0-alpha.30"
+  resolved "https://registry.yarnpkg.com/@ory/client/-/client-0.2.0-alpha.30.tgz#09c3f59023f34a118855be18ec5eec12625cb6f6"
+  integrity sha512-ZQ6PPkHL3TY/Pnq4FTaAPlwDt7S/n6OuQMvekmzuoDkx1zrLnZICp8ZxKCQfNICxyvCLsHP1x/XS0EZa7RNboA==
   dependencies:
     axios "^0.21.4"
 
