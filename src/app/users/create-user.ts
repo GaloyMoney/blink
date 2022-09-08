@@ -1,13 +1,12 @@
+import { WalletCurrency } from "@domain/shared"
 import { checkedToKratosUserId, checkedToPhoneNumber } from "@domain/users"
-import { getTestAccounts } from "@config"
+import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
 import {
-  WalletsRepository,
   AccountsRepository,
   UsersRepository,
+  WalletsRepository,
 } from "@services/mongoose"
-import { WalletCurrency } from "@domain/shared"
-import { WalletType } from "@domain/wallets"
 import { TwilioClient } from "@services/twilio"
 
 const setupAccount = async (userId: UserId): Promise<Account | ApplicationError> => {
@@ -29,7 +28,8 @@ const setupAccount = async (userId: UserId): Promise<Account | ApplicationError>
   return updatedAccount
 }
 
-export const createUser = async ({
+// no kratos user is been added (currently with PhoneSchema)
+export const createUserForPhoneSchema = async ({
   phone,
   phoneMetadata,
 }: {
@@ -42,7 +42,6 @@ export const createUser = async ({
   const userRaw: NewUserInfo = {
     phone: phoneNumberValid,
     phoneMetadata,
-    role: getTestAccounts().find(({ phone }) => phone === phoneNumberValid)?.role,
   }
 
   // FIXME: this is only used from tests. should be refactored with a mock
@@ -65,7 +64,12 @@ export const createUser = async ({
   return user
 }
 
-export const createKratosUser = async ({ kratosUserId }: { kratosUserId: string }) => {
+// kratos user already exist, as he has been using self registration
+export const createUserForEmailSchema = async ({
+  kratosUserId,
+}: {
+  kratosUserId: string
+}) => {
   const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
   if (kratosUserIdValid instanceof Error) return kratosUserIdValid
 

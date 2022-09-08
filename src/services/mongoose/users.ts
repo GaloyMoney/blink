@@ -59,15 +59,11 @@ export const UsersRepository = (): IUsersRepository => {
   const persistNew = async ({
     phone,
     phoneMetadata,
-    role,
   }: NewUserInfo): Promise<User | RepositoryError> => {
     try {
       const user = new User()
       user.phone = phone
       user.twilio = phoneMetadata
-      if (role) {
-        user.role = role
-      }
       await user.save()
       return userFromRaw(user)
     } catch (err) {
@@ -149,7 +145,6 @@ const userFromRaw = (result: UserRecord): User => ({
   deviceTokens: (result.deviceToken || []) as DeviceToken[],
   createdAt: new Date(result.created_at),
   phoneMetadata: result.twilio as PhoneMetadata,
-  isEditor: result.role === "editor",
 })
 
 const projection = {
@@ -160,5 +155,4 @@ const projection = {
   deviceToken: 1,
   created_at: 1,
   twilio: 1,
-  role: 1,
 }

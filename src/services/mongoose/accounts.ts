@@ -101,6 +101,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     username,
     defaultWalletId,
     withdrawFee,
+    role,
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
@@ -120,6 +121,7 @@ export const AccountsRepository = (): IAccountsRepository => {
           ),
           defaultWalletId,
           withdrawFee,
+          role,
         },
         {
           new: true,
@@ -172,6 +174,7 @@ const translateToAccount = (result: UserRecord): Account => ({
   ),
   depositFeeRatio: result.depositFeeRatio as DepositFeeRatio,
   withdrawFee: result.withdrawFee as Satoshis,
+  isEditor: result.role === "editor",
 })
 
 const projection = {
@@ -185,4 +188,5 @@ const projection = {
   contacts: 1,
   depositFeeRatio: 1,
   withdrawFee: 1,
+  role: 1,
 }

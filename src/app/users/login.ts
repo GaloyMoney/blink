@@ -18,7 +18,7 @@ import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
 
-import { createKratosUser, createUser } from "./create-user"
+import { createUserForEmailSchema, createUserForPhoneSchema } from "./create-user"
 
 export const login = async ({
   phone,
@@ -60,7 +60,7 @@ export const login = async ({
   if (user instanceof CouldNotFindUserFromPhoneError) {
     subLogger.info({ phone }, "new user signup")
     const userRaw: NewUserInfo = { phone }
-    user = await createUser(userRaw)
+    user = await createUserForPhoneSchema(userRaw)
     if (user instanceof Error) return user
   } else if (user instanceof Error) {
     return user
@@ -106,7 +106,7 @@ export const loginWithKratos = async ({
 
   if (user instanceof CouldNotFindUserFromKratosIdError) {
     subLogger.info({ kratosUserId }, "New Kratos user signup")
-    user = await createKratosUser({ kratosUserId })
+    user = await createUserForEmailSchema({ kratosUserId })
     if (user instanceof Error) return user
   } else if (user instanceof Error) {
     return user
