@@ -244,10 +244,11 @@ export const LndService = (): ILightningService | LightningServiceError => {
       }
 
       const errDetails = parseLndErrorDetails(err)
-      switch (errDetails) {
-        case KnownLndErrorDetails.InsufficientBalance:
+      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+      switch (true) {
+        case match(KnownLndErrorDetails.InsufficientBalance):
           return new InsufficientBalanceForRoutingError()
-        case KnownLndErrorDetails.ProbeForRouteTimedOut:
+        case match(KnownLndErrorDetails.ProbeForRouteTimedOut):
           return new ProbeForRouteTimedOutError()
         default:
           return handleCommonRouteNotFoundErrors(err)
@@ -307,8 +308,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
       return translateLnInvoiceLookup(invoice)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      switch (errDetails) {
-        case KnownLndErrorDetails.InvoiceNotFound:
+      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+      switch (true) {
+        case match(KnownLndErrorDetails.InvoiceNotFound):
           return new InvoiceNotFoundError()
         default:
           return handleCommonLightningServiceErrors(err)
@@ -360,8 +362,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
         }
       } catch (err) {
         const errDetails = parseLndErrorDetails(err)
-        switch (errDetails) {
-          case KnownLndErrorDetails.LndDbCorruption:
+        const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+        switch (true) {
+          case match(KnownLndErrorDetails.LndDbCorruption):
             return new CorruptLndDbError(
               `Corrupted DB error for node with pubkey: ${pubkey}`,
             )
@@ -438,8 +441,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
       return true
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      switch (errDetails) {
-        case KnownLndErrorDetails.PaymentForDeleteNotFound:
+      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+      switch (true) {
+        case match(KnownLndErrorDetails.PaymentForDeleteNotFound):
           return false
         default:
           return handleCommonRouteNotFoundErrors(err)
@@ -463,8 +467,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
       return true
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      switch (errDetails) {
-        case KnownLndErrorDetails.SecretDoesNotMatchAnyExistingHodlInvoice:
+      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+      switch (true) {
+        case match(KnownLndErrorDetails.SecretDoesNotMatchAnyExistingHodlInvoice):
           return new SecretDoesNotMatchAnyExistingHodlInvoiceError(err)
         default:
           return handleCommonLightningServiceErrors(err)
@@ -487,8 +492,9 @@ export const LndService = (): ILightningService | LightningServiceError => {
       return true
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      switch (errDetails) {
-        case KnownLndErrorDetails.InvoiceNotFound:
+      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+      switch (true) {
+        case match(KnownLndErrorDetails.InvoiceNotFound):
           return true
         default:
           return handleCommonLightningServiceErrors(err)
@@ -675,8 +681,9 @@ const lookupPaymentByPubkeyAndHash = async ({
     return new BadPaymentDataError(JSON.stringify(result))
   } catch (err) {
     const errDetails = parseLndErrorDetails(err)
-    switch (errDetails) {
-      case KnownLndErrorDetails.SentPaymentNotFound:
+    const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+    switch (true) {
+      case match(KnownLndErrorDetails.SentPaymentNotFound):
         return new PaymentNotFoundError(JSON.stringify({ paymentHash, pubkey }))
       default:
         return handleCommonLightningServiceErrors(err)
@@ -684,21 +691,21 @@ const lookupPaymentByPubkeyAndHash = async ({
   }
 }
 
-export const KnownLndErrorDetails = {
-  InsufficientBalance: "insufficient local balance",
-  InvoiceNotFound: "unable to locate invoice",
-  InvoiceAlreadyPaid: "invoice is already paid",
-  UnableToFindRoute: "PaymentPathfindingFailedToFindPossibleRoute",
-  LndDbCorruption: "payment isn't initiated",
-  PaymentRejectedByDestination: "PaymentRejectedByDestination",
-  UnknownPaymentHash: "UnknownPaymentHash",
-  PaymentAttemptsTimedOut: "PaymentAttemptsTimedOut",
-  ProbeForRouteTimedOut: "ProbeForRouteTimedOut",
-  SentPaymentNotFound: "SentPaymentNotFound",
-  PaymentInTransition: "payment is in transition",
-  PaymentForDeleteNotFound: "non bucket element in payments bucket",
-  SecretDoesNotMatchAnyExistingHodlInvoice: "SecretDoesNotMatchAnyExistingHodlInvoice",
-  ConnectionDropped: "Connection dropped",
+export const KnownLndErrorDetails: { [key: string]: RegExp } = {
+  InsufficientBalance: /insufficient local balance/,
+  InvoiceNotFound: /unable to locate invoice/,
+  InvoiceAlreadyPaid: /invoice is already paid/,
+  UnableToFindRoute: /PaymentPathfindingFailedToFindPossibleRoute/,
+  LndDbCorruption: /payment isn't initiated/,
+  PaymentRejectedByDestination: /PaymentRejectedByDestination/,
+  UnknownPaymentHash: /UnknownPaymentHash/,
+  PaymentAttemptsTimedOut: /PaymentAttemptsTimedOut/,
+  ProbeForRouteTimedOut: /ProbeForRouteTimedOut/,
+  SentPaymentNotFound: /SentPaymentNotFound/,
+  PaymentInTransition: /payment is in transition/,
+  PaymentForDeleteNotFound: /non bucket element in payments bucket/,
+  SecretDoesNotMatchAnyExistingHodlInvoice: /SecretDoesNotMatchAnyExistingHodlInvoice/,
+  ConnectionDropped: /Connection dropped/,
 } as const
 
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
@@ -802,17 +809,18 @@ const handleSendPaymentLndErrors = ({
   paymentHash: PaymentHash
 }) => {
   const errDetails = parseLndErrorDetails(err)
-  switch (errDetails) {
-    case KnownLndErrorDetails.InvoiceAlreadyPaid:
+  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+  switch (true) {
+    case match(KnownLndErrorDetails.InvoiceAlreadyPaid):
       return new LnAlreadyPaidError()
-    case KnownLndErrorDetails.UnableToFindRoute:
+    case match(KnownLndErrorDetails.UnableToFindRoute):
       return new RouteNotFoundError()
-    case KnownLndErrorDetails.PaymentRejectedByDestination:
-    case KnownLndErrorDetails.UnknownPaymentHash:
+    case match(KnownLndErrorDetails.PaymentRejectedByDestination):
+    case match(KnownLndErrorDetails.UnknownPaymentHash):
       return new InvoiceExpiredOrBadPaymentHashError(paymentHash)
-    case KnownLndErrorDetails.PaymentAttemptsTimedOut:
+    case match(KnownLndErrorDetails.PaymentAttemptsTimedOut):
       return new PaymentAttemptsTimedOutError()
-    case KnownLndErrorDetails.PaymentInTransition:
+    case match(KnownLndErrorDetails.PaymentInTransition):
       return new PaymentInTransitionError(paymentHash)
     default:
       return handleCommonLightningServiceErrors(err)
@@ -821,8 +829,9 @@ const handleSendPaymentLndErrors = ({
 
 const handleCommonLightningServiceErrors = (err: Error) => {
   const errDetails = parseLndErrorDetails(err)
-  switch (errDetails) {
-    case KnownLndErrorDetails.ConnectionDropped:
+  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+  switch (true) {
+    case match(KnownLndErrorDetails.ConnectionDropped):
       return new OffChainServiceUnavailableError()
     default:
       return new UnknownLightningServiceError(msgForUnknown(err))
@@ -831,8 +840,9 @@ const handleCommonLightningServiceErrors = (err: Error) => {
 
 const handleCommonRouteNotFoundErrors = (err: Error) => {
   const errDetails = parseLndErrorDetails(err)
-  switch (errDetails) {
-    case KnownLndErrorDetails.ConnectionDropped:
+  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+  switch (true) {
+    case match(KnownLndErrorDetails.ConnectionDropped):
       return new OffChainServiceUnavailableError()
     default:
       return new UnknownRouteNotFoundError(msgForUnknown(err))
