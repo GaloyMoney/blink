@@ -9275,10 +9275,10 @@ mongodb@4.8.1, mongodb@^4.0.1, mongodb@^4.4.1:
   optionalDependencies:
     saslprep "^1.0.3"
 
-"mongoose@5 - 6", mongoose@^6.5.2:
-  version "6.5.2"
-  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-6.5.2.tgz#630ae67c4d2576635ba1f859b2840560b27b7775"
-  integrity sha512-3CFDrSLtK2qjM1pZeZpLTUyqPRkc11Iuh74ZrwS4IwEJ3K2PqGnmyPLw7ex4Kzu37ujIMp3MAuiBlUjfrcb6hw==
+"mongoose@5 - 6", mongoose@^6.5.5:
+  version "6.5.5"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-6.5.5.tgz#750ced2a6939312e4ab6fc56afbf291977b92512"
+  integrity sha512-sfRRRmkDAPV1H8Qy+zbCEVo8E2jLENF1GA5oaNOrDe1pNTqBtudbnZETOG+5XgGeH52kpPLNzcTCSOijcy505g==
   dependencies:
     bson "^4.6.5"
     kareem "2.4.1"
