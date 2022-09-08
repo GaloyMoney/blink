@@ -19,11 +19,11 @@ import {
 } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import express from "express"
-import { expressjwt } from "express-jwt"
+import { expressjwt, GetVerificationKey } from "express-jwt"
 import { execute, GraphQLError, GraphQLSchema, subscribe } from "graphql"
 import { rule } from "graphql-shield"
 import helmet from "helmet"
-import * as jwt from "jsonwebtoken"
+import jsonwebtoken from "jsonwebtoken"
 import PinoHttp from "pino-http"
 import {
   ExecuteFunction,
@@ -35,6 +35,8 @@ import { mapError } from "@graphql/error-map"
 import { AuthenticationError, AuthorizationError } from "@graphql/error"
 
 import { parseIps } from "@domain/users-ips"
+
+import jwksRsa from "jwks-rsa"
 
 import { playgroundTabs } from "../graphql/playground"
 
@@ -59,7 +61,7 @@ export const isEditor = rule({ cache: "contextual" })(
   },
 )
 
-const jwtAlgorithms: jwt.Algorithm[] = ["HS256"]
+const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
 
 const geeTestConfig = getGeetestConfig()
 const geetest = Geetest(geeTestConfig)
@@ -69,7 +71,7 @@ const sessionContext = ({
   ip,
   body,
 }: {
-  tokenPayload: jwt.JwtPayload | null
+  tokenPayload: jsonwebtoken.JwtPayload | null
   ip: IpAddress | undefined
   body: unknown
 }): Promise<GraphQLContext> => {
@@ -229,9 +231,19 @@ export const startApolloServer = async ({
     }),
   )
 
+  const URI_OATHKEEPER = "http://localhost:4456"
+
+  const secret = jwksRsa.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: `${URI_OATHKEEPER}/.well-known/jwks.json`,
+  }) as GetVerificationKey // https://github.com/auth0/express-jwt/issues/288#issuecomment-1122524366
+
   app.use(
     expressjwt({
-      secret: JWT_SECRET,
+      secret,
+      // secret: JWT_SECRET,
       algorithms: jwtAlgorithms,
       credentialsRequired: false,
       requestProperty: "token",
@@ -268,12 +280,12 @@ export const startApolloServer = async ({
             ) {
               const { request } = connectionContext
 
-              let tokenPayload: string | jwt.JwtPayload | null = null
+              let tokenPayload: string | jsonwebtoken.JwtPayload | null = null
               const authz = (connectionParams.authorization ||
                 connectionParams.Authorization) as string
               if (authz) {
                 const rawToken = authz.slice(7)
-                tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
+                tokenPayload = jsonwebtoken.verify(rawToken, JWT_SECRET, {
                   algorithms: jwtAlgorithms,
                 })
 
