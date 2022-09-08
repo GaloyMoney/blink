@@ -216,7 +216,7 @@ const KnownLndErrorDetails = {
   InsufficientFunds: /insufficient funds available to construct transaction/,
   ConnectionDropped: /Connection dropped/,
   CPFPAncestorLimitReached:
-    /unmatched backend error: -26: too-long-mempool-chain, too many unconfirmed ancestors \[limit: 25\]/,
+    /unmatched backend error: -26: too-long-mempool-chain, too many .* \[limit: \d+\]/,
 } as const
 
 export const extractIncomingTransactions = ({
