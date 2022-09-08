@@ -2,7 +2,7 @@ import { createServer } from "http"
 import crypto from "crypto"
 
 import { Accounts, Users } from "@app"
-import { getApolloConfig, getGeetestConfig, isDev, isProd, JWT_SECRET } from "@config"
+import { getApolloConfig, getGeetestConfig, isDev, isProd } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
 import {
@@ -65,6 +65,15 @@ export const isEditor = rule({ cache: "contextual" })(
   },
 )
 
+const URI_OATHKEEPER = "http://localhost:4456"
+
+const jwksArgs = {
+  cache: true,
+  rateLimit: true,
+  jwksRequestsPerMinute: 5,
+  jwksUri: `${URI_OATHKEEPER}/.well-known/jwks.json`,
+}
+
 const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
 
 const geeTestConfig = getGeetestConfig()
@@ -79,7 +88,7 @@ const sessionContext = ({
   ip: IpAddress | undefined
   body: unknown
 }): Promise<GraphQLContext> => {
-  const aid: AccountId | undefined = tokenPayload?.aid ?? undefined
+  const aid: AccountId | undefined = tokenPayload?.aid || undefined
 
   // TODO move from crypto.randomUUID() to a Jaeger standard
   const logger = graphqlLogger.child({ tokenPayload, id: crypto.randomUUID(), body })
@@ -228,19 +237,11 @@ export const startApolloServer = async ({
     }),
   )
 
-  const URI_OATHKEEPER = "http://localhost:4456"
-
-  const secret = jwksRsa.expressJwtSecret({
-    cache: true,
-    rateLimit: true,
-    jwksRequestsPerMinute: 5,
-    jwksUri: `${URI_OATHKEEPER}/.well-known/jwks.json`,
-  }) as GetVerificationKey // https://github.com/auth0/express-jwt/issues/288#issuecomment-1122524366
+  const secret = jwksRsa.expressJwtSecret(jwksArgs) as GetVerificationKey // https://github.com/auth0/express-jwt/issues/288#issuecomment-1122524366
 
   app.use(
     expressjwt({
       secret,
-      // secret: JWT_SECRET,
       algorithms: jwtAlgorithms,
       credentialsRequired: false,
       requestProperty: "token",
@@ -260,6 +261,8 @@ export const startApolloServer = async ({
   await apolloServer.start()
 
   apolloServer.applyMiddleware({ app, path: "/graphql" })
+
+  const keyJwks = await jwksRsa(jwksArgs).getSigningKey()
 
   return new Promise((resolve, reject) => {
     httpServer.listen({ port }, () => {
@@ -282,7 +285,7 @@ export const startApolloServer = async ({
                 connectionParams.Authorization) as string
               if (authz) {
                 const rawToken = authz.slice(7)
-                tokenPayload = jsonwebtoken.verify(rawToken, JWT_SECRET, {
+                tokenPayload = jsonwebtoken.verify(rawToken, keyJwks.getPublicKey(), {
                   algorithms: jwtAlgorithms,
                 })
 

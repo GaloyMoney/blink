@@ -11,6 +11,7 @@
       check_session_url: "http://localhost:4002/auth/validatejwt"
       preserve_path: true
       preserve_query: true
+  - handler: anonymous
   authorizer:
     handler: allow
   mutators: 
