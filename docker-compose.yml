@@ -163,8 +163,13 @@ services:
       - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
       - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
       - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
-      - ${PWD}/dev/lnd/loop/lnd-outside-1:/root/.lnd
-      - ${PWD}/dev/lnd/loop/lnd-outside-1/data/chain/bitcoin/regtest/admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/readonly.macaroon
+      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/readonly.macaroon
+      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/invoices.macaroon
+      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/signer.macaroon
+      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/chainnotifier.macaroon
+      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/router.macaroon
+      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/walletkit.macaroon
     depends_on:
       - lnd-outside-1
     ports:
@@ -182,7 +187,12 @@ services:
       - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
       - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
       - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
-      - ${PWD}/dev/lnd/regtest/lnd1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/lnd1.macaroon
+      - ${PWD}/dev/lnd/regtest/lnd1.admin.macaroon:/root/.lnd/lnd1.admin.macaroon
+      - ${PWD}/dev/lnd/loop/regtest/loopd1-1.macaroons.db:/root/.loop/regtest/macaroons.db
+      - ${PWD}/dev/lnd/loop/regtest/loopd1-1.loop.db:/root/.loop/regtest/loop.db
+      - ${PWD}/dev/lnd/loop/regtest/loopd1-1.tls.key:/root/.loop/regtest/tls.key
+      - ${PWD}/dev/lnd/loop/regtest/loopd1-1.tls.cert:/root/.loop/regtest/tls.cert
+      - ${PWD}/dev/lnd/loop/regtest/loopd1-1.loop.macaroon:/root/.loop/regtest/loop.macaroon
     depends_on:
       - lnd1
       - loopserver
@@ -195,11 +205,11 @@ services:
       - "loopd"
       - "--network=regtest"
       - "--debuglevel=debug"
-      - "--experimental"
+      # - "--experimental"
       - "--server.host=${LOOP_SERVER_INTERNAL_IP}:11009"
       - "--server.notls"
       - "--lnd.host=lnd1:10009"
-      - "--lnd.macaroonpath=/root/.lnd/data/chain/bitcoin/regtest/lnd1.macaroon"
+      - "--lnd.macaroonpath=/root/.lnd/lnd1.admin.macaroon"
       - "--lnd.tlspath=/root/.lnd/tls.cert"
       - "--tlsautorefresh"
       - "--restlisten=0.0.0.0:8081"
@@ -211,7 +221,12 @@ services:
       - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
       - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
       - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
-      - ${PWD}/dev/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/lnd2.macaroon
+      - ${PWD}/dev/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/lnd2.admin.macaroon
+      - ${PWD}/dev/lnd/loop/regtest/loopd2-1.macaroons.db:/root/.loop/regtest/macaroons.db
+      - ${PWD}/dev/lnd/loop/regtest/loopd2-1.loop.db:/root/.loop/regtest/loop.db
+      - ${PWD}/dev/lnd/loop/regtest/loopd2-1.tls.key:/root/.loop/regtest/tls.key
+      - ${PWD}/dev/lnd/loop/regtest/loopd2-1.tls.cert:/root/.loop/regtest/tls.cert
+      - ${PWD}/dev/lnd/loop/regtest/loopd2-1.loop.macaroon:/root/.loop/regtest/loop.macaroon
     depends_on:
       - lnd2
       - loopserver
@@ -224,11 +239,11 @@ services:
       - "loopd"
       - "--network=regtest"
       - "--debuglevel=debug"
-      - "--experimental"
+      # - "--experimental"
       - "--server.host=${LOOP_SERVER_INTERNAL_IP}:11009"
       - "--server.notls"
       - "--lnd.host=lnd2:10009"
-      - "--lnd.macaroonpath=/root/.lnd/data/chain/bitcoin/regtest/lnd2.macaroon"
+      - "--lnd.macaroonpath=/root/.lnd/lnd2.admin.macaroon"
       - "--lnd.tlspath=/root/.lnd/tls.cert"
       - "--tlsautorefresh"
       - "--restlisten=0.0.0.0:8081"

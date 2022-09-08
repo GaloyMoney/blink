@@ -21,7 +21,7 @@ loopd1_id=$(docker ps -q -f name="loopd1-1")
 docker exec -it $loopd1_id loop -n regtest monitor
 # 3. Loop out
 TEST="swap-out" make integration
-# 4. Mine a block (or a few) to finish loop out
+# 4. Mine a block (or a few) to finish the loop out
 make mine-block
 make mine-block
 ```
