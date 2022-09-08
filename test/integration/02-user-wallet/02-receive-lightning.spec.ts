@@ -596,7 +596,7 @@ describe("UserWallet - Lightning", () => {
     } catch (err) {
       getInvoiceErr = err
     }
-    expect(parseLndErrorDetails(getInvoiceErr)).toEqual(
+    expect(parseLndErrorDetails(getInvoiceErr)).toMatch(
       KnownLndErrorDetails.InvoiceNotFound,
     )
 
@@ -831,7 +831,7 @@ describe("Invoice handling from trigger", () => {
       const [result] = await Promise.all([startPay(), delayedListener(subInvoices)])
 
       // See successful payment
-      expect(result).toEqual(KnownLndErrorDetails.PaymentRejectedByDestination)
+      expect(result).toMatch(KnownLndErrorDetails.PaymentRejectedByDestination)
       subInvoices.removeAllListeners()
     })
 
