@@ -53,7 +53,9 @@ export const isAuthenticated = rule({ cache: "contextual" })((parent, args, ctx)
 
 export const isEditor = rule({ cache: "contextual" })(
   (parent, args, ctx: GraphQLContextForUser) => {
-    return ctx.domainUser.isEditor ? true : new AuthorizationError({ logger: baseLogger })
+    return ctx.domainAccount.isEditor
+      ? true
+      : new AuthorizationError({ logger: baseLogger })
   },
 )
 

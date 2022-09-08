@@ -60,6 +60,8 @@ type Account = {
   title: BusinessMapTitle
   coordinates: Coordinates
   readonly contacts: AccountContact[]
+  readonly isEditor: boolean
+  role?: string
 }
 
 type BusinessMapTitle = string & { readonly brand: unique symbol }

@@ -43,7 +43,6 @@ export const createUserForPhoneSchema = async ({
   const userRaw: NewUserInfo = {
     phone: phoneNumberValid,
     phoneMetadata,
-    role: getTestAccounts().find(({ phone }) => phone === phoneNumberValid)?.role,
   }
 
   // FIXME: this is only used from tests. should be refactored with a mock
