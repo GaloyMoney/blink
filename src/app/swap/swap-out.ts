@@ -9,27 +9,27 @@ import { LoopService } from "@services/loopd"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 import { LndService } from "@services/lnd"
 
-import { LND1_LOOP_CONFIG } from "./get-active-loopd"
+import { getActiveLoopd } from "./get-active-loopd"
+import { getSwapDestAddress } from "./get-swap-dest-address"
 
 const logger = baseLogger.child({ module: "swap" })
 
 export const swapOut = async (): Promise<
   SwapOutResult | SwapServiceError | NoSwapAction
 > => {
-  const swapService = LoopService(LND1_LOOP_CONFIG)
   logger.info("SwapApp: Started")
+  const activeLoopdConfig = getActiveLoopd()
+  const swapService = LoopService(activeLoopdConfig)
+
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
-
   const onChainBalance = await onChainService.getBalance()
   if (onChainBalance instanceof Error) return onChainBalance
-
   const offChainService = LndService()
   if (offChainService instanceof Error) return offChainService
   const offChainChannelBalances = await offChainService.getInboundOutboundBalance()
   if (offChainChannelBalances instanceof Error) return offChainChannelBalances
   const outbound = offChainChannelBalances.outbound
-
   const minOnChainHotWalletBalanceConfig = getSwapConfig().minOnChainHotWalletBalance
 
   const swapChecker = SwapOutChecker({
@@ -41,14 +41,21 @@ export const swapOut = async (): Promise<
     currentOutboundLiquidityBalance: outbound,
   })
   if (swapOutAmount instanceof Error) return swapOutAmount
-  logger.info({ swapOutAmount }, "SwapOutChecker amount")
-
-  addAttributesToCurrentSpan({
-    "swap.amount": swapOutAmount,
-  })
 
   if (swapOutAmount > 0) {
-    const swapResult = await swapService.swapOut({ amount: swapOutAmount })
+    logger.info(
+      { swapOutAmount, activeLoopdConfig },
+      `Initiating swapout for ${swapOutAmount} sats`,
+    )
+    addAttributesToCurrentSpan({
+      "swap.amount": swapOutAmount,
+    })
+    const swapDestAddress = await getSwapDestAddress()
+    if (swapDestAddress instanceof Error) return swapDestAddress
+    const swapResult = await swapService.swapOut({
+      amount: swapOutAmount,
+      swapDestAddress,
+    })
     if (swapResult instanceof Error) {
       addAttributesToCurrentSpan({
         "swap.error": JSON.stringify(swapResult),

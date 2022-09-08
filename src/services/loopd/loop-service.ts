@@ -7,6 +7,7 @@ import {
   SwapServiceError,
   SwapErrorHealthCheckFailed,
   UnknownSwapServiceError,
+  SwapErrorChannelBalanceTooLow,
 } from "@domain/swap/errors"
 import { SwapState as SwapStateType } from "@domain/swap/index"
 import { SwapType as DomainSwapType } from "@domain/swap"
@@ -100,6 +101,9 @@ export const LoopService = ({
       }
       return swapOutResult
     } catch (error) {
+      if (error.message.includes("channel balance too low")) {
+        return new SwapErrorChannelBalanceTooLow(error)
+      }
       return new SwapServiceError(error)
     }
   }
