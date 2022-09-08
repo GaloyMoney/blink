@@ -25,16 +25,13 @@ export const getAccount = async (
 }
 
 export const hasPermissions = async (
-  userId: UserId,
+  accountId: AccountId,
   walletId: WalletId,
 ): Promise<boolean | ApplicationError> => {
-  const userAccount = await accounts.findByUserId(userId)
-  if (userAccount instanceof Error) return userAccount
-
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
 
-  return userAccount.id === wallet.accountId
+  return accountId === wallet.accountId
 }
 
 export const getBusinessMapMarkers = async () => {

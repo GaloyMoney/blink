@@ -1,5 +1,4 @@
 import { checkedToKratosUserId, checkedToPhoneNumber } from "@domain/users"
-import { getTestAccounts } from "@config"
 import { baseLogger } from "@services/logger"
 import {
   WalletsRepository,

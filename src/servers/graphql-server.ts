@@ -49,9 +49,13 @@ const graphqlLogger = baseLogger.child({
 
 const apolloConfig = getApolloConfig()
 
-export const isAuthenticated = rule({ cache: "contextual" })((parent, args, ctx) => {
-  return ctx.uid !== null ? true : new AuthenticationError({ logger: baseLogger })
-})
+export const isAuthenticated = rule({ cache: "contextual" })(
+  (parent, args, ctx: GraphQLContext) => {
+    return ctx.domainAccount !== null
+      ? true
+      : new AuthenticationError({ logger: baseLogger })
+  },
+)
 
 export const isEditor = rule({ cache: "contextual" })(
   (parent, args, ctx: GraphQLContextForUser) => {
@@ -75,7 +79,7 @@ const sessionContext = ({
   ip: IpAddress | undefined
   body: unknown
 }): Promise<GraphQLContext> => {
-  const userId = tokenPayload?.uid ?? null
+  const aid: AccountId | undefined = tokenPayload?.aid ?? undefined
 
   // TODO move from crypto.randomUUID() to a Jaeger standard
   const logger = graphqlLogger.child({ tokenPayload, id: crypto.randomUUID(), body })
@@ -84,11 +88,12 @@ const sessionContext = ({
   let domainAccount: Account | undefined
   return addAttributesToCurrentSpanAndPropagate(
     {
-      [SemanticAttributes.ENDUSER_ID]: userId,
+      [SemanticAttributes.ENDUSER_ID]: aid,
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
     },
     async () => {
-      if (userId) {
+      if (aid) {
+        const userId = aid as unknown as UserId // FIXME: fix until User is attached to kratos
         const loggedInUser = await Users.getUserForLogin({ userId, ip, logger })
         if (loggedInUser instanceof Error)
           throw new ApolloError("Invalid user authentication", "INVALID_AUTHENTICATION", {
@@ -96,9 +101,7 @@ const sessionContext = ({
           })
         domainUser = loggedInUser
 
-        const loggedInDomainAccount = await Accounts.getAccount(
-          domainUser.defaultAccountId,
-        )
+        const loggedInDomainAccount = await Accounts.getAccount(aid)
         if (loggedInDomainAccount instanceof Error) throw Error
         domainAccount = loggedInDomainAccount
       }
@@ -107,7 +110,6 @@ const sessionContext = ({
 
       return {
         logger,
-        uid: userId,
         // FIXME: we should not return this for the admin graphql endpoint
         domainUser,
         domainAccount,
@@ -170,14 +172,9 @@ export const startApolloServer = async ({
 
       const body = context.req?.body ?? null
 
-      console.log({ body }, "body123")
-
       const ipString = isDev
         ? context.req?.ip
         : context.req?.headers["x-real-ip"] || context.req?.headers["x-forwarded-for"]
-
-      const accountId = context.req?.headers["ACCOUNT_ID"]
-      console.log({ accountId }, "accountId")
 
       const ip = parseIps(ipString)
 
