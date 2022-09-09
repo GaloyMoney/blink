@@ -6,21 +6,25 @@ authenticators:
   bearer_token:
     enabled: true
     config:
-      check_session_url: http://kratos:4433/sessions/whoami
+      check_session_url: http://e2e-tests:4002/auth/validatejwt # will need 2 bearer token? can filter?
 
   anonymous:
     enabled: true
     config:
       subject: anon
 
-  cookie_session:
+  # cookie_session:
+  #   enabled: true
+  #   config:
+  #     # TODO cluster-internal mTLS
+  #     check_session_url: http://kratos:4433/sessions/whoami
+  #     preserve_path: true
+  #     subject_from: identity.id
+  #     extra_from: identity.traits
+
+  unauthorized:
+    # Set 'enabled' to 'true' if the authenticator should be enabled and 'false' to disable the authenticator. Defaults to 'false'.
     enabled: true
-    config:
-      # TODO cluster-internal mTLS
-      check_session_url: http://kratos:4433/sessions/whoami
-      preserve_path: true
-      subject_from: identity.id
-      extra_from: identity.traits
 
 authorizers:
   allow:
@@ -33,15 +37,25 @@ mutators:
   id_token:
     enabled: true
     config: 
-      jwks_url: file:///Users/nicolasburtey/Code/galoy/galoy-app2/galoy/dev/ory/jwks.json
+      jwks_url: file:///home/ory/jwks.json
       issuer_url: "galoy.io"
 
 errors:
+  fallback:
+    - json
   handlers:
-    redirect:
+    json:
       enabled: true
       config:
-        to: /login
+        verbose: true
+
+# for kratos?
+# errors:
+#   handlers:
+#     redirect:
+#       enabled: true
+#       config:
+#         to: /login
 
 serve:
   proxy:
@@ -63,5 +77,5 @@ serve:
 
 access_rules:
   repositories:
-    - file:///Users/nicolasburtey/Code/galoy/galoy-app2/galoy/dev/ory/oathkeeper_rules.yaml
+    - file:///home/ory/oathkeeper_rules.yaml
   matching_strategy: regexp

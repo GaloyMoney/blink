@@ -65,7 +65,8 @@ export const isEditor = rule({ cache: "contextual" })(
   },
 )
 
-const URI_OATHKEEPER = "http://localhost:4456"
+// FIXME put in env
+const URI_OATHKEEPER = "http://oathkeeper:4456"
 
 const jwksArgs = {
   cache: true,

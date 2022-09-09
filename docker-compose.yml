@@ -191,22 +191,17 @@ services:
     image: oryd/kratos:v0.10.1
     entrypoint: sh -c
     command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --sqa-opt-out"'
-    ports:
-      - '4433:4433' # public
-      - '4434:4434' # admin
     environment:
       DSN: sqlite:///var/lib/sqlite/db.sqlite?_fk=true
     volumes:
-      - type: bind
-        source: dev/ory
-        target: /home/ory
+    - type: bind
+      source: dev/ory
+      target: /home/ory
 
   oathkeeper:
     image: oryd/oathkeeper:v0.39.4
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
-    ports:
-      - "4455:4455"
     volumes:
-      - type: bind
-        source: dev/ory
-        target: /home/ory
+    - type: bind
+      source: dev/ory
+      target: /home/ory
