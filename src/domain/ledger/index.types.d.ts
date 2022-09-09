@@ -11,9 +11,6 @@ type LedgerTransactionTypeObject = typeof import("./index").LedgerTransactionTyp
 type LedgerTransactionTypeKey = keyof typeof import("./index").LedgerTransactionType
 type LedgerTransactionType = LedgerTransactionTypeObject[LedgerTransactionTypeKey]
 
-type ExtendedLedgerTransactionType =
-  typeof import("./index").ExtendedLedgerTransactionType[keyof typeof import("./index").ExtendedLedgerTransactionType]
-
 type LedgerJournal = {
   readonly journalId: LedgerJournalId
   readonly voided: boolean
