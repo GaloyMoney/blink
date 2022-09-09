@@ -2,7 +2,7 @@ import { createServer } from "http"
 import crypto from "crypto"
 
 import { Accounts, Users } from "@app"
-import { getApolloConfig, getGeetestConfig, isDev, isProd } from "@config"
+import { getApolloConfig, getGeetestConfig, isDev, isProd, JWT_SECRET } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
 import {
@@ -75,6 +75,7 @@ const jwksArgs = {
 }
 
 const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
+const jwtAlgorithmsLegacy: jsonwebtoken.Algorithm[] = ["HS256"]
 
 const geeTestConfig = getGeetestConfig()
 const geetest = Geetest(geeTestConfig)
@@ -88,7 +89,7 @@ const sessionContext = ({
   ip: IpAddress | undefined
   body: unknown
 }): Promise<GraphQLContext> => {
-  const aid: AccountId | undefined = tokenPayload?.aid || undefined
+  const uid: AccountId | undefined = tokenPayload?.uid || undefined
 
   // TODO move from crypto.randomUUID() to a Jaeger standard
   const logger = graphqlLogger.child({ tokenPayload, id: crypto.randomUUID(), body })
@@ -97,12 +98,12 @@ const sessionContext = ({
   let domainAccount: Account | undefined
   return addAttributesToCurrentSpanAndPropagate(
     {
-      [SemanticAttributes.ENDUSER_ID]: aid,
+      [SemanticAttributes.ENDUSER_ID]: uid,
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
     },
     async () => {
-      if (aid) {
-        const userId = aid as unknown as UserId // FIXME: fix until User is attached to kratos
+      if (uid) {
+        const userId = uid as unknown as UserId // FIXME: fix until User is attached to kratos
         const loggedInUser = await Users.getUserForLogin({ userId, ip, logger })
         if (loggedInUser instanceof Error)
           throw new ApolloError("Invalid user authentication", "INVALID_AUTHENTICATION", {
@@ -110,7 +111,7 @@ const sessionContext = ({
           })
         domainUser = loggedInUser
 
-        const loggedInDomainAccount = await Accounts.getAccount(aid)
+        const loggedInDomainAccount = await Accounts.getAccount(uid)
         if (loggedInDomainAccount instanceof Error) throw Error
         domainAccount = loggedInDomainAccount
       }
@@ -262,8 +263,6 @@ export const startApolloServer = async ({
 
   apolloServer.applyMiddleware({ app, path: "/graphql" })
 
-  const keyJwks = await jwksRsa(jwksArgs).getSigningKey()
-
   return new Promise((resolve, reject) => {
     httpServer.listen({ port }, () => {
       if (startSubscriptionServer) {
@@ -285,8 +284,13 @@ export const startApolloServer = async ({
                 connectionParams.Authorization) as string
               if (authz) {
                 const rawToken = authz.slice(7)
-                tokenPayload = jsonwebtoken.verify(rawToken, keyJwks.getPublicKey(), {
-                  algorithms: jwtAlgorithms,
+
+                // TODO: key passed from kratos would be:
+                // const keyJwks = await jwksRsa(jwksArgs).getSigningKey()
+                // keyJwks.getPublicKey()
+
+                tokenPayload = jsonwebtoken.verify(rawToken, JWT_SECRET, {
+                  algorithms: jwtAlgorithmsLegacy,
                 })
 
                 if (typeof tokenPayload === "string") {

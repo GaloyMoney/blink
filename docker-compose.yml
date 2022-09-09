@@ -16,6 +16,7 @@ services:
       - lnd-outside-1
       - lnd-outside-2
       - otel-agent
+      - oathkeeper
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.43.0
     command: [ "--config=/etc/otel-agent-config.yaml" ]
@@ -190,7 +191,6 @@ services:
     image: oryd/kratos:v0.10.1
     entrypoint: sh -c
     command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --sqa-opt-out"'
-    restart: unless-stopped
     ports:
       - '4433:4433' # public
       - '4434:4434' # admin
@@ -204,7 +204,6 @@ services:
   oathkeeper:
     image: oryd/oathkeeper:v0.39.4
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
-    restart: on-failure
     ports:
       - "4455:4455"
     volumes:

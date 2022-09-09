@@ -42,7 +42,7 @@ export const createApolloClient = (
   const authLink = new ApolloLink((operation, forward) => {
     operation.setContext(({ headers }: { headers: Record<string, string> }) => ({
       headers: {
-        "authorization": authToken ? `Bearer ${authToken}` : "",
+        "Authorization": authToken ? `Bearer ${authToken}` : "",
         "x-real-ip": localIpAddress,
         ...headers,
       },

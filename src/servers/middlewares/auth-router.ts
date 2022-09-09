@@ -90,8 +90,7 @@ authRouter.post("/validatejwt", async (req, res) => {
     }
   }
   if (tokenPayload) {
-    // FIXME: using { extra.aid } because oathkeeper is not picking up { subject }
-    res.json({ subject: tokenPayload.uid, extra: { aid: tokenPayload.uid } })
+    res.json({ subject: "", extra: { uid: tokenPayload.uid } })
   } else {
     res.status(401).send({ error: "Token validation error" })
   }

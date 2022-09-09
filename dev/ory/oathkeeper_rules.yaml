@@ -17,7 +17,7 @@
   mutators: 
   - handler: id_token
     config: 
-      claims: '{"aid": "{{ print .Extra.aid }}"}'
+      claims: '{"uid": "{{ print .Extra.uid }}"}'
 
 
 #  {

@@ -1,5 +1,6 @@
 log:
   level: debug
+  format: json
 
 authenticators:
   bearer_token:
