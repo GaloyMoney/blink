@@ -285,6 +285,8 @@ export const startApolloServer = async ({
                 connectionParams.Authorization) as string
               if (authz) {
                 const rawToken = authz.slice(7)
+                console.log({ rawToken })
+
                 tokenPayload = jsonwebtoken.verify(rawToken, keyJwks.getPublicKey(), {
                   algorithms: jwtAlgorithms,
                 })

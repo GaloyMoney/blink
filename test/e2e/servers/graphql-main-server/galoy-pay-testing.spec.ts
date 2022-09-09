@@ -47,14 +47,16 @@ beforeAll(async () => {
   await fundWalletIdFromLightning({ walletId: sendingWalletId, amount: toSats(50_000) })
   receivingWalletId = await getDefaultWalletIdByTestUserRef(receivingUserRef)
 
-  serverPid = await startServer("start-main-ci")
-  ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
-  const input = { phone, code }
-  const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
+  // serverPid = await startServer("start-main-ci")
+  // ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
+  // const input = { phone, code }
+  // const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
   // Create a new authenticated client
   disposeClient()
   ;({ apolloClient, disposeClient } = createApolloClient(
-    defaultTestClientConfig(result.data.userLogin.authToken),
+    defaultTestClientConfig(
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2MzFhZmEyYTUzMTFkYzU3Mzc1NGY4YzMiLCJuZXR3b3JrIjoicmVndGVzdCIsImlhdCI6MTY2MjcxMjM3M30._jaLI12kZQeLG9ljTRLlLjY9yWzcygAo2EkG-WRFe_o",
+    ),
   ))
 })
 
@@ -189,7 +191,7 @@ describe("galoy-pay", () => {
     })
   })
 
-  describe("price", () => {
+  describe.only("price", () => {
     const subscriptionQuery = PRICE
 
     it("returns data with valid inputs", async () => {

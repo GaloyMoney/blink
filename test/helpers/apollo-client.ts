@@ -22,7 +22,7 @@ export type ApolloTestClientConfig = {
   graphqlSubscriptionPath: string
 }
 
-const OATHKEEPER_PORT = 4455
+const OATHKEEPER_PORT = 4002
 
 export const defaultTestClientConfig = (authToken?: string): ApolloTestClientConfig => {
   return {
@@ -42,7 +42,7 @@ export const createApolloClient = (
   const authLink = new ApolloLink((operation, forward) => {
     operation.setContext(({ headers }: { headers: Record<string, string> }) => ({
       headers: {
-        "authorization": authToken ? `Bearer ${authToken}` : "",
+        "Authorization": authToken ? `Bearer ${authToken}` : "",
         "x-real-ip": localIpAddress,
         ...headers,
       },
@@ -52,6 +52,10 @@ export const createApolloClient = (
 
   const httpLink = new HttpLink({ uri: `http://localhost:${port}${graphqlPath}`, fetch })
 
+  console.log({
+    uri: `ws://localhost:${port}${graphqlSubscriptionPath}`,
+    connectionParams: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
+  })
   const subscriptionClient = new SubscriptionClient(
     `ws://localhost:${port}${graphqlSubscriptionPath}`,
     {

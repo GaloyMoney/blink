@@ -1,9 +1,28 @@
 
-- id: galoy-backend
+- id: galoy-backend-http
   upstream: 
     url: "http://localhost:4002"
   match: 
     url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/<.*>"
+    methods: ["GET", "POST"]
+  authenticators:
+  - handler: bearer_token
+    config: 
+      check_session_url: "http://localhost:4002/auth/validatejwt"
+      preserve_path: true
+      preserve_query: true
+  - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators: 
+  - handler: id_token
+    config: 
+      claims: '{"aid": "{{ print .Extra.aid }}"}'
+- id: galoy-backend-ws
+  upstream: 
+    url: "ws://localhost:4002"
+  match: 
+    url: "<(ws)>://<[a-zA-Z0-9-.:]+>/<.*>"
     methods: ["GET", "POST"]
   authenticators:
   - handler: bearer_token
