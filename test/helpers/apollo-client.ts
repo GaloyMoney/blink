@@ -7,11 +7,11 @@ import {
   split,
   NormalizedCacheObject,
 } from "@apollo/client/core"
-import { WebSocketLink } from "@apollo/client/link/ws"
 import { getMainDefinition } from "@apollo/client/utilities"
 import fetch from "cross-fetch"
-import { SubscriptionClient } from "subscriptions-transport-ws"
-import ws from "ws"
+import { createClient } from "graphql-ws"
+import { GraphQLWsLink } from "@apollo/client/link/subscriptions"
+import WebSocket from "ws"
 
 export const localIpAddress = "127.0.0.1" as IpAddress
 
@@ -56,15 +56,14 @@ export const createApolloClient = (
     uri: `ws://localhost:${port}${graphqlSubscriptionPath}`,
     connectionParams: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
   })
-  const subscriptionClient = new SubscriptionClient(
-    `ws://localhost:${port}${graphqlSubscriptionPath}`,
-    {
-      connectionParams: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
-    },
-    ws,
-  )
 
-  const wsLink = new WebSocketLink(subscriptionClient)
+  const subscriptionClient = createClient({
+    url: `ws://localhost:${port}${graphqlSubscriptionPath}`,
+    connectionParams: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
+    webSocketImpl: WebSocket,
+  })
+
+  const wsLink = new GraphQLWsLink(subscriptionClient)
 
   const splitLink = split(
     ({ query }) => {
@@ -97,7 +96,7 @@ export const createApolloClient = (
   const disposeClient = () => {
     apolloClient.clearStore()
     apolloClient.stop()
-    subscriptionClient.close()
+    subscriptionClient.terminate()
   }
 
   return {
