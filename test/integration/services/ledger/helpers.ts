@@ -61,7 +61,7 @@ export const recordSendLnPayment = async ({
   })
 }
 
-export const recordIntraLedgerPayment = async ({
+export const recordLnIntraLedgerPayment = async ({
   senderWalletDescriptor,
   recipientWalletDescriptor,
   paymentAmount,

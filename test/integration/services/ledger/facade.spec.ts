@@ -4,7 +4,7 @@ import { BtcWalletDescriptor, UsdWalletDescriptor, WalletCurrency } from "@domai
 import * as LedgerFacade from "@services/ledger/facade"
 
 import {
-  recordIntraLedgerPayment,
+  recordLnIntraLedgerPayment,
   recordReceivePayment,
   recordSendLnPayment,
 } from "./helpers"
@@ -79,7 +79,7 @@ describe("Facade", () => {
       )
       if (startingBalanceSender instanceof Error) throw startingBalanceSender
 
-      await recordIntraLedgerPayment({
+      await recordLnIntraLedgerPayment({
         senderWalletDescriptor: walletDescriptor1,
         recipientWalletDescriptor: walletDescriptor2,
         paymentAmount: sendAmount,
