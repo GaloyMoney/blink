@@ -238,7 +238,11 @@ export const recordOnChainIntraLedgerPayment = async ({
 // Non-LedgerFacade helpers from legacy admin service
 // ======
 
-export const recordLnChannelOpenOrClosingFee = async ({ fee }: { fee: Satoshis }) => {
+export const recordLnChannelOpenOrClosingFee = async ({
+  amount,
+}: {
+  amount: Satoshis
+}) => {
   const metadata = LedgerFacade.LnChannelOpenOrClosingFee({
     txId: "txId" as OnChainTxHash,
   })
@@ -246,8 +250,8 @@ export const recordLnChannelOpenOrClosingFee = async ({ fee }: { fee: Satoshis }
   const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())
 
   const savedEntry = await MainBook.entry("LnChannelOpenOrClosingFee")
-    .debit(bankOwnerPath, fee, { ...metadata, currency: WalletCurrency.Btc })
-    .credit(lndAccountingPath, fee, { ...metadata, currency: WalletCurrency.Btc })
+    .debit(bankOwnerPath, amount, { ...metadata, currency: WalletCurrency.Btc })
+    .credit(lndAccountingPath, amount, { ...metadata, currency: WalletCurrency.Btc })
     .commit()
 
   return translateToLedgerJournal(savedEntry)
