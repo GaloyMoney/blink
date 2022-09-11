@@ -43,6 +43,11 @@ export const rebalancingInternalChannels = async () => {
 
   const { channels } = await getDirectChannels({ lnd: selfLnd, otherPubkey })
 
+  if (channels.length === 0) {
+    baseLogger.warn("need at least one active channel to rebalance")
+    return
+  }
+
   // TODO:
   // we currently only rebalancing the biggest channel between both peers.
 
