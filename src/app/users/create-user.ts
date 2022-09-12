@@ -1,16 +1,19 @@
-import { checkedToKratosUserId, checkedToPhoneNumber } from "@domain/users"
 import { getTestAccounts } from "@config"
+import { WalletCurrency } from "@domain/shared"
+import { checkedToKratosUserId, checkedToPhoneNumber } from "@domain/users"
+import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
 import {
-  WalletsRepository,
   AccountsRepository,
   UsersRepository,
+  WalletsRepository,
 } from "@services/mongoose"
-import { WalletCurrency } from "@domain/shared"
-import { WalletType } from "@domain/wallets"
 import { TwilioClient } from "@services/twilio"
 
-const setupAccount = async (userId: UserId): Promise<Account | ApplicationError> => {
+const setupAccount = async (
+  userId: UserId,
+  phoneNumberValid?: PhoneNumber,
+): Promise<Account | ApplicationError> => {
   const account = await AccountsRepository().findByUserId(userId)
   if (account instanceof Error) return account
 
@@ -23,13 +26,18 @@ const setupAccount = async (userId: UserId): Promise<Account | ApplicationError>
 
   account.defaultWalletId = wallet.id
 
+  // FIXME: to remove when Casbin is been introduced
+  const role = getTestAccounts().find(({ phone }) => phone === phoneNumberValid)?.role
+  account.role = role
+
   const updatedAccount = await AccountsRepository().update(account)
   if (updatedAccount instanceof Error) return updatedAccount
 
   return updatedAccount
 }
 
-export const createUser = async ({
+// no kratos user is been added (currently with PhoneSchema)
+export const createUserForPhoneSchema = async ({
   phone,
   phoneMetadata,
 }: {
@@ -42,7 +50,6 @@ export const createUser = async ({
   const userRaw: NewUserInfo = {
     phone: phoneNumberValid,
     phoneMetadata,
-    role: getTestAccounts().find(({ phone }) => phone === phoneNumberValid)?.role,
   }
 
   // FIXME: this is only used from tests. should be refactored with a mock
@@ -59,13 +66,18 @@ export const createUser = async ({
   const user = await UsersRepository().persistNew(userRaw)
   if (user instanceof Error) return user
 
-  const account = await setupAccount(user.id)
+  const account = await setupAccount(user.id, phoneNumberValid)
   if (account instanceof Error) return account
 
   return user
 }
 
-export const createKratosUser = async ({ kratosUserId }: { kratosUserId: string }) => {
+// kratos user already exist, as he has been using self registration
+export const createUserForEmailSchema = async ({
+  kratosUserId,
+}: {
+  kratosUserId: string
+}) => {
   const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
   if (kratosUserIdValid instanceof Error) return kratosUserIdValid
 

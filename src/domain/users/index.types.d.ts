@@ -54,14 +54,12 @@ type User = {
   readonly createdAt: Date
   readonly phone?: PhoneNumber
   readonly phoneMetadata?: PhoneMetadata
-  readonly isEditor: boolean
   language: UserLanguage
   twoFA: TwoFAForUser
 }
 
 type NewUserInfo = {
   phone: PhoneNumber
-  role?: string
   phoneMetadata?: PhoneMetadata
 }
 

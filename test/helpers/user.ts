@@ -1,4 +1,4 @@
-import { createUser } from "@app/users"
+import { createUserForPhoneSchema } from "@app/users"
 import { yamlConfig } from "@config"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import {
@@ -103,29 +103,42 @@ export const createMandatoryUsers = async () => {
   }
 }
 
+type TestEntry = {
+  role?: string
+  needUsdWallet?: boolean
+  phone: string
+  username?: string | undefined
+  phoneMetadataCarrierType?: string | undefined
+  title?: string | undefined
+  currency?: string | undefined
+}
+
 export const createUserAndWalletFromUserRef = async (ref: string) => {
   const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
+  if (entry === undefined) throw new Error("no ref matching entry for test")
   await createUserAndWallet(entry)
 }
 
-export const createUserAndWallet = async (entry) => {
+export const createUserAndWallet = async (entry: TestEntry) => {
   const phone = entry.phone as PhoneNumber
 
   let userRepo = await users.findByPhone(phone)
   if (userRepo instanceof CouldNotFindUserFromPhoneError) {
-    const phoneMetadata = entry.phoneMetadataCarrierType
-      ? {
-          carrier: {
-            type: entry.phoneMetadataCarrierType,
-            name: "",
-            mobile_network_code: "",
-            mobile_country_code: "",
-            error_code: "",
-          },
-          countryCode: "US",
-        }
-      : undefined
-    userRepo = await createUser({ phone, phoneMetadata })
+    let phoneMetadata: PhoneMetadata | undefined = undefined
+    if (entry.phoneMetadataCarrierType) {
+      phoneMetadata = {
+        carrier: {
+          type: entry.phoneMetadataCarrierType as CarrierType,
+          name: "",
+          mobile_network_code: "",
+          mobile_country_code: "",
+          error_code: "",
+        },
+        countryCode: "US",
+      }
+    }
+
+    userRepo = await createUserForPhoneSchema({ phone, phoneMetadata })
     if (userRepo instanceof Error) throw userRepo
 
     const lastConnection = new Date()

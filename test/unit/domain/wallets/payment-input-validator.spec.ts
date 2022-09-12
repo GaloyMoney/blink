@@ -27,6 +27,7 @@ describe("PaymentInputValidator", () => {
       longitude: 0,
     },
     contacts: [],
+    isEditor: false,
   }
 
   const dummySenderWallet: Wallet = {
