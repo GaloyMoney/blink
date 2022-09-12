@@ -17,3 +17,10 @@ tracing:
   host: "otel-agent"
   port: 6831
   service_name: "stablesats-dev"
+
+user_trades:
+  enabled: false
+
+hedging:
+  enabled: false
+
