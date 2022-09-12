@@ -303,18 +303,19 @@ describe("Volumes", () => {
     })
   }
 
-  describe("Withdrawal volumes", () => {
-    const fetchWithdrawalVolumeAmount = async <S extends WalletCurrency>(
+  const fetchVolumeAmount =
+    ({ volumeFn, volumeAmountFn }) =>
+    async <S extends WalletCurrency>(
       walletDescriptor: WalletDescriptor<S>,
     ): Promise<PaymentAmount<S>> => {
-      const walletVolume = await ledgerService.externalPaymentVolumeSince({
+      const walletVolume = await volumeFn({
         walletId: walletDescriptor.id,
         timestamp: timestamp1DayAgo,
       })
       expect(walletVolume).not.toBeInstanceOf(Error)
       if (walletVolume instanceof Error) throw walletVolume
 
-      const walletVolumeAmount = await ledgerService.externalPaymentVolumeAmountSince({
+      const walletVolumeAmount = await volumeAmountFn({
         walletDescriptor,
         timestamp: timestamp1DayAgo,
       })
@@ -333,9 +334,13 @@ describe("Volumes", () => {
       return calc.sub(outgoingBaseAmount, incomingBaseAmount)
     }
 
+  describe("Withdrawal volumes", () => {
     executeLimitTests({
       includedTxTypes: ["Payment", "OnchainPayment"],
-      fetchVolumeAmount: fetchWithdrawalVolumeAmount,
+      fetchVolumeAmount: fetchVolumeAmount({
+        volumeFn: ledgerService.externalPaymentVolumeSince,
+        volumeAmountFn: ledgerService.externalPaymentVolumeAmountSince,
+      }),
     })
   })
 })
