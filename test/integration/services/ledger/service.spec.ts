@@ -46,8 +46,7 @@ describe("Volumes", () => {
     btc: { amount: 20n, currency: WalletCurrency.Btc },
   }
 
-  const prepareExternalTxFns = (fetchVolumeAmount) => {
-    // Setup external txns tests
+  const prepareTxFns = (fetchVolumeAmount) => {
     const testExternalTx = async ({ recordTx, calcFn }) => {
       const currentVolumeAmount = await fetchVolumeAmount(walletDescriptor)
       const expected = calcFn(currentVolumeAmount, paymentAmount.btc)
@@ -63,21 +62,6 @@ describe("Volumes", () => {
       expect(expected).toStrictEqual(actual)
     }
 
-    return {
-      testExternalTxSend: (args) =>
-        it(`testExternalSend: ${args.recordTx.name}`, async () =>
-          testExternalTx({ ...args, calcFn: calc.add })),
-      testExternalTxReceive: (args) =>
-        it(`testExternalTxReceive: ${args.recordTx.name}`, async () =>
-          testExternalTx({ ...args, calcFn: calc.sub })),
-      testExternalTxNoOp: (args) =>
-        it(`testExternalTxNoOp: ${args.recordTx.name}`, async () =>
-          testExternalTx({ ...args, calcFn: (a) => a })),
-    }
-  }
-
-  const prepareInternalTxFns = (fetchVolumeAmount) => {
-    // Setup internal txns tests
     const testInternalTx = async ({ recordTx, sender, recipient, calcFn }) => {
       const currentVolumeAmount = await fetchVolumeAmount(walletDescriptor)
       const expected = calcFn(currentVolumeAmount, paymentAmount.btc)
@@ -93,46 +77,58 @@ describe("Volumes", () => {
       expect(expected).toStrictEqual(actual)
     }
 
+    const sendLimitCalc = calc.add
+    const receiveLimitCalc = calc.sub
+    const noLimitCalc = (a) => a
+
     return {
-      testInternalTxSend: (args) =>
-        it(`testInternalTxSend: ${args.recordTx.name}`, async () =>
-          testInternalTx({
-            ...args,
-            sender: walletDescriptor,
-            recipient: walletDescriptorOther,
-            calcFn: calc.add,
-          })),
-      testInternalTxReceive: (args) =>
-        it(`testInternalTxReceive: ${args.recordTx.name}`, async () =>
-          testInternalTx({
-            ...args,
-            sender: walletDescriptorOther,
-            recipient: walletDescriptor,
-            calcFn: calc.sub,
-          })),
-      testInternalTxSendNoOp: (args) =>
-        it(`testInternalTxSendNoOp: ${args.recordTx.name}`, async () =>
-          testInternalTx({
-            ...args,
-            sender: walletDescriptor,
-            recipient: walletDescriptorOther,
-            calcFn: (a) => a,
-          })),
-      testInternalTxReceiveNoOp: (args) =>
-        it(`testInternalTxReceiveNoOp: ${args.recordTx.name}`, async () =>
-          testInternalTx({
-            ...args,
-            sender: walletDescriptorOther,
-            recipient: walletDescriptor,
-            calcFn: (a) => a,
-          })),
+      withLimitEffect: {
+        testExternalTxSendWLE: (args) =>
+          it(`testExternalTxSendWLE: ${args.recordTx.name}`, async () =>
+            testExternalTx({ ...args, calcFn: sendLimitCalc })),
+        testExternalTxReceiveWLE: (args) =>
+          it(`testExternalTxReceiveWLE: ${args.recordTx.name}`, async () =>
+            testExternalTx({ ...args, calcFn: receiveLimitCalc })),
+        testInternalTxSendWLE: (args) =>
+          it(`testInternalTxSendWLE: ${args.recordTx.name}`, async () =>
+            testInternalTx({
+              ...args,
+              sender: walletDescriptor,
+              recipient: walletDescriptorOther,
+              calcFn: sendLimitCalc,
+            })),
+        testInternalTxReceiveWLE: (args) =>
+          it(`testInternalTxReceiveWLE: ${args.recordTx.name}`, async () =>
+            testInternalTx({
+              ...args,
+              sender: walletDescriptorOther,
+              recipient: walletDescriptor,
+              calcFn: receiveLimitCalc,
+            })),
+      },
+      noLimitEffect: {
+        testExternalTxNLE: (args) =>
+          it(`testExternalTxNLE: ${args.recordTx.name}`, async () =>
+            testExternalTx({ ...args, calcFn: noLimitCalc })),
+        testInternalTxSendNLE: (args) =>
+          it(`testInternalTxSendNLE: ${args.recordTx.name}`, async () =>
+            testInternalTx({
+              ...args,
+              sender: walletDescriptor,
+              recipient: walletDescriptorOther,
+              calcFn: noLimitCalc,
+            })),
+        testInternalTxReceiveNLE: (args) =>
+          it(`testInternalTxReceiveNLE: ${args.recordTx.name}`, async () =>
+            testInternalTx({
+              ...args,
+              sender: walletDescriptorOther,
+              recipient: walletDescriptor,
+              calcFn: noLimitCalc,
+            })),
+      },
     }
   }
-
-  const prepareTxFns = (fetchVolumeAmount) => ({
-    ...prepareExternalTxFns(fetchVolumeAmount),
-    ...prepareInternalTxFns(fetchVolumeAmount),
-  })
 
   describe("Withdrawal volumes", () => {
     const withdrawalTypes: LedgerTransactionTypeKey[] = ["Payment", "OnchainPayment"]
@@ -171,10 +167,12 @@ describe("Volumes", () => {
     }
 
     const {
-      testExternalTxSend,
-      testExternalTxNoOp,
-      testInternalTxSendNoOp,
-      testInternalTxReceiveNoOp,
+      withLimitEffect: { testExternalTxSendWLE },
+      noLimitEffect: {
+        testExternalTxNLE,
+        testInternalTxSendNLE,
+        testInternalTxReceiveNLE,
+      },
     } = prepareTxFns(fetchWithdrawalVolumeAmount)
 
     /*
@@ -185,12 +183,12 @@ describe("Volumes", () => {
     */
     describe("correctly registers withdrawal transactions amount", () => {
       // Payment
-      testExternalTxSend({
+      testExternalTxSendWLE({
         recordTx: recordSendLnPayment,
       })
 
       // OnchainPayment
-      testExternalTxSend({
+      testExternalTxSendWLE({
         recordTx: recordSendOnChainPayment,
       })
     })
@@ -218,48 +216,48 @@ describe("Volumes", () => {
     describe("correctly ignores all other transaction types", () => {
       // TODO: move to "included" above
       // LnFeeReimbursement
-      testExternalTxNoOp({ recordTx: recordLnFeeReimbursement })
+      testExternalTxNLE({ recordTx: recordLnFeeReimbursement })
 
       // Invoice (LnReceipt)
-      testExternalTxNoOp({ recordTx: recordReceiveLnPayment })
+      testExternalTxNLE({ recordTx: recordReceiveLnPayment })
 
       // Invoice (OnChainReceipt)
-      testExternalTxNoOp({ recordTx: recordReceiveOnChainPayment })
+      testExternalTxNLE({ recordTx: recordReceiveOnChainPayment })
 
       // WalletId IntraLedger send
-      testInternalTxSendNoOp({ recordTx: recordWalletIdIntraLedgerPayment })
+      testInternalTxSendNLE({ recordTx: recordWalletIdIntraLedgerPayment })
 
       // WalletId IntraLedger receive
-      testInternalTxReceiveNoOp({ recordTx: recordWalletIdIntraLedgerPayment })
+      testInternalTxReceiveNLE({ recordTx: recordWalletIdIntraLedgerPayment })
 
       // LnIntraledger send
-      testInternalTxSendNoOp({ recordTx: recordLnIntraLedgerPayment })
+      testInternalTxSendNLE({ recordTx: recordLnIntraLedgerPayment })
 
       // LnIntraledger receive
-      testInternalTxReceiveNoOp({ recordTx: recordLnIntraLedgerPayment })
+      testInternalTxReceiveNLE({ recordTx: recordLnIntraLedgerPayment })
 
       // OnChain IntraLedger send
-      testInternalTxSendNoOp({ recordTx: recordOnChainIntraLedgerPayment })
+      testInternalTxSendNLE({ recordTx: recordOnChainIntraLedgerPayment })
 
       // OnChain IntraLedger receive
-      testInternalTxReceiveNoOp({ recordTx: recordOnChainIntraLedgerPayment })
+      testInternalTxReceiveNLE({ recordTx: recordOnChainIntraLedgerPayment })
 
       // Fee
-      testExternalTxNoOp({ recordTx: recordLnChannelOpenOrClosingFee })
+      testExternalTxNLE({ recordTx: recordLnChannelOpenOrClosingFee })
 
       // Escrow
-      testExternalTxNoOp({ recordTx: recordLndEscrowCredit })
+      testExternalTxNLE({ recordTx: recordLndEscrowCredit })
 
-      testExternalTxNoOp({ recordTx: recordLndEscrowDebit })
+      testExternalTxNLE({ recordTx: recordLndEscrowDebit })
 
       // RoutingRevenue
-      testExternalTxNoOp({ recordTx: recordLnRoutingRevenue })
+      testExternalTxNLE({ recordTx: recordLnRoutingRevenue })
 
       // ToColdStorage
-      testExternalTxNoOp({ recordTx: recordColdStorageTxReceive })
+      testExternalTxNLE({ recordTx: recordColdStorageTxReceive })
 
       // ToHotWallet
-      testExternalTxNoOp({ recordTx: recordColdStorageTxSend })
+      testExternalTxNLE({ recordTx: recordColdStorageTxSend })
     })
   })
 })
