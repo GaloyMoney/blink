@@ -1,6 +1,7 @@
 import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindOnChainTransactionError,
+  CPFPAncestorLimitReachedError,
   IncomingOnChainTransaction,
   InsufficientOnChainFundsError,
   OnChainServiceUnavailableError,
@@ -51,6 +52,7 @@ export const OnChainService = (
       return toSats(chain_balance)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
+
       return new OnChainServiceUnavailableError(errDetails)
     }
   }
@@ -66,6 +68,7 @@ export const OnChainService = (
       return toSats(pending_chain_balance)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
+
       return new OnChainServiceUnavailableError(errDetails)
     }
   }
@@ -92,8 +95,7 @@ export const OnChainService = (
         after,
       })
     } catch (err) {
-      const errDetails = parseLndErrorDetails(err)
-      return new UnknownOnChainServiceError(errDetails)
+      return handleCommonOnChainServiceErrors(err)
     }
   }
 
@@ -126,8 +128,7 @@ export const OnChainService = (
 
       return { address: address as OnChainAddress, pubkey }
     } catch (err) {
-      const errDetails = parseLndErrorDetails(err)
-      return new UnknownOnChainServiceError(errDetails)
+      return handleCommonOnChainServiceErrors(err)
     }
   }
 
@@ -152,17 +153,19 @@ export const OnChainService = (
       const { fee } = await getChainFeeEstimate({
         lnd,
         send_to: sendTo,
+        utxo_confirmations: 0,
         target_confirmations: targetConfirmations,
       })
 
       return toSats(fee)
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      switch (errDetails) {
-        case KnownLndErrorDetails.InsufficientFunds:
+      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+      switch (true) {
+        case match(KnownLndErrorDetails.InsufficientFunds):
           return new InsufficientOnChainFundsError()
         default:
-          return new UnknownOnChainServiceError(err)
+          return handleCommonOnChainServiceErrors(err)
       }
     }
   }
@@ -184,7 +187,13 @@ export const OnChainService = (
       return id as OnChainTxHash
     } catch (err) {
       const errDetails = parseLndErrorDetails(err)
-      return new UnknownOnChainServiceError(errDetails)
+      const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+      switch (true) {
+        case match(KnownLndErrorDetails.CPFPAncestorLimitReached):
+          return new CPFPAncestorLimitReachedError()
+        default:
+          return handleCommonOnChainServiceErrors(err)
+      }
     }
   }
 
@@ -204,7 +213,10 @@ export const OnChainService = (
 }
 
 const KnownLndErrorDetails = {
-  InsufficientFunds: "insufficient funds available to construct transaction",
+  InsufficientFunds: /insufficient funds available to construct transaction/,
+  ConnectionDropped: /Connection dropped/,
+  CPFPAncestorLimitReached:
+    /unmatched backend error: -26: too-long-mempool-chain, too many .* \[limit: \d+\]/,
 } as const
 
 export const extractIncomingTransactions = ({
@@ -252,3 +264,20 @@ const getCachedHeight = async (): Promise<number> => {
   if (cachedHeight instanceof Error) return 0
   return cachedHeight
 }
+
+const handleCommonOnChainServiceErrors = (err: Error) => {
+  const errDetails = parseLndErrorDetails(err)
+  const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
+  switch (true) {
+    case match(KnownLndErrorDetails.ConnectionDropped):
+      return new OnChainServiceUnavailableError()
+    default:
+      return new UnknownOnChainServiceError(msgForUnknown(err))
+  }
+}
+
+const msgForUnknown = (err: Error) =>
+  JSON.stringify({
+    parsedLndErrorDetails: parseLndErrorDetails(err),
+    detailsFromLnd: err,
+  })

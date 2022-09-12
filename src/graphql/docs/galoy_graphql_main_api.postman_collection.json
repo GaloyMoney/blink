@@ -452,7 +452,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "query me {\n    me {\n        id\n        phone\n        username\n        language\n        quizQuestions {\n            question {\n                id\n                earnAmount\n            }\n            completed\n        }\n        contacts {\n            id\n            username\n            alias\n            transactionsCount\n        }\n        twoFAEnabled\n        createdAt\n        defaultAccount {\n            id\n            defaultWalletId\n            wallets {\n                id\n                walletCurrency\n                balance\n            }\n        }\n    }\n}",
-										"variables": "{}"
+										"variables": ""
 									}
 								},
 								"url": {
@@ -488,7 +488,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query me {\n    me {\n        defaultAccount {\n            wallets {\n                walletCurrency\n                balance\n            }\n        }\n    }\n}",
+										"query": "query me {\n    me {\n        username\n        defaultAccount {\n            wallets {\n                ... on BTCWallet {\n                    id\n                    walletCurrency\n                    balance\n                    pendingIncomingBalance\n                }\n                ... on UsdWallet {\n                    id\n                    walletCurrency\n                    balance\n                    pendingIncomingBalance\n                }\n            }\n        }\n    }\n}",
 										"variables": "{}"
 									}
 								},
@@ -581,7 +581,7 @@
 							"response": []
 						},
 						{
-							"name": "transactions",
+							"name": "transactionsForWallet",
 							"event": [
 								{
 									"listen": "test",
@@ -599,7 +599,81 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query transactionsListForContact($first: Int, $after: String) {\n    me {\n        defaultAccount {\n            wallets {\n                walletCurrency\n                transactions(first: $first, after: $after) {\n                    pageInfo {\n                        hasNextPage\n                    }\n                    edges {\n                        cursor\n                        node {\n                            __typename\n                            id\n                            settlementAmount\n                            settlementFee\n                            status\n                            direction\n                            settlementPrice {\n                                base\n                                offset\n                                # currencyUnit\n                                # formattedAmount\n                            }\n                            memo\n                            createdAt\n                            initiationVia {\n                                ... on InitiationViaOnChain {\n                                    __typename\n                                    address\n                                }\n                                ... on InitiationViaLn {\n                                    __typename\n                                    paymentHash\n                                }\n                                ... on InitiationViaIntraLedger {\n                                    __typename\n                                    counterPartyWalletId\n                                    counterPartyUsername\n                                }\n                            }\n                            settlementVia {\n                                ... on SettlementViaOnChain {\n                                    __typename\n                                    transactionHash\n                                }\n                                ... on SettlementViaLn {\n                                    __typename\n                                    paymentSecret\n                                    preImage\n                                }\n                                ... on SettlementViaIntraLedger {\n                                    __typename\n                                    counterPartyWalletId\n                                    counterPartyUsername\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }\n}\n",
+										"query": "query transactionsListForContact($first: Int, $after: String) {\n    me {\n        defaultAccount {\n            wallets {\n                ... on BTCWallet {\n                    __typename\n                    walletCurrency\n                    transactions(first: $first, after: $after) {\n                        ... TransactionList\n                    }\n                }\n                ... on UsdWallet {\n                    __typename\n                    walletCurrency\n                    transactions(first: $first, after: $after) {\n                        ... TransactionList\n                    }\n                }\n            }\n        }\n    }\n}\n\nfragment TransactionList on TransactionConnection {\n    pageInfo {\n        hasNextPage\n    }\n    edges {\n        cursor\n        node {\n            __typename\n            id\n            status\n            direction\n            memo\n            createdAt\n            settlementAmount\n            settlementFee\n            settlementPrice {\n                base\n                offset\n                # currencyUnit\n                # formattedAmount\n            }\n            initiationVia {\n                __typename\n                ... on InitiationViaIntraLedger {\n                    counterPartyWalletId\n                    counterPartyUsername\n                }\n                ... on InitiationViaLn {\n                    paymentHash\n                }\n                ... on InitiationViaOnChain {\n                    address\n                }\n            }\n            settlementVia {\n                __typename\n                ... on SettlementViaIntraLedger {\n                    counterPartyWalletId\n                    counterPartyUsername\n                }\n                ... on SettlementViaLn {\n                    paymentSecret\n                    preImage\n                }\n                ... on SettlementViaOnChain {\n                    transactionHash\n                }\n            }\n        }\n    }\n  }",
+										"variables": "{\n    \"first\": 20,\n    \"after\": null\n}"
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{domain}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "transactionsByAddressForWallet",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query transactionsListForContact($first: Int, $after: String, $address: OnChainAddress!) {\n    me {\n        defaultAccount {\n            wallets {\n                ... on BTCWallet {\n                    __typename\n                    walletCurrency\n                    transactionsByAddress(first: $first, after: $after, address: $address) {\n                        ... TransactionList\n                    }\n                }\n            }\n        }\n    }\n}\n\nfragment TransactionList on TransactionConnection {\n    pageInfo {\n        hasNextPage\n    }\n    edges {\n        cursor\n        node {\n            __typename\n            id\n            status\n            direction\n            memo\n            createdAt\n            settlementAmount\n            settlementFee\n            settlementPrice {\n                base\n                offset\n                # currencyUnit\n                # formattedAmount\n            }\n            initiationVia {\n                __typename\n                ... on InitiationViaIntraLedger {\n                    counterPartyWalletId\n                    counterPartyUsername\n                }\n                ... on InitiationViaLn {\n                    paymentHash\n                }\n                ... on InitiationViaOnChain {\n                    address\n                }\n            }\n            settlementVia {\n                __typename\n                ... on SettlementViaIntraLedger {\n                    counterPartyWalletId\n                    counterPartyUsername\n                }\n                ... on SettlementViaLn {\n                    paymentSecret\n                    preImage\n                }\n                ... on SettlementViaOnChain {\n                    transactionHash\n                }\n            }\n        }\n    }\n  }",
+										"variables": "{\n    \"first\": 20,\n    \"after\": null,\n    \"address\": \"{{currentOnChainAddress}}\"\n}"
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{domain}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "transactionsForAccount",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query transactionsForAccount($walletIds: [WalletId], $first: Int, $after: String) {\n    me {\n        defaultAccount {\n              transactions(walletIds: $walletIds, first: $first, after: $after) {\n                  pageInfo {\n                      hasNextPage\n                  }\n                  edges {\n                      cursor\n                      node {\n                          settlementAmount\n                          settlementFee\n                          settlementCurrency\n                          status\n                        \tcreatedAt\n                      }\n                  }\n              }\n        }\n    }\n}\n",
 										"variables": "{\n    \"first\": 5,\n    \"after\": null\n}"
 									}
 								},
@@ -618,7 +692,7 @@
 							"response": []
 						},
 						{
-							"name": "transactionsByHash",
+							"name": "contactTransactions",
 							"event": [
 								{
 									"listen": "test",
@@ -636,8 +710,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query transactionsListForContact($hash: PaymentHash) {\n    me {\n        defaultAccount {\n            wallets {\n                walletCurrency\n                transactions(hash: $hash) {\n                    pageInfo {\n                        hasNextPage\n                    }\n                    edges {\n                        cursor\n                        node {\n                            __typename\n                            id\n                            settlementAmount\n                            settlementFee\n                            status\n                            direction\n                            settlementPrice {\n                                base\n                                offset\n                                # currencyUnit\n                                # formattedAmount\n                            }\n                            memo\n                            createdAt\n                            initiationVia {\n                                ... on InitiationViaOnChain {\n                                    __typename\n                                    address\n                                }\n                                ... on InitiationViaLn {\n                                    __typename\n                                    paymentHash\n                                }\n                                ... on InitiationViaIntraLedger {\n                                    __typename\n                                    counterPartyWalletId\n                                    counterPartyUsername\n                                }\n                            }\n                            settlementVia {\n                                ... on SettlementViaOnChain {\n                                    __typename\n                                    transactionHash\n                                }\n                                ... on SettlementViaLn {\n                                    __typename\n                                    paymentSecret\n                                    preImage\n                                }\n                                ... on SettlementViaIntraLedger {\n                                    __typename\n                                    counterPartyWalletId\n                                    counterPartyUsername\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }\n}\n",
-										"variables": "{\n    \"hash\": \"a879e89ae7bda4dfefa864a4c6aee1db996b23014d8ffc4ae71479d820b57a88\"\n}"
+										"query": "query transactionsListForContact($first: Int, $after: String, $username: Username!) {\n    me {\n        contactByUsername(username: $username) {\n            transactions(first: $first, after: $after) {\n                pageInfo {\n                    hasNextPage\n                }\n                edges {\n                    cursor\n                    node {\n                        __typename\n                        id\n                        settlementAmount\n                        settlementFee\n                        status\n                        direction\n                        settlementPrice {\n                            base\n                            offset\n                            # currencyUnit\n                            # formattedAmount\n                        }\n                        memo\n                        createdAt\n                        initiationVia {\n                            ... on InitiationViaOnChain {\n                                __typename\n                                address\n                            }\n                            ... on InitiationViaLn {\n                                __typename\n                                paymentHash\n                            }\n                            ... on InitiationViaIntraLedger {\n                                __typename\n                                counterPartyWalletId\n                                counterPartyUsername\n                            }\n                        }\n                        settlementVia {\n                            ... on SettlementViaOnChain {\n                                __typename\n                                transactionHash\n                            }\n                            ... on SettlementViaLn {\n                                __typename\n                                paymentSecret\n                                preImage\n                            }\n                            ... on SettlementViaIntraLedger {\n                                __typename\n                                counterPartyWalletId\n                                counterPartyUsername\n                            }\n                        }\n                    }\n                }\n            }\n        }\n    }\n}\n",
+										"variables": "{\n    \"first\": 5,\n    \"after\": null,\n    \"username\": \"user0\"\n}"
 									}
 								},
 								"url": {
@@ -957,6 +1031,23 @@
 						},
 						{
 							"name": "onChainAddressCurrent",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"requesting address data\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    const address = jsonData.data.onChainAddressCurrent.address",
+											"",
+											"    pm.expect(address).to.be.a(\"string\");",
+											"    pm.environment.set(\"currentOnChainAddress\", address)",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
 							"request": {
 								"auth": {
 									"type": "bearer",
@@ -974,7 +1065,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation onChainAddressCurrent($input: OnChainAddressCurrentInput!) {\n  onChainAddressCurrent(input: $input) {\n    address\n    errors {\n      message\n    }\n  }\n}\n",
-										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletId}}\"\n    }\n}\n"
+										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdBtc}}\"\n    }\n}\n"
 									}
 								},
 								"url": {
@@ -1011,6 +1102,42 @@
 									"graphql": {
 										"query": "mutation onChainPaymentSend($input: OnChainPaymentSendInput!) {\n  onChainPaymentSend(input: $input) {\n    errors {\n      message\n    }\n    status\n  }\n}\n",
 										"variables": "{\n  \"input\": {\n      \"walletId\": \"{{walletIdBtc}}\",\n        \"address\": \"{{regtest-segwitV0-address}}\",\n        \"amount\": 5000,\n        \"memo\": \"\",\n        \"targetConfirmations\": 2\n    }\n}\n"
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{domain}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "onChainPaymentSendAll",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation onChainPaymentSendAll($input: OnChainPaymentSendAllInput!) {\n  onChainPaymentSendAll(input: $input) {\n    errors {\n      message\n    }\n    status\n  }\n}\n",
+										"variables": "{\n  \"input\": {\n      \"walletId\": \"{{walletIdBtc}}\",\n        \"address\": \"{{regtest-segwitV0-address}}\",\n        \"memo\": \"\",\n        \"targetConfirmations\": 2\n    }\n}\n"
 									}
 								},
 								"url": {
@@ -1087,7 +1214,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation lnInvoiceCreateInput($input: LnInvoiceCreateInput!) {\n  lnInvoiceCreate(input: $input) {\n    invoice {\n      paymentRequest\n      paymentHash\n      paymentSecret\n      satoshis\n    }\n    errors {\n      message\n    }\n  }\n}\n",
-										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletId}}\",\n        \"amount\": 313000,\n        \"memo\": \"Test\"\n    }\n}"
+										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdBtc}}\",\n        \"amount\": 313000,\n        \"memo\": \"Test\"\n    }\n}"
 									}
 								},
 								"url": {
@@ -1210,7 +1337,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation lnUsdInvoiceCreate($input: LnUsdInvoiceCreateInput!) {\n  lnUsdInvoiceCreate(input: $input) {\n    invoice {\n      paymentRequest\n      paymentHash\n      paymentSecret\n      satoshis\n    }\n    errors {\n      message\n    }\n  }\n}\n",
-										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletId}}\",\n        \"amount\": 30,\n        \"memo\": \"Test\"\n    }\n}"
+										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdUsd}}\",\n        \"amount\": 100000,\n        \"memo\": \"Test\"\n    }\n}"
 									}
 								},
 								"url": {
@@ -1374,7 +1501,48 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation intraLedgerPaymentSend($input: IntraLedgerPaymentSendInput!) {\n  intraLedgerPaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n    }\n  }\n}",
-										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdBtc}}\",\n        \"amount\": 100,\n        \"recipientWalletId\": \"2ac41da6-1cbe-499a-a7b0-cf24b26e8a01\",\n        \"memo\": \"Test\"\n    }\n}\n"
+										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdBtc}}\",\n        \"amount\": 100,\n        \"recipientWalletId\": \"{{walletIdUsd}}\",\n        \"memo\": \"Test\"\n    }\n}\n"
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{domain}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "intraledgerUsdPaymentSend",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"add invoice\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    const invoice = jsonData.data.invoice.addInvoice",
+											"    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation intraLedgerUsdPaymentSend($input: IntraLedgerUsdPaymentSendInput!) {\n  intraLedgerUsdPaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n    }\n  }\n}",
+										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdUsd}}\",\n        \"amount\": 0.0229,\n        \"recipientWalletId\": \"{{walletIdBtc}}\",\n        \"memo\": \"Test\"\n    }\n}\n"
 									}
 								},
 								"url": {
@@ -1455,8 +1623,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation LnNoAmountInvoiceFeeProbe($input: LnNoAmountInvoiceFeeProbeInput!) {\n  lnNoAmountInvoiceFeeProbe(input: $input) {\n    errors {\n      message\n    }\n    amount\n    currencyUnit\n  }\n}\n",
-										"variables": "{\n    \"input\": {\n        \"paymentRequest\": \"lnbcrt1p39aw9gpp54xlvdj7w7wk8u4pvdwxphkmpenq6lvq95zh73ss6c7v3nplhqv3sdqqcqzpuxqr23ssp5uxl2n8297fny3dnejzwr8zvkcp6dud8nw7v0uz89aknled3nsqus9qyyssqxch49l59q6939aluk0vsc85cv4clp583cdrph9fj5a9f59qp68jstaj4w2hgeg6szjkhnvezhacrmcse6l30awnw3h2lhf5kyd0pwegpyf8xz5\",\n        \"amount\": 10,\n        \"walletId\": \"{{walletIdBtc}}\"\n    }\n}"
+										"query": "mutation LnNoAmountInvoiceFeeProbe($input: LnNoAmountInvoiceFeeProbeInput!) {\n  lnNoAmountInvoiceFeeProbe(input: $input) {\n    errors {\n      message\n    }\n    amount\n  }\n}\n",
+										"variables": "{\n    \"input\": {\n        \"paymentRequest\": \"lntb1p38jzs7pp5lhrxyetmx36x2fx4374l2uja6fvj7ap5keleljcaqgwd90ky8c4qsp5g77rxjwjp7lqt3zky43djfq2eznrs07tc0239m8syqhut43067dsdqj2aex7mn8ypc8ymmzv5cqzynxqyz5vq9qxpq9qsqrzjqt4dhk0824eh29salzmyvam22379e0pwjkesw8kgz4fl3mpvagaccgqd7qqqq0cqqqqqqqlgqqqqqqgq9qrzjqv43we5lgmdwmn8gldtfwc9jm2an0qkjvmtvlwg96dvz4rcaw4746gy7cuqqqpsqqyqqqqlgqqqq86qq9qrzjqd4hzv9j0g3adlsa2hqa80keumd959cfqkytpq6wsgqwp4gwu6yx5gy7ccqqqpcqqqqqqqlgqqqqqqgq9qdnm9f72yygsznzgwhmekmqejdtcyqq9hjxvuma7jhv4r73g9q4v9dcux32yj2cyxwvup6k7t9kjkrs2wj86ygj985qe42l4zjyq02jqpsmcsla\",\n        \"amount\": 10,\n        \"walletId\": \"{{walletIdBtc}}\"\n    }\n}"
 									}
 								},
 								"url": {
@@ -1496,7 +1664,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation LnNoAmountUsdInvoiceFeeProbe($input: LnNoAmountUsdInvoiceFeeProbeInput!) {\n  lnNoAmountUsdInvoiceFeeProbe(input: $input) {\n    errors {\n      message\n    }\n    amount\n    currencyUnit\n  }\n}\n",
+										"query": "mutation LnNoAmountUsdInvoiceFeeProbe($input: LnNoAmountUsdInvoiceFeeProbeInput!) {\n  lnNoAmountUsdInvoiceFeeProbe(input: $input) {\n    errors {\n      message\n    }\n    amount\n  }\n}\n",
 										"variables": "{\n    \"input\": {\n        \"paymentRequest\": \"lnbcrt1p39aw9gpp54xlvdj7w7wk8u4pvdwxphkmpenq6lvq95zh73ss6c7v3nplhqv3sdqqcqzpuxqr23ssp5uxl2n8297fny3dnejzwr8zvkcp6dud8nw7v0uz89aknled3nsqus9qyyssqxch49l59q6939aluk0vsc85cv4clp583cdrph9fj5a9f59qp68jstaj4w2hgeg6szjkhnvezhacrmcse6l30awnw3h2lhf5kyd0pwegpyf8xz5\",\n        \"amount\": 10,\n        \"walletId\": \"{{walletIdUsd}}\"\n    }\n}"
 									}
 								},
@@ -1579,7 +1747,7 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation lnNoAmountUsdInvoicePaymentSend($input: LnNoAmountUsdInvoicePaymentInput!) {\n  lnNoAmountUsdInvoicePaymentSend(input:$input) {\n    status\n    errors {\n        message\n    }\n  }\n}\n",
-										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletId}}\",\n        \"paymentRequest\": \"lntb1psecnzvpp5rvdaupfd2aztvyhypmycgayq8xjg3qfx6l0rtl9qr8z9z49yw27qdq823jhxaqcqzpuxqyz5vqsp5mprs6nvzjuqmtwqum0hnf6wxg9vkj7ug8up2fxe5tn34q0yglqrs9qyyssqp9m56rp6jnxyfu3t37hzfqxph98navlylakpq9fxwlg5jrjtvqthnluk3suvw2h9wt33ltpj0x90yas7nen204fe7gj69gaqeqca8tsq4nykqz\",\n        \"amount\": 10,\n        \"memo\": \"Test\"\n    }\n}"
+										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdUsd}}\",\n        \"paymentRequest\": \"lntb1psecnzvpp5rvdaupfd2aztvyhypmycgayq8xjg3qfx6l0rtl9qr8z9z49yw27qdq823jhxaqcqzpuxqyz5vqsp5mprs6nvzjuqmtwqum0hnf6wxg9vkj7ug8up2fxe5tn34q0yglqrs9qyyssqp9m56rp6jnxyfu3t37hzfqxph98navlylakpq9fxwlg5jrjtvqthnluk3suvw2h9wt33ltpj0x90yas7nen204fe7gj69gaqeqca8tsq4nykqz\",\n        \"amount\": 30,\n        \"memo\": \"Test\"\n    }\n}"
 									}
 								},
 								"url": {
@@ -1858,47 +2026,6 @@
 							"response": []
 						},
 						{
-							"name": "lnNoAmountInvoiceFeeProbe",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"add invoice\", function () {",
-											"    const jsonData = pm.response.json();",
-											"    const invoice = jsonData.data.invoice.addInvoice",
-											"    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")",
-											"});"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
-							"request": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "graphql",
-									"graphql": {
-										"query": "mutation LnNoAmountInvoiceFeeProbe($input: LnNoAmountInvoiceFeeProbeInput!) {\n  lnNoAmountInvoiceFeeProbe(input: $input) {\n    errors {\n      message\n    }\n    amount\n  }\n}\n",
-										"variables": "{\n    \"input\": {\n        \"paymentRequest\": \"lntb1psecnzvpp5rvdaupfd2aztvyhypmycgayq8xjg3qfx6l0rtl9qr8z9z49yw27qdq823jhxaqcqzpuxqyz5vqsp5mprs6nvzjuqmtwqum0hnf6wxg9vkj7ug8up2fxe5tn34q0yglqrs9qyyssqp9m56rp6jnxyfu3t37hzfqxph98navlylakpq9fxwlg5jrjtvqthnluk3suvw2h9wt33ltpj0x90yas7nen204fe7gj69gaqeqca8tsq4nykqz\",\n        \"amount\": 10,\n        \"walletId\": \"{{walletId}}\"\n    }\n}"
-									}
-								},
-								"url": {
-									"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
-									"protocol": "{{protocol}}",
-									"host": [
-										"{{domain}}"
-									],
-									"port": "{{port}}",
-									"path": [
-										"graphql"
-									]
-								}
-							},
-							"response": []
-						},
-						{
 							"name": "lnUsdInvoiceCreate",
 							"event": [
 								{
@@ -2046,6 +2173,88 @@
 									"graphql": {
 										"query": "mutation lnNoAmountUsdInvoicePaymentSend($input: LnNoAmountUsdInvoicePaymentInput!) {\n  lnNoAmountUsdInvoicePaymentSend(input:$input) {\n    status\n    errors {\n        message\n    }\n  }\n}\n",
 										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdUsd}}\",\n        \"paymentRequest\": \"lntb1p3p3e2jpp59cvgj0r0ttuaxw6k5867twrmkhyjp7kf8eujfzjlefus39sjmweqsp59fk3mx7uh87z6aqtml7gc6ugusz2mvhr36qft55hdc0ezt5jsw5qdqqcqzynxqyz5vq9qxpq9qsqrzjqd4hzv9j0g3adlsa2hqa80keumd959cfqkytpq6wsgqwp4gwu6yx5gy7ccqqqpcqqqqqqqlgqqqqqqgq9qrzjqv43we5lgmdwmn8gldtfwc9jm2an0qkjvmtvlwg96dvz4rcaw4746gy7cuqqqpsqqyqqqqlgqqqq86qq9qrzjqt4dhk0824eh29salzmyvam22379e0pwjkesw8kgz4fl3mpvagaccgqd7qqqq0cqqqqqqqlgqqqqqqgq9qx7snq2ye2jszkjj872f0r35xumprt06h853yz3kdnypf2mry00q8c4d8jlun59aantpzc62atc4xx6nwxqvhlcd8sssezp7mn4qr8egq9mlc42\",\n        \"amount\": 600,\n        \"memo\": \"Test\"\n    }\n}"
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{domain}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "lnNoAmountUsdInvoiceFeeProbe",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"add invoice\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    const invoice = jsonData.data.invoice.addInvoice",
+											"    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation LnNoAmountUsdInvoiceFeeProbe($input: LnNoAmountUsdInvoiceFeeProbeInput!) {\n  lnNoAmountUsdInvoiceFeeProbe(input: $input) {\n    errors {\n      message\n    }\n    amount\n  }\n}\n",
+										"variables": "{\n    \"input\": {\n        \"paymentRequest\": \"lnbcrt1p39aw9gpp54xlvdj7w7wk8u4pvdwxphkmpenq6lvq95zh73ss6c7v3nplhqv3sdqqcqzpuxqr23ssp5uxl2n8297fny3dnejzwr8zvkcp6dud8nw7v0uz89aknled3nsqus9qyyssqxch49l59q6939aluk0vsc85cv4clp583cdrph9fj5a9f59qp68jstaj4w2hgeg6szjkhnvezhacrmcse6l30awnw3h2lhf5kyd0pwegpyf8xz5\",\n        \"amount\": 10,\n        \"walletId\": \"{{walletIdUsd}}\"\n    }\n}"
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{domain}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "lnUsdInvoiceCreateOnBehalfOfRecipient",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"add invoice\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    const invoice = jsonData.data.invoice.addInvoice",
+											"    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation lnInvoiceCreateOnBehalfOfRecipient($input: LnInvoiceCreateOnBehalfOfRecipientInput!) {\n  lnInvoiceCreateOnBehalfOfRecipient(input: $input) {\n    errors {\n      message\n    }\n    invoice {\n      paymentRequest\n      paymentHash\n      paymentSecret\n      satoshis\n    }\n  }\n}\n",
+										"variables": "{\n  \"input\": {\n    \"amount\": 10,\n    \"memo\": \"memo\",\n    \"recipientWalletId\": \"{{walletIdBtc}}\"\n  }\n}"
 									}
 								},
 								"url": {
@@ -2213,7 +2422,7 @@
 						"body": {
 							"mode": "graphql",
 							"graphql": {
-								"query": "query me {\n    me {\n        defaultAccount {\n            defaultWalletId\n            wallets {\n                id\n                walletCurrency\n                balance\n            }\n        }\n    }\n}",
+								"query": "query me {\n    me {\n        username\n        defaultAccount {\n            defaultWalletId\n            wallets {\n                id\n                walletCurrency\n                balance\n            }\n        }\n    }\n}",
 								"variables": "{}"
 							}
 						},

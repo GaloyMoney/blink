@@ -1,12 +1,12 @@
-import { InvalidAccountStatusError, InvalidWalletId } from "@domain/errors"
+import { InactiveAccountError, InvalidWalletId } from "@domain/errors"
 
-import { AccountStatus } from "."
+import { AccountStatus } from "./primitives"
 
 export const AccountValidator = (
   account: Account,
 ): AccountValidator | ValidationError => {
   if (account.status !== AccountStatus.Active) {
-    return new InvalidAccountStatusError()
+    return new InactiveAccountError(account.id)
   }
 
   const validateWalletForAccount = (wallet: Wallet): true | ValidationError => {

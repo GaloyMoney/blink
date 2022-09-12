@@ -10,7 +10,9 @@ import { User } from "@services/mongoose/schema"
 
 import { toObjectId, fromObjectId } from "./utils"
 
-import { caseInsensitiveRegex } from "."
+const caseInsensitiveRegex = (input: string) => {
+  return new RegExp(`^${input}$`, "i")
+}
 
 export const AccountsRepository = (): IAccountsRepository => {
   const listUnlockedAccounts = async (): Promise<Account[] | RepositoryError> => {

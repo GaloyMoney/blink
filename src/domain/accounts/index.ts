@@ -39,7 +39,7 @@ export const checkedMapTitle = (title: string) => {
 
 export const checkedAccountStatus = (status: string) => {
   if (!Object.values(AccountStatus).includes(status as AccountStatus)) {
-    return new InvalidAccountStatusError()
+    return new InvalidAccountStatusError(status)
   }
   return status as AccountStatus
 }

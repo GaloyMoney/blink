@@ -1,10 +1,6 @@
 import { AccountStatus } from "@domain/accounts"
 import { checkedToCurrencyBaseAmount } from "@domain/bitcoin"
-import {
-  InvalidAccountStatusError,
-  InvalidWalletId,
-  SelfPaymentError,
-} from "@domain/errors"
+import { InactiveAccountError, InvalidWalletId, SelfPaymentError } from "@domain/errors"
 import { checkedToWalletId } from "@domain/wallets"
 
 export const PaymentInputValidator = (
@@ -20,7 +16,7 @@ export const PaymentInputValidator = (
     if (validAmount instanceof Error) return validAmount
 
     if (senderAccount.status !== AccountStatus.Active) {
-      return new InvalidAccountStatusError()
+      return new InactiveAccountError(senderAccount.id)
     }
 
     const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)

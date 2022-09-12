@@ -125,6 +125,12 @@ export class LightningPaymentError extends CustomApolloError {
   }
 }
 
+export class OnChainPaymentError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({ code: "ONCHAIN_PAYMENT_ERROR", forwardToClient: true, ...errData })
+  }
+}
+
 export class RouteFindingError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
@@ -281,6 +287,17 @@ export class AuthenticationError extends CustomApolloError {
       message: "Not authenticated",
       forwardToClient: true,
       code: "NOT_AUTHENTICATED",
+      ...errData,
+    })
+  }
+}
+
+export class AuthorizationError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Not authorized",
+      forwardToClient: true,
+      code: "NOT_AUTHORIZED",
       ...errData,
     })
   }

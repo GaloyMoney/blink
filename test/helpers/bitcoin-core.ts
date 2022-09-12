@@ -7,8 +7,8 @@ import { LedgerService } from "@services/ledger"
 import { toSats } from "@domain/bitcoin"
 
 import { descriptors } from "./multisig-wallet"
-
-import { checkIsBalanced, waitUntilBlockHeight } from "."
+import { checkIsBalanced } from "./check-is-balanced"
+import { waitUntilBlockHeight } from "./lightning"
 
 export const RANDOM_ADDRESS = "2N1AdXp9qihogpSmSBXSSfgeUFgTYyjVWqo"
 export const bitcoindClient = bitcoindDefaultClient // no wallet

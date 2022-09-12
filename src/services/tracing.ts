@@ -29,7 +29,7 @@ import {
   Context,
 } from "@opentelemetry/api"
 import { tracingConfig } from "@config"
-import { ErrorLevel } from "@domain/shared"
+import { ErrorLevel, RankedErrorLevel } from "@domain/shared"
 
 import type * as graphqlTypes from "graphql"
 
@@ -77,61 +77,82 @@ const recordGqlErrors = ({
     },
     ErrorLevel.Warn,
   )
+
+  const setErrorAttribute = ({ attribute, value }) =>
+    span.setAttribute(`graphql.${subPath ? "data." : subPath}error.${attribute}`, value)
+
   const firstErr = errors[0]
-  if (firstErr.message != "") {
-    span.setAttribute(`graphql.${subPath}error.message`, firstErr.message)
+  if (subPath) {
+    setErrorAttribute({
+      attribute: `operation.name`,
+      value: subPath.split(".").join(""), // remove trailing '.'
+    })
   }
-  if (firstErr.constructor?.name) {
-    span.setAttribute(`graphql.${subPath}error.type`, firstErr.constructor.name)
-  }
-  if (firstErr.path) {
-    span.setAttribute(`graphql.${subPath}error.path`, firstErr.path.join("."))
-  }
-  if (firstErr.extensions?.code) {
-    span.setAttribute(`graphql.${subPath}error.code`, firstErr.extensions.code)
-  }
+
+  setErrorAttribute({
+    attribute: "message",
+    value: firstErr.message,
+  })
+
+  setErrorAttribute({
+    attribute: "type",
+    value: firstErr.constructor?.name,
+  })
+
+  setErrorAttribute({
+    attribute: "path",
+    value: firstErr.path,
+  })
+
+  setErrorAttribute({
+    attribute: "code",
+    value: firstErr.extensions?.code,
+  })
+
   if (firstErr.originalError) {
-    if (firstErr.originalError.constructor?.name) {
-      span.setAttribute(
-        `graphql.${subPath}error.original.type`,
-        firstErr.originalError.constructor.name,
-      )
-    }
-    if (firstErr.originalError.message != "") {
-      span.setAttribute(
-        `graphql.${subPath}error.original.message`,
-        firstErr.originalError.message,
-      )
-    }
+    setErrorAttribute({
+      attribute: "original.type",
+      value: firstErr.originalError.constructor?.name,
+    })
+
+    setErrorAttribute({
+      attribute: "original.message",
+      value: firstErr.originalError.message,
+    })
   }
 
   // @ts-ignore-next-line no-implicit-any error
   errors.forEach((err, idx) => {
-    if (err.message != "") {
-      span.setAttribute(`graphql.${subPath}error.${idx}.message`, err.message)
-    }
-    if (err.constructor?.name) {
-      span.setAttribute(`graphql.${subPath}error.${idx}.type`, err.constructor.name)
-    }
-    if (err.path) {
-      span.setAttribute(`graphql.${subPath}error.${idx}.path`, err.path.join("."))
-    }
-    if (err.extensions?.code) {
-      span.setAttribute(`graphql.${subPath}error.${idx}.code`, err.extensions.code)
-    }
+    setErrorAttribute({
+      attribute: `${idx}.message`,
+      value: err.message,
+    })
+
+    setErrorAttribute({
+      attribute: `${idx}.type`,
+      value: err.constructor?.name,
+    })
+
+    setErrorAttribute({
+      attribute: `${idx}.path`,
+      value: err.path,
+    })
+
+    setErrorAttribute({
+      attribute: `${idx}.code`,
+      value: err.extensions?.code,
+    })
+
     if (err.originalError) {
-      if (err.originalError.constructor?.name != "") {
-        span.setAttribute(
-          `graphql.${subPath}error.${idx}.original.type`,
-          err.originalError.constructor.name,
-        )
-      }
-      if (err.originalError.message != "") {
-        span.setAttribute(
-          `graphql.${subPath}error.${idx}.original.message`,
-          err.originalError.message,
-        )
-      }
+      setErrorAttribute({
+        attribute: `${idx}.original.type`,
+        value: err.originalError.constructor?.name,
+      })
+
+      setErrorAttribute({
+        attribute: `${idx}.original.message`,
+        value: err.originalError.message,
+      })
     }
   })
 }
@@ -238,13 +259,41 @@ export const recordExceptionInCurrentSpan = ({
   recordException(span, error, level)
 }
 
+const updateErrorForSpan = ({
+  span,
+  errorLevel,
+}: {
+  span: Span
+  errorLevel: ErrorLevel
+}): boolean => {
+  const spanErrorRank = RankedErrorLevel.indexOf(span.attributes["error.level"])
+  const errorRank = RankedErrorLevel.indexOf(errorLevel)
+
+  return errorRank >= spanErrorRank
+}
+
 const recordException = (span: Span, exception: Exception, level?: ErrorLevel) => {
   // @ts-ignore-next-line no-implicit-any error
   const errorLevel = level || exception["level"] || ErrorLevel.Warn
-  span.setAttribute("error.level", errorLevel)
+
+  // Write error attributes if update checks pass
+  if (updateErrorForSpan({ span, errorLevel })) {
+    span.setAttribute("error.level", errorLevel)
+    // @ts-ignore-next-line no-implicit-any error
+    span.setAttribute("error.name", exception["name"])
+    span.setAttribute("error.message", exception["message"])
+  }
+
+  // Append error with next index
+  let nextIdx = 0
+  while (span.attributes[`error.${nextIdx}.level`] !== undefined) {
+    nextIdx++
+  }
+  span.setAttribute(`error.${nextIdx}.level`, errorLevel)
   // @ts-ignore-next-line no-implicit-any error
-  span.setAttribute("error.name", exception["name"])
-  span.setAttribute("error.message", exception["message"])
+  span.setAttribute(`error.${nextIdx}.name`, exception["name"])
+  span.setAttribute(`error.${nextIdx}.message`, exception["message"])
+
   span.recordException(exception)
   span.setStatus({ code: SpanStatusCode.ERROR })
 }

@@ -14,7 +14,7 @@ import InvoicePaymentStatus from "@graphql/types/scalar/invoice-payment-status"
 import { Prices } from "@app"
 import { PubSubService } from "@services/pubsub"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
-import { AuthenticationError } from "@graphql/error"
+import { AuthenticationError, UnknownClientError } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
 const pubsub = PubSubService()
@@ -122,6 +122,14 @@ const MeSubscription = {
     if (!ctx.uid) {
       throw new AuthenticationError({
         message: "Not Authenticated for subscription",
+        logger: baseLogger,
+      })
+    }
+
+    if (source === undefined) {
+      throw new UnknownClientError({
+        message: "Got 'undefined' payload",
+        level: "fatal",
         logger: baseLogger,
       })
     }

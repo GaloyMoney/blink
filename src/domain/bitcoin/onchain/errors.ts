@@ -5,6 +5,9 @@ export class OnChainError extends DomainError {}
 export class TransactionDecodeError extends OnChainError {}
 
 export class OnChainServiceError extends OnChainError {}
+export class CPFPAncestorLimitReachedError extends OnChainServiceError {
+  level = ErrorLevel.Critical
+}
 export class InsufficientOnChainFundsError extends OnChainServiceError {
   level = ErrorLevel.Critical
 }

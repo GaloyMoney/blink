@@ -26,6 +26,18 @@ export const ZERO_BANK_FEE = {
   btcBankFee: ZERO_SATS,
 }
 
+// 100_000 BTC is the max amount you can make a hodl invoice for in lnd
+export const MAX_SATS = {
+  currency: WalletCurrency.Btc,
+  amount: 10_000_000_000_000n,
+} as const
+
+// Assumes optimistic price under sat-cent parity
+export const MAX_CENTS = {
+  currency: WalletCurrency.Usd,
+  amount: 100_000_000_000_00n,
+}
+
 export const BtcWalletDescriptor = (walletId: WalletId) => {
   return {
     id: walletId,

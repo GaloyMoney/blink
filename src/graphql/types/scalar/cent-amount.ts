@@ -1,3 +1,4 @@
+import { MAX_CENTS } from "@domain/shared"
 import { InputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
 
@@ -25,10 +26,16 @@ function validCentAmount(value: string | number) {
   } else {
     intValue = Number.parseInt(value, 10)
   }
-  if (Number.isInteger(intValue) && intValue >= 0) {
-    return intValue
+
+  if (!(Number.isInteger(intValue) && intValue >= 0)) {
+    return new InputValidationError({ message: "Invalid value for CentAmount" })
   }
-  return new InputValidationError({ message: "Invalid value for CentAmount" })
+
+  if (intValue > MAX_CENTS.amount) {
+    return new InputValidationError({ message: "Value too big for CentAmount" })
+  }
+
+  return intValue
 }
 
 export default CentAmount

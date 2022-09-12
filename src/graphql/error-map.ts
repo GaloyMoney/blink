@@ -18,6 +18,8 @@ import {
   RebalanceNeededError,
   DealerOfflineError,
   InsufficientLiquidityError,
+  LndOfflineError,
+  OnChainPaymentError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -121,6 +123,14 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "A valid usd amount is required"
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "BtcAmountTooLargeError":
+      message = "Sats amount passed is too large"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "UsdAmountTooLargeError":
+      message = "Usd cents amount passed is too large"
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "LnPaymentRequestNonZeroAmountRequiredError":
       message = "Invoice does not have a valid amount to pay"
       return new ValidationInternalError({ message, logger: baseLogger })
@@ -216,6 +226,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "Onchain service temporarily unavailable. Withdraw via Lightning until service is restored."
       return new InsufficientLiquidityError({ message, logger: baseLogger })
 
+    case "CPFPAncestorLimitReachedError":
+      message =
+        "Onchain payments temporarily unavailable because of busy mempool queue. Withdraw via Lightning until queue is cleared."
+      return new OnChainPaymentError({ message, logger: baseLogger })
+
     case "UnknownRouteNotFoundError":
       message = "Unknown error occurred when trying to find a route for payment."
       return new RouteFindingError({ message, logger: baseLogger })
@@ -252,6 +267,26 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InsufficientBalanceError":
       message = error.message
       return new InsufficientBalanceError({ message, logger: baseLogger })
+
+    case "CaptchaUserFailToPassError":
+      message = "Captcha validation failed."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "LessThanDustThresholdError":
+      message = error.message
+      return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "OffChainServiceUnavailableError":
+    case "OnChainServiceUnavailableError":
+      /* eslint-disable-next-line no-case-declarations */
+      const serviceType =
+        errorName === "OffChainServiceUnavailableError" ? "Offchain" : "Onchain"
+      message = `${serviceType} action failed, please try again in a few minutes. If the problem persists, please contact support.`
+      return new LndOfflineError({ message, logger: baseLogger })
+
+    case "InactiveAccountError":
+      message = "Account is inactive."
+      return new ValidationInternalError({ message, logger: baseLogger })
 
     case "InvalidCoordinatesError":
       return new InvalidCoordinatesError({ logger: baseLogger })
@@ -300,11 +335,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "TwoFAError":
     case "LedgerError":
     case "LedgerServiceError":
+    case "LedgerFacadeError":
     case "LightningError":
     case "BadPaymentDataError":
     case "LnInvoiceDecodeError":
     case "LightningServiceError":
-    case "OffChainServiceUnavailableError":
     case "CouldNotDecodeReturnedPaymentRequest":
     case "InvoiceNotFoundError":
     case "LnPaymentPendingError":
@@ -322,7 +357,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidUsername":
     case "InvalidPhoneNumber":
     case "InvalidEmailAddress":
-    case "LessThanDustThresholdError":
     case "InvalidTargetConfirmations":
     case "NoContactForUsernameError":
     case "NoWalletExistsForUserError":
@@ -353,7 +387,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "TransactionDecodeError":
     case "OnChainServiceError":
     case "CouldNotFindOnChainTransactionError":
-    case "OnChainServiceUnavailableError":
     case "NotificationsError":
     case "NotificationsServiceError":
     case "InvalidDeviceNotificationsServiceError":
@@ -400,6 +433,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidNegativeAmountError":
     case "DomainError":
     case "ErrorLevel":
+    case "RankedErrorLevel":
     case "InvalidCurrencyBaseAmountError":
     case "NoTransactionToUpdateError":
     case "BalanceLessThanZeroError":
@@ -425,6 +459,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidPubKeyError":
     case "SkipProbeForPubkeyError":
     case "SecretDoesNotMatchAnyExistingHodlInvoiceError":
+    case "CaptchaError":
+    case "UnknownCaptchaError":
+    case "InvalidNonHodlInvoiceError":
       message = `Unknown error occurred (code: ${error.name}${
         error.message ? ": " + error.message : ""
       })`

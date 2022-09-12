@@ -64,6 +64,13 @@ type PayToAddressArgs = {
   targetConfirmations: TargetConfirmations
 }
 
+type IncomingOnChainTxHandler = {
+  balancesByAddresses(): { [key: OnChainAddress]: BtcPaymentAmount } | ValidationError
+  balanceByWallet(
+    wallets: Wallet[],
+  ): { [key: WalletId]: BtcPaymentAmount } | ValidationError
+}
+
 interface IOnChainService {
   listActivePubkeys(): Pubkey[]
 

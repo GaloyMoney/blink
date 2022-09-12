@@ -1,4 +1,3 @@
-import { NoTransactionToSettleError, UnknownLedgerError } from "@domain/ledger"
 import {
   ZERO_BANK_FEE,
   AmountCalculator,
@@ -12,6 +11,8 @@ import { toLedgerAccountDescriptor, toLedgerAccountId, EntryBuilder } from "./do
 import { persistAndReturnEntry } from "./helpers"
 import * as caching from "./caching"
 import { TransactionsMetadataRepository } from "./services"
+
+import { NoTransactionToSettleError, UnknownLedgerError } from "./domain/errors"
 
 import { translateToLedgerJournal } from "."
 
