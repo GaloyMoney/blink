@@ -80,3 +80,6 @@ type LoopdConfig = {
   btcNetwork: BtcNetwork
   loopdInstanceName: LoopdInstanceName
 }
+
+type SwapId = string & { readonly brand: unique symbol }
+type SwapHash = string & { readonly brand: unique symbol }

@@ -54,10 +54,23 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
     }
   }
 
+  const findByHash = async (hash: PaymentHash | OnChainTxHash | SwapHash) => {
+    try {
+      const result = await TransactionMetadata.findOne({
+        hash,
+      })
+      if (!result) return new CouldNotFindTransactionMetadataError()
+      return translateToLedgerTxMetadata(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   return {
     updateByHash,
     persistAll,
     findById,
+    findByHash,
   }
 }
 

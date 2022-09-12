@@ -45,4 +45,5 @@ interface TransactionMetadataRecord {
 
   hash?: string
   revealedPreImage?: string
+  swap: SwapTransactionMetadataUpdate
 }

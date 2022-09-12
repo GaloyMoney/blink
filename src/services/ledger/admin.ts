@@ -1,15 +1,22 @@
 import {
+  CouldNotFindTransactionMetadataError,
   LedgerTransactionType,
   toLiabilitiesWalletId,
   UnknownLedgerError,
 } from "@domain/ledger"
 import { WalletCurrency } from "@domain/shared"
 
+import { DuplicateError } from "@domain/errors"
+
 import { bitcoindAccountingPath, lndAccountingPath } from "./accounts"
 import { MainBook, Transaction } from "./books"
 import { getBankOwnerWalletId } from "./caching"
 
+import { TransactionsMetadataRepository } from "./services"
+
 import { translateToLedgerJournal } from "."
+
+const txMetadataRepo = TransactionsMetadataRepository()
 
 export const admin = {
   isToHotWalletTxRecorded: async (
@@ -102,23 +109,43 @@ export const admin = {
     swapFeeMetadata,
     description,
   }: {
-    swapFeeMetadata: SwapFeeLedgerMetadata
+    swapFeeMetadata: SwapTransactionMetadataUpdate
     description: string
-  }): Promise<LedgerJournal | LedgerServiceError> => {
-    const metadata = swapFeeMetadata
+  }): Promise<LedgerJournal | LedgerServiceError | DuplicateError> => {
     const totalSwapFee =
       swapFeeMetadata.offchainRoutingFee +
       swapFeeMetadata.onchainMinerFee +
       swapFeeMetadata.serviceProviderFee
-
     try {
-      const bankOwnerWalletId = await getBankOwnerWalletId()
-      const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
-      const entry = MainBook.entry(description)
-        .credit(lndAccountingPath, totalSwapFee, metadata)
-        .debit(bankOwnerPath, totalSwapFee, metadata)
-      const saved = await entry.commit()
-      return translateToLedgerJournal(saved)
+      // check for duplicates
+      const result = await txMetadataRepo.findByHash(swapFeeMetadata.hash)
+      if (result instanceof CouldNotFindTransactionMetadataError) {
+        const bankOwnerWalletId = await getBankOwnerWalletId()
+        const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
+        const entry = MainBook.entry(description)
+          .credit(lndAccountingPath, totalSwapFee, {
+            currency: WalletCurrency.Btc,
+            pending: false,
+            type: LedgerTransactionType.Fee,
+          })
+          .debit(bankOwnerPath, totalSwapFee, {
+            currency: WalletCurrency.Btc,
+            pending: false,
+            type: LedgerTransactionType.Fee,
+          })
+        const saved = await entry.commit()
+        const journalEntry = translateToLedgerJournal(saved)
+        const txsMetadataToPersist = journalEntry.transactionIds.map((id) => ({
+          id,
+          hash: swapFeeMetadata.hash,
+          swap: swapFeeMetadata,
+        }))
+        const metadataResults = await txMetadataRepo.persistAll(txsMetadataToPersist)
+        if (metadataResults instanceof Error) return metadataResults
+        return journalEntry
+      } else {
+        return new DuplicateError()
+      }
     } catch (error) {
       return new UnknownLedgerError(error)
     }
