@@ -25,6 +25,10 @@ const GraphQLUser = GT.Object({
   fields: () => ({
     id: {
       type: GT.NonNullID,
+
+      // TODO after migration to oathkeeper/kratos, remove getUuidByString
+      // eventually add a uuiv v4 to accounts so that there is no longer
+      //  ID dependency on mongodb
       resolve: (source) => getUuidByString(source.id),
     },
 

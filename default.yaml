@@ -191,6 +191,9 @@ kratosConfig:
   serverURL: "http://localhost:4433"
   corsAllowedOrigins: ["http://localhost:3000"]
 
+oathkeeperConfig:
+  urlJkws: http://oathkeeper:4456/.well-known/jwks.json
+
 captcha:
   mandatory: false
 

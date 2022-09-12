@@ -12,36 +12,39 @@ import { getMainDefinition } from "@apollo/client/utilities"
 import fetch from "cross-fetch"
 import { SubscriptionClient } from "subscriptions-transport-ws"
 import ws from "ws"
-import { GALOY_API_PORT } from "@config"
+
+import { onError } from "@apollo/client/link/error"
+import { baseLogger } from "@services/logger"
 
 export const localIpAddress = "127.0.0.1" as IpAddress
 
 export type ApolloTestClientConfig = {
   authToken?: string
-  port: string | number
-  graphqlPath: string
-  graphqlSubscriptionPath: string
+  graphqlUrl: string
+  graphqlSubscriptionUrl: string
 }
 
 export const defaultTestClientConfig = (authToken?: string): ApolloTestClientConfig => {
+  const OATHKEEPER_URL = "oathkeeper"
+  const OATHKEEPER_PORT = 4455
+
   return {
     authToken,
-    port: GALOY_API_PORT,
-    graphqlPath: "/graphql",
-    graphqlSubscriptionPath: "/graphql",
+    graphqlUrl: `http://${OATHKEEPER_URL}:${OATHKEEPER_PORT}/graphql`,
+    graphqlSubscriptionUrl: `ws://${OATHKEEPER_URL}:${OATHKEEPER_PORT}/graphql`,
   }
 }
 
 export const createApolloClient = (
   testClientConfg: ApolloTestClientConfig,
 ): { apolloClient: ApolloClient<NormalizedCacheObject>; disposeClient: () => void } => {
-  const { authToken, port, graphqlPath, graphqlSubscriptionPath } = testClientConfg
+  const { authToken, graphqlUrl, graphqlSubscriptionUrl } = testClientConfg
   const cache = new InMemoryCache()
 
   const authLink = new ApolloLink((operation, forward) => {
     operation.setContext(({ headers }: { headers: Record<string, string> }) => ({
       headers: {
-        "authorization": authToken ? `Bearer ${authToken}` : "",
+        "Authorization": authToken ? `Bearer ${authToken}` : "",
         "x-real-ip": localIpAddress,
         ...headers,
       },
@@ -49,10 +52,13 @@ export const createApolloClient = (
     return forward(operation)
   })
 
-  const httpLink = new HttpLink({ uri: `http://localhost:${port}${graphqlPath}`, fetch })
+  const httpLink = new HttpLink({
+    uri: graphqlUrl,
+    fetch,
+  })
 
   const subscriptionClient = new SubscriptionClient(
-    `ws://localhost:${port}${graphqlSubscriptionPath}`,
+    graphqlSubscriptionUrl,
     {
       connectionParams: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
     },
@@ -60,6 +66,16 @@ export const createApolloClient = (
   )
 
   const wsLink = new WebSocketLink(subscriptionClient)
+
+  const errorLink = onError(({ graphQLErrors, networkError }) => {
+    if (graphQLErrors)
+      graphQLErrors.forEach(({ message, locations, path }) =>
+        baseLogger.error(
+          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+        ),
+      )
+    if (networkError) baseLogger.error(`[Network error]: ${networkError}`)
+  })
 
   const splitLink = split(
     ({ query }) => {
@@ -70,7 +86,7 @@ export const createApolloClient = (
       )
     },
     wsLink,
-    from([authLink, httpLink]),
+    from([errorLink, authLink, httpLink]),
   )
 
   const apolloClient = new ApolloClient({
