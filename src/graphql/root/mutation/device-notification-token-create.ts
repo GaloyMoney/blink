@@ -20,12 +20,12 @@ const DeviceNotificationTokenCreateMutation = GT.Field<
   args: {
     input: { type: GT.NonNull(DeviceNotificationTokenCreateInput) },
   },
-  resolve: async (_, args, { uid }) => {
+  resolve: async (_, args, { domainUser }) => {
     const { deviceToken } = args.input
 
     try {
       // FIXME: this should be moved to a use case
-      const user = await User.findOne({ _id: toObjectId<UserId>(uid) })
+      const user = await User.findOne({ _id: toObjectId<UserId>(domainUser.id) })
       if (!user) throw Error("find user issue")
 
       if (!user.deviceToken.includes(deviceToken)) {
