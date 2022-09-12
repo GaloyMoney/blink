@@ -1,7 +1,6 @@
 import express from "express"
 import cors from "cors"
-import { Configuration } from "@ory/client"
-import { V0alpha2ApiInterface, V0alpha2Api } from "@ory/kratos-client"
+import { Configuration, V0alpha2ApiInterface, V0alpha2Api } from "@ory/client"
 
 import { Users } from "@app"
 import { baseLogger } from "@services/logger"
@@ -11,10 +10,7 @@ import { mapError } from "@graphql/error-map"
 
 export const KratosSdk: (kratosEndpoint?: string) => V0alpha2ApiInterface = (
   kratosEndpoint,
-) =>
-  new V0alpha2Api(
-    new Configuration({ basePath: kratosEndpoint }),
-  ) as unknown as V0alpha2ApiInterface
+) => new V0alpha2Api(new Configuration({ basePath: kratosEndpoint }))
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
