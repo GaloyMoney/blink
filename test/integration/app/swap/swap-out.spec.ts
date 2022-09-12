@@ -29,6 +29,7 @@ describe("Swap", () => {
         console.log("Swap Client is not running, skipping")
         return
       }
+      if (swapResult instanceof Error) throw swapResult
       expect(swapResult).not.toBeInstanceOf(Error)
       expect(swapResult).toEqual(
         expect.objectContaining({

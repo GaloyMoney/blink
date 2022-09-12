@@ -11,6 +11,12 @@ docker compose stop loopd2
 # boot up the mock loopserver
 docker compose up loopserver -d
 
+# add more sats to LNDs for loopouts, need at least 250,000
+outside=$(docker ps -q -f name="lnd-outside-1-1")
+lnd1=$(docker ps -q -f name="lnd1-1")
+addr1=$(docker exec $lnd1 lncli -n regtest newaddress p2wkh | grep address | awk -F'"' '{print $4}')
+docker exec $outside lncli -n regtest sendcoins $addr1 500000
+
 # mine some bitcoin to sync the loopserver
 make mine-block
 
