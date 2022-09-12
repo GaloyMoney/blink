@@ -33,7 +33,7 @@ import {
 const ledgerService = LedgerService()
 const calc = AmountCalculator()
 
-describe("Withdrawal volumes", () => {
+describe("Volumes", () => {
   const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
   const walletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
   const walletDescriptorOther = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
@@ -47,201 +47,232 @@ describe("Withdrawal volumes", () => {
     btc: { amount: 20n, currency: WalletCurrency.Btc },
   }
 
-  const withdrawalTypes: LedgerTransactionTypeKey[] = ["Payment", "OnchainPayment"]
-  const nonWithdrawalTypes = Object.keys(LedgerTransactionType)
-    .map((key) => key as LedgerTransactionTypeKey)
-    .filter((key: LedgerTransactionTypeKey) => !withdrawalTypes.includes(key))
-  console.log(nonWithdrawalTypes)
+  const prepareExternalTxFns = (fetchVolumeAmount) => {
+    // Setup external txns tests
+    const testExternalTx = async ({ recordTx, calcFn }) => {
+      const currentVolumeAmount = await fetchVolumeAmount(walletDescriptor)
+      const expected = calcFn(currentVolumeAmount, paymentAmount.btc)
 
-  const fetchWithdrawalVolumeAmount = async <S extends WalletCurrency>(
-    walletDescriptor: WalletDescriptor<S>,
-  ): Promise<PaymentAmount<S>> => {
-    const walletVolume = await ledgerService.externalPaymentVolumeSince({
-      walletId: walletDescriptor.id,
-      timestamp: timestamp1DayAgo,
-    })
-    expect(walletVolume).not.toBeInstanceOf(Error)
-    if (walletVolume instanceof Error) throw walletVolume
+      const result = await recordTx({
+        walletDescriptor,
+        paymentAmount,
+        bankFee,
+      })
+      expect(result).not.toBeInstanceOf(Error)
 
-    const walletVolumeAmount = await ledgerService.externalPaymentVolumeAmountSince({
-      walletDescriptor,
-      timestamp: timestamp1DayAgo,
-    })
-    expect(walletVolumeAmount).not.toBeInstanceOf(Error)
-    if (walletVolumeAmount instanceof Error) throw walletVolumeAmount
+      const actual = await fetchVolumeAmount(walletDescriptor)
+      expect(expected).toStrictEqual(actual)
+    }
 
-    const { outgoingBaseAmount: outgoingBase } = walletVolume
-    const { outgoingBaseAmount } = walletVolumeAmount
-    expect(outgoingBase).toEqual(Number(outgoingBaseAmount.amount))
-
-    const { incomingBaseAmount: incomingBase } = walletVolume
-    const { incomingBaseAmount } = walletVolumeAmount
-    expect(incomingBase).toEqual(Number(incomingBaseAmount.amount))
-
-    // FIXME: change in code to aggregate outgoing/incoming into single value
-    return calc.sub(outgoingBaseAmount, incomingBaseAmount)
+    return {
+      testExternalTxSend: async (args) => testExternalTx({ ...args, calcFn: calc.add }),
+      testExternalTxReceive: async (args) =>
+        testExternalTx({ ...args, calcFn: calc.sub }),
+      testExternalTxNoOp: async (args) => testExternalTx({ ...args, calcFn: (a) => a }),
+    }
   }
 
-  // Setup external txns tests
-  const testExternalTx = async ({ recordTx, calcFn }) => {
-    const currentVolumeAmount = await fetchWithdrawalVolumeAmount(walletDescriptor)
-    const expected = calcFn(currentVolumeAmount, paymentAmount.btc)
+  const prepareInternalTxFns = (fetchVolumeAmount) => {
+    // Setup internal txns tests
+    const testInternalTx = async ({ recordTx, sender, recipient, calcFn }) => {
+      const currentVolumeAmount = await fetchVolumeAmount(walletDescriptor)
+      const expected = calcFn(currentVolumeAmount, paymentAmount.btc)
 
-    const result = await recordTx({
-      walletDescriptor,
-      paymentAmount,
-      bankFee,
-    })
-    expect(result).not.toBeInstanceOf(Error)
+      const result = await recordTx({
+        senderWalletDescriptor: sender,
+        recipientWalletDescriptor: recipient,
+        paymentAmount,
+      })
+      expect(result).not.toBeInstanceOf(Error)
 
-    const actual = await fetchWithdrawalVolumeAmount(walletDescriptor)
-    expect(expected).toStrictEqual(actual)
+      const actual = await fetchVolumeAmount(walletDescriptor)
+      expect(expected).toStrictEqual(actual)
+    }
+
+    return {
+      testInternalTxSend: async (args) =>
+        testInternalTx({
+          ...args,
+          sender: walletDescriptor,
+          recipient: walletDescriptorOther,
+          calcFn: calc.add,
+        }),
+      testInternalTxReceive: async (args) =>
+        testInternalTx({
+          ...args,
+          sender: walletDescriptorOther,
+          recipient: walletDescriptor,
+          calcFn: calc.sub,
+        }),
+      testInternalTxSendNoOp: async (args) =>
+        testInternalTx({
+          ...args,
+          sender: walletDescriptor,
+          recipient: walletDescriptorOther,
+          calcFn: (a) => a,
+        }),
+      testInternalTxReceiveNoOp: async (args) =>
+        testInternalTx({
+          ...args,
+          sender: walletDescriptorOther,
+          recipient: walletDescriptor,
+          calcFn: (a) => a,
+        }),
+    }
   }
-  const testExternalTxSend = async (args) => testExternalTx({ ...args, calcFn: calc.add })
-  const testExternalTxReceive = async (args) =>
-    testExternalTx({ ...args, calcFn: calc.sub })
-  const testExternalTxNoOp = async (args) => testExternalTx({ ...args, calcFn: (a) => a })
 
-  // Setup internal txns tests
-  const testInternalTx = async ({ recordTx, sender, recipient, calcFn }) => {
-    const currentVolumeAmount = await fetchWithdrawalVolumeAmount(walletDescriptor)
-    const expected = calcFn(currentVolumeAmount, paymentAmount.btc)
+  const prepareTxWithoutFacadeFns = (fetchVolumeAmount) => {
+    // Setup no-facade txns tests
+    const testTxWithoutFacade = async ({ recordTx, calcFn }) => {
+      const currentVolumeAmount = await fetchVolumeAmount(walletDescriptor)
+      const expected = calcFn(currentVolumeAmount, paymentAmount.btc)
 
-    const result = await recordTx({
-      senderWalletDescriptor: sender,
-      recipientWalletDescriptor: recipient,
-      paymentAmount,
-    })
-    expect(result).not.toBeInstanceOf(Error)
+      const result = await recordTx({ amount: toSats(paymentAmount.btc.amount) })
+      expect(result).not.toBeInstanceOf(Error)
 
-    const actual = await fetchWithdrawalVolumeAmount(walletDescriptor)
-    expect(expected).toStrictEqual(actual)
+      const actual = await fetchVolumeAmount(walletDescriptor)
+      expect(expected).toStrictEqual(actual)
+    }
+
+    return {
+      testTxWithoutFacadeNoOp: async (args) =>
+        testTxWithoutFacade({ ...args, calcFn: (a) => a }),
+    }
   }
-  const testInternalTxSend = async (args) =>
-    testInternalTx({
-      ...args,
-      sender: walletDescriptor,
-      recipient: walletDescriptorOther,
-      calcFn: calc.add,
-    })
-  const testInternalTxReceive = async (args) =>
-    testInternalTx({
-      ...args,
-      sender: walletDescriptorOther,
-      recipient: walletDescriptor,
-      calcFn: calc.sub,
-    })
-  const testInternalTxSendNoOp = async (args) =>
-    testInternalTx({
-      ...args,
-      sender: walletDescriptor,
-      recipient: walletDescriptorOther,
-      calcFn: (a) => a,
-    })
-  const testInternalTxReceiveNoOp = async (args) =>
-    testInternalTx({
-      ...args,
-      sender: walletDescriptorOther,
-      recipient: walletDescriptor,
-      calcFn: (a) => a,
-    })
 
-  // Setup no-facade txns tests
-  const testTxWithoutFacade = async ({ recordTx, calcFn }) => {
-    const currentVolumeAmount = await fetchWithdrawalVolumeAmount(walletDescriptor)
-    const expected = calcFn(currentVolumeAmount, paymentAmount.btc)
-
-    const result = await recordTx({ amount: toSats(paymentAmount.btc.amount) })
-    expect(result).not.toBeInstanceOf(Error)
-
-    const actual = await fetchWithdrawalVolumeAmount(walletDescriptor)
-    expect(expected).toStrictEqual(actual)
-  }
-  const testTxWithoutFacadeNoOp = async (args) =>
-    testTxWithoutFacade({ ...args, calcFn: (a) => a })
-
-  /*
-  Txns expected to count:
-    - Payment
-    - LnFeeReimbursement
-    - OnchainPayment
-  */
-  it("correctly registers withdrawal transactions amount", async () => {
-    // Payment
-    await testExternalTxSend({
-      recordTx: recordSendLnPayment,
-    })
-
-    // OnchainPayment
-    await testExternalTxSend({
-      recordTx: recordSendOnChainPayment,
-    })
+  const prepareTxFns = (fetchVolumeAmount) => ({
+    ...prepareExternalTxFns(fetchVolumeAmount),
+    ...prepareInternalTxFns(fetchVolumeAmount),
+    ...prepareTxWithoutFacadeFns(fetchVolumeAmount),
   })
 
-  /* 
-  Txns expected to skip:
-    - Invoice (LnReceipt)
-    - OnchainReceipt
-    - IntraLedger (WalletId)
-    - LnIntraLedger
-    - OnchainIntraLedger
+  describe("Withdrawal volumes", () => {
+    const withdrawalTypes: LedgerTransactionTypeKey[] = ["Payment", "OnchainPayment"]
+    const nonWithdrawalTypes = Object.keys(LedgerTransactionType)
+      .map((key) => key as LedgerTransactionTypeKey)
+      .filter((key: LedgerTransactionTypeKey) => !withdrawalTypes.includes(key))
+    console.log(nonWithdrawalTypes)
 
-    Admin:
-    - Fee
-    - Escrow
-    - RoutingRevenue
-    - ToColdStorage
-    - ToHotWallet
+    const fetchWithdrawalVolumeAmount = async <S extends WalletCurrency>(
+      walletDescriptor: WalletDescriptor<S>,
+    ): Promise<PaymentAmount<S>> => {
+      const walletVolume = await ledgerService.externalPaymentVolumeSince({
+        walletId: walletDescriptor.id,
+        timestamp: timestamp1DayAgo,
+      })
+      expect(walletVolume).not.toBeInstanceOf(Error)
+      if (walletVolume instanceof Error) throw walletVolume
 
-    Unused:
-    - OnchainDepositFee
-    - ExchangeRebalance
-    - UserRebalance
-*/
-  it("correctly ignores all other transaction types", async () => {
-    // TODO: move to "included" above
-    // LnFeeReimbursement
-    await testExternalTxNoOp({ recordTx: recordLnFeeReimbursement })
+      const walletVolumeAmount = await ledgerService.externalPaymentVolumeAmountSince({
+        walletDescriptor,
+        timestamp: timestamp1DayAgo,
+      })
+      expect(walletVolumeAmount).not.toBeInstanceOf(Error)
+      if (walletVolumeAmount instanceof Error) throw walletVolumeAmount
 
-    // Invoice (LnReceipt)
-    await testExternalTxNoOp({ recordTx: recordReceiveLnPayment })
+      const { outgoingBaseAmount: outgoingBase } = walletVolume
+      const { outgoingBaseAmount } = walletVolumeAmount
+      expect(outgoingBase).toEqual(Number(outgoingBaseAmount.amount))
 
-    // Invoice (OnChainReceipt)
-    await testExternalTxNoOp({ recordTx: recordReceiveOnChainPayment })
+      const { incomingBaseAmount: incomingBase } = walletVolume
+      const { incomingBaseAmount } = walletVolumeAmount
+      expect(incomingBase).toEqual(Number(incomingBaseAmount.amount))
 
-    // WalletId IntraLedger send
-    await testInternalTxSendNoOp({ recordTx: recordWalletIdIntraLedgerPayment })
+      // FIXME: change in code to aggregate outgoing/incoming into single value
+      return calc.sub(outgoingBaseAmount, incomingBaseAmount)
+    }
 
-    // WalletId IntraLedger receive
-    await testInternalTxReceiveNoOp({ recordTx: recordWalletIdIntraLedgerPayment })
+    const {
+      testExternalTxSend,
+      testExternalTxNoOp,
+      testInternalTxSendNoOp,
+      testInternalTxReceiveNoOp,
+      testTxWithoutFacadeNoOp,
+    } = prepareTxFns(fetchWithdrawalVolumeAmount)
 
-    // LnIntraledger send
-    await testInternalTxSendNoOp({ recordTx: recordLnIntraLedgerPayment })
+    /*
+    Txns expected to count:
+      - Payment
+      - LnFeeReimbursement
+      - OnchainPayment
+    */
+    it("correctly registers withdrawal transactions amount", async () => {
+      // Payment
+      await testExternalTxSend({
+        recordTx: recordSendLnPayment,
+      })
 
-    // LnIntraledger receive
-    await testInternalTxReceiveNoOp({ recordTx: recordLnIntraLedgerPayment })
+      // OnchainPayment
+      await testExternalTxSend({
+        recordTx: recordSendOnChainPayment,
+      })
+    })
 
-    // OnChain IntraLedger send
-    await testInternalTxSendNoOp({ recordTx: recordOnChainIntraLedgerPayment })
+    /* 
+    Txns expected to skip:
+      - Invoice (LnReceipt)
+      - OnchainReceipt
+      - IntraLedger (WalletId)
+      - LnIntraLedger
+      - OnchainIntraLedger
 
-    // OnChain IntraLedger receive
-    await testInternalTxReceiveNoOp({ recordTx: recordOnChainIntraLedgerPayment })
+      Admin:
+      - Fee
+      - Escrow
+      - RoutingRevenue
+      - ToColdStorage
+      - ToHotWallet
 
-    // Fee
-    testTxWithoutFacadeNoOp({ recordTx: recordLnChannelOpenOrClosingFee })
+      Unused:
+      - OnchainDepositFee
+      - ExchangeRebalance
+      - UserRebalance
+    */
+    it("correctly ignores all other transaction types", async () => {
+      // TODO: move to "included" above
+      // LnFeeReimbursement
+      await testExternalTxNoOp({ recordTx: recordLnFeeReimbursement })
 
-    // Escrow
-    testTxWithoutFacadeNoOp({ recordTx: recordLndEscrowCredit })
+      // Invoice (LnReceipt)
+      await testExternalTxNoOp({ recordTx: recordReceiveLnPayment })
 
-    testTxWithoutFacadeNoOp({ recordTx: recordLndEscrowDebit })
+      // Invoice (OnChainReceipt)
+      await testExternalTxNoOp({ recordTx: recordReceiveOnChainPayment })
 
-    // RoutingRevenue
-    testTxWithoutFacadeNoOp({ recordTx: recordLnRoutingRevenue })
+      // WalletId IntraLedger send
+      await testInternalTxSendNoOp({ recordTx: recordWalletIdIntraLedgerPayment })
 
-    // ToColdStorage
-    await testExternalTxNoOp({ recordTx: recordColdStorageTxReceive })
+      // WalletId IntraLedger receive
+      await testInternalTxReceiveNoOp({ recordTx: recordWalletIdIntraLedgerPayment })
 
-    // ToHotWallet
-    await testExternalTxNoOp({ recordTx: recordColdStorageTxSend })
+      // LnIntraledger send
+      await testInternalTxSendNoOp({ recordTx: recordLnIntraLedgerPayment })
+
+      // LnIntraledger receive
+      await testInternalTxReceiveNoOp({ recordTx: recordLnIntraLedgerPayment })
+
+      // OnChain IntraLedger send
+      await testInternalTxSendNoOp({ recordTx: recordOnChainIntraLedgerPayment })
+
+      // OnChain IntraLedger receive
+      await testInternalTxReceiveNoOp({ recordTx: recordOnChainIntraLedgerPayment })
+
+      // Fee
+      testTxWithoutFacadeNoOp({ recordTx: recordLnChannelOpenOrClosingFee })
+
+      // Escrow
+      testTxWithoutFacadeNoOp({ recordTx: recordLndEscrowCredit })
+
+      testTxWithoutFacadeNoOp({ recordTx: recordLndEscrowDebit })
+
+      // RoutingRevenue
+      testTxWithoutFacadeNoOp({ recordTx: recordLnRoutingRevenue })
+
+      // ToColdStorage
+      await testExternalTxNoOp({ recordTx: recordColdStorageTxReceive })
+
+      // ToHotWallet
+      await testExternalTxNoOp({ recordTx: recordColdStorageTxSend })
+    })
   })
 })
