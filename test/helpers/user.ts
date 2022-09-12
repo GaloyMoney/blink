@@ -169,12 +169,6 @@ export const createUserAndWallet = async (entry: TestEntry) => {
         type: WalletType.Checking,
       })
     }
-
-    if (entry.role) {
-      const account = await AccountsRepository().findByUserId(userRepo.id)
-      if (account instanceof Error) throw account
-      AccountsRepository().update({ ...account, role: entry.role })
-    }
   }
 
   if (userRepo instanceof Error) throw userRepo

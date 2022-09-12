@@ -1,3 +1,4 @@
+import { getTestAccounts } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { checkedToKratosUserId, checkedToPhoneNumber } from "@domain/users"
 import { WalletType } from "@domain/wallets"
@@ -9,7 +10,10 @@ import {
 } from "@services/mongoose"
 import { TwilioClient } from "@services/twilio"
 
-const setupAccount = async (userId: UserId): Promise<Account | ApplicationError> => {
+const setupAccount = async (
+  userId: UserId,
+  phoneNumberValid?: PhoneNumber,
+): Promise<Account | ApplicationError> => {
   const account = await AccountsRepository().findByUserId(userId)
   if (account instanceof Error) return account
 
@@ -21,6 +25,10 @@ const setupAccount = async (userId: UserId): Promise<Account | ApplicationError>
   if (wallet instanceof Error) return wallet
 
   account.defaultWalletId = wallet.id
+
+  // FIXME: to remove when Casbin is been introduced
+  const role = getTestAccounts().find(({ phone }) => phone === phoneNumberValid)?.role
+  account.role = role
 
   const updatedAccount = await AccountsRepository().update(account)
   if (updatedAccount instanceof Error) return updatedAccount
@@ -58,7 +66,7 @@ export const createUserForPhoneSchema = async ({
   const user = await UsersRepository().persistNew(userRaw)
   if (user instanceof Error) return user
 
-  const account = await setupAccount(user.id)
+  const account = await setupAccount(user.id, phoneNumberValid)
   if (account instanceof Error) return account
 
   return user
