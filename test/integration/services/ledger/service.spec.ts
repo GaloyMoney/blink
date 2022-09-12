@@ -36,17 +36,20 @@ const calc = AmountCalculator()
 
 const FullLedgerTransactionType = {
   ...LedgerTransactionType,
-  IntraLedgerSend: "on_us",
-  OnchainIntraLedgerSend: "onchain_on_us",
-  LnIntraLedgerSend: "ln_on_us",
-  IntraLedgerReceive: "on_us",
-  OnchainIntraLedgerReceive: "onchain_on_us",
-  LnIntraLedgerReceive: "ln_on_us",
+  IntraLedgerSend: LedgerTransactionType.IntraLedger,
+  IntraLedgerReceive: LedgerTransactionType.IntraLedger,
+  LnIntraLedgerSend: LedgerTransactionType.LnIntraLedger,
+  LnIntraLedgerReceive: LedgerTransactionType.LnIntraLedger,
+  OnchainIntraLedgerSend: LedgerTransactionType.OnchainIntraLedger,
+  OnchainIntraLedgerReceive: LedgerTransactionType.OnchainIntraLedger,
+  EscrowCredit: LedgerTransactionType.Escrow,
+  EscrowDebit: LedgerTransactionType.Escrow,
 } as const
 const {
   IntraLedger,
-  OnchainIntraLedger,
   LnIntraLedger,
+  OnchainIntraLedger,
+  Escrow,
   ...ExtendedLedgerTransactionType
 } = FullLedgerTransactionType
 
@@ -102,13 +105,13 @@ describe("Volumes", () => {
     return {
       withLimitEffect: {
         testExternalTxSendWLE: (args) =>
-          it(`testExternalTxSendWLE: ${args.recordTx.name}`, async () =>
+          it(`${args.recordTx.name}`, async () =>
             testExternalTx({ ...args, calcFn: sendLimitCalc })),
         testExternalTxReceiveWLE: (args) =>
-          it(`testExternalTxReceiveWLE: ${args.recordTx.name}`, async () =>
+          it(`${args.recordTx.name}`, async () =>
             testExternalTx({ ...args, calcFn: receiveLimitCalc })),
         testInternalTxSendWLE: (args) =>
-          it(`testInternalTxSendWLE: ${args.recordTx.name}`, async () =>
+          it(`send ${args.recordTx.name}`, async () =>
             testInternalTx({
               ...args,
               sender: walletDescriptor,
@@ -116,7 +119,7 @@ describe("Volumes", () => {
               calcFn: sendLimitCalc,
             })),
         testInternalTxReceiveWLE: (args) =>
-          it(`testInternalTxReceiveWLE: ${args.recordTx.name}`, async () =>
+          it(`receive ${args.recordTx.name}`, async () =>
             testInternalTx({
               ...args,
               sender: walletDescriptorOther,
@@ -126,10 +129,10 @@ describe("Volumes", () => {
       },
       noLimitEffect: {
         testExternalTxNLE: (args) =>
-          it(`testExternalTxNLE: ${args.recordTx.name}`, async () =>
+          it(`${args.recordTx.name}`, async () =>
             testExternalTx({ ...args, calcFn: noLimitCalc })),
         testInternalTxSendNLE: (args) =>
-          it(`testInternalTxSendNLE: ${args.recordTx.name}`, async () =>
+          it(`send ${args.recordTx.name}`, async () =>
             testInternalTx({
               ...args,
               sender: walletDescriptor,
@@ -137,7 +140,7 @@ describe("Volumes", () => {
               calcFn: noLimitCalc,
             })),
         testInternalTxReceiveNLE: (args) =>
-          it(`testInternalTxReceiveNLE: ${args.recordTx.name}`, async () =>
+          it(`receive ${args.recordTx.name}`, async () =>
             testInternalTx({
               ...args,
               sender: walletDescriptorOther,
@@ -157,24 +160,150 @@ describe("Volumes", () => {
         (key: keyof typeof ExtendedLedgerTransactionType) => !includedTypes.includes(key),
       )
 
-    const includedTypesSet = new ModifiedSet(includedTypes)
-    const excludedTypesSet = new ModifiedSet(excludedTypes)
-
     it("prepares limit tx types", () => {
+      const includedTypesSet = new ModifiedSet(includedTypes)
+      const excludedTypesSet = new ModifiedSet(excludedTypes)
       expect(includedTypesSet.intersect(excludedTypesSet).size).toEqual(0)
+
+      // Included here to remove lint for these unused variables
+      expect(includedTypes).not.toContain(IntraLedger)
+      expect(includedTypes).not.toContain(LnIntraLedger)
+      expect(includedTypes).not.toContain(OnchainIntraLedger)
+      expect(includedTypes).not.toContain(Escrow)
     })
 
     return { includedTypes, excludedTypes }
   }
 
-  describe("Withdrawal volumes", () => {
-    const { includedTypes, excludedTypes } = txTypesForLimits([
-      "Payment",
-      "OnchainPayment",
-    ])
-    console.log("HERE 0:", includedTypes)
-    console.log("HERE 1:", excludedTypes)
+  const executeLimitTests = ({
+    includedTxTypes,
+    fetchVolumeAmount,
+  }: {
+    includedTxTypes: (keyof typeof ExtendedLedgerTransactionType)[]
+    fetchVolumeAmount
+  }) => {
+    const { includedTypes, excludedTypes } = txTypesForLimits(includedTxTypes)
 
+    const {
+      withLimitEffect: {
+        testExternalTxSendWLE,
+        testExternalTxReceiveWLE,
+        testInternalTxSendWLE,
+        testInternalTxReceiveWLE,
+      },
+      noLimitEffect: {
+        testExternalTxNLE,
+        testInternalTxSendNLE,
+        testInternalTxReceiveNLE,
+      },
+    } = prepareTxFns(fetchVolumeAmount)
+
+    const txFnsForIncludedTypes = {
+      Invoice: () => testExternalTxReceiveWLE({ recordTx: recordReceiveLnPayment }),
+      OnchainReceipt: () =>
+        testExternalTxReceiveWLE({ recordTx: recordReceiveOnChainPayment }),
+      Payment: () => testExternalTxSendWLE({ recordTx: recordSendLnPayment }),
+      OnchainPayment: () => testExternalTxSendWLE({ recordTx: recordSendOnChainPayment }),
+      LnFeeReimbursement: () =>
+        testExternalTxReceiveWLE({
+          recordTx: recordLnFeeReimbursement,
+        }),
+      IntraLedgerSend: () =>
+        testInternalTxSendWLE({
+          recordTx: recordWalletIdIntraLedgerPayment,
+        }),
+      IntraLedgerReceive: () =>
+        testInternalTxReceiveWLE({
+          recordTx: recordWalletIdIntraLedgerPayment,
+        }),
+      OnchainIntraLedgerSend: () =>
+        testInternalTxSendWLE({
+          recordTx: recordOnChainIntraLedgerPayment,
+        }),
+      OnchainIntraLedgerReceive: () =>
+        testInternalTxReceiveWLE({
+          recordTx: recordOnChainIntraLedgerPayment,
+        }),
+      LnIntraLedgerSend: () =>
+        testInternalTxSendWLE({
+          recordTx: recordLnIntraLedgerPayment,
+        }),
+      LnIntraLedgerReceive: () =>
+        testInternalTxReceiveWLE({
+          recordTx: recordLnIntraLedgerPayment,
+        }),
+
+      // Used, but no limit checks yet:
+      // Fee,
+      // Escrow,
+      // RoutingRevenue,
+      // ToColdStorage,
+      // ToHotWallet,
+
+      // Not used:
+      // ExchangeRebalance,
+      // UserRebalance,
+      // OnchainDepositFee,
+    }
+
+    const txFnsForExcludedTypes = {
+      Invoice: () => testExternalTxNLE({ recordTx: recordReceiveLnPayment }),
+      OnchainReceipt: () => testExternalTxNLE({ recordTx: recordReceiveOnChainPayment }),
+      Payment: () => testExternalTxNLE({ recordTx: recordSendLnPayment }),
+      OnchainPayment: () => testExternalTxNLE({ recordTx: recordSendOnChainPayment }),
+      LnFeeReimbursement: () => testExternalTxNLE({ recordTx: recordLnFeeReimbursement }),
+      Fee: () => testExternalTxNLE({ recordTx: recordLnChannelOpenOrClosingFee }),
+      EscrowCredit: () => testExternalTxNLE({ recordTx: recordLndEscrowCredit }),
+      EscrowDebit: () => testExternalTxNLE({ recordTx: recordLndEscrowDebit }),
+      RoutingRevenue: () => testExternalTxNLE({ recordTx: recordLnRoutingRevenue }),
+      ToHotWallet: () => testExternalTxNLE({ recordTx: recordColdStorageTxSend }),
+      ToColdStorage: () => testExternalTxNLE({ recordTx: recordColdStorageTxReceive }),
+      IntraLedgerSend: () =>
+        testInternalTxSendNLE({
+          recordTx: recordWalletIdIntraLedgerPayment,
+        }),
+      IntraLedgerReceive: () =>
+        testInternalTxReceiveNLE({
+          recordTx: recordWalletIdIntraLedgerPayment,
+        }),
+      OnchainIntraLedgerSend: () =>
+        testInternalTxSendNLE({
+          recordTx: recordOnChainIntraLedgerPayment,
+        }),
+      OnchainIntraLedgerReceive: () =>
+        testInternalTxReceiveNLE({
+          recordTx: recordOnChainIntraLedgerPayment,
+        }),
+      LnIntraLedgerSend: () =>
+        testInternalTxSendNLE({
+          recordTx: recordLnIntraLedgerPayment,
+        }),
+      LnIntraLedgerReceive: () =>
+        testInternalTxReceiveNLE({
+          recordTx: recordLnIntraLedgerPayment,
+        }),
+
+      // Not used
+      ExchangeRebalance: () => undefined,
+      UserRebalance: () => undefined,
+      OnchainDepositFee: () => undefined,
+    }
+
+    // Execute tests for types
+    describe("correctly registers transactions amount", () => {
+      for (const txType of includedTypes) {
+        txFnsForIncludedTypes[txType]()
+      }
+    })
+
+    describe("correctly ignores all other transaction types", () => {
+      for (const txType of excludedTypes) {
+        txFnsForExcludedTypes[txType]()
+      }
+    })
+  }
+
+  describe("Withdrawal volumes", () => {
     const fetchWithdrawalVolumeAmount = async <S extends WalletCurrency>(
       walletDescriptor: WalletDescriptor<S>,
     ): Promise<PaymentAmount<S>> => {
@@ -204,98 +333,9 @@ describe("Volumes", () => {
       return calc.sub(outgoingBaseAmount, incomingBaseAmount)
     }
 
-    const {
-      withLimitEffect: { testExternalTxSendWLE },
-      noLimitEffect: {
-        testExternalTxNLE,
-        testInternalTxSendNLE,
-        testInternalTxReceiveNLE,
-      },
-    } = prepareTxFns(fetchWithdrawalVolumeAmount)
-
-    /*
-    Txns expected to count:
-      - Payment
-      - LnFeeReimbursement
-      - OnchainPayment
-    */
-    describe("correctly registers withdrawal transactions amount", () => {
-      // Payment
-      testExternalTxSendWLE({
-        recordTx: recordSendLnPayment,
-      })
-
-      // OnchainPayment
-      testExternalTxSendWLE({
-        recordTx: recordSendOnChainPayment,
-      })
-    })
-
-    /* 
-    Txns expected to skip:
-      - Invoice (LnReceipt)
-      - OnchainReceipt
-      - IntraLedger (WalletId)
-      - LnIntraLedger
-      - OnchainIntraLedger
-
-      Admin:
-      - Fee
-      - Escrow
-      - RoutingRevenue
-      - ToColdStorage
-      - ToHotWallet
-
-      Unused:
-      - OnchainDepositFee
-      - ExchangeRebalance
-      - UserRebalance
-    */
-    describe("correctly ignores all other transaction types", () => {
-      // TODO: move to "included" above
-      // LnFeeReimbursement
-      testExternalTxNLE({ recordTx: recordLnFeeReimbursement })
-
-      // Invoice (LnReceipt)
-      testExternalTxNLE({ recordTx: recordReceiveLnPayment })
-
-      // Invoice (OnChainReceipt)
-      testExternalTxNLE({ recordTx: recordReceiveOnChainPayment })
-
-      // WalletId IntraLedger send
-      testInternalTxSendNLE({ recordTx: recordWalletIdIntraLedgerPayment })
-
-      // WalletId IntraLedger receive
-      testInternalTxReceiveNLE({ recordTx: recordWalletIdIntraLedgerPayment })
-
-      // LnIntraledger send
-      testInternalTxSendNLE({ recordTx: recordLnIntraLedgerPayment })
-
-      // LnIntraledger receive
-      testInternalTxReceiveNLE({ recordTx: recordLnIntraLedgerPayment })
-
-      // OnChain IntraLedger send
-      testInternalTxSendNLE({ recordTx: recordOnChainIntraLedgerPayment })
-
-      // OnChain IntraLedger receive
-      testInternalTxReceiveNLE({ recordTx: recordOnChainIntraLedgerPayment })
-
-      // Fee
-      testExternalTxNLE({ recordTx: recordLnChannelOpenOrClosingFee })
-
-      // Escrow
-      testExternalTxNLE({ recordTx: recordLndEscrowCredit })
-
-      testExternalTxNLE({ recordTx: recordLndEscrowDebit })
-
-      // RoutingRevenue
-      testExternalTxNLE({ recordTx: recordLnRoutingRevenue })
-
-      // ToColdStorage
-      testExternalTxNLE({ recordTx: recordColdStorageTxReceive })
-
-      // ToHotWallet
-      testExternalTxNLE({ recordTx: recordColdStorageTxSend })
+    executeLimitTests({
+      includedTxTypes: ["Payment", "OnchainPayment"],
+      fetchVolumeAmount: fetchWithdrawalVolumeAmount,
     })
   })
 })
