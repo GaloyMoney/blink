@@ -12,6 +12,8 @@ import { LedgerTransactionType } from "@domain/ledger"
 
 import { LedgerService } from "@services/ledger"
 
+import { ModifiedSet } from "@utils"
+
 import {
   recordLnIntraLedgerPayment,
   recordLnFeeReimbursement,
@@ -31,6 +33,22 @@ import {
 
 const ledgerService = LedgerService()
 const calc = AmountCalculator()
+
+const FullLedgerTransactionType = {
+  ...LedgerTransactionType,
+  IntraLedgerSend: "on_us",
+  OnchainIntraLedgerSend: "onchain_on_us",
+  LnIntraLedgerSend: "ln_on_us",
+  IntraLedgerReceive: "on_us",
+  OnchainIntraLedgerReceive: "onchain_on_us",
+  LnIntraLedgerReceive: "ln_on_us",
+} as const
+const {
+  IntraLedger,
+  OnchainIntraLedger,
+  LnIntraLedger,
+  ...ExtendedLedgerTransactionType
+} = FullLedgerTransactionType
 
 describe("Volumes", () => {
   const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
@@ -130,12 +148,32 @@ describe("Volumes", () => {
     }
   }
 
+  const txTypesForLimits = (
+    includedTypes: (keyof typeof ExtendedLedgerTransactionType)[],
+  ) => {
+    const excludedTypes = Object.keys(ExtendedLedgerTransactionType)
+      .map((key) => key as keyof typeof ExtendedLedgerTransactionType)
+      .filter(
+        (key: keyof typeof ExtendedLedgerTransactionType) => !includedTypes.includes(key),
+      )
+
+    const includedTypesSet = new ModifiedSet(includedTypes)
+    const excludedTypesSet = new ModifiedSet(excludedTypes)
+
+    it("prepares limit tx types", () => {
+      expect(includedTypesSet.intersect(excludedTypesSet).size).toEqual(0)
+    })
+
+    return { includedTypes, excludedTypes }
+  }
+
   describe("Withdrawal volumes", () => {
-    const withdrawalTypes: LedgerTransactionTypeKey[] = ["Payment", "OnchainPayment"]
-    const nonWithdrawalTypes = Object.keys(LedgerTransactionType)
-      .map((key) => key as LedgerTransactionTypeKey)
-      .filter((key: LedgerTransactionTypeKey) => !withdrawalTypes.includes(key))
-    console.log(nonWithdrawalTypes)
+    const { includedTypes, excludedTypes } = txTypesForLimits([
+      "Payment",
+      "OnchainPayment",
+    ])
+    console.log("HERE 0:", includedTypes)
+    console.log("HERE 1:", excludedTypes)
 
     const fetchWithdrawalVolumeAmount = async <S extends WalletCurrency>(
       walletDescriptor: WalletDescriptor<S>,
