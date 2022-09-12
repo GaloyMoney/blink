@@ -353,6 +353,14 @@ export const configSchema = {
       required: ["serverURL", "corsAllowedOrigins"],
       additionalProperties: false,
     },
+    oathkeeperConfig: {
+      type: "object",
+      properties: {
+        urlJkws: { type: "string" },
+      },
+      required: ["urlJkws"],
+      additionalProperties: false,
+    },
     captcha: {
       type: "object",
       properties: {

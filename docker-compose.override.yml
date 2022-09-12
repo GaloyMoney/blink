@@ -40,3 +40,10 @@ services:
   stablesats:
     ports:
       - "3325:3325"
+  oathkeeper:
+    ports:
+      - "4455:4455"
+      - "4456:4456"
+  e2e-tests:
+    ports: 
+      - "4002:4002"

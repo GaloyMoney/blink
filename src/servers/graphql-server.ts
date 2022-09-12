@@ -1,8 +1,7 @@
 import { createServer } from "http"
-import crypto from "crypto"
 
 import { Accounts, Users } from "@app"
-import { getApolloConfig, getGeetestConfig, isDev, isProd, JWT_SECRET } from "@config"
+import { getApolloConfig, getGeetestConfig, getJwksArgs, isDev, isProd } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
 import {
@@ -19,11 +18,11 @@ import {
 } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import express from "express"
-import { expressjwt } from "express-jwt"
+import { expressjwt, GetVerificationKey } from "express-jwt"
 import { execute, GraphQLError, GraphQLSchema, subscribe } from "graphql"
 import { rule } from "graphql-shield"
 import helmet from "helmet"
-import * as jwt from "jsonwebtoken"
+import jsonwebtoken from "jsonwebtoken"
 import PinoHttp from "pino-http"
 import {
   ExecuteFunction,
@@ -31,15 +30,21 @@ import {
   SubscriptionServer,
 } from "subscriptions-transport-ws"
 
-import { mapError } from "@graphql/error-map"
 import { AuthenticationError, AuthorizationError } from "@graphql/error"
+import { mapError } from "@graphql/error-map"
 
 import { parseIps } from "@domain/users-ips"
 
+import jwksRsa from "jwks-rsa"
+
+import { checkedToAccountId, InvalidAccountIdError } from "@domain/accounts"
+
+import { sendOathkeeperRequest } from "@services/oathkeeper"
+
 import { playgroundTabs } from "../graphql/playground"
 
+import authRouter from "./middlewares/auth-router"
 import healthzHandler from "./middlewares/healthz"
-import authRouter from "./auth-router"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -47,9 +52,13 @@ const graphqlLogger = baseLogger.child({
 
 const apolloConfig = getApolloConfig()
 
-export const isAuthenticated = rule({ cache: "contextual" })((parent, args, ctx) => {
-  return ctx.uid !== null ? true : new AuthenticationError({ logger: baseLogger })
-})
+export const isAuthenticated = rule({ cache: "contextual" })(
+  (parent, args, ctx: GraphQLContext) => {
+    return ctx.domainAccount !== null
+      ? true
+      : new AuthenticationError({ logger: baseLogger })
+  },
+)
 
 export const isEditor = rule({ cache: "contextual" })(
   (parent, args, ctx: GraphQLContextForUser) => {
@@ -59,7 +68,7 @@ export const isEditor = rule({ cache: "contextual" })(
   },
 )
 
-const jwtAlgorithms: jwt.Algorithm[] = ["HS256"]
+const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
 
 const geeTestConfig = getGeetestConfig()
 const geetest = Geetest(geeTestConfig)
@@ -69,24 +78,27 @@ const sessionContext = ({
   ip,
   body,
 }: {
-  tokenPayload: jwt.JwtPayload | null
+  tokenPayload: jsonwebtoken.JwtPayload
   ip: IpAddress | undefined
   body: unknown
 }): Promise<GraphQLContext> => {
-  const userId = tokenPayload?.uid ?? null
-
-  // TODO move from crypto.randomUUID() to a Jaeger standard
-  const logger = graphqlLogger.child({ tokenPayload, id: crypto.randomUUID(), body })
+  const logger = graphqlLogger.child({ tokenPayload, body })
 
   let domainUser: User | null = null
   let domainAccount: Account | undefined
+
+  // note: value should match (ie: "anon") if not an accountId
+  // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
+  const maybeAid = checkedToAccountId(tokenPayload.sub || "")
+
   return addAttributesToCurrentSpanAndPropagate(
     {
-      [SemanticAttributes.ENDUSER_ID]: userId,
+      [SemanticAttributes.ENDUSER_ID]: tokenPayload.sub,
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
     },
     async () => {
-      if (userId) {
+      if (!(maybeAid instanceof InvalidAccountIdError)) {
+        const userId = maybeAid as string as UserId // FIXME: fix until User is attached to kratos
         const loggedInUser = await Users.getUserForLogin({ userId, ip, logger })
         if (loggedInUser instanceof Error)
           throw new ApolloError("Invalid user authentication", "INVALID_AUTHENTICATION", {
@@ -94,18 +106,15 @@ const sessionContext = ({
           })
         domainUser = loggedInUser
 
-        const loggedInDomainAccount = await Accounts.getAccount(
-          domainUser.defaultAccountId,
-        )
+        const loggedInDomainAccount = await Accounts.getAccount(maybeAid)
         if (loggedInDomainAccount instanceof Error) throw Error
         domainAccount = loggedInDomainAccount
-      }
 
-      addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
+        addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
+      }
 
       return {
         logger,
-        uid: userId,
         // FIXME: we should not return this for the admin graphql endpoint
         domainUser,
         domainAccount,
@@ -224,9 +233,11 @@ export const startApolloServer = async ({
     }),
   )
 
+  const secret = jwksRsa.expressJwtSecret(getJwksArgs()) as GetVerificationKey // https://github.com/auth0/express-jwt/issues/288#issuecomment-1122524366
+
   app.use(
     expressjwt({
-      secret: JWT_SECRET,
+      secret,
       algorithms: jwtAlgorithms,
       credentialsRequired: false,
       requestProperty: "token",
@@ -263,18 +274,25 @@ export const startApolloServer = async ({
             ) {
               const { request } = connectionContext
 
-              let tokenPayload: string | jwt.JwtPayload | null = null
               const authz = (connectionParams.authorization ||
                 connectionParams.Authorization) as string
-              if (authz) {
-                const rawToken = authz.slice(7)
-                tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
-                  algorithms: jwtAlgorithms,
-                })
+              // TODO: also manage the case where there is a cookie in the request
 
-                if (typeof tokenPayload === "string") {
-                  throw new Error("tokenPayload should be an object")
-                }
+              // make request to oathkeeper
+              const originalToken = authz.slice(7)
+
+              const newToken = await sendOathkeeperRequest(originalToken)
+              // TODO: see how returning an error affect the websocket connection
+              if (newToken instanceof Error) return newToken
+
+              const keyJwks = await jwksRsa(getJwksArgs()).getSigningKey()
+
+              const tokenPayload = jsonwebtoken.verify(newToken, keyJwks.getPublicKey(), {
+                algorithms: jwtAlgorithms,
+              })
+
+              if (typeof tokenPayload === "string") {
+                throw new Error("tokenPayload should be an object")
               }
 
               return sessionContext({

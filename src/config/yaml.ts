@@ -302,3 +302,14 @@ export const getDefaultAccountsConfig = (config = yamlConfig): AccountsConfig =>
   initialStatus: config.accounts.initialStatus as AccountStatus,
   initialWallets: config.accounts.initialWallets,
 })
+
+export const getJwksArgs = (config = yamlConfig) => {
+  const urlJkws = config.oathkeeperConfig.urlJkws
+
+  return {
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: urlJkws,
+  }
+}
