@@ -65,10 +65,15 @@ describe("Volumes", () => {
     }
 
     return {
-      testExternalTxSend: async (args) => testExternalTx({ ...args, calcFn: calc.add }),
-      testExternalTxReceive: async (args) =>
-        testExternalTx({ ...args, calcFn: calc.sub }),
-      testExternalTxNoOp: async (args) => testExternalTx({ ...args, calcFn: (a) => a }),
+      testExternalTxSend: (args) =>
+        it(`testExternalSend: ${args.recordTx.name}`, async () =>
+          testExternalTx({ ...args, calcFn: calc.add })),
+      testExternalTxReceive: (args) =>
+        it(`testExternalTxReceive: ${args.recordTx.name}`, async () =>
+          testExternalTx({ ...args, calcFn: calc.sub })),
+      testExternalTxNoOp: (args) =>
+        it(`testExternalTxNoOp: ${args.recordTx.name}`, async () =>
+          testExternalTx({ ...args, calcFn: (a) => a })),
     }
   }
 
@@ -90,34 +95,38 @@ describe("Volumes", () => {
     }
 
     return {
-      testInternalTxSend: async (args) =>
-        testInternalTx({
-          ...args,
-          sender: walletDescriptor,
-          recipient: walletDescriptorOther,
-          calcFn: calc.add,
-        }),
-      testInternalTxReceive: async (args) =>
-        testInternalTx({
-          ...args,
-          sender: walletDescriptorOther,
-          recipient: walletDescriptor,
-          calcFn: calc.sub,
-        }),
-      testInternalTxSendNoOp: async (args) =>
-        testInternalTx({
-          ...args,
-          sender: walletDescriptor,
-          recipient: walletDescriptorOther,
-          calcFn: (a) => a,
-        }),
-      testInternalTxReceiveNoOp: async (args) =>
-        testInternalTx({
-          ...args,
-          sender: walletDescriptorOther,
-          recipient: walletDescriptor,
-          calcFn: (a) => a,
-        }),
+      testInternalTxSend: (args) =>
+        it(`testInternalTxSend: ${args.recordTx.name}`, async () =>
+          testInternalTx({
+            ...args,
+            sender: walletDescriptor,
+            recipient: walletDescriptorOther,
+            calcFn: calc.add,
+          })),
+      testInternalTxReceive: (args) =>
+        it(`testInternalTxReceive: ${args.recordTx.name}`, async () =>
+          testInternalTx({
+            ...args,
+            sender: walletDescriptorOther,
+            recipient: walletDescriptor,
+            calcFn: calc.sub,
+          })),
+      testInternalTxSendNoOp: (args) =>
+        it(`testInternalTxSendNoOp: ${args.recordTx.name}`, async () =>
+          testInternalTx({
+            ...args,
+            sender: walletDescriptor,
+            recipient: walletDescriptorOther,
+            calcFn: (a) => a,
+          })),
+      testInternalTxReceiveNoOp: (args) =>
+        it(`testInternalTxReceiveNoOp: ${args.recordTx.name}`, async () =>
+          testInternalTx({
+            ...args,
+            sender: walletDescriptorOther,
+            recipient: walletDescriptor,
+            calcFn: (a) => a,
+          })),
     }
   }
 
@@ -136,7 +145,8 @@ describe("Volumes", () => {
 
     return {
       testTxWithoutFacadeNoOp: async (args) =>
-        testTxWithoutFacade({ ...args, calcFn: (a) => a }),
+        it(`testTxWithoutFacadeNoOp: ${args.recordTx.name}`, async () =>
+          testTxWithoutFacade({ ...args, calcFn: (a) => a })),
     }
   }
 
@@ -196,14 +206,14 @@ describe("Volumes", () => {
       - LnFeeReimbursement
       - OnchainPayment
     */
-    it("correctly registers withdrawal transactions amount", async () => {
+    describe("correctly registers withdrawal transactions amount", () => {
       // Payment
-      await testExternalTxSend({
+      testExternalTxSend({
         recordTx: recordSendLnPayment,
       })
 
       // OnchainPayment
-      await testExternalTxSend({
+      testExternalTxSend({
         recordTx: recordSendOnChainPayment,
       })
     })
@@ -228,34 +238,34 @@ describe("Volumes", () => {
       - ExchangeRebalance
       - UserRebalance
     */
-    it("correctly ignores all other transaction types", async () => {
+    describe("correctly ignores all other transaction types", () => {
       // TODO: move to "included" above
       // LnFeeReimbursement
-      await testExternalTxNoOp({ recordTx: recordLnFeeReimbursement })
+      testExternalTxNoOp({ recordTx: recordLnFeeReimbursement })
 
       // Invoice (LnReceipt)
-      await testExternalTxNoOp({ recordTx: recordReceiveLnPayment })
+      testExternalTxNoOp({ recordTx: recordReceiveLnPayment })
 
       // Invoice (OnChainReceipt)
-      await testExternalTxNoOp({ recordTx: recordReceiveOnChainPayment })
+      testExternalTxNoOp({ recordTx: recordReceiveOnChainPayment })
 
       // WalletId IntraLedger send
-      await testInternalTxSendNoOp({ recordTx: recordWalletIdIntraLedgerPayment })
+      testInternalTxSendNoOp({ recordTx: recordWalletIdIntraLedgerPayment })
 
       // WalletId IntraLedger receive
-      await testInternalTxReceiveNoOp({ recordTx: recordWalletIdIntraLedgerPayment })
+      testInternalTxReceiveNoOp({ recordTx: recordWalletIdIntraLedgerPayment })
 
       // LnIntraledger send
-      await testInternalTxSendNoOp({ recordTx: recordLnIntraLedgerPayment })
+      testInternalTxSendNoOp({ recordTx: recordLnIntraLedgerPayment })
 
       // LnIntraledger receive
-      await testInternalTxReceiveNoOp({ recordTx: recordLnIntraLedgerPayment })
+      testInternalTxReceiveNoOp({ recordTx: recordLnIntraLedgerPayment })
 
       // OnChain IntraLedger send
-      await testInternalTxSendNoOp({ recordTx: recordOnChainIntraLedgerPayment })
+      testInternalTxSendNoOp({ recordTx: recordOnChainIntraLedgerPayment })
 
       // OnChain IntraLedger receive
-      await testInternalTxReceiveNoOp({ recordTx: recordOnChainIntraLedgerPayment })
+      testInternalTxReceiveNoOp({ recordTx: recordOnChainIntraLedgerPayment })
 
       // Fee
       testTxWithoutFacadeNoOp({ recordTx: recordLnChannelOpenOrClosingFee })
@@ -269,10 +279,10 @@ describe("Volumes", () => {
       testTxWithoutFacadeNoOp({ recordTx: recordLnRoutingRevenue })
 
       // ToColdStorage
-      await testExternalTxNoOp({ recordTx: recordColdStorageTxReceive })
+      testExternalTxNoOp({ recordTx: recordColdStorageTxReceive })
 
       // ToHotWallet
-      await testExternalTxNoOp({ recordTx: recordColdStorageTxSend })
+      testExternalTxNoOp({ recordTx: recordColdStorageTxSend })
     })
   })
 })
