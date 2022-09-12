@@ -238,11 +238,8 @@ export const recordOnChainIntraLedgerPayment = async ({
 // Non-LedgerFacade helpers from legacy admin service
 // ======
 
-export const recordLnChannelOpenOrClosingFee = async ({
-  amount,
-}: {
-  amount: Satoshis
-}) => {
+export const recordLnChannelOpenOrClosingFee = async ({ paymentAmount }) => {
+  const amount = Number(paymentAmount.btc.amount)
   const metadata = LedgerFacade.LnChannelOpenOrClosingFee({
     txId: "txId" as OnChainTxHash,
   })
@@ -257,7 +254,8 @@ export const recordLnChannelOpenOrClosingFee = async ({
   return translateToLedgerJournal(savedEntry)
 }
 
-export const recordLndEscrowDebit = async ({ amount }: { amount: Satoshis }) => {
+export const recordLndEscrowDebit = async ({ paymentAmount }) => {
+  const amount = Number(paymentAmount.btc.amount)
   const metadata = LedgerFacade.Escrow()
 
   const savedEntry = await MainBook.entry("escrow")
@@ -268,7 +266,8 @@ export const recordLndEscrowDebit = async ({ amount }: { amount: Satoshis }) => 
   return translateToLedgerJournal(savedEntry)
 }
 
-export const recordLndEscrowCredit = async ({ amount }: { amount: Satoshis }) => {
+export const recordLndEscrowCredit = async ({ paymentAmount }) => {
+  const amount = Number(paymentAmount.btc.amount)
   const metadata = LedgerFacade.Escrow()
 
   const savedEntry = await MainBook.entry("escrow")
@@ -279,7 +278,8 @@ export const recordLndEscrowCredit = async ({ amount }: { amount: Satoshis }) =>
   return translateToLedgerJournal(savedEntry)
 }
 
-export const recordLnRoutingRevenue = async ({ amount }: { amount: Satoshis }) => {
+export const recordLnRoutingRevenue = async ({ paymentAmount }) => {
+  const amount = Number(paymentAmount.btc.amount)
   const metadata = LedgerFacade.LnRoutingRevenue(new Date(Date.now()))
 
   const bankOwnerPath = toLiabilitiesWalletId(await getBankOwnerWalletId())

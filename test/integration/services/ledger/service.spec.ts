@@ -9,7 +9,6 @@ import {
   WalletCurrency,
 } from "@domain/shared"
 import { LedgerTransactionType } from "@domain/ledger"
-import { toSats } from "@domain/bitcoin"
 
 import { LedgerService } from "@services/ledger"
 
@@ -130,30 +129,9 @@ describe("Volumes", () => {
     }
   }
 
-  const prepareTxWithoutFacadeFns = (fetchVolumeAmount) => {
-    // Setup no-facade txns tests
-    const testTxWithoutFacade = async ({ recordTx, calcFn }) => {
-      const currentVolumeAmount = await fetchVolumeAmount(walletDescriptor)
-      const expected = calcFn(currentVolumeAmount, paymentAmount.btc)
-
-      const result = await recordTx({ amount: toSats(paymentAmount.btc.amount) })
-      expect(result).not.toBeInstanceOf(Error)
-
-      const actual = await fetchVolumeAmount(walletDescriptor)
-      expect(expected).toStrictEqual(actual)
-    }
-
-    return {
-      testTxWithoutFacadeNoOp: async (args) =>
-        it(`testTxWithoutFacadeNoOp: ${args.recordTx.name}`, async () =>
-          testTxWithoutFacade({ ...args, calcFn: (a) => a })),
-    }
-  }
-
   const prepareTxFns = (fetchVolumeAmount) => ({
     ...prepareExternalTxFns(fetchVolumeAmount),
     ...prepareInternalTxFns(fetchVolumeAmount),
-    ...prepareTxWithoutFacadeFns(fetchVolumeAmount),
   })
 
   describe("Withdrawal volumes", () => {
@@ -197,7 +175,6 @@ describe("Volumes", () => {
       testExternalTxNoOp,
       testInternalTxSendNoOp,
       testInternalTxReceiveNoOp,
-      testTxWithoutFacadeNoOp,
     } = prepareTxFns(fetchWithdrawalVolumeAmount)
 
     /*
@@ -268,15 +245,15 @@ describe("Volumes", () => {
       testInternalTxReceiveNoOp({ recordTx: recordOnChainIntraLedgerPayment })
 
       // Fee
-      testTxWithoutFacadeNoOp({ recordTx: recordLnChannelOpenOrClosingFee })
+      testExternalTxNoOp({ recordTx: recordLnChannelOpenOrClosingFee })
 
       // Escrow
-      testTxWithoutFacadeNoOp({ recordTx: recordLndEscrowCredit })
+      testExternalTxNoOp({ recordTx: recordLndEscrowCredit })
 
-      testTxWithoutFacadeNoOp({ recordTx: recordLndEscrowDebit })
+      testExternalTxNoOp({ recordTx: recordLndEscrowDebit })
 
       // RoutingRevenue
-      testTxWithoutFacadeNoOp({ recordTx: recordLnRoutingRevenue })
+      testExternalTxNoOp({ recordTx: recordLnRoutingRevenue })
 
       // ToColdStorage
       testExternalTxNoOp({ recordTx: recordColdStorageTxReceive })
