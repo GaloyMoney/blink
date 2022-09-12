@@ -46,4 +46,3 @@ curl -k \
     --url     https://localhost:8082/v1/loop/out/quote/500000 \
     --header  'Content-Type: application/json' \
     --header  "Grpc-Metadata-macaroon: $LOOP2_MACAROON_HEXSTR" # --verbose
- 
