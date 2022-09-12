@@ -67,9 +67,24 @@ describe("Volumes", () => {
     btc: { amount: 20n, currency: WalletCurrency.Btc },
   }
 
-  const prepareTxFns = (fetchVolumeAmount) => {
-    const testExternalTx = async ({ recordTx, calcFn }) => {
-      const currentVolumeAmount = await fetchVolumeAmount(walletDescriptor)
+  type fetchVolumeAmountType<S extends WalletCurrency> = (
+    walletDescriptor: WalletDescriptor<S>,
+  ) => Promise<PaymentAmount<S>>
+
+  const prepareTxFns = <S extends WalletCurrency>(
+    fetchVolumeAmount: fetchVolumeAmountType<S>,
+  ) => {
+    const testExternalTx = async ({
+      recordTx,
+      calcFn,
+    }: {
+      recordTx
+      calcFn: <S extends WalletCurrency>(a, b) => PaymentAmount<S>
+    }) => {
+      const currentVolumeAmount = await fetchVolumeAmount(
+        walletDescriptor as WalletDescriptor<S>,
+      )
+      if (currentVolumeAmount instanceof Error) throw currentVolumeAmount
       const expected = calcFn(currentVolumeAmount, paymentAmount.btc)
 
       const result = await recordTx({
@@ -79,12 +94,14 @@ describe("Volumes", () => {
       })
       expect(result).not.toBeInstanceOf(Error)
 
-      const actual = await fetchVolumeAmount(walletDescriptor)
+      const actual = await fetchVolumeAmount(walletDescriptor as WalletDescriptor<S>)
       expect(expected).toStrictEqual(actual)
     }
 
     const testInternalTx = async ({ recordTx, sender, recipient, calcFn }) => {
-      const currentVolumeAmount = await fetchVolumeAmount(walletDescriptor)
+      const currentVolumeAmount = await fetchVolumeAmount(
+        walletDescriptor as WalletDescriptor<S>,
+      )
       const expected = calcFn(currentVolumeAmount, paymentAmount.btc)
 
       const result = await recordTx({
@@ -94,7 +111,7 @@ describe("Volumes", () => {
       })
       expect(result).not.toBeInstanceOf(Error)
 
-      const actual = await fetchVolumeAmount(walletDescriptor)
+      const actual = await fetchVolumeAmount(walletDescriptor as WalletDescriptor<S>)
       expect(expected).toStrictEqual(actual)
     }
 
@@ -175,12 +192,12 @@ describe("Volumes", () => {
     return { includedTypes, excludedTypes }
   }
 
-  const executeLimitTests = ({
+  const executeLimitTests = <S extends WalletCurrency>({
     includedTxTypes,
     fetchVolumeAmount,
   }: {
     includedTxTypes: (keyof typeof ExtendedLedgerTransactionType)[]
-    fetchVolumeAmount
+    fetchVolumeAmount: fetchVolumeAmountType<S>
   }) => {
     const { includedTypes, excludedTypes } = txTypesForLimits(includedTxTypes)
 
@@ -234,16 +251,18 @@ describe("Volumes", () => {
         }),
 
       // Used, but no limit checks yet:
-      // Fee,
-      // Escrow,
-      // RoutingRevenue,
-      // ToColdStorage,
-      // ToHotWallet,
+      Fee: () => testExternalTxSendWLE({ recordTx: recordLnChannelOpenOrClosingFee }),
+      EscrowCredit: () => testExternalTxSendWLE({ recordTx: recordLndEscrowCredit }),
+      EscrowDebit: () => testExternalTxSendWLE({ recordTx: recordLndEscrowDebit }),
+      RoutingRevenue: () => testExternalTxSendWLE({ recordTx: recordLnRoutingRevenue }),
+      ToHotWallet: () => testExternalTxSendWLE({ recordTx: recordColdStorageTxSend }),
+      ToColdStorage: () =>
+        testExternalTxSendWLE({ recordTx: recordColdStorageTxReceive }),
 
       // Not used:
-      // ExchangeRebalance,
-      // UserRebalance,
-      // OnchainDepositFee,
+      ExchangeRebalance: () => undefined,
+      UserRebalance: () => undefined,
+      OnchainDepositFee: () => undefined,
     }
 
     const txFnsForExcludedTypes = {
@@ -303,9 +322,22 @@ describe("Volumes", () => {
     })
   }
 
-  const fetchVolumeAmount =
-    ({ volumeFn, volumeAmountFn }) =>
-    async <S extends WalletCurrency>(
+  const VolumeType = {
+    Out: "out",
+    NetOut: "netOut",
+    In: "in",
+  } as const
+
+  const getFetchVolumeAmountFn = <S extends WalletCurrency>({
+    volumeFn,
+    volumeAmountFn,
+    volumeType,
+  }: {
+    volumeFn: GetVolumeSinceFn
+    volumeAmountFn: GetVolumeAmountSinceFn
+    volumeType
+  }): fetchVolumeAmountType<S> => {
+    const fetchVolumeAmountFn: fetchVolumeAmountType<S> = async (
       walletDescriptor: WalletDescriptor<S>,
     ): Promise<PaymentAmount<S>> => {
       const walletVolume = await volumeFn({
@@ -330,16 +362,121 @@ describe("Volumes", () => {
       const { incomingBaseAmount } = walletVolumeAmount
       expect(incomingBase).toEqual(Number(incomingBaseAmount.amount))
 
-      // FIXME: change in code to aggregate outgoing/incoming into single value
-      return calc.sub(outgoingBaseAmount, incomingBaseAmount)
+      // FIXME: change in code to couple this method to actual implementation
+      // return calc.sub(outgoingBaseAmount, incomingBaseAmount)
+
+      switch (volumeType) {
+        case VolumeType.Out:
+          return walletVolumeAmount.outgoingBaseAmount
+        case VolumeType.In:
+          return walletVolumeAmount.incomingBaseAmount
+        case VolumeType.NetOut:
+          return calc.sub(
+            walletVolumeAmount.outgoingBaseAmount,
+            walletVolumeAmount.incomingBaseAmount,
+          )
+        default:
+          throw new Error("Invalid 'volumeType' arg")
+      }
     }
 
-  describe("Withdrawal volumes", () => {
+    return fetchVolumeAmountFn
+  }
+
+  describe("All payment volumes", () => {
+    executeLimitTests({
+      includedTxTypes: [
+        "Payment",
+        "OnchainPayment",
+        "IntraLedgerSend",
+        "OnchainIntraLedgerSend",
+        "LnIntraLedgerSend",
+      ],
+      fetchVolumeAmount: getFetchVolumeAmountFn({
+        volumeFn: ledgerService.allPaymentVolumeSince,
+        volumeAmountFn: ledgerService.allPaymentVolumeAmountSince,
+        volumeType: VolumeType.Out,
+      }),
+    })
+  })
+
+  describe("External payment (withdrawal) volumes", () => {
     executeLimitTests({
       includedTxTypes: ["Payment", "OnchainPayment"],
-      fetchVolumeAmount: fetchVolumeAmount({
+      fetchVolumeAmount: getFetchVolumeAmountFn({
         volumeFn: ledgerService.externalPaymentVolumeSince,
         volumeAmountFn: ledgerService.externalPaymentVolumeAmountSince,
+        volumeType: VolumeType.Out,
+      }),
+    })
+  })
+
+  describe("Internal payment volumes", () => {
+    executeLimitTests({
+      includedTxTypes: ["IntraLedgerSend", "OnchainIntraLedgerSend", "LnIntraLedgerSend"],
+      fetchVolumeAmount: getFetchVolumeAmountFn({
+        volumeFn: ledgerService.intraledgerTxBaseVolumeSince,
+        volumeAmountFn: ledgerService.intraledgerTxBaseVolumeAmountSince,
+        volumeType: VolumeType.Out,
+      }),
+    })
+  })
+
+  describe("All activity", () => {
+    // FIXME: Should be all tx types, why are these not included?
+    const {
+      Fee,
+      RoutingRevenue,
+      ToColdStorage,
+      ToHotWallet,
+      EscrowCredit,
+      EscrowDebit,
+      ...includedTypesObj
+    } = ExtendedLedgerTransactionType
+    const includedTxTypes = Object.keys(
+      includedTypesObj,
+    ) as (keyof typeof ExtendedLedgerTransactionType)[]
+
+    const others = [
+      Fee,
+      RoutingRevenue,
+      ToColdStorage,
+      ToHotWallet,
+      EscrowCredit,
+      EscrowDebit,
+    ]
+    expect(
+      new ModifiedSet(others).intersect(new ModifiedSet(includedTxTypes)).size,
+    ).toEqual(0)
+
+    executeLimitTests({
+      includedTxTypes,
+      fetchVolumeAmount: getFetchVolumeAmountFn({
+        volumeFn: ledgerService.allTxBaseVolumeSince,
+        volumeAmountFn: ledgerService.allTxBaseVolumeAmountSince,
+        volumeType: VolumeType.NetOut,
+      }),
+    })
+  })
+
+  describe("All onchain activity", () => {
+    executeLimitTests({
+      includedTxTypes: ["OnchainPayment", "OnchainReceipt"],
+      fetchVolumeAmount: getFetchVolumeAmountFn({
+        volumeFn: ledgerService.onChainTxBaseVolumeSince,
+        volumeAmountFn: ledgerService.onChainTxBaseVolumeAmountSince,
+        volumeType: VolumeType.NetOut,
+      }),
+    })
+  })
+
+  describe("All ln activity", () => {
+    executeLimitTests({
+      includedTxTypes: ["Payment", "Invoice", "LnFeeReimbursement"],
+      fetchVolumeAmount: getFetchVolumeAmountFn({
+        volumeFn: ledgerService.lightningTxBaseVolumeSince,
+        volumeAmountFn: ledgerService.lightningTxBaseVolumeAmountSince,
+        volumeType: VolumeType.NetOut,
       }),
     })
   })
