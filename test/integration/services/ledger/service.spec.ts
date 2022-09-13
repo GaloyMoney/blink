@@ -45,6 +45,7 @@ const FullLedgerTransactionType = {
   EscrowCredit: LedgerTransactionType.Escrow,
   EscrowDebit: LedgerTransactionType.Escrow,
 } as const
+
 const {
   IntraLedger,
   LnIntraLedger,
@@ -52,6 +53,31 @@ const {
   Escrow,
   ...ExtendedLedgerTransactionType
 } = FullLedgerTransactionType
+
+// Discarded for type-checker
+const _unusedSwappedOutTypes = [IntraLedger, LnIntraLedger, OnchainIntraLedger, Escrow]
+_unusedSwappedOutTypes
+
+const {
+  Fee,
+  RoutingRevenue,
+  ToColdStorage,
+  ToHotWallet,
+  EscrowCredit,
+  EscrowDebit,
+  ...UserLedgerTransactionType
+} = ExtendedLedgerTransactionType
+
+// Discarded for type-checker
+const _unusedAdminTypes = [
+  Fee,
+  RoutingRevenue,
+  ToColdStorage,
+  ToHotWallet,
+  EscrowCredit,
+  EscrowDebit,
+]
+_unusedAdminTypes
 
 describe("Volumes", () => {
   const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
@@ -181,12 +207,6 @@ describe("Volumes", () => {
       const includedTypesSet = new ModifiedSet(includedTypes)
       const excludedTypesSet = new ModifiedSet(excludedTypes)
       expect(includedTypesSet.intersect(excludedTypesSet).size).toEqual(0)
-
-      // Included here to remove lint for these unused variables
-      expect(includedTypes).not.toContain(IntraLedger)
-      expect(includedTypes).not.toContain(LnIntraLedger)
-      expect(includedTypes).not.toContain(OnchainIntraLedger)
-      expect(includedTypes).not.toContain(Escrow)
     })
 
     return { includedTypes, excludedTypes }
@@ -196,7 +216,7 @@ describe("Volumes", () => {
     includedTxTypes,
     fetchVolumeAmount,
   }: {
-    includedTxTypes: (keyof typeof ExtendedLedgerTransactionType)[]
+    includedTxTypes: (keyof typeof UserLedgerTransactionType)[]
     fetchVolumeAmount: fetchVolumeAmountType<S>
   }) => {
     const { includedTypes, excludedTypes } = txTypesForLimits(includedTxTypes)
@@ -423,31 +443,9 @@ describe("Volumes", () => {
   })
 
   describe("All activity", () => {
-    // FIXME: Should be all tx types, why are these not included?
-    const {
-      Fee,
-      RoutingRevenue,
-      ToColdStorage,
-      ToHotWallet,
-      EscrowCredit,
-      EscrowDebit,
-      ...includedTypesObj
-    } = ExtendedLedgerTransactionType
     const includedTxTypes = Object.keys(
-      includedTypesObj,
-    ) as (keyof typeof ExtendedLedgerTransactionType)[]
-
-    const others = [
-      Fee,
-      RoutingRevenue,
-      ToColdStorage,
-      ToHotWallet,
-      EscrowCredit,
-      EscrowDebit,
-    ]
-    expect(
-      new ModifiedSet(others).intersect(new ModifiedSet(includedTxTypes)).size,
-    ).toEqual(0)
+      UserLedgerTransactionType,
+    ) as (keyof typeof UserLedgerTransactionType)[]
 
     executeLimitTests({
       includedTxTypes,
