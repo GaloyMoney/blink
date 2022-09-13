@@ -339,17 +339,11 @@ export const setupInvoiceSubscribe = ({
   pubkey: Pubkey
   subInvoices: EventEmitter
 }) => {
-  subInvoices.on(
-    "invoice_updated",
-    (
-      invoice: SubscribeToInvoicesInvoiceUpdatedEvent & /* fix upstream */ {
-        is_canceled: boolean
-      },
-    ) => {
-      !(invoice.is_confirmed || invoice.is_canceled)
-        ? listenerHodlInvoice({ lnd, paymentHash: invoice.id as PaymentHash })
-        : undefined
-    },
+  subInvoices.on("invoice_updated", (invoice: SubscribeToInvoicesInvoiceUpdatedEvent) =>
+    // Note: canceled and expired invoices don't come in here, only confirmed check req'd
+    !invoice.is_confirmed
+      ? listenerHodlInvoice({ lnd, paymentHash: invoice.id as PaymentHash })
+      : undefined,
   )
   subInvoices.on("error", (err) => {
     baseLogger.info({ err }, "error subInvoices")
