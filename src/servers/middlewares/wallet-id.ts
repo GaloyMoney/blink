@@ -16,12 +16,12 @@ const validateWalletId = async (
   if (!walletId) return new Error("Invalid wallet")
   if (walletId instanceof Error) return walletId
 
-  if (!context.domainUser) {
-    return new Error("Invalid wallet")
+  if (!context.domainAccount) {
+    return new Error("Invalid Account")
   }
 
   const hasPermissions = await Accounts.hasPermissions(
-    context.domainUser.id,
+    context.domainAccount.id,
     walletId as WalletId,
   )
   if (hasPermissions instanceof Error) return mapError(hasPermissions)

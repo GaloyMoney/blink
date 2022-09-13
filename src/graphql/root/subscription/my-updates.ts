@@ -119,7 +119,7 @@ const userPayload = (domainUser: User | null) => (updateData: MeResolveUpdate) =
 const MeSubscription = {
   type: GT.NonNull(MyUpdatesPayload),
   resolve: (source: MeResolveSource, _args: unknown, ctx: GraphQLContextForUser) => {
-    if (!ctx.uid) {
+    if (!ctx.domainUser) {
       throw new AuthenticationError({
         message: "Not Authenticated for subscription",
         logger: baseLogger,
@@ -172,7 +172,7 @@ const MeSubscription = {
   },
 
   subscribe: async (_source: unknown, _args: unknown, ctx: GraphQLContextForUser) => {
-    if (!ctx.uid) {
+    if (!ctx.domainUser) {
       throw new AuthenticationError({
         message: "Not Authenticated for subscription",
         logger: baseLogger,
