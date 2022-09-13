@@ -25,6 +25,7 @@ import { toSats } from "@domain/bitcoin"
 import { CacheKeys } from "@domain/cache"
 import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
+import { CouldNotFindWalletInvoiceError } from "@domain/errors"
 
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
@@ -300,19 +301,29 @@ const listenerExistingHodlInvoices = async ({
 
   for (const lnInvoice of invoices) {
     if (lnInvoice.isHeld) {
-      const invoicesRepo = WalletInvoicesRepository()
-      const walletInvoice = await invoicesRepo.findByPaymentHash(lnInvoice.paymentHash)
-      if (
-        walletInvoice instanceof Error ||
-        walletInvoice.recipientWalletDescriptor.currency !== WalletCurrency.Btc
-      ) {
-        Wallets.declineHeldInvoice({
-          pubkey,
-          paymentHash: lnInvoice.paymentHash,
-          logger: baseLogger,
-        })
+      const walletInvoice = await WalletInvoicesRepository().findByPaymentHash(
+        lnInvoice.paymentHash,
+      )
+      const declineArgs = {
+        pubkey,
+        paymentHash: lnInvoice.paymentHash,
+        logger: baseLogger,
+      }
+      if (walletInvoice instanceof CouldNotFindWalletInvoiceError) {
+        Wallets.declineHeldInvoice(declineArgs)
         continue
       }
+      if (walletInvoice instanceof Error) {
+        continue
+      }
+      if (walletInvoice.recipientWalletDescriptor.currency !== WalletCurrency.Btc) {
+        Wallets.declineHeldInvoice(declineArgs)
+        continue
+      }
+    }
+
+    if (lnInvoice.isSettled || lnInvoice.isCanceled) {
+      continue
     }
 
     listenerHodlInvoice({ lnd, paymentHash: lnInvoice.paymentHash })
@@ -328,8 +339,17 @@ export const setupInvoiceSubscribe = ({
   pubkey: Pubkey
   subInvoices: EventEmitter
 }) => {
-  subInvoices.on("invoice_updated", (invoice: SubscribeToInvoicesInvoiceUpdatedEvent) =>
-    listenerHodlInvoice({ lnd, paymentHash: invoice.id as PaymentHash }),
+  subInvoices.on(
+    "invoice_updated",
+    (
+      invoice: SubscribeToInvoicesInvoiceUpdatedEvent & /* fix upstream */ {
+        is_canceled: boolean
+      },
+    ) => {
+      !(invoice.is_confirmed || invoice.is_canceled)
+        ? listenerHodlInvoice({ lnd, paymentHash: invoice.id as PaymentHash })
+        : undefined
+    },
   )
   subInvoices.on("error", (err) => {
     baseLogger.info({ err }, "error subInvoices")
