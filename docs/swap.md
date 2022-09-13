@@ -69,7 +69,7 @@ sudo chmod 755 /var/yaml/custom.yaml
 Add the following config (you might need to 'retry as sudo' on mac+vscode):
 ```
 swap:
-  minOnChainHotWalletBalance: 350000
+  minOnChainHotWalletBalance: 300000
   swapOutAmount:  250000
   swapProviders: ["LOOP"]
   lnd1loopRestEndpoint: "https://localhost:8081"

@@ -2,6 +2,7 @@ import { LoopService } from "@services/loopd"
 
 import { toSats } from "@domain/bitcoin"
 import {
+  NoSwapAction,
   SwapClientNotResponding,
   SwapErrorChannelBalanceTooLow,
 } from "@domain/swap/errors"
@@ -13,13 +14,32 @@ import {
   LND1_LOOP_CONFIG,
   LND2_LOOP_CONFIG,
 } from "@app/swap/get-active-loopd"
+import { swapOut } from "@app/swap"
 
 describe("Swap", () => {
   const activeLoopd = getActiveLoopd()
   const swapService = LoopService(activeLoopd ?? LND1_LOOP_CONFIG)
   const amount = toSats(250000)
 
-  it("Swap out returns successful swap result for default active loop node or lnd1-loop node", async () => {
+  it("Swap out app returns a SwapOutResult or NoSwapAction", async () => {
+    const isSwapServerUp = await swapService.healthCheck()
+    if (isSwapServerUp instanceof Error === false) {
+      const swapResult = await swapOut()
+      if (swapResult instanceof Error) throw swapResult
+      expect(swapResult).not.toBeInstanceOf(Error)
+      if (swapResult instanceof NoSwapAction) {
+        expect(swapResult).toBeInstanceOf(NoSwapAction)
+      } else {
+        expect(swapResult).toEqual(
+          expect.objectContaining({
+            swapId: expect.any(String),
+          }),
+        )
+      }
+    }
+  })
+
+  it("Swap out for default active loop node or lnd1-loop node returns successful swap result ", async () => {
     const isSwapServerUp = await swapService.healthCheck()
     if (isSwapServerUp instanceof Error === false) {
       const swapDestAddress = await getSwapDestAddress()
@@ -39,7 +59,7 @@ describe("Swap", () => {
     }
   })
 
-  it("Swap out returns successful swap result for lnd2-loop node or error if not enough funds", async () => {
+  it("Swap out for lnd2-loop node returns successful swap result or error if not enough funds", async () => {
     const isSwapServerUp = await swapService.healthCheck()
     if (isSwapServerUp instanceof Error === false) {
       const loopService = LoopService(LND2_LOOP_CONFIG)
