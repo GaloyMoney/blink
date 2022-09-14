@@ -56,8 +56,7 @@ export const newGetRemainingTwoFALimit = async <T extends WalletCurrency>({
 }): Promise<UsdPaymentAmount | ApplicationError> => {
   const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
   const walletVolume = await LedgerService().allPaymentVolumeAmountSince({
-    walletId: walletDescriptor.id,
-    walletCurrency: walletDescriptor.currency,
+    walletDescriptor,
     timestamp: timestamp1DayAgo,
   })
   if (walletVolume instanceof Error) return walletVolume

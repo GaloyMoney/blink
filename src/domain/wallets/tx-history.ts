@@ -1,7 +1,7 @@
 import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
-import { ExtendedLedgerTransactionType, LedgerTransactionType } from "@domain/ledger"
+import { LedgerTransactionType } from "@domain/ledger"
 import { WalletCurrency } from "@domain/shared"
 
 import { PaymentInitiationMethod, SettlementMethod } from "./tx-methods"
@@ -82,9 +82,9 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
     createdAt: txn.timestamp,
   }
 
-  let txType: ExtendedLedgerTransactionType = txn.type
+  let txType = txn.type
   if (txn.type == LedgerTransactionType.IntraLedger && txn.paymentHash) {
-    txType = ExtendedLedgerTransactionType.LnIntraLedger
+    txType = LedgerTransactionType.LnIntraLedger
   }
 
   const defaultOnChainAddress = "<no-address>" as OnChainAddress
@@ -93,7 +93,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
 
   let walletTransaction: WalletTransaction
   switch (txType) {
-    case ExtendedLedgerTransactionType.IntraLedger:
+    case LedgerTransactionType.IntraLedger:
       walletTransaction = {
         ...baseTransaction,
         initiationVia: {
@@ -109,7 +109,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
       }
       break
 
-    case ExtendedLedgerTransactionType.OnchainIntraLedger:
+    case LedgerTransactionType.OnchainIntraLedger:
       walletTransaction = {
         ...baseTransaction,
         initiationVia: {
@@ -124,8 +124,8 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
       }
       break
 
-    case ExtendedLedgerTransactionType.OnchainPayment:
-    case ExtendedLedgerTransactionType.OnchainReceipt:
+    case LedgerTransactionType.OnchainPayment:
+    case LedgerTransactionType.OnchainReceipt:
       walletTransaction = {
         ...baseTransaction,
         initiationVia: {
@@ -139,7 +139,7 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
       }
       break
 
-    case ExtendedLedgerTransactionType.LnIntraLedger:
+    case LedgerTransactionType.LnIntraLedger:
       walletTransaction = {
         ...baseTransaction,
         initiationVia: {
@@ -155,8 +155,8 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
       }
       break
 
-    case ExtendedLedgerTransactionType.Payment:
-    case ExtendedLedgerTransactionType.Invoice:
+    case LedgerTransactionType.Payment:
+    case LedgerTransactionType.Invoice:
       walletTransaction = {
         ...baseTransaction,
         initiationVia: {

@@ -49,11 +49,6 @@ export const LedgerTransactionType = {
   ToHotWallet: "to_hot_wallet",
 } as const
 
-export const ExtendedLedgerTransactionType = {
-  ...LedgerTransactionType,
-  LnIntraLedger: "ln_on_us",
-} as const
-
 export const isOnChainTransaction = (type: LedgerTransactionType): boolean =>
   type === LedgerTransactionType.OnchainIntraLedger ||
   type === LedgerTransactionType.OnchainReceipt ||

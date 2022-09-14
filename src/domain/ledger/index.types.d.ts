@@ -11,9 +11,6 @@ type LedgerTransactionTypeObject = typeof import("./index").LedgerTransactionTyp
 type LedgerTransactionTypeKey = keyof typeof import("./index").LedgerTransactionType
 type LedgerTransactionType = LedgerTransactionTypeObject[LedgerTransactionTypeKey]
 
-type ExtendedLedgerTransactionType =
-  typeof import("./index").ExtendedLedgerTransactionType[keyof typeof import("./index").ExtendedLedgerTransactionType]
-
 type LedgerJournal = {
   readonly journalId: LedgerJournalId
   readonly voided: boolean
@@ -218,9 +215,8 @@ interface IGetVolumeArgs {
   timestamp: Date
 }
 
-interface IGetVolumeAmountArgs {
-  walletId: WalletId
-  walletCurrency: WalletCurrency
+interface IGetVolumeAmountArgs<T extends WalletCurrency> {
+  walletDescriptor: WalletDescriptor<T>
   timestamp: Date
 }
 
@@ -230,8 +226,8 @@ type GetVolumeSinceFn = (args: IGetVolumeArgs) => VolumeResult
 type VolumeAmountResult<S extends WalletCurrency> = Promise<
   TxBaseVolumeAmount<S> | LedgerServiceError
 >
-type GetVolumeAmountSinceFn<S extends WalletCurrency> = (
-  args: IGetVolumeAmountArgs,
+type GetVolumeAmountSinceFn = <S extends WalletCurrency>(
+  args: IGetVolumeAmountArgs<S>,
 ) => VolumeAmountResult<S>
 
 type RevertLightningPaymentArgs = {
@@ -293,11 +289,11 @@ interface ILedgerService {
 
   onChainTxBaseVolumeSince: GetVolumeSinceFn
 
-  allPaymentVolumeAmountSince: GetVolumeAmountSinceFn<WalletCurrency>
+  allPaymentVolumeAmountSince: GetVolumeAmountSinceFn
 
-  externalPaymentVolumeAmountSince: GetVolumeAmountSinceFn<WalletCurrency>
+  externalPaymentVolumeAmountSince: GetVolumeAmountSinceFn
 
-  intraledgerTxBaseVolumeAmountSince: GetVolumeAmountSinceFn<WalletCurrency>
+  intraledgerTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
 
   isOnChainTxRecorded({
     walletId,
