@@ -1,5 +1,4 @@
-import { getTestAccounts } from "@config"
-import { WalletCurrency } from "@domain/shared"
+import { ConfigError, getTestAccounts } from "@config"
 import { checkedToKratosUserId, checkedToPhoneNumber } from "@domain/users"
 import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
@@ -22,23 +21,33 @@ const setupAccount = async ({
   const account = await AccountsRepository().findByUserId(userId)
   if (account instanceof Error) return account
 
-  const btcWallet = await WalletsRepository().persistNew({
-    accountId: account.id,
-    type: WalletType.Checking,
-    currency: WalletCurrency.Btc,
-  })
-  if (btcWallet instanceof Error) return btcWallet
-
-  if (config.hasUsdWallet) {
-    const usdWallet = await WalletsRepository().persistNew({
+  const newWallet = (currency: WalletCurrency) =>
+    WalletsRepository().persistNew({
       accountId: account.id,
       type: WalletType.Checking,
-      currency: WalletCurrency.Usd,
+      currency,
     })
-    if (usdWallet instanceof Error) return usdWallet
+
+  const walletsEnabledConfig = config.wallets.enabledCurrencies
+  const defaultWalletConfig = config.wallets.defaultCurrency
+
+  // Create all wallets
+  const enabledWallets: Partial<Record<WalletCurrency, Wallet>> = {}
+  for (const currency of walletsEnabledConfig) {
+    const wallet = await newWallet(currency)
+    if (wallet instanceof Error) return wallet
+    enabledWallets[currency] = wallet
   }
 
-  account.defaultWalletId = btcWallet.id
+  // Set default wallet explicitly, or implicitly as 1st element in
+  // walletsEnabledConfig array.
+  const defaultWalletId =
+    enabledWallets[defaultWalletConfig]?.id || enabledWallets[walletsEnabledConfig[0]]?.id
+
+  if (defaultWalletId === undefined) {
+    return new ConfigError("NoWalletsEnabledInConfigError")
+  }
+  account.defaultWalletId = defaultWalletId
 
   // FIXME: to remove when Casbin is been introduced
   const role = getTestAccounts().find(({ phone }) => phone === phoneNumberValid)?.role

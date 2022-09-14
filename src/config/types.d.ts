@@ -29,5 +29,5 @@ type TwoFAConfig = {
 
 type AccountsConfig = {
   initialStatus: AccountStatus
-  hasUsdWallet: boolean
+  wallets: { enabledCurrencies: WalletCurrency[]; defaultCurrency: WalletCurrency }
 }

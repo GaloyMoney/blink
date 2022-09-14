@@ -300,5 +300,5 @@ export const getRewardsConfig = () => {
 
 export const getAccountsConfig = (config = yamlConfig): AccountsConfig => ({
   initialStatus: config.accounts.initialStatus as AccountStatus,
-  hasUsdWallet: config.accounts.hasUsdWallet,
+  wallets: config.accounts.wallets,
 })

@@ -130,7 +130,10 @@ rateLimits:
 
 accounts:
   initialStatus: active
-  hasUsdWallet: false
+  wallets:
+    enabledCurrencies:
+      - "BTC"
+    defaultCurrency: "BTC"
 
 accountLimits:
   withdrawal:

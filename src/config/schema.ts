@@ -1,5 +1,6 @@
 import { AccountStatus } from "@domain/accounts/primitives"
 import { DisplayCurrency } from "@domain/fiat"
+import { WalletCurrency } from "@domain/shared"
 
 const displayCurrencyConfigSchema = {
   type: "object",
@@ -219,9 +220,26 @@ export const configSchema = {
       type: "object",
       properties: {
         initialStatus: { type: "string", enum: Object.values(AccountStatus) },
-        hasUsdWallet: { type: "boolean" },
+        wallets: {
+          type: "object",
+          properties: {
+            enabledCurrencies: {
+              type: "array",
+              items: {
+                type: "string",
+                enum: Object.values(WalletCurrency),
+              },
+            },
+            defaultCurrency: {
+              type: "string",
+              enum: Object.values(WalletCurrency),
+            },
+          },
+          required: ["enabledCurrencies", "defaultCurrency"],
+          additionalProperties: false,
+        },
       },
-      required: ["initialStatus", "hasUsdWallet"],
+      required: ["initialStatus", "wallets"],
       additionalProperties: false,
     },
     accountLimits: {
