@@ -737,6 +737,7 @@ const translateLnInvoiceLookup = (
   createdAt: new Date(invoice.created_at),
   confirmedAt: invoice.confirmed_at ? new Date(invoice.confirmed_at) : undefined,
   isSettled: !!invoice.is_confirmed,
+  isCanceled: !!invoice.is_canceled,
   isHeld: !!invoice.is_held,
   heldAt:
     invoice.payments && invoice.payments.length
