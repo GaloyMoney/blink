@@ -163,13 +163,7 @@ services:
       - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
       - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
       - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
-      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
-      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/readonly.macaroon
-      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/invoices.macaroon
-      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/signer.macaroon
-      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/chainnotifier.macaroon
-      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/router.macaroon
-      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/data/chain/bitcoin/regtest/walletkit.macaroon
+      - ${PWD}/dev/lnd/loop/server/regtest:/root/.lnd/data/chain/bitcoin/regtest
     depends_on:
       - lnd-outside-1
     ports:
