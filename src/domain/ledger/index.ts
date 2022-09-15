@@ -29,22 +29,26 @@ export const toWalletId = (walletIdPath: LiabilitiesWalletId): WalletId | undefi
 }
 
 export const LedgerTransactionType = {
+  // External
   Invoice: "invoice",
   Payment: "payment",
-  IntraLedger: "on_us",
-  LnIntraLedger: "ln_on_us",
   LnFeeReimbursement: "fee_reimbursement", // lightning
   OnchainReceipt: "onchain_receipt",
   OnchainPayment: "onchain_payment",
+
+  // Internal
+  IntraLedger: "on_us",
+  LnIntraLedger: "ln_on_us",
   OnchainIntraLedger: "onchain_on_us",
+  TradeIntraAccount: "self_trade",
 
+  // Admin
   Fee: "fee",
-  Escrow: "escrow",
-
-  // TODO: rename. should be routing_revenue
-  RoutingRevenue: "routing_fee", // channel-related
   ToColdStorage: "to_cold_storage",
   ToHotWallet: "to_hot_wallet",
+  Escrow: "escrow",
+  // TODO: rename. should be routing_revenue
+  RoutingRevenue: "routing_fee", // channel-related
 } as const
 
 export const isOnChainTransaction = (type: LedgerTransactionType): boolean =>
