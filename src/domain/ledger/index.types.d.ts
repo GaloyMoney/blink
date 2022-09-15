@@ -295,6 +295,12 @@ interface ILedgerService {
 
   intraledgerTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
 
+  allTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
+
+  lightningTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
+
+  onChainTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
+
   isOnChainTxRecorded({
     walletId,
     txHash,

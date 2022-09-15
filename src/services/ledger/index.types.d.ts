@@ -23,7 +23,7 @@ type RecordReceiveArgs = {
     btc: BtcPaymentAmount
   }
   metadata: ReceiveLedgerMetadata
-  txMetadata: LnLedgerTransactionMetadataUpdate
+  txMetadata?: LnLedgerTransactionMetadataUpdate
   bankFee?: {
     usd: UsdPaymentAmount
     btc: BtcPaymentAmount
