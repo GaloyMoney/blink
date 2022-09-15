@@ -40,7 +40,9 @@ export const LedgerTransactionType = {
   IntraLedger: "on_us",
   LnIntraLedger: "ln_on_us",
   OnchainIntraLedger: "onchain_on_us",
-  TradeIntraAccount: "self_trade",
+  WalletIdTradeIntraAccount: "self_trade",
+  LnTradeIntraAccount: "ln_self_trade",
+  OnChainTradeIntraAccount: "onchain_self_trade",
 
   // Admin
   Fee: "fee",
@@ -53,6 +55,7 @@ export const LedgerTransactionType = {
 
 export const isOnChainTransaction = (type: LedgerTransactionType): boolean =>
   type === LedgerTransactionType.OnchainIntraLedger ||
+  type === LedgerTransactionType.OnChainTradeIntraAccount ||
   type === LedgerTransactionType.OnchainReceipt ||
   type === LedgerTransactionType.OnchainPayment
 

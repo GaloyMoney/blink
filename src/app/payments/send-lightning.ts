@@ -512,21 +512,39 @@ const executePaymentViaIntraledger = async ({
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
 
-    const lnIntraLedgerMetadata = LedgerFacade.LnIntraledgerLedgerMetadata({
-      paymentHash,
-      pubkey: recipientPubkey,
-      paymentFlow,
+    let metadata:
+      | NewAddLnIntraledgerSendLedgerMetadata
+      | NewAddLnTradeIntraAccountLedgerMetadata
+    let additionalDebitMetadata = {}
+    if (senderWallet.accountId === recipientWallet.accountId) {
+      ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
+        LedgerFacade.LnTradeIntraAccountLedgerMetadata({
+          paymentHash,
+          pubkey: recipientPubkey,
+          paymentFlow,
 
-      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-      feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-      displayCurrency: DisplayCurrency.Usd,
+          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+          displayCurrency: DisplayCurrency.Usd,
 
-      memoOfPayer: memo || undefined,
-      senderUsername,
-      recipientUsername,
-    })
-    const { metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
-      lnIntraLedgerMetadata
+          memoOfPayer: memo || undefined,
+        }))
+    } else {
+      ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
+        LedgerFacade.LnIntraledgerLedgerMetadata({
+          paymentHash,
+          pubkey: recipientPubkey,
+          paymentFlow,
+
+          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+          displayCurrency: DisplayCurrency.Usd,
+
+          memoOfPayer: memo || undefined,
+          senderUsername,
+          recipientUsername,
+        }))
+    }
 
     const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
     if (recipientWalletDescriptor === undefined)
