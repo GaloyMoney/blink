@@ -62,6 +62,9 @@ export const getTransactionsForWallets = async (
   })
 
   const pendingIncoming = filter.apply(onChainTxs)
+  if (pendingIncoming instanceof Error) {
+    return PartialResult.partial(confirmedHistory.transactions, pendingIncoming)
+  }
 
   let price = await getCurrentPrice()
   if (price instanceof Error) {

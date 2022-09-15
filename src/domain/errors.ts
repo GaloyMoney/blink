@@ -8,6 +8,11 @@ export class RepositoryError extends DomainError {}
 export class UnknownRepositoryError extends RepositoryError {
   level = ErrorLevel.Critical
 }
+
+export class UncaughtTypescriptError extends RepositoryError {
+  level = ErrorLevel.Critical
+}
+
 export class PersistError extends RepositoryError {}
 export class DuplicateError extends RepositoryError {}
 

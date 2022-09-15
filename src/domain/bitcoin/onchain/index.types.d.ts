@@ -51,7 +51,9 @@ type TxFilterArgs = {
 }
 
 type TxFilter = {
-  apply(txs: IncomingOnChainTransaction[]): IncomingOnChainTransaction[]
+  apply(
+    txs: IncomingOnChainTransaction[],
+  ): IncomingOnChainTransaction[] | UncaughtTypescriptError
 }
 
 type LookupOnChainFeeArgs = {

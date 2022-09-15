@@ -21,6 +21,7 @@ export const getPendingOnChainBalanceForWallets = async (
     addresses: wallets.flatMap((wallet) => wallet.onChainAddresses()),
   })
   const pendingIncoming = filter.apply(onChainTxs)
+  if (pendingIncoming instanceof Error) return pendingIncoming
 
   return IncomingOnChainTxHandler(pendingIncoming).balanceByWallet(wallets)
 }

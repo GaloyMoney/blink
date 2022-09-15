@@ -35,6 +35,7 @@ describe("TxFilter", () => {
       }),
     ])
 
+    if (filteredTxs instanceof Error) throw filteredTxs
     expect(filteredTxs.length).toEqual(1)
   })
 
