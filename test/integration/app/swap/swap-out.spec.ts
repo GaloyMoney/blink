@@ -23,7 +23,7 @@ describe("Swap", () => {
 
   it("Swap out app returns a SwapOutResult or NoSwapAction", async () => {
     const isSwapServerUp = await swapService.healthCheck()
-    if (isSwapServerUp instanceof Error === false) {
+    if (!(isSwapServerUp instanceof Error)) {
       const swapResult = await swapOut()
       if (swapResult instanceof Error) throw swapResult
       expect(swapResult).not.toBeInstanceOf(Error)
@@ -41,7 +41,7 @@ describe("Swap", () => {
 
   it("Swap out for default active loop node or lnd1-loop node returns successful swap result ", async () => {
     const isSwapServerUp = await swapService.healthCheck()
-    if (isSwapServerUp instanceof Error === false) {
+    if (!(isSwapServerUp instanceof Error)) {
       const swapDestAddress = await getSwapDestAddress()
       if (swapDestAddress instanceof Error) return swapDestAddress
       const swapResult = await swapService.swapOut({ amount, swapDestAddress })
@@ -61,11 +61,11 @@ describe("Swap", () => {
 
   it("Swap out for lnd2-loop node returns successful swap result or error if not enough funds", async () => {
     const isSwapServerUp = await swapService.healthCheck()
-    if (isSwapServerUp instanceof Error === false) {
+    if (!(isSwapServerUp instanceof Error)) {
       const loopService = LoopService(LND2_LOOP_CONFIG)
       const swapServiceLnd2 = loopService
       const isSwapServerUp2 = await swapServiceLnd2.healthCheck()
-      if (isSwapServerUp2 instanceof Error === false) {
+      if (!(isSwapServerUp2 instanceof Error)) {
         const swapDestAddress = await getSwapDestAddress()
         if (swapDestAddress instanceof Error) return swapDestAddress
         // this might fail in not enough funds in LND2 in regtest
@@ -93,8 +93,8 @@ describe("Swap", () => {
 
   it("Swap out without enough funds returns an error", async () => {
     const isSwapServerUp = await swapService.healthCheck()
-    if (isSwapServerUp instanceof Error === false) {
-      const swapResult = await swapService.swapOut({ amount: toSats(5000000000) })
+    if (!(isSwapServerUp instanceof Error)) {
+      const swapResult = await swapService.swapOut({ amount: toSats(5_000_000_000) })
       if (swapResult instanceof SwapClientNotResponding) {
         return
       }
@@ -104,7 +104,7 @@ describe("Swap", () => {
 
   it("Swap out if on chain wallet is depleted returns a swap result", async () => {
     const isSwapServerUp = await swapService.healthCheck()
-    if (isSwapServerUp instanceof Error === false) {
+    if (!(isSwapServerUp instanceof Error)) {
       // thresholds
       const { onChain } = await lndsBalances()
       const minOnChainHotWalletBalanceConfig = toSats(onChain + 50000)
@@ -139,7 +139,7 @@ describe("Swap", () => {
 
   it("Swap out quote return quote result", async () => {
     const isSwapServerUp = await swapService.healthCheck()
-    if (isSwapServerUp instanceof Error === false) {
+    if (!(isSwapServerUp instanceof Error)) {
       const quoteResult = await swapService.swapOutQuote(toSats(250000))
       expect(quoteResult).not.toBeInstanceOf(Error)
       expect(quoteResult).toEqual(
@@ -147,14 +147,12 @@ describe("Swap", () => {
           swapFeeSat: expect.any(Number),
         }),
       )
-    } else {
-      expect("No swap Needed").toEqual("No swap Needed")
     }
   })
 
   it("Swap out terms return terms result", async () => {
     const isSwapServerUp = await swapService.healthCheck()
-    if (isSwapServerUp instanceof Error === false) {
+    if (!(isSwapServerUp instanceof Error)) {
       const termsResult = await swapService.swapOutTerms()
       expect(termsResult).not.toBeInstanceOf(Error)
       expect(termsResult).toEqual(
@@ -162,8 +160,6 @@ describe("Swap", () => {
           minSwapAmount: expect.any(Number),
         }),
       )
-    } else {
-      expect("No swap Needed").toEqual("No swap Needed")
     }
   })
 })

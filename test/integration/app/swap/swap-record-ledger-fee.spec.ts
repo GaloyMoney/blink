@@ -17,7 +17,7 @@ describe("Swap Record ledger Fee", () => {
     onchainMinerFee: toSats(50),
     offchainRoutingFee: toSats(10),
     serviceProviderFee: toSats(50),
-    serviceProvider: SwapProvider.LOOP,
+    serviceProvider: SwapProvider.Loop,
     currency: WalletCurrency.Btc,
     type: LedgerTransactionType.Fee,
   }

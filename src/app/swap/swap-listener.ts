@@ -10,16 +10,11 @@ import { sha256 } from "@domain/bitcoin/lightning"
 
 export const startSwapMonitor = async (swapService: ISwapService) => {
   const isSwapServerUp = await swapService.healthCheck()
-  if (isSwapServerUp instanceof Error === false) {
-    const listener = swapService.swapListener()
-    listener.on("data", (response) => {
-      // const swapData = response.parsedSwapData
-      // logger.info({ swapData }, "listenerSwapMonitor")
-      handleSwapOutCompleted(response)
-    })
-  } else {
-    return SwapErrorNoActiveLoopdNode
-  }
+  if (isSwapServerUp instanceof Error) return new SwapErrorNoActiveLoopdNode()
+  const listener = swapService.swapListener()
+  listener.on("data", (response) => {
+    handleSwapOutCompleted(response)
+  })
 }
 
 export const handleSwapOutCompleted = async (swapStatus: SwapStatusResultWrapper) => {
@@ -30,7 +25,7 @@ export const handleSwapOutCompleted = async (swapStatus: SwapStatusResultWrapper
     const serviceProviderFee = toSats(swapStatus.parsedSwapData.serviceProviderFee)
     const totalFees = onchainMinerFee + offchainRoutingFee + serviceProviderFee
     const state = swapStatus.parsedSwapData.state
-    if (type === SwapType.SWAP_OUT && state === SwapState.SUCCESS && totalFees > 0) {
+    if (type === SwapType.Swapout && state === SwapState.Success && totalFees > 0) {
       const swapId = swapStatus.parsedSwapData.id as SwapId
       const swapFeeMetadata: SwapTransactionMetadataUpdate = {
         hash: sha256(Buffer.from(swapId)) as SwapHash,
@@ -40,7 +35,7 @@ export const handleSwapOutCompleted = async (swapStatus: SwapStatusResultWrapper
         onchainMinerFee,
         offchainRoutingFee,
         serviceProviderFee,
-        serviceProvider: SwapProvider.LOOP,
+        serviceProvider: SwapProvider.Loop,
         currency: WalletCurrency.Btc,
         type: LedgerTransactionType.Fee,
       }
@@ -49,7 +44,7 @@ export const handleSwapOutCompleted = async (swapStatus: SwapStatusResultWrapper
         "swap.success": JSON.stringify(swapFeeMetadata),
       })
     }
-    if (state === SwapState.FAILED) {
+    if (state === SwapState.Failed) {
       addAttributesToCurrentSpan({
         "swap.error": JSON.stringify({
           swapId: swapStatus.parsedSwapData.id,

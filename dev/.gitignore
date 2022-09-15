@@ -1,6 +1,6 @@
 # ignore lnd data files
-# *.macaroon
-# *.db
+*.macaroon
+*.db
 # ignore all folders with lnd data
 /dev/lnd/*
 lnd/loopserver/*

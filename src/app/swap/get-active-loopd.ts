@@ -24,7 +24,7 @@ export const LND1_LOOP_CONFIG: LoopdConfig = {
   grpcEndpoint: getSwapConfig().lnd1loopRpcEndpoint,
   tlsCert: getLoopConfig().lnd1LoopTls,
   macaroon: getLoopConfig().lnd1LoopMacaroon,
-  loopdInstanceName: LoopdInstanceName.LND1_LOOP,
+  loopdInstanceName: LoopdInstanceName.Lnd1Loop,
 }
 
 export const LND2_LOOP_CONFIG: LoopdConfig = {
@@ -32,5 +32,5 @@ export const LND2_LOOP_CONFIG: LoopdConfig = {
   grpcEndpoint: getSwapConfig().lnd2loopRpcEndpoint,
   tlsCert: getLoopConfig().lnd2LoopTls,
   macaroon: getLoopConfig().lnd2LoopMacaroon,
-  loopdInstanceName: LoopdInstanceName.LND2_LOOP,
+  loopdInstanceName: LoopdInstanceName.Lnd2Loop,
 }

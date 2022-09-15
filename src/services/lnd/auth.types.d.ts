@@ -24,3 +24,5 @@ type LndParamsUnAuthed = LndParams & {
   active: boolean
   priority: number
 }
+
+type Macaroon = string & { readonly brand: unique symbol }

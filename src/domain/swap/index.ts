@@ -1,23 +1,24 @@
 export * from "./swap-out-checker"
 
-export enum SwapProvider {
-  LOOP = "LOOP",
-}
+export const SwapProvider = {
+  Loop: "Loop",
+} as const
 
-export enum SwapType {
-  SWAP_OUT = "SWAP_OUT",
-}
+export const SwapType = {
+  Swapout: "swapout",
+  Unknown: "unknown",
+} as const
 
-export enum SwapState {
-  INITIATED = "INITIATED",
-  PREIMAGE_REVEALED = "PREIMAGE_REVEALED",
-  HTLC_PUBLISHED = "HTLC_PUBLISHED",
-  SUCCESS = "SUCCESS",
-  FAILED = "FAILED",
-  INVOICE_SETTLED = "INVOICE_SETTLED",
-}
+export const SwapState = {
+  Initiated: "initiated",
+  PreimageRevealed: "preimageRevealed",
+  HtlcPublished: "htlcPublished",
+  Success: "success",
+  Failed: "failed",
+  InvoiceSettled: "invoiceSettled",
+} as const
 
-export enum LoopdInstanceName {
-  "LND1_LOOP" = "LND1_LOOP",
-  "LND2_LOOP" = "LND2_LOOP",
-}
+export const LoopdInstanceName = {
+  Lnd1Loop: "lnd1Loop",
+  Lnd2Loop: "lnd2Loop",
+} as const

@@ -1,14 +1,17 @@
 type SwapClientReadableStream<T> = import("@grpc/grpc-js").ClientReadableStream<T>
 type SwapServiceError = import("./errors").SwapServiceError
-type SwapType = import("./index").SwapType
-type SwapProvider = import("./index").SwapProvider
-type SwapState = import("./index").SwapState
-type LoopdInstanceName = import("./index").LoopdInstanceName
+type SwapProvider =
+  typeof import("./index").SwapProvider[keyof typeof import("./index").SwapProvider]
+type SwapType = typeof import("./index").SwapType[keyof typeof import("./index").SwapType]
+type SwapState =
+  typeof import("./index").SwapState[keyof typeof import("./index").SwapState]
+type LoopdInstanceName =
+  typeof import("./index").LoopdInstanceName[keyof typeof import("./index").LoopdInstanceName]
 
 interface ISwapService {
-  healthCheck: () => Promise<boolean | SwapServiceError>
+  healthCheck: () => Promise<true | SwapServiceError>
   swapOut: (swapOutArgs: SwapOutArgs) => Promise<SwapOutResult | SwapServiceError>
-  swapListener: () => SwapClientReadableStream<SwapListenerResponse>
+  swapListener: () => SwapClientReadableStream<SwapListenerResponse | SwapServiceError>
   swapOutTerms: () => Promise<SwapOutTermsResult | SwapServiceError>
   swapOutQuote: (amt: Satoshis) => Promise<SwapOutQuoteResult | SwapServiceError>
 }
@@ -20,19 +23,18 @@ type SwapOutArgs = {
 }
 
 type SwapOutResult = {
-  swapId: string
+  swapId: SwapId
   swapIdBytes: string
-  htlcAddress: string
+  htlcAddress: OnChainAddress
   serverMessage: string
 }
 
 type SwapListenerResponse =
   | SwapStatusResultWrapper
   | (SwapStatusResult & SwapStatusResultWrapper)
-  | SwapServiceError
 
 type SwapStatusResultWrapper = {
-  parsedSwapData?: SwapStatusResult
+  parsedSwapData: SwapStatusResult
 }
 
 type SwapStatusResult = {
@@ -48,17 +50,17 @@ type SwapStatusResult = {
 }
 
 type SwapOutTermsResult = {
-  minSwapAmount: number
-  maxSwapAmount: number
+  minSwapAmount: Satoshis
+  maxSwapAmount: Satoshis
   minCltvDelta: number
   maxCltvDelta: number
 }
 
 type SwapOutQuoteResult = {
-  swapFeeSat: number
-  prepayAmtSat: number
-  htlcSweepFeeSat: number
-  swapPaymentDest: string
+  swapFeeSat: Satoshis
+  prepayAmtSat: Satoshis
+  htlcSweepFeeSat: Satoshis
+  swapPaymentDest: OnChainAddress
   cltvDelta: number
   confTarget: number
 }
@@ -74,7 +76,7 @@ type SwapConfig = {
 }
 
 type LoopdConfig = {
-  macaroon: string
+  macaroon: Macaroon
   tlsCert: string
   grpcEndpoint: string
   btcNetwork: BtcNetwork

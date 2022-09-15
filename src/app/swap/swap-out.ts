@@ -40,33 +40,28 @@ export const swapOut = async (): Promise<
     currentOnChainHotWalletBalance: onChainBalance,
     currentOutboundLiquidityBalance: outbound,
   })
-  if (swapOutAmount instanceof Error) return swapOutAmount
 
-  if (swapOutAmount > 0) {
-    logger.info(
-      { swapOutAmount, activeLoopdConfig },
-      `Initiating swapout for ${swapOutAmount} sats`,
-    )
+  if (swapOutAmount instanceof Error) return swapOutAmount
+  if (swapOutAmount > 0) return new NoSwapAction()
+
+  logger.info({ swapOutAmount, activeLoopdConfig }, `Initiating swapout`)
+  addAttributesToCurrentSpan({
+    "swap.amount": swapOutAmount,
+  })
+  const swapDestAddress = await getSwapDestAddress()
+  if (swapDestAddress instanceof Error) return swapDestAddress
+  const swapResult = await swapService.swapOut({
+    amount: swapOutAmount,
+    swapDestAddress,
+  })
+  if (swapResult instanceof Error) {
     addAttributesToCurrentSpan({
-      "swap.amount": swapOutAmount,
+      "swap.error": JSON.stringify(swapResult),
     })
-    const swapDestAddress = await getSwapDestAddress()
-    if (swapDestAddress instanceof Error) return swapDestAddress
-    const swapResult = await swapService.swapOut({
-      amount: swapOutAmount,
-      swapDestAddress,
-    })
-    if (swapResult instanceof Error) {
-      addAttributesToCurrentSpan({
-        "swap.error": JSON.stringify(swapResult),
-      })
-    } else {
-      addAttributesToCurrentSpan({
-        "swap.submitted": JSON.stringify(swapResult),
-      })
-    }
-    return swapResult
   } else {
-    return new NoSwapAction()
+    addAttributesToCurrentSpan({
+      "swap.submitted": JSON.stringify(swapResult),
+    })
   }
+  return swapResult
 }

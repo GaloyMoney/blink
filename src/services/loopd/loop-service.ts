@@ -9,11 +9,12 @@ import {
   UnknownSwapServiceError,
   SwapErrorChannelBalanceTooLow,
 } from "@domain/swap/errors"
-import { SwapState as SwapStateType } from "@domain/swap/index"
 import { SwapType as DomainSwapType } from "@domain/swap"
 import { ServiceClient } from "@grpc/grpc-js/build/src/make-client"
 import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
 import { BtcNetwork } from "@domain/bitcoin"
+
+import { SwapState as DomainSwapState } from "@domain/swap/index"
 
 import { SwapClientClient } from "./protos/loop_grpc_pb"
 import {
@@ -24,7 +25,6 @@ import {
   SwapResponse,
   MonitorRequest,
   SwapState,
-  SwapType,
   SwapStatus,
   TokensResponse,
   TokensRequest,
@@ -39,7 +39,7 @@ export const LoopService = ({
   btcNetwork,
   loopdInstanceName,
 }: LoopdConfig): ISwapService => {
-  const mac = Buffer.from(macaroon, "base64").toString("hex")
+  const mac = Buffer.from(macaroon, "base64").toString("hex") as Macaroon
   const tls = Buffer.from(tlsCert, "base64")
   const swapClient: ServiceClient = createClient(mac, tls, grpcEndpoint)
 
@@ -57,7 +57,7 @@ export const LoopService = ({
     swapClient.loopOutTerms.bind(swapClient),
   )
 
-  const healthCheck = async (): Promise<boolean | SwapServiceError> => {
+  const healthCheck = async (): Promise<true | SwapServiceError> => {
     try {
       const request = new TokensRequest()
       const resp = await clientHealthCheck(request)
@@ -65,7 +65,7 @@ export const LoopService = ({
     } catch (error) {
       return new SwapErrorHealthCheckFailed(error)
     }
-    return false
+    return new SwapErrorHealthCheckFailed()
   }
 
   const swapOut = async function ({
@@ -94,9 +94,9 @@ export const LoopService = ({
       if (btcNetwork === BtcNetwork.regtest) request.setSweepConfTarget(2)
       const resp = await clientSwapOut(request)
       const swapOutResult: SwapOutResult = {
-        htlcAddress: resp.getHtlcAddress(),
+        htlcAddress: resp.getHtlcAddress() as OnChainAddress,
         serverMessage: resp.getServerMessage(),
-        swapId: resp.getId(),
+        swapId: resp.getId() as SwapId,
         swapIdBytes: resp.getIdBytes().toString(),
       }
       return swapOutResult
@@ -108,52 +108,18 @@ export const LoopService = ({
     }
   }
 
-  const swapListener = function (): SwapClientReadableStream<SwapListenerResponse> {
+  const swapListener = function (): SwapClientReadableStream<
+    SwapListenerResponse | SwapServiceError
+  > {
     try {
       const request = new MonitorRequest()
       const listener = swapClient.monitor(request)
-      // listener.on("data" | "status" | "end")
       listener.on("data", (data: SwapStatus & SwapStatusResultWrapper) => {
         listener.pause()
         // parse data to our interface
-        const stateVal = data.getState()
-        let state
-        try {
-          state = Object.keys(SwapState).find((key) => {
-            // eslint-disable-next-line
-            // @ts-ignore
-            return SwapState[key] === stateVal
-          })
-        } catch (e) {
-          state = SwapState.FAILED
-        }
-        let message
-        try {
-          const failureReason = data.getFailureReason()
-          message = Object.keys(FailureReason).find(
-            // eslint-disable-next-line
-            // @ts-ignore
-            (key) => FailureReason[key] === failureReason,
-          )
-        } catch (e) {
-          message = ""
-        }
-        let swapType = DomainSwapType.SWAP_OUT
-        try {
-          const dataType = data.getType()
-          const parsedType = Object.keys(SwapType).find(
-            // eslint-disable-next-line
-            // @ts-ignore
-            (key) => SwapType[key] === dataType,
-          )
-          if (parsedType) {
-            if (parsedType === "LOOP_OUT") {
-              swapType = DomainSwapType.SWAP_OUT
-            }
-          }
-        } catch (e) {
-          swapType = DomainSwapType.SWAP_OUT
-        }
+        const state = parseState(data.getState())
+        const message = parseMessage(data.getFailureReason())
+        const swapType = parseSwapType(data.getType())
         const parsedSwapData: SwapStatusResult = {
           id: data.getId(),
           amt: BigInt(data.getAmt()),
@@ -161,8 +127,8 @@ export const LoopService = ({
           offchainRoutingFee: BigInt(data.getCostOffchain()),
           onchainMinerFee: BigInt(data.getCostOnchain()),
           serviceProviderFee: BigInt(data.getCostServer()),
-          state: state as SwapStateType,
-          message: message ? message : "",
+          state: state,
+          message,
           swapType,
         }
         data.parsedSwapData = parsedSwapData
@@ -184,11 +150,11 @@ export const LoopService = ({
       return {
         cltvDelta: resp.getCltvDelta(),
         confTarget: resp.getConfTarget(),
-        htlcSweepFeeSat: resp.getHtlcSweepFeeSat(),
-        prepayAmtSat: resp.getPrepayAmtSat(),
-        swapFeeSat: resp.getSwapFeeSat(),
-        swapPaymentDest: resp.getSwapPaymentDest(),
-      } as SwapOutQuoteResult
+        htlcSweepFeeSat: resp.getHtlcSweepFeeSat() as Satoshis,
+        prepayAmtSat: resp.getPrepayAmtSat() as Satoshis,
+        swapFeeSat: resp.getSwapFeeSat() as Satoshis,
+        swapPaymentDest: resp.getSwapPaymentDest().toString() as OnChainAddress,
+      }
     } catch (error) {
       return new UnknownSwapServiceError(error)
     }
@@ -200,17 +166,17 @@ export const LoopService = ({
       const resp = await clientSwapOutTerms(request)
       return {
         maxCltvDelta: resp.getMaxCltvDelta(),
-        maxSwapAmount: resp.getMaxSwapAmount(),
+        maxSwapAmount: resp.getMaxSwapAmount() as Satoshis,
         minCltvDelta: resp.getMinCltvDelta(),
-        minSwapAmount: resp.getMinSwapAmount(),
-      } as SwapOutTermsResult
+        minSwapAmount: resp.getMinSwapAmount() as Satoshis,
+      }
     } catch (error) {
       return new UnknownSwapServiceError(error)
     }
   }
 
   function createClient(
-    macaroon: string,
+    macaroon: Macaroon,
     tls: Buffer,
     grpcEndpoint: string,
   ): ServiceClient {
@@ -238,7 +204,47 @@ export const LoopService = ({
       )
       return client
     } catch (e) {
-      throw SwapClientNotResponding
+      throw new SwapClientNotResponding(e)
+    }
+  }
+
+  function parseState(state: number) {
+    try {
+      const parsedState = Object.keys(SwapState).find((key: string) => {
+        // eslint-disable-next-line
+        // @ts-ignore
+        return SwapState[key] === state
+      })
+      if (parsedState === "INITIATED") return DomainSwapState.Initiated
+      if (parsedState === "SUCCESS") return DomainSwapState.Success
+      if (parsedState === "PREIMAGE_REVEALED") return DomainSwapState.PreimageRevealed
+      if (parsedState === "HTLC_PUBLISHED") return DomainSwapState.HtlcPublished
+      if (parsedState === "INVOICE_SETTLED") return DomainSwapState.Initiated
+      return DomainSwapState.Failed
+    } catch (e) {
+      return DomainSwapState.Failed
+    }
+  }
+
+  function parseMessage(messageCode: number): string {
+    try {
+      const parsedMessage = Object.keys(messageCode).find(
+        // eslint-disable-next-line
+        // @ts-ignore
+        (key: string) => FailureReason[key] === messageCode,
+      )
+      return parsedMessage ?? ""
+    } catch (e) {
+      return ""
+    }
+  }
+
+  function parseSwapType(swapType: number) {
+    try {
+      if (swapType === 0) return DomainSwapType.Swapout
+      return DomainSwapType.Unknown
+    } catch (e) {
+      return DomainSwapType.Unknown
     }
   }
 

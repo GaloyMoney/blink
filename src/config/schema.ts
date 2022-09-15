@@ -321,7 +321,7 @@ export const configSchema = {
         swapOutAmount: { type: "integer" },
         swapProviders: {
           type: "array",
-          items: { enum: ["LOOP"] },
+          items: { enum: ["Loop"] },
           uniqueItems: true,
         },
       },

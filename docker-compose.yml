@@ -166,8 +166,6 @@ services:
       - ${PWD}/dev/lnd/loop/server/regtest:/root/.lnd/data/chain/bitcoin/regtest
     depends_on:
       - lnd-outside-1
-    ports:
-      - "11009:11009"
     command:
       - "daemon"
       - "--maxamt=5000000"
@@ -190,9 +188,6 @@ services:
     depends_on:
       - lnd1
       - loopserver
-    ports:
-      - "8081:8081"
-      - "11010:11010"
     environment:
       - LOOP_SERVER_INTERNAL_IP=${LOOP_SERVER_INTERNAL_IP}
     command: bash -c "
@@ -207,8 +202,7 @@ services:
         --lnd.tlspath=/root/.lnd/tls.cert\
         --tlsautorefresh\
         --restlisten=0.0.0.0:8081\
-        --rpclisten=0.0.0.0:11010
-     "
+        --rpclisten=0.0.0.0:11010"
   loopd2:
     image: lightninglabs/loop:v0.20.1-beta
     restart: unless-stopped
@@ -225,9 +219,6 @@ services:
     depends_on:
       - lnd2
       - loopserver
-    ports:
-      - "8082:8081"
-      - "11011:11010"
     environment:
       - LOOP_SERVER_INTERNAL_IP=${LOOP_SERVER_INTERNAL_IP}
     command: bash -c "
@@ -242,8 +233,7 @@ services:
         --lnd.tlspath=/root/.lnd/tls.cert\
         --tlsautorefresh\
         --restlisten=0.0.0.0:8081\
-        --rpclisten=0.0.0.0:11010
-     "
+        --rpclisten=0.0.0.0:11010"
   e2e-tests:
     image: us.gcr.io/galoy-org/galoy-app-pipeline
     depends_on:

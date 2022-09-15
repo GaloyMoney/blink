@@ -40,3 +40,14 @@ services:
   stablesats:
     ports:
       - "3325:3325"
+  loopserver:
+    ports:
+      - "11009:11009"
+  loopd1:
+    ports:
+      - "8081:8081"
+      - "11010:11010"
+  loopd2:
+    ports:
+      - "8082:8081"
+      - "11011:11010"

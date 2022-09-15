@@ -51,7 +51,7 @@ Successfully starting the loop server returns this:
 swap:
   minOnChainHotWalletBalance: 75000000
   swapOutAmount:  50000000
-  swapProviders: ["LOOP"]
+  swapProviders: ["Loop"]
   lnd1loopRestEndpoint: "https://localhost:8081"
   lnd1loopRpcEndpoint: "localhost:11010"
   lnd2loopRestEndpoint: "https://localhost:8082"
@@ -71,7 +71,7 @@ Add the following config (you might need to 'retry as sudo' on mac+vscode):
 swap:
   minOnChainHotWalletBalance: 300000
   swapOutAmount:  250000
-  swapProviders: ["LOOP"]
+  swapProviders: ["Loop"]
   lnd1loopRestEndpoint: "https://localhost:8081"
   lnd1loopRpcEndpoint: "localhost:11010"
   lnd2loopRestEndpoint: "https://localhost:8082"
