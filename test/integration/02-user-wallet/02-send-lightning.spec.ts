@@ -1901,6 +1901,88 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(finalBalanceB).toBe(initBalanceUsdB + cents)
       expect(finalBalanceA).toBe(initBalanceA - amountPayment)
     })
+
+    it("pay self amountless invoice from usd wallet to btc wallet", async () => {
+      const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdA))
+      const initBalanceA = toSats(await getBalanceHelper(walletIdA))
+
+      const amountPayment = toCents(4)
+
+      const request = await Wallets.addInvoiceNoAmountForSelf({
+        walletId: walletIdA,
+      })
+      if (request instanceof Error) throw request
+      const { paymentRequest: uncheckedPaymentRequest, paymentHash } = request
+
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+        uncheckedPaymentRequest,
+        memo: null,
+        senderWalletId: walletIdUsdA,
+        senderAccount: accountA,
+        amount: amountPayment,
+      })
+      if (paymentResult instanceof Error) throw paymentResult
+      expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+      // Check tx type
+      const txns = await LedgerService().getTransactionsByHash(paymentHash)
+      if (txns instanceof Error) throw txns
+      const txTypeSet = new Set(txns.map((txn) => txn.type))
+      expect(txTypeSet.size).toEqual(1)
+      expect(txTypeSet.has(LedgerTransactionType.LnTradeIntraAccount)).toBeTruthy()
+
+      // Check amounts
+      const dealerFns = DealerPriceService()
+      const sats = await dealerFns.getSatsFromCentsForImmediateSell(amountPayment)
+      if (sats instanceof Error) throw sats
+
+      const finalBalanceB = await getBalanceHelper(walletIdUsdA)
+      const finalBalanceA = await getBalanceHelper(walletIdA)
+
+      expect(finalBalanceB).toBe(initBalanceUsdB - amountPayment)
+      expect(finalBalanceA).toBe(initBalanceA + sats)
+    })
+
+    it("pay self amountless invoice from btc wallet to usd wallet", async () => {
+      const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdA))
+      const initBalanceA = toSats(await getBalanceHelper(walletIdA))
+
+      const amountPayment = toSats(50)
+
+      const request = await Wallets.addInvoiceNoAmountForSelf({
+        walletId: walletIdUsdA,
+      })
+      if (request instanceof Error) throw request
+      const { paymentRequest: uncheckedPaymentRequest, paymentHash } = request
+
+      const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
+        uncheckedPaymentRequest,
+        memo: null,
+        senderWalletId: walletIdA,
+        senderAccount: accountA,
+        amount: amountPayment,
+      })
+      if (paymentResult instanceof Error) throw paymentResult
+      expect(paymentResult).toBe(PaymentSendStatus.Success)
+
+      // Check tx type
+      const txns = await LedgerService().getTransactionsByHash(paymentHash)
+      if (txns instanceof Error) throw txns
+      const txTypeSet = new Set(txns.map((txn) => txn.type))
+      expect(txTypeSet.size).toEqual(1)
+      expect(txTypeSet.has(LedgerTransactionType.LnTradeIntraAccount)).toBeTruthy()
+
+      // Check amounts
+      const dealerFns = DealerPriceService()
+      const cents = await dealerFns.getCentsFromSatsForImmediateBuy(amountPayment)
+      if (cents instanceof Error) throw cents
+
+      const finalBalanceB = await getBalanceHelper(walletIdUsdA)
+      const finalBalanceA = await getBalanceHelper(walletIdA)
+
+      expect(finalBalanceB).toBe(initBalanceUsdB + cents)
+      expect(finalBalanceA).toBe(initBalanceA - amountPayment)
+    })
   })
   describe("Intraledger payments", () => {
     const btcSendAmount = 50_000
@@ -1915,6 +1997,14 @@ describe("USD Wallets - Lightning Pay", () => {
       recipientWalletId,
       senderAmountInvoice,
       recipientAmountInvoice,
+      txType = LedgerTransactionType.IntraLedger,
+    }: {
+      senderWalletId
+      senderAccount
+      recipientWalletId
+      senderAmountInvoice
+      recipientAmountInvoice
+      txType?: LedgerTransactionType
     }) => {
       const senderInitBalance = toSats(await getBalanceHelper(senderWalletId))
       const recipientInitBalance = toSats(await getBalanceHelper(recipientWalletId))
@@ -1929,22 +2019,33 @@ describe("USD Wallets - Lightning Pay", () => {
       if (res instanceof Error) return res
       expect(res).toBe(PaymentSendStatus.Success)
 
-      const recipientFinalBalance = await getBalanceHelper(recipientWalletId)
       const { result: txWalletA, error } = await Wallets.getTransactionsForWalletId({
         walletId: recipientWalletId,
       })
       if (error instanceof Error || txWalletA === null) {
         return error
       }
+      const recipientTxns = await LedgerService().getTransactionsByWalletId(
+        recipientWalletId,
+      )
+      if (recipientTxns instanceof Error) throw recipientTxns
+      expect(recipientTxns[0].type).toEqual(txType)
+
+      const recipientFinalBalance = await getBalanceHelper(recipientWalletId)
       expect(recipientFinalBalance).toBe(recipientInitBalance + recipientAmountInvoice)
 
-      const senderFinalBalance = await getBalanceHelper(senderWalletId)
       const txResult = await Wallets.getTransactionsForWalletId({
         walletId: senderWalletId,
       })
       if (txResult.error instanceof Error || txResult.result === null) {
         return txResult.error
       }
+
+      const senderTxns = await LedgerService().getTransactionsByWalletId(senderWalletId)
+      if (senderTxns instanceof Error) throw senderTxns
+      expect(senderTxns[0].type).toEqual(txType)
+
+      const senderFinalBalance = await getBalanceHelper(senderWalletId)
       expect(senderFinalBalance).toBe(senderInitBalance - senderAmountInvoice)
     }
 
@@ -1958,6 +2059,7 @@ describe("USD Wallets - Lightning Pay", () => {
         recipientWalletId: walletIdUsdA,
         senderAmountInvoice: btcSendAmount,
         recipientAmountInvoice: btcSendAmountInUsd,
+        txType: LedgerTransactionType.WalletIdTradeIntraAccount,
       })
       expect(res).not.toBeInstanceOf(Error)
     })
@@ -1972,6 +2074,7 @@ describe("USD Wallets - Lightning Pay", () => {
         recipientWalletId: walletIdA,
         senderAmountInvoice: usdSendAmount,
         recipientAmountInvoice: usdSendAmountInBtc,
+        txType: LedgerTransactionType.WalletIdTradeIntraAccount,
       })
       expect(res).not.toBeInstanceOf(Error)
     })
