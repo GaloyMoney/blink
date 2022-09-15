@@ -334,11 +334,6 @@ describe("Volumes", () => {
       ToHotWallet: () => testExternalTxSendWLE({ recordTx: recordColdStorageTxSend }),
       ToColdStorage: () =>
         testExternalTxSendWLE({ recordTx: recordColdStorageTxReceive }),
-
-      // Not used:
-      ExchangeRebalance: () => undefined,
-      UserRebalance: () => undefined,
-      OnchainDepositFee: () => undefined,
     }
 
     // Setting up all 'it' tests for each txn type, to check volume is NOT affected
@@ -378,11 +373,6 @@ describe("Volumes", () => {
         testInternalTxReceiveNLE({
           recordTx: recordLnIntraLedgerPayment,
         }),
-
-      // Not used
-      ExchangeRebalance: () => undefined,
-      UserRebalance: () => undefined,
-      OnchainDepositFee: () => undefined,
     }
 
     // Execute tests for specific types included

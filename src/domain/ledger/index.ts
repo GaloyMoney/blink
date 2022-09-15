@@ -37,14 +37,12 @@ export const LedgerTransactionType = {
   OnchainReceipt: "onchain_receipt",
   OnchainPayment: "onchain_payment",
   OnchainIntraLedger: "onchain_on_us",
-  OnchainDepositFee: "deposit_fee", // onchain
+
   Fee: "fee",
   Escrow: "escrow",
 
   // TODO: rename. should be routing_revenue
   RoutingRevenue: "routing_fee", // channel-related
-  ExchangeRebalance: "exchange_rebalance", // send/receive btc from the exchange
-  UserRebalance: "user_rebalance", // buy/sell btc in the user wallet
   ToColdStorage: "to_cold_storage",
   ToHotWallet: "to_hot_wallet",
 } as const
