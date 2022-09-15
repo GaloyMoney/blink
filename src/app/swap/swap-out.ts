@@ -42,7 +42,7 @@ export const swapOut = async (): Promise<
   })
 
   if (swapOutAmount instanceof Error) return swapOutAmount
-  if (swapOutAmount > 0) return new NoSwapAction()
+  if (swapOutAmount === 0) return new NoSwapAction()
 
   logger.info({ swapOutAmount, activeLoopdConfig }, `Initiating swapout`)
   addAttributesToCurrentSpan({
