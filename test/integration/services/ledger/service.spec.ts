@@ -47,37 +47,24 @@ const FullLedgerTransactionType = {
 } as const
 
 const {
-  IntraLedger,
-  LnIntraLedger,
-  OnchainIntraLedger,
-  Escrow,
+  IntraLedger, // eslint-disable-line @typescript-eslint/no-unused-vars
+  LnIntraLedger, // eslint-disable-line @typescript-eslint/no-unused-vars
+  OnchainIntraLedger, // eslint-disable-line @typescript-eslint/no-unused-vars
+  Escrow, // eslint-disable-line @typescript-eslint/no-unused-vars
+
   ...ExtendedLedgerTransactionType
 } = FullLedgerTransactionType
 
-// Discarded for type-checker
-const _unusedSwappedOutTypes = [IntraLedger, LnIntraLedger, OnchainIntraLedger, Escrow]
-_unusedSwappedOutTypes
-
 const {
-  Fee,
-  RoutingRevenue,
-  ToColdStorage,
-  ToHotWallet,
-  EscrowCredit,
-  EscrowDebit,
+  Fee, // eslint-disable-line @typescript-eslint/no-unused-vars
+  RoutingRevenue, // eslint-disable-line @typescript-eslint/no-unused-vars
+  ToColdStorage, // eslint-disable-line @typescript-eslint/no-unused-vars
+  ToHotWallet, // eslint-disable-line @typescript-eslint/no-unused-vars
+  EscrowCredit, // eslint-disable-line @typescript-eslint/no-unused-vars
+  EscrowDebit, // eslint-disable-line @typescript-eslint/no-unused-vars
+
   ...UserLedgerTransactionType
 } = ExtendedLedgerTransactionType
-
-// Discarded for type-checker
-const _unusedAdminTypes = [
-  Fee,
-  RoutingRevenue,
-  ToColdStorage,
-  ToHotWallet,
-  EscrowCredit,
-  EscrowDebit,
-]
-_unusedAdminTypes
 
 describe("Volumes", () => {
   const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
