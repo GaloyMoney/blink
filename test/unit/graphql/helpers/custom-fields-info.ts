@@ -7,7 +7,7 @@ export const customFieldsInfo = [
       type: "string",
       required: true,
     } as CustomField,
-    field: { fieldNameNonNullString: { type: GT.NonNull(GT.String) } },
+    field: { fieldNameNonNullString: { type: GT.String } },
   },
   {
     schema: { name: "fieldNameString", type: "string", required: false } as CustomField,
@@ -27,7 +27,7 @@ export const customFieldsInfo = [
       type: "integer",
       required: true,
     } as CustomField,
-    field: { fieldNameNonNullInt: { type: GT.NonNull(GT.Int) } },
+    field: { fieldNameNonNullInt: { type: GT.Int } },
   },
   {
     schema: { name: "fieldNameInt", type: "integer", required: false } as CustomField,
@@ -47,7 +47,7 @@ export const customFieldsInfo = [
       type: "float",
       required: true,
     } as CustomField,
-    field: { fieldNameNonNullFloat: { type: GT.NonNull(GT.Float) } },
+    field: { fieldNameNonNullFloat: { type: GT.Float } },
   },
   {
     schema: { name: "fieldNameFloat", type: "float", required: false } as CustomField,
@@ -67,7 +67,7 @@ export const customFieldsInfo = [
       type: "boolean",
       required: true,
     } as CustomField,
-    field: { fieldNameNonNullBoolean: { type: GT.NonNull(GT.Boolean) } },
+    field: { fieldNameNonNullBoolean: { type: GT.Boolean } },
   },
   {
     schema: { name: "fieldNameBoolean", type: "boolean", required: false } as CustomField,

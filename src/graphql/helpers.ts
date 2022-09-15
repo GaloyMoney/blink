@@ -48,7 +48,9 @@ export const parseCustomFieldsSchema = <TSource, TContext>({
   const result: ThunkObjMap<GraphQLFieldConfig<TSource, TContext>> = {}
   for (const field of fields) {
     if (result[field.name] || (onlyEditable && !field.editable)) continue
-    result[field.name] = { type: translateCustomFieldToGT(field) }
+    result[field.name] = {
+      type: translateCustomFieldToGT({ field, ignoreRequired: true }),
+    }
   }
   return result
 }
@@ -64,14 +66,19 @@ export const parseCustomFieldsInputSchema = ({
   for (const field of fields) {
     if (result[field.name] || (onlyEditable && !field.editable)) continue
     result[field.name] = {
-      type: translateCustomFieldToGT(field),
-      defaultValue: field.defaultValue,
+      type: translateCustomFieldToGT({ field }),
     }
   }
   return result
 }
 
-const translateCustomFieldToGT = (field: CustomField) => {
+const translateCustomFieldToGT = ({
+  field,
+  ignoreRequired = false,
+}: {
+  field: CustomField
+  ignoreRequired?: boolean
+}) => {
   let baseType = GT.String
   if (field.type === "integer") {
     baseType = GT.Int
@@ -84,6 +91,8 @@ const translateCustomFieldToGT = (field: CustomField) => {
   if (field.type === "boolean") {
     baseType = GT.Boolean
   }
+
+  if (ignoreRequired) return baseType
 
   return field.required ? GT.NonNull(baseType) : baseType
 }

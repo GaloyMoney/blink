@@ -237,7 +237,6 @@ export const configSchema = {
                 type: "string",
                 enum: ["string", "integer", "float", "boolean"],
               },
-              defaultValue: { type: ["string", "number", "boolean"] },
               required: { type: "boolean", default: false },
               editable: { type: "boolean", default: false },
               index: { type: "boolean", default: false },

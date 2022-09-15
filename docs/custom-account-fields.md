@@ -8,7 +8,6 @@ This document shows you how to setup account custom fields for your galoy instan
 customFields:
   - name: "customFieldName"
     type: <"string" | "integer" | "float" | "boolean"> # optional (default: "string")
-    defaultValue: <value> # optional
     editable: <true | false> # optional (default: false) - true if field can be updated by the user
     required: <true | false> # optional (default: false) - true if field is required by mutations
     index: <true | false> # optional (default: false) - true if field should have an index in db
@@ -24,7 +23,6 @@ accounts:
   customFields:
     - name: "nationalId"
       type: "integer"
-      defaultValue: 0
     - name: "firstName"
       type: "string"
       required: true
@@ -35,7 +33,6 @@ accounts:
     - name: "terms"
       type: "boolean"
       editable: true
-      defaultValue: false
 ```
 
 If customFields config is empty then all related mutations and queries should not be visible by API clients.

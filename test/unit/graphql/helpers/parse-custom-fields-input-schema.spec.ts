@@ -46,15 +46,6 @@ describe("parseCustomFieldsInputSchema", () => {
     },
   )
 
-  test.each(customFieldsInputInfo.filter((s) => s.schema.defaultValue !== undefined))(
-    "returns default values for $schema.type",
-    ({ schema, field }) => {
-      const result = parseCustomFieldsInputSchema({ fields: [schema] })
-      expect(result).toEqual(expect.objectContaining(field))
-      expect(result[schema.name].defaultValue).toBe(field[schema.name].defaultValue)
-    },
-  )
-
   it("returns multiple fields", () => {
     const schema = customFieldsInputInfo.map((s) => s.schema)
     const fields = Object.assign({}, ...customFieldsInputInfo.map((s) => s.field))
