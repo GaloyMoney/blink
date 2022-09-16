@@ -496,6 +496,22 @@ describe("Volumes", () => {
     })
   })
 
+  describe("Intra-account trade volumes", () => {
+    executeVolumeTests({
+      // Note: Including '...In' types as well would double-count volumes
+      includedTxTypes: [
+        "WalletIdTradeIntraAccountOut",
+        "OnChainTradeIntraAccountOut",
+        "LnTradeIntraAccountOut",
+      ],
+      fetchVolumeAmount: getFetchVolumeAmountFn({
+        volumeFn: ledgerService.tradeIntraAccountTxBaseVolumeSince,
+        volumeAmountFn: ledgerService.tradeIntraAccountTxBaseVolumeAmountSince,
+        volumeType: VolumeType.Out,
+      }),
+    })
+  })
+
   describe("All activity", () => {
     const includedTxTypes = Object.keys(
       UserLedgerTransactionType,
