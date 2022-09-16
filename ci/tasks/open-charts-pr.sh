@@ -7,9 +7,9 @@ export migrate_digest=$(cat ./migrate-edge-image/digest)
 
 pushd charts-repo
 
-ref=$(yq e '.image.git_ref' charts/galoy/values.yaml)
+ref=$(yq e '.galoy.images.app.git_ref' charts/galoy/values.yaml)
 git checkout ${BRANCH}
-old_ref=$(yq e '.image.git_ref' charts/galoy/values.yaml)
+old_ref=$(yq e '.galoy.images.app.git_ref' charts/galoy/values.yaml)
 
 cat <<EOF >> ../body.md
 # Bump galoy image
