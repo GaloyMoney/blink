@@ -378,6 +378,7 @@ describe("Volumes", () => {
     // Execute tests for specific types included
     describe("correctly registers transactions amount", () => {
       for (const txType of includedTypes) {
+        expect(Object.keys(txFnsForIncludedTypes)).toContain(txType)
         txFnsForIncludedTypes[txType]()
       }
     })
@@ -385,6 +386,7 @@ describe("Volumes", () => {
     // Execute tests for rest of types excluded
     describe("correctly ignores all other transaction types", () => {
       for (const txType of excludedTypes) {
+        expect(Object.keys(txFnsForExcludedTypes)).toContain(txType)
         txFnsForExcludedTypes[txType]()
       }
     })
