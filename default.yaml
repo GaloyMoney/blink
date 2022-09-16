@@ -133,7 +133,6 @@ accounts:
   wallets:
     enabledCurrencies:
       - "BTC"
-    defaultCurrency: "BTC"
 
 accountLimits:
   withdrawal:

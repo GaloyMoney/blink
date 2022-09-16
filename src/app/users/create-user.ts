@@ -1,4 +1,5 @@
 import { ConfigError, getTestAccounts } from "@config"
+import { WalletCurrency } from "@domain/shared"
 import { checkedToKratosUserId, checkedToPhoneNumber } from "@domain/users"
 import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
@@ -29,7 +30,6 @@ const setupAccount = async ({
     })
 
   const walletsEnabledConfig = config.wallets.enabledCurrencies
-  const defaultWalletConfig = config.wallets.defaultCurrency
 
   // Create all wallets
   const enabledWallets: Partial<Record<WalletCurrency, Wallet>> = {}
@@ -39,10 +39,10 @@ const setupAccount = async ({
     enabledWallets[currency] = wallet
   }
 
-  // Set default wallet explicitly, or implicitly as 1st element in
+  // Set default wallet explicitly as BTC, or implicitly as 1st element in
   // walletsEnabledConfig array.
   const defaultWalletId =
-    enabledWallets[defaultWalletConfig]?.id || enabledWallets[walletsEnabledConfig[0]]?.id
+    enabledWallets[WalletCurrency.Btc]?.id || enabledWallets[walletsEnabledConfig[0]]?.id
 
   if (defaultWalletId === undefined) {
     return new ConfigError("NoWalletsEnabledInConfigError")

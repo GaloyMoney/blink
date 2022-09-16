@@ -17,10 +17,8 @@ const randomKratosId = () => {
 describe("Users - wallets", () => {
   describe("with 'createUser'", () => {
     it("adds a USD wallet for new user if config is set to true", async () => {
-      const defaultCurrency = WalletCurrency.Btc
       const walletsConfig = {
         enabledCurrencies: [WalletCurrency.Btc, WalletCurrency.Usd],
-        defaultCurrency,
       }
 
       const user = await Users.createUserForPhoneSchema({
@@ -44,15 +42,15 @@ describe("Users - wallets", () => {
       const btcWallet = wallets.filter(
         (wallet) => wallet.currency === WalletCurrency.Btc,
       )[0]
-      if (btcWallet === undefined) throw new Error(`${defaultCurrency} wallet not found`)
+      if (btcWallet === undefined) {
+        throw new Error(`${WalletCurrency.Btc} wallet not found`)
+      }
       expect(account.defaultWalletId).toEqual(btcWallet.id)
     })
 
     it("does not add a USD wallet for new user if config is set to false", async () => {
-      const defaultCurrency = WalletCurrency.Btc
       const walletsConfig = {
         enabledCurrencies: [WalletCurrency.Btc],
-        defaultCurrency,
       }
 
       const user = await Users.createUserForPhoneSchema({
@@ -76,15 +74,15 @@ describe("Users - wallets", () => {
       const btcWallet = wallets.filter(
         (wallet) => wallet.currency === WalletCurrency.Btc,
       )[0]
-      if (btcWallet === undefined) throw new Error(`${defaultCurrency} wallet not found`)
+      if (btcWallet === undefined) {
+        throw new Error(`${WalletCurrency.Btc} wallet not found`)
+      }
       expect(account.defaultWalletId).toEqual(btcWallet.id)
     })
 
     it("sets USD wallet as default if BTC wallet does not exist", async () => {
-      const defaultCurrency = WalletCurrency.Btc
       const walletsConfig = {
         enabledCurrencies: [WalletCurrency.Usd],
-        defaultCurrency,
       }
 
       const user = await Users.createUserForPhoneSchema({
@@ -108,19 +106,17 @@ describe("Users - wallets", () => {
       const usdWallet = wallets.filter(
         (wallet) => wallet.currency === WalletCurrency.Usd,
       )[0]
-      if (usdWallet === undefined)
+      if (usdWallet === undefined) {
         throw new Error(`${WalletCurrency.Usd} wallet not found`)
+      }
       expect(account.defaultWalletId).toEqual(usdWallet.id)
-      expect(defaultCurrency).toEqual(WalletCurrency.Btc)
     })
   })
 
   describe("with 'createUserForEmailSchema'", () => {
     it("adds a USD wallet for new user if config is set to true", async () => {
-      const defaultCurrency = WalletCurrency.Btc
       const walletsConfig = {
         enabledCurrencies: [WalletCurrency.Btc, WalletCurrency.Usd],
-        defaultCurrency,
       }
 
       const user = await Users.createUserForEmailSchema({
@@ -144,15 +140,15 @@ describe("Users - wallets", () => {
       const btcWallet = wallets.filter(
         (wallet) => wallet.currency === WalletCurrency.Btc,
       )[0]
-      if (btcWallet === undefined) throw new Error(`${defaultCurrency} wallet not found`)
+      if (btcWallet === undefined) {
+        throw new Error(`${WalletCurrency.Btc} wallet not found`)
+      }
       expect(account.defaultWalletId).toEqual(btcWallet.id)
     })
 
     it("does not add a USD wallet for new user if config is set to false", async () => {
-      const defaultCurrency = WalletCurrency.Btc
       const walletsConfig = {
         enabledCurrencies: [WalletCurrency.Btc],
-        defaultCurrency,
       }
 
       const user = await Users.createUserForEmailSchema({
@@ -176,15 +172,15 @@ describe("Users - wallets", () => {
       const btcWallet = wallets.filter(
         (wallet) => wallet.currency === WalletCurrency.Btc,
       )[0]
-      if (btcWallet === undefined) throw new Error(`${defaultCurrency} wallet not found`)
+      if (btcWallet === undefined) {
+        throw new Error(`${WalletCurrency.Btc} wallet not found`)
+      }
       expect(account.defaultWalletId).toEqual(btcWallet.id)
     })
 
     it("sets USD wallet as default if BTC wallet does not exist", async () => {
-      const defaultCurrency = WalletCurrency.Btc
       const walletsConfig = {
         enabledCurrencies: [WalletCurrency.Usd],
-        defaultCurrency,
       }
 
       const user = await Users.createUserForEmailSchema({
@@ -208,10 +204,10 @@ describe("Users - wallets", () => {
       const usdWallet = wallets.filter(
         (wallet) => wallet.currency === WalletCurrency.Usd,
       )[0]
-      if (usdWallet === undefined)
+      if (usdWallet === undefined) {
         throw new Error(`${WalletCurrency.Usd} wallet not found`)
+      }
       expect(account.defaultWalletId).toEqual(usdWallet.id)
-      expect(defaultCurrency).toEqual(WalletCurrency.Btc)
     })
   })
 })

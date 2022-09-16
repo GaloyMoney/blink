@@ -230,12 +230,8 @@ export const configSchema = {
                 enum: Object.values(WalletCurrency),
               },
             },
-            defaultCurrency: {
-              type: "string",
-              enum: Object.values(WalletCurrency),
-            },
           },
-          required: ["enabledCurrencies", "defaultCurrency"],
+          required: ["enabledCurrencies"],
           additionalProperties: false,
         },
       },
