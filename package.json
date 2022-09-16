@@ -55,7 +55,7 @@
     "cors": "^2.8.5",
     "csv-writer": "^1.6.0",
     "dedent": "^0.7.0",
-    "dotenv": "^16.0.0",
+    "dotenv": "^16.0.2",
     "express": "^4.17.2",
     "express-jwt": "^7.7.5",
     "firebase-admin": "^11.0.1",
