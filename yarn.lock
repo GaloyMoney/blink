@@ -2102,12 +2102,12 @@
     "@opentelemetry/semantic-conventions" "1.4.0"
     jaeger-client "^3.15.0"
 
-"@opentelemetry/instrumentation-graphql@^0.29.0":
-  version "0.29.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-graphql/-/instrumentation-graphql-0.29.0.tgz#98abeb3722120656df82e8dbd90dd0b76d9b33ea"
-  integrity sha512-mAjz326UtWGQUAmmEY6VB4XV1kbgQGBmRWjh/QT0giLwcbKa9RdO0x0B+VbALbrth7ZtHuoyKaDjCWowuzUujw==
+"@opentelemetry/instrumentation-graphql@^0.31.0":
+  version "0.31.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-graphql/-/instrumentation-graphql-0.31.0.tgz#ee297faf39138f1e3629851d5260902108c5f87c"
+  integrity sha512-l8Vzu7xp0ybRNao8T59B1wp7MB9yaxTMeF1ETv+YWdYgQcDGLI7f5fb737645ArODBd2DtDsZZwJoyAsfFUyFQ==
   dependencies:
-    "@opentelemetry/instrumentation" "^0.29.2"
+    "@opentelemetry/instrumentation" "^0.32.0"
     graphql "^15.5.1"
 
 "@opentelemetry/instrumentation-grpc@^0.32.0":
