@@ -94,7 +94,7 @@
     "rate-limiter-flexible": "^2.3.8",
     "redlock": "^5.0.0-beta.2",
     "subscriptions-transport-ws": "^0.11.0",
-    "twilio": "^3.81.0",
+    "twilio": "^3.82.0",
     "uuid-by-string": "^3.0.4"
   },
   "devDependencies": {
