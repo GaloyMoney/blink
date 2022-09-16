@@ -8461,7 +8461,7 @@ lightning@5.16.6:
     tiny-secp256k1 "2.2.1"
     type-fest "2.18.0"
 
-lightning@^5.21.0:
+lightning@5.21.0, lightning@^5.21.0:
   version "5.21.0"
   resolved "https://registry.yarnpkg.com/lightning/-/lightning-5.21.0.tgz#01366e2f9a7db4c52f912e2f46c1a2bf0f0d38b2"
   integrity sha512-Rha4U1yZS/SHwW/GJ+IeEaxI6vqJ1bx/upQkY5RIZNCn4YoMvqd4inQUt9GNtuLy/pXus8Bms4DL2B9DkujBKQ==
@@ -8556,7 +8556,7 @@ ln-service@53.17.3:
     morgan "1.10.0"
     ws "8.8.0"
 
-ln-service@53.17.4, ln-service@^53.17.2:
+ln-service@53.17.4:
   version "53.17.4"
   resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-53.17.4.tgz#f557d4959f54ff52ce3bad92d10d52272050df06"
   integrity sha512-/lyDSuovNrBub1oGLhWGWsre1q9YHRVroMyZ5wybcXhBTFgB/m1gEc7HK8VPzwtLVptd9OkRFwgCZSms0e4p4Q==
@@ -8580,6 +8580,20 @@ ln-service@53.17.5:
     express "4.18.1"
     invoices "2.1.0"
     lightning "5.16.6"
+    macaroon "3.0.4"
+    morgan "1.10.0"
+    ws "8.8.1"
+
+ln-service@^53.23.0:
+  version "53.23.0"
+  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-53.23.0.tgz#a8c5a5717c7b37d159a8d2df160908408c619fa6"
+  integrity sha512-Ds3IzMNEiAgP8auc9AfDbzr6E2Xdy/GTUcLc6m5FM66JtJBM3jM52apzod+VG1vGm9rVyHfCeem/iP4oyaNPYA==
+  dependencies:
+    bolt07 "1.8.2"
+    cors "2.8.5"
+    express "4.18.1"
+    invoices "2.2.0"
+    lightning "5.21.0"
     macaroon "3.0.4"
     morgan "1.10.0"
     ws "8.8.1"
