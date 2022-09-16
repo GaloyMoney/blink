@@ -29,6 +29,9 @@ import {
   recordLnRoutingRevenue,
   recordColdStorageTxReceive,
   recordColdStorageTxSend,
+  recordWalletIdTradeIntraAccountTxn,
+  recordOnChainTradeIntraAccountTxn,
+  recordLnTradeIntraAccountTxn,
 } from "./helpers"
 
 const ledgerService = LedgerService()
@@ -42,6 +45,14 @@ const FullLedgerTransactionType = {
   LnIntraLedgerReceive: LedgerTransactionType.LnIntraLedger,
   OnchainIntraLedgerSend: LedgerTransactionType.OnchainIntraLedger,
   OnchainIntraLedgerReceive: LedgerTransactionType.OnchainIntraLedger,
+
+  WalletIdTradeIntraAccountOut: LedgerTransactionType.WalletIdTradeIntraAccount,
+  WalletIdTradeIntraAccountIn: LedgerTransactionType.WalletIdTradeIntraAccount,
+  LnTradeIntraAccountOut: LedgerTransactionType.LnTradeIntraAccount,
+  LnTradeIntraAccountIn: LedgerTransactionType.LnTradeIntraAccount,
+  OnChainTradeIntraAccountOut: LedgerTransactionType.OnChainTradeIntraAccount,
+  OnChainTradeIntraAccountIn: LedgerTransactionType.OnChainTradeIntraAccount,
+
   EscrowCredit: LedgerTransactionType.Escrow,
   EscrowDebit: LedgerTransactionType.Escrow,
 } as const
@@ -50,6 +61,9 @@ const {
   IntraLedger, // eslint-disable-line @typescript-eslint/no-unused-vars
   LnIntraLedger, // eslint-disable-line @typescript-eslint/no-unused-vars
   OnchainIntraLedger, // eslint-disable-line @typescript-eslint/no-unused-vars
+  WalletIdTradeIntraAccount, // eslint-disable-line @typescript-eslint/no-unused-vars
+  LnTradeIntraAccount, // eslint-disable-line @typescript-eslint/no-unused-vars
+  OnChainTradeIntraAccount, // eslint-disable-line @typescript-eslint/no-unused-vars
   Escrow, // eslint-disable-line @typescript-eslint/no-unused-vars
 
   ...ExtendedLedgerTransactionType
@@ -325,6 +339,30 @@ describe("Volumes", () => {
         testInternalTxReceiveWLE({
           recordTx: recordLnIntraLedgerPayment,
         }),
+      WalletIdTradeIntraAccountOut: () =>
+        testInternalTxSendWLE({
+          recordTx: recordWalletIdTradeIntraAccountTxn,
+        }),
+      LnTradeIntraAccountOut: () =>
+        testInternalTxSendWLE({
+          recordTx: recordLnTradeIntraAccountTxn,
+        }),
+      OnChainTradeIntraAccountOut: () =>
+        testInternalTxSendWLE({
+          recordTx: recordOnChainTradeIntraAccountTxn,
+        }),
+      WalletIdTradeIntraAccountIn: () =>
+        testInternalTxReceiveWLE({
+          recordTx: recordWalletIdTradeIntraAccountTxn,
+        }),
+      LnTradeIntraAccountIn: () =>
+        testInternalTxReceiveWLE({
+          recordTx: recordLnTradeIntraAccountTxn,
+        }),
+      OnChainTradeIntraAccountIn: () =>
+        testInternalTxReceiveWLE({
+          recordTx: recordOnChainTradeIntraAccountTxn,
+        }),
 
       // Used, but no volume checks yet:
       Fee: () => testExternalTxSendWLE({ recordTx: recordLnChannelOpenOrClosingFee }),
@@ -372,6 +410,30 @@ describe("Volumes", () => {
       LnIntraLedgerReceive: () =>
         testInternalTxReceiveNLE({
           recordTx: recordLnIntraLedgerPayment,
+        }),
+      WalletIdTradeIntraAccountOut: () =>
+        testInternalTxSendNLE({
+          recordTx: recordWalletIdTradeIntraAccountTxn,
+        }),
+      LnTradeIntraAccountOut: () =>
+        testInternalTxSendNLE({
+          recordTx: recordLnTradeIntraAccountTxn,
+        }),
+      OnChainTradeIntraAccountOut: () =>
+        testInternalTxSendNLE({
+          recordTx: recordOnChainTradeIntraAccountTxn,
+        }),
+      WalletIdTradeIntraAccountIn: () =>
+        testInternalTxReceiveNLE({
+          recordTx: recordWalletIdTradeIntraAccountTxn,
+        }),
+      LnTradeIntraAccountIn: () =>
+        testInternalTxReceiveNLE({
+          recordTx: recordLnTradeIntraAccountTxn,
+        }),
+      OnChainTradeIntraAccountIn: () =>
+        testInternalTxReceiveNLE({
+          recordTx: recordOnChainTradeIntraAccountTxn,
         }),
     }
 
