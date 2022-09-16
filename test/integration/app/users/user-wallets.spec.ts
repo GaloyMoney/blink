@@ -17,13 +17,11 @@ const randomKratosId = () => {
 describe("Users - wallets", () => {
   describe("with 'createUser'", () => {
     it("adds a USD wallet for new user if config is set to true", async () => {
-      const walletsConfig = {
-        enabledCurrencies: [WalletCurrency.Btc, WalletCurrency.Usd],
-      }
+      const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
 
       const user = await Users.createUserForPhoneSchema({
         newUserInfo: { phone: randomPhoneNumber() },
-        config: { initialStatus: AccountStatus.Active, wallets: walletsConfig },
+        config: { initialStatus: AccountStatus.Active, initialWallets },
       })
       if (user instanceof Error) throw user
 
@@ -49,13 +47,11 @@ describe("Users - wallets", () => {
     })
 
     it("does not add a USD wallet for new user if config is set to false", async () => {
-      const walletsConfig = {
-        enabledCurrencies: [WalletCurrency.Btc],
-      }
+      const initialWallets = [WalletCurrency.Btc]
 
       const user = await Users.createUserForPhoneSchema({
         newUserInfo: { phone: randomPhoneNumber() },
-        config: { initialStatus: AccountStatus.Active, wallets: walletsConfig },
+        config: { initialStatus: AccountStatus.Active, initialWallets },
       })
       if (user instanceof Error) throw user
 
@@ -81,13 +77,11 @@ describe("Users - wallets", () => {
     })
 
     it("sets USD wallet as default if BTC wallet does not exist", async () => {
-      const walletsConfig = {
-        enabledCurrencies: [WalletCurrency.Usd],
-      }
+      const initialWallets = [WalletCurrency.Usd]
 
       const user = await Users.createUserForPhoneSchema({
         newUserInfo: { phone: randomPhoneNumber() },
-        config: { initialStatus: AccountStatus.Active, wallets: walletsConfig },
+        config: { initialStatus: AccountStatus.Active, initialWallets },
       })
       if (user instanceof Error) throw user
 
@@ -115,13 +109,11 @@ describe("Users - wallets", () => {
 
   describe("with 'createUserForEmailSchema'", () => {
     it("adds a USD wallet for new user if config is set to true", async () => {
-      const walletsConfig = {
-        enabledCurrencies: [WalletCurrency.Btc, WalletCurrency.Usd],
-      }
+      const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
 
       const user = await Users.createUserForEmailSchema({
         kratosUserId: randomKratosId(),
-        config: { initialStatus: AccountStatus.Active, wallets: walletsConfig },
+        config: { initialStatus: AccountStatus.Active, initialWallets },
       })
       if (user instanceof Error) throw user
 
@@ -147,13 +139,11 @@ describe("Users - wallets", () => {
     })
 
     it("does not add a USD wallet for new user if config is set to false", async () => {
-      const walletsConfig = {
-        enabledCurrencies: [WalletCurrency.Btc],
-      }
+      const initialWallets = [WalletCurrency.Btc]
 
       const user = await Users.createUserForEmailSchema({
         kratosUserId: randomKratosId(),
-        config: { initialStatus: AccountStatus.Active, wallets: walletsConfig },
+        config: { initialStatus: AccountStatus.Active, initialWallets },
       })
       if (user instanceof Error) throw user
 
@@ -179,13 +169,11 @@ describe("Users - wallets", () => {
     })
 
     it("sets USD wallet as default if BTC wallet does not exist", async () => {
-      const walletsConfig = {
-        enabledCurrencies: [WalletCurrency.Usd],
-      }
+      const initialWallets = [WalletCurrency.Usd]
 
       const user = await Users.createUserForEmailSchema({
         kratosUserId: randomKratosId(),
-        config: { initialStatus: AccountStatus.Active, wallets: walletsConfig },
+        config: { initialStatus: AccountStatus.Active, initialWallets },
       })
       if (user instanceof Error) throw user
 

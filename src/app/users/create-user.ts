@@ -29,7 +29,7 @@ const setupAccount = async ({
       currency,
     })
 
-  const walletsEnabledConfig = config.wallets.enabledCurrencies
+  const walletsEnabledConfig = config.initialWallets
 
   // Create all wallets
   const enabledWallets: Partial<Record<WalletCurrency, Wallet>> = {}

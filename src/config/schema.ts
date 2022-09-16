@@ -220,22 +220,15 @@ export const configSchema = {
       type: "object",
       properties: {
         initialStatus: { type: "string", enum: Object.values(AccountStatus) },
-        wallets: {
-          type: "object",
-          properties: {
-            enabledCurrencies: {
-              type: "array",
-              items: {
-                type: "string",
-                enum: Object.values(WalletCurrency),
-              },
-            },
+        initialWallets: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: Object.values(WalletCurrency),
           },
-          required: ["enabledCurrencies"],
-          additionalProperties: false,
         },
       },
-      required: ["initialStatus", "wallets"],
+      required: ["initialStatus", "initialWallets"],
       additionalProperties: false,
     },
     accountLimits: {

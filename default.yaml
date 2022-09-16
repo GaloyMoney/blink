@@ -130,9 +130,8 @@ rateLimits:
 
 accounts:
   initialStatus: active
-  wallets:
-    enabledCurrencies:
-      - "BTC"
+  initialWallets:
+    - "BTC"
 
 accountLimits:
   withdrawal:

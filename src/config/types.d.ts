@@ -29,5 +29,5 @@ type TwoFAConfig = {
 
 type AccountsConfig = {
   initialStatus: AccountStatus
-  wallets: { enabledCurrencies: WalletCurrency[] }
+  initialWallets: WalletCurrency[]
 }
