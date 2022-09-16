@@ -33,7 +33,7 @@
     "@opentelemetry/core": "^1.4.0",
     "@opentelemetry/exporter-jaeger": "^1.4.0",
     "@opentelemetry/instrumentation": "^0.32.0",
-    "@opentelemetry/instrumentation-graphql": "^0.29.0",
+    "@opentelemetry/instrumentation-graphql": "^0.31.0",
     "@opentelemetry/instrumentation-grpc": "^0.32.0",
     "@opentelemetry/instrumentation-http": "^0.32.0",
     "@opentelemetry/instrumentation-ioredis": "^0.32.1",
