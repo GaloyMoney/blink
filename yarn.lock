@@ -2129,12 +2129,12 @@
     "@opentelemetry/semantic-conventions" "1.6.0"
     semver "^7.3.5"
 
-"@opentelemetry/instrumentation-ioredis@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-ioredis/-/instrumentation-ioredis-0.31.0.tgz#1f11278508da9ec5ff5b2012c2057218a9c98ef1"
-  integrity sha512-wP9KbFxdcrI1uQ5QATOfzhEUhb6gM+HY0rwgnch0Q/IpItstowUiQ+IwaOSTQVmPoh7frdSbIXAmFBO6mJyBVQ==
+"@opentelemetry/instrumentation-ioredis@^0.32.1":
+  version "0.32.1"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-ioredis/-/instrumentation-ioredis-0.32.1.tgz#1def7e109993e7f5f5ea0c9bedd7e15347772ca8"
+  integrity sha512-0b2l8S72AF9wIgZGCs8q91iRCn5tww60j3FSURSyfjSIVIu3A2fYGPvT2L1XrJ4AsD0Mi4L4OWI3yq+630xR2g==
   dependencies:
-    "@opentelemetry/instrumentation" "^0.29.2"
+    "@opentelemetry/instrumentation" "^0.32.0"
     "@opentelemetry/semantic-conventions" "^1.0.0"
     "@types/ioredis" "4.26.6"
 
