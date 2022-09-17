@@ -1,4 +1,4 @@
-import { getTestAccounts } from "@config"
+import { ConfigError, getTestAccounts } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { checkedToKratosUserId, checkedToPhoneNumber } from "@domain/users"
 import { WalletType } from "@domain/wallets"
@@ -10,21 +10,44 @@ import {
 } from "@services/mongoose"
 import { TwilioClient } from "@services/twilio"
 
-const setupAccount = async (
-  userId: UserId,
-  phoneNumberValid?: PhoneNumber,
-): Promise<Account | ApplicationError> => {
+const setupAccount = async ({
+  userId,
+  config,
+  phoneNumberValid,
+}: {
+  userId: UserId
+  config: AccountsConfig
+  phoneNumberValid?: PhoneNumber
+}): Promise<Account | ApplicationError> => {
   const account = await AccountsRepository().findByUserId(userId)
   if (account instanceof Error) return account
 
-  const wallet = await WalletsRepository().persistNew({
-    accountId: account.id,
-    type: WalletType.Checking,
-    currency: WalletCurrency.Btc,
-  })
-  if (wallet instanceof Error) return wallet
+  const newWallet = (currency: WalletCurrency) =>
+    WalletsRepository().persistNew({
+      accountId: account.id,
+      type: WalletType.Checking,
+      currency,
+    })
 
-  account.defaultWalletId = wallet.id
+  const walletsEnabledConfig = config.initialWallets
+
+  // Create all wallets
+  const enabledWallets: Partial<Record<WalletCurrency, Wallet>> = {}
+  for (const currency of walletsEnabledConfig) {
+    const wallet = await newWallet(currency)
+    if (wallet instanceof Error) return wallet
+    enabledWallets[currency] = wallet
+  }
+
+  // Set default wallet explicitly as BTC, or implicitly as 1st element in
+  // walletsEnabledConfig array.
+  const defaultWalletId =
+    enabledWallets[WalletCurrency.Btc]?.id || enabledWallets[walletsEnabledConfig[0]]?.id
+
+  if (defaultWalletId === undefined) {
+    return new ConfigError("NoWalletsEnabledInConfigError")
+  }
+  account.defaultWalletId = defaultWalletId
 
   // FIXME: to remove when Casbin is been introduced
   const role = getTestAccounts().find(({ phone }) => phone === phoneNumberValid)?.role
@@ -38,11 +61,11 @@ const setupAccount = async (
 
 // no kratos user is been added (currently with PhoneSchema)
 export const createUserForPhoneSchema = async ({
-  phone,
-  phoneMetadata,
+  newUserInfo: { phone, phoneMetadata },
+  config,
 }: {
-  phone: string
-  phoneMetadata?: PhoneMetadata
+  newUserInfo: NewUserInfo
+  config: AccountsConfig
 }) => {
   const phoneNumberValid = checkedToPhoneNumber(phone)
   if (phoneNumberValid instanceof Error) return phoneNumberValid
@@ -66,7 +89,7 @@ export const createUserForPhoneSchema = async ({
   const user = await UsersRepository().persistNew(userRaw)
   if (user instanceof Error) return user
 
-  const account = await setupAccount(user.id, phoneNumberValid)
+  const account = await setupAccount({ userId: user.id, config, phoneNumberValid })
   if (account instanceof Error) return account
 
   return user
@@ -75,8 +98,10 @@ export const createUserForPhoneSchema = async ({
 // kratos user already exist, as he has been using self registration
 export const createUserForEmailSchema = async ({
   kratosUserId,
+  config,
 }: {
   kratosUserId: string
+  config: AccountsConfig
 }) => {
   const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
   if (kratosUserIdValid instanceof Error) return kratosUserIdValid
@@ -86,7 +111,7 @@ export const createUserForEmailSchema = async ({
   })
   if (user instanceof Error) return user
 
-  const account = await setupAccount(user.id)
+  const account = await setupAccount({ userId: user.id, config })
   if (account instanceof Error) return account
 
   return user

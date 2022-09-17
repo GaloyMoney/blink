@@ -3,6 +3,7 @@ import {
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
   getTestAccounts,
+  getDefaultAccountsConfig,
   MAX_AGE_TIME_CODE,
 } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
@@ -60,7 +61,10 @@ export const login = async ({
   if (user instanceof CouldNotFindUserFromPhoneError) {
     subLogger.info({ phone }, "new user signup")
     const userRaw: NewUserInfo = { phone }
-    user = await createUserForPhoneSchema(userRaw)
+    user = await createUserForPhoneSchema({
+      newUserInfo: userRaw,
+      config: getDefaultAccountsConfig(),
+    })
     if (user instanceof Error) return user
   } else if (user instanceof Error) {
     return user
@@ -106,7 +110,10 @@ export const loginWithKratos = async ({
 
   if (user instanceof CouldNotFindUserFromKratosIdError) {
     subLogger.info({ kratosUserId }, "New Kratos user signup")
-    user = await createUserForEmailSchema({ kratosUserId })
+    user = await createUserForEmailSchema({
+      kratosUserId,
+      config: getDefaultAccountsConfig(),
+    })
     if (user instanceof Error) return user
   } else if (user instanceof Error) {
     return user

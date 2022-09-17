@@ -1,5 +1,6 @@
 import mongoose from "mongoose"
 import { Accounts, Users } from "@app"
+import { getDefaultAccountsConfig } from "@config"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
@@ -11,7 +12,10 @@ import {
 } from "test/helpers"
 
 it("change default walletId of account", async () => {
-  const user = await Users.createUserForPhoneSchema({ phone: "+123456789" })
+  const user = await Users.createUserForPhoneSchema({
+    newUserInfo: { phone: "+123456789" as PhoneNumber },
+    config: getDefaultAccountsConfig(),
+  })
   if (user instanceof Error) throw user
 
   const accountId = user.defaultAccountId
