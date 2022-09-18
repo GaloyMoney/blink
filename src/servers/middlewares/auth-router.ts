@@ -22,10 +22,13 @@ const { serverURL, corsAllowedOrigins } = getKratosConfig()
 
 const authRouter = express.Router({ caseSensitive: true })
 
+// TODO: why is cors origin policies mapped to kratos config?
+const { publicApi, corsAllowedOrigins } = getKratosConfig()
+
 authRouter.use(cors({ origin: corsAllowedOrigins, credentials: true }))
 
 authRouter.post("/browser", async (req, res) => {
-  const kratos = KratosSdk(serverURL)
+  const kratos = KratosSdk(publicApi)
 
   const ipString = isDev ? req?.ip : req?.headers["x-real-ip"]
   const ip = parseIps(ipString)
