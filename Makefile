@@ -2,7 +2,6 @@ BIN_DIR=node_modules/.bin
 
 start-deps:
 	docker compose up integration-deps -d
-	direnv reload
 
 update-price-history:
 	docker compose run price-history node servers/history/cron.js
