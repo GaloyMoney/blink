@@ -127,7 +127,8 @@ type YamlSchema = {
     rebalanceEnabled: boolean
   }
   kratosConfig: {
-    serverURL: string
+    publicApi: string
+    adminApi: string
     corsAllowedOrigins: string[]
   }
   captcha: {

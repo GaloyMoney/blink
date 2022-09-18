@@ -343,14 +343,15 @@ export const configSchema = {
     kratosConfig: {
       type: "object",
       properties: {
-        serverURL: { type: "string" },
+        publicApi: { type: "string" },
+        adminApi: { type: "string" },
         corsAllowedOrigins: {
           type: "array",
           items: { type: "string" },
           uniqueItems: true,
         },
       },
-      required: ["serverURL", "corsAllowedOrigins"],
+      required: ["publicApi", "adminApi", "corsAllowedOrigins"],
       additionalProperties: false,
     },
     captcha: {
