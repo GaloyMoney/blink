@@ -10,7 +10,8 @@ type CronConfig = {
 }
 
 type KratosConfig = {
-  serverURL: string
+  adminApi: string
+  publicApi: string
   corsAllowedOrigins: string[]
 }
 
