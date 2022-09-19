@@ -16,13 +16,17 @@ const createUsdWallets = async () => {
 
   const accounts = await AccountsRepository().listUnlockedAccounts()
   if (accounts instanceof Error) return accounts
-
+  let progress = 0
   for (const account of accounts) {
     await AccountsWithSpans.addWalletIfNonexistent({
       accountId: account.id,
       type: WalletType.Checking,
       currency: WalletCurrency.Usd,
     })
+    progress++
+    if (progress % 1000 === 0) {
+      console.log(`${progress} accounts iterated`)
+    }
   }
 
   console.log("completed")
