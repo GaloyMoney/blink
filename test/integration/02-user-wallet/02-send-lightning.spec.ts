@@ -113,14 +113,17 @@ jest.mock("@config", () => {
       .mockReturnValueOnce({
         intraLedgerLimit: 100 as UsdCents,
         withdrawalLimit: 100 as UsdCents,
+        tradeIntraAccountLimit: 100 as UsdCents,
       })
       .mockReturnValueOnce({
         intraLedgerLimit: 100 as UsdCents,
         withdrawalLimit: 100 as UsdCents,
+        tradeIntraAccountLimit: 100 as UsdCents,
       })
       .mockReturnValue({
         intraLedgerLimit: 100_000 as UsdCents,
         withdrawalLimit: 100_000 as UsdCents,
+        tradeIntraAccountLimit: 100_000 as UsdCents,
       }),
   }
 })

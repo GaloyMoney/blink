@@ -33,7 +33,11 @@ import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { Accounts } from "@app"
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 
-import { newCheckIntraledgerLimits, getPriceRatioForLimits } from "./helpers"
+import {
+  newCheckIntraledgerLimits,
+  getPriceRatioForLimits,
+  newCheckTradeIntraAccountLimits,
+} from "./helpers"
 
 const dealer = NewDealerPriceService()
 
@@ -190,7 +194,11 @@ const executePaymentViaIntraledger = async ({
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
-  const limitCheck = await newCheckIntraledgerLimits({
+  const checkLimits =
+    senderWallet.accountId === recipientWallet.accountId
+      ? newCheckTradeIntraAccountLimits
+      : newCheckIntraledgerLimits
+  const limitCheck = await checkLimits({
     amount: paymentFlow.usdPaymentAmount,
     wallet: senderWallet,
     priceRatio: priceRatioForLimits,

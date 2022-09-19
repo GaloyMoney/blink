@@ -53,6 +53,7 @@ import {
   newCheckIntraledgerLimits,
   newCheckTwoFALimits,
   getPriceRatioForLimits,
+  newCheckTradeIntraAccountLimits,
 } from "./helpers"
 
 const dealer = NewDealerPriceService()
@@ -462,13 +463,6 @@ const executePaymentViaIntraledger = async ({
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
-  const limitCheck = await newCheckIntraledgerLimits({
-    amount: paymentFlow.usdPaymentAmount,
-    wallet: senderWallet,
-    priceRatio: priceRatioForLimits,
-  })
-  if (limitCheck instanceof Error) return limitCheck
-
   const paymentHash = paymentFlow.paymentHashForFlow()
   if (paymentHash instanceof Error) return paymentHash
 
@@ -485,6 +479,17 @@ const executePaymentViaIntraledger = async ({
   }
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
+
+  const checkLimits =
+    senderWallet.accountId === recipientWallet.accountId
+      ? newCheckTradeIntraAccountLimits
+      : newCheckIntraledgerLimits
+  const limitCheck = await checkLimits({
+    amount: paymentFlow.usdPaymentAmount,
+    wallet: senderWallet,
+    priceRatio: priceRatioForLimits,
+  })
+  if (limitCheck instanceof Error) return limitCheck
 
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
     const ledgerService = LedgerService()
