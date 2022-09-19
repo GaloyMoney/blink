@@ -7,7 +7,23 @@ import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 const checkLimitBase =
-  ({ limitName, limitAmount, limitError, limitErrMsg, priceRatio }) =>
+  ({
+    limitName,
+    limitAmount,
+    limitError,
+    limitErrMsg,
+    priceRatio,
+  }: {
+    limitName:
+      | "checkIntraledger"
+      | "checkWithdrawal"
+      | "checkTradeIntraAccount"
+      | "checkTwoFA"
+    limitAmount: UsdCents
+    limitError: LimitsExceededErrorConstructor
+    limitErrMsg: string | undefined
+    priceRatio: PriceRatio
+  }) =>
   async ({
     amount,
     walletVolume,

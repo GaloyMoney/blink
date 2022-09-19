@@ -83,6 +83,7 @@ type YamlSchema = {
   accountLimits: {
     withdrawal: AccountLimitsConfig
     intraLedger: AccountLimitsConfig
+    tradeIntraAccount: AccountLimitsConfig
   }
   spamLimits: {
     memoSharingSatsThreshold: number

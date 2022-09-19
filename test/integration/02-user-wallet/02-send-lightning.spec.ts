@@ -102,6 +102,7 @@ jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
 const accountLimits: IAccountLimits = {
   intraLedgerLimit: 100 as UsdCents,
   withdrawalLimit: 100 as UsdCents,
+  tradeIntraAccountLimit: 100 as UsdCents,
 }
 
 jest.mock("@config", () => {
