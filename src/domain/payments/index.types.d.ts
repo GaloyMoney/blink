@@ -88,9 +88,7 @@ type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
 }
 
 type LPFBWithInvoice<S extends WalletCurrency> = {
-  withSenderWallet(
-    senderWallet: WalletDescriptor<S>,
-  ): LPFBWithSenderWallet<S> | LPFBWithError
+  withSenderWallet(senderWallet: Wallet): LPFBWithSenderWallet<S> | LPFBWithError
 }
 
 type LPFBWithSenderWallet<S extends WalletCurrency> = {
@@ -103,7 +101,10 @@ type LPFBWithSenderWallet<S extends WalletCurrency> = {
     currency: recipientWalletCurrency,
     usdPaymentAmount,
   }: WalletDescriptor<R> & {
+    accountId: AccountId
+    pubkey?: Pubkey
     usdPaymentAmount?: UsdPaymentAmount
+    username?: Username
   }): LPFBWithRecipientWallet<S, R> | LPFBWithError
 }
 
@@ -136,6 +137,7 @@ type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
   skipProbeForDestination(): Promise<boolean | DealerPriceServiceError>
 
   isIntraLedger(): Promise<boolean | DealerPriceServiceError>
+  isTradeIntraAccount(): Promise<boolean | DealerPriceServiceError>
 }
 
 type LPFBTest = {
@@ -153,6 +155,7 @@ type LPFBWithError = {
   usdPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
   skipProbeForDestination(): Promise<ValidationError | DealerPriceServiceError>
   isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
+  isTradeIntraAccount(): Promise<ValidationError | DealerPriceServiceError>
 }
 interface IPaymentFlowRepository {
   persistNew<S extends WalletCurrency>(
@@ -204,6 +207,7 @@ type LPFBWithSenderWalletState<S extends WalletCurrency> = RequireField<
 > & {
   senderWalletId: WalletId
   senderWalletCurrency: S
+  senderAccountId: AccountId
   usdPaymentAmount?: UsdPaymentAmount
 }
 
@@ -215,6 +219,7 @@ type LPFBWithRecipientWalletState<
   recipientWalletCurrency?: R
   recipientPubkey?: Pubkey
   recipientUsername?: Username
+  recipientAccountId?: AccountId
 }
 
 type LPFBWithConversionState<

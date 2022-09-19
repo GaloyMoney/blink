@@ -366,7 +366,7 @@ const getPaymentFlow = async <S extends WalletCurrency, R extends WalletCurrency
   inputPaymentAmount,
   uncheckedAmount,
 }: {
-  senderWallet: WalletDescriptor<S>
+  senderWallet: Wallet
   decodedInvoice: LnInvoice
   inputPaymentAmount: PaymentAmount<S>
   uncheckedAmount?: number | undefined

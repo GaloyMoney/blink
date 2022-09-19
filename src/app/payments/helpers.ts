@@ -36,7 +36,7 @@ export const constructPaymentFlowBuilder = async <
   usdFromBtc,
   btcFromUsd,
 }: {
-  senderWallet: WalletDescriptor<S>
+  senderWallet: Wallet
   invoice: LnInvoice
   uncheckedAmount?: number
   usdFromBtc: (amount: BtcPaymentAmount) => Promise<UsdPaymentAmount | ApplicationError>
@@ -91,6 +91,7 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   | {
       id: WalletId
       currency: R
+      accountId: AccountId
       pubkey: Pubkey
       usdPaymentAmount: UsdPaymentAmount | undefined
       username: Username
@@ -123,6 +124,7 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   return {
     id: recipientWalletId,
     currency: recipientsWalletCurrency as R,
+    accountId: recipientAccount.id,
     pubkey: recipientPubkey,
     usdPaymentAmount,
     username: recipientUsername,
