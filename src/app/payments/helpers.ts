@@ -160,6 +160,37 @@ export const newCheckIntraledgerLimits = async ({
   })
 }
 
+export const newCheckTradeIntraAccountLimits = async ({
+  amount,
+  wallet,
+  priceRatio,
+}: {
+  amount: UsdPaymentAmount
+  wallet: Wallet
+  priceRatio: PriceRatio
+}) => {
+  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const walletVolume = await ledger.tradeIntraAccountTxBaseVolumeAmountSince({
+    walletDescriptor: { id: wallet.id, currency: wallet.currency },
+    timestamp: timestamp1Day,
+  })
+  if (walletVolume instanceof Error) return walletVolume
+
+  const account = await AccountsRepository().findById(wallet.accountId)
+  if (account instanceof Error) return account
+
+  const accountLimits = getAccountLimits({ level: account.level })
+  const { checkTradeIntraAccount } = AccountLimitsChecker({
+    accountLimits,
+    priceRatio,
+  })
+
+  return checkTradeIntraAccount({
+    amount,
+    walletVolume,
+  })
+}
+
 export const newCheckWithdrawalLimits = async ({
   amount,
   wallet,

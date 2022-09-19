@@ -125,6 +125,7 @@ type NewLimitsCheckerFn = (
 type AccountLimitsChecker = {
   checkIntraledger: NewLimitsCheckerFn
   checkWithdrawal: NewLimitsCheckerFn
+  checkTradeIntraAccount: NewLimitsCheckerFn
 }
 
 type TwoFALimitsChecker = {

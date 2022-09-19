@@ -1,5 +1,6 @@
 import {
   IntraledgerLimitsExceededError,
+  TradeIntraAccountLimitsExceededError,
   TwoFALimitsExceededError,
   WithdrawalLimitsExceededError,
 } from "@domain/errors"
@@ -73,6 +74,13 @@ export const AccountLimitsChecker = ({
     limitAmount: accountLimits.withdrawalLimit,
     limitError: WithdrawalLimitsExceededError,
     limitErrMsg: `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`,
+    priceRatio,
+  }),
+  checkTradeIntraAccount: checkLimitBase({
+    limitName: "checkTradeIntraAccount",
+    limitAmount: accountLimits.tradeIntraAccountLimit,
+    limitError: TradeIntraAccountLimitsExceededError,
+    limitErrMsg: `Cannot transfer more than ${accountLimits.tradeIntraAccountLimit} cents in 24 hours`,
     priceRatio,
   }),
 })
