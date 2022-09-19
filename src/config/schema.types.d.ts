@@ -23,6 +23,7 @@ type CustomField = {
   editable?: boolean
   index?: boolean
   unique?: boolean
+  setOnlyOnce?: boolean
 }
 
 type YamlSchema = {

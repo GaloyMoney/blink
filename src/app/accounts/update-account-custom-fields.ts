@@ -1,11 +1,18 @@
 import { getAccountsConfig } from "@config"
 
 import { CouldNotFindError } from "@domain/errors"
-import { NoAccountCustomFieldsError } from "@domain/accounts"
+import {
+  AccountCustomFieldsSetOnlyOnceError,
+  NoAccountCustomFieldsError,
+} from "@domain/accounts"
 
 import { AccountCustomFieldsRepository, AccountsRepository } from "@services/mongoose"
 
 const { customFields: customFieldsSchema } = getAccountsConfig()
+
+const onlyOnceFields = customFieldsSchema
+  .filter((f) => !!f.setOnlyOnce)
+  .map((f) => f.name)
 
 export const updateAccountCustomFields = async ({
   accountId,
@@ -33,6 +40,14 @@ export const updateAccountCustomFields = async ({
     })
   }
   if (accountCustomFields instanceof Error) return accountCustomFields
+
+  const onlyOnceToUpdate = Object.keys(customFields).filter(
+    (cf) => !!onlyOnceFields.find((f) => f === cf),
+  )
+  for (const field in accountCustomFields.customFields) {
+    if (onlyOnceToUpdate.find((f) => f === field))
+      return new AccountCustomFieldsSetOnlyOnceError(field)
+  }
 
   accountCustomFields.updatedByUserId = updatedByUserId
   accountCustomFields.customFields = {

@@ -469,6 +469,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidCustomFieldError":
     case "NoAccountCustomFieldsError":
     case "AccountCustomFieldsUpdateError":
+    case "AccountCustomFieldsSetOnlyOnceError":
       message = `Unknown error occurred (code: ${error.name}${
         error.message ? ": " + error.message : ""
       })`

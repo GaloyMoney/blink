@@ -12,6 +12,7 @@ customFields:
     required: <true | false> # optional (default: false) - true if field is required by mutations
     index: <true | false> # optional (default: false) - true if field should have an index in db
     unique: <true | false> # optional (default: false) - true if field should have a unique index in db
+    setOnlyOnce: <true | false> # optional (default: false) - true if field can only set once
 ```
 
 ## Example

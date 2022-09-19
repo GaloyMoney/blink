@@ -241,6 +241,7 @@ export const configSchema = {
               editable: { type: "boolean", default: false },
               index: { type: "boolean", default: false },
               unique: { type: "boolean", default: false },
+              setOnlyOnce: { type: "boolean", default: false },
             },
             required: ["name"],
             additionalProperties: false,
