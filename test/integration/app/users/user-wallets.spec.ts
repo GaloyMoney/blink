@@ -21,7 +21,7 @@ describe("Users - wallets", () => {
 
       const user = await Users.createUserForPhoneSchema({
         newUserInfo: { phone: randomPhoneNumber() },
-        config: { initialStatus: AccountStatus.Active, initialWallets },
+        config: { initialStatus: AccountStatus.Active, initialWallets, customFields: [] },
       })
       if (user instanceof Error) throw user
 
@@ -51,7 +51,7 @@ describe("Users - wallets", () => {
 
       const user = await Users.createUserForPhoneSchema({
         newUserInfo: { phone: randomPhoneNumber() },
-        config: { initialStatus: AccountStatus.Active, initialWallets },
+        config: { initialStatus: AccountStatus.Active, initialWallets, customFields: [] },
       })
       if (user instanceof Error) throw user
 
@@ -81,7 +81,7 @@ describe("Users - wallets", () => {
 
       const user = await Users.createUserForPhoneSchema({
         newUserInfo: { phone: randomPhoneNumber() },
-        config: { initialStatus: AccountStatus.Active, initialWallets },
+        config: { initialStatus: AccountStatus.Active, initialWallets, customFields: [] },
       })
       if (user instanceof Error) throw user
 
@@ -113,7 +113,7 @@ describe("Users - wallets", () => {
 
       const user = await Users.createUserForEmailSchema({
         kratosUserId: randomKratosId(),
-        config: { initialStatus: AccountStatus.Active, initialWallets },
+        config: { initialStatus: AccountStatus.Active, initialWallets, customFields: [] },
       })
       if (user instanceof Error) throw user
 
@@ -143,7 +143,7 @@ describe("Users - wallets", () => {
 
       const user = await Users.createUserForEmailSchema({
         kratosUserId: randomKratosId(),
-        config: { initialStatus: AccountStatus.Active, initialWallets },
+        config: { initialStatus: AccountStatus.Active, initialWallets, customFields: [] },
       })
       if (user instanceof Error) throw user
 
@@ -173,7 +173,7 @@ describe("Users - wallets", () => {
 
       const user = await Users.createUserForEmailSchema({
         kratosUserId: randomKratosId(),
-        config: { initialStatus: AccountStatus.Active, initialWallets },
+        config: { initialStatus: AccountStatus.Active, initialWallets, customFields: [] },
       })
       if (user instanceof Error) throw user
 

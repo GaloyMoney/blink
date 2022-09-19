@@ -370,7 +370,7 @@ const AccountCustomFieldsSchema = new Schema<AccountCustomFieldsRecord>({
 
 AccountCustomFieldsSchema.index({ accountId: 1, createdAt: -1 })
 
-const customFieldsIndexes = getAccountsConfig().customFields.filter(
+const customFieldsIndexes = getDefaultAccountsConfig().customFields.filter(
   (cf) => !!cf.index || !!cf.unique,
 )
 

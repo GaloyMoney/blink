@@ -1,4 +1,4 @@
-import { getAccountsConfig } from "@config"
+import { getDefaultAccountsConfig } from "@config"
 
 import { GT } from "@graphql/index"
 
@@ -92,7 +92,7 @@ const fields = {
   onChainPaymentSendAll: OnChainPaymentSendAllMutation,
 }
 
-const { customFields } = getAccountsConfig()
+const { customFields } = getDefaultAccountsConfig()
 if (customFields && customFields.length > 0) {
   Object.assign(fields, { accountCustomFieldsUpdate: AccountCustomFieldsUpdateMutation })
 }

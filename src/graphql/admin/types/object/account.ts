@@ -1,4 +1,4 @@
-import { getAccountsConfig } from "@config"
+import { getDefaultAccountsConfig } from "@config"
 
 import { Accounts, Users, Wallets } from "@app"
 
@@ -18,7 +18,7 @@ import AccountStatus from "../scalar/account-status"
 import GraphQLUser from "./user"
 import AccountCustomFields from "./account-custom-fields"
 
-const { customFields } = getAccountsConfig()
+const { customFields } = getDefaultAccountsConfig()
 
 const Account: GraphQLObjectType<Account> = GT.Object<Account>({
   name: "Account",

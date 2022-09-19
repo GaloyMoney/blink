@@ -6,7 +6,7 @@ import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { baseLogger } from "@services/logger"
 
-import { GALOY_API_PORT, getAccountsConfig } from "@config"
+import { GALOY_API_PORT, getDefaultAccountsConfig } from "@config"
 
 import { gqlMainSchema } from "../graphql"
 
@@ -51,7 +51,7 @@ export async function startApolloServerForCoreSchema() {
     onChainPaymentSendAll: isAuthenticated,
   }
 
-  const { customFields } = getAccountsConfig()
+  const { customFields } = getDefaultAccountsConfig()
   if (customFields && customFields.length > 0) {
     mutations["accountCustomFieldsUpdate"] = isAuthenticated
   }

@@ -1,4 +1,4 @@
-import { getAccountsConfig } from "@config"
+import { getDefaultAccountsConfig } from "@config"
 
 import { GT } from "@graphql/index"
 import { connectionArgs } from "graphql-relay"
@@ -10,7 +10,7 @@ import WalletId from "../scalar/wallet-id"
 
 import Wallet from "./wallet"
 
-const { customFields } = getAccountsConfig()
+const { customFields } = getDefaultAccountsConfig()
 
 const IAccount = GT.Interface({
   name: "Account",

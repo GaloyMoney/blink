@@ -1,4 +1,4 @@
-import { getAccountsConfig } from "@config"
+import { getDefaultAccountsConfig } from "@config"
 
 import { CouldNotFindError } from "@domain/errors"
 import {
@@ -8,7 +8,7 @@ import {
 
 import { AccountCustomFieldsRepository, AccountsRepository } from "@services/mongoose"
 
-const { customFields: customFieldsSchema } = getAccountsConfig()
+const { customFields: customFieldsSchema } = getDefaultAccountsConfig()
 
 const onlyOnceFields = customFieldsSchema
   .filter((f) => !!f.setOnlyOnce)

@@ -1,6 +1,6 @@
 import { GraphQLEnumValueConfigMap } from "graphql"
 
-import { getAccountsConfig } from "@config"
+import { getDefaultAccountsConfig } from "@config"
 
 import { Accounts } from "@app"
 
@@ -8,7 +8,7 @@ import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
 import GraphQLAccount from "@graphql/admin/types/object/account"
 
-const { customFields: customFieldsSchema } = getAccountsConfig()
+const { customFields: customFieldsSchema } = getDefaultAccountsConfig()
 
 const fields: Readonly<GraphQLEnumValueConfigMap> = customFieldsSchema.reduce(
   (acc, val) => {

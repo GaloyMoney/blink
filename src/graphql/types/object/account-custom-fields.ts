@@ -1,9 +1,9 @@
-import { getAccountsConfig } from "@config"
+import { getDefaultAccountsConfig } from "@config"
 
 import { GT } from "@graphql/index"
 import { parseCustomFieldsSchema } from "@graphql/helpers"
 
-const customFieldsSchema = getAccountsConfig().customFields
+const customFieldsSchema = getDefaultAccountsConfig().customFields
 
 const AccountCustomFields = GT.Object({
   name: "AccountCustomFields",

@@ -1,10 +1,10 @@
-import { getAccountsConfig } from "@config"
+import { getDefaultAccountsConfig } from "@config"
 
 import { NoAccountCustomFieldsError } from "@domain/accounts"
 
 import { AccountCustomFieldsRepository } from "@services/mongoose"
 
-const { customFields: customFieldsSchema } = getAccountsConfig()
+const { customFields: customFieldsSchema } = getDefaultAccountsConfig()
 
 export const getAccountCustomFields = async (
   accountId: AccountId,

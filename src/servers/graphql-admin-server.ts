@@ -8,7 +8,7 @@ import { setupMongoConnection } from "@services/mongodb"
 
 import { activateLndHealthCheck } from "@services/lnd/health"
 
-import { GALOY_ADMIN_PORT, getAccountsConfig } from "@config"
+import { GALOY_ADMIN_PORT, getDefaultAccountsConfig } from "@config"
 
 import { gqlAdminSchema } from "../graphql"
 
@@ -38,7 +38,7 @@ export async function startApolloServerForAdminSchema() {
     coldStorageRebalanceToHotWallet: and(isAuthenticated, isEditor),
   }
 
-  const { customFields } = getAccountsConfig()
+  const { customFields } = getDefaultAccountsConfig()
   if (customFields && customFields.length > 0) {
     queries["accountsDetailsByCustomField"] = and(isAuthenticated, isEditor)
     mutations["accountCustomFieldsUpdate"] = and(isAuthenticated, isEditor)

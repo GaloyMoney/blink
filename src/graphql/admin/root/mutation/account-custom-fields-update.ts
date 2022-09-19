@@ -1,4 +1,4 @@
-import { getAccountsConfig } from "@config"
+import { getDefaultAccountsConfig } from "@config"
 
 import { Accounts } from "@app"
 
@@ -7,7 +7,7 @@ import { mapError } from "@graphql/error-map"
 import { parseCustomFieldsInputSchema } from "@graphql/helpers"
 import AccountCustomFieldsUpdatePayload from "@graphql/admin/types/payload/account-custom-fields"
 
-const customFieldsSchema = getAccountsConfig().customFields
+const customFieldsSchema = getDefaultAccountsConfig().customFields
 
 const AccountCustomFieldsUpdateInput = GT.Input({
   name: "AccountCustomFieldsUpdateInput",

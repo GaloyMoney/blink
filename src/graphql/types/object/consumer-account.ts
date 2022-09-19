@@ -1,7 +1,7 @@
 import getUuidByString from "uuid-by-string"
 import { GraphQLFieldConfig, ThunkObjMap } from "graphql"
 
-import { getAccountsConfig } from "@config"
+import { getDefaultAccountsConfig } from "@config"
 
 import { Accounts, Wallets } from "@app"
 
@@ -25,7 +25,7 @@ import WalletId from "../scalar/wallet-id"
 import { TransactionConnection } from "./transaction"
 import AccountCustomFields from "./account-custom-fields"
 
-const { customFields } = getAccountsConfig()
+const { customFields } = getDefaultAccountsConfig()
 
 const ConsumerAccount = GT.Object({
   name: "ConsumerAccount",
