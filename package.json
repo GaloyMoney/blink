@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^6.5.0",
-    "@grpc/grpc-js": "^1.6.12",
+    "@grpc/grpc-js": "^1.7.0",
     "@grpc/proto-loader": "^0.7.2",
     "@opentelemetry/api": "^1.1.0",
     "@opentelemetry/core": "^1.4.0",
@@ -35,7 +35,7 @@
     "@opentelemetry/instrumentation": "^0.32.0",
     "@opentelemetry/instrumentation-graphql": "^0.31.0",
     "@opentelemetry/instrumentation-grpc": "^0.32.0",
-    "@opentelemetry/instrumentation-http": "^0.32.0",
+    "@opentelemetry/instrumentation-http": "^0.33.0",
     "@opentelemetry/instrumentation-ioredis": "^0.32.1",
     "@opentelemetry/instrumentation-mongodb": "^0.31.1",
     "@opentelemetry/resources": "^1.6.0",
