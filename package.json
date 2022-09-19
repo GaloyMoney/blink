@@ -128,7 +128,7 @@
     "@types/prettier": "^2.7.0",
     "@typescript-eslint/eslint-plugin": "^5.37.0",
     "@typescript-eslint/parser": "^5.37.0",
-    "axios-mock-adapter": "^1.21.1",
+    "axios-mock-adapter": "^1.21.2",
     "cross-fetch": "^3.1.4",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "^8.3.0",
