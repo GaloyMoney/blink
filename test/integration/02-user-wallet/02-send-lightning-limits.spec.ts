@@ -88,7 +88,9 @@ const createAndFundNewWalletForPhone = async <S extends WalletCurrency>({
   })
   if (wallet instanceof Error) throw wallet
 
-  // Fund new wallet
+  // Fund new wallet if a non-zero balance is passed
+  if (balanceAmount.amount === 0n) return wallet
+
   const lnInvoice = await Wallets.addInvoiceForSelf({
     walletId: wallet.id,
     amount: Number(balanceAmount.amount),
@@ -121,9 +123,11 @@ const createAndFundNewWalletForPhone = async <S extends WalletCurrency>({
   return wallet
 }
 
-const btcAmountFromUsdNumber = async (centsAmount: number): Promise<BtcPaymentAmount> => {
+const btcAmountFromUsdNumber = async (
+  centsAmount: number | bigint,
+): Promise<BtcPaymentAmount> => {
   const usdPaymentAmount = paymentAmountFromNumber({
-    amount: centsAmount,
+    amount: Number(centsAmount),
     currency: WalletCurrency.Usd,
   })
   if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
@@ -136,67 +140,128 @@ const btcAmountFromUsdNumber = async (centsAmount: number): Promise<BtcPaymentAm
 describe("UserWallet Limits - Lightning Pay", () => {
   const phone = randomPhone()
 
-  it("fails to pay when withdrawalLimit exceeded", async () => {
-    // Create new wallet
-    const newWallet = await createAndFundNewWalletForPhone({
-      phone,
-      balanceAmount: await btcAmountFromUsdNumber(MOCKED_LIMIT + 10),
+  describe("single payment above limit fails limit check", () => {
+    it("fails to pay when withdrawalLimit exceeded", async () => {
+      // Create new wallet
+      const newWallet = await createAndFundNewWalletForPhone({
+        phone,
+        balanceAmount: await btcAmountFromUsdNumber(MOCKED_LIMIT + 20),
+      })
+
+      // Test limits
+      const usdAmountAboveThreshold = accountLimits.withdrawalLimit + 10
+      const btcThresholdAmount = await btcAmountFromUsdNumber(usdAmountAboveThreshold)
+
+      const senderAccount = await AccountsRepository().findById(newWallet.accountId)
+      if (senderAccount instanceof Error) throw senderAccount
+
+      const { request: uncheckedPaymentRequest } = await createInvoice({
+        lnd: lndOutside1,
+        tokens: Number(btcThresholdAmount.amount),
+      })
+
+      const paymentResult = await Payments.payInvoiceByWalletId({
+        uncheckedPaymentRequest,
+        memo: null,
+        senderWalletId: newWallet.id,
+        senderAccount,
+      })
+
+      expect(paymentResult).toBeInstanceOf(LimitsExceededError)
+      const expectedError = `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`
+      expect((paymentResult as Error).message).toBe(expectedError)
     })
 
-    // Test limits
-    const usdAmountAboveThreshold = accountLimits.withdrawalLimit + 1
-    const btcThresholdAmount = await btcAmountFromUsdNumber(usdAmountAboveThreshold)
+    it("fails to pay when amount exceeds intraLedger limit", async () => {
+      // Create new wallet
+      const newWallet = await createAndFundNewWalletForPhone({
+        phone,
+        balanceAmount: await btcAmountFromUsdNumber(MOCKED_LIMIT + 20),
+      })
 
-    const senderAccount = await AccountsRepository().findById(newWallet.accountId)
-    if (senderAccount instanceof Error) throw senderAccount
+      // Test limits
+      const usdAmountAboveThreshold = accountLimits.intraLedgerLimit + 10
+      const btcThresholdAmount = await btcAmountFromUsdNumber(usdAmountAboveThreshold)
 
-    const { request } = await createInvoice({
-      lnd: lndOutside1,
-      tokens: Number(btcThresholdAmount.amount),
+      const senderAccount = await AccountsRepository().findById(newWallet.accountId)
+      if (senderAccount instanceof Error) throw senderAccount
+
+      const lnInvoice = await Wallets.addInvoiceForSelf({
+        walletId: otherBtcWallet.id,
+        amount: Number(btcThresholdAmount.amount),
+      })
+      if (lnInvoice instanceof Error) throw lnInvoice
+      const { paymentRequest: uncheckedPaymentRequest } = lnInvoice
+
+      const paymentResult = await Payments.payInvoiceByWalletId({
+        uncheckedPaymentRequest,
+        memo: null,
+        senderWalletId: newWallet.id,
+        senderAccount,
+      })
+
+      expect(paymentResult).toBeInstanceOf(LimitsExceededError)
+      const expectedError = `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`
+      expect((paymentResult as Error).message).toBe(expectedError)
     })
 
-    const paymentResult = await Payments.payInvoiceByWalletId({
-      uncheckedPaymentRequest: request,
-      memo: null,
-      senderWalletId: newWallet.id,
-      senderAccount,
+    it("fails to pay when amount exceeds tradeIntraAccount limit", async () => {
+      const usdFundingAmount = paymentAmountFromNumber({
+        amount: MOCKED_LIMIT + 20,
+        currency: WalletCurrency.Usd,
+      })
+      if (usdFundingAmount instanceof Error) throw usdFundingAmount
+
+      // Create new wallets
+      const newBtcWallet = await createAndFundNewWalletForPhone({
+        phone,
+        balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
+      })
+
+      const newUsdWallet = await createAndFundNewWalletForPhone({
+        phone,
+        balanceAmount: usdFundingAmount,
+      })
+
+      // Test limits
+      const usdAmountAboveThreshold = accountLimits.tradeIntraAccountLimit + 10
+      const btcThresholdAmount = await btcAmountFromUsdNumber(usdAmountAboveThreshold)
+
+      expect(newBtcWallet.accountId).toEqual(newUsdWallet.accountId)
+      const senderAccount = await AccountsRepository().findById(newBtcWallet.accountId)
+      if (senderAccount instanceof Error) throw senderAccount
+
+      const cases = [
+        {
+          senderWallet: newBtcWallet,
+          recipientWallet: newUsdWallet,
+          receiveAmount: usdAmountAboveThreshold,
+        },
+        {
+          senderWallet: newUsdWallet,
+          recipientWallet: newBtcWallet,
+          receiveAmount: Number(btcThresholdAmount.amount),
+        },
+      ]
+      for (const { senderWallet, recipientWallet, receiveAmount } of cases) {
+        const lnInvoice = await Wallets.addInvoiceForSelf({
+          walletId: recipientWallet.id,
+          amount: receiveAmount,
+        })
+        if (lnInvoice instanceof Error) throw lnInvoice
+        const { paymentRequest: uncheckedPaymentRequest } = lnInvoice
+
+        const paymentResult = await Payments.payInvoiceByWalletId({
+          uncheckedPaymentRequest,
+          memo: null,
+          senderWalletId: senderWallet.id,
+          senderAccount,
+        })
+
+        expect(paymentResult).toBeInstanceOf(LimitsExceededError)
+        const expectedError = `Cannot transfer more than ${accountLimits.tradeIntraAccountLimit} cents in 24 hours`
+        expect((paymentResult as Error).message).toBe(expectedError)
+      }
     })
-
-    expect(paymentResult).toBeInstanceOf(LimitsExceededError)
-    const expectedError = `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`
-    expect((paymentResult as Error).message).toBe(expectedError)
-  })
-
-  it("fails to pay when amount exceeds intraLedger limit", async () => {
-    // Create new wallet
-    const newWallet = await createAndFundNewWalletForPhone({
-      phone,
-      balanceAmount: await btcAmountFromUsdNumber(MOCKED_LIMIT + 10),
-    })
-
-    // Test limits
-    const usdAmountAboveThreshold = accountLimits.intraLedgerLimit + 1
-    const btcThresholdAmount = await btcAmountFromUsdNumber(usdAmountAboveThreshold)
-
-    const senderAccount = await AccountsRepository().findById(newWallet.accountId)
-    if (senderAccount instanceof Error) throw senderAccount
-
-    const lnInvoice = await Wallets.addInvoiceForSelf({
-      walletId: otherBtcWallet.id,
-      amount: Number(btcThresholdAmount.amount),
-    })
-    if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentRequest: request } = lnInvoice
-
-    const paymentResult = await Payments.payInvoiceByWalletId({
-      uncheckedPaymentRequest: request,
-      memo: null,
-      senderWalletId: newWallet.id,
-      senderAccount,
-    })
-
-    expect(paymentResult).toBeInstanceOf(LimitsExceededError)
-    const expectedError = `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`
-    expect((paymentResult as Error).message).toBe(expectedError)
   })
 })
