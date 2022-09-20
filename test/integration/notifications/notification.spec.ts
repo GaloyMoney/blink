@@ -55,6 +55,7 @@ describe("notification", () => {
         const user = await UsersRepository().findById(ownerId)
         if (user instanceof Error) throw user
 
+        expect(user.deviceTokens).not.toHaveLength(0)
         if (user.deviceTokens && user.deviceTokens.length > 0) usersWithDeviceTokens++
       }
 

@@ -227,30 +227,33 @@ export const createNewWalletFromPhone = async ({
 }: {
   phone: PhoneNumber
   currency: WalletCurrency
-}): Promise<Wallet | ApplicationError> => {
+}): Promise<Wallet> => {
   // Fetch user (account) or create if doesn't exist
-  let accountId: AccountId | undefined = undefined
-  const user = await users.findByPhone(phone)
+  let user = await users.findByPhone(phone)
   if (user instanceof CouldNotFindUserFromPhoneError) {
     const account = await createNewAccount({
       phone,
       phoneMetadataCarrierType: "mobile" as CarrierType,
     })
     if (account instanceof Error) throw account
-    accountId = account.id
-  }
 
-  if (!accountId) {
-    if (user instanceof Error) {
-      return user
-    }
-    accountId = user.defaultAccountId
+    user = await users.findByPhone(phone)
   }
+  if (user instanceof Error) throw user
 
   // Create wallet for account (phone number)
-  return addWallet({
+  const wallet = await addWallet({
     currency,
-    accountId,
+    accountId: user.defaultAccountId,
     type: WalletType.Checking,
   })
+  if (wallet instanceof Error) throw wallet
+
+  // Needed for 'notifications.spec.ts' test to be included in 'sendBalance' function
+  await User.findOneAndUpdate(
+    { _id: toObjectId<UserId>(user.id) },
+    { deviceToken: ["test-token"] },
+  )
+
+  return wallet
 }
