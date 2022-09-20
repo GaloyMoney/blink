@@ -32,6 +32,11 @@ const updateOnChainReceipt = async () => {
   if (txNumber instanceof Error) throw txNumber
 }
 
+const updateOnChainSent = async () => {
+  const txNumber = await Wallets.updateOnChainSent({})
+  if (txNumber instanceof Error) throw txNumber
+}
+
 const deleteExpiredInvoices = async () => {
   await deleteExpiredWalletInvoice()
 }
@@ -67,6 +72,7 @@ const main = async () => {
     updateLnPaymentsCollection,
     updateRoutingRevenues,
     updateOnChainReceipt,
+    updateOnChainSent,
     ...(cronConfig.rebalanceEnabled ? [rebalance] : []),
     deleteExpiredPaymentFlows,
     deleteExpiredInvoices,

@@ -204,6 +204,7 @@ export const OnChainService = (
       getBalance,
       getPendingBalance,
       listIncomingTransactions,
+      listOutgoingTransactions,
       lookupOnChainFee,
       createOnChainAddress,
       getOnChainFeeEstimate,

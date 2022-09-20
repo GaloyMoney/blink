@@ -82,6 +82,10 @@ interface IOnChainService {
     scanDepth: ScanDepth,
   ): Promise<IncomingOnChainTransaction[] | OnChainServiceError>
 
+  listOutgoingTransactions(
+    scanDepth: ScanDepth,
+  ): Promise<OutgoingOnChainTransaction[] | OnChainServiceError>
+
   lookupOnChainFee({
     txHash,
     scanDepth,
