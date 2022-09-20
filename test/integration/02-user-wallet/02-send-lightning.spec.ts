@@ -19,7 +19,6 @@ import {
 } from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
-  LimitsExceededError,
   SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
 import { LedgerTransactionType } from "@domain/ledger"
@@ -99,32 +98,14 @@ jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current
 
 jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
 
-const accountLimits: IAccountLimits = {
-  intraLedgerLimit: 100 as UsdCents,
-  withdrawalLimit: 100 as UsdCents,
-  tradeIntraAccountLimit: 100 as UsdCents,
-}
-
 jest.mock("@config", () => {
   return {
     ...jest.requireActual("@config"),
-    getAccountLimits: jest
-      .fn()
-      .mockReturnValueOnce({
-        intraLedgerLimit: 100 as UsdCents,
-        withdrawalLimit: 100 as UsdCents,
-        tradeIntraAccountLimit: 100 as UsdCents,
-      })
-      .mockReturnValueOnce({
-        intraLedgerLimit: 100 as UsdCents,
-        withdrawalLimit: 100 as UsdCents,
-        tradeIntraAccountLimit: 100 as UsdCents,
-      })
-      .mockReturnValue({
-        intraLedgerLimit: 100_000 as UsdCents,
-        withdrawalLimit: 100_000 as UsdCents,
-        tradeIntraAccountLimit: 100_000 as UsdCents,
-      }),
+    getAccountLimits: jest.fn().mockReturnValue({
+      intraLedgerLimit: 100_000 as UsdCents,
+      withdrawalLimit: 100_000 as UsdCents,
+      tradeIntraAccountLimit: 100_000 as UsdCents,
+    }),
   }
 })
 
@@ -234,65 +215,6 @@ afterAll(() => {
 })
 
 describe("UserWallet - Lightning Pay", () => {
-  it("fails to pay when withdrawalLimit exceeded", async () => {
-    const usdAmountAboveThreshold = paymentAmountFromNumber({
-      amount: accountLimits.withdrawalLimit + 10,
-      currency: WalletCurrency.Usd,
-    })
-    expect(usdAmountAboveThreshold).not.toBeInstanceOf(Error)
-    if (usdAmountAboveThreshold instanceof Error) throw usdAmountAboveThreshold
-
-    const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
-    if (midPriceRatio instanceof Error) throw midPriceRatio
-    const btcThresholdAmount = midPriceRatio.convertFromUsd(usdAmountAboveThreshold)
-
-    const { request } = await createInvoice({
-      lnd: lndOutside1,
-      tokens: Number(btcThresholdAmount.amount),
-    })
-    const paymentResult = await Payments.payInvoiceByWalletId({
-      uncheckedPaymentRequest: request,
-      memo: null,
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-
-    expect(paymentResult).toBeInstanceOf(LimitsExceededError)
-    const expectedError = `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`
-    expect((paymentResult as Error).message).toBe(expectedError)
-  })
-
-  it("fails to pay when amount exceeds intraLedger limit", async () => {
-    const usdAmountAboveThreshold = paymentAmountFromNumber({
-      amount: accountLimits.intraLedgerLimit + 10,
-      currency: WalletCurrency.Usd,
-    })
-    expect(usdAmountAboveThreshold).not.toBeInstanceOf(Error)
-    if (usdAmountAboveThreshold instanceof Error) throw usdAmountAboveThreshold
-
-    const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
-    if (midPriceRatio instanceof Error) throw midPriceRatio
-    const btcThresholdAmount = midPriceRatio.convertFromUsd(usdAmountAboveThreshold)
-
-    const lnInvoice = await Wallets.addInvoiceForSelf({
-      walletId: walletIdA as WalletId,
-      amount: Number(btcThresholdAmount.amount),
-    })
-    if (lnInvoice instanceof Error) throw lnInvoice
-    const { paymentRequest: request } = lnInvoice
-
-    const paymentResult = await Payments.payInvoiceByWalletId({
-      uncheckedPaymentRequest: request,
-      memo: null,
-      senderWalletId: walletIdB,
-      senderAccount: accountB,
-    })
-
-    expect(paymentResult).toBeInstanceOf(LimitsExceededError)
-    const expectedError = `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`
-    expect((paymentResult as Error).message).toBe(expectedError)
-  })
-
   it("sends to another Galoy user with memo", async () => {
     const memo = "invoiceMemo"
 
