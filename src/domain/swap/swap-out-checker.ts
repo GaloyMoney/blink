@@ -1,4 +1,4 @@
-import { WalletCurrency, ZERO_SATS } from "@domain/shared"
+import { ZERO_SATS } from "@domain/shared"
 
 import { SwapServiceError } from "./errors"
 
