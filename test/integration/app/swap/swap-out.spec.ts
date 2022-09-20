@@ -1,6 +1,5 @@
 import { LoopService } from "@services/loopd"
 
-import { toSats } from "@domain/bitcoin"
 import {
   NoSwapAction,
   SwapClientNotResponding,
@@ -15,11 +14,12 @@ import {
   LND2_LOOP_CONFIG,
 } from "@app/swap/get-active-loopd"
 import { swapOut } from "@app/swap"
+import { BtcPaymentAmount, WalletCurrency, ZERO_SATS } from "@domain/shared"
 
 describe("Swap", () => {
   const activeLoopd = getActiveLoopd()
   const swapService = LoopService(activeLoopd ?? LND1_LOOP_CONFIG)
-  const amount = toSats(250000)
+  const amount: BtcPaymentAmount = { amount: 250000n, currency: WalletCurrency.Btc }
 
   it("Swap out app returns a SwapOutResult or NoSwapAction", async () => {
     const isSwapServerUp = await swapService.healthCheck()
@@ -94,7 +94,8 @@ describe("Swap", () => {
   it("Swap out without enough funds returns an error", async () => {
     const isSwapServerUp = await swapService.healthCheck()
     if (!(isSwapServerUp instanceof Error)) {
-      const swapResult = await swapService.swapOut({ amount: toSats(5_000_000_000) })
+      const btc = { amount: 5_000_000_000n, currency: WalletCurrency.Btc }
+      const swapResult = await swapService.swapOut({ amount: btc })
       if (swapResult instanceof SwapClientNotResponding) {
         return
       }
@@ -107,7 +108,10 @@ describe("Swap", () => {
     if (!(isSwapServerUp instanceof Error)) {
       // thresholds
       const { onChain } = await lndsBalances()
-      const minOnChainHotWalletBalanceConfig = toSats(onChain + 50000)
+      const minOnChainHotWalletBalanceConfig = {
+        amount: BigInt(onChain + 50000),
+        currency: WalletCurrency.Btc,
+      }
 
       // check if wallet is depleted
       const swapOutChecker = SwapOutChecker({
@@ -115,12 +119,12 @@ describe("Swap", () => {
         swapOutAmount: amount,
       })
       const amountToSwapOut = swapOutChecker.getSwapOutAmount({
-        currentOnChainHotWalletBalance: toSats(0),
-        currentOutboundLiquidityBalance: toSats(0),
+        currentOnChainHotWalletBalance: ZERO_SATS,
+        currentOutboundLiquidityBalance: ZERO_SATS,
       })
-
-      if (amountToSwapOut > 0) {
-        const swapResult = await swapService.swapOut({ amount: toSats(amount) })
+      if (amountToSwapOut instanceof Error) return amountToSwapOut
+      if (amountToSwapOut.amount > 0) {
+        const swapResult = await swapService.swapOut({ amount: amountToSwapOut })
         if (swapResult instanceof SwapClientNotResponding) {
           return
         }
@@ -140,13 +144,11 @@ describe("Swap", () => {
   it("Swap out quote return quote result", async () => {
     const isSwapServerUp = await swapService.healthCheck()
     if (!(isSwapServerUp instanceof Error)) {
-      const quoteResult = await swapService.swapOutQuote(toSats(250000))
+      const btc: BtcPaymentAmount = { amount: 250000n, currency: WalletCurrency.Btc }
+      const quoteResult = await swapService.swapOutQuote(btc)
+      if (quoteResult instanceof Error) throw quoteResult
       expect(quoteResult).not.toBeInstanceOf(Error)
-      expect(quoteResult).toEqual(
-        expect.objectContaining({
-          swapFeeSat: expect.any(Number),
-        }),
-      )
+      expect(quoteResult.swapFeeSat).toBeDefined()
     }
   })
 
@@ -154,12 +156,9 @@ describe("Swap", () => {
     const isSwapServerUp = await swapService.healthCheck()
     if (!(isSwapServerUp instanceof Error)) {
       const termsResult = await swapService.swapOutTerms()
+      if (termsResult instanceof Error) throw termsResult
       expect(termsResult).not.toBeInstanceOf(Error)
-      expect(termsResult).toEqual(
-        expect.objectContaining({
-          minSwapAmount: expect.any(Number),
-        }),
-      )
+      expect(termsResult.maxSwapAmount).toBeDefined()
     }
   })
 })

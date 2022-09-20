@@ -23,8 +23,8 @@ make mine-block
 # start the loop client with REST API
 export LOOP_SERVER_INTERNAL_IP=$(docker inspect $(docker ps -q -f name="loopserver")  -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')
 echo "LOOP_SERVER_INTERNAL_IP is $LOOP_SERVER_INTERNAL_IP"
-docker compose up loopd1 -d 
-docker compose up loopd2 -d 
+docker compose up loopd1 -d
+docker compose up loopd2 -d
 
 echo ""
 echo "waiting 5 seconds..."

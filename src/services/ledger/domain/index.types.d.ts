@@ -176,12 +176,12 @@ type LnLedgerTransactionMetadataUpdate = {
 
 type SwapTransactionMetadataUpdate = {
   hash: SwapHash
-  swapAmount: Satoshis
+  swapAmount: number
   swapId: SwapId
   htlcAddress: OnChainAddress
-  onchainMinerFee: Satoshis
-  offchainRoutingFee: Satoshis
-  serviceProviderFee: Satoshis
+  onchainMinerFee: number
+  offchainRoutingFee: number
+  serviceProviderFee: number
   serviceProvider: string
   currency: WalletCurrency
   type: LedgerTransactionType

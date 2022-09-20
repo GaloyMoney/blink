@@ -14,8 +14,8 @@ import { toCents } from "@domain/fiat"
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
 import { toDays, toSeconds } from "@domain/primitives"
-
 import { checkedToPubkey } from "@domain/bitcoin/lightning"
+import { WalletCurrency } from "@domain/shared"
 
 import { configSchema } from "./schema"
 import { ConfigError } from "./error"
@@ -307,8 +307,11 @@ export const getAccountsConfig = (config = yamlConfig): AccountsConfig => ({
 export const getSwapConfig = (): SwapConfig => {
   const config = yamlConfig.swap
   return {
-    minOnChainHotWalletBalance: toSats(config.minOnChainHotWalletBalance),
-    swapOutAmount: toSats(config.swapOutAmount),
+    minOnChainHotWalletBalance: {
+      amount: BigInt(config.minOnChainHotWalletBalance),
+      currency: WalletCurrency.Btc,
+    },
+    swapOutAmount: { amount: BigInt(config.swapOutAmount), currency: WalletCurrency.Btc },
     lnd1loopRestEndpoint: config.lnd1loopRestEndpoint,
     lnd2loopRestEndpoint: config.lnd2loopRestEndpoint,
     lnd1loopRpcEndpoint: config.lnd1loopRpcEndpoint,

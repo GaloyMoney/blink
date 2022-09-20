@@ -1,12 +1,9 @@
-import { toSats } from "@domain/bitcoin"
-
 import { admin as LedgerAdmin } from "@services/ledger/admin"
 import { WalletCurrency } from "@domain/shared"
-import { LedgerTransactionType } from "@domain/ledger"
-import { SwapProvider, SwapState, SwapType } from "@domain/swap"
+import { SwapState, SwapType } from "@domain/swap"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 import { SwapErrorNoActiveLoopdNode } from "@domain/swap/errors"
-import { sha256 } from "@domain/bitcoin/lightning"
+import { DuplicateError } from "@domain/errors"
 
 export const startSwapMonitor = async (swapService: ISwapService) => {
   const isSwapServerUp = await swapService.healthCheck()
@@ -20,28 +17,28 @@ export const startSwapMonitor = async (swapService: ISwapService) => {
 export const handleSwapOutCompleted = async (swapStatus: SwapStatusResultWrapper) => {
   if (swapStatus.parsedSwapData) {
     const type = swapStatus.parsedSwapData.swapType
-    const onchainMinerFee = toSats(swapStatus.parsedSwapData.onchainMinerFee)
-    const offchainRoutingFee = toSats(swapStatus.parsedSwapData.offchainRoutingFee)
-    const serviceProviderFee = toSats(swapStatus.parsedSwapData.serviceProviderFee)
-    const totalFees = onchainMinerFee + offchainRoutingFee + serviceProviderFee
+    const onchainMinerFee = {
+      amount: BigInt(swapStatus.parsedSwapData.onchainMinerFee),
+      currency: WalletCurrency.Btc,
+    }
+    const offchainRoutingFee = {
+      amount: BigInt(swapStatus.parsedSwapData.offchainRoutingFee),
+      currency: WalletCurrency.Btc,
+    }
+    const serviceProviderFee = {
+      amount: BigInt(swapStatus.parsedSwapData.serviceProviderFee),
+      currency: WalletCurrency.Btc,
+    }
+    const totalFees =
+      onchainMinerFee.amount + offchainRoutingFee.amount + serviceProviderFee.amount
     const state = swapStatus.parsedSwapData.state
-    if (type === SwapType.Swapout && state === SwapState.Success && totalFees > 0) {
-      const swapId = swapStatus.parsedSwapData.id as SwapId
-      const swapFeeMetadata: SwapTransactionMetadataUpdate = {
-        hash: sha256(Buffer.from(swapId)) as SwapHash,
-        swapId: swapStatus.parsedSwapData.id as SwapId,
-        swapAmount: toSats(swapStatus.parsedSwapData.amt),
-        htlcAddress: swapStatus.parsedSwapData.htlcAddress as OnChainAddress,
-        onchainMinerFee,
-        offchainRoutingFee,
-        serviceProviderFee,
-        serviceProvider: SwapProvider.Loop,
-        currency: WalletCurrency.Btc,
-        type: LedgerTransactionType.Fee,
-      }
-      await recordSwapFeeToLedger(swapFeeMetadata)
+    if (type === SwapType.Swapout && state === SwapState.Success && totalFees > 0n) {
+      const journalResponse = await LedgerAdmin.addSwapFeeTxSend(
+        swapStatus.parsedSwapData,
+      )
+      if (journalResponse instanceof DuplicateError) return
       addAttributesToCurrentSpan({
-        "swap.success": JSON.stringify(swapFeeMetadata),
+        "swap.success": JSON.stringify(journalResponse),
       })
     }
     if (state === SwapState.Failed) {
@@ -54,15 +51,4 @@ export const handleSwapOutCompleted = async (swapStatus: SwapStatusResultWrapper
       })
     }
   }
-}
-
-export async function recordSwapFeeToLedger(
-  swapFeeMetadata: SwapTransactionMetadataUpdate,
-) {
-  const description = `Swap out fee for swapId ${swapFeeMetadata.swapId}`
-  const journalResponse = await LedgerAdmin.addSwapFeeTxSend({
-    swapFeeMetadata,
-    description,
-  })
-  return journalResponse
 }

@@ -5,8 +5,9 @@ import {
   UnknownLedgerError,
 } from "@domain/ledger"
 import { WalletCurrency } from "@domain/shared"
-
 import { DuplicateError } from "@domain/errors"
+import { SwapProvider } from "@domain/swap"
+import { sha256 } from "@domain/bitcoin/lightning"
 
 import { bitcoindAccountingPath, lndAccountingPath } from "./accounts"
 import { MainBook, Transaction } from "./books"
@@ -105,13 +106,22 @@ export const admin = {
     }
   },
 
-  addSwapFeeTxSend: async ({
-    swapFeeMetadata,
-    description,
-  }: {
-    swapFeeMetadata: SwapTransactionMetadataUpdate
-    description: string
-  }): Promise<LedgerJournal | LedgerServiceError | DuplicateError> => {
+  addSwapFeeTxSend: async (
+    swapResult: SwapStatusResult,
+  ): Promise<LedgerJournal | LedgerServiceError | DuplicateError> => {
+    const swapFeeMetadata: SwapTransactionMetadataUpdate = {
+      hash: sha256(Buffer.from(swapResult.id)) as SwapHash,
+      swapId: swapResult.id as SwapId,
+      swapAmount: Number(swapResult.amt),
+      htlcAddress: swapResult.htlcAddress as OnChainAddress,
+      onchainMinerFee: Number(swapResult.onchainMinerFee),
+      offchainRoutingFee: Number(swapResult.offchainRoutingFee),
+      serviceProviderFee: Number(swapResult.serviceProviderFee),
+      serviceProvider: SwapProvider.Loop,
+      currency: WalletCurrency.Btc,
+      type: LedgerTransactionType.Fee,
+    }
+    const description = `Swap out fee for swapId ${swapFeeMetadata.swapId}`
     const totalSwapFee =
       swapFeeMetadata.offchainRoutingFee +
       swapFeeMetadata.onchainMinerFee +
@@ -123,12 +133,12 @@ export const admin = {
         const bankOwnerWalletId = await getBankOwnerWalletId()
         const bankOwnerPath = toLiabilitiesWalletId(bankOwnerWalletId)
         const entry = MainBook.entry(description)
-          .credit(lndAccountingPath, totalSwapFee, {
+          .credit(lndAccountingPath, Number(totalSwapFee), {
             currency: WalletCurrency.Btc,
             pending: false,
             type: LedgerTransactionType.Fee,
           })
-          .debit(bankOwnerPath, totalSwapFee, {
+          .debit(bankOwnerPath, Number(totalSwapFee), {
             currency: WalletCurrency.Btc,
             pending: false,
             type: LedgerTransactionType.Fee,

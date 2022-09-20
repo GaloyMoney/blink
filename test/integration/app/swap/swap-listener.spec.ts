@@ -1,6 +1,6 @@
 import { handleSwapOutCompleted } from "@app/swap"
 import { LND1_LOOP_CONFIG } from "@app/swap/get-active-loopd"
-import { toSats } from "@domain/bitcoin"
+import { WalletCurrency } from "@domain/shared"
 import { LoopService } from "@services/loopd"
 import { sleep } from "@utils"
 
@@ -8,7 +8,7 @@ import { mineBlockAndSyncAll } from "test/helpers"
 
 describe("Swap", () => {
   it("Initiate Swap out, then listen for events", async () => {
-    const amount = 250000
+    const amount = { amount: BigInt(250000), currency: WalletCurrency.Btc }
     const swapService = LoopService(LND1_LOOP_CONFIG)
     const isSwapServerUp = await swapService.healthCheck()
     if (isSwapServerUp instanceof Error === false) {
@@ -21,7 +21,7 @@ describe("Swap", () => {
           resolve(true)
         })
         // 2) Trigger Swap Out
-        await swapService.swapOut({ amount: toSats(amount) })
+        await swapService.swapOut({ amount })
         await sleep(1000)
         // 3) Mine blocks and wait a few seconds between rounds
         await mineBlockAndSyncAll()

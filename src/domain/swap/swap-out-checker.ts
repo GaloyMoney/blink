@@ -1,4 +1,4 @@
-import { toSats } from "@domain/bitcoin"
+import { WalletCurrency, ZERO_SATS } from "@domain/shared"
 
 import { SwapServiceError } from "./errors"
 
@@ -6,8 +6,8 @@ export const SwapOutChecker = ({
   minOnChainHotWalletBalanceConfig,
   swapOutAmount,
 }: {
-  minOnChainHotWalletBalanceConfig: Satoshis
-  swapOutAmount: Satoshis
+  minOnChainHotWalletBalanceConfig: BtcPaymentAmount
+  swapOutAmount: BtcPaymentAmount
 }) => {
   // checks the amount of "swap out" that is need
   // if return "0" then no swap out needed
@@ -18,21 +18,22 @@ export const SwapOutChecker = ({
     currentOnChainHotWalletBalance,
     currentOutboundLiquidityBalance,
   }: {
-    currentOnChainHotWalletBalance: Satoshis
-    currentOutboundLiquidityBalance: Satoshis
-  }): Satoshis | SwapServiceError => {
+    currentOnChainHotWalletBalance: BtcPaymentAmount
+    currentOutboundLiquidityBalance: BtcPaymentAmount
+  }): BtcPaymentAmount | SwapServiceError => {
     const isOnChainWalletDepleted =
-      currentOnChainHotWalletBalance < minOnChainHotWalletBalanceConfig
-    const hasEnoughOutboundLiquidity = currentOutboundLiquidityBalance > swapOutAmount
+      currentOnChainHotWalletBalance.amount < minOnChainHotWalletBalanceConfig.amount
+    const hasEnoughOutboundLiquidity =
+      currentOutboundLiquidityBalance.amount > swapOutAmount.amount
     if (!hasEnoughOutboundLiquidity) {
       return new SwapServiceError(
-        `Not enough outbound liquidity. Need at least ${swapOutAmount} but we only have ${currentOutboundLiquidityBalance}`,
+        `Not enough outbound liquidity. Need at least ${swapOutAmount.amount} but we only have ${currentOutboundLiquidityBalance.amount}`,
       )
     }
     if (isOnChainWalletDepleted && hasEnoughOutboundLiquidity) {
-      return toSats(swapOutAmount)
+      return swapOutAmount
     }
-    return toSats(0)
+    return ZERO_SATS
   }
   return {
     getSwapOutAmount,

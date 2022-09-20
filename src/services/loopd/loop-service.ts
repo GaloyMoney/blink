@@ -16,6 +16,8 @@ import { BtcNetwork } from "@domain/bitcoin"
 
 import { SwapState as DomainSwapState } from "@domain/swap/index"
 
+import { WalletCurrency } from "@domain/shared"
+
 import { SwapClientClient } from "./protos/loop_grpc_pb"
 import {
   FailureReason,
@@ -73,7 +75,7 @@ export const LoopService = ({
     maxSwapFee,
     swapDestAddress,
   }: SwapOutArgs): Promise<SwapOutResult | SwapServiceError> {
-    const fee = maxSwapFee ? maxSwapFee : 20000
+    const fee = maxSwapFee ? Number(maxSwapFee.amount) : 20000
     try {
       const request = new LoopOutRequest()
       // on regtest, set the publication deadline to 0 for faster swaps, otherwise
@@ -82,7 +84,7 @@ export const LoopService = ({
       const swapPublicationDeadline =
         btcNetwork === BtcNetwork.regtest ? 0 : Date.now() + thirtyMins
       if (swapDestAddress) request.setDest(swapDestAddress)
-      request.setAmt(amount)
+      request.setAmt(Number(amount.amount))
       request.setMaxSwapFee(fee)
       request.setMaxPrepayRoutingFee(fee)
       request.setMaxSwapFee(fee)
@@ -141,18 +143,27 @@ export const LoopService = ({
   }
 
   const swapOutQuote = async (
-    amt: Satoshis,
+    btcAmount: BtcPaymentAmount,
   ): Promise<SwapOutQuoteResult | SwapServiceError> => {
     try {
       const request = new QuoteRequest()
-      request.setAmt(amt)
+      request.setAmt(Number(btcAmount.amount))
       const resp = await clientSwapOutQuote(request)
       return {
         cltvDelta: resp.getCltvDelta(),
         confTarget: resp.getConfTarget(),
-        htlcSweepFeeSat: resp.getHtlcSweepFeeSat() as Satoshis,
-        prepayAmtSat: resp.getPrepayAmtSat() as Satoshis,
-        swapFeeSat: resp.getSwapFeeSat() as Satoshis,
+        htlcSweepFeeSat: {
+          amount: BigInt(resp.getHtlcSweepFeeSat()),
+          currency: WalletCurrency.Btc,
+        },
+        prepayAmtSat: {
+          amount: BigInt(resp.getPrepayAmtSat()),
+          currency: WalletCurrency.Btc,
+        },
+        swapFeeSat: {
+          amount: BigInt(resp.getSwapFeeSat()),
+          currency: WalletCurrency.Btc,
+        },
         swapPaymentDest: resp.getSwapPaymentDest().toString() as OnChainAddress,
       }
     } catch (error) {
@@ -166,9 +177,15 @@ export const LoopService = ({
       const resp = await clientSwapOutTerms(request)
       return {
         maxCltvDelta: resp.getMaxCltvDelta(),
-        maxSwapAmount: resp.getMaxSwapAmount() as Satoshis,
+        maxSwapAmount: {
+          amount: BigInt(resp.getMaxSwapAmount()),
+          currency: WalletCurrency.Btc,
+        },
         minCltvDelta: resp.getMinCltvDelta(),
-        minSwapAmount: resp.getMinSwapAmount() as Satoshis,
+        minSwapAmount: {
+          amount: BigInt(resp.getMinSwapAmount()),
+          currency: WalletCurrency.Btc,
+        },
       }
     } catch (error) {
       return new UnknownSwapServiceError(error)

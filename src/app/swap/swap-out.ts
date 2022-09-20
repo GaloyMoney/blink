@@ -2,12 +2,13 @@ import { BTC_NETWORK, getSwapConfig } from "@config"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { SwapServiceError, NoSwapAction } from "@domain/swap/errors"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { toSats } from "@domain/bitcoin"
 import { SwapOutChecker } from "@domain/swap"
 import { baseLogger } from "@services/logger"
 import { LoopService } from "@services/loopd"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 import { LndService } from "@services/lnd"
+
+import { WalletCurrency } from "@domain/shared"
 
 import { getActiveLoopd } from "./get-active-loopd"
 import { getSwapDestAddress } from "./get-swap-dest-address"
@@ -34,19 +35,25 @@ export const swapOut = async (): Promise<
 
   const swapChecker = SwapOutChecker({
     minOnChainHotWalletBalanceConfig,
-    swapOutAmount: toSats(getSwapConfig().swapOutAmount),
+    swapOutAmount: getSwapConfig().swapOutAmount,
   })
   const swapOutAmount = swapChecker.getSwapOutAmount({
-    currentOnChainHotWalletBalance: onChainBalance,
-    currentOutboundLiquidityBalance: outbound,
+    currentOnChainHotWalletBalance: {
+      amount: BigInt(onChainBalance),
+      currency: WalletCurrency.Btc,
+    },
+    currentOutboundLiquidityBalance: {
+      amount: BigInt(outbound),
+      currency: WalletCurrency.Btc,
+    },
   })
 
   if (swapOutAmount instanceof Error) return swapOutAmount
-  if (swapOutAmount === 0) return new NoSwapAction()
+  if (swapOutAmount.amount === 0n) return new NoSwapAction()
 
   logger.info({ swapOutAmount, activeLoopdConfig }, `Initiating swapout`)
   addAttributesToCurrentSpan({
-    "swap.amount": swapOutAmount,
+    "swap.amount": Number(swapOutAmount.amount),
   })
   const swapDestAddress = await getSwapDestAddress()
   if (swapDestAddress instanceof Error) return swapDestAddress

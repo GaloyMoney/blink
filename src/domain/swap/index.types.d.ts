@@ -13,12 +13,12 @@ interface ISwapService {
   swapOut: (swapOutArgs: SwapOutArgs) => Promise<SwapOutResult | SwapServiceError>
   swapListener: () => SwapClientReadableStream<SwapListenerResponse | SwapServiceError>
   swapOutTerms: () => Promise<SwapOutTermsResult | SwapServiceError>
-  swapOutQuote: (amt: Satoshis) => Promise<SwapOutQuoteResult | SwapServiceError>
+  swapOutQuote: (amt: BtcPaymentAmount) => Promise<SwapOutQuoteResult | SwapServiceError>
 }
 
 type SwapOutArgs = {
-  amount: Satoshis
-  maxSwapFee?: Satoshis
+  amount: BtcPaymentAmount
+  maxSwapFee?: BtcPaymentAmount
   swapDestAddress?: OnChainAddress
 }
 
@@ -50,24 +50,24 @@ type SwapStatusResult = {
 }
 
 type SwapOutTermsResult = {
-  minSwapAmount: Satoshis
-  maxSwapAmount: Satoshis
+  minSwapAmount: BtcPaymentAmount
+  maxSwapAmount: BtcPaymentAmount
   minCltvDelta: number
   maxCltvDelta: number
 }
 
 type SwapOutQuoteResult = {
-  swapFeeSat: Satoshis
-  prepayAmtSat: Satoshis
-  htlcSweepFeeSat: Satoshis
+  swapFeeSat: BtcPaymentAmount
+  prepayAmtSat: BtcPaymentAmount
+  htlcSweepFeeSat: BtcPaymentAmount
   swapPaymentDest: OnChainAddress
   cltvDelta: number
   confTarget: number
 }
 
 type SwapConfig = {
-  minOnChainHotWalletBalance: Satoshis
-  swapOutAmount: Satoshis
+  minOnChainHotWalletBalance: BtcPaymentAmount
+  swapOutAmount: BtcPaymentAmount
   lnd1loopRestEndpoint: string
   lnd2loopRestEndpoint: string
   lnd1loopRpcEndpoint: string
