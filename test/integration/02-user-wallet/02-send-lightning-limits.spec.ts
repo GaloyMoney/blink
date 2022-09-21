@@ -27,6 +27,8 @@ jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current
 jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
 
 const MOCKED_LIMIT = 100 as UsdCents
+const AMOUNT_ABOVE_THRESHOLD = 10 as UsdCents
+const MOCKED_BALANCE_ABOVE_THRESHOLD = (MOCKED_LIMIT + 20) as UsdCents
 const accountLimits: IAccountLimits = {
   intraLedgerLimit: MOCKED_LIMIT,
   withdrawalLimit: MOCKED_LIMIT,
@@ -287,11 +289,12 @@ describe("UserWallet Limits - Lightning Pay", () => {
       // Create new wallet
       const newWallet = await createAndFundNewWalletForPhone({
         phone,
-        balanceAmount: await btcAmountFromUsdNumber(MOCKED_LIMIT + 20),
+        balanceAmount: await btcAmountFromUsdNumber(MOCKED_BALANCE_ABOVE_THRESHOLD),
       })
 
       // Test limits
-      const usdAmountAboveThreshold = accountLimits.withdrawalLimit + 10
+      const usdAmountAboveThreshold =
+        accountLimits.withdrawalLimit + AMOUNT_ABOVE_THRESHOLD
       const btcThresholdAmount = await btcAmountFromUsdNumber(usdAmountAboveThreshold)
 
       const senderAccount = await AccountsRepository().findById(newWallet.accountId)
@@ -307,11 +310,12 @@ describe("UserWallet Limits - Lightning Pay", () => {
       // Create new wallet
       const newWallet = await createAndFundNewWalletForPhone({
         phone,
-        balanceAmount: await btcAmountFromUsdNumber(MOCKED_LIMIT + 20),
+        balanceAmount: await btcAmountFromUsdNumber(MOCKED_BALANCE_ABOVE_THRESHOLD),
       })
 
       // Test limits
-      const usdAmountAboveThreshold = accountLimits.intraLedgerLimit + 10
+      const usdAmountAboveThreshold =
+        accountLimits.intraLedgerLimit + AMOUNT_ABOVE_THRESHOLD
       const btcThresholdAmount = await btcAmountFromUsdNumber(usdAmountAboveThreshold)
 
       const senderAccount = await AccountsRepository().findById(newWallet.accountId)
@@ -325,7 +329,7 @@ describe("UserWallet Limits - Lightning Pay", () => {
 
     it("fails to pay when amount exceeds tradeIntraAccount limit", async () => {
       const usdFundingAmount = paymentAmountFromNumber({
-        amount: MOCKED_LIMIT + 20,
+        amount: MOCKED_BALANCE_ABOVE_THRESHOLD,
         currency: WalletCurrency.Usd,
       })
       if (usdFundingAmount instanceof Error) throw usdFundingAmount
@@ -342,7 +346,8 @@ describe("UserWallet Limits - Lightning Pay", () => {
       })
 
       // Test limits
-      const usdAmountAboveThreshold = accountLimits.tradeIntraAccountLimit + 10
+      const usdAmountAboveThreshold =
+        accountLimits.tradeIntraAccountLimit + AMOUNT_ABOVE_THRESHOLD
       const btcThresholdAmount = await btcAmountFromUsdNumber(usdAmountAboveThreshold)
 
       const senderAccount = await AccountsRepository().findById(newBtcWallet.accountId)
@@ -365,14 +370,14 @@ describe("UserWallet Limits - Lightning Pay", () => {
 
       // Create new wallet
       const usdFundingAmount = paymentAmountFromNumber({
-        amount: MOCKED_LIMIT + 20,
+        amount: MOCKED_BALANCE_ABOVE_THRESHOLD,
         currency: WalletCurrency.Usd,
       })
       if (usdFundingAmount instanceof Error) throw usdFundingAmount
 
       const newBtcWallet = await createAndFundNewWalletForPhone({
         phone,
-        balanceAmount: await btcAmountFromUsdNumber(MOCKED_LIMIT + 20),
+        balanceAmount: await btcAmountFromUsdNumber(MOCKED_BALANCE_ABOVE_THRESHOLD),
       })
 
       const newUsdWallet = await createAndFundNewWalletForPhone({
@@ -385,7 +390,7 @@ describe("UserWallet Limits - Lightning Pay", () => {
       const partialUsdSendAmount = Math.floor(accountLimits[limit] / SPLITS)
       const partialBtcSendAmount = await btcAmountFromUsdNumber(partialUsdSendAmount)
 
-      const usdAmountAboveThreshold = 10
+      const usdAmountAboveThreshold = AMOUNT_ABOVE_THRESHOLD
       const btcAmountAboveThreshold = await btcAmountFromUsdNumber(
         usdAmountAboveThreshold,
       )
