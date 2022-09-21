@@ -88,7 +88,7 @@
     "mongoose": "^6.6.0",
     "node-2fa": "^2.0.2",
     "node-cache": "^5.1.2",
-    "pino": "^8.4.2",
+    "pino": "^8.6.0",
     "pino-http": "^8.2.0",
     "prom-client": "^14.1.0",
     "rate-limiter-flexible": "^2.3.10",
@@ -99,7 +99,7 @@
   },
   "devDependencies": {
     "@apollo/client": "^3.6.6",
-    "@babel/core": "^7.18.13",
+    "@babel/core": "^7.19.1",
     "@babel/preset-env": "^7.18.10",
     "@graphql-tools/jest-transform": "^1.2.1",
     "@jest/test-sequencer": "^29.0.1",
