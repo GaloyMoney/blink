@@ -258,7 +258,7 @@ const createWalletGauge = ({
         return cache.getOrSet({
           key: name,
           ttlSecs: toSeconds(SECS_PER_5_MINS * 3),
-          fn: getWalletBalancePromise,
+          getForCaching: getWalletBalancePromise,
         })
       }
     },

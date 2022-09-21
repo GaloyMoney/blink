@@ -25,6 +25,13 @@ type IncomingOnChainTransaction = {
   uniqueAddresses: () => OnChainAddress[]
 }
 
+type IncomingOnChainTransactionFromCache = {
+  confirmations: number
+  rawTx: OnChainTransaction
+  fee: Satoshis
+  createdAt: string
+}
+
 type OutgoingOnChainTransaction = {
   confirmations: number
   rawTx: OnChainTransaction

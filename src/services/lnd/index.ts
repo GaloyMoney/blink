@@ -770,7 +770,7 @@ const resolvePaymentStatus = async ({
   const currentBlockHeight = await cache.getOrSet({
     key: CacheKeys.BlockHeight,
     ttlSecs: SECS_PER_5_MINS,
-    fn: async () => {
+    getForCaching: async () => {
       const { current_block_height } = await getWalletInfo({ lnd })
       return current_block_height
     },
@@ -783,7 +783,7 @@ const resolvePaymentStatus = async ({
     const closedChannels = await cache.getOrSet({
       key: CacheKeys.ClosedChannels,
       ttlSecs: SECS_PER_5_MINS,
-      fn: async () => {
+      getForCaching: async () => {
         const { channels } = await getClosedChannels({ lnd })
         return channels
       },

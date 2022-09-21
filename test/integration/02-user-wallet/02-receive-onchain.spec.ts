@@ -312,6 +312,7 @@ describe("UserWallet - On chain", () => {
 
     await sleep(1000)
 
+    // Check pendingTx from chain
     const { result: txs, error } = await Wallets.getTransactionsForWalletId({
       walletId: walletIdA,
     })
@@ -325,6 +326,20 @@ describe("UserWallet - On chain", () => {
     expect(pendingTx.settlementVia.type).toBe("onchain")
     expect(pendingTx.settlementAmount).toBe(amountSats)
     expect(pendingTx.initiationVia.address).toBe(address)
+    expect(pendingTx.createdAt).toBeInstanceOf(Date)
+
+    // Check pendingTx from cache
+    const { result: txsFromCache, error: errorFromCache } =
+      await Wallets.getTransactionsForWalletId({
+        walletId: walletIdA,
+      })
+    if (errorFromCache instanceof Error || txsFromCache === null) {
+      throw errorFromCache
+    }
+    const pendingTxsFromCache = txsFromCache.filter(
+      ({ status }) => status === TxStatus.Pending,
+    )
+    expect(pendingTxsFromCache[0]?.createdAt).toBeInstanceOf(Date)
 
     await sleep(1000)
 
