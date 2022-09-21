@@ -34,17 +34,23 @@ const accountLimits: IAccountLimits = {
 }
 
 jest.mock("@config", () => {
+  const config = jest.requireActual("@config")
   return {
-    ...jest.requireActual("@config"),
+    ...config,
     getAccountLimits: jest.fn().mockReturnValue({
       intraLedgerLimit: 100 as UsdCents,
       withdrawalLimit: 100 as UsdCents,
       tradeIntraAccountLimit: 100 as UsdCents,
     }),
+    getInvoiceCreateAttemptLimits: jest.fn().mockReturnValue({
+      ...config.getInvoiceCreateAttemptLimits(),
+      points: 100,
+    }),
   }
 })
 
 const newDealerFns = NewDealerPriceService()
+const dealerUsdFromBtc = newDealerFns.getCentsFromSatsForImmediateBuy
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
@@ -228,9 +234,7 @@ const successLimitsPaymentTests = ({
     if (senderUsdWallet === undefined) throw new Error("'senderUsdWallet' undefined")
     expect(senderBtcWallet.accountId).toEqual(senderUsdWallet.accountId)
 
-    const usdPaymentAmount = await newDealerFns.getCentsFromSatsForImmediateBuy(
-      btcPaymentAmount,
-    )
+    const usdPaymentAmount = await dealerUsdFromBtc(btcPaymentAmount)
     if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
 
     const cases = [
@@ -353,5 +357,89 @@ describe("UserWallet Limits - Lightning Pay", () => {
         btcPaymentAmount: btcThresholdAmount,
       })
     })
+  })
+
+  describe("multiple payments up to limit succeed, last payment fails", () => {
+    const multiplePaymentLimitTests = async (limit: keyof IAccountLimits) => {
+      const otherLimits = Object.keys(accountLimits).filter((val) => val !== limit)
+
+      // Create new wallet
+      const usdFundingAmount = paymentAmountFromNumber({
+        amount: MOCKED_LIMIT + 20,
+        currency: WalletCurrency.Usd,
+      })
+      if (usdFundingAmount instanceof Error) throw usdFundingAmount
+
+      const newBtcWallet = await createAndFundNewWalletForPhone({
+        phone,
+        balanceAmount: await btcAmountFromUsdNumber(MOCKED_LIMIT + 20),
+      })
+
+      const newUsdWallet = await createAndFundNewWalletForPhone({
+        phone,
+        balanceAmount: usdFundingAmount,
+      })
+
+      // Construct payments
+      const SPLITS = 2
+      const partialUsdSendAmount = Math.floor(accountLimits[limit] / SPLITS)
+      const partialBtcSendAmount = await btcAmountFromUsdNumber(partialUsdSendAmount)
+
+      const usdAmountAboveThreshold = 10
+      const btcAmountAboveThreshold = await btcAmountFromUsdNumber(
+        usdAmountAboveThreshold,
+      )
+
+      // Check constructed amounts
+      const checkPartialUsdAmount = await dealerUsdFromBtc(partialBtcSendAmount)
+      if (checkPartialUsdAmount instanceof Error) throw checkPartialUsdAmount
+      const expectedUsdSuccessfulAmount = checkPartialUsdAmount.amount * BigInt(SPLITS)
+      expect(expectedUsdSuccessfulAmount).toBeLessThan(accountLimits[limit])
+
+      const checkUsdAboveThreshold = await dealerUsdFromBtc(btcAmountAboveThreshold)
+      if (checkUsdAboveThreshold instanceof Error) throw checkUsdAboveThreshold
+      expect(expectedUsdSuccessfulAmount + checkUsdAboveThreshold.amount).toBeGreaterThan(
+        accountLimits[limit],
+      )
+
+      // Test direct limits
+      const senderAccount = await AccountsRepository().findById(newBtcWallet.accountId)
+      if (senderAccount instanceof Error) throw senderAccount
+
+      const limitTests = successLimitsPaymentTests({
+        senderBtcWallet: newBtcWallet,
+        senderAccount,
+        senderUsdWallet: newUsdWallet,
+      })
+
+      // Succeeds for multiple payments below limit
+      for (let i = 0; i < SPLITS; i++) {
+        await limitTests[limit]({
+          testSuccess: true,
+          btcPaymentAmount: partialBtcSendAmount,
+        })
+      }
+
+      // Fails for payment just above limit
+      await limitTests[limit]({
+        testSuccess: false,
+        btcPaymentAmount: btcAmountAboveThreshold,
+      })
+
+      // Test indirect limits
+      for (const otherLimit of otherLimits) {
+        // Succeeds for same payment just above other limits
+        await limitTests[otherLimit]({
+          testSuccess: true,
+          btcPaymentAmount: btcAmountAboveThreshold,
+        })
+      }
+    }
+
+    const limits = Object.keys(accountLimits) as (keyof IAccountLimits)[]
+    for (const limit of limits) {
+      it(`fails to pay when ${limit} exceeded`, async () =>
+        multiplePaymentLimitTests(limit))
+    }
   })
 })
