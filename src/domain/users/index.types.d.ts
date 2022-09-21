@@ -70,12 +70,6 @@ type PhoneMetadataValidator = {
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
-  findByKratosUserId(kratosUserId: KratosUserId): Promise<User | RepositoryError>
-  persistNewKratosUser({
-    kratosUserId,
-  }: {
-    kratosUserId: KratosUserId
-  }): Promise<User | RepositoryError>
   persistNew({ phone, phoneMetadata }: NewUserInfo): Promise<User | RepositoryError>
   update(user: User): Promise<User | RepositoryError>
 }

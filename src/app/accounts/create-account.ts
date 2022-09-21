@@ -1,6 +1,7 @@
 import { ConfigError, getTestAccounts } from "@config"
+import { checkedToKratosUserId } from "@domain/accounts"
 import { WalletCurrency } from "@domain/shared"
-import { checkedToKratosUserId, checkedToPhoneNumber } from "@domain/users"
+import { checkedToPhoneNumber } from "@domain/users"
 import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
 import {
@@ -11,17 +12,14 @@ import {
 import { TwilioClient } from "@services/twilio"
 
 const setupAccount = async ({
-  userId,
+  account,
   config,
   phoneNumberValid,
 }: {
-  userId: UserId
+  account: Account
   config: AccountsConfig
   phoneNumberValid?: PhoneNumber
 }): Promise<Account | ApplicationError> => {
-  const account = await AccountsRepository().findByUserId(userId)
-  if (account instanceof Error) return account
-
   const newWallet = (currency: WalletCurrency) =>
     WalletsRepository().persistNew({
       accountId: account.id,
@@ -60,13 +58,13 @@ const setupAccount = async ({
 }
 
 // no kratos user is been added (currently with PhoneSchema)
-export const createUserForPhoneSchema = async ({
+export const createAccountForPhoneSchema = async ({
   newUserInfo: { phone, phoneMetadata },
   config,
 }: {
   newUserInfo: NewUserInfo
   config: AccountsConfig
-}) => {
+}): Promise<Account | RepositoryError> => {
   const phoneNumberValid = checkedToPhoneNumber(phone)
   if (phoneNumberValid instanceof Error) return phoneNumberValid
 
@@ -89,30 +87,31 @@ export const createUserForPhoneSchema = async ({
   const user = await UsersRepository().persistNew(userRaw)
   if (user instanceof Error) return user
 
-  const account = await setupAccount({ userId: user.id, config, phoneNumberValid })
+  let account = await AccountsRepository().findByUserId(user.id)
   if (account instanceof Error) return account
 
-  return user
+  account = await setupAccount({ account, config, phoneNumberValid })
+  if (account instanceof Error) return account
+
+  return account
 }
 
 // kratos user already exist, as he has been using self registration
-export const createUserForEmailSchema = async ({
+export const createAccountForEmailSchema = async ({
   kratosUserId,
   config,
 }: {
   kratosUserId: string
   config: AccountsConfig
-}) => {
+}): Promise<Account | RepositoryError> => {
   const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
   if (kratosUserIdValid instanceof Error) return kratosUserIdValid
 
-  const user = await UsersRepository().persistNewKratosUser({
-    kratosUserId: kratosUserIdValid,
-  })
-  if (user instanceof Error) return user
-
-  const account = await setupAccount({ userId: user.id, config })
+  let account = await AccountsRepository().persistNewKratosUser(kratosUserIdValid)
   if (account instanceof Error) return account
 
-  return user
+  account = await setupAccount({ account, config })
+  if (account instanceof Error) return account
+
+  return account
 }

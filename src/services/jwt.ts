@@ -8,9 +8,8 @@ export const createToken = ({
   uid,
   network,
 }: {
-  uid: UserId
+  uid: AccountId
   network: BtcNetwork
-  kratosUserId?: KratosUserId
 }): JwtToken => {
   return jwt.sign({ uid, network }, JWT_SECRET, {
     // TODO use asymmetric signature

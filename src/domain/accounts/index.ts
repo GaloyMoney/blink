@@ -6,6 +6,7 @@ import {
   InvalidUsername,
   InvalidContactAlias,
   InvalidWithdrawFeeError,
+  InvalidKratosUserId,
 } from "@domain/errors"
 
 import { AccountStatus } from "./primitives"
@@ -15,6 +16,16 @@ export * from "./limits-checker"
 export * from "./new-limits-checker"
 export * from "./account-validator"
 export * from "./primitives"
+
+const KratosUserIdRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+export const checkedToKratosUserId = (userId: string): KratosUserId | ValidationError => {
+  if (!userId.match(KratosUserIdRegex)) {
+    return new InvalidKratosUserId(userId)
+  }
+  return userId as KratosUserId
+}
 
 export const checkedCoordinates = ({
   latitude,

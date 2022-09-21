@@ -15,6 +15,7 @@ export * from "./update-default-walletid"
 export * from "./get-csv-for-account"
 export * from "./get-transactions-for-account"
 export * from "./add-wallet"
+export * from "./create-account"
 
 const accounts = AccountsRepository()
 

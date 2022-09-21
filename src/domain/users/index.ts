@@ -2,7 +2,6 @@ import { AccountLevel } from "@domain/accounts"
 import {
   InvalidAccountLevelError,
   InvalidEmailAddress,
-  InvalidKratosUserId,
   InvalidLanguageError,
   InvalidPhoneNumber,
 } from "@domain/errors"
@@ -13,9 +12,6 @@ import { Languages } from "./languages"
 // for a more precise "regex"
 const PhoneNumberRegex = /^\+\d{7,14}$/i // FIXME {7,14} to be refined
 
-const KratosUserIdRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
 const EmailAddressRegex = /^[\w-.+]+@([\w-]+\.)+[\w-]{2,4}$/i
 
 export const checkedToPhoneNumber = (
@@ -25,13 +21,6 @@ export const checkedToPhoneNumber = (
     return new InvalidPhoneNumber(phoneNumber)
   }
   return phoneNumber as PhoneNumber
-}
-
-export const checkedToKratosUserId = (userId: string): KratosUserId | ValidationError => {
-  if (!userId.match(KratosUserIdRegex)) {
-    return new InvalidKratosUserId(userId)
-  }
-  return userId as KratosUserId
 }
 
 export const checkedToEmailAddress = (

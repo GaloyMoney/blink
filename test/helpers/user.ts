@@ -1,4 +1,3 @@
-import { createUserForPhoneSchema } from "@app/users"
 import { getDefaultAccountsConfig, yamlConfig } from "@config"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import {
@@ -13,6 +12,7 @@ import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { adminUsers } from "@domain/admin-users"
 import { UsersIpRepository } from "@services/mongoose/users-ips"
+import { createAccountForPhoneSchema } from "@app/accounts"
 
 const users = UsersRepository()
 
@@ -122,8 +122,8 @@ export const createUserAndWalletFromUserRef = async (ref: string) => {
 export const createUserAndWallet = async (entry: TestEntry) => {
   const phone = entry.phone as PhoneNumber
 
-  let userRepo = await users.findByPhone(phone)
-  if (userRepo instanceof CouldNotFindUserFromPhoneError) {
+  let user = await users.findByPhone(phone)
+  if (user instanceof CouldNotFindUserFromPhoneError) {
     let phoneMetadata: PhoneMetadata | undefined = undefined
     if (entry.phoneMetadataCarrierType) {
       phoneMetadata = {
@@ -138,11 +138,11 @@ export const createUserAndWallet = async (entry: TestEntry) => {
       }
     }
 
-    userRepo = await createUserForPhoneSchema({
+    const account = await createAccountForPhoneSchema({
       newUserInfo: { phone, phoneMetadata },
       config: getDefaultAccountsConfig(),
     })
-    if (userRepo instanceof Error) throw userRepo
+    if (account instanceof Error) throw account
 
     const lastConnection = new Date()
     const ipInfo: IPType = {
@@ -158,7 +158,7 @@ export const createUserAndWallet = async (entry: TestEntry) => {
       proxy: false,
     }
 
-    const userIP = await UsersIpRepository().findById(userRepo.id)
+    const userIP = await UsersIpRepository().findById(account.id as string as UserId) // FIXME tmp hack until full kratos integration
     if (userIP instanceof Error) throw userIP
 
     userIP.lastIPs.push(ipInfo)
@@ -168,14 +168,15 @@ export const createUserAndWallet = async (entry: TestEntry) => {
     if (entry.needUsdWallet) {
       await addWalletIfNonexistent({
         currency: WalletCurrency.Usd,
-        accountId: userRepo.defaultAccountId,
+        accountId: account.id,
         type: WalletType.Checking,
       })
     }
   }
 
-  if (userRepo instanceof Error) throw userRepo
-  const uid = userRepo.id
+  user = await users.findByPhone(phone)
+  if (user instanceof Error) throw user
+  const uid = user.id
 
   await User.findOneAndUpdate(
     { _id: toObjectId<UserId>(uid) },
