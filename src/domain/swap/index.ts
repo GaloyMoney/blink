@@ -5,7 +5,7 @@ export const SwapProvider = {
 } as const
 
 export const SwapType = {
-  Swapout: "swapout",
+  Swapout: "swapOut",
   Unknown: "unknown",
 } as const
 
@@ -16,9 +16,4 @@ export const SwapState = {
   Success: "success",
   Failed: "failed",
   InvoiceSettled: "invoiceSettled",
-} as const
-
-export const LoopdInstanceName = {
-  Lnd1Loop: "lnd1Loop",
-  Lnd2Loop: "lnd2Loop",
 } as const

@@ -5,8 +5,6 @@ type SwapProvider =
 type SwapType = typeof import("./index").SwapType[keyof typeof import("./index").SwapType]
 type SwapState =
   typeof import("./index").SwapState[keyof typeof import("./index").SwapState]
-type LoopdInstanceName =
-  typeof import("./index").LoopdInstanceName[keyof typeof import("./index").LoopdInstanceName]
 
 interface ISwapService {
   healthCheck: () => Promise<true | SwapServiceError>
@@ -27,6 +25,7 @@ type SwapOutResult = {
   swapIdBytes: string
   htlcAddress: OnChainAddress
   serverMessage: string
+  noOp?: true
 }
 
 type SwapListenerResponse =
@@ -80,7 +79,7 @@ type LoopdConfig = {
   tlsCert: string
   grpcEndpoint: string
   btcNetwork: BtcNetwork
-  loopdInstanceName: LoopdInstanceName
+  lndInstanceName: string
 }
 
 type SwapId = string & { readonly brand: unique symbol }

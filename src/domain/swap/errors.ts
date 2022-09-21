@@ -11,4 +11,3 @@ export class SwapErrorChannelBalanceTooLow extends SwapServiceError {}
 export class UnknownSwapServiceError extends SwapServiceError {
   level = ErrorLevel.Critical
 }
-export class NoSwapAction extends Object {}

@@ -39,7 +39,7 @@ export const LoopService = ({
   tlsCert,
   grpcEndpoint,
   btcNetwork,
-  loopdInstanceName,
+  lndInstanceName,
 }: LoopdConfig): ISwapService => {
   const mac = Buffer.from(macaroon, "base64").toString("hex") as Macaroon
   const tls = Buffer.from(tlsCert, "base64")
@@ -91,7 +91,7 @@ export const LoopService = ({
       request.setMaxPrepayAmt(fee)
       request.setMaxMinerFee(fee)
       request.setSwapPublicationDeadline(swapPublicationDeadline)
-      request.setInitiator(`galoy-${loopdInstanceName}`)
+      request.setInitiator(`galoy-${lndInstanceName}`)
       if (btcNetwork === BtcNetwork.regtest) request.setHtlcConfirmations(1)
       if (btcNetwork === BtcNetwork.regtest) request.setSweepConfTarget(2)
       const resp = await clientSwapOut(request)

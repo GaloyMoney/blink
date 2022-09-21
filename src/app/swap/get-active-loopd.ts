@@ -1,7 +1,6 @@
 import { getActiveLnd } from "@services/lnd/utils"
 import { SwapErrorNoActiveLoopdNode } from "@domain/swap/errors"
 import { BTC_NETWORK, getSwapConfig, getLoopConfig } from "@config"
-import { LoopdInstanceName } from "@domain/swap"
 
 export const getActiveLoopd = (): LoopdConfig => {
   const activeOffChainNode = getActiveLnd()
@@ -24,7 +23,7 @@ export const LND1_LOOP_CONFIG: LoopdConfig = {
   grpcEndpoint: getSwapConfig().lnd1loopRpcEndpoint,
   tlsCert: getLoopConfig().lnd1LoopTls,
   macaroon: getLoopConfig().lnd1LoopMacaroon,
-  loopdInstanceName: LoopdInstanceName.Lnd1Loop,
+  lndInstanceName: "LND1",
 }
 
 export const LND2_LOOP_CONFIG: LoopdConfig = {
@@ -32,5 +31,5 @@ export const LND2_LOOP_CONFIG: LoopdConfig = {
   grpcEndpoint: getSwapConfig().lnd2loopRpcEndpoint,
   tlsCert: getLoopConfig().lnd2LoopTls,
   macaroon: getLoopConfig().lnd2LoopMacaroon,
-  loopdInstanceName: LoopdInstanceName.Lnd2Loop,
+  lndInstanceName: "LND2",
 }

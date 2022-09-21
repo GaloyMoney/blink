@@ -1,7 +1,6 @@
 import { LoopService } from "@services/loopd"
 
 import {
-  NoSwapAction,
   SwapClientNotResponding,
   SwapErrorChannelBalanceTooLow,
 } from "@domain/swap/errors"
@@ -27,8 +26,8 @@ describe("Swap", () => {
       const swapResult = await swapOut()
       if (swapResult instanceof Error) throw swapResult
       expect(swapResult).not.toBeInstanceOf(Error)
-      if (swapResult instanceof NoSwapAction) {
-        expect(swapResult).toBeInstanceOf(NoSwapAction)
+      if (swapResult.noOp) {
+        expect(swapResult.noOp).toBe(true)
       } else {
         expect(swapResult).toEqual(
           expect.objectContaining({
