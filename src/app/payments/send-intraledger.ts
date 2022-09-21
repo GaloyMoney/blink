@@ -26,6 +26,7 @@ import {
 import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
+import { getFunderWalletId } from "@services/ledger/caching"
 import { NotificationsService } from "@services/notifications"
 
 import { ResourceExpiredLockServiceError } from "@domain/lock"
@@ -108,6 +109,9 @@ export const intraledgerPaymentSendWalletId = async ({
     memo,
   })
   if (paymentSendStatus instanceof Error) return paymentSendStatus
+
+  const funderWalletId = await getFunderWalletId()
+  if (senderWallet.id === funderWalletId) return paymentSendStatus
 
   const addContactResult = await addContactsAfterSend({
     senderAccountId: senderAccount.id,
