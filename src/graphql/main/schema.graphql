@@ -2,6 +2,7 @@ interface Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+  settings: AccountSettings
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -27,6 +28,13 @@ interface Account {
   wallets: [Wallet!]!
 }
 
+type AccountSettings {
+  """
+  True to save a contact after intraledger transaction
+  """
+  contactEnabled: Boolean!
+}
+
 input AccountUpdateDefaultWalletIdInput {
   walletId: WalletId!
 }
@@ -34,6 +42,15 @@ input AccountUpdateDefaultWalletIdInput {
 type AccountUpdateDefaultWalletIdPayload {
   account: ConsumerAccount
   errors: [Error!]!
+}
+
+input AccountUpdateSettingsInput {
+  contactEnabled: Boolean! = true
+}
+
+type AccountUpdateSettingsPayload {
+  errors: [Error!]!
+  settings: AccountSettings
 }
 
 """
@@ -158,6 +175,11 @@ type ConsumerAccount implements Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+
+  """
+  A list of settings associated with the account.
+  """
+  settings: AccountSettings!
 
   """
   A list of all transactions associated with walletIds optionally passed.
@@ -563,6 +585,7 @@ type Mutation {
   accountUpdateDefaultWalletId(
     input: AccountUpdateDefaultWalletIdInput!
   ): AccountUpdateDefaultWalletIdPayload!
+  accountUpdateSettings(input: AccountUpdateSettingsInput!): AccountUpdateSettingsPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
   deviceNotificationTokenCreate(

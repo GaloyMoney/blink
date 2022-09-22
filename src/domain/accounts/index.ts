@@ -6,6 +6,7 @@ import {
   InvalidUsername,
   InvalidContactAlias,
   InvalidWithdrawFeeError,
+  InvalidAccountIdError,
 } from "@domain/errors"
 
 import { AccountStatus } from "./primitives"
@@ -72,4 +73,9 @@ export const sanityCheckedDefaultAccountWithdrawFee = (
     return new InvalidWithdrawFeeError(fee.toString())
   }
   return toSats(fee)
+}
+
+export const checkedToAccountId = (accountId: string): AccountId | ValidationError => {
+  if (!accountId || !accountId.trim()) return new InvalidAccountIdError(accountId)
+  return accountId as AccountId
 }

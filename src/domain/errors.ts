@@ -96,6 +96,7 @@ export class InvalidIPMetadataASNError extends ValidationError {}
 export class InvalidIPMetadataForRewardError extends ValidationError {}
 
 export class InvalidLanguageError extends ValidationError {}
+export class InvalidAccountIdError extends ValidationError {}
 export class InvalidAccountLevelError extends ValidationError {}
 
 export class LimitsExceededError extends ValidationError {}

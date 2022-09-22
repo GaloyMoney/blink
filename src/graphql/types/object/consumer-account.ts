@@ -14,6 +14,7 @@ import Wallet from "../abstract/wallet"
 
 import WalletId from "../scalar/wallet-id"
 
+import AccountSettings from "./account-settings"
 import { TransactionConnection } from "./transaction"
 
 const ConsumerAccount = GT.Object({
@@ -91,6 +92,11 @@ const ConsumerAccount = GT.Object({
 
         return connectionFromArray<WalletTransaction>(transactions, args)
       },
+    },
+    settings: {
+      description: "A list of settings associated with the account.",
+      type: GT.NonNull(AccountSettings),
+      resolve: (source) => source,
     },
   }),
 })

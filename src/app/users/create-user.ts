@@ -52,6 +52,7 @@ const setupAccount = async ({
   // FIXME: to remove when Casbin is been introduced
   const role = getTestAccounts().find(({ phone }) => phone === phoneNumberValid)?.role
   account.role = role
+  account.contactEnabled = !account.role || account.role === "user"
 
   const updatedAccount = await AccountsRepository().update(account)
   if (updatedAccount instanceof Error) return updatedAccount

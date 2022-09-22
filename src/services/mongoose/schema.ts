@@ -235,6 +235,10 @@ const UserSchema = new Schema<UserRecord>(
       type: [String],
       default: [],
     },
+    contactEnabled: {
+      type: Boolean,
+      default: true,
+    },
     contacts: {
       type: [
         {

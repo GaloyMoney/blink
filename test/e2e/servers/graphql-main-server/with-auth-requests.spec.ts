@@ -87,6 +87,7 @@ beforeAll(async () => {
   ))
   const meResult = await apolloClient.query({ query: ME })
   expect(meResult.data.me.defaultAccount.defaultWalletId).toBe(walletId)
+  expect(meResult.data.me.defaultAccount.settings.contactEnabled).toBeTruthy()
 })
 
 beforeEach(async () => {

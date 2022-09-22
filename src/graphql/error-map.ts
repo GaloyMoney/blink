@@ -264,6 +264,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invalid walletId for account."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "InvalidAccountIdError":
+      message = "Invalid accountId."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "InsufficientBalanceError":
       message = error.message
       return new InsufficientBalanceError({ message, logger: baseLogger })

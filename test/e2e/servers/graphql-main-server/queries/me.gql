@@ -6,6 +6,9 @@ query me {
         id
         walletCurrency
       }
+      settings{
+        contactEnabled
+      }
     }
   }
 }

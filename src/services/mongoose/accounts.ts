@@ -96,6 +96,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     level,
     statusHistory,
     coordinates,
+    contactEnabled,
     contacts,
     title,
     username,
@@ -112,6 +113,7 @@ export const AccountsRepository = (): IAccountsRepository => {
           coordinates,
           title,
           username,
+          contactEnabled,
           contacts: contacts.map(
             ({ username, alias, transactionsCount }: AccountContact) => ({
               id: username,
@@ -129,7 +131,7 @@ export const AccountsRepository = (): IAccountsRepository => {
         },
       )
       if (!result) {
-        return new RepositoryError("Couldn't update user")
+        return new RepositoryError("Couldn't update account")
       }
       return translateToAccount(result)
     } catch (err) {
@@ -158,6 +160,7 @@ const translateToAccount = (result: UserRecord): Account => ({
   title: result.title as BusinessMapTitle,
   coordinates: result.coordinates as Coordinates,
   ownerId: fromObjectId<UserId>(result._id),
+  contactEnabled: !!result.contactEnabled,
   contacts: result.contacts.reduce(
     (res: AccountContact[], contact: ContactObjectForUser): AccountContact[] => {
       if (contact.id) {
@@ -185,6 +188,7 @@ const projection = {
   username: 1,
   title: 1,
   created_at: 1,
+  contactEnabled: 1,
   contacts: 1,
   depositFeeRatio: 1,
   withdrawFee: 1,
