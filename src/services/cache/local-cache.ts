@@ -42,6 +42,11 @@ export const LocalCacheService = (): ICacheService => {
     if (!(cachedData instanceof Error)) return cachedData
 
     const data = await getForCaching()
+
+    // Typescript can't parse 'ReturnType<F>' to filter out 'Error' types
+    if (data instanceof Error) return data
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     set<ReturnType<F>>({ key, value: data, ttlSecs })
     return data
   }
