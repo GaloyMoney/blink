@@ -1,6 +1,5 @@
-import { Configuration, V0alpha2Api, V0alpha2ApiInterface } from "@ory/client"
 import cors from "cors"
-import express, { Request, Response } from "express"
+import express from "express"
 
 import * as jwt from "jsonwebtoken"
 
@@ -11,9 +10,10 @@ import { mapError } from "@graphql/error-map"
 import { baseLogger } from "@services/logger"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 
-export const KratosSdk: (kratosEndpoint?: string) => V0alpha2ApiInterface = (
-  kratosEndpoint,
-) => new V0alpha2Api(new Configuration({ basePath: kratosEndpoint }))
+import { AccountsRepository } from "@services/mongoose"
+import { kratosPublic } from "@services/kratos/private"
+import { validateKratosToken } from "@services/kratos/tests-but-not-prod"
+import { KratosError } from "@services/kratos/errors"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -21,13 +21,11 @@ const graphqlLogger = baseLogger.child({
 
 const authRouter = express.Router({ caseSensitive: true })
 
-const { publicApi, corsAllowedOrigins } = getKratosConfig()
+const { corsAllowedOrigins } = getKratosConfig()
 
 authRouter.use(cors({ origin: corsAllowedOrigins, credentials: true }))
 
 authRouter.post("/browser", async (req, res) => {
-  const kratos = KratosSdk(publicApi)
-
   const ipString = isDev ? req?.ip : req?.headers["x-real-ip"]
   const ip = parseIps(ipString)
 
@@ -38,9 +36,9 @@ authRouter.post("/browser", async (req, res) => {
   const logger = graphqlLogger.child({ ip, body: req.body })
 
   try {
-    const { data } = await kratos.toSession(undefined, req.header("Cookie"))
+    const { data } = await kratosPublic.toSession(undefined, req.header("Cookie"))
 
-    const kratosLoginResp = await Users.loginWithKratos({
+    const kratosLoginResp = await Users.loginWithEmail({
       kratosUserId: data.identity.id,
       emailAddress: data.identity.traits.email,
       logger,
@@ -59,31 +57,47 @@ authRouter.post("/browser", async (req, res) => {
 
 const jwtAlgorithms: jwt.Algorithm[] = ["HS256"]
 
-// used by oathkeeper to validate JWT
+// used by oathkeeper to validate LegacyJWT and SessionToken
 // should not be public
 authRouter.post(
   "/validatetoken",
   wrapAsyncToRunInSpan({
     namespace: "validatetoken",
-    fn: async (
-      /* eslint-disable @typescript-eslint/no-explicit-any */
-      req: Request<any, any, any, any, Record<string, any>>,
-      res: Response<any>,
-    ) => {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    fn: async (req: any, res: any) => {
+      const accountsRepo = AccountsRepository()
       const headers = req?.headers
       let tokenPayload: string | jwt.JwtPayload | null = null
       const authz = headers.authorization || headers.Authorization
-      if (authz) {
-        try {
-          const rawToken = authz.slice(7) as string
 
-          tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
-            algorithms: jwtAlgorithms,
-          })
-        } catch (err) {
-          res.status(401).send({ error: "Token validation error" })
+      if (!authz) {
+        res.status(401).send({ error: "Missing token" })
+        return
+      }
+
+      const rawToken = authz.slice(7) as string
+
+      // new flow
+      if (rawToken.length === 32) {
+        const kratosRes = await validateKratosToken(rawToken as SessionToken)
+
+        if (!(kratosRes instanceof KratosError)) {
+          const account = await accountsRepo.findByKratosUserId(kratosRes.kratosUserId)
+          if (account instanceof Error) return account
+
+          res.json({ sub: account.id })
           return
         }
+      }
+
+      // legacy flow
+      try {
+        tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
+          algorithms: jwtAlgorithms,
+        })
+      } catch (err) {
+        res.status(401).send({ error: "Token validation error" })
+        return
       }
 
       if (typeof tokenPayload === "string") {
@@ -101,5 +115,11 @@ authRouter.post(
     },
   }),
 )
+
+authRouter.post("/after_settings_hooks", (req, res) => {
+  // not currently use
+  console.log("after settings hooks")
+  res.sendStatus(401)
+})
 
 export default authRouter

@@ -1,0 +1,4 @@
+make it work with cookie
+
+schema for staff. can we get different schema when creating account with self service API?
+enforce 2FA for staff?

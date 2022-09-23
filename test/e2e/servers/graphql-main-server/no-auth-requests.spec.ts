@@ -1,5 +1,4 @@
-import { BTC_NETWORK, JWT_SECRET } from "@config"
-import * as jwt from "jsonwebtoken"
+import { BTC_NETWORK } from "@config"
 
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import {
@@ -130,14 +129,11 @@ describe("graphql", () => {
   describe("userLogin", () => {
     const mutation = USER_LOGIN
 
-    it("returns a jwt token for a valid phone/code", async () => {
+    it("returns a bearer token for a valid phone/code", async () => {
       const input = { phone, code: correctCode }
       const result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userLogin).toHaveProperty("authToken")
-      const token = jwt.verify(result.data.userLogin.authToken, `${JWT_SECRET}`)
-      expect(token).toHaveProperty("uid")
-      expect(token).toHaveProperty("network")
-      expect(token).toHaveProperty("iat")
+      expect(result.data.userLogin.authToken).toHaveLength(32)
     })
 
     it("returns error for invalid phone", async () => {

@@ -1,23 +1,22 @@
-import { OutputValidationError } from "@graphql/error"
 import { GT } from "@graphql/index"
 
 const AuthToken = GT.Scalar({
   name: "AuthToken",
-  description: "An JWT-formatted authentication token",
+  description: "An Opaque Bearer token",
   serialize(value) {
     if (typeof value !== "string") {
-      return new OutputValidationError({ message: "Invalid type for AuthToken" })
+      return "Invalid value for AuthToken"
     }
     return validAuthTokenValue(value)
   },
 })
 
 function validAuthTokenValue(value: string) {
-  const jwtRegex = /^([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-+/=]*)/gi
-  if (value.match(jwtRegex)) {
-    return value
+  if (value.length !== 32) {
+    return "Invalid value for AuthToken"
   }
-  return new OutputValidationError({ message: "Invalid value for AuthToken" })
+
+  return value
 }
 
 export default AuthToken

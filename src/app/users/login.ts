@@ -1,36 +1,33 @@
 import {
-  BTC_NETWORK,
+  createAccountForEmailSchema,
+  createAccountForPhoneSchema,
+} from "@app/accounts/create-account"
+import {
+  getDefaultAccountsConfig,
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
   getTestAccounts,
-  getDefaultAccountsConfig,
   MAX_AGE_TIME_CODE,
 } from "@config"
 
+import { checkedToKratosUserId } from "@domain/accounts"
+import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import {
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindUserFromPhoneError,
 } from "@domain/errors"
-import { checkedToEmailAddress } from "@domain/users"
-import { checkedToKratosUserId } from "@domain/accounts"
-import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
-import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
+import { RateLimiterExceededError } from "@domain/rate-limit/errors"
+import { checkedToEmailAddress } from "@domain/users"
+import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import { LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
 
-import { createToken } from "@services/jwt"
-import { addAttributesToCurrentSpan } from "@services/tracing"
-import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
+import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
-import {
-  createAccountForEmailSchema,
-  createAccountForPhoneSchema,
-} from "../accounts/create-account"
-
-const network = BTC_NETWORK
-
-export const login = async ({
+export const loginWithPhone = async ({
   phone,
   code,
   logger,
@@ -40,7 +37,7 @@ export const login = async ({
   code: PhoneCode
   logger: Logger
   ip: IpAddress
-}): Promise<JwtToken | ApplicationError> => {
+}): Promise<SessionToken | ApplicationError> => {
   const subLogger = logger.child({ topic: "login" })
 
   {
@@ -64,33 +61,57 @@ export const login = async ({
   await rewardFailedLoginAttemptPerIpLimits(ip)
   await rewardFailedLoginAttemptPerPhoneLimits(phone)
 
-  const user = await UsersRepository().findByPhone(phone)
-  let account: Account
+  let kratosToken: SessionToken
 
-  if (user instanceof CouldNotFindUserFromPhoneError) {
-    subLogger.info({ phone }, "new user signup")
+  const authService = AuthWithPhonePasswordlessService()
+
+  let kratosResult = await authService.login(phone)
+  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
+    // user has not migrated to kratos or it's a new user
+
+    kratosResult = await authService.createWithSession(phone)
+    if (kratosResult instanceof Error) return kratosResult
     addAttributesToCurrentSpan({ "login.newAccount": true })
-    const userRaw: NewUserInfo = { phone }
-    const account_ = await createAccountForPhoneSchema({
-      newUserInfo: userRaw,
-      config: getDefaultAccountsConfig(),
-    })
-    if (account_ instanceof Error) return account_
-    account = account_
-  } else if (user instanceof Error) {
-    return user
-  } else {
-    subLogger.info({ phone }, "user login")
 
-    const account_ = await AccountsRepository().findByUserId(user.id)
-    if (account_ instanceof Error) return account_
-    account = account_
+    kratosToken = kratosResult.sessionToken
+    const kratosUserId = kratosResult.kratosUserId
+
+    const user = await UsersRepository().findByPhone(phone)
+    if (user instanceof CouldNotFindUserFromPhoneError) {
+      // brand new user
+      subLogger.info({ phone }, "new user signup")
+
+      const accountRaw: NewAccountInfo = { phone, kratosUserId }
+      const account_ = await createAccountForPhoneSchema({
+        newAccountInfo: accountRaw,
+        config: getDefaultAccountsConfig(),
+      })
+
+      if (account_ instanceof Error) return account_
+    } else {
+      if (user instanceof Error) return user
+      else {
+        // account exist but doesn't have a kratos user yet
+
+        let account = await AccountsRepository().findByUserId(user.id)
+        if (account instanceof Error) return account
+
+        account = await AccountsRepository().attachKratosUser({
+          id: account.id,
+          kratosUserId,
+        })
+      }
+    }
+  } else if (kratosResult instanceof Error) {
+    return kratosResult
+  } else {
+    kratosToken = kratosResult.sessionToken
   }
 
-  return createToken({ uid: account.id, network })
+  return kratosToken
 }
 
-export const loginWithKratos = async ({
+export const loginWithEmail = async ({
   kratosUserId,
   emailAddress,
   logger,
@@ -100,7 +121,7 @@ export const loginWithKratos = async ({
   emailAddress: string
   logger: Logger
   ip: IpAddress
-}): Promise<{ accountStatus: string; authToken: JwtToken } | ApplicationError> => {
+}): Promise<{ accountStatus: string } | ApplicationError> => {
   const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
   if (kratosUserIdValid instanceof Error) return kratosUserIdValid
 
@@ -125,7 +146,7 @@ export const loginWithKratos = async ({
     subLogger.info({ kratosUserId }, "New Kratos user signup")
     addAttributesToCurrentSpan({ "login.newAccount": true })
     account = await createAccountForEmailSchema({
-      kratosUserId,
+      kratosUserId: kratosUserIdValid,
       config: getDefaultAccountsConfig(),
     })
   }
@@ -133,10 +154,6 @@ export const loginWithKratos = async ({
 
   return {
     accountStatus: account.status.toUpperCase(),
-    authToken: createToken({
-      uid: account.id,
-      network,
-    }),
   }
 }
 
