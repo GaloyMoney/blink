@@ -14,11 +14,11 @@ jest.mock("@config", () => {
   // so we're overriding the config here
   return {
     ...jest.requireActual("@config"),
-    getKratosConfig: jest.fn().mockReturnValue({
-      publicApi: "http://localhost:4433",
-      adminApi: "http://localhost:4434",
-      corsAllowedOrigins: ["http://localhost:3000"],
-    }),
+    // getKratosConfig: jest.fn().mockReturnValue({
+    //   publicApi: "http://localhost:4433",
+    //   adminApi: "http://localhost:4434",
+    //   corsAllowedOrigins: ["http://localhost:3000"],
+    // }),
   }
 })
 
