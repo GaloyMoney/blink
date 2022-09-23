@@ -17,6 +17,7 @@ services:
       - lnd-outside-2
       - otel-agent
       - oathkeeper
+      - kratos
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.43.0
     command: [ "--config=/etc/otel-agent-config.yaml" ]
@@ -167,6 +168,9 @@ services:
       - ${TMP_ENV_CI:-.env.ci}
     volumes:
       - ./:/repo
+    environment:
+      - KRATOS_PUBLIC_API=http://localhost:4433
+      - KRATOS_ADMIN_API=http://localhost:4434
   integration-tests:
     image: us.gcr.io/galoy-org/galoy-app-pipeline
     depends_on:
@@ -177,6 +181,9 @@ services:
       - ${TMP_ENV_CI:-.env.ci}
     volumes:
       - ./:/repo
+    environment:
+      - KRATOS_PUBLIC_API=http://localhost:4433
+      - KRATOS_ADMIN_API=http://localhost:4434
   stablesats:
     image: us.gcr.io/galoy-org/stablesats-rs:edge
     command: [ "stablesats", "run" ]
@@ -186,6 +193,17 @@ services:
       - redis
     volumes:
       - ./:/repo
+
+  kratos:
+    image: oryd/kratos:v0.10.1
+    entrypoint: sh -c
+    command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --sqa-opt-out"'
+    environment:
+      DSN: sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+    volumes:
+    - type: bind
+      source: dev/ory
+      target: /home/ory
 
   oathkeeper:
     image: oryd/oathkeeper:v0.39.4

@@ -30,3 +30,30 @@
   - handler: id_token
     config: 
       claims: '{"sub": "{{ print .Subject }}"}'
+
+#  {
+#     "id": "public-kratos",
+#     "upstream": {
+#       "url": "http://kratos:4433"
+#     },
+#     "match": {
+#       "url": "<(http|https)>://<[a-zA-Z0-9-.:]+>/<(self-service/.*)|sessions/whoami|(.well-known/.*)>",
+#       "methods": [
+#         "GET",
+#         "POST"
+#       ]
+#     },
+#     "authenticators": [
+#       {
+#         "handler": "anonymous"
+#       }
+#     ],
+#     "authorizer": {
+#       "handler": "allow"
+#     },
+#     "mutators": [
+#       {
+#         "handler": "noop"
+#       }
+#     ]
+#   }
