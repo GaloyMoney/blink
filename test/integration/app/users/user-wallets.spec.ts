@@ -1,4 +1,4 @@
-import { Users } from "@app"
+import { Accounts } from "@app"
 import { AccountStatus } from "@domain/accounts"
 import { WalletCurrency } from "@domain/shared"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
@@ -19,14 +19,14 @@ describe("Users - wallets", () => {
     it("adds a USD wallet for new user if config is set to true", async () => {
       const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
 
-      const user = await Users.createUserForPhoneSchema({
+      let account = await Accounts.createAccountForPhoneSchema({
         newUserInfo: { phone: randomPhoneNumber() },
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
-      if (user instanceof Error) throw user
+      if (account instanceof Error) throw account
 
       // Check all wallets were created
-      const wallets = await WalletsRepository().listByAccountId(user.defaultAccountId)
+      const wallets = await WalletsRepository().listByAccountId(account.id)
       if (wallets instanceof Error) throw wallets
       const walletCurrencies = wallets.map((wallet) => wallet.currency)
       expect(walletCurrencies).toHaveLength(2)
@@ -34,7 +34,7 @@ describe("Users - wallets", () => {
       expect(walletCurrencies).toContain(WalletCurrency.Usd)
 
       // Check expected default wallet was set
-      const account = await AccountsRepository().findById(wallets[0].accountId)
+      account = await AccountsRepository().findById(wallets[0].accountId)
       if (account instanceof Error) throw account
 
       const btcWallet = wallets.filter(
@@ -49,14 +49,14 @@ describe("Users - wallets", () => {
     it("does not add a USD wallet for new user if config is set to false", async () => {
       const initialWallets = [WalletCurrency.Btc]
 
-      const user = await Users.createUserForPhoneSchema({
+      let account = await Accounts.createAccountForPhoneSchema({
         newUserInfo: { phone: randomPhoneNumber() },
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
-      if (user instanceof Error) throw user
+      if (account instanceof Error) throw account
 
       // Check all wallets were created
-      const wallets = await WalletsRepository().listByAccountId(user.defaultAccountId)
+      const wallets = await WalletsRepository().listByAccountId(account.id)
       if (wallets instanceof Error) throw wallets
       const walletCurrencies = wallets.map((wallet) => wallet.currency)
       expect(walletCurrencies).toHaveLength(1)
@@ -64,7 +64,7 @@ describe("Users - wallets", () => {
       expect(walletCurrencies).not.toContain(WalletCurrency.Usd)
 
       // Check expected default wallet was set
-      const account = await AccountsRepository().findById(wallets[0].accountId)
+      account = await AccountsRepository().findById(wallets[0].accountId)
       if (account instanceof Error) throw account
 
       const btcWallet = wallets.filter(
@@ -79,14 +79,14 @@ describe("Users - wallets", () => {
     it("sets USD wallet as default if BTC wallet does not exist", async () => {
       const initialWallets = [WalletCurrency.Usd]
 
-      const user = await Users.createUserForPhoneSchema({
+      let account = await Accounts.createAccountForPhoneSchema({
         newUserInfo: { phone: randomPhoneNumber() },
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
-      if (user instanceof Error) throw user
+      if (account instanceof Error) throw account
 
       // Check all wallets were created
-      const wallets = await WalletsRepository().listByAccountId(user.defaultAccountId)
+      const wallets = await WalletsRepository().listByAccountId(account.id)
       if (wallets instanceof Error) throw wallets
       const walletCurrencies = wallets.map((wallet) => wallet.currency)
       expect(walletCurrencies).toHaveLength(1)
@@ -94,7 +94,7 @@ describe("Users - wallets", () => {
       expect(walletCurrencies).toContain(WalletCurrency.Usd)
 
       // Check expected default wallet was set
-      const account = await AccountsRepository().findById(wallets[0].accountId)
+      account = await AccountsRepository().findById(wallets[0].accountId)
       if (account instanceof Error) throw account
 
       const usdWallet = wallets.filter(
@@ -107,18 +107,18 @@ describe("Users - wallets", () => {
     })
   })
 
-  describe("with 'createUserForEmailSchema'", () => {
+  describe("with 'createAccountForEmailSchema'", () => {
     it("adds a USD wallet for new user if config is set to true", async () => {
       const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
 
-      const user = await Users.createUserForEmailSchema({
+      let account = await Accounts.createAccountForEmailSchema({
         kratosUserId: randomKratosId(),
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
-      if (user instanceof Error) throw user
+      if (account instanceof Error) throw account
 
       // Check all wallets were created
-      const wallets = await WalletsRepository().listByAccountId(user.defaultAccountId)
+      const wallets = await WalletsRepository().listByAccountId(account.id)
       if (wallets instanceof Error) throw wallets
       const walletCurrencies = wallets.map((wallet) => wallet.currency)
       expect(walletCurrencies).toHaveLength(2)
@@ -126,7 +126,7 @@ describe("Users - wallets", () => {
       expect(walletCurrencies).toContain(WalletCurrency.Usd)
 
       // Check expected default wallet was set
-      const account = await AccountsRepository().findById(wallets[0].accountId)
+      account = await AccountsRepository().findById(wallets[0].accountId)
       if (account instanceof Error) throw account
 
       const btcWallet = wallets.filter(
@@ -141,14 +141,14 @@ describe("Users - wallets", () => {
     it("does not add a USD wallet for new user if config is set to false", async () => {
       const initialWallets = [WalletCurrency.Btc]
 
-      const user = await Users.createUserForEmailSchema({
+      let account = await Accounts.createAccountForEmailSchema({
         kratosUserId: randomKratosId(),
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
-      if (user instanceof Error) throw user
+      if (account instanceof Error) throw account
 
       // Check all wallets were created
-      const wallets = await WalletsRepository().listByAccountId(user.defaultAccountId)
+      const wallets = await WalletsRepository().listByAccountId(account.id)
       if (wallets instanceof Error) throw wallets
       const walletCurrencies = wallets.map((wallet) => wallet.currency)
       expect(walletCurrencies).toHaveLength(1)
@@ -156,7 +156,7 @@ describe("Users - wallets", () => {
       expect(walletCurrencies).not.toContain(WalletCurrency.Usd)
 
       // Check expected default wallet was set
-      const account = await AccountsRepository().findById(wallets[0].accountId)
+      account = await AccountsRepository().findById(wallets[0].accountId)
       if (account instanceof Error) throw account
 
       const btcWallet = wallets.filter(
@@ -171,14 +171,14 @@ describe("Users - wallets", () => {
     it("sets USD wallet as default if BTC wallet does not exist", async () => {
       const initialWallets = [WalletCurrency.Usd]
 
-      const user = await Users.createUserForEmailSchema({
+      let account = await Accounts.createAccountForEmailSchema({
         kratosUserId: randomKratosId(),
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
-      if (user instanceof Error) throw user
+      if (account instanceof Error) throw account
 
       // Check all wallets were created
-      const wallets = await WalletsRepository().listByAccountId(user.defaultAccountId)
+      const wallets = await WalletsRepository().listByAccountId(account.id)
       if (wallets instanceof Error) throw wallets
       const walletCurrencies = wallets.map((wallet) => wallet.currency)
       expect(walletCurrencies).toHaveLength(1)
@@ -186,7 +186,7 @@ describe("Users - wallets", () => {
       expect(walletCurrencies).toContain(WalletCurrency.Usd)
 
       // Check expected default wallet was set
-      const account = await AccountsRepository().findById(wallets[0].accountId)
+      account = await AccountsRepository().findById(wallets[0].accountId)
       if (account instanceof Error) throw account
 
       const usdWallet = wallets.filter(

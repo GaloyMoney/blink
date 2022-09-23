@@ -119,6 +119,10 @@ interface IAccountsRepository {
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   findByUserId(userId: UserId): Promise<Account | RepositoryError>
+
+  findByKratosUserId(kratosUserId: KratosUserId): Promise<Account | RepositoryError>
+  persistNewKratosUser(kratosUserId: KratosUserId): Promise<Account | RepositoryError>
+
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
   update(account: Account): Promise<Account | RepositoryError>

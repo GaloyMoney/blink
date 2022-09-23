@@ -18,7 +18,6 @@ export class CouldNotFindWalletInvoiceError extends CouldNotFindError {}
 
 export class CouldNotFindUserError extends CouldNotFindError {}
 export class CouldNotFindUserFromIdError extends CouldNotFindError {}
-export class CouldNotFindUserFromKratosIdError extends CouldNotFindError {}
 export class CouldNotFindUserFromPhoneError extends CouldNotFindError {}
 export class CouldNotFindUserFromWalletIdError extends CouldNotFindError {}
 export class CouldNotFindPhoneCodeError extends CouldNotFindError {}
@@ -43,6 +42,7 @@ export class CouldNotFindLnPaymentFromHashError extends CouldNotFindError {
 export class CouldNotFindAccountFromUsernameError extends CouldNotFindError {}
 export class CouldNotFindAccountFromPhoneError extends CouldNotFindError {}
 export class CouldNotFindTransactionsForAccountError extends CouldNotFindError {}
+export class CouldNotFindAccountFromKratosIdError extends CouldNotFindError {}
 
 export class RewardAlreadyPresentError extends DomainError {}
 

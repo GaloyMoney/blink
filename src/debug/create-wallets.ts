@@ -76,7 +76,7 @@ const generateWallets = async (count: number, level: AccountLevel) => {
 
     const network = BTC_NETWORK
 
-    const jwtToken = createToken({ uid: user.id, network })
+    const jwtToken = createToken({ uid: account.id, network })
 
     wallets.push({
       accountId: account.id,

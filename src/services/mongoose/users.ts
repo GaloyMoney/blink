@@ -2,7 +2,6 @@ import { onboardingEarn } from "@config"
 import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindUserFromIdError,
-  CouldNotFindUserFromKratosIdError,
   CouldNotFindUserFromPhoneError,
   RepositoryError,
   DuplicateError,
@@ -40,22 +39,6 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const findByKratosUserId = async (
-    kratosUserId: KratosUserId,
-  ): Promise<User | RepositoryError> => {
-    try {
-      const result = await User.findOne({ kratosUserId }, projection)
-
-      if (!result) {
-        return new CouldNotFindUserFromKratosIdError(kratosUserId)
-      }
-
-      return userFromRaw(result)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
   const persistNew = async ({
     phone,
     phoneMetadata,
@@ -70,21 +53,6 @@ export const UsersRepository = (): IUsersRepository => {
       if (err.message?.includes("MongoError: E11000 duplicate key error collection")) {
         return new DuplicateError(phone)
       }
-      return new UnknownRepositoryError(err)
-    }
-  }
-
-  const persistNewKratosUser = async ({
-    kratosUserId,
-  }: {
-    kratosUserId: KratosUserId
-  }): Promise<User | RepositoryError> => {
-    try {
-      const user = new User()
-      user.kratosUserId = kratosUserId
-      await user.save()
-      return userFromRaw(user)
-    } catch (err) {
       return new UnknownRepositoryError(err)
     }
   }
@@ -119,9 +87,7 @@ export const UsersRepository = (): IUsersRepository => {
   return {
     findById,
     findByPhone,
-    findByKratosUserId,
     persistNew,
-    persistNewKratosUser,
     update,
   }
 }
