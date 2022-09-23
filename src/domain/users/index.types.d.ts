@@ -7,17 +7,6 @@ type EmailAddress = string & { readonly brand: unique symbol }
 type UserLanguage = typeof import("./languages").Languages[number]
 
 type DeviceToken = string & { readonly brand: unique symbol }
-type QuizQuestionId = string & { readonly brand: unique symbol }
-
-type QuizQuestion = {
-  readonly id: QuizQuestionId
-  readonly earnAmount: Satoshis
-}
-
-type UserQuizQuestion = {
-  readonly question: QuizQuestion
-  completed: boolean
-}
 
 // TODO: move to camelCase base // migration needed
 // type PhoneMetadata = {
@@ -48,7 +37,6 @@ type PhoneMetadata = {
 
 type User = {
   readonly id: UserId
-  readonly quizQuestions: UserQuizQuestion[]
   readonly defaultAccountId: AccountId
   readonly deviceTokens: DeviceToken[]
   readonly createdAt: Date

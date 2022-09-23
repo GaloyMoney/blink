@@ -62,6 +62,19 @@ type Account = {
   readonly contacts: AccountContact[]
   readonly isEditor: boolean
   role?: string
+  readonly quizQuestions: UserQuizQuestion[]
+}
+
+type QuizQuestionId = string & { readonly brand: unique symbol }
+
+type QuizQuestion = {
+  readonly id: QuizQuestionId
+  readonly earnAmount: Satoshis
+}
+
+type UserQuizQuestion = {
+  readonly question: QuizQuestion
+  completed: boolean
 }
 
 type BusinessMapTitle = string & { readonly brand: unique symbol }
