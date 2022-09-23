@@ -26,6 +26,7 @@ describe("PaymentInputValidator", () => {
       latitude: 0,
       longitude: 0,
     },
+    contactEnabled: true,
     contacts: [],
     isEditor: false,
     quizQuestions: [],
