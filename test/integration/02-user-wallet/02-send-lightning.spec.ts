@@ -122,11 +122,6 @@ jest.mock("@config", () => {
         intraLedgerLimit: 100_000 as UsdCents,
         withdrawalLimit: 100_000 as UsdCents,
       }),
-    // getKratosConfig: jest.fn().mockReturnValue({
-    //   publicApi: "http://localhost:4433",
-    //   adminApi: "http://localhost:4434",
-    //   corsAllowedOrigins: ["http://localhost:3000"],
-    // }),
   }
 })
 

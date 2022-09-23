@@ -123,6 +123,9 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
       resetDatabase(mongoose),
       clearLimiters(),
       clearAccountLocks(),
+
+      // TODO:
+      // reset kratos + run migrations
     ])
     baseLogger.info("Reset state.")
   }
@@ -144,7 +147,7 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
   await Promise.all(
     stateConfig.userAccounts.map((accountEntry) => createUserAndWallet(accountEntry)),
   )
-  baseLogger.info("Created all test users.")
+  baseLogger.error("Created all test users.")
 
   // Fund special wallets
   if (stateConfig.fundFunderWallet) {

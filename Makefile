@@ -64,6 +64,8 @@ e2e-in-ci:
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up e2e-tests
 
+reset-e2e-in-ci-with-build: reset-deps e2e-in-ci-with-build
+
 e2e-in-ci-with-build:
 	yarn build && \
 	docker compose -f docker-compose.yml up integration-deps -d && \
@@ -77,13 +79,23 @@ e2e-in-ci-cached:
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make execute-e2e-from-within-container-cached || \
 	docker rm `docker ps -q -f status=exited`
 
+main-in-ci-cached:
+	docker compose -f docker-compose.yml up integration-deps -d && \
+	make create-tmp-env-ci && \
+	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make start-main-ci || \
+	docker rm `docker ps -q -a -f status=exited`
+
+del-containers:
+	docker stop `docker ps -q -a` || \
+	docker rm `docker ps -q -a`
+
 execute-e2e-from-within-container:
 	yarn install && \
 	yarn build && \
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 execute-e2e-from-within-container-cached:
-	NODE_ENV=test LOGLEVEL=debug $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 integration:
 	yarn build && \
@@ -91,7 +103,7 @@ integration:
 
 reset-integration: reset-deps integration
 
-reset-e2e: reset-deps e2e
+reset-e2e: reset-deps e2e-in-ci
 
 integration-in-ci:
 	make create-tmp-env-ci && \
