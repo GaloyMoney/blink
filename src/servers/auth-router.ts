@@ -18,7 +18,6 @@ const graphqlLogger = baseLogger.child({
 
 const authRouter = express.Router({ caseSensitive: true })
 
-// TODO: why is cors origin policies mapped to kratos config?
 const { publicApi, corsAllowedOrigins } = getKratosConfig()
 
 authRouter.use(cors({ origin: corsAllowedOrigins, credentials: true }))
