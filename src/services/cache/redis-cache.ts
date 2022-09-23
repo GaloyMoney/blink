@@ -48,6 +48,8 @@ export const RedisCacheService = (): ICacheService => {
     }
 
     const data = await getForCaching()
+    if (data instanceof Error) return data
+
     set<ReturnType<F>>({ key, value: data, ttlSecs })
     return data
   }
