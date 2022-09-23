@@ -246,6 +246,9 @@ services:
       - ${TMP_ENV_CI:-.env.ci}
     volumes:
       - ./:/repo
+    environment:
+      - KRATOS_PUBLIC_API=http://kratos:4433
+      - KRATOS_ADMIN_API=http://kratos:4434
   integration-tests:
     image: us.gcr.io/galoy-org/galoy-app-pipeline
     depends_on:
@@ -256,6 +259,22 @@ services:
       - ${TMP_ENV_CI:-.env.ci}
     volumes:
       - ./:/repo
+    environment:
+      - KRATOS_PUBLIC_API=http://kratos:4433
+      - KRATOS_ADMIN_API=http://kratos:4434
+  integration-tests-cached:
+    image: us.gcr.io/galoy-org/galoy-app-pipeline
+    depends_on:
+      - integration-deps
+    command: [ "make", "execute-integration-from-within-container-cached" ]
+    working_dir: /repo
+    env_file:
+      - ${TMP_ENV_CI:-.env.ci}
+    volumes:
+      - ./:/repo
+    environment:
+      - KRATOS_PUBLIC_API=http://kratos:4433
+      - KRATOS_ADMIN_API=http://kratos:4434
   stablesats:
     image: us.gcr.io/galoy-org/stablesats-rs:edge
     command: ["stablesats", "run"]
