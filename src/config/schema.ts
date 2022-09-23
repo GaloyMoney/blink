@@ -601,8 +601,8 @@ export const configSchema = {
       required: ["publicApi", "adminApi", "corsAllowedOrigins"],
       additionalProperties: false,
       default: {
-        publicApi: "http://localhost:4433",
-        adminApi: "http://localhost:4434",
+        publicApi: "http://kratos:4433",
+        adminApi: "http://kratos:4434",
         corsAllowedOrigins: ["http://localhost:3000"],
       },
     },

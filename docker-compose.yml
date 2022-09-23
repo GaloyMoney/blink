@@ -17,6 +17,7 @@ services:
       - lnd-outside-2
       - otel-agent
       - oathkeeper
+      - kratos
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.61.0
     command: ["--config=/etc/otel-agent-config.yaml"]
@@ -269,6 +270,17 @@ services:
     image: oryd/oathkeeper:v0.40
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
     volumes:
-      - type: bind
-        source: dev/ory
-        target: /home/ory
+    - type: bind
+      source: dev/ory
+      target: /home/ory
+
+  kratos:
+    image: oryd/kratos:v0.10.1
+    entrypoint: sh -c
+    command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --sqa-opt-out"'
+    environment:
+      DSN: sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+    volumes:
+    - type: bind
+      source: dev/ory
+      target: /home/ory
