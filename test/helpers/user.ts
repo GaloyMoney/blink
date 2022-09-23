@@ -13,6 +13,10 @@ import { WalletType } from "@domain/wallets"
 import { adminUsers } from "@domain/admin-users"
 import { UsersIpRepository } from "@services/mongoose/users-ips"
 import { createAccountForPhoneSchema } from "@app/accounts"
+import {
+  createKratosUserForPhoneNoPasswordSchema,
+  loginForPhoneNoPasswordSchema,
+} from "@services/kratos"
 
 const users = UsersRepository()
 
@@ -138,8 +142,17 @@ export const createUserAndWallet = async (entry: TestEntry) => {
       }
     }
 
+    let kratosResult = await createKratosUserForPhoneNoPasswordSchema(phone)
+    if (kratosResult instanceof Error) {
+      // TODO: remove once kratos states is been re-iniaitlized been tests
+      kratosResult = await loginForPhoneNoPasswordSchema(phone)
+    }
+    if (kratosResult instanceof Error) throw kratosResult
+
+    const kratosUserId = kratosResult.kratosUserId
+
     const account = await createAccountForPhoneSchema({
-      newUserInfo: { phone, phoneMetadata },
+      newAccountInfo: { phone, phoneMetadata, kratosUserId },
       config: getDefaultAccountsConfig(),
     })
     if (account instanceof Error) throw account

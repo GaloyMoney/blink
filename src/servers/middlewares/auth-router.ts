@@ -1,4 +1,3 @@
-import { Configuration, V0alpha2Api, V0alpha2ApiInterface } from "@ory/client"
 import cors from "cors"
 import express from "express"
 
@@ -10,26 +9,20 @@ import { parseIps } from "@domain/users-ips"
 import { mapError } from "@graphql/error-map"
 import { baseLogger } from "@services/logger"
 
-export const KratosSdk: (kratosEndpoint?: string) => V0alpha2ApiInterface = (
-  kratosEndpoint,
-) => new V0alpha2Api(new Configuration({ basePath: kratosEndpoint }))
+import { kratosPublic } from "@services/kratos"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
 })
 
-const { serverURL, corsAllowedOrigins } = getKratosConfig()
-
 const authRouter = express.Router({ caseSensitive: true })
 
 // TODO: why is cors origin policies mapped to kratos config?
-const { publicApi, corsAllowedOrigins } = getKratosConfig()
+const { corsAllowedOrigins } = getKratosConfig()
 
 authRouter.use(cors({ origin: corsAllowedOrigins, credentials: true }))
 
 authRouter.post("/browser", async (req, res) => {
-  const kratos = KratosSdk(publicApi)
-
   const ipString = isDev ? req?.ip : req?.headers["x-real-ip"]
   const ip = parseIps(ipString)
 
@@ -40,9 +33,9 @@ authRouter.post("/browser", async (req, res) => {
   const logger = graphqlLogger.child({ ip, body: req.body })
 
   try {
-    const { data } = await kratos.toSession(undefined, req.header("Cookie"))
+    const { data } = await kratosPublic.toSession(undefined, req.header("Cookie"))
 
-    const kratosLoginResp = await Users.loginWithKratos({
+    const kratosLoginResp = await Users.loginWithEmail({
       kratosUserId: data.identity.id,
       emailAddress: data.identity.traits.email,
       logger,

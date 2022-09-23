@@ -48,6 +48,8 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
     return wallet.id
   },
   funderWalletResolver: async () => {
+    baseLogger.error(await User.find())
+
     const result = await User.findOne({ role: "funder" }, { defaultWalletId: 1 })
     if (!result) throw new ConfigError("missing funder")
     return result.defaultWalletId

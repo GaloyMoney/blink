@@ -4,7 +4,6 @@ import {
   CouldNotFindUserFromIdError,
   CouldNotFindUserFromPhoneError,
   RepositoryError,
-  DuplicateError,
   UnknownRepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
@@ -39,24 +38,6 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const persistNew = async ({
-    phone,
-    phoneMetadata,
-  }: NewUserInfo): Promise<User | RepositoryError> => {
-    try {
-      const user = new User()
-      user.phone = phone
-      user.twilio = phoneMetadata
-      await user.save()
-      return userFromRaw(user)
-    } catch (err) {
-      if (err.message?.includes("MongoError: E11000 duplicate key error collection")) {
-        return new DuplicateError(phone)
-      }
-      return new UnknownRepositoryError(err)
-    }
-  }
-
   const update = async ({
     id,
     phone,
@@ -87,7 +68,6 @@ export const UsersRepository = (): IUsersRepository => {
   return {
     findById,
     findByPhone,
-    persistNew,
     update,
   }
 }
