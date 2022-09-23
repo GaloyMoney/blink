@@ -1,4 +1,6 @@
+import { onboardingEarn } from "@config"
 import { AccountLevel, AccountStatus } from "@domain/accounts"
+import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindAccountFromUsernameError,
@@ -207,6 +209,16 @@ const translateToAccount = (result: UserRecord): Account => ({
   depositFeeRatio: result.depositFeeRatio as DepositFeeRatio,
   withdrawFee: result.withdrawFee as Satoshis,
   isEditor: result.role === "editor",
+  quizQuestions:
+    result.earn?.map(
+      (questionId: string): UserQuizQuestion => ({
+        question: {
+          id: questionId as QuizQuestionId,
+          earnAmount: toSats(onboardingEarn[questionId]),
+        },
+        completed: true,
+      }),
+    ) || [],
 })
 
 const projection = {
@@ -221,4 +233,5 @@ const projection = {
   depositFeeRatio: 1,
   withdrawFee: 1,
   role: 1,
+  earn: 1,
 }

@@ -1,5 +1,3 @@
-import { onboardingEarn } from "@config"
-import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindUserFromIdError,
   CouldNotFindUserFromPhoneError,
@@ -97,16 +95,6 @@ const userFromRaw = (result: UserRecord): User => ({
   phone: result.phone as PhoneNumber,
   language: result.language as UserLanguage,
   twoFA: result.twoFA as TwoFAForUser,
-  quizQuestions:
-    result.earn?.map(
-      (questionId: string): UserQuizQuestion => ({
-        question: {
-          id: questionId as QuizQuestionId,
-          earnAmount: toSats(onboardingEarn[questionId]),
-        },
-        completed: true,
-      }),
-    ) || [],
   defaultAccountId: fromObjectId<AccountId>(result._id),
   deviceTokens: (result.deviceToken || []) as DeviceToken[],
   createdAt: new Date(result.created_at),
@@ -117,7 +105,6 @@ const projection = {
   phone: 1,
   language: 1,
   twoFA: 1,
-  earn: 1,
   deviceToken: 1,
   created_at: 1,
   twilio: 1,

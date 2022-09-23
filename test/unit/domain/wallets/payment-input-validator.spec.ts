@@ -28,6 +28,7 @@ describe("PaymentInputValidator", () => {
     },
     contacts: [],
     isEditor: false,
+    quizQuestions: [],
   }
 
   const dummySenderWallet: Wallet = {
