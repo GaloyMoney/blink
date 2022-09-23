@@ -3,19 +3,20 @@ services:
   integration-deps:
     image: busybox
     depends_on:
-    - price
-    - price-history
-    - price-history-migrate
-    - stablesats
-    - redis
-    - mongodb
-    - postgres-price-history
-    - bitcoind
-    - lnd1
-    - lnd2
-    - lnd-outside-1
-    - lnd-outside-2
-    - otel-agent
+      - price
+      - price-history
+      - price-history-migrate
+      - stablesats
+      - redis
+      - mongodb
+      - postgres-price-history
+      - bitcoind
+      - lnd1
+      - lnd2
+      - lnd-outside-1
+      - lnd-outside-2
+      - otel-agent
+      - kratos
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.43.0
     command: ["--config=/etc/otel-agent-config.yaml"]
@@ -185,3 +186,13 @@ services:
     - redis
     volumes:
       - ./:/repo
+  kratos:
+    image: oryd/kratos:v0.10.1
+    entrypoint: sh -c
+    command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --sqa-opt-out"'
+    environment:
+      DSN: sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+    volumes:
+    - type: bind
+      source: dev/ory
+      target: /home/ory
