@@ -276,7 +276,21 @@ export const getTestAccounts = (config = yamlConfig): TestAccount[] =>
   }))
 
 export const getCronConfig = (config = yamlConfig): CronConfig => config.cronConfig
-export const getKratosConfig = (config = yamlConfig): KratosConfig => config.kratosConfig
+
+export const getKratosConfig = (config = yamlConfig): KratosConfig => {
+  let { publicApi, adminApi } = config.kratosConfig
+  if (process.env.KRATOS_PUBLIC_API) {
+    publicApi = process.env.KRATOS_PUBLIC_API
+  }
+  if (process.env.KRATOS_ADMIN_API) {
+    adminApi = process.env.KRATOS_ADMIN_API
+  }
+  return {
+    ...config.kratosConfig,
+    publicApi,
+    adminApi,
+  }
+}
 
 export const getCaptcha = (config = yamlConfig): CaptchaConfig => config.captcha
 
