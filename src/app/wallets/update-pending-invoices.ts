@@ -168,14 +168,6 @@ const updatePendingInvoiceBeforeFinally = async ({
       return true
     }
 
-    if (!lnInvoiceLookup.isSettled) {
-      const invoiceSettled = await lndService.settleInvoice({ pubkey, secret })
-      if (invoiceSettled instanceof Error) return invoiceSettled
-    }
-
-    const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
-    if (invoicePaid instanceof Error) return invoicePaid
-
     // Prepare metadata and record transaction
     const walletInvoiceReceiver = await WalletInvoiceReceiver({
       walletInvoice,
@@ -184,6 +176,14 @@ const updatePendingInvoiceBeforeFinally = async ({
       usdFromBtcMidPrice: usdFromBtcMidPriceFn,
     })
     if (walletInvoiceReceiver instanceof Error) return walletInvoiceReceiver
+
+    if (!lnInvoiceLookup.isSettled) {
+      const invoiceSettled = await lndService.settleInvoice({ pubkey, secret })
+      if (invoiceSettled instanceof Error) return invoiceSettled
+    }
+
+    const invoicePaid = await walletInvoicesRepo.markAsPaid(paymentHash)
+    if (invoicePaid instanceof Error) return invoicePaid
 
     // TODO: this should be a in a mongodb transaction session with the ledger transaction below
     // markAsPaid could be done after the transaction, but we should in that case not only look
