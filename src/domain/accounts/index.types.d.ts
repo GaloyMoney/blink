@@ -128,13 +128,31 @@ type AccountValidator = {
   validateWalletForAccount(wallet: Wallet): true | ValidationError
 }
 
+type NewAccountInfo = {
+  kratosUserId: KratosUserId
+  phone?: PhoneNumber
+  phoneMetadata?: PhoneMetadata
+}
+
 interface IAccountsRepository {
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   findByUserId(userId: UserId): Promise<Account | RepositoryError>
 
   findByKratosUserId(kratosUserId: KratosUserId): Promise<Account | RepositoryError>
-  persistNewKratosUser(kratosUserId: KratosUserId): Promise<Account | RepositoryError>
+  persistNew({
+    kratosUserId,
+    phone,
+    phoneMetadata,
+  }: NewAccountInfo): Promise<Account | RepositoryError>
+
+  attachKratosUser({
+    kratosUserId,
+    id,
+  }: {
+    kratosUserId: KratosUserId
+    id: AccountId
+  }): Promise<Account | RepositoryError>
 
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>

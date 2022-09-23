@@ -5,6 +5,7 @@ import {
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindAccountFromUsernameError,
   CouldNotFindError,
+  DuplicateError,
   RepositoryError,
   UnknownRepositoryError,
 } from "@domain/errors"
@@ -140,15 +141,30 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const persistNewKratosUser = async (
-    kratosUserId: KratosUserId,
-  ): Promise<Account | RepositoryError> => {
+  const persistNew = async ({
+    kratosUserId,
+    phone,
+    phoneMetadata,
+  }: {
+    kratosUserId: KratosUserId
+    phone?: PhoneNumber
+    phoneMetadata?: PhoneMetadata
+  }): Promise<Account | RepositoryError> => {
     try {
       const user = new User()
       user.kratosUserId = kratosUserId
+
+      if (phone) {
+        user.phone = phone
+      }
+
+      user.twilio = phoneMetadata
       await user.save()
       return translateToAccount(user)
     } catch (err) {
+      if (err.message?.includes("MongoError: E11000 duplicate key error collection")) {
+        return new DuplicateError(phone)
+      }
       return new UnknownRepositoryError(err)
     }
   }
@@ -169,9 +185,38 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
+  const attachKratosUser = async ({
+    kratosUserId,
+    id,
+  }: {
+    kratosUserId: KratosUserId
+    id: AccountId
+  }): Promise<Account | RepositoryError> => {
+    try {
+      const result = await User.findOneAndUpdate(
+        { _id: toObjectId<AccountId>(id) },
+        {
+          kratosUserId,
+        },
+        {
+          new: true,
+          projection,
+        },
+      )
+      if (!result) {
+        return new RepositoryError("Couldn't attach kratosUserId")
+      }
+      return translateToAccount(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   return {
-    persistNewKratosUser,
+    persistNew,
     findByKratosUserId,
+    attachKratosUser,
+
     listUnlockedAccounts,
     findById,
     findByUserId,

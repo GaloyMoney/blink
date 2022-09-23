@@ -123,6 +123,9 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
       resetDatabase(mongoose),
       clearLimiters(),
       clearAccountLocks(),
+
+      // TODO:
+      // reset kratos + run migrations
     ])
     baseLogger.info("Reset state.")
   }

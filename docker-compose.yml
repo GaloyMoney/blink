@@ -168,6 +168,9 @@ services:
       - ${TMP_ENV_CI:-.env.ci}
     volumes:
       - ./:/repo
+    environment:
+      - KRATOS_PUBLIC_API=http://localhost:4433
+      - KRATOS_ADMIN_API=http://localhost:4434
   integration-tests:
     image: us.gcr.io/galoy-org/galoy-app-pipeline
     depends_on:
@@ -178,6 +181,9 @@ services:
       - ${TMP_ENV_CI:-.env.ci}
     volumes:
       - ./:/repo
+    environment:
+      - KRATOS_PUBLIC_API=http://localhost:4433
+      - KRATOS_ADMIN_API=http://localhost:4434
   stablesats:
     image: us.gcr.io/galoy-org/stablesats-rs:edge
     command: [ "stablesats", "run" ]
