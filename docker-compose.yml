@@ -262,19 +262,6 @@ services:
     environment:
       - KRATOS_PUBLIC_API=http://kratos:4433
       - KRATOS_ADMIN_API=http://kratos:4434
-  integration-tests-cached:
-    image: us.gcr.io/galoy-org/galoy-app-pipeline
-    depends_on:
-      - integration-deps
-    command: [ "make", "execute-integration-from-within-container-cached" ]
-    working_dir: /repo
-    env_file:
-      - ${TMP_ENV_CI:-.env.ci}
-    volumes:
-      - ./:/repo
-    environment:
-      - KRATOS_PUBLIC_API=http://kratos:4433
-      - KRATOS_ADMIN_API=http://kratos:4434
   stablesats:
     image: us.gcr.io/galoy-org/stablesats-rs:edge
     command: ["stablesats", "run"]
@@ -297,9 +284,19 @@ services:
     image: oryd/kratos:v0.10.1
     entrypoint: sh -c
     command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --sqa-opt-out"'
+    links:
+      - pg:pg
     environment:
-      DSN: sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+      DSN: postgres://dbuser:secret@pg:5432/default?sslmode=disable
     volumes:
-    - type: bind
-      source: dev/ory
-      target: /home/ory
+      - type: bind
+        source: dev/ory
+        target: /home/ory
+  pg:
+    image: postgres:14.1
+    expose:
+      - "5432"
+    environment:
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=default
