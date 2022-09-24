@@ -1,5 +1,6 @@
 import { getKratosConfig, getKratosMasterPhonePassword } from "@config"
 import {
+  AuthenticationKratosError,
   IncompatibleSchemaUpgradeError,
   KratosError,
   LikelyNoUserWithThisPhoneExistError,
@@ -9,6 +10,8 @@ import {
 import {
   AdminUpdateIdentityBody,
   Configuration,
+  Identity,
+  Session,
   SuccessfulSelfServiceLoginWithoutBrowser,
   SuccessfulSelfServiceRegistrationWithoutBrowser,
   V0alpha2Api,
@@ -49,7 +52,10 @@ export const loginForPhoneNoPasswordSchema = async (
       return new LikelyNoUserWithThisPhoneExistError(err)
     }
 
-    console.log({ err })
+    if (err.message === "Request failed with status code 401") {
+      return new AuthenticationKratosError(err)
+    }
+
     return new UnknownKratosError(err)
   }
 
@@ -113,4 +119,76 @@ export const upgradeUserToPasswordSchema = async ({
     adminIdentity,
   )
   return newIdentity
+}
+
+export const validateKratosToken = async (
+  KratosSessionToken: KratosSessionToken,
+): Promise<KratosUserId | KratosError> => {
+  let session: Session
+
+  try {
+    const { data } = await kratosPublic.toSession(KratosSessionToken)
+    session = data
+  } catch (err) {
+    if (err.message === "Request failed with status code 401") {
+      return new AuthenticationKratosError(err)
+    }
+    return new UnknownKratosError(err)
+  }
+
+  // TODO active: true
+
+  return session.identity.id as KratosUserId
+}
+
+export const activateUser = async (
+  kratosUserId: KratosUserId,
+): Promise<void | KratosError> => {
+  let identity: Identity
+  try {
+    const res = await kratosAdmin.adminGetIdentity(kratosUserId)
+    identity = res.data
+  } catch (err) {
+    return new UnknownKratosError(err)
+  }
+
+  try {
+    await kratosAdmin.adminUpdateIdentity(kratosUserId, {
+      ...identity,
+      state: "active",
+    })
+  } catch (err) {
+    return new UnknownKratosError(err)
+  }
+}
+
+export const deactivateUser = async (
+  kratosUserId: KratosUserId,
+): Promise<void | KratosError> => {
+  let identity: Identity
+  try {
+    const res = await kratosAdmin.adminGetIdentity(kratosUserId)
+    identity = res.data
+  } catch (err) {
+    return new UnknownKratosError(err)
+  }
+
+  try {
+    await kratosAdmin.adminUpdateIdentity(kratosUserId, {
+      ...identity,
+      state: "inactive",
+    })
+  } catch (err) {
+    return new UnknownKratosError(err)
+  }
+}
+
+export const revokeSessions = async (
+  kratosUserId: KratosUserId,
+): Promise<void | KratosError> => {
+  try {
+    await kratosAdmin.adminDeleteIdentitySessions(kratosUserId)
+  } catch (err) {
+    return new UnknownKratosError(err)
+  }
 }
