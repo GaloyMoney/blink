@@ -40,10 +40,6 @@ services:
   stablesats:
     ports:
       - "3325:3325"
-  oathkeeper:
-    ports:
-      - "4455:4455"
-      - "4456:4456"
   kratos:
     ports:
       - '4433:4433' # public

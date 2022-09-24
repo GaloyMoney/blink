@@ -101,3 +101,10 @@ export const LND_HEALTH_REFRESH_TIME_MS = parseInt(
   process.env.LND_HEALTH_REFRESH_TIME_MS || "20000",
   10,
 )
+
+export const getKratosMasterPhonePassword = () => {
+  if (!process.env.KRATOS_MASTER_PHONE_PASSWORD) {
+    throw new ConfigError("KRATOS_MASTER_PHONE_PASSWORD env not found")
+  }
+  return process.env.KRATOS_MASTER_PHONE_PASSWORD
+}

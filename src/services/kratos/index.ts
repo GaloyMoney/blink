@@ -1,4 +1,4 @@
-import { getKratosConfig } from "@config"
+import { getKratosConfig, getKratosMasterPhonePassword } from "@config"
 import {
   IncompatibleSchemaUpgradeError,
   KratosError,
@@ -26,9 +26,7 @@ export const kratosPublic = KratosSdk(publicApi)
 export const kratosAdmin = KratosSdk(adminApi)
 
 // login with phone
-
-// FIXME -> process.env
-const password = "passwordHardtoFindWithNumber123And$"
+const password = getKratosMasterPhonePassword()
 
 export const loginForPhoneNoPasswordSchema = async (
   phone: PhoneNumber,
