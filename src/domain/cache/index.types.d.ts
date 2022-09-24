@@ -5,7 +5,7 @@ type CacheKeys =
 
 type LocalCacheSetArgs<T> = {
   key: CacheKeys | string
-  value: T
+  value: NonError<T>
   ttlSecs: Seconds
 }
 
