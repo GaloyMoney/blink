@@ -520,7 +520,7 @@ const executePaymentViaIntraledger = async ({
     let metadata:
       | NewAddLnIntraledgerSendLedgerMetadata
       | NewAddLnTradeIntraAccountLedgerMetadata
-    let additionalDebitMetadata = {}
+    let additionalDebitMetadata: { [key: string]: string | undefined } = {}
     if (senderWallet.accountId === recipientWallet.accountId) {
       ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
         LedgerFacade.LnTradeIntraAccountLedgerMetadata({
