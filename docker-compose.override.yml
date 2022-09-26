@@ -16,7 +16,7 @@ services:
     - "6379:6379"
   mongodb:
     environment:
-    - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
+    - MONGODB_ADVERTISED_HOSTNAME=mongodb
     ports:
     - "27017:27017"
   postgres-price-history:
