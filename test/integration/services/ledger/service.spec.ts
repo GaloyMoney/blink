@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { MS_PER_DAY } from "@config"
+import { ONE_DAY } from "@config"
 
 import {
   AmountCalculator,
@@ -12,7 +12,7 @@ import { LedgerTransactionType } from "@domain/ledger"
 
 import { LedgerService } from "@services/ledger"
 
-import { ModifiedSet } from "@utils"
+import { ModifiedSet, timestampDaysAgo } from "@utils"
 
 import {
   recordLnIntraLedgerPayment,
@@ -81,7 +81,9 @@ const {
 } = ExtendedLedgerTransactionType
 
 describe("Volumes", () => {
-  const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
+  if (timestamp1DayAgo instanceof Error) return timestamp1DayAgo
+
   const walletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
   const walletDescriptorOther = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
 

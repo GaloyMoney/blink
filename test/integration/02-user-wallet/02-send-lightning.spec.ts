@@ -5,7 +5,7 @@ import { getMidPriceRatio } from "@app/shared"
 
 import { delete2fa } from "@app/users"
 
-import { getDealerConfig, getDisplayCurrencyConfig, getLocale } from "@config"
+import { getDealerConfig, getDisplayCurrencyConfig, getLocale, ONE_DAY } from "@config"
 
 import { toSats } from "@domain/bitcoin"
 import {
@@ -460,7 +460,7 @@ describe("UserWallet - Lightning Pay", () => {
   it("pay zero amount invoice", async () => {
     const imbalanceCalc = ImbalanceCalculator({
       method: WithdrawalFeePriceMethod.proportionalOnImbalance,
-      sinceDaysAgo: 1 as Days,
+      sinceDaysAgo: ONE_DAY,
       volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
       volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
     })
@@ -581,7 +581,7 @@ describe("UserWallet - Lightning Pay", () => {
   it("pay zero amount invoice with amount less than 1 cent", async () => {
     const imbalanceCalc = ImbalanceCalculator({
       method: WithdrawalFeePriceMethod.proportionalOnImbalance,
-      sinceDaysAgo: 1 as Days,
+      sinceDaysAgo: ONE_DAY,
       volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
       volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
     })

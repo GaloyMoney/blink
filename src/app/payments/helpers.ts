@@ -1,9 +1,9 @@
 import {
   getTwoFALimits,
   getAccountLimits,
-  MS_PER_DAY,
   MIN_SATS_FOR_PRICE_RATIO_PRECISION,
   getPubkeysToSkipProbe,
+  ONE_DAY,
 } from "@config"
 import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
 import {
@@ -21,8 +21,9 @@ import {
 } from "@services/mongoose"
 import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
-import { WalletCurrency } from "@domain/shared"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { WalletCurrency } from "@domain/shared"
+import { timestampDaysAgo } from "@utils"
 
 const ledger = LedgerService()
 
@@ -140,7 +141,9 @@ export const newCheckIntraledgerLimits = async ({
   wallet: Wallet
   priceRatio: PriceRatio
 }) => {
-  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1Day = timestampDaysAgo(ONE_DAY)
+  if (timestamp1Day instanceof Error) return timestamp1Day
+
   const walletVolume = await ledger.intraledgerTxBaseVolumeAmountSince({
     walletDescriptor: { id: wallet.id, currency: wallet.currency },
     timestamp: timestamp1Day,
@@ -171,7 +174,9 @@ export const newCheckTradeIntraAccountLimits = async ({
   wallet: Wallet
   priceRatio: PriceRatio
 }) => {
-  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1Day = timestampDaysAgo(ONE_DAY)
+  if (timestamp1Day instanceof Error) return timestamp1Day
+
   const walletVolume = await ledger.tradeIntraAccountTxBaseVolumeAmountSince({
     walletDescriptor: { id: wallet.id, currency: wallet.currency },
     timestamp: timestamp1Day,
@@ -202,7 +207,9 @@ export const newCheckWithdrawalLimits = async ({
   wallet: Wallet
   priceRatio: PriceRatio
 }) => {
-  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1Day = timestampDaysAgo(ONE_DAY)
+  if (timestamp1Day instanceof Error) return timestamp1Day
+
   const walletVolume = await ledger.externalPaymentVolumeAmountSince({
     walletDescriptor: { id: wallet.id, currency: wallet.currency },
     timestamp: timestamp1Day,
@@ -232,7 +239,9 @@ export const newCheckTwoFALimits = async ({
   wallet: Wallet
   priceRatio: PriceRatio
 }) => {
-  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1Day = timestampDaysAgo(ONE_DAY)
+  if (timestamp1Day instanceof Error) return timestamp1Day
+
   const walletVolume = await ledger.allPaymentVolumeAmountSince({
     walletDescriptor: { id: wallet.id, currency: wallet.currency },
     timestamp: timestamp1Day,
