@@ -1,9 +1,7 @@
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
-import {
-  CouldNotFindLnPaymentFromHashError,
-  UnknownRepositoryError,
-} from "@domain/errors"
+import { CouldNotFindLnPaymentFromHashError } from "@domain/errors"
 import { LnPayment } from "@services/lnd/schema"
+import { parseRepositoryError } from "@services/shared/repository"
 
 export const LnPaymentsRepository = (): ILnPaymentsRepository => {
   const findByPaymentHash = async (
@@ -16,7 +14,7 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
       }
       return lnPaymentFromRaw(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -29,7 +27,7 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
       })
       return result.map(lnPaymentFromRaw)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -46,7 +44,7 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
         ? lnPaymentFromRaw(result)
         : lnPaymentPartialFromRaw(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -62,7 +60,7 @@ export const LnPaymentsRepository = (): ILnPaymentsRepository => {
       if (!result) return new CouldNotFindLnPaymentFromHashError()
       return lnPaymentFromRaw(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 

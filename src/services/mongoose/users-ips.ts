@@ -5,8 +5,8 @@ import {
   CouldNotFindUserFromIdError,
   PersistError,
   RepositoryError,
-  UnknownRepositoryError,
 } from "@domain/errors"
+import { parseRepositoryError } from "@services/shared/repository"
 
 import { fromObjectId, toObjectId } from "./utils"
 
@@ -28,7 +28,7 @@ export const UsersIpRepository = (): IUsersIPsRepository => {
 
       return true
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -44,7 +44,7 @@ export const UsersIpRepository = (): IUsersIPsRepository => {
 
       return userIPsFromRaw(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 

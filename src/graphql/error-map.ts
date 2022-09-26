@@ -301,6 +301,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "RebalanceNeededError":
       return new RebalanceNeededError({ logger: baseLogger })
 
+    case "CantConnectToMongoDbError":
+      message =
+        "Service offline, please try again in a few minutes. If the problem persists, please contact support."
+      return new DbError({ message, logger: baseLogger })
+
     // ----------
     // Unhandled below here
     // ----------

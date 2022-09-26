@@ -6,10 +6,10 @@ import {
   CouldNotFindAccountFromUsernameError,
   CouldNotFindError,
   RepositoryError,
-  UnknownRepositoryError,
 } from "@domain/errors"
 
 import { User } from "@services/mongoose/schema"
+import { parseRepositoryError } from "@services/shared/repository"
 
 import { toObjectId, fromObjectId } from "./utils"
 
@@ -28,7 +28,7 @@ export const AccountsRepository = (): IAccountsRepository => {
       if (result.length === 0) return new CouldNotFindError()
       return result.map((a) => translateToAccount(a))
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -39,7 +39,7 @@ export const AccountsRepository = (): IAccountsRepository => {
       if (!result) return new CouldNotFindError()
       return translateToAccount(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -56,7 +56,7 @@ export const AccountsRepository = (): IAccountsRepository => {
       }
       return translateToAccount(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -89,7 +89,7 @@ export const AccountsRepository = (): IAccountsRepository => {
         },
       }))
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -136,7 +136,7 @@ export const AccountsRepository = (): IAccountsRepository => {
       }
       return translateToAccount(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -149,7 +149,7 @@ export const AccountsRepository = (): IAccountsRepository => {
       await user.save()
       return translateToAccount(user)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -165,7 +165,7 @@ export const AccountsRepository = (): IAccountsRepository => {
 
       return translateToAccount(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 

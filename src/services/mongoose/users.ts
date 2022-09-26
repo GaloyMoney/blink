@@ -3,9 +3,9 @@ import {
   CouldNotFindUserFromPhoneError,
   RepositoryError,
   DuplicateError,
-  UnknownRepositoryError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
+import { parseRepositoryError } from "@services/shared/repository"
 
 import { fromObjectId, toObjectId } from "./utils"
 
@@ -20,7 +20,7 @@ export const UsersRepository = (): IUsersRepository => {
 
       return userFromRaw(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -33,7 +33,7 @@ export const UsersRepository = (): IUsersRepository => {
 
       return userFromRaw(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -51,7 +51,7 @@ export const UsersRepository = (): IUsersRepository => {
       if (err.message?.includes("MongoError: E11000 duplicate key error collection")) {
         return new DuplicateError(phone)
       }
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -78,7 +78,7 @@ export const UsersRepository = (): IUsersRepository => {
       }
       return userFromRaw(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 

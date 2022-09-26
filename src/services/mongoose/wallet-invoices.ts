@@ -1,9 +1,6 @@
-import {
-  CouldNotFindWalletInvoiceError,
-  RepositoryError,
-  UnknownRepositoryError,
-} from "@domain/errors"
+import { CouldNotFindWalletInvoiceError, RepositoryError } from "@domain/errors"
 import { UsdPaymentAmount } from "@domain/shared"
+import { parseRepositoryError } from "@services/shared/repository"
 
 import { WalletInvoice } from "./schema"
 
@@ -30,7 +27,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }).save()
       return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -50,7 +47,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }
       return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -64,7 +61,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }
       return walletInvoiceFromRaw(walletInvoice)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
