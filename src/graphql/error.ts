@@ -237,6 +237,17 @@ export class PhoneCodeError extends CustomApolloError {
   }
 }
 
+export class PhoneProviderError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({
+      message: "Issue with phone provider",
+      forwardToClient: true,
+      code: "PHONE_PROVIDER_ERROR",
+      ...errData,
+    })
+  }
+}
+
 export class InvalidCoordinatesError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
