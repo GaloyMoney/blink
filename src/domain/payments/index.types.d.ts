@@ -17,6 +17,7 @@ type PaymentFlowState<
 > = XorPaymentHashProperty & {
   senderWalletId: WalletId
   senderWalletCurrency: S
+  senderAccountId: AccountId
   settlementMethod: SettlementMethod
   paymentInitiationMethod: PaymentInitiationMethod
   descriptionFromInvoice: string
@@ -33,6 +34,7 @@ type PaymentFlowState<
 
   recipientWalletId?: WalletId
   recipientWalletCurrency?: R
+  recipientAccountId?: AccountId
   recipientPubkey?: Pubkey
   recipientUsername?: Username
 
@@ -88,7 +90,9 @@ type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
 }
 
 type LPFBWithInvoice<S extends WalletCurrency> = {
-  withSenderWallet(senderWallet: Wallet): LPFBWithSenderWallet<S> | LPFBWithError
+  withSenderWallet(
+    senderWallet: WalletDescriptor<S>,
+  ): LPFBWithSenderWallet<S> | LPFBWithError
 }
 
 type LPFBWithSenderWallet<S extends WalletCurrency> = {
@@ -96,16 +100,13 @@ type LPFBWithSenderWallet<S extends WalletCurrency> = {
   withoutRecipientWallet<R extends WalletCurrency>():
     | LPFBWithRecipientWallet<S, R>
     | LPFBWithError
-  withRecipientWallet<R extends WalletCurrency>({
-    id: recipientWalletId,
-    currency: recipientWalletCurrency,
-    usdPaymentAmount,
-  }: WalletDescriptor<R> & {
-    accountId: AccountId
-    pubkey?: Pubkey
-    usdPaymentAmount?: UsdPaymentAmount
-    username?: Username
-  }): LPFBWithRecipientWallet<S, R> | LPFBWithError
+  withRecipientWallet<R extends WalletCurrency>(
+    args: WalletDescriptor<R> & {
+      pubkey?: Pubkey
+      usdPaymentAmount?: UsdPaymentAmount
+      username?: Username
+    },
+  ): LPFBWithRecipientWallet<S, R> | LPFBWithError
 }
 
 type LPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {

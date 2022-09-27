@@ -36,6 +36,7 @@ type DisplayBalanceAmount<T extends DisplayCurrency> = DisplayAmount<T> & {
 type WalletDescriptor<T extends WalletCurrency> = {
   id: WalletId
   currency: T
+  accountId: AccountId
 }
 
 type BtcPaymentAmount = PaymentAmount<"BTC">

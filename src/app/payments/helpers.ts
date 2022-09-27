@@ -58,7 +58,11 @@ export const constructPaymentFlowBuilder = async <
       }) as LPFBWithInvoice<S>)
     : (paymentBuilder.withInvoice(invoice) as LPFBWithInvoice<S>)
 
-  const builderWithSenderWallet = builderWithInvoice.withSenderWallet(senderWallet)
+  const builderWithSenderWallet = builderWithInvoice.withSenderWallet({
+    id: senderWallet.id,
+    currency: senderWallet.currency as S,
+    accountId: senderWallet.accountId,
+  })
 
   let builderAfterRecipientStep: LPFBWithRecipientWallet<S, R> | LPFBWithError
   if (builderWithSenderWallet.isIntraLedger()) {
@@ -145,7 +149,7 @@ export const newCheckIntraledgerLimits = async ({
   if (timestamp1Day instanceof Error) return timestamp1Day
 
   const walletVolume = await ledger.intraledgerTxBaseVolumeAmountSince({
-    walletDescriptor: { id: wallet.id, currency: wallet.currency },
+    walletDescriptor: wallet,
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
@@ -178,7 +182,7 @@ export const newCheckTradeIntraAccountLimits = async ({
   if (timestamp1Day instanceof Error) return timestamp1Day
 
   const walletVolume = await ledger.tradeIntraAccountTxBaseVolumeAmountSince({
-    walletDescriptor: { id: wallet.id, currency: wallet.currency },
+    walletDescriptor: wallet,
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
@@ -211,7 +215,7 @@ export const newCheckWithdrawalLimits = async ({
   if (timestamp1Day instanceof Error) return timestamp1Day
 
   const walletVolume = await ledger.externalPaymentVolumeAmountSince({
-    walletDescriptor: { id: wallet.id, currency: wallet.currency },
+    walletDescriptor: wallet,
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
@@ -243,7 +247,7 @@ export const newCheckTwoFALimits = async ({
   if (timestamp1Day instanceof Error) return timestamp1Day
 
   const walletVolume = await ledger.allPaymentVolumeAmountSince({
-    walletDescriptor: { id: wallet.id, currency: wallet.currency },
+    walletDescriptor: wallet,
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume

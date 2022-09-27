@@ -1495,7 +1495,11 @@ describe("UserWallet - Lightning Pay", () => {
         if (midPriceRatio instanceof Error) return midPriceRatio
 
         const remainingLimitAmount = await newGetRemainingTwoFALimit({
-          walletDescriptor: { id: walletIdA, currency: WalletCurrency.Btc },
+          walletDescriptor: {
+            id: walletIdA,
+            currency: WalletCurrency.Btc,
+            accountId: accountA.id,
+          },
           priceRatio: midPriceRatio,
         })
         if (remainingLimitAmount instanceof Error) throw Error

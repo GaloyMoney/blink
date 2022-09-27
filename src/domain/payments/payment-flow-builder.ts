@@ -117,7 +117,7 @@ export const LightningPaymentFlowBuilder = <S extends WalletCurrency>(
 const LPFBWithInvoice = <S extends WalletCurrency>(
   state: LPFBWithInvoiceState,
 ): LPFBWithInvoice<S> | LPFBWithError => {
-  const withSenderWallet = (senderWallet: Wallet) => {
+  const withSenderWallet = (senderWallet: WalletDescriptor<S>) => {
     const {
       id: senderWalletId,
       accountId: senderAccountId,
@@ -438,8 +438,10 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
 
       senderWalletId: state.senderWalletId,
       senderWalletCurrency: state.senderWalletCurrency,
+      senderAccountId: state.senderAccountId,
       recipientWalletId: state.recipientWalletId,
       recipientWalletCurrency: state.recipientWalletCurrency,
+      recipientAccountId: state.recipientAccountId,
       recipientPubkey: state.recipientPubkey,
       recipientUsername: state.recipientUsername,
 

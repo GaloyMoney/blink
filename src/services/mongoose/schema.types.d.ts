@@ -140,6 +140,7 @@ type PaymentFlowStateRecordPartial = XOR<
 > & {
   senderWalletId: string
   senderWalletCurrency: string
+  senderAccountId: string
   settlementMethod: string
   paymentInitiationMethod: string
   createdAt: Date
@@ -156,6 +157,7 @@ type PaymentFlowStateRecordPartial = XOR<
 
   recipientWalletId?: string
   recipientWalletCurrency?: string
+  recipientAccountId?: string
   recipientPubkey?: string
   recipientUsername?: string
 
