@@ -172,7 +172,10 @@ const validateIntraledgerPaymentInputs = async ({
   }
 }
 
-const executePaymentViaIntraledger = async ({
+const executePaymentViaIntraledger = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   paymentFlow,
   senderAccount,
   senderWallet,
@@ -180,11 +183,11 @@ const executePaymentViaIntraledger = async ({
   recipientWallet,
   memo,
 }: {
-  paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
+  paymentFlow: PaymentFlow<S, R>
   senderAccount: Account
-  senderWallet: Wallet
+  senderWallet: WalletDescriptor<S>
   recipientAccount: Account
-  recipientWallet: Wallet
+  recipientWallet: WalletDescriptor<R>
   memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({

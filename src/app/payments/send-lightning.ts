@@ -367,7 +367,7 @@ const getPaymentFlow = async <S extends WalletCurrency, R extends WalletCurrency
   inputPaymentAmount,
   uncheckedAmount,
 }: {
-  senderWallet: Wallet
+  senderWallet: WalletDescriptor<S>
   decodedInvoice: LnInvoice
   inputPaymentAmount: PaymentAmount<S>
   uncheckedAmount?: number | undefined
@@ -445,14 +445,17 @@ const newCheckAndVerifyTwoFA = async ({
   return true
 }
 
-const executePaymentViaIntraledger = async ({
+const executePaymentViaIntraledger = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   paymentFlow,
   senderWallet,
   senderUsername,
   memo,
 }: {
-  paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
-  senderWallet: Wallet
+  paymentFlow: PaymentFlow<S, R>
+  senderWallet: WalletDescriptor<S>
   senderUsername: Username | undefined
   memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {

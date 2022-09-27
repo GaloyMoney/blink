@@ -37,7 +37,7 @@ export const constructPaymentFlowBuilder = async <
   usdFromBtc,
   btcFromUsd,
 }: {
-  senderWallet: Wallet
+  senderWallet: WalletDescriptor<S>
   invoice: LnInvoice
   uncheckedAmount?: number
   usdFromBtc: (amount: BtcPaymentAmount) => Promise<UsdPaymentAmount | ApplicationError>
@@ -58,11 +58,7 @@ export const constructPaymentFlowBuilder = async <
       }) as LPFBWithInvoice<S>)
     : (paymentBuilder.withInvoice(invoice) as LPFBWithInvoice<S>)
 
-  const builderWithSenderWallet = builderWithInvoice.withSenderWallet({
-    id: senderWallet.id,
-    currency: senderWallet.currency as S,
-    accountId: senderWallet.accountId,
-  })
+  const builderWithSenderWallet = builderWithInvoice.withSenderWallet(senderWallet)
 
   let builderAfterRecipientStep: LPFBWithRecipientWallet<S, R> | LPFBWithError
   if (builderWithSenderWallet.isIntraLedger()) {
@@ -136,13 +132,13 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   }
 }
 
-export const newCheckIntraledgerLimits = async ({
+export const newCheckIntraledgerLimits = async <S extends WalletCurrency>({
   amount,
   wallet,
   priceRatio,
 }: {
   amount: UsdPaymentAmount
-  wallet: Wallet
+  wallet: WalletDescriptor<S>
   priceRatio: PriceRatio
 }) => {
   const timestamp1Day = timestampDaysAgo(ONE_DAY)
@@ -169,13 +165,13 @@ export const newCheckIntraledgerLimits = async ({
   })
 }
 
-export const newCheckTradeIntraAccountLimits = async ({
+export const newCheckTradeIntraAccountLimits = async <S extends WalletCurrency>({
   amount,
   wallet,
   priceRatio,
 }: {
   amount: UsdPaymentAmount
-  wallet: Wallet
+  wallet: WalletDescriptor<S>
   priceRatio: PriceRatio
 }) => {
   const timestamp1Day = timestampDaysAgo(ONE_DAY)
@@ -202,13 +198,13 @@ export const newCheckTradeIntraAccountLimits = async ({
   })
 }
 
-export const newCheckWithdrawalLimits = async ({
+export const newCheckWithdrawalLimits = async <S extends WalletCurrency>({
   amount,
   wallet,
   priceRatio,
 }: {
   amount: UsdPaymentAmount
-  wallet: Wallet
+  wallet: WalletDescriptor<S>
   priceRatio: PriceRatio
 }) => {
   const timestamp1Day = timestampDaysAgo(ONE_DAY)
@@ -234,13 +230,13 @@ export const newCheckWithdrawalLimits = async ({
   })
 }
 
-export const newCheckTwoFALimits = async ({
+export const newCheckTwoFALimits = async <S extends WalletCurrency>({
   amount,
   wallet,
   priceRatio,
 }: {
   amount: UsdPaymentAmount
-  wallet: Wallet
+  wallet: WalletDescriptor<S>
   priceRatio: PriceRatio
 }) => {
   const timestamp1Day = timestampDaysAgo(ONE_DAY)
