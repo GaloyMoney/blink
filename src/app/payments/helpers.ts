@@ -22,6 +22,7 @@ import {
 import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
 import { WalletCurrency } from "@domain/shared"
+import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 const ledger = LedgerService()
 
@@ -213,30 +214,33 @@ export const newCheckTwoFALimits = async ({
   })
 }
 
-export const getPriceRatioForLimits = async <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->(
-  paymentFlow: PaymentFlow<S, R>,
-) => {
-  const amount = MIN_SATS_FOR_PRICE_RATIO_PRECISION
+export const getPriceRatioForLimits = wrapAsyncToRunInSpan({
+  namespace: "app.payments",
+  fnName: "getPriceRatioForLimits",
+  fn: async <S extends WalletCurrency, R extends WalletCurrency>(
+    paymentFlow: PaymentFlow<S, R>,
+  ) => {
+    const amount = MIN_SATS_FOR_PRICE_RATIO_PRECISION
 
-  if (paymentFlow.btcPaymentAmount.amount < amount) {
-    const btcPaymentAmountForRatio = {
-      amount,
-      currency: WalletCurrency.Btc,
+    if (paymentFlow.btcPaymentAmount.amount < amount) {
+      const btcPaymentAmountForRatio = {
+        amount,
+        currency: WalletCurrency.Btc,
+      }
+      const usdPaymentAmountForRatio = await usdFromBtcMidPriceFn(
+        btcPaymentAmountForRatio,
+      )
+      if (usdPaymentAmountForRatio instanceof Error) return usdPaymentAmountForRatio
+
+      return PriceRatio({
+        usd: usdPaymentAmountForRatio,
+        btc: btcPaymentAmountForRatio,
+      })
     }
-    const usdPaymentAmountForRatio = await usdFromBtcMidPriceFn(btcPaymentAmountForRatio)
-    if (usdPaymentAmountForRatio instanceof Error) return usdPaymentAmountForRatio
 
     return PriceRatio({
-      usd: usdPaymentAmountForRatio,
-      btc: btcPaymentAmountForRatio,
+      usd: paymentFlow.usdPaymentAmount,
+      btc: paymentFlow.btcPaymentAmount,
     })
-  }
-
-  return PriceRatio({
-    usd: paymentFlow.usdPaymentAmount,
-    btc: paymentFlow.btcPaymentAmount,
-  })
-}
+  },
+})
