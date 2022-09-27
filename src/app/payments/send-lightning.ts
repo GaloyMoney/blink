@@ -481,7 +481,13 @@ const executePaymentViaIntraledger = async ({
   if (recipientWallet instanceof Error) return recipientWallet
 
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
-    const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
+    const ledgerService = LedgerService()
+
+    const recorded = await ledgerService.isLnTxRecorded(paymentHash)
+    if (recorded instanceof Error) return recorded
+    if (recorded) return PaymentSendStatus.AlreadyPaid
+
+    const balance = await ledgerService.getWalletBalanceAmount(senderWallet)
     if (balance instanceof Error) return balance
 
     const balanceCheck = paymentFlow.checkBalanceForSend(balance)
