@@ -49,7 +49,7 @@ type PaymentSendArgs = {
 }
 
 type PayInvoiceByWalletIdArgs = PaymentSendArgs & {
-  paymentRequest: EncodedPaymentRequest
+  uncheckedPaymentRequest: string
   senderAccount: Account
 }
 type PayInvoiceByWalletIdWithTwoFAArgs = PayInvoiceByWalletIdArgs & {
@@ -57,7 +57,7 @@ type PayInvoiceByWalletIdWithTwoFAArgs = PayInvoiceByWalletIdArgs & {
 }
 
 type PayNoAmountInvoiceByWalletIdArgs = PaymentSendArgs & {
-  paymentRequest: EncodedPaymentRequest
+  uncheckedPaymentRequest: string
   amount: number
   senderAccount: Account
 }

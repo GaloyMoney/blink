@@ -31,7 +31,7 @@ const LnInvoicePaymentSendMutation = GT.Field<
   {
     input: {
       walletId: WalletId | InputValidationError
-      paymentRequest: EncodedPaymentRequest | InputValidationError
+      paymentRequest: string | InputValidationError
       memo?: string | InputValidationError
     }
   },
@@ -62,7 +62,7 @@ const LnInvoicePaymentSendMutation = GT.Field<
 
     const status = await Payments.payInvoiceByWalletId({
       senderWalletId: walletId,
-      paymentRequest,
+      uncheckedPaymentRequest: paymentRequest,
       memo: memo ?? null,
       senderAccount: domainAccount,
     })
