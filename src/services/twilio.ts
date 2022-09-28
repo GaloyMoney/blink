@@ -3,6 +3,7 @@ import twilio from "twilio"
 import { getTwilioConfig } from "@config"
 import {
   InvalidPhoneNumberPhoneProviderError,
+  PhoneProviderConnectionError,
   RestrictedRegionPhoneProviderError,
   UnknownPhoneProviderServiceError,
   UnsubscribedRecipientPhoneProviderError,
@@ -35,6 +36,10 @@ export const TwilioClient = (): IPhoneProviderService => {
 
       if (err.message.includes("unsubscribed recipient")) {
         return new UnsubscribedRecipientPhoneProviderError(err)
+      }
+
+      if (err.message.includes("timeout of") && err.message.includes("exceeded")) {
+        return new PhoneProviderConnectionError(err)
       }
 
       return new UnknownPhoneProviderServiceError(err)

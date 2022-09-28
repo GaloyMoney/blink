@@ -20,6 +20,7 @@ import {
   InsufficientLiquidityError,
   LndOfflineError,
   OnChainPaymentError,
+  PhoneProviderError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -150,6 +151,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "RestrictedRegionPhoneProviderError":
       message = "Phone number is not from a valid region"
       return new ValidationInternalError({ message, logger: baseLogger })
+
+    case "PhoneProviderConnectionError":
+      message = "Phone provider temporarily unreachable"
+      return new PhoneProviderError({ message, logger: baseLogger })
 
     case "UnsubscribedRecipientPhoneProviderError":
       message = "Phone number has opted out of receiving messages"
