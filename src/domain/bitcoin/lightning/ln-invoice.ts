@@ -4,6 +4,7 @@ import { parsePaymentRequest } from "invoices"
 
 import {
   InvalidChecksumForLnInvoiceError,
+  InvalidMixedCaseLnInvoiceError,
   LnInvoiceDecodeError,
   LnInvoiceMissingPaymentSecretError,
   UnknownLnInvoiceDecodeError,
@@ -70,6 +71,8 @@ const safeDecode = (bolt11EncodedInvoice: EncodedPaymentRequest) => {
     switch (true) {
       case err.message.includes("Invalid checksum"):
         return new InvalidChecksumForLnInvoiceError()
+      case err.message.includes("Mixed-case string"):
+        return new InvalidMixedCaseLnInvoiceError()
       default:
         return new UnknownLnInvoiceDecodeError(err)
     }
