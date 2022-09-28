@@ -6,9 +6,8 @@ import {
   PersistError,
   RepositoryError,
 } from "@domain/errors"
-import { parseRepositoryError } from "@services/mongoose/utils"
 
-import { fromObjectId, toObjectId } from "./utils"
+import { fromObjectId, toObjectId, parseRepositoryError } from "./utils"
 
 export const UsersIpRepository = (): IUsersIPsRepository => {
   const update = async (userIp: UserIPs): Promise<true | RepositoryError> => {

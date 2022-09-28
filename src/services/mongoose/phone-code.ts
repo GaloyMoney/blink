@@ -1,6 +1,6 @@
 import { CouldNotFindPhoneCodeError, RepositoryError } from "@domain/errors"
-import { parseRepositoryError } from "@services/mongoose/utils"
 
+import { parseRepositoryError } from "./utils"
 import { PhoneCode } from "./schema"
 
 export const PhoneCodesRepository = (): IPhoneCodesRepository => {

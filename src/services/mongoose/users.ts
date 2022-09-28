@@ -5,9 +5,8 @@ import {
   DuplicateError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
-import { parseRepositoryError } from "@services/mongoose/utils"
 
-import { fromObjectId, toObjectId } from "./utils"
+import { fromObjectId, toObjectId, parseRepositoryError } from "./utils"
 
 export const UsersRepository = (): IUsersRepository => {
   const findById = async (userId: UserId): Promise<User | RepositoryError> => {

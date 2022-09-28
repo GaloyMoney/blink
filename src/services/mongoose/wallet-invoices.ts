@@ -1,7 +1,7 @@
 import { CouldNotFindWalletInvoiceError, RepositoryError } from "@domain/errors"
 import { UsdPaymentAmount } from "@domain/shared"
-import { parseRepositoryError } from "@services/mongoose/utils"
 
+import { parseRepositoryError } from "./utils"
 import { WalletInvoice } from "./schema"
 
 export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {

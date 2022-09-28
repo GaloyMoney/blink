@@ -8,9 +8,9 @@ import {
 import { InvalidLightningPaymentFlowStateError, PaymentFlow } from "@domain/payments"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { safeBigInt } from "@domain/shared/safe"
-import { parseRepositoryError } from "@services/mongoose/utils"
 import { elapsedSinceTimestamp } from "@utils"
 
+import { parseRepositoryError } from "./utils"
 import { PaymentFlowState } from "./schema"
 
 export const PaymentFlowStateRepository = (

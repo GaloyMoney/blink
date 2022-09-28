@@ -9,9 +9,8 @@ import {
 } from "@domain/errors"
 
 import { User } from "@services/mongoose/schema"
-import { parseRepositoryError } from "@services/mongoose/utils"
 
-import { toObjectId, fromObjectId } from "./utils"
+import { toObjectId, fromObjectId, parseRepositoryError } from "./utils"
 
 const caseInsensitiveRegex = (input: string) => {
   return new RegExp(`^${input}$`, "i")
