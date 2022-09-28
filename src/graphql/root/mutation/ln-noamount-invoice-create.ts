@@ -19,6 +19,9 @@ const LnNoAmountInvoiceCreateInput = GT.Input({
 })
 
 const LnNoAmountInvoiceCreateMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(LnNoAmountInvoicePayload),
   description: dedent`Returns a lightning invoice for an associated wallet.
   Can be used to receive any supported currency value (currently USD or BTC).

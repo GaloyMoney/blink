@@ -23,6 +23,9 @@ const AccountUpdateLevelMutation = GT.Field<{
     level: AccountLevel | Error
   }
 }>({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(AccountDetailPayload),
   args: {
     input: { type: GT.NonNull(AccountUpdateLevelInput) },

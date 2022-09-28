@@ -15,6 +15,9 @@ const ColdStorageRebalanceToHotWalletInput = GT.Input({
 })
 
 const ColdStorageRebalanceToHotWalletMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(PsbtDetailPayload),
   args: {
     input: { type: GT.NonNull(ColdStorageRebalanceToHotWalletInput) },

@@ -27,6 +27,9 @@ const AccountUpdateStatusMutation = GT.Field<
   null,
   GraphQLContextForUser
 >({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(AccountDetailPayload),
   args: {
     input: { type: GT.NonNull(AccountUpdateStatusInput) },

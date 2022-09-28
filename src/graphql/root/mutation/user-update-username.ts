@@ -14,6 +14,9 @@ const UserUpdateUsernameInput = GT.Input({
 })
 
 const UserUpdateUsernameMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(UserUpdateUsernamePayload),
   args: {
     input: { type: GT.NonNull(UserUpdateUsernameInput) },

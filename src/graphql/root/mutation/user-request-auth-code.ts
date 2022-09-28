@@ -16,6 +16,9 @@ const UserRequestAuthCodeInput = GT.Input({
 })
 
 const UserRequestAuthCodeMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(SuccessPayload),
   args: {
     input: { type: GT.NonNull(UserRequestAuthCodeInput) },

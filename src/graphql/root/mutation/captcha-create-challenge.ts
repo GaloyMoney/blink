@@ -3,6 +3,9 @@ import { GT } from "@graphql/index"
 import CaptchaCreateChallengePayload from "@graphql/types/payload/captcha-create-challenge"
 
 const CaptchaCreateChallengeMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(CaptchaCreateChallengePayload),
   resolve: async (_, __, { geetest }) => {
     // TODO: store the request and determine what to do if things fail here...
