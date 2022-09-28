@@ -13,7 +13,7 @@ export class DuplicateError extends RepositoryError {}
 
 export class BadInputsForFindError extends RepositoryError {}
 export class CouldNotFindError extends RepositoryError {}
-export class CantConnectToMongoDbError extends RepositoryError {
+export class CannotConnectToDbError extends RepositoryError {
   level = ErrorLevel.Critical
 }
 
