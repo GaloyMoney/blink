@@ -22,7 +22,7 @@ const LnInvoiceFeeProbeInput = GT.Input({
 const LnInvoiceFeeProbeMutation = GT.Field<{
   input: {
     walletId: WalletId | InputValidationError
-    paymentRequest: EncodedPaymentRequest | InputValidationError
+    paymentRequest: string | InputValidationError
   }
 }>({
   extensions: {
@@ -45,7 +45,7 @@ const LnInvoiceFeeProbeMutation = GT.Field<{
 
     const { result: feeSatAmount, error } = await Payments.getLightningFeeEstimation({
       walletId,
-      paymentRequest,
+      uncheckedPaymentRequest: paymentRequest,
     })
 
     if (feeSatAmount !== null && error instanceof Error) {

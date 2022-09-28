@@ -34,7 +34,7 @@ const LnNoAmountUsdInvoicePaymentSendMutation = GT.Field<
   {
     input: {
       walletId: WalletId | InputValidationError
-      paymentRequest: EncodedPaymentRequest | InputValidationError
+      paymentRequest: string | InputValidationError
       amount: Satoshis | InputValidationError
       memo?: string | InputValidationError
     }
@@ -73,7 +73,7 @@ const LnNoAmountUsdInvoicePaymentSendMutation = GT.Field<
 
     const status = await Payments.payNoAmountInvoiceByWalletId({
       senderWalletId: walletId,
-      paymentRequest,
+      uncheckedPaymentRequest: paymentRequest,
       memo: memo ?? null,
       amount,
       senderAccount: domainAccount,
