@@ -5,7 +5,7 @@ import {
   DuplicateError,
 } from "@domain/errors"
 import { User } from "@services/mongoose/schema"
-import { parseRepositoryError } from "@services/shared/repository"
+import { parseRepositoryError } from "@services/mongoose/utils"
 
 import { fromObjectId, toObjectId } from "./utils"
 

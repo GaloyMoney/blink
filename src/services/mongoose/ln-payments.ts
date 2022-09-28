@@ -1,7 +1,7 @@
 import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { CouldNotFindLnPaymentFromHashError } from "@domain/errors"
 import { LnPayment } from "@services/lnd/schema"
-import { parseRepositoryError } from "@services/shared/repository"
+import { parseRepositoryError } from "@services/mongoose/utils"
 
 export const LnPaymentsRepository = (): ILnPaymentsRepository => {
   const findByPaymentHash = async (

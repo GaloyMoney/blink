@@ -1,7 +1,6 @@
 import { NoTransactionToUpdateError } from "@domain/errors"
 import { CouldNotFindTransactionMetadataError } from "@domain/ledger"
-import { fromObjectId, toObjectId } from "@services/mongoose/utils"
-import { parseRepositoryError } from "@services/shared/repository"
+import { fromObjectId, toObjectId, parseRepositoryError } from "@services/mongoose/utils"
 
 import { TransactionMetadata } from "../schema"
 

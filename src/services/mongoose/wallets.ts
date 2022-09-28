@@ -6,7 +6,7 @@ import {
   CouldNotListWalletsFromWalletCurrencyError,
   RepositoryError,
 } from "@domain/errors"
-import { parseRepositoryError } from "@services/shared/repository"
+import { parseRepositoryError } from "@services/mongoose/utils"
 import { Types } from "mongoose"
 
 import { toObjectId, fromObjectId } from "./utils"

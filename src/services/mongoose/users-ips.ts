@@ -6,7 +6,7 @@ import {
   PersistError,
   RepositoryError,
 } from "@domain/errors"
-import { parseRepositoryError } from "@services/shared/repository"
+import { parseRepositoryError } from "@services/mongoose/utils"
 
 import { fromObjectId, toObjectId } from "./utils"
 

@@ -1,6 +1,6 @@
 import { CouldNotFindWalletInvoiceError, RepositoryError } from "@domain/errors"
 import { UsdPaymentAmount } from "@domain/shared"
-import { parseRepositoryError } from "@services/shared/repository"
+import { parseRepositoryError } from "@services/mongoose/utils"
 
 import { WalletInvoice } from "./schema"
 

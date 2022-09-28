@@ -1,5 +1,5 @@
 import { CouldNotFindPhoneCodeError, RepositoryError } from "@domain/errors"
-import { parseRepositoryError } from "@services/shared/repository"
+import { parseRepositoryError } from "@services/mongoose/utils"
 
 import { PhoneCode } from "./schema"
 
