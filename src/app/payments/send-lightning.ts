@@ -59,7 +59,7 @@ const dealer = NewDealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
 
 export const payInvoiceByWalletIdWithTwoFA = async ({
-  paymentRequest,
+  uncheckedPaymentRequest,
   memo,
   senderWalletId: uncheckedSenderWalletId,
   senderAccount,
@@ -70,7 +70,7 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
   })
 
   const validatedPaymentInputs = await validateInvoicePaymentInputs({
-    paymentRequest,
+    uncheckedPaymentRequest,
     uncheckedSenderWalletId,
     senderAccount,
   })
@@ -115,7 +115,7 @@ export const payInvoiceByWalletIdWithTwoFA = async ({
 }
 
 export const payInvoiceByWalletId = async ({
-  paymentRequest,
+  uncheckedPaymentRequest,
   memo,
   senderWalletId: uncheckedSenderWalletId,
   senderAccount,
@@ -125,7 +125,7 @@ export const payInvoiceByWalletId = async ({
   })
 
   const validatedPaymentInputs = await validateInvoicePaymentInputs({
-    paymentRequest,
+    uncheckedPaymentRequest,
     uncheckedSenderWalletId,
     senderAccount,
   })
@@ -152,7 +152,7 @@ export const payInvoiceByWalletId = async ({
 }
 
 export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
-  paymentRequest,
+  uncheckedPaymentRequest,
   amount,
   memo,
   senderWalletId: uncheckedSenderWalletId,
@@ -166,7 +166,7 @@ export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
   })
 
   const validatedNoAmountPaymentInputs = await validateNoAmountInvoicePaymentInputs({
-    paymentRequest,
+    uncheckedPaymentRequest,
     amount,
     uncheckedSenderWalletId,
     senderAccount,
@@ -212,7 +212,7 @@ export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
 }
 
 export const payNoAmountInvoiceByWalletId = async ({
-  paymentRequest,
+  uncheckedPaymentRequest,
   amount,
   memo,
   senderWalletId: uncheckedSenderWalletId,
@@ -223,7 +223,7 @@ export const payNoAmountInvoiceByWalletId = async ({
   })
 
   const validatedNoAmountPaymentInputs = await validateNoAmountInvoicePaymentInputs({
-    paymentRequest,
+    uncheckedPaymentRequest,
     amount,
     uncheckedSenderWalletId,
     senderAccount,
@@ -251,11 +251,11 @@ export const payNoAmountInvoiceByWalletId = async ({
 }
 
 const validateInvoicePaymentInputs = async ({
-  paymentRequest,
+  uncheckedPaymentRequest,
   uncheckedSenderWalletId,
   senderAccount,
 }: {
-  paymentRequest: EncodedPaymentRequest
+  uncheckedPaymentRequest: string
   uncheckedSenderWalletId: string
   senderAccount: Account
 }): Promise<
@@ -269,7 +269,7 @@ const validateInvoicePaymentInputs = async ({
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
   if (senderWalletId instanceof Error) return senderWalletId
 
-  const decodedInvoice = decodeInvoice(paymentRequest)
+  const decodedInvoice = decodeInvoice(uncheckedPaymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
   addAttributesToCurrentSpan({
     "payment.request.destination": decodedInvoice.destination,
@@ -301,12 +301,12 @@ const validateInvoicePaymentInputs = async ({
 }
 
 const validateNoAmountInvoicePaymentInputs = async <S extends WalletCurrency>({
-  paymentRequest,
+  uncheckedPaymentRequest,
   amount,
   uncheckedSenderWalletId,
   senderAccount,
 }: {
-  paymentRequest: EncodedPaymentRequest
+  uncheckedPaymentRequest: string
   amount: number
   uncheckedSenderWalletId: string
   senderAccount: Account
@@ -322,7 +322,7 @@ const validateNoAmountInvoicePaymentInputs = async <S extends WalletCurrency>({
   const senderWalletId = checkedToWalletId(uncheckedSenderWalletId)
   if (senderWalletId instanceof Error) return senderWalletId
 
-  const decodedInvoice = decodeInvoice(paymentRequest)
+  const decodedInvoice = decodeInvoice(uncheckedPaymentRequest)
   if (decodedInvoice instanceof Error) return decodedInvoice
   addAttributesToCurrentSpan({
     "payment.request.destination": decodedInvoice.destination,

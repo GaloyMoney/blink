@@ -23,12 +23,12 @@ import {
 
 export const getLightningFeeEstimation = async ({
   walletId,
-  paymentRequest,
+  uncheckedPaymentRequest,
 }: {
   walletId: string
-  paymentRequest: EncodedPaymentRequest
+  uncheckedPaymentRequest: string
 }): Promise<PartialResult<PaymentAmount<WalletCurrency>>> => {
-  const decodedInvoice = decodeInvoice(paymentRequest)
+  const decodedInvoice = decodeInvoice(uncheckedPaymentRequest)
   if (decodedInvoice instanceof Error) return PartialResult.err(decodedInvoice)
   if (decodedInvoice.paymentAmount === null) {
     return PartialResult.err(new LnPaymentRequestNonZeroAmountRequiredError())
@@ -42,14 +42,14 @@ export const getLightningFeeEstimation = async ({
 
 export const getNoAmountLightningFeeEstimation = async ({
   walletId,
-  paymentRequest,
+  uncheckedPaymentRequest,
   amount,
 }: {
   walletId: string
-  paymentRequest: EncodedPaymentRequest
+  uncheckedPaymentRequest: string
   amount: number
 }): Promise<PartialResult<PaymentAmount<WalletCurrency>>> => {
-  const decodedInvoice = decodeInvoice(paymentRequest)
+  const decodedInvoice = decodeInvoice(uncheckedPaymentRequest)
   if (decodedInvoice instanceof Error) return PartialResult.err(decodedInvoice)
 
   const { amount: lnInvoiceAmount } = decodedInvoice
