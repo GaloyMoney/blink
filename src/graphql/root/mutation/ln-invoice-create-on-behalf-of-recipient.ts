@@ -24,6 +24,9 @@ const LnInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
 })
 
 const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(LnInvoicePayload),
   description: dedent`Returns a lightning invoice for an associated wallet.
   When invoice is paid the value will be credited to a BTC wallet.

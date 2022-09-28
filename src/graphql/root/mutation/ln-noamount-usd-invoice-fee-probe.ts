@@ -22,6 +22,9 @@ const LnNoAmountUsdInvoiceFeeProbeInput = GT.Input({
 })
 
 const LnNoAmountUsdInvoiceFeeProbeMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(CentAmountPayload),
   args: {
     input: { type: GT.NonNull(LnNoAmountUsdInvoiceFeeProbeInput) },

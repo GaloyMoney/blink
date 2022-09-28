@@ -21,6 +21,9 @@ const TwoFASaveMutation = GT.Field<
   null,
   GraphQLContextForUser
 >({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(SuccessPayload),
   args: {
     input: { type: GT.NonNull(TwoFASaveInput) },

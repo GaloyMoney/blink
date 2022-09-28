@@ -33,6 +33,9 @@ const OnChainPaymentSendMutation = GT.Field<
   null,
   GraphQLContextForUser
 >({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(PaymentSendPayload),
   args: {
     input: { type: GT.NonNull(OnChainPaymentSendInput) },

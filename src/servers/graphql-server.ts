@@ -1,5 +1,5 @@
-import { createServer } from "http"
 import crypto from "crypto"
+import { createServer } from "http"
 
 import { Accounts, Users } from "@app"
 import { getApolloConfig, getGeetestConfig, isDev, isProd, JWT_SECRET } from "@config"
@@ -31,15 +31,19 @@ import {
   SubscriptionServer,
 } from "subscriptions-transport-ws"
 
-import { mapError } from "@graphql/error-map"
 import { AuthenticationError, AuthorizationError } from "@graphql/error"
+import { mapError } from "@graphql/error-map"
 
 import { parseIps } from "@domain/users-ips"
 
+import { fieldExtensionsEstimator, simpleEstimator } from "graphql-query-complexity"
+
+import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
+
 import { playgroundTabs } from "../graphql/playground"
 
-import healthzHandler from "./middlewares/healthz"
 import authRouter from "./auth-router"
+import healthzHandler from "./middlewares/healthz"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -133,6 +137,14 @@ export const startApolloServer = async ({
   const httpServer = createServer(app)
 
   const apolloPlugins = [
+    createComplexityPlugin({
+      schema,
+      estimators: [fieldExtensionsEstimator(), simpleEstimator({ defaultComplexity: 1 })],
+      maximumComplexity: 200,
+      onComplete: (complexity) => {
+        baseLogger.debug({ complexity }, "queryComplexity")
+      },
+    }),
     ApolloServerPluginDrainHttpServer({ httpServer }),
     apolloConfig.playground
       ? ApolloServerPluginLandingPageGraphQLPlayground({

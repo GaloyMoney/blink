@@ -23,6 +23,9 @@ const BusinessUpdateMapInfoInput = GT.Input({
 })
 
 const BusinessUpdateMapInfoMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(AccountDetailPayload),
   args: {
     input: { type: GT.NonNull(BusinessUpdateMapInfoInput) },

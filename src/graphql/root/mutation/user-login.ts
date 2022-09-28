@@ -24,6 +24,9 @@ const UserLoginMutation = GT.Field<{
     code: PhoneCode | InputValidationError
   }
 }>({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(AuthTokenPayload),
   args: {
     input: { type: GT.NonNull(UserLoginInput) },

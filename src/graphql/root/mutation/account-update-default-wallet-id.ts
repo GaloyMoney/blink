@@ -13,6 +13,9 @@ const AccountUpdateDefaultWalletIdInput = GT.Input({
 })
 
 const AccountUpdateDefaultWalletIdMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(AccountUpdateDefaultWalletIdPayload),
   args: {
     input: { type: GT.NonNull(AccountUpdateDefaultWalletIdInput) },

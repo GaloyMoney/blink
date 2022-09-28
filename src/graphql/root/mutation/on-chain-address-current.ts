@@ -13,6 +13,9 @@ const OnChainAddressCurrentInput = GT.Input({
 })
 
 const OnChainAddressCurrentMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(OnChainAddressPayload),
   args: {
     input: { type: GT.NonNull(OnChainAddressCurrentInput) },

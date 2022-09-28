@@ -20,6 +20,9 @@ const IntraLedgerPaymentSendInput = GT.Input({
 })
 
 const IntraLedgerPaymentSendMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(PaymentSendPayload),
   description: dedent`Actions a payment which is internal to the ledger e.g. it does
   not use onchain/lightning. Returns payment status (success,

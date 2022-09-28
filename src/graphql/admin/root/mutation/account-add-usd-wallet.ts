@@ -22,6 +22,9 @@ const AccountsAddUsdWalletMutation = GT.Field<
   null,
   GraphQLContextForUser
 >({
+  extensions: {
+    complexity: 120,
+  },
   type: WalletDetailsPayload,
   args: {
     input: { type: GT.NonNull(AccountsAddUsdWalletInput) },
