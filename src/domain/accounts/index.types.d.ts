@@ -60,6 +60,21 @@ type Account = {
   title: BusinessMapTitle
   coordinates: Coordinates
   readonly contacts: AccountContact[]
+  readonly isEditor: boolean
+  role?: string
+  readonly quizQuestions: UserQuizQuestion[]
+}
+
+type QuizQuestionId = string & { readonly brand: unique symbol }
+
+type QuizQuestion = {
+  readonly id: QuizQuestionId
+  readonly earnAmount: Satoshis
+}
+
+type UserQuizQuestion = {
+  readonly question: QuizQuestion
+  completed: boolean
 }
 
 type BusinessMapTitle = string & { readonly brand: unique symbol }
@@ -117,6 +132,10 @@ interface IAccountsRepository {
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   findByUserId(userId: UserId): Promise<Account | RepositoryError>
+
+  findByKratosUserId(kratosUserId: KratosUserId): Promise<Account | RepositoryError>
+  persistNewKratosUser(kratosUserId: KratosUserId): Promise<Account | RepositoryError>
+
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
   update(account: Account): Promise<Account | RepositoryError>

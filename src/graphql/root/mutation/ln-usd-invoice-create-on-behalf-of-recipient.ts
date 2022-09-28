@@ -28,6 +28,9 @@ const LnUsdInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
 })
 
 const LnUsdInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(LnInvoicePayload),
   description: dedent`Returns a lightning invoice denominated in satoshis for an associated wallet.
   When invoice is paid the equivalent value at invoice creation will be credited to a USD wallet.

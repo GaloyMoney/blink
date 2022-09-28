@@ -23,6 +23,9 @@ const UserContactUpdateAliasMutation = GT.Field<
   null,
   GraphQLContextForUser
 >({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(UserContactUpdateAliasPayload),
   args: {
     input: { type: GT.NonNull(UserContactUpdateAliasInput) },

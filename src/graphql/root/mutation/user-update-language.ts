@@ -13,6 +13,9 @@ const UserUpdateLanguageInput = GT.Input({
 })
 
 const UserUpdateLanguageMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(UserUpdateLanguagePayload),
   args: {
     input: { type: GT.NonNull(UserUpdateLanguageInput) },

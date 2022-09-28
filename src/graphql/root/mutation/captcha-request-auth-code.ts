@@ -16,6 +16,9 @@ const CaptchaRequestAuthCodeInput = GT.Input({
 })
 
 const CaptchaRequestAuthCodeMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(SuccessPayload),
   args: {
     input: { type: GT.NonNull(CaptchaRequestAuthCodeInput) },

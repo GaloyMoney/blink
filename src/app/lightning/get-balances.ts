@@ -27,7 +27,7 @@ export const getOffChainBalance = async (): Promise<Satoshis | ApplicationError>
   cache.getOrSet({
     key: CacheKeys.OffChainBalance,
     ttlSecs: SECS_PER_MIN,
-    fn: async () => {
+    getForCaching: async () => {
       const offChainService = LndService()
       if (offChainService instanceof Error) return offChainService
 
@@ -45,7 +45,7 @@ export const getOpeningChannelBalance = async (): Promise<Satoshis | Application
   cache.getOrSet({
     key: CacheKeys.OpeningChannelBalance,
     ttlSecs: SECS_PER_MIN,
-    fn: async () => {
+    getForCaching: async () => {
       const offChainService = LndService()
       if (offChainService instanceof Error) return offChainService
 
@@ -63,7 +63,7 @@ export const getClosingChannelBalance = async (): Promise<Satoshis | Application
   cache.getOrSet({
     key: CacheKeys.ClosingChannelBalance,
     ttlSecs: SECS_PER_MIN,
-    fn: async () => {
+    getForCaching: async () => {
       const offChainService = LndService()
       if (offChainService instanceof Error) return offChainService
 
@@ -81,7 +81,7 @@ export const getOnChainBalance = async (): Promise<Satoshis | ApplicationError> 
   cache.getOrSet({
     key: CacheKeys.OnChainBalance,
     ttlSecs: SECS_PER_MIN,
-    fn: async () => {
+    getForCaching: async () => {
       const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
       if (onChainService instanceof Error) return onChainService
 

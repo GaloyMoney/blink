@@ -1,5 +1,8 @@
+import { onboardingEarn } from "@config"
 import { AccountLevel, AccountStatus } from "@domain/accounts"
+import { toSats } from "@domain/bitcoin"
 import {
+  CouldNotFindAccountFromKratosIdError,
   CouldNotFindAccountFromUsernameError,
   CouldNotFindError,
   RepositoryError,
@@ -101,6 +104,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     username,
     defaultWalletId,
     withdrawFee,
+    role,
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
@@ -120,6 +124,7 @@ export const AccountsRepository = (): IAccountsRepository => {
           ),
           defaultWalletId,
           withdrawFee,
+          role,
         },
         {
           new: true,
@@ -135,7 +140,38 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
+  const persistNewKratosUser = async (
+    kratosUserId: KratosUserId,
+  ): Promise<Account | RepositoryError> => {
+    try {
+      const user = new User()
+      user.kratosUserId = kratosUserId
+      await user.save()
+      return translateToAccount(user)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
+  const findByKratosUserId = async (
+    kratosUserId: KratosUserId,
+  ): Promise<Account | RepositoryError> => {
+    try {
+      const result = await User.findOne({ kratosUserId }, projection)
+
+      if (!result) {
+        return new CouldNotFindAccountFromKratosIdError(kratosUserId)
+      }
+
+      return translateToAccount(result)
+    } catch (err) {
+      return new UnknownRepositoryError(err)
+    }
+  }
+
   return {
+    persistNewKratosUser,
+    findByKratosUserId,
     listUnlockedAccounts,
     findById,
     findByUserId,
@@ -172,6 +208,17 @@ const translateToAccount = (result: UserRecord): Account => ({
   ),
   depositFeeRatio: result.depositFeeRatio as DepositFeeRatio,
   withdrawFee: result.withdrawFee as Satoshis,
+  isEditor: result.role === "editor",
+  quizQuestions:
+    result.earn?.map(
+      (questionId: string): UserQuizQuestion => ({
+        question: {
+          id: questionId as QuizQuestionId,
+          earnAmount: toSats(onboardingEarn[questionId]),
+        },
+        completed: true,
+      }),
+    ) || [],
 })
 
 const projection = {
@@ -185,4 +232,6 @@ const projection = {
   contacts: 1,
   depositFeeRatio: 1,
   withdrawFee: 1,
+  role: 1,
+  earn: 1,
 }

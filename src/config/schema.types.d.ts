@@ -78,6 +78,7 @@ type YamlSchema = {
   }
   accounts: {
     initialStatus: string
+    initialWallets: WalletCurrency[]
   }
   accountLimits: {
     withdrawal: AccountLimitsConfig
@@ -136,7 +137,8 @@ type YamlSchema = {
     swapEnabled: boolean
   }
   kratosConfig: {
-    serverURL: string
+    publicApi: string
+    adminApi: string
     corsAllowedOrigins: string[]
   }
   captcha: {

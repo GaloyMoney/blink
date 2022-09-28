@@ -44,11 +44,7 @@ export const IncomingOnChainTransaction = ({
   rawTx,
   fee,
   createdAt,
-  uniqueAddresses: () =>
-    rawTx.outs.reduce<OnChainAddress[]>((a: OnChainAddress[], o: TxOut) => {
-      if (o.address && !a.includes(o.address)) a.push(o.address)
-      return a
-    }, []),
+  uniqueAddresses: () => uniqueAddressesForTxn(rawTx),
 })
 
 export const OutgoingOnChainTransaction = ({
@@ -66,9 +62,11 @@ export const OutgoingOnChainTransaction = ({
   rawTx,
   fee,
   createdAt,
-  uniqueAddresses: () =>
-    rawTx.outs.reduce<OnChainAddress[]>((a: OnChainAddress[], o: TxOut) => {
-      if (o.address && !a.includes(o.address)) a.push(o.address)
-      return a
-    }, []),
+  uniqueAddresses: () => uniqueAddressesForTxn(rawTx),
 })
+
+export const uniqueAddressesForTxn = (rawTx: OnChainTransaction) =>
+  rawTx.outs.reduce<OnChainAddress[]>((a: OnChainAddress[], o: TxOut) => {
+    if (o.address && !a.includes(o.address)) a.push(o.address)
+    return a
+  }, [])

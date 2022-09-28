@@ -300,8 +300,9 @@ export const getRewardsConfig = () => {
   }
 }
 
-export const getAccountsConfig = (config = yamlConfig): AccountsConfig => ({
+export const getDefaultAccountsConfig = (config = yamlConfig): AccountsConfig => ({
   initialStatus: config.accounts.initialStatus as AccountStatus,
+  initialWallets: config.accounts.initialWallets,
 })
 
 export const getSwapConfig = (): SwapConfig => {

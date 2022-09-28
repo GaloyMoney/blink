@@ -1455,7 +1455,7 @@ describe("UserWallet - Lightning Pay", () => {
           currency: WalletCurrency.Btc,
         })
         if (btcInvoiceAmount instanceof Error) throw btcInvoiceAmount
-        const usdInvoiceAmount = await newDealerFns.getCentsFromSatsForImmediateBuy(
+        const usdInvoiceAmount = await newDealerFns.getCentsFromSatsForImmediateSell(
           btcInvoiceAmount,
         )
         if (usdInvoiceAmount instanceof Error) throw usdInvoiceAmount
@@ -1644,7 +1644,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
 
-      const cents = await dealerFns.getCentsFromSatsForImmediateBuy(amountPayment)
+      const cents = await dealerFns.getCentsFromSatsForImmediateSell(amountPayment)
       if (cents instanceof Error) throw cents
 
       const finalBalance = await getBalanceHelper(walletIdUsdB)
@@ -1703,7 +1703,7 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(paymentResult).toBe(PaymentSendStatus.Success)
 
       const dealerFns = DealerPriceService()
-      const cents = await dealerFns.getCentsFromSatsForImmediateBuy(amountPayment)
+      const cents = await dealerFns.getCentsFromSatsForImmediateSell(amountPayment)
       if (cents instanceof Error) throw cents
 
       const finalBalanceB = await getBalanceHelper(walletIdUsdB)
@@ -1893,7 +1893,7 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(paymentResult).toBe(PaymentSendStatus.Success)
 
       const dealerFns = DealerPriceService()
-      const cents = await dealerFns.getCentsFromSatsForImmediateBuy(amountPayment)
+      const cents = await dealerFns.getCentsFromSatsForImmediateSell(amountPayment)
       if (cents instanceof Error) throw cents
 
       const finalBalanceB = await getBalanceHelper(walletIdUsdB)
@@ -2042,7 +2042,7 @@ describe("USD Wallets - Lightning Pay", () => {
 
     it("fails to send less-than-1-cent amount from BTC wallet to USD wallet", async () => {
       const btcSendAmount = 10
-      const btcSendAmountInUsd = await dealerFns.getCentsFromSatsForImmediateBuy(
+      const btcSendAmountInUsd = await dealerFns.getCentsFromSatsForImmediateSell(
         toSats(btcSendAmount),
       )
       expect(btcSendAmountInUsd).toBe(0)

@@ -757,6 +757,7 @@ const translateLnInvoiceLookup = (
   createdAt: new Date(invoice.created_at),
   confirmedAt: invoice.confirmed_at ? new Date(invoice.confirmed_at) : undefined,
   isSettled: !!invoice.is_confirmed,
+  isCanceled: !!invoice.is_canceled,
   isHeld: !!invoice.is_held,
   heldAt:
     invoice.payments && invoice.payments.length
@@ -789,7 +790,7 @@ const resolvePaymentStatus = async ({
   const currentBlockHeight = await cache.getOrSet({
     key: CacheKeys.BlockHeight,
     ttlSecs: SECS_PER_5_MINS,
-    fn: async () => {
+    getForCaching: async () => {
       const { current_block_height } = await getWalletInfo({ lnd })
       return current_block_height
     },
@@ -802,7 +803,7 @@ const resolvePaymentStatus = async ({
     const closedChannels = await cache.getOrSet({
       key: CacheKeys.ClosedChannels,
       ttlSecs: SECS_PER_5_MINS,
-      fn: async () => {
+      getForCaching: async () => {
         const { channels } = await getClosedChannels({ lnd })
         return channels
       },

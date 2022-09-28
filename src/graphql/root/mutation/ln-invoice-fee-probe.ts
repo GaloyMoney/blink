@@ -25,6 +25,9 @@ const LnInvoiceFeeProbeMutation = GT.Field<{
     paymentRequest: EncodedPaymentRequest | InputValidationError
   }
 }>({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(SatAmountPayload),
   args: {
     input: { type: GT.NonNull(LnInvoiceFeeProbeInput) },

@@ -130,6 +130,8 @@ rateLimits:
 
 accounts:
   initialStatus: active
+  initialWallets:
+    - "BTC"
 
 accountLimits:
   withdrawal:
@@ -196,7 +198,8 @@ cronConfig:
   swapEnabled: true
 
 kratosConfig:
-  serverURL: "http://localhost:4433"
+  publicApi: "http://localhost:4433"
+  adminApi: "http://localhost:4434"
   corsAllowedOrigins: ["http://localhost:3000"]
 
 captcha:

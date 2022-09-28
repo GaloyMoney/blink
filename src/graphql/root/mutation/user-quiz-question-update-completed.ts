@@ -12,6 +12,9 @@ const UserQuizQuestionUpdateCompletedInput = GT.Input({
 })
 
 const UserQuizQuestionUpdateCompletedMutation = GT.Field({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(UserQuizQuestionUpdateCompletedPayload),
   args: {
     input: { type: GT.NonNull(UserQuizQuestionUpdateCompletedInput) },

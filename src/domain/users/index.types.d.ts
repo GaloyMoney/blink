@@ -7,17 +7,6 @@ type EmailAddress = string & { readonly brand: unique symbol }
 type UserLanguage = typeof import("./languages").Languages[number]
 
 type DeviceToken = string & { readonly brand: unique symbol }
-type QuizQuestionId = string & { readonly brand: unique symbol }
-
-type QuizQuestion = {
-  readonly id: QuizQuestionId
-  readonly earnAmount: Satoshis
-}
-
-type UserQuizQuestion = {
-  readonly question: QuizQuestion
-  completed: boolean
-}
 
 // TODO: move to camelCase base // migration needed
 // type PhoneMetadata = {
@@ -48,20 +37,17 @@ type PhoneMetadata = {
 
 type User = {
   readonly id: UserId
-  readonly quizQuestions: UserQuizQuestion[]
   readonly defaultAccountId: AccountId
   readonly deviceTokens: DeviceToken[]
   readonly createdAt: Date
   readonly phone?: PhoneNumber
   readonly phoneMetadata?: PhoneMetadata
-  readonly isEditor: boolean
   language: UserLanguage
   twoFA: TwoFAForUser
 }
 
 type NewUserInfo = {
   phone: PhoneNumber
-  role?: string
   phoneMetadata?: PhoneMetadata
 }
 
@@ -72,21 +58,6 @@ type PhoneMetadataValidator = {
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
-  findByKratosUserId(kratosUserId: KratosUserId): Promise<User | RepositoryError>
-  persistNewKratosUser({
-    kratosUserId,
-  }: {
-    kratosUserId: KratosUserId
-  }): Promise<User | RepositoryError>
   persistNew({ phone, phoneMetadata }: NewUserInfo): Promise<User | RepositoryError>
   update(user: User): Promise<User | RepositoryError>
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface ReadonlyArray<T> {
-  includes<S, R extends `${Extract<S, string>}`>(
-    this: ReadonlyArray<R>,
-    searchElement: S,
-    fromIndex?: number,
-  ): searchElement is R & S
 }

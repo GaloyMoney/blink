@@ -15,6 +15,7 @@ export * from "./update-default-walletid"
 export * from "./get-csv-for-account"
 export * from "./get-transactions-for-account"
 export * from "./add-wallet"
+export * from "./create-account"
 
 const accounts = AccountsRepository()
 
@@ -25,16 +26,13 @@ export const getAccount = async (
 }
 
 export const hasPermissions = async (
-  userId: UserId,
+  accountId: AccountId,
   walletId: WalletId,
 ): Promise<boolean | ApplicationError> => {
-  const userAccount = await accounts.findByUserId(userId)
-  if (userAccount instanceof Error) return userAccount
-
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return wallet
 
-  return userAccount.id === wallet.accountId
+  return accountId === wallet.accountId
 }
 
 export const getBusinessMapMarkers = async () => {

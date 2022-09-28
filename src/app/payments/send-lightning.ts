@@ -377,9 +377,9 @@ const getPaymentFlow = async <S extends WalletCurrency, R extends WalletCurrency
     inputAmount: inputPaymentAmount.amount,
   })
   addAttributesToCurrentSpan({
-    "payment.paymentFlow.existsFromProbe": !(
+    "payment.paymentFlow.existsFromProbe": `${!(
       paymentFlow instanceof CouldNotFindLightningPaymentFlowError
-    ),
+    )}`,
   })
 
   if (paymentFlow instanceof CouldNotFindLightningPaymentFlowError) {
@@ -387,7 +387,7 @@ const getPaymentFlow = async <S extends WalletCurrency, R extends WalletCurrency
       uncheckedAmount,
       senderWallet,
       invoice: decodedInvoice,
-      usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+      usdFromBtc: dealer.getCentsFromSatsForImmediateSell,
       btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
     })
     if (builderWithConversion instanceof Error) return builderWithConversion
@@ -481,7 +481,13 @@ const executePaymentViaIntraledger = async ({
   if (recipientWallet instanceof Error) return recipientWallet
 
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
-    const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
+    const ledgerService = LedgerService()
+
+    const recorded = await ledgerService.isLnTxRecorded(paymentHash)
+    if (recorded instanceof Error) return recorded
+    if (recorded) return PaymentSendStatus.AlreadyPaid
+
+    const balance = await ledgerService.getWalletBalanceAmount(senderWallet)
     if (balance instanceof Error) return balance
 
     const balanceCheck = paymentFlow.checkBalanceForSend(balance)

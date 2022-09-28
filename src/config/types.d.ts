@@ -11,7 +11,8 @@ type CronConfig = {
 }
 
 type KratosConfig = {
-  serverURL: string
+  adminApi: string
+  publicApi: string
   corsAllowedOrigins: string[]
 }
 
@@ -30,4 +31,5 @@ type TwoFAConfig = {
 
 type AccountsConfig = {
   initialStatus: AccountStatus
+  initialWallets: WalletCurrency[]
 }

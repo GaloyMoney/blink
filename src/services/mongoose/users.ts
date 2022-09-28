@@ -1,8 +1,5 @@
-import { onboardingEarn } from "@config"
-import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindUserFromIdError,
-  CouldNotFindUserFromKratosIdError,
   CouldNotFindUserFromPhoneError,
   RepositoryError,
   DuplicateError,
@@ -40,55 +37,20 @@ export const UsersRepository = (): IUsersRepository => {
     }
   }
 
-  const findByKratosUserId = async (
-    kratosUserId: KratosUserId,
-  ): Promise<User | RepositoryError> => {
-    try {
-      const result = await User.findOne({ kratosUserId }, projection)
-
-      if (!result) {
-        return new CouldNotFindUserFromKratosIdError(kratosUserId)
-      }
-
-      return userFromRaw(result)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
   const persistNew = async ({
     phone,
     phoneMetadata,
-    role,
   }: NewUserInfo): Promise<User | RepositoryError> => {
     try {
       const user = new User()
       user.phone = phone
       user.twilio = phoneMetadata
-      if (role) {
-        user.role = role
-      }
       await user.save()
       return userFromRaw(user)
     } catch (err) {
       if (err.message?.includes("MongoError: E11000 duplicate key error collection")) {
         return new DuplicateError(phone)
       }
-      return new UnknownRepositoryError(err)
-    }
-  }
-
-  const persistNewKratosUser = async ({
-    kratosUserId,
-  }: {
-    kratosUserId: KratosUserId
-  }): Promise<User | RepositoryError> => {
-    try {
-      const user = new User()
-      user.kratosUserId = kratosUserId
-      await user.save()
-      return userFromRaw(user)
-    } catch (err) {
       return new UnknownRepositoryError(err)
     }
   }
@@ -123,9 +85,7 @@ export const UsersRepository = (): IUsersRepository => {
   return {
     findById,
     findByPhone,
-    findByKratosUserId,
     persistNew,
-    persistNewKratosUser,
     update,
   }
 }
@@ -135,30 +95,17 @@ const userFromRaw = (result: UserRecord): User => ({
   phone: result.phone as PhoneNumber,
   language: result.language as UserLanguage,
   twoFA: result.twoFA as TwoFAForUser,
-  quizQuestions:
-    result.earn?.map(
-      (questionId: string): UserQuizQuestion => ({
-        question: {
-          id: questionId as QuizQuestionId,
-          earnAmount: toSats(onboardingEarn[questionId]),
-        },
-        completed: true,
-      }),
-    ) || [],
   defaultAccountId: fromObjectId<AccountId>(result._id),
   deviceTokens: (result.deviceToken || []) as DeviceToken[],
   createdAt: new Date(result.created_at),
   phoneMetadata: result.twilio as PhoneMetadata,
-  isEditor: result.role === "editor",
 })
 
 const projection = {
   phone: 1,
   language: 1,
   twoFA: 1,
-  earn: 1,
   deviceToken: 1,
   created_at: 1,
   twilio: 1,
-  role: 1,
 }

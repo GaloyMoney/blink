@@ -38,6 +38,9 @@ const LnInvoicePaymentSendMutation = GT.Field<
   null,
   GraphQLContextForUser
 >({
+  extensions: {
+    complexity: 120,
+  },
   type: GT.NonNull(PaymentSendPayload),
   description: dedent`Pay a lightning invoice using a balance from a wallet which is owned by the account of the current user.
   Provided wallet can be USD or BTC and must have sufficient balance to cover amount in lightning invoice.

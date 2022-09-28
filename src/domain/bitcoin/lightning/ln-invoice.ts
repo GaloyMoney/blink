@@ -3,6 +3,7 @@ import { toMilliSatsFromNumber, toSats } from "@domain/bitcoin"
 import { parsePaymentRequest } from "invoices"
 
 import {
+  InvalidChecksumForLnInvoiceError,
   LnInvoiceDecodeError,
   LnInvoiceMissingPaymentSecretError,
   UnknownLnInvoiceDecodeError,
@@ -66,6 +67,11 @@ const safeDecode = (bolt11EncodedInvoice: EncodedPaymentRequest) => {
   try {
     return parsePaymentRequest({ request: bolt11EncodedInvoice })
   } catch (err) {
-    return new UnknownLnInvoiceDecodeError(err)
+    switch (true) {
+      case err.message.includes("Invalid checksum"):
+        return new InvalidChecksumForLnInvoiceError()
+      default:
+        return new UnknownLnInvoiceDecodeError(err)
+    }
   }
 }
