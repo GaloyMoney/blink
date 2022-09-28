@@ -85,7 +85,7 @@ const estimateLightningFee = async ({
     invoice,
     uncheckedAmount,
     usdFromBtc: dealer.getCentsFromSatsForFutureSell,
-    btcFromUsd: dealer.getSatsFromCentsForFutureBuy,
+    btcFromUsd: dealer.getSatsFromCentsForFutureSell,
   })
   if (builder instanceof Error) return PartialResult.err(builder)
 
