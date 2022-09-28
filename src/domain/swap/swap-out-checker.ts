@@ -3,10 +3,10 @@ import { ZERO_SATS } from "@domain/shared"
 import { SwapServiceError } from "./errors"
 
 export const SwapOutChecker = ({
-  minOnChainHotWalletBalanceConfig,
+  loopOutWhenHotWalletLessThanConfig,
   swapOutAmount,
 }: {
-  minOnChainHotWalletBalanceConfig: BtcPaymentAmount
+  loopOutWhenHotWalletLessThanConfig: BtcPaymentAmount
   swapOutAmount: BtcPaymentAmount
 }) => {
   // checks the amount of "swap out" that is need
@@ -22,7 +22,7 @@ export const SwapOutChecker = ({
     currentOutboundLiquidityBalance: BtcPaymentAmount
   }): BtcPaymentAmount | SwapServiceError => {
     const isOnChainWalletDepleted =
-      currentOnChainHotWalletBalance.amount < minOnChainHotWalletBalanceConfig.amount
+      currentOnChainHotWalletBalance.amount < loopOutWhenHotWalletLessThanConfig.amount
     const hasEnoughOutboundLiquidity =
       currentOutboundLiquidityBalance.amount > swapOutAmount.amount
     if (!hasEnoughOutboundLiquidity) {

@@ -65,7 +65,7 @@ type SwapOutQuoteResult = {
 }
 
 type SwapConfig = {
-  minOnChainHotWalletBalance: BtcPaymentAmount
+  loopOutWhenHotWalletLessThan: BtcPaymentAmount
   swapOutAmount: BtcPaymentAmount
   lnd1loopRestEndpoint: string
   lnd2loopRestEndpoint: string

@@ -119,7 +119,7 @@ type YamlSchema = {
     scanDepthChannelUpdate: number
   }
   swap: {
-    minOnChainHotWalletBalance: number
+    loopOutWhenHotWalletLessThan: number
     lnd1loopRestEndpoint: string
     lnd2loopRestEndpoint: string
     lnd1loopRpcEndpoint: string

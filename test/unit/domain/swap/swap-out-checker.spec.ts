@@ -5,7 +5,7 @@ import { SwapServiceError } from "@domain/swap/errors"
 describe("SwapOutChecker", () => {
   it("returns the amount that should be swapped", () => {
     const checker = SwapOutChecker({
-      minOnChainHotWalletBalanceConfig: {
+      loopOutWhenHotWalletLessThanConfig: {
         amount: BigInt(50000),
         currency: WalletCurrency.Btc,
       },
@@ -30,7 +30,7 @@ describe("SwapOutChecker", () => {
 
   it("returns 0 amount when we don't need a swap out", () => {
     const checker = SwapOutChecker({
-      minOnChainHotWalletBalanceConfig: {
+      loopOutWhenHotWalletLessThanConfig: {
         amount: BigInt(50000),
         currency: WalletCurrency.Btc,
       },
@@ -55,7 +55,7 @@ describe("SwapOutChecker", () => {
 
   it("returns an error when we don't have enough outbound liquidity to perform a swap out", () => {
     const checker = SwapOutChecker({
-      minOnChainHotWalletBalanceConfig: {
+      loopOutWhenHotWalletLessThanConfig: {
         amount: BigInt(50000),
         currency: WalletCurrency.Btc,
       },

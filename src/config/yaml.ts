@@ -308,8 +308,8 @@ export const getDefaultAccountsConfig = (config = yamlConfig): AccountsConfig =>
 export const getSwapConfig = (): SwapConfig => {
   const config = yamlConfig.swap
   return {
-    minOnChainHotWalletBalance: {
-      amount: BigInt(config.minOnChainHotWalletBalance),
+    loopOutWhenHotWalletLessThan: {
+      amount: BigInt(config.loopOutWhenHotWalletLessThan),
       currency: WalletCurrency.Btc,
     },
     swapOutAmount: { amount: BigInt(config.swapOutAmount), currency: WalletCurrency.Btc },

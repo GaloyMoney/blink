@@ -107,14 +107,14 @@ describe("Swap", () => {
     if (!(isSwapServerUp instanceof Error)) {
       // thresholds
       const { onChain } = await lndsBalances()
-      const minOnChainHotWalletBalanceConfig = {
+      const loopOutWhenHotWalletLessThanConfig = {
         amount: BigInt(onChain + 50000),
         currency: WalletCurrency.Btc,
       }
 
       // check if wallet is depleted
       const swapOutChecker = SwapOutChecker({
-        minOnChainHotWalletBalanceConfig,
+        loopOutWhenHotWalletLessThanConfig,
         swapOutAmount: amount,
       })
       const amountToSwapOut = swapOutChecker.getSwapOutAmount({

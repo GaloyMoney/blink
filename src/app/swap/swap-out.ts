@@ -31,10 +31,10 @@ export const swapOut = async (): Promise<SwapOutResult | SwapServiceError> => {
   const offChainChannelBalances = await offChainService.getInboundOutboundBalance()
   if (offChainChannelBalances instanceof Error) return offChainChannelBalances
   const outbound = offChainChannelBalances.outbound
-  const minOnChainHotWalletBalanceConfig = getSwapConfig().minOnChainHotWalletBalance
+  const loopOutWhenHotWalletLessThanConfig = getSwapConfig().loopOutWhenHotWalletLessThan
 
   const swapChecker = SwapOutChecker({
-    minOnChainHotWalletBalanceConfig,
+    loopOutWhenHotWalletLessThanConfig,
     swapOutAmount: getSwapConfig().swapOutAmount,
   })
   const swapOutAmount = swapChecker.getSwapOutAmount({

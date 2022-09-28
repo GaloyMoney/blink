@@ -1,7 +1,7 @@
 Swap Service (regtest)
 =======================
 
-This docs shows you how to get the swap service up and running in your local dev environment. 
+This docs shows you how to get the swap service up and running in your local dev environment.
 
 The high level steps are:
 
@@ -35,11 +35,11 @@ make start-loopd
 Successfully starting the loop server returns this:
 ```json
 {
-  "swap_fee_sat":"50", 
-  "prepay_amt_sat":"1337", 
-  "htlc_sweep_fee_sat":"7262", 
+  "swap_fee_sat":"50",
+  "prepay_amt_sat":"1337",
+  "htlc_sweep_fee_sat":"7262",
   "swap_payment_dest":"A31dVAIzvYn1p/0J7WG3DS7Qbq5FIzWhPgtHQngozskq",
-  "cltv_delta":0, 
+  "cltv_delta":0,
   "conf_target":9
 }
 ```
@@ -49,7 +49,7 @@ Successfully starting the loop server returns this:
 
 ```yaml
 swap:
-  minOnChainHotWalletBalance: 75000000
+  loopOutWhenHotWalletLessThan: 75000000
   swapOutAmount:  50000000
   swapProviders: ["Loop"]
   lnd1loopRestEndpoint: "https://localhost:8081"
@@ -58,7 +58,7 @@ swap:
   lnd2loopRpcEndpoint: "localhost:11011"
 ```
 
-When testing in dev you want to override this config by creating a `/var/yaml/custom.yaml` file 
+When testing in dev you want to override this config by creating a `/var/yaml/custom.yaml` file
 
 create `/var/yaml/custom.yaml` and set permissions:
 ```
@@ -69,7 +69,7 @@ sudo chmod 755 /var/yaml/custom.yaml
 Add the following config (you might need to 'retry as sudo' on mac+vscode):
 ```
 swap:
-  minOnChainHotWalletBalance: 300000
+  loopOutWhenHotWalletLessThan: 300000
   swapOutAmount:  250000
   swapProviders: ["Loop"]
   lnd1loopRestEndpoint: "https://localhost:8081"
@@ -81,7 +81,7 @@ swap:
 (3) Choose the swap provider
 ---------------------------------------
 
-By default we use the lightning-labs `loop` swap provider, but there is an `ISwapProvider` interface that third party contributors can code against. For example, you could create a PeerSwap swap provider by configuring the `swapProviders` parameter in the `default.yaml` file. Use the lightning-labs provider as an example here `src/services/loopd`. 
+By default we use the lightning-labs `loop` swap provider, but there is an `ISwapProvider` interface that third party contributors can code against. For example, you could create a PeerSwap swap provider by configuring the `swapProviders` parameter in the `default.yaml` file. Use the lightning-labs provider as an example here `src/services/loopd`.
 
 ```typescript
 import { LoopService } from "@services/loopd"
@@ -94,7 +94,7 @@ const loopResult = await loopService.swapOut({ amount: swapOutAmount })
 
 (4) Monitor Status of the swap
 ----------------------------
-The easiest way to monitor the status of a loop out in dev is to remote into loopd. 
+The easiest way to monitor the status of a loop out in dev is to remote into loopd.
 ```
 # loop 1
 loopd1_id=$(docker ps -q -f name="loopd1-1")
@@ -144,9 +144,9 @@ successfully loop outs, preimage revealed messages, etc...
 
 Cron Job
 =====
-There is a cron job that checks if the onChain wallet is depleted. If it is depleted, it proceeds to do a `swap out` based on the swap config from the `default.yaml` file.  
+There is a cron job that checks if the onChain wallet is depleted. If it is depleted, it proceeds to do a `swap out` based on the swap config from the `default.yaml` file.
 
-To Enable 
+To Enable
 
 default.yaml
 ```

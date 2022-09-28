@@ -321,7 +321,7 @@ export const configSchema = {
     swap: {
       type: "object",
       properties: {
-        minOnChainHotWalletBalance: { type: "integer" },
+        loopOutWhenHotWalletLessThan: { type: "integer" },
         lnd1loopRestEndpoint: { type: "string" },
         lnd2loopRestEndpoint: { type: "string" },
         lnd1loopRpcEndpoint: { type: "string" },
