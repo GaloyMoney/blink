@@ -3,12 +3,16 @@ import PricePoint from "@graphql/types/object/price-point"
 import PriceGraphRange, {
   priceRangeValues,
 } from "@graphql/types/scalar/price-graph-range"
+import { InputValidationError } from "@graphql/error"
 import { PriceInterval, PriceRange } from "@domain/price"
 import { BTC_PRICE_PRECISION_OFFSET } from "@config"
 import { Prices } from "@app"
 import { SATS_PER_BTC } from "@domain/bitcoin"
+import { mapError } from "@graphql/error-map"
 
-const parseRange: (string: typeof priceRangeValues[number]) => PriceRange = (range) => {
+const parseRange: (
+  string: typeof priceRangeValues[number],
+) => PriceRange | InputValidationError = (range) => {
   switch (range) {
     case "ONE_DAY":
       return PriceRange.OneDay
@@ -20,12 +24,14 @@ const parseRange: (string: typeof priceRangeValues[number]) => PriceRange = (ran
       return PriceRange.OneYear
     case "FIVE_YEARS":
       return PriceRange.FiveYears
+    default:
+      return new InputValidationError({ message: "Invalid value for 'range'." })
   }
 }
 
-const parseInterval: (string: typeof priceRangeValues[number]) => PriceInterval = (
-  range,
-) => {
+const parseInterval: (
+  string: typeof priceRangeValues[number],
+) => PriceInterval | InputValidationError = (range) => {
   switch (range) {
     case "ONE_DAY":
       return PriceInterval.OneHour
@@ -37,6 +43,8 @@ const parseInterval: (string: typeof priceRangeValues[number]) => PriceInterval 
       return PriceInterval.OneWeek
     case "FIVE_YEARS":
       return PriceInterval.OneMonth
+    default:
+      return new InputValidationError({ message: "Invalid value for 'range'." })
   }
 }
 
@@ -51,10 +59,11 @@ const BtcPriceListQuery = GT.Field({
     const range = parseRange(args.range)
     const interval = parseInterval(args.range)
 
-    if (!range) throw new Error("Invalid range")
+    if (range instanceof Error) throw range
+    if (interval instanceof Error) throw interval
 
     const hourlyPrices = await Prices.getPriceHistory({ range, interval })
-    if (hourlyPrices instanceof Error) throw hourlyPrices
+    if (hourlyPrices instanceof Error) throw mapError(hourlyPrices)
 
     const prices: PricePointType[] = hourlyPrices.map(({ date, price }) => {
       const btcPriceInCents = price * 100 * SATS_PER_BTC
