@@ -52,12 +52,11 @@ import {
   LnPaymentsRepository,
   WalletInvoicesRepository,
   WalletsRepository,
+  PaymentFlowStateRepository,
 } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
 
 import { sleep } from "@utils"
-
-import { PaymentFlowStateRepository } from "@services/payment-flow"
 
 import { NotificationType } from "@domain/notifications"
 
