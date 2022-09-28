@@ -107,6 +107,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Invoice has an invalid checksum, please check again"
       return new InvoiceDecodeError({ message, logger: baseLogger })
 
+    case "InvalidMixedCaseLnInvoiceError":
+      message = "Invoice should be all lowercase or uppercase, please check again"
+      return new InvoiceDecodeError({ message, logger: baseLogger })
+
     case "LnPaymentRequestInTransitError":
       message = "There is a pending payment for this invoice"
       return new ValidationInternalError({ message, logger: baseLogger })
