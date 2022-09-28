@@ -41,7 +41,7 @@ describe("Delete payments from Lnd - Lightning Pay", () => {
     const revealedPreImage = secret as RevealedPreImage
 
     const paymentResult = await Payments.payNoAmountInvoiceByWalletId({
-      paymentRequest: request as EncodedPaymentRequest,
+      uncheckedPaymentRequest: request,
       memo: null,
       amount: toSats(1000),
       senderWalletId: walletIdB,

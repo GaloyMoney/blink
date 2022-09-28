@@ -122,7 +122,7 @@ const disburseFunds = async (
     if (invoice instanceof Error) return invoice
 
     await Payments.payInvoiceByWalletId({
-      paymentRequest: invoice.paymentRequest,
+      uncheckedPaymentRequest: invoice.paymentRequest,
       memo: null,
       senderWalletId: disburserWalletId,
       senderAccount: disburserAccount,

@@ -10,8 +10,11 @@ import {
 } from "./errors"
 
 export const decodeInvoice = (
-  bolt11EncodedInvoice: EncodedPaymentRequest,
+  uncheckedBolt11EncodedInvoice: string,
 ): LnInvoice | LnInvoiceDecodeError => {
+  const bolt11EncodedInvoice =
+    uncheckedBolt11EncodedInvoice.toLowerCase() as EncodedPaymentRequest
+
   const decodedInvoice = safeDecode(bolt11EncodedInvoice)
   if (decodedInvoice instanceof Error) return decodedInvoice
 

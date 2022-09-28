@@ -45,7 +45,7 @@ const LnNoAmountUsdInvoiceFeeProbeMutation = GT.Field({
       await Payments.getNoAmountLightningFeeEstimation({
         walletId,
         amount,
-        paymentRequest,
+        uncheckedPaymentRequest: paymentRequest,
       })
 
     if (feeSatAmount !== null && error instanceof Error) {
