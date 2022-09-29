@@ -202,7 +202,6 @@ input DeviceNotificationTokenCreateInput {
 }
 
 interface Error {
-  code: String
   message: String!
   path: [String]
 }
