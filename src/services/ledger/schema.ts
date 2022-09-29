@@ -151,6 +151,7 @@ const transactionMetadataSchema = new Schema<TransactionMetadataRecord>(
       type: String,
       index: true,
     },
+    swap: Schema.Types.Mixed,
   },
   { id: false },
 )

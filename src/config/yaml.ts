@@ -14,8 +14,8 @@ import { toCents } from "@domain/fiat"
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
 import { toDays, toSeconds } from "@domain/primitives"
-
 import { checkedToPubkey } from "@domain/bitcoin/lightning"
+import { WalletCurrency } from "@domain/shared"
 
 import { configSchema } from "./schema"
 import { ConfigError } from "./error"
@@ -136,6 +136,7 @@ export const getLndParams = (): LndParams[] => {
     const port = process.env[`${input.name}_RPCPORT`] ?? 10009
     const type = input.type.map((item) => item as NodeType) // TODO: verify if validation is done from yaml.ts
     const priority = input.priority
+    const name = input.name
 
     return {
       cert,
@@ -145,6 +146,7 @@ export const getLndParams = (): LndParams[] => {
       pubkey,
       type,
       priority,
+      name,
     }
   })
 }
@@ -302,3 +304,19 @@ export const getDefaultAccountsConfig = (config = yamlConfig): AccountsConfig =>
   initialStatus: config.accounts.initialStatus as AccountStatus,
   initialWallets: config.accounts.initialWallets,
 })
+
+export const getSwapConfig = (): SwapConfig => {
+  const config = yamlConfig.swap
+  return {
+    loopOutWhenHotWalletLessThan: {
+      amount: BigInt(config.loopOutWhenHotWalletLessThan),
+      currency: WalletCurrency.Btc,
+    },
+    swapOutAmount: { amount: BigInt(config.swapOutAmount), currency: WalletCurrency.Btc },
+    lnd1loopRestEndpoint: config.lnd1loopRestEndpoint,
+    lnd2loopRestEndpoint: config.lnd2loopRestEndpoint,
+    lnd1loopRpcEndpoint: config.lnd1loopRpcEndpoint,
+    lnd2loopRpcEndpoint: config.lnd2loopRpcEndpoint,
+    swapProviders: config.swapProviders,
+  }
+}

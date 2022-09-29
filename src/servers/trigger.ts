@@ -42,6 +42,10 @@ import {
   WalletsRepository,
 } from "@services/mongoose"
 import { LndService } from "@services/lnd"
+import { LoopService } from "@services/loopd"
+import { startSwapMonitor } from "@app/swap"
+import { LND1_LOOP_CONFIG, LND2_LOOP_CONFIG } from "@app/swap/get-active-loopd"
+import { SwapTriggerError } from "@domain/swap/errors"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -400,6 +404,17 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
   })
 }
 
+const listenerSwapMonitor = async () => {
+  try {
+    const loopServiceLnd1 = LoopService(LND1_LOOP_CONFIG)
+    const loopServiceLnd2 = LoopService(LND2_LOOP_CONFIG)
+    startSwapMonitor(loopServiceLnd1)
+    startSwapMonitor(loopServiceLnd2)
+  } catch (e) {
+    return new SwapTriggerError(e)
+  }
+}
+
 const main = () => {
   lndStatusEvent.on("started", ({ lnd, pubkey, socket, type }: LndParamsAuthed) => {
     baseLogger.info({ socket }, "lnd started")
@@ -419,6 +434,8 @@ const main = () => {
 
   activateLndHealthCheck()
   publishCurrentPrice()
+
+  listenerSwapMonitor()
 
   console.log("trigger server ready")
 }

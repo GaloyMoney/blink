@@ -156,6 +156,84 @@ services:
       cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
       cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
       /bin/lnd
+  loopserver:
+    image: lightninglabs/loopserver:v0.9.52-beta
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
+      - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${PWD}/dev/lnd/loop/server/regtest:/root/.lnd/data/chain/bitcoin/regtest
+    depends_on:
+      - lnd-outside-1
+    command:
+      - "daemon"
+      - "--maxamt=5000000"
+      - "--lnd.host=lnd-outside-1:10009"
+      - "--lnd.macaroondir=/root/.lnd/data/chain/bitcoin/regtest"
+      - "--lnd.tlspath=/root/.lnd/tls.cert"
+  loopd1:
+    image: lightninglabs/loop:v0.20.1-beta
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
+      - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${PWD}/dev/lnd/regtest/lnd1.admin.macaroon:/root/.lnd/lnd1.admin.macaroon
+      - ${PWD}/dev/lnd/loop/regtest/loopd1-1.macaroons.db:/root/.loop/tmp/macaroons.db
+      - ${PWD}/dev/lnd/loop/regtest/loopd1-1.loop.db:/root/.loop/tmp/loop.db
+      - ${PWD}/dev/lnd/loop/regtest/loopd1-1.tls.key:/root/.loop/tmp/tls.key
+      - ${PWD}/dev/lnd/loop/regtest/loopd1-1.tls.cert:/root/.loop/tmp/tls.cert
+      - ${PWD}/dev/lnd/loop/regtest/loopd1-1.loop.macaroon:/root/.loop/tmp/loop.macaroon
+    depends_on:
+      - lnd1
+      - loopserver
+    environment:
+      - LOOP_SERVER_INTERNAL_IP=${LOOP_SERVER_INTERNAL_IP}
+    command: bash -c "
+      mkdir -p /root/.loop/regtest/ &&
+      cp /root/.loop/tmp/* /root/.loop/regtest/ &&
+      loopd\
+        --network=regtest\
+        --debuglevel=debug\
+        --server.host=${LOOP_SERVER_INTERNAL_IP}:11009\
+        --server.notls --lnd.host=lnd1:10009\
+        --lnd.macaroonpath=/root/.lnd/lnd1.admin.macaroon\
+        --lnd.tlspath=/root/.lnd/tls.cert\
+        --tlsautorefresh\
+        --restlisten=0.0.0.0:8081\
+        --rpclisten=0.0.0.0:11010"
+  loopd2:
+    image: lightninglabs/loop:v0.20.1-beta
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
+      - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${PWD}/dev/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/lnd2.admin.macaroon
+      - ${PWD}/dev/lnd/loop/regtest/loopd2-1.macaroons.db:/root/.loop/tmp/macaroons.db
+      - ${PWD}/dev/lnd/loop/regtest/loopd2-1.loop.db:/root/.loop/tmp/loop.db
+      - ${PWD}/dev/lnd/loop/regtest/loopd2-1.tls.key:/root/.loop/tmp/tls.key
+      - ${PWD}/dev/lnd/loop/regtest/loopd2-1.tls.cert:/root/.loop/tmp/tls.cert
+      - ${PWD}/dev/lnd/loop/regtest/loopd2-1.loop.macaroon:/root/.loop/tmp/loop.macaroon
+    depends_on:
+      - lnd2
+      - loopserver
+    environment:
+      - LOOP_SERVER_INTERNAL_IP=${LOOP_SERVER_INTERNAL_IP}
+    command: bash -c "
+      mkdir -p /root/.loop/regtest/ &&
+      cp /root/.loop/tmp/* /root/.loop/regtest/ &&
+      loopd\
+        --network=regtest\
+        --debuglevel=debug\
+        --server.host=${LOOP_SERVER_INTERNAL_IP}:11009\
+        --server.notls --lnd.host=lnd2:10009\
+        --lnd.macaroonpath=/root/.lnd/lnd2.admin.macaroon\
+        --lnd.tlspath=/root/.lnd/tls.cert\
+        --tlsautorefresh\
+        --restlisten=0.0.0.0:8081\
+        --rpclisten=0.0.0.0:11010"
   e2e-tests:
     image: us.gcr.io/galoy-org/galoy-app-pipeline
     depends_on:

@@ -318,6 +318,22 @@ export const configSchema = {
       ],
       additionalProperties: false,
     },
+    swap: {
+      type: "object",
+      properties: {
+        loopOutWhenHotWalletLessThan: { type: "integer" },
+        lnd1loopRestEndpoint: { type: "string" },
+        lnd2loopRestEndpoint: { type: "string" },
+        lnd1loopRpcEndpoint: { type: "string" },
+        lnd2loopRpcEndpoint: { type: "string" },
+        swapOutAmount: { type: "integer" },
+        swapProviders: {
+          type: "array",
+          items: { enum: ["Loop"] },
+          uniqueItems: true,
+        },
+      },
+    },
     apollo: {
       type: "object",
       properties: {
@@ -336,8 +352,9 @@ export const configSchema = {
       type: "object",
       properties: {
         rebalanceEnabled: { type: "boolean" },
+        swapEnabled: { type: "boolean" },
       },
-      required: ["rebalanceEnabled"],
+      required: ["rebalanceEnabled", "swapEnabled"],
       additionalProperties: false,
     },
     kratosConfig: {

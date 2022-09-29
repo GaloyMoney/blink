@@ -8,6 +8,7 @@ type LndParams = {
   type: NodeType[]
   pubkey: Pubkey
   priority: number
+  name: string
 }
 
 type LndParamsAuthed = LndParams & {
@@ -23,3 +24,5 @@ type LndParamsUnAuthed = LndParams & {
   active: boolean
   priority: number
 }
+
+type Macaroon = string & { readonly brand: unique symbol }

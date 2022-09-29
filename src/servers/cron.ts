@@ -11,7 +11,7 @@ import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
 
 import { activateLndHealthCheck } from "@services/lnd/health"
-import { ColdStorage, Lightning, Wallets, Payments } from "@app"
+import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
 import { getCronConfig, TWO_MONTHS_IN_MS } from "@config"
 
 import { rebalancingInternalChannels, reconnectNodes } from "@services/lnd/utils-bos"
@@ -51,6 +51,11 @@ const deleteLndPaymentsBefore2Months = async () => {
   if (result instanceof Error) throw result
 }
 
+const swapOutJob = async () => {
+  const swapResult = await Swap.swapOut()
+  if (swapResult instanceof Error) throw swapResult
+}
+
 const main = async () => {
   console.log("cronjob started")
 
@@ -68,6 +73,7 @@ const main = async () => {
     updateRoutingRevenues,
     updateOnChainReceipt,
     ...(cronConfig.rebalanceEnabled ? [rebalance] : []),
+    ...(cronConfig.swapEnabled ? [swapOutJob] : []),
     deleteExpiredPaymentFlows,
     deleteExpiredInvoices,
     deleteLndPaymentsBefore2Months,

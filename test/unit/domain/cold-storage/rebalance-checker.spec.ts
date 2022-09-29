@@ -2,7 +2,7 @@ import { toSats } from "@domain/bitcoin"
 import { RebalanceChecker } from "@domain/cold-storage"
 
 describe("RebalanceChecker", () => {
-  it("checks if a rebalance is needed", async () => {
+  it("returns the amount that should be rebalanced", async () => {
     const checker = RebalanceChecker({
       minOnChainHotWalletBalance: toSats(10000),
       minRebalanceSize: toSats(10000),

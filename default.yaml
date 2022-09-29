@@ -178,6 +178,15 @@ onChainWallet:
   scanDepthOutgoing: 2
   scanDepthChannelUpdate: 8
 
+swap:
+  loopOutWhenHotWalletLessThan: 200000000
+  swapOutAmount:  50000000
+  swapProviders: ["Loop"]
+  lnd1loopRestEndpoint: "https://localhost:8081"
+  lnd1loopRpcEndpoint: "localhost:11010"
+  lnd2loopRestEndpoint: "https://localhost:8082"
+  lnd2loopRpcEndpoint: "localhost:11011"
+
 apollo:
   playground: true
   playgroundUrl: "https://api.staging.galoy.io/graphql"
@@ -186,6 +195,7 @@ userActivenessMonthlyVolumeThreshold: 100 # cents
 
 cronConfig:
   rebalanceEnabled: true
+  swapEnabled: true
 
 kratosConfig:
   publicApi: "http://localhost:4433"

@@ -1,8 +1,10 @@
 files.extend-exclude = [
   "dev",
-  "src/domain/users/languages.ts"
+  "src/domain/users/languages.ts",
+  "src/services/loopd/protos"
 ]
 
 [default.extend-words]
 # returned from twilio API referenced in src/debug/text-sms.ts
 Ons = "Ons"
+Lsat = "Lsat"
