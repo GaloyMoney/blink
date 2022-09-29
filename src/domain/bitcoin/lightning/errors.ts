@@ -35,6 +35,7 @@ export class PaymentAttemptsTimedOutError extends LightningServiceError {}
 export class ProbeForRouteTimedOutError extends LightningServiceError {}
 export class ProbeForRouteTimedOutFromApplicationError extends LightningServiceError {}
 export class PaymentInTransitionError extends LightningServiceError {}
+export class TemporaryChannelFailureError extends LightningServiceError {}
 export class InvalidFeeProbeStateError extends LightningServiceError {
   level = ErrorLevel.Critical
 }

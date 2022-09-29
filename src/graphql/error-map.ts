@@ -245,12 +245,15 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new RouteFindingError({ message, logger: baseLogger })
 
     case "UnknownLnInvoiceDecodeError":
-      // TODO: Consider using `error.message` somehow since lib returns semi-sensible details
       message = "Invalid lightning request, couldn't decode."
       return new InvoiceDecodeError({ message, logger: baseLogger })
 
     case "PaymentInTransitionError":
       message = "Payment was sent and is still in transition."
+      return new LightningPaymentError({ message, logger: baseLogger })
+
+    case "TemporaryChannelFailureError":
+      message = "Issue with lightning payment, please try again."
       return new LightningPaymentError({ message, logger: baseLogger })
 
     case "UsernameNotAvailableError":

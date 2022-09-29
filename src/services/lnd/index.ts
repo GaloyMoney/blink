@@ -46,6 +46,7 @@ import {
   ProbeForRouteTimedOutFromApplicationError,
   RouteNotFoundError,
   SecretDoesNotMatchAnyExistingHodlInvoiceError,
+  TemporaryChannelFailureError,
   UnknownLightningServiceError,
   UnknownRouteNotFoundError,
 } from "@domain/bitcoin/lightning"
@@ -706,6 +707,7 @@ export const KnownLndErrorDetails: { [key: string]: RegExp } = {
   PaymentForDeleteNotFound: /non bucket element in payments bucket/,
   SecretDoesNotMatchAnyExistingHodlInvoice: /SecretDoesNotMatchAnyExistingHodlInvoice/,
   ConnectionDropped: /Connection dropped/,
+  TemporaryChannelFailure: /TemporaryChannelFailure/,
 } as const
 
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
@@ -823,6 +825,8 @@ const handleSendPaymentLndErrors = ({
       return new PaymentAttemptsTimedOutError()
     case match(KnownLndErrorDetails.PaymentInTransition):
       return new PaymentInTransitionError(paymentHash)
+    case match(KnownLndErrorDetails.TemporaryChannelFailure):
+      return new TemporaryChannelFailureError(paymentHash)
     default:
       return handleCommonLightningServiceErrors(err)
   }
