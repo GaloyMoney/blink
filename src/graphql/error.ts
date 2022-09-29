@@ -36,6 +36,12 @@ export class UnknownClientError extends CustomApolloError {
   }
 }
 
+export class UnexpectedClientError extends CustomApolloError {
+  constructor(errData: CustomApolloErrorData) {
+    super({ code: "UNEXPECTED_CLIENT_ERROR", forwardToClient: true, ...errData })
+  }
+}
+
 export class InsufficientBalanceError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({

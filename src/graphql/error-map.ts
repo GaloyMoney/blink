@@ -21,6 +21,7 @@ import {
   LndOfflineError,
   OnChainPaymentError,
   PhoneProviderError,
+  UnexpectedClientError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -437,10 +438,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "SecretDoesNotMatchAnyExistingHodlInvoiceError":
     case "CaptchaError":
     case "InvalidNonHodlInvoiceError":
-      message = `Unknown error occurred (code: ${error.name}${
-        error.message ? ": " + error.message : ""
-      })`
-      return new UnknownClientError({ message, logger: baseLogger })
+      message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
+        error.name
+      }${error.message ? ": " + error.message : ""})`
+      return new UnexpectedClientError({ message, logger: baseLogger })
 
     // ----------
     // Unknown below here
