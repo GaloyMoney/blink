@@ -51,7 +51,7 @@ test: unit integration
 test-migrate:
 	docker compose down -v
 	docker compose build
-	docker compose up mongodb-migrate --exit-code-from mongodb-migrate
+	docker compose -f docker-compose.yml up mongodb-migrate --exit-code-from mongodb-migrate
 
 unit:
 	yarn test:unit
