@@ -285,7 +285,11 @@ const addContactsAfterSend = async ({
   senderAccount: Account
   recipientAccount: Account
 }): Promise<true | ApplicationError> => {
-  if (senderAccount.contactEnabled && recipientAccount.username) {
+  if (!(senderAccount.contactEnabled && recipientAccount.contactEnabled)) {
+    return true
+  }
+
+  if (recipientAccount.username) {
     const addContactToPayerResult = await Accounts.addNewContact({
       accountId: senderAccount.id,
       contactUsername: recipientAccount.username,
@@ -293,7 +297,7 @@ const addContactsAfterSend = async ({
     if (addContactToPayerResult instanceof Error) return addContactToPayerResult
   }
 
-  if (recipientAccount.contactEnabled && senderAccount.username) {
+  if (senderAccount.username) {
     const addContactToPayeeResult = await Accounts.addNewContact({
       accountId: recipientAccount.id,
       contactUsername: senderAccount.username,
