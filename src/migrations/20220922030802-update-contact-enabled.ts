@@ -3,7 +3,7 @@ module.exports = {
     try {
       const collection = db.collection("users")
       const result = await collection.updateMany(
-        { role: { $ne: "user" } },
+        { role: { $in: ["dealer", "funder", "bankowner"] } },
         { $set: { contactEnabled: false, contacts: [] } },
         { multi: true },
       )

@@ -191,7 +191,7 @@ export const createUserAndWallet = async (entry: TestEntry) => {
   }
 
   if (entry.role) {
-    const contactEnabled = entry.role === "user"
+    const contactEnabled = entry.role === "user" || entry.role === "editor"
     await User.findOneAndUpdate(
       { _id: toObjectId<UserId>(uid) },
       { role: entry.role, contactEnabled },
