@@ -1,5 +1,5 @@
 import { Accounts } from "@app"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import AccountUpdateDefaultWalletIdPayload from "@graphql/types/payload/account-update-default-wallet-id"
@@ -33,8 +33,7 @@ const AccountUpdateDefaultWalletIdMutation = GT.Field({
     })
 
     if (result instanceof Error) {
-      const appErr = mapError(result)
-      return { errors: [{ message: appErr.message || appErr.name }] }
+      return { errors: [mapAndParseErrorForGqlResponse(result)] }
     }
 
     return {

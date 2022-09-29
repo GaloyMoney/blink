@@ -6,7 +6,7 @@ import { GT } from "@graphql/index"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import CentAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { validateIsUsdWalletForMutation } from "@graphql/helpers"
 
 import { checkedToWalletId } from "@domain/wallets"
@@ -59,20 +59,20 @@ const LnUsdInvoiceFeeProbeMutation = GT.Field<{
 
     if (feeSatAmount !== null && error instanceof Error) {
       return {
-        errors: [{ message: mapError(error).message }],
+        errors: [mapAndParseErrorForGqlResponse(error)],
         ...normalizePaymentAmount(feeSatAmount),
       }
     }
 
     if (error instanceof Error) {
       return {
-        errors: [{ message: mapError(error).message }],
+        errors: [mapAndParseErrorForGqlResponse(error)],
       }
     }
 
     if (feeSatAmount === null) {
       return {
-        errors: [{ message: mapError(new InvalidFeeProbeStateError()).message }],
+        errors: [mapAndParseErrorForGqlResponse(new InvalidFeeProbeStateError())],
       }
     }
 
