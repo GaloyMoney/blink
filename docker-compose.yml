@@ -17,7 +17,7 @@ services:
     - lnd-outside-2
     - otel-agent
   otel-agent:
-    image: otel/opentelemetry-collector-contrib:0.43.0
+    image: otel/opentelemetry-collector-contrib:0.61.0
     command: ["--config=/etc/otel-agent-config.yaml"]
     environment:
     - HONEYCOMB_DATASET=${HONEYCOMB_DATASET}

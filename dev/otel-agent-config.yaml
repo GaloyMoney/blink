@@ -5,6 +5,12 @@ receivers:
       thrift_binary: # on port 6832
 
 processors:
+  filter:
+    spans:
+      exclude:
+        match_type: strict
+        span_names:
+          - grpc.lnrpc.State/GetState
   batch:
   attributes:
     actions:
@@ -40,5 +46,5 @@ service:
   pipelines:
     traces:
       receivers: [jaeger]
-      processors: [attributes, batch]
+      processors: [filter, attributes, batch]
       exporters: [otlp, logging]
