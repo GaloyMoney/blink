@@ -21,7 +21,7 @@ import {
   context,
   propagation,
   Span,
-  SpanAttributes,
+  Attributes,
   SpanStatusCode,
   SpanOptions,
   TimeInput,
@@ -163,14 +163,18 @@ registerInstrumentations({
       ignoreIncomingPaths: ["/healthz"],
       headersToSpanAttributes: {
         server: {
-          requestHeaders: ["apollographql-client-name", "apollographql-client-version"],
+          requestHeaders: [
+            "apollographql-client-name",
+            "apollographql-client-version",
+            "x-real-ip",
+            "x-forwarded-for",
+          ],
         },
       },
     }),
     new GraphQLInstrumentation({
       mergeItems: true,
       allowValues: true,
-      // @ts-expect-error: type mismatch for some reasons
       responseHook: gqlResponseHook,
     }),
     new MongoDBInstrumentation(),
@@ -216,7 +220,7 @@ export const tracer = trace.getTracer(
   tracingConfig.tracingServiceName,
   process.env.COMMITHASH || "dev",
 )
-export const addAttributesToCurrentSpan = (attributes: SpanAttributes) => {
+export const addAttributesToCurrentSpan = (attributes: Attributes) => {
   const span = trace.getSpan(context.active())
   if (span) {
     for (const [key, value] of Object.entries(attributes)) {
@@ -229,7 +233,7 @@ export const addAttributesToCurrentSpan = (attributes: SpanAttributes) => {
 
 export const addEventToCurrentSpan = (
   name: string,
-  attributesOrStartTime?: SpanAttributes | TimeInput | undefined,
+  attributesOrStartTime?: Attributes | TimeInput | undefined,
   startTime?: TimeInput | undefined,
 ) => {
   const span = trace.getSpan(context.active())
@@ -245,7 +249,7 @@ export const recordExceptionInCurrentSpan = ({
 }: {
   error: Exception
   level?: ErrorLevel
-  attributes?: SpanAttributes
+  attributes?: Attributes
 }) => {
   const span = trace.getSpan(context.active())
   if (!span) return
@@ -273,13 +277,11 @@ const updateErrorForSpan = ({
 }
 
 const recordException = (span: Span, exception: Exception, level?: ErrorLevel) => {
-  // @ts-ignore-next-line no-implicit-any error
   const errorLevel = level || exception["level"] || ErrorLevel.Warn
 
   // Write error attributes if update checks pass
   if (updateErrorForSpan({ span, errorLevel })) {
     span.setAttribute("error.level", errorLevel)
-    // @ts-ignore-next-line no-implicit-any error
     span.setAttribute("error.name", exception["name"])
     span.setAttribute("error.message", exception["message"])
   }
@@ -290,7 +292,6 @@ const recordException = (span: Span, exception: Exception, level?: ErrorLevel) =
     nextIdx++
   }
   span.setAttribute(`error.${nextIdx}.level`, errorLevel)
-  // @ts-ignore-next-line no-implicit-any error
   span.setAttribute(`error.${nextIdx}.name`, exception["name"])
   span.setAttribute(`error.${nextIdx}.message`, exception["message"])
 
@@ -330,7 +331,7 @@ const resolveFunctionSpanOptions = ({
   namespace: string
   functionName: string
   functionArgs: Array<unknown>
-  spanAttributes?: SpanAttributes
+  spanAttributes?: Attributes
   root?: boolean
 }): SpanOptions => {
   const attributes = {
@@ -367,7 +368,7 @@ export const wrapToRunInSpan = <
   fn: (...args: A) => R
   fnName?: string
   namespace: string
-  spanAttributes?: SpanAttributes
+  spanAttributes?: Attributes
   root?: boolean
 }) => {
   const functionName = fnName || fn.name || "unknown"
@@ -423,7 +424,7 @@ export const wrapAsyncToRunInSpan = <
   fn: (...args: A) => Promise<PromiseReturnType<R>>
   fnName?: string
   namespace: string
-  spanAttributes?: SpanAttributes
+  spanAttributes?: Attributes
   root?: boolean
 }) => {
   const functionName = fnName || fn.name || "unknown"
@@ -473,13 +474,10 @@ export const wrapAsyncFunctionsToRunInSpan = <F extends object>({
 }): F => {
   const functions = { ...fns }
   for (const fn of Object.keys(functions)) {
-    // @ts-ignore-next-line no-implicit-any error
     const fnType = fns[fn].constructor.name
     if (fnType === "Function") {
-      // @ts-ignore-next-line no-implicit-any error
       functions[fn] = wrapToRunInSpan({
         namespace,
-        // @ts-ignore-next-line no-implicit-any error
         fn: fns[fn],
         fnName: fn,
       })
@@ -487,16 +485,13 @@ export const wrapAsyncFunctionsToRunInSpan = <F extends object>({
     }
 
     if (fnType === "AsyncFunction") {
-      // @ts-ignore-next-line no-implicit-any error
       functions[fn] = wrapAsyncToRunInSpan({
         namespace,
-        // @ts-ignore-next-line no-implicit-any error
         fn: fns[fn],
         fnName: fn,
       })
       continue
     }
-    // @ts-ignore-next-line no-implicit-any error
     functions[fn] = fns[fn]
   }
   return functions
