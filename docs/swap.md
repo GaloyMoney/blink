@@ -160,16 +160,7 @@ make start-cron
 
 Tracing
 =======
-In Honeycomb you can query the following:
-
-```
-swap.error exists
-swap.submitted exists
-swap.success exists
-swap.checker.message exists
-swap.checker.outboundAmountNeeded exists
-swap.checker.currentOutboundBalance exists
-```
+In Honeycomb you can query for `swap`
 
 Generate GRPC Types
 ====================
