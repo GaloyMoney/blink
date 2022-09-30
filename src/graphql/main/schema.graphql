@@ -36,13 +36,10 @@ type AccountUpdateDefaultWalletIdPayload {
   errors: [AppError!]!
 }
 
-type AppError implements Error {
-  code: AppErrorCode!
-  message: String!
-  path: [String]
-}
+union AppError = InputError | OtherError | PaymentError
 
 enum AppErrorCode {
+  ACCOUNT_LOCKED
   CANT_PAY_SELF
   DB_ERROR
   DEALER_OFFLINE
@@ -53,13 +50,17 @@ enum AppErrorCode {
   INVALID_OUTPUT
   INVALID_TITLE
   INVOICE_DECODE_ERROR
+  INVOICE_PAID
   LIGHTNING_PAYMENT_ERROR
+  LIMIT_EXCEEDED
   LIQUIDITY_ERROR
   LND_OFFLINE
   NEW_ACCOUNT_WITHDRAWAL_RESTRICTED
   NOT_AUTHENTICATED
   NOT_AUTHORIZED
   NOT_FOUND
+  NO_LIQUIDITY
+  NO_ROUTE
   ONCHAIN_FEE_ESTIMATION_ERROR
   ONCHAIN_PAYMENT_ERROR
   PHONE_CODE_ERROR
@@ -72,6 +73,9 @@ enum AppErrorCode {
   TWOFA_ERROR
   UNKNOWN_CLIENT_ERROR
   USERNAME_ERROR
+  VALUE_NOT_ALLOWED
+  VALUE_TOO_LONG
+  VALUE_TOO_SHORT
 }
 
 """
@@ -240,6 +244,7 @@ input DeviceNotificationTokenCreateInput {
 }
 
 interface Error {
+  code: AppErrorCode!
   message: String!
   path: [String]
 }
@@ -289,16 +294,9 @@ type InitiationViaOnChain {
 }
 
 type InputError implements Error {
-  code: InputErrorCode!
+  code: AppErrorCode!
   message: String!
   path: [String]
-}
-
-enum InputErrorCode {
-  INVALID_INPUT
-  VALUE_NOT_ALLOWED
-  VALUE_TOO_LONG
-  VALUE_TOO_SHORT
 }
 
 input IntraLedgerPaymentSendInput {
@@ -781,6 +779,12 @@ An authentication code valid for a single use
 """
 scalar OneTimeAuthCode
 
+type OtherError implements Error {
+  code: AppErrorCode!
+  message: String!
+  path: [String]
+}
+
 """
 Information about pagination in a connection.
 """
@@ -807,18 +811,9 @@ type PageInfo {
 }
 
 type PaymentError implements Error {
-  code: PaymentErrorCode!
+  code: AppErrorCode!
   message: String!
   path: [String]
-}
-
-enum PaymentErrorCode {
-  ACCOUNT_LOCKED
-  INSUFFICIENT_BALANCE
-  INVOICE_PAID
-  LIMIT_EXCEEDED
-  NO_LIQUIDITY
-  NO_ROUTE
 }
 
 scalar PaymentHash

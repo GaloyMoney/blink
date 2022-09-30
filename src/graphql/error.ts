@@ -6,12 +6,30 @@ import { baseLogger } from "@services/logger"
 
 const onChainWalletConfig = getOnChainWalletConfig()
 
-export const CustomApolloErrorCode = {
+export const PaymentErrorCode = {
+  ACCOUNT_LOCKED: "ACCOUNT_LOCKED",
+  LIMIT_EXCEEDED: "LIMIT_EXCEEDED",
+  INSUFFICIENT_BALANCE: "INSUFFICIENT_BALANCE",
+  INVOICE_PAID: "INVOICE_PAID",
+
+  // LN
+  NO_LIQUIDITY: "NO_LIQUIDITY",
+  NO_ROUTE: "NO_ROUTE",
+} as const
+
+export const InputErrorCode = {
+  INVALID_INPUT: "INVALID_INPUT",
+  VALUE_TOO_SHORT: "VALUE_TOO_SHORT",
+  VALUE_TOO_LONG: "VALUE_TOO_LONG",
+  VALUE_NOT_ALLOWED: "VALUE_NOT_ALLOWED",
+} as const
+
+export const OtherErrorCode = {
+  // INSUFFICIENT_BALANCE: "INSUFFICIENT_BALANCE",
+  // INVALID_INPUT: "INVALID_INPUT",
   TRANSACTION_RESTRICTED: "TRANSACTION_RESTRICTED",
   UNKNOWN_CLIENT_ERROR: "UNKNOWN_CLIENT_ERROR",
-  INSUFFICIENT_BALANCE: "INSUFFICIENT_BALANCE",
   CANT_PAY_SELF: "CANT_PAY_SELF",
-  INVALID_INPUT: "INVALID_INPUT",
   INVALID_OUTPUT: "INVALID_OUTPUT",
   NOT_FOUND: "NOT_FOUND",
   NEW_ACCOUNT_WITHDRAWAL_RESTRICTED: "NEW_ACCOUNT_WITHDRAWAL_RESTRICTED",
@@ -36,6 +54,12 @@ export const CustomApolloErrorCode = {
   LIQUIDITY_ERROR: "LIQUIDITY_ERROR",
   NOT_AUTHENTICATED: "NOT_AUTHENTICATED",
   NOT_AUTHORIZED: "NOT_AUTHORIZED",
+} as const
+
+export const CustomApolloErrorCode = {
+  ...PaymentErrorCode,
+  ...InputErrorCode,
+  ...OtherErrorCode,
 } as const
 
 export class CustomApolloError extends ApolloError {

@@ -23,6 +23,15 @@ type LogFn = import("pino").LogFn
 
 type CustomApolloError = import("./error").CustomApolloError
 
+type PaymentErrorCodeKey = keyof typeof import("./error").PaymentErrorCode
+type PaymentErrorCode = typeof import("./error").PaymentErrorCode[PaymentErrorCodeKey]
+
+type InputErrorCodeKey = keyof typeof import("./error").InputErrorCode
+type InputErrorCode = typeof import("./error").InputErrorCode[InputErrorCodeKey]
+
+type OtherErrorCodeKey = keyof typeof import("./error").OtherErrorCode
+type OtherErrorCode = typeof import("./error").OtherErrorCode[OtherErrorCodeKey]
+
 type CustomApolloErrorCodeKey = keyof typeof import("./error").CustomApolloErrorCode
 type CustomApolloErrorCode =
   typeof import("./error").CustomApolloErrorCode[CustomApolloErrorCodeKey]
