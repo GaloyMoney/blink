@@ -1,7 +1,7 @@
 import { ZERO_SATS } from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
-import { SwapServiceError } from "./errors"
+import { SwapErrorNonCritical, SwapServiceError } from "./errors"
 
 export const SwapOutChecker = ({
   loopOutWhenHotWalletLessThanConfig,
@@ -21,7 +21,7 @@ export const SwapOutChecker = ({
   }: {
     currentOnChainHotWalletBalance: BtcPaymentAmount
     currentOutboundLiquidityBalance: BtcPaymentAmount
-  }): BtcPaymentAmount | SwapServiceError => {
+  }): BtcPaymentAmount | SwapServiceError | SwapErrorNonCritical => {
     const isOnChainWalletDepleted =
       currentOnChainHotWalletBalance.amount < loopOutWhenHotWalletLessThanConfig.amount
     const hasEnoughOutboundLiquidity =
@@ -34,7 +34,9 @@ export const SwapOutChecker = ({
           currentOutboundLiquidityBalance.amount,
         ),
       })
-      return ZERO_SATS
+      return new SwapErrorNonCritical(
+        `Not enough outbound liquidity. Need at least ${swapOutAmount.amount} but we only have ${currentOutboundLiquidityBalance.amount}`,
+      )
     }
     if (isOnChainWalletDepleted && hasEnoughOutboundLiquidity) {
       return swapOutAmount

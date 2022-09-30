@@ -1,5 +1,6 @@
 import { WalletCurrency, ZERO_SATS } from "@domain/shared"
 import { SwapOutChecker } from "@domain/swap"
+import { SwapErrorNonCritical } from "@domain/swap/errors"
 
 describe("SwapOutChecker", () => {
   it("returns the amount that should be swapped", () => {
@@ -52,7 +53,7 @@ describe("SwapOutChecker", () => {
     ).toEqual(ZERO_SATS)
   })
 
-  it("returns 0 amount when we don't have enough outbound liquidity to perform a swap out", () => {
+  it("returns SwapErrorNonCritical when we don't have enough outbound liquidity to perform a swap out", () => {
     const checker = SwapOutChecker({
       loopOutWhenHotWalletLessThanConfig: {
         amount: BigInt(50000),
@@ -74,6 +75,6 @@ describe("SwapOutChecker", () => {
           currency: WalletCurrency.Btc,
         },
       }),
-    ).toEqual(ZERO_SATS)
+    ).toBeInstanceOf(SwapErrorNonCritical)
   })
 })

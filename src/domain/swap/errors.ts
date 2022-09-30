@@ -1,6 +1,9 @@
 import { DomainError, ErrorLevel } from "@domain/shared"
 
 export class SwapError extends DomainError {}
+export class SwapErrorNonCritical extends DomainError {
+  level = ErrorLevel.Info
+}
 export class SwapTriggerError extends SwapError {}
 export class SwapServiceError extends SwapError {}
 export class SwapClientNotResponding extends SwapServiceError {}
