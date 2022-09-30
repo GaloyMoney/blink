@@ -18,7 +18,7 @@ type Account {
 
 type AccountDetailPayload {
   accountDetails: Account
-  errors: [Error!]!
+  errors: [AppError!]!
 }
 
 enum AccountLevel {
@@ -48,6 +48,44 @@ input AccountsAddUsdWalletInput {
   accountIds: [ID!]!
 }
 
+type AppError implements Error {
+  code: AppErrorCode!
+  message: String!
+  path: [String]
+}
+
+enum AppErrorCode {
+  CANT_PAY_SELF
+  DB_ERROR
+  DEALER_OFFLINE
+  ENTERED_DUST_AMOUNT
+  INSUFFICIENT_BALANCE
+  INVALID_COORDINATES
+  INVALID_INPUT
+  INVALID_OUTPUT
+  INVALID_TITLE
+  INVOICE_DECODE_ERROR
+  LIGHTNING_PAYMENT_ERROR
+  LIQUIDITY_ERROR
+  LND_OFFLINE
+  NEW_ACCOUNT_WITHDRAWAL_RESTRICTED
+  NOT_AUTHENTICATED
+  NOT_AUTHORIZED
+  NOT_FOUND
+  ONCHAIN_FEE_ESTIMATION_ERROR
+  ONCHAIN_PAYMENT_ERROR
+  PHONE_CODE_ERROR
+  PHONE_PROVIDER_ERROR
+  REBALANCE_NEEDED
+  REJECTED_CAPTCHA_FAILED
+  ROUTE_FINDING_ERROR
+  TOO_MANY_REQUEST
+  TRANSACTION_RESTRICTED
+  TWOFA_ERROR
+  UNKNOWN_CLIENT_ERROR
+  USERNAME_ERROR
+}
+
 """
 An JWT-formatted authentication token
 """
@@ -55,7 +93,7 @@ scalar AuthToken
 
 type AuthTokenPayload {
   authToken: AuthToken
-  errors: [Error!]!
+  errors: [AppError!]!
 }
 
 """
@@ -136,7 +174,7 @@ input BusinessUpdateMapInfoInput {
 }
 
 type CaptchaCreateChallengePayload {
-  errors: [Error!]!
+  errors: [AppError!]!
   result: CaptchaCreateChallengeResult
 }
 
@@ -323,7 +361,7 @@ type PsbtDetail {
 }
 
 type PsbtDetailPayload {
-  errors: [Error!]!
+  errors: [AppError!]!
   psbtDetail: PsbtDetail
 }
 
@@ -377,7 +415,7 @@ An amount (of a currency) that can be negative (e.g. in a transaction)
 scalar SignedAmount
 
 type SuccessPayload {
-  errors: [Error!]!
+  errors: [AppError!]!
   success: Boolean
 }
 
@@ -631,7 +669,7 @@ enum WalletCurrency {
 }
 
 type WalletDetailsPayload {
-  errors: [Error!]!
+  errors: [AppError!]!
   walletDetails: [Wallet!]!
 }
 

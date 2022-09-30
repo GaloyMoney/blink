@@ -1,13 +1,13 @@
 import { GT } from "@graphql/index"
 
-import IError from "@graphql/types/abstract/error"
+import AppError from "@graphql/types/object/app-error"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 
 const SatAmountPayload = GT.Object({
   name: "SatAmountPayload",
   fields: () => ({
     errors: {
-      type: GT.NonNullList(IError),
+      type: GT.NonNullList(AppError),
     },
     amount: {
       type: SatAmount,

@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import IError from "@graphql/types/abstract/error"
+import AppError from "@graphql/types/object/app-error"
 
 import GraphQLAccount from "../object/account"
 
@@ -7,7 +7,7 @@ const AccountDetailPayload = GT.Object({
   name: "AccountDetailPayload",
   fields: () => ({
     errors: {
-      type: GT.NonNullList(IError),
+      type: GT.NonNullList(AppError),
     },
     accountDetails: {
       type: GraphQLAccount,

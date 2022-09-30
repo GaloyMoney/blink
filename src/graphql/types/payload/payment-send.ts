@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import IError from "../abstract/error"
+import AppError from "../object/app-error"
 
 import PaymentSendResult from "../scalar/payment-send-result"
 
@@ -8,7 +8,7 @@ const PaymentSendPayload = GT.Object({
   name: "PaymentSendPayload",
   fields: () => ({
     errors: {
-      type: GT.NonNullList(IError),
+      type: GT.NonNullList(AppError),
     },
     status: { type: PaymentSendResult },
   }),

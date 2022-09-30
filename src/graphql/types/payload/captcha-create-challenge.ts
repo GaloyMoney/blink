@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 
-import IError from "../abstract/error"
+import AppError from "../object/app-error"
 
 const CaptchaCreateChallengeResult = GT.Object({
   name: "CaptchaCreateChallengeResult",
@@ -24,7 +24,7 @@ const CaptchaCreateChallengePayload = GT.Object({
   name: "CaptchaCreateChallengePayload",
   fields: () => ({
     errors: {
-      type: GT.NonNullList(IError),
+      type: GT.NonNullList(AppError),
     },
     result: { type: CaptchaCreateChallengeResult },
   }),

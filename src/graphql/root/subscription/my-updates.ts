@@ -2,7 +2,7 @@ import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
 import { GT } from "@graphql/index"
 import Price from "@graphql/types/object/price"
-import IError from "@graphql/types/abstract/error"
+import AppError from "@graphql/types/object/app-error"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import GraphQLUser from "@graphql/types/object/graphql-user"
@@ -66,7 +66,7 @@ const UserUpdate = GT.Union({
 const MyUpdatesPayload = GT.Object({
   name: "MyUpdatesPayload",
   fields: () => ({
-    errors: { type: GT.NonNullList(IError) },
+    errors: { type: GT.NonNullList(AppError) },
     update: { type: UserUpdate },
     me: { type: GraphQLUser },
   }),

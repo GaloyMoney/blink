@@ -1,13 +1,13 @@
 import { GT } from "@graphql/index"
 
-import IError from "../abstract/error"
+import AppError from "../object/app-error"
 import TwoFASecret from "../object/twofa-secret"
 
 const TwoFAGeneratePayload = GT.Object({
   name: "TwoFAGeneratePayload",
   fields: () => ({
     errors: {
-      type: GT.NonNullList(IError),
+      type: GT.NonNullList(AppError),
     },
     twoFASecret: {
       type: TwoFASecret,

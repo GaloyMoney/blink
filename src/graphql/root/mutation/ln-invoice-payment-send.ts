@@ -69,6 +69,7 @@ const LnInvoicePaymentSendMutation = GT.Field<
 
     if (status instanceof Error) {
       return { status: "failed", errors: [mapAndParseErrorForGqlResponse(status)] }
+      // return { status: "failed", errors: [{ message: status.message }] }
     }
 
     return {

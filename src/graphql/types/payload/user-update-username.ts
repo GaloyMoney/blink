@@ -1,13 +1,13 @@
 import { GT } from "@graphql/index"
 
-import IError from "../abstract/error"
+import AppError from "../object/app-error"
 import GraphQLUser from "../object/graphql-user"
 
 const UserUpdateUsernamePayload = GT.Object({
   name: "UserUpdateUsernamePayload",
   fields: () => ({
     errors: {
-      type: GT.NonNullList(IError),
+      type: GT.NonNullList(AppError),
     },
     user: {
       type: GraphQLUser,

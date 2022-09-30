@@ -23,6 +23,10 @@ type LogFn = import("pino").LogFn
 
 type CustomApolloError = import("./error").CustomApolloError
 
+type CustomApolloErrorCodeKey = keyof typeof import("./error").CustomApolloErrorCode
+type CustomApolloErrorCode =
+  typeof import("./error").CustomApolloErrorCode[CustomApolloErrorCodeKey]
+
 type CustomApolloErrorData = {
   message?: string
   logger: Logger
