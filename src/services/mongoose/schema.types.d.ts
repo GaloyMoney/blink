@@ -90,6 +90,7 @@ interface UserRecord {
   withdrawFee?: number
   earn: string[]
   deviceToken: string[]
+  contactEnabled: boolean
   contacts: ContactObjectForUser[]
   created_at: Date
   lastConnection: Date

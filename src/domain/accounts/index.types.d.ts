@@ -59,6 +59,7 @@ type Account = {
   statusHistory: AccountStatusHistory
   title: BusinessMapTitle
   coordinates: Coordinates
+  contactEnabled: boolean
   readonly contacts: AccountContact[]
   readonly isEditor: boolean
   role?: string

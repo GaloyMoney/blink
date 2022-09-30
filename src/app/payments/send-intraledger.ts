@@ -54,7 +54,7 @@ export const intraledgerPaymentSendWalletId = async ({
   const { senderWallet, recipientWallet, recipientAccount } = validatedPaymentInputs
 
   const { id: recipientWalletId, currency: recipientWalletCurrency } = recipientWallet
-  const { id: recipientAccountId, username: recipientUsername } = recipientAccount
+  const { username: recipientUsername } = recipientAccount
 
   const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: [],
@@ -110,10 +110,8 @@ export const intraledgerPaymentSendWalletId = async ({
   if (paymentSendStatus instanceof Error) return paymentSendStatus
 
   const addContactResult = await addContactsAfterSend({
-    senderAccountId: senderAccount.id,
-    senderUsername: senderAccount.username,
-    recipientAccountId,
-    recipientUsername,
+    senderAccount,
+    recipientAccount,
   })
   if (addContactResult instanceof Error) {
     recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
@@ -281,28 +279,28 @@ const executePaymentViaIntraledger = async ({
 }
 
 const addContactsAfterSend = async ({
-  senderAccountId,
-  senderUsername,
-  recipientAccountId,
-  recipientUsername,
+  senderAccount,
+  recipientAccount,
 }: {
-  senderAccountId: AccountId
-  senderUsername: Username | undefined
-  recipientAccountId: AccountId
-  recipientUsername: Username | undefined
+  senderAccount: Account
+  recipientAccount: Account
 }): Promise<true | ApplicationError> => {
-  if (recipientUsername) {
+  if (!(senderAccount.contactEnabled && recipientAccount.contactEnabled)) {
+    return true
+  }
+
+  if (recipientAccount.username) {
     const addContactToPayerResult = await Accounts.addNewContact({
-      accountId: senderAccountId,
-      contactUsername: recipientUsername,
+      accountId: senderAccount.id,
+      contactUsername: recipientAccount.username,
     })
     if (addContactToPayerResult instanceof Error) return addContactToPayerResult
   }
 
-  if (senderUsername) {
+  if (senderAccount.username) {
     const addContactToPayeeResult = await Accounts.addNewContact({
-      accountId: recipientAccountId,
-      contactUsername: senderUsername,
+      accountId: recipientAccount.id,
+      contactUsername: senderAccount.username,
     })
     if (addContactToPayeeResult instanceof Error) return addContactToPayeeResult
   }
