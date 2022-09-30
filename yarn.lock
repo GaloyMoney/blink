@@ -1403,20 +1403,12 @@
     "@graphql-tools/utils" "8.9.0"
     tslib "^2.4.0"
 
-"@graphql-tools/merge@8.3.4":
+"@graphql-tools/merge@8.3.4", "@graphql-tools/merge@^8.1.2":
   version "8.3.4"
   resolved "https://registry.yarnpkg.com/@graphql-tools/merge/-/merge-8.3.4.tgz#749f710d3a930512e6ca36e3bb053c12e22ef332"
   integrity sha512-2z1UpHvvI52nQZIYArU+rPq1lOENWetsdb+6vu8yLGyCRP4CpKMBvtmiHkbrlPBO8dItpZ08szXEoaStfJHBxQ==
   dependencies:
     "@graphql-tools/utils" "8.10.1"
-    tslib "^2.4.0"
-
-"@graphql-tools/merge@^8.1.2":
-  version "8.3.3"
-  resolved "https://registry.yarnpkg.com/@graphql-tools/merge/-/merge-8.3.3.tgz#74dd4816c3fc7af38730fc59d1cba6e687d7fb2d"
-  integrity sha512-EfULshN2s2s2mhBwbV9WpGnoehRLe7eIMdZrKfHhxlBWOvtNUd3KSCN0PUdAMd7lj1jXUW9KYdn624JrVn6qzg==
-  dependencies:
-    "@graphql-tools/utils" "8.10.0"
     tslib "^2.4.0"
 
 "@graphql-tools/mock@^8.1.2":
@@ -1466,14 +1458,7 @@
     tslib "^2.4.0"
     value-or-promise "1.0.11"
 
-"@graphql-tools/utils@8.10.0", "@graphql-tools/utils@^8.8.0":
-  version "8.10.0"
-  resolved "https://registry.yarnpkg.com/@graphql-tools/utils/-/utils-8.10.0.tgz#8e76db7487e19b60cf99fb90c2d6343b2105b331"
-  integrity sha512-yI+V373FdXQbYfqdarehn9vRWDZZYuvyQ/xwiv5ez2BbobHrqsexF7qs56plLRaQ8ESYpVAjMQvJWe9s23O0Jg==
-  dependencies:
-    tslib "^2.4.0"
-
-"@graphql-tools/utils@8.10.1":
+"@graphql-tools/utils@8.10.1", "@graphql-tools/utils@^8.8.0":
   version "8.10.1"
   resolved "https://registry.yarnpkg.com/@graphql-tools/utils/-/utils-8.10.1.tgz#3224fe0611c9bb51e6a5c16472ae17afbd6c5465"
   integrity sha512-UYi/afPvxZ8mz0LjplMxOSmGDPenVS/Q0zJ/6LOyF9yZdJYIDe+J+Qr/I9+rCYQmgBW4BJeRUUc7VoUzZPfZDA==
@@ -11369,10 +11354,10 @@ spawn-sync@^1.0.15:
     concat-stream "^1.4.7"
     os-shim "^0.1.2"
 
-spectaql@^1.5.3:
-  version "1.5.3"
-  resolved "https://registry.yarnpkg.com/spectaql/-/spectaql-1.5.3.tgz#0ac2dbde98e946df2ec5096ddcf7d758c7504062"
-  integrity sha512-eiTtDtkGohGKsprwJiTiulH3W47yZJlkmgQF56pi2Fu7LBU777qYXdGQ9qakKsCMov/p9p8ZB/G8vX10KRiYuQ==
+spectaql@^1.5.4:
+  version "1.5.4"
+  resolved "https://registry.yarnpkg.com/spectaql/-/spectaql-1.5.4.tgz#646ee859b2d4a2e1600ed6d36203c8a1ef4551f6"
+  integrity sha512-j0nNy6wF78Y6l6B5V1v/86dxqO2AYWxsEGifLElcAK3FWUhYk9XNNkLDF2EpbK3YFP49QEg/Io8GrZx0dIvwIg==
   dependencies:
     "@anvilco/apollo-server-plugin-introspection-metadata" "^1.2.0"
     "@anvilco/grunt-embed" "^0.0.1"
