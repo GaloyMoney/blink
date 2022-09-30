@@ -1,4 +1,5 @@
 import { ZERO_SATS } from "@domain/shared"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { SwapServiceError } from "./errors"
 
@@ -26,9 +27,14 @@ export const SwapOutChecker = ({
     const hasEnoughOutboundLiquidity =
       currentOutboundLiquidityBalance.amount > swapOutAmount.amount
     if (!hasEnoughOutboundLiquidity) {
-      return new SwapServiceError(
-        `Not enough outbound liquidity. Need at least ${swapOutAmount.amount} but we only have ${currentOutboundLiquidityBalance.amount}`,
-      )
+      addAttributesToCurrentSpan({
+        "swap.checker.message": "Not enough outbound liquidity to perform swap out",
+        "swap.checker.outboundAmountNeeded": Number(swapOutAmount.amount),
+        "swap.checker.currentOutboundBalance": Number(
+          currentOutboundLiquidityBalance.amount,
+        ),
+      })
+      return ZERO_SATS
     }
     if (isOnChainWalletDepleted && hasEnoughOutboundLiquidity) {
       return swapOutAmount
