@@ -1,4 +1,3 @@
-import { CustomApolloErrorCode } from "@graphql/error"
 import { GT } from "@graphql/index"
 
 import IError from "../abstract/error"
@@ -7,7 +6,8 @@ import AppErrorCode from "../scalar/app-error-code"
 const AppError = GT.Object({
   name: "AppError",
   interfaces: () => [IError],
-  isTypeOf: (source) => Object.values(CustomApolloErrorCode).includes(source.code),
+  // TODO: make this work in e2e tests with InvalidWalletId validation
+  // isTypeOf: (source) => Object.values(CustomApolloErrorCode).includes(source.code),
   fields: () => ({
     message: {
       type: GT.NonNull(GT.String),
