@@ -168,6 +168,7 @@ registerInstrumentations({
             "apollographql-client-version",
             "x-real-ip",
             "x-forwarded-for",
+            "user-agent",
           ],
         },
       },
