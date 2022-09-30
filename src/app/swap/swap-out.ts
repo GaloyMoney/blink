@@ -1,6 +1,6 @@
 import { BTC_NETWORK, getSwapConfig } from "@config"
 import { TxDecoder } from "@domain/bitcoin/onchain"
-import { SwapServiceError } from "@domain/swap/errors"
+import { SwapErrorNonCritical, SwapServiceError } from "@domain/swap/errors"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { SwapOutChecker } from "@domain/swap"
 import { baseLogger } from "@services/logger"
@@ -48,16 +48,17 @@ export const swapOut = async (): Promise<SwapOutResult | SwapServiceError> => {
     },
   })
 
-  if (swapOutAmount instanceof Error) return swapOutAmount
+  const swapNoOp: SwapOutResult = {
+    noOp: true,
+    htlcAddress: "" as OnChainAddress,
+    serverMessage: "",
+    swapId: "" as SwapId,
+    swapIdBytes: "",
+  }
 
-  if (swapOutAmount.amount === 0n)
-    return {
-      noOp: true,
-      htlcAddress: "" as OnChainAddress,
-      serverMessage: "",
-      swapId: "" as SwapId,
-      swapIdBytes: "",
-    }
+  if (swapOutAmount instanceof SwapErrorNonCritical) return swapNoOp
+  if (swapOutAmount instanceof Error) return swapOutAmount
+  if (swapOutAmount.amount === 0n) return swapNoOp
 
   logger.info({ swapOutAmount, activeLoopdConfig }, `Initiating swapout`)
   addAttributesToCurrentSpan({

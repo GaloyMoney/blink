@@ -17,7 +17,11 @@ import {
 
 import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
-import { Prices as PricesWithSpans, Wallets as WalletWithSpans } from "@app"
+import {
+  Prices as PricesWithSpans,
+  Wallets as WalletWithSpans,
+  Swap as SwapWithSpans,
+} from "@app"
 import * as Wallets from "@app/wallets"
 import { uploadBackup } from "@app/admin/backup"
 
@@ -43,9 +47,8 @@ import {
 } from "@services/mongoose"
 import { LndService } from "@services/lnd"
 import { LoopService } from "@services/loopd"
-import { startSwapMonitor } from "@app/swap"
 import { LND1_LOOP_CONFIG, LND2_LOOP_CONFIG } from "@app/swap/get-active-loopd"
-import { SwapTriggerError } from "@domain/swap/errors"
+import { SwapErrorNoActiveLoopdNode, SwapTriggerError } from "@domain/swap/errors"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -401,6 +404,15 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
       attributes: { ["error.subscription"]: "subBackups" },
     })
     subBackups.removeAllListeners()
+  })
+}
+
+const startSwapMonitor = async (swapService: ISwapService) => {
+  const isSwapServerUp = await swapService.healthCheck()
+  if (isSwapServerUp instanceof Error) return new SwapErrorNoActiveLoopdNode()
+  const listener = swapService.swapListener()
+  listener.on("data", (response) => {
+    SwapWithSpans.handleSwapOutCompleted(response)
   })
 }
 
