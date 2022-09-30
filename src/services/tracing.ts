@@ -163,7 +163,12 @@ registerInstrumentations({
       ignoreIncomingPaths: ["/healthz"],
       headersToSpanAttributes: {
         server: {
-          requestHeaders: ["apollographql-client-name", "apollographql-client-version"],
+          requestHeaders: [
+            "apollographql-client-name",
+            "apollographql-client-version",
+            "x-real-ip",
+            "x-forwarded-for",
+          ],
         },
       },
     }),
