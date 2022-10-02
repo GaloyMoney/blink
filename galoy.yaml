@@ -13,6 +13,14 @@ buildVersion:
   ios:
     minBuildNumber: 182
     lastBuildNumber: 269
+rewards:
+  allowPhoneCountries:
+    - SV
+  denyPhoneCountries: []
+  allowIPCountries: []
+  denyIPCountries: []
+  allowASNs: []
+  denyASNs: []
 coldStorage:
   minOnChainHotWalletBalance: 1000000
   minRebalanceSize: 10000000

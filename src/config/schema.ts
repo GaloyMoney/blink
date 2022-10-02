@@ -41,32 +41,32 @@ const rewardsConfigSchema = {
   properties: {
     allowPhoneCountries: {
       type: "array",
-      items: { type: "string", default: ["SV"] },
+      items: { type: "string" },
       uniqueItems: true,
     },
     denyPhoneCountries: {
       type: "array",
-      items: { type: "string", default: [] },
+      items: { type: "string" },
       uniqueItems: true,
     },
     allowIPCountries: {
       type: "array",
-      items: { type: "string", default: [] },
+      items: { type: "string" },
       uniqueItems: true,
     },
     denyIPCountries: {
       type: "array",
-      items: { type: "string", default: [] },
+      items: { type: "string" },
       uniqueItems: true,
     },
     allowASNs: {
       type: "array",
-      items: { type: "string", default: [] },
+      items: { type: "string" },
       uniqueItems: true,
     },
     denyASNs: {
       type: "array",
-      items: { type: "string", default: [] },
+      items: { type: "string" },
       uniqueItems: true,
     },
   },
@@ -79,6 +79,14 @@ const rewardsConfigSchema = {
     "denyASNs",
   ],
   additionalProperties: false,
+  default: {
+    allowPhoneCountries: ["SV"],
+    denyPhoneCountries: [],
+    allowIPCountries: [],
+    denyIPCountries: [],
+    allowASNs: [],
+    denyASNs: [],
+  },
 }
 
 const accountLimitConfigSchema = {
