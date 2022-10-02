@@ -4,7 +4,13 @@ lightningAddressDomainAliases:
   - pay1.domain.com
   - pay2.domain.com
 locale: en
+displayCurrency:
+  code: USD
+  symbol: $
 funder: FunderWallet
+dealer:
+  usd:
+    hedgingEnabled: false
 ratioPrecision: 1000000
 buildVersion:
   android:
@@ -51,7 +57,7 @@ test_accounts:
     phone: '+16505554332'
     code: '321321'
   - ref: F
-    phone: '+16505554332'
+    phone: '+16505554333'
     code: '321321'
     needUsdWallet: true
   - ref: G

@@ -5,11 +5,15 @@ import { WalletCurrency } from "@domain/shared"
 const displayCurrencyConfigSchema = {
   type: "object",
   properties: {
-    code: { type: "string", default: "USD", enum: Object.values(DisplayCurrency) },
-    symbol: { type: "string", default: "$" },
+    code: { type: "string", enum: Object.values(DisplayCurrency) },
+    symbol: { type: "string" },
   },
   required: ["code", "symbol"],
   additionalProperties: false,
+  default: {
+    code: "USD",
+    symbol: "$",
+  },
 } as const
 
 const dealerConfigSchema = {
@@ -24,6 +28,11 @@ const dealerConfigSchema = {
     },
   },
   required: ["usd"],
+  default: {
+    usd: {
+      hedgingEnabled: false,
+    },
+  },
 } as const
 
 const buildNumberConfigSchema = {
@@ -250,7 +259,7 @@ export const configSchema = {
         },
         {
           ref: "F",
-          phone: "+16505554332",
+          phone: "+16505554333",
           code: "321321",
           needUsdWallet: true,
         },
