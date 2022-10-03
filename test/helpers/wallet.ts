@@ -9,14 +9,12 @@ import {
   ZERO_CENTS,
 } from "@domain/shared"
 import { LedgerService } from "@services/ledger"
-import { baseLogger } from "@services/logger"
 
 export const getBalanceHelper = async (
   walletId: WalletId,
 ): Promise<CurrencyBaseAmount> => {
   const balance = await getBalanceForWallet({
     walletId,
-    logger: baseLogger,
   })
   if (balance instanceof Error) throw balance
   return balance
