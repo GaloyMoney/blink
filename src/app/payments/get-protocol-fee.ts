@@ -1,3 +1,4 @@
+import { WalletCurrency } from "@domain/shared"
 import { decodeInvoice, defaultTimeToExpiryInSeconds } from "@domain/bitcoin/lightning"
 import { checkedToWalletId } from "@domain/wallets"
 import {
@@ -84,8 +85,14 @@ const estimateLightningFee = async ({
     senderWallet,
     invoice,
     uncheckedAmount,
-    usdFromBtc: dealer.getCentsFromSatsForFutureSell,
-    btcFromUsd: dealer.getSatsFromCentsForFutureSell,
+    usdFromBtc:
+      senderWallet.currency === WalletCurrency.Btc
+        ? dealer.getCentsFromSatsForFutureBuy
+        : dealer.getCentsFromSatsForFutureSell,
+    btcFromUsd:
+      senderWallet.currency === WalletCurrency.Btc
+        ? dealer.getSatsFromCentsForFutureBuy
+        : dealer.getSatsFromCentsForFutureSell,
   })
   if (builder instanceof Error) return PartialResult.err(builder)
 
