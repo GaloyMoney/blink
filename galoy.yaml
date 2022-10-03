@@ -1,0 +1,182 @@
+name: Galoy Banking
+lightningAddressDomain: pay.domain.com
+lightningAddressDomainAliases:
+  - pay1.domain.com
+  - pay2.domain.com
+locale: en
+displayCurrency:
+  code: USD
+  symbol: $
+funder: FunderWallet
+dealer:
+  usd:
+    hedgingEnabled: false
+ratioPrecision: 1000000
+buildVersion:
+  android:
+    minBuildNumber: 182
+    lastBuildNumber: 294
+  ios:
+    minBuildNumber: 182
+    lastBuildNumber: 269
+rewards:
+  allowPhoneCountries:
+    - SV
+  denyPhoneCountries: []
+  allowIPCountries: []
+  denyIPCountries: []
+  allowASNs: []
+  denyASNs: []
+coldStorage:
+  minOnChainHotWalletBalance: 1000000
+  minRebalanceSize: 10000000
+  maxHotWalletBalance: 200000000
+  walletPattern: specter
+  onChainWallet: specter/coldstorage
+  targetConfirmations: 6
+lndScbBackupBucketName: lnd-static-channel-backups
+test_accounts:
+  - ref: A
+    phone: '+16505554321'
+    code: '321321'
+    needUsdWallet: true
+  - ref: B
+    phone: '+16505554322'
+    code: '321432'
+    needUsdWallet: true
+    phoneMetadataCarrierType: mobile
+  - ref: C
+    phone: '+16505554323'
+    code: '321321'
+    title: business
+  - ref: D
+    phone: '+16505554324'
+    code: '321321'
+    needUsdWallet: true
+  - ref: E
+    phone: '+16505554332'
+    code: '321321'
+  - ref: F
+    phone: '+16505554333'
+    code: '321321'
+    needUsdWallet: true
+  - ref: G
+    phone: '+16505554335'
+    code: '321321'
+    username: user15
+  - ref: H
+    phone: '+19876543210'
+    code: '321321'
+    username: tester
+  - ref: I
+    phone: '+19876543336'
+    code: '321321'
+    role: editor
+    username: editor
+rateLimits:
+  requestPhoneCodePerPhone:
+    points: 4
+    duration: 3600
+    blockDuration: 10800
+  requestPhoneCodePerPhoneMinInterval:
+    points: 1
+    duration: 15
+    blockDuration: 15
+  requestPhoneCodePerIp:
+    points: 8
+    duration: 3600
+    blockDuration: 86400
+  failedLoginAttemptPerPhone:
+    points: 8
+    duration: 1200
+    blockDuration: 3600
+  failedLoginAttemptPerEmailAddress:
+    points: 8
+    duration: 1200
+    blockDuration: 3600
+  failedLoginAttemptPerIp:
+    points: 20
+    duration: 21600
+    blockDuration: 86400
+  invoiceCreateAttempt:
+    points: 20
+    duration: 120
+    blockDuration: 300
+  invoiceCreateForRecipientAttempt:
+    points: 20
+    duration: 120
+    blockDuration: 300
+  onChainAddressCreateAttempt:
+    points: 20
+    duration: 3600
+    blockDuration: 14400
+accounts:
+  initialStatus: active
+  initialWallets:
+    - BTC
+accountLimits:
+  withdrawal:
+    level:
+      '1': 100000
+      '2': 5000000
+  intraLedger:
+    level:
+      '1': 200000
+      '2': 5000000
+spamLimits:
+  memoSharingSatsThreshold: 1000
+twoFALimits:
+  threshold: 10000
+ipRecording:
+  enabled: true
+  proxyChecking:
+    enabled: true
+fees:
+  withdraw:
+    method: flat
+    defaultMin: 2000
+    ratio: 0.005
+    threshold: 1000000
+    daysLookback: 30
+  deposit: 0.003
+lnds:
+  - name: LND1
+    type:
+      - offchain
+      - onchain
+    priority: 2
+  - name: LND2
+    type:
+      - offchain
+    priority: 3
+onChainWallet:
+  dustThreshold: 5000
+  minConfirmations: 2
+  scanDepth: 360
+  scanDepthOutgoing: 2
+  scanDepthChannelUpdate: 8
+swap:
+  loopOutWhenHotWalletLessThan: 200000000
+  swapOutAmount: 50000000
+  swapProviders:
+    - Loop
+  lnd1loopRestEndpoint: https://localhost:8081
+  lnd1loopRpcEndpoint: localhost:11010
+  lnd2loopRestEndpoint: https://localhost:8082
+  lnd2loopRpcEndpoint: localhost:11011
+apollo:
+  playground: true
+  playgroundUrl: https://api.staging.galoy.io/graphql
+userActivenessMonthlyVolumeThreshold: 100
+cronConfig:
+  rebalanceEnabled: true
+  swapEnabled: true
+kratosConfig:
+  publicApi: http://localhost:4433
+  adminApi: http://localhost:4434
+  corsAllowedOrigins:
+    - http://localhost:3000
+captcha:
+  mandatory: false
+skipFeeProbe:
+  - 038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6

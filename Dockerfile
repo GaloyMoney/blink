@@ -20,7 +20,7 @@ COPY --from=BUILD_IMAGE /app/src/config/locales /app/lib/config/locales
 COPY --from=BUILD_IMAGE /app/node_modules /app/node_modules
 
 WORKDIR /app
-COPY ./*.js ./default.yaml ./package.json ./tsconfig.json ./yarn.lock ./.env ./
+COPY ./*.js ./package.json ./tsconfig.json ./yarn.lock ./.env ./
 
 USER 1000
 

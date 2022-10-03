@@ -22,8 +22,7 @@ import { ConfigError } from "./error"
 
 import { merge } from "./utils"
 
-const defaultContent = fs.readFileSync("./default.yaml", "utf8")
-const defaultConfig = yaml.load(defaultContent)
+const defaultConfig = {}
 let customContent: string, customConfig
 
 try {
@@ -36,7 +35,7 @@ try {
 
 export const yamlConfigInit = merge(defaultConfig, customConfig)
 
-const ajv = new Ajv()
+const ajv = new Ajv({ useDefaults: true })
 
 // TODO: fix errors
 // const ajv = new Ajv({ allErrors: true, strict: "log" })

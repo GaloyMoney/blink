@@ -1,6 +1,9 @@
+import fs from "fs"
+
 import { configSchema, getAccountLimits, yamlConfig, merge } from "@config"
 import { toCents } from "@domain/fiat"
 import Ajv from "ajv"
+import yaml from "js-yaml"
 
 const ajv = new Ajv()
 let validate
@@ -29,6 +32,8 @@ describe("config.ts", () => {
     it("passes validation with valid config", () => {
       const valid = validate(yamlConfig)
       expect(valid).toBeTruthy()
+
+      fs.writeFileSync("./galoy.yaml", yaml.dump(yamlConfig), "utf8")
     })
 
     it("passes validation with conditional not required", () => {

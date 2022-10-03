@@ -5,11 +5,15 @@ import { WalletCurrency } from "@domain/shared"
 const displayCurrencyConfigSchema = {
   type: "object",
   properties: {
-    code: { type: "string", default: "USD", enum: Object.values(DisplayCurrency) },
-    symbol: { type: "string", default: "$" },
+    code: { type: "string", enum: Object.values(DisplayCurrency) },
+    symbol: { type: "string" },
   },
   required: ["code", "symbol"],
   additionalProperties: false,
+  default: {
+    code: "USD",
+    symbol: "$",
+  },
 } as const
 
 const dealerConfigSchema = {
@@ -24,6 +28,11 @@ const dealerConfigSchema = {
     },
   },
   required: ["usd"],
+  default: {
+    usd: {
+      hedgingEnabled: false,
+    },
+  },
 } as const
 
 const buildNumberConfigSchema = {
@@ -34,7 +43,7 @@ const buildNumberConfigSchema = {
   },
   required: ["minBuildNumber", "lastBuildNumber"],
   additionalProperties: false,
-}
+} as const
 
 const rewardsConfigSchema = {
   type: "object",
@@ -79,6 +88,14 @@ const rewardsConfigSchema = {
     "denyASNs",
   ],
   additionalProperties: false,
+  default: {
+    allowPhoneCountries: ["SV"],
+    denyPhoneCountries: [],
+    allowIPCountries: [],
+    denyIPCountries: [],
+    allowASNs: [],
+    denyASNs: [],
+  },
 }
 
 const accountLimitConfigSchema = {
@@ -128,37 +145,49 @@ export const configSchema = {
   type: "object",
   properties: {
     PROXY_CHECK_APIKEY: { type: "string" }, // TODO: move out of yaml and to env
-    name: { type: "string" },
-    lightningAddressDomain: { type: "string" },
+    name: { type: "string", default: "Galoy Banking" },
+    lightningAddressDomain: { type: "string", default: "pay.domain.com" },
     lightningAddressDomainAliases: {
       type: "array",
       items: { type: "string" },
       uniqueItems: true,
+      default: ["pay1.domain.com", "pay2.domain.com"],
     },
     locale: { type: "string", enum: ["en", "es"], default: "en" },
     displayCurrency: displayCurrencyConfigSchema,
-    funder: { type: "string" },
+    funder: { type: "string", default: "FunderWallet" },
     dealer: dealerConfigSchema,
-    ratioPrecision: { type: "number" },
+    ratioPrecision: { type: "number", default: 1000000 },
     buildVersion: {
       type: "object",
       properties: {
         android: buildNumberConfigSchema,
         ios: buildNumberConfigSchema,
       },
+      default: {
+        android: {
+          minBuildNumber: 182,
+          lastBuildNumber: 294,
+        },
+        ios: {
+          minBuildNumber: 182,
+          lastBuildNumber: 269,
+        },
+      },
       required: ["ios", "android"],
+      additionalProperties: false,
     },
     rewards: rewardsConfigSchema,
     coldStorage: {
       type: "object",
       properties: {
-        minOnChainHotWalletBalance: { type: "integer" },
-        minRebalanceSize: { type: "integer" },
-        maxHotWalletBalance: { type: "integer" },
-        walletPattern: { type: "string" },
+        minOnChainHotWalletBalance: { type: "integer", default: 1000000 },
+        minRebalanceSize: { type: "integer", default: 10000000 },
+        maxHotWalletBalance: { type: "integer", default: 200000000 },
+        walletPattern: { type: "string", default: "specter" },
         // TODO: confusing: 2 properties with the same name
-        onChainWallet: { type: "string" },
-        targetConfirmations: { type: "integer" },
+        onChainWallet: { type: "string", default: "specter/coldstorage" },
+        targetConfirmations: { type: "integer", default: 6 },
       },
       required: [
         "minOnChainHotWalletBalance",
@@ -168,8 +197,17 @@ export const configSchema = {
         "targetConfirmations",
       ],
       additionalProperties: false,
+      default: {
+        minOnChainHotWalletBalance: 1000000,
+        minRebalanceSize: 10000000,
+        maxHotWalletBalance: 200000000,
+        walletPattern: "specter",
+        // TODO: confusing: 2 properties with the same name
+        onChainWallet: "specter/coldstorage",
+        targetConfirmations: 6,
+      },
     },
-    lndScbBackupBucketName: { type: "string" },
+    lndScbBackupBucketName: { type: "string", default: "lnd-static-channel-backups" },
     test_accounts: {
       type: "array",
       items: {
@@ -188,6 +226,63 @@ export const configSchema = {
         required: ["ref", "phone", "code"],
         additionalProperties: false,
       },
+      default: [
+        {
+          ref: "A",
+          phone: "+16505554321",
+          code: "321321",
+          needUsdWallet: true,
+        },
+        {
+          ref: "B",
+          phone: "+16505554322",
+          code: "321432",
+          needUsdWallet: true,
+          phoneMetadataCarrierType: "mobile",
+        },
+        {
+          ref: "C",
+          phone: "+16505554323",
+          code: "321321",
+          title: "business",
+        },
+        {
+          ref: "D",
+          phone: "+16505554324",
+          code: "321321",
+          needUsdWallet: true,
+        },
+        {
+          ref: "E",
+          phone: "+16505554332",
+          code: "321321",
+        },
+        {
+          ref: "F",
+          phone: "+16505554333",
+          code: "321321",
+          needUsdWallet: true,
+        },
+        {
+          ref: "G",
+          phone: "+16505554335",
+          code: "321321",
+          username: "user15",
+        },
+        {
+          ref: "H",
+          phone: "+19876543210",
+          code: "321321",
+          username: "tester",
+        },
+        {
+          ref: "I",
+          phone: "+19876543336",
+          code: "321321",
+          role: "editor",
+          username: "editor",
+        },
+      ],
       uniqueItems: true,
     },
     rateLimits: {
@@ -215,6 +310,53 @@ export const configSchema = {
         "onChainAddressCreateAttempt",
       ],
       additionalProperties: false,
+      default: {
+        requestPhoneCodePerPhone: {
+          points: 4,
+          duration: 3600,
+          blockDuration: 10800,
+        },
+        requestPhoneCodePerPhoneMinInterval: {
+          points: 1,
+          duration: 15,
+          blockDuration: 15,
+        },
+        requestPhoneCodePerIp: {
+          points: 8,
+          duration: 3600,
+          blockDuration: 86400,
+        },
+        failedLoginAttemptPerPhone: {
+          points: 8,
+          duration: 1200,
+          blockDuration: 3600,
+        },
+        failedLoginAttemptPerEmailAddress: {
+          points: 8,
+          duration: 1200,
+          blockDuration: 3600,
+        },
+        failedLoginAttemptPerIp: {
+          points: 20,
+          duration: 21600,
+          blockDuration: 86400,
+        },
+        invoiceCreateAttempt: {
+          points: 20,
+          duration: 120,
+          blockDuration: 300,
+        },
+        invoiceCreateForRecipientAttempt: {
+          points: 20,
+          duration: 120,
+          blockDuration: 300,
+        },
+        onChainAddressCreateAttempt: {
+          points: 20,
+          duration: 3600,
+          blockDuration: 14400,
+        },
+      },
     },
     accounts: {
       type: "object",
@@ -230,6 +372,10 @@ export const configSchema = {
       },
       required: ["initialStatus", "initialWallets"],
       additionalProperties: false,
+      default: {
+        initialStatus: "active",
+        initialWallets: ["BTC"],
+      },
     },
     accountLimits: {
       type: "object",
@@ -239,6 +385,20 @@ export const configSchema = {
       },
       required: ["withdrawal", "intraLedger"],
       additionalProperties: false,
+      default: {
+        withdrawal: {
+          level: {
+            "1": 100000,
+            "2": 5000000,
+          },
+        },
+        intraLedger: {
+          level: {
+            "1": 200000,
+            "2": 5000000,
+          },
+        },
+      },
     },
     spamLimits: {
       type: "object",
@@ -247,6 +407,9 @@ export const configSchema = {
       },
       required: ["memoSharingSatsThreshold"],
       additionalProperties: false,
+      default: {
+        memoSharingSatsThreshold: 1000,
+      },
     },
     twoFALimits: {
       type: "object",
@@ -255,6 +418,7 @@ export const configSchema = {
       },
       required: ["threshold"],
       additionalProperties: false,
+      default: { threshold: 10000 }, // cents,
     },
     ipRecording: {
       type: "object",
@@ -271,6 +435,12 @@ export const configSchema = {
       },
       required: ["enabled"],
       additionalProperties: false,
+      default: {
+        enabled: true,
+        proxyChecking: {
+          enabled: true,
+        },
+      },
     },
     fees: {
       type: "object",
@@ -294,11 +464,33 @@ export const configSchema = {
       },
       required: ["withdraw", "deposit"],
       additionalProperties: false,
+      default: {
+        withdraw: {
+          method: "flat",
+          defaultMin: 2000,
+          ratio: 0.005,
+          threshold: 1000000,
+          daysLookback: 30,
+        },
+        deposit: 0.003,
+      },
     },
     lnds: {
       type: "array",
       items: lndConfig,
       uniqueItems: true,
+      default: [
+        {
+          name: "LND1",
+          type: ["offchain", "onchain"],
+          priority: 2,
+        },
+        {
+          name: "LND2",
+          type: ["offchain"],
+          priority: 3,
+        },
+      ],
     },
     onChainWallet: {
       type: "object",
@@ -317,6 +509,13 @@ export const configSchema = {
         "scanDepthChannelUpdate",
       ],
       additionalProperties: false,
+      default: {
+        dustThreshold: 5000,
+        minConfirmations: 2,
+        scanDepth: 360,
+        scanDepthOutgoing: 2,
+        scanDepthChannelUpdate: 8,
+      },
     },
     swap: {
       type: "object",
@@ -333,6 +532,15 @@ export const configSchema = {
           uniqueItems: true,
         },
       },
+      default: {
+        loopOutWhenHotWalletLessThan: 200000000,
+        swapOutAmount: 50000000,
+        swapProviders: ["Loop"],
+        lnd1loopRestEndpoint: "https://localhost:8081",
+        lnd1loopRpcEndpoint: "localhost:11010",
+        lnd2loopRestEndpoint: "https://localhost:8082",
+        lnd2loopRpcEndpoint: "localhost:11011",
+      },
     },
     apollo: {
       type: "object",
@@ -346,8 +554,12 @@ export const configSchema = {
       },
       then: { required: ["playgroundUrl"] },
       additionalProperties: false,
+      default: {
+        playground: true,
+        playgroundUrl: "https://api.staging.galoy.io/graphql",
+      },
     },
-    userActivenessMonthlyVolumeThreshold: { type: "integer" },
+    userActivenessMonthlyVolumeThreshold: { type: "integer", default: 100 },
     cronConfig: {
       type: "object",
       properties: {
@@ -356,6 +568,10 @@ export const configSchema = {
       },
       required: ["rebalanceEnabled", "swapEnabled"],
       additionalProperties: false,
+      default: {
+        rebalanceEnabled: true,
+        swapEnabled: true,
+      },
     },
     kratosConfig: {
       type: "object",
@@ -370,6 +586,11 @@ export const configSchema = {
       },
       required: ["publicApi", "adminApi", "corsAllowedOrigins"],
       additionalProperties: false,
+      default: {
+        publicApi: "http://localhost:4433",
+        adminApi: "http://localhost:4434",
+        corsAllowedOrigins: ["http://localhost:3000"],
+      },
     },
     captcha: {
       type: "object",
@@ -378,11 +599,15 @@ export const configSchema = {
       },
       required: ["mandatory"],
       additionalProperties: false,
+      default: { mandatory: false },
     },
     skipFeeProbe: {
       type: "array",
       items: { type: "string", maxLength: 66, minLength: 66 },
       uniqueItems: true,
+      default: [
+        "038f8f113c580048d847d6949371726653e02b928196bad310e3eda39ff61723f6", // Muun
+      ],
     },
   },
   required: [
