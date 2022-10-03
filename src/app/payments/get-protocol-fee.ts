@@ -86,11 +86,11 @@ const estimateLightningFee = async ({
     invoice,
     uncheckedAmount,
     usdFromBtc:
-      senderWallet.currency == WalletCurrency.Btc
+      senderWallet.currency === WalletCurrency.Btc
         ? dealer.getCentsFromSatsForFutureBuy
         : dealer.getCentsFromSatsForFutureSell,
     btcFromUsd:
-      senderWallet.currency == WalletCurrency.Btc
+      senderWallet.currency === WalletCurrency.Btc
         ? dealer.getSatsFromCentsForFutureBuy
         : dealer.getSatsFromCentsForFutureSell,
   })
