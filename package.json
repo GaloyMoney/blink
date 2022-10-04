@@ -27,7 +27,7 @@
     "start-main": ". ./.envrc && yarn run build && node --inspect -r ./lib/services/tracing.js ./lib/servers/graphql-main-server.js"
   },
   "engines": {
-    "node": "16"
+    "node": "18"
   },
   "dependencies": {
     "@google-cloud/storage": "^6.5.2",
