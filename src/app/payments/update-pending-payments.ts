@@ -12,7 +12,7 @@ import { setErrorCritical, WalletCurrency } from "@domain/shared"
 import { LedgerService, getNonEndUserWalletIds } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
-import { PaymentFlowStateRepository } from "@services/payment-flow"
+import { PaymentFlowStateRepository } from "@services/mongoose"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { Wallets } from "@app"

@@ -32,8 +32,8 @@ import {
   UsersRepository,
   WalletInvoicesRepository,
   WalletsRepository,
+  PaymentFlowStateRepository,
 } from "@services/mongoose"
-import { PaymentFlowStateRepository } from "@services/payment-flow"
 
 import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"

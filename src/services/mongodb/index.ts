@@ -8,10 +8,16 @@ import { lazyLoadLedgerAdmin } from "@services/ledger"
 import { WalletsRepository } from "@services/mongoose"
 import { fromObjectId } from "@services/mongoose/utils"
 import { TransactionMetadata } from "@services/ledger/schema"
-import { PaymentFlowState } from "@services/payment-flow/schema"
 
 import { baseLogger } from "../logger"
-import { DbMetadata, PhoneCode, User, Wallet, WalletInvoice } from "../mongoose/schema"
+import {
+  DbMetadata,
+  PhoneCode,
+  User,
+  Wallet,
+  WalletInvoice,
+  PaymentFlowState,
+} from "../mongoose/schema"
 
 export const ledgerAdmin = lazyLoadLedgerAdmin({
   bankOwnerWalletResolver: async () => {

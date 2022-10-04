@@ -1,9 +1,6 @@
-import {
-  CouldNotFindPhoneCodeError,
-  RepositoryError,
-  UnknownRepositoryError,
-} from "@domain/errors"
+import { CouldNotFindPhoneCodeError, RepositoryError } from "@domain/errors"
 
+import { parseRepositoryError } from "./utils"
 import { PhoneCode } from "./schema"
 
 export const PhoneCodesRepository = (): IPhoneCodesRepository => {
@@ -30,7 +27,7 @@ export const PhoneCodesRepository = (): IPhoneCodesRepository => {
       }
       return true
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -45,7 +42,7 @@ export const PhoneCodesRepository = (): IPhoneCodesRepository => {
       await PhoneCode.create({ phone, code })
       return true
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 

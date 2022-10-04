@@ -5,10 +5,9 @@ import {
   CouldNotFindUserFromIdError,
   PersistError,
   RepositoryError,
-  UnknownRepositoryError,
 } from "@domain/errors"
 
-import { fromObjectId, toObjectId } from "./utils"
+import { fromObjectId, toObjectId, parseRepositoryError } from "./utils"
 
 export const UsersIpRepository = (): IUsersIPsRepository => {
   const update = async (userIp: UserIPs): Promise<true | RepositoryError> => {
@@ -28,7 +27,7 @@ export const UsersIpRepository = (): IUsersIPsRepository => {
 
       return true
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -44,7 +43,7 @@ export const UsersIpRepository = (): IUsersIPsRepository => {
 
       return userIPsFromRaw(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 

@@ -10,6 +10,7 @@ import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { safeBigInt } from "@domain/shared/safe"
 import { elapsedSinceTimestamp } from "@utils"
 
+import { parseRepositoryError } from "./utils"
 import { PaymentFlowState } from "./schema"
 
 export const PaymentFlowStateRepository = (
@@ -26,7 +27,7 @@ export const PaymentFlowStateRepository = (
       await paymentFlowState.save()
       return paymentFlowFromRaw(paymentFlowState)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -66,7 +67,7 @@ export const PaymentFlowStateRepository = (
 
       return paymentFlow
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -96,7 +97,7 @@ export const PaymentFlowStateRepository = (
       }
       return true
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -122,7 +123,7 @@ export const PaymentFlowStateRepository = (
       }
       return paymentFlowFromRaw(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 

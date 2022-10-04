@@ -1,6 +1,6 @@
-import { NoTransactionToUpdateError, UnknownRepositoryError } from "@domain/errors"
+import { NoTransactionToUpdateError } from "@domain/errors"
 import { CouldNotFindTransactionMetadataError } from "@domain/ledger"
-import { fromObjectId, toObjectId } from "@services/mongoose/utils"
+import { fromObjectId, toObjectId, parseRepositoryError } from "@services/mongoose/utils"
 
 import { TransactionMetadata } from "../schema"
 
@@ -19,7 +19,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       }
       return true
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -38,7 +38,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       )
       return result.map((txRecord) => translateToLedgerTxMetadata(txRecord))
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -50,7 +50,7 @@ export const TransactionsMetadataRepository = (): ITransactionsMetadataRepositor
       if (!result) return new CouldNotFindTransactionMetadataError()
       return translateToLedgerTxMetadata(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 

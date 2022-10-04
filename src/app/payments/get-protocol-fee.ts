@@ -9,8 +9,7 @@ import {
 } from "@domain/payments"
 import { LndService } from "@services/lnd"
 
-import { PaymentFlowStateRepository } from "@services/payment-flow"
-import { WalletsRepository } from "@services/mongoose"
+import { WalletsRepository, PaymentFlowStateRepository } from "@services/mongoose"
 import { NewDealerPriceService } from "@services/dealer-price"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 

@@ -5,11 +5,10 @@ import {
   CouldNotListWalletsFromAccountIdError,
   CouldNotListWalletsFromWalletCurrencyError,
   RepositoryError,
-  UnknownRepositoryError,
 } from "@domain/errors"
 import { Types } from "mongoose"
 
-import { toObjectId, fromObjectId } from "./utils"
+import { toObjectId, fromObjectId, parseRepositoryError } from "./utils"
 import { Wallet } from "./schema"
 import { AccountsRepository } from "./accounts"
 
@@ -40,7 +39,7 @@ export const WalletsRepository = (): IWalletsRepository => {
       await wallet.save()
       return resultToWallet(wallet)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -52,7 +51,7 @@ export const WalletsRepository = (): IWalletsRepository => {
       }
       return resultToWallet(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -68,7 +67,7 @@ export const WalletsRepository = (): IWalletsRepository => {
       }
       return result.map(resultToWallet)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -84,7 +83,7 @@ export const WalletsRepository = (): IWalletsRepository => {
       }
       return resultToWallet(result)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -100,7 +99,7 @@ export const WalletsRepository = (): IWalletsRepository => {
       }
       return result.map(resultToWallet)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
   // TODO: future performance improvement might be needed
@@ -115,7 +114,7 @@ export const WalletsRepository = (): IWalletsRepository => {
       }
       return result.map(resultToWallet)
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 

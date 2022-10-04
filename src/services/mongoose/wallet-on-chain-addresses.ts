@@ -1,11 +1,8 @@
-import {
-  CouldNotFindError,
-  PersistError,
-  RepositoryError,
-  UnknownRepositoryError,
-} from "@domain/errors"
+import { CouldNotFindError, PersistError, RepositoryError } from "@domain/errors"
 import { baseLogger } from "@services/logger"
 import { Wallet } from "@services/mongoose/schema"
+
+import { parseRepositoryError } from "./utils"
 
 export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepository => {
   const persistNew = async ({
@@ -32,7 +29,7 @@ export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepos
 
       return onChainAddress
     } catch (err) {
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 
@@ -55,7 +52,7 @@ export const WalletOnChainAddressesRepository = (): IWalletOnChainAddressesRepos
       }
     } catch (err) {
       baseLogger.warn({ err }, "issue findLastByWalletId")
-      return new UnknownRepositoryError(err)
+      return parseRepositoryError(err)
     }
   }
 

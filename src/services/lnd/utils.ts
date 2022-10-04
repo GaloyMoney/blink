@@ -16,9 +16,8 @@ import {
   updateLndEscrow,
 } from "@services/ledger/admin-legacy"
 import { baseLogger } from "@services/logger"
-import { WalletInvoicesRepository } from "@services/mongoose"
+import { WalletInvoicesRepository, PaymentFlowStateRepository } from "@services/mongoose"
 import { DbMetadata } from "@services/mongoose/schema"
-import { PaymentFlowStateRepository } from "@services/payment-flow"
 
 import { default as axios } from "axios"
 import {
