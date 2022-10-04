@@ -515,6 +515,7 @@ export const LndService = (): ILightningService | LightningServiceError => {
       const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
       switch (true) {
         case match(KnownLndErrorDetails.InvoiceNotFound):
+        case match(KnownLndErrorDetails.InvoiceAlreadySettled):
           return true
         default:
           return handleCommonLightningServiceErrors(err)
@@ -728,6 +729,7 @@ export const KnownLndErrorDetails: { [key: string]: RegExp } = {
   SecretDoesNotMatchAnyExistingHodlInvoice: /SecretDoesNotMatchAnyExistingHodlInvoice/,
   ConnectionDropped: /Connection dropped/,
   TemporaryChannelFailure: /TemporaryChannelFailure/,
+  InvoiceAlreadySettled: /invoice already settled/,
 } as const
 
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
