@@ -21,6 +21,7 @@ import {
   LndOfflineError,
   OnChainPaymentError,
   PhoneProviderError,
+  UnexpectedClientError,
 } from "@graphql/error"
 import { baseLogger } from "@services/logger"
 
@@ -240,14 +241,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "Onchain payments temporarily unavailable because of busy mempool queue. Withdraw via Lightning until queue is cleared."
       return new OnChainPaymentError({ message, logger: baseLogger })
 
-    case "UnknownRouteNotFoundError":
-      message = "Unknown error occurred when trying to find a route for payment."
-      return new RouteFindingError({ message, logger: baseLogger })
-
-    case "UnknownLnInvoiceDecodeError":
-      message = "Invalid lightning request, couldn't decode."
-      return new InvoiceDecodeError({ message, logger: baseLogger })
-
     case "PaymentInTransitionError":
       message = "Payment was sent and is still in transition."
       return new LightningPaymentError({ message, logger: baseLogger })
@@ -317,34 +310,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     // ----------
     // Unhandled below here
     // ----------
-    case "UnknownRepositoryError":
-    case "UnknownLedgerError":
-      message = `Unknown error occurred (code: ${error.name})`
-      return new DbError({ message, logger: baseLogger, level: "fatal" })
-
-    case "UnknownLightningServiceError":
-      message = `Unknown error occurred (code: ${error.name})`
-      return new LightningPaymentError({ message, logger: baseLogger })
-
-    case "UnknownTwoFAError":
-      message = `Unknown error occurred (code: ${error.name})`
-      return new TwoFAError({ message, logger: baseLogger })
-
-    case "UnknownRateLimitServiceError":
-    case "UnknownLockServiceError":
-    case "UnknownPriceServiceError":
-    case "UnknownOnChainServiceError":
-    case "UnknownNotificationsServiceError":
-    case "UnknownIpFetcherServiceError":
-    case "UnknownCacheServiceError":
-    case "UnknownPhoneProviderServiceError":
-    case "UnknownColdStorageServiceError":
-    case "UnknownDealerPriceServiceError":
-    case "UnknownPubSubError":
-    case "UnknownBigIntConversionError":
-      message = `Unknown error occurred (code: ${error.name})`
-      return new UnknownClientError({ message, logger: baseLogger })
-
     case "RateLimiterExceededError":
     case "RateLimitError":
     case "RateLimitServiceError":
@@ -477,8 +442,52 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "SkipProbeForPubkeyError":
     case "SecretDoesNotMatchAnyExistingHodlInvoiceError":
     case "CaptchaError":
-    case "UnknownCaptchaError":
     case "InvalidNonHodlInvoiceError":
+      message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
+        error.name
+      }${error.message ? ": " + error.message : ""})`
+      return new UnexpectedClientError({ message, logger: baseLogger })
+
+    // ----------
+    // Unknown below here
+    // ----------
+    case "UnknownRouteNotFoundError":
+      message = "Unknown error occurred when trying to find a route for payment."
+      return new RouteFindingError({ message, logger: baseLogger })
+
+    case "UnknownLnInvoiceDecodeError":
+      message = "Invalid lightning request, couldn't decode."
+      return new InvoiceDecodeError({ message, logger: baseLogger })
+
+    case "UnknownRepositoryError":
+    case "UnknownLedgerError":
+      message = `Unknown error occurred (code: ${error.name})`
+      return new DbError({ message, logger: baseLogger, level: "fatal" })
+
+    case "UnknownLightningServiceError":
+      message = `Unknown error occurred (code: ${error.name})`
+      return new LightningPaymentError({ message, logger: baseLogger })
+
+    case "UnknownTwoFAError":
+      message = `Unknown error occurred (code: ${error.name})`
+      return new TwoFAError({ message, logger: baseLogger })
+
+    case "UnknownRateLimitServiceError":
+    case "UnknownLockServiceError":
+    case "UnknownPriceServiceError":
+    case "UnknownOnChainServiceError":
+    case "UnknownNotificationsServiceError":
+    case "UnknownIpFetcherServiceError":
+    case "UnknownCacheServiceError":
+    case "UnknownPhoneProviderServiceError":
+    case "UnknownColdStorageServiceError":
+    case "UnknownDealerPriceServiceError":
+    case "UnknownPubSubError":
+    case "UnknownBigIntConversionError":
+      message = `Unknown error occurred (code: ${error.name})`
+      return new UnknownClientError({ message, logger: baseLogger })
+
+    case "UnknownCaptchaError":
       message = `Unknown error occurred (code: ${error.name}${
         error.message ? ": " + error.message : ""
       })`
