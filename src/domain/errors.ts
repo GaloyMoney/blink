@@ -16,6 +16,9 @@ export class CouldNotFindError extends RepositoryError {}
 export class CannotConnectToDbError extends RepositoryError {
   level = ErrorLevel.Critical
 }
+export class DbConnectionClosedError extends RepositoryError {
+  level = ErrorLevel.Critical
+}
 
 export class CouldNotFindWalletInvoiceError extends CouldNotFindError {}
 

@@ -307,6 +307,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return new RebalanceNeededError({ logger: baseLogger })
 
     case "CannotConnectToDbError":
+    case "DbConnectionClosedError":
       message =
         "Service offline, please try again in a few minutes. If the problem persists, please contact support."
       return new DbError({ message, logger: baseLogger })
