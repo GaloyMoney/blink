@@ -7,6 +7,7 @@ import { credentials } from "@grpc/grpc-js"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import {
+  DealerStalePriceError,
   NoConnectionToDealerError,
   UnknownDealerPriceServiceError,
 } from "@domain/dealer-price"
@@ -439,5 +440,9 @@ const parseDealerErrors = (error): DealerPriceServiceError => {
   if (error.details === "No connection established") {
     return new NoConnectionToDealerError()
   }
+  if (error.message.includes("StalePrice")) {
+    return new DealerStalePriceError()
+  }
+
   return new UnknownDealerPriceServiceError(error.message)
 }

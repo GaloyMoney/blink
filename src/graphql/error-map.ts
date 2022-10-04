@@ -222,6 +222,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "No connection to dealer to perform USD operation."
       return new DealerOfflineError({ message, logger: baseLogger })
 
+    case "DealerStalePriceError":
+      message = "Stale dealer price, can't perform USD operation."
+      return new DealerOfflineError({ message, logger: baseLogger })
+
     case "RouteNotFoundError":
       message = "Unable to find a route for payment."
       return new RouteFindingError({ message, logger: baseLogger })
