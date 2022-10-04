@@ -48,7 +48,7 @@ import {
 import { LndService } from "@services/lnd"
 import { LoopService } from "@services/loopd"
 import { LND1_LOOP_CONFIG, LND2_LOOP_CONFIG } from "@app/swap/get-active-loopd"
-import { SwapErrorNoActiveLoopdNode, SwapTriggerError } from "@domain/swap/errors"
+import { SwapTriggerError } from "@domain/swap/errors"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -409,11 +409,12 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
 
 const startSwapMonitor = async (swapService: ISwapService) => {
   const isSwapServerUp = await swapService.healthCheck()
-  if (isSwapServerUp instanceof Error) return new SwapErrorNoActiveLoopdNode()
-  const listener = swapService.swapListener()
-  listener.on("data", (response) => {
-    SwapWithSpans.handleSwapOutCompleted(response)
-  })
+  if (isSwapServerUp) {
+    const listener = swapService.swapListener()
+    listener.on("data", (response) => {
+      SwapWithSpans.handleSwapOutCompleted(response)
+    })
+  }
 }
 
 const listenerSwapMonitor = async () => {

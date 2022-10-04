@@ -7,7 +7,7 @@ type SwapState =
   typeof import("./index").SwapState[keyof typeof import("./index").SwapState]
 
 interface ISwapService {
-  healthCheck: () => Promise<true | SwapServiceError>
+  healthCheck: () => Promise<boolean>
   swapOut: (swapOutArgs: SwapOutArgs) => Promise<SwapOutResult | SwapServiceError>
   swapListener: () => SwapClientReadableStream<SwapListenerResponse | SwapServiceError>
   swapOutTerms: () => Promise<SwapOutTermsResult | SwapServiceError>

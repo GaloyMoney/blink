@@ -1,6 +1,6 @@
 import { BTC_NETWORK, getSwapConfig } from "@config"
 import { TxDecoder } from "@domain/bitcoin/onchain"
-import { SwapErrorNonCritical, SwapServiceError } from "@domain/swap/errors"
+import { NoOutboundLiquidityForSwapError, SwapServiceError } from "@domain/swap/errors"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { SwapOutChecker } from "@domain/swap"
 import { baseLogger } from "@services/logger"
@@ -15,13 +15,15 @@ import { getSwapDestAddress } from "./get-swap-dest-address"
 
 const logger = baseLogger.child({ module: "swap" })
 
-export const swapOut = async (): Promise<SwapOutResult | SwapServiceError> => {
+export const swapOut = async (): Promise<
+  SwapOutResult | NoOutboundLiquidityForSwapError | SwapServiceError
+> => {
   addAttributesToCurrentSpan({
     "swap.event": "started",
   })
   const activeLoopdConfig = getActiveLoopd()
   const swapService = LoopService(activeLoopdConfig)
-
+  if (!swapService.healthCheck()) return new SwapServiceError("Failed health check")
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
   const onChainBalance = await onChainService.getBalance()
@@ -55,10 +57,19 @@ export const swapOut = async (): Promise<SwapOutResult | SwapServiceError> => {
     swapId: "" as SwapId,
     swapIdBytes: "",
   }
-
-  if (swapOutAmount instanceof SwapErrorNonCritical) return swapNoOp
-  if (swapOutAmount instanceof Error) return swapOutAmount
   if (swapOutAmount.amount === 0n) return swapNoOp
+
+  const hasEnoughOutboundLiquidity = outbound > swapOutAmount.amount
+  if (!hasEnoughOutboundLiquidity) {
+    addAttributesToCurrentSpan({
+      "swap.checker.message": "Not enough outbound liquidity to perform swap out",
+      "swap.checker.outboundAmountNeeded": Number(swapOutAmount.amount),
+      "swap.checker.currentOutboundBalance": outbound,
+    })
+    return new NoOutboundLiquidityForSwapError(
+      `Not enough outbound liquidity. Need at least ${swapOutAmount.amount} but we only have ${outbound}`,
+    )
+  }
 
   logger.info({ swapOutAmount, activeLoopdConfig }, `Initiating swapout`)
   addAttributesToCurrentSpan({

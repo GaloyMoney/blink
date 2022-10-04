@@ -11,7 +11,7 @@ describe("Swap", () => {
     const amount = { amount: BigInt(250000), currency: WalletCurrency.Btc }
     const swapService = LoopService(LND1_LOOP_CONFIG)
     const isSwapServerUp = await swapService.healthCheck()
-    if (isSwapServerUp instanceof Error === false) {
+    if (isSwapServerUp) {
       await new Promise(async (resolve) => {
         // 1) Start Swap Listener
         const listener = swapService.swapListener()
