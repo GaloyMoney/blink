@@ -1,4 +1,4 @@
-import { NoTransactionToUpdateError } from "@domain/errors"
+import { NoTransactionToUpdateError, UnknownRepositoryError } from "@domain/errors"
 import { CouldNotFindTransactionMetadataError } from "@domain/ledger"
 import { fromObjectId, toObjectId, parseRepositoryError } from "@services/mongoose/utils"
 
