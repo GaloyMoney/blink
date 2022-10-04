@@ -1,4 +1,3 @@
-import { setupMongoConnection } from "@services/mongodb"
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
 
@@ -9,7 +8,6 @@ import {
   lndOutside2,
   getWalletInfo,
   bitcoindClient,
-  resetDatabase,
   resetLnds,
   getChannels,
   getChainBalance,
@@ -55,12 +53,8 @@ describe("connects to lnds", () => {
 })
 
 it("connects to mongodb", async () => {
-  const mongoose = await setupMongoConnection()
-  expect(mongoose.connection.readyState).toBe(1)
-  await resetDatabase(mongoose)
   const users = await User.find()
   expect(users).toBeInstanceOf(Array)
-  await mongoose.connection.close()
 })
 
 it("connects to redis", async () => {
