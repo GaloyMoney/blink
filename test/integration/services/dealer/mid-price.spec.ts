@@ -2,8 +2,17 @@ import { getCurrentPriceInCentsPerSat, getMidPriceRatio } from "@app/shared"
 
 import { NewDealerPriceService } from "@services/dealer-price"
 
-jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
+import { cancelOkexPricePublish, publishOkexPrice } from "test/helpers"
+
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
+
+beforeAll(async () => {
+  await publishOkexPrice()
+})
+
+afterAll(() => {
+  cancelOkexPricePublish()
+})
 
 describe("getMidPriceRatio", () => {
   const fetchPrices = async () => {

@@ -27,6 +27,7 @@ import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { sleep } from "@utils"
 
 import {
+  cancelOkexPricePublish,
   checkIsBalanced,
   createUserAndWalletFromUserRef,
   getAmount,
@@ -39,6 +40,7 @@ import {
   lnd1,
   lndOutside1,
   pay,
+  publishOkexPrice,
   subscribeToInvoices,
 } from "test/helpers"
 
@@ -49,17 +51,20 @@ let walletIdUsdF: WalletId
 let initBalanceB: Satoshis
 let initBalanceUsdB: UsdCents
 
-jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
-
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
 beforeAll(async () => {
+  await publishOkexPrice()
   await createUserAndWalletFromUserRef("B")
   await createUserAndWalletFromUserRef("F")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
   walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
   walletIdF = await getDefaultWalletIdByTestUserRef("F")
   walletIdUsdF = await getUsdWalletIdByTestUserRef("F")
+})
+
+afterAll(async () => {
+  cancelOkexPricePublish()
 })
 
 beforeEach(async () => {

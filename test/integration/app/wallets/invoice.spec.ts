@@ -17,10 +17,12 @@ import { WalletInvoicesRepository } from "@services/mongoose"
 import { DealerPriceService } from "@services/dealer-price"
 
 import {
+  cancelOkexPricePublish,
   createUserAndWalletFromUserRef,
   getAccountIdByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getHash,
+  publishOkexPrice,
 } from "test/helpers"
 import {
   resetRecipientAccountIdLimits,
@@ -32,11 +34,11 @@ let walletIdUsd: WalletId
 let accountIdB: AccountId
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
 
 const walletInvoices = WalletInvoicesRepository()
 
 beforeAll(async () => {
+  await publishOkexPrice()
   const userRef = "B"
   await createUserAndWalletFromUserRef(userRef)
 
@@ -53,6 +55,7 @@ beforeAll(async () => {
 })
 
 afterAll(() => {
+  cancelOkexPricePublish()
   jest.restoreAllMocks()
 })
 

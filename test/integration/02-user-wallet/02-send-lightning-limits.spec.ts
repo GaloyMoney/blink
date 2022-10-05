@@ -14,17 +14,17 @@ import { AccountsRepository } from "@services/mongoose"
 import { sleep } from "@utils"
 
 import {
+  cancelOkexPricePublish,
   checkIsBalanced,
   createInvoice,
   createNewWalletFromPhone,
   lndOutside1,
   pay,
+  publishOkexPrice,
   randomPhone,
 } from "test/helpers"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-
-jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
 
 const MOCKED_LIMIT = 100 as UsdCents
 const AMOUNT_ABOVE_THRESHOLD = 10 as UsdCents
@@ -61,6 +61,7 @@ let otherBtcWallet: Wallet
 let otherUsdWallet: Wallet // eslint-disable-line @typescript-eslint/no-unused-vars
 
 beforeAll(async () => {
+  await publishOkexPrice()
   otherPhone = randomPhone()
 
   const btcWallet = await createNewWalletFromPhone({
@@ -83,6 +84,7 @@ afterEach(async () => {
 })
 
 afterAll(() => {
+  cancelOkexPricePublish()
   jest.restoreAllMocks()
 })
 
