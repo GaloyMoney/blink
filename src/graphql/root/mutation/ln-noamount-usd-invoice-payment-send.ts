@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import Memo from "@graphql/types/scalar/memo"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import { Payments } from "@app"
@@ -80,8 +80,7 @@ const LnNoAmountUsdInvoicePaymentSendMutation = GT.Field<
     })
 
     if (status instanceof Error) {
-      const appErr = mapError(status)
-      return { status: "failed", errors: [{ message: appErr.message }] }
+      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(status)] }
     }
 
     return {

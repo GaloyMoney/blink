@@ -502,3 +502,12 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       return assertUnreachable(errorName)
   }
 }
+
+export const mapAndParseErrorForGqlResponse = (err: ApplicationError): IError => {
+  const mappedError = mapError(err)
+  return {
+    message: mappedError.message,
+    path: mappedError.path,
+    code: mappedError.extensions.code,
+  }
+}
