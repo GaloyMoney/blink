@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
 import AccountStatus from "@graphql/admin/types/scalar/account-status"
 import { Accounts } from "@app"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 
 const AccountUpdateStatusInput = GT.Input({
   name: "AccountUpdateStatusInput",
@@ -51,7 +51,7 @@ const AccountUpdateStatusMutation = GT.Field<
       comment,
     })
     if (account instanceof Error) {
-      return { errors: [{ message: mapError(account).message }] }
+      return { errors: [mapAndParseErrorForGqlResponse(account)] }
     }
     return { errors: [], accountDetails: account }
   },

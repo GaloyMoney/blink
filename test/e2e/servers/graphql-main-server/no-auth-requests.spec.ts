@@ -261,7 +261,12 @@ const testPhoneCodeAttemptPerPhoneMinInterval = async (mutation) => {
   }
 
   // Check limiter is exhausted
-  const { errors } = await apolloClient.mutate({ mutation, variables: { input } })
+  const {
+    data: {
+      userRequestAuthCode: { errors },
+    },
+  } = await apolloClient.mutate({ mutation, variables: { input } })
+
   expect(new error()).toBeInstanceOf(
     UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError,
   )
@@ -294,7 +299,11 @@ const testPhoneCodeAttemptPerPhone = async (mutation) => {
   // Check limiter is exhausted
   const expectedErrorMessage =
     "Too many phone code attempts, please wait for a while and try again."
-  const { errors } = await apolloClient.mutate({ mutation, variables: { input } })
+  const {
+    data: {
+      userRequestAuthCode: { errors },
+    },
+  } = await apolloClient.mutate({ mutation, variables: { input } })
   expect(new error()).toBeInstanceOf(UserPhoneCodeAttemptPhoneRateLimiterExceededError)
   expect(errors && errors[0].message).toBe(expectedErrorMessage)
 }
@@ -327,7 +336,11 @@ const testPhoneCodeAttemptPerIp = async (mutation) => {
 
   const expectedErrorMessage =
     "Too many phone code attempts on same network, please wait for a while and try again."
-  const { errors } = await apolloClient.mutate({ mutation, variables: { input } })
+  const {
+    data: {
+      userRequestAuthCode: { errors },
+    },
+  } = await apolloClient.mutate({ mutation, variables: { input } })
   expect(new error()).toBeInstanceOf(UserPhoneCodeAttemptIpRateLimiterExceededError)
   expect(errors && errors[0].message).toBe(expectedErrorMessage)
 }

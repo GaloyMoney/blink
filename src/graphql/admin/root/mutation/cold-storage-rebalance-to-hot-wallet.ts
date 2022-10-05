@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import PsbtDetailPayload from "@graphql/admin/types/payload/psbt-detail"
 import { ColdStorage } from "@app"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 
@@ -37,8 +37,7 @@ const ColdStorageRebalanceToHotWalletMutation = GT.Field({
     })
 
     if (result instanceof Error) {
-      const appErr = mapError(result)
-      return { errors: [appErr] }
+      return { errors: [mapAndParseErrorForGqlResponse(result)] }
     }
 
     return { errors: [], psbtDetail: result }
