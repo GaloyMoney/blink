@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { ONE_DAY } from "@config"
+import { MS_PER_DAY } from "@config"
 
 import {
   AmountCalculator,
@@ -12,7 +12,7 @@ import { LedgerTransactionType } from "@domain/ledger"
 
 import { LedgerService } from "@services/ledger"
 
-import { ModifiedSet, timestampDaysAgo } from "@utils"
+import { ModifiedSet } from "@utils"
 
 import {
   recordLnIntraLedgerPayment,
@@ -29,9 +29,6 @@ import {
   recordLnRoutingRevenue,
   recordColdStorageTxReceive,
   recordColdStorageTxSend,
-  recordWalletIdTradeIntraAccountTxn,
-  recordOnChainTradeIntraAccountTxn,
-  recordLnTradeIntraAccountTxn,
 } from "./helpers"
 
 const ledgerService = LedgerService()
@@ -45,14 +42,6 @@ const FullLedgerTransactionType = {
   LnIntraLedgerReceive: LedgerTransactionType.LnIntraLedger,
   OnchainIntraLedgerSend: LedgerTransactionType.OnchainIntraLedger,
   OnchainIntraLedgerReceive: LedgerTransactionType.OnchainIntraLedger,
-
-  WalletIdTradeIntraAccountOut: LedgerTransactionType.WalletIdTradeIntraAccount,
-  WalletIdTradeIntraAccountIn: LedgerTransactionType.WalletIdTradeIntraAccount,
-  LnTradeIntraAccountOut: LedgerTransactionType.LnTradeIntraAccount,
-  LnTradeIntraAccountIn: LedgerTransactionType.LnTradeIntraAccount,
-  OnChainTradeIntraAccountOut: LedgerTransactionType.OnChainTradeIntraAccount,
-  OnChainTradeIntraAccountIn: LedgerTransactionType.OnChainTradeIntraAccount,
-
   EscrowCredit: LedgerTransactionType.Escrow,
   EscrowDebit: LedgerTransactionType.Escrow,
 } as const
@@ -61,9 +50,6 @@ const {
   IntraLedger, // eslint-disable-line @typescript-eslint/no-unused-vars
   LnIntraLedger, // eslint-disable-line @typescript-eslint/no-unused-vars
   OnchainIntraLedger, // eslint-disable-line @typescript-eslint/no-unused-vars
-  WalletIdTradeIntraAccount, // eslint-disable-line @typescript-eslint/no-unused-vars
-  LnTradeIntraAccount, // eslint-disable-line @typescript-eslint/no-unused-vars
-  OnChainTradeIntraAccount, // eslint-disable-line @typescript-eslint/no-unused-vars
   Escrow, // eslint-disable-line @typescript-eslint/no-unused-vars
 
   ...ExtendedLedgerTransactionType
@@ -81,9 +67,7 @@ const {
 } = ExtendedLedgerTransactionType
 
 describe("Volumes", () => {
-  const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
-  if (timestamp1DayAgo instanceof Error) return timestamp1DayAgo
-
+  const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
   const walletDescriptor = BtcWalletDescriptor(crypto.randomUUID() as WalletId)
   const walletDescriptorOther = UsdWalletDescriptor(crypto.randomUUID() as WalletId)
 
@@ -341,30 +325,6 @@ describe("Volumes", () => {
         testInternalTxReceiveWLE({
           recordTx: recordLnIntraLedgerPayment,
         }),
-      WalletIdTradeIntraAccountOut: () =>
-        testInternalTxSendWLE({
-          recordTx: recordWalletIdTradeIntraAccountTxn,
-        }),
-      LnTradeIntraAccountOut: () =>
-        testInternalTxSendWLE({
-          recordTx: recordLnTradeIntraAccountTxn,
-        }),
-      OnChainTradeIntraAccountOut: () =>
-        testInternalTxSendWLE({
-          recordTx: recordOnChainTradeIntraAccountTxn,
-        }),
-      WalletIdTradeIntraAccountIn: () =>
-        testInternalTxReceiveWLE({
-          recordTx: recordWalletIdTradeIntraAccountTxn,
-        }),
-      LnTradeIntraAccountIn: () =>
-        testInternalTxReceiveWLE({
-          recordTx: recordLnTradeIntraAccountTxn,
-        }),
-      OnChainTradeIntraAccountIn: () =>
-        testInternalTxReceiveWLE({
-          recordTx: recordOnChainTradeIntraAccountTxn,
-        }),
 
       // Used, but no volume checks yet:
       Fee: () => testExternalTxSendWLE({ recordTx: recordLnChannelOpenOrClosingFee }),
@@ -374,6 +334,11 @@ describe("Volumes", () => {
       ToHotWallet: () => testExternalTxSendWLE({ recordTx: recordColdStorageTxSend }),
       ToColdStorage: () =>
         testExternalTxSendWLE({ recordTx: recordColdStorageTxReceive }),
+
+      // Not used:
+      ExchangeRebalance: () => undefined,
+      UserRebalance: () => undefined,
+      OnchainDepositFee: () => undefined,
     }
 
     // Setting up all 'it' tests for each txn type, to check volume is NOT affected
@@ -413,36 +378,16 @@ describe("Volumes", () => {
         testInternalTxReceiveNLE({
           recordTx: recordLnIntraLedgerPayment,
         }),
-      WalletIdTradeIntraAccountOut: () =>
-        testInternalTxSendNLE({
-          recordTx: recordWalletIdTradeIntraAccountTxn,
-        }),
-      LnTradeIntraAccountOut: () =>
-        testInternalTxSendNLE({
-          recordTx: recordLnTradeIntraAccountTxn,
-        }),
-      OnChainTradeIntraAccountOut: () =>
-        testInternalTxSendNLE({
-          recordTx: recordOnChainTradeIntraAccountTxn,
-        }),
-      WalletIdTradeIntraAccountIn: () =>
-        testInternalTxReceiveNLE({
-          recordTx: recordWalletIdTradeIntraAccountTxn,
-        }),
-      LnTradeIntraAccountIn: () =>
-        testInternalTxReceiveNLE({
-          recordTx: recordLnTradeIntraAccountTxn,
-        }),
-      OnChainTradeIntraAccountIn: () =>
-        testInternalTxReceiveNLE({
-          recordTx: recordOnChainTradeIntraAccountTxn,
-        }),
+
+      // Not used
+      ExchangeRebalance: () => undefined,
+      UserRebalance: () => undefined,
+      OnchainDepositFee: () => undefined,
     }
 
     // Execute tests for specific types included
     describe("correctly registers transactions amount", () => {
       for (const txType of includedTypes) {
-        expect(Object.keys(txFnsForIncludedTypes)).toContain(txType)
         txFnsForIncludedTypes[txType]()
       }
     })
@@ -450,7 +395,6 @@ describe("Volumes", () => {
     // Execute tests for rest of types excluded
     describe("correctly ignores all other transaction types", () => {
       for (const txType of excludedTypes) {
-        expect(Object.keys(txFnsForExcludedTypes)).toContain(txType)
         txFnsForExcludedTypes[txType]()
       }
     })
@@ -493,22 +437,6 @@ describe("Volumes", () => {
       fetchVolumeAmount: getFetchVolumeAmountFn({
         volumeFn: ledgerService.intraledgerTxBaseVolumeSince,
         volumeAmountFn: ledgerService.intraledgerTxBaseVolumeAmountSince,
-        volumeType: VolumeType.Out,
-      }),
-    })
-  })
-
-  describe("Intra-account trade volumes", () => {
-    executeVolumeTests({
-      // Note: Including '...In' types as well would double-count volumes
-      includedTxTypes: [
-        "WalletIdTradeIntraAccountOut",
-        "OnChainTradeIntraAccountOut",
-        "LnTradeIntraAccountOut",
-      ],
-      fetchVolumeAmount: getFetchVolumeAmountFn({
-        volumeFn: ledgerService.tradeIntraAccountTxBaseVolumeSince,
-        volumeAmountFn: ledgerService.tradeIntraAccountTxBaseVolumeAmountSince,
         volumeType: VolumeType.Out,
       }),
     })

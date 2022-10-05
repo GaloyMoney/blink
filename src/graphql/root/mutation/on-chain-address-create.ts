@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 import { Wallets } from "@app"
 import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
 import WalletId from "@graphql/types/scalar/wallet-id"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 
 const OnChainAddressCreateInput = GT.Input({
@@ -31,7 +31,8 @@ const OnChainAddressCreateMutation = GT.Field({
 
     const address = await Wallets.createOnChainAddress(walletId)
     if (address instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(address)] }
+      const appErr = mapError(address)
+      return { errors: [{ message: appErr.message }] }
     }
 
     return {

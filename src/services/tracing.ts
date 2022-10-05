@@ -106,7 +106,7 @@ const recordGqlErrors = ({
 
   setErrorAttribute({
     attribute: "code",
-    value: firstErr.extensions?.code || firstErr.code,
+    value: firstErr.extensions?.code,
   })
 
   if (firstErr.originalError) {
@@ -140,7 +140,7 @@ const recordGqlErrors = ({
 
     setErrorAttribute({
       attribute: `${idx}.code`,
-      value: err.extensions?.code || err.code,
+      value: err.extensions?.code,
     })
 
     if (err.originalError) {

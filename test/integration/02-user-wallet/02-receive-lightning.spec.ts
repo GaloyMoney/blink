@@ -1,4 +1,4 @@
-import { MEMO_SHARING_SATS_THRESHOLD, ONE_DAY } from "@config"
+import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
 
 import { Lightning } from "@app"
 import * as Wallets from "@app/wallets"
@@ -165,7 +165,7 @@ describe("UserWallet - Lightning", () => {
 
     const imbalanceCalc = ImbalanceCalculator({
       method: WithdrawalFeePriceMethod.proportionalOnImbalance,
-      sinceDaysAgo: ONE_DAY,
+      sinceDaysAgo: 1 as Days,
       volumeLightningFn: ledger.lightningTxBaseVolumeSince,
       volumeOnChainFn: ledger.onChainTxBaseVolumeSince,
     })

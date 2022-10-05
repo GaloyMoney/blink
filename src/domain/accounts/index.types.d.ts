@@ -24,18 +24,12 @@ type AccountLimitsArgs = {
         [l: number]: number
       }
     }
-    tradeIntraAccount: {
-      level: {
-        [l: number]: number
-      }
-    }
   }
 }
 
 interface IAccountLimits {
   intraLedgerLimit: UsdCents
   withdrawalLimit: UsdCents
-  tradeIntraAccountLimit: UsdCents
 }
 
 type AccountContact = {
@@ -125,7 +119,6 @@ type NewLimitsCheckerFn = (
 type AccountLimitsChecker = {
   checkIntraledger: NewLimitsCheckerFn
   checkWithdrawal: NewLimitsCheckerFn
-  checkTradeIntraAccount: NewLimitsCheckerFn
 }
 
 type TwoFALimitsChecker = {

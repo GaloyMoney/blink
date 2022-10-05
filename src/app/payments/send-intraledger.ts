@@ -33,11 +33,7 @@ import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { Accounts } from "@app"
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 
-import {
-  newCheckIntraledgerLimits,
-  getPriceRatioForLimits,
-  newCheckTradeIntraAccountLimits,
-} from "./helpers"
+import { newCheckIntraledgerLimits, getPriceRatioForLimits } from "./helpers"
 
 const dealer = NewDealerPriceService()
 
@@ -58,7 +54,7 @@ export const intraledgerPaymentSendWalletId = async ({
   const { senderWallet, recipientWallet, recipientAccount } = validatedPaymentInputs
 
   const { id: recipientWalletId, currency: recipientWalletCurrency } = recipientWallet
-  const { id: recipientAccountId, username: recipientUsername } = recipientAccount
+  const { username: recipientUsername } = recipientAccount
 
   const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: [],
@@ -76,7 +72,6 @@ export const intraledgerPaymentSendWalletId = async ({
   const recipientDetailsForBuilder = {
     id: recipientWalletId,
     currency: recipientWalletCurrency,
-    accountId: recipientAccountId,
     username: recipientUsername,
     pubkey: undefined,
     usdPaymentAmount: undefined,
@@ -172,10 +167,7 @@ const validateIntraledgerPaymentInputs = async ({
   }
 }
 
-const executePaymentViaIntraledger = async <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+const executePaymentViaIntraledger = async ({
   paymentFlow,
   senderAccount,
   senderWallet,
@@ -183,11 +175,11 @@ const executePaymentViaIntraledger = async <
   recipientWallet,
   memo,
 }: {
-  paymentFlow: PaymentFlow<S, R>
+  paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
   senderAccount: Account
-  senderWallet: WalletDescriptor<S>
+  senderWallet: Wallet
   recipientAccount: Account
-  recipientWallet: WalletDescriptor<R>
+  recipientWallet: Wallet
   memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {
   addAttributesToCurrentSpan({
@@ -197,11 +189,7 @@ const executePaymentViaIntraledger = async <
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
-  const checkLimits =
-    senderWallet.accountId === recipientWallet.accountId
-      ? newCheckTradeIntraAccountLimits
-      : newCheckIntraledgerLimits
-  const limitCheck = await checkLimits({
+  const limitCheck = await newCheckIntraledgerLimits({
     amount: paymentFlow.usdPaymentAmount,
     wallet: senderWallet,
     priceRatio: priceRatioForLimits,
@@ -235,34 +223,19 @@ const executePaymentViaIntraledger = async <
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
 
-    let metadata:
-      | NewAddWalletIdIntraledgerSendLedgerMetadata
-      | NewAddWalletIdTradeIntraAccountLedgerMetadata
-    let additionalDebitMetadata: { [key: string]: Username | undefined } = {}
-    if (senderWallet.accountId === recipientWallet.accountId) {
-      metadata = LedgerFacade.WalletIdTradeIntraAccountLedgerMetadata({
-        paymentFlow,
+    const lnIntraLedgerMetadata = LedgerFacade.WalletIdIntraledgerLedgerMetadata({
+      paymentFlow,
 
-        amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-        feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-        displayCurrency: DisplayCurrency.Usd,
+      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+      feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+      displayCurrency: DisplayCurrency.Usd,
 
-        memoOfPayer: memo || undefined,
-      })
-    } else {
-      ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
-        LedgerFacade.WalletIdIntraledgerLedgerMetadata({
-          paymentFlow,
-
-          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-          displayCurrency: DisplayCurrency.Usd,
-
-          memoOfPayer: memo || undefined,
-          senderUsername: senderAccount.username,
-          recipientUsername,
-        }))
-    }
+      memoOfPayer: memo || undefined,
+      senderUsername: senderAccount.username,
+      recipientUsername,
+    })
+    const { metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
+      lnIntraLedgerMetadata
 
     const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
     if (recipientWalletDescriptor === undefined)

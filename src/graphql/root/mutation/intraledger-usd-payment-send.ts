@@ -1,6 +1,6 @@
 import { Accounts, Payments } from "@app"
 import { checkedToWalletId } from "@domain/wallets"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import { validateIsUsdWalletForMutation } from "@graphql/helpers"
 import { GT } from "@graphql/index"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
@@ -40,7 +40,8 @@ const IntraLedgerUsdPaymentSendMutation = GT.Field({
 
     const senderWalletId = checkedToWalletId(walletId)
     if (senderWalletId instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(senderWalletId)] }
+      const appErr = mapError(senderWalletId)
+      return { errors: [{ message: appErr.message }] }
     }
 
     const usdWalletValidated = await validateIsUsdWalletForMutation(walletId)
@@ -48,7 +49,8 @@ const IntraLedgerUsdPaymentSendMutation = GT.Field({
 
     const recipientWalletIdChecked = checkedToWalletId(recipientWalletId)
     if (recipientWalletIdChecked instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(recipientWalletIdChecked)] }
+      const appErr = mapError(recipientWalletIdChecked)
+      return { errors: [{ message: appErr.message }] }
     }
 
     // TODO: confirm whether we need to check for username here
@@ -56,7 +58,8 @@ const IntraLedgerUsdPaymentSendMutation = GT.Field({
       recipientWalletIdChecked,
     )
     if (recipientUsername instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(recipientUsername)] }
+      const appErr = mapError(recipientUsername)
+      return { errors: [{ message: appErr.message }] }
     }
 
     const status = await Payments.intraledgerPaymentSendWalletId({
@@ -67,7 +70,8 @@ const IntraLedgerUsdPaymentSendMutation = GT.Field({
       senderAccount: domainAccount,
     })
     if (status instanceof Error) {
-      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(status)] }
+      const appErr = mapError(status)
+      return { status: "failed", errors: [{ message: appErr.message }] }
     }
 
     return {

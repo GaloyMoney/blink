@@ -1,5 +1,4 @@
 import { generate2fa, save2fa } from "@app/users"
-import { InvalidPhoneNumber } from "@domain/errors"
 import { TwoFAAlreadySetError } from "@domain/twoFA"
 import { gqlAdminSchema } from "@graphql/admin"
 import { ExecutionResult, graphql, Source } from "graphql"
@@ -65,15 +64,6 @@ export const enable2FA = async (userId: UserId) => {
 
 export const chunk = (a, n) =>
   [...Array(Math.ceil(a.length / n))].map((_, i) => a.slice(n * i, n + n * i))
-
-export const randomPhone = (length = 14): PhoneNumber => {
-  const PhoneNumberRegex = /^\+\d{7,14}$/i // FIXME {7,14} to be refined
-
-  const phoneNumber = `+${Math.floor(Math.random() * 10 ** length)}`
-  if (!phoneNumber.match(PhoneNumberRegex)) throw new InvalidPhoneNumber()
-
-  return phoneNumber as PhoneNumber
-}
 
 export const graphqlAdmin = <
   T = Promise<ExecutionResult<ObjMap<unknown>, ObjMap<unknown>>>,

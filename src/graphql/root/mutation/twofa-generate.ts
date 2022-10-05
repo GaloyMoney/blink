@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import TwoFAGeneratePayload from "@graphql/types/payload/twofa-generate"
 import { generate2fa } from "@app/users"
 
@@ -11,7 +11,8 @@ const TwoFAGenerateMutation = GT.Field<null, null, GraphQLContextForUser>({
   resolve: async (_, __, { domainUser }) => {
     const twoFASecret = await generate2fa(domainUser.id)
     if (twoFASecret instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(twoFASecret)] }
+      const appErr = mapError(twoFASecret)
+      return { errors: [{ message: appErr.message }] }
     }
 
     return { errors: [], twoFASecret }

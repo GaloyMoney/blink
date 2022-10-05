@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 
 import { Accounts } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import WalletDetailsPayload from "@graphql/admin/types/payload/wallet-details"
@@ -50,7 +50,7 @@ const AccountsAddUsdWalletMutation = GT.Field<
 
     addWalletResults.forEach((wallet) => {
       if (wallet instanceof Error) {
-        return errors.push(mapAndParseErrorForGqlResponse(wallet))
+        return errors.push({ message: mapError(wallet).message })
       }
 
       walletDetails.push(wallet)

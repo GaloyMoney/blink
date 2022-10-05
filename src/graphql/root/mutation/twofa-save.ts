@@ -1,5 +1,5 @@
 import { save2fa } from "@app/users"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import SuccessPayload from "@graphql/types/payload/success-payload"
@@ -38,7 +38,8 @@ const TwoFASaveMutation = GT.Field<
       userId: domainUser.id,
     })
     if (user instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(user)] }
+      const appErr = mapError(user)
+      return { errors: [{ message: appErr.message }] }
     }
 
     return { errors: [], success: true }

@@ -1,4 +1,3 @@
-import { ONE_DAY } from "@config"
 import { toSats } from "@domain/bitcoin"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { WalletCurrency } from "@domain/shared"
@@ -30,7 +29,7 @@ describe("ImbalanceCalculator", () => {
     it("return positive imbalance when receiving sats on ln", async () => {
       const calculator = ImbalanceCalculator({
         method,
-        sinceDaysAgo: ONE_DAY,
+        sinceDaysAgo: 1 as Days,
         volumeLightningFn: VolumeAfterLightningReceiptFn,
         volumeOnChainFn: NoVolumeFn,
       })
@@ -41,7 +40,7 @@ describe("ImbalanceCalculator", () => {
     it("return negative imbalance when sending sats on ln", async () => {
       const calculator = ImbalanceCalculator({
         method,
-        sinceDaysAgo: ONE_DAY,
+        sinceDaysAgo: 1 as Days,
         volumeLightningFn: VolumeAfterLightningPaymentFn,
         volumeOnChainFn: NoVolumeFn,
       })
@@ -52,7 +51,7 @@ describe("ImbalanceCalculator", () => {
     it("return negative imbalance when receiving sats onchain", async () => {
       const calculator = ImbalanceCalculator({
         method,
-        sinceDaysAgo: ONE_DAY,
+        sinceDaysAgo: 1 as Days,
         volumeLightningFn: NoVolumeFn,
         volumeOnChainFn: VolumeAfterOnChainReceiptFn,
       })
@@ -63,7 +62,7 @@ describe("ImbalanceCalculator", () => {
     it("return positive imbalance when sending sats onchain", async () => {
       const calculator = ImbalanceCalculator({
         method,
-        sinceDaysAgo: ONE_DAY,
+        sinceDaysAgo: 1 as Days,
         volumeLightningFn: NoVolumeFn,
         volumeOnChainFn: VolumeAfterOnChainPaymentFn,
       })
@@ -74,7 +73,7 @@ describe("ImbalanceCalculator", () => {
     it("swap out increase imbalance", async () => {
       const calculator = ImbalanceCalculator({
         method,
-        sinceDaysAgo: ONE_DAY,
+        sinceDaysAgo: 1 as Days,
         volumeLightningFn: VolumeAfterLightningReceiptFn,
         volumeOnChainFn: VolumeAfterOnChainPaymentFn,
       })
@@ -85,7 +84,7 @@ describe("ImbalanceCalculator", () => {
     it("swap in reduce decrease imbalance", async () => {
       const calculator = ImbalanceCalculator({
         method,
-        sinceDaysAgo: ONE_DAY,
+        sinceDaysAgo: 1 as Days,
         volumeLightningFn: VolumeAfterLightningPaymentFn,
         volumeOnChainFn: VolumeAfterOnChainReceiptFn,
       })
@@ -100,7 +99,7 @@ describe("ImbalanceCalculator", () => {
     it("no imbalance with flat fees", async () => {
       const calculator = ImbalanceCalculator({
         method,
-        sinceDaysAgo: ONE_DAY,
+        sinceDaysAgo: 1 as Days,
         volumeLightningFn: VolumeAfterLightningReceiptFn,
         volumeOnChainFn: NoVolumeFn,
       })
