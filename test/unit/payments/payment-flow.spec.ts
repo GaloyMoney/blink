@@ -15,6 +15,7 @@ describe("PaymentFlowFromLedgerTransaction", () => {
 
   const paymentFlowState: PaymentFlowState<WalletCurrency, WalletCurrency> = {
     senderWalletId: "walletId" as WalletId,
+    senderAccountId: "accountId" as AccountId,
     settlementMethod: SettlementMethod.Lightning,
     paymentInitiationMethod: PaymentInitiationMethod.Lightning,
 

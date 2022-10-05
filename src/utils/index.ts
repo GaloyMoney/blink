@@ -1,3 +1,6 @@
+import { MS_PER_DAY } from "@config"
+import { NonIntegerError } from "@domain/errors"
+
 export async function sleep(ms: MilliSeconds | number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
@@ -57,6 +60,14 @@ export const mapObj = <T, R>(
 
 export const elapsedSinceTimestamp = (date: Date): Seconds => {
   return ((Date.now() - Number(date)) / 1000) as Seconds
+}
+
+export const checkedInteger = (num: number) =>
+  Number.isInteger(num) ? num : new NonIntegerError()
+
+export const timestampDaysAgo = (days: Days): Date | NonIntegerError => {
+  const check = checkedInteger(days)
+  return check instanceof Error ? check : new Date(Date.now() - days * MS_PER_DAY)
 }
 
 export class ModifiedSet extends Set {

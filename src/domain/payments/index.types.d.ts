@@ -17,6 +17,7 @@ type PaymentFlowState<
 > = XorPaymentHashProperty & {
   senderWalletId: WalletId
   senderWalletCurrency: S
+  senderAccountId: AccountId
   settlementMethod: SettlementMethod
   paymentInitiationMethod: PaymentInitiationMethod
   descriptionFromInvoice: string
@@ -33,6 +34,7 @@ type PaymentFlowState<
 
   recipientWalletId?: WalletId
   recipientWalletCurrency?: R
+  recipientAccountId?: AccountId
   recipientPubkey?: Pubkey
   recipientUsername?: Username
 
@@ -98,13 +100,13 @@ type LPFBWithSenderWallet<S extends WalletCurrency> = {
   withoutRecipientWallet<R extends WalletCurrency>():
     | LPFBWithRecipientWallet<S, R>
     | LPFBWithError
-  withRecipientWallet<R extends WalletCurrency>({
-    id: recipientWalletId,
-    currency: recipientWalletCurrency,
-    usdPaymentAmount,
-  }: WalletDescriptor<R> & {
-    usdPaymentAmount?: UsdPaymentAmount
-  }): LPFBWithRecipientWallet<S, R> | LPFBWithError
+  withRecipientWallet<R extends WalletCurrency>(
+    args: WalletDescriptor<R> & {
+      pubkey?: Pubkey
+      usdPaymentAmount?: UsdPaymentAmount
+      username?: Username
+    },
+  ): LPFBWithRecipientWallet<S, R> | LPFBWithError
 }
 
 type LPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {
@@ -136,6 +138,7 @@ type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
   skipProbeForDestination(): Promise<boolean | DealerPriceServiceError>
 
   isIntraLedger(): Promise<boolean | DealerPriceServiceError>
+  isTradeIntraAccount(): Promise<boolean | DealerPriceServiceError>
 }
 
 type LPFBTest = {
@@ -153,6 +156,7 @@ type LPFBWithError = {
   usdPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
   skipProbeForDestination(): Promise<ValidationError | DealerPriceServiceError>
   isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
+  isTradeIntraAccount(): Promise<ValidationError | DealerPriceServiceError>
 }
 interface IPaymentFlowRepository {
   persistNew<S extends WalletCurrency>(
@@ -204,6 +208,7 @@ type LPFBWithSenderWalletState<S extends WalletCurrency> = RequireField<
 > & {
   senderWalletId: WalletId
   senderWalletCurrency: S
+  senderAccountId: AccountId
   usdPaymentAmount?: UsdPaymentAmount
 }
 
@@ -215,6 +220,7 @@ type LPFBWithRecipientWalletState<
   recipientWalletCurrency?: R
   recipientPubkey?: Pubkey
   recipientUsername?: Username
+  recipientAccountId?: AccountId
 }
 
 type LPFBWithConversionState<

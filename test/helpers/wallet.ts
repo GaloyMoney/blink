@@ -1,5 +1,5 @@
 import { getBalanceForWallet } from "@app/wallets"
-import { getTwoFALimits, MS_PER_DAY } from "@config"
+import { getTwoFALimits, ONE_DAY } from "@config"
 import { toSats } from "@domain/bitcoin"
 import { sub, toCents } from "@domain/fiat"
 import {
@@ -10,6 +10,7 @@ import {
 } from "@domain/shared"
 import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
+import { timestampDaysAgo } from "@utils"
 
 export const getBalanceHelper = async (
   walletId: WalletId,
@@ -30,8 +31,10 @@ export const getRemainingTwoFALimit = async ({
 }: {
   walletId: WalletId
   satsToCents
-}): Promise<UsdCents> => {
-  const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
+}): Promise<UsdCents | ValidationError> => {
+  const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
+  if (timestamp1DayAgo instanceof Error) return timestamp1DayAgo
+
   const walletVolume = await LedgerService().allPaymentVolumeSince({
     walletId,
     timestamp: timestamp1DayAgo,
@@ -54,7 +57,9 @@ export const newGetRemainingTwoFALimit = async <T extends WalletCurrency>({
   walletDescriptor: WalletDescriptor<T>
   priceRatio: PriceRatio
 }): Promise<UsdPaymentAmount | ApplicationError> => {
-  const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
+  if (timestamp1DayAgo instanceof Error) return timestamp1DayAgo
+
   const walletVolume = await LedgerService().allPaymentVolumeAmountSince({
     walletDescriptor,
     timestamp: timestamp1DayAgo,

@@ -71,6 +71,7 @@ export const reimburseFailedUsdPayment = async <
   const btcWalletDescriptor = {
     id: recipientBtcWallet.id,
     currency: recipientBtcWallet.currency,
+    accountId: recipientBtcWallet.accountId,
   }
 
   const result = await LedgerFacade.recordReceive({
