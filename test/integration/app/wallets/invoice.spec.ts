@@ -1,6 +1,5 @@
 import { Wallets } from "@app"
 import { addWallet } from "@app/accounts/add-wallet"
-import { getCurrentPriceInCentsPerSat } from "@app/shared"
 import {
   getInvoiceCreateAttemptLimits,
   getInvoiceCreateForRecipientAttemptLimits,
@@ -158,18 +157,12 @@ describe("Wallet - addInvoice USD", () => {
   it("add a self generated USD invoice", async () => {
     const centsInput = 10000
 
-    const centsPerSatRatio = await getCurrentPriceInCentsPerSat()
-    if (centsPerSatRatio instanceof Error) return centsPerSatRatio
-    const satsFallbackViaPriceService =
-      (centsInput / centsPerSatRatio.usdPerSat()) * 0.996 // 40 bps spread
-
     const sats = await DealerPriceService().getSatsFromCentsForFutureBuy(
       toCents(centsInput),
       defaultTimeToExpiryInSeconds,
     )
     expect(sats).not.toBeInstanceOf(Error)
     if (sats instanceof Error) throw sats
-    expect(sats).toEqual(satsFallbackViaPriceService)
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletIdUsd,
