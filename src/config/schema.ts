@@ -384,9 +384,33 @@ export const configSchema = {
     accountLimits: {
       type: "object",
       properties: {
-        withdrawal: accountLimitConfigSchema,
-        intraLedger: accountLimitConfigSchema,
-        tradeIntraAccount: accountLimitConfigSchema,
+        withdrawal: {
+          ...accountLimitConfigSchema,
+          default: {
+            level: {
+              "1": 100000,
+              "2": 5000000,
+            },
+          },
+        },
+        intraLedger: {
+          ...accountLimitConfigSchema,
+          default: {
+            level: {
+              "1": 200000,
+              "2": 5000000,
+            },
+          },
+        },
+        tradeIntraAccount: {
+          ...accountLimitConfigSchema,
+          default: {
+            level: {
+              "1": 5000000,
+              "2": 20000000,
+            },
+          },
+        },
       },
       required: ["withdrawal", "intraLedger", "tradeIntraAccount"],
       additionalProperties: false,
