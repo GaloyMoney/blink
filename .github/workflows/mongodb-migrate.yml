@@ -2,7 +2,7 @@ name: "Migrate Mongodb"
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   migrate_mongodb:
@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
-    - run: yarn install
-    - name: Run clean mongodb migration
-      run: make test-migrate
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - run: yarn install
+      - name: Run clean mongodb migration
+        run: make test-migrate

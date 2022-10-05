@@ -6,19 +6,19 @@ services:
       - "6832:6832/udp" # Jaeger receiver
   price:
     ports:
-    - "50051:50051"
-    - "9464:9464"
+      - "50051:50051"
+      - "9464:9464"
   price-history:
     ports:
-    - "50052:50052"
+      - "50052:50052"
   redis:
     ports:
-    - "6379:6379"
+      - "6379:6379"
   mongodb:
     environment:
-    - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
+      - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
     ports:
-    - "27017:27017"
+      - "27017:27017"
   postgres-price-history:
     ports:
       - "5432:5432"

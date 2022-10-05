@@ -106,6 +106,7 @@ check-code: check-implicit
 	yarn tsc-check
 	yarn eslint-check
 	yarn build
+	yarn check-yaml
 
 create-tmp-env-ci:
 	. ./.envrc && \

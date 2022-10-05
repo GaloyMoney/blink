@@ -42,508 +42,508 @@ source:
 #@ end
 
 groups:
-- name: galoy
-  jobs:
-  - test-integration
-  - test-e2e
-  - test-unit
-  - check-code
-  - audit
-  - build-edge-image
-  - build-debug-edge-image
-  - build-migrate-edge-image
-  - install-deps
-  - bump-image-in-chart
-  - release
-- name: sync-proto
-  jobs:
-  - sync-dealer-proto
-  - sync-price-history-proto
-
-jobs:
-- #@ install_yarn_deps()
-- #@ nodejs_check_code()
-- #@ nodejs_audit()
-
-- name: test-e2e
-  serial: true
-  plan:
-  - in_parallel:
-    - { get: repo, trigger: true }
-    - { get: pipeline-tasks }
-    - { get: bundled-deps, tags: ["galoy-staging"], trigger: true}
-  - task: test-e2e
-    timeout: 12m
-    tags: ["galoy-staging"]
-    config:
-      platform: linux
-      image_resource: #@ nodejs_task_image_config()
-      inputs:
-      - name: bundled-deps
-      - name: pipeline-tasks
-      - name: repo
-        path: galoy-e2e
-      params:
-        REPO_PATH: galoy-e2e
-        DOCKER_HOST_IP: #@ data.values.docker_host_ip
-        GOOGLE_CREDENTIALS: #@ data.values.staging_inception_creds
-        SSH_PRIVATE_KEY: #@ data.values.staging_ssh_private_key
-        SSH_PUB_KEY: #@ data.values.staging_ssh_pub_key
-        JEST_TIMEOUT: 90000
-      run:
-        path: pipeline-tasks/ci/tasks/test-e2e.sh
-  on_failure: #@ slack_failure_notification()
-
-- name: test-integration
-  serial: true
-  plan:
-  - in_parallel:
-    - { get: repo, trigger: true }
-    - { get: pipeline-tasks }
-    - { get: bundled-deps, tags: ["galoy-staging"], trigger: true}
-  - task: test-integration
-    timeout: 12m
-    tags: ["galoy-staging"]
-    config:
-      platform: linux
-      image_resource: #@ nodejs_task_image_config()
-      inputs:
-      - name: bundled-deps
-      - name: pipeline-tasks
-      - name: repo
-        path: galoy-integration
-      params:
-        REPO_PATH: galoy-integration
-        DOCKER_HOST_IP: #@ data.values.docker_host_ip
-        GOOGLE_CREDENTIALS: #@ data.values.staging_inception_creds
-        SSH_PRIVATE_KEY: #@ data.values.staging_ssh_private_key
-        SSH_PUB_KEY: #@ data.values.staging_ssh_pub_key
-        JEST_TIMEOUT: 90000
-      run:
-        path: pipeline-tasks/ci/tasks/test-integration.sh
-  on_failure: #@ slack_failure_notification()
-
-- name: test-unit
-  serial: true
-  plan:
-  - in_parallel:
-    - { get: repo, trigger: true }
-    - { get: pipeline-tasks }
-    - { get: bundled-deps, trigger: true}
-  - task: test-unit
-    config:
-      platform: linux
-      image_resource: #@ nodejs_task_image_config()
-      inputs:
-      - name: bundled-deps
-      - name: pipeline-tasks
-      - name: repo
-      run:
-        path: pipeline-tasks/ci/tasks/test-unit.sh
-  on_failure: #@ slack_failure_notification()
-
-- name: build-edge-image
-  serial: true
-  plan:
-  - in_parallel:
-    - { get: repo, trigger: true }
-    - { get: pipeline-tasks }
-  - task: prepare-docker-build
-    config:
-      platform: linux
-      image_resource: #@ nodejs_task_image_config()
-      inputs:
-      - name: pipeline-tasks
-      - name: repo
-      outputs:
-      - name: repo
-      run:
-        path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
-  - task: build
-    privileged: true
-    config:
-      platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: vito/oci-build-task
-      inputs:
-      - name: repo
-      outputs:
-      - name: image
-      params:
-        CONTEXT: repo
-        BUILD_ARGS_FILE: repo/.env
-      run:
-        path: build
-  - put: edge-image
-    params:
-      image: image/image.tar
-
-- name: build-debug-edge-image
-  serial: true
-  plan:
-  - { get: repo, trigger: true }
-  - task: build
-    privileged: true
-    config:
-      platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: vito/oci-build-task
-      inputs:
-      - name: repo
-      outputs:
-      - name: image
-      params:
-        CONTEXT: repo
-        BUILD_ARGS_FILE: repo/.env
-        DOCKERFILE: "repo/Dockerfile-debug"
-      run:
-        path: build
-  - put: debug-edge-image
-    params:
-      image: image/image.tar
-
-- name: build-migrate-edge-image
-  serial: true
-  plan:
-  - { get: repo, trigger: true }
-  - task: build
-    privileged: true
-    config:
-      platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: vito/oci-build-task
-      inputs:
-      - name: repo
-      outputs:
-      - name: image
-      params:
-        CONTEXT: repo
-        BUILD_ARGS_FILE: repo/.env
-        DOCKERFILE: "repo/Dockerfile-migrate"
-      run:
-        path: build
-  - put: migrate-edge-image
-    params:
-      image: image/image.tar
-
-- name: release
-  plan:
-  - in_parallel:
-    - get: repo
-      trigger: true
-      passed:
-      - check-code
-      - audit
-      - test-unit
+  - name: galoy
+    jobs:
       - test-integration
       - test-e2e
+      - test-unit
+      - check-code
+      - audit
+      - build-edge-image
       - build-debug-edge-image
       - build-migrate-edge-image
-      - build-edge-image
-    - get: pipeline-tasks
-    - get: edge-image
-      passed: [ build-edge-image ]
-      params:
-        format: oci
-    - get: migrate-edge-image
-      passed: [ build-migrate-edge-image ]
-      params:
-        format: oci
-    - get: version
-  - task: prep-release
-    config:
-      platform: linux
-      image_resource: #@ release_task_image_config()
-      inputs:
-      - name: repo
-      - name: edge-image
-      - name: pipeline-tasks
-      - name: version
-      outputs:
-      - name: version
-      - name: artifacts
-      params:
-        CHART: galoy
-      run:
-        path: pipeline-tasks/ci/tasks/vendor/prep-release-src.sh
-  - in_parallel:
-    - put: versioned-image
-      params:
-        image: edge-image/image.tar
-        additional_tags: artifacts/gh-release-tag
-    - put: versioned-migrate-image
-      params:
-        image: migrate-edge-image/image.tar
-        additional_tags: artifacts/gh-release-tag
-    - put: gh-release
-      params:
-        name: artifacts/gh-release-name
-        tag: artifacts/gh-release-tag
-        body: artifacts/gh-release-notes.md
-    - put: version
-      params:
-        file: version/version
-  on_failure: #@ slack_failure_notification()
-
-- name: bump-image-in-chart
-  plan:
-  - in_parallel:
-    - get: edge-image
-      passed: [ release ]
-      params: { skip_download: true }
-    - get: migrate-edge-image
-      passed: [ release ]
-      params: { skip_download: true }
-    - get: repo
-      trigger: true
-      passed:
+      - install-deps
+      - bump-image-in-chart
       - release
-    - get: version
-      passed: [ release ]
-    - get: charts-repo
-      params: { skip_download: true }
-    - get: pipeline-tasks
-  - task: bump-image-digest-in-values
-    config:
-      platform: linux
-      image_resource: #@ nodejs_task_image_config()
-      inputs:
-      - name: repo
-      - name: edge-image
-      - name: migrate-edge-image
-      - name: pipeline-tasks
-      - name: charts-repo
-      - name: version
-      outputs:
-      - name: charts-repo
-      params:
-        BRANCH: #@ data.values.git_charts_branch
-      run:
-        path: pipeline-tasks/ci/tasks/bump-image-digest.sh
-  - put: charts-repo-bot-branch
-    params:
-      repository: charts-repo
-      force: true
-  - task: open-charts-pr
-    config:
-      platform: linux
-      image_resource: #@ nodejs_task_image_config()
-      inputs:
-      - name: pipeline-tasks
-      - name: edge-image
-      - name: migrate-edge-image
-      - name: charts-repo
-      params:
-        GH_TOKEN: #@ data.values.github_token
-        BRANCH: #@ data.values.git_charts_branch
-        BOT_BRANCH: #@ data.values.git_charts_bot_branch
-      run:
-        path: pipeline-tasks/ci/tasks/open-charts-pr.sh
+  - name: sync-proto
+    jobs:
+      - sync-dealer-proto
+      - sync-price-history-proto
 
-- name: sync-dealer-proto
-  plan:
-  - in_parallel:
-    - get: repo
-    - get: pipeline-tasks
-    - get: dealer-price-proto
-      trigger: true
-  - task: sync-proto
-    config:
-      platform: linux
-      image_resource: #@ nodejs_task_image_config()
-      inputs:
-      - name: repo
-      - name: pipeline-tasks
-      - name: dealer-price-proto
-        path: src-repo
-      outputs:
-      - name: repo
-      params:
-        PROTO_FILES_SRC_PATH: dealer/proto
-        PROTO_FILES_DEST_PATH: src/services/dealer-price/proto
-        RUN_BUF_GENERATE: "true"
-        BRANCH: #@ data.values.git_branch
-        MODULE: dealer
-      run:
-        path: pipeline-tasks/ci/tasks/sync-proto.sh
-  - put: dealer-proto-bot-branch
-    params:
-      repository: repo
-      force: true
-  - task: open-bump-proto-pr
-    config:
-      platform: linux
-      image_resource: #@ nodejs_task_image_config()
-      inputs:
-      - name: pipeline-tasks
-      - name: repo
-      params:
-        BRANCH: #@ data.values.git_branch
-        BOT_BRANCH: #@ data.values.git_dealer_proto_bot_branch
-        GH_TOKEN: #@ data.values.github_token
-        MODULE: dealer
-      run:
-        path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
+jobs:
+  -  #@ install_yarn_deps()
+  -  #@ nodejs_check_code()
+  -  #@ nodejs_audit()
 
-- name: sync-price-history-proto
-  plan:
-  - in_parallel:
-    - get: repo
-    - get: pipeline-tasks
-    - get: price-history-proto
-      trigger: true
-  - task: sync-proto
-    config:
-      platform: linux
-      image_resource: #@ nodejs_task_image_config()
-      inputs:
-      - name: repo
-      - name: pipeline-tasks
-      - name: price-history-proto
-        path: src-repo
-      outputs:
-      - name: repo
-      params:
-        PROTO_FILES_SRC_PATH: history/src/servers/protos
-        PROTO_FILES_DEST_PATH: src/services/price/protos
-        RUN_BUF_GENERATE: "false"
-        BRANCH: #@ data.values.git_branch
-        MODULE: price-history
-      run:
-        path: pipeline-tasks/ci/tasks/sync-proto.sh
-  - put: price-history-proto-bot-branch
-    params:
-      repository: repo
-      force: true
-  - task: open-bump-proto-pr
-    config:
-      platform: linux
-      image_resource: #@ nodejs_task_image_config()
-      inputs:
-      - name: pipeline-tasks
-      - name: repo
-      params:
-        BRANCH: #@ data.values.git_branch
-        BOT_BRANCH: #@ data.values.git_price_history_proto_bot_branch
-        GH_TOKEN: #@ data.values.github_token
-        MODULE: price-history
-      run:
-        path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
+  - name: test-e2e
+    serial: true
+    plan:
+      - in_parallel:
+          - { get: repo, trigger: true }
+          - { get: pipeline-tasks }
+          - { get: bundled-deps, tags: ["galoy-staging"], trigger: true }
+      - task: test-e2e
+        timeout: 12m
+        tags: ["galoy-staging"]
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: bundled-deps
+            - name: pipeline-tasks
+            - name: repo
+              path: galoy-e2e
+          params:
+            REPO_PATH: galoy-e2e
+            DOCKER_HOST_IP: #@ data.values.docker_host_ip
+            GOOGLE_CREDENTIALS: #@ data.values.staging_inception_creds
+            SSH_PRIVATE_KEY: #@ data.values.staging_ssh_private_key
+            SSH_PUB_KEY: #@ data.values.staging_ssh_pub_key
+            JEST_TIMEOUT: 90000
+          run:
+            path: pipeline-tasks/ci/tasks/test-e2e.sh
+    on_failure: #@ slack_failure_notification()
+
+  - name: test-integration
+    serial: true
+    plan:
+      - in_parallel:
+          - { get: repo, trigger: true }
+          - { get: pipeline-tasks }
+          - { get: bundled-deps, tags: ["galoy-staging"], trigger: true }
+      - task: test-integration
+        timeout: 12m
+        tags: ["galoy-staging"]
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: bundled-deps
+            - name: pipeline-tasks
+            - name: repo
+              path: galoy-integration
+          params:
+            REPO_PATH: galoy-integration
+            DOCKER_HOST_IP: #@ data.values.docker_host_ip
+            GOOGLE_CREDENTIALS: #@ data.values.staging_inception_creds
+            SSH_PRIVATE_KEY: #@ data.values.staging_ssh_private_key
+            SSH_PUB_KEY: #@ data.values.staging_ssh_pub_key
+            JEST_TIMEOUT: 90000
+          run:
+            path: pipeline-tasks/ci/tasks/test-integration.sh
+    on_failure: #@ slack_failure_notification()
+
+  - name: test-unit
+    serial: true
+    plan:
+      - in_parallel:
+          - { get: repo, trigger: true }
+          - { get: pipeline-tasks }
+          - { get: bundled-deps, trigger: true }
+      - task: test-unit
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: bundled-deps
+            - name: pipeline-tasks
+            - name: repo
+          run:
+            path: pipeline-tasks/ci/tasks/test-unit.sh
+    on_failure: #@ slack_failure_notification()
+
+  - name: build-edge-image
+    serial: true
+    plan:
+      - in_parallel:
+          - { get: repo, trigger: true }
+          - { get: pipeline-tasks }
+      - task: prepare-docker-build
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: pipeline-tasks
+            - name: repo
+          outputs:
+            - name: repo
+          run:
+            path: pipeline-tasks/ci/tasks/prepare-docker-build.sh
+      - task: build
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: vito/oci-build-task
+          inputs:
+            - name: repo
+          outputs:
+            - name: image
+          params:
+            CONTEXT: repo
+            BUILD_ARGS_FILE: repo/.env
+          run:
+            path: build
+      - put: edge-image
+        params:
+          image: image/image.tar
+
+  - name: build-debug-edge-image
+    serial: true
+    plan:
+      - { get: repo, trigger: true }
+      - task: build
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: vito/oci-build-task
+          inputs:
+            - name: repo
+          outputs:
+            - name: image
+          params:
+            CONTEXT: repo
+            BUILD_ARGS_FILE: repo/.env
+            DOCKERFILE: "repo/Dockerfile-debug"
+          run:
+            path: build
+      - put: debug-edge-image
+        params:
+          image: image/image.tar
+
+  - name: build-migrate-edge-image
+    serial: true
+    plan:
+      - { get: repo, trigger: true }
+      - task: build
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: vito/oci-build-task
+          inputs:
+            - name: repo
+          outputs:
+            - name: image
+          params:
+            CONTEXT: repo
+            BUILD_ARGS_FILE: repo/.env
+            DOCKERFILE: "repo/Dockerfile-migrate"
+          run:
+            path: build
+      - put: migrate-edge-image
+        params:
+          image: image/image.tar
+
+  - name: release
+    plan:
+      - in_parallel:
+          - get: repo
+            trigger: true
+            passed:
+              - check-code
+              - audit
+              - test-unit
+              - test-integration
+              - test-e2e
+              - build-debug-edge-image
+              - build-migrate-edge-image
+              - build-edge-image
+          - get: pipeline-tasks
+          - get: edge-image
+            passed: [build-edge-image]
+            params:
+              format: oci
+          - get: migrate-edge-image
+            passed: [build-migrate-edge-image]
+            params:
+              format: oci
+          - get: version
+      - task: prep-release
+        config:
+          platform: linux
+          image_resource: #@ release_task_image_config()
+          inputs:
+            - name: repo
+            - name: edge-image
+            - name: pipeline-tasks
+            - name: version
+          outputs:
+            - name: version
+            - name: artifacts
+          params:
+            CHART: galoy
+          run:
+            path: pipeline-tasks/ci/tasks/vendor/prep-release-src.sh
+      - in_parallel:
+          - put: versioned-image
+            params:
+              image: edge-image/image.tar
+              additional_tags: artifacts/gh-release-tag
+          - put: versioned-migrate-image
+            params:
+              image: migrate-edge-image/image.tar
+              additional_tags: artifacts/gh-release-tag
+          - put: gh-release
+            params:
+              name: artifacts/gh-release-name
+              tag: artifacts/gh-release-tag
+              body: artifacts/gh-release-notes.md
+          - put: version
+            params:
+              file: version/version
+    on_failure: #@ slack_failure_notification()
+
+  - name: bump-image-in-chart
+    plan:
+      - in_parallel:
+          - get: edge-image
+            passed: [release]
+            params: { skip_download: true }
+          - get: migrate-edge-image
+            passed: [release]
+            params: { skip_download: true }
+          - get: repo
+            trigger: true
+            passed:
+              - release
+          - get: version
+            passed: [release]
+          - get: charts-repo
+            params: { skip_download: true }
+          - get: pipeline-tasks
+      - task: bump-image-digest-in-values
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: repo
+            - name: edge-image
+            - name: migrate-edge-image
+            - name: pipeline-tasks
+            - name: charts-repo
+            - name: version
+          outputs:
+            - name: charts-repo
+          params:
+            BRANCH: #@ data.values.git_charts_branch
+          run:
+            path: pipeline-tasks/ci/tasks/bump-image-digest.sh
+      - put: charts-repo-bot-branch
+        params:
+          repository: charts-repo
+          force: true
+      - task: open-charts-pr
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: pipeline-tasks
+            - name: edge-image
+            - name: migrate-edge-image
+            - name: charts-repo
+          params:
+            GH_TOKEN: #@ data.values.github_token
+            BRANCH: #@ data.values.git_charts_branch
+            BOT_BRANCH: #@ data.values.git_charts_bot_branch
+          run:
+            path: pipeline-tasks/ci/tasks/open-charts-pr.sh
+
+  - name: sync-dealer-proto
+    plan:
+      - in_parallel:
+          - get: repo
+          - get: pipeline-tasks
+          - get: dealer-price-proto
+            trigger: true
+      - task: sync-proto
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: repo
+            - name: pipeline-tasks
+            - name: dealer-price-proto
+              path: src-repo
+          outputs:
+            - name: repo
+          params:
+            PROTO_FILES_SRC_PATH: dealer/proto
+            PROTO_FILES_DEST_PATH: src/services/dealer-price/proto
+            RUN_BUF_GENERATE: "true"
+            BRANCH: #@ data.values.git_branch
+            MODULE: dealer
+          run:
+            path: pipeline-tasks/ci/tasks/sync-proto.sh
+      - put: dealer-proto-bot-branch
+        params:
+          repository: repo
+          force: true
+      - task: open-bump-proto-pr
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: pipeline-tasks
+            - name: repo
+          params:
+            BRANCH: #@ data.values.git_branch
+            BOT_BRANCH: #@ data.values.git_dealer_proto_bot_branch
+            GH_TOKEN: #@ data.values.github_token
+            MODULE: dealer
+          run:
+            path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
+
+  - name: sync-price-history-proto
+    plan:
+      - in_parallel:
+          - get: repo
+          - get: pipeline-tasks
+          - get: price-history-proto
+            trigger: true
+      - task: sync-proto
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: repo
+            - name: pipeline-tasks
+            - name: price-history-proto
+              path: src-repo
+          outputs:
+            - name: repo
+          params:
+            PROTO_FILES_SRC_PATH: history/src/servers/protos
+            PROTO_FILES_DEST_PATH: src/services/price/protos
+            RUN_BUF_GENERATE: "false"
+            BRANCH: #@ data.values.git_branch
+            MODULE: price-history
+          run:
+            path: pipeline-tasks/ci/tasks/sync-proto.sh
+      - put: price-history-proto-bot-branch
+        params:
+          repository: repo
+          force: true
+      - task: open-bump-proto-pr
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: pipeline-tasks
+            - name: repo
+          params:
+            BRANCH: #@ data.values.git_branch
+            BOT_BRANCH: #@ data.values.git_price_history_proto_bot_branch
+            GH_TOKEN: #@ data.values.github_token
+            MODULE: price-history
+          run:
+            path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
 
 resources:
-- #@ repo_resource()
-- #@ pipeline_tasks_resource()
+  -  #@ repo_resource()
+  -  #@ pipeline_tasks_resource()
 
-- #@ nodejs_deps_resource()
-- #@ deps_version_resource()
-- #@ bundled_deps_resource()
-- #@ slack_resource()
+  -  #@ nodejs_deps_resource()
+  -  #@ deps_version_resource()
+  -  #@ bundled_deps_resource()
+  -  #@ slack_resource()
 
-- name: charts-repo-bot-branch
-  type: git
-  source:
-    uri: #@ data.values.git_charts_uri
-    branch: #@ data.values.git_charts_bot_branch
-    private_key: #@ data.values.github_private_key
+  - name: charts-repo-bot-branch
+    type: git
+    source:
+      uri: #@ data.values.git_charts_uri
+      branch: #@ data.values.git_charts_bot_branch
+      private_key: #@ data.values.github_private_key
 
-- name: dealer-proto-bot-branch
-  type: git
-  source:
-    uri: #@ data.values.git_uri
-    branch: #@ data.values.git_dealer_proto_bot_branch
-    private_key: #@ data.values.github_private_key
+  - name: dealer-proto-bot-branch
+    type: git
+    source:
+      uri: #@ data.values.git_uri
+      branch: #@ data.values.git_dealer_proto_bot_branch
+      private_key: #@ data.values.github_private_key
 
-- name: price-history-proto-bot-branch
-  type: git
-  source:
-    uri: #@ data.values.git_uri
-    branch: #@ data.values.git_price_history_proto_bot_branch
-    private_key: #@ data.values.github_private_key
+  - name: price-history-proto-bot-branch
+    type: git
+    source:
+      uri: #@ data.values.git_uri
+      branch: #@ data.values.git_price_history_proto_bot_branch
+      private_key: #@ data.values.github_private_key
 
-- name: charts-repo
-  type: git
-  source:
-    uri: #@ data.values.git_charts_uri
-    branch: #@ data.values.git_charts_branch
-    private_key: #@ data.values.github_private_key
+  - name: charts-repo
+    type: git
+    source:
+      uri: #@ data.values.git_charts_uri
+      branch: #@ data.values.git_charts_branch
+      private_key: #@ data.values.github_private_key
 
-- name: edge-image
-  type: registry-image
-  source:
-    tag: edge
-    username: #@ data.values.docker_registry_user
-    password: #@ data.values.docker_registry_password
-    repository: #@ galoy_image()
+  - name: edge-image
+    type: registry-image
+    source:
+      tag: edge
+      username: #@ data.values.docker_registry_user
+      password: #@ data.values.docker_registry_password
+      repository: #@ galoy_image()
 
-- name: debug-edge-image
-  type: registry-image
-  source:
-    tag: edge
-    username: #@ data.values.docker_registry_user
-    password: #@ data.values.docker_registry_password
-    repository: #@ debug_galoy_image()
+  - name: debug-edge-image
+    type: registry-image
+    source:
+      tag: edge
+      username: #@ data.values.docker_registry_user
+      password: #@ data.values.docker_registry_password
+      repository: #@ debug_galoy_image()
 
-- name: migrate-edge-image
-  type: registry-image
-  source:
-    tag: edge
-    username: #@ data.values.docker_registry_user
-    password: #@ data.values.docker_registry_password
-    repository: #@ migrate_galoy_image()
+  - name: migrate-edge-image
+    type: registry-image
+    source:
+      tag: edge
+      username: #@ data.values.docker_registry_user
+      password: #@ data.values.docker_registry_password
+      repository: #@ migrate_galoy_image()
 
-- name: versioned-image
-  type: registry-image
-  source:
-    username: #@ data.values.docker_registry_user
-    password: #@ data.values.docker_registry_password
-    repository: #@ galoy_image()
+  - name: versioned-image
+    type: registry-image
+    source:
+      username: #@ data.values.docker_registry_user
+      password: #@ data.values.docker_registry_password
+      repository: #@ galoy_image()
 
-- name: versioned-migrate-image
-  type: registry-image
-  source:
-    username: #@ data.values.docker_registry_user
-    password: #@ data.values.docker_registry_password
-    repository: #@ migrate_galoy_image()
+  - name: versioned-migrate-image
+    type: registry-image
+    source:
+      username: #@ data.values.docker_registry_user
+      password: #@ data.values.docker_registry_password
+      repository: #@ migrate_galoy_image()
 
-- name: version
-  type: semver
-  source:
-    initial_version: 0.0.0
-    driver: git
-    file: version
-    uri: #@ data.values.git_uri
-    branch: #@ data.values.git_version_branch
-    private_key: #@ data.values.github_private_key
+  - name: version
+    type: semver
+    source:
+      initial_version: 0.0.0
+      driver: git
+      file: version
+      uri: #@ data.values.git_uri
+      branch: #@ data.values.git_version_branch
+      private_key: #@ data.values.github_private_key
 
-- name: gh-release
-  type: github-release
-  source:
-    owner: #@ data.values.gh_org
-    repository: #@ data.values.gh_repository
-    access_token: #@ data.values.github_token
+  - name: gh-release
+    type: github-release
+    source:
+      owner: #@ data.values.gh_org
+      repository: #@ data.values.gh_repository
+      access_token: #@ data.values.github_token
 
-- name: dealer-price-proto
-  type: git
-  source:
-    paths: ["dealer/proto/*"]
-    uri: #@ data.values.git_dealer_uri
-    branch: #@ data.values.git_branch
-    private_key: #@ data.values.github_private_key
+  - name: dealer-price-proto
+    type: git
+    source:
+      paths: ["dealer/proto/*"]
+      uri: #@ data.values.git_dealer_uri
+      branch: #@ data.values.git_branch
+      private_key: #@ data.values.github_private_key
 
-- name: price-history-proto
-  type: git
-  source:
-    paths: ["history/src/servers/protos/*"]
-    uri: #@ data.values.git_price_uri
-    branch: #@ data.values.git_branch
-    private_key: #@ data.values.github_private_key
+  - name: price-history-proto
+    type: git
+    source:
+      paths: ["history/src/servers/protos/*"]
+      uri: #@ data.values.git_price_uri
+      branch: #@ data.values.git_branch
+      private_key: #@ data.values.github_private_key
 
 resource_types:
-- #@ gcr_resource_type()
-- #@ slack_resource_type()
+  -  #@ gcr_resource_type()
+  -  #@ slack_resource_type()
