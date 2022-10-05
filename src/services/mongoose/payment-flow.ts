@@ -226,6 +226,7 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
 
     senderWalletId: paymentFlowState.senderWalletId as WalletId,
     senderWalletCurrency: paymentFlowState.senderWalletCurrency as S,
+    senderAccountId: paymentFlowState.senderAccountId as AccountId,
     settlementMethod: paymentFlowState.settlementMethod as SettlementMethod,
     paymentInitiationMethod:
       paymentFlowState.paymentInitiationMethod as PaymentInitiationMethod,
@@ -243,6 +244,7 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
 
     recipientWalletId: (paymentFlowState.recipientWalletId as WalletId) || undefined,
     recipientWalletCurrency: (paymentFlowState.recipientWalletCurrency as R) || undefined,
+    recipientAccountId: (paymentFlowState.recipientAccountId as AccountId) || undefined,
     recipientPubkey: (paymentFlowState.recipientPubkey as Pubkey) || undefined,
     recipientUsername: (paymentFlowState.recipientUsername as Username) || undefined,
 
@@ -269,6 +271,7 @@ const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
 
     senderWalletId: paymentFlow.senderWalletId,
     senderWalletCurrency: paymentFlow.senderWalletCurrency,
+    senderAccountId: paymentFlow.senderAccountId,
     settlementMethod: paymentFlow.settlementMethod,
     paymentInitiationMethod: paymentFlow.paymentInitiationMethod,
     descriptionFromInvoice: paymentFlow.descriptionFromInvoice,
@@ -285,6 +288,7 @@ const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
 
     recipientWalletId: paymentFlow.recipientWalletId,
     recipientWalletCurrency: paymentFlow.recipientWalletCurrency,
+    recipientAccountId: paymentFlow.recipientAccountId,
     recipientPubkey: paymentFlow.recipientPubkey,
     recipientUsername: paymentFlow.recipientUsername,
 

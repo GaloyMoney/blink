@@ -1,6 +1,6 @@
 import assert from "assert"
 
-import { MS_PER_DAY, ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE } from "@config"
+import { MS_PER_DAY, ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE, ONE_DAY } from "@config"
 import { toSats } from "@domain/bitcoin"
 import {
   defaultTimeToExpiryInSeconds,
@@ -18,6 +18,8 @@ import {
 import { baseLogger } from "@services/logger"
 import { WalletInvoicesRepository, PaymentFlowStateRepository } from "@services/mongoose"
 import { DbMetadata } from "@services/mongoose/schema"
+
+import { timestampDaysAgo } from "@utils"
 
 import { default as axios } from "axios"
 import {
@@ -237,7 +239,8 @@ export const updateRoutingRevenues = async () => {
 
   const after = lastDate.toISOString()
 
-  const endDate = new Date(Date.now() - MS_PER_DAY)
+  const endDate = timestampDaysAgo(ONE_DAY)
+  if (endDate instanceof Error) throw endDate
 
   // Done to remove effect of timezone
   endDate.setUTCHours(0, 0, 0, 0)

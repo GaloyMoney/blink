@@ -72,7 +72,7 @@ type WalletInvoice = {
   selfGenerated: boolean
   pubkey: Pubkey
   usdAmount?: UsdPaymentAmount
-  recipientWalletDescriptor: WalletDescriptor<WalletCurrency>
+  recipientWalletDescriptor: PartialWalletDescriptor<WalletCurrency>
   paid: boolean
 }
 
@@ -81,7 +81,6 @@ type WalletInvoiceReceiver = WalletInvoice & {
   btcToCreditReceiver: BtcPaymentAmount
   usdBankFee: UsdPaymentAmount
   btcBankFee: BtcPaymentAmount
-  recipientWalletDescriptor: WalletDescriptor<WalletCurrency>
   receivedAmount: () => BtcPaymentAmount | UsdPaymentAmount
 }
 

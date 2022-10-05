@@ -1,10 +1,10 @@
-import { MS_PER_DAY } from "@config"
+import { MS_PER_DAY, ONE_DAY } from "@config"
 import { deleteExpiredWalletInvoice, updateRoutingRevenues } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import { ledgerAdmin } from "@services/mongodb"
 import { DbMetadata, WalletInvoice } from "@services/mongoose/schema"
 
-import { sleep } from "@utils"
+import { sleep, timestampDaysAgo } from "@utils"
 
 import {
   cancelHodlInvoice,
@@ -98,7 +98,8 @@ describe("lndUtils", () => {
     const startDate = new Date(0)
     startDate.setUTCHours(0, 0, 0, 0)
 
-    const endDate = new Date(Date.now() - MS_PER_DAY)
+    const endDate = timestampDaysAgo(ONE_DAY)
+    if (endDate instanceof Error) return endDate
     endDate.setUTCHours(0, 0, 0, 0)
 
     const after = startDate.toISOString()

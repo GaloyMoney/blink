@@ -22,6 +22,11 @@ export const TxnGroups = {
     LedgerTransactionType.OnchainIntraLedger,
     LedgerTransactionType.LnIntraLedger,
   ],
+  tradeIntraAccountTxBaseVolumeSince: [
+    LedgerTransactionType.WalletIdTradeIntraAccount,
+    LedgerTransactionType.OnChainTradeIntraAccount,
+    LedgerTransactionType.LnTradeIntraAccount,
+  ],
   lightningTxBaseVolumeSince: [
     LedgerTransactionType.Payment,
     LedgerTransactionType.Invoice,
@@ -115,6 +120,7 @@ export const volume = {
   allPaymentVolumeSince: volumeFn("allPaymentVolumeSince"),
   externalPaymentVolumeSince: volumeFn("externalPaymentVolumeSince"),
   intraledgerTxBaseVolumeSince: volumeFn("intraledgerTxBaseVolumeSince"),
+  tradeIntraAccountTxBaseVolumeSince: volumeFn("tradeIntraAccountTxBaseVolumeSince"),
   allTxBaseVolumeSince: volumeFn("allTxBaseVolumeSince"),
   onChainTxBaseVolumeSince: volumeFn("onChainTxBaseVolumeSince"),
   lightningTxBaseVolumeSince: volumeFn("lightningTxBaseVolumeSince"),
@@ -122,6 +128,9 @@ export const volume = {
   allPaymentVolumeAmountSince: volumeAmountFn("allPaymentVolumeSince"),
   externalPaymentVolumeAmountSince: volumeAmountFn("externalPaymentVolumeSince"),
   intraledgerTxBaseVolumeAmountSince: volumeAmountFn("intraledgerTxBaseVolumeSince"),
+  tradeIntraAccountTxBaseVolumeAmountSince: volumeAmountFn(
+    "tradeIntraAccountTxBaseVolumeSince",
+  ),
   allTxBaseVolumeAmountSince: volumeAmountFn("allTxBaseVolumeSince"),
   onChainTxBaseVolumeAmountSince: volumeAmountFn("onChainTxBaseVolumeSince"),
   lightningTxBaseVolumeAmountSince: volumeAmountFn("lightningTxBaseVolumeSince"),

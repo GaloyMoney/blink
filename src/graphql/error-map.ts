@@ -41,6 +41,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = error.message
       return new TransactionRestrictedError({ message, logger: baseLogger })
 
+    case "TradeIntraAccountLimitsExceededError":
+      message = error.message
+      return new TransactionRestrictedError({ message, logger: baseLogger })
+
     case "TwoFANewCodeNeededError":
       message = "Need a 2FA code to proceed with the payment"
       return new TwoFAError({ message, logger: baseLogger })

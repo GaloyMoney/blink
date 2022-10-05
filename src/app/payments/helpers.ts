@@ -1,9 +1,9 @@
 import {
   getTwoFALimits,
   getAccountLimits,
-  MS_PER_DAY,
   MIN_SATS_FOR_PRICE_RATIO_PRECISION,
   getPubkeysToSkipProbe,
+  ONE_DAY,
 } from "@config"
 import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
 import {
@@ -21,8 +21,9 @@ import {
 } from "@services/mongoose"
 import { LndService } from "@services/lnd"
 import { LedgerService } from "@services/ledger"
-import { WalletCurrency } from "@domain/shared"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { WalletCurrency } from "@domain/shared"
+import { timestampDaysAgo } from "@utils"
 
 const ledger = LedgerService()
 
@@ -91,6 +92,7 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   | {
       id: WalletId
       currency: R
+      accountId: AccountId
       pubkey: Pubkey
       usdPaymentAmount: UsdPaymentAmount | undefined
       username: Username
@@ -123,24 +125,27 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   return {
     id: recipientWalletId,
     currency: recipientsWalletCurrency as R,
+    accountId: recipientAccount.id,
     pubkey: recipientPubkey,
     usdPaymentAmount,
     username: recipientUsername,
   }
 }
 
-export const newCheckIntraledgerLimits = async ({
+export const newCheckIntraledgerLimits = async <S extends WalletCurrency>({
   amount,
   wallet,
   priceRatio,
 }: {
   amount: UsdPaymentAmount
-  wallet: Wallet
+  wallet: WalletDescriptor<S>
   priceRatio: PriceRatio
 }) => {
-  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1Day = timestampDaysAgo(ONE_DAY)
+  if (timestamp1Day instanceof Error) return timestamp1Day
+
   const walletVolume = await ledger.intraledgerTxBaseVolumeAmountSince({
-    walletDescriptor: { id: wallet.id, currency: wallet.currency },
+    walletDescriptor: wallet,
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
@@ -160,18 +165,53 @@ export const newCheckIntraledgerLimits = async ({
   })
 }
 
-export const newCheckWithdrawalLimits = async ({
+export const newCheckTradeIntraAccountLimits = async <S extends WalletCurrency>({
   amount,
   wallet,
   priceRatio,
 }: {
   amount: UsdPaymentAmount
-  wallet: Wallet
+  wallet: WalletDescriptor<S>
   priceRatio: PriceRatio
 }) => {
-  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1Day = timestampDaysAgo(ONE_DAY)
+  if (timestamp1Day instanceof Error) return timestamp1Day
+
+  const walletVolume = await ledger.tradeIntraAccountTxBaseVolumeAmountSince({
+    walletDescriptor: wallet,
+    timestamp: timestamp1Day,
+  })
+  if (walletVolume instanceof Error) return walletVolume
+
+  const account = await AccountsRepository().findById(wallet.accountId)
+  if (account instanceof Error) return account
+
+  const accountLimits = getAccountLimits({ level: account.level })
+  const { checkTradeIntraAccount } = AccountLimitsChecker({
+    accountLimits,
+    priceRatio,
+  })
+
+  return checkTradeIntraAccount({
+    amount,
+    walletVolume,
+  })
+}
+
+export const newCheckWithdrawalLimits = async <S extends WalletCurrency>({
+  amount,
+  wallet,
+  priceRatio,
+}: {
+  amount: UsdPaymentAmount
+  wallet: WalletDescriptor<S>
+  priceRatio: PriceRatio
+}) => {
+  const timestamp1Day = timestampDaysAgo(ONE_DAY)
+  if (timestamp1Day instanceof Error) return timestamp1Day
+
   const walletVolume = await ledger.externalPaymentVolumeAmountSince({
-    walletDescriptor: { id: wallet.id, currency: wallet.currency },
+    walletDescriptor: wallet,
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
@@ -190,18 +230,20 @@ export const newCheckWithdrawalLimits = async ({
   })
 }
 
-export const newCheckTwoFALimits = async ({
+export const newCheckTwoFALimits = async <S extends WalletCurrency>({
   amount,
   wallet,
   priceRatio,
 }: {
   amount: UsdPaymentAmount
-  wallet: Wallet
+  wallet: WalletDescriptor<S>
   priceRatio: PriceRatio
 }) => {
-  const timestamp1Day = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1Day = timestampDaysAgo(ONE_DAY)
+  if (timestamp1Day instanceof Error) return timestamp1Day
+
   const walletVolume = await ledger.allPaymentVolumeAmountSince({
-    walletDescriptor: { id: wallet.id, currency: wallet.currency },
+    walletDescriptor: wallet,
     timestamp: timestamp1Day,
   })
   if (walletVolume instanceof Error) return walletVolume
