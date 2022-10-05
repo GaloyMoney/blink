@@ -1,6 +1,6 @@
 import { GT } from "@graphql/index"
 import Memo from "@graphql/types/scalar/memo"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
@@ -73,8 +73,7 @@ const OnChainPaymentSendMutation = GT.Field<
     })
 
     if (status instanceof Error) {
-      const appErr = mapError(status)
-      return { status: "failed", errors: [{ message: appErr.message }] }
+      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(status)] }
     }
 
     return {

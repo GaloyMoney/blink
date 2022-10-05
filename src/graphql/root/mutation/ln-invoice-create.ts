@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import Memo from "@graphql/types/scalar/memo"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
@@ -50,8 +50,7 @@ const LnInvoiceCreateMutation = GT.Field({
     })
 
     if (lnInvoice instanceof Error) {
-      const appErr = mapError(lnInvoice)
-      return { errors: [{ message: appErr.message }] }
+      return { errors: [mapAndParseErrorForGqlResponse(lnInvoice)] }
     }
 
     return {
