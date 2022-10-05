@@ -33,9 +33,12 @@ type DisplayBalanceAmount<T extends DisplayCurrency> = DisplayAmount<T> & {
   readonly brand?: unique symbol
 }
 
-type WalletDescriptor<T extends WalletCurrency> = {
+type PartialWalletDescriptor<T extends WalletCurrency> = {
   id: WalletId
   currency: T
+}
+type WalletDescriptor<T extends WalletCurrency> = PartialWalletDescriptor<T> & {
+  accountId: AccountId
 }
 
 type BtcPaymentAmount = PaymentAmount<"BTC">

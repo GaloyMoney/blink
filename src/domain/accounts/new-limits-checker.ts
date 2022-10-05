@@ -1,10 +1,59 @@
 import {
   IntraledgerLimitsExceededError,
+  TradeIntraAccountLimitsExceededError,
   TwoFALimitsExceededError,
   WithdrawalLimitsExceededError,
 } from "@domain/errors"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
+
+const checkLimitBase =
+  ({
+    limitName,
+    limitAmount,
+    limitError,
+    limitErrMsg,
+    priceRatio,
+  }: {
+    limitName:
+      | "checkIntraledger"
+      | "checkWithdrawal"
+      | "checkTradeIntraAccount"
+      | "checkTwoFA"
+    limitAmount: UsdCents
+    limitError: LimitsExceededErrorConstructor
+    limitErrMsg: string | undefined
+    priceRatio: PriceRatio
+  }) =>
+  async ({
+    amount,
+    walletVolume,
+  }: NewLimiterCheckInputs): Promise<true | LimitsExceededError> => {
+    const volumeInUsdAmount =
+      walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
+        ? await priceRatio.convertFromBtc(
+            walletVolume.outgoingBaseAmount as BtcPaymentAmount,
+          )
+        : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
+
+    const limit = paymentAmountFromNumber({
+      amount: limitAmount,
+      currency: WalletCurrency.Usd,
+    })
+    if (limit instanceof Error) return limit
+    addAttributesToCurrentSpan({
+      "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
+      "txVolume.threshold": `${limit.amount}`,
+      "txVolume.amountInBase": `${amount.amount}`,
+      "txVolume.limitCheck": limitName,
+    })
+
+    const remainingLimit = limit.amount - volumeInUsdAmount.amount
+    if (remainingLimit < amount.amount) {
+      return new limitError(limitErrMsg)
+    }
+    return true
+  }
 
 export const AccountLimitsChecker = ({
   accountLimits,
@@ -12,76 +61,29 @@ export const AccountLimitsChecker = ({
 }: {
   accountLimits: IAccountLimits
   priceRatio: PriceRatio
-}): AccountLimitsChecker => {
-  const checkIntraledger = async ({
-    amount,
-    walletVolume,
-  }: NewLimiterCheckInputs): Promise<true | LimitsExceededError> => {
-    const volumeInUsdAmount =
-      walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
-        ? await priceRatio.convertFromBtc(
-            walletVolume.outgoingBaseAmount as BtcPaymentAmount,
-          )
-        : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
-
-    const limit = paymentAmountFromNumber({
-      amount: accountLimits.intraLedgerLimit,
-      currency: WalletCurrency.Usd,
-    })
-    if (limit instanceof Error) return limit
-    addAttributesToCurrentSpan({
-      "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
-      "txVolume.threshold": `${limit.amount}`,
-      "txVolume.amountInBase": `${amount.amount}`,
-      "txVolume.limitCheck": "checkIntraledger",
-    })
-
-    const remainingLimit = limit.amount - volumeInUsdAmount.amount
-    if (remainingLimit < amount.amount) {
-      return new IntraledgerLimitsExceededError(
-        `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`,
-      )
-    }
-    return true
-  }
-
-  const checkWithdrawal = async ({
-    amount,
-    walletVolume,
-  }: NewLimiterCheckInputs): Promise<true | LimitsExceededError> => {
-    const volumeInUsdAmount =
-      walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
-        ? await priceRatio.convertFromBtc(
-            walletVolume.outgoingBaseAmount as BtcPaymentAmount,
-          )
-        : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
-
-    const limit = paymentAmountFromNumber({
-      amount: accountLimits.withdrawalLimit,
-      currency: WalletCurrency.Usd,
-    })
-    if (limit instanceof Error) return limit
-    addAttributesToCurrentSpan({
-      "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
-      "txVolume.threshold": `${limit.amount}`,
-      "txVolume.amountInBase": `${amount.amount}`,
-      "txVolume.limitCheck": "checkWithdrawal",
-    })
-
-    const remainingLimit = limit.amount - volumeInUsdAmount.amount
-    if (remainingLimit < amount.amount) {
-      return new WithdrawalLimitsExceededError(
-        `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`,
-      )
-    }
-    return true
-  }
-
-  return {
-    checkIntraledger,
-    checkWithdrawal,
-  }
-}
+}): AccountLimitsChecker => ({
+  checkIntraledger: checkLimitBase({
+    limitName: "checkIntraledger",
+    limitAmount: accountLimits.intraLedgerLimit,
+    limitError: IntraledgerLimitsExceededError,
+    limitErrMsg: `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`,
+    priceRatio,
+  }),
+  checkWithdrawal: checkLimitBase({
+    limitName: "checkWithdrawal",
+    limitAmount: accountLimits.withdrawalLimit,
+    limitError: WithdrawalLimitsExceededError,
+    limitErrMsg: `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`,
+    priceRatio,
+  }),
+  checkTradeIntraAccount: checkLimitBase({
+    limitName: "checkTradeIntraAccount",
+    limitAmount: accountLimits.tradeIntraAccountLimit,
+    limitError: TradeIntraAccountLimitsExceededError,
+    limitErrMsg: `Cannot transfer more than ${accountLimits.tradeIntraAccountLimit} cents in 24 hours`,
+    priceRatio,
+  }),
+})
 
 export const TwoFALimitsChecker = ({
   twoFALimits,
@@ -89,38 +91,12 @@ export const TwoFALimitsChecker = ({
 }: {
   twoFALimits: TwoFALimits
   priceRatio: PriceRatio
-}): TwoFALimitsChecker => {
-  const checkTwoFA = async ({
-    amount,
-    walletVolume,
-  }: NewLimiterCheckInputs): Promise<true | LimitsExceededError> => {
-    const volumeInUsdAmount =
-      walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
-        ? await priceRatio.convertFromBtc(
-            walletVolume.outgoingBaseAmount as BtcPaymentAmount,
-          )
-        : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
-
-    const limit = paymentAmountFromNumber({
-      amount: twoFALimits.threshold,
-      currency: WalletCurrency.Usd,
-    })
-    if (limit instanceof Error) return limit
-    addAttributesToCurrentSpan({
-      "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
-      "txVolume.threshold": `${limit.amount}`,
-      "txVolume.amountInBase": `${amount.amount}`,
-      "txVolume.limitCheck": "checkTwoFA",
-    })
-
-    const remainingLimit = limit.amount - volumeInUsdAmount.amount
-    if (remainingLimit < amount.amount) {
-      return new TwoFALimitsExceededError()
-    }
-    return true
-  }
-
-  return {
-    checkTwoFA,
-  }
-}
+}): TwoFALimitsChecker => ({
+  checkTwoFA: checkLimitBase({
+    limitName: "checkTwoFA",
+    limitAmount: twoFALimits.threshold,
+    limitError: TwoFALimitsExceededError,
+    limitErrMsg: undefined,
+    priceRatio,
+  }),
+})

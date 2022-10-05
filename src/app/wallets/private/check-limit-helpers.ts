@@ -1,4 +1,4 @@
-import { getTwoFALimits, getAccountLimits, MS_PER_DAY } from "@config"
+import { getTwoFALimits, getAccountLimits, ONE_DAY } from "@config"
 import { LimitsChecker } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
@@ -6,7 +6,7 @@ import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
 import { WalletCurrency } from "@domain/shared"
 import { LedgerService } from "@services/ledger"
 import { addAttributesToCurrentSpan } from "@services/tracing"
-import { mapObj } from "@utils"
+import { mapObj, timestampDaysAgo } from "@utils"
 
 export const checkIntraledgerLimits = async ({
   amount,
@@ -25,7 +25,8 @@ export const checkIntraledgerLimits = async ({
   if (limitsChecker instanceof Error) return limitsChecker
 
   const ledgerService = LedgerService()
-  const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
+  if (timestamp1DayAgo instanceof Error) return timestamp1DayAgo
 
   const walletVolume = await ledgerService.intraledgerTxBaseVolumeSince({
     walletId,
@@ -59,7 +60,8 @@ export const checkWithdrawalLimits = async ({
   if (limitsChecker instanceof Error) return limitsChecker
 
   const ledgerService = LedgerService()
-  const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
+  if (timestamp1DayAgo instanceof Error) return timestamp1DayAgo
 
   const walletVolume = await ledgerService.externalPaymentVolumeSince({
     walletId,
@@ -93,7 +95,8 @@ export const checkTwoFALimits = async ({
   if (limitsChecker instanceof Error) return limitsChecker
 
   const ledgerService = LedgerService()
-  const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
+  const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
+  if (timestamp1DayAgo instanceof Error) return timestamp1DayAgo
 
   const walletVolume = await ledgerService.allPaymentVolumeSince({
     walletId,

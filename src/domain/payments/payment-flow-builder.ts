@@ -118,7 +118,12 @@ const LPFBWithInvoice = <S extends WalletCurrency>(
   state: LPFBWithInvoiceState,
 ): LPFBWithInvoice<S> | LPFBWithError => {
   const withSenderWallet = (senderWallet: WalletDescriptor<S>) => {
-    const { id: senderWalletId, currency: senderWalletCurrency } = senderWallet
+    const {
+      id: senderWalletId,
+      accountId: senderAccountId,
+    }: { id: WalletId; accountId: AccountId } = senderWallet
+    const senderWalletCurrency = senderWallet.currency as S
+
     if (state.uncheckedAmount !== undefined) {
       if (senderWalletCurrency === WalletCurrency.Btc) {
         const paymentAmount = checkedToBtcPaymentAmount(state.uncheckedAmount)
@@ -129,6 +134,7 @@ const LPFBWithInvoice = <S extends WalletCurrency>(
           ...state,
           senderWalletId,
           senderWalletCurrency,
+          senderAccountId,
           btcPaymentAmount: paymentAmount,
           inputAmount: paymentAmount.amount,
           btcProtocolFee: state.btcProtocolFee || LnFees().maxProtocolFee(paymentAmount),
@@ -142,6 +148,7 @@ const LPFBWithInvoice = <S extends WalletCurrency>(
           ...state,
           senderWalletId,
           senderWalletCurrency,
+          senderAccountId,
           usdPaymentAmount: paymentAmount,
           inputAmount: paymentAmount.amount,
           usdProtocolFee: state.usdProtocolFee || LnFees().maxProtocolFee(paymentAmount),
@@ -156,6 +163,7 @@ const LPFBWithInvoice = <S extends WalletCurrency>(
         ...state,
         senderWalletId,
         senderWalletCurrency,
+        senderAccountId,
         btcPaymentAmount,
         btcProtocolFee: state.btcProtocolFee || LnFees().maxProtocolFee(btcPaymentAmount),
         inputAmount,
@@ -192,7 +200,9 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
     pubkey: recipientPubkey,
     usdPaymentAmount,
     username: recipientUsername,
+    accountId: recipientAccountId,
   }: WalletDescriptor<R> & {
+    accountId: AccountId
     pubkey?: Pubkey
     usdPaymentAmount?: UsdPaymentAmount
     username?: Username
@@ -217,6 +227,7 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
       recipientWalletId,
       recipientWalletCurrency,
       recipientPubkey,
+      recipientAccountId,
       recipientUsername,
       usdPaymentAmount: usdPaymentAmount || state.usdPaymentAmount,
     })
@@ -427,8 +438,10 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
 
       senderWalletId: state.senderWalletId,
       senderWalletCurrency: state.senderWalletCurrency,
+      senderAccountId: state.senderAccountId,
       recipientWalletId: state.recipientWalletId,
       recipientWalletCurrency: state.recipientWalletCurrency,
+      recipientAccountId: state.recipientAccountId,
       recipientPubkey: state.recipientPubkey,
       recipientUsername: state.recipientUsername,
 
@@ -519,6 +532,17 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     return state.settlementMethod === SettlementMethod.IntraLedger
   }
 
+  const isTradeIntraAccount = async () => {
+    const state = await statePromise
+    if (state instanceof Error) return state
+
+    return (
+      state.senderAccountId === state.recipientAccountId &&
+      state.senderWalletCurrency !==
+        (state.recipientWalletCurrency as unknown as S | undefined)
+    )
+  }
+
   return {
     withRoute,
     withoutRoute,
@@ -526,6 +550,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     usdPaymentAmount,
     skipProbeForDestination,
     isIntraLedger,
+    isTradeIntraAccount,
   }
 }
 
@@ -560,6 +585,9 @@ const LPFBWithError = (
   const isIntraLedger = async () => {
     return Promise.resolve(error)
   }
+  const isTradeIntraAccount = async () => {
+    return Promise.resolve(error)
+  }
   const btcPaymentAmount = async () => {
     return Promise.resolve(error)
   }
@@ -575,6 +603,7 @@ const LPFBWithError = (
     withConversion,
     skipProbeForDestination,
     isIntraLedger,
+    isTradeIntraAccount,
     withRoute,
     withoutRoute,
     btcPaymentAmount,

@@ -26,19 +26,24 @@ describe("LightningPaymentFlowBuilder", () => {
   const senderBtcWallet = {
     id: "senderWalletId" as WalletId,
     currency: WalletCurrency.Btc,
-  }
+    accountId: "senderAccountId" as AccountId,
+  } as Wallet
+
   const recipientBtcWallet = {
     id: "recipientWalletId" as WalletId,
     currency: WalletCurrency.Btc,
+    accountId: "recipientAccountId" as AccountId,
     username: "Username" as Username,
   }
   const senderUsdWallet = {
     id: "walletId" as WalletId,
     currency: WalletCurrency.Usd,
-  }
+    accountId: "senderAccountId" as AccountId,
+  } as Wallet
   const recipientUsdWallet = {
     id: "recipientWalletId" as WalletId,
     currency: WalletCurrency.Usd,
+    accountId: "recipientAccountId" as AccountId,
     username: "Username" as Username,
   }
   const pubkey = "pubkey" as Pubkey
