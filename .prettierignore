@@ -5,6 +5,5 @@ charts
 protos
 .vscode
 
-**/*.yaml
-**/*.yml
+ci/vendor
 **/*.md

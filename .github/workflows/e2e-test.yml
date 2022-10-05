@@ -2,7 +2,7 @@ name: "E2E test"
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   integration:
@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
-    - run: yarn install
-    - name: Run e2e tests
-      run: |
-        make e2e-in-ci
-        container_id=$(docker ps -q -f status=exited -f name="${PWD##*/}-e2e-tests-")
-        exit $(docker inspect $container_id --format='{{.State.ExitCode}}')
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - run: yarn install
+      - name: Run e2e tests
+        run: |
+          make e2e-in-ci
+          container_id=$(docker ps -q -f status=exited -f name="${PWD##*/}-e2e-tests-")
+          exit $(docker inspect $container_id --format='{{.State.ExitCode}}')

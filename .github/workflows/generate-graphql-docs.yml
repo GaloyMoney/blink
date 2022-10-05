@@ -4,38 +4,38 @@ concurrency: ${{ github.workflow }}
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        path: main
-    - uses: actions/checkout@v2
-      with:
-        ref: docs
-        path: docs
-    - uses: actions/setup-node@v2
-    - run: yarn install
-      working-directory: main
-    - uses: vmware-tanzu/carvel-setup-action@v1
-      with:
-        only: ytt
-    - run: ytt -f spectaql/TUTORIAL.md -f spectaql/spectaql-config-template.yml > spectaql-config.yml
-      working-directory: main
-    - name: Build docs
-      run: yarn run build-docs
-      working-directory: main
-    - run: cp main/public/index.html docs
-    - run: cp main/public/logo.png docs/images
-    - name: Deploy docs
-      working-directory: docs
-      run: |
-        git config --local user.name 'github-actions[bot]'
-        git config --local user.email 'github-actions[bot]@users.noreply.github.com'
-        git add .
-        git commit -m "Update docs: $GITHUB_SHA"
-        git push
+      - uses: actions/checkout@v2
+        with:
+          path: main
+      - uses: actions/checkout@v2
+        with:
+          ref: docs
+          path: docs
+      - uses: actions/setup-node@v2
+      - run: yarn install
+        working-directory: main
+      - uses: vmware-tanzu/carvel-setup-action@v1
+        with:
+          only: ytt
+      - run: ytt -f spectaql/TUTORIAL.md -f spectaql/spectaql-config-template.yml > spectaql-config.yml
+        working-directory: main
+      - name: Build docs
+        run: yarn run build-docs
+        working-directory: main
+      - run: cp main/public/index.html docs
+      - run: cp main/public/logo.png docs/images
+      - name: Deploy docs
+        working-directory: docs
+        run: |
+          git config --local user.name 'github-actions[bot]'
+          git config --local user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "Update docs: $GITHUB_SHA"
+          git push

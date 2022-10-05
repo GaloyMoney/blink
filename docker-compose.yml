@@ -3,25 +3,25 @@ services:
   integration-deps:
     image: busybox
     depends_on:
-    - price
-    - price-history
-    - price-history-migrate
-    - stablesats
-    - redis
-    - mongodb
-    - postgres-price-history
-    - bitcoind
-    - lnd1
-    - lnd2
-    - lnd-outside-1
-    - lnd-outside-2
-    - otel-agent
+      - price
+      - price-history
+      - price-history-migrate
+      - stablesats
+      - redis
+      - mongodb
+      - postgres-price-history
+      - bitcoind
+      - lnd1
+      - lnd2
+      - lnd-outside-1
+      - lnd-outside-2
+      - otel-agent
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.61.0
     command: ["--config=/etc/otel-agent-config.yaml"]
     environment:
-    - HONEYCOMB_DATASET=${HONEYCOMB_DATASET}
-    - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
+      - HONEYCOMB_DATASET=${HONEYCOMB_DATASET}
+      - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
     volumes:
       - ./dev/otel-agent-config.yaml:/etc/otel-agent-config.yaml
   price:
@@ -56,24 +56,24 @@ services:
   redis:
     image: bitnami/redis:6.2
     environment:
-    - ALLOW_EMPTY_PASSWORD=yes
-    - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
   mongodb-migrate:
     depends_on: [mongodb]
     build:
       context: .
       dockerfile: Dockerfile-migrate
     environment:
-    - MONGODB_ADDRESS=mongodb
+      - MONGODB_ADDRESS=mongodb
   mongodb:
     image: bitnami/mongodb:4.4.6-debian-10-r0
     environment:
-    - MONGODB_PASSWORD=password
-    - MONGODB_USERNAME=testGaloy
-    - MONGODB_DATABASE=galoy
-    - MONGODB_REPLICA_SET_MODE=primary
-    - MONGODB_ROOT_PASSWORD=password
-    - MONGODB_REPLICA_SET_KEY=replicasetkey
+      - MONGODB_PASSWORD=password
+      - MONGODB_USERNAME=testGaloy
+      - MONGODB_DATABASE=galoy
+      - MONGODB_REPLICA_SET_MODE=primary
+      - MONGODB_ROOT_PASSWORD=password
+      - MONGODB_REPLICA_SET_KEY=replicasetkey
   postgres-price-history:
     image: postgres:14.1
     environment:
@@ -83,79 +83,79 @@ services:
   bitcoind:
     image: lncm/bitcoind:v23.0
     volumes:
-    - ${PWD}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
+      - ${PWD}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   lnd1:
     image: lightninglabs/lnd:v0.15.1-beta
     volumes:
-    - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
-    - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
-    - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
-    - ${PWD}/dev/lnd/regtest/lnd1.wallet.db:/root/.lnd/wallet.db
-    - ${PWD}/dev/lnd/regtest/lnd1.macaroons.db:/root/.lnd/macaroons.db
-    - ${PWD}/dev/lnd/regtest/lnd1.admin.macaroon:/root/.lnd/admin.macaroon
+      - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
+      - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${PWD}/dev/lnd/regtest/lnd1.wallet.db:/root/.lnd/wallet.db
+      - ${PWD}/dev/lnd/regtest/lnd1.macaroons.db:/root/.lnd/macaroons.db
+      - ${PWD}/dev/lnd/regtest/lnd1.admin.macaroon:/root/.lnd/admin.macaroon
     depends_on: [bitcoind]
-    entrypoint: ["/bin/sh","-c"]
+    entrypoint: ["/bin/sh", "-c"]
     command:
-    - |
-      mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
-      cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
-      cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
-      cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
-      /bin/lnd
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
   lnd2:
     image: lightninglabs/lnd:v0.15.1-beta
     volumes:
-    - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
-    - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
-    - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
-    - ${PWD}/dev/lnd/regtest/lnd2.wallet.db:/root/.lnd/wallet.db
-    - ${PWD}/dev/lnd/regtest/lnd2.macaroons.db:/root/.lnd/macaroons.db
-    - ${PWD}/dev/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/admin.macaroon
+      - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
+      - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${PWD}/dev/lnd/regtest/lnd2.wallet.db:/root/.lnd/wallet.db
+      - ${PWD}/dev/lnd/regtest/lnd2.macaroons.db:/root/.lnd/macaroons.db
+      - ${PWD}/dev/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/admin.macaroon
     depends_on: [bitcoind]
-    entrypoint: ["/bin/sh","-c"]
+    entrypoint: ["/bin/sh", "-c"]
     command:
-    - |
-      mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
-      cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
-      cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
-      cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
-      /bin/lnd
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
   lnd-outside-1:
     image: lightninglabs/lnd:v0.15.1-beta
     volumes:
-    - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
-    - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
-    - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
-    - ${PWD}/dev/lnd/regtest/lnd-outside-1.wallet.db:/root/.lnd/wallet.db
-    - ${PWD}/dev/lnd/regtest/lnd-outside-1.macaroons.db:/root/.lnd/macaroons.db
-    - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/admin.macaroon
-    entrypoint: ["/bin/sh","-c"]
+      - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
+      - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${PWD}/dev/lnd/regtest/lnd-outside-1.wallet.db:/root/.lnd/wallet.db
+      - ${PWD}/dev/lnd/regtest/lnd-outside-1.macaroons.db:/root/.lnd/macaroons.db
+      - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/admin.macaroon
+    entrypoint: ["/bin/sh", "-c"]
     command:
-    - |
-      mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
-      cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
-      cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
-      cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
-      /bin/lnd
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
     depends_on: [bitcoind]
   lnd-outside-2:
     image: lightninglabs/lnd:v0.15.1-beta
     volumes:
-    - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
-    - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
-    - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
-    - ${PWD}/dev/lnd/regtest/lnd-outside-2.wallet.db:/root/.lnd/wallet.db
-    - ${PWD}/dev/lnd/regtest/lnd-outside-2.macaroons.db:/root/.lnd/macaroons.db
-    - ${PWD}/dev/lnd/regtest/lnd-outside-2.admin.macaroon:/root/.lnd/admin.macaroon
+      - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
+      - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
+      - ${PWD}/dev/lnd/tls.cert:/root/.lnd/tls.cert
+      - ${PWD}/dev/lnd/regtest/lnd-outside-2.wallet.db:/root/.lnd/wallet.db
+      - ${PWD}/dev/lnd/regtest/lnd-outside-2.macaroons.db:/root/.lnd/macaroons.db
+      - ${PWD}/dev/lnd/regtest/lnd-outside-2.admin.macaroon:/root/.lnd/admin.macaroon
     depends_on: [bitcoind]
-    entrypoint: ["/bin/sh","-c"]
+    entrypoint: ["/bin/sh", "-c"]
     command:
-    - |
-      mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
-      cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
-      cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
-      cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
-      /bin/lnd
+      - |
+        mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
+        cp /root/.lnd/wallet.db /root/.lnd/data/chain/bitcoin/regtest/wallet.db
+        cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
+        cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
+        /bin/lnd
   loopserver:
     image: lightninglabs/loopserver:v0.9.52-beta
     restart: unless-stopped
@@ -194,15 +194,15 @@ services:
       mkdir -p /root/.loop/regtest/ &&
       cp /root/.loop/tmp/* /root/.loop/regtest/ &&
       loopd\
-        --network=regtest\
-        --debuglevel=debug\
-        --server.host=${LOOP_SERVER_INTERNAL_IP}:11009\
-        --server.notls --lnd.host=lnd1:10009\
-        --lnd.macaroonpath=/root/.lnd/lnd1.admin.macaroon\
-        --lnd.tlspath=/root/.lnd/tls.cert\
-        --tlsautorefresh\
-        --restlisten=0.0.0.0:8081\
-        --rpclisten=0.0.0.0:11010"
+      --network=regtest\
+      --debuglevel=debug\
+      --server.host=${LOOP_SERVER_INTERNAL_IP}:11009\
+      --server.notls --lnd.host=lnd1:10009\
+      --lnd.macaroonpath=/root/.lnd/lnd1.admin.macaroon\
+      --lnd.tlspath=/root/.lnd/tls.cert\
+      --tlsautorefresh\
+      --restlisten=0.0.0.0:8081\
+      --rpclisten=0.0.0.0:11010"
   loopd2:
     image: lightninglabs/loop:v0.20.1-beta
     restart: unless-stopped
@@ -225,20 +225,20 @@ services:
       mkdir -p /root/.loop/regtest/ &&
       cp /root/.loop/tmp/* /root/.loop/regtest/ &&
       loopd\
-        --network=regtest\
-        --debuglevel=debug\
-        --server.host=${LOOP_SERVER_INTERNAL_IP}:11009\
-        --server.notls --lnd.host=lnd2:10009\
-        --lnd.macaroonpath=/root/.lnd/lnd2.admin.macaroon\
-        --lnd.tlspath=/root/.lnd/tls.cert\
-        --tlsautorefresh\
-        --restlisten=0.0.0.0:8081\
-        --rpclisten=0.0.0.0:11010"
+      --network=regtest\
+      --debuglevel=debug\
+      --server.host=${LOOP_SERVER_INTERNAL_IP}:11009\
+      --server.notls --lnd.host=lnd2:10009\
+      --lnd.macaroonpath=/root/.lnd/lnd2.admin.macaroon\
+      --lnd.tlspath=/root/.lnd/tls.cert\
+      --tlsautorefresh\
+      --restlisten=0.0.0.0:8081\
+      --rpclisten=0.0.0.0:11010"
   e2e-tests:
     image: us.gcr.io/galoy-org/galoy-app-pipeline
     depends_on:
-    - integration-deps
-    command: ["make","execute-e2e-from-within-container"]
+      - integration-deps
+    command: ["make", "execute-e2e-from-within-container"]
     working_dir: /repo
     env_file:
       - ${TMP_ENV_CI:-.env.ci}
@@ -247,8 +247,8 @@ services:
   integration-tests:
     image: us.gcr.io/galoy-org/galoy-app-pipeline
     depends_on:
-    - integration-deps
-    command: ["make","execute-integration-from-within-container"]
+      - integration-deps
+    command: ["make", "execute-integration-from-within-container"]
     working_dir: /repo
     env_file:
       - ${TMP_ENV_CI:-.env.ci}
@@ -259,7 +259,7 @@ services:
     command: ["stablesats", "run"]
     working_dir: /repo/dev
     depends_on:
-    - otel-agent
-    - redis
+      - otel-agent
+      - redis
     volumes:
       - ./:/repo

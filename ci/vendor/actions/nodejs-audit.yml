@@ -2,7 +2,7 @@ name: "Nodejs Audit"
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   integration:

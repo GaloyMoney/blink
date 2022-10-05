@@ -37,40 +37,40 @@ coldStorage:
 lndScbBackupBucketName: lnd-static-channel-backups
 test_accounts:
   - ref: A
-    phone: '+16505554321'
-    code: '321321'
+    phone: "+16505554321"
+    code: "321321"
     needUsdWallet: true
   - ref: B
-    phone: '+16505554322'
-    code: '321432'
+    phone: "+16505554322"
+    code: "321432"
     needUsdWallet: true
     phoneMetadataCarrierType: mobile
   - ref: C
-    phone: '+16505554323'
-    code: '321321'
+    phone: "+16505554323"
+    code: "321321"
     title: business
   - ref: D
-    phone: '+16505554324'
-    code: '321321'
+    phone: "+16505554324"
+    code: "321321"
     needUsdWallet: true
   - ref: E
-    phone: '+16505554332'
-    code: '321321'
+    phone: "+16505554332"
+    code: "321321"
   - ref: F
-    phone: '+16505554333'
-    code: '321321'
+    phone: "+16505554333"
+    code: "321321"
     needUsdWallet: true
   - ref: G
-    phone: '+16505554335'
-    code: '321321'
+    phone: "+16505554335"
+    code: "321321"
     username: user15
   - ref: H
-    phone: '+19876543210'
-    code: '321321'
+    phone: "+19876543210"
+    code: "321321"
     username: tester
   - ref: I
-    phone: '+19876543336'
-    code: '321321'
+    phone: "+19876543336"
+    code: "321321"
     role: editor
     username: editor
 rateLimits:
@@ -117,12 +117,12 @@ accounts:
 accountLimits:
   withdrawal:
     level:
-      '1': 100000
-      '2': 5000000
+      "1": 100000
+      "2": 5000000
   intraLedger:
     level:
-      '1': 200000
-      '2': 5000000
+      "1": 200000
+      "2": 5000000
 spamLimits:
   memoSharingSatsThreshold: 1000
 twoFALimits:

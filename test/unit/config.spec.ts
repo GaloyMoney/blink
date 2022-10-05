@@ -33,7 +33,11 @@ describe("config.ts", () => {
       const valid = validate(yamlConfig)
       expect(valid).toBeTruthy()
 
-      fs.writeFileSync("./galoy.yaml", yaml.dump(yamlConfig), "utf8")
+      fs.writeFileSync(
+        "./galoy.yaml",
+        yaml.dump(yamlConfig, { quotingType: '"' }),
+        "utf8",
+      )
     })
 
     it("passes validation with conditional not required", () => {
