@@ -1,5 +1,5 @@
 import { Accounts } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import UserQuizQuestionUpdateCompletedPayload from "@graphql/types/payload/user-quiz-question-update-completed"
@@ -27,7 +27,8 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field({
       accountId: domainAccount.id,
     })
     if (question instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(question)] }
+      const appErr = mapError(question)
+      return { errors: [{ message: appErr.message }] }
     }
 
     return {

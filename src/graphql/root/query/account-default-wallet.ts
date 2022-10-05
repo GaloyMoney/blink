@@ -24,7 +24,7 @@ const AccountDefaultWalletQuery = GT.Field({
 
     const account = await AccountsRepository().findByUsername(username)
     if (account instanceof Error) {
-      throw mapError(account)
+      return mapError(account)
     }
 
     const wallets = await Wallets.listWalletsByAccountId(account.id)
@@ -36,7 +36,7 @@ const AccountDefaultWalletQuery = GT.Field({
 
     const wallet = wallets.find((wallet) => wallet.currency === walletCurrency)
     if (!wallet) {
-      throw mapError(new CouldNotFindWalletFromUsernameAndCurrencyError(username))
+      return mapError(new CouldNotFindWalletFromUsernameAndCurrencyError(username))
     }
 
     return wallet

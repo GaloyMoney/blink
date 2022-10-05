@@ -21,7 +21,7 @@ const AccountDefaultWalletIdQuery = GT.Field({
 
     const account = await AccountsRepository().findByUsername(username)
     if (account instanceof Error) {
-      throw mapError(account)
+      return mapError(account)
     }
 
     const walletId = account.defaultWalletId

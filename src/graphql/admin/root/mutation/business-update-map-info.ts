@@ -1,6 +1,6 @@
 import { Accounts } from "@app"
 import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 import Username from "@graphql/types/scalar/username"
 
@@ -47,7 +47,7 @@ const BusinessUpdateMapInfoMutation = GT.Field({
     const account = await Accounts.updateBusinessMapInfo({ username, title, coordinates })
 
     if (account instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(account)] }
+      return { errors: [{ message: mapError(account).message }] }
     }
 
     return {

@@ -3,8 +3,8 @@ type InputValidationError = import("./error").InputValidationError
 
 type IError = {
   message: string
-  readonly path: ReadonlyArray<string | number> | undefined
-  code?: string
+  path?: string
+  // TODO: add code
 }
 
 type PriceType = {

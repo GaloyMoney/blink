@@ -9,9 +9,6 @@ const IError = GT.Interface({
     path: {
       type: GT.List(GT.String),
     },
-    code: {
-      type: GT.String,
-    },
   }),
 })
 

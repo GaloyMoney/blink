@@ -1,5 +1,5 @@
 import { Wallets } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
@@ -58,7 +58,8 @@ const LnUsdInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
     })
 
     if (invoice instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(invoice)] }
+      const appErr = mapError(invoice)
+      return { errors: [{ message: appErr.message || appErr.name }] } // TODO: refine error
     }
 
     return {

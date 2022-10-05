@@ -1,6 +1,6 @@
 import { Accounts } from "@app"
 import { UsernameIsImmutableError } from "@domain/accounts"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import UserUpdateUsernamePayload from "@graphql/types/payload/user-update-username"
@@ -33,10 +33,10 @@ const UserUpdateUsernameMutation = GT.Field({
     const result = await Accounts.setUsername({ username, id: domainAccount.id })
 
     if (result instanceof Error) {
-      return {
-        errors: [mapAndParseErrorForGqlResponse(result)],
-        ...(result instanceof UsernameIsImmutableError ? { user: domainUser } : {}),
-      }
+      const appErr = mapError(result)
+      return result instanceof UsernameIsImmutableError
+        ? { errors: [{ message: appErr.message || appErr.name }], user: domainUser }
+        : { errors: [{ message: appErr.message || appErr.name }] }
     }
 
     return {
