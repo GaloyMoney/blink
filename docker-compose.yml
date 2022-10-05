@@ -3,6 +3,7 @@ services:
   integration-deps:
     image: busybox
     depends_on:
+      - kratos
       - price
       - price-history
       - price-history-migrate
@@ -17,7 +18,6 @@ services:
       - lnd-outside-2
       - otel-agent
       - oathkeeper
-      - kratos
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.61.0
     command: ["--config=/etc/otel-agent-config.yaml"]
@@ -246,9 +246,6 @@ services:
       - ${TMP_ENV_CI:-.env.ci}
     volumes:
       - ./:/repo
-    environment:
-      - KRATOS_PUBLIC_API=http://kratos:4433
-      - KRATOS_ADMIN_API=http://kratos:4434
   integration-tests:
     image: us.gcr.io/galoy-org/galoy-app-pipeline
     depends_on:
@@ -259,9 +256,6 @@ services:
       - ${TMP_ENV_CI:-.env.ci}
     volumes:
       - ./:/repo
-    environment:
-      - KRATOS_PUBLIC_API=http://kratos:4433
-      - KRATOS_ADMIN_API=http://kratos:4434
   stablesats:
     image: us.gcr.io/galoy-org/stablesats-rs:edge
     command: ["stablesats", "run"]
@@ -276,9 +270,9 @@ services:
     image: oryd/oathkeeper:v0.40
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
     volumes:
-    - type: bind
-      source: dev/ory
-      target: /home/ory
+      - type: bind
+        source: dev/ory
+        target: /home/ory
 
   kratos:
     image: oryd/kratos:v0.10.1

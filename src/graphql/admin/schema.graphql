@@ -49,7 +49,7 @@ input AccountsAddUsdWalletInput {
 }
 
 """
-An JWT-formatted authentication token
+An Opaque Bearer token
 """
 scalar AuthToken
 

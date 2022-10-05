@@ -1,9 +1,6 @@
 type PhoneNumber = string & { readonly brand: unique symbol }
 type PhoneCode = string & { readonly brand: unique symbol }
 
-type KratosUserId = string & { readonly brand: unique symbol }
-type KratosSessionToken = string & { readonly brand: unique symbol }
-
 type EmailAddress = string & { readonly brand: unique symbol }
 
 type UserLanguage = typeof import("./languages").Languages[number]
@@ -48,11 +45,6 @@ type User = {
   twoFA: TwoFAForUser
 }
 
-type NewUserInfo = {
-  phone: PhoneNumber
-  phoneMetadata?: PhoneMetadata
-}
-
 type PhoneMetadataValidator = {
   validateForReward(phoneMetadata?: PhoneMetadata): true | ValidationError
 }
@@ -60,6 +52,5 @@ type PhoneMetadataValidator = {
 interface IUsersRepository {
   findById(userId: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
-  persistNew({ phone, phoneMetadata }: NewUserInfo): Promise<User | RepositoryError>
   update(user: User): Promise<User | RepositoryError>
 }

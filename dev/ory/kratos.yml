@@ -42,6 +42,22 @@ selfservice:
 
       required_aal: aal1
 
+      after:
+        profile:
+          hooks:
+            - hook: web_hook
+              config:
+                # url: http://e2e-tests:4002/auth/after_settings_hooks
+                url: http://invalid-because-we-dont-want-profile-to-be-updated
+                method: POST
+                body: file:///home/ory/body.jsonnet
+                auth:
+                  type: api_key # Can be one of 'basic_auth' or 'api_key'
+                  config:
+                    name: Authorization
+                    value: The-Value-of-My-Key
+                    in: header
+
     recovery:
       enabled: true
       ui_url: http://127.0.0.1:4455/recovery
@@ -66,8 +82,7 @@ selfservice:
       after:
         password:
           hooks:
-            -
-              hook: session
+            - hook: session
 
 log:
   level: debug
@@ -89,20 +104,24 @@ hashers:
     cost: 8
 
 identity:
-  default_schema_id: phone_v0
+  default_schema_id: phone_no_password_v0
   schemas:
-    - id: phone_v0
+    - id: phone_no_password_v0
       url: file:///home/ory/phone_v0.identity.schema.json
     - id: phone_with_password_v0
-      url: file:///home/ory/phone_with_password_v0.identity.schema.json
+      url: file:///home/ory/phone_v0.identity.schema.json
+    - id: email_and_phone_with_password_v0
+      url: file:///home/ory/email_and_phone_with_password_v0.identity.schema.json
 
 courier:
   smtp:
     connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true
 
 session:
-  lifespan: "8760h"
-  earliest_possible_extend: "24h"
+  # TODO: check lifespan per schema
+  # or look how to extend
+  lifespan: "720h" # 1 month
+  earliest_possible_extend: "720h" # needed for test. should be shorter in prod
 
   whoami:
-    required_aal: highest_available
+    required_aal: aal1

@@ -177,12 +177,13 @@ cronConfig:
   rebalanceEnabled: true
   swapEnabled: true
 kratosConfig:
-  publicApi: http://kratos:4433
-  adminApi: http://kratos:4434
+  publicApi: http://localhost:4433
+  adminApi: http://localhost:4434
   corsAllowedOrigins:
     - http://localhost:3000
 oathkeeperConfig:
   urlJkws: http://oathkeeper:4456/.well-known/jwks.json
+  decisionsApi: http://oathkeeper:4456/decisions/
 captcha:
   mandatory: false
 skipFeeProbe:

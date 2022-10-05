@@ -15,6 +15,7 @@ import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
 import { getCronConfig, TWO_MONTHS_IN_MS } from "@config"
 
 import { rebalancingInternalChannels, reconnectNodes } from "@services/lnd/utils-bos"
+import { extendSessions } from "@services/kratos"
 
 const logger = baseLogger.child({ module: "cron" })
 
@@ -64,6 +65,7 @@ const main = async () => {
   const mongoose = await setupMongoConnection()
 
   const tasks = [
+    // bitcoin related tasks
     reconnectNodes,
     rebalancingInternalChannels,
     updateEscrows,
@@ -78,6 +80,9 @@ const main = async () => {
     deleteExpiredInvoices,
     deleteLndPaymentsBefore2Months,
     deleteFailedPaymentsAttemptAllLnds,
+
+    // auth related tasks
+    () => extendSessions(["phone_no_password_v0" as SchemaId]),
   ]
 
   for (const task of tasks) {
