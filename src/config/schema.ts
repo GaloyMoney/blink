@@ -45,59 +45,6 @@ const buildNumberConfigSchema = {
   additionalProperties: false,
 } as const
 
-const rewardsConfigSchema = {
-  type: "object",
-  properties: {
-    allowPhoneCountries: {
-      type: "array",
-      items: { type: "string" },
-      uniqueItems: true,
-    },
-    denyPhoneCountries: {
-      type: "array",
-      items: { type: "string" },
-      uniqueItems: true,
-    },
-    allowIPCountries: {
-      type: "array",
-      items: { type: "string" },
-      uniqueItems: true,
-    },
-    denyIPCountries: {
-      type: "array",
-      items: { type: "string" },
-      uniqueItems: true,
-    },
-    allowASNs: {
-      type: "array",
-      items: { type: "string" },
-      uniqueItems: true,
-    },
-    denyASNs: {
-      type: "array",
-      items: { type: "string" },
-      uniqueItems: true,
-    },
-  },
-  required: [
-    "allowPhoneCountries",
-    "denyPhoneCountries",
-    "allowIPCountries",
-    "denyIPCountries",
-    "allowASNs",
-    "denyASNs",
-  ],
-  additionalProperties: false,
-  default: {
-    allowPhoneCountries: ["SV"],
-    denyPhoneCountries: [],
-    allowIPCountries: [],
-    denyIPCountries: [],
-    allowASNs: [],
-    denyASNs: [],
-  },
-}
-
 const accountLimitConfigSchema = {
   type: "object",
   properties: {
@@ -177,7 +124,64 @@ export const configSchema = {
       required: ["ios", "android"],
       additionalProperties: false,
     },
-    rewards: rewardsConfigSchema,
+    rewards: {
+      type: "object",
+      properties: {
+        allowPhoneCountries: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+          default: [],
+        },
+        denyPhoneCountries: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+          default: [],
+        },
+        allowIPCountries: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+          default: [],
+        },
+        denyIPCountries: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+          default: [],
+        },
+        allowASNs: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+          default: [],
+        },
+        denyASNs: {
+          type: "array",
+          items: { type: "string" },
+          uniqueItems: true,
+          default: [],
+        },
+      },
+      required: [
+        "allowPhoneCountries",
+        "denyPhoneCountries",
+        "allowIPCountries",
+        "denyIPCountries",
+        "allowASNs",
+        "denyASNs",
+      ],
+      additionalProperties: false,
+      default: {
+        allowPhoneCountries: ["SV"],
+        denyPhoneCountries: [],
+        allowIPCountries: [],
+        denyIPCountries: [],
+        allowASNs: [],
+        denyASNs: [],
+      },
+    },
     coldStorage: {
       type: "object",
       properties: {
