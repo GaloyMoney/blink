@@ -94,7 +94,6 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
   let walletTransaction: WalletTransaction
   switch (txType) {
     case LedgerTransactionType.IntraLedger:
-    case LedgerTransactionType.WalletIdTradeIntraAccount:
       walletTransaction = {
         ...baseTransaction,
         initiationVia: {
@@ -111,7 +110,6 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
       break
 
     case LedgerTransactionType.OnchainIntraLedger:
-    case LedgerTransactionType.OnChainTradeIntraAccount:
       walletTransaction = {
         ...baseTransaction,
         initiationVia: {
@@ -142,7 +140,6 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
       break
 
     case LedgerTransactionType.LnIntraLedger:
-    case LedgerTransactionType.LnTradeIntraAccount:
       walletTransaction = {
         ...baseTransaction,
         initiationVia: {

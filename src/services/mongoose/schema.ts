@@ -362,7 +362,6 @@ const paymentFlowStateSchema = new Schema<PaymentFlowStateRecord>(
   {
     senderWalletId: { type: String, required: true },
     senderWalletCurrency: { type: String, required: true },
-    senderAccountId: { type: String, required: true },
     settlementMethod: { type: String, required: true },
     paymentInitiationMethod: { type: String, required: true },
     paymentHash: String,
@@ -380,7 +379,6 @@ const paymentFlowStateSchema = new Schema<PaymentFlowStateRecord>(
 
     recipientWalletId: String,
     recipientWalletCurrency: String,
-    recipientAccountId: String,
     recipientPubkey: String,
     recipientUsername: String,
 

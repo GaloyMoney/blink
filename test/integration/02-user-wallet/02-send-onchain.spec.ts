@@ -5,9 +5,9 @@ import {
   getFeesConfig,
   getOnChainWalletConfig,
   getAccountLimits,
+  MS_PER_DAY,
   getLocale,
   getDisplayCurrencyConfig,
-  ONE_DAY,
 } from "@config"
 import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
@@ -24,7 +24,7 @@ import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wal
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
-import { sleep, timestampDaysAgo } from "@utils"
+import { sleep } from "@utils"
 
 import { getCurrentPrice } from "@app/prices"
 
@@ -635,9 +635,7 @@ describe("UserWallet - onChainPay", () => {
     })
 
     const ledgerService = LedgerService()
-    const timestamp1DayAgo = timestampDaysAgo(ONE_DAY)
-    if (timestamp1DayAgo instanceof Error) return timestamp1DayAgo
-
+    const timestamp1DayAgo = new Date(Date.now() - MS_PER_DAY)
     const walletVolume = await ledgerService.externalPaymentVolumeSince({
       walletId: walletIdA,
       timestamp: timestamp1DayAgo,
@@ -703,7 +701,6 @@ describe("UserWallet - onChainPay", () => {
         walletId: walletIdA,
         satsToCents: dCConverter.fromSatsToCents,
       })
-      if (remainingLimit instanceof Error) throw remainingLimit
 
       const aboveThreshold = add(remainingLimit, toCents(10))
 

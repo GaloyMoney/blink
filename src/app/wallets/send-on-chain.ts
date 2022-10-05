@@ -168,10 +168,7 @@ export const payOnChainByWalletId = async ({
   })
 }
 
-const executePaymentViaIntraledger = async <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
+const executePaymentViaIntraledger = async ({
   senderAccount,
   senderWallet,
   recipientWallet,
@@ -182,8 +179,8 @@ const executePaymentViaIntraledger = async <
   logger,
 }: {
   senderAccount: Account
-  senderWallet: WalletDescriptor<S>
-  recipientWallet: WalletDescriptor<R>
+  senderWallet: Wallet
+  recipientWallet: Wallet
   amount: CurrencyBaseAmount
   address: OnChainAddress
   memo: string | null

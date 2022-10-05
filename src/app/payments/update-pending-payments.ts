@@ -7,17 +7,12 @@ import {
   LedgerTransactionType,
   UnknownLedgerError,
 } from "@domain/ledger"
-import { MissingPropsInTransactionForPaymentFlowError } from "@domain/payments"
 import { setErrorCritical, WalletCurrency } from "@domain/shared"
 
 import { LedgerService, getNonEndUserWalletIds } from "@services/ledger"
 import { LndService } from "@services/lnd"
 import { LockService } from "@services/lock"
-import {
-  AccountsRepository,
-  PaymentFlowStateRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+import { PaymentFlowStateRepository } from "@services/mongoose"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { Wallets } from "@app"
@@ -258,15 +253,5 @@ const reconstructPendingPaymentFlow = async <
   ) as LedgerTransaction<S> | undefined
   if (!payment) return new CouldNotFindTransactionError()
 
-  const { walletId: senderWalletId } = payment
-  if (!senderWalletId) return new MissingPropsInTransactionForPaymentFlowError()
-  const senderWallet = await WalletsRepository().findById(senderWalletId)
-  if (senderWallet instanceof Error) return senderWallet
-  const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
-  if (senderAccount instanceof Error) return senderAccount
-
-  return PaymentFlowFromLedgerTransaction({
-    ledgerTxn: payment,
-    senderAccountId: senderAccount.id,
-  })
+  return PaymentFlowFromLedgerTransaction(payment)
 }

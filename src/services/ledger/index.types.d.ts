@@ -107,46 +107,21 @@ type AddLnIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata & {
   pubkey: Pubkey
 }
 
-type AddLnTradeIntraAccountLedgerMetadata = Omit<
-  AddLnIntraledgerSendLedgerMetadata,
-  "username"
->
-
 type NewAddLnIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
   SendAmountsMetadata & {
     hash: PaymentHash
     pubkey: Pubkey
   }
 
-type NewAddLnTradeIntraAccountLedgerMetadata = Omit<
-  NewAddLnIntraledgerSendLedgerMetadata,
-  "username"
->
-
 type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata & {
   payee_addresses: OnChainAddress[]
   sendAll: boolean
 }
 
-type AddOnChainTradeIntraAccountLedgerMetadata = Omit<
-  AddOnChainIntraledgerSendLedgerMetadata,
-  "username"
->
-
 type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata
-
-type AddWalletIdTradeIntraAccountLedgerMetadata = Omit<
-  AddWalletIdIntraledgerSendLedgerMetadata,
-  "username"
->
 
 type NewAddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
   SendAmountsMetadata
-
-type NewAddWalletIdTradeIntraAccountLedgerMetadata = Omit<
-  NewAddWalletIdIntraledgerSendLedgerMetadata,
-  "username"
->
 
 type ReimbursementLedgerMetadata = SendAmountsMetadata & {
   hash: PaymentHash
