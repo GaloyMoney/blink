@@ -449,7 +449,7 @@ export const configSchema = {
     fees: {
       type: "object",
       properties: {
-        deposit: { type: "number" },
+        deposit: { type: "number", default: 0.003 },
         withdraw: {
           type: "object",
           properties: {
@@ -458,12 +458,19 @@ export const configSchema = {
               enum: ["flat", "proportionalOnImbalance"],
             },
             ratio: { type: "number" },
-            threshold: { type: "integer" },
-            daysLookback: { type: "integer" },
+            threshold: { type: "integer", default: 1000000 },
+            daysLookback: { type: "integer", default: 30 },
             defaultMin: { type: "integer" },
           },
           required: ["method", "ratio", "threshold", "daysLookback", "defaultMin"],
           additionalProperties: false,
+          default: {
+            method: "flat",
+            defaultMin: 2000,
+            ratio: 0.005,
+            threshold: 1000000,
+            daysLookback: 30,
+          },
         },
       },
       required: ["withdraw", "deposit"],
@@ -500,10 +507,10 @@ export const configSchema = {
       type: "object",
       properties: {
         dustThreshold: { type: "integer" },
-        minConfirmations: { type: "integer" },
-        scanDepth: { type: "integer" }, // TODO: improve naming
-        scanDepthOutgoing: { type: "integer" },
-        scanDepthChannelUpdate: { type: "integer" },
+        minConfirmations: { type: "integer", default: 2 },
+        scanDepth: { type: "integer", default: 360 }, // TODO: improve naming
+        scanDepthOutgoing: { type: "integer", default: 2 },
+        scanDepthChannelUpdate: { type: "integer", default: 8 },
       },
       required: [
         "dustThreshold",
