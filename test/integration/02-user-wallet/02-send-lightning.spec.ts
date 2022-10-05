@@ -1806,9 +1806,20 @@ describe("USD Wallets - Lightning Pay", () => {
 
       const amountPayment = toSats(50)
 
+      // Validate btc amount to pay
+      const usdPaymentAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+        amount: BigInt(amountPayment),
+        currency: WalletCurrency.Btc,
+      })
+      expect(usdPaymentAmount).not.toBeInstanceOf(Error)
+      if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+      expect(usdPaymentAmount.amount).toBeGreaterThan(0n)
+
+      // Generate invoice for btc amount and pay
       const request = await Wallets.addInvoiceNoAmountForSelf({
         walletId: walletIdUsdB,
       })
+      expect(request).not.toBeInstanceOf(Error)
       if (request instanceof Error) throw request
       const { paymentRequest: uncheckedPaymentRequest } = request
 
@@ -1819,6 +1830,7 @@ describe("USD Wallets - Lightning Pay", () => {
         senderAccount: accountA,
         amount: amountPayment,
       })
+      expect(paymentResult).not.toBeInstanceOf(Error)
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
 
@@ -1880,6 +1892,16 @@ describe("USD Wallets - Lightning Pay", () => {
 
       const amountPayment = toSats(50)
 
+      // Validate btc amount to pay
+      const usdPaymentAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+        amount: BigInt(amountPayment),
+        currency: WalletCurrency.Btc,
+      })
+      expect(usdPaymentAmount).not.toBeInstanceOf(Error)
+      if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+      expect(usdPaymentAmount.amount).toBeGreaterThan(0n)
+
+      // Generate invoice for btc amount and pay
       const request = await Wallets.addInvoiceNoAmountForSelf({
         walletId: walletIdUsdA,
       })
