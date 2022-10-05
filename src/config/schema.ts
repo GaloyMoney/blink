@@ -401,8 +401,8 @@ export const configSchema = {
         },
         tradeIntraAccount: {
           level: {
-            "1": 200000,
-            "2": 5000000,
+            "1": 5000000,
+            "2": 20000000,
           },
         },
       },
