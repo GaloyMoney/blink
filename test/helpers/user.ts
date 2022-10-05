@@ -7,7 +7,7 @@ import {
 } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 import { toObjectId } from "@services/mongoose/utils"
-import { addWalletIfNonexistent } from "@app/accounts/add-wallet"
+import { addWallet, addWalletIfNonexistent } from "@app/accounts/add-wallet"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { adminUsers } from "@domain/admin-users"
@@ -119,51 +119,66 @@ export const createUserAndWalletFromUserRef = async (ref: string) => {
   await createUserAndWallet(entry)
 }
 
+const createNewAccount = async ({
+  phone,
+  phoneMetadataCarrierType,
+}: {
+  phone: PhoneNumber
+  phoneMetadataCarrierType: CarrierType | undefined
+}) => {
+  let phoneMetadata: PhoneMetadata | undefined = undefined
+  if (phoneMetadataCarrierType) {
+    phoneMetadata = {
+      carrier: {
+        type: phoneMetadataCarrierType,
+        name: "",
+        mobile_network_code: "",
+        mobile_country_code: "",
+        error_code: "",
+      },
+      countryCode: "US",
+    }
+  }
+
+  const account = await createAccountForPhoneSchema({
+    newUserInfo: { phone, phoneMetadata },
+    config: getDefaultAccountsConfig(),
+  })
+  if (account instanceof Error) throw account
+
+  const lastConnection = new Date()
+  const ipInfo: IPType = {
+    ip: "89.187.173.251" as IpAddress,
+    firstConnection: lastConnection,
+    lastConnection: lastConnection,
+    asn: "AS60068",
+    provider: "ISP",
+    country: "United States",
+    isoCode: "US",
+    region: "Florida",
+    city: "Miami",
+    proxy: false,
+  }
+
+  const userIP = await UsersIpRepository().findById(account.id as string as UserId) // FIXME tmp hack until full kratos integration
+  if (userIP instanceof Error) throw userIP
+
+  userIP.lastIPs.push(ipInfo)
+  const result = await UsersIpRepository().update(userIP)
+  if (result instanceof Error) throw result
+
+  return account
+}
+
 export const createUserAndWallet = async (entry: TestEntry) => {
   const phone = entry.phone as PhoneNumber
 
   let user = await users.findByPhone(phone)
   if (user instanceof CouldNotFindUserFromPhoneError) {
-    let phoneMetadata: PhoneMetadata | undefined = undefined
-    if (entry.phoneMetadataCarrierType) {
-      phoneMetadata = {
-        carrier: {
-          type: entry.phoneMetadataCarrierType as CarrierType,
-          name: "",
-          mobile_network_code: "",
-          mobile_country_code: "",
-          error_code: "",
-        },
-        countryCode: "US",
-      }
-    }
-
-    const account = await createAccountForPhoneSchema({
-      newUserInfo: { phone, phoneMetadata },
-      config: getDefaultAccountsConfig(),
+    const account = await createNewAccount({
+      phone,
+      phoneMetadataCarrierType: entry.phoneMetadataCarrierType as CarrierType,
     })
-    if (account instanceof Error) throw account
-
-    const lastConnection = new Date()
-    const ipInfo: IPType = {
-      ip: "89.187.173.251" as IpAddress,
-      firstConnection: lastConnection,
-      lastConnection: lastConnection,
-      asn: "AS60068",
-      provider: "ISP",
-      country: "United States",
-      isoCode: "US",
-      region: "Florida",
-      city: "Miami",
-      proxy: false,
-    }
-
-    const userIP = await UsersIpRepository().findById(account.id as string as UserId) // FIXME tmp hack until full kratos integration
-    if (userIP instanceof Error) throw userIP
-
-    userIP.lastIPs.push(ipInfo)
-    const result = await UsersIpRepository().update(userIP)
-    if (result instanceof Error) throw result
 
     if (entry.needUsdWallet) {
       await addWalletIfNonexistent({
@@ -204,4 +219,41 @@ export const createUserAndWallet = async (entry: TestEntry) => {
       { title: entry.title, coordinates: { latitude: -1, longitude: 1 } },
     )
   }
+}
+
+export const createNewWalletFromPhone = async ({
+  phone,
+  currency,
+}: {
+  phone: PhoneNumber
+  currency: WalletCurrency
+}): Promise<Wallet> => {
+  // Fetch user (account) or create if doesn't exist
+  let user = await users.findByPhone(phone)
+  if (user instanceof CouldNotFindUserFromPhoneError) {
+    const account = await createNewAccount({
+      phone,
+      phoneMetadataCarrierType: "mobile" as CarrierType,
+    })
+    if (account instanceof Error) throw account
+
+    user = await users.findByPhone(phone)
+  }
+  if (user instanceof Error) throw user
+
+  // Create wallet for account (phone number)
+  const wallet = await addWallet({
+    currency,
+    accountId: user.defaultAccountId,
+    type: WalletType.Checking,
+  })
+  if (wallet instanceof Error) throw wallet
+
+  // Needed for 'notifications.spec.ts' test to be included in 'sendBalance' function
+  await User.findOneAndUpdate(
+    { _id: toObjectId<UserId>(user.id) },
+    { deviceToken: ["test-token"] },
+  )
+
+  return wallet
 }

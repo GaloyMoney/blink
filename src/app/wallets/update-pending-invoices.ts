@@ -202,10 +202,23 @@ const updatePendingInvoiceBeforeFinally = async ({
       pubkey: walletInvoiceReceiver.pubkey,
     })
 
+    const recipientWallet = await WalletsRepository().findById(
+      recipientWalletDescriptor.id,
+    )
+    if (recipientWallet instanceof Error) return recipientWallet
+
+    const recipientAccount = await AccountsRepository().findById(
+      recipientWallet.accountId,
+    )
+    if (recipientAccount instanceof Error) return recipientAccount
+
     //TODO: add displayCurrency: displayPaymentAmount.currency,
     const result = await LedgerFacade.recordReceive({
       description,
-      recipientWalletDescriptor: walletInvoiceReceiver.recipientWalletDescriptor,
+      recipientWalletDescriptor: {
+        ...walletInvoiceReceiver.recipientWalletDescriptor,
+        accountId: recipientAccount.id,
+      },
       amountToCreditReceiver: {
         usd: walletInvoiceReceiver.usdToCreditReceiver,
         btc: walletInvoiceReceiver.btcToCreditReceiver,
@@ -223,21 +236,11 @@ const updatePendingInvoiceBeforeFinally = async ({
     if (result instanceof Error) return result
 
     // Prepare and send notification
-    const recipientWallet = await WalletsRepository().findById(
-      recipientWalletDescriptor.id,
-    )
-    if (recipientWallet instanceof Error) return recipientWallet
-
     const { usdToCreditReceiver: displayAmount } = walletInvoiceReceiver
     const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {
       amount: Number((Number(displayAmount.amount) / 100).toFixed(2)),
       currency: displayAmount.currency,
     } as DisplayPaymentAmount<DisplayCurrency>
-
-    const recipientAccount = await AccountsRepository().findById(
-      recipientWallet.accountId,
-    )
-    if (recipientAccount instanceof Error) return recipientAccount
 
     const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
     if (recipientUser instanceof Error) return recipientUser

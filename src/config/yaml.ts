@@ -173,6 +173,7 @@ export const getAccountLimits = ({
   return {
     intraLedgerLimit: toCents(accountLimits.intraLedger.level[level]),
     withdrawalLimit: toCents(accountLimits.withdrawal.level[level]),
+    tradeIntraAccountLimit: toCents(accountLimits.tradeIntraAccount.level[level]),
   }
 }
 

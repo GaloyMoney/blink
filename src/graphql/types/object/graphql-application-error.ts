@@ -1,7 +1,11 @@
 import { GT } from "@graphql/index"
 
-const IError = GT.Interface({
-  name: "Error",
+import IError from "../abstract/error"
+
+const GraphQLApplicationError = GT.Object({
+  name: "GraphQLApplicationError",
+  interfaces: () => [IError],
+  isTypeOf: () => true,
   fields: () => ({
     message: {
       type: GT.NonNull(GT.String),
@@ -9,10 +13,11 @@ const IError = GT.Interface({
     path: {
       type: GT.List(GT.String),
     },
+
     code: {
       type: GT.String,
     },
   }),
 })
 
-export default IError
+export default GraphQLApplicationError

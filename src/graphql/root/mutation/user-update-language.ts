@@ -1,5 +1,5 @@
 import { Users } from "@app"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 import UserUpdateLanguagePayload from "@graphql/types/payload/user-update-language"
@@ -30,8 +30,7 @@ const UserUpdateLanguageMutation = GT.Field({
     const result = await Users.updateLanguage({ userId: domainUser.id, language })
 
     if (result instanceof Error) {
-      const appErr = mapError(result)
-      return { errors: [{ message: appErr.message }] }
+      return { errors: [mapAndParseErrorForGqlResponse(result)] }
     }
 
     return {

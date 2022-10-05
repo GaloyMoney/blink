@@ -202,6 +202,7 @@ input DeviceNotificationTokenCreateInput {
 }
 
 interface Error {
+  code: String
   message: String!
   path: [String]
 }
@@ -230,6 +231,12 @@ type Globals {
   nodesIds: [String!]!
 }
 
+type GraphQLApplicationError implements Error {
+  code: String
+  message: String!
+  path: [String]
+}
+
 """
 Hex-encoded string of 32 bytes
 """
@@ -248,19 +255,6 @@ type InitiationViaLn {
 
 type InitiationViaOnChain {
   address: OnChainAddress!
-}
-
-type InputError implements Error {
-  code: InputErrorCode!
-  message: String!
-  path: [String]
-}
-
-enum InputErrorCode {
-  INVALID_INPUT
-  VALUE_NOT_ALLOWED
-  VALUE_TOO_LONG
-  VALUE_TOO_SHORT
 }
 
 input IntraLedgerPaymentSendInput {
@@ -766,21 +760,6 @@ type PageInfo {
   When paginating backwards, the cursor to continue.
   """
   startCursor: String
-}
-
-type PaymentError implements Error {
-  code: PaymentErrorCode!
-  message: String!
-  path: [String]
-}
-
-enum PaymentErrorCode {
-  ACCOUNT_LOCKED
-  INSUFFICIENT_BALANCE
-  INVOICE_PAID
-  LIMIT_EXCEEDED
-  NO_LIQUIDITY
-  NO_ROUTE
 }
 
 scalar PaymentHash

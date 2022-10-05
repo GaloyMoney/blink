@@ -9,7 +9,9 @@ export const AccountValidator = (
     return new InactiveAccountError(account.id)
   }
 
-  const validateWalletForAccount = (wallet: Wallet): true | ValidationError => {
+  const validateWalletForAccount = <S extends WalletCurrency>(
+    wallet: WalletDescriptor<S>,
+  ): true | ValidationError => {
     if (wallet.accountId !== account.id)
       return new InvalidWalletId(
         JSON.stringify({ accountId: account.id, accountIdFromWallet: wallet.accountId }),

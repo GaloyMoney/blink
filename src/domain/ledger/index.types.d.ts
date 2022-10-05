@@ -283,6 +283,8 @@ interface ILedgerService {
 
   intraledgerTxBaseVolumeSince: GetVolumeSinceFn
 
+  tradeIntraAccountTxBaseVolumeSince: GetVolumeSinceFn
+
   allTxBaseVolumeSince: GetVolumeSinceFn
 
   lightningTxBaseVolumeSince: GetVolumeSinceFn
@@ -294,6 +296,8 @@ interface ILedgerService {
   externalPaymentVolumeAmountSince: GetVolumeAmountSinceFn
 
   intraledgerTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
+
+  tradeIntraAccountTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
 
   allTxBaseVolumeAmountSince: GetVolumeAmountSinceFn
 

@@ -1,7 +1,7 @@
 import { Accounts } from "@app"
 import AccountDetailPayload from "@graphql/admin/types/payload/account-detail"
 import AccountLevel from "@graphql/admin/types/scalar/account-level"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
 const AccountUpdateLevelInput = GT.Input({
@@ -45,7 +45,7 @@ const AccountUpdateLevelMutation = GT.Field<{
     const account = await Accounts.updateAccountLevel({ id: uid, level })
 
     if (account instanceof Error) {
-      return { errors: [{ message: mapError(account).message }] }
+      return { errors: [mapAndParseErrorForGqlResponse(account)] }
     }
     return { errors: [], accountDetails: account }
   },

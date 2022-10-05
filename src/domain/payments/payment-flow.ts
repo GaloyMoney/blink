@@ -70,13 +70,15 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
   const senderWalletDescriptor = (): WalletDescriptor<S> => ({
     id: state.senderWalletId,
     currency: state.senderWalletCurrency,
+    accountId: state.senderAccountId,
   })
 
   const recipientWalletDescriptor = (): WalletDescriptor<R> | undefined =>
-    state.recipientWalletId && state.recipientWalletCurrency
+    state.recipientWalletId && state.recipientWalletCurrency && state.recipientAccountId
       ? {
           id: state.recipientWalletId,
           currency: state.recipientWalletCurrency,
+          accountId: state.recipientAccountId,
         }
       : undefined
 

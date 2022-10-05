@@ -53,6 +53,7 @@ import {
   newCheckIntraledgerLimits,
   newCheckTwoFALimits,
   getPriceRatioForLimits,
+  newCheckTradeIntraAccountLimits,
 } from "./helpers"
 
 const dealer = NewDealerPriceService()
@@ -444,14 +445,17 @@ const newCheckAndVerifyTwoFA = async ({
   return true
 }
 
-const executePaymentViaIntraledger = async ({
+const executePaymentViaIntraledger = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   paymentFlow,
   senderWallet,
   senderUsername,
   memo,
 }: {
-  paymentFlow: PaymentFlow<WalletCurrency, WalletCurrency>
-  senderWallet: Wallet
+  paymentFlow: PaymentFlow<S, R>
+  senderWallet: WalletDescriptor<S>
   senderUsername: Username | undefined
   memo: string | null
 }): Promise<PaymentSendStatus | ApplicationError> => {
@@ -461,13 +465,6 @@ const executePaymentViaIntraledger = async ({
 
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
-
-  const limitCheck = await newCheckIntraledgerLimits({
-    amount: paymentFlow.usdPaymentAmount,
-    wallet: senderWallet,
-    priceRatio: priceRatioForLimits,
-  })
-  if (limitCheck instanceof Error) return limitCheck
 
   const paymentHash = paymentFlow.paymentHashForFlow()
   if (paymentHash instanceof Error) return paymentHash
@@ -485,6 +482,17 @@ const executePaymentViaIntraledger = async ({
   }
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
+
+  const checkLimits =
+    senderWallet.accountId === recipientWallet.accountId
+      ? newCheckTradeIntraAccountLimits
+      : newCheckIntraledgerLimits
+  const limitCheck = await checkLimits({
+    amount: paymentFlow.usdPaymentAmount,
+    wallet: senderWallet,
+    priceRatio: priceRatioForLimits,
+  })
+  if (limitCheck instanceof Error) return limitCheck
 
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
     const ledgerService = LedgerService()
@@ -512,21 +520,39 @@ const executePaymentViaIntraledger = async ({
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
 
-    const lnIntraLedgerMetadata = LedgerFacade.LnIntraledgerLedgerMetadata({
-      paymentHash,
-      pubkey: recipientPubkey,
-      paymentFlow,
+    let metadata:
+      | NewAddLnIntraledgerSendLedgerMetadata
+      | NewAddLnTradeIntraAccountLedgerMetadata
+    let additionalDebitMetadata: { [key: string]: string | undefined } = {}
+    if (senderWallet.accountId === recipientWallet.accountId) {
+      ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
+        LedgerFacade.LnTradeIntraAccountLedgerMetadata({
+          paymentHash,
+          pubkey: recipientPubkey,
+          paymentFlow,
 
-      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
-      feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
-      displayCurrency: DisplayCurrency.Usd,
+          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+          displayCurrency: DisplayCurrency.Usd,
 
-      memoOfPayer: memo || undefined,
-      senderUsername,
-      recipientUsername,
-    })
-    const { metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
-      lnIntraLedgerMetadata
+          memoOfPayer: memo || undefined,
+        }))
+    } else {
+      ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
+        LedgerFacade.LnIntraledgerLedgerMetadata({
+          paymentHash,
+          pubkey: recipientPubkey,
+          paymentFlow,
+
+          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+          displayCurrency: DisplayCurrency.Usd,
+
+          memoOfPayer: memo || undefined,
+          senderUsername,
+          recipientUsername,
+        }))
+    }
 
     const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
     if (recipientWalletDescriptor === undefined)

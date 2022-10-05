@@ -1,6 +1,6 @@
 import { Accounts, Payments } from "@app"
 import { checkedToWalletId } from "@domain/wallets"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 import { GT } from "@graphql/index"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
@@ -40,8 +40,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
 
     const senderWalletId = checkedToWalletId(walletId)
     if (senderWalletId instanceof Error) {
-      const appErr = mapError(senderWalletId)
-      return { errors: [{ message: appErr.message }] }
+      return { errors: [mapAndParseErrorForGqlResponse(senderWalletId)] }
     }
 
     const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
@@ -49,8 +48,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
 
     const recipientWalletIdChecked = checkedToWalletId(recipientWalletId)
     if (recipientWalletIdChecked instanceof Error) {
-      const appErr = mapError(recipientWalletIdChecked)
-      return { errors: [{ message: appErr.message }] }
+      return { errors: [mapAndParseErrorForGqlResponse(recipientWalletIdChecked)] }
     }
 
     // TODO: confirm whether we need to check for username here
@@ -58,8 +56,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       recipientWalletIdChecked,
     )
     if (recipientUsername instanceof Error) {
-      const appErr = mapError(recipientUsername)
-      return { errors: [{ message: appErr.message }] }
+      return { errors: [mapAndParseErrorForGqlResponse(recipientUsername)] }
     }
 
     const status = await Payments.intraledgerPaymentSendWalletId({
@@ -70,8 +67,7 @@ const IntraLedgerPaymentSendMutation = GT.Field({
       senderAccount: domainAccount,
     })
     if (status instanceof Error) {
-      const appErr = mapError(status)
-      return { status: "failed", errors: [{ message: appErr.message }] }
+      return { status: "failed", errors: [mapAndParseErrorForGqlResponse(status)] }
     }
 
     return {
