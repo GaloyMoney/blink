@@ -1,5 +1,6 @@
 query nodeIds {
   globals {
     nodesIds
+    network
   }
 }
