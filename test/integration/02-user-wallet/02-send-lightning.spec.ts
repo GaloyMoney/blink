@@ -1804,7 +1804,7 @@ describe("USD Wallets - Lightning Pay", () => {
       const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
       const initBalanceA = toSats(await getBalanceHelper(walletIdA))
 
-      const amountPayment = toSats(50)
+      const amountPayment = toSats(100)
 
       // Validate btc amount to pay
       const usdPaymentAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
@@ -1890,7 +1890,7 @@ describe("USD Wallets - Lightning Pay", () => {
       const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdA))
       const initBalanceA = toSats(await getBalanceHelper(walletIdA))
 
-      const amountPayment = toSats(50)
+      const amountPayment = toSats(100)
 
       // Validate btc amount to pay
       const usdPaymentAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
@@ -1901,7 +1901,7 @@ describe("USD Wallets - Lightning Pay", () => {
       if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
       expect(usdPaymentAmount.amount).toBeGreaterThan(0n)
 
-      // Generate invoice for btc amount and pay
+      // Generate invoice for and pay
       const request = await Wallets.addInvoiceNoAmountForSelf({
         walletId: walletIdUsdA,
       })
