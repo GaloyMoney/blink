@@ -9,7 +9,7 @@ import LN_INVOICE_PAYMENT_SEND from "./mutations/ln-invoice-payment-send.gql"
 import LN_NO_AMOUNT_INVOICE_CREATE_ON_BEHALF_OF from "./mutations/ln-no-amount-invoice-create-on-behalf-of-recipient.gql"
 import USER_LOGIN from "./mutations/user-login.gql"
 import ME from "./queries/me.gql"
-import NODE_IDS from "./queries/node-ids.gql"
+import GLOBALS from "./queries/globals.gql"
 import USER_DEFAULT_WALLET_ID from "./queries/user-default-walletid.gql"
 import LN_INVOICE_PAYMENT_STATUS_QUERY from "./queries/ln-invoice-payment-status.gql"
 import LN_INVOICE_PAYMENT_STATUS_SUBSCRIPTION from "./subscriptions/ln-invoice-payment-status.gql"
@@ -108,7 +108,7 @@ describe("galoy-pay", () => {
   })
 
   describe("nodeIds", () => {
-    const myQuery = NODE_IDS
+    const myQuery = GLOBALS
 
     it("returns a nonempty list of nodes", async () => {
       const result = await apolloClient.query({ query: myQuery })

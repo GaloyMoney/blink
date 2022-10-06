@@ -1,4 +1,4 @@
-import { JWT_SECRET } from "@config"
+import { BTC_NETWORK, JWT_SECRET } from "@config"
 import * as jwt from "jsonwebtoken"
 
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
@@ -66,6 +66,7 @@ describe("graphql", () => {
       expect(data.quizQuestions).toBeTruthy()
 
       expect(data.globals.nodesIds).toEqual(expect.arrayContaining([expect.any(String)]))
+      expect(data.globals.network).toEqual(BTC_NETWORK)
       expect(data.mobileVersions).toEqual(
         expect.arrayContaining([
           expect.objectContaining({

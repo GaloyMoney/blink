@@ -1,4 +1,5 @@
 import {
+  BTC_NETWORK,
   getGaloyBuildInformation,
   getLightningAddressDomain,
   getLightningAddressDomainAliases,
@@ -17,6 +18,7 @@ const GlobalsQuery = GT.Field({
 
     return {
       nodesIds,
+      network: BTC_NETWORK,
       lightningAddressDomain: getLightningAddressDomain(),
       lightningAddressDomainAliases: getLightningAddressDomainAliases(),
       buildInformation: getGaloyBuildInformation(),

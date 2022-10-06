@@ -225,6 +225,11 @@ type Globals {
   lightningAddressDomainAliases: [String!]!
 
   """
+  Which network (mainnet, testnet, regtest, signet) this instance is running on.
+  """
+  network: Network!
+
+  """
   A list of public keys for the running lightning nodes.
   This can be used to know if an invoice belongs to one of our nodes.
   """
@@ -681,6 +686,13 @@ type MyUpdatesPayload {
   errors: [Error!]!
   me: User
   update: UserUpdate
+}
+
+enum Network {
+  mainnet
+  regtest
+  signet
+  testnet
 }
 
 """

@@ -1,6 +1,7 @@
 query mainQuery($hasToken: Boolean!) {
   globals {
     nodesIds
+    network
   }
   quizQuestions {
     id
