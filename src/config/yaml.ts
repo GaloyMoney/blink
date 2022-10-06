@@ -316,14 +316,17 @@ export const getSwapConfig = (): SwapConfig => {
   const config = yamlConfig.swap
   return {
     loopOutWhenHotWalletLessThan: {
-      amount: BigInt(config.loopOutWhenHotWalletLessThan),
+      amount: BigInt(config.loopOutWhenHotWalletLessThan ?? 250000),
       currency: WalletCurrency.Btc,
     },
-    swapOutAmount: { amount: BigInt(config.swapOutAmount), currency: WalletCurrency.Btc },
-    lnd1loopRestEndpoint: config.lnd1loopRestEndpoint,
-    lnd2loopRestEndpoint: config.lnd2loopRestEndpoint,
-    lnd1loopRpcEndpoint: config.lnd1loopRpcEndpoint,
-    lnd2loopRpcEndpoint: config.lnd2loopRpcEndpoint,
-    swapProviders: config.swapProviders,
+    swapOutAmount: {
+      amount: BigInt(config.swapOutAmount ?? 250000),
+      currency: WalletCurrency.Btc,
+    },
+    lnd1loopRestEndpoint: config.lnd1loopRestEndpoint ?? "",
+    lnd2loopRestEndpoint: config.lnd2loopRestEndpoint ?? "",
+    lnd1loopRpcEndpoint: config.lnd1loopRpcEndpoint ?? "",
+    lnd2loopRpcEndpoint: config.lnd2loopRpcEndpoint ?? "",
+    swapProviders: config.swapProviders ?? [],
   }
 }
