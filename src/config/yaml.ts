@@ -50,7 +50,10 @@ export const yamlConfig = yamlConfigInit as YamlSchema
 
 export const RATIO_PRECISION: number = yamlConfig.ratioPrecision
 
-export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.spamLimits.memoSharingSatsThreshold
+export const MEMO_SHARING_SATS_THRESHOLD = yamlConfig.spamLimits
+  .memoSharingSatsThreshold as Satoshis
+export const MEMO_SHARING_CENTS_THRESHOLD = yamlConfig.spamLimits
+  .memoSharingCentsThreshold as UsdCents
 
 // how many block are we looking back for getChainTransactions
 const getOnChainScanDepth = (val: number): ScanDepth => {

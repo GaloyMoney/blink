@@ -1,4 +1,8 @@
-import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
+import {
+  MEMO_SHARING_CENTS_THRESHOLD,
+  MEMO_SHARING_SATS_THRESHOLD,
+  onboardingEarn,
+} from "@config"
 import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
@@ -50,7 +54,7 @@ const filterPendingIncoming = ({
 const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
   txn: LedgerTransaction<S>,
 ) => {
-  const { credit, debit, currency, fee, feeUsd } = txn
+  const { credit, debit, currency, fee, feeUsd, lnMemo, memoFromPayer } = txn
   const settlementAmount =
     currency === WalletCurrency.Btc ? toSats(credit - debit) : toCents(credit - debit)
   const settlementFee =
@@ -58,11 +62,11 @@ const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
       ? toSats(fee || 0)
       : toCents(feeUsd ? Math.floor(feeUsd * 100) : 0)
 
-  const { lnMemo, memoFromPayer } = txn
   const memo = translateMemo({
     memoFromPayer,
     lnMemo,
     credit,
+    currency,
   })
 
   const status = txn.pendingConfirmation ? TxStatus.Pending : TxStatus.Success
@@ -259,11 +263,17 @@ const fromLedgerWithMetadata = <S extends WalletCurrency>(
 const shouldDisplayMemo = ({
   memo,
   credit,
+  currency,
 }: {
   memo: string | undefined
-  credit: number
+  credit: CurrencyBaseAmount
+  currency: WalletCurrency
 }) => {
-  return isAuthorizedMemo(memo) || credit === 0 || credit >= MEMO_SHARING_SATS_THRESHOLD
+  if (isAuthorizedMemo(memo) || credit === 0) return true
+
+  if (currency === WalletCurrency.Btc) return credit >= MEMO_SHARING_SATS_THRESHOLD
+
+  return credit >= MEMO_SHARING_CENTS_THRESHOLD
 }
 
 const isAuthorizedMemo = (memo: string | undefined): boolean =>
@@ -273,18 +283,16 @@ export const translateMemo = ({
   memoFromPayer,
   lnMemo,
   credit,
+  currency,
 }: {
   memoFromPayer?: string
   lnMemo?: string
-  credit: number
+  credit: CurrencyBaseAmount
+  currency: WalletCurrency
 }): string | null => {
-  if (shouldDisplayMemo({ memo: memoFromPayer, credit })) {
-    if (memoFromPayer) {
-      return memoFromPayer
-    }
-    if (lnMemo) {
-      return lnMemo
-    }
+  const memo = memoFromPayer || lnMemo
+  if (shouldDisplayMemo({ memo, credit, currency })) {
+    return memo || null
   }
 
   return null

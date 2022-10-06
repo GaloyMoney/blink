@@ -129,6 +129,7 @@ accountLimits:
       "2": 20000000
 spamLimits:
   memoSharingSatsThreshold: 1000
+  memoSharingCentsThreshold: 50
 twoFALimits:
   threshold: 10000
 ipRecording:
