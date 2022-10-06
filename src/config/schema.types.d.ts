@@ -143,6 +143,10 @@ type YamlSchema = {
     adminApi: string
     corsAllowedOrigins: string[]
   }
+  oathkeeperConfig: {
+    urlJkws: string
+    decisionsApi: string
+  }
   captcha: {
     mandatory: boolean
   }

@@ -327,3 +327,18 @@ export const getSwapConfig = (): SwapConfig => {
     swapProviders: config.swapProviders,
   }
 }
+
+export const decisionsApi = (config = yamlConfig) => {
+  return config.oathkeeperConfig.decisionsApi
+}
+
+export const getJwksArgs = (config = yamlConfig) => {
+  const urlJkws = config.oathkeeperConfig.urlJkws
+
+  return {
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: urlJkws,
+  }
+}

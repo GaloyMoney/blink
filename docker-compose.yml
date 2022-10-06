@@ -16,6 +16,7 @@ services:
       - lnd-outside-1
       - lnd-outside-2
       - otel-agent
+      - oathkeeper
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.61.0
     command: ["--config=/etc/otel-agent-config.yaml"]
@@ -263,3 +264,11 @@ services:
       - redis
     volumes:
       - ./:/repo
+
+  oathkeeper:
+    image: oryd/oathkeeper:v0.40
+    command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
+    volumes:
+      - type: bind
+        source: dev/ory
+        target: /home/ory
