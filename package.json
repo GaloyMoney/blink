@@ -68,7 +68,7 @@
     "graphql-query-complexity-apollo-plugin": "^1.0.2",
     "graphql-redis-subscriptions": "^2.4.2",
     "graphql-relay": "^0.10.0",
-    "graphql-shield": "^7.5.0",
+    "graphql-shield": "^7.6.2",
     "graphql-tools": "^8.3.4",
     "gt3-server-node-express-sdk": "https://github.com/GaloyMoney/gt3-server-node-express-bypass#master",
     "helmet": "^5.1.1",
