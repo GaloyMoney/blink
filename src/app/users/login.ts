@@ -6,18 +6,23 @@ import {
   getDefaultAccountsConfig,
   MAX_AGE_TIME_CODE,
 } from "@config"
-import { checkedToKratosUserId } from "@domain/accounts"
-import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
+
 import {
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindUserFromPhoneError,
+  InvalidIPMetadataForLoginError,
 } from "@domain/errors"
-import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
-import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToEmailAddress } from "@domain/users"
+import { checkedToKratosUserId } from "@domain/accounts"
+import { RateLimiterExceededError } from "@domain/rate-limit/errors"
+import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
+import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
+import { IPMetadataValidator } from "@domain/users-ips/ip-metadata-validator"
+
 import { createToken } from "@services/jwt"
-import { AccountsRepository, UsersRepository } from "@services/mongoose"
+import { IpFetcher } from "@services/ipfetcher"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
+import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
 
 import {
@@ -37,6 +42,13 @@ export const login = async ({
   ip: IpAddress
 }): Promise<JwtToken | ApplicationError> => {
   const subLogger = logger.child({ topic: "login" })
+
+  const ipMetadata = await IpFetcher().fetchIPInfo(ip)
+  if (!(ipMetadata instanceof Error)) {
+    const validatedIPMetadata = IPMetadataValidator().validateForNewAccount(ipMetadata)
+    if (validatedIPMetadata instanceof Error)
+      return new InvalidIPMetadataForLoginError(validatedIPMetadata.name)
+  }
 
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
@@ -103,6 +115,13 @@ export const loginWithKratos = async ({
   if (emailAddressValid instanceof Error) return emailAddressValid
 
   const subLogger = logger.child({ topic: "login" })
+
+  const ipMetadata = await IpFetcher().fetchIPInfo(ip)
+  if (!(ipMetadata instanceof Error)) {
+    const validatedIPMetadata = IPMetadataValidator().validateForNewAccount(ipMetadata)
+    if (validatedIPMetadata instanceof Error)
+      return new InvalidIPMetadataForLoginError(validatedIPMetadata.name)
+  }
 
   {
     const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
@@ -189,16 +208,13 @@ const isCodeValid = async ({
   phone: PhoneNumber
   code: PhoneCode
   age: Seconds
-}) => {
+}): Promise<true | ApplicationError> => {
   const testAccounts = getTestAccounts()
   const validTestCode = TestAccountsChecker(testAccounts).isPhoneAndCodeValid({
     code,
     phone,
   })
+  if (validTestCode) return true
 
-  if (validTestCode) {
-    return true
-  } else {
-    return PhoneCodesRepository().existNewerThan({ code, phone, age })
-  }
+  return PhoneCodesRepository().existNewerThan({ code, phone, age })
 }

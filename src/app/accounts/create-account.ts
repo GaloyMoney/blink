@@ -52,10 +52,7 @@ const setupAccount = async ({
   account.role = role || "user"
   account.contactEnabled = account.role === "user" || account.role === "editor"
 
-  const updatedAccount = await AccountsRepository().update(account)
-  if (updatedAccount instanceof Error) return updatedAccount
-
-  return updatedAccount
+  return AccountsRepository().update(account)
 }
 
 // no kratos user is been added (currently with PhoneSchema)
@@ -65,7 +62,7 @@ export const createAccountForPhoneSchema = async ({
 }: {
   newUserInfo: NewUserInfo
   config: AccountsConfig
-}): Promise<Account | RepositoryError> => {
+}): Promise<Account | ApplicationError> => {
   const phoneNumberValid = checkedToPhoneNumber(phone)
   if (phoneNumberValid instanceof Error) return phoneNumberValid
 
@@ -88,13 +85,10 @@ export const createAccountForPhoneSchema = async ({
   const user = await UsersRepository().persistNew(userRaw)
   if (user instanceof Error) return user
 
-  let account = await AccountsRepository().findByUserId(user.id)
+  const account = await AccountsRepository().findByUserId(user.id)
   if (account instanceof Error) return account
 
-  account = await setupAccount({ account, config, phoneNumberValid })
-  if (account instanceof Error) return account
-
-  return account
+  return setupAccount({ account, config, phoneNumberValid })
 }
 
 // kratos user already exist, as he has been using self registration
@@ -104,15 +98,12 @@ export const createAccountForEmailSchema = async ({
 }: {
   kratosUserId: string
   config: AccountsConfig
-}): Promise<Account | RepositoryError> => {
+}): Promise<Account | ApplicationError> => {
   const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
   if (kratosUserIdValid instanceof Error) return kratosUserIdValid
 
-  let account = await AccountsRepository().persistNewKratosUser(kratosUserIdValid)
+  const account = await AccountsRepository().persistNewKratosUser(kratosUserIdValid)
   if (account instanceof Error) return account
 
-  account = await setupAccount({ account, config })
-  if (account instanceof Error) return account
-
-  return account
+  return setupAccount({ account, config })
 }

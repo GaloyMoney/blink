@@ -222,6 +222,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Unsupported phone carrier for rewards."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "InvalidIPMetadataForLoginError":
+      message = "Unsupported internet service provider."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "NoConnectionToDealerError":
       message = "No connection to dealer to perform USD operation."
       return new DealerOfflineError({ message, logger: baseLogger })
