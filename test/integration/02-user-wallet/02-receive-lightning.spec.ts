@@ -41,6 +41,7 @@ import {
   lndOutside1,
   pay,
   publishOkexPrice,
+  safePay,
   subscribeToInvoices,
 } from "test/helpers"
 
@@ -107,7 +108,7 @@ describe("UserWallet - Lightning", () => {
       })
 
     const promises = Promise.all([
-      pay({ lnd: lndOutside1, request: invoice }),
+      safePay({ lnd: lndOutside1, request: invoice }),
       (async () => {
         // TODO: we could use event instead of a sleep to lower test latency
         await sleep(500)
@@ -374,7 +375,7 @@ describe("UserWallet - Lightning", () => {
 
     expect(amount).toBe(sats)
 
-    pay({ lnd: lndOutside1, request: invoice })
+    safePay({ lnd: lndOutside1, request: invoice })
 
     // TODO: we could use an event instead of a sleep
     await sleep(500)
@@ -443,7 +444,7 @@ describe("UserWallet - Lightning", () => {
 
     const hash = getHash(invoice)
 
-    pay({ lnd: lndOutside1, request: invoice, tokens: sats })
+    safePay({ lnd: lndOutside1, request: invoice, tokens: sats })
 
     // TODO: we could use an event instead of a sleep
     await sleep(500)
@@ -509,7 +510,7 @@ describe("UserWallet - Lightning", () => {
 
     const hash = getHash(invoice)
 
-    pay({ lnd: lndOutside1, request: invoice, tokens: sats })
+    safePay({ lnd: lndOutside1, request: invoice, tokens: sats })
 
     // TODO: we could use an event instead of a sleep
     await sleep(500)
@@ -560,13 +561,6 @@ describe("UserWallet - Lightning", () => {
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: invoice, paymentHash: hash } = lnInvoice
 
-    const safePay = async (args) => {
-      try {
-        return await pay(args) // 'await' is explicitly needed here
-      } catch (err) {
-        return err
-      }
-    }
     safePay({ lnd: lndOutside1, request: invoice, mtokens })
     // TODO: we could use an event instead of a sleep
     await sleep(500)
@@ -628,7 +622,7 @@ describe("UserWallet - Lightning", () => {
     const { paymentRequest: invoice } = lnInvoice
 
     const hash = getHash(invoice)
-    pay({ lnd: lndOutside1, request: invoice })
+    safePay({ lnd: lndOutside1, request: invoice })
 
     // TODO: we could use an event instead of a sleep
     await sleep(500)

@@ -19,9 +19,9 @@ import {
   createInvoice,
   createNewWalletFromPhone,
   lndOutside1,
-  pay,
   publishOkexPrice,
   randomPhone,
+  safePay,
 } from "test/helpers"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
@@ -120,7 +120,7 @@ const createAndFundNewWalletForPhone = async <S extends WalletCurrency>({
     })
 
   const promises = Promise.all([
-    pay({ lnd: lndOutside1, request: invoice }),
+    safePay({ lnd: lndOutside1, request: invoice }),
     (async () => {
       // TODO: we could use event instead of a sleep to lower test latency
       await sleep(500)

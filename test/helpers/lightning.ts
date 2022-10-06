@@ -341,15 +341,7 @@ export const fundWalletIdFromLightning = async ({
   const invoice = await addInvoiceForSelf({ walletId, amount })
   if (invoice instanceof Error) return invoice
 
-  const safePay = async () => {
-    try {
-      await pay({ lnd: lndOutside1, request: invoice.paymentRequest })
-    } catch (err) {
-      // If we get here, error
-      expect(err).toBeUndefined()
-    }
-  }
-  safePay()
+  safePay({ lnd: lndOutside1, request: invoice.paymentRequest })
 
   // TODO: we could use an event instead of a sleep
   await sleep(500)
@@ -365,4 +357,13 @@ export const fundWalletIdFromLightning = async ({
 
   const balance = await getBalanceForWallet({ walletId, logger: baseLogger })
   if (balance instanceof Error) throw balance
+}
+
+export const safePay = async (args) => {
+  try {
+    await pay(args) // 'await' is explicitly needed here
+  } catch (err) {
+    // If we get here, error
+    expect(err).toBeUndefined()
+  }
 }
