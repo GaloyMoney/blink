@@ -5,7 +5,7 @@ import { SettlementMethod, PaymentInitiationMethod, TxStatus } from "@domain/wal
 import { translateMemo, WalletTransactionHistory } from "@domain/wallets/tx-history"
 import { toSats } from "@domain/bitcoin"
 import { IncomingOnChainTransaction } from "@domain/bitcoin/onchain"
-import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
+import { MEMO_SHARING_CENTS_THRESHOLD, MEMO_SHARING_SATS_THRESHOLD } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { toCents } from "@domain/fiat"
 
@@ -323,34 +323,74 @@ describe("translates ledger txs to wallet txs", () => {
 })
 
 describe("translateDescription", () => {
-  it("returns the memoFromPayer", () => {
+  it("returns the memoFromPayer for BTC wallet", () => {
     const result = translateMemo({
       memoFromPayer: "some memo",
       credit: MEMO_SHARING_SATS_THRESHOLD,
+      currency: WalletCurrency.Btc,
     })
     expect(result).toEqual("some memo")
   })
 
-  it("returns memo if there is no memoFromPayer", () => {
+  it("returns memo if there is no memoFromPayer for BTC wallet", () => {
     const result = translateMemo({
       lnMemo: "some memo",
       credit: MEMO_SHARING_SATS_THRESHOLD,
+      currency: WalletCurrency.Btc,
     })
     expect(result).toEqual("some memo")
   })
 
-  it("returns null under spam thresh", () => {
+  it("returns null under spam thresh for BTC wallet", () => {
     const result = translateMemo({
       memoFromPayer: "some memo",
-      credit: 1,
+      credit: 1 as Satoshis,
+      currency: WalletCurrency.Btc,
     })
     expect(result).toBeNull()
   })
 
-  it("returns memo for debit under spam threshold", () => {
+  it("returns memo for debit under spam threshold for BTC wallet", () => {
     const result = translateMemo({
       memoFromPayer: "some memo",
-      credit: 0,
+      credit: 0 as Satoshis,
+      currency: WalletCurrency.Btc,
+    })
+    expect(result).toEqual("some memo")
+  })
+
+  it("returns the memoFromPayer for USD wallet", () => {
+    const result = translateMemo({
+      memoFromPayer: "some memo",
+      credit: MEMO_SHARING_CENTS_THRESHOLD,
+      currency: WalletCurrency.Usd,
+    })
+    expect(result).toEqual("some memo")
+  })
+
+  it("returns memo if there is no memoFromPayer for USD wallet", () => {
+    const result = translateMemo({
+      lnMemo: "some memo",
+      credit: MEMO_SHARING_CENTS_THRESHOLD,
+      currency: WalletCurrency.Usd,
+    })
+    expect(result).toEqual("some memo")
+  })
+
+  it("returns null under spam thresh for USD wallet", () => {
+    const result = translateMemo({
+      memoFromPayer: "some memo",
+      credit: 1 as UsdCents,
+      currency: WalletCurrency.Usd,
+    })
+    expect(result).toBeNull()
+  })
+
+  it("returns memo for debit under spam threshold for USD wallet", () => {
+    const result = translateMemo({
+      memoFromPayer: "some memo",
+      credit: 0 as UsdCents,
+      currency: WalletCurrency.Usd,
     })
     expect(result).toEqual("some memo")
   })

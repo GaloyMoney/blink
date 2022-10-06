@@ -439,11 +439,13 @@ export const configSchema = {
       type: "object",
       properties: {
         memoSharingSatsThreshold: { type: "integer" },
+        memoSharingCentsThreshold: { type: "integer" },
       },
-      required: ["memoSharingSatsThreshold"],
+      required: ["memoSharingSatsThreshold", "memoSharingCentsThreshold"],
       additionalProperties: false,
       default: {
         memoSharingSatsThreshold: 1000,
+        memoSharingCentsThreshold: 50,
       },
     },
     twoFALimits: {

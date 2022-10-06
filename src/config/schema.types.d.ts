@@ -87,6 +87,7 @@ type YamlSchema = {
   }
   spamLimits: {
     memoSharingSatsThreshold: number
+    memoSharingCentsThreshold: number
   }
   twoFALimits: {
     threshold: number
