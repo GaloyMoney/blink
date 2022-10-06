@@ -21,6 +21,7 @@ import { IPMetadataValidator } from "@domain/users-ips/ip-metadata-validator"
 
 import { createToken } from "@services/jwt"
 import { IpFetcher } from "@services/ipfetcher"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
@@ -29,6 +30,8 @@ import {
   createAccountForEmailSchema,
   createAccountForPhoneSchema,
 } from "../accounts/create-account"
+
+const network = BTC_NETWORK
 
 export const login = async ({
   phone,
@@ -76,6 +79,7 @@ export const login = async ({
 
   if (user instanceof CouldNotFindUserFromPhoneError) {
     subLogger.info({ phone }, "new user signup")
+    addAttributesToCurrentSpan({ "login.newAccount": true })
     const userRaw: NewUserInfo = { phone }
     const account_ = await createAccountForPhoneSchema({
       newUserInfo: userRaw,
@@ -93,7 +97,6 @@ export const login = async ({
     account = account_
   }
 
-  const network = BTC_NETWORK
   return createToken({ uid: account.id, network })
 }
 
@@ -137,14 +140,13 @@ export const loginWithKratos = async ({
 
   if (account instanceof CouldNotFindAccountFromKratosIdError) {
     subLogger.info({ kratosUserId }, "New Kratos user signup")
+    addAttributesToCurrentSpan({ "login.newAccount": true })
     account = await createAccountForEmailSchema({
       kratosUserId,
       config: getDefaultAccountsConfig(),
     })
   }
   if (account instanceof Error) return account
-
-  const network = BTC_NETWORK
 
   return {
     accountStatus: account.status.toUpperCase(),
