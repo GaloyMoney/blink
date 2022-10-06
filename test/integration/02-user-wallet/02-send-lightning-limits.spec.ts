@@ -39,6 +39,9 @@ jest.mock("@config", () => {
   const config = jest.requireActual("@config")
   return {
     ...config,
+    getDealerConfig: jest.fn().mockReturnValue({
+      usd: { hedgingEnabled: true },
+    }),
     getAccountLimits: jest.fn().mockReturnValue({
       intraLedgerLimit: 100 as UsdCents,
       withdrawalLimit: 100 as UsdCents,
