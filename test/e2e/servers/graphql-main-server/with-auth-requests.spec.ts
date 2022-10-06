@@ -59,7 +59,7 @@ const userRef = "D"
 const { phone, code } = getPhoneAndCodeFromRef(userRef)
 
 const satsAmount = toSats(50_000)
-const centsAmount = toCents(10_000)
+const centsAmount = toCents(4_000)
 
 beforeAll(async () => {
   await publishOkexPrice()
@@ -197,7 +197,7 @@ describe("graphql", () => {
         expect.arrayContaining([
           expect.objectContaining({
             node: expect.objectContaining({
-              settlementAmount: 10_000,
+              settlementAmount: 4_000,
               settlementCurrency: WalletCurrency.Usd,
             }),
           }),
@@ -237,7 +237,7 @@ describe("graphql", () => {
         expect.arrayContaining([
           expect.objectContaining({
             node: expect.objectContaining({
-              settlementAmount: 10_000,
+              settlementAmount: 4_000,
               settlementCurrency: WalletCurrency.Usd,
             }),
           }),
