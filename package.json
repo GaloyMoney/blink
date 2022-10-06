@@ -93,7 +93,7 @@
     "node-2fa": "^2.0.2",
     "node-cache": "^5.1.2",
     "pino": "^8.6.1",
-    "pino-http": "^8.2.0",
+    "pino-http": "^8.2.1",
     "prom-client": "^14.1.0",
     "rate-limiter-flexible": "^2.3.10",
     "redlock": "^5.0.0-beta.2",
