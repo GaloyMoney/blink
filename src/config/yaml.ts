@@ -22,7 +22,6 @@ import { ConfigError } from "./error"
 
 import { merge } from "./utils"
 
-const defaultConfig = {}
 let customContent: string, customConfig
 
 try {
@@ -33,15 +32,20 @@ try {
   baseLogger.debug({ err }, "no custom.yaml available. using default values")
 }
 
-export const yamlConfigInit = merge(defaultConfig, customConfig)
-
-const ajv = new Ajv({ useDefaults: true })
-
 // TODO: fix errors
 // const ajv = new Ajv({ allErrors: true, strict: "log" })
+const ajv = new Ajv({ useDefaults: true })
 
+const defaultConfig = {}
 const validate = ajv.compile<YamlSchema>(configSchema)
+
+// validate is mutating defaultConfig - even thought it's a const -> it's changing its properties
+validate(defaultConfig)
+
+export const yamlConfigInit = merge(defaultConfig, customConfig)
+
 const valid = validate(yamlConfigInit)
+
 if (!valid) {
   baseLogger.error({ validationErrors: validate.errors }, "Invalid yaml configuration")
   throw new ConfigError("Invalid yaml configuration", validate.errors)
