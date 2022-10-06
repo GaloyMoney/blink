@@ -6,24 +6,29 @@ import {
   getDefaultAccountsConfig,
   MAX_AGE_TIME_CODE,
 } from "@config"
-import { checkedToKratosUserId } from "@domain/accounts"
-import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
+
 import {
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindUserFromPhoneError,
 } from "@domain/errors"
-import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
-import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToEmailAddress } from "@domain/users"
+import { checkedToKratosUserId } from "@domain/accounts"
+import { RateLimiterExceededError } from "@domain/rate-limit/errors"
+import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
+import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
+
 import { createToken } from "@services/jwt"
-import { AccountsRepository, UsersRepository } from "@services/mongoose"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
+import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
 
 import {
   createAccountForEmailSchema,
   createAccountForPhoneSchema,
 } from "../accounts/create-account"
+
+const network = BTC_NETWORK
 
 export const login = async ({
   phone,
@@ -64,6 +69,7 @@ export const login = async ({
 
   if (user instanceof CouldNotFindUserFromPhoneError) {
     subLogger.info({ phone }, "new user signup")
+    addAttributesToCurrentSpan({ "login.newAccount": true })
     const userRaw: NewUserInfo = { phone }
     const account_ = await createAccountForPhoneSchema({
       newUserInfo: userRaw,
@@ -81,7 +87,6 @@ export const login = async ({
     account = account_
   }
 
-  const network = BTC_NETWORK
   return createToken({ uid: account.id, network })
 }
 
@@ -118,14 +123,13 @@ export const loginWithKratos = async ({
 
   if (account instanceof CouldNotFindAccountFromKratosIdError) {
     subLogger.info({ kratosUserId }, "New Kratos user signup")
+    addAttributesToCurrentSpan({ "login.newAccount": true })
     account = await createAccountForEmailSchema({
       kratosUserId,
       config: getDefaultAccountsConfig(),
     })
   }
   if (account instanceof Error) return account
-
-  const network = BTC_NETWORK
 
   return {
     accountStatus: account.status.toUpperCase(),
@@ -195,10 +199,7 @@ const isCodeValid = async ({
     code,
     phone,
   })
+  if (validTestCode) return true
 
-  if (validTestCode) {
-    return true
-  } else {
-    return PhoneCodesRepository().existNewerThan({ code, phone, age })
-  }
+  return PhoneCodesRepository().existNewerThan({ code, phone, age })
 }
