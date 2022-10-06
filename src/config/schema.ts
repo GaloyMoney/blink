@@ -22,7 +22,7 @@ const dealerConfigSchema = {
     usd: {
       type: "object",
       properties: {
-        hedgingEnabled: { type: "boolean", default: false },
+        hedgingEnabled: { type: "boolean" },
       },
       required: ["hedgingEnabled"],
     },
@@ -131,37 +131,31 @@ export const configSchema = {
           type: "array",
           items: { type: "string" },
           uniqueItems: true,
-          default: [],
         },
         denyPhoneCountries: {
           type: "array",
           items: { type: "string" },
           uniqueItems: true,
-          default: [],
         },
         allowIPCountries: {
           type: "array",
           items: { type: "string" },
           uniqueItems: true,
-          default: [],
         },
         denyIPCountries: {
           type: "array",
           items: { type: "string" },
           uniqueItems: true,
-          default: [],
         },
         allowASNs: {
           type: "array",
           items: { type: "string" },
           uniqueItems: true,
-          default: [],
         },
         denyASNs: {
           type: "array",
           items: { type: "string" },
           uniqueItems: true,
-          default: [],
         },
       },
       required: [
@@ -185,13 +179,13 @@ export const configSchema = {
     coldStorage: {
       type: "object",
       properties: {
-        minOnChainHotWalletBalance: { type: "integer", default: 1000000 },
-        minRebalanceSize: { type: "integer", default: 10000000 },
-        maxHotWalletBalance: { type: "integer", default: 200000000 },
-        walletPattern: { type: "string", default: "specter" },
+        minOnChainHotWalletBalance: { type: "integer" },
+        minRebalanceSize: { type: "integer" },
+        maxHotWalletBalance: { type: "integer" },
+        walletPattern: { type: "string" },
         // TODO: confusing: 2 properties with the same name
-        onChainWallet: { type: "string", default: "specter/coldstorage" },
-        targetConfirmations: { type: "integer", default: 6 },
+        onChainWallet: { type: "string" },
+        targetConfirmations: { type: "integer" },
       },
       required: [
         "minOnChainHotWalletBalance",
@@ -384,33 +378,9 @@ export const configSchema = {
     accountLimits: {
       type: "object",
       properties: {
-        withdrawal: {
-          ...accountLimitConfigSchema,
-          default: {
-            level: {
-              "1": 100000,
-              "2": 5000000,
-            },
-          },
-        },
-        intraLedger: {
-          ...accountLimitConfigSchema,
-          default: {
-            level: {
-              "1": 200000,
-              "2": 5000000,
-            },
-          },
-        },
-        tradeIntraAccount: {
-          ...accountLimitConfigSchema,
-          default: {
-            level: {
-              "1": 5000000,
-              "2": 20000000,
-            },
-          },
-        },
+        withdrawal: accountLimitConfigSchema,
+        intraLedger: accountLimitConfigSchema,
+        tradeIntraAccount: accountLimitConfigSchema,
       },
       required: ["withdrawal", "intraLedger", "tradeIntraAccount"],
       additionalProperties: false,
@@ -482,7 +452,7 @@ export const configSchema = {
     fees: {
       type: "object",
       properties: {
-        deposit: { type: "number", default: 0.003 },
+        deposit: { type: "number" },
         withdraw: {
           type: "object",
           properties: {
@@ -491,8 +461,8 @@ export const configSchema = {
               enum: ["flat", "proportionalOnImbalance"],
             },
             ratio: { type: "number" },
-            threshold: { type: "integer", default: 1000000 },
-            daysLookback: { type: "integer", default: 30 },
+            threshold: { type: "integer" },
+            daysLookback: { type: "integer" },
             defaultMin: { type: "integer" },
           },
           required: ["method", "ratio", "threshold", "daysLookback", "defaultMin"],
@@ -540,10 +510,10 @@ export const configSchema = {
       type: "object",
       properties: {
         dustThreshold: { type: "integer" },
-        minConfirmations: { type: "integer", default: 2 },
-        scanDepth: { type: "integer", default: 360 }, // TODO: improve naming
-        scanDepthOutgoing: { type: "integer", default: 2 },
-        scanDepthChannelUpdate: { type: "integer", default: 8 },
+        minConfirmations: { type: "integer" },
+        scanDepth: { type: "integer" }, // TODO: improve naming
+        scanDepthOutgoing: { type: "integer" },
+        scanDepthChannelUpdate: { type: "integer" },
       },
       required: [
         "dustThreshold",
