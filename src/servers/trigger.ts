@@ -15,7 +15,7 @@ import {
   SubscribeToTransactionsChainTransactionEvent,
 } from "lightning"
 
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { getCronConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
 import {
   Prices as PricesWithSpans,
@@ -409,9 +409,11 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
 
 const startSwapMonitor = async (swapService: ISwapService) => {
   const isSwapServerUp = await swapService.healthCheck()
+  baseLogger.info({ isSwapServerUp }, "isSwapServerUp")
   if (isSwapServerUp) {
     const listener = swapService.swapListener()
     listener.on("data", (response) => {
+      baseLogger.info({ response }, "Swap Listener Called")
       SwapWithSpans.handleSwapOutCompleted(response)
     })
   }
@@ -448,7 +450,7 @@ const main = () => {
   activateLndHealthCheck()
   publishCurrentPrice()
 
-  listenerSwapMonitor()
+  if (getCronConfig().swapEnabled) listenerSwapMonitor()
 
   console.log("trigger server ready")
 }
