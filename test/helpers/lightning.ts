@@ -367,3 +367,11 @@ export const safePay = async (args) => {
     expect(err).toBeUndefined()
   }
 }
+
+export const safePayNoExpect = async (args) => {
+  try {
+    return await pay(args) // 'await' is explicitly needed here
+  } catch (err) {
+    return err
+  }
+}

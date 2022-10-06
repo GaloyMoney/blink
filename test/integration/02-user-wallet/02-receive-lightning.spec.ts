@@ -42,6 +42,7 @@ import {
   pay,
   publishOkexPrice,
   safePay,
+  safePayNoExpect,
   subscribeToInvoices,
 } from "test/helpers"
 
@@ -561,7 +562,7 @@ describe("UserWallet - Lightning", () => {
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: invoice, paymentHash: hash } = lnInvoice
 
-    safePay({ lnd: lndOutside1, request: invoice, mtokens })
+    safePayNoExpect({ lnd: lndOutside1, request: invoice, mtokens })
     // TODO: we could use an event instead of a sleep
     await sleep(500)
 
@@ -622,7 +623,7 @@ describe("UserWallet - Lightning", () => {
     const { paymentRequest: invoice } = lnInvoice
 
     const hash = getHash(invoice)
-    safePay({ lnd: lndOutside1, request: invoice })
+    safePayNoExpect({ lnd: lndOutside1, request: invoice })
 
     // TODO: we could use an event instead of a sleep
     await sleep(500)
