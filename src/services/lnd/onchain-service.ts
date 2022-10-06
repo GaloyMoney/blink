@@ -153,7 +153,7 @@ export const OnChainService = (
       const { fee } = await getChainFeeEstimate({
         lnd,
         send_to: sendTo,
-        utxo_confirmations: 0,
+        utxo_confirmations: 1,
         target_confirmations: targetConfirmations,
       })
 
@@ -180,7 +180,7 @@ export const OnChainService = (
         lnd,
         address,
         tokens: amount,
-        utxo_confirmations: 0,
+        utxo_confirmations: 1,
         target_confirmations: targetConfirmations,
       })
 
