@@ -27,6 +27,9 @@ mutators:
       jwks_url: file:///home/ory/jwks.json
       issuer_url: "galoy.io"
 
+  noop:
+    enabled: true
+
 errors:
   fallback:
     - json
