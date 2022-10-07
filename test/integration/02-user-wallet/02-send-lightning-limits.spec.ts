@@ -392,7 +392,9 @@ describe("UserWallet Limits - Lightning Pay", () => {
 
       // Construct payments
       const SPLITS = 2
-      const partialUsdSendAmount = Math.floor(accountLimits[limit] / SPLITS)
+      let partialUsdSendAmount = Math.floor(accountLimits[limit] / SPLITS)
+      const bufferForSpread = 2
+      partialUsdSendAmount -= bufferForSpread
       const partialBtcSendAmount = await btcAmountFromUsdNumber(partialUsdSendAmount)
 
       const usdAmountAboveThreshold = AMOUNT_ABOVE_THRESHOLD
