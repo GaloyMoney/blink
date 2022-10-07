@@ -64,7 +64,7 @@ const jwtAlgorithms: jwt.Algorithm[] = ["HS256"]
 authRouter.post(
   "/validatetoken",
   wrapAsyncToRunInSpan({
-    namespace: "daily-balance-notification",
+    namespace: "validatetoken",
     fn: async (
       /* eslint-disable @typescript-eslint/no-explicit-any */
       req: Request<any, any, any, any, Record<string, any>>,
