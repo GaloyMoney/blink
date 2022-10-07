@@ -21,9 +21,6 @@ authorizers:
     enabled: true
 
 mutators:
-  noop:
-    enabled: true
-
   id_token:
     enabled: true
     config:
