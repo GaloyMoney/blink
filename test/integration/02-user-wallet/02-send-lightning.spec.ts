@@ -1835,7 +1835,7 @@ describe("USD Wallets - Lightning Pay", () => {
       expect(paymentResult).toBe(PaymentSendStatus.Success)
 
       const dealerFns = DealerPriceService()
-      const cents = await dealerFns.getCentsFromSatsForImmediateSell(amountPayment)
+      const cents = await dealerFns.getCentsFromSatsForImmediateBuy(amountPayment)
       if (cents instanceof Error) throw cents
 
       const finalBalanceB = await getBalanceHelper(walletIdUsdB)
@@ -2099,7 +2099,7 @@ describe("USD Wallets - Lightning Pay", () => {
 
     it("fails to send less-than-1-cent amount from BTC wallet to USD wallet", async () => {
       const btcSendAmount = 10
-      const btcSendAmountInUsd = await dealerFns.getCentsFromSatsForImmediateSell(
+      const btcSendAmountInUsd = await dealerFns.getCentsFromSatsForImmediateBuy(
         toSats(btcSendAmount),
       )
       expect(btcSendAmountInUsd).toBe(0)
