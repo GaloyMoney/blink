@@ -30,6 +30,7 @@ export class NoValidNodeForPubkeyError extends LightningServiceError {
 export class PaymentNotFoundError extends LightningServiceError {}
 export class RouteNotFoundError extends LightningServiceError {}
 export class InsufficientBalanceForRoutingError extends LightningServiceError {}
+export class InsufficientBalanceForLnPaymentError extends LightningServiceError {}
 export class InvoiceExpiredOrBadPaymentHashError extends LightningServiceError {}
 export class PaymentAttemptsTimedOutError extends LightningServiceError {}
 export class ProbeForRouteTimedOutError extends LightningServiceError {}

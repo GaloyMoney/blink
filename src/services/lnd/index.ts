@@ -31,6 +31,7 @@ import {
   CorruptLndDbError,
   CouldNotDecodeReturnedPaymentRequest,
   decodeInvoice,
+  InsufficientBalanceForLnPaymentError,
   InsufficientBalanceForRoutingError,
   InvoiceExpiredOrBadPaymentHashError,
   InvoiceNotFoundError,
@@ -715,6 +716,7 @@ const lookupPaymentByPubkeyAndHash = async ({
 
 export const KnownLndErrorDetails: { [key: string]: RegExp } = {
   InsufficientBalance: /insufficient local balance/,
+  InsufficientBalanceToAttemptPayment: /InsufficientBalanceToAttemptPayment/,
   InvoiceNotFound: /unable to locate invoice/,
   InvoiceAlreadyPaid: /invoice is already paid/,
   UnableToFindRoute: /PaymentPathfindingFailedToFindPossibleRoute/,
@@ -730,6 +732,7 @@ export const KnownLndErrorDetails: { [key: string]: RegExp } = {
   ConnectionDropped: /Connection dropped/,
   TemporaryChannelFailure: /TemporaryChannelFailure/,
   InvoiceAlreadySettled: /invoice already settled/,
+  NoConnectionEstablished: /No connection established/,
 } as const
 
 /* eslint @typescript-eslint/ban-ts-comment: "off" */
@@ -849,6 +852,9 @@ const handleSendPaymentLndErrors = ({
       return new PaymentInTransitionError(paymentHash)
     case match(KnownLndErrorDetails.TemporaryChannelFailure):
       return new TemporaryChannelFailureError(paymentHash)
+    case match(KnownLndErrorDetails.InsufficientBalanceToAttemptPayment):
+      return new InsufficientBalanceForLnPaymentError()
+
     default:
       return handleCommonLightningServiceErrors(err)
   }
@@ -859,6 +865,7 @@ const handleCommonLightningServiceErrors = (err: Error) => {
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
   switch (true) {
     case match(KnownLndErrorDetails.ConnectionDropped):
+    case match(KnownLndErrorDetails.NoConnectionEstablished):
       return new OffChainServiceUnavailableError()
     default:
       return new UnknownLightningServiceError(msgForUnknown(err))
@@ -870,6 +877,7 @@ const handleCommonRouteNotFoundErrors = (err: Error) => {
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
   switch (true) {
     case match(KnownLndErrorDetails.ConnectionDropped):
+    case match(KnownLndErrorDetails.NoConnectionEstablished):
       return new OffChainServiceUnavailableError()
     default:
       return new UnknownRouteNotFoundError(msgForUnknown(err))
