@@ -288,11 +288,11 @@ export const startApolloServer = async ({
               const { request } = connectionContext
 
               const authz = (connectionParams.authorization ||
-                connectionParams.Authorization) as string
+                connectionParams.Authorization) as string | undefined
               // TODO: also manage the case where there is a cookie in the request
 
               // make request to oathkeeper
-              const originalToken = authz.slice(7)
+              const originalToken = authz?.slice(7) ?? undefined
 
               const newToken = await sendOathkeeperRequest(originalToken)
               // TODO: see how returning an error affect the websocket connection
