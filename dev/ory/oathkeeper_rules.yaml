@@ -1,6 +1,6 @@
 - id: decline-direct-access-validatetoken
   upstream:
-    url: "http://localhost:4002"
+    url: "http://e2e-tests:4002"
   match:
     url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/validatetoken"
     methods: ["GET", "POST"]
@@ -15,7 +15,7 @@
     url: "http://e2e-tests:4002"
   match:
     url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/<.*>"
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST", "OPTIONS"]
   authenticators:
     - handler: bearer_token
       config:
