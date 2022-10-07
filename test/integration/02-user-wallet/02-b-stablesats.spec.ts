@@ -1,11 +1,12 @@
 // This is a test suite added to document stablesats behaviour in a way that devs can
 // reason about what to expect from the different methods under different scenarios.
 //
-// It is also useful since we have some places in our tests where we hardcode expected
-// values that depend on the exchange rate.
+// This is also placed in '02-user-wallet' and not 'services/dealer' because it acts
+// as a canary for the rest of these tests. This is because we have some places in
+// our tests where we hardcode expected values that depend on the exchange rate.
 //
 // This test suite can probably be removed if we remove all those hardcoded places (i.e.
-// can change the mocked value without breaking tests), and we find some other way to
+// can change the mocked rates without breaking tests), and we find some other way to
 // communicate how the different stablesats methods work.
 
 import { WalletCurrency } from "@domain/shared"
