@@ -31,6 +31,7 @@ import {
   CorruptLndDbError,
   CouldNotDecodeReturnedPaymentRequest,
   decodeInvoice,
+  InsufficientBalanceForLnPaymentError,
   InsufficientBalanceForRoutingError,
   InvoiceExpiredOrBadPaymentHashError,
   InvoiceNotFoundError,
@@ -715,6 +716,7 @@ const lookupPaymentByPubkeyAndHash = async ({
 
 export const KnownLndErrorDetails: { [key: string]: RegExp } = {
   InsufficientBalance: /insufficient local balance/,
+  InsufficientBalanceToAttemptPayment: /InsufficientBalanceToAttemptPayment/,
   InvoiceNotFound: /unable to locate invoice/,
   InvoiceAlreadyPaid: /invoice is already paid/,
   UnableToFindRoute: /PaymentPathfindingFailedToFindPossibleRoute/,
@@ -850,6 +852,9 @@ const handleSendPaymentLndErrors = ({
       return new PaymentInTransitionError(paymentHash)
     case match(KnownLndErrorDetails.TemporaryChannelFailure):
       return new TemporaryChannelFailureError(paymentHash)
+    case match(KnownLndErrorDetails.InsufficientBalanceToAttemptPayment):
+      return new InsufficientBalanceForLnPaymentError()
+
     default:
       return handleCommonLightningServiceErrors(err)
   }
