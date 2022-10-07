@@ -131,9 +131,9 @@ describe("define stablesats expected behavior", () => {
 
     // Values with spreads
     expect(centsFromSatsRes.getCentsFromSatsForImmediateBuy.amount).toEqual(199_800n)
-    expect(centsFromSatsRes.getCentsFromSatsForImmediateSell.amount).toEqual(199_800n)
+    expect(centsFromSatsRes.getCentsFromSatsForImmediateSell.amount).toEqual(200_200n)
     expect(centsFromSatsRes.getCentsFromSatsForFutureBuy.amount).toEqual(199_760n)
-    expect(centsFromSatsRes.getCentsFromSatsForFutureSell.amount).toEqual(199_760n)
+    expect(centsFromSatsRes.getCentsFromSatsForFutureSell.amount).toEqual(200_200n)
 
     // ==========
     // USD TO BTC
@@ -145,9 +145,9 @@ describe("define stablesats expected behavior", () => {
     expect(satsFromCentsRes.convertFromUsd.amount).toEqual(10_000_000n)
 
     // Values with spreads
-    expect(satsFromCentsRes.getSatsFromCentsForImmediateBuy.amount).toEqual(9_990_000n)
+    expect(satsFromCentsRes.getSatsFromCentsForImmediateBuy.amount).toEqual(10_010_000n)
     expect(satsFromCentsRes.getSatsFromCentsForImmediateSell.amount).toEqual(9_990_000n)
-    expect(satsFromCentsRes.getSatsFromCentsForFutureBuy.amount).toEqual(9_988_000n)
+    expect(satsFromCentsRes.getSatsFromCentsForFutureBuy.amount).toEqual(10_012_000n)
     expect(satsFromCentsRes.getSatsFromCentsForFutureSell.amount).toEqual(9_988_000n)
   })
 
@@ -165,9 +165,9 @@ describe("define stablesats expected behavior", () => {
 
     // Values with spreads
     expect(centsFromSatsRes.getCentsFromSatsForImmediateBuy.amount).toEqual(199_799n)
-    expect(centsFromSatsRes.getCentsFromSatsForImmediateSell.amount).toEqual(199_799n)
+    expect(centsFromSatsRes.getCentsFromSatsForImmediateSell.amount).toEqual(200_199n)
     expect(centsFromSatsRes.getCentsFromSatsForFutureBuy.amount).toEqual(199_759n)
-    expect(centsFromSatsRes.getCentsFromSatsForFutureSell.amount).toEqual(199_759n)
+    expect(centsFromSatsRes.getCentsFromSatsForFutureSell.amount).toEqual(200_199n)
 
     // ==========
     // USD TO BTC
@@ -179,9 +179,9 @@ describe("define stablesats expected behavior", () => {
     expect(satsFromCentsRes.convertFromUsd.amount).toEqual(9_997_500n)
 
     // Values with spreads
-    expect(satsFromCentsRes.getSatsFromCentsForImmediateBuy.amount).toEqual(9_987_502n)
+    expect(satsFromCentsRes.getSatsFromCentsForImmediateBuy.amount).toEqual(10_007_497n)
     expect(satsFromCentsRes.getSatsFromCentsForImmediateSell.amount).toEqual(9_987_502n)
-    expect(satsFromCentsRes.getSatsFromCentsForFutureBuy.amount).toEqual(9_985_503n)
+    expect(satsFromCentsRes.getSatsFromCentsForFutureBuy.amount).toEqual(10_009_497n)
     expect(satsFromCentsRes.getSatsFromCentsForFutureSell.amount).toEqual(9_985_503n)
   })
 
@@ -199,9 +199,9 @@ describe("define stablesats expected behavior", () => {
 
     // Values with spreads
     expect(centsFromSatsRes.getCentsFromSatsForImmediateBuy.amount).toEqual(19n)
-    expect(centsFromSatsRes.getCentsFromSatsForImmediateSell.amount).toEqual(19n)
+    expect(centsFromSatsRes.getCentsFromSatsForImmediateSell.amount).toEqual(21n)
     expect(centsFromSatsRes.getCentsFromSatsForFutureBuy.amount).toEqual(19n)
-    expect(centsFromSatsRes.getCentsFromSatsForFutureSell.amount).toEqual(19n)
+    expect(centsFromSatsRes.getCentsFromSatsForFutureSell.amount).toEqual(21n)
 
     // ==========
     // USD TO BTC
@@ -213,9 +213,9 @@ describe("define stablesats expected behavior", () => {
     expect(satsFromCentsRes.convertFromUsd.amount).toEqual(1_000n)
 
     // Values with spreads
-    expect(satsFromCentsRes.getSatsFromCentsForImmediateBuy.amount).toEqual(999n)
+    expect(satsFromCentsRes.getSatsFromCentsForImmediateBuy.amount).toEqual(1_001n)
     expect(satsFromCentsRes.getSatsFromCentsForImmediateSell.amount).toEqual(999n)
-    expect(satsFromCentsRes.getSatsFromCentsForFutureBuy.amount).toEqual(998n)
+    expect(satsFromCentsRes.getSatsFromCentsForFutureBuy.amount).toEqual(1_002n)
     expect(satsFromCentsRes.getSatsFromCentsForFutureSell.amount).toEqual(998n)
   })
 
@@ -233,9 +233,9 @@ describe("define stablesats expected behavior", () => {
 
     // Values with spreads
     expect(centsFromSatsRes.getCentsFromSatsForImmediateBuy.amount).toEqual(19n)
-    expect(centsFromSatsRes.getCentsFromSatsForImmediateSell.amount).toEqual(19n)
+    expect(centsFromSatsRes.getCentsFromSatsForImmediateSell.amount).toEqual(20n)
     expect(centsFromSatsRes.getCentsFromSatsForFutureBuy.amount).toEqual(19n)
-    expect(centsFromSatsRes.getCentsFromSatsForFutureSell.amount).toEqual(19n)
+    expect(centsFromSatsRes.getCentsFromSatsForFutureSell.amount).toEqual(20n)
 
     // ==========
     // USD TO BTC
@@ -247,9 +247,9 @@ describe("define stablesats expected behavior", () => {
     expect(satsFromCentsRes.convertFromUsd.amount).toEqual(950n)
 
     // Values with spreads
-    expect(satsFromCentsRes.getSatsFromCentsForImmediateBuy.amount).toEqual(949n)
+    expect(satsFromCentsRes.getSatsFromCentsForImmediateBuy.amount).toEqual(950n)
     expect(satsFromCentsRes.getSatsFromCentsForImmediateSell.amount).toEqual(949n)
-    expect(satsFromCentsRes.getSatsFromCentsForFutureBuy.amount).toEqual(948n)
+    expect(satsFromCentsRes.getSatsFromCentsForFutureBuy.amount).toEqual(952n)
     expect(satsFromCentsRes.getSatsFromCentsForFutureSell.amount).toEqual(948n)
   })
 
@@ -267,9 +267,9 @@ describe("define stablesats expected behavior", () => {
 
     // Values with spreads
     expect(centsFromSatsRes.getCentsFromSatsForImmediateBuy.amount).toEqual(19n)
-    expect(centsFromSatsRes.getCentsFromSatsForImmediateSell.amount).toEqual(19n)
+    expect(centsFromSatsRes.getCentsFromSatsForImmediateSell.amount).toEqual(21n)
     expect(centsFromSatsRes.getCentsFromSatsForFutureBuy.amount).toEqual(19n)
-    expect(centsFromSatsRes.getCentsFromSatsForFutureSell.amount).toEqual(19n)
+    expect(centsFromSatsRes.getCentsFromSatsForFutureSell.amount).toEqual(21n)
 
     // ==========
     // USD TO BTC
@@ -281,10 +281,10 @@ describe("define stablesats expected behavior", () => {
     expect(satsFromCentsRes.convertFromUsd.amount).toEqual(1_050n)
 
     // Values with spreads
-    expect(satsFromCentsRes.getSatsFromCentsForImmediateBuy.amount).toEqual(1048n)
-    expect(satsFromCentsRes.getSatsFromCentsForImmediateSell.amount).toEqual(1048n)
-    expect(satsFromCentsRes.getSatsFromCentsForFutureBuy.amount).toEqual(1048n)
-    expect(satsFromCentsRes.getSatsFromCentsForFutureSell.amount).toEqual(1048n)
+    expect(satsFromCentsRes.getSatsFromCentsForImmediateBuy.amount).toEqual(1_051n)
+    expect(satsFromCentsRes.getSatsFromCentsForImmediateSell.amount).toEqual(1_048n)
+    expect(satsFromCentsRes.getSatsFromCentsForFutureBuy.amount).toEqual(1_052n)
+    expect(satsFromCentsRes.getSatsFromCentsForFutureSell.amount).toEqual(1_048n)
   })
 
   it("min values", async () => {
@@ -301,9 +301,9 @@ describe("define stablesats expected behavior", () => {
 
     // Values with spreads
     expect(centsFromSatsRes.getCentsFromSatsForImmediateBuy.amount).toEqual(0n)
-    expect(centsFromSatsRes.getCentsFromSatsForImmediateSell.amount).toEqual(0n)
+    expect(centsFromSatsRes.getCentsFromSatsForImmediateSell.amount).toEqual(1n)
     expect(centsFromSatsRes.getCentsFromSatsForFutureBuy.amount).toEqual(0n)
-    expect(centsFromSatsRes.getCentsFromSatsForFutureSell.amount).toEqual(0n)
+    expect(centsFromSatsRes.getCentsFromSatsForFutureSell.amount).toEqual(1n)
 
     // ==========
     // USD TO BTC
@@ -315,9 +315,9 @@ describe("define stablesats expected behavior", () => {
     expect(satsFromCentsRes.convertFromUsd.amount).toEqual(50n)
 
     // Values with spreads
-    expect(satsFromCentsRes.getSatsFromCentsForImmediateBuy.amount).toEqual(49n)
+    expect(satsFromCentsRes.getSatsFromCentsForImmediateBuy.amount).toEqual(50n)
     expect(satsFromCentsRes.getSatsFromCentsForImmediateSell.amount).toEqual(49n)
-    expect(satsFromCentsRes.getSatsFromCentsForFutureBuy.amount).toEqual(49n)
+    expect(satsFromCentsRes.getSatsFromCentsForFutureBuy.amount).toEqual(51n)
     expect(satsFromCentsRes.getSatsFromCentsForFutureSell.amount).toEqual(49n)
   })
 })
