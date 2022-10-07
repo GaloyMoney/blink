@@ -60,7 +60,7 @@ const jwtAlgorithms: jwt.Algorithm[] = ["HS256"]
 
 // used by oathkeeper to validate JWT
 // should not be public
-authRouter.post("/validatejwt", async (req, res) => {
+authRouter.post("/validatetoken", async (req, res) => {
   const headers = req?.headers
   let tokenPayload: string | jwt.JwtPayload | null = null
   const authz = headers.authorization || headers.Authorization
