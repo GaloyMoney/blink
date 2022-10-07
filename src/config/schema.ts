@@ -606,6 +606,19 @@ export const configSchema = {
         corsAllowedOrigins: ["http://localhost:3000"],
       },
     },
+    oathkeeperConfig: {
+      type: "object",
+      properties: {
+        urlJkws: { type: "string" },
+        decisionsApi: { type: "string" },
+      },
+      required: ["urlJkws", "decisionsApi"],
+      additionalProperties: false,
+      default: {
+        urlJkws: "http://oathkeeper:4456/.well-known/jwks.json",
+        decisionsApi: "http://oathkeeper:4456/decisions/",
+      },
+    },
     captcha: {
       type: "object",
       properties: {

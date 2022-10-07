@@ -1,0 +1,32 @@
+- id: decline-direct-access-validatetoken
+  upstream:
+    url: "http://e2e-tests:4002"
+  match:
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/validatetoken"
+    methods: ["GET", "POST"]
+  authenticators:
+    - handler: unauthorized
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+- id: galoy-backend
+  upstream:
+    url: "http://e2e-tests:4002"
+  match:
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/<.*>"
+    methods: ["GET", "POST", "OPTIONS"]
+  authenticators:
+    - handler: bearer_token
+      config:
+        check_session_url: "http://e2e-tests:4002/auth/validatetoken"
+        preserve_path: true
+        preserve_query: true
+        subject_from: sub
+    - handler: anonymous
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: id_token
+      config:
+        claims: '{"sub": "{{ print .Subject }}"}'

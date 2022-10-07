@@ -9,6 +9,8 @@ import {
   InvalidKratosUserId,
 } from "@domain/errors"
 
+import { InvalidAccountIdError } from "./errors"
+
 import { AccountStatus } from "./primitives"
 
 export * from "./errors"
@@ -83,4 +85,14 @@ export const sanityCheckedDefaultAccountWithdrawFee = (
     return new InvalidWithdrawFeeError(fee.toString())
   }
   return toSats(fee)
+}
+
+export const checkedToAccountId = (
+  accountId: string,
+): AccountId | InvalidAccountIdError => {
+  if (accountId.length !== 24) {
+    // TODO: move to a uuid-v4
+    return new InvalidAccountIdError(accountId)
+  }
+  return accountId as AccountId
 }

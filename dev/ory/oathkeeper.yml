@@ -1,0 +1,45 @@
+log:
+  level: debug
+  format: json
+
+authenticators:
+  bearer_token:
+    enabled: true
+    config:
+      check_session_url: http://e2e-tests:4002/auth/validatetoken
+
+  anonymous:
+    enabled: true
+    config:
+      subject: anon
+
+  unauthorized:
+    enabled: true
+
+authorizers:
+  allow:
+    enabled: true
+
+mutators:
+  id_token:
+    enabled: true
+    config:
+      jwks_url: file:///home/ory/jwks.json
+      issuer_url: "galoy.io"
+
+  noop:
+    enabled: true
+
+errors:
+  fallback:
+    - json
+  handlers:
+    json:
+      enabled: true
+      config:
+        verbose: true
+
+access_rules:
+  repositories:
+    - file:///home/ory/oathkeeper_rules.yaml
+  matching_strategy: regexp

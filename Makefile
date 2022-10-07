@@ -63,18 +63,30 @@ watch-unit:
 watch-compile:
 	$(BIN_DIR)/tsc --watch  --noEmit --skipLibCheck
 
-e2e:
-	yarn build && \
-	yarn test:e2e
-
 e2e-in-ci:
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up e2e-tests
+
+e2e-in-ci-with-build:
+	yarn build && \
+	docker compose -f docker-compose.yml up integration-deps -d && \
+	make create-tmp-env-ci && \
+	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make execute-e2e-from-within-container-cached || \
+	docker rm `docker ps -q -f status=exited`
+
+e2e-in-ci-cached:
+	docker compose -f docker-compose.yml up integration-deps -d && \
+	make create-tmp-env-ci && \
+	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make execute-e2e-from-within-container-cached || \
+	docker rm `docker ps -q -f status=exited`
 
 execute-e2e-from-within-container:
 	yarn install && \
 	yarn build && \
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+
+execute-e2e-from-within-container-cached:
+	NODE_ENV=test LOGLEVEL=debug $(BIN_DIR)/jest oathkeeper --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 integration:
 	yarn build && \

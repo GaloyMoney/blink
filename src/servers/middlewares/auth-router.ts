@@ -1,12 +1,14 @@
-import express from "express"
+import { Configuration, V0alpha2Api, V0alpha2ApiInterface } from "@ory/client"
 import cors from "cors"
-import { Configuration, V0alpha2ApiInterface, V0alpha2Api } from "@ory/client"
+import express from "express"
+
+import * as jwt from "jsonwebtoken"
 
 import { Users } from "@app"
-import { baseLogger } from "@services/logger"
-import { isDev, getKratosConfig } from "@config"
+import { getKratosConfig, isDev, JWT_SECRET } from "@config"
 import { parseIps } from "@domain/users-ips"
 import { mapError } from "@graphql/error-map"
+import { baseLogger } from "@services/logger"
 
 export const KratosSdk: (kratosEndpoint?: string) => V0alpha2ApiInterface = (
   kratosEndpoint,
@@ -52,6 +54,41 @@ authRouter.post("/browser", async (req, res) => {
   } catch (error) {
     res.send({ error: "Browser auth error" })
   }
+})
+
+const jwtAlgorithms: jwt.Algorithm[] = ["HS256"]
+
+// used by oathkeeper to validate JWT
+// should not be public
+authRouter.post("/validatetoken", async (req, res) => {
+  const headers = req?.headers
+  let tokenPayload: string | jwt.JwtPayload | null = null
+  const authz = headers.authorization || headers.Authorization
+  if (authz) {
+    try {
+      const rawToken = authz.slice(7) as string
+
+      tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
+        algorithms: jwtAlgorithms,
+      })
+    } catch (err) {
+      res.status(401).send({ error: "Token validation error" })
+      return
+    }
+  }
+
+  if (typeof tokenPayload === "string") {
+    throw new Error("tokenPayload should be an object")
+  }
+
+  if (!tokenPayload) {
+    res.status(401).send({ error: "Token validation error" })
+    return
+  }
+
+  // the sub (subject) sent to oathkeeper as a response is the uid from the original token
+  // which is the AccountId
+  res.json({ sub: tokenPayload.uid })
 })
 
 export default authRouter
