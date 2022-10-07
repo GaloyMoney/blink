@@ -1,6 +1,6 @@
 import { Configuration, V0alpha2Api, V0alpha2ApiInterface } from "@ory/client"
 import cors from "cors"
-import express from "express"
+import express, { Request, Response } from "express"
 
 import * as jwt from "jsonwebtoken"
 
@@ -9,6 +9,7 @@ import { getKratosConfig, isDev, JWT_SECRET } from "@config"
 import { parseIps } from "@domain/users-ips"
 import { mapError } from "@graphql/error-map"
 import { baseLogger } from "@services/logger"
+import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 export const KratosSdk: (kratosEndpoint?: string) => V0alpha2ApiInterface = (
   kratosEndpoint,
@@ -60,35 +61,45 @@ const jwtAlgorithms: jwt.Algorithm[] = ["HS256"]
 
 // used by oathkeeper to validate JWT
 // should not be public
-authRouter.post("/validatetoken", async (req, res) => {
-  const headers = req?.headers
-  let tokenPayload: string | jwt.JwtPayload | null = null
-  const authz = headers.authorization || headers.Authorization
-  if (authz) {
-    try {
-      const rawToken = authz.slice(7) as string
+authRouter.post(
+  "/validatetoken",
+  wrapAsyncToRunInSpan({
+    namespace: "validatetoken",
+    fn: async (
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      req: Request<any, any, any, any, Record<string, any>>,
+      res: Response<any>,
+    ) => {
+      const headers = req?.headers
+      let tokenPayload: string | jwt.JwtPayload | null = null
+      const authz = headers.authorization || headers.Authorization
+      if (authz) {
+        try {
+          const rawToken = authz.slice(7) as string
 
-      tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
-        algorithms: jwtAlgorithms,
-      })
-    } catch (err) {
-      res.status(401).send({ error: "Token validation error" })
-      return
-    }
-  }
+          tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
+            algorithms: jwtAlgorithms,
+          })
+        } catch (err) {
+          res.status(401).send({ error: "Token validation error" })
+          return
+        }
+      }
 
-  if (typeof tokenPayload === "string") {
-    throw new Error("tokenPayload should be an object")
-  }
+      if (typeof tokenPayload === "string") {
+        throw new Error("tokenPayload should be an object")
+      }
 
-  if (!tokenPayload) {
-    res.status(401).send({ error: "Token validation error" })
-    return
-  }
+      if (!tokenPayload) {
+        res.status(401).send({ error: "Token validation error" })
+        return
+      }
 
-  // the sub (subject) sent to oathkeeper as a response is the uid from the original token
-  // which is the AccountId
-  res.json({ sub: tokenPayload.uid })
-})
+      // the sub (subject) sent to oathkeeper as a response is the uid from the original token
+      // which is the AccountId
+      res.json({ sub: tokenPayload.uid })
+    },
+  }),
+)
 
 export default authRouter
