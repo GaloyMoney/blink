@@ -55,7 +55,7 @@ jest.mock("@config", () => {
 })
 
 const newDealerFns = NewDealerPriceService()
-const dealerUsdFromBtc = newDealerFns.getCentsFromSatsForImmediateBuy
+const dealerUsdFromBtc = newDealerFns.getCentsFromSatsForImmediateSell
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
