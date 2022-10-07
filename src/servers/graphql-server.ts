@@ -181,6 +181,7 @@ export const startApolloServer = async ({
 
   const apolloServer = new ApolloServer({
     schema,
+    cache: "bounded",
     introspection: apolloConfig.playground,
     plugins: apolloPlugins,
     context: async (context) => {
