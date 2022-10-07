@@ -217,6 +217,7 @@ const KnownLndErrorDetails = {
   ConnectionDropped: /Connection dropped/,
   CPFPAncestorLimitReached:
     /unmatched backend error: -26: too-long-mempool-chain, too many .* \[limit: \d+\]/,
+  NoConnectionEstablished: /No connection established/,
 } as const
 
 export const extractIncomingTransactions = ({
@@ -270,6 +271,7 @@ const handleCommonOnChainServiceErrors = (err: Error) => {
   const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
   switch (true) {
     case match(KnownLndErrorDetails.ConnectionDropped):
+    case match(KnownLndErrorDetails.NoConnectionEstablished):
       return new OnChainServiceUnavailableError()
     default:
       return new UnknownOnChainServiceError(msgForUnknown(err))
