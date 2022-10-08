@@ -74,6 +74,6 @@ describe("SwapOutChecker", () => {
           currency: WalletCurrency.Btc,
         },
       }),
-    ).toBeInstanceOf(ZERO_SATS)
+    ).toEqual(ZERO_SATS)
   })
 })
