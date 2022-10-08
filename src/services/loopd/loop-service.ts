@@ -5,7 +5,6 @@ import * as grpc from "@grpc/grpc-js"
 import {
   SwapClientNotResponding,
   SwapServiceError,
-  SwapErrorHealthCheckFailed,
   UnknownSwapServiceError,
   SwapErrorChannelBalanceTooLow,
 } from "@domain/swap/errors"
@@ -59,15 +58,15 @@ export const LoopService = ({
     swapClient.loopOutTerms.bind(swapClient),
   )
 
-  const healthCheck = async (): Promise<true | SwapServiceError> => {
+  const healthCheck = async (): Promise<boolean> => {
     try {
       const request = new TokensRequest()
       const resp = await clientHealthCheck(request)
       if (resp) return true
     } catch (error) {
-      return new SwapErrorHealthCheckFailed(error)
+      return false
     }
-    return new SwapErrorHealthCheckFailed()
+    return false
   }
 
   const swapOut = async function ({
