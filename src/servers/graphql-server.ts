@@ -1,15 +1,7 @@
 import { createServer } from "http"
 
-import { Accounts, Users } from "@app"
 import { getApolloConfig, getGeetestConfig, getJwksArgs, isDev } from "@config"
-import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
-import {
-  ACCOUNT_USERNAME,
-  addAttributesToCurrentSpan,
-  addAttributesToCurrentSpanAndPropagate,
-  SemanticAttributes,
-} from "@services/tracing"
 import {
   ApolloServerPluginDrainHttpServer,
   ApolloServerPluginLandingPageDisabled,
@@ -17,9 +9,7 @@ import {
 } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import express, { NextFunction, Request, Response } from "express"
-import { expressjwt, GetVerificationKey } from "express-jwt"
 import { execute, GraphQLError, GraphQLSchema, subscribe } from "graphql"
-import { rule } from "graphql-shield"
 import helmet from "helmet"
 import jsonwebtoken from "jsonwebtoken"
 import PinoHttp from "pino-http"
@@ -29,7 +19,6 @@ import {
   SubscriptionServer,
 } from "subscriptions-transport-ws"
 
-import { AuthenticationError, AuthorizationError } from "@graphql/error"
 import { mapError } from "@graphql/error-map"
 
 import { parseIps } from "@domain/users-ips"
@@ -42,35 +31,33 @@ import jwksRsa from "jwks-rsa"
 
 import { checkedToKratosUserId } from "@domain/accounts"
 
+import { ValidationError } from "@domain/shared"
 import { sendOathkeeperRequest } from "@services/oathkeeper"
 
-import { ValidationError } from "@domain/shared"
+import { expressjwt, GetVerificationKey } from "express-jwt"
+
+import Geetest from "@services/geetest"
+
+import { SemanticAttributes } from "@opentelemetry/semantic-conventions"
+import {
+  ACCOUNT_USERNAME,
+  addAttributesToCurrentSpan,
+  addAttributesToCurrentSpanAndPropagate,
+} from "@services/tracing"
+
+import { Accounts, Users } from "@app/index"
 
 import { playgroundTabs } from "../graphql/playground"
 
-import healthzHandler from "./middlewares/healthz"
 import authRouter from "./middlewares/auth-router"
 import { updateToken } from "./middlewares/update-token"
+import healthzHandler from "./middlewares/healthz"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
 })
 
 const apolloConfig = getApolloConfig()
-
-export const isAuthenticated = rule({ cache: "contextual" })(
-  (parent, args, ctx: GraphQLContext) => {
-    return !!ctx.domainAccount || new AuthenticationError({ logger: baseLogger })
-  },
-)
-
-export const isEditor = rule({ cache: "contextual" })(
-  (parent, args, ctx: GraphQLContextForUser) => {
-    return ctx.domainAccount.isEditor
-      ? true
-      : new AuthorizationError({ logger: baseLogger })
-  },
-)
 
 const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
 

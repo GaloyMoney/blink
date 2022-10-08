@@ -11,7 +11,8 @@ import { GALOY_ADMIN_PORT } from "@config"
 
 import { gqlAdminSchema } from "../graphql"
 
-import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
+import { startApolloServer } from "./graphql-server"
+import { isAuthenticated, isEditor } from "./utils"
 
 dotenv.config()
 

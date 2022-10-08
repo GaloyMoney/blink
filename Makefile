@@ -10,6 +10,10 @@ start-okex:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register \
 		test/mocks/okex-server.ts | yarn pino-pretty -c -l
 
+start-ws:
+	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
+		src/servers/graphql-ws-server.ts | yarn pino-pretty -c -l
+
 start-main-only:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/graphql-main-server.ts | yarn pino-pretty -c -l
@@ -46,6 +50,9 @@ start-main-ci:
 
 start-trigger-ci:
 	node lib/servers/trigger.js
+
+start-ws-ci:
+	node lib/servers/graphql-ws-server.js
 
 exporter: start-deps
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
@@ -123,7 +130,7 @@ execute-e2e-from-within-container:
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 execute-e2e-from-within-container-cached:
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest with-auth --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit 
+	NODE_ENV=test LOGLEVEL=debug $(BIN_DIR)/jest with-auth --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 integration:
 	yarn build && \

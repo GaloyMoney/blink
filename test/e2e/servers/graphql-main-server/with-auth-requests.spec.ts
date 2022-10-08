@@ -59,7 +59,8 @@ let apolloClient: ApolloClient<NormalizedCacheObject>,
   walletId: WalletId,
   usdWalletId: WalletId,
   serverPid: PID,
-  triggerPid: PID
+  triggerPid: PID,
+  websocketPid: PID
 const userRef = "D"
 
 const { phone, code } = getPhoneAndCodeFromRef(userRef)
@@ -68,6 +69,8 @@ const satsAmount = toSats(50_000)
 const centsAmount = toCents(4_000)
 
 beforeAll(async () => {
+  websocketPid = await startServer("start-ws-ci")
+
   await publishOkexPrice()
   await initializeTestingState(defaultStateConfig())
   const account = await getAccountByTestUserRef(userRef)
@@ -106,6 +109,7 @@ afterAll(async () => {
   cancelOkexPricePublish()
   await killServer(serverPid)
   await killServer(triggerPid)
+  await killServer(websocketPid)
 })
 
 describe("header", () => {
@@ -134,9 +138,9 @@ describe("header", () => {
   })
 })
 
-describe("graphql", () => {
-  describe("main query", () => {
-    it("returns valid data", async () => {
+describe.only("graphql", () => {
+  describe.only("main query", () => {
+    it.only("returns valid data", async () => {
       const { data } = await apolloClient.query({
         query: MAIN,
         variables: { hasToken: true },

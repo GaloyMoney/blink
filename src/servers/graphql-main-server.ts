@@ -10,8 +10,9 @@ import { GALOY_API_PORT } from "@config"
 
 import { gqlMainSchema } from "../graphql"
 
-import { isAuthenticated, startApolloServer } from "./graphql-server"
+import { startApolloServer } from "./graphql-server"
 import { walletIdMiddleware } from "./middlewares/wallet-id"
+import { isAuthenticated } from "./utils"
 
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
