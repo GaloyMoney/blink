@@ -17,7 +17,7 @@ import {
 
 import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
 
-import { kratosAdmin, kratosPublic } from "."
+import { kratosAdmin, kratosPublic } from "./private"
 
 // login with phone
 const password = getKratosMasterPhonePassword()

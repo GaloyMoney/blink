@@ -6,20 +6,19 @@ import {
 } from "@domain/authentication/errors"
 import { AdminCreateIdentityBody } from "@ory/client"
 import {
+  AuthWithPhoneNoPassword,
   activateUser,
   addTotp,
-  AuthWithPhoneNoPassword,
   deactivateUser,
   elevatingSessionWithTotp,
   extendSession,
-  kratosAdmin,
-  kratosPublic,
   listIdentitySchemas,
   listSessions,
   listUsers,
   revokeSessions,
   validateKratosToken,
 } from "@services/kratos"
+import { kratosAdmin, kratosPublic } from "@services/kratos/private"
 import { baseLogger } from "@services/logger"
 import { authenticator } from "otplib"
 

@@ -279,14 +279,14 @@ services:
     entrypoint: sh -c
     command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --sqa-opt-out"'
     environment:
-      DSN: postgres://dbuser:secret@pg:5432/default?sslmode=disable
+      DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
     links:
-      - pg:pg
+      - kratos-pg:kratos-pg
     volumes:
       - type: bind
         source: dev/ory
         target: /home/ory
-  pg:
+  kratos-pg:
     image: postgres:14.1
     expose:
       - "5432"
