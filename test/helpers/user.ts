@@ -136,9 +136,10 @@ const createNewAccount = async ({ phone }: { phone: PhoneNumber }) => {
   if (kratosResult instanceof KratosError) throw kratosResult
 
   const kratosUserId = kratosResult.kratosUserId
+  kratosUserId // FIXME variable will be used/line removed in the follow up PR
 
   const account = await createAccountForPhoneSchema({
-    newAccountInfo: { phone, kratosUserId },
+    newUserInfo: { phone },
     config: getDefaultAccountsConfig(),
   })
   if (account instanceof Error) throw account
@@ -200,9 +201,10 @@ export const createUserAndWallet = async (entry: TestEntry) => {
     if (kratosResult instanceof KratosError) throw kratosResult
 
     const kratosUserId = kratosResult.kratosUserId
+    kratosUserId // FIXME variable will be used/line removed in the follow up PR
 
     const account = await createAccountForPhoneSchema({
-      newAccountInfo: { phone, phoneMetadata, kratosUserId },
+      newUserInfo: { phone, phoneMetadata },
       config: getDefaultAccountsConfig(),
     })
 

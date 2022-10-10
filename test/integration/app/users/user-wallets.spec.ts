@@ -24,9 +24,10 @@ const createAccount = async (initialWallets: WalletCurrency[]) => {
   if (kratosResult instanceof Error) throw kratosResult
 
   const kratosUserId = kratosResult.kratosUserId
+  kratosUserId // FIXME variable will be used/line removed in the follow up PR
 
   const account = await Accounts.createAccountForPhoneSchema({
-    newAccountInfo: { phone, kratosUserId },
+    newUserInfo: { phone },
     config: { initialStatus: AccountStatus.Active, initialWallets },
   })
   if (account instanceof Error) throw account

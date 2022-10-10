@@ -6,12 +6,11 @@ import {
   CouldNotFindAccountFromUsernameError,
   CouldNotFindError,
   RepositoryError,
-  UnknownRepositoryError,
 } from "@domain/errors"
 
 import { User } from "@services/mongoose/schema"
 
-import { fromObjectId, parseRepositoryError, toObjectId } from "./utils"
+import { toObjectId, fromObjectId, parseRepositoryError } from "./utils"
 
 const caseInsensitiveRegex = (input: string) => {
   return new RegExp(`^${input}$`, "i")
@@ -142,24 +141,12 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const persistNew = async ({
-    kratosUserId,
-    phone,
-    phoneMetadata,
-  }: {
-    kratosUserId: KratosUserId
-    phone?: PhoneNumber
-    phoneMetadata?: PhoneMetadata
-  }): Promise<Account | RepositoryError> => {
+  const persistNewKratosUser = async (
+    kratosUserId: KratosUserId,
+  ): Promise<Account | RepositoryError> => {
     try {
       const user = new User()
       user.kratosUserId = kratosUserId
-
-      if (phone) {
-        user.phone = phone
-      }
-
-      user.twilio = phoneMetadata
       await user.save()
       return translateToAccount(user)
     } catch (err) {
@@ -183,38 +170,9 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const attachKratosUser = async ({
-    kratosUserId,
-    id,
-  }: {
-    kratosUserId: KratosUserId
-    id: AccountId
-  }): Promise<Account | RepositoryError> => {
-    try {
-      const result = await User.findOneAndUpdate(
-        { _id: toObjectId<AccountId>(id) },
-        {
-          kratosUserId,
-        },
-        {
-          new: true,
-          projection,
-        },
-      )
-      if (!result) {
-        return new RepositoryError("Couldn't attach kratosUserId")
-      }
-      return translateToAccount(result)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
   return {
-    persistNew,
+    persistNewKratosUser,
     findByKratosUserId,
-    attachKratosUser,
-
     listUnlockedAccounts,
     findById,
     findByUserId,

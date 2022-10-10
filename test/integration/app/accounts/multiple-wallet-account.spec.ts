@@ -21,9 +21,10 @@ it("change default walletId of account", async () => {
 
   if (kratosResult instanceof Error) throw kratosResult
   const kratosUserId = kratosResult.kratosUserId
+  kratosUserId // FIXME variable will be used/line removed in the follow up PR
 
   const account = await Accounts.createAccountForPhoneSchema({
-    newAccountInfo: { phone, kratosUserId },
+    newUserInfo: { phone },
     config: getDefaultAccountsConfig(),
   })
   if (account instanceof Error) throw account

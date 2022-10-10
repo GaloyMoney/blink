@@ -1,6 +1,6 @@
 version: v0.10.1
 
-dsn: postgres://dbuser:secret@pg:5432/default?sslmode=disable
+dsn: "overrided-by-env"
 
 serve:
   public:
