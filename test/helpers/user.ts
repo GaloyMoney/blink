@@ -137,7 +137,7 @@ const createNewAccount = async ({ phone }: { phone: PhoneNumber }) => {
   kratosUserId // FIXME variable will be used/line removed in the follow up PR
 
   const account = await createAccountForPhoneSchema({
-    newUserInfo: { phone },
+    newAccountInfo: { phone, kratosUserId },
     config: getDefaultAccountsConfig(),
   })
   if (account instanceof Error) throw account
@@ -202,7 +202,7 @@ export const createUserAndWallet = async (entry: TestEntry) => {
     kratosUserId // FIXME variable will be used/line removed in the follow up PR
 
     const account = await createAccountForPhoneSchema({
-      newUserInfo: { phone, phoneMetadata },
+      newAccountInfo: { phone, phoneMetadata, kratosUserId },
       config: getDefaultAccountsConfig(),
     })
 

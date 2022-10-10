@@ -1,17 +1,11 @@
 import { ConfigError, getTestAccounts } from "@config"
-import { checkedToKratosUserId } from "@domain/accounts"
 import { WalletCurrency } from "@domain/shared"
-import { checkedToPhoneNumber } from "@domain/users"
 import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
-import {
-  AccountsRepository,
-  UsersRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { TwilioClient } from "@services/twilio"
 
-const setupAccount = async ({
+const initializeCreatedAccount = async ({
   account,
   config,
   phoneNumberValid,
@@ -58,40 +52,36 @@ const setupAccount = async ({
   return updatedAccount
 }
 
-// no kratos user is been added (currently with PhoneSchema)
 export const createAccountForPhoneSchema = async ({
-  newUserInfo: { phone, phoneMetadata },
+  newAccountInfo: { phone, phoneMetadata, kratosUserId },
   config,
 }: {
-  newUserInfo: NewUserInfo
+  newAccountInfo: NewAccountInfo
   config: AccountsConfig
 }): Promise<Account | RepositoryError> => {
-  const phoneNumberValid = checkedToPhoneNumber(phone)
-  if (phoneNumberValid instanceof Error) return phoneNumberValid
+  const accountsRepo = AccountsRepository()
 
-  const userRaw: NewUserInfo = {
-    phone: phoneNumberValid,
+  const accountRaw: NewAccountInfo = {
+    phone,
     phoneMetadata,
+    kratosUserId,
   }
 
   // FIXME: this is only used from tests. should be refactored with a mock
-  if (!phoneMetadata) {
-    const carrierInfo = await TwilioClient().getCarrier(phoneNumberValid)
+  if (!phoneMetadata && !!phone) {
+    const carrierInfo = await TwilioClient().getCarrier(phone)
     if (carrierInfo instanceof Error) {
       // non fatal error
-      baseLogger.warn({ phoneNumberValid }, "impossible to fetch carrier")
+      baseLogger.warn({ phone }, "impossible to fetch carrier")
     } else {
-      userRaw.phoneMetadata = carrierInfo
+      accountRaw.phoneMetadata = carrierInfo
     }
   }
 
-  const user = await UsersRepository().persistNew(userRaw)
-  if (user instanceof Error) return user
-
-  let account = await AccountsRepository().findByUserId(user.id)
+  let account = await accountsRepo.persistNew(accountRaw)
   if (account instanceof Error) return account
 
-  account = await setupAccount({ account, config, phoneNumberValid })
+  account = await initializeCreatedAccount({ account, config, phoneNumberValid: phone })
   if (account instanceof Error) return account
 
   return account
@@ -102,16 +92,13 @@ export const createAccountForEmailSchema = async ({
   kratosUserId,
   config,
 }: {
-  kratosUserId: string
+  kratosUserId: KratosUserId
   config: AccountsConfig
 }): Promise<Account | RepositoryError> => {
-  const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
-  if (kratosUserIdValid instanceof Error) return kratosUserIdValid
-
-  let account = await AccountsRepository().persistNewKratosUser(kratosUserIdValid)
+  let account = await AccountsRepository().persistNew({ kratosUserId })
   if (account instanceof Error) return account
 
-  account = await setupAccount({ account, config })
+  account = await initializeCreatedAccount({ account, config })
   if (account instanceof Error) return account
 
   return account

@@ -47,6 +47,7 @@ import { sendOathkeeperRequest } from "@services/oathkeeper"
 import { playgroundTabs } from "../graphql/playground"
 
 import healthzHandler from "./middlewares/healthz"
+import { updateToken } from "./middlewares/update-token"
 import authRouter from "./middlewares/auth-router"
 
 const graphqlLogger = baseLogger.child({
@@ -252,6 +253,8 @@ export const startApolloServer = async ({
     }),
   )
 
+  app.use(updateToken)
+
   await apolloServer.start()
 
   apolloServer.applyMiddleware({ app, path: "/graphql" })
@@ -277,7 +280,10 @@ export const startApolloServer = async ({
               // TODO: also manage the case where there is a cookie in the request
 
               // make request to oathkeeper
-              const originalToken = authz?.slice(7) ?? undefined
+              const originalToken = authz?.slice(7) as
+                | LegacyJwtToken
+                | SessionToken
+                | undefined
 
               const newToken = await sendOathkeeperRequest(originalToken)
               // TODO: see how returning an error affect the websocket connection

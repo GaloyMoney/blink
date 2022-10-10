@@ -80,18 +80,32 @@ e2e-in-ci:
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up e2e-tests
 
+reset-e2e-in-ci-with-build: reset-deps e2e-in-ci-with-build
+
 e2e-in-ci-with-build:
 	yarn build && \
-	docker compose -f docker-compose.yml up integration-deps -d && \
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make execute-e2e-from-within-container-cached || \
 	docker rm `docker ps -q -f status=exited`
 
 e2e-in-ci-cached:
-	docker compose -f docker-compose.yml up integration-deps -d && \
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make execute-e2e-from-within-container-cached || \
 	docker rm `docker ps -q -f status=exited`
+
+main-in-ci-cached:
+	make create-tmp-env-ci && \
+	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make start-main-ci || \
+	docker rm `docker ps -q -a -f status=exited`
+
+main-in-ci-cached-no-restart:
+	make create-tmp-env-ci && \
+	TMP_ENV_CI=tmp.env.ci docker compose run --name e2e-tests e2e-tests make start-main-ci || \
+	docker rm `docker ps -q -a -f status=exited`
+
+del-containers:
+	docker stop `docker ps -q -a` && \
+	docker rm `docker ps -q -a`
 
 execute-e2e-from-within-container:
 	yarn install && \
@@ -99,7 +113,7 @@ execute-e2e-from-within-container:
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 execute-e2e-from-within-container-cached:
-	NODE_ENV=test LOGLEVEL=debug $(BIN_DIR)/jest oathkeeper --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit 
 
 integration:
 	yarn build && \
@@ -113,6 +127,11 @@ e2e:
 
 reset-e2e: reset-deps e2e
 
+integration-in-ci-cached:
+	yarn build && \
+	make create-tmp-env-ci && \
+	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests-cached
+
 integration-in-ci:
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests
@@ -123,6 +142,10 @@ execute-integration-from-within-container:
 	yarn install && \
 	NODE_OPTIONS="--max-old-space-size=4096" \
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+
+execute-integration-from-within-container-cached:
+	NODE_OPTIONS="--max-old-space-size=3072" \
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit 
 
 unit-in-ci:
 	. ./.envrc && \

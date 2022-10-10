@@ -5,16 +5,18 @@ import {
   LikelyUserAlreadyExistError,
 } from "@services/kratos/errors"
 import { AdminCreateIdentityBody } from "@ory/client"
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import {
+  AuthWithPhonePasswordlessService,
+  extendSession,
+  listIdentities,
+  listSessions,
+} from "@services/kratos"
 import {
   activateUser,
   addTotp,
   deactivateUser,
   elevatingSessionWithTotp,
-  extendSession,
   listIdentitySchemas,
-  listSessions,
-  listUsers,
   revokeSessions,
   validateKratosToken,
 } from "@services/kratos/tests-but-not-prod"
@@ -185,7 +187,7 @@ describe("phoneNoPassword", () => {
 })
 
 it("list users", async () => {
-  const res = await listUsers()
+  const res = await listIdentities()
   if (res instanceof Error) throw res
 })
 
