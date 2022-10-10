@@ -1,7 +1,7 @@
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
 
-import { listUsers } from "@services/kratos"
+import { listUsers } from "@services/kratos/tests-but-not-prod"
 
 import {
   lnd1,

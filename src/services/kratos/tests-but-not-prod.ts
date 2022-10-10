@@ -4,21 +4,26 @@ import {
   LikelyNoUserWithThisPhoneExistError,
   MissingTotpKratosError,
   UnknownKratosError,
-} from "@domain/authentication/errors"
+} from "@services/kratos/errors"
 import { SuccessfulSelfServiceLoginWithoutBrowser } from "@ory/client"
 import { authenticator } from "otplib"
 
 import { baseLogger } from "@services/logger"
 import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
 
-import { kratosAdmin, kratosPublic } from "./private"
+import {
+  kratosAdmin,
+  kratosPublic,
+  toDomainIdentityPhone,
+  toDomainSession,
+} from "./private"
 
 export const LoginWithPhoneAndPasswordSchema = async ({
   phone,
   password,
 }: {
   phone: PhoneNumber
-  password: KratosPassword
+  password: IdentityPassword
 }): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError> => {
   const flow = await kratosPublic.initializeSelfServiceLoginFlowWithoutBrowser()
 
@@ -45,13 +50,13 @@ export const LoginWithPhoneAndPasswordSchema = async ({
     return new UnknownKratosError(err)
   }
 
-  const sessionToken = result.data.session_token as KratosSessionToken
+  const sessionToken = result.data.session_token as SessionToken
   const kratosUserId = result.data.session.identity.id as KratosUserId
 
   return { sessionToken, kratosUserId }
 }
 
-export const addTotp = async (token: KratosSessionToken) => {
+export const addTotp = async (token: SessionToken) => {
   interface TotpAttributes {
     text: {
       text: string
@@ -88,12 +93,12 @@ export const addTotp = async (token: KratosSessionToken) => {
 }
 
 export const validateKratosToken = async (
-  KratosSessionToken: KratosSessionToken,
+  SessionToken: SessionToken,
 ): Promise<ValidateKratosTokenResult | KratosError> => {
   let session: Session
 
   try {
-    const { data } = await kratosPublic.toSession(KratosSessionToken)
+    const { data } = await kratosPublic.toSession(SessionToken)
     session = toDomainSession(data)
   } catch (err) {
     if (err.message === "Request failed with status code 401") {
@@ -112,7 +117,7 @@ export const validateKratosToken = async (
 export const activateUser = async (
   kratosUserId: KratosUserId,
 ): Promise<void | KratosError> => {
-  let identity: IdentityKratos
+  let identity: KratosIdentity
   try {
     const res = await kratosAdmin.adminGetIdentity(kratosUserId)
     identity = res.data
@@ -133,7 +138,7 @@ export const activateUser = async (
 export const deactivateUser = async (
   kratosUserId: KratosUserId,
 ): Promise<void | KratosError> => {
-  let identity: IdentityKratos
+  let identity: KratosIdentity
   try {
     const res = await kratosAdmin.adminGetIdentity(kratosUserId)
     identity = res.data
@@ -161,45 +166,51 @@ export const revokeSessions = async (
   }
 }
 
-export const listSessions = async (
+const listSessionsInternal = async (
   userId: KratosUserId,
-): Promise<Session[] | KratosError> => {
+): Promise<KratosSession[] | KratosError> => {
   try {
     const res = await kratosAdmin.adminListIdentitySessions(userId)
     if (res.data === null) return []
-    return res.data.map(toDomainSession)
+    return res.data
   } catch (err) {
     return new UnknownKratosError(err)
   }
 }
 
-export const listUsers = async (): Promise<Identity[] | KratosError> => {
+export const listSessions = async (
+  userId: KratosUserId,
+): Promise<Session[] | KratosError> => {
+  const res = await listSessionsInternal(userId)
+  if (res instanceof Error) return res
+  return res.map(toDomainSession)
+}
+
+export const listUsers = async (): Promise<IdentityPhone[] | KratosError> => {
   try {
     const res = await kratosAdmin.adminListIdentities()
-    return res.data.map((item) => ({
-      ...item,
-      id: item.id as KratosUserId,
-    }))
+    return res.data.map(toDomainIdentityPhone)
   } catch (err) {
     return new UnknownKratosError(err)
   }
 }
 
-export const extendSessions = async (
-  schemaIds: SchemaId[],
-): Promise<void | KratosError> => {
+export const extendSessions = async (): Promise<void | KratosError> => {
   const users = await listUsers()
   if (users instanceof Error) return users
 
   for (const user of users) {
-    const sessions = await listSessions(user.id)
+    const sessions = await listSessionsInternal(user.id)
     if (sessions instanceof Error) return sessions
 
     for (const session of sessions) {
-      await extendSession({ session, schemaIds })
+      await extendSession({ session })
     }
   }
 }
+
+// TODO: should be a param in yaml
+const schemaIdsToExtend = ["phone_no_password_v0"]
 
 // not all identities need to be extended
 // a schemaId attached to an itentity with Phone may need to be
@@ -207,12 +218,10 @@ export const extendSessions = async (
 // whereas a schemasId attached to an email + password may not need to have long session time
 export const extendSession = async ({
   session,
-  schemaIds,
 }: {
-  session: Session
-  schemaIds: SchemaId[]
+  session: KratosSession
 }): Promise<void | KratosError> => {
-  if (!schemaIds.includes(session.identity.schema_id as SchemaId)) return
+  if (!schemaIdsToExtend.includes(session.identity.schema_id)) return
 
   await kratosAdmin.adminExtendSession(session.id)
 }
@@ -233,7 +242,7 @@ export const elevatingSessionWithTotp = async ({
   code,
   password,
 }: {
-  session: KratosSessionToken
+  session: SessionToken
   code: string
   password: string
 }): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError> => {
@@ -265,18 +274,7 @@ export const elevatingSessionWithTotp = async ({
     return new UnknownKratosError(err)
   }
 
-  const sessionToken = result.data.session_token as KratosSessionToken
+  const sessionToken = result.data.session_token as SessionToken
   const kratosUserId = result.data.session.identity.id as KratosUserId
   return { sessionToken, kratosUserId }
-}
-
-const toDomainSession = (session: SessionKratos): Session => {
-  return {
-    ...session,
-    id: session.id as SessionId,
-    identity: {
-      ...session.identity,
-      id: session.identity.id as KratosUserId,
-    },
-  }
 }

@@ -7,7 +7,7 @@ import {
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
   UnknownKratosError,
-} from "@domain/authentication/errors"
+} from "@services/kratos/errors"
 import {
   AdminCreateIdentityBody,
   AdminUpdateIdentityBody,
@@ -17,12 +17,12 @@ import {
 
 import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
 
-import { kratosAdmin, kratosPublic } from "./private"
+import { kratosAdmin, kratosPublic, toDomainIdentityPhone } from "./private"
 
 // login with phone
 const password = getKratosMasterPhonePassword()
 
-export const AuthWithPhoneNoPassword = (): AuthWithPhoneNoPasswordSchema => {
+export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessService => {
   const login = async (
     phone: PhoneNumber,
   ): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError> => {
@@ -51,9 +51,9 @@ export const AuthWithPhoneNoPassword = (): AuthWithPhoneNoPasswordSchema => {
       return new UnknownKratosError(err)
     }
 
-    const sessionToken = result.data.session_token as KratosSessionToken
+    const sessionToken = result.data.session_token as SessionToken
 
-    // this only works when whoami: required_aal: aal1
+    // note: this only works when whoami: required_aal = aal1
     const kratosUserId = result.data.session.identity.id as KratosUserId
 
     return { sessionToken, kratosUserId }
@@ -83,7 +83,7 @@ export const AuthWithPhoneNoPassword = (): AuthWithPhoneNoPasswordSchema => {
       return new UnknownKratosError(err)
     }
 
-    const sessionToken = result.data.session_token as KratosSessionToken
+    const sessionToken = result.data.session_token as SessionToken
     const kratosUserId = result.data.identity.id as KratosUserId
 
     return { sessionToken, kratosUserId }
@@ -111,7 +111,7 @@ export const AuthWithPhoneNoPassword = (): AuthWithPhoneNoPasswordSchema => {
     password,
   }: {
     kratosUserId: KratosUserId
-    password: KratosPassword
+    password: IdentityPassword
   }) => {
     const { data: identity } = await kratosAdmin.adminGetIdentity(kratosUserId)
 
@@ -131,7 +131,7 @@ export const AuthWithPhoneNoPassword = (): AuthWithPhoneNoPasswordSchema => {
       adminIdentity,
     )
 
-    return { ...newIdentity, id: newIdentity.id as KratosUserId }
+    return toDomainIdentityPhone(newIdentity)
   }
 
   return {

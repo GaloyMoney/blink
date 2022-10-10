@@ -19,7 +19,7 @@ export * from "./check-is-balanced"
 
 export const randomEmail = () => (Math.random().toString(36) + "@galoy.io") as KratosEmail
 
-export const randomPassword = () => Math.random().toString(36) as KratosPassword
+export const randomPassword = () => Math.random().toString(36) as IdentityPassword
 
 export const randomPhone = () =>
   `+1415${Math.floor(Math.random() * 900000 + 100000)}` as PhoneNumber

@@ -3,10 +3,10 @@ import {
   AuthenticationKratosError,
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
-} from "@domain/authentication/errors"
+} from "@services/kratos/errors"
 import { AdminCreateIdentityBody } from "@ory/client"
+import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import {
-  AuthWithPhoneNoPassword,
   activateUser,
   addTotp,
   deactivateUser,
@@ -17,7 +17,7 @@ import {
   listUsers,
   revokeSessions,
   validateKratosToken,
-} from "@services/kratos"
+} from "@services/kratos/tests-but-not-prod"
 import { kratosAdmin, kratosPublic } from "@services/kratos/private"
 import { baseLogger } from "@services/logger"
 import { authenticator } from "otplib"
@@ -25,7 +25,7 @@ import { authenticator } from "otplib"
 import { randomEmail, randomPassword, randomPhone } from "test/helpers"
 
 describe("phoneNoPassword", () => {
-  const authService = AuthWithPhoneNoPassword()
+  const authService = AuthWithPhonePasswordlessService()
 
   describe("public selflogin api", () => {
     const phone = randomPhone()
@@ -122,7 +122,9 @@ describe("phoneNoPassword", () => {
         password,
       })
       if (res instanceof Error) throw res
-      expect(res.schema_id).toBe("phone_with_password_v0")
+
+      const newIdentity = await kratosAdmin.adminGetIdentity(kratosUserId)
+      expect(newIdentity.data.schema_id).toBe("phone_with_password_v0")
     })
   })
 
@@ -147,7 +149,7 @@ describe("phoneNoPassword", () => {
 
     const res1 = await validateKratosToken(res.sessionToken)
     if (res1 instanceof Error) throw res1
-    expect(res1.session.identity.traits).toStrictEqual({ phone })
+    expect(res1.session.identity.phone).toStrictEqual(phone)
 
     const res2 = await kratosPublic.initializeSelfServiceSettingsFlowWithoutBrowser(
       res.sessionToken,
@@ -187,7 +189,7 @@ it("list users", async () => {
   if (res instanceof Error) throw res
 })
 
-const authService = AuthWithPhoneNoPassword()
+const authService = AuthWithPhonePasswordlessService()
 
 describe("token validation", () => {
   it("validate bearer token", async () => {
@@ -202,7 +204,7 @@ describe("token validation", () => {
   })
 
   it("return error on invalid token", async () => {
-    const res = await validateKratosToken("invalid_token" as KratosSessionToken)
+    const res = await validateKratosToken("invalid_token" as SessionToken)
     expect(res).toBeInstanceOf(AuthenticationKratosError)
   })
 })
@@ -228,7 +230,7 @@ describe("session revokation", () => {
   })
 
   it("return error on revoked session", async () => {
-    let token: KratosSessionToken
+    let token: SessionToken
     {
       const res = await authService.login(phone)
       if (res instanceof Error) throw res
@@ -285,21 +287,17 @@ it("extend session", async () => {
   if (res instanceof Error) throw res
 
   expect(res).toHaveProperty("kratosUserId")
-  const res2 = await validateKratosToken(res.sessionToken)
-  if (res2 instanceof Error) throw res2
-  const { session } = res2
-  if (!session.expires_at) throw Error("missing expiry")
+  const res2 = await kratosPublic.toSession(res.sessionToken)
+  const session = res2.data
+  if (!session.expires_at) throw Error("should have expired_at")
   const initialExpiresAt = new Date(session.expires_at)
 
-  const schemaIds = ["phone_no_password_v0"] as SchemaId[]
+  await extendSession({ session })
 
-  await extendSession({ schemaIds, session })
-
-  const res3 = await validateKratosToken(res.sessionToken)
-  if (res3 instanceof Error) throw res3
-  const { session: extendedSession } = res3
-  if (!extendedSession.expires_at) throw Error("missing expiry")
-  const newExpiresAt = new Date(extendedSession.expires_at)
+  const res3 = await kratosPublic.toSession(res.sessionToken)
+  const newSession = res3.data
+  if (!newSession.expires_at) throw Error("should have expired_at")
+  const newExpiresAt = new Date(newSession.expires_at)
 
   expect(initialExpiresAt.getTime()).toBeLessThan(newExpiresAt.getTime())
 })

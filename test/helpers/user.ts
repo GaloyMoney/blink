@@ -14,11 +14,9 @@ import { adminUsers } from "@domain/admin-users"
 import { UsersIpRepository } from "@services/mongoose/users-ips"
 import { createAccountForPhoneSchema } from "@app/accounts"
 
-import {
-  KratosError,
-  LikelyNoUserWithThisPhoneExistError,
-} from "@domain/authentication/errors"
-import { AuthWithPhoneNoPassword } from "@services/kratos"
+import { LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
+import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import { AuthenticationError } from "@domain/authentication/errors"
 
 const users = UsersRepository()
 
@@ -126,14 +124,14 @@ export const createUserAndWalletFromUserRef = async (ref: string) => {
 }
 
 const createNewAccount = async ({ phone }: { phone: PhoneNumber }) => {
-  const authService = AuthWithPhoneNoPassword()
+  const authService = AuthWithPhonePasswordlessService()
 
   let kratosResult = await authService.login(phone)
   if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
     // TODO: remove once kratos states is been re-iniaitlized been tests
     kratosResult = await authService.createWithSession(phone)
   }
-  if (kratosResult instanceof KratosError) throw kratosResult
+  if (kratosResult instanceof AuthenticationError) throw kratosResult
 
   const kratosUserId = kratosResult.kratosUserId
   kratosUserId // FIXME variable will be used/line removed in the follow up PR
@@ -191,14 +189,14 @@ export const createUserAndWallet = async (entry: TestEntry) => {
       }
     }
 
-    const authService = AuthWithPhoneNoPassword()
+    const authService = AuthWithPhonePasswordlessService()
 
     let kratosResult = await authService.login(phone)
     if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
       // TODO: remove once kratos states is been re-iniaitlized been tests
       kratosResult = await authService.createWithSession(phone)
     }
-    if (kratosResult instanceof KratosError) throw kratosResult
+    if (kratosResult instanceof AuthenticationError) throw kratosResult
 
     const kratosUserId = kratosResult.kratosUserId
     kratosUserId // FIXME variable will be used/line removed in the follow up PR

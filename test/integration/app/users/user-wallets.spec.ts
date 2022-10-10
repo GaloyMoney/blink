@@ -1,7 +1,7 @@
 import { Accounts } from "@app"
 import { AccountStatus } from "@domain/accounts"
 import { WalletCurrency } from "@domain/shared"
-import { AuthWithPhoneNoPassword } from "@services/kratos"
+import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 import getUuidByString from "uuid-by-string"
@@ -18,7 +18,7 @@ const randomKratosId = () => {
 const createAccount = async (initialWallets: WalletCurrency[]) => {
   const phone = randomPhoneNumber()
 
-  const authService = AuthWithPhoneNoPassword()
+  const authService = AuthWithPhonePasswordlessService()
 
   const kratosResult = await authService.createWithSession(phone)
   if (kratosResult instanceof Error) throw kratosResult
