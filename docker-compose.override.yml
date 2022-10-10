@@ -55,6 +55,10 @@ services:
     ports:
       - "4455:4455"
       - "4456:4456"
+  kratos:
+    ports:
+      - "4433:4433" # public
+      - "4434:4434" # admin
   e2e-tests:
     ports:
       - "4002:4002"

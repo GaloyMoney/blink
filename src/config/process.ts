@@ -116,3 +116,10 @@ export const getLoopConfig = () => {
     lnd2LoopMacaroon: process.env.LND2_LOOP_MACAROON as Macaroon,
   }
 }
+
+export const getKratosMasterPhonePassword = () => {
+  if (!process.env.KRATOS_MASTER_PHONE_PASSWORD) {
+    throw new ConfigError("KRATOS_MASTER_PHONE_PASSWORD env not found")
+  }
+  return process.env.KRATOS_MASTER_PHONE_PASSWORD
+}

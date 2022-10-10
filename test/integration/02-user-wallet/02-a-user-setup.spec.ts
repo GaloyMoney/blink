@@ -217,13 +217,14 @@ describe("UserWallet", () => {
     })
   })
 
-  describe("delete2fa", () => {
+  // TODO: reimplement with kratos
+  describe.skip("delete2fa", () => {
     it("delete 2fa for userA", async () => {
       const usersRepo = UsersRepository()
       const user = await usersRepo.findById(userIdA)
       if (user instanceof Error) throw user
 
-      const token = generateTokenHelper(userRecordA.twoFA.secret)
+      const token = generateTokenHelper("FIXME userRecordA.twoFA.secret")
       const result = await delete2fa({ token, userId: userIdA })
       expect(result).toBeTruthy()
       userRecordA = await getUserRecordByTestUserRef("A")

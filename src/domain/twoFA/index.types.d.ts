@@ -5,16 +5,9 @@ type TwoFAError = import("./errors").TwoFAError
 
 interface TwoFA {
   verify({ secret, token }: { secret: TwoFASecret; token: TwoFAToken }): true | TwoFAError
-  generate({
-    galoyInstanceName,
-    phone,
-  }: {
-    galoyInstanceName: string
-    phone: PhoneNumber
-  }): TwoFAGeneratedEntry
+  generate(): TwoFAGeneratedEntry
 }
 
 interface TwoFAGeneratedEntry {
   secret: TwoFASecret
-  uri: TwoFAUri
 }

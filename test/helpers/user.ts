@@ -14,6 +14,12 @@ import { adminUsers } from "@domain/admin-users"
 import { UsersIpRepository } from "@services/mongoose/users-ips"
 import { createAccountForPhoneSchema } from "@app/accounts"
 
+import {
+  KratosError,
+  LikelyNoUserWithThisPhoneExistError,
+} from "@domain/authentication/errors"
+import { AuthWithPhoneNoPassword } from "@services/kratos"
+
 const users = UsersRepository()
 
 const getPhoneByTestUserRef = (ref: string) => {
@@ -119,33 +125,30 @@ export const createUserAndWalletFromUserRef = async (ref: string) => {
   await createUserAndWallet(entry)
 }
 
-const createNewAccount = async ({
-  phone,
-  phoneMetadataCarrierType,
-}: {
-  phone: PhoneNumber
-  phoneMetadataCarrierType: CarrierType | undefined
-}) => {
-  let phoneMetadata: PhoneMetadata | undefined = undefined
-  if (phoneMetadataCarrierType) {
-    phoneMetadata = {
-      carrier: {
-        type: phoneMetadataCarrierType,
-        name: "",
-        mobile_network_code: "",
-        mobile_country_code: "",
-        error_code: "",
-      },
-      countryCode: "US",
-    }
+const createNewAccount = async ({ phone }: { phone: PhoneNumber }) => {
+  const authService = AuthWithPhoneNoPassword()
+
+  let kratosResult = await authService.login(phone)
+  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
+    // TODO: remove once kratos states is been re-iniaitlized been tests
+    kratosResult = await authService.createWithSession(phone)
   }
+  if (kratosResult instanceof KratosError) throw kratosResult
+
+  const kratosUserId = kratosResult.kratosUserId
 
   const account = await createAccountForPhoneSchema({
-    newUserInfo: { phone, phoneMetadata },
+    newAccountInfo: { phone, kratosUserId },
     config: getDefaultAccountsConfig(),
   })
   if (account instanceof Error) throw account
 
+  await addIp(account.id)
+
+  return account
+}
+
+export const addIp = async (accountId: AccountId) => {
   const lastConnection = new Date()
   const ipInfo: IPType = {
     ip: "89.187.173.251" as IpAddress,
@@ -160,14 +163,12 @@ const createNewAccount = async ({
     proxy: false,
   }
 
-  const userIP = await UsersIpRepository().findById(account.id as string as UserId) // FIXME tmp hack until full kratos integration
+  const userIP = await UsersIpRepository().findById(accountId as string as UserId) // FIXME tmp hack until full kratos integration
   if (userIP instanceof Error) throw userIP
 
   userIP.lastIPs.push(ipInfo)
   const result = await UsersIpRepository().update(userIP)
   if (result instanceof Error) throw result
-
-  return account
 }
 
 export const createUserAndWallet = async (entry: TestEntry) => {
@@ -175,10 +176,39 @@ export const createUserAndWallet = async (entry: TestEntry) => {
 
   let user = await users.findByPhone(phone)
   if (user instanceof CouldNotFindUserFromPhoneError) {
-    const account = await createNewAccount({
-      phone,
-      phoneMetadataCarrierType: entry.phoneMetadataCarrierType as CarrierType,
+    let phoneMetadata: PhoneMetadata | undefined = undefined
+    if (entry.phoneMetadataCarrierType) {
+      phoneMetadata = {
+        carrier: {
+          type: entry.phoneMetadataCarrierType as CarrierType,
+          name: "",
+          mobile_network_code: "",
+          mobile_country_code: "",
+          error_code: "",
+        },
+        countryCode: "US",
+      }
+    }
+
+    const authService = AuthWithPhoneNoPassword()
+
+    let kratosResult = await authService.login(phone)
+    if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
+      // TODO: remove once kratos states is been re-iniaitlized been tests
+      kratosResult = await authService.createWithSession(phone)
+    }
+    if (kratosResult instanceof KratosError) throw kratosResult
+
+    const kratosUserId = kratosResult.kratosUserId
+
+    const account = await createAccountForPhoneSchema({
+      newAccountInfo: { phone, phoneMetadata, kratosUserId },
+      config: getDefaultAccountsConfig(),
     })
+
+    if (account instanceof Error) throw account
+
+    await addIp(account.id)
 
     if (entry.needUsdWallet) {
       await addWalletIfNonexistent({
@@ -233,7 +263,6 @@ export const createNewWalletFromPhone = async ({
   if (user instanceof CouldNotFindUserFromPhoneError) {
     const account = await createNewAccount({
       phone,
-      phoneMetadataCarrierType: "mobile" as CarrierType,
     })
     if (account instanceof Error) throw account
 
