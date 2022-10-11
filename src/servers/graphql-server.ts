@@ -185,8 +185,7 @@ export const startApolloServer = async ({
     introspection: apolloConfig.playground,
     plugins: apolloPlugins,
     context: async (context) => {
-      // @ts-expect-error: TODO
-      const tokenPayload = context.req?.token ?? null
+      const tokenPayload = context.req.token
 
       const body = context.req?.body ?? null
 
@@ -252,7 +251,7 @@ export const startApolloServer = async ({
     expressjwt({
       secret,
       algorithms: jwtAlgorithms,
-      credentialsRequired: false,
+      credentialsRequired: true,
       requestProperty: "token",
     }),
   )

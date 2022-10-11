@@ -16,3 +16,9 @@ type GraphQLContextForUser = {
 
 // globally used types
 type Logger = import("pino").Logger
+
+declare namespace Express {
+  interface Request {
+    token: import("jsonwebtoken").JwtPayload
+  }
+}
