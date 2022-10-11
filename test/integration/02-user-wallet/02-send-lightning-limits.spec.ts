@@ -14,17 +14,17 @@ import { AccountsRepository } from "@services/mongoose"
 import { sleep } from "@utils"
 
 import {
+  cancelOkexPricePublish,
   checkIsBalanced,
   createInvoice,
   createNewWalletFromPhone,
   lndOutside1,
-  pay,
+  publishOkexPrice,
   randomPhone,
+  safePay,
 } from "test/helpers"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-
-jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
 
 const MOCKED_LIMIT = 100 as UsdCents
 const AMOUNT_ABOVE_THRESHOLD = 10 as UsdCents
@@ -39,6 +39,9 @@ jest.mock("@config", () => {
   const config = jest.requireActual("@config")
   return {
     ...config,
+    getDealerConfig: jest.fn().mockReturnValue({
+      usd: { hedgingEnabled: true },
+    }),
     getAccountLimits: jest.fn().mockReturnValue({
       intraLedgerLimit: 100 as UsdCents,
       withdrawalLimit: 100 as UsdCents,
@@ -52,7 +55,7 @@ jest.mock("@config", () => {
 })
 
 const newDealerFns = NewDealerPriceService()
-const dealerUsdFromBtc = newDealerFns.getCentsFromSatsForImmediateBuy
+const dealerUsdFromBtc = newDealerFns.getCentsFromSatsForImmediateSell
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
@@ -61,6 +64,7 @@ let otherBtcWallet: Wallet
 let otherUsdWallet: Wallet // eslint-disable-line @typescript-eslint/no-unused-vars
 
 beforeAll(async () => {
+  await publishOkexPrice()
   otherPhone = randomPhone()
 
   const btcWallet = await createNewWalletFromPhone({
@@ -83,6 +87,7 @@ afterEach(async () => {
 })
 
 afterAll(() => {
+  cancelOkexPricePublish()
   jest.restoreAllMocks()
 })
 
@@ -118,7 +123,7 @@ const createAndFundNewWalletForPhone = async <S extends WalletCurrency>({
     })
 
   const promises = Promise.all([
-    pay({ lnd: lndOutside1, request: invoice }),
+    safePay({ lnd: lndOutside1, request: invoice }),
     (async () => {
       // TODO: we could use event instead of a sleep to lower test latency
       await sleep(500)
@@ -387,7 +392,9 @@ describe("UserWallet Limits - Lightning Pay", () => {
 
       // Construct payments
       const SPLITS = 2
-      const partialUsdSendAmount = Math.floor(accountLimits[limit] / SPLITS)
+      let partialUsdSendAmount = Math.floor(accountLimits[limit] / SPLITS)
+      const bufferForSpread = 2
+      partialUsdSendAmount -= bufferForSpread
       const partialBtcSendAmount = await btcAmountFromUsdNumber(partialUsdSendAmount)
 
       const usdAmountAboveThreshold = AMOUNT_ABOVE_THRESHOLD

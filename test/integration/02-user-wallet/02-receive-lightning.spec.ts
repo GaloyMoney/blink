@@ -27,6 +27,7 @@ import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { sleep } from "@utils"
 
 import {
+  cancelOkexPricePublish,
   checkIsBalanced,
   createUserAndWalletFromUserRef,
   getAmount,
@@ -39,6 +40,9 @@ import {
   lnd1,
   lndOutside1,
   pay,
+  publishOkexPrice,
+  safePay,
+  safePayNoExpect,
   subscribeToInvoices,
 } from "test/helpers"
 
@@ -49,17 +53,20 @@ let walletIdUsdF: WalletId
 let initBalanceB: Satoshis
 let initBalanceUsdB: UsdCents
 
-jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
-
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
 beforeAll(async () => {
+  await publishOkexPrice()
   await createUserAndWalletFromUserRef("B")
   await createUserAndWalletFromUserRef("F")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
   walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
   walletIdF = await getDefaultWalletIdByTestUserRef("F")
   walletIdUsdF = await getUsdWalletIdByTestUserRef("F")
+})
+
+afterAll(async () => {
+  cancelOkexPricePublish()
 })
 
 beforeEach(async () => {
@@ -102,7 +109,7 @@ describe("UserWallet - Lightning", () => {
       })
 
     const promises = Promise.all([
-      pay({ lnd: lndOutside1, request: invoice }),
+      safePay({ lnd: lndOutside1, request: invoice }),
       (async () => {
         // TODO: we could use event instead of a sleep to lower test latency
         await sleep(500)
@@ -369,7 +376,7 @@ describe("UserWallet - Lightning", () => {
 
     expect(amount).toBe(sats)
 
-    pay({ lnd: lndOutside1, request: invoice })
+    safePay({ lnd: lndOutside1, request: invoice })
 
     // TODO: we could use an event instead of a sleep
     await sleep(500)
@@ -438,7 +445,7 @@ describe("UserWallet - Lightning", () => {
 
     const hash = getHash(invoice)
 
-    pay({ lnd: lndOutside1, request: invoice, tokens: sats })
+    safePay({ lnd: lndOutside1, request: invoice, tokens: sats })
 
     // TODO: we could use an event instead of a sleep
     await sleep(500)
@@ -504,7 +511,7 @@ describe("UserWallet - Lightning", () => {
 
     const hash = getHash(invoice)
 
-    pay({ lnd: lndOutside1, request: invoice, tokens: sats })
+    safePay({ lnd: lndOutside1, request: invoice, tokens: sats })
 
     // TODO: we could use an event instead of a sleep
     await sleep(500)
@@ -555,14 +562,7 @@ describe("UserWallet - Lightning", () => {
     if (lnInvoice instanceof Error) throw lnInvoice
     const { paymentRequest: invoice, paymentHash: hash } = lnInvoice
 
-    const safePay = async (args) => {
-      try {
-        return await pay(args) // 'await' is explicitly needed here
-      } catch (err) {
-        return err
-      }
-    }
-    safePay({ lnd: lndOutside1, request: invoice, mtokens })
+    safePayNoExpect({ lnd: lndOutside1, request: invoice, mtokens })
     // TODO: we could use an event instead of a sleep
     await sleep(500)
 
@@ -623,7 +623,7 @@ describe("UserWallet - Lightning", () => {
     const { paymentRequest: invoice } = lnInvoice
 
     const hash = getHash(invoice)
-    pay({ lnd: lndOutside1, request: invoice })
+    safePayNoExpect({ lnd: lndOutside1, request: invoice })
 
     // TODO: we could use an event instead of a sleep
     await sleep(500)

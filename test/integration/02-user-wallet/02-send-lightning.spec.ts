@@ -54,6 +54,7 @@ import {
   PaymentFlowStateRepository,
 } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
+import { DealerPriceService, NewDealerPriceService } from "@services/dealer-price"
 
 import { sleep } from "@utils"
 
@@ -64,6 +65,7 @@ import * as PushNotificationsServiceImpl from "@services/notifications/push-noti
 
 import {
   cancelHodlInvoice,
+  cancelOkexPricePublish,
   checkIsBalanced,
   createHodlInvoice,
   createInvoice,
@@ -83,20 +85,17 @@ import {
   lndOutside1,
   lndOutside2,
   newGetRemainingTwoFALimit,
+  publishOkexPrice,
   settleHodlInvoice,
   waitFor,
   waitUntilChannelBalanceSyncAll,
 } from "test/helpers"
-
-import { DealerPriceService, NewDealerPriceService } from "test/mocks/dealer-price"
 
 const dealerFns = DealerPriceService()
 const newDealerFns = NewDealerPriceService()
 const calc = AmountCalculator()
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-
-jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
 
 jest.mock("@config", () => {
   return {
@@ -171,6 +170,7 @@ const locale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 beforeAll(async () => {
+  await publishOkexPrice()
   await createUserAndWalletFromUserRef("A")
   await createUserAndWalletFromUserRef("B")
   await createUserAndWalletFromUserRef("C")
@@ -211,6 +211,7 @@ afterEach(async () => {
 })
 
 afterAll(() => {
+  cancelOkexPricePublish()
   jest.restoreAllMocks()
 })
 
@@ -1803,11 +1804,22 @@ describe("USD Wallets - Lightning Pay", () => {
       const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
       const initBalanceA = toSats(await getBalanceHelper(walletIdA))
 
-      const amountPayment = toSats(50)
+      const amountPayment = toSats(100)
 
+      // Validate btc amount to pay
+      const usdPaymentAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+        amount: BigInt(amountPayment),
+        currency: WalletCurrency.Btc,
+      })
+      expect(usdPaymentAmount).not.toBeInstanceOf(Error)
+      if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+      expect(usdPaymentAmount.amount).toBeGreaterThan(0n)
+
+      // Generate invoice for btc amount and pay
       const request = await Wallets.addInvoiceNoAmountForSelf({
         walletId: walletIdUsdB,
       })
+      expect(request).not.toBeInstanceOf(Error)
       if (request instanceof Error) throw request
       const { paymentRequest: uncheckedPaymentRequest } = request
 
@@ -1818,11 +1830,12 @@ describe("USD Wallets - Lightning Pay", () => {
         senderAccount: accountA,
         amount: amountPayment,
       })
+      expect(paymentResult).not.toBeInstanceOf(Error)
       if (paymentResult instanceof Error) throw paymentResult
       expect(paymentResult).toBe(PaymentSendStatus.Success)
 
       const dealerFns = DealerPriceService()
-      const cents = await dealerFns.getCentsFromSatsForImmediateSell(amountPayment)
+      const cents = await dealerFns.getCentsFromSatsForImmediateBuy(amountPayment)
       if (cents instanceof Error) throw cents
 
       const finalBalanceB = await getBalanceHelper(walletIdUsdB)
@@ -1877,8 +1890,18 @@ describe("USD Wallets - Lightning Pay", () => {
       const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdA))
       const initBalanceA = toSats(await getBalanceHelper(walletIdA))
 
-      const amountPayment = toSats(50)
+      const amountPayment = toSats(100)
 
+      // Validate btc amount to pay
+      const usdPaymentAmount = await newDealerFns.getCentsFromSatsForImmediateBuy({
+        amount: BigInt(amountPayment),
+        currency: WalletCurrency.Btc,
+      })
+      expect(usdPaymentAmount).not.toBeInstanceOf(Error)
+      if (usdPaymentAmount instanceof Error) throw usdPaymentAmount
+      expect(usdPaymentAmount.amount).toBeGreaterThan(0n)
+
+      // Generate invoice for and pay
       const request = await Wallets.addInvoiceNoAmountForSelf({
         walletId: walletIdUsdA,
       })
@@ -1916,10 +1939,12 @@ describe("USD Wallets - Lightning Pay", () => {
   })
   describe("Intraledger payments", () => {
     const btcSendAmount = 50_000
-    const btcPromise = dealerFns.getCentsFromSatsForImmediateBuy(toSats(btcSendAmount))
+    const btcPromise = () =>
+      dealerFns.getCentsFromSatsForImmediateBuy(toSats(btcSendAmount))
 
     const usdSendAmount = 100
-    const usdPromise = dealerFns.getSatsFromCentsForImmediateSell(toCents(usdSendAmount))
+    const usdPromise = () =>
+      dealerFns.getSatsFromCentsForImmediateSell(toCents(usdSendAmount))
 
     const testIntraledgerSend = async ({
       senderWalletId,
@@ -1980,7 +2005,7 @@ describe("USD Wallets - Lightning Pay", () => {
     }
 
     it("sends to self, conversion from BTC wallet to USD wallet", async () => {
-      const btcSendAmountInUsd = await Promise.resolve(btcPromise)
+      const btcSendAmountInUsd = await Promise.resolve(btcPromise())
       if (btcSendAmountInUsd instanceof Error) throw btcSendAmountInUsd
 
       const res = await testIntraledgerSend({
@@ -1995,7 +2020,7 @@ describe("USD Wallets - Lightning Pay", () => {
     })
 
     it("sends to self, conversion from USD wallet to BTC wallet", async () => {
-      const usdSendAmountInBtc = await Promise.resolve(usdPromise)
+      const usdSendAmountInBtc = await Promise.resolve(usdPromise())
       if (usdSendAmountInBtc instanceof Error) throw usdSendAmountInBtc
 
       const res = await testIntraledgerSend({
@@ -2034,7 +2059,7 @@ describe("USD Wallets - Lightning Pay", () => {
     })
 
     it("sends from BTC wallet to another Galoy user's USD wallet", async () => {
-      const btcSendAmountInUsd = await Promise.resolve(btcPromise)
+      const btcSendAmountInUsd = await Promise.resolve(btcPromise())
       if (btcSendAmountInUsd instanceof Error) throw btcSendAmountInUsd
 
       const res = await testIntraledgerSend({
@@ -2048,7 +2073,7 @@ describe("USD Wallets - Lightning Pay", () => {
     })
 
     it("sends from USD wallet to another Galoy user's BTC wallet", async () => {
-      const usdSendAmountInBtc = await Promise.resolve(usdPromise)
+      const usdSendAmountInBtc = await Promise.resolve(usdPromise())
       if (usdSendAmountInBtc instanceof Error) throw usdSendAmountInBtc
 
       const res = await testIntraledgerSend({
@@ -2074,7 +2099,7 @@ describe("USD Wallets - Lightning Pay", () => {
 
     it("fails to send less-than-1-cent amount from BTC wallet to USD wallet", async () => {
       const btcSendAmount = 10
-      const btcSendAmountInUsd = await dealerFns.getCentsFromSatsForImmediateSell(
+      const btcSendAmountInUsd = await dealerFns.getCentsFromSatsForImmediateBuy(
         toSats(btcSendAmount),
       )
       expect(btcSendAmountInUsd).toBe(0)

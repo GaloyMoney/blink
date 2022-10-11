@@ -1,6 +1,5 @@
 import { Wallets } from "@app"
 import { addWallet } from "@app/accounts/add-wallet"
-import { getCurrentPriceInCentsPerSat } from "@app/shared"
 import {
   getInvoiceCreateAttemptLimits,
   getInvoiceCreateForRecipientAttemptLimits,
@@ -17,10 +16,12 @@ import { WalletInvoicesRepository } from "@services/mongoose"
 import { DealerPriceService } from "@services/dealer-price"
 
 import {
+  cancelOkexPricePublish,
   createUserAndWalletFromUserRef,
   getAccountIdByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getHash,
+  publishOkexPrice,
 } from "test/helpers"
 import {
   resetRecipientAccountIdLimits,
@@ -32,11 +33,11 @@ let walletIdUsd: WalletId
 let accountIdB: AccountId
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-jest.mock("@services/dealer-price", () => require("test/mocks/dealer-price"))
 
 const walletInvoices = WalletInvoicesRepository()
 
 beforeAll(async () => {
+  await publishOkexPrice()
   const userRef = "B"
   await createUserAndWalletFromUserRef(userRef)
 
@@ -53,6 +54,7 @@ beforeAll(async () => {
 })
 
 afterAll(() => {
+  cancelOkexPricePublish()
   jest.restoreAllMocks()
 })
 
@@ -155,18 +157,12 @@ describe("Wallet - addInvoice USD", () => {
   it("add a self generated USD invoice", async () => {
     const centsInput = 10000
 
-    const centsPerSatRatio = await getCurrentPriceInCentsPerSat()
-    if (centsPerSatRatio instanceof Error) return centsPerSatRatio
-    const satsFallbackViaPriceService =
-      (centsInput / centsPerSatRatio.usdPerSat()) * 0.996 // 40 bps spread
-
     const sats = await DealerPriceService().getSatsFromCentsForFutureBuy(
       toCents(centsInput),
       defaultTimeToExpiryInSeconds,
     )
     expect(sats).not.toBeInstanceOf(Error)
     if (sats instanceof Error) throw sats
-    expect(sats).toEqual(satsFallbackViaPriceService)
 
     const lnInvoice = await Wallets.addInvoiceForSelf({
       walletId: walletIdUsd,

@@ -22,13 +22,13 @@ import {
   lnd1,
   lndOutside1,
   mineBlockAndSyncAll,
-  pay,
   RANDOM_ADDRESS,
   subscribeToBlocks,
   waitFor,
   waitUntilSyncAll,
   initializeTestingState,
   defaultStateConfig,
+  safePay,
 } from "test/helpers"
 import { getBalanceHelper } from "test/helpers/wallet"
 
@@ -202,7 +202,7 @@ describe("onchainBlockEventHandler", () => {
     expect(lnInvoice).not.toBeInstanceOf(Error)
 
     const { paymentRequest: request } = lnInvoice as LnInvoice
-    pay({ lnd: lndOutside1, request })
+    safePay({ lnd: lndOutside1, request })
 
     await sleep(250)
 
