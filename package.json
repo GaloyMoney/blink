@@ -78,7 +78,7 @@
     "ioredis-cache": "^1.4.1",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
-    "jwks-rsa": "^2.1.4",
+    "jwks-rsa": "^2.1.5",
     "lightning": "^6.2.0",
     "ln-service": "^54.2.0",
     "lodash.difference": "^4.5.0",
