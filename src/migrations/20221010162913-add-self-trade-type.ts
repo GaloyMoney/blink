@@ -139,4 +139,28 @@ module.exports = {
       )
     }
   },
+
+  async down(db) {
+    try {
+      const result = await db.collection("medici_transactions").updateMany(
+        {
+          type: { $in: ["self_trade", "ln_self_trade", "onchain_self_trade"] },
+          type_old: { $exists: true },
+        },
+        [
+          {
+            $set: {
+              type: "$type_old",
+            },
+          },
+          {
+            $unset: "type_old",
+          },
+        ],
+      )
+      console.log({ result }, "revert '..self_trade' types back to '..on_us'")
+    } catch (error) {
+      console.log({ result: error }, "Couldn't revert '..self_trade' medici_transactions")
+    }
+  },
 }
