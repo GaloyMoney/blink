@@ -1,5 +1,4 @@
 /* eslint @typescript-eslint/no-var-requires: "off" */
-
 const { Types } = require("mongoose")
 
 const toWalletId = (walletIdPath) => {
@@ -27,7 +26,6 @@ const getNonUserWalletIds = async ({ usersCollection, walletsCollection }) => {
   for await (const wallet of walletsCursor) {
     nonUserWalletIds.push(wallet.id)
   }
-  console.log("HERE 0:", nonUserWalletIds)
   return nonUserWalletIds
 }
 
@@ -78,7 +76,6 @@ module.exports = {
 
       // Check that we have txns with valid walletIds
       if (txns && txns.length === 0) return false
-      console.log("\nHERE 1:", { [txnAgg._id]: txns })
 
       // Check if we have exactly 2 txns
       if (txns.length !== 2) return false
@@ -88,12 +85,10 @@ module.exports = {
 
       // Compare accountIds to see if self-trade
       const accountIdsSet = new Set(txns.map((txn) => txn.accountId))
-      console.log("HERE 2:", { accountIdsSet })
       if (accountIdsSet.size > 1) return false
 
       // RETURN SELF-TRADE TYPE
       // =====
-      console.log("HERE 3:", txnAgg.type)
       switch (txnAgg.type) {
         case "on_us":
           return "self_trade"
@@ -124,7 +119,6 @@ module.exports = {
       const selfTradeType = await getSelfTradeType(txn)
       if (!selfTradeType) continue
 
-      console.log("HERE 4:", _journal)
       const result = await txnsCollection.updateMany(
         { _journal },
         [
@@ -139,18 +133,10 @@ module.exports = {
           multi: true,
         },
       )
-      console.log("HERE 5:", result)
       const { modifiedCount, matchedCount } = result
       console.log(
         `changed txn type from ${type} to ${selfTradeType} for ${modifiedCount} of ${matchedCount} transactions for journalId: ${_journal.toString()}`,
       )
     }
-  },
-
-  async down(db) {
-    console.log(db)
-    // TODO write the statements to rollback your migration (if possible)
-    // Example:
-    // await db.collection('albums').updateOne({artist: 'The Beatles'}, {$set: {blacklisted: false}});
   },
 }
