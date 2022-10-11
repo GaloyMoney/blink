@@ -11,7 +11,7 @@ const KratosSdk: (kratosEndpoint: string) => V0alpha2ApiInterface = (kratosEndpo
 export const kratosPublic = KratosSdk(publicApi)
 export const kratosAdmin = KratosSdk(adminApi)
 
-export const toDomainSession = (session: KratosSession) => {
+export const toDomainSession = (session: KratosSession): Session => {
   // is throw ok? this should not happen I (nb) believe but the type say it can
   // this may probably be a type issue in kratos SDK
   if (!session.expires_at) throw new MissingExpiredAtKratosError()
@@ -19,7 +19,6 @@ export const toDomainSession = (session: KratosSession) => {
   return {
     id: session.id as SessionId,
     identity: toDomainIdentityPhone(session.identity),
-    expiresAt: new Date(session.expires_at),
   }
 }
 
