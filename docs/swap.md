@@ -160,7 +160,7 @@ make start-cron
 
 Tracing
 =======
-In Honeycomb you can query for `swap`
+In Honeycomb you can query for `code.namespace = services.swap`
 
 Generate GRPC Types
 ====================
