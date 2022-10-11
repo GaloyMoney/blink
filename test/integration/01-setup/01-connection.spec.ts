@@ -1,6 +1,8 @@
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
 
+import { listUsers } from "@services/kratos/tests-but-not-prod"
+
 import {
   lnd1,
   lnd2,
@@ -62,4 +64,10 @@ it("connects to redis", async () => {
   await redis.set("key", value)
   const result = await redis.get("key")
   expect(result).toBe(value)
+})
+
+it("connects to kratos", async () => {
+  const users = await listUsers()
+  expect(users).not.toBeInstanceOf(Error)
+  expect(Array.isArray(users)).toBe(true)
 })

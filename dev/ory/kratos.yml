@@ -1,0 +1,122 @@
+version: v0.10.1
+
+dsn: "overrided-by-env"
+
+serve:
+  public:
+    base_url: http://127.0.0.1:4433/
+    cors:
+      enabled: true
+  admin:
+    base_url: http://0.0.0.0:4434/
+
+selfservice:
+  default_browser_return_url: http://127.0.0.1:4455/
+  allowed_return_urls:
+    - http://127.0.0.1:4455
+
+  methods:
+    oidc:
+      enabled: false
+    webauthn:
+      enabled: false
+    totp:
+      enabled: true
+    password:
+      enabled: true
+    link:
+      enabled: false
+
+  flows:
+    error:
+      ui_url: http://127.0.0.1:4455/error
+
+    settings:
+      ui_url: http://127.0.0.1:4455/settings
+      privileged_session_max_age: 15m
+
+      required_aal: aal1
+
+      after:
+        profile:
+          hooks:
+            - hook: web_hook
+              config:
+                # url: http://e2e-tests:4002/auth/after_settings_hooks
+                url: http://invalid-because-we-dont-want-profile-to-be-updated
+                method: POST
+                body: file:///home/ory/body.jsonnet
+                auth:
+                  type: api_key
+                  config:
+                    name: Authorization
+                    value: The-Value-of-My-Key
+                    in: header
+
+    recovery:
+      enabled: true
+      ui_url: http://127.0.0.1:4455/recovery
+
+    verification:
+      enabled: true
+      ui_url: http://127.0.0.1:4455/verification
+      after:
+        default_browser_return_url: http://127.0.0.1:4455/
+
+    logout:
+      after:
+        default_browser_return_url: http://127.0.0.1:4455/login
+
+    login:
+      ui_url: http://127.0.0.1:4455/login
+      lifespan: 10m
+
+    registration:
+      lifespan: 10m
+      ui_url: http://127.0.0.1:4455/registration
+      after:
+        password:
+          hooks:
+            - hook: session
+
+log:
+  level: debug
+  format: text
+  leak_sensitive_values: true
+
+secrets:
+  cookie:
+    - PLEASE-CHANGE-ME-I-AM-VERY-INSECURE
+  cipher:
+    - 32-LONG-SECRET-NOT-SECURE-AT-ALL
+
+ciphers:
+  algorithm: xchacha20-poly1305
+
+hashers:
+  algorithm: bcrypt
+  bcrypt:
+    cost: 8
+
+identity:
+  default_schema_id: phone_no_password_v0
+  schemas:
+    - id: phone_no_password_v0
+      url: file:///home/ory/phone_v0.identity.schema.json
+    - id: phone_with_password_v0
+      url: file:///home/ory/phone_v0.identity.schema.json
+    - id: email_and_phone_with_password_v0
+      url: file:///home/ory/email_and_phone_with_password_v0.identity.schema.json
+
+courier:
+  smtp:
+    connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true
+
+session:
+  # TODO: check lifespan per schema
+  # or look how to extend
+  lifespan: "720h" # 1 month
+  earliest_possible_extend: "720h" # needed for test. should be shorter in prod
+
+  whoami:
+    required_aal: aal1

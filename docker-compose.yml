@@ -3,6 +3,7 @@ services:
   integration-deps:
     image: busybox
     depends_on:
+      - kratos
       - price
       - price-history
       - price-history-migrate
@@ -272,3 +273,24 @@ services:
       - type: bind
         source: dev/ory
         target: /home/ory
+
+  kratos:
+    image: oryd/kratos:v0.10.1
+    entrypoint: sh -c
+    command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --sqa-opt-out"'
+    environment:
+      DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
+    links:
+      - kratos-pg:kratos-pg
+    volumes:
+      - type: bind
+        source: dev/ory
+        target: /home/ory
+  kratos-pg:
+    image: postgres:14.1
+    expose:
+      - "5432"
+    environment:
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=default

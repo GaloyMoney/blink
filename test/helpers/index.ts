@@ -1,10 +1,9 @@
 import { generate2fa, save2fa } from "@app/users"
-import { InvalidPhoneNumber } from "@domain/errors"
 import { TwoFAAlreadySetError } from "@domain/twoFA"
 import { gqlAdminSchema } from "@graphql/admin"
 import { ExecutionResult, graphql, Source } from "graphql"
 import { ObjMap } from "graphql/jsutils/ObjMap"
-import { generateToken } from "node-2fa"
+import { authenticator } from "otplib"
 
 export * from "./apollo-client"
 export * from "./bitcoin-core"
@@ -17,6 +16,13 @@ export * from "./state-setup"
 export * from "./user"
 export * from "./wallet"
 export * from "./check-is-balanced"
+
+export const randomEmail = () => (Math.random().toString(36) + "@galoy.io") as KratosEmail
+
+export const randomPassword = () => Math.random().toString(36) as IdentityPassword
+
+export const randomPhone = () =>
+  `+1415${Math.floor(Math.random() * 900000 + 100000)}` as PhoneNumber
 
 export const amountAfterFeeDeduction = ({
   amount,
@@ -38,13 +44,9 @@ export const resetDatabase = async (mongoose) => {
     })
 }
 
-export const generateTokenHelper = (secret) => {
-  const generateTokenResult = generateToken(secret)
-  if (generateTokenResult && generateTokenResult.token) {
-    return generateTokenResult.token as TwoFAToken
-  }
-
-  fail("generateToken returned null")
+export const generateTokenHelper = (secret: string) => {
+  const generateTokenResult = authenticator.generate(secret) as TwoFAToken
+  return generateTokenResult
 }
 
 export const enable2FA = async (userId: UserId) => {
@@ -65,15 +67,6 @@ export const enable2FA = async (userId: UserId) => {
 
 export const chunk = (a, n) =>
   [...Array(Math.ceil(a.length / n))].map((_, i) => a.slice(n * i, n + n * i))
-
-export const randomPhone = (length = 14): PhoneNumber => {
-  const PhoneNumberRegex = /^\+\d{7,14}$/i // FIXME {7,14} to be refined
-
-  const phoneNumber = `+${Math.floor(Math.random() * 10 ** length)}`
-  if (!phoneNumber.match(PhoneNumberRegex)) throw new InvalidPhoneNumber()
-
-  return phoneNumber as PhoneNumber
-}
 
 export const graphqlAdmin = <
   T = Promise<ExecutionResult<ObjMap<unknown>, ObjMap<unknown>>>,

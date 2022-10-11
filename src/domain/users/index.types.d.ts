@@ -1,7 +1,6 @@
 type PhoneNumber = string & { readonly brand: unique symbol }
 type PhoneCode = string & { readonly brand: unique symbol }
 
-type KratosUserId = string & { readonly brand: unique symbol }
 type EmailAddress = string & { readonly brand: unique symbol }
 
 type UserLanguage = typeof import("./languages").Languages[number]

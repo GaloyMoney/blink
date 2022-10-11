@@ -1,27 +1,17 @@
-import { generateSecret, verifyToken } from "node-2fa"
+import { authenticator } from "otplib"
 
 import { TwoFAValidationError, UnknownTwoFAError } from "./errors"
 
 export * from "./errors"
 
 export const TwoFA = (): TwoFA => {
-  const generate = ({
-    galoyInstanceName,
-    phone,
-  }: {
-    galoyInstanceName: string
-    phone: PhoneNumber
-  }): {
+  const generate = (): {
     secret: TwoFASecret
-    uri: TwoFAUri
   } => {
-    const result = generateSecret({
-      name: galoyInstanceName,
-      account: phone,
-    })
+    const result = authenticator.generateSecret()
     return {
-      secret: result.secret as TwoFASecret,
-      uri: result.uri as TwoFAUri,
+      secret: result as TwoFASecret,
+      // uri: result.uri as TwoFAUri,
     }
   }
 
@@ -33,7 +23,7 @@ export const TwoFA = (): TwoFA => {
     token: TwoFAToken
   }): true | TwoFAError => {
     try {
-      const result = verifyToken(secret, token)
+      const result = authenticator.verify({ token, secret })
       if (!result) {
         return new TwoFAValidationError()
       }

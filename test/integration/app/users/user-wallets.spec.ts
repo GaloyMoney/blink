@@ -1,6 +1,7 @@
 import { Accounts } from "@app"
 import { AccountStatus } from "@domain/accounts"
 import { WalletCurrency } from "@domain/shared"
+import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 import getUuidByString from "uuid-by-string"
@@ -14,16 +15,32 @@ const randomKratosId = () => {
   return getUuidByString(randomPhoneNumber()) as KratosUserId
 }
 
+const createAccount = async (initialWallets: WalletCurrency[]) => {
+  const phone = randomPhoneNumber()
+
+  const authService = AuthWithPhonePasswordlessService()
+
+  const kratosResult = await authService.createWithSession(phone)
+  if (kratosResult instanceof Error) throw kratosResult
+
+  const kratosUserId = kratosResult.kratosUserId
+  kratosUserId // FIXME variable will be used/line removed in the follow up PR
+
+  const account = await Accounts.createAccountForPhoneSchema({
+    newUserInfo: { phone },
+    config: { initialStatus: AccountStatus.Active, initialWallets },
+  })
+  if (account instanceof Error) throw account
+
+  return account
+}
+
 describe("Users - wallets", () => {
   describe("with 'createUser'", () => {
     it("adds a USD wallet for new user if config is set to true", async () => {
       const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
 
-      let account = await Accounts.createAccountForPhoneSchema({
-        newUserInfo: { phone: randomPhoneNumber() },
-        config: { initialStatus: AccountStatus.Active, initialWallets },
-      })
-      if (account instanceof Error) throw account
+      let account: Account | RepositoryError = await createAccount(initialWallets)
 
       // Check all wallets were created
       const wallets = await WalletsRepository().listByAccountId(account.id)
@@ -49,11 +66,7 @@ describe("Users - wallets", () => {
     it("does not add a USD wallet for new user if config is set to false", async () => {
       const initialWallets = [WalletCurrency.Btc]
 
-      let account = await Accounts.createAccountForPhoneSchema({
-        newUserInfo: { phone: randomPhoneNumber() },
-        config: { initialStatus: AccountStatus.Active, initialWallets },
-      })
-      if (account instanceof Error) throw account
+      let account: Account | RepositoryError = await createAccount(initialWallets)
 
       // Check all wallets were created
       const wallets = await WalletsRepository().listByAccountId(account.id)
@@ -79,11 +92,7 @@ describe("Users - wallets", () => {
     it("sets USD wallet as default if BTC wallet does not exist", async () => {
       const initialWallets = [WalletCurrency.Usd]
 
-      let account = await Accounts.createAccountForPhoneSchema({
-        newUserInfo: { phone: randomPhoneNumber() },
-        config: { initialStatus: AccountStatus.Active, initialWallets },
-      })
-      if (account instanceof Error) throw account
+      let account: Account | RepositoryError = await createAccount(initialWallets)
 
       // Check all wallets were created
       const wallets = await WalletsRepository().listByAccountId(account.id)

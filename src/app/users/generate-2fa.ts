@@ -1,4 +1,3 @@
-import { getGaloyInstanceName } from "@config"
 import { MissingPhoneError } from "@domain/errors"
 import { TwoFA } from "@domain/twoFA"
 import { UsersRepository } from "@services/mongoose"
@@ -11,10 +10,7 @@ export const generate2fa = async (
 
   if (!user.phone) return new MissingPhoneError()
 
-  const { secret, uri } = TwoFA().generate({
-    galoyInstanceName: getGaloyInstanceName(),
-    phone: user.phone,
-  })
+  const { secret } = TwoFA().generate()
 
   /*
     { secret: 'XDQXYCP5AC6FA32FQXDGJSPBIDYNKK5W',
@@ -23,5 +19,5 @@ export const generate2fa = async (
     }
     */
 
-  return { secret, uri }
+  return { secret }
 }
