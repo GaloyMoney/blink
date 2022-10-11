@@ -6460,10 +6460,10 @@ grapheme-splitter@^1.0.4:
   resolved "https://registry.yarnpkg.com/grapheme-splitter/-/grapheme-splitter-1.0.4.tgz#9cf3a665c6247479896834af35cf1dbb4400767e"
   integrity sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==
 
-graphql-middleware@^6.1.32:
-  version "6.1.32"
-  resolved "https://registry.yarnpkg.com/graphql-middleware/-/graphql-middleware-6.1.32.tgz#1b8a121d615efcf6d4b21d63f0a4818189700e0a"
-  integrity sha512-4vL+o9lljc1JavXNtMZg+gwDiZ9ORhgzAxf+7ef8r9/gn6D5sWxm2w8SdG6PLkKOsSM/tDunwSpfSJinn0XPCw==
+graphql-middleware@^6.1.33:
+  version "6.1.33"
+  resolved "https://registry.yarnpkg.com/graphql-middleware/-/graphql-middleware-6.1.33.tgz#81bbf0eab83a2829a5d2da4e3878e9e7f3e610ed"
+  integrity sha512-5gJqTvsBlcuZEcYqWEqhF0eAHlmP3SWenX86djfdnr27UNOY74i7HR9LEUiIUnCyxdSjg1ukpwugI6CF0GX2Lw==
   dependencies:
     "@graphql-tools/delegate" "^8.8.1"
     "@graphql-tools/schema" "^8.5.1"
