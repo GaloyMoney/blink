@@ -58,9 +58,7 @@ const apolloConfig = getApolloConfig()
 
 export const isAuthenticated = rule({ cache: "contextual" })(
   (parent, args, ctx: GraphQLContext) => {
-    return ctx.domainAccount !== null
-      ? true
-      : new AuthenticationError({ logger: baseLogger })
+    return !!ctx.domainAccount || new AuthenticationError({ logger: baseLogger })
   },
 )
 
