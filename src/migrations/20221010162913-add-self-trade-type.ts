@@ -1,6 +1,15 @@
 /* eslint @typescript-eslint/no-var-requires: "off" */
 const { Types } = require("mongoose")
 
+const LedgerTransactionType = {
+  IntraLedger: "on_us",
+  LnIntraLedger: "ln_on_us",
+  OnchainIntraLedger: "onchain_on_us",
+  WalletIdTradeIntraAccount: "self_trade",
+  LnTradeIntraAccount: "ln_self_trade",
+  OnChainTradeIntraAccount: "onchain_self_trade",
+}
+
 const toWalletId = (walletIdPath) => {
   const path = walletIdPath.split(":")
   return Array.isArray(path) && path.length === 2 && path[0] === "Liabilities" && path[1]
@@ -90,12 +99,12 @@ module.exports = {
       // RETURN SELF-TRADE TYPE
       // =====
       switch (txnAgg.type) {
-        case "on_us":
-          return "self_trade"
-        case "ln_on_us":
-          return "ln_self_trade"
-        case "onchain_on_us":
-          return "onchain_self_trade"
+        case LedgerTransactionType.IntraLedger:
+          return LedgerTransactionType.WalletIdTradeIntraAccount
+        case LedgerTransactionType.LnIntraLedger:
+          return LedgerTransactionType.LnTradeIntraAccount
+        case LedgerTransactionType.OnchainIntraLedger:
+          return LedgerTransactionType.OnChainTradeIntraAccount
         default:
           return false
       }
@@ -104,7 +113,9 @@ module.exports = {
     // FETCH INTRALEDGER TXNS AND UPDATE TYPE FOR SELF-TRADES
     // =====
     const journalCursor = txnsCollection.aggregate([
-      { $match: { type: { $regex: "on_us" }, currency: "USD" } },
+      {
+        $match: { type: { $regex: "on_us" }, currency: "USD" },
+      },
       {
         $group: {
           _id: "$_journal",
@@ -144,7 +155,13 @@ module.exports = {
     try {
       const result = await db.collection("medici_transactions").updateMany(
         {
-          type: { $in: ["self_trade", "ln_self_trade", "onchain_self_trade"] },
+          type: {
+            $in: [
+              LedgerTransactionType.WalletIdTradeIntraAccount,
+              LedgerTransactionType.LnTradeIntraAccount,
+              LedgerTransactionType.OnChainTradeIntraAccount,
+            ],
+          },
           type_old: { $exists: true },
         },
         [
