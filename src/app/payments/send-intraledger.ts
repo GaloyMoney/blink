@@ -63,8 +63,6 @@ export const intraledgerPaymentSendWalletId = async ({
   const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: [],
     flaggedPubkeys: getPubkeysToSkipProbe(),
-    usdFromBtcMidPriceFn,
-    btcFromUsdMidPriceFn,
   })
   const builderWithInvoice = paymentBuilder.withoutInvoice({
     uncheckedAmount,
@@ -87,8 +85,15 @@ export const intraledgerPaymentSendWalletId = async ({
   )
 
   const builderWithConversion = builderAfterRecipientStep.withConversion({
-    usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
-    btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
+    mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+    hedgeBuyUsd: {
+      usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+      btcFromUsd: dealer.getSatsFromCentsForImmediateBuy,
+    },
+    hedgeSellUsd: {
+      usdFromBtc: dealer.getCentsFromSatsForImmediateSell,
+      btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
+    },
   })
   if (builderWithConversion instanceof Error) return builderWithConversion
 
