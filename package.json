@@ -22,7 +22,9 @@
     "test:e2e": ". ./.envrc && LOGLEVEL=warn jest --config ./test/jest-e2e.config.js --bail --runInBand --verbose $TEST | yarn pino-pretty -c -l",
     "build-docs": "npx spectaql spectaql-config.yml -1",
     "fix-yaml": "prettier --write '**/*.(yaml|yml)'",
-    "check-yaml": "prettier --check '**/*.(yaml|yml)'"
+    "check-yaml": "prettier --check '**/*.(yaml|yml)'",
+    "watch-main": "nodemon -V -e ts,graphql -w ./src --exec yarn run start-main",
+    "start-main": ". ./.envrc && yarn run build && node --inspect -r ./lib/services/tracing.js ./lib/servers/graphql-main-server.js"
   },
   "engines": {
     "node": "16"

@@ -17,6 +17,9 @@ start-main-only:
 start-main:
 	make start-okex & make start-main-only
 
+start-main-fast:
+	yarn run watch-main | yarn pino-pretty -c -l
+
 start-admin-only:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/graphql-admin-server.ts | yarn pino-pretty -c -l
