@@ -107,6 +107,10 @@ integration:
 
 reset-integration: reset-deps integration
 
+e2e:
+	yarn build && \
+	yarn test:e2e
+
 reset-e2e: reset-deps e2e
 
 integration-in-ci:

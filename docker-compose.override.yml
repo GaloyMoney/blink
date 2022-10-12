@@ -52,6 +52,8 @@ services:
       - "8082:8081"
       - "11011:11010"
   oathkeeper:
+    extra_hosts:
+      - "e2e-tests:host-gateway"
     ports:
       - "4455:4455"
       - "4456:4456"

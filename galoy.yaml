@@ -182,8 +182,8 @@ kratosConfig:
   corsAllowedOrigins:
     - http://localhost:3000
 oathkeeperConfig:
-  urlJkws: http://oathkeeper:4456/.well-known/jwks.json
-  decisionsApi: http://oathkeeper:4456/decisions/
+  urlJkws: http://localhost:4456/.well-known/jwks.json
+  decisionsApi: http://localhost:4456/decisions/
 captcha:
   mandatory: false
 skipFeeProbe:
