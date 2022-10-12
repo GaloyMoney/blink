@@ -1,3 +1,6 @@
+/* eslint @typescript-eslint/ban-ts-comment: "off" */
+// @ts-nocheck
+
 /* eslint @typescript-eslint/no-var-requires: "off" */
 const { Types } = require("mongoose")
 
