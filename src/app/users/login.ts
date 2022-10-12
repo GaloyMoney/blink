@@ -18,6 +18,7 @@ import {
 } from "@domain/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
+import { ErrorLevel } from "@domain/shared"
 import { checkedToEmailAddress } from "@domain/users"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import { LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
@@ -25,7 +26,10 @@ import { LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
-import { addAttributesToCurrentSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+} from "@services/tracing"
 
 export const loginWithPhone = async ({
   phone,
@@ -81,6 +85,7 @@ export const loginWithPhone = async ({
       // brand new user
       subLogger.info({ phone }, "new user signup")
 
+      // TODO: look at where is phone metadata stored
       const accountRaw: NewAccountInfo = { phone, kratosUserId }
       const account_ = await createAccountForPhoneSchema({
         newAccountInfo: accountRaw,
@@ -100,6 +105,14 @@ export const loginWithPhone = async ({
           id: account.id,
           kratosUserId,
         })
+
+        if (account instanceof Error) {
+          recordExceptionInCurrentSpan({
+            error: `error with attachKratosUser login: ${account}`,
+            level: ErrorLevel.Critical,
+            attributes: { kratosUserId, id: user.id, phone },
+          })
+        }
       }
     }
   } else if (kratosResult instanceof Error) {

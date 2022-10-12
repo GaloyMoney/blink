@@ -1,8 +1,10 @@
 import { JWT_SECRET } from "@config"
+import { ErrorLevel } from "@domain/shared"
 import { RedisCacheService } from "@services/cache"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import { LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
-import { UsersRepository } from "@services/mongoose"
+import { AccountsRepository, UsersRepository } from "@services/mongoose"
+import { recordExceptionInCurrentSpan } from "@services/tracing"
 import { NextFunction, Request, Response } from "express"
 import * as jwt from "jsonwebtoken"
 const jwtAlgorithms: jwt.Algorithm[] = ["HS256"]
@@ -91,6 +93,21 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
   if (kratosResult instanceof Error) {
     next()
     return
+  }
+
+  const kratosUserId = kratosResult.kratosUserId
+
+  const updatedAccount = await AccountsRepository().attachKratosUser({
+    kratosUserId,
+    id: uid,
+  })
+
+  if (updatedAccount instanceof Error) {
+    recordExceptionInCurrentSpan({
+      error: `error with attachKratosUser update-token: ${updatedAccount}`,
+      level: ErrorLevel.Critical,
+      attributes: { kratosUserId, uid, phone },
+    })
   }
 
   kratosToken = kratosResult.sessionToken
