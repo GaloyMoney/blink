@@ -83,7 +83,10 @@ authRouter.post(
 
         if (!(kratosRes instanceof KratosError)) {
           const account = await accountsRepo.findByKratosUserId(kratosRes.kratosUserId)
-          if (account instanceof Error) return account
+
+          if (account instanceof Error) {
+            return res.status(401).send({ error: account.message })
+          }
 
           res.json({ sub: account.id })
           return
@@ -101,7 +104,8 @@ authRouter.post(
       }
 
       if (typeof tokenPayload === "string") {
-        throw new Error("tokenPayload should be an object")
+        res.status(401).send({ error: "tokenPayload should be an object" })
+        return
       }
 
       if (!tokenPayload) {
