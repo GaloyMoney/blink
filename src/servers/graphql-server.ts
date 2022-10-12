@@ -183,8 +183,7 @@ export const startApolloServer = async ({
     introspection: apolloConfig.playground,
     plugins: apolloPlugins,
     context: async (context) => {
-      // @ts-expect-error: TODO
-      const tokenPayload = context.req?.token ?? null
+      const tokenPayload = context.req.token
 
       const body = context.req?.body ?? null
 
@@ -234,6 +233,16 @@ export const startApolloServer = async ({
     }),
   )
 
+  // Health check
+  app.get(
+    "/healthz",
+    healthzHandler({
+      checkDbConnectionStatus: true,
+      checkRedisStatus: true,
+      checkLndsStatus: false,
+    }),
+  )
+
   app.use(
     PinoHttp({
       logger: graphqlLogger,
@@ -247,21 +256,13 @@ export const startApolloServer = async ({
   const secret = jwksRsa.expressJwtSecret(getJwksArgs()) as GetVerificationKey // https://github.com/auth0/express-jwt/issues/288#issuecomment-1122524366
 
   app.use(
+    "/graphql",
     expressjwt({
       secret,
       algorithms: jwtAlgorithms,
-      credentialsRequired: false,
+      credentialsRequired: true,
       requestProperty: "token",
-    }),
-  )
-
-  // Health check
-  app.get(
-    "/healthz",
-    healthzHandler({
-      checkDbConnectionStatus: true,
-      checkRedisStatus: true,
-      checkLndsStatus: false,
+      issuer: "galoy.io",
     }),
   )
 
