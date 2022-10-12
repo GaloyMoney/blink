@@ -48,7 +48,7 @@
     "ajv": "^8.10.0",
     "apollo-server-core": "^3.10.3",
     "apollo-server-errors": "^3.3.1",
-    "apollo-server-express": "^3.10.2",
+    "apollo-server-express": "^3.10.3",
     "axios": "1.1",
     "balanceofsatoshis": "^13.1.1",
     "bip32": "^3.1.0",
