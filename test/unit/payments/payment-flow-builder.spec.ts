@@ -77,6 +77,8 @@ describe("LightningPaymentFlowBuilder", () => {
       currency: WalletCurrency.Btc,
     })
   }
+
+  // FIXME: Change these to separate 'buy' and 'sell' methods
   const usdFromBtc = async (amount: BtcPaymentAmount) => {
     return Promise.resolve({
       amount: mulByDealerPriceRatio(amount.amount),
@@ -94,8 +96,6 @@ describe("LightningPaymentFlowBuilder", () => {
     const lightningBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [],
       flaggedPubkeys: [muunPubkey],
-      usdFromBtcMidPriceFn,
-      btcFromUsdMidPriceFn,
     })
     const checkSettlementMethod = (payment) => {
       expect(payment).toEqual(
@@ -138,8 +138,15 @@ describe("LightningPaymentFlowBuilder", () => {
 
         it("sets 'skipProbe' property to true for flagged destination invoice", async () => {
           const muunBuilder = await withMuunBtcWalletBuilder.withConversion({
-            usdFromBtc,
-            btcFromUsd,
+            mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+            hedgeBuyUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
+            hedgeSellUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
           })
           expect(muunBuilder.skipProbeForDestination()).toBeTruthy()
         })
@@ -147,8 +154,15 @@ describe("LightningPaymentFlowBuilder", () => {
         it("uses mid price and max btc fees", async () => {
           const payment = await withBtcWalletBuilder
             .withConversion({
-              usdFromBtc,
-              btcFromUsd,
+              mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+              hedgeBuyUsd: {
+                usdFromBtc,
+                btcFromUsd,
+              },
+              hedgeSellUsd: {
+                usdFromBtc,
+                btcFromUsd,
+              },
             })
             .withoutRoute()
           if (payment instanceof Error) throw payment
@@ -186,8 +200,15 @@ describe("LightningPaymentFlowBuilder", () => {
         it("can take fees from a route", async () => {
           const payment = await withBtcWalletBuilder
             .withConversion({
-              usdFromBtc,
-              btcFromUsd,
+              mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+              hedgeBuyUsd: {
+                usdFromBtc,
+                btcFromUsd,
+              },
+              hedgeSellUsd: {
+                usdFromBtc,
+                btcFromUsd,
+              },
             })
             .withRoute({
               pubkey,
@@ -248,8 +269,15 @@ describe("LightningPaymentFlowBuilder", () => {
         it("uses dealer price and max btc fees", async () => {
           const payment = await withUsdWalletBuilder
             .withConversion({
-              usdFromBtc,
-              btcFromUsd,
+              mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+              hedgeBuyUsd: {
+                usdFromBtc,
+                btcFromUsd,
+              },
+              hedgeSellUsd: {
+                usdFromBtc,
+                btcFromUsd,
+              },
             })
             .withoutRoute()
           if (payment instanceof Error) throw payment
@@ -287,8 +315,15 @@ describe("LightningPaymentFlowBuilder", () => {
         it("can take fees from a route", async () => {
           const payment = await withUsdWalletBuilder
             .withConversion({
-              usdFromBtc,
-              btcFromUsd,
+              mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+              hedgeBuyUsd: {
+                usdFromBtc,
+                btcFromUsd,
+              },
+              hedgeSellUsd: {
+                usdFromBtc,
+                btcFromUsd,
+              },
             })
             .withRoute({
               pubkey,
@@ -369,8 +404,15 @@ describe("LightningPaymentFlowBuilder", () => {
         it("uses mid price and max btc fees", async () => {
           const payment = await withBtcWalletBuilder
             .withConversion({
-              usdFromBtc,
-              btcFromUsd,
+              mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+              hedgeBuyUsd: {
+                usdFromBtc,
+                btcFromUsd,
+              },
+              hedgeSellUsd: {
+                usdFromBtc,
+                btcFromUsd,
+              },
             })
             .withoutRoute()
           if (payment instanceof Error) throw payment
@@ -431,8 +473,15 @@ describe("LightningPaymentFlowBuilder", () => {
         it("uses dealer price and max usd fees", async () => {
           const payment = await withUsdWalletBuilder
             .withConversion({
-              usdFromBtc,
-              btcFromUsd,
+              mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+              hedgeBuyUsd: {
+                usdFromBtc,
+                btcFromUsd,
+              },
+              hedgeSellUsd: {
+                usdFromBtc,
+                btcFromUsd,
+              },
             })
             .withoutRoute()
           if (payment instanceof Error) throw payment
@@ -461,8 +510,6 @@ describe("LightningPaymentFlowBuilder", () => {
     const intraledgerBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [invoiceWithAmount.destination, invoiceWithNoAmount.destination],
       flaggedPubkeys: [muunPubkey],
-      usdFromBtcMidPriceFn,
-      btcFromUsdMidPriceFn,
     })
     const checkSettlementMethod = (payment) => {
       expect(payment).toEqual(
@@ -511,8 +558,18 @@ describe("LightningPaymentFlowBuilder", () => {
           it("uses mid price and intraledger fees", async () => {
             const payment = await withBtcRecipientBuilder
               .withConversion({
-                usdFromBtc,
-                btcFromUsd,
+                mid: {
+                  usdFromBtc: usdFromBtcMidPriceFn,
+                  btcFromUsd: btcFromUsdMidPriceFn,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
               })
               .withoutRoute()
             if (payment instanceof Error) throw payment
@@ -558,8 +615,18 @@ describe("LightningPaymentFlowBuilder", () => {
           it("uses amount specified by recipient invoice", async () => {
             const payment = await withUsdRecipientBuilder
               .withConversion({
-                usdFromBtc,
-                btcFromUsd,
+                mid: {
+                  usdFromBtc: usdFromBtcMidPriceFn,
+                  btcFromUsd: btcFromUsdMidPriceFn,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
               })
               .withoutRoute()
             if (payment instanceof Error) throw payment
@@ -598,8 +665,18 @@ describe("LightningPaymentFlowBuilder", () => {
           it("uses dealer price", async () => {
             const payment = await withBtcRecipientBuilder
               .withConversion({
-                usdFromBtc,
-                btcFromUsd,
+                mid: {
+                  usdFromBtc: usdFromBtcMidPriceFn,
+                  btcFromUsd: btcFromUsdMidPriceFn,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
               })
               .withoutRoute()
             if (payment instanceof Error) throw payment
@@ -645,8 +722,18 @@ describe("LightningPaymentFlowBuilder", () => {
           it("uses amount specified by recipient invoice", async () => {
             const payment = await withUsdRecipientBuilder
               .withConversion({
-                usdFromBtc,
-                btcFromUsd,
+                mid: {
+                  usdFromBtc: usdFromBtcMidPriceFn,
+                  btcFromUsd: btcFromUsdMidPriceFn,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
               })
               .withoutRoute()
             if (payment instanceof Error) throw payment
@@ -704,8 +791,18 @@ describe("LightningPaymentFlowBuilder", () => {
           it("uses mid price", async () => {
             const payment = await withBtcRecipientBuilder
               .withConversion({
-                usdFromBtc,
-                btcFromUsd,
+                mid: {
+                  usdFromBtc: usdFromBtcMidPriceFn,
+                  btcFromUsd: btcFromUsdMidPriceFn,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
               })
               .withoutRoute()
             if (payment instanceof Error) throw payment
@@ -743,8 +840,18 @@ describe("LightningPaymentFlowBuilder", () => {
           it("uses dealer price", async () => {
             const payment = await withUsdRecipientBuilder
               .withConversion({
-                usdFromBtc,
-                btcFromUsd,
+                mid: {
+                  usdFromBtc: usdFromBtcMidPriceFn,
+                  btcFromUsd: btcFromUsdMidPriceFn,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
               })
               .withoutRoute()
             if (payment instanceof Error) throw payment
@@ -798,8 +905,18 @@ describe("LightningPaymentFlowBuilder", () => {
           it("uses dealer price", async () => {
             const payment = await withBtcRecipientBuilder
               .withConversion({
-                usdFromBtc,
-                btcFromUsd,
+                mid: {
+                  usdFromBtc: usdFromBtcMidPriceFn,
+                  btcFromUsd: btcFromUsdMidPriceFn,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
               })
               .withoutRoute()
             if (payment instanceof Error) throw payment
@@ -836,8 +953,18 @@ describe("LightningPaymentFlowBuilder", () => {
           it("uses mid price", async () => {
             const payment = await withUsdRecipientBuilder
               .withConversion({
-                usdFromBtc,
-                btcFromUsd,
+                mid: {
+                  usdFromBtc: usdFromBtcMidPriceFn,
+                  btcFromUsd: btcFromUsdMidPriceFn,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
               })
               .withoutRoute()
             if (payment instanceof Error) throw payment
@@ -866,8 +993,6 @@ describe("LightningPaymentFlowBuilder", () => {
     const intraledgerBuilder = LightningPaymentFlowBuilder({
       localNodeIds: [],
       flaggedPubkeys: [muunPubkey],
-      usdFromBtcMidPriceFn,
-      btcFromUsdMidPriceFn,
     })
     const checkSettlementMethod = (payment) => {
       expect(payment).toEqual(
@@ -924,8 +1049,18 @@ describe("LightningPaymentFlowBuilder", () => {
           it("uses mid price", async () => {
             const payment = await withBtcRecipientBuilder
               .withConversion({
-                usdFromBtc,
-                btcFromUsd,
+                mid: {
+                  usdFromBtc: usdFromBtcMidPriceFn,
+                  btcFromUsd: btcFromUsdMidPriceFn,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
               })
               .withoutRoute()
             if (payment instanceof Error) throw payment
@@ -963,8 +1098,18 @@ describe("LightningPaymentFlowBuilder", () => {
           it("uses dealer price", async () => {
             const payment = await withUsdRecipientBuilder
               .withConversion({
-                usdFromBtc,
-                btcFromUsd,
+                mid: {
+                  usdFromBtc: usdFromBtcMidPriceFn,
+                  btcFromUsd: btcFromUsdMidPriceFn,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
               })
               .withoutRoute()
             if (payment instanceof Error) throw payment
@@ -1018,8 +1163,18 @@ describe("LightningPaymentFlowBuilder", () => {
           it("uses dealer price", async () => {
             const payment = await withBtcRecipientBuilder
               .withConversion({
-                usdFromBtc,
-                btcFromUsd,
+                mid: {
+                  usdFromBtc: usdFromBtcMidPriceFn,
+                  btcFromUsd: btcFromUsdMidPriceFn,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
               })
               .withoutRoute()
             if (payment instanceof Error) throw payment
@@ -1056,8 +1211,18 @@ describe("LightningPaymentFlowBuilder", () => {
           it("uses mid price", async () => {
             const payment = await withUsdRecipientBuilder
               .withConversion({
-                usdFromBtc,
-                btcFromUsd,
+                mid: {
+                  usdFromBtc: usdFromBtcMidPriceFn,
+                  btcFromUsd: btcFromUsdMidPriceFn,
+                },
+                hedgeBuyUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
+                hedgeSellUsd: {
+                  usdFromBtc,
+                  btcFromUsd,
+                },
               })
               .withoutRoute()
             if (payment instanceof Error) throw payment
@@ -1088,15 +1253,20 @@ describe("LightningPaymentFlowBuilder", () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
           flaggedPubkeys: [muunPubkey],
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
         })
           .withInvoice(invoiceWithNoAmount)
           .withSenderWallet(senderBtcWallet)
           .withoutRecipientWallet()
           .withConversion({
-            usdFromBtc,
-            btcFromUsd,
+            mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+            hedgeBuyUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
+            hedgeSellUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
           })
           .withoutRoute()
 
@@ -1108,15 +1278,20 @@ describe("LightningPaymentFlowBuilder", () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
           flaggedPubkeys: [muunPubkey],
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
         })
           .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 0.4 })
           .withSenderWallet(senderBtcWallet)
           .withoutRecipientWallet()
           .withConversion({
-            usdFromBtc,
-            btcFromUsd,
+            mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+            hedgeBuyUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
+            hedgeSellUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
           })
           .withoutRoute()
 
@@ -1128,15 +1303,20 @@ describe("LightningPaymentFlowBuilder", () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [],
           flaggedPubkeys: [muunPubkey],
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
         })
           .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 0 })
           .withSenderWallet(senderBtcWallet)
           .withoutRecipientWallet()
           .withConversion({
-            usdFromBtc,
-            btcFromUsd,
+            mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+            hedgeBuyUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
+            hedgeSellUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
           })
           .withoutRoute()
 
@@ -1148,15 +1328,20 @@ describe("LightningPaymentFlowBuilder", () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
           flaggedPubkeys: [muunPubkey],
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
         })
           .withInvoice(invoiceWithAmount)
           .withSenderWallet(senderBtcWallet)
           .withoutRecipientWallet()
           .withConversion({
-            usdFromBtc,
-            btcFromUsd,
+            mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+            hedgeBuyUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
+            hedgeSellUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
           })
           .withoutRoute()
 
@@ -1169,15 +1354,20 @@ describe("LightningPaymentFlowBuilder", () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
           flaggedPubkeys: [muunPubkey],
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
         })
           .withInvoice(invoiceWithAmount)
           .withSenderWallet(senderBtcWallet)
           .withRecipientWallet(senderUsdWallet)
           .withConversion({
-            usdFromBtc,
-            btcFromUsd,
+            mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+            hedgeBuyUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
+            hedgeSellUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
           })
           .withoutRoute()
 
@@ -1190,8 +1380,6 @@ describe("LightningPaymentFlowBuilder", () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithNoAmount.destination],
           flaggedPubkeys: [muunPubkey],
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
         })
           .withNoAmountInvoice({ invoice: invoiceWithNoAmount, uncheckedAmount: 1000 })
           .withSenderWallet(senderBtcWallet)
@@ -1200,8 +1388,15 @@ describe("LightningPaymentFlowBuilder", () => {
             usdPaymentAmount: { amount: 1000n, currency: WalletCurrency.Usd },
           })
           .withConversion({
-            usdFromBtc,
-            btcFromUsd,
+            mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+            hedgeBuyUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
+            hedgeSellUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
           })
           .withoutRoute()
 
@@ -1214,15 +1409,20 @@ describe("LightningPaymentFlowBuilder", () => {
         const payment = await LightningPaymentFlowBuilder({
           localNodeIds: [invoiceWithAmount.destination],
           flaggedPubkeys: [muunPubkey],
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
         })
           .withInvoice(invoiceWithAmount)
           .withSenderWallet(senderBtcWallet)
           .withRecipientWallet(senderBtcWallet)
           .withConversion({
-            usdFromBtc,
-            btcFromUsd,
+            mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+            hedgeBuyUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
+            hedgeSellUsd: {
+              usdFromBtc,
+              btcFromUsd,
+            },
           })
           .withoutRoute()
 
