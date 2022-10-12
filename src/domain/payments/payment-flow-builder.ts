@@ -246,16 +246,10 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
   state: LPFBWithRecipientWalletState<S, R>,
 ): LPFBWithRecipientWallet<S, R> | LPFBWithError => {
   const withConversion = ({
-    usdFromBtc,
-    btcFromUsd,
-  }: {
-    usdFromBtc(
-      amount: BtcPaymentAmount,
-    ): Promise<UsdPaymentAmount | DealerPriceServiceError>
-    btcFromUsd(
-      amount: UsdPaymentAmount,
-    ): Promise<BtcPaymentAmount | DealerPriceServiceError>
-  }): LPFBWithConversion<S, R> | LPFBWithError => {
+    hedgeBuyUsd,
+    hedgeSellUsd,
+    mid,
+  }: WithConversionArgs): LPFBWithConversion<S, R> | LPFBWithError => {
     const stateWithCreatedAt = { ...state, createdAt: new Date(Date.now()) }
     const { btcPaymentAmount, usdPaymentAmount, btcProtocolFee, usdProtocolFee } = state
 
@@ -285,7 +279,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
         const updatedStateFromBtcPaymentAmount = async (
           btcPaymentAmount: BtcPaymentAmount,
         ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
-          const convertedAmount = await state.usdFromBtcMidPriceFn(btcPaymentAmount)
+          const convertedAmount = await mid.usdFromBtc(btcPaymentAmount)
           if (convertedAmount instanceof Error) return convertedAmount
 
           const priceRatio = PriceRatio({
@@ -309,7 +303,7 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
         const updatedStateFromUsdPaymentAmount = async (
           usdPaymentAmount: UsdPaymentAmount,
         ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
-          const convertedAmount = await state.btcFromUsdMidPriceFn(usdPaymentAmount)
+          const convertedAmount = await mid.btcFromUsd(usdPaymentAmount)
           if (convertedAmount instanceof Error) return convertedAmount
 
           const priceRatio = PriceRatio({
@@ -360,6 +354,11 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
       const updatedStateFromBtcPaymentAmount = async (
         btcPaymentAmount: BtcPaymentAmount,
       ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
+        const usdFromBtc =
+          state.senderWalletCurrency === WalletCurrency.Btc
+            ? hedgeBuyUsd.usdFromBtc
+            : hedgeSellUsd.usdFromBtc
+
         const convertedAmount = await usdFromBtc(btcPaymentAmount)
         if (convertedAmount instanceof Error) return convertedAmount
 
@@ -386,6 +385,11 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
       const updatedStateFromUsdPaymentAmount = async (
         usdPaymentAmount: UsdPaymentAmount,
       ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
+        const btcFromUsd =
+          state.senderWalletCurrency === WalletCurrency.Btc
+            ? hedgeBuyUsd.btcFromUsd
+            : hedgeSellUsd.btcFromUsd
+
         const convertedAmount = await btcFromUsd(usdPaymentAmount)
         if (convertedAmount instanceof Error) return convertedAmount
 
