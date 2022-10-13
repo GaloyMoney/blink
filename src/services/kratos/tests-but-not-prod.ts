@@ -11,7 +11,7 @@ import { authenticator } from "otplib"
 import { baseLogger } from "@services/logger"
 import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
 
-import { kratosAdmin, kratosPublic, toDomainSession } from "./private"
+import { kratosAdmin, kratosPublic } from "./private"
 
 export const LoginWithPhoneAndPasswordSchema = async ({
   phone,
@@ -84,28 +84,6 @@ export const addTotp = async (token: SessionToken) => {
     return totpSecret
   } catch (err) {
     return new UnknownKratosError(err)
-  }
-}
-
-export const validateKratosToken = async (
-  SessionToken: SessionToken,
-): Promise<ValidateKratosTokenResult | KratosError> => {
-  let session: Session
-
-  try {
-    const { data } = await kratosPublic.toSession(SessionToken)
-    session = toDomainSession(data)
-  } catch (err) {
-    if (err.message === "Request failed with status code 401") {
-      return new AuthenticationKratosError(err)
-    }
-    return new UnknownKratosError(err)
-  }
-
-  // TODO: should return aal level also
-  return {
-    kratosUserId: session.identity.id,
-    session,
   }
 }
 

@@ -12,8 +12,8 @@ import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { AccountsRepository } from "@services/mongoose"
 import { kratosPublic } from "@services/kratos/private"
-import { validateKratosToken } from "@services/kratos/tests-but-not-prod"
 import { KratosError } from "@services/kratos/errors"
+import { validateKratosToken } from "@services/kratos"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -118,11 +118,5 @@ authRouter.post(
     },
   }),
 )
-
-authRouter.post("/after_settings_hooks", (req, res) => {
-  // not currently use
-  console.log("after settings hooks")
-  res.sendStatus(401)
-})
 
 export default authRouter

@@ -10,6 +10,7 @@ import {
   extendSession,
   listIdentities,
   listSessions,
+  validateKratosToken,
 } from "@services/kratos"
 import {
   activateUser,
@@ -18,7 +19,6 @@ import {
   elevatingSessionWithTotp,
   listIdentitySchemas,
   revokeSessions,
-  validateKratosToken,
 } from "@services/kratos/tests-but-not-prod"
 import { kratosAdmin, kratosPublic } from "@services/kratos/private"
 import { baseLogger } from "@services/logger"
