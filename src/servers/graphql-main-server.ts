@@ -64,7 +64,6 @@ export async function startApolloServerForCoreSchema() {
     schema,
     port: GALOY_API_PORT,
     startSubscriptionServer: true,
-    enableApolloUsageReporting: true,
     type: "main",
   })
 }

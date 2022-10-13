@@ -1,7 +1,7 @@
 import { createServer } from "http"
 
 import { Accounts, Users } from "@app"
-import { getApolloConfig, getGeetestConfig, getJwksArgs, isDev, isProd } from "@config"
+import { getApolloConfig, getGeetestConfig, getJwksArgs, isDev } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
 import {
@@ -14,7 +14,6 @@ import {
   ApolloServerPluginDrainHttpServer,
   ApolloServerPluginLandingPageDisabled,
   ApolloServerPluginLandingPageGraphQLPlayground,
-  ApolloServerPluginUsageReporting,
 } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
 import express from "express"
@@ -131,13 +130,11 @@ export const startApolloServer = async ({
   schema,
   port,
   startSubscriptionServer = false,
-  enableApolloUsageReporting = false,
   type,
 }: {
   schema: GraphQLSchema
   port: string | number
   startSubscriptionServer?: boolean
-  enableApolloUsageReporting?: boolean
   type: string
 }): Promise<Record<string, unknown>> => {
   const app = express()
@@ -165,17 +162,6 @@ export const startApolloServer = async ({
         })
       : ApolloServerPluginLandingPageDisabled(),
   ]
-
-  if (isProd && enableApolloUsageReporting) {
-    apolloPlugins.push(
-      ApolloServerPluginUsageReporting({
-        rewriteError(err) {
-          graphqlLogger.error(err, "Error caught in rewriteError")
-          return err
-        },
-      }),
-    )
-  }
 
   const apolloServer = new ApolloServer({
     schema,
