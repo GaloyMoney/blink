@@ -59,8 +59,6 @@ describe("Oathkeeper", () => {
     const decodedNew = jwt.decode(res, { complete: true })
     const decodedOriginal = jwt.decode(originalToken, { complete: true })
 
-    console.log({ decodedNew, originalToken, res }, "decoded123")
-
     if (typeof decodedOriginal?.payload === "string") {
       throw Error("should be an object")
     }
