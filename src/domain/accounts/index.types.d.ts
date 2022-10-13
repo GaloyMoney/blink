@@ -70,6 +70,7 @@ type Account = {
   readonly isEditor: boolean
   role?: string
   readonly quizQuestions: UserQuizQuestion[]
+  kratosUserId?: KratosUserId // TODO: remove ? after initial kratos migration
 }
 
 type QuizQuestionId = string & { readonly brand: unique symbol }
@@ -153,14 +154,6 @@ interface IAccountsRepository {
     phone,
     phoneMetadata,
   }: NewAccountInfo): Promise<Account | RepositoryError>
-
-  attachKratosUser({
-    kratosUserId,
-    id,
-  }: {
-    kratosUserId: KratosUserId
-    id: AccountId
-  }): Promise<Account | RepositoryError>
 
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>

@@ -6,7 +6,6 @@ import {
   CouldNotFindAccountFromUsernameError,
   CouldNotFindError,
   RepositoryError,
-  UnknownRepositoryError,
 } from "@domain/errors"
 
 import { User } from "@services/mongoose/schema"
@@ -106,6 +105,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     defaultWalletId,
     withdrawFee,
     role,
+    kratosUserId,
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
@@ -127,6 +127,7 @@ export const AccountsRepository = (): IAccountsRepository => {
           defaultWalletId,
           withdrawFee,
           role,
+          kratosUserId,
         },
         {
           new: true,
@@ -183,38 +184,9 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const attachKratosUser = async ({
-    kratosUserId,
-    id,
-  }: {
-    kratosUserId: KratosUserId
-    id: AccountId
-  }): Promise<Account | RepositoryError> => {
-    try {
-      const result = await User.findOneAndUpdate(
-        { _id: toObjectId<AccountId>(id) },
-        {
-          kratosUserId,
-        },
-        {
-          new: true,
-          projection,
-        },
-      )
-      if (!result) {
-        return new RepositoryError("Couldn't attach kratosUserId")
-      }
-      return translateToAccount(result)
-    } catch (err) {
-      return new UnknownRepositoryError(err)
-    }
-  }
-
   return {
     persistNew,
     findByKratosUserId,
-    attachKratosUser,
-
     listUnlockedAccounts,
     findById,
     findByUserId,
@@ -263,6 +235,7 @@ const translateToAccount = (result: UserRecord): Account => ({
         completed: true,
       }),
     ) || [],
+  kratosUserId: result.kratosUserId as KratosUserId,
 })
 
 const projection = {

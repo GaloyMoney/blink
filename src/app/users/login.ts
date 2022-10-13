@@ -101,8 +101,8 @@ export const loginWithPhone = async ({
         let account = await AccountsRepository().findByUserId(user.id)
         if (account instanceof Error) return account
 
-        account = await AccountsRepository().attachKratosUser({
-          id: account.id,
+        account = await AccountsRepository().update({
+          ...account,
           kratosUserId,
         })
 

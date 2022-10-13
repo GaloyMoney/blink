@@ -97,9 +97,15 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
 
   const kratosUserId = kratosResult.kratosUserId
 
-  const updatedAccount = await AccountsRepository().attachKratosUser({
+  const account = await AccountsRepository().findById(uid)
+  if (account instanceof Error) {
+    next()
+    return
+  }
+
+  const updatedAccount = await AccountsRepository().update({
+    ...account,
     kratosUserId,
-    id: uid,
   })
 
   if (updatedAccount instanceof Error) {
