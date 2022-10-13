@@ -93,6 +93,17 @@ e2e-in-ci-cached:
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make execute-e2e-from-within-container-cached || \
 	docker rm `docker ps -q -f status=exited`
 
+delete-e2e:
+	docker container kill `docker ps -f name="e2e-tests" -q` && \
+	sleep 1 && \
+	docker container rm `docker ps -f name="e2e-tests" -q`
+
+main-in-ci-build:
+	yarn build && \
+	make create-tmp-env-ci && \
+	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make start-main-ci || \
+	docker rm `docker ps -q -a -f status=exited`
+
 main-in-ci-cached:
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make start-main-ci || \
@@ -113,7 +124,7 @@ execute-e2e-from-within-container:
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 execute-e2e-from-within-container-cached:
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit 
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest with-auth --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit 
 
 integration:
 	yarn build && \

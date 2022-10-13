@@ -63,8 +63,7 @@ authRouter.post(
   "/validatetoken",
   wrapAsyncToRunInSpan({
     namespace: "validatetoken",
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    fn: async (req: any, res: any) => {
+    fn: async (req: express.Request, res: express.Response) => {
       const accountsRepo = AccountsRepository()
       const headers = req?.headers
       let tokenPayload: string | jwt.JwtPayload | null = null
