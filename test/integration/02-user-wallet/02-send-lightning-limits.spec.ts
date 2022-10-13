@@ -8,20 +8,17 @@ import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { NewDealerPriceService } from "@services/dealer-price"
 
-import { baseLogger } from "@services/logger"
 import { AccountsRepository } from "@services/mongoose"
-
-import { sleep } from "@utils"
 
 import {
   cancelOkexPricePublish,
   checkIsBalanced,
+  createAndFundNewWalletForPhone,
   createInvoice,
   createNewWalletFromPhone,
   lndOutside1,
   publishOkexPrice,
   randomPhone,
-  safePay,
 } from "test/helpers"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
@@ -90,55 +87,6 @@ afterAll(() => {
   cancelOkexPricePublish()
   jest.restoreAllMocks()
 })
-
-const createAndFundNewWalletForPhone = async <S extends WalletCurrency>({
-  phone,
-  balanceAmount,
-}: {
-  phone: PhoneNumber
-  balanceAmount: PaymentAmount<S>
-}) => {
-  // Create new wallet
-  const wallet = await createNewWalletFromPhone({
-    phone,
-    currency: balanceAmount.currency,
-  })
-  if (wallet instanceof Error) throw wallet
-
-  // Fund new wallet if a non-zero balance is passed
-  if (balanceAmount.amount === 0n) return wallet
-
-  const lnInvoice = await Wallets.addInvoiceForSelf({
-    walletId: wallet.id,
-    amount: Number(balanceAmount.amount),
-    memo: `Fund new wallet ${wallet.id}`,
-  })
-  if (lnInvoice instanceof Error) throw lnInvoice
-  const { paymentRequest: invoice, paymentHash } = lnInvoice
-
-  const updateInvoice = () =>
-    Wallets.updatePendingInvoiceByPaymentHash({
-      paymentHash,
-      logger: baseLogger,
-    })
-
-  const promises = Promise.all([
-    safePay({ lnd: lndOutside1, request: invoice }),
-    (async () => {
-      // TODO: we could use event instead of a sleep to lower test latency
-      await sleep(500)
-      return updateInvoice()
-    })(),
-  ])
-
-  {
-    // first arg is the outsideLndpayResult
-    const [, result] = await promises
-    expect(result).not.toBeInstanceOf(Error)
-  }
-
-  return wallet
-}
 
 const btcAmountFromUsdNumber = async (
   centsAmount: number | bigint,
