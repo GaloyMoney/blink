@@ -13,6 +13,7 @@ authenticators:
     config:
       subject: anon
 
+  # TODO: for follow up PR and activating web wallet
   # cookie_session:
   #   enabled: true
   #   config:
