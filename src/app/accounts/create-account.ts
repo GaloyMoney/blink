@@ -52,7 +52,7 @@ const initializeCreatedAccount = async ({
   return updatedAccount
 }
 
-export const createAccountForPhoneSchema = async ({
+export const createAccountWithPhoneIdentifier = async ({
   newAccountInfo: { phone, phoneMetadata, kratosUserId },
   config,
 }: {
@@ -88,7 +88,7 @@ export const createAccountForPhoneSchema = async ({
 }
 
 // kratos user already exist, as he has been using self registration
-export const createAccountForEmailSchema = async ({
+export const createAccountForEmailIdentifier = async ({
   kratosUserId,
   config,
 }: {

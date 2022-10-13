@@ -1,6 +1,6 @@
 import {
-  createAccountForEmailSchema,
-  createAccountForPhoneSchema,
+  createAccountForEmailIdentifier,
+  createAccountWithPhoneIdentifier,
 } from "@app/accounts/create-account"
 import {
   getDefaultAccountsConfig,
@@ -73,7 +73,7 @@ export const loginWithPhone = async ({
   if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
     // user has not migrated to kratos or it's a new user
 
-    kratosResult = await authService.createWithSession(phone)
+    kratosResult = await authService.createIdentityWithSession(phone)
     if (kratosResult instanceof Error) return kratosResult
     addAttributesToCurrentSpan({ "login.newAccount": true })
 
@@ -87,12 +87,12 @@ export const loginWithPhone = async ({
 
       // TODO: look at where is phone metadata stored
       const accountRaw: NewAccountInfo = { phone, kratosUserId }
-      const account_ = await createAccountForPhoneSchema({
+      const account = await createAccountWithPhoneIdentifier({
         newAccountInfo: accountRaw,
         config: getDefaultAccountsConfig(),
       })
 
-      if (account_ instanceof Error) return account_
+      if (account instanceof Error) return account
     } else {
       if (user instanceof Error) return user
       else {
@@ -158,7 +158,7 @@ export const loginWithEmail = async ({
   if (account instanceof CouldNotFindAccountFromKratosIdError) {
     subLogger.info({ kratosUserId }, "New Kratos user signup")
     addAttributesToCurrentSpan({ "login.newAccount": true })
-    account = await createAccountForEmailSchema({
+    account = await createAccountForEmailIdentifier({
       kratosUserId: kratosUserIdValid,
       config: getDefaultAccountsConfig(),
     })

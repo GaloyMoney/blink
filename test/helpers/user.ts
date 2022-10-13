@@ -12,7 +12,7 @@ import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { adminUsers } from "@domain/admin-users"
 import { UsersIpRepository } from "@services/mongoose/users-ips"
-import { createAccountForPhoneSchema } from "@app/accounts"
+import { createAccountWithPhoneIdentifier } from "@app/accounts"
 
 import { LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
@@ -129,14 +129,14 @@ const createNewAccount = async ({ phone }: { phone: PhoneNumber }) => {
   let kratosResult = await authService.login(phone)
   if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
     // TODO: remove once kratos states is been re-iniaitlized been tests
-    kratosResult = await authService.createWithSession(phone)
+    kratosResult = await authService.createIdentityWithSession(phone)
   }
   if (kratosResult instanceof AuthenticationError) throw kratosResult
 
   const kratosUserId = kratosResult.kratosUserId
   kratosUserId // FIXME variable will be used/line removed in the follow up PR
 
-  const account = await createAccountForPhoneSchema({
+  const account = await createAccountWithPhoneIdentifier({
     newAccountInfo: { phone, kratosUserId },
     config: getDefaultAccountsConfig(),
   })
@@ -194,14 +194,14 @@ export const createUserAndWallet = async (entry: TestEntry) => {
     let kratosResult = await authService.login(phone)
     if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
       // TODO: remove once kratos states is been re-iniaitlized been tests
-      kratosResult = await authService.createWithSession(phone)
+      kratosResult = await authService.createIdentityWithSession(phone)
     }
     if (kratosResult instanceof AuthenticationError) throw kratosResult
 
     const kratosUserId = kratosResult.kratosUserId
     kratosUserId // FIXME variable will be used/line removed in the follow up PR
 
-    const account = await createAccountForPhoneSchema({
+    const account = await createAccountWithPhoneIdentifier({
       newAccountInfo: { phone, phoneMetadata, kratosUserId },
       config: getDefaultAccountsConfig(),
     })

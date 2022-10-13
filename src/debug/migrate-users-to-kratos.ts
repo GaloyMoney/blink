@@ -21,7 +21,9 @@ const main = async () => {
   for (const account of accounts) {
     progress++
 
-    const kratosUserId = await authService.createNoSession(account.phone as PhoneNumber)
+    const kratosUserId = await authService.createIdentityNoSession(
+      account.phone as PhoneNumber,
+    )
     if (kratosUserId instanceof Error) throw kratosUserId
 
     await User.updateOne({ _id: account._id }, { kratosUserId })

@@ -87,7 +87,7 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
   // FIXME: only if we don't run the migration before
   if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
     // user has not migrated to kratos or it's a new user
-    kratosResult = await authService.createWithSession(phone)
+    kratosResult = await authService.createIdentityWithSession(phone)
   }
 
   if (kratosResult instanceof Error) {

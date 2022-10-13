@@ -59,7 +59,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     return { sessionToken, kratosUserId }
   }
 
-  const createWithSession = async (
+  const createIdentityWithSession = async (
     phone: PhoneNumber,
   ): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | KratosError> => {
     const flow = await kratosPublic.initializeSelfServiceRegistrationFlowWithoutBrowser()
@@ -89,7 +89,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     return { sessionToken, kratosUserId }
   }
 
-  const createNoSession = async (
+  const createIdentityNoSession = async (
     phone: PhoneNumber,
   ): Promise<KratosUserId | KratosError> => {
     const adminIdentity: AdminCreateIdentityBody = {
@@ -136,8 +136,8 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
 
   return {
     login,
-    createWithSession,
-    createNoSession,
+    createIdentityWithSession,
+    createIdentityNoSession,
     upgradeToPhoneWithPasswordSchema,
   }
 }
