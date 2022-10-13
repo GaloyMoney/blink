@@ -6,7 +6,7 @@ authenticators:
   bearer_token:
     enabled: true
     config:
-      check_session_url: http://e2e-tests:4002/auth/validatetoken
+      check_session_url: http://e2e-tests:4012/auth/validatetoken
 
   anonymous:
     enabled: true

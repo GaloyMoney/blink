@@ -25,7 +25,7 @@ export type ApolloTestClientConfig = {
 
 export const defaultTestClientConfig = (authToken?: string): ApolloTestClientConfig => {
   const OATHKEEPER_HOST = process.env.OATHKEEPER_HOST ?? "oathkeeper"
-  const OATHKEEPER_PORT = process.env.OATHKEEPER_PORT ?? "4455"
+  const OATHKEEPER_PORT = process.env.OATHKEEPER_PORT ?? "4002"
 
   return {
     authToken,

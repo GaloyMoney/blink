@@ -13,6 +13,7 @@ export const startServer = async (command: string): Promise<PID> => {
     })
     const serverPid = serverProcess.pid as PID
     serverProcess.stdout.on("data", (data) => {
+      console.log(data.toString())
       if (data.includes(serverStartMessage)) {
         resolve(serverPid)
       }
