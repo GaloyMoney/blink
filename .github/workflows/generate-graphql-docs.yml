@@ -11,14 +11,16 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: main
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: docs
           path: docs
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
       - run: yarn install
         working-directory: main
       - uses: vmware-tanzu/carvel-setup-action@v1

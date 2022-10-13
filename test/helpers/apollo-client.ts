@@ -9,7 +9,6 @@ import {
 } from "@apollo/client/core"
 import { WebSocketLink } from "@apollo/client/link/ws"
 import { getMainDefinition } from "@apollo/client/utilities"
-import fetch from "cross-fetch"
 import { SubscriptionClient } from "subscriptions-transport-ws"
 import ws from "ws"
 
@@ -52,10 +51,7 @@ export const createApolloClient = (
     return forward(operation)
   })
 
-  const httpLink = new HttpLink({
-    uri: graphqlUrl,
-    fetch,
-  })
+  const httpLink = new HttpLink({ uri: graphqlUrl })
 
   const subscriptionClient = new SubscriptionClient(
     graphqlSubscriptionUrl,
