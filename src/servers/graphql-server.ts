@@ -138,7 +138,17 @@ export const startApolloServer = async ({
   type: string
 }): Promise<Record<string, unknown>> => {
   const app = express()
-  const httpServer = createServer(app)
+  /* eslint @typescript-eslint/ban-ts-comment: "off" */
+  // @ts-ignore-next-line no-implicit-any error
+  const httpServer = createServer(
+    {
+      keepAlive: true,
+      requestTimeout: 0,
+      keepAliveTimeout: 0,
+      headersTimeout: 0,
+    } as any, // FIXME: @types/node has not yet all the Options property introduce in node18
+    app,
+  )
 
   const apolloPlugins = [
     createComplexityPlugin({
