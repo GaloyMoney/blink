@@ -225,9 +225,11 @@ const UserSchema = new Schema<UserRecord>(
       match: [UsernameRegex, "Username can only have alphabets, numbers and underscores"],
       minlength: 3,
       maxlength: 50,
-      unique: true,
-      collation: { locale: "en", strength: 2 },
-      index: true,
+      index: {
+        unique: true,
+        collation: { locale: "en", strength: 2 },
+        partialFilterExpression: { username: { $type: "string" } },
+      },
     },
     deviceToken: {
       type: [String],
