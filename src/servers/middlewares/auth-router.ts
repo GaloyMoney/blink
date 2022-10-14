@@ -64,7 +64,6 @@ authRouter.post(
   wrapAsyncToRunInSpan({
     namespace: "validatetoken",
     fn: async (req: express.Request, res: express.Response) => {
-      const accountsRepo = AccountsRepository()
       const headers = req?.headers
       let tokenPayload: string | jwt.JwtPayload | null = null
       const authz = headers.authorization || headers.Authorization
@@ -79,17 +78,13 @@ authRouter.post(
       // new flow
       if (rawToken.length === 32) {
         const kratosRes = await validateKratosToken(rawToken as SessionToken)
-
-        if (!(kratosRes instanceof KratosError)) {
-          const account = await accountsRepo.findByKratosUserId(kratosRes.kratosUserId)
-
-          if (account instanceof Error) {
-            return res.status(401).send({ error: account.message })
-          }
-
-          res.json({ sub: account.id })
+        if (kratosRes instanceof KratosError) {
+          res.status(401).send({ error: `${kratosRes.name} ${kratosRes.message}` })
           return
         }
+
+        res.json({ sub: kratosRes.kratosUserId })
+        return
       }
 
       // legacy flow
@@ -112,9 +107,13 @@ authRouter.post(
         return
       }
 
-      // the sub (subject) sent to oathkeeper as a response is the uid from the original token
-      // which is the AccountId
-      res.json({ sub: tokenPayload.uid })
+      const account = await AccountsRepository().findById(tokenPayload.uid)
+      if (account instanceof Error) {
+        res.status(401).send({ error: `${account.name} ${account.message}` })
+        return
+      }
+
+      res.json({ sub: account.kratosUserId })
     },
   }),
 )

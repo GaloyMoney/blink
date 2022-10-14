@@ -40,9 +40,11 @@ import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
 
 import jwksRsa from "jwks-rsa"
 
-import { checkedToAccountId, InvalidAccountIdError } from "@domain/accounts"
+import { checkedToKratosUserId } from "@domain/accounts"
 
 import { sendOathkeeperRequest } from "@services/oathkeeper"
+
+import { ValidationError } from "@domain/shared"
 
 import { playgroundTabs } from "../graphql/playground"
 
@@ -89,26 +91,32 @@ const sessionContext = ({
   let domainUser: User | null = null
   let domainAccount: Account | undefined
 
-  // note: value should match (ie: "anon") if not an accountId
-  // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
-  const maybeAid = checkedToAccountId(tokenPayload.sub || "")
-
   return addAttributesToCurrentSpanAndPropagate(
     {
       [SemanticAttributes.ENDUSER_ID]: tokenPayload.sub,
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
     },
     async () => {
-      if (!(maybeAid instanceof InvalidAccountIdError)) {
-        const userId = maybeAid as string as UserId // FIXME: fix until User is attached to kratos
-        const loggedInUser = await Users.getUserForLogin({ userId, ip, logger })
+      // note: value should match (ie: "anon") if not an accountId
+      // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
+      const maybeKratosUserId = checkedToKratosUserId(tokenPayload.sub || "")
+      if (!(maybeKratosUserId instanceof ValidationError)) {
+        const userId = maybeKratosUserId
+
+        const legacyUserId = userId as string as UserId
+
+        const loggedInUser = await Users.getUserForLogin({
+          userId: legacyUserId,
+          ip,
+          logger,
+        })
         if (loggedInUser instanceof Error)
           throw new ApolloError("Invalid user authentication", "INVALID_AUTHENTICATION", {
             reason: loggedInUser,
           })
         domainUser = loggedInUser
 
-        const loggedInDomainAccount = await Accounts.getAccount(maybeAid)
+        const loggedInDomainAccount = await Accounts.getAccountFromKratosUserId(userId)
         if (loggedInDomainAccount instanceof Error) throw Error
         domainAccount = loggedInDomainAccount
 

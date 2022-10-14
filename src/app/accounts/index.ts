@@ -25,6 +25,12 @@ export const getAccount = async (
   return accounts.findById(accountId)
 }
 
+export const getAccountFromKratosUserId = async (
+  kratosUserId: KratosUserId,
+): Promise<Account | RepositoryError> => {
+  return accounts.findByKratosUserId(kratosUserId)
+}
+
 export const hasPermissions = async (
   accountId: AccountId,
   walletId: WalletId,
