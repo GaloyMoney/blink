@@ -575,4 +575,104 @@ describe("arbitrage strategies", () => {
       expect(diffUsd).toBeLessThanOrEqual(0)
     })
   })
+
+  describe("can pay 1 sat and receive $0.01", () => {
+    it("pay 1 sat to usd wallet intraledger, convert back with intraledger payment", async () => {
+      // send-intraledger => sender btc wallet => usdFromBtc => expects Buy
+
+      const USD_STARTING_BALANCE = 2_00 as UsdCents
+      const usdFundingAmount = paymentAmountFromNumber({
+        amount: USD_STARTING_BALANCE,
+        currency: WalletCurrency.Usd,
+      })
+      if (usdFundingAmount instanceof Error) throw usdFundingAmount
+
+      const ONE_SAT = { amount: 1n, currency: WalletCurrency.Btc } as BtcPaymentAmount
+
+      // CREATE NEW ACCOUNT WALLETS
+      // =====
+      const phone = randomPhone()
+      const newBtcWallet = await createAndFundNewWalletForPhone({
+        phone,
+        balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
+      })
+
+      const newUsdWallet = await createAndFundNewWalletForPhone({
+        phone,
+        balanceAmount: usdFundingAmount,
+      })
+
+      const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
+      if (newAccount instanceof Error) throw newAccount
+
+      const sendArgs = {
+        recipientWalletId: newUsdWallet.id,
+        memo: null,
+        senderWalletId: newBtcWallet.id,
+        senderAccount: newAccount,
+      }
+
+      // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
+      // =====
+      // Validate btc starting amount for min btc discovery
+      let minBtcAmountToSpend: BtcPaymentAmount = ONE_SAT
+      {
+        let paid = await Payments.intraledgerPaymentSendWalletId({
+          amount: toSats(minBtcAmountToSpend.amount),
+          ...sendArgs,
+        })
+        // Increment to discover min BTC amount to sell for $0.01
+        while (paid instanceof ZeroAmountForUsdRecipientError) {
+          minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
+          paid = await Payments.intraledgerPaymentSendWalletId({
+            amount: toSats(minBtcAmountToSpend.amount),
+            ...sendArgs,
+          })
+          if (
+            paid instanceof Error &&
+            !(paid instanceof ZeroAmountForUsdRecipientError)
+          ) {
+            throw paid
+          }
+        }
+      }
+      baseLogger.info("Discovered:", { minBtcAmountToSpend })
+
+      // EXECUTE ARBITRAGE
+      // =====
+      const btcBalanceBefore = await getBalanceHelper(newBtcWallet.id)
+      const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
+
+      // Step 1: Pay min sats intraledger to USD wallet
+      const paid = await Payments.intraledgerPaymentSendWalletId({
+        amount: toSats(minBtcAmountToSpend.amount),
+        ...sendArgs,
+      })
+      if (paid instanceof Error) throw paid
+
+      // Step 2: Pay back $0.01 from USD to BTC wallet
+      const repaid = await Payments.intraledgerPaymentSendWalletId({
+        amount: toCents(1),
+        recipientWalletId: newBtcWallet.id,
+        memo: null,
+        senderWalletId: newUsdWallet.id,
+        senderAccount: newAccount,
+      })
+      if (repaid instanceof Error) throw repaid
+
+      // Step 3: Check that no profit was made in the process
+      const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
+      const diffBtc = btcBalanceAfter - btcBalanceBefore
+      expect(diffBtc).toBeLessThanOrEqual(0)
+
+      const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
+      const diffUsd = usdBalanceAfter - usdBalanceBefore
+      expect(diffUsd).toBeLessThanOrEqual(0)
+      console.log({ diffBtc, diffUsd })
+    })
+
+    // it("pay 1 sat to usd wallet via no-amount invoice, convert back with intraledger payment", async () => {})
+
+    // it("pay 1 sat to usd wallet via no-amount fee prove, convert back with intraledger payment", async () => {})
+  })
 })
