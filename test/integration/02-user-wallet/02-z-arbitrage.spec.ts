@@ -66,6 +66,7 @@ describe("arbitrage strategies", () => {
 
     it("pay invoice to btc wallet from usd wallet, replenish $0.01 with intraledger payment", async () => {
       // send-lightning => sender usd wallet => usdFromBtc => expects Sell
+      // send-intraledger => sender btc wallet => usdFromBtc => expects Buy
 
       const USD_STARTING_BALANCE = 2_00 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
@@ -173,7 +174,10 @@ describe("arbitrage strategies", () => {
           }
         }
         // Decrement until paid fails
-        while (!(paid instanceof ZeroAmountForUsdRecipientError)) {
+        while (
+          !(paid instanceof ZeroAmountForUsdRecipientError) &&
+          minBtcAmountToSpend.amount > 1n
+        ) {
           minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
           paid = await Payments.intraledgerPaymentSendWalletId({
             amount: toSats(minBtcAmountToSpend.amount),
@@ -252,6 +256,7 @@ describe("arbitrage strategies", () => {
     it("fee probe & pay invoice to btc wallet from usd wallet, replenish $0.01 with intraledger payment", async () => {
       // probe => sender usd wallet => usdFromBtc => expects Sell
       // send-lightning => sender usd wallet => usdFromBtc => expects Sell
+      // send-intraledger => sender btc wallet => usdFromBtc => expects Buy
 
       const USD_STARTING_BALANCE = 2_00 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
@@ -364,7 +369,10 @@ describe("arbitrage strategies", () => {
           }
         }
         // Decrement until paid fails
-        while (!(paid instanceof ZeroAmountForUsdRecipientError)) {
+        while (
+          !(paid instanceof ZeroAmountForUsdRecipientError) &&
+          minBtcAmountToSpend.amount > 1n
+        ) {
           minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
           paid = await Payments.intraledgerPaymentSendWalletId({
             amount: toSats(minBtcAmountToSpend.amount),
