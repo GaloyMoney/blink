@@ -140,9 +140,6 @@ export const startApolloServer = async ({
   const app = express()
   const httpServer = createServer(app)
 
-  httpServer.requestTimeout = 0
-  httpServer.headersTimeout = 0
-
   const apolloPlugins = [
     createComplexityPlugin({
       schema,
