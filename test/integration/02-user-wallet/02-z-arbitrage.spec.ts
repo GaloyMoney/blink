@@ -448,7 +448,7 @@ describe("arbitrage strategies", () => {
       expect(diffUsd).toBeLessThanOrEqual(0)
     })
 
-    it("pay btc-denominated invoice, replenish $0.01 with usd-denominated invoice", async () => {
+    it("pay invoice to btc wallet from usd wallet, replenish $0.01 with usd-denominated invoice", async () => {
       // send-lightning => sender usd wallet => usdFromBtc => expects Sell
 
       const USD_STARTING_BALANCE = 2_00 as UsdCents
