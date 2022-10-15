@@ -1,14 +1,9 @@
 import { AuthenticationKratosError, UnknownKratosError } from "./errors"
-import {
-  kratosAdmin,
-  kratosPublic,
-  listSessionsInternal,
-  toDomainIdentityPhone,
-  toDomainSession,
-} from "./private"
+import { kratosPublic, listSessionsInternal, toDomainSession } from "./private"
 
 export * from "./auth-phone-no-password"
 export * from "./cron"
+export * from "./identity"
 
 export const listSessions = async (
   userId: KratosUserId,
@@ -16,15 +11,6 @@ export const listSessions = async (
   const res = await listSessionsInternal(userId)
   if (res instanceof Error) return res
   return res.map(toDomainSession)
-}
-
-export const listIdentities = async (): Promise<IdentityPhone[] | KratosError> => {
-  try {
-    const res = await kratosAdmin.adminListIdentities()
-    return res.data.map(toDomainIdentityPhone)
-  } catch (err) {
-    return new UnknownKratosError(err)
-  }
 }
 
 export const validateKratosToken = async (

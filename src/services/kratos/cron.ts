@@ -1,20 +1,4 @@
-import { kratosAdmin, listSessionsInternal } from "./private"
-
-import { listIdentities } from "."
-
-export const extendSessions = async (): Promise<void | KratosError> => {
-  const users = await listIdentities()
-  if (users instanceof Error) return users
-
-  for (const user of users) {
-    const sessions = await listSessionsInternal(user.id)
-    if (sessions instanceof Error) return sessions
-
-    for (const session of sessions) {
-      await extendSession({ session })
-    }
-  }
-}
+import { kratosAdmin } from "./private"
 
 // TODO: should be a param in yaml
 const schemaIdsToExtend = ["phone_no_password_v0"]
