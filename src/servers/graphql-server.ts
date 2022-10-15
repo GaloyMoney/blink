@@ -103,10 +103,12 @@ const sessionContext = ({
       if (!(maybeKratosUserId instanceof ValidationError)) {
         const userId = maybeKratosUserId
 
-        const legacyUserId = userId as string as UserId
+        const account = await Accounts.getAccountFromKratosUserId(userId)
+        if (account instanceof Error) throw Error
+        domainAccount = account
 
         const loggedInUser = await Users.getUserForLogin({
-          userId: legacyUserId,
+          userId: account.id as string as UserId,
           ip,
           logger,
         })
@@ -115,10 +117,6 @@ const sessionContext = ({
             reason: loggedInUser,
           })
         domainUser = loggedInUser
-
-        const loggedInDomainAccount = await Accounts.getAccountFromKratosUserId(userId)
-        if (loggedInDomainAccount instanceof Error) throw Error
-        domainAccount = loggedInDomainAccount
 
         addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
       }
@@ -155,6 +153,7 @@ export const startApolloServer = async ({
       estimators: [fieldExtensionsEstimator(), simpleEstimator({ defaultComplexity: 1 })],
       maximumComplexity: 200,
       onComplete: (complexity) => {
+        // TODO(telemetry): add complexity value to span
         baseLogger.debug({ complexity }, "queryComplexity")
       },
     }),

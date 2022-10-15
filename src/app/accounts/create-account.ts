@@ -67,7 +67,6 @@ export const createAccountWithPhoneIdentifier = async ({
     kratosUserId,
   }
 
-  // FIXME: this is only used from tests. should be refactored with a mock
   if (!phoneMetadata && !!phone) {
     const carrierInfo = await TwilioClient().getCarrier(phone)
     if (carrierInfo instanceof Error) {
