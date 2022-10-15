@@ -93,26 +93,25 @@ export const loginWithPhone = async ({
       })
 
       if (account instanceof Error) return account
+    } else if (user instanceof Error) {
+      return user
     } else {
-      if (user instanceof Error) return user
-      else {
-        // account exist but doesn't have a kratos user yet
+      // account exist but doesn't have a kratos user yet
 
-        let account = await AccountsRepository().findByUserId(user.id)
-        if (account instanceof Error) return account
+      let account = await AccountsRepository().findByUserId(user.id)
+      if (account instanceof Error) return account
 
-        account = await AccountsRepository().update({
-          ...account,
-          kratosUserId,
+      account = await AccountsRepository().update({
+        ...account,
+        kratosUserId,
+      })
+
+      if (account instanceof Error) {
+        recordExceptionInCurrentSpan({
+          error: `error with attachKratosUser login: ${account}`,
+          level: ErrorLevel.Critical,
+          attributes: { kratosUserId, id: user.id, phone },
         })
-
-        if (account instanceof Error) {
-          recordExceptionInCurrentSpan({
-            error: `error with attachKratosUser login: ${account}`,
-            level: ErrorLevel.Critical,
-            attributes: { kratosUserId, id: user.id, phone },
-          })
-        }
       }
     }
   } else if (kratosResult instanceof Error) {
