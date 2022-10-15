@@ -1,3 +1,5 @@
+import axios from "axios"
+
 import { Accounts } from "@app"
 import { WalletType } from "@domain/wallets"
 import { toSats } from "@domain/bitcoin"
@@ -12,8 +14,6 @@ import { baseLogger } from "@services/logger"
 import { sleep } from "@utils"
 
 import { BTC_NETWORK } from "@config"
-
-import axios from "axios"
 
 import { createToken } from "@services/legacy-jwt"
 
