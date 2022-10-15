@@ -86,7 +86,7 @@ export const loginWithPhone = async ({
       subLogger.info({ phone }, "new user signup")
 
       // TODO: look at where is phone metadata stored
-      const accountRaw: NewAccountInfo = { phone, kratosUserId }
+      const accountRaw: NewAccountWithPhoneIdentifier = { kratosUserId, phone }
       const account = await createAccountWithPhoneIdentifier({
         newAccountInfo: accountRaw,
         config: getDefaultAccountsConfig(),

@@ -252,4 +252,5 @@ const projection = {
   withdrawFee: 1,
   role: 1,
   earn: 1,
+  kratosUserId: 1,
 }

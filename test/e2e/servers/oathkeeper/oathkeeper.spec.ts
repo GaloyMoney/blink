@@ -6,6 +6,8 @@ import { UsersRepository } from "@services/mongoose"
 
 import { BTC_NETWORK } from "@config"
 
+import { User } from "@services/mongoose/schema"
+
 import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
 
 import {
@@ -42,7 +44,7 @@ describe("Oathkeeper", () => {
     expect(res).toBeInstanceOf(OathkeeperUnauthorizedServiceError)
   })
 
-  it("return account id when kratos token is provided", async () => {
+  it("return KratosUserId when kratos session token is provided", async () => {
     const userRef = "D"
     const { phone, code } = getPhoneAndCodeFromRef(userRef)
 
@@ -56,18 +58,20 @@ describe("Oathkeeper", () => {
     })
     disposeClient()
 
-    const kratosToken = result.data.userLogin.authToken
+    const token = result.data.userLogin.authToken
 
-    const res = await sendOathkeeperRequest(kratosToken)
+    const res = await sendOathkeeperRequest(token)
     if (res instanceof Error) throw res
 
     const decodedNew = jwt.decode(res, { complete: true })
     const uidFromJwt = decodedNew?.payload?.sub
 
-    expect(uidFromJwt).toHaveLength(24) // mongodb id length
+    expect(uidFromJwt).toHaveLength(36) // uuid-v4 token (kratosUserId)
+
+    console.log(await User.find({}), "users")
   })
 
-  it("return account id when legacy JWT is provided", async () => {
+  it("return KratosUserId when legacy JWT is provided", async () => {
     const userRef = "D"
     const { phone } = getPhoneAndCodeFromRef(userRef)
 
@@ -86,6 +90,6 @@ describe("Oathkeeper", () => {
     const decodedNew = jwt.decode(res, { complete: true })
     const uidFromJwt = decodedNew?.payload?.sub
 
-    expect(uidFromJwt).toHaveLength(24) // mongodb id length
+    expect(uidFromJwt).toHaveLength(36) // uuid-v4 token (kratosUserId)
   })
 })

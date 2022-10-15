@@ -53,15 +53,15 @@ const initializeCreatedAccount = async ({
 }
 
 export const createAccountWithPhoneIdentifier = async ({
-  newAccountInfo: { phone, phoneMetadata, kratosUserId },
+  newAccountInfo: { kratosUserId, phone, phoneMetadata },
   config,
 }: {
-  newAccountInfo: NewAccountInfo
+  newAccountInfo: NewAccountWithPhoneIdentifier
   config: AccountsConfig
 }): Promise<Account | RepositoryError> => {
   const accountsRepo = AccountsRepository()
 
-  const accountRaw: NewAccountInfo = {
+  const accountRaw: NewAccountWithPhoneIdentifier = {
     phone,
     phoneMetadata,
     kratosUserId,

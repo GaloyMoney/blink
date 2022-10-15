@@ -137,11 +137,19 @@ type AccountValidator = {
   validateWalletForAccount(wallet: Wallet): true | ValidationError
 }
 
-type NewAccountInfo = {
+type NewAccountWithEmailIdentifier = {
   kratosUserId: KratosUserId
-  phone?: PhoneNumber
+  phone?: undefined
+  phoneMetadata?: undefined
+}
+
+type NewAccountWithPhoneIdentifier = {
+  kratosUserId: KratosUserId
+  phone: PhoneNumber
   phoneMetadata?: PhoneMetadata
 }
+
+type NewAccount = NewAccountWithEmailIdentifier | NewAccountWithPhoneIdentifier
 
 interface IAccountsRepository {
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
@@ -149,11 +157,13 @@ interface IAccountsRepository {
   findByUserId(userId: UserId): Promise<Account | RepositoryError>
 
   findByKratosUserId(kratosUserId: KratosUserId): Promise<Account | RepositoryError>
+  persistNew({ kratosUserId }: NewAccount): Promise<Account | RepositoryError>
+
   persistNew({
     kratosUserId,
     phone,
     phoneMetadata,
-  }: NewAccountInfo): Promise<Account | RepositoryError>
+  }: NewAccount): Promise<Account | RepositoryError>
 
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
