@@ -15,6 +15,8 @@ import { BTC_NETWORK } from "@config"
 
 import axios from "axios"
 
+import { createToken } from "@services/legacy-jwt"
+
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_USD_INVOICE_CREATE from "./mutations/ln-usd-invoice-create.gql"
 import LN_INVOICE_FEE_PROBE from "./mutations/ln-invoice-fee-probe.gql"
@@ -51,7 +53,6 @@ import {
   PID,
   startServer,
 } from "test/helpers"
-import { createToken } from "test/helpers/legacy-jwt"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,

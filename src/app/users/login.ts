@@ -3,6 +3,7 @@ import {
   createAccountWithPhoneIdentifier,
 } from "@app/accounts/create-account"
 import {
+  BTC_NETWORK,
   getDefaultAccountsConfig,
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
@@ -22,6 +23,7 @@ import { ErrorLevel } from "@domain/shared"
 import { checkedToEmailAddress } from "@domain/users"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import { LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
+import { createToken } from "@services/legacy-jwt"
 
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
@@ -41,7 +43,7 @@ export const loginWithPhone = async ({
   code: PhoneCode
   logger: Logger
   ip: IpAddress
-}): Promise<SessionToken | ApplicationError> => {
+}): Promise<SessionToken | LegacyJwtToken | ApplicationError> => {
   const subLogger = logger.child({ topic: "login" })
 
   {
@@ -66,6 +68,7 @@ export const loginWithPhone = async ({
   await rewardFailedLoginAttemptPerPhoneLimits(phone)
 
   let kratosToken: SessionToken
+  let kratosUserId: KratosUserId
 
   const authService = AuthWithPhonePasswordlessService()
 
@@ -78,7 +81,7 @@ export const loginWithPhone = async ({
     addAttributesToCurrentSpan({ "login.newAccount": true })
 
     kratosToken = kratosResult.sessionToken
-    const kratosUserId = kratosResult.kratosUserId
+    kratosUserId = kratosResult.kratosUserId
 
     const user = await UsersRepository().findByPhone(phone)
     if (user instanceof CouldNotFindUserFromPhoneError) {
@@ -118,6 +121,17 @@ export const loginWithPhone = async ({
     return kratosResult
   } else {
     kratosToken = kratosResult.sessionToken
+    kratosUserId = kratosResult.kratosUserId
+  }
+
+  // TODO: apply after migration of the mobile app
+  const returnNewKratosToken = false
+
+  if (returnNewKratosToken) {
+    const account = await AccountsRepository().findByKratosUserId(kratosUserId)
+    if (account instanceof Error) return account
+
+    return createToken({ uid: account.id, network: BTC_NETWORK })
   }
 
   return kratosToken

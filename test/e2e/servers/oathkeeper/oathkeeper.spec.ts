@@ -8,6 +8,8 @@ import { BTC_NETWORK } from "@config"
 
 import { User } from "@services/mongoose/schema"
 
+import { createToken } from "@services/legacy-jwt"
+
 import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
 
 import {
@@ -18,7 +20,6 @@ import {
   PID,
   startServer,
 } from "test/helpers"
-import { createToken } from "test/helpers/legacy-jwt"
 
 let serverPid: PID
 
