@@ -10,7 +10,7 @@ import {
   addAttributesToCurrentSpan,
   wrapAsyncToRunInSpan,
 } from "@services/tracing"
-import { User } from "@services/mongoose/schema"
+import { Account } from "@services/mongoose/schema"
 import { LedgerService } from "@services/ledger"
 import { getBosScore } from "@services/lnd/utils"
 import { getBalance as getBitcoindBalance } from "@services/bitcoind"
@@ -53,7 +53,7 @@ const main = async () => {
     name: "userCount",
     description: "how much users have registered",
     collect: async () => {
-      const value = await User.countDocuments()
+      const value = await Account.countDocuments()
       return value
     },
   })
@@ -141,7 +141,7 @@ const main = async () => {
     name: "business",
     description: "number of businesses in the app",
     collect: async () => {
-      const value = await User.countDocuments({ title: { $ne: undefined } })
+      const value = await Account.countDocuments({ title: { $ne: undefined } })
       return value
     },
   })

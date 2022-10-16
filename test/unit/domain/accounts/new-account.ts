@@ -1,11 +1,11 @@
-import { User } from "@services/mongoose/schema"
+import { Account } from "@services/mongoose/schema"
 import { getDefaultAccountsConfig } from "@config"
 
 describe("New Account", () => {
   it("uses the default account status", async () => {
-    const user = new User()
-    await user.save()
-    expect(user.statusHistory).toEqual({
+    const account = new Account()
+    await account.save()
+    expect(account.statusHistory).toEqual({
       status: getDefaultAccountsConfig().initialStatus,
       comment: "Initial Status",
     })

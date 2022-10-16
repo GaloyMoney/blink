@@ -11,6 +11,10 @@ type SessionToken = string & { readonly brand: unique symbol }
 type IdentityPhone = {
   id: KratosUserId
   phone: PhoneNumber
+  language: UserLanguage
+  deviceTokens: DeviceToken[]
+  createdAt: Date
+  phoneMetadata: PhoneMetadata | undefined
 }
 
 type Session = {

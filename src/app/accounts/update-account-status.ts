@@ -9,7 +9,7 @@ export const updateAccountStatus = async ({
 }: {
   id: string
   status: string
-  updatedByUserId: UserId
+  updatedByUserId: KratosUserId
   comment?: string
 }): Promise<Account | ApplicationError> => {
   const accountsRepo = AccountsRepository()

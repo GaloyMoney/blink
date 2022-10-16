@@ -16,6 +16,7 @@ export * from "./get-csv-for-account"
 export * from "./get-transactions-for-account"
 export * from "./add-wallet"
 export * from "./create-account"
+export * from "./update-account-ip"
 
 const accounts = AccountsRepository()
 

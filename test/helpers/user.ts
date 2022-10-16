@@ -1,38 +1,36 @@
+import { createAccountWithPhoneIdentifier, addWallet } from "@app/accounts"
+import { addWalletIfNonexistent } from "@app/accounts/add-wallet"
 import { getDefaultAccountsConfig, yamlConfig } from "@config"
 
-import { CouldNotFindUserFromPhoneError } from "@domain/errors"
-import { WalletCurrency } from "@domain/shared"
-import { WalletType } from "@domain/wallets"
 import { adminUsers } from "@domain/admin-users"
 import {
   AuthenticationError,
   LikelyNoUserWithThisPhoneExistError,
 } from "@domain/authentication/errors"
-
 import {
-  AccountsRepository,
-  UsersRepository,
-  WalletsRepository,
-} from "@services/mongoose"
-import { User } from "@services/mongoose/schema"
-import { toObjectId } from "@services/mongoose/utils"
-import { UsersIpRepository } from "@services/mongoose/users-ips"
+  CouldNotFindUserFromPhoneError,
+  CouldNotFindAccountFromKratosIdError,
+} from "@domain/errors"
+import { WalletCurrency } from "@domain/shared"
+import { WalletType } from "@domain/wallets"
 
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { Account } from "@services/mongoose/schema"
+import { toObjectId } from "@services/mongoose/utils"
+
+import { AuthWithPhonePasswordlessService, IdentityRepository } from "@services/kratos"
 import { baseLogger } from "@services/logger"
 
 import { Wallets } from "@app"
-import {
-  addWallet,
-  addWalletIfNonexistent,
-  createAccountWithPhoneIdentifier,
-} from "@app/accounts"
 
 import { sleep } from "@utils"
 
+import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
+
 import { lndOutside1, safePay } from "./lightning"
 
-const users = UsersRepository()
+const accounts = AccountsRepository()
+const identities = IdentityRepository()
 
 const getPhoneByTestUserRef = (ref: string) => {
   const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
@@ -48,14 +46,14 @@ export const getPhoneAndCodeFromRef = (ref: string) => {
 
 const getUserByTestUserRef = async (ref: string) => {
   const phone = getPhoneByTestUserRef(ref)
-  const user = await UsersRepository().findByPhone(phone)
+  const user = await identities.slowFindByPhone(phone)
   if (user instanceof Error) throw user
   return user
 }
 
 export const getAccountByTestUserRef = async (ref: string) => {
   const user = await getUserByTestUserRef(ref)
-  const account = await AccountsRepository().findByUserId(user.id)
+  const account = await AccountsRepository().findByKratosUserId(user.id)
   if (account instanceof Error) throw account
   return account
 }
@@ -99,20 +97,20 @@ export const getUsdWalletIdByTestUserRef = async (ref: string) => {
 
 export const getDefaultWalletIdByRole = async (role: string) => {
   const entry = adminUsers.find((item) => item.role === role)
-  const user = await UsersRepository().findByPhone(entry?.phone as PhoneNumber)
+  const user = await identities.slowFindByPhone(entry?.phone as PhoneNumber)
   if (user instanceof Error) throw user
-  const account = await AccountsRepository().findByUserId(user.id)
+  const account = await AccountsRepository().findByKratosUserId(user.id)
   if (account instanceof Error) throw account
   return account.defaultWalletId
 }
 
-export const getUserRecordByTestUserRef = async (ref: string) => {
+export const getAccountRecordByTestUserRef = async (ref: string) => {
   const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
-  const phone = entry?.phone as PhoneNumber
-
-  const result = await User.findOne({ phone })
-  if (!result) throw Error("user not found")
-  return result as UserRecord
+  const user = await identities.slowFindByPhone(entry?.phone as PhoneNumber)
+  if (user instanceof Error) throw user
+  const accountRecord = await Account.findOne({ kratosUserId: user.id })
+  if (!accountRecord) throw Error("missing account")
+  return accountRecord
 }
 
 export const createMandatoryUsers = async () => {
@@ -137,61 +135,29 @@ export const createUserAndWalletFromUserRef = async (ref: string) => {
   await createUserAndWallet(entry)
 }
 
-const createNewAccount = async ({ phone }: { phone: PhoneNumber }) => {
+export const createUserAndWallet = async (entry: TestEntry) => {
+  const phone = entry.phone as PhoneNumber
+  let kratosUserId: KratosUserId
+
   const authService = AuthWithPhonePasswordlessService()
 
   let kratosResult = await authService.login(phone)
+
+  // currently kratos users are not been reset between tests, but accounts and wallets are.
   if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
-    // TODO: remove once kratos states is been re-iniaitlized been tests
     kratosResult = await authService.createIdentityWithSession(phone)
-  }
-  if (kratosResult instanceof AuthenticationError) throw kratosResult
+    if (kratosResult instanceof AuthenticationError) throw kratosResult
 
-  const kratosUserId = kratosResult.kratosUserId
-  kratosUserId // FIXME variable will be used/line removed in the follow up PR
+    kratosUserId = kratosResult.kratosUserId
 
-  const account = await createAccountWithPhoneIdentifier({
-    newAccountInfo: { phone, kratosUserId },
-    config: getDefaultAccountsConfig(),
-  })
-  if (account instanceof Error) throw account
+    const res = await identities.setDeviceTokens({
+      id: kratosUserId,
+      deviceTokens: [`token-${kratosUserId}`] as DeviceToken[],
+    })
+    if (res instanceof Error) throw res
 
-  await addIp(account.id)
-
-  return account
-}
-
-export const addIp = async (accountId: AccountId) => {
-  const lastConnection = new Date()
-  const ipInfo: IPType = {
-    ip: "89.187.173.251" as IpAddress,
-    firstConnection: lastConnection,
-    lastConnection: lastConnection,
-    asn: "AS60068",
-    provider: "ISP",
-    country: "United States",
-    isoCode: "US",
-    region: "Florida",
-    city: "Miami",
-    proxy: false,
-  }
-
-  const userIP = await UsersIpRepository().findById(accountId as string as UserId) // FIXME tmp hack until full kratos integration
-  if (userIP instanceof Error) throw userIP
-
-  userIP.lastIPs.push(ipInfo)
-  const result = await UsersIpRepository().update(userIP)
-  if (result instanceof Error) throw result
-}
-
-export const createUserAndWallet = async (entry: TestEntry) => {
-  const phone = entry.phone as PhoneNumber
-
-  let user = await users.findByPhone(phone)
-  if (user instanceof CouldNotFindUserFromPhoneError) {
-    let phoneMetadata: PhoneMetadata | undefined = undefined
     if (entry.phoneMetadataCarrierType) {
-      phoneMetadata = {
+      const phoneMetadata = {
         carrier: {
           type: entry.phoneMetadataCarrierType as CarrierType,
           name: "",
@@ -201,28 +167,43 @@ export const createUserAndWallet = async (entry: TestEntry) => {
         },
         countryCode: "US",
       }
+
+      await identities.setPhoneMetadata({ id: kratosUserId, phoneMetadata })
     }
+  }
+  if (kratosResult instanceof AuthenticationError) throw kratosResult
 
-    const authService = AuthWithPhonePasswordlessService()
+  kratosUserId = kratosResult.kratosUserId
 
-    let kratosResult = await authService.login(phone)
-    if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
-      // TODO: remove once kratos states is been re-iniaitlized been tests
-      kratosResult = await authService.createIdentityWithSession(phone)
-    }
-    if (kratosResult instanceof AuthenticationError) throw kratosResult
+  let account = await accounts.findByKratosUserId(kratosUserId)
 
-    const kratosUserId = kratosResult.kratosUserId
-    kratosUserId // FIXME variable will be used/line removed in the follow up PR
-
-    const account = await createAccountWithPhoneIdentifier({
-      newAccountInfo: { phone, phoneMetadata, kratosUserId },
+  if (account instanceof CouldNotFindAccountFromKratosIdError) {
+    account = await createAccountWithPhoneIdentifier({
+      newAccountInfo: { phone, kratosUserId },
       config: getDefaultAccountsConfig(),
     })
-
     if (account instanceof Error) throw account
 
-    await addIp(account.id)
+    const lastConnection = new Date()
+    const ipInfo: IPType = {
+      ip: "89.187.173.251" as IpAddress,
+      firstConnection: lastConnection,
+      lastConnection: lastConnection,
+      asn: "AS60068",
+      provider: "ISP",
+      country: "United States",
+      isoCode: "US",
+      region: "Florida",
+      city: "Miami",
+      proxy: false,
+    }
+
+    const accountIP = await AccountsIpRepository().findById(account.id)
+    if (accountIP instanceof Error) throw accountIP
+
+    accountIP.lastIPs.push(ipInfo)
+    const result = await AccountsIpRepository().update(accountIP)
+    if (result instanceof Error) throw result
 
     if (entry.needUsdWallet) {
       await addWalletIfNonexistent({
@@ -233,33 +214,31 @@ export const createUserAndWallet = async (entry: TestEntry) => {
     }
   }
 
-  user = await users.findByPhone(phone)
-  if (user instanceof Error) throw user
-  const uid = user.id
+  if (account instanceof Error) throw account
 
-  await User.findOneAndUpdate(
-    { _id: toObjectId<UserId>(uid) },
+  await Account.findOneAndUpdate(
+    { _id: toObjectId<AccountId>(account.id) },
     { deviceToken: ["test-token"] },
   )
 
   if (entry.username) {
-    await User.findOneAndUpdate(
-      { _id: toObjectId<UserId>(uid) },
+    await Account.findOneAndUpdate(
+      { _id: toObjectId<AccountId>(account.id) },
       { username: entry.username },
     )
   }
 
   if (entry.role) {
     const contactEnabled = entry.role === "user" || entry.role === "editor"
-    await User.findOneAndUpdate(
-      { _id: toObjectId<UserId>(uid) },
+    await Account.findOneAndUpdate(
+      { _id: toObjectId<AccountId>(account.id) },
       { role: entry.role, contactEnabled },
     )
   }
 
   if (entry.title) {
-    await User.findOneAndUpdate(
-      { _id: toObjectId<UserId>(uid) },
+    await Account.findOneAndUpdate(
+      { _id: toObjectId<AccountId>(account.id) },
       { title: entry.title, coordinates: { latitude: -1, longitude: 1 } },
     )
   }
@@ -273,14 +252,14 @@ export const createNewWalletFromPhone = async ({
   currency: WalletCurrency
 }): Promise<Wallet> => {
   // Fetch user (account) or create if doesn't exist
-  let user = await users.findByPhone(phone)
+  let user = await UsersRepository().findByPhone(phone)
   if (user instanceof CouldNotFindUserFromPhoneError) {
     const account = await createNewAccount({
       phone,
     })
     if (account instanceof Error) throw account
 
-    user = await users.findByPhone(phone)
+    user = await UsersRepository().findByPhone(phone)
   }
   if (user instanceof Error) throw user
 
@@ -292,11 +271,12 @@ export const createNewWalletFromPhone = async ({
   })
   if (wallet instanceof Error) throw wallet
 
+  // FIXME
   // Needed for 'notifications.spec.ts' test to be included in 'sendBalance' function
-  await User.findOneAndUpdate(
-    { _id: toObjectId<UserId>(user.id) },
-    { deviceToken: ["test-token"] },
-  )
+  // await User.findOneAndUpdate(
+  //   { _id: toObjectId<UserId>(user.id) },
+  //   { deviceToken: ["test-token"] },
+  // )
 
   return wallet
 }

@@ -1,0 +1,4 @@
+migration:
+- userId -> kratosUserId accountUpdateStatus (is it necessary?)
+- language, devicetoken, phoneMetadata
+- remove phone from user collection

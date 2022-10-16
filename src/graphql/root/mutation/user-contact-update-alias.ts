@@ -21,7 +21,7 @@ const UserContactUpdateAliasMutation = GT.Field<
     }
   },
   null,
-  GraphQLContextForUser
+  GraphQLContextAuth
 >({
   extensions: {
     complexity: 120,

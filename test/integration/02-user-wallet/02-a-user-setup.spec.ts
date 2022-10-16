@@ -1,20 +1,22 @@
+import { randomUUID } from "crypto"
+
 import { Accounts } from "@app"
 import { setUsername } from "@app/accounts"
 import { UsernameIsImmutableError, UsernameNotAvailableError } from "@domain/accounts"
 import { ValidationError } from "@domain/shared"
 import { CsvWalletsExport } from "@services/ledger/csv-wallet-export"
 import { AccountsRepository } from "@services/mongoose"
-import { User } from "@services/mongoose/schema"
+import { Account } from "@services/mongoose/schema"
 
 import {
   createMandatoryUsers,
   createUserAndWalletFromUserRef,
   getAccountIdByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  getUserRecordByTestUserRef,
+  getAccountRecordByTestUserRef,
 } from "test/helpers"
 
-let userRecordA: UserRecord, userRecordC: UserRecord
+let userRecordC: AccountRecord
 let walletIdA: WalletId
 let accountIdA: AccountId, accountIdB: AccountId, accountIdC: AccountId
 
@@ -26,8 +28,7 @@ describe("UserWallet", () => {
     await createUserAndWalletFromUserRef("B")
     await createUserAndWalletFromUserRef("C")
 
-    userRecordA = await getUserRecordByTestUserRef("A")
-    userRecordC = await getUserRecordByTestUserRef("C")
+    userRecordC = await getAccountRecordByTestUserRef("C")
 
     walletIdA = await getDefaultWalletIdByTestUserRef("A")
 
@@ -37,12 +38,12 @@ describe("UserWallet", () => {
   })
 
   it("has a role if it was configured", async () => {
-    const dealer = await User.findOne({ role: "dealer" })
-    expect(dealer).toHaveProperty("phone")
+    const dealer = await Account.findOne({ role: "dealer" })
+    expect(dealer).toBeTruthy()
   })
 
   it("has a title if it was configured", () => {
-    expect(userRecordC.title).toBeTruthy()
+    expect(userRecordC).toHaveProperty("title")
   })
 
   describe("setUsername", () => {
@@ -155,7 +156,7 @@ describe("UserWallet", () => {
     it("sets account status (with history) for given user id", async () => {
       let account
 
-      const updatedByUserId = userRecordA._id as unknown as UserId
+      const updatedByUserId = randomUUID() as KratosUserId
 
       account = await Accounts.updateAccountStatus({
         id: accountIdC,

@@ -20,14 +20,17 @@ const UserUpdateLanguageMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserUpdateLanguageInput) },
   },
-  resolve: async (_, args, { domainUser }: { domainUser: User }) => {
+  resolve: async (_, args, { kratosUser }: GraphQLContextAuth) => {
     const { language } = args.input
 
     if (language instanceof Error) {
       return { errors: [{ message: language.message }] }
     }
 
-    const result = await Users.updateLanguage({ userId: domainUser.id, language })
+    const result = await Users.updateLanguage({
+      kratosUserId: kratosUser.id,
+      language,
+    })
 
     if (result instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(result)] }

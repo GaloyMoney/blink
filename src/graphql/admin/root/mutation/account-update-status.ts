@@ -25,7 +25,7 @@ const AccountUpdateStatusMutation = GT.Field<
     input: { uid: string; status: AccountStatus | Error; comment: string }
   },
   null,
-  GraphQLContextForUser
+  GraphQLContextAuth
 >({
   extensions: {
     complexity: 120,
@@ -34,7 +34,7 @@ const AccountUpdateStatusMutation = GT.Field<
   args: {
     input: { type: GT.NonNull(AccountUpdateStatusInput) },
   },
-  resolve: async (_, args, { domainUser }) => {
+  resolve: async (_, args, { kratosUser }) => {
     const { uid, status, comment } = args.input
     for (const input of [uid, status, comment]) {
       if (input instanceof Error) {
@@ -47,7 +47,7 @@ const AccountUpdateStatusMutation = GT.Field<
     const account = await Accounts.updateAccountStatus({
       id: uid,
       status,
-      updatedByUserId: domainUser.id,
+      updatedByUserId: kratosUser.id,
       comment,
     })
     if (account instanceof Error) {

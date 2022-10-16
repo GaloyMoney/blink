@@ -1,13 +1,16 @@
+export * from "./login"
+export * from "./request-phone-code"
+
 import { ErrorLevel } from "@domain/shared"
-import { extendSession, listIdentities } from "@services/kratos"
+import { extendSession, IdentityRepository } from "@services/kratos"
 
 // TODO: interface/type should be reworked so that it doesn't have to come from private
 import { listSessionsInternal } from "@services/kratos/private"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 export const extendSessions = async (): Promise<void | KratosError> => {
-  const users = await listIdentities()
-  if (users instanceof Error) throw users
+  const users = await IdentityRepository().listIdentities()
+  if (users instanceof Error) return users
 
   for (const user of users) {
     const sessions = await listSessionsInternal(user.id)

@@ -5,17 +5,14 @@ import {
   UnknownNotificationsServiceError,
 } from "@domain/notifications"
 import { baseLogger } from "@services/logger"
+import { googleApplicationCredentialsIsSet } from "@config"
 
 const logger = baseLogger.child({ module: "notifications" })
 
 type MessagingPayload = admin.messaging.MessagingPayload
 type NotificationMessagePayload = admin.messaging.NotificationMessagePayload
 
-// The key GOOGLE_APPLICATION_CREDENTIALS should be set in production
-// This key defined the path of the config file that include the key
-// more info at https://firebase.google.com/docs/admin/setup
-// TODO: mock up the function for devnet
-if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+if (googleApplicationCredentialsIsSet()) {
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
   })
@@ -23,7 +20,7 @@ if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
 
 export const PushNotificationsService = (): IPushNotificationsService => {
   const sendNotification = async ({
-    deviceToken,
+    deviceTokens,
     title,
     body,
     data,
@@ -41,22 +38,18 @@ export const PushNotificationsService = (): IPushNotificationsService => {
       message.notification.body = body
     }
 
-    const tokens = Array.isArray(deviceToken) ? deviceToken : [deviceToken]
-    const deviceTokens = tokens.filter((token) => token.length === 163)
-    if (deviceTokens.length <= 0) {
-      logger.info({ message, deviceToken }, "invalid token. skipping notification")
+    const tokens = deviceTokens.filter((token) => token.length === 163)
+    if (tokens.length <= 0) {
+      logger.info({ message, tokens }, "invalid tokens. skipping notification")
       return new InvalidDeviceNotificationsServiceError()
     }
 
     try {
-      const response = await admin.messaging().sendToDevice(deviceTokens, message)
-      logger.info(
-        { response, deviceToken, message },
-        "notification was sent successfully",
-      )
+      const response = await admin.messaging().sendToDevice(tokens, message)
+      logger.info({ response, tokens, message }, "notification was sent successfully")
       return true
     } catch (err) {
-      logger.error({ err, deviceToken, message }, "impossible to send notification")
+      logger.error({ err, tokens, message }, "impossible to send notification")
       return new UnknownNotificationsServiceError(err?.message)
     }
   }

@@ -55,7 +55,7 @@ import {
   createUserAndWalletFromUserRef,
   getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  getUserRecordByTestUserRef,
+  getAccountRecordByTestUserRef,
   lndonchain,
   lndOutside1,
   mineBlockAndSync,
@@ -64,7 +64,7 @@ import {
 } from "test/helpers"
 
 let initialBalanceUserA: Satoshis
-let userA: UserRecord
+let userA: AccountRecord
 
 let accountA: Account
 let accountG: Account
@@ -90,7 +90,7 @@ beforeAll(async () => {
   await createUserAndWalletFromUserRef("E")
   await createUserAndWalletFromUserRef("F")
 
-  userA = await getUserRecordByTestUserRef("A")
+  userA = await getAccountRecordByTestUserRef("A")
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   accountA = await getAccountByTestUserRef("A")
 

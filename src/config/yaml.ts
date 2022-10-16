@@ -86,7 +86,7 @@ export const getGaloyInstanceName = (): string => yamlConfig.name
 export const getLightningAddressDomain = (): string => yamlConfig.lightningAddressDomain
 export const getLightningAddressDomainAliases = (): string[] =>
   yamlConfig.lightningAddressDomainAliases
-export const getLocale = (): string => yamlConfig.locale || "en"
+export const getLocale = (): UserLanguage => yamlConfig.locale as UserLanguage
 
 export const getPubkeysToSkipProbe = (): Pubkey[] => yamlConfig.skipFeeProbe
 

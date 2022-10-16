@@ -15,7 +15,6 @@ import { NewDealerPriceService } from "@services/dealer-price"
 import { LndService } from "@services/lnd"
 import {
   AccountsRepository,
-  UsersRepository,
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
@@ -28,6 +27,7 @@ import {
 } from "@services/tracing"
 
 import { elapsedSinceTimestamp, runInParallel } from "@utils"
+import { IdentityRepository } from "@services/kratos"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -242,7 +242,9 @@ const updatePendingInvoiceBeforeFinally = async ({
       currency: displayAmount.currency,
     } as DisplayPaymentAmount<DisplayCurrency>
 
-    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+    const recipientUser = await IdentityRepository().getIdentity(
+      recipientAccount.kratosUserId,
+    )
     if (recipientUser instanceof Error) return recipientUser
 
     const notificationsService = NotificationsService()
