@@ -6,7 +6,7 @@ import Timestamp from "@graphql/types/scalar/timestamp"
 
 import Account from "./account"
 
-const User = GT.Object<User>({
+const User = GT.Object<IdentityPhone>({
   name: "User",
 
   fields: () => ({
@@ -16,7 +16,7 @@ const User = GT.Object<User>({
     defaultAccount: {
       type: GT.NonNull(Account),
       resolve: async (source) => {
-        const account = await Accounts.getAccount(source.defaultAccountId)
+        const account = await Accounts.getAccountFromKratosUserId(source.id)
         if (account instanceof Error) {
           throw account
         }

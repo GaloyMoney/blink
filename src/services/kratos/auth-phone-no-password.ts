@@ -11,6 +11,7 @@ import {
 import {
   AdminCreateIdentityBody,
   AdminUpdateIdentityBody,
+  IdentityState,
   SuccessfulSelfServiceLoginWithoutBrowser,
   SuccessfulSelfServiceRegistrationWithoutBrowser,
 } from "@ory/client"
@@ -122,7 +123,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     const adminIdentity: AdminUpdateIdentityBody = {
       ...identity,
       credentials: { password: { config: { password } } },
-      state: "active",
+      state: identity.state as IdentityState, // FIXME? type bug from ory library?
       schema_id: "phone_with_password_v0",
     }
 

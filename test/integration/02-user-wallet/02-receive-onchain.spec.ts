@@ -36,7 +36,7 @@ import {
   getAccountIdByTestUserRef,
   getDefaultWalletIdByRole,
   getDefaultWalletIdByTestUserRef,
-  getUserRecordByTestUserRef,
+  getAccountRecordByTestUserRef,
   lndonchain,
   RANDOM_ADDRESS,
   sendToAddress,
@@ -354,7 +354,7 @@ describe("UserWallet - On chain", () => {
 
     const pendingNotification = createPushNotificationContent({
       type: NotificationType.OnchainReceiptPending,
-      userLanguage: locale as UserLanguage,
+      userLanguage: locale,
       amount: paymentAmount,
       displayAmount: displayPaymentAmount,
     })
@@ -375,9 +375,9 @@ describe("UserWallet - On chain", () => {
   it("allows fee exemption for specific users", async () => {
     const amountSats = getRandomAmountOfSats()
 
-    const userRecordC = await getUserRecordByTestUserRef("C")
-    userRecordC.depositFeeRatio = 0
-    await userRecordC.save()
+    const accountRecordC = await getAccountRecordByTestUserRef("C")
+    accountRecordC.depositFeeRatio = 0
+    await accountRecordC.save()
     const walletC = await getDefaultWalletIdByTestUserRef("C")
 
     const initBalanceUserC = await getBalanceHelper(walletC)
@@ -413,7 +413,7 @@ async function sendToWalletTestWrapper({
   const address = await Wallets.createOnChainAddress(walletId)
   if (address instanceof Error) throw address
 
-  expect(address.substr(0, 4)).toBe("bcrt")
+  expect(address.substring(0, 4)).toBe("bcrt")
 
   const checkBalance = async (minBlockToWatch = 1) => {
     const sub = subscribeToChainAddress({
@@ -432,6 +432,7 @@ async function sendToWalletTestWrapper({
     }
 
     const balance = await getBalanceHelper(walletId)
+
     expect(balance).toBe(
       initialBalance +
         amountAfterFeeDeduction({

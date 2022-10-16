@@ -1,3 +1,4 @@
+import { getLocale } from "@config"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 
 import {
@@ -7,11 +8,17 @@ import {
   usdTransactionsWithDisplayCurrency,
 } from "./transactions"
 
+const userLanguage = getLocale()
+
 describe("Notifications - createPushNotificationContent", () => {
   test.each(btcTransactions)(
     "content is valid for BTC $type transaction",
     ({ type, paymentAmount, body, title }) => {
-      const result = createPushNotificationContent({ type, amount: paymentAmount })
+      const result = createPushNotificationContent({
+        type,
+        amount: paymentAmount,
+        userLanguage,
+      })
       expect(result).toEqual(expect.objectContaining({ body, title }))
     },
   )
@@ -23,6 +30,7 @@ describe("Notifications - createPushNotificationContent", () => {
         type,
         amount: paymentAmount,
         displayAmount: displayPaymentAmount,
+        userLanguage,
       })
       expect(result).toEqual(expect.objectContaining({ body, title }))
     },
@@ -31,7 +39,11 @@ describe("Notifications - createPushNotificationContent", () => {
   test.each(usdTransactions)(
     "content is valid for USD $type transaction",
     ({ type, paymentAmount, body, title }) => {
-      const result = createPushNotificationContent({ type, amount: paymentAmount })
+      const result = createPushNotificationContent({
+        type,
+        amount: paymentAmount,
+        userLanguage,
+      })
       expect(result).toEqual(expect.objectContaining({ body, title }))
     },
   )
@@ -43,6 +55,7 @@ describe("Notifications - createPushNotificationContent", () => {
         type,
         amount: paymentAmount,
         displayAmount: displayPaymentAmount,
+        userLanguage,
       })
       expect(result).toEqual(expect.objectContaining({ body, title }))
     },

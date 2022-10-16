@@ -4,12 +4,12 @@ import { AccountsRepository } from "@services/mongoose"
 export const updateAccountStatus = async ({
   id,
   status,
-  updatedByUserId,
+  updatedByKratosUserId,
   comment,
 }: {
   id: string
   status: string
-  updatedByUserId: UserId
+  updatedByKratosUserId: KratosUserId
   comment?: string
 }): Promise<Account | ApplicationError> => {
   const accountsRepo = AccountsRepository()
@@ -22,7 +22,7 @@ export const updateAccountStatus = async ({
 
   account.statusHistory = (account.statusHistory ?? []).concat({
     status: statusChecked,
-    updatedByUserId,
+    updatedByKratosUserId,
     comment,
   })
   return accountsRepo.update(account)

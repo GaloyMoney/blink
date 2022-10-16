@@ -8,7 +8,7 @@ import { AdminCreateIdentityBody } from "@ory/client"
 import {
   AuthWithPhonePasswordlessService,
   extendSession,
-  listIdentities,
+  IdentityRepository,
   listSessions,
   validateKratosToken,
 } from "@services/kratos"
@@ -25,6 +25,8 @@ import { baseLogger } from "@services/logger"
 import { authenticator } from "otplib"
 
 import { randomEmail, randomPassword, randomPhone } from "test/helpers"
+
+const identityRepo = IdentityRepository()
 
 describe("phoneNoPassword", () => {
   const authService = AuthWithPhonePasswordlessService()
@@ -128,6 +130,13 @@ describe("phoneNoPassword", () => {
       const newIdentity = await kratosAdmin.adminGetIdentity(kratosUserId)
       expect(newIdentity.data.schema_id).toBe("phone_with_password_v0")
     })
+
+    it("can get the user with slowFindByPhone", async () => {
+      const identity = await identityRepo.slowFindByPhone(phone)
+      if (identity instanceof Error) throw identity
+
+      expect(identity.phone).toBe(phone)
+    })
   })
 
   describe("admin api", () => {
@@ -141,9 +150,64 @@ describe("phoneNoPassword", () => {
 
       expect(res2.kratosUserId).toBe(kratosUserId)
     })
+
+    it("set language", async () => {
+      const phone = randomPhone()
+      const id = await authService.createIdentityNoSession(phone)
+      if (id instanceof Error) throw id
+
+      const language = "es" as UserLanguage
+
+      const receivedIdentity = await identityRepo.setLanguage({ id, language })
+      if (receivedIdentity instanceof Error) throw receivedIdentity
+
+      expect(receivedIdentity.language).toBe("es")
+
+      const validateRes = await identityRepo.getIdentity(id)
+      if (validateRes instanceof Error) throw validateRes
+
+      expect(validateRes.language).toBe("es")
+    })
+
+    it("set device token", async () => {
+      const phone = randomPhone()
+      const id = await authService.createIdentityNoSession(phone)
+      if (id instanceof Error) throw id
+
+      const deviceTokens = ["token1", "token2"] as DeviceToken[]
+
+      const receivedIdentity = await identityRepo.setDeviceTokens({ id, deviceTokens })
+      if (receivedIdentity instanceof Error) throw receivedIdentity
+
+      expect(receivedIdentity.deviceTokens).toStrictEqual(deviceTokens)
+
+      const validateRes = await identityRepo.getIdentity(id)
+      if (validateRes instanceof Error) throw validateRes
+
+      expect(validateRes.deviceTokens).toStrictEqual(deviceTokens)
+
+      // set language doesn't override deviceTokens
+      const language = "es" as UserLanguage
+
+      const receivedIdentity2 = await identityRepo.setLanguage({ id, language })
+      if (receivedIdentity2 instanceof Error) throw receivedIdentity2
+
+      expect(receivedIdentity2.deviceTokens).toStrictEqual(deviceTokens)
+
+      // there is no token deep copy
+      const deviceTokens3 = ["token3"] as DeviceToken[]
+
+      const receivedIdentity3 = await identityRepo.setDeviceTokens({
+        id,
+        deviceTokens: deviceTokens3,
+      })
+      if (receivedIdentity3 instanceof Error) throw receivedIdentity3
+
+      expect(receivedIdentity3.deviceTokens).toStrictEqual(deviceTokens3)
+    })
   })
 
-  it("borbidding change of a phone number from publicApi", async () => {
+  it("forbidding change of a phone number from publicApi", async () => {
     const phone = randomPhone()
 
     const res = await authService.createIdentityWithSession(phone)
@@ -187,7 +251,7 @@ describe("phoneNoPassword", () => {
 })
 
 it("list users", async () => {
-  const res = await listIdentities()
+  const res = await identityRepo.listIdentities()
   if (res instanceof Error) throw res
 })
 
@@ -269,6 +333,7 @@ describe("update status", () => {
   })
 })
 
+// FIXME: not sure why this one is failing on github actions
 it.skip("list schemas", async () => {
   const res = await listIdentitySchemas()
   if (res instanceof Error) throw res

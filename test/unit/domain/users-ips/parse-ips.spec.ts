@@ -1,4 +1,4 @@
-import { parseIps } from "@domain/users-ips"
+import { parseIps } from "@domain/accounts-ips"
 
 describe("parseIps", () => {
   it("returns undefined if ip is empty", () => {

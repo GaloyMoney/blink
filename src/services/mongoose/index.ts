@@ -1,4 +1,3 @@
-export * from "./users"
 export * from "./wallet-invoices"
 export * from "./wallet-on-chain-addresses"
 export * from "./wallets"

@@ -1,6 +1,6 @@
 import { createServer } from "http"
 
-import { Accounts, Users } from "@app"
+import { Accounts } from "@app"
 import { getApolloConfig, getGeetestConfig, getJwksArgs, isDev } from "@config"
 import Geetest from "@services/geetest"
 import { baseLogger } from "@services/logger"
@@ -32,7 +32,7 @@ import {
 import { AuthenticationError, AuthorizationError } from "@graphql/error"
 import { mapError } from "@graphql/error-map"
 
-import { parseIps } from "@domain/users-ips"
+import { parseIps } from "@domain/accounts-ips"
 
 import { fieldExtensionsEstimator, simpleEstimator } from "graphql-query-complexity"
 
@@ -46,11 +46,13 @@ import { sendOathkeeperRequest } from "@services/oathkeeper"
 
 import { ValidationError } from "@domain/shared"
 
+import { IdentityRepository } from "@services/kratos"
+
 import { playgroundTabs } from "../graphql/playground"
 
+import authRouter from "./middlewares/auth-router"
 import healthzHandler from "./middlewares/healthz"
 import { updateToken } from "./middlewares/update-token"
-import authRouter from "./middlewares/auth-router"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -65,7 +67,7 @@ export const isAuthenticated = rule({ cache: "contextual" })(
 )
 
 export const isEditor = rule({ cache: "contextual" })(
-  (parent, args, ctx: GraphQLContextForUser) => {
+  (parent, args, ctx: GraphQLContextAuth) => {
     return ctx.domainAccount.isEditor
       ? true
       : new AuthorizationError({ logger: baseLogger })
@@ -88,8 +90,8 @@ const sessionContext = ({
 }): Promise<GraphQLContext> => {
   const logger = graphqlLogger.child({ tokenPayload, body })
 
-  let domainUser: User | null = null
   let domainAccount: Account | undefined
+  let kratosUser: IdentityPhone | undefined
 
   return addAttributesToCurrentSpanAndPropagate(
     {
@@ -104,19 +106,19 @@ const sessionContext = ({
         const userId = maybeKratosUserId
 
         const account = await Accounts.getAccountFromKratosUserId(userId)
-        if (account instanceof Error) throw Error
+        if (account instanceof Error) throw new Error(account.name)
         domainAccount = account
 
-        const loggedInUser = await Users.getUserForLogin({
-          userId: account.id as string as UserId,
+        // not awaiting on purpose. just updating metadata
+        Accounts.updateAccountIPsInfo({
+          accountId: account.id,
           ip,
           logger,
         })
-        if (loggedInUser instanceof Error)
-          throw new ApolloError("Invalid user authentication", "INVALID_AUTHENTICATION", {
-            reason: loggedInUser,
-          })
-        domainUser = loggedInUser
+
+        const kratosRes = await IdentityRepository().getIdentity(account.kratosUserId)
+        if (kratosRes instanceof Error) throw new Error(kratosRes.name)
+        kratosUser = kratosRes
 
         addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
       }
@@ -124,7 +126,7 @@ const sessionContext = ({
       return {
         logger,
         // FIXME: we should not return this for the admin graphql endpoint
-        domainUser,
+        kratosUser,
         domainAccount,
         geetest,
         ip,

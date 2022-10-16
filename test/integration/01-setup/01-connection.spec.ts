@@ -1,7 +1,7 @@
 import { redis } from "@services/redis"
 import { User } from "@services/mongoose/schema"
 
-import { listIdentities } from "@services/kratos"
+import { IdentityRepository } from "@services/kratos"
 
 import {
   lnd1,
@@ -67,7 +67,7 @@ it("connects to redis", async () => {
 })
 
 it("connects to kratos", async () => {
-  const users = await listIdentities()
+  const users = await IdentityRepository().listIdentities()
   expect(users).not.toBeInstanceOf(Error)
   expect(Array.isArray(users)).toBe(true)
 })

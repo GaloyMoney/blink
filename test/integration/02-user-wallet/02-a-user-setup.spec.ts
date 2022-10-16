@@ -1,27 +1,24 @@
+import { randomUUID } from "crypto"
+
 import { Accounts } from "@app"
 import { setUsername } from "@app/accounts"
-import { delete2fa } from "@app/users"
 import { UsernameIsImmutableError, UsernameNotAvailableError } from "@domain/accounts"
 import { ValidationError } from "@domain/shared"
 import { CsvWalletsExport } from "@services/ledger/csv-wallet-export"
-import { AccountsRepository, UsersRepository } from "@services/mongoose"
+import { AccountsRepository } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 
 import {
   createMandatoryUsers,
   createUserAndWalletFromUserRef,
-  enable2FA,
-  generateTokenHelper,
   getAccountIdByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  getUserIdByTestUserRef,
-  getUserRecordByTestUserRef,
+  getAccountRecordByTestUserRef,
 } from "test/helpers"
 
-let userRecordA: UserRecord, userRecordC: UserRecord
+let userRecordC: AccountRecord
 let walletIdA: WalletId
 let accountIdA: AccountId, accountIdB: AccountId, accountIdC: AccountId
-let userIdA: UserId
 
 describe("UserWallet", () => {
   beforeAll(async () => {
@@ -31,25 +28,22 @@ describe("UserWallet", () => {
     await createUserAndWalletFromUserRef("B")
     await createUserAndWalletFromUserRef("C")
 
-    userRecordA = await getUserRecordByTestUserRef("A")
-    userRecordC = await getUserRecordByTestUserRef("C")
+    userRecordC = await getAccountRecordByTestUserRef("C")
 
     walletIdA = await getDefaultWalletIdByTestUserRef("A")
 
     accountIdA = await getAccountIdByTestUserRef("A")
     accountIdB = await getAccountIdByTestUserRef("B")
     accountIdC = await getAccountIdByTestUserRef("C")
-
-    userIdA = await getUserIdByTestUserRef("A")
   })
 
   it("has a role if it was configured", async () => {
     const dealer = await User.findOne({ role: "dealer" })
-    expect(dealer).toHaveProperty("phone")
+    expect(dealer).toBeTruthy()
   })
 
   it("has a title if it was configured", () => {
-    expect(userRecordC.title).toBeTruthy()
+    expect(userRecordC).toHaveProperty("title")
   })
 
   describe("setUsername", () => {
@@ -162,12 +156,12 @@ describe("UserWallet", () => {
     it("sets account status (with history) for given user id", async () => {
       let account
 
-      const updatedByUserId = userRecordA._id as unknown as UserId
+      const updatedByKratosUserId = randomUUID() as KratosUserId
 
       account = await Accounts.updateAccountStatus({
         id: accountIdC,
         status: "pending",
-        updatedByUserId,
+        updatedByKratosUserId,
       })
       if (account instanceof Error) {
         throw account
@@ -177,7 +171,7 @@ describe("UserWallet", () => {
       account = await Accounts.updateAccountStatus({
         id: account.id,
         status: "locked",
-        updatedByUserId,
+        updatedByKratosUserId,
         comment: "Looks spammy",
       })
       if (account instanceof Error) {
@@ -185,7 +179,7 @@ describe("UserWallet", () => {
       }
       expect(account.statusHistory.slice(-1)[0]).toMatchObject({
         status: "locked",
-        updatedByUserId,
+        updatedByKratosUserId,
         comment: "Looks spammy",
       })
       expect(account.status).toEqual("locked")
@@ -193,42 +187,13 @@ describe("UserWallet", () => {
       account = await Accounts.updateAccountStatus({
         id: account.id,
         status: "active",
-        updatedByUserId,
+        updatedByKratosUserId,
       })
       if (account instanceof Error) {
         throw account
       }
       expect(account.statusHistory.length).toBe(4)
       expect(account.status).toEqual("active")
-    })
-  })
-
-  describe("save2fa", () => {
-    it("saves 2fa for userA", async () => {
-      const usersRepo = UsersRepository()
-      const user = await usersRepo.findById(userIdA)
-      if (user instanceof Error) throw user
-
-      const secret = await enable2FA(userIdA)
-      if (secret instanceof Error) return secret
-
-      userRecordA = await getUserRecordByTestUserRef("A")
-      expect(userRecordA.twoFA.secret).toBe(secret)
-    })
-  })
-
-  // TODO: reimplement with kratos
-  describe.skip("delete2fa", () => {
-    it("delete 2fa for userA", async () => {
-      const usersRepo = UsersRepository()
-      const user = await usersRepo.findById(userIdA)
-      if (user instanceof Error) throw user
-
-      const token = generateTokenHelper("FIXME userRecordA.twoFA.secret")
-      const result = await delete2fa({ token, userId: userIdA })
-      expect(result).toBeTruthy()
-      userRecordA = await getUserRecordByTestUserRef("A")
-      expect(userRecordA.twoFA.secret).toBeUndefined()
     })
   })
 })

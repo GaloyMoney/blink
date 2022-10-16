@@ -7,7 +7,8 @@ import * as serviceLedger from "@services/ledger"
 import { LedgerService } from "@services/ledger"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
-import { UsersRepository, WalletsRepository } from "@services/mongoose"
+import { WalletsRepository } from "@services/mongoose"
+import { IdentityRepository } from "@services/kratos"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
@@ -51,24 +52,26 @@ describe("notification", () => {
       expect(sendNotification.mock.calls.length).toBeGreaterThan(0)
 
       let usersWithDeviceTokens = 0
-      for (const { ownerId } of activeAccounts) {
-        const user = await UsersRepository().findById(ownerId)
-        if (user instanceof Error) throw user
+      for (const { kratosUserId } of activeAccounts) {
+        const user = await IdentityRepository().getIdentity(kratosUserId)
+        if (user instanceof Error) return user
 
-        if (user.deviceTokens && user.deviceTokens.length > 0) usersWithDeviceTokens++
+        if (user.deviceTokens.length > 0) usersWithDeviceTokens++
       }
 
       expect(sendNotification.mock.calls.length).toBe(usersWithDeviceTokens)
 
       for (let i = 0; i < sendNotification.mock.calls.length; i++) {
         const [call] = sendNotification.mock.calls[i]
-        const { defaultWalletId, ownerId } = activeAccounts[i]
+        const { defaultWalletId, kratosUserId } = activeAccounts[i]
 
-        const user = await UsersRepository().findById(ownerId)
-        if (user instanceof Error) throw user
+        const user = await IdentityRepository().getIdentity(kratosUserId)
+        if (user instanceof Error) return user
 
         const wallet = await WalletsRepository().findById(defaultWalletId)
-        if (wallet instanceof Error) throw wallet
+        if (wallet instanceof Error) {
+          throw wallet
+        }
 
         const balance = await LedgerService().getWalletBalance(defaultWalletId)
         if (balance instanceof Error) throw balance

@@ -18,3 +18,12 @@ type ValidateKratosTokenResult = {
   kratosUserId: KratosUserId
   session: Session
 }
+
+type KratosPublicMetadata = {
+  language: UserLanguage
+  deviceTokens: DeviceToken[]
+}
+
+type KratosAdminMetadata = {
+  phoneMetadata: PhoneMetadata | undefined
+}

@@ -110,16 +110,16 @@ type MeResolveUpdate =
   | MeResolveOnChain
   | MeResolveIntraLedger
 
-const userPayload = (domainUser: User | null) => (updateData: MeResolveUpdate) => ({
+const userPayload = (domainAccount: Account | null) => (updateData: MeResolveUpdate) => ({
   errors: [],
-  me: domainUser,
+  me: domainAccount,
   update: updateData,
 })
 
 const MeSubscription = {
   type: GT.NonNull(MyUpdatesPayload),
-  resolve: (source: MeResolveSource, _args: unknown, ctx: GraphQLContextForUser) => {
-    if (!ctx.domainUser) {
+  resolve: (source: MeResolveSource, _args: unknown, ctx: GraphQLContextAuth) => {
+    if (!ctx.domainAccount) {
       throw new AuthenticationError({
         message: "Not Authenticated for subscription",
         logger: baseLogger,
@@ -138,7 +138,7 @@ const MeSubscription = {
       return { errors: source.errors }
     }
 
-    const myPayload = userPayload(ctx.domainUser)
+    const myPayload = userPayload(ctx.domainAccount)
 
     if (source.price) {
       return userPayload(null)({
@@ -171,8 +171,8 @@ const MeSubscription = {
     }
   },
 
-  subscribe: async (_source: unknown, _args: unknown, ctx: GraphQLContextForUser) => {
-    if (!ctx.domainUser) {
+  subscribe: async (_source: unknown, _args: unknown, ctx: GraphQLContextAuth) => {
+    if (!ctx.domainAccount) {
       throw new AuthenticationError({
         message: "Not Authenticated for subscription",
         logger: baseLogger,

@@ -1,5 +1,5 @@
-type UserIPs = {
-  readonly id: UserId
+type AccountIPs = {
+  readonly id: AccountId
   lastIPs: IPType[]
 }
 
@@ -14,7 +14,7 @@ type IPMetadataValidator = {
   validateForReward(ipMetadata?: IPType): true | ValidationError
 }
 
-interface IUsersIPsRepository {
-  update(userIp: UserIPs): Promise<true | RepositoryError>
-  findById(userId: UserId): Promise<UserIPs | RepositoryError>
+interface IAccountsIPsRepository {
+  update(accountIp: AccountIPs): Promise<true | RepositoryError>
+  findById(accountId: AccountId): Promise<AccountIPs | RepositoryError>
 }

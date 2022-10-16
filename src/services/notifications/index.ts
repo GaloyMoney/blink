@@ -64,7 +64,7 @@ export const NotificationsService = (): INotificationsService => {
 
         // Do not await this call for quicker processing
         pushNotification.sendNotification({
-          deviceToken: recipientDeviceTokens,
+          deviceTokens: recipientDeviceTokens,
           title,
           body,
         })
@@ -121,7 +121,7 @@ export const NotificationsService = (): INotificationsService => {
 
         // Do not await this call for quicker processing
         pushNotification.sendNotification({
-          deviceToken: recipientDeviceTokens,
+          deviceTokens: recipientDeviceTokens,
           title,
           body,
         })
@@ -146,8 +146,8 @@ export const NotificationsService = (): INotificationsService => {
     walletId: WalletId
     paymentAmount: PaymentAmount<WalletCurrency>
     displayPaymentAmount?: DisplayPaymentAmount<DisplayCurrency>
-    deviceTokens?: DeviceToken[]
-    language?: UserLanguage
+    deviceTokens: DeviceToken[]
+    language: UserLanguage
     txHash: OnChainTxHash
   }): Promise<void | NotificationsServiceError> => {
     try {
@@ -176,7 +176,7 @@ export const NotificationsService = (): INotificationsService => {
         payload: { transaction: data },
       })
 
-      if (deviceTokens && deviceTokens.length > 0) {
+      if (deviceTokens.length > 0) {
         const { title, body } = createPushNotificationContent({
           type,
           userLanguage: language,
@@ -186,7 +186,7 @@ export const NotificationsService = (): INotificationsService => {
 
         // Do not await this call for quicker processing
         pushNotification.sendNotification({
-          deviceToken: deviceTokens,
+          deviceTokens,
           title,
           body,
         })
@@ -286,7 +286,7 @@ export const NotificationsService = (): INotificationsService => {
 
       // Do not await this call for quicker processing
       pushNotification.sendNotification({
-        deviceToken: recipientDeviceTokens,
+        deviceTokens: recipientDeviceTokens,
         title,
         body,
       })

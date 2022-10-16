@@ -15,7 +15,6 @@ describe("PaymentInputValidator", () => {
     createdAt: new Date(),
     username: "username" as Username,
     defaultWalletId: "senderWalletId" as WalletId,
-    ownerId: "ownerId" as UserId,
     depositFeeRatio: 0 as DepositFeeRatio,
     withdrawFee: 0 as Satoshis,
     level: AccountLevel.One,
@@ -30,6 +29,7 @@ describe("PaymentInputValidator", () => {
     contacts: [],
     isEditor: false,
     quizQuestions: [],
+    kratosUserId: "kratosUserId" as KratosUserId,
   }
 
   const dummySenderWallet: Wallet = {

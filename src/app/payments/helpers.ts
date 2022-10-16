@@ -1,11 +1,10 @@
 import {
-  getTwoFALimits,
   getAccountLimits,
   MIN_SATS_FOR_PRICE_RATIO_PRECISION,
   getPubkeysToSkipProbe,
   ONE_DAY,
 } from "@config"
-import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
+import { AccountLimitsChecker } from "@domain/accounts"
 import {
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
@@ -225,32 +224,6 @@ export const newCheckWithdrawalLimits = async <S extends WalletCurrency>({
   })
 
   return checkWithdrawal({
-    amount,
-    walletVolume,
-  })
-}
-
-export const newCheckTwoFALimits = async <S extends WalletCurrency>({
-  amount,
-  wallet,
-  priceRatio,
-}: {
-  amount: UsdPaymentAmount
-  wallet: WalletDescriptor<S>
-  priceRatio: PriceRatio
-}) => {
-  const timestamp1Day = timestampDaysAgo(ONE_DAY)
-  if (timestamp1Day instanceof Error) return timestamp1Day
-
-  const walletVolume = await ledger.allPaymentVolumeAmountSince({
-    walletDescriptor: wallet,
-    timestamp: timestamp1Day,
-  })
-  if (walletVolume instanceof Error) return walletVolume
-  const twoFALimits = getTwoFALimits()
-  const { checkTwoFA } = TwoFALimitsChecker({ twoFALimits, priceRatio })
-
-  return checkTwoFA({
     amount,
     walletVolume,
   })

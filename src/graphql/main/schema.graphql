@@ -664,9 +664,6 @@ type Mutation {
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
   onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload!
-  twoFADelete(input: TwoFADeleteInput!): SuccessPayload!
-  twoFAGenerate: TwoFAGeneratePayload!
-  twoFASave(input: TwoFASaveInput!): SuccessPayload!
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
@@ -1009,25 +1006,6 @@ type TransactionEdge {
   node: Transaction!
 }
 
-input TwoFADeleteInput {
-  token: String!
-}
-
-type TwoFAGeneratePayload {
-  errors: [Error!]!
-  twoFASecret: TwoFASecret
-}
-
-input TwoFASaveInput {
-  secret: String!
-  token: String!
-}
-
-type TwoFASecret {
-  secret: String!
-  uri: String!
-}
-
 enum TxDirection {
   RECEIVE
   SEND
@@ -1142,7 +1120,6 @@ type User {
   List the quiz questions the user may have completed.
   """
   quizQuestions: [UserQuizQuestion!]! @deprecated(reason: "will be moved to Accounts")
-  twoFAEnabled: Boolean
 
   """
   Optional immutable user friendly identifier.

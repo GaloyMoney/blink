@@ -36,7 +36,7 @@ const LnInvoicePaymentSendMutation = GT.Field<
     }
   },
   null,
-  GraphQLContextForUser
+  GraphQLContextAuth
 >({
   extensions: {
     complexity: 120,

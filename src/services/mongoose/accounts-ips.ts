@@ -9,12 +9,12 @@ import {
 
 import { fromObjectId, toObjectId, parseRepositoryError } from "./utils"
 
-export const UsersIpRepository = (): IUsersIPsRepository => {
-  const update = async (userIp: UserIPs): Promise<true | RepositoryError> => {
+export const AccountsIpRepository = (): IAccountsIPsRepository => {
+  const update = async (accountIp: AccountIPs): Promise<true | RepositoryError> => {
     try {
       const result = await User.updateOne(
-        { _id: toObjectId<UserId>(userIp.id) },
-        { $set: { lastConnection: new Date(), lastIPs: userIp.lastIPs } },
+        { _id: toObjectId<AccountId>(accountIp.id) },
+        { $set: { lastConnection: new Date(), lastIPs: accountIp.lastIPs } },
       )
 
       if (result.matchedCount === 0) {
@@ -31,14 +31,16 @@ export const UsersIpRepository = (): IUsersIPsRepository => {
     }
   }
 
-  const findById = async (userId: UserId): Promise<UserIPs | RepositoryError> => {
+  const findById = async (
+    accountId: AccountId,
+  ): Promise<AccountIPs | RepositoryError> => {
     try {
       const result = await User.findOne(
-        { _id: toObjectId<UserId>(userId) },
+        { _id: toObjectId<AccountId>(accountId) },
         { lastIPs: 1 },
       )
       if (!result) {
-        return new CouldNotFindUserFromIdError(userId)
+        return new CouldNotFindUserFromIdError(accountId)
       }
 
       return userIPsFromRaw(result)
@@ -53,9 +55,9 @@ export const UsersIpRepository = (): IUsersIPsRepository => {
   }
 }
 
-const userIPsFromRaw = (result: UserRecord): UserIPs => {
+const userIPsFromRaw = (result: AccountRecord): AccountIPs => {
   return {
-    id: fromObjectId<UserId>(result._id),
+    id: fromObjectId<AccountId>(result._id),
     lastIPs: (result.lastIPs || []) as IPType[],
   }
 }

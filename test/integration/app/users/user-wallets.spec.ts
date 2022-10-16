@@ -1,10 +1,10 @@
+import { randomUUID } from "crypto"
+
 import { Accounts } from "@app"
 import { AccountStatus } from "@domain/accounts"
 import { WalletCurrency } from "@domain/shared"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
-
-import getUuidByString from "uuid-by-string"
 
 const randomPhoneNumber = () => {
   const numDigits = 14
@@ -12,7 +12,7 @@ const randomPhoneNumber = () => {
 }
 
 const randomKratosId = () => {
-  return getUuidByString(randomPhoneNumber()) as KratosUserId
+  return randomUUID() as KratosUserId
 }
 
 const createAccount = async (initialWallets: WalletCurrency[]) => {

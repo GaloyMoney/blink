@@ -26,9 +26,9 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
     return result.defaultWalletId
   },
   dealerBtcWalletResolver: async () => {
-    const user: UserRecord | null = await User.findOne({ role: "dealer" }, { id: 1 })
+    const user: AccountRecord | null = await User.findOne({ role: "dealer" }, { id: 1 })
     if (!user) throw new ConfigError("missing dealer")
-    // FIXME remove the use of UserRecord when role if part of the AccountRepository
+    // FIXME remove the use of AccountRecord when role if part of the AccountRepository
     const accountId = fromObjectId<AccountId>(user._id)
     const wallets = await WalletsRepository().listByAccountId(accountId)
     if (wallets instanceof Error) {
@@ -40,9 +40,9 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
     return wallet.id
   },
   dealerUsdWalletResolver: async () => {
-    const user: UserRecord | null = await User.findOne({ role: "dealer" }, { id: 1 })
+    const user: AccountRecord | null = await User.findOne({ role: "dealer" }, { id: 1 })
     if (!user) throw new ConfigError("missing dealer")
-    // FIXME remove the use of UserRecord when role if part of the AccountRepository
+    // FIXME remove the use of AccountRecord when role if part of the AccountRepository
     const accountId = fromObjectId<AccountId>(user._id)
     const wallets = await WalletsRepository().listByAccountId(accountId)
     if (wallets instanceof Error) {
