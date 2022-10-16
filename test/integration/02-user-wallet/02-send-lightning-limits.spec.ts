@@ -13,14 +13,17 @@ import { AccountsRepository } from "@services/mongoose"
 
 import { sleep } from "@utils"
 
+import { addWallet } from "@app/accounts"
+
+import { WalletType } from "@domain/wallets"
+
 import {
   cancelOkexPricePublish,
   checkIsBalanced,
   createInvoice,
-  createNewWalletFromPhone,
+  freshAccount,
   lndOutside1,
   publishOkexPrice,
-  randomPhone,
   safePay,
 } from "test/helpers"
 
@@ -57,23 +60,23 @@ const dealerUsdFromBtc = newDealerFns.getCentsFromSatsForImmediateSell
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
-let otherPhone: PhoneNumber
+let otherAccountId: AccountId
 let otherBtcWallet: Wallet
 let otherUsdWallet: Wallet // eslint-disable-line @typescript-eslint/no-unused-vars
 
 beforeAll(async () => {
   await publishOkexPrice()
-  otherPhone = randomPhone()
+  otherAccountId = (await freshAccount()).id
 
-  const btcWallet = await createNewWalletFromPhone({
-    phone: otherPhone,
+  const btcWallet = await addNewWallet({
+    accountId: otherAccountId,
     currency: WalletCurrency.Btc,
   })
   if (btcWallet instanceof Error) throw btcWallet
   otherBtcWallet = btcWallet
 
-  const usdWallet = await createNewWalletFromPhone({
-    phone: otherPhone,
+  const usdWallet = await addNewWallet({
+    accountId: otherAccountId,
     currency: WalletCurrency.Usd,
   })
   if (usdWallet instanceof Error) throw usdWallet
@@ -89,16 +92,34 @@ afterAll(() => {
   jest.restoreAllMocks()
 })
 
-const createAndFundNewWalletForPhone = async <S extends WalletCurrency>({
-  phone,
+const addNewWallet = async ({
+  accountId,
+  currency,
+}: {
+  accountId: AccountId
+  currency: WalletCurrency
+}): Promise<Wallet> => {
+  // Create wallet for account (phone number)
+  const wallet = await addWallet({
+    currency,
+    accountId,
+    type: WalletType.Checking,
+  })
+  if (wallet instanceof Error) throw wallet
+
+  return wallet
+}
+
+const createAndFundNewWallet = async <S extends WalletCurrency>({
+  accountId,
   balanceAmount,
 }: {
-  phone: PhoneNumber
+  accountId: AccountId
   balanceAmount: PaymentAmount<S>
 }) => {
   // Create new wallet
-  const wallet = await createNewWalletFromPhone({
-    phone,
+  const wallet = await addNewWallet({
+    accountId,
     currency: balanceAmount.currency,
   })
   if (wallet instanceof Error) throw wallet
@@ -285,13 +306,15 @@ const successLimitsPaymentTests = ({
 }
 
 describe("UserWallet Limits - Lightning Pay", () => {
-  const phone = randomPhone()
+  let accountId: AccountId
 
   describe("single payment above limit fails limit check", () => {
     it("fails to pay when withdrawalLimit exceeded", async () => {
+      accountId = (await freshAccount()).id
+
       // Create new wallet
-      const newWallet = await createAndFundNewWalletForPhone({
-        phone,
+      const newWallet = await createAndFundNewWallet({
+        accountId,
         balanceAmount: await btcAmountFromUsdNumber(MOCKED_BALANCE_ABOVE_THRESHOLD),
       })
 
@@ -311,8 +334,8 @@ describe("UserWallet Limits - Lightning Pay", () => {
 
     it("fails to pay when amount exceeds intraLedger limit", async () => {
       // Create new wallet
-      const newWallet = await createAndFundNewWalletForPhone({
-        phone,
+      const newWallet = await createAndFundNewWallet({
+        accountId,
         balanceAmount: await btcAmountFromUsdNumber(MOCKED_BALANCE_ABOVE_THRESHOLD),
       })
 
@@ -338,13 +361,13 @@ describe("UserWallet Limits - Lightning Pay", () => {
       if (usdFundingAmount instanceof Error) throw usdFundingAmount
 
       // Create new wallets
-      const newBtcWallet = await createAndFundNewWalletForPhone({
-        phone,
+      const newBtcWallet = await createAndFundNewWallet({
+        accountId,
         balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
       })
 
-      const newUsdWallet = await createAndFundNewWalletForPhone({
-        phone,
+      const newUsdWallet = await createAndFundNewWallet({
+        accountId,
         balanceAmount: usdFundingAmount,
       })
 
@@ -378,13 +401,13 @@ describe("UserWallet Limits - Lightning Pay", () => {
       })
       if (usdFundingAmount instanceof Error) throw usdFundingAmount
 
-      const newBtcWallet = await createAndFundNewWalletForPhone({
-        phone,
+      const newBtcWallet = await createAndFundNewWallet({
+        accountId,
         balanceAmount: await btcAmountFromUsdNumber(MOCKED_BALANCE_ABOVE_THRESHOLD),
       })
 
-      const newUsdWallet = await createAndFundNewWalletForPhone({
-        phone,
+      const newUsdWallet = await createAndFundNewWallet({
+        accountId,
         balanceAmount: usdFundingAmount,
       })
 

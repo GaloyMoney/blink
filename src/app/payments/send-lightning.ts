@@ -28,7 +28,6 @@ import { LndService } from "@services/lnd"
 import {
   AccountsRepository,
   LnPaymentsRepository,
-  UsersRepository,
   WalletInvoicesRepository,
   WalletsRepository,
   PaymentFlowStateRepository,
@@ -45,6 +44,8 @@ import { addAttributesToCurrentSpan } from "@services/tracing"
 import { Wallets } from "@app"
 
 import { ResourceExpiredLockServiceError } from "@domain/lock"
+
+import { IdentityRepository } from "@services/kratos"
 
 import {
   constructPaymentFlowBuilder,
@@ -439,7 +440,9 @@ const executePaymentViaIntraledger = async <
     )
     if (recipientAccount instanceof Error) return recipientAccount
 
-    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+    const recipientUser = await IdentityRepository().getIdentity(
+      recipientAccount.kratosUserId,
+    )
     if (recipientUser instanceof Error) return recipientUser
 
     let amount = paymentFlow.btcPaymentAmount.amount

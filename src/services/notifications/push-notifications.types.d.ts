@@ -1,5 +1,5 @@
 type SendPushNotificationArgs = {
-  deviceToken: string | string[]
+  deviceTokens: DeviceToken[]
   title: string
   body?: string
   data?: { [key: string]: string }
@@ -7,7 +7,7 @@ type SendPushNotificationArgs = {
 
 interface IPushNotificationsService {
   sendNotification({
-    deviceToken,
+    deviceTokens,
     title,
     body,
     data,

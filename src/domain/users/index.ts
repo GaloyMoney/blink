@@ -1,6 +1,7 @@
 import { AccountLevel } from "@domain/accounts"
 import {
   InvalidAccountLevelError,
+  InvalidDeviceTokenError,
   InvalidEmailAddress,
   InvalidLanguageError,
   InvalidPhoneNumber,
@@ -33,9 +34,20 @@ export const checkedToEmailAddress = (
 }
 
 export const checkedToLanguage = (language: string): UserLanguage | ValidationError => {
+  // FIXME: "" is not in the Languages list and this can lead to error
+  // (NB: have seen that in tests. need to reproduce)
   if (language === "DEFAULT" || language === "") return "" as UserLanguage
   if (Languages.includes(language)) return language as UserLanguage
   return new InvalidLanguageError()
+}
+
+export const checkedToDeviceToken = (token: string): DeviceToken | ValidationError => {
+  // token from firebase have a length of 163
+  if (token.length !== 163) {
+    return new InvalidDeviceTokenError("wrong length, expected")
+  }
+
+  return token as DeviceToken
 }
 
 export const checkedToAccountLevel = (level: number): AccountLevel | ValidationError => {

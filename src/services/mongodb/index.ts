@@ -13,22 +13,25 @@ import { baseLogger } from "../logger"
 import {
   DbMetadata,
   PhoneCode,
-  User,
   Wallet,
   WalletInvoice,
   PaymentFlowState,
+  Account,
 } from "../mongoose/schema"
 
 export const ledgerAdmin = lazyLoadLedgerAdmin({
   bankOwnerWalletResolver: async () => {
-    const result = await User.findOne({ role: "bankowner" }, { defaultWalletId: 1 })
+    const result = await Account.findOne({ role: "bankowner" }, { defaultWalletId: 1 })
     if (!result) throw new ConfigError("missing bankowner")
     return result.defaultWalletId
   },
   dealerBtcWalletResolver: async () => {
-    const user: UserRecord | null = await User.findOne({ role: "dealer" }, { id: 1 })
+    const user: AccountRecord | null = await Account.findOne(
+      { role: "dealer" },
+      { id: 1 },
+    )
     if (!user) throw new ConfigError("missing dealer")
-    // FIXME remove the use of UserRecord when role if part of the AccountRepository
+    // FIXME remove the use of AccountRecord when role if part of the AccountRepository
     const accountId = fromObjectId<AccountId>(user._id)
     const wallets = await WalletsRepository().listByAccountId(accountId)
     if (wallets instanceof Error) {
@@ -40,9 +43,12 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
     return wallet.id
   },
   dealerUsdWalletResolver: async () => {
-    const user: UserRecord | null = await User.findOne({ role: "dealer" }, { id: 1 })
+    const user: AccountRecord | null = await Account.findOne(
+      { role: "dealer" },
+      { id: 1 },
+    )
     if (!user) throw new ConfigError("missing dealer")
-    // FIXME remove the use of UserRecord when role if part of the AccountRepository
+    // FIXME remove the use of AccountRecord when role if part of the AccountRepository
     const accountId = fromObjectId<AccountId>(user._id)
     const wallets = await WalletsRepository().listByAccountId(accountId)
     if (wallets instanceof Error) {
@@ -54,7 +60,7 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
     return wallet.id
   },
   funderWalletResolver: async () => {
-    const result = await User.findOne({ role: "funder" }, { defaultWalletId: 1 })
+    const result = await Account.findOne({ role: "funder" }, { defaultWalletId: 1 })
     if (!result) throw new ConfigError("missing funder")
     return result.defaultWalletId
   },
@@ -87,7 +93,7 @@ export const setupMongoConnection = async (syncIndexes = false) => {
       await PaymentFlowState.syncIndexes()
       await PhoneCode.syncIndexes()
       await TransactionMetadata.syncIndexes()
-      await User.syncIndexes()
+      await Account.syncIndexes()
       await Wallet.syncIndexes()
       await WalletInvoice.syncIndexes()
     }

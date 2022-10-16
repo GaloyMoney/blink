@@ -48,7 +48,7 @@ type AccountContact = {
 type AccountStatusHistory = Array<{
   status: AccountStatus
   updatedAt?: Date
-  updatedByUserId?: UserId
+  updatedByUserId?: KratosUserId
   comment?: string
 }>
 
@@ -57,7 +57,6 @@ type Account = {
   readonly createdAt: Date
   username: Username
   defaultWalletId: WalletId
-  readonly ownerId: UserId
   readonly depositFeeRatio: DepositFeeRatio
   withdrawFee: Satoshis // TODO: make it optional. only save when not default value from yaml
   level: AccountLevel
@@ -68,9 +67,11 @@ type Account = {
   contactEnabled: boolean
   readonly contacts: AccountContact[]
   readonly isEditor: boolean
-  role?: string
   readonly quizQuestions: UserQuizQuestion[]
-  kratosUserId?: KratosUserId // TODO: remove ? after initial kratos migration
+  kratosUserId: KratosUserId
+
+  // temp
+  role?: string
 }
 
 type QuizQuestionId = string & { readonly brand: unique symbol }
@@ -136,33 +137,13 @@ type AccountValidator = {
   validateWalletForAccount(wallet: Wallet): true | ValidationError
 }
 
-type NewAccountWithEmailIdentifier = {
-  kratosUserId: KratosUserId
-  phone?: undefined
-  phoneMetadata?: undefined
-}
-
-type NewAccountWithPhoneIdentifier = {
-  kratosUserId: KratosUserId
-  phone: PhoneNumber
-  phoneMetadata?: PhoneMetadata
-}
-
-type NewAccount = NewAccountWithEmailIdentifier | NewAccountWithPhoneIdentifier
-
 interface IAccountsRepository {
+  list(): Promise<Account[] | RepositoryError>
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
-  findByUserId(userId: UserId): Promise<Account | RepositoryError>
-
   findByKratosUserId(kratosUserId: KratosUserId): Promise<Account | RepositoryError>
-  persistNew({ kratosUserId }: NewAccount): Promise<Account | RepositoryError>
 
-  persistNew({
-    kratosUserId,
-    phone,
-    phoneMetadata,
-  }: NewAccount): Promise<Account | RepositoryError>
+  persistNew(kratosUserId: KratosUserId): Promise<Account | RepositoryError>
 
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>

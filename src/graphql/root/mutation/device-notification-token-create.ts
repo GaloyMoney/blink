@@ -1,8 +1,8 @@
 import { GT } from "@graphql/index"
 
 import SuccessPayload from "@graphql/types/payload/success-payload"
-import { User } from "@services/mongoose/schema"
-import { toObjectId } from "@services/mongoose/utils"
+
+import { Users } from "@app"
 
 const DeviceNotificationTokenCreateInput = GT.Input({
   name: "DeviceNotificationTokenCreateInput",
@@ -14,7 +14,7 @@ const DeviceNotificationTokenCreateInput = GT.Input({
 const DeviceNotificationTokenCreateMutation = GT.Field<
   { input: { deviceToken: string } },
   null,
-  GraphQLContextForUser
+  GraphQLContextAuth
 >({
   extensions: {
     complexity: 120,
@@ -23,18 +23,11 @@ const DeviceNotificationTokenCreateMutation = GT.Field<
   args: {
     input: { type: GT.NonNull(DeviceNotificationTokenCreateInput) },
   },
-  resolve: async (_, args, { domainUser }) => {
+  resolve: async (_, args, { kratosUser }) => {
     const { deviceToken } = args.input
 
     try {
-      // FIXME: this should be moved to a use case
-      const user = await User.findOne({ _id: toObjectId<UserId>(domainUser.id) })
-      if (!user) throw Error("find user issue")
-
-      if (!user.deviceToken.includes(deviceToken)) {
-        user.deviceToken.push(deviceToken)
-      }
-      await user.save()
+      await Users.addDeviceToken({ kratosUserId: kratosUser.id, deviceToken })
     } catch (err) {
       return { errors: [{ message: err.message }] }
     }

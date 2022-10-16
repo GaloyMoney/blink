@@ -3,7 +3,7 @@ import OneTimeAuthCode from "@graphql/types/scalar/one-time-auth-code"
 
 import Phone from "@graphql/types/scalar/phone"
 import AuthTokenPayload from "@graphql/types/payload/auth-token"
-import { Users } from "@app"
+import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 
 const UserLoginInput = GT.Input({
@@ -31,7 +31,7 @@ const UserLoginMutation = GT.Field<{
   args: {
     input: { type: GT.NonNull(UserLoginInput) },
   },
-  resolve: async (_, args, { logger, ip }) => {
+  resolve: async (_, args, { ip }) => {
     const { phone, code } = args.input
 
     if (phone instanceof Error) {
@@ -46,7 +46,7 @@ const UserLoginMutation = GT.Field<{
       return { errors: [{ message: "ip is undefined" }] }
     }
 
-    const authToken = await Users.loginWithPhone({ phone, code, logger, ip })
+    const authToken = await Auth.loginWithPhone({ phone, code, ip })
 
     if (authToken instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(authToken)] }

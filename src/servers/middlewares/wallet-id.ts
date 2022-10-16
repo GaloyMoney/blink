@@ -6,10 +6,10 @@ import { mapError } from "@graphql/error-map"
 type InputArgs = Record<"input", Record<string, unknown>>
 
 const validateWalletId = async (
-  resolve: GraphQLFieldResolver<unknown, GraphQLContext | GraphQLContextForUser>,
+  resolve: GraphQLFieldResolver<unknown, GraphQLContext | GraphQLContextAuth>,
   parent: unknown,
   args: unknown,
-  context: GraphQLContext | GraphQLContextForUser,
+  context: GraphQLContext | GraphQLContextAuth,
   info: GraphQLResolveInfo,
 ) => {
   const { walletId } = (args as InputArgs).input || args || {}
@@ -31,10 +31,10 @@ const validateWalletId = async (
 }
 
 const validateWalletIdQuery = async (
-  resolve: GraphQLFieldResolver<unknown, GraphQLContext | GraphQLContextForUser>,
+  resolve: GraphQLFieldResolver<unknown, GraphQLContext | GraphQLContextAuth>,
   parent: unknown,
   args: unknown,
-  context: GraphQLContext | GraphQLContextForUser,
+  context: GraphQLContext | GraphQLContextAuth,
   info: GraphQLResolveInfo,
 ) => {
   const result = await validateWalletId(resolve, parent, args, context, info)
@@ -43,10 +43,10 @@ const validateWalletIdQuery = async (
 }
 
 const validateWalletIdMutation = async (
-  resolve: GraphQLFieldResolver<unknown, GraphQLContext | GraphQLContextForUser>,
+  resolve: GraphQLFieldResolver<unknown, GraphQLContext | GraphQLContextAuth>,
   parent: unknown,
   args: unknown,
-  context: GraphQLContext | GraphQLContextForUser,
+  context: GraphQLContext | GraphQLContextAuth,
   info: GraphQLResolveInfo,
 ) => {
   const result = await validateWalletId(resolve, parent, args, context, info)
