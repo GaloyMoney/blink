@@ -4,7 +4,6 @@ import { getDefaultAccountsConfig, getFeesConfig, levels } from "@config"
 import { AccountStatus, UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
-import { Languages } from "@domain/users"
 import mongoose from "mongoose"
 
 import { WalletRecord } from "./wallets"
@@ -127,7 +126,7 @@ const WalletSchema = new Schema<WalletRecord>({
 
 export const Wallet = mongoose.model<WalletRecord>("Wallet", WalletSchema)
 
-const UserSchema = new Schema<UserRecord>(
+const AccountSchema = new Schema<AccountRecord>(
   {
     depositFeeRatio: {
       type: Number,
@@ -189,28 +188,6 @@ const UserSchema = new Schema<UserRecord>(
       default: 1,
     },
 
-    // TODO: refactor, have phone and twilio metadata in the same sub-object.
-    phone: {
-      type: String,
-      index: true,
-      unique: true,
-      sparse: true,
-    },
-    twilio: {
-      // TODO: rename to PhoneMetadata
-      carrier: {
-        error_code: String, // check this is the right syntax
-        mobile_country_code: String,
-        mobile_network_code: String,
-        name: String,
-        type: {
-          types: String,
-          enum: ["landline", "voip", "mobile"],
-        },
-      },
-      countryCode: String,
-    },
-
     kratosUserId: {
       type: String,
       index: true,
@@ -228,10 +205,6 @@ const UserSchema = new Schema<UserRecord>(
         collation: { locale: "en", strength: 2 },
         partialFilterExpression: { username: { $type: "string" } },
       },
-    },
-    deviceToken: {
-      type: [String],
-      default: [],
     },
     contactEnabled: {
       type: Boolean,
@@ -256,15 +229,6 @@ const UserSchema = new Schema<UserRecord>(
       ],
       default: [],
     },
-    language: {
-      type: String,
-      enum: [...Languages, ""],
-      default: "",
-    },
-    // firstName,
-    // lastName,
-    // activated,
-    // etc
 
     title: {
       type: String,
@@ -295,9 +259,8 @@ const UserSchema = new Schema<UserRecord>(
             default: Date.now,
             required: true,
           },
-          updatedByUserId: {
-            type: Schema.Types.ObjectId,
-            ref: "User",
+          updatedByKratosUserId: {
+            type: String,
             required: false,
           },
           comment: {
@@ -319,12 +282,12 @@ const UserSchema = new Schema<UserRecord>(
   { id: false },
 )
 
-UserSchema.index({
+AccountSchema.index({
   title: 1,
   coordinates: 1,
 })
 
-export const User = mongoose.model<UserRecord>("User", UserSchema)
+export const User = mongoose.model<AccountRecord>("User", AccountSchema)
 
 // TODO: this DB should be capped.
 const PhoneCodeSchema = new Schema({

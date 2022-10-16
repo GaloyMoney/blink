@@ -441,6 +441,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "CaptchaError":
     case "InvalidNonHodlInvoiceError":
     case "InvalidAccountIdError":
+    case "InvalidDeviceTokenError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`

@@ -87,7 +87,7 @@ const addTracing = () => {
     const original = fields[key].resolve
     /* eslint @typescript-eslint/ban-ts-comment: "off" */
     // @ts-ignore-next-line no-implicit-any error
-    fields[key].resolve = (source, args, context: GraphQLContextForUser, info) => {
+    fields[key].resolve = (source, args, context: GraphQLContextAuth, info) => {
       const { ip, domainAccount } = context
       return addAttributesToCurrentSpanAndPropagate(
         {

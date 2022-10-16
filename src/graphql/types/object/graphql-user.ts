@@ -1,4 +1,3 @@
-import getUuidByString from "uuid-by-string"
 import dedent from "dedent"
 
 import { GT } from "@graphql/index"
@@ -25,11 +24,6 @@ const GraphQLUser = GT.Object({
   fields: () => ({
     id: {
       type: GT.NonNullID,
-
-      // TODO after migration to oathkeeper/kratos, remove getUuidByString
-      // eventually add a uuiv v4 to accounts so that there is no longer
-      //  ID dependency on mongodb
-      resolve: (source) => getUuidByString(source.id),
     },
 
     phone: {
@@ -41,7 +35,7 @@ const GraphQLUser = GT.Object({
       type: Username,
       description: "Optional immutable user friendly identifier.",
       resolve: async (source, args, { domainAccount }) => {
-        return domainAccount?.username || source.username
+        return domainAccount?.username
       },
       deprecationReason: "will be moved to @Handle in Account and Wallet",
     },
@@ -56,6 +50,9 @@ const GraphQLUser = GT.Object({
       deprecationReason: `will be moved to Accounts`,
       type: GT.NonNullList(UserQuizQuestion),
       description: "List the quiz questions the user may have completed.",
+      resolve: async (source, args, { domainAccount }) => {
+        return domainAccount?.quizQuestions
+      },
     },
 
     contacts: {

@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto"
+
 import { Accounts } from "@app"
 import { setUsername } from "@app/accounts"
 import { UsernameIsImmutableError, UsernameNotAvailableError } from "@domain/accounts"
@@ -11,10 +13,10 @@ import {
   createUserAndWalletFromUserRef,
   getAccountIdByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  getUserRecordByTestUserRef,
+  getAccountRecordByTestUserRef,
 } from "test/helpers"
 
-let userRecordA: UserRecord, userRecordC: UserRecord
+let userRecordC: AccountRecord
 let walletIdA: WalletId
 let accountIdA: AccountId, accountIdB: AccountId, accountIdC: AccountId
 
@@ -26,8 +28,7 @@ describe("UserWallet", () => {
     await createUserAndWalletFromUserRef("B")
     await createUserAndWalletFromUserRef("C")
 
-    userRecordA = await getUserRecordByTestUserRef("A")
-    userRecordC = await getUserRecordByTestUserRef("C")
+    userRecordC = await getAccountRecordByTestUserRef("C")
 
     walletIdA = await getDefaultWalletIdByTestUserRef("A")
 
@@ -38,11 +39,11 @@ describe("UserWallet", () => {
 
   it("has a role if it was configured", async () => {
     const dealer = await User.findOne({ role: "dealer" })
-    expect(dealer).toHaveProperty("phone")
+    expect(dealer).toBeTruthy()
   })
 
   it("has a title if it was configured", () => {
-    expect(userRecordC.title).toBeTruthy()
+    expect(userRecordC).toHaveProperty("title")
   })
 
   describe("setUsername", () => {
@@ -155,12 +156,12 @@ describe("UserWallet", () => {
     it("sets account status (with history) for given user id", async () => {
       let account
 
-      const updatedByUserId = userRecordA._id as unknown as UserId
+      const updatedByKratosUserId = randomUUID() as KratosUserId
 
       account = await Accounts.updateAccountStatus({
         id: accountIdC,
         status: "pending",
-        updatedByUserId,
+        updatedByKratosUserId,
       })
       if (account instanceof Error) {
         throw account
@@ -170,7 +171,7 @@ describe("UserWallet", () => {
       account = await Accounts.updateAccountStatus({
         id: account.id,
         status: "locked",
-        updatedByUserId,
+        updatedByKratosUserId,
         comment: "Looks spammy",
       })
       if (account instanceof Error) {
@@ -178,7 +179,7 @@ describe("UserWallet", () => {
       }
       expect(account.statusHistory.slice(-1)[0]).toMatchObject({
         status: "locked",
-        updatedByUserId,
+        updatedByKratosUserId,
         comment: "Looks spammy",
       })
       expect(account.status).toEqual("locked")
@@ -186,7 +187,7 @@ describe("UserWallet", () => {
       account = await Accounts.updateAccountStatus({
         id: account.id,
         status: "active",
-        updatedByUserId,
+        updatedByKratosUserId,
       })
       if (account instanceof Error) {
         throw account

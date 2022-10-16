@@ -41,7 +41,6 @@ import { NotificationsService } from "@services/notifications"
 import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
 import {
   AccountsRepository,
-  UsersRepository,
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
@@ -49,6 +48,8 @@ import { LndService } from "@services/lnd"
 import { LoopService } from "@services/loopd"
 import { LND1_LOOP_CONFIG, LND2_LOOP_CONFIG } from "@app/swap/get-active-loopd"
 import { SwapTriggerError } from "@domain/swap/errors"
+
+import { IdentityRepository } from "@services/kratos"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -58,6 +59,8 @@ const logger = baseLogger.child({ module: "trigger" })
 export const onchainTransactionEventHandler = async (
   tx: SubscribeToTransactionsChainTransactionEvent,
 ) => {
+  const identitiesRepo = IdentityRepository()
+
   logger.info({ tx }, "received new onchain tx event")
   const onchainLogger = logger.child({
     topic: "payment",
@@ -117,7 +120,7 @@ export const onchainTransactionEventHandler = async (
     const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
     if (senderAccount instanceof Error) return senderAccount
 
-    const senderUser = await UsersRepository().findById(senderAccount.ownerId)
+    const senderUser = await identitiesRepo.getIdentity(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
 
     await NotificationsService().onChainTxSent({
@@ -164,7 +167,9 @@ export const onchainTransactionEventHandler = async (
         const recipientAccount = await AccountsRepository().findById(wallet.accountId)
         if (recipientAccount instanceof Error) return recipientAccount
 
-        const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+        const recipientUser = await identitiesRepo.getIdentity(
+          recipientAccount.kratosUserId,
+        )
         if (recipientUser instanceof Error) return recipientUser
 
         NotificationsService().onChainTxReceivedPending({

@@ -44,13 +44,13 @@ const addTracing = (trcFields: typeof fields) => {
       trcFields[key].resolve = (
         source: unknown,
         args: unknown,
-        context: GraphQLContext | GraphQLContextForUser,
+        context: GraphQLContext | GraphQLContextAuth,
         info: GraphQLResolveInfo,
       ) => {
-        const { ip, domainAccount, domainUser } = context
+        const { ip, domainAccount, kratosUser } = context
         return addAttributesToCurrentSpanAndPropagate(
           {
-            [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
+            [SemanticAttributes.ENDUSER_ID]: kratosUser?.id,
             [ACCOUNT_USERNAME]: domainAccount?.username,
             [SemanticAttributes.HTTP_CLIENT_IP]: ip,
           },

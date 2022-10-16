@@ -1,5 +1,6 @@
 import { checkedToUsername } from "@domain/accounts"
-import { AccountsRepository, UsersRepository } from "@services/mongoose"
+import { IdentityRepository } from "@services/kratos"
+import { AccountsRepository } from "@services/mongoose"
 
 export const getAccountByUsername = async (username: string) => {
   const usernameValid = checkedToUsername(username)
@@ -10,10 +11,9 @@ export const getAccountByUsername = async (username: string) => {
 }
 
 export const getAccountByUserPhone = async (phone: PhoneNumber) => {
-  const users = UsersRepository()
-  const user = await users.findByPhone(phone)
+  const user = await IdentityRepository().slowFindByPhone(phone)
   if (user instanceof Error) return user
 
   const accounts = AccountsRepository()
-  return accounts.findById(user.defaultAccountId)
+  return accounts.findByKratosUserId(user.id)
 }

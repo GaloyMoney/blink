@@ -1,9 +1,9 @@
 import { JWT_SECRET } from "@config"
 import { ErrorLevel } from "@domain/shared"
 import { RedisCacheService } from "@services/cache"
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import { AuthWithPhonePasswordlessService, IdentityRepository } from "@services/kratos"
 import { LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
-import { AccountsRepository, UsersRepository } from "@services/mongoose"
+import { AccountsRepository } from "@services/mongoose"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 import { NextFunction, Request, Response } from "express"
 import * as jwt from "jsonwebtoken"
@@ -40,23 +40,6 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
     return
   }
 
-  const uid = tokenPayload.uid
-  const user = await UsersRepository().findById(uid)
-  if (user instanceof Error) {
-    // TODO: log error
-    next()
-    return
-  }
-
-  const { phone } = user
-
-  if (!phone) {
-    // TODO: log error
-    // is there users who doesn't have phone on bbw?
-    next()
-    return
-  }
-
   let kratosToken: SessionToken
 
   // the cache aim to limit to 1 session per kratos user on mobile phone
@@ -80,6 +63,23 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
     return
   }
 
+  const uid = tokenPayload.uid as AccountId
+  const account = await AccountsRepository().findById(uid)
+  if (account instanceof Error) {
+    next()
+    return
+  }
+
+  const kratosUserId = account.kratosUserId
+
+  const kratosUser = await IdentityRepository().getIdentity(kratosUserId)
+  if (kratosUser instanceof Error) {
+    next()
+    return
+  }
+
+  const phone = kratosUser.phone
+
   const authService = AuthWithPhonePasswordlessService()
 
   let kratosResult = await authService.login(phone)
@@ -91,14 +91,6 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
   }
 
   if (kratosResult instanceof Error) {
-    next()
-    return
-  }
-
-  const kratosUserId = kratosResult.kratosUserId
-
-  const account = await AccountsRepository().findById(uid)
-  if (account instanceof Error) {
     next()
     return
   }

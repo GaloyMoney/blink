@@ -21,11 +21,8 @@ import { RedisCacheService } from "@services/cache"
 import { ColdStorageService } from "@services/cold-storage"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { NotificationsService } from "@services/notifications"
-import {
-  AccountsRepository,
-  UsersRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { IdentityRepository } from "@services/kratos"
 
 const redisCache = RedisCacheService()
 
@@ -129,10 +126,10 @@ const processTxForWallet = async (
       return recorded
     }
 
-    const account = await AccountsRepository().findById(wallet.accountId)
-    if (account instanceof Error) return account
-
     if (!recorded) {
+      const account = await AccountsRepository().findById(wallet.accountId)
+      if (account instanceof Error) return account
+
       for (const { sats, address } of tx.rawTx.outs) {
         if (address !== null && walletAddresses.includes(address)) {
           const fee = DepositFeeCalculator().onChainDepositFee({
@@ -162,7 +159,9 @@ const processTxForWallet = async (
           const recipientAccount = await AccountsRepository().findById(wallet.accountId)
           if (recipientAccount instanceof Error) return recipientAccount
 
-          const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+          const recipientUser = await IdentityRepository().getIdentity(
+            recipientAccount.kratosUserId,
+          )
           if (recipientUser instanceof Error) return recipientUser
 
           await notifications.onChainTxReceived({

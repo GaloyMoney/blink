@@ -1,6 +1,10 @@
+import { randomUUID } from "crypto"
+
 import { gqlAdminSchema } from "@graphql/admin"
 import { ExecutionResult, graphql, Source } from "graphql"
 import { ObjMap } from "graphql/jsutils/ObjMap"
+import { AccountsRepository } from "@services/mongoose"
+import { AuthWithPhonePasswordlessService } from "@services/kratos"
 
 export * from "./apollo-client"
 export * from "./bitcoin-core"
@@ -20,6 +24,19 @@ export const randomPassword = () => Math.random().toString(36) as IdentityPasswo
 
 export const randomPhone = () =>
   `+1415${Math.floor(Math.random() * 900000 + 100000)}` as PhoneNumber
+
+export const randomKratosUserId = () => randomUUID() as KratosUserId
+
+export const freshAccount = async () => {
+  const phone = randomPhone()
+  const authService = AuthWithPhonePasswordlessService()
+  const kratosUserId = await authService.createIdentityNoSession(phone)
+  if (kratosUserId instanceof Error) throw kratosUserId
+
+  const account = await AccountsRepository().persistNew(kratosUserId)
+  if (account instanceof Error) throw account
+  return account
+}
 
 export const amountAfterFeeDeduction = ({
   amount,
@@ -51,6 +68,5 @@ export const graphqlAdmin = <
   contextValue,
 }: {
   source: string | Source
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  contextValue?: Record<string, any>
+  contextValue?: Partial<GraphQLContext>
 }) => graphql({ schema: gqlAdminSchema, source, contextValue }) as unknown as T

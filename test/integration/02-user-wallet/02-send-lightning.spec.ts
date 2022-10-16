@@ -18,7 +18,9 @@ import {
   InsufficientBalanceError as DomainInsufficientBalanceError,
   SelfPaymentError as DomainSelfPaymentError,
 } from "@domain/errors"
+import { toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
+import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import {
   LnFees,
   LnPaymentRequestInTransitError,
@@ -34,9 +36,8 @@ import {
   ZERO_SATS,
 } from "@domain/shared"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
-import { toCents } from "@domain/fiat"
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
+import { DealerPriceService, NewDealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { getDealerUsdWalletId } from "@services/ledger/caching"
 import { TransactionsMetadataRepository } from "@services/ledger/services"
@@ -45,12 +46,11 @@ import { getActiveLnd } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import {
   LnPaymentsRepository,
+  PaymentFlowStateRepository,
   WalletInvoicesRepository,
   WalletsRepository,
-  PaymentFlowStateRepository,
 } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
-import { DealerPriceService, NewDealerPriceService } from "@services/dealer-price"
 
 import { sleep } from "@utils"
 
@@ -74,7 +74,7 @@ import {
   getInvoice,
   getInvoiceAttempt,
   getUsdWalletIdByTestUserRef,
-  getUserRecordByTestUserRef,
+  getAccountRecordByTestUserRef,
   lndOutside1,
   lndOutside2,
   publishOkexPrice,
@@ -136,7 +136,7 @@ let initBalanceA: Satoshis, initBalanceB: Satoshis, initBalanceUsdB: UsdCents
 const amountInvoice = toSats(1000)
 
 const invoicesRepo = WalletInvoicesRepository()
-let userRecordA: UserRecord
+let userRecordA: AccountRecord
 
 let accountA: Account
 let accountB: Account
@@ -176,13 +176,13 @@ beforeAll(async () => {
   walletIdC = await getDefaultWalletIdByTestUserRef("C")
   walletIdH = await getDefaultWalletIdByTestUserRef("H")
 
-  userRecordA = await getUserRecordByTestUserRef("A")
+  userRecordA = await getAccountRecordByTestUserRef("A")
   usernameA = userRecordA.username as Username
 
-  const userRecord1 = await getUserRecordByTestUserRef("B")
+  const userRecord1 = await getAccountRecordByTestUserRef("B")
   usernameB = userRecord1.username as Username
 
-  const userRecordC = await getUserRecordByTestUserRef("C")
+  const userRecordC = await getAccountRecordByTestUserRef("C")
   usernameC = userRecordC.username as Username
 })
 
@@ -395,8 +395,8 @@ describe("UserWallet - Lightning Pay", () => {
     expect(sendNotification.mock.calls[0][0].title).toBe(titleReceipt)
     expect(sendNotification.mock.calls[0][0].body).toBe(bodyReceipt)
 
-    let userRecordA = await getUserRecordByTestUserRef("A")
-    let userRecordB = await getUserRecordByTestUserRef("B")
+    let userRecordA = await getAccountRecordByTestUserRef("A")
+    let userRecordB = await getAccountRecordByTestUserRef("B")
 
     expect(userRecordA.contacts).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
@@ -424,7 +424,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (res2 instanceof Error) throw res2
     expect(res2).toBe(PaymentSendStatus.Success)
 
-    userRecordA = await getUserRecordByTestUserRef("A")
+    userRecordA = await getAccountRecordByTestUserRef("A")
     expect(userRecordA.contacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -433,7 +433,7 @@ describe("UserWallet - Lightning Pay", () => {
         }),
       ]),
     )
-    userRecordB = await getUserRecordByTestUserRef("B")
+    userRecordB = await getAccountRecordByTestUserRef("B")
     expect(userRecordB.contacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -664,8 +664,8 @@ describe("UserWallet - Lightning Pay", () => {
     expect(transaction1Above.memo).toBe(memoSpamAboveThreshold)
 
     // check contacts being added
-    const userRecordA = await getUserRecordByTestUserRef("A")
-    const userRecordB = await getUserRecordByTestUserRef("B")
+    const userRecordA = await getAccountRecordByTestUserRef("A")
+    const userRecordB = await getAccountRecordByTestUserRef("B")
 
     expect(userRecordA.contacts).toEqual(
       expect.arrayContaining([expect.objectContaining({ id: usernameB })]),
@@ -1062,7 +1062,7 @@ describe("UserWallet - Lightning Pay", () => {
           ).not.toBeInstanceOf(Error)
         }
 
-        const userRecordA = await getUserRecordByTestUserRef("A")
+        const userRecordA = await getAccountRecordByTestUserRef("A")
         await paymentOtherGaloyUser({
           walletIdPayee: walletIdC,
           walletIdPayer: walletIdB,

@@ -2,13 +2,13 @@ import { OathkeeperUnauthorizedServiceError } from "@domain/oathkeeper/errors"
 import { sendOathkeeperRequest } from "@services/oathkeeper"
 import * as jwt from "jsonwebtoken"
 
-import { UsersRepository } from "@services/mongoose"
-
 import { BTC_NETWORK } from "@config"
 
-import { User } from "@services/mongoose/schema"
-
 import { createToken } from "@services/legacy-jwt"
+
+import { AccountsRepository } from "@services/mongoose"
+
+import { IdentityRepository } from "@services/kratos"
 
 import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
 
@@ -68,20 +68,20 @@ describe("Oathkeeper", () => {
     const uidFromJwt = decodedNew?.payload?.sub
 
     expect(uidFromJwt).toHaveLength(36) // uuid-v4 token (kratosUserId)
-
-    console.log(await User.find({}), "users")
   })
 
   it("return KratosUserId when legacy JWT is provided", async () => {
     const userRef = "D"
     const { phone } = getPhoneAndCodeFromRef(userRef)
 
-    const usersRepo = UsersRepository()
-    const user = await usersRepo.findByPhone(phone)
+    const user = await IdentityRepository().slowFindByPhone(phone)
     if (user instanceof Error) throw user
 
+    const account = await AccountsRepository().findByKratosUserId(user.id)
+    if (account instanceof Error) throw account
+
     const jwtToken = createToken({
-      uid: user.id as string as AccountId,
+      uid: account.id,
       network: BTC_NETWORK,
     })
 

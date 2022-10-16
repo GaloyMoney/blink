@@ -68,23 +68,19 @@ interface WalletInvoiceRecord {
   paid: boolean
 }
 
-interface UserRecord {
+interface AccountRecord {
   _id: ObjectId
   kratosUserId: string
 
   username: string | null
-  phone: string
   role: string
 
   level?: number // ?: enum [1, 2]
   statusHistory: AccountStatusHistory
-  language?: string // ?: enum ["en", "es"]
 
-  twilio?: TwilioObjectForUser
   depositFeeRatio?: number
   withdrawFee?: number
   earn: string[]
-  deviceToken: string[]
   contactEnabled: boolean
   contacts: ContactObjectForUser[]
   created_at: Date
@@ -111,7 +107,7 @@ interface UserRecord {
   coordinates?: CoordinateObjectForUser
 
   // mongoose in-built functions
-  save: () => Promise<UserRecord>
+  save: () => Promise<AccountRecord>
 }
 
 type PaymentFlowStateRecord = {

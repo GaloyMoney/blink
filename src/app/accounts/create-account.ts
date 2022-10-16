@@ -1,6 +1,7 @@
 import { ConfigError, getTestAccounts } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
+import { IdentityRepository } from "@services/kratos"
 import { baseLogger } from "@services/logger"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { TwilioClient } from "@services/twilio"
@@ -53,34 +54,27 @@ const initializeCreatedAccount = async ({
 }
 
 export const createAccountWithPhoneIdentifier = async ({
-  newAccountInfo: { kratosUserId, phone, phoneMetadata },
+  newAccountInfo: { kratosUserId, phone },
   config,
 }: {
   newAccountInfo: NewAccountWithPhoneIdentifier
   config: AccountsConfig
 }): Promise<Account | RepositoryError> => {
-  const accountsRepo = AccountsRepository()
-
-  const accountRaw: NewAccountWithPhoneIdentifier = {
-    phone,
-    phoneMetadata,
-    kratosUserId,
+  const phoneMetadata = await TwilioClient().getCarrier(phone)
+  if (phoneMetadata instanceof Error) {
+    baseLogger.warn({ phone }, "impossible to fetch carrier")
+  } else {
+    await IdentityRepository().setPhoneMetadata({ id: kratosUserId, phoneMetadata })
   }
 
-  if (!phoneMetadata && !!phone) {
-    const carrierInfo = await TwilioClient().getCarrier(phone)
-    if (carrierInfo instanceof Error) {
-      // non fatal error
-      baseLogger.warn({ phone }, "impossible to fetch carrier")
-    } else {
-      accountRaw.phoneMetadata = carrierInfo
-    }
-  }
+  const accountNew = await AccountsRepository().persistNew(kratosUserId)
+  if (accountNew instanceof Error) return accountNew
 
-  let account = await accountsRepo.persistNew(accountRaw)
-  if (account instanceof Error) return account
-
-  account = await initializeCreatedAccount({ account, config, phoneNumberValid: phone })
+  const account = await initializeCreatedAccount({
+    account: accountNew,
+    config,
+    phoneNumberValid: phone,
+  })
   if (account instanceof Error) return account
 
   return account
@@ -94,7 +88,7 @@ export const createAccountForEmailIdentifier = async ({
   kratosUserId: KratosUserId
   config: AccountsConfig
 }): Promise<Account | RepositoryError> => {
-  let account = await AccountsRepository().persistNew({ kratosUserId })
+  let account = await AccountsRepository().persistNew(kratosUserId)
   if (account instanceof Error) return account
 
   account = await initializeCreatedAccount({ account, config })

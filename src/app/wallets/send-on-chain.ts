@@ -22,11 +22,7 @@ import { LockService } from "@services/lock"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { baseLogger } from "@services/logger"
-import {
-  AccountsRepository,
-  UsersRepository,
-  WalletsRepository,
-} from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
@@ -35,6 +31,8 @@ import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 
 import { DisplayCurrency } from "@domain/fiat"
+
+import { IdentityRepository } from "@services/kratos"
 
 import {
   checkIntraledgerLimits,
@@ -199,7 +197,9 @@ const executePaymentViaIntraledger = async <
 
     if (journal instanceof Error) return journal
 
-    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+    const recipientUser = await IdentityRepository().getIdentity(
+      recipientAccount.kratosUserId,
+    )
     if (recipientUser instanceof Error) return recipientUser
 
     const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {

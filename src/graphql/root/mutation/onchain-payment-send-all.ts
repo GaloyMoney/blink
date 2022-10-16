@@ -28,7 +28,7 @@ const OnChainPaymentSendAllMutation = GT.Field<
     }
   },
   null,
-  GraphQLContextForUser
+  GraphQLContextAuth
 >({
   extensions: {
     complexity: 120,

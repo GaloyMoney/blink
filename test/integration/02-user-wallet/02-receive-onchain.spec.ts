@@ -36,7 +36,7 @@ import {
   getAccountIdByTestUserRef,
   getDefaultWalletIdByRole,
   getDefaultWalletIdByTestUserRef,
-  getUserRecordByTestUserRef,
+  getAccountRecordByTestUserRef,
   lndonchain,
   RANDOM_ADDRESS,
   sendToAddress,
@@ -354,7 +354,7 @@ describe("UserWallet - On chain", () => {
 
     const pendingNotification = createPushNotificationContent({
       type: NotificationType.OnchainReceiptPending,
-      userLanguage: locale as UserLanguage,
+      userLanguage: locale,
       amount: paymentAmount,
       displayAmount: displayPaymentAmount,
     })
@@ -375,9 +375,9 @@ describe("UserWallet - On chain", () => {
   it("allows fee exemption for specific users", async () => {
     const amountSats = getRandomAmountOfSats()
 
-    const userRecordC = await getUserRecordByTestUserRef("C")
-    userRecordC.depositFeeRatio = 0
-    await userRecordC.save()
+    const accountRecordC = await getAccountRecordByTestUserRef("C")
+    accountRecordC.depositFeeRatio = 0
+    await accountRecordC.save()
     const walletC = await getDefaultWalletIdByTestUserRef("C")
 
     const initBalanceUserC = await getBalanceHelper(walletC)

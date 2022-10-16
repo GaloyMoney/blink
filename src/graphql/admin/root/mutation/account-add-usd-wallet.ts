@@ -20,7 +20,7 @@ const AccountsAddUsdWalletMutation = GT.Field<
     input: { accountIds: [string] }
   },
   null,
-  GraphQLContextForUser
+  GraphQLContextAuth
 >({
   extensions: {
     complexity: 120,

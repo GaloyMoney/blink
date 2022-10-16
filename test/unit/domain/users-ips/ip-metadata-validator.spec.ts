@@ -4,7 +4,7 @@ import {
   InvalidIPMetadataProxyError,
   MissingIPMetadataError,
 } from "@domain/errors"
-import { IPMetadataValidator } from "@domain/users-ips/ip-metadata-validator"
+import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
 
 const defaultConfig = {
   denyIPCountries: [],

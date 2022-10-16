@@ -101,6 +101,8 @@ export class InvalidIPMetadataCountryError extends ValidationError {}
 export class InvalidIPMetadataASNError extends ValidationError {}
 export class InvalidIPMetadataForRewardError extends ValidationError {}
 
+export class InvalidDeviceTokenError extends ValidationError {}
+
 export class InvalidLanguageError extends ValidationError {}
 export class InvalidAccountLevelError extends ValidationError {}
 
