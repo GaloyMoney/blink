@@ -31,6 +31,8 @@ jest.mock("@config", () => {
 const calc = AmountCalculator()
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
+const USD_STARTING_BALANCE = 100 as UsdCents
+
 const ONE_CENT = { amount: 1n, currency: WalletCurrency.Usd } as UsdPaymentAmount
 const ONE_SAT = { amount: 1n, currency: WalletCurrency.Btc } as BtcPaymentAmount
 
@@ -68,7 +70,6 @@ describe("arbitrage strategies", () => {
     // to $0.01 for 53 sats.
 
     it("pay max invoice to btc wallet from usd wallet, replenish $0.01 with usd-denominated invoice", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -195,7 +196,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max invoice to btc wallet from usd wallet, replenish $0.01 with intraledger payment", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -383,7 +383,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max fee probe to btc wallet from usd wallet, replenish $0.01 with intraledger payment", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -582,7 +581,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max invoice to btc wallet from usd wallet, replenish $0.01 with no-amount min btc invoice", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -777,7 +775,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max invoice to btc wallet from usd wallet, replenish $0.01 with usd-denominated fee probe", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -910,7 +907,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max invoice to btc wallet from usd wallet, replenish $0.01 with no-amount min btc fee probe", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -1123,7 +1119,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max fee probe to btc wallet from usd wallet, replenish $0.01 with usd-denominated invoice", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -1261,7 +1256,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max fee probe to btc wallet from usd wallet, replenish $0.01 with no-amount min btc invoice", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -1467,7 +1461,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max fee probe to btc wallet from usd wallet, replenish $0.01 with usd-denominated fee probe", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -1611,7 +1604,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max fee probe to btc wallet from usd wallet, replenish $0.01 with no-amount min btc fee probe", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -1837,7 +1829,6 @@ describe("arbitrage strategies", () => {
 
   describe("can pay 1 sat and receive $0.01", () => {
     it("pay 1 sat to usd wallet intraledger, convert back $0.01 with intraledger payment", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -1939,7 +1930,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay 1 sat to usd wallet via no-amount invoice, convert back $0.01 with intraledger payment", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -2042,7 +2032,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay 1 sat to usd wallet via no-amount fee probe, convert back $0.01 with intraledger payment", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -2160,7 +2149,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay 1 sat to usd wallet via no-amount invoice, convert back $0.01 with no-amount invoice", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -2268,7 +2256,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay 1 sat to usd wallet via no-amount invoice, convert back $0.01 with no-amount fee probe", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -2383,7 +2370,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay 1 sat to usd wallet via no-amount invoice, convert back with max amount invoice", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -2546,7 +2532,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay 1 sat to usd wallet via no-amount invoice, convert back with max amount fee probe", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -2722,7 +2707,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay 1 sat to usd wallet via no-amount fee probe, convert back $0.01 with no-amount invoice", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -2848,7 +2832,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay 1 sat to usd wallet via no-amount fee probe, convert back $0.01 with no-amount fee probe", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -2981,7 +2964,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay 1 sat to usd wallet via no-amount fee probe, convert back with max amount invoice", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
@@ -3162,7 +3144,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay 1 sat to usd wallet via no-amount fee probe, convert back with max amount fee probe", async () => {
-      const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
         currency: WalletCurrency.Usd,
