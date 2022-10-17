@@ -10,10 +10,10 @@ import { mapError } from "@graphql/error-map"
 import { baseLogger } from "@services/logger"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 
-import { AccountsRepository } from "@services/mongoose"
+import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { kratosPublic } from "@services/kratos/private"
-import { KratosError } from "@services/kratos/errors"
-import { validateKratosToken } from "@services/kratos"
+import { KratosError, LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
+import { AuthWithPhonePasswordlessService, validateKratosToken } from "@services/kratos"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -113,7 +113,52 @@ authRouter.post(
         return
       }
 
-      res.json({ sub: account.kratosUserId })
+      let kratosUserId: KratosUserId | undefined
+
+      if (!account.kratosUserId) {
+        const user = await UsersRepository().findById(account.id as string as UserId)
+        if (user instanceof Error) {
+          res.status(401).send({ error: `${user.name} ${user.message}` })
+          return
+        }
+
+        const authService = AuthWithPhonePasswordlessService()
+        const phone = user.phone
+
+        if (!phone) {
+          res.status(401).send({ error: `phone is missing` })
+          return
+        }
+
+        const kratosRes = await authService.login(phone)
+
+        if (kratosRes instanceof LikelyNoUserWithThisPhoneExistError) {
+          // expected to fail pre migration.
+          // post migration: not going into this loop because kratosUserId would exist
+
+          const kratosUserId_ = await authService.createIdentityNoSession(phone)
+          if (kratosUserId_ instanceof Error) {
+            res
+              .status(401)
+              .send({ error: `${kratosUserId_.name} ${kratosUserId_.message}` })
+            return
+          }
+
+          kratosUserId = kratosUserId_
+
+          const accountRes = await AccountsRepository().update({
+            ...account,
+            kratosUserId,
+          })
+
+          if (accountRes instanceof Error) {
+            res.status(401).send({ error: `${accountRes.name} ${accountRes.message}` })
+            return
+          }
+        }
+      }
+
+      res.json({ sub: kratosUserId || account.kratosUserId })
     },
   }),
 )
