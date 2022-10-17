@@ -102,21 +102,20 @@ main-in-ci-build:
 	yarn build && \
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make start-main-ci || \
-	docker rm `docker ps -q -a -f status=exited`
+	make del-containers
 
 main-in-ci-cached:
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml run --name e2e-tests e2e-tests make start-main-ci || \
-	docker rm `docker ps -q -a -f status=exited`
+	make del-containers
 
 main-in-ci-cached-no-restart:
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose run --name e2e-tests e2e-tests make start-main-ci || \
-	docker rm `docker ps -q -a -f status=exited`
+	make del-containers
 
 del-containers:
-	docker stop `docker ps -q -a` && \
-	docker rm `docker ps -q -a`
+	docker compose rm -sfv
 
 execute-e2e-from-within-container:
 	yarn install && \
