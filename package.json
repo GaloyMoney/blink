@@ -98,7 +98,7 @@
     "pino": "^8.6.1",
     "pino-http": "^8.2.1",
     "prom-client": "^14.1.0",
-    "rate-limiter-flexible": "^2.3.11",
+    "rate-limiter-flexible": "^2.3.12",
     "redlock": "^5.0.0-beta.2",
     "subscriptions-transport-ws": "^0.11.0",
     "twilio": "^3.82.2",
