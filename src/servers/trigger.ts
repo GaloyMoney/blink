@@ -15,9 +15,13 @@ import {
   SubscribeToTransactionsChainTransactionEvent,
 } from "lightning"
 
-import { ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { getCronConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
-import { Prices as PricesWithSpans, Wallets as WalletWithSpans } from "@app"
+import {
+  Prices as PricesWithSpans,
+  Wallets as WalletWithSpans,
+  Swap as SwapWithSpans,
+} from "@app"
 import * as Wallets from "@app/wallets"
 import { uploadBackup } from "@app/admin/backup"
 
@@ -43,7 +47,6 @@ import {
 } from "@services/mongoose"
 import { LndService } from "@services/lnd"
 import { LoopService } from "@services/loopd"
-import { startSwapMonitor } from "@app/swap"
 import { LND1_LOOP_CONFIG, LND2_LOOP_CONFIG } from "@app/swap/get-active-loopd"
 import { SwapTriggerError } from "@domain/swap/errors"
 
@@ -404,6 +407,18 @@ const listenerOffchain = ({ lnd, pubkey }: { lnd: AuthenticatedLnd; pubkey: Pubk
   })
 }
 
+const startSwapMonitor = async (swapService: ISwapService) => {
+  const isSwapServerUp = await swapService.healthCheck()
+  baseLogger.info({ isSwapServerUp }, "isSwapServerUp")
+  if (isSwapServerUp) {
+    const listener = swapService.swapListener()
+    listener.on("data", (response) => {
+      baseLogger.info({ response }, "Swap Listener Called")
+      SwapWithSpans.handleSwapOutCompleted(response)
+    })
+  }
+}
+
 const listenerSwapMonitor = async () => {
   try {
     const loopServiceLnd1 = LoopService(LND1_LOOP_CONFIG)
@@ -435,7 +450,7 @@ const main = () => {
   activateLndHealthCheck()
   publishCurrentPrice()
 
-  listenerSwapMonitor()
+  if (getCronConfig().swapEnabled) listenerSwapMonitor()
 
   console.log("trigger server ready")
 }

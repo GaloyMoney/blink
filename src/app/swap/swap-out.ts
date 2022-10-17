@@ -1,6 +1,6 @@
 import { BTC_NETWORK, getSwapConfig } from "@config"
 import { TxDecoder } from "@domain/bitcoin/onchain"
-import { SwapServiceError } from "@domain/swap/errors"
+import { NoOutboundLiquidityForSwapError, SwapServiceError } from "@domain/swap/errors"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { SwapOutChecker } from "@domain/swap"
 import { baseLogger } from "@services/logger"
@@ -15,13 +15,15 @@ import { getSwapDestAddress } from "./get-swap-dest-address"
 
 const logger = baseLogger.child({ module: "swap" })
 
-export const swapOut = async (): Promise<SwapOutResult | SwapServiceError> => {
+export const swapOut = async (): Promise<
+  SwapOutResult | NoOutboundLiquidityForSwapError | SwapServiceError
+> => {
   addAttributesToCurrentSpan({
     "swap.event": "started",
   })
   const activeLoopdConfig = getActiveLoopd()
   const swapService = LoopService(activeLoopdConfig)
-
+  if (!swapService.healthCheck()) return new SwapServiceError("Failed health check")
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
   const onChainBalance = await onChainService.getBalance()
@@ -48,16 +50,24 @@ export const swapOut = async (): Promise<SwapOutResult | SwapServiceError> => {
     },
   })
 
-  if (swapOutAmount instanceof Error) return swapOutAmount
+  const swapNoOp: SwapOutResult = {
+    noOp: true,
+    htlcAddress: "" as OnChainAddress,
+    serverMessage: "",
+    swapId: "" as SwapId,
+    swapIdBytes: "",
+  }
+  if (swapOutAmount.amount === 0n) return swapNoOp
 
-  if (swapOutAmount.amount === 0n)
-    return {
-      noOp: true,
-      htlcAddress: "" as OnChainAddress,
-      serverMessage: "",
-      swapId: "" as SwapId,
-      swapIdBytes: "",
-    }
+  const hasEnoughOutboundLiquidity = outbound > swapOutAmount.amount
+  if (!hasEnoughOutboundLiquidity) {
+    addAttributesToCurrentSpan({
+      "swap.checker.message": "Not enough outbound liquidity to perform swap out",
+      "swap.checker.outboundAmountNeeded": Number(swapOutAmount.amount),
+      "swap.checker.currentOutboundBalance": outbound,
+    })
+    return swapNoOp
+  }
 
   logger.info({ swapOutAmount, activeLoopdConfig }, `Initiating swapout`)
   addAttributesToCurrentSpan({
