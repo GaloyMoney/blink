@@ -74,6 +74,33 @@ const newAccountAndWallets = async () => {
   return { newBtcWallet, newUsdWallet, newAccount }
 }
 
+const getUsdForBtcEquivalentWithAmountInvoice = async ({
+  btcPaymentAmount,
+  accountAndWallets,
+}: {
+  btcPaymentAmount: BtcPaymentAmount
+  accountAndWallets: { newBtcWallet: Wallet; newUsdWallet: Wallet; newAccount: Account }
+}): Promise<CurrencyBaseAmount> => {
+  const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
+  const lnInvoice = await Wallets.addInvoiceForSelf({
+    walletId: newBtcWallet.id,
+    amount: toSats(btcPaymentAmount.amount),
+  })
+  if (lnInvoice instanceof Error) throw lnInvoice
+
+  const beforeUsd = await getBalanceHelper(newUsdWallet.id)
+  const result = await Payments.payInvoiceByWalletId({
+    uncheckedPaymentRequest: lnInvoice.paymentRequest,
+    memo: null,
+    senderWalletId: newUsdWallet.id,
+    senderAccount: newAccount,
+  })
+  if (result instanceof Error) throw result
+  const afterUsd = await getBalanceHelper(newUsdWallet.id)
+  const diff = (beforeUsd - afterUsd) as CurrencyBaseAmount
+  return diff
+}
+
 beforeAll(async () => {
   await publishOkexPrice()
 })
@@ -101,28 +128,6 @@ describe("arbitrage strategies", () => {
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
-          const getUsdForBtcEquivalent = async (
-            btcAmount: BtcPaymentAmount,
-          ): Promise<CurrencyBaseAmount> => {
-            const lnInvoice = await Wallets.addInvoiceForSelf({
-              walletId: newBtcWallet.id,
-              amount: toSats(btcAmount.amount),
-            })
-            if (lnInvoice instanceof Error) throw lnInvoice
-
-            const beforeUsd = await getBalanceHelper(newUsdWallet.id)
-            const result = await Payments.payInvoiceByWalletId({
-              uncheckedPaymentRequest: lnInvoice.paymentRequest,
-              memo: null,
-              senderWalletId: newUsdWallet.id,
-              senderAccount: newAccount,
-            })
-            if (result instanceof Error) throw result
-            const afterUsd = await getBalanceHelper(newUsdWallet.id)
-            const diff = (beforeUsd - afterUsd) as CurrencyBaseAmount
-            return diff
-          }
-
           const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
           if (midPriceRatio instanceof Error) throw midPriceRatio
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
@@ -136,21 +141,33 @@ describe("arbitrage strategies", () => {
             // - push up to find max, from place where we are sure diff is 1
 
             // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
+              btcPaymentAmount: maxBtcAmountToEarn,
+              accountAndWallets,
+            })
             while (diff <= 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             // Decrement until diff is 1
             while (diff > 1) {
               maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             expect(diff).toEqual(1)
             // Increment to discover max BTC amount to buy for $0.01
             while (diff === 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
           }
@@ -208,27 +225,6 @@ describe("arbitrage strategies", () => {
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
-          const getUsdForBtcEquivalent = async (
-            btcAmount: BtcPaymentAmount,
-          ): Promise<CurrencyBaseAmount> => {
-            const lnInvoice = await Wallets.addInvoiceForSelf({
-              walletId: newBtcWallet.id,
-              amount: toSats(btcAmount.amount),
-            })
-            if (lnInvoice instanceof Error) throw lnInvoice
-
-            const beforeUsd = await getBalanceHelper(newUsdWallet.id)
-            const result = await Payments.payInvoiceByWalletId({
-              uncheckedPaymentRequest: lnInvoice.paymentRequest,
-              memo: null,
-              senderWalletId: newUsdWallet.id,
-              senderAccount: newAccount,
-            })
-            if (result instanceof Error) throw result
-            const afterUsd = await getBalanceHelper(newUsdWallet.id)
-            const diff = (beforeUsd - afterUsd) as CurrencyBaseAmount
-            return diff
-          }
 
           const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
           if (midPriceRatio instanceof Error) throw midPriceRatio
@@ -243,21 +239,33 @@ describe("arbitrage strategies", () => {
             // - push up to find max, from place where we are sure diff is 1
 
             // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
+              btcPaymentAmount: maxBtcAmountToEarn,
+              accountAndWallets,
+            })
             while (diff <= 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             // Decrement until diff is 1
             while (diff > 1) {
               maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             expect(diff).toEqual(1)
             // Increment to discover max BTC amount to buy for $0.01
             while (diff === 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
           }
@@ -323,27 +331,6 @@ describe("arbitrage strategies", () => {
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
-          const getUsdForBtcEquivalent = async (
-            btcAmount: BtcPaymentAmount,
-          ): Promise<CurrencyBaseAmount> => {
-            const lnInvoice = await Wallets.addInvoiceForSelf({
-              walletId: newBtcWallet.id,
-              amount: toSats(btcAmount.amount),
-            })
-            if (lnInvoice instanceof Error) throw lnInvoice
-
-            const beforeUsd = await getBalanceHelper(newUsdWallet.id)
-            const result = await Payments.payInvoiceByWalletId({
-              uncheckedPaymentRequest: lnInvoice.paymentRequest,
-              memo: null,
-              senderWalletId: newUsdWallet.id,
-              senderAccount: newAccount,
-            })
-            if (result instanceof Error) throw result
-            const afterUsd = await getBalanceHelper(newUsdWallet.id)
-            const diff = (beforeUsd - afterUsd) as CurrencyBaseAmount
-            return diff
-          }
 
           const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
           if (midPriceRatio instanceof Error) throw midPriceRatio
@@ -358,21 +345,33 @@ describe("arbitrage strategies", () => {
             // - push up to find max, from place where we are sure diff is 1
 
             // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
+              btcPaymentAmount: maxBtcAmountToEarn,
+              accountAndWallets,
+            })
             while (diff <= 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             // Decrement until diff is 1
             while (diff > 1) {
               maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             expect(diff).toEqual(1)
             // Increment to discover max BTC amount to buy for $0.01
             while (diff === 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
           }
@@ -494,27 +493,6 @@ describe("arbitrage strategies", () => {
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
-          const getUsdForBtcEquivalent = async (
-            btcAmount: BtcPaymentAmount,
-          ): Promise<CurrencyBaseAmount> => {
-            const lnInvoice = await Wallets.addInvoiceForSelf({
-              walletId: newBtcWallet.id,
-              amount: toSats(btcAmount.amount),
-            })
-            if (lnInvoice instanceof Error) throw lnInvoice
-
-            const beforeUsd = await getBalanceHelper(newUsdWallet.id)
-            const result = await Payments.payInvoiceByWalletId({
-              uncheckedPaymentRequest: lnInvoice.paymentRequest,
-              memo: null,
-              senderWalletId: newUsdWallet.id,
-              senderAccount: newAccount,
-            })
-            if (result instanceof Error) throw result
-            const afterUsd = await getBalanceHelper(newUsdWallet.id)
-            const diff = (beforeUsd - afterUsd) as CurrencyBaseAmount
-            return diff
-          }
 
           const getBtcForUsdEquivalent = async (
             btcPaymentAmount: BtcPaymentAmount,
@@ -554,21 +532,33 @@ describe("arbitrage strategies", () => {
             // - push up to find max, from place where we are sure diff is 1
 
             // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
+              btcPaymentAmount: maxBtcAmountToEarn,
+              accountAndWallets,
+            })
             while (diff <= 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             // Decrement until diff is 1
             while (diff > 1) {
               maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             expect(diff).toEqual(1)
             // Increment to discover max BTC amount to buy for $0.01
             while (diff === 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
           }
@@ -669,27 +659,6 @@ describe("arbitrage strategies", () => {
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
-          const getUsdForBtcEquivalent = async (
-            btcAmount: BtcPaymentAmount,
-          ): Promise<CurrencyBaseAmount> => {
-            const lnInvoice = await Wallets.addInvoiceForSelf({
-              walletId: newBtcWallet.id,
-              amount: toSats(btcAmount.amount),
-            })
-            if (lnInvoice instanceof Error) throw lnInvoice
-
-            const beforeUsd = await getBalanceHelper(newUsdWallet.id)
-            const result = await Payments.payInvoiceByWalletId({
-              uncheckedPaymentRequest: lnInvoice.paymentRequest,
-              memo: null,
-              senderWalletId: newUsdWallet.id,
-              senderAccount: newAccount,
-            })
-            if (result instanceof Error) throw result
-            const afterUsd = await getBalanceHelper(newUsdWallet.id)
-            const diff = (beforeUsd - afterUsd) as CurrencyBaseAmount
-            return diff
-          }
 
           const getBtcForUsdEquivalent = async (
             btcPaymentAmount: BtcPaymentAmount,
@@ -740,21 +709,33 @@ describe("arbitrage strategies", () => {
             // - push up to find max, from place where we are sure diff is 1
 
             // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
+              btcPaymentAmount: maxBtcAmountToEarn,
+              accountAndWallets,
+            })
             while (diff <= 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             // Decrement until diff is 1
             while (diff > 1) {
               maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             expect(diff).toEqual(1)
             // Increment to discover max BTC amount to buy for $0.01
             while (diff === 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
           }
@@ -2066,28 +2047,6 @@ describe("arbitrage strategies", () => {
             return diff
           }
 
-          const getUsdForBtcEquivalent = async (
-            btcAmount: BtcPaymentAmount,
-          ): Promise<CurrencyBaseAmount> => {
-            const lnInvoice = await Wallets.addInvoiceForSelf({
-              walletId: newBtcWallet.id,
-              amount: toSats(btcAmount.amount),
-            })
-            if (lnInvoice instanceof Error) throw lnInvoice
-
-            const beforeUsd = await getBalanceHelper(newUsdWallet.id)
-            const result = await Payments.payInvoiceByWalletId({
-              uncheckedPaymentRequest: lnInvoice.paymentRequest,
-              memo: null,
-              senderWalletId: newUsdWallet.id,
-              senderAccount: newAccount,
-            })
-            if (result instanceof Error) throw result
-            const afterUsd = await getBalanceHelper(newUsdWallet.id)
-            const diff = (beforeUsd - afterUsd) as CurrencyBaseAmount
-            return diff
-          }
-
           const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
           if (midPriceRatio instanceof Error) throw midPriceRatio
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
@@ -2113,21 +2072,33 @@ describe("arbitrage strategies", () => {
             // - push up to find max, from place where we are sure diff is 1
 
             // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
+              btcPaymentAmount: maxBtcAmountToEarn,
+              accountAndWallets,
+            })
             while (diff <= 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             // Decrement until diff is 1
             while (diff > 1) {
               maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             expect(diff).toEqual(1)
             // Increment to discover max BTC amount to buy for $0.01
             while (diff === 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
           }
@@ -2695,28 +2666,6 @@ describe("arbitrage strategies", () => {
             return diff
           }
 
-          const getUsdForBtcEquivalent = async (
-            btcAmount: BtcPaymentAmount,
-          ): Promise<CurrencyBaseAmount> => {
-            const lnInvoice = await Wallets.addInvoiceForSelf({
-              walletId: newBtcWallet.id,
-              amount: toSats(btcAmount.amount),
-            })
-            if (lnInvoice instanceof Error) throw lnInvoice
-
-            const beforeUsd = await getBalanceHelper(newUsdWallet.id)
-            const result = await Payments.payInvoiceByWalletId({
-              uncheckedPaymentRequest: lnInvoice.paymentRequest,
-              memo: null,
-              senderWalletId: newUsdWallet.id,
-              senderAccount: newAccount,
-            })
-            if (result instanceof Error) throw result
-            const afterUsd = await getBalanceHelper(newUsdWallet.id)
-            const diff = (beforeUsd - afterUsd) as CurrencyBaseAmount
-            return diff
-          }
-
           const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
           if (midPriceRatio instanceof Error) throw midPriceRatio
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
@@ -2742,21 +2691,33 @@ describe("arbitrage strategies", () => {
             // - push up to find max, from place where we are sure diff is 1
 
             // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
+              btcPaymentAmount: maxBtcAmountToEarn,
+              accountAndWallets,
+            })
             while (diff <= 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             // Decrement until diff is 1
             while (diff > 1) {
               maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             expect(diff).toEqual(1)
             // Increment to discover max BTC amount to buy for $0.01
             while (diff === 1) {
               maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalent(maxBtcAmountToEarn)
+              diff = await getUsdForBtcEquivalentWithAmountInvoice({
+                btcPaymentAmount: maxBtcAmountToEarn,
+                accountAndWallets,
+              })
             }
             maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
           }
