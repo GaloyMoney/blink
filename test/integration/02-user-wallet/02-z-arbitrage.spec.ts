@@ -50,6 +50,30 @@ const btcAmountFromUsdNumber = async (
   return midPriceRatio.convertFromUsd(usdPaymentAmount)
 }
 
+const usdFundingAmount = paymentAmountFromNumber({
+  amount: USD_STARTING_BALANCE,
+  currency: WalletCurrency.Usd,
+})
+if (usdFundingAmount instanceof Error) throw usdFundingAmount
+
+const newAccountAndWallets = async () => {
+  const phone = randomPhone()
+  const newBtcWallet = await createAndFundNewWalletForPhone({
+    phone,
+    balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
+  })
+
+  const newUsdWallet = await createAndFundNewWalletForPhone({
+    phone,
+    balanceAmount: usdFundingAmount,
+  })
+
+  const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
+  if (newAccount instanceof Error) throw newAccount
+
+  return { newBtcWallet, newUsdWallet, newAccount }
+}
+
 beforeAll(async () => {
   await publishOkexPrice()
 })
@@ -72,27 +96,8 @@ describe("arbitrage strategies", () => {
     describe("pay max btc-amount invoice from usd wallet, replenish $0.01 back to usd wallet", () => {
       describe("with $0.01 pull from usd wallet", () => {
         it("via usd-denominated invoice", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const accountAndWallets = await newAccountAndWallets()
+          const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -198,27 +203,8 @@ describe("arbitrage strategies", () => {
         })
 
         it("via usd-denominated fee probe", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const accountAndWallets = await newAccountAndWallets()
+          const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -332,27 +318,8 @@ describe("arbitrage strategies", () => {
 
       describe("with min-btc push from btc wallet", () => {
         it("via intraledger payment", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const accountAndWallets = await newAccountAndWallets()
+          const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -522,27 +489,8 @@ describe("arbitrage strategies", () => {
         })
 
         it("via no-amount invoice", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const accountAndWallets = await newAccountAndWallets()
+          const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -716,27 +664,8 @@ describe("arbitrage strategies", () => {
         })
 
         it("via no-amount fee probe", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const accountAndWallets = await newAccountAndWallets()
+          const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -932,27 +861,7 @@ describe("arbitrage strategies", () => {
     describe("pay max btc-amount fee probe from usd wallet, replenish $0.01 back to usd wallet", () => {
       describe("with $0.01 pull from usd wallet", () => {
         it("with usd-denominated invoice", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const { newBtcWallet, newUsdWallet, newAccount } = await newAccountAndWallets()
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -1069,27 +978,7 @@ describe("arbitrage strategies", () => {
         })
 
         it("with usd-denominated fee probe", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const { newBtcWallet, newUsdWallet, newAccount } = await newAccountAndWallets()
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -1213,27 +1102,8 @@ describe("arbitrage strategies", () => {
 
         describe("with min-btc push from btc wallet", () => {
           it("with intraledger payment", async () => {
-            const usdFundingAmount = paymentAmountFromNumber({
-              amount: USD_STARTING_BALANCE,
-              currency: WalletCurrency.Usd,
-            })
-            if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-            // CREATE NEW ACCOUNT WALLETS
-            // =====
-            const phone = randomPhone()
-            const newBtcWallet = await createAndFundNewWalletForPhone({
-              phone,
-              balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-            })
-
-            const newUsdWallet = await createAndFundNewWalletForPhone({
-              phone,
-              balanceAmount: usdFundingAmount,
-            })
-
-            const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-            if (newAccount instanceof Error) throw newAccount
+            const { newBtcWallet, newUsdWallet, newAccount } =
+              await newAccountAndWallets()
 
             // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
             // =====
@@ -1414,27 +1284,8 @@ describe("arbitrage strategies", () => {
           })
 
           it("with no-amount min btc invoice", async () => {
-            const usdFundingAmount = paymentAmountFromNumber({
-              amount: USD_STARTING_BALANCE,
-              currency: WalletCurrency.Usd,
-            })
-            if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-            // CREATE NEW ACCOUNT WALLETS
-            // =====
-            const phone = randomPhone()
-            const newBtcWallet = await createAndFundNewWalletForPhone({
-              phone,
-              balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-            })
-
-            const newUsdWallet = await createAndFundNewWalletForPhone({
-              phone,
-              balanceAmount: usdFundingAmount,
-            })
-
-            const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-            if (newAccount instanceof Error) throw newAccount
+            const { newBtcWallet, newUsdWallet, newAccount } =
+              await newAccountAndWallets()
 
             // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
             // =====
@@ -1619,27 +1470,8 @@ describe("arbitrage strategies", () => {
           })
 
           it("with no-amount min btc fee probe", async () => {
-            const usdFundingAmount = paymentAmountFromNumber({
-              amount: USD_STARTING_BALANCE,
-              currency: WalletCurrency.Usd,
-            })
-            if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-            // CREATE NEW ACCOUNT WALLETS
-            // =====
-            const phone = randomPhone()
-            const newBtcWallet = await createAndFundNewWalletForPhone({
-              phone,
-              balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-            })
-
-            const newUsdWallet = await createAndFundNewWalletForPhone({
-              phone,
-              balanceAmount: usdFundingAmount,
-            })
-
-            const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-            if (newAccount instanceof Error) throw newAccount
+            const { newBtcWallet, newUsdWallet, newAccount } =
+              await newAccountAndWallets()
 
             // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
             // =====
@@ -1854,27 +1686,7 @@ describe("arbitrage strategies", () => {
     describe("pay 1-sat to intraledger usd wallet from btc wallet, convert back $0.01 from usd wallet", () => {
       describe("with $0.01 push from usd wallet", () => {
         it("via intraledger payment", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const { newBtcWallet, newUsdWallet, newAccount } = await newAccountAndWallets()
 
           const sendArgs = {
             recipientWalletId: newUsdWallet.id,
@@ -1959,27 +1771,7 @@ describe("arbitrage strategies", () => {
     describe("pay 1-sat to no-amount usd invoice from btc wallet, convert back $0.01 from usd wallet", () => {
       describe("with $0.01 push from usd wallet", () => {
         it("via intraledger payment", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const { newBtcWallet, newUsdWallet, newAccount } = await newAccountAndWallets()
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -2061,27 +1853,7 @@ describe("arbitrage strategies", () => {
         })
 
         it("via no-amount invoice", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const { newBtcWallet, newUsdWallet, newAccount } = await newAccountAndWallets()
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -2168,27 +1940,7 @@ describe("arbitrage strategies", () => {
         })
 
         it("via no-amount fee probe", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const { newBtcWallet, newUsdWallet, newAccount } = await newAccountAndWallets()
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -2284,27 +2036,8 @@ describe("arbitrage strategies", () => {
 
       describe("with min-btc pull from btc wallet", () => {
         it("via invoice", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const accountAndWallets = await newAccountAndWallets()
+          const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -2446,27 +2179,7 @@ describe("arbitrage strategies", () => {
         })
 
         it("via fee probe", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const { newBtcWallet, newUsdWallet, newAccount } = await newAccountAndWallets()
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -2625,27 +2338,7 @@ describe("arbitrage strategies", () => {
     describe("pay 1-sat to no-amount usd fee probe from btc wallet, convert back $0.01 from usd wallet", () => {
       describe("with $0.01 push from usd wallet", () => {
         it("via intraledger payment", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const { newBtcWallet, newUsdWallet, newAccount } = await newAccountAndWallets()
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -2742,27 +2435,7 @@ describe("arbitrage strategies", () => {
         })
 
         it("via no-amount invoice", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const { newBtcWallet, newUsdWallet, newAccount } = await newAccountAndWallets()
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -2867,27 +2540,7 @@ describe("arbitrage strategies", () => {
         })
 
         it("via no-amount fee probe", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const { newBtcWallet, newUsdWallet, newAccount } = await newAccountAndWallets()
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -3001,27 +2654,8 @@ describe("arbitrage strategies", () => {
 
       describe("with min-btc pull from btc wallet", () => {
         it("via invoice", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const accountAndWallets = await newAccountAndWallets()
+          const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
@@ -3181,27 +2815,7 @@ describe("arbitrage strategies", () => {
         })
 
         it("via fee probe", async () => {
-          const usdFundingAmount = paymentAmountFromNumber({
-            amount: USD_STARTING_BALANCE,
-            currency: WalletCurrency.Usd,
-          })
-          if (usdFundingAmount instanceof Error) throw usdFundingAmount
-
-          // CREATE NEW ACCOUNT WALLETS
-          // =====
-          const phone = randomPhone()
-          const newBtcWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
-          })
-
-          const newUsdWallet = await createAndFundNewWalletForPhone({
-            phone,
-            balanceAmount: usdFundingAmount,
-          })
-
-          const newAccount = await AccountsRepository().findById(newBtcWallet.accountId)
-          if (newAccount instanceof Error) throw newAccount
+          const { newBtcWallet, newUsdWallet, newAccount } = await newAccountAndWallets()
 
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
