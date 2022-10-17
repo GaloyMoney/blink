@@ -68,8 +68,6 @@ describe("arbitrage strategies", () => {
     // to $0.01 for 53 sats.
 
     it("pay max invoice to btc wallet from usd wallet, replenish $0.01 with usd-denominated invoice", async () => {
-      // send-lightning => sender usd wallet => usdFromBtc => expects Sell
-
       const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
@@ -197,8 +195,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max invoice to btc wallet from usd wallet, replenish $0.01 with intraledger payment", async () => {
-      // send-lightning => sender usd wallet => usdFromBtc => expects Sell
-
       const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
@@ -387,10 +383,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max fee probe to btc wallet from usd wallet, replenish $0.01 with intraledger payment", async () => {
-      // probe => sender usd wallet => usdFromBtc => expects Sell
-      // send-lightning => sender usd wallet => usdFromBtc => expects Sell
-      // send-intraledger => sender btc wallet => usdFromBtc => expects Buy
-
       const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
@@ -584,8 +576,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max invoice to btc wallet from usd wallet, replenish $0.01 with no-amount min btc invoice", async () => {
-      // send-lightning => sender usd wallet => usdFromBtc => expects Sell
-
       const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
@@ -777,8 +767,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max invoice to btc wallet from usd wallet, replenish $0.01 with usd-denominated fee probe", async () => {
-      // send-lightning => sender usd wallet => usdFromBtc => expects Sell
-
       const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
@@ -912,8 +900,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max invoice to btc wallet from usd wallet, replenish $0.01 with no-amount min btc fee probe", async () => {
-      // send-lightning => sender usd wallet => usdFromBtc => expects Sell
-
       const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
@@ -1112,8 +1098,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max fee probe to btc wallet from usd wallet, replenish $0.01 with usd-denominated invoice", async () => {
-      // send-lightning => sender usd wallet => usdFromBtc => expects Sell
-
       const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
@@ -1247,8 +1231,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max fee probe to btc wallet from usd wallet, replenish $0.01 with no-amount min btc invoice", async () => {
-      // send-lightning => sender usd wallet => usdFromBtc => expects Sell
-
       const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
@@ -1446,8 +1428,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max fee probe to btc wallet from usd wallet, replenish $0.01 with usd-denominated fee probe", async () => {
-      // send-lightning => sender usd wallet => usdFromBtc => expects Sell
-
       const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
@@ -1587,8 +1567,6 @@ describe("arbitrage strategies", () => {
     })
 
     it("pay max fee probe to btc wallet from usd wallet, replenish $0.01 with no-amount min btc fee probe", async () => {
-      // send-lightning => sender usd wallet => usdFromBtc => expects Sell
-
       const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
@@ -1795,8 +1773,6 @@ describe("arbitrage strategies", () => {
 
   describe("can pay 1 sat and receive $0.01", () => {
     it("pay 1 sat to usd wallet intraledger, convert back with intraledger payment", async () => {
-      // send-intraledger => sender btc wallet => usdFromBtc => expects Buy
-
       const USD_STARTING_BALANCE = 10 as UsdCents
       const usdFundingAmount = paymentAmountFromNumber({
         amount: USD_STARTING_BALANCE,
