@@ -82,7 +82,7 @@
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^2.1.5",
     "lightning": "^6.2.3",
-    "ln-service": "^54.2.0",
+    "ln-service": "^54.2.2",
     "lodash.difference": "^4.5.0",
     "lodash.find": "^4.6.0",
     "lodash.groupby": "^4.6.0",
