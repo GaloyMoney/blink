@@ -36,6 +36,12 @@ const USD_STARTING_BALANCE = 100 as UsdCents
 const ONE_CENT = { amount: 1n, currency: WalletCurrency.Usd } as UsdPaymentAmount
 const ONE_SAT = { amount: 1n, currency: WalletCurrency.Btc } as BtcPaymentAmount
 
+type AccountAndWallets = {
+  newBtcWallet: Wallet
+  newUsdWallet: Wallet
+  newAccount: Account
+}
+
 const btcAmountFromUsdNumber = async (
   centsAmount: number | bigint,
 ): Promise<BtcPaymentAmount> => {
@@ -79,7 +85,7 @@ const getBtcForUsdEquivalentIntraledger = async ({
   accountAndWallets,
 }: {
   btcPaymentAmount: BtcPaymentAmount
-  accountAndWallets: { newBtcWallet: Wallet; newUsdWallet: Wallet; newAccount: Account }
+  accountAndWallets: AccountAndWallets
 }): Promise<CurrencyBaseAmount | ZeroAmountForUsdRecipientError> => {
   const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
   const sendArgs = {
@@ -109,7 +115,7 @@ const getUsdForBtcEquivalentWithAmountInvoice = async ({
   accountAndWallets,
 }: {
   btcPaymentAmount: BtcPaymentAmount
-  accountAndWallets: { newBtcWallet: Wallet; newUsdWallet: Wallet; newAccount: Account }
+  accountAndWallets: AccountAndWallets
 }): Promise<CurrencyBaseAmount> => {
   const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
   const lnInvoice = await Wallets.addInvoiceForSelf({
@@ -136,7 +142,7 @@ const getUsdForBtcEquivalentWithAmountInvoiceAndProbe = async ({
   accountAndWallets,
 }: {
   btcPaymentAmount: BtcPaymentAmount
-  accountAndWallets: { newBtcWallet: Wallet; newUsdWallet: Wallet; newAccount: Account }
+  accountAndWallets: AccountAndWallets
 }): Promise<CurrencyBaseAmount> => {
   const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
@@ -169,7 +175,7 @@ const getBtcForUsdEquivalentNoAmountInvoice = async ({
   accountAndWallets,
 }: {
   btcPaymentAmount: BtcPaymentAmount
-  accountAndWallets: { newBtcWallet: Wallet; newUsdWallet: Wallet; newAccount: Account }
+  accountAndWallets: AccountAndWallets
 }): Promise<CurrencyBaseAmount | ZeroAmountForUsdRecipientError> => {
   const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
@@ -200,7 +206,7 @@ const getBtcForUsdEquivalentNoAmountInvoiceAndProbe = async ({
   accountAndWallets,
 }: {
   btcPaymentAmount: BtcPaymentAmount
-  accountAndWallets: { newBtcWallet: Wallet; newUsdWallet: Wallet; newAccount: Account }
+  accountAndWallets: AccountAndWallets
 }): Promise<CurrencyBaseAmount | ZeroAmountForUsdRecipientError> => {
   const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
@@ -237,6 +243,56 @@ const getBtcForUsdEquivalentNoAmountInvoiceAndProbe = async ({
   return diff
 }
 
+const getMaxBtcAmountToEarn = async ({
+  startingBtcAmount,
+  accountAndWallets,
+  diffFn,
+}: {
+  startingBtcAmount: BtcPaymentAmount
+  accountAndWallets: AccountAndWallets
+  diffFn
+}): Promise<BtcPaymentAmount> => {
+  // 3 steps here to:
+  // - check diff is greater than 1 to start (push up if not)
+  // - bring the diff down, in case starting diff is already past max
+  // - push up to find max, from place where we are sure diff is 1
+
+  let maxBtcAmountToEarn = startingBtcAmount
+
+  // Ensure diff is '> 1' for starting amount
+  let diff = await diffFn({
+    btcPaymentAmount: maxBtcAmountToEarn,
+    accountAndWallets,
+  })
+  while (diff <= 1) {
+    maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
+    diff = await diffFn({
+      btcPaymentAmount: maxBtcAmountToEarn,
+      accountAndWallets,
+    })
+  }
+  // Decrement until diff is 1
+  while (diff > 1) {
+    maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
+    diff = await diffFn({
+      btcPaymentAmount: maxBtcAmountToEarn,
+      accountAndWallets,
+    })
+  }
+  expect(diff).toEqual(1)
+  // Increment to discover max BTC amount to buy for $0.01
+  while (diff === 1) {
+    maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
+    diff = await diffFn({
+      btcPaymentAmount: maxBtcAmountToEarn,
+      accountAndWallets,
+    })
+  }
+  maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
+
+  return maxBtcAmountToEarn
+}
+
 beforeAll(async () => {
   await publishOkexPrice()
 })
@@ -269,44 +325,11 @@ describe("arbitrage strategies", () => {
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
           // Validate btc starting amount for max btc discovery
-          let maxBtcAmountToEarn = startingBtcAmount
-          {
-            // 3 steps here to:
-            // - check diff is greater than 1 to start (push up if not)
-            // - bring the diff down, in case starting diff is already past max
-            // - push up to find max, from place where we are sure diff is 1
-
-            // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
-              btcPaymentAmount: maxBtcAmountToEarn,
-              accountAndWallets,
-            })
-            while (diff <= 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            // Decrement until diff is 1
-            while (diff > 1) {
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            expect(diff).toEqual(1)
-            // Increment to discover max BTC amount to buy for $0.01
-            while (diff === 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-          }
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+          })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // EXECUTE ARBITRAGE
@@ -366,44 +389,11 @@ describe("arbitrage strategies", () => {
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
           // Validate btc starting amount for max btc discovery
-          let maxBtcAmountToEarn = startingBtcAmount
-          {
-            // 3 steps here to:
-            // - check diff is greater than 1 to start (push up if not)
-            // - bring the diff down, in case starting diff is already past max
-            // - push up to find max, from place where we are sure diff is 1
-
-            // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
-              btcPaymentAmount: maxBtcAmountToEarn,
-              accountAndWallets,
-            })
-            while (diff <= 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            // Decrement until diff is 1
-            while (diff > 1) {
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            expect(diff).toEqual(1)
-            // Increment to discover max BTC amount to buy for $0.01
-            while (diff === 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-          }
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+          })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // EXECUTE ARBITRAGE
@@ -471,44 +461,11 @@ describe("arbitrage strategies", () => {
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
           // Validate btc starting amount for max btc discovery
-          let maxBtcAmountToEarn = startingBtcAmount
-          {
-            // 3 steps here to:
-            // - check diff is greater than 1 to start (push up if not)
-            // - bring the diff down, in case starting diff is already past max
-            // - push up to find max, from place where we are sure diff is 1
-
-            // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
-              btcPaymentAmount: maxBtcAmountToEarn,
-              accountAndWallets,
-            })
-            while (diff <= 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            // Decrement until diff is 1
-            while (diff > 1) {
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            expect(diff).toEqual(1)
-            // Increment to discover max BTC amount to buy for $0.01
-            while (diff === 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-          }
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+          })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // Validate btc starting amount for min btc discovery
@@ -632,44 +589,11 @@ describe("arbitrage strategies", () => {
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
           // Validate btc starting amount for max btc discovery
-          let maxBtcAmountToEarn = startingBtcAmount
-          {
-            // 3 steps here to:
-            // - check diff is greater than 1 to start (push up if not)
-            // - bring the diff down, in case starting diff is already past max
-            // - push up to find max, from place where we are sure diff is 1
-
-            // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
-              btcPaymentAmount: maxBtcAmountToEarn,
-              accountAndWallets,
-            })
-            while (diff <= 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            // Decrement until diff is 1
-            while (diff > 1) {
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            expect(diff).toEqual(1)
-            // Increment to discover max BTC amount to buy for $0.01
-            while (diff === 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-          }
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+          })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // Validate btc starting amount for min btc discovery
@@ -784,44 +708,11 @@ describe("arbitrage strategies", () => {
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
           // Validate btc starting amount for max btc discovery
-          let maxBtcAmountToEarn = startingBtcAmount
-          {
-            // 3 steps here to:
-            // - check diff is greater than 1 to start (push up if not)
-            // - bring the diff down, in case starting diff is already past max
-            // - push up to find max, from place where we are sure diff is 1
-
-            // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
-              btcPaymentAmount: maxBtcAmountToEarn,
-              accountAndWallets,
-            })
-            while (diff <= 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            // Decrement until diff is 1
-            while (diff > 1) {
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            expect(diff).toEqual(1)
-            // Increment to discover max BTC amount to buy for $0.01
-            while (diff === 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-          }
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+          })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // Validate btc starting amount for min btc discovery
@@ -947,44 +838,11 @@ describe("arbitrage strategies", () => {
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
           // Validate btc starting amount for max btc discovery
-          let maxBtcAmountToEarn = startingBtcAmount
-          {
-            // 3 steps here to:
-            // - check diff is greater than 1 to start (push up if not)
-            // - bring the diff down, in case starting diff is already past max
-            // - push up to find max, from place where we are sure diff is 1
-
-            // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-              btcPaymentAmount: maxBtcAmountToEarn,
-              accountAndWallets,
-            })
-            while (diff <= 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            // Decrement until diff is 1
-            while (diff > 1) {
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            expect(diff).toEqual(1)
-            // Increment to discover max BTC amount to buy for $0.01
-            while (diff === 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-          }
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+          })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // EXECUTE ARBITRAGE
@@ -1050,44 +908,11 @@ describe("arbitrage strategies", () => {
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
           // Validate btc starting amount for max btc discovery
-          let maxBtcAmountToEarn = startingBtcAmount
-          {
-            // 3 steps here to:
-            // - check diff is greater than 1 to start (push up if not)
-            // - bring the diff down, in case starting diff is already past max
-            // - push up to find max, from place where we are sure diff is 1
-
-            // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-              btcPaymentAmount: maxBtcAmountToEarn,
-              accountAndWallets,
-            })
-            while (diff <= 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            // Decrement until diff is 1
-            while (diff > 1) {
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            expect(diff).toEqual(1)
-            // Increment to discover max BTC amount to buy for $0.01
-            while (diff === 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-          }
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+          })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // EXECUTE ARBITRAGE
@@ -1160,44 +985,11 @@ describe("arbitrage strategies", () => {
             const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
             // Validate btc starting amount for max btc discovery
-            let maxBtcAmountToEarn = startingBtcAmount
-            {
-              // 3 steps here to:
-              // - check diff is greater than 1 to start (push up if not)
-              // - bring the diff down, in case starting diff is already past max
-              // - push up to find max, from place where we are sure diff is 1
-
-              // Ensure diff is '> 1' for starting amount
-              let diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-              while (diff <= 1) {
-                maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-                diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                  btcPaymentAmount: maxBtcAmountToEarn,
-                  accountAndWallets,
-                })
-              }
-              // Decrement until diff is 1
-              while (diff > 1) {
-                maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-                diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                  btcPaymentAmount: maxBtcAmountToEarn,
-                  accountAndWallets,
-                })
-              }
-              expect(diff).toEqual(1)
-              // Increment to discover max BTC amount to buy for $0.01
-              while (diff === 1) {
-                maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-                diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                  btcPaymentAmount: maxBtcAmountToEarn,
-                  accountAndWallets,
-                })
-              }
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-            }
+            const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+              startingBtcAmount,
+              accountAndWallets,
+              diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+            })
             baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
             // Validate btc starting amount for min btc discovery
@@ -1327,44 +1119,11 @@ describe("arbitrage strategies", () => {
             const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
             // Validate btc starting amount for max btc discovery
-            let maxBtcAmountToEarn = startingBtcAmount
-            {
-              // 3 steps here to:
-              // - check diff is greater than 1 to start (push up if not)
-              // - bring the diff down, in case starting diff is already past max
-              // - push up to find max, from place where we are sure diff is 1
-
-              // Ensure diff is '> 1' for starting amount
-              let diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-              while (diff <= 1) {
-                maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-                diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                  btcPaymentAmount: maxBtcAmountToEarn,
-                  accountAndWallets,
-                })
-              }
-              // Decrement until diff is 1
-              while (diff > 1) {
-                maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-                diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                  btcPaymentAmount: maxBtcAmountToEarn,
-                  accountAndWallets,
-                })
-              }
-              expect(diff).toEqual(1)
-              // Increment to discover max BTC amount to buy for $0.01
-              while (diff === 1) {
-                maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-                diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                  btcPaymentAmount: maxBtcAmountToEarn,
-                  accountAndWallets,
-                })
-              }
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-            }
+            const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+              startingBtcAmount,
+              accountAndWallets,
+              diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+            })
             baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
             // Validate btc starting amount for min btc discovery
@@ -1485,44 +1244,11 @@ describe("arbitrage strategies", () => {
             const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
             // Validate btc starting amount for max btc discovery
-            let maxBtcAmountToEarn = startingBtcAmount
-            {
-              // 3 steps here to:
-              // - check diff is greater than 1 to start (push up if not)
-              // - bring the diff down, in case starting diff is already past max
-              // - push up to find max, from place where we are sure diff is 1
-
-              // Ensure diff is '> 1' for starting amount
-              let diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-              while (diff <= 1) {
-                maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-                diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                  btcPaymentAmount: maxBtcAmountToEarn,
-                  accountAndWallets,
-                })
-              }
-              // Decrement until diff is 1
-              while (diff > 1) {
-                maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-                diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                  btcPaymentAmount: maxBtcAmountToEarn,
-                  accountAndWallets,
-                })
-              }
-              expect(diff).toEqual(1)
-              // Increment to discover max BTC amount to buy for $0.01
-              while (diff === 1) {
-                maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-                diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                  btcPaymentAmount: maxBtcAmountToEarn,
-                  accountAndWallets,
-                })
-              }
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-            }
+            const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+              startingBtcAmount,
+              accountAndWallets,
+              diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+            })
             baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
             // Validate btc starting amount for min btc discovery
@@ -1964,44 +1690,11 @@ describe("arbitrage strategies", () => {
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // Validate btc starting amount for max btc discovery
-          let maxBtcAmountToEarn = startingBtcAmount
-          {
-            // 3 steps here to:
-            // - check diff is greater than 1 to start (push up if not)
-            // - bring the diff down, in case starting diff is already past max
-            // - push up to find max, from place where we are sure diff is 1
-
-            // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
-              btcPaymentAmount: maxBtcAmountToEarn,
-              accountAndWallets,
-            })
-            while (diff <= 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            // Decrement until diff is 1
-            while (diff > 1) {
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            expect(diff).toEqual(1)
-            // Increment to discover max BTC amount to buy for $0.01
-            while (diff === 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-          }
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+          })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // EXECUTE ARBITRAGE
@@ -2078,44 +1771,11 @@ describe("arbitrage strategies", () => {
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // Validate btc starting amount for max btc discovery
-          let maxBtcAmountToEarn = startingBtcAmount
-          {
-            // 3 steps here to:
-            // - check diff is greater than 1 to start (push up if not)
-            // - bring the diff down, in case starting diff is already past max
-            // - push up to find max, from place where we are sure diff is 1
-
-            // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-              btcPaymentAmount: maxBtcAmountToEarn,
-              accountAndWallets,
-            })
-            while (diff <= 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            // Decrement until diff is 1
-            while (diff > 1) {
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            expect(diff).toEqual(1)
-            // Increment to discover max BTC amount to buy for $0.01
-            while (diff === 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-          }
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+          })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // EXECUTE ARBITRAGE
@@ -2434,44 +2094,11 @@ describe("arbitrage strategies", () => {
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // Validate btc starting amount for max btc discovery
-          let maxBtcAmountToEarn = startingBtcAmount
-          {
-            // 3 steps here to:
-            // - check diff is greater than 1 to start (push up if not)
-            // - bring the diff down, in case starting diff is already past max
-            // - push up to find max, from place where we are sure diff is 1
-
-            // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalentWithAmountInvoice({
-              btcPaymentAmount: maxBtcAmountToEarn,
-              accountAndWallets,
-            })
-            while (diff <= 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            // Decrement until diff is 1
-            while (diff > 1) {
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            expect(diff).toEqual(1)
-            // Increment to discover max BTC amount to buy for $0.01
-            while (diff === 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoice({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-          }
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+          })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // EXECUTE ARBITRAGE
@@ -2555,44 +2182,11 @@ describe("arbitrage strategies", () => {
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // Validate btc starting amount for max btc discovery
-          let maxBtcAmountToEarn = startingBtcAmount
-          {
-            // 3 steps here to:
-            // - check diff is greater than 1 to start (push up if not)
-            // - bring the diff down, in case starting diff is already past max
-            // - push up to find max, from place where we are sure diff is 1
-
-            // Ensure diff is '> 1' for starting amount
-            let diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-              btcPaymentAmount: maxBtcAmountToEarn,
-              accountAndWallets,
-            })
-            while (diff <= 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            // Decrement until diff is 1
-            while (diff > 1) {
-              maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            expect(diff).toEqual(1)
-            // Increment to discover max BTC amount to buy for $0.01
-            while (diff === 1) {
-              maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-              diff = await getUsdForBtcEquivalentWithAmountInvoiceAndProbe({
-                btcPaymentAmount: maxBtcAmountToEarn,
-                accountAndWallets,
-              })
-            }
-            maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-          }
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+          })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // EXECUTE ARBITRAGE
