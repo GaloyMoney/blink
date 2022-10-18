@@ -18,6 +18,7 @@ services:
       - lnd-outside-2
       - otel-agent
       - oathkeeper
+    restart: on-failure:10
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.61.0
     command: ["--config=/etc/otel-agent-config.yaml"]
@@ -263,6 +264,8 @@ services:
     depends_on:
       - otel-agent
       - redis
+      - mongodb
+    restart: on-failure:10
     volumes:
       - ./:/repo
 
