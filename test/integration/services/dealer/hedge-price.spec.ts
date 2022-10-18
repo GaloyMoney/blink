@@ -366,7 +366,7 @@ describe("arbitrage strategies", () => {
     // an invoice up to 78 sats for $0.01 from a USD wallet and then convert back
     // to $0.01 for 53 sats.
 
-    describe("pay max btc-amount invoice from usd wallet", () => {
+    describe("pay max btc-amount invoice pull from usd wallet", () => {
       describe("replenish with $0.01 pull back to usd wallet", () => {
         it("via usd-denominated invoice", async () => {
           const accountAndWallets = await newAccountAndWallets()
@@ -730,7 +730,7 @@ describe("arbitrage strategies", () => {
       })
     })
 
-    describe("pay max btc-amount fee probe from usd wallet", () => {
+    describe("pay max btc-amount fee probe pull from usd wallet", () => {
       describe("replenish with $0.01 pull back to usd wallet", () => {
         it("via usd-denominated invoice", async () => {
           const accountAndWallets = await newAccountAndWallets()
@@ -1131,7 +1131,7 @@ describe("arbitrage strategies", () => {
     // - rounds up to $0.01
     // - can be converted back to BTC to get back more than 1 sat
 
-    describe("pay 1-sat to intraledger usd wallet from btc wallet", () => {
+    describe("pay 1-sat to intraledger usd wallet push from btc wallet", () => {
       describe("replenish with $0.01 push from usd wallet", () => {
         it("via intraledger payment", async () => {
           const accountAndWallets = await newAccountAndWallets()
@@ -1188,7 +1188,7 @@ describe("arbitrage strategies", () => {
       })
     })
 
-    describe("pay 1-sat to no-amount usd invoice from btc wallet", () => {
+    describe("pay 1-sat to no-amount usd invoice push from btc wallet", () => {
       describe("replenish with $0.01 push from usd wallet", () => {
         it("via intraledger payment", async () => {
           const accountAndWallets = await newAccountAndWallets()
@@ -1521,7 +1521,7 @@ describe("arbitrage strategies", () => {
       })
     })
 
-    describe("pay 1-sat to no-amount usd fee probe from btc wallet", () => {
+    describe("pay 1-sat to no-amount usd fee probe push from btc wallet", () => {
       describe("replenish with $0.01 push from usd wallet", () => {
         it("via intraledger payment", async () => {
           const accountAndWallets = await newAccountAndWallets()
