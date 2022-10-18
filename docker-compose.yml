@@ -87,7 +87,7 @@ services:
     volumes:
       - ${PWD}/dev/bitcoind/bitcoin.conf:/data/.bitcoin/bitcoin.conf
   lnd1:
-    image: lightninglabs/lnd:v0.15.2-beta
+    image: lightninglabs/lnd:v0.15.3-beta
     volumes:
       - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
       - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
@@ -105,7 +105,7 @@ services:
         cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
         /bin/lnd
   lnd2:
-    image: lightninglabs/lnd:v0.15.2-beta
+    image: lightninglabs/lnd:v0.15.3-beta
     volumes:
       - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
       - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
@@ -123,7 +123,7 @@ services:
         cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
         /bin/lnd
   lnd-outside-1:
-    image: lightninglabs/lnd:v0.15.2-beta
+    image: lightninglabs/lnd:v0.15.3-beta
     volumes:
       - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
       - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
@@ -141,7 +141,7 @@ services:
         /bin/lnd
     depends_on: [bitcoind]
   lnd-outside-2:
-    image: lightninglabs/lnd:v0.15.2-beta
+    image: lightninglabs/lnd:v0.15.3-beta
     volumes:
       - ${PWD}/dev/lnd/lnd.conf:/root/.lnd/lnd.conf
       - ${PWD}/dev/lnd/tls.key:/root/.lnd/tls.key
