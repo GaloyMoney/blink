@@ -972,398 +972,398 @@ describe("arbitrage strategies", () => {
           const diffUsd = usdBalanceAfter - usdBalanceBefore
           expect(diffUsd).toBeLessThanOrEqual(0)
         })
+      })
 
-        describe("with min-btc push from btc wallet", () => {
-          it("with intraledger payment", async () => {
-            const accountAndWallets = await newAccountAndWallets()
-            const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
+      describe("with min-btc push from btc wallet", () => {
+        it("with intraledger payment", async () => {
+          const accountAndWallets = await newAccountAndWallets()
+          const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
-            // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
-            // =====
-            const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
-            if (midPriceRatio instanceof Error) throw midPriceRatio
-            const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
+          // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
+          // =====
+          const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
+          if (midPriceRatio instanceof Error) throw midPriceRatio
+          const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
-            // Validate btc starting amount for max btc discovery
-            const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
-              startingBtcAmount,
-              accountAndWallets,
-              diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+          // Validate btc starting amount for max btc discovery
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+          })
+          baseLogger.info("Discovered:", { maxBtcAmountToEarn })
+
+          // Validate btc starting amount for min btc discovery
+          let minBtcAmountToSpend = startingBtcAmount
+          {
+            const sendArgs = {
+              recipientWalletId: newUsdWallet.id,
+              memo: null,
+              senderWalletId: newBtcWallet.id,
+              senderAccount: newAccount,
+            }
+            let paid = await Payments.intraledgerPaymentSendWalletId({
+              amount: toSats(minBtcAmountToSpend.amount),
+              ...sendArgs,
             })
-            baseLogger.info("Discovered:", { maxBtcAmountToEarn })
-
-            // Validate btc starting amount for min btc discovery
-            let minBtcAmountToSpend = startingBtcAmount
-            {
-              const sendArgs = {
-                recipientWalletId: newUsdWallet.id,
-                memo: null,
-                senderWalletId: newBtcWallet.id,
-                senderAccount: newAccount,
-              }
-              let paid = await Payments.intraledgerPaymentSendWalletId({
+            // Ensure paid is 'Success' for starting amount
+            while (paid instanceof ZeroAmountForUsdRecipientError) {
+              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
+              paid = await Payments.intraledgerPaymentSendWalletId({
                 amount: toSats(minBtcAmountToSpend.amount),
                 ...sendArgs,
               })
-              // Ensure paid is 'Success' for starting amount
-              while (paid instanceof ZeroAmountForUsdRecipientError) {
-                minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-                paid = await Payments.intraledgerPaymentSendWalletId({
-                  amount: toSats(minBtcAmountToSpend.amount),
-                  ...sendArgs,
-                })
-                if (
-                  paid instanceof Error &&
-                  !(paid instanceof ZeroAmountForUsdRecipientError)
-                ) {
-                  throw paid
-                }
-              }
-              // Decrement until paid fails
-              while (
-                !(paid instanceof ZeroAmountForUsdRecipientError) &&
-                minBtcAmountToSpend.amount > 1n
+              if (
+                paid instanceof Error &&
+                !(paid instanceof ZeroAmountForUsdRecipientError)
               ) {
-                minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
-                paid = await Payments.intraledgerPaymentSendWalletId({
-                  amount: toSats(minBtcAmountToSpend.amount),
-                  ...sendArgs,
-                })
-                if (
-                  paid instanceof Error &&
-                  !(paid instanceof ZeroAmountForUsdRecipientError)
-                ) {
-                  throw paid
-                }
-              }
-              // Increment to discover min BTC amount to sell for $0.01
-              while (paid instanceof ZeroAmountForUsdRecipientError) {
-                minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-                paid = await Payments.intraledgerPaymentSendWalletId({
-                  recipientWalletId: newUsdWallet.id,
-                  memo: null,
-                  amount: toSats(minBtcAmountToSpend.amount),
-                  senderWalletId: newBtcWallet.id,
-                  senderAccount: newAccount,
-                })
-                if (
-                  paid instanceof Error &&
-                  !(paid instanceof ZeroAmountForUsdRecipientError)
-                ) {
-                  throw paid
-                }
+                throw paid
               }
             }
-            baseLogger.info("Discovered:", { minBtcAmountToSpend })
-
-            // EXECUTE ARBITRAGE
-            // =====
-            const btcBalanceBefore = await getBalanceHelper(newBtcWallet.id)
-            const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
-
-            // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
-            const lnInvoice = await Wallets.addInvoiceForSelf({
-              walletId: newBtcWallet.id,
-              amount: toSats(maxBtcAmountToEarn.amount),
-            })
-            if (lnInvoice instanceof Error) throw lnInvoice
-
-            // Step 2: Pay invoice from USD wallet at favourable rate
-            const probeResult = await Payments.getLightningFeeEstimation({
-              uncheckedPaymentRequest: lnInvoice.paymentRequest,
-              walletId: newUsdWallet.id,
-            })
-            if (probeResult instanceof Error) throw probeResult
-
-            const result = await Payments.payInvoiceByWalletId({
-              uncheckedPaymentRequest: lnInvoice.paymentRequest,
-              memo: null,
-              senderWalletId: newUsdWallet.id,
-              senderAccount: newAccount,
-            })
-            if (result instanceof Error) throw result
-
-            // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
-            const paid = await Payments.intraledgerPaymentSendWalletId({
-              recipientWalletId: newUsdWallet.id,
-              memo: null,
-              amount: toSats(minBtcAmountToSpend.amount),
-              senderWalletId: newBtcWallet.id,
-              senderAccount: newAccount,
-            })
-            if (
-              paid instanceof Error &&
-              !(paid instanceof ZeroAmountForUsdRecipientError)
+            // Decrement until paid fails
+            while (
+              !(paid instanceof ZeroAmountForUsdRecipientError) &&
+              minBtcAmountToSpend.amount > 1n
             ) {
-              throw paid
+              minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
+              paid = await Payments.intraledgerPaymentSendWalletId({
+                amount: toSats(minBtcAmountToSpend.amount),
+                ...sendArgs,
+              })
+              if (
+                paid instanceof Error &&
+                !(paid instanceof ZeroAmountForUsdRecipientError)
+              ) {
+                throw paid
+              }
             }
+            // Increment to discover min BTC amount to sell for $0.01
+            while (paid instanceof ZeroAmountForUsdRecipientError) {
+              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
+              paid = await Payments.intraledgerPaymentSendWalletId({
+                recipientWalletId: newUsdWallet.id,
+                memo: null,
+                amount: toSats(minBtcAmountToSpend.amount),
+                senderWalletId: newBtcWallet.id,
+                senderAccount: newAccount,
+              })
+              if (
+                paid instanceof Error &&
+                !(paid instanceof ZeroAmountForUsdRecipientError)
+              ) {
+                throw paid
+              }
+            }
+          }
+          baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
-            // Step 4: Check that no profit was made in the process
-            const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-            const diffBtc = btcBalanceAfter - btcBalanceBefore
-            expect(diffBtc).toBeLessThanOrEqual(0)
+          // EXECUTE ARBITRAGE
+          // =====
+          const btcBalanceBefore = await getBalanceHelper(newBtcWallet.id)
+          const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
-            const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-            const diffUsd = usdBalanceAfter - usdBalanceBefore
-            expect(diffUsd).toBeLessThanOrEqual(0)
+          // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
+          const lnInvoice = await Wallets.addInvoiceForSelf({
+            walletId: newBtcWallet.id,
+            amount: toSats(maxBtcAmountToEarn.amount),
           })
+          if (lnInvoice instanceof Error) throw lnInvoice
 
-          it("with no-amount min btc invoice", async () => {
-            const accountAndWallets = await newAccountAndWallets()
-            const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
+          // Step 2: Pay invoice from USD wallet at favourable rate
+          const probeResult = await Payments.getLightningFeeEstimation({
+            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            walletId: newUsdWallet.id,
+          })
+          if (probeResult instanceof Error) throw probeResult
 
-            // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
-            // =====
-            const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
-            if (midPriceRatio instanceof Error) throw midPriceRatio
-            const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
+          const result = await Payments.payInvoiceByWalletId({
+            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            memo: null,
+            senderWalletId: newUsdWallet.id,
+            senderAccount: newAccount,
+          })
+          if (result instanceof Error) throw result
 
-            // Validate btc starting amount for max btc discovery
-            const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
-              startingBtcAmount,
+          // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
+          const paid = await Payments.intraledgerPaymentSendWalletId({
+            recipientWalletId: newUsdWallet.id,
+            memo: null,
+            amount: toSats(minBtcAmountToSpend.amount),
+            senderWalletId: newBtcWallet.id,
+            senderAccount: newAccount,
+          })
+          if (
+            paid instanceof Error &&
+            !(paid instanceof ZeroAmountForUsdRecipientError)
+          ) {
+            throw paid
+          }
+
+          // Step 4: Check that no profit was made in the process
+          const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
+          const diffBtc = btcBalanceAfter - btcBalanceBefore
+          expect(diffBtc).toBeLessThanOrEqual(0)
+
+          const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
+          const diffUsd = usdBalanceAfter - usdBalanceBefore
+          expect(diffUsd).toBeLessThanOrEqual(0)
+        })
+
+        it("with no-amount min btc invoice", async () => {
+          const accountAndWallets = await newAccountAndWallets()
+          const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
+
+          // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
+          // =====
+          const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
+          if (midPriceRatio instanceof Error) throw midPriceRatio
+          const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
+
+          // Validate btc starting amount for max btc discovery
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+          })
+          baseLogger.info("Discovered:", { maxBtcAmountToEarn })
+
+          // Validate btc starting amount for min btc discovery
+          let minBtcAmountToSpend = startingBtcAmount
+          {
+            let diff = await getBtcForUsdEquivalentNoAmountInvoice({
+              btcPaymentAmount: minBtcAmountToSpend,
               accountAndWallets,
-              diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
             })
-            baseLogger.info("Discovered:", { maxBtcAmountToEarn })
-
-            // Validate btc starting amount for min btc discovery
-            let minBtcAmountToSpend = startingBtcAmount
-            {
-              let diff = await getBtcForUsdEquivalentNoAmountInvoice({
+            // Ensure diff is 'Success' for starting amount
+            while (diff instanceof ZeroAmountForUsdRecipientError) {
+              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
+              diff = await getBtcForUsdEquivalentNoAmountInvoice({
                 btcPaymentAmount: minBtcAmountToSpend,
                 accountAndWallets,
               })
-              // Ensure diff is 'Success' for starting amount
-              while (diff instanceof ZeroAmountForUsdRecipientError) {
-                minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-                diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                  btcPaymentAmount: minBtcAmountToSpend,
-                  accountAndWallets,
-                })
-                if (
-                  diff instanceof Error &&
-                  !(diff instanceof ZeroAmountForUsdRecipientError)
-                ) {
-                  throw diff
-                }
-              }
-              // Decrement until diff fails
-              while (
-                !(diff instanceof ZeroAmountForUsdRecipientError) &&
-                minBtcAmountToSpend.amount > 1n
+              if (
+                diff instanceof Error &&
+                !(diff instanceof ZeroAmountForUsdRecipientError)
               ) {
-                minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
-                diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                  btcPaymentAmount: minBtcAmountToSpend,
-                  accountAndWallets,
-                })
-                if (
-                  diff instanceof Error &&
-                  !(diff instanceof ZeroAmountForUsdRecipientError)
-                ) {
-                  throw diff
-                }
-              }
-              // Increment to discover min BTC amount to sell for $0.01
-              while (diff instanceof ZeroAmountForUsdRecipientError) {
-                minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-                diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                  btcPaymentAmount: minBtcAmountToSpend,
-                  accountAndWallets,
-                })
-                if (
-                  diff instanceof Error &&
-                  !(diff instanceof ZeroAmountForUsdRecipientError)
-                ) {
-                  throw diff
-                }
+                throw diff
               }
             }
-            baseLogger.info("Discovered:", { minBtcAmountToSpend })
-
-            // EXECUTE ARBITRAGE
-            // =====
-            const btcBalanceBefore = await getBalanceHelper(newBtcWallet.id)
-            const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
-
-            // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
-            const lnInvoice = await Wallets.addInvoiceForSelf({
-              walletId: newBtcWallet.id,
-              amount: toSats(maxBtcAmountToEarn.amount),
-            })
-            if (lnInvoice instanceof Error) throw lnInvoice
-
-            // Step 2: Pay invoice from USD wallet at favourable rate
-            const probe = await Payments.getLightningFeeEstimation({
-              uncheckedPaymentRequest: lnInvoice.paymentRequest,
-              walletId: newUsdWallet.id,
-            })
-            if (probe instanceof Error) throw probe
-
-            const result = await Payments.payInvoiceByWalletId({
-              uncheckedPaymentRequest: lnInvoice.paymentRequest,
-              memo: null,
-              senderWalletId: newUsdWallet.id,
-              senderAccount: newAccount,
-            })
-            if (result instanceof Error) throw result
-
-            // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
-            const lnInvoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
-              walletId: newUsdWallet.id,
-            })
-            if (lnInvoiceNoAmountUsd instanceof Error) throw lnInvoiceNoAmountUsd
-
-            const repaid = await Payments.payNoAmountInvoiceByWalletId({
-              amount: toSats(minBtcAmountToSpend.amount),
-              uncheckedPaymentRequest: lnInvoiceNoAmountUsd.paymentRequest,
-              memo: null,
-              senderWalletId: newBtcWallet.id,
-              senderAccount: newAccount,
-            })
-            if (repaid instanceof Error) throw repaid
-
-            // Step 4: Check that no profit was made in the process
-            const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-            const diffBtc = btcBalanceAfter - btcBalanceBefore
-            expect(diffBtc).toBeLessThanOrEqual(0)
-
-            const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-            const diffUsd = usdBalanceAfter - usdBalanceBefore
-            expect(diffUsd).toBeLessThanOrEqual(0)
-          })
-
-          it("with no-amount min btc fee probe", async () => {
-            const accountAndWallets = await newAccountAndWallets()
-            const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
-
-            // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
-            // =====
-            const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
-            if (midPriceRatio instanceof Error) throw midPriceRatio
-            const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
-
-            // Validate btc starting amount for max btc discovery
-            const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
-              startingBtcAmount,
-              accountAndWallets,
-              diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
-            })
-            baseLogger.info("Discovered:", { maxBtcAmountToEarn })
-
-            // Validate btc starting amount for min btc discovery
-            let minBtcAmountToSpend = startingBtcAmount
-            {
-              let diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
+            // Decrement until diff fails
+            while (
+              !(diff instanceof ZeroAmountForUsdRecipientError) &&
+              minBtcAmountToSpend.amount > 1n
+            ) {
+              minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
+              diff = await getBtcForUsdEquivalentNoAmountInvoice({
                 btcPaymentAmount: minBtcAmountToSpend,
                 accountAndWallets,
               })
-              // Ensure diff is 'Success' for starting amount
-              while (diff instanceof ZeroAmountForUsdRecipientError) {
-                minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-                diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                  btcPaymentAmount: minBtcAmountToSpend,
-                  accountAndWallets,
-                })
-                if (
-                  diff instanceof Error &&
-                  !(diff instanceof ZeroAmountForUsdRecipientError)
-                ) {
-                  throw diff
-                }
-              }
-              // Decrement until diff fails
-              while (
-                !(diff instanceof ZeroAmountForUsdRecipientError) &&
-                minBtcAmountToSpend.amount > 1n
+              if (
+                diff instanceof Error &&
+                !(diff instanceof ZeroAmountForUsdRecipientError)
               ) {
-                minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
-                diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                  btcPaymentAmount: minBtcAmountToSpend,
-                  accountAndWallets,
-                })
-                if (
-                  diff instanceof Error &&
-                  !(diff instanceof ZeroAmountForUsdRecipientError)
-                ) {
-                  throw diff
-                }
-              }
-              // Increment to discover min BTC amount to sell for $0.01
-              while (diff instanceof ZeroAmountForUsdRecipientError) {
-                minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-                diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                  btcPaymentAmount: minBtcAmountToSpend,
-                  accountAndWallets,
-                })
-                if (
-                  diff instanceof Error &&
-                  !(diff instanceof ZeroAmountForUsdRecipientError)
-                ) {
-                  throw diff
-                }
+                throw diff
               }
             }
-            baseLogger.info("Discovered:", { minBtcAmountToSpend })
+            // Increment to discover min BTC amount to sell for $0.01
+            while (diff instanceof ZeroAmountForUsdRecipientError) {
+              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
+              diff = await getBtcForUsdEquivalentNoAmountInvoice({
+                btcPaymentAmount: minBtcAmountToSpend,
+                accountAndWallets,
+              })
+              if (
+                diff instanceof Error &&
+                !(diff instanceof ZeroAmountForUsdRecipientError)
+              ) {
+                throw diff
+              }
+            }
+          }
+          baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
-            // EXECUTE ARBITRAGE
-            // =====
-            const btcBalanceBefore = await getBalanceHelper(newBtcWallet.id)
-            const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
+          // EXECUTE ARBITRAGE
+          // =====
+          const btcBalanceBefore = await getBalanceHelper(newBtcWallet.id)
+          const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
 
-            // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
-            const lnInvoice = await Wallets.addInvoiceForSelf({
-              walletId: newBtcWallet.id,
-              amount: toSats(maxBtcAmountToEarn.amount),
-            })
-            if (lnInvoice instanceof Error) throw lnInvoice
-
-            // Step 2: Pay invoice from USD wallet at favourable rate
-            const probe = await Payments.getLightningFeeEstimation({
-              uncheckedPaymentRequest: lnInvoice.paymentRequest,
-              walletId: newUsdWallet.id,
-            })
-            if (probe instanceof Error) throw probe
-
-            const result = await Payments.payInvoiceByWalletId({
-              uncheckedPaymentRequest: lnInvoice.paymentRequest,
-              memo: null,
-              senderWalletId: newUsdWallet.id,
-              senderAccount: newAccount,
-            })
-            if (result instanceof Error) throw result
-
-            // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
-            const lnInvoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
-              walletId: newUsdWallet.id,
-            })
-            if (lnInvoiceNoAmountUsd instanceof Error) throw lnInvoiceNoAmountUsd
-
-            const probeUsd = await Payments.getNoAmountLightningFeeEstimation({
-              amount: toSats(minBtcAmountToSpend.amount),
-              uncheckedPaymentRequest: lnInvoiceNoAmountUsd.paymentRequest,
-              walletId: newBtcWallet.id,
-            })
-            if (probeUsd instanceof Error) throw probeUsd
-
-            const repaid = await Payments.payNoAmountInvoiceByWalletId({
-              amount: toSats(minBtcAmountToSpend.amount),
-              uncheckedPaymentRequest: lnInvoiceNoAmountUsd.paymentRequest,
-              memo: null,
-              senderWalletId: newBtcWallet.id,
-              senderAccount: newAccount,
-            })
-            if (repaid instanceof Error) throw repaid
-
-            // Step 4: Check that no profit was made in the process
-            const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-            const diffBtc = btcBalanceAfter - btcBalanceBefore
-            expect(diffBtc).toBeLessThanOrEqual(0)
-
-            const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-            const diffUsd = usdBalanceAfter - usdBalanceBefore
-            expect(diffUsd).toBeLessThanOrEqual(0)
+          // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
+          const lnInvoice = await Wallets.addInvoiceForSelf({
+            walletId: newBtcWallet.id,
+            amount: toSats(maxBtcAmountToEarn.amount),
           })
+          if (lnInvoice instanceof Error) throw lnInvoice
+
+          // Step 2: Pay invoice from USD wallet at favourable rate
+          const probe = await Payments.getLightningFeeEstimation({
+            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            walletId: newUsdWallet.id,
+          })
+          if (probe instanceof Error) throw probe
+
+          const result = await Payments.payInvoiceByWalletId({
+            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            memo: null,
+            senderWalletId: newUsdWallet.id,
+            senderAccount: newAccount,
+          })
+          if (result instanceof Error) throw result
+
+          // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
+          const lnInvoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
+            walletId: newUsdWallet.id,
+          })
+          if (lnInvoiceNoAmountUsd instanceof Error) throw lnInvoiceNoAmountUsd
+
+          const repaid = await Payments.payNoAmountInvoiceByWalletId({
+            amount: toSats(minBtcAmountToSpend.amount),
+            uncheckedPaymentRequest: lnInvoiceNoAmountUsd.paymentRequest,
+            memo: null,
+            senderWalletId: newBtcWallet.id,
+            senderAccount: newAccount,
+          })
+          if (repaid instanceof Error) throw repaid
+
+          // Step 4: Check that no profit was made in the process
+          const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
+          const diffBtc = btcBalanceAfter - btcBalanceBefore
+          expect(diffBtc).toBeLessThanOrEqual(0)
+
+          const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
+          const diffUsd = usdBalanceAfter - usdBalanceBefore
+          expect(diffUsd).toBeLessThanOrEqual(0)
+        })
+
+        it("with no-amount min btc fee probe", async () => {
+          const accountAndWallets = await newAccountAndWallets()
+          const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
+
+          // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
+          // =====
+          const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
+          if (midPriceRatio instanceof Error) throw midPriceRatio
+          const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
+
+          // Validate btc starting amount for max btc discovery
+          const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+          })
+          baseLogger.info("Discovered:", { maxBtcAmountToEarn })
+
+          // Validate btc starting amount for min btc discovery
+          let minBtcAmountToSpend = startingBtcAmount
+          {
+            let diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
+              btcPaymentAmount: minBtcAmountToSpend,
+              accountAndWallets,
+            })
+            // Ensure diff is 'Success' for starting amount
+            while (diff instanceof ZeroAmountForUsdRecipientError) {
+              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
+              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
+                btcPaymentAmount: minBtcAmountToSpend,
+                accountAndWallets,
+              })
+              if (
+                diff instanceof Error &&
+                !(diff instanceof ZeroAmountForUsdRecipientError)
+              ) {
+                throw diff
+              }
+            }
+            // Decrement until diff fails
+            while (
+              !(diff instanceof ZeroAmountForUsdRecipientError) &&
+              minBtcAmountToSpend.amount > 1n
+            ) {
+              minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
+              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
+                btcPaymentAmount: minBtcAmountToSpend,
+                accountAndWallets,
+              })
+              if (
+                diff instanceof Error &&
+                !(diff instanceof ZeroAmountForUsdRecipientError)
+              ) {
+                throw diff
+              }
+            }
+            // Increment to discover min BTC amount to sell for $0.01
+            while (diff instanceof ZeroAmountForUsdRecipientError) {
+              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
+              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
+                btcPaymentAmount: minBtcAmountToSpend,
+                accountAndWallets,
+              })
+              if (
+                diff instanceof Error &&
+                !(diff instanceof ZeroAmountForUsdRecipientError)
+              ) {
+                throw diff
+              }
+            }
+          }
+          baseLogger.info("Discovered:", { minBtcAmountToSpend })
+
+          // EXECUTE ARBITRAGE
+          // =====
+          const btcBalanceBefore = await getBalanceHelper(newBtcWallet.id)
+          const usdBalanceBefore = await getBalanceHelper(newUsdWallet.id)
+
+          // Step 1: Create invoice from BTC Wallet using discovered 'maxBtcAmountToEarn' from $0.01
+          const lnInvoice = await Wallets.addInvoiceForSelf({
+            walletId: newBtcWallet.id,
+            amount: toSats(maxBtcAmountToEarn.amount),
+          })
+          if (lnInvoice instanceof Error) throw lnInvoice
+
+          // Step 2: Pay invoice from USD wallet at favourable rate
+          const probe = await Payments.getLightningFeeEstimation({
+            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            walletId: newUsdWallet.id,
+          })
+          if (probe instanceof Error) throw probe
+
+          const result = await Payments.payInvoiceByWalletId({
+            uncheckedPaymentRequest: lnInvoice.paymentRequest,
+            memo: null,
+            senderWalletId: newUsdWallet.id,
+            senderAccount: newAccount,
+          })
+          if (result instanceof Error) throw result
+
+          // Step 3: Replenish USD from BTC wallet with discovered 'minBtcAmountToSpend' for $0.01
+          const lnInvoiceNoAmountUsd = await Wallets.addInvoiceNoAmountForSelf({
+            walletId: newUsdWallet.id,
+          })
+          if (lnInvoiceNoAmountUsd instanceof Error) throw lnInvoiceNoAmountUsd
+
+          const probeUsd = await Payments.getNoAmountLightningFeeEstimation({
+            amount: toSats(minBtcAmountToSpend.amount),
+            uncheckedPaymentRequest: lnInvoiceNoAmountUsd.paymentRequest,
+            walletId: newBtcWallet.id,
+          })
+          if (probeUsd instanceof Error) throw probeUsd
+
+          const repaid = await Payments.payNoAmountInvoiceByWalletId({
+            amount: toSats(minBtcAmountToSpend.amount),
+            uncheckedPaymentRequest: lnInvoiceNoAmountUsd.paymentRequest,
+            memo: null,
+            senderWalletId: newBtcWallet.id,
+            senderAccount: newAccount,
+          })
+          if (repaid instanceof Error) throw repaid
+
+          // Step 4: Check that no profit was made in the process
+          const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
+          const diffBtc = btcBalanceAfter - btcBalanceBefore
+          expect(diffBtc).toBeLessThanOrEqual(0)
+
+          const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
+          const diffUsd = usdBalanceAfter - usdBalanceBefore
+          expect(diffUsd).toBeLessThanOrEqual(0)
         })
       })
     })
