@@ -52,8 +52,10 @@ services:
       - "8082:8081"
       - "11011:11010"
   oathkeeper:
+    extra_hosts:
+      - "e2e-tests:host-gateway"
     ports:
-      - "4455:4455"
+      - "4002:4455"
       - "4456:4456"
   kratos:
     ports:
@@ -61,4 +63,4 @@ services:
       - "4434:4434" # admin
   e2e-tests:
     ports:
-      - "4002:4002"
+      - "4012:4012"

@@ -9,7 +9,7 @@
     "trigger": "yarn build && node lib/servers/trigger.js | pino-pretty -c -l",
     "watch": "nodemon -V -e ts,graphql -w ./src -x yarn run start",
     "watch-trigger": "nodemon -V -e ts,graphql -w ./src -x yarn trigger",
-    "kill-graphql": "kill $(lsof -t -i:4001) & kill $(lsof -t -i:4002)",
+    "kill-graphql": "kill $(lsof -t -i:4001) & kill $(lsof -t -i:4012)",
     "forward-mongodb": "kubectl port-forward $(kubectl get pods -l app.kubernetes.io/name=mongodb | awk '/mongo/ {print $1}') 27017",
     "cron": ". ./.envrc && yarn build && node lib/servers/cron.js",
     "exporter": "yarn build && node lib/servers/exporter.js",

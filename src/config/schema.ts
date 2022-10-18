@@ -615,8 +615,12 @@ export const configSchema = {
       required: ["urlJkws", "decisionsApi"],
       additionalProperties: false,
       default: {
-        urlJkws: "http://oathkeeper:4456/.well-known/jwks.json",
-        decisionsApi: "http://oathkeeper:4456/decisions/",
+        urlJkws: `http://${
+          process.env.OATHKEEPER_HOST ?? "oathkeeper"
+        }:4456/.well-known/jwks.json`,
+        decisionsApi: `http://${
+          process.env.OATHKEEPER_HOST ?? "oathkeeper"
+        }:4456/decisions/`,
       },
     },
     captcha: {

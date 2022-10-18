@@ -1,19 +1,21 @@
-import { LoopService } from "@services/loopd"
+import { swapOut } from "@app/swap"
+import {
+  getActiveLoopd,
+  LND1_LOOP_CONFIG,
+  LND2_LOOP_CONFIG,
+} from "@app/swap/get-active-loopd"
+import { getSwapDestAddress } from "@app/swap/get-swap-dest-address"
 
 import {
   SwapClientNotResponding,
   SwapErrorChannelBalanceTooLow,
 } from "@domain/swap/errors"
 import { SwapOutChecker } from "@domain/swap"
-import { lndsBalances } from "@services/lnd/utils"
-import { getSwapDestAddress } from "@app/swap/get-swap-dest-address"
-import {
-  getActiveLoopd,
-  LND1_LOOP_CONFIG,
-  LND2_LOOP_CONFIG,
-} from "@app/swap/get-active-loopd"
-import { swapOut } from "@app/swap"
 import { BtcPaymentAmount, WalletCurrency, ZERO_SATS } from "@domain/shared"
+
+import { baseLogger } from "@services/logger"
+import { LoopService } from "@services/loopd"
+import { lndsBalances } from "@services/lnd/utils"
 
 describe("Swap", () => {
   const activeLoopd = getActiveLoopd()
@@ -45,7 +47,7 @@ describe("Swap", () => {
       if (swapDestAddress instanceof Error) return swapDestAddress
       const swapResult = await swapService.swapOut({ amount, swapDestAddress })
       if (swapResult instanceof SwapClientNotResponding) {
-        console.log("Swap Client is not running, skipping")
+        baseLogger.info("Swap Client is not running, skipping")
         return
       }
       if (swapResult instanceof Error) throw swapResult
@@ -70,7 +72,7 @@ describe("Swap", () => {
         // this might fail in not enough funds in LND2 in regtest
         const swapResult = await swapServiceLnd2.swapOut({ amount, swapDestAddress })
         if (swapResult instanceof SwapClientNotResponding) {
-          console.log("Swap Client is not running, skipping")
+          baseLogger.info("Swap Client is not running, skipping")
           return
         }
         if (swapResult instanceof Error) {

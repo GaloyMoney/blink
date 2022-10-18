@@ -24,13 +24,13 @@ export type ApolloTestClientConfig = {
 }
 
 export const defaultTestClientConfig = (authToken?: string): ApolloTestClientConfig => {
-  const OATHKEEPER_URL = "oathkeeper"
-  const OATHKEEPER_PORT = 4455
+  const OATHKEEPER_HOST = process.env.OATHKEEPER_HOST ?? "oathkeeper"
+  const OATHKEEPER_PORT = process.env.OATHKEEPER_PORT ?? "4002"
 
   return {
     authToken,
-    graphqlUrl: `http://${OATHKEEPER_URL}:${OATHKEEPER_PORT}/graphql`,
-    graphqlSubscriptionUrl: `ws://${OATHKEEPER_URL}:${OATHKEEPER_PORT}/graphql`,
+    graphqlUrl: `http://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/graphql`,
+    graphqlSubscriptionUrl: `ws://${OATHKEEPER_HOST}:${OATHKEEPER_PORT}/graphql`,
   }
 }
 
