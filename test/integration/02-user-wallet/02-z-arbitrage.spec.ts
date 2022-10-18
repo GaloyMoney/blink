@@ -367,7 +367,7 @@ describe("arbitrage strategies", () => {
     // to $0.01 for 53 sats.
 
     describe("pay max btc-amount invoice from usd wallet, replenish $0.01 back to usd wallet", () => {
-      describe("with $0.01 pull from usd wallet", () => {
+      describe("replenish with $0.01 pull from usd wallet", () => {
         it("via usd-denominated invoice", async () => {
           const accountAndWallets = await newAccountAndWallets()
           const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
@@ -503,7 +503,7 @@ describe("arbitrage strategies", () => {
         })
       })
 
-      describe("with min-btc push from btc wallet", () => {
+      describe("replenish with min-btc push from btc wallet", () => {
         it("via intraledger payment", async () => {
           const accountAndWallets = await newAccountAndWallets()
           const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
@@ -731,8 +731,8 @@ describe("arbitrage strategies", () => {
     })
 
     describe("pay max btc-amount fee probe from usd wallet, replenish $0.01 back to usd wallet", () => {
-      describe("with $0.01 pull from usd wallet", () => {
-        it("with usd-denominated invoice", async () => {
+      describe("replenish with $0.01 pull from usd wallet", () => {
+        it("via usd-denominated invoice", async () => {
           const accountAndWallets = await newAccountAndWallets()
           const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
@@ -802,7 +802,7 @@ describe("arbitrage strategies", () => {
           expect(diffUsd).toBeLessThanOrEqual(0)
         })
 
-        it("with usd-denominated fee probe", async () => {
+        it("via usd-denominated fee probe", async () => {
           const accountAndWallets = await newAccountAndWallets()
           const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
@@ -879,8 +879,8 @@ describe("arbitrage strategies", () => {
         })
       })
 
-      describe("with min-btc push from btc wallet", () => {
-        it("with intraledger payment", async () => {
+      describe("replenish with min-btc push from btc wallet", () => {
+        it("via intraledger payment", async () => {
           const accountAndWallets = await newAccountAndWallets()
           const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
@@ -959,7 +959,7 @@ describe("arbitrage strategies", () => {
           expect(diffUsd).toBeLessThanOrEqual(0)
         })
 
-        it("with no-amount min btc invoice", async () => {
+        it("via no-amount min btc invoice", async () => {
           const accountAndWallets = await newAccountAndWallets()
           const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
@@ -1037,7 +1037,7 @@ describe("arbitrage strategies", () => {
           expect(diffUsd).toBeLessThanOrEqual(0)
         })
 
-        it("with no-amount min btc fee probe", async () => {
+        it("via no-amount min btc fee probe", async () => {
           const accountAndWallets = await newAccountAndWallets()
           const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
 
@@ -1132,7 +1132,7 @@ describe("arbitrage strategies", () => {
     // - can be converted back to BTC to get back more than 1 sat
 
     describe("pay 1-sat to intraledger usd wallet from btc wallet, convert back $0.01 from usd wallet", () => {
-      describe("with $0.01 push from usd wallet", () => {
+      describe("replenish with $0.01 push from usd wallet", () => {
         it("via intraledger payment", async () => {
           const accountAndWallets = await newAccountAndWallets()
           const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
@@ -1189,7 +1189,7 @@ describe("arbitrage strategies", () => {
     })
 
     describe("pay 1-sat to no-amount usd invoice from btc wallet, convert back $0.01 from usd wallet", () => {
-      describe("with $0.01 push from usd wallet", () => {
+      describe("replenish with $0.01 push from usd wallet", () => {
         it("via intraledger payment", async () => {
           const accountAndWallets = await newAccountAndWallets()
           const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
@@ -1370,7 +1370,7 @@ describe("arbitrage strategies", () => {
         })
       })
 
-      describe("with min-btc pull from btc wallet", () => {
+      describe("replenish with min-btc pull from btc wallet", () => {
         it("via invoice", async () => {
           const accountAndWallets = await newAccountAndWallets()
           const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
@@ -1522,7 +1522,7 @@ describe("arbitrage strategies", () => {
     })
 
     describe("pay 1-sat to no-amount usd fee probe from btc wallet, convert back $0.01 from usd wallet", () => {
-      describe("with $0.01 push from usd wallet", () => {
+      describe("replenish with $0.01 push from usd wallet", () => {
         it("via intraledger payment", async () => {
           const accountAndWallets = await newAccountAndWallets()
           const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
@@ -1724,7 +1724,7 @@ describe("arbitrage strategies", () => {
         })
       })
 
-      describe("with min-btc pull from btc wallet", () => {
+      describe("replenish with min-btc pull from btc wallet", () => {
         it("via invoice", async () => {
           const accountAndWallets = await newAccountAndWallets()
           const { newBtcWallet, newUsdWallet, newAccount } = accountAndWallets
