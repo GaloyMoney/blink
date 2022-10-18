@@ -293,6 +293,60 @@ const getMaxBtcAmountToEarn = async ({
   return maxBtcAmountToEarn
 }
 
+const getMinBtcAmountToSpend = async ({
+  startingBtcAmount,
+  accountAndWallets,
+  diffFn,
+}: {
+  startingBtcAmount: BtcPaymentAmount
+  accountAndWallets: AccountAndWallets
+  diffFn
+}): Promise<BtcPaymentAmount> => {
+  let minBtcAmountToSpend = startingBtcAmount
+  let diff = await diffFn({
+    btcPaymentAmount: minBtcAmountToSpend,
+    accountAndWallets,
+  })
+  // Ensure diff is 'Success' for starting amount
+  while (diff instanceof ZeroAmountForUsdRecipientError) {
+    minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
+    diff = await diffFn({
+      btcPaymentAmount: minBtcAmountToSpend,
+      accountAndWallets,
+    })
+    if (diff instanceof Error && !(diff instanceof ZeroAmountForUsdRecipientError)) {
+      throw diff
+    }
+  }
+  // Decrement until diff fails
+  while (
+    !(diff instanceof ZeroAmountForUsdRecipientError) &&
+    minBtcAmountToSpend.amount > 1n
+  ) {
+    minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
+    diff = await diffFn({
+      btcPaymentAmount: minBtcAmountToSpend,
+      accountAndWallets,
+    })
+    if (diff instanceof Error && !(diff instanceof ZeroAmountForUsdRecipientError)) {
+      throw diff
+    }
+  }
+  // Increment to discover min BTC amount to sell for $0.01
+  while (diff instanceof ZeroAmountForUsdRecipientError) {
+    minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
+    diff = await diffFn({
+      btcPaymentAmount: minBtcAmountToSpend,
+      accountAndWallets,
+    })
+    if (diff instanceof Error && !(diff instanceof ZeroAmountForUsdRecipientError)) {
+      throw diff
+    }
+  }
+
+  return minBtcAmountToSpend
+}
+
 beforeAll(async () => {
   await publishOkexPrice()
 })
@@ -469,58 +523,12 @@ describe("arbitrage strategies", () => {
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend = startingBtcAmount
-          {
-            let diff = await getBtcForUsdEquivalentIntraledger({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Ensure diff is 'Success' for starting amount
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentIntraledger({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-            // Decrement until diff fails
-            while (
-              !(diff instanceof ZeroAmountForUsdRecipientError) &&
-              minBtcAmountToSpend.amount > 1n
-            ) {
-              minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentIntraledger({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentIntraledger({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentIntraledger,
+          })
+
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // EXECUTE ARBITRAGE
@@ -588,58 +596,11 @@ describe("arbitrage strategies", () => {
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend = startingBtcAmount
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoice({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Ensure diff is 'Success' for starting amount
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-            // Decrement until diff fails
-            while (
-              !(diff instanceof ZeroAmountForUsdRecipientError) &&
-              minBtcAmountToSpend.amount > 1n
-            ) {
-              minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // EXECUTE ARBITRAGE
@@ -707,58 +668,11 @@ describe("arbitrage strategies", () => {
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend = startingBtcAmount
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Ensure diff is 'Success' for starting amount
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-            // Decrement until diff fails
-            while (
-              !(diff instanceof ZeroAmountForUsdRecipientError) &&
-              minBtcAmountToSpend.amount > 1n
-            ) {
-              minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // EXECUTE ARBITRAGE
@@ -985,58 +899,12 @@ describe("arbitrage strategies", () => {
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend = startingBtcAmount
-          {
-            let diff = await getBtcForUsdEquivalentIntraledger({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Ensure diff is 'Success' for starting amount
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentIntraledger({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-            // Decrement until diff fails
-            while (
-              !(diff instanceof ZeroAmountForUsdRecipientError) &&
-              minBtcAmountToSpend.amount > 1n
-            ) {
-              minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentIntraledger({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentIntraledger({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentIntraledger,
+          })
+
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // EXECUTE ARBITRAGE
@@ -1110,58 +978,11 @@ describe("arbitrage strategies", () => {
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend = startingBtcAmount
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoice({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Ensure diff is 'Success' for starting amount
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-            // Decrement until diff fails
-            while (
-              !(diff instanceof ZeroAmountForUsdRecipientError) &&
-              minBtcAmountToSpend.amount > 1n
-            ) {
-              minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // EXECUTE ARBITRAGE
@@ -1235,58 +1056,11 @@ describe("arbitrage strategies", () => {
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend = startingBtcAmount
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Ensure diff is 'Success' for starting amount
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-            // Decrement until diff fails
-            while (
-              !(diff instanceof ZeroAmountForUsdRecipientError) &&
-              minBtcAmountToSpend.amount > 1n
-            ) {
-              minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // EXECUTE ARBITRAGE
@@ -1373,27 +1147,11 @@ describe("arbitrage strategies", () => {
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend: BtcPaymentAmount = ONE_SAT
-          {
-            let diff = await getBtcForUsdEquivalentIntraledger({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentIntraledger({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-              if (
-                diff instanceof Error &&
-                !(diff instanceof ZeroAmountForUsdRecipientError)
-              ) {
-                throw diff
-              }
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount: ONE_SAT,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentIntraledger,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // EXECUTE ARBITRAGE
@@ -1439,21 +1197,11 @@ describe("arbitrage strategies", () => {
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend: BtcPaymentAmount = ONE_SAT
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoice({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount: ONE_SAT,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // EXECUTE ARBITRAGE
@@ -1503,21 +1251,11 @@ describe("arbitrage strategies", () => {
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend: BtcPaymentAmount = ONE_SAT
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoice({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount: ONE_SAT,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // EXECUTE ARBITRAGE
@@ -1572,21 +1310,11 @@ describe("arbitrage strategies", () => {
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend: BtcPaymentAmount = ONE_SAT
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoice({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount: ONE_SAT,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // EXECUTE ARBITRAGE
@@ -1654,21 +1382,11 @@ describe("arbitrage strategies", () => {
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend: BtcPaymentAmount = ONE_SAT
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoice({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount: ONE_SAT,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // Validate btc starting amount for max btc discovery
@@ -1735,21 +1453,11 @@ describe("arbitrage strategies", () => {
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend: BtcPaymentAmount = ONE_SAT
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoice({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoice({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount: ONE_SAT,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // Validate btc starting amount for max btc discovery
@@ -1822,21 +1530,11 @@ describe("arbitrage strategies", () => {
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend: BtcPaymentAmount = ONE_SAT
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount: ONE_SAT,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // EXECUTE ARBITRAGE
@@ -1893,21 +1591,11 @@ describe("arbitrage strategies", () => {
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend: BtcPaymentAmount = ONE_SAT
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount: ONE_SAT,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // EXECUTE ARBITRAGE
@@ -1969,21 +1657,11 @@ describe("arbitrage strategies", () => {
           // DISCOVER ARBITRAGE AMOUNTS FOR STRATEGY
           // =====
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend: BtcPaymentAmount = ONE_SAT
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount: ONE_SAT,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // EXECUTE ARBITRAGE
@@ -2058,21 +1736,11 @@ describe("arbitrage strategies", () => {
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend: BtcPaymentAmount = ONE_SAT
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount: ONE_SAT,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // Validate btc starting amount for max btc discovery
@@ -2146,21 +1814,11 @@ describe("arbitrage strategies", () => {
           const startingBtcAmount = midPriceRatio.convertFromUsd(ONE_CENT)
 
           // Validate btc starting amount for min btc discovery
-          let minBtcAmountToSpend: BtcPaymentAmount = ONE_SAT
-          {
-            let diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-              btcPaymentAmount: minBtcAmountToSpend,
-              accountAndWallets,
-            })
-            // Increment to discover min BTC amount to sell for $0.01
-            while (diff instanceof ZeroAmountForUsdRecipientError) {
-              minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-              diff = await getBtcForUsdEquivalentNoAmountInvoiceAndProbe({
-                btcPaymentAmount: minBtcAmountToSpend,
-                accountAndWallets,
-              })
-            }
-          }
+          const minBtcAmountToSpend = await getMinBtcAmountToSpend({
+            startingBtcAmount: ONE_SAT,
+            accountAndWallets,
+            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+          })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
           // Validate btc starting amount for max btc discovery
