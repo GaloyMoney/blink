@@ -1334,10 +1334,10 @@
   dependencies:
     tslib "^2.1.0"
 
-"@google-cloud/firestore@^6.3.0":
-  version "6.3.0"
-  resolved "https://registry.yarnpkg.com/@google-cloud/firestore/-/firestore-6.3.0.tgz#0ba073f02c4ac9bda63f45b332cf73e5ebb0c04f"
-  integrity sha512-EtEOl1A8lDFv+t2X/GyyvCDSWamUfBPVep0y0qHvO7CKD4MH/4MiPKe/+kcq1h8rynX6Ths/E/jtfAiizFCVrA==
+"@google-cloud/firestore@^6.4.0":
+  version "6.4.0"
+  resolved "https://registry.yarnpkg.com/@google-cloud/firestore/-/firestore-6.4.0.tgz#cc6899fda202c385a285a8628c7e0c380828bd8b"
+  integrity sha512-qhL5V8S6uIGlESQYC/TMKISlKHaM2qSACz0X15ID0s4F1NuVgSM3Z2FS10WYHdCGIwJ2C73xdLaS+ByFDsu7sg==
   dependencies:
     fast-deep-equal "^3.1.1"
     functional-red-black-tree "^1.0.1"
@@ -5909,10 +5909,10 @@ fined@^1.2.0:
     object.pick "^1.2.0"
     parse-filepath "^1.0.1"
 
-firebase-admin@^11.1.0:
-  version "11.1.0"
-  resolved "https://registry.yarnpkg.com/firebase-admin/-/firebase-admin-11.1.0.tgz#8b94d056afd01eaf3210f3af864d5640ead63de1"
-  integrity sha512-c7yzUs8CYdmnkuN5OCHPguDNqqdMJqlrBsCHekYkd8aR3WmhHwOISHru2QL+M/HE7t2VMj3018Ibqu2ja1xfGg==
+firebase-admin@^11.2.0:
+  version "11.2.0"
+  resolved "https://registry.yarnpkg.com/firebase-admin/-/firebase-admin-11.2.0.tgz#eeabeddcca03cb50cc04564e8d6f0db4d25878cf"
+  integrity sha512-EGr8w4ZDXPXdwUgDZc/InSP/ciu5/FlaAmT8hw9qBnIbKHOuETYqKnzx8hxLlF8VIg7OQKsxb/PEQik6dVAIgQ==
   dependencies:
     "@fastify/busboy" "^1.1.0"
     "@firebase/database-compat" "^0.2.6"
@@ -5923,7 +5923,7 @@ firebase-admin@^11.1.0:
     node-forge "^1.3.1"
     uuid "^9.0.0"
   optionalDependencies:
-    "@google-cloud/firestore" "^6.3.0"
+    "@google-cloud/firestore" "^6.4.0"
     "@google-cloud/storage" "^6.5.2"
 
 flagged-respawn@^1.0.1:
