@@ -109,18 +109,23 @@ type LPFBWithSenderWallet<S extends WalletCurrency> = {
   ): LPFBWithRecipientWallet<S, R> | LPFBWithError
 }
 
+type ConversionFns = {
+  usdFromBtc(
+    amount: BtcPaymentAmount,
+  ): Promise<UsdPaymentAmount | DealerPriceServiceError>
+  btcFromUsd(
+    amount: UsdPaymentAmount,
+  ): Promise<BtcPaymentAmount | DealerPriceServiceError>
+}
+
+type WithConversionArgs = {
+  hedgeBuyUsd: ConversionFns
+  hedgeSellUsd: ConversionFns
+  mid: ConversionFns
+}
+
 type LPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {
-  withConversion({
-    usdFromBtc,
-    btcFromUsd,
-  }: {
-    usdFromBtc(
-      amount: BtcPaymentAmount,
-    ): Promise<UsdPaymentAmount | DealerPriceServiceError>
-    btcFromUsd(
-      amount: UsdPaymentAmount,
-    ): Promise<BtcPaymentAmount | DealerPriceServiceError>
-  }): LPFBWithConversion<S, R> | LPFBWithError
+  withConversion(args: WithConversionArgs): LPFBWithConversion<S, R> | LPFBWithError
 }
 
 type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
@@ -185,8 +190,6 @@ type BtcFromUsdMidPriceFn = (
 type LightningPaymentFlowBuilderConfig = {
   localNodeIds: Pubkey[]
   flaggedPubkeys: Pubkey[]
-  usdFromBtcMidPriceFn: UsdFromBtcMidPriceFn
-  btcFromUsdMidPriceFn: BtcFromUsdMidPriceFn
 }
 
 type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &

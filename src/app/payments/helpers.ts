@@ -34,22 +34,20 @@ export const constructPaymentFlowBuilder = async <
   senderWallet,
   invoice,
   uncheckedAmount,
-  usdFromBtc,
-  btcFromUsd,
+  hedgeBuyUsd,
+  hedgeSellUsd,
 }: {
   senderWallet: WalletDescriptor<S>
   invoice: LnInvoice
   uncheckedAmount?: number
-  usdFromBtc: (amount: BtcPaymentAmount) => Promise<UsdPaymentAmount | ApplicationError>
-  btcFromUsd: (amount: UsdPaymentAmount) => Promise<BtcPaymentAmount | ApplicationError>
+  hedgeBuyUsd: ConversionFns
+  hedgeSellUsd: ConversionFns
 }): Promise<LPFBWithConversion<S, R> | ApplicationError> => {
   const lndService = LndService()
   if (lndService instanceof Error) return lndService
   const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: lndService.listAllPubkeys(),
     flaggedPubkeys: getPubkeysToSkipProbe(),
-    usdFromBtcMidPriceFn,
-    btcFromUsdMidPriceFn,
   })
   const builderWithInvoice = uncheckedAmount
     ? (paymentBuilder.withNoAmountInvoice({
@@ -71,8 +69,9 @@ export const constructPaymentFlowBuilder = async <
   }
 
   const builderWithConversion = await builderAfterRecipientStep.withConversion({
-    usdFromBtc,
-    btcFromUsd,
+    mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+    hedgeBuyUsd,
+    hedgeSellUsd,
   })
 
   const check = await builderWithConversion.usdPaymentAmount()

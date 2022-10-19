@@ -388,14 +388,14 @@ const getPaymentFlow = async <S extends WalletCurrency, R extends WalletCurrency
       uncheckedAmount,
       senderWallet,
       invoice: decodedInvoice,
-      usdFromBtc:
-        senderWallet.currency === WalletCurrency.Btc
-          ? dealer.getCentsFromSatsForImmediateBuy
-          : dealer.getCentsFromSatsForImmediateSell,
-      btcFromUsd:
-        senderWallet.currency === WalletCurrency.Btc
-          ? dealer.getSatsFromCentsForImmediateBuy
-          : dealer.getSatsFromCentsForImmediateSell,
+      hedgeBuyUsd: {
+        usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+        btcFromUsd: dealer.getSatsFromCentsForImmediateBuy,
+      },
+      hedgeSellUsd: {
+        usdFromBtc: dealer.getCentsFromSatsForImmediateSell,
+        btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
+      },
     })
     if (builderWithConversion instanceof Error) return builderWithConversion
 
