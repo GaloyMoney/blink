@@ -178,7 +178,11 @@ beforeAll(async () => {
   walletIdC = await getDefaultWalletIdByTestUserRef("C")
   walletIdH = await getDefaultWalletIdByTestUserRef("H")
 
-  walletDescriptorB = { id: walletIdB, currency: WalletCurrency.Btc }
+  walletDescriptorB = {
+    id: walletIdB,
+    currency: WalletCurrency.Btc,
+    accountId: accountB.id,
+  }
 
   userRecordA = await getUserRecordByTestUserRef("A")
   usernameA = userRecordA.username as Username

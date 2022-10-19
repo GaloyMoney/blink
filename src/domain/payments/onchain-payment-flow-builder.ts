@@ -60,12 +60,17 @@ const OPFBWithAddress = <S extends WalletCurrency>(
     wallet: WalletDescriptor<S>
     account: Account
   }) => {
-    const { id: senderWalletId, currency: senderWalletCurrency } = wallet
+    const {
+      id: senderWalletId,
+      currency: senderWalletCurrency,
+      accountId: senderAccountId,
+    } = wallet
     const { withdrawFee: senderWithdrawFee } = account
     return OPFBWithSenderWalletAndAccount({
       ...state,
       senderWalletId,
       senderWalletCurrency,
+      senderAccountId,
       senderWithdrawFee,
     })
   }
@@ -357,6 +362,7 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     const imbalanceForWallet = await imbalanceCalculator.getSwapOutImbalanceAmount<S>({
       id: state.senderWalletId,
       currency: state.senderWalletCurrency,
+      accountId: state.senderAccountId,
     })
     if (imbalanceForWallet instanceof Error) return imbalanceForWallet
 

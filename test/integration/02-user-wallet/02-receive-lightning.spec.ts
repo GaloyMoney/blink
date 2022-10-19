@@ -30,6 +30,7 @@ import {
   cancelOkexPricePublish,
   checkIsBalanced,
   createUserAndWalletFromUserRef,
+  getAccountByTestUserRef,
   getAmount,
   getBalanceHelper,
   getDefaultWalletIdByTestUserRef,
@@ -47,6 +48,7 @@ import {
 } from "test/helpers"
 
 let walletIdB: WalletId
+let accountB: Account
 let walletDescriptorB: WalletDescriptor<WalletCurrency>
 let walletIdUsdB: WalletId
 let walletIdF: WalletId
@@ -61,7 +63,12 @@ beforeAll(async () => {
   await createUserAndWalletFromUserRef("B")
   await createUserAndWalletFromUserRef("F")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
-  walletDescriptorB = { id: walletIdB, currency: WalletCurrency.Btc }
+  accountB = await getAccountByTestUserRef("B")
+  walletDescriptorB = {
+    id: walletIdB,
+    currency: WalletCurrency.Btc,
+    accountId: accountB.id,
+  }
   walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
   walletIdF = await getDefaultWalletIdByTestUserRef("F")
   walletIdUsdF = await getUsdWalletIdByTestUserRef("F")
