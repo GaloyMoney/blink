@@ -241,7 +241,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
 
     case "InsufficientOnChainFundsError":
       message =
-        "Onchain service temporarily unavailable. Withdraw via Lightning until service is restored."
+        "Onchain withdrawals halted while we replenish the hot wallet. Withdrawals will be resumed shortly, and Lightning withdrawals are still available."
       return new InsufficientLiquidityError({ message, logger: baseLogger })
 
     case "CPFPAncestorLimitReachedError":
