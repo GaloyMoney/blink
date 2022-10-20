@@ -5,7 +5,7 @@ import {
   IncompatibleSchemaUpgradeError,
   KratosError,
   LikelyNoUserWithThisPhoneExistError,
-  LikelyUserAlreadyExistError,
+  LikelyUserAlreadyExistOrCallBackServerDownError,
   UnknownKratosError,
 } from "@services/kratos/errors"
 import {
@@ -78,7 +78,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       })
     } catch (err) {
       if (err.message === "Request failed with status code 400") {
-        return new LikelyUserAlreadyExistError(err)
+        return new LikelyUserAlreadyExistOrCallBackServerDownError(err)
       }
 
       return new UnknownKratosError(err)

@@ -2,7 +2,7 @@ import { getKratosMasterPhonePassword } from "@config"
 import {
   AuthenticationKratosError,
   LikelyNoUserWithThisPhoneExistError,
-  LikelyUserAlreadyExistError,
+  LikelyUserAlreadyExistOrCallBackServerDownError,
 } from "@services/kratos/errors"
 import { AdminCreateIdentityBody } from "@ory/client"
 import {
@@ -46,7 +46,7 @@ describe("phoneNoPassword", () => {
     it("can't create user twice", async () => {
       const res = await authService.createIdentityWithSession(phone)
 
-      expect(res).toBeInstanceOf(LikelyUserAlreadyExistError)
+      expect(res).toBeInstanceOf(LikelyUserAlreadyExistOrCallBackServerDownError)
     })
 
     it("login user succeed if user exists", async () => {
