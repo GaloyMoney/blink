@@ -29,6 +29,7 @@ export class NoValidNodeForPubkeyError extends LightningServiceError {
 }
 export class PaymentNotFoundError extends LightningServiceError {}
 export class RouteNotFoundError extends LightningServiceError {}
+export class UnknownNextPeerError extends LightningServiceError {}
 export class InsufficientBalanceForRoutingError extends LightningServiceError {}
 export class InsufficientBalanceForLnPaymentError extends LightningServiceError {}
 export class InvoiceExpiredOrBadPaymentHashError extends LightningServiceError {}
