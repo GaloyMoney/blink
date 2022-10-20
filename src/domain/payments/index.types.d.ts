@@ -220,8 +220,13 @@ type OPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
 
   btcPaymentAmount(): Promise<BtcPaymentAmount | DealerPriceServiceError>
   usdPaymentAmount(): Promise<UsdPaymentAmount | DealerPriceServiceError>
+  paymentAmounts(): Promise<
+    { btc: BtcPaymentAmount; usd: UsdPaymentAmount } | DealerPriceServiceError
+  >
 
   isIntraLedger(): Promise<boolean | DealerPriceServiceError>
+  addressForFlow(): Promise<OnChainAddress | DealerPriceServiceError>
+  senderWalletDescriptor(): Promise<WalletDescriptor<S> | DealerPriceServiceError>
 }
 
 type LPFBTest = {
@@ -253,6 +258,9 @@ type OPFBWithError = {
   btcPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
   usdPaymentAmount(): Promise<ValidationError | DealerPriceServiceError>
   isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
+  paymentAmounts(): Promise<ValidationError | DealerPriceServiceError>
+  addressForFlow(): Promise<ValidationError | DealerPriceServiceError>
+  senderWalletDescriptor(): Promise<ValidationError | DealerPriceServiceError>
 }
 
 interface IPaymentFlowRepository {
