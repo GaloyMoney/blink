@@ -406,12 +406,42 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     return state.settlementMethod === SettlementMethod.IntraLedger
   }
 
+  const paymentAmounts = async () => {
+    const btc = await btcPaymentAmount()
+    if (btc instanceof Error) return btc
+    const usd = await usdPaymentAmount()
+    if (usd instanceof Error) return usd
+
+    return { btc, usd }
+  }
+
+  const addressForFlow = async () => {
+    const state = await stateFromPromise(statePromise)
+    if (state instanceof Error) return state
+
+    return state.address
+  }
+
+  const senderWalletDescriptor = async () => {
+    const state = await stateFromPromise(statePromise)
+    if (state instanceof Error) return state
+
+    return {
+      id: state.senderWalletId,
+      currency: state.senderWalletCurrency,
+      accountId: state.senderAccountId,
+    }
+  }
+
   return {
     withoutMinerFee,
     withMinerFee,
     btcPaymentAmount,
     usdPaymentAmount,
+    paymentAmounts,
     isIntraLedger,
+    addressForFlow,
+    senderWalletDescriptor,
   }
 }
 
@@ -454,6 +484,18 @@ const OPFBWithError = (
     return Promise.resolve(error)
   }
 
+  const paymentAmounts = async () => {
+    return Promise.resolve(error)
+  }
+
+  const addressForFlow = async () => {
+    return Promise.resolve(error)
+  }
+
+  const senderWalletDescriptor = async () => {
+    return Promise.resolve(error)
+  }
+
   return {
     withSenderWalletAndAccount,
     withAmount,
@@ -465,5 +507,8 @@ const OPFBWithError = (
     isIntraLedger,
     btcPaymentAmount,
     usdPaymentAmount,
+    paymentAmounts,
+    addressForFlow,
+    senderWalletDescriptor,
   }
 }
