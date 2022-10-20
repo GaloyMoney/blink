@@ -231,12 +231,10 @@ export const newCheckWithdrawalLimits = async <S extends WalletCurrency>({
 export const getPriceRatioForLimits = wrapAsyncToRunInSpan({
   namespace: "app.payments",
   fnName: "getPriceRatioForLimits",
-  fn: async <S extends WalletCurrency, R extends WalletCurrency>(
-    paymentFlow: PaymentFlow<S, R>,
-  ) => {
+  fn: async (paymentAmounts: { btc: BtcPaymentAmount; usd: UsdPaymentAmount }) => {
     const amount = MIN_SATS_FOR_PRICE_RATIO_PRECISION
 
-    if (paymentFlow.btcPaymentAmount.amount < amount) {
+    if (paymentAmounts.btc.amount < amount) {
       const btcPaymentAmountForRatio = {
         amount,
         currency: WalletCurrency.Btc,
@@ -252,9 +250,6 @@ export const getPriceRatioForLimits = wrapAsyncToRunInSpan({
       })
     }
 
-    return PriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
-    })
+    return PriceRatio(paymentAmounts)
   },
 })

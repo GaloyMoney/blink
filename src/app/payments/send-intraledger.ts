@@ -199,7 +199,7 @@ const executePaymentViaIntraledger = async <
     "payment.settlement_method": SettlementMethod.IntraLedger,
   })
 
-  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
+  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const checkLimits =
