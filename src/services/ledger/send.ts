@@ -44,25 +44,34 @@ export const send = {
       usd: amountDisplayCurrency,
       sendAll,
     }
-
     if (bankFee > 0) {
-      return addSendInternalFee({
+      // TODO: remove once implemented
+      if (walletCurrency !== WalletCurrency.Btc) {
+        return new NotImplementedError("USD Intraledger")
+      }
+
+      const entry = await buildSendInternalFeeEntry({
         walletId,
-        walletCurrency,
         metadata,
         description,
         sats,
         fee: bankFee,
       })
+      if (entry instanceof Error) return entry
+
+      return persistAndReturnEntry({ entry, hash: metadata.hash })
     }
 
-    return addSendNoInternalFee({
+    const entry = await buildSendNoInternalFeeEntry({
       walletId,
       walletCurrency,
       metadata,
       description,
       sats,
     })
+    if (entry instanceof Error) return entry
+
+    return persistAndReturnEntry({ entry, hash: metadata.hash })
   },
 
   settlePendingLnPayment: async (
@@ -140,60 +149,47 @@ const buildSendNoInternalFeeEntry = async ({
     dealerUsdAccountId: toLedgerAccountId(await caching.getDealerUsdWalletId()),
   }
 
-  const metadata = { ...metaInput, currency: walletCurrency }
+  // Start entry
   let entry = MainBook.entry(description)
   const builder = LegacyEntryBuilder({
     staticAccountIds,
     entry,
-    metadata,
+    metadata: { ...metaInput, currency: walletCurrency },
   }).withoutFee()
 
+  // Calculate amounts
   const satsAmount = paymentAmountFromNumber({
     amount: sats,
     currency: WalletCurrency.Btc,
   })
   if (satsAmount instanceof Error) return satsAmount
 
-  if (walletCurrency === WalletCurrency.Btc) {
-    entry = builder
-      .debitAccount({
-        accountId,
-        amount: satsAmount,
-      })
-      .creditLnd()
-  }
-
+  let centsAmount: UsdPaymentAmount | ValidationError | undefined = undefined
   if (walletCurrency === WalletCurrency.Usd) {
     if (!cents) return new UnknownLedgerError("Cents are required")
-    const centsAmount = paymentAmountFromNumber({
+    centsAmount = paymentAmountFromNumber({
       amount: cents,
       currency: WalletCurrency.Usd,
     })
     if (centsAmount instanceof Error) return centsAmount
-
-    entry = builder
-      .debitAccount({
-        accountId,
-        amount: centsAmount,
-      })
-      .creditLnd(satsAmount)
   }
 
+  // Complete entry
+  entry = centsAmount
+    ? builder
+        .debitAccount({
+          accountId,
+          amount: centsAmount,
+        })
+        .creditLnd(satsAmount)
+    : builder
+        .debitAccount({
+          accountId,
+          amount: satsAmount,
+        })
+        .creditLnd()
+
   return entry
-}
-
-const addSendNoInternalFee = async (args: {
-  metadata: AddLnSendLedgerMetadata | AddOnchainSendLedgerMetadata
-  walletId: WalletId
-  walletCurrency: WalletCurrency
-  sats: Satoshis
-  cents?: UsdCents
-  description: string
-}) => {
-  const entry = await buildSendNoInternalFeeEntry(args)
-  if (entry instanceof Error) return entry
-
-  return persistAndReturnEntry({ entry, hash: args.metadata.hash })
 }
 
 const buildSendInternalFeeEntry = async ({
@@ -216,6 +212,15 @@ const buildSendInternalFeeEntry = async ({
     dealerUsdAccountId: toLedgerAccountId(await caching.getDealerUsdWalletId()),
   }
 
+  // Start entry
+  let entry = MainBook.entry(description)
+  const builder = LegacyEntryBuilder({
+    staticAccountIds,
+    entry,
+    metadata: metaInput,
+  })
+
+  // Calculate amounts
   const feeSatsAmount = paymentAmountFromNumber({
     amount: fee,
     currency: WalletCurrency.Btc,
@@ -227,14 +232,9 @@ const buildSendInternalFeeEntry = async ({
   })
   if (satsAmount instanceof Error) return satsAmount
 
-  let entry = MainBook.entry(description)
-  const builder = LegacyEntryBuilder({
-    staticAccountIds,
-    entry,
-    metadata: metaInput,
-  }).withFee(feeSatsAmount)
-
+  // Complete entry
   entry = builder
+    .withFee(feeSatsAmount)
     .debitAccount({
       accountId,
       amount: satsAmount,
@@ -242,23 +242,4 @@ const buildSendInternalFeeEntry = async ({
     .creditLnd()
 
   return entry
-}
-
-const addSendInternalFee = async (args: {
-  metadata: AddOnchainSendLedgerMetadata
-  walletId: WalletId
-  walletCurrency: WalletCurrency
-  sats: Satoshis
-  fee: Satoshis
-  description: string
-}) => {
-  // TODO: remove once implemented
-  if (args.walletCurrency !== WalletCurrency.Btc) {
-    return new NotImplementedError("USD Intraledger")
-  }
-
-  const entry = await buildSendInternalFeeEntry(args)
-  if (entry instanceof Error) return entry
-
-  return persistAndReturnEntry({ entry, hash: args.metadata.hash })
 }
