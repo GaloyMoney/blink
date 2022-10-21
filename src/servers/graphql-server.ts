@@ -260,7 +260,9 @@ export const startApolloServer = async ({
     }),
   )
 
-  app.use(updateToken)
+  // skip the updateToken for now
+  // FIXME: revert once phone migration to kratos has been done
+  // app.use(updateToken)
 
   await apolloServer.start()
 
