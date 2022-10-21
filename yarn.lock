@@ -1362,16 +1362,15 @@
   resolved "https://registry.yarnpkg.com/@google-cloud/promisify/-/promisify-3.0.0.tgz#5cd6941fc30c4acac18051706aa5af96069bd3e3"
   integrity sha512-91ArYvRgXWb73YvEOBMmOcJc0bDRs5yiVHnqkwoG0f3nm7nZuipllz6e7BvFESBvjkDTBC0zMD8QxedUwNLc1A==
 
-"@google-cloud/storage@^6.5.2":
-  version "6.5.2"
-  resolved "https://registry.yarnpkg.com/@google-cloud/storage/-/storage-6.5.2.tgz#0db4eebb947256925db06365cfdab412062b504b"
-  integrity sha512-n4HVE5bGGFdXlPUN2tP+wEnVH2XbYnv9PVrHirbAJPHk8EM7bm1G86+IhLha8KH4PpHLhjCPML173Sr6PWCXIQ==
+"@google-cloud/storage@^6.5.2", "@google-cloud/storage@^6.5.3":
+  version "6.5.3"
+  resolved "https://registry.yarnpkg.com/@google-cloud/storage/-/storage-6.5.3.tgz#e51b159effbd7c5f572de77be9b8eabf66f12137"
+  integrity sha512-AWUJRYE8Nt62SNaJZWr8LbruJ5NvM/nc5IBwgL24icbJScmjpeRFQOvLwpv6ugjQuFH89XuITmRQXDU+pK09HQ==
   dependencies:
     "@google-cloud/paginator" "^3.0.7"
     "@google-cloud/projectify" "^3.0.0"
     "@google-cloud/promisify" "^3.0.0"
     abort-controller "^3.0.0"
-    arrify "^2.0.0"
     async-retry "^1.3.3"
     compressible "^2.0.12"
     duplexify "^4.0.0"
@@ -6073,28 +6072,7 @@ gauge@~1.2.5:
     lodash.padend "^4.1.0"
     lodash.padstart "^4.1.0"
 
-gaxios@^4.0.0:
-  version "4.3.3"
-  resolved "https://registry.yarnpkg.com/gaxios/-/gaxios-4.3.3.tgz#d44bdefe52d34b6435cc41214fdb160b64abfc22"
-  integrity sha512-gSaYYIO1Y3wUtdfHmjDUZ8LWaxJQpiavzbF5Kq53akSzvmVg0RfyOcFDbO1KJ/KCGRFz2qG+lS81F0nkr7cRJA==
-  dependencies:
-    abort-controller "^3.0.0"
-    extend "^3.0.2"
-    https-proxy-agent "^5.0.0"
-    is-stream "^2.0.0"
-    node-fetch "^2.6.7"
-
-gaxios@^5.0.0:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/gaxios/-/gaxios-5.0.1.tgz#50fc76a2d04bc1700ed8c3ff1561e52255dfc6e0"
-  integrity sha512-keK47BGKHyyOVQxgcUaSaFvr3ehZYAlvhvpHXy0YB2itzZef+GqZR8TBsfVRWghdwlKrYsn+8L8i3eblF7Oviw==
-  dependencies:
-    extend "^3.0.2"
-    https-proxy-agent "^5.0.0"
-    is-stream "^2.0.0"
-    node-fetch "^2.6.7"
-
-gaxios@^5.0.1:
+gaxios@^5.0.0, gaxios@^5.0.1:
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/gaxios/-/gaxios-5.0.2.tgz#ca3a40e851c728d31d7001c2357062d46bf966d1"
   integrity sha512-TjtV2AJOZoMQqRYoy5eM8cCQogYwazWNYLQ72QB0kwa6vHHruYkGmhhyrlzbmgNHK1dNnuP2WSH81urfzyN2Og==
@@ -6379,22 +6357,7 @@ goldengate@11.4.0:
     tiny-secp256k1 "2.2.1"
     varuint-bitcoin "1.1.2"
 
-google-auth-library@^8.0.1:
-  version "8.1.0"
-  resolved "https://registry.yarnpkg.com/google-auth-library/-/google-auth-library-8.1.0.tgz#879e8d2e90a9d47e6eab32fd1d5fd9ed52d7d441"
-  integrity sha512-J/fNXEnqLgbr3kmeUshZCtHQia6ZiNbbrebVzpt/+LTeY6Ka9CtbQvloTjVGVO7nyYbs0KYeuIwgUC/t2Gp1Jw==
-  dependencies:
-    arrify "^2.0.0"
-    base64-js "^1.3.0"
-    ecdsa-sig-formatter "^1.0.11"
-    fast-text-encoding "^1.0.0"
-    gaxios "^5.0.0"
-    gcp-metadata "^5.0.0"
-    gtoken "^6.0.0"
-    jws "^4.0.0"
-    lru-cache "^6.0.0"
-
-google-auth-library@^8.0.2:
+google-auth-library@^8.0.1, google-auth-library@^8.0.2:
   version "8.5.2"
   resolved "https://registry.yarnpkg.com/google-auth-library/-/google-auth-library-8.5.2.tgz#bcdced8f7b475b80bf0e9c109c7c7e930866947b"
   integrity sha512-FPfOSaI8n2TVXFHTP8/vAVFCXhyALj7w9/Rgefux3oeKZ/nQDNmfNTJ+lIKcoYT1cKkvMllp1Eood7Y5L+TP+A==
@@ -6742,15 +6705,6 @@ grunt@^1.4.1:
     axios "^0.19.2"
     express "^4.17.1"
     string-random "^0.1.3"
-
-gtoken@^6.0.0:
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/gtoken/-/gtoken-6.1.0.tgz#62938c679b364662ce21077858e0db3cfe025363"
-  integrity sha512-WPZcFw34wh2LUvbCUWI70GDhOlO7qHpSvFHFqq7d3Wvsf8dIJedE0lnUdOmsKuC0NgflKmF0LxIF38vsGeHHiQ==
-  dependencies:
-    gaxios "^4.0.0"
-    google-p12-pem "^4.0.0"
-    jws "^4.0.0"
 
 gtoken@^6.1.0:
   version "6.1.2"
