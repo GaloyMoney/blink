@@ -1,5 +1,3 @@
-- callback on kratosIdentity creation to create associated account
-
 migration:
 - userId -> kratosUserId accountUpdateStatus (is it necessary?)
 - language, devicetoken, phoneMetadata

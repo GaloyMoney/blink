@@ -6,6 +6,8 @@ import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
 import mongoose from "mongoose"
 
+import { Languages } from "@domain/users"
+
 import { WalletRecord } from "./wallets"
 
 // TODO migration:
@@ -278,6 +280,37 @@ const AccountSchema = new Schema<AccountRecord>(
       type: String,
       index: true,
     },
+
+    // TODO: delete post migration
+    phone: {
+      type: String,
+      index: true,
+      unique: true,
+      sparse: true,
+    },
+    twilio: {
+      carrier: {
+        error_code: String, // check this is the right syntax
+        mobile_country_code: String,
+        mobile_network_code: String,
+        name: String,
+        type: {
+          types: String,
+          enum: ["landline", "voip", "mobile"],
+        },
+      },
+      countryCode: String,
+    },
+    deviceToken: {
+      type: [String],
+      default: [],
+    },
+    language: {
+      type: String,
+      enum: [...Languages, ""],
+      default: "",
+    },
+    // END TODO
   },
   { id: false },
 )

@@ -17,6 +17,15 @@ const caseInsensitiveRegex = (input: string) => {
 }
 
 export const AccountsRepository = (): IAccountsRepository => {
+  const list = async (): Promise<Account[] | RepositoryError> => {
+    try {
+      const result = await User.find({})
+      return result.map((a) => translateToAccount(a))
+    } catch (err) {
+      return parseRepositoryError(err)
+    }
+  }
+
   const listUnlockedAccounts = async (): Promise<Account[] | RepositoryError> => {
     try {
       const result = await User.find({
@@ -55,10 +64,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const findByUserId = async (userId: UserId): Promise<Account | RepositoryError> => {
-    return findById(userId as string as AccountId)
-  }
-
   // FIXME: could be in a different file? does not return an Account
   const listBusinessesForMap = async (): Promise<
     BusinessMapMarker[] | RepositoryError
@@ -88,7 +93,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  // currently only used by Admin
   const update = async ({
     id,
     level,
@@ -174,8 +178,8 @@ export const AccountsRepository = (): IAccountsRepository => {
     findByKratosUserId,
     listUnlockedAccounts,
     findById,
-    findByUserId,
     findByUsername,
+    list,
     listBusinessesForMap,
     update,
   }

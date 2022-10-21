@@ -106,6 +106,13 @@ interface AccountRecord {
   title?: string
   coordinates?: CoordinateObjectForUser
 
+  // TODO: delete
+  phone: string
+  language?: string // ?: enum ["en", "es"]
+  twilio?: TwilioObjectForUser
+  deviceToken: string[]
+  // end TODO
+
   // mongoose in-built functions
   save: () => Promise<AccountRecord>
 }
