@@ -231,15 +231,30 @@ describe("onchainBlockEventHandler", () => {
       currency: DefaultDisplayCurrency,
     }
 
-    const { title, body } = createPushNotificationContent({
+    // floor/ceil is needed here because the price can sometimes shift in the time between
+    // function execution and 'getCurrentPrice' call above here resulting in different rounding
+    // for 'displayPaymentAmount' calculation.
+    const { title, body: bodyFloor } = createPushNotificationContent({
       type: NotificationType.LnInvoicePaid,
       userLanguage: locale as UserLanguage,
       amount: paymentAmount,
-      displayAmount: displayPaymentAmount,
+      displayAmount: {
+        ...displayPaymentAmount,
+        amount: Math.floor(displayPaymentAmount.amount * 100) / 100,
+      },
+    })
+    const { body: bodyCeil } = createPushNotificationContent({
+      type: NotificationType.LnInvoicePaid,
+      userLanguage: locale as UserLanguage,
+      amount: paymentAmount,
+      displayAmount: {
+        ...displayPaymentAmount,
+        amount: Math.ceil(displayPaymentAmount.amount * 100) / 100,
+      },
     })
 
     expect(sendNotification.mock.calls.length).toBe(1)
     expect(sendNotification.mock.calls[0][0].title).toBe(title)
-    expect(sendNotification.mock.calls[0][0].body).toBe(body)
+    expect([bodyFloor, bodyCeil]).toContain(sendNotification.mock.calls[0][0].body)
   })
 })
