@@ -108,7 +108,7 @@ afterAll(async () => {
   await killServer(triggerPid)
 })
 
-describe("header", () => {
+describe.skip("header", () => {
   it("getting a kratos header when passing a legacy JWT in the header", async () => {
     const account = await getAccountByTestUserRef(userRef)
     const jwtLegacyToken = createToken({ uid: account.id, network: BTC_NETWORK })
