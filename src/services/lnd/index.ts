@@ -20,6 +20,7 @@ import {
   settleHodlInvoice,
   getInvoices,
   GetInvoicesResult,
+  getPendingChannels,
 } from "lightning"
 import lnService from "ln-service"
 
@@ -136,14 +137,10 @@ export const LndService = (): ILightningService | LightningServiceError => {
       const lnd = pubkey ? getLndFromPubkey({ pubkey }) : defaultLnd
       if (lnd instanceof Error) return lnd
 
-      const { channels } = await getClosedChannels({ lnd })
+      const { pending_channels } = await getPendingChannels({ lnd })
 
-      // FIXME: there can be issue with channel not closed completely from lnd
-      // https://github.com/alexbosworth/ln-service/issues/139
-      const closingChannelBalance = sumBy(channels, (channel) =>
-        sumBy(channel.close_payments, (payment) =>
-          payment.is_pending ? payment.tokens : 0,
-        ),
+      const closingChannelBalance = sumBy(pending_channels, (c) =>
+        c.is_closing ? c.pending_balance || c.local_balance : 0,
       )
 
       return toSats(closingChannelBalance)
