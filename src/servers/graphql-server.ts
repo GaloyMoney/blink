@@ -50,6 +50,7 @@ import { playgroundTabs } from "../graphql/playground"
 
 import healthzHandler from "./middlewares/healthz"
 import authRouter from "./middlewares/auth-router"
+import { updateToken } from "./middlewares/update-token"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -259,9 +260,7 @@ export const startApolloServer = async ({
     }),
   )
 
-  // skip the updateToken for now
-  // FIXME: revert once phone migration to kratos has been done
-  // app.use(updateToken)
+  app.use(updateToken)
 
   await apolloServer.start()
 
