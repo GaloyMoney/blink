@@ -20,9 +20,10 @@ import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index
 import { kratosAdmin, kratosPublic, toDomainIdentityPhone } from "./private"
 
 // login with phone
-const password = getKratosMasterPhonePassword()
 
 export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessService => {
+  const password = getKratosMasterPhonePassword()
+
   const login = async (
     phone: PhoneNumber,
   ): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError> => {
