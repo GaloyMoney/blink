@@ -52,17 +52,11 @@ type PayInvoiceByWalletIdArgs = PaymentSendArgs & {
   uncheckedPaymentRequest: string
   senderAccount: Account
 }
-type PayInvoiceByWalletIdWithTwoFAArgs = PayInvoiceByWalletIdArgs & {
-  twoFAToken: TwoFAToken
-}
 
 type PayNoAmountInvoiceByWalletIdArgs = PaymentSendArgs & {
   uncheckedPaymentRequest: string
   amount: number
   senderAccount: Account
-}
-type PayNoAmountInvoiceByWalletIdWithTwoFAArgs = PayNoAmountInvoiceByWalletIdArgs & {
-  twoFAToken: TwoFAToken
 }
 
 type IntraLedgerPaymentSendUsernameArgs = PaymentSendArgs & {
@@ -75,10 +69,6 @@ type IntraLedgerPaymentSendWalletIdArgs = PaymentSendArgs & {
   amount: number
 }
 
-type IntraLedgerPaymentSendWithTwoFAArgs = IntraLedgerPaymentSendUsernameArgs & {
-  twoFAToken: TwoFAToken
-}
-
 type PayOnChainByWalletIdArgs = {
   senderWalletId: WalletId
   senderAccount: Account
@@ -87,8 +77,4 @@ type PayOnChainByWalletIdArgs = {
   targetConfirmations: number
   memo: string | null
   sendAll: boolean
-}
-
-type PayOnChainByWalletIdWithTwoFAArgs = PayOnChainByWalletIdArgs & {
-  twoFAToken: TwoFAToken
 }

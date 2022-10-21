@@ -1,13 +1,10 @@
-import { generate2fa, save2fa } from "@app/users"
-import { TwoFAAlreadySetError } from "@domain/twoFA"
 import { gqlAdminSchema } from "@graphql/admin"
 import { ExecutionResult, graphql, Source } from "graphql"
 import { ObjMap } from "graphql/jsutils/ObjMap"
-import { authenticator } from "otplib"
 
 export * from "./apollo-client"
-
 export * from "./bitcoin-core"
+export * from "./check-is-balanced"
 export * from "./integration-server"
 export * from "./lightning"
 export * from "./price"
@@ -16,7 +13,6 @@ export * from "./redis"
 export * from "./state-setup"
 export * from "./user"
 export * from "./wallet"
-export * from "./check-is-balanced"
 
 export const randomEmail = () => (Math.random().toString(36) + "@galoy.io") as KratosEmail
 
@@ -43,27 +39,6 @@ export const resetDatabase = async (mongoose) => {
     .forEach(async (collectionName) => {
       await db.dropCollection(collectionName)
     })
-}
-
-export const generateTokenHelper = (secret: string) => {
-  const generateTokenResult = authenticator.generate(secret) as TwoFAToken
-  return generateTokenResult
-}
-
-export const enable2FA = async (userId: UserId) => {
-  const generateResult = await generate2fa(userId)
-  if (generateResult instanceof Error) return generateResult
-
-  const { secret } = generateResult
-
-  const token = generateTokenHelper(secret)
-
-  const user = await save2fa({ secret, token, userId })
-  if (user instanceof Error && !(user instanceof TwoFAAlreadySetError)) {
-    throw user
-  }
-
-  return secret
 }
 
 export const chunk = (a, n) =>

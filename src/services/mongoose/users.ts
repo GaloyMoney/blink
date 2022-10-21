@@ -40,14 +40,12 @@ export const UsersRepository = (): IUsersRepository => {
     phone,
     language,
     deviceTokens,
-    twoFA,
   }: User): Promise<User | RepositoryError> => {
     try {
       const data = {
         phone,
         language,
         deviceToken: deviceTokens,
-        twoFA,
       }
       const result = await User.findOneAndUpdate({ _id: toObjectId<UserId>(id) }, data, {
         projection,
@@ -73,7 +71,6 @@ const userFromRaw = (result: UserRecord): User => ({
   id: fromObjectId<UserId>(result._id),
   phone: result.phone as PhoneNumber,
   language: result.language as UserLanguage,
-  twoFA: result.twoFA as TwoFAForUser,
   defaultAccountId: fromObjectId<AccountId>(result._id),
   deviceTokens: (result.deviceToken || []) as DeviceToken[],
   createdAt: new Date(result.created_at),

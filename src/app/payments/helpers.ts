@@ -1,28 +1,27 @@
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 import {
-  getTwoFALimits,
   getAccountLimits,
-  MIN_SATS_FOR_PRICE_RATIO_PRECISION,
   getPubkeysToSkipProbe,
+  MIN_SATS_FOR_PRICE_RATIO_PRECISION,
   ONE_DAY,
 } from "@config"
-import { AccountLimitsChecker, TwoFALimitsChecker } from "@domain/accounts"
+import { AccountLimitsChecker } from "@domain/accounts"
+import { AlreadyPaidError } from "@domain/errors"
 import {
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
   PriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
-import { AlreadyPaidError } from "@domain/errors"
-import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
+import { WalletCurrency } from "@domain/shared"
+import { LedgerService } from "@services/ledger"
+import { LndService } from "@services/lnd"
 import {
   AccountsRepository,
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { LndService } from "@services/lnd"
-import { LedgerService } from "@services/ledger"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
-import { WalletCurrency } from "@domain/shared"
 import { timestampDaysAgo } from "@utils"
 
 const ledger = LedgerService()
@@ -224,32 +223,6 @@ export const newCheckWithdrawalLimits = async <S extends WalletCurrency>({
   })
 
   return checkWithdrawal({
-    amount,
-    walletVolume,
-  })
-}
-
-export const newCheckTwoFALimits = async <S extends WalletCurrency>({
-  amount,
-  wallet,
-  priceRatio,
-}: {
-  amount: UsdPaymentAmount
-  wallet: WalletDescriptor<S>
-  priceRatio: PriceRatio
-}) => {
-  const timestamp1Day = timestampDaysAgo(ONE_DAY)
-  if (timestamp1Day instanceof Error) return timestamp1Day
-
-  const walletVolume = await ledger.allPaymentVolumeAmountSince({
-    walletDescriptor: wallet,
-    timestamp: timestamp1Day,
-  })
-  if (walletVolume instanceof Error) return walletVolume
-  const twoFALimits = getTwoFALimits()
-  const { checkTwoFA } = TwoFALimitsChecker({ twoFALimits, priceRatio })
-
-  return checkTwoFA({
     amount,
     walletVolume,
   })

@@ -21,7 +21,6 @@ import {
   LnPaymentPendingError,
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
-import { TwoFA, TwoFANewCodeNeededError } from "@domain/twoFA"
 import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
 
@@ -51,69 +50,12 @@ import {
   constructPaymentFlowBuilder,
   newCheckWithdrawalLimits,
   newCheckIntraledgerLimits,
-  newCheckTwoFALimits,
   getPriceRatioForLimits,
   newCheckTradeIntraAccountLimits,
 } from "./helpers"
 
 const dealer = NewDealerPriceService()
 const paymentFlowRepo = PaymentFlowStateRepository(defaultTimeToExpiryInSeconds)
-
-export const payInvoiceByWalletIdWithTwoFA = async ({
-  uncheckedPaymentRequest,
-  memo,
-  senderWalletId: uncheckedSenderWalletId,
-  senderAccount,
-  twoFAToken,
-}: PayInvoiceByWalletIdWithTwoFAArgs): Promise<PaymentSendStatus | ApplicationError> => {
-  addAttributesToCurrentSpan({
-    "payment.initiation_method": PaymentInitiationMethod.Lightning,
-  })
-
-  const validatedPaymentInputs = await validateInvoicePaymentInputs({
-    uncheckedPaymentRequest,
-    uncheckedSenderWalletId,
-    senderAccount,
-  })
-  if (validatedPaymentInputs instanceof AlreadyPaidError) {
-    return PaymentSendStatus.AlreadyPaid
-  }
-  if (validatedPaymentInputs instanceof Error) {
-    return validatedPaymentInputs
-  }
-  const paymentFlow = await getPaymentFlow(validatedPaymentInputs)
-  if (paymentFlow instanceof Error) return paymentFlow
-
-  const user = await UsersRepository().findById(senderAccount.ownerId)
-  if (user instanceof Error) return user
-  const { twoFA } = user
-
-  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
-  if (priceRatioForLimits instanceof Error) return priceRatioForLimits
-
-  const { senderWallet, decodedInvoice } = validatedPaymentInputs
-  const twoFACheck = twoFA?.secret
-    ? await newCheckAndVerifyTwoFA({
-        amount: paymentFlow.usdPaymentAmount,
-        twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
-        twoFASecret: twoFA.secret,
-        wallet: senderWallet,
-        priceRatio: priceRatioForLimits,
-      })
-    : true
-  if (twoFACheck instanceof Error) return twoFACheck
-
-  // Get display currency price... add to payment flow builder?
-
-  return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
-    ? executePaymentViaIntraledger({
-        paymentFlow,
-        senderWallet,
-        senderUsername: senderAccount.username,
-        memo,
-      })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet })
-}
 
 export const payInvoiceByWalletId = async ({
   uncheckedPaymentRequest,
@@ -142,66 +84,6 @@ export const payInvoiceByWalletId = async ({
   // Get display currency price... add to payment flow builder?
 
   const { senderWallet, decodedInvoice } = validatedPaymentInputs
-  return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
-    ? executePaymentViaIntraledger({
-        paymentFlow,
-        senderWallet,
-        senderUsername: senderAccount.username,
-        memo,
-      })
-    : executePaymentViaLn({ decodedInvoice, paymentFlow, senderWallet })
-}
-
-export const payNoAmountInvoiceByWalletIdWithTwoFA = async ({
-  uncheckedPaymentRequest,
-  amount,
-  memo,
-  senderWalletId: uncheckedSenderWalletId,
-  senderAccount,
-  twoFAToken,
-}: PayNoAmountInvoiceByWalletIdWithTwoFAArgs): Promise<
-  PaymentSendStatus | ApplicationError
-> => {
-  addAttributesToCurrentSpan({
-    "payment.initiation_method": PaymentInitiationMethod.Lightning,
-  })
-
-  const validatedNoAmountPaymentInputs = await validateNoAmountInvoicePaymentInputs({
-    uncheckedPaymentRequest,
-    amount,
-    uncheckedSenderWalletId,
-    senderAccount,
-  })
-  if (validatedNoAmountPaymentInputs instanceof AlreadyPaidError) {
-    return PaymentSendStatus.AlreadyPaid
-  }
-  if (validatedNoAmountPaymentInputs instanceof Error) {
-    return validatedNoAmountPaymentInputs
-  }
-  const paymentFlow = await getPaymentFlow(validatedNoAmountPaymentInputs)
-  if (paymentFlow instanceof Error) return paymentFlow
-
-  const user = await UsersRepository().findById(senderAccount.ownerId)
-  if (user instanceof Error) return user
-  const { twoFA } = user
-
-  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
-  if (priceRatioForLimits instanceof Error) return priceRatioForLimits
-
-  const { senderWallet, decodedInvoice } = validatedNoAmountPaymentInputs
-  const twoFACheck = twoFA?.secret
-    ? await newCheckAndVerifyTwoFA({
-        amount: paymentFlow.usdPaymentAmount,
-        twoFAToken: twoFAToken ? (twoFAToken as TwoFAToken) : null,
-        twoFASecret: twoFA.secret,
-        wallet: senderWallet,
-        priceRatio: priceRatioForLimits,
-      })
-    : true
-  if (twoFACheck instanceof Error) return twoFACheck
-
-  // Get display currency price... add to payment flow builder?
-
   return paymentFlow.settlementMethod === SettlementMethod.IntraLedger
     ? executePaymentViaIntraledger({
         paymentFlow,
@@ -412,37 +294,6 @@ const getPaymentFlow = async <S extends WalletCurrency, R extends WalletCurrency
   })
 
   return paymentFlow
-}
-
-const newCheckAndVerifyTwoFA = async ({
-  amount,
-  twoFAToken,
-  twoFASecret,
-  wallet,
-  priceRatio,
-}: {
-  amount: UsdPaymentAmount
-  twoFAToken: TwoFAToken | null
-  twoFASecret: TwoFASecret
-  wallet: Wallet
-  priceRatio: PriceRatio
-}): Promise<true | ApplicationError> => {
-  const twoFALimitCheck = await newCheckTwoFALimits({
-    amount,
-    wallet,
-    priceRatio,
-  })
-  if (!(twoFALimitCheck instanceof Error)) return true
-
-  if (!twoFAToken) return new TwoFANewCodeNeededError()
-
-  const validTwoFA = TwoFA().verify({
-    secret: twoFASecret,
-    token: twoFAToken,
-  })
-  if (validTwoFA instanceof Error) return validTwoFA
-
-  return true
 }
 
 const executePaymentViaIntraledger = async <

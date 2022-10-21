@@ -109,7 +109,6 @@ type LimiterCheckInputs = {
 type LimitsCheckerFn = (args: LimiterCheckInputs) => true | LimitsExceededError
 
 type LimitsChecker = {
-  checkTwoFA: LimitsCheckerFn
   checkIntraledger: LimitsCheckerFn
   checkWithdrawal: LimitsCheckerFn
 }

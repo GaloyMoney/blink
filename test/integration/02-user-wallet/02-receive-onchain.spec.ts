@@ -413,7 +413,7 @@ async function sendToWalletTestWrapper({
   const address = await Wallets.createOnChainAddress(walletId)
   if (address instanceof Error) throw address
 
-  expect(address.substr(0, 4)).toBe("bcrt")
+  expect(address.substring(0, 4)).toBe("bcrt")
 
   const checkBalance = async (minBlockToWatch = 1) => {
     const sub = subscribeToChainAddress({
@@ -432,6 +432,7 @@ async function sendToWalletTestWrapper({
     }
 
     const balance = await getBalanceHelper(walletId)
+
     expect(balance).toBe(
       initialBalance +
         amountAfterFeeDeduction({

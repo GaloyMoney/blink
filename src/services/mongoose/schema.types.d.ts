@@ -14,11 +14,6 @@ type IPType = {
   lastConnection: Date
 }
 
-type TwoFAForUser = {
-  secret?: TwoFASecret
-  threshold: number
-}
-
 type OnChainObjectForUser = {
   pubkey: string
   address: string
@@ -95,7 +90,6 @@ interface UserRecord {
   created_at: Date
   lastConnection: Date
   onchain: OnChainObjectForUser[]
-  twoFA: TwoFAForUser
   defaultWalletId: WalletId
 
   lastIPs: {
@@ -115,16 +109,6 @@ interface UserRecord {
   // business:
   title?: string
   coordinates?: CoordinateObjectForUser
-
-  // virtual:
-  ratioUsd: number
-  ratioBtc: number
-  walletPath: string
-
-  // methods
-  remainingTwoFALimit: () => Promise<number>
-  remainingintraLedgerLimit: () => Promise<number>
-  remainingWithdrawalLimit: () => Promise<number>
 
   // mongoose in-built functions
   save: () => Promise<UserRecord>

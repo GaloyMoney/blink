@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { getDefaultAccountsConfig, getFeesConfig, getTwoFAConfig, levels } from "@config"
+import { getDefaultAccountsConfig, getFeesConfig, levels } from "@config"
 import { AccountStatus, UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
@@ -85,8 +85,6 @@ export const WalletInvoice = mongoose.model<WalletInvoiceRecord>(
 )
 
 const feesConfig = getFeesConfig()
-
-const twoFAConfig = getTwoFAConfig()
 
 const WalletSchema = new Schema<WalletRecord>({
   id: {
@@ -311,16 +309,6 @@ const UserSchema = new Schema<UserRecord>(
       default: [
         { status: getDefaultAccountsConfig().initialStatus, comment: "Initial Status" },
       ],
-    },
-
-    twoFA: {
-      secret: {
-        type: String,
-      },
-      threshold: {
-        type: Number,
-        default: twoFAConfig.threshold,
-      },
     },
 
     defaultWalletId: {

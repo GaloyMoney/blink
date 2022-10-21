@@ -25,10 +25,6 @@ export async function startApolloServerForCoreSchema() {
         onChainTxFee: isAuthenticated,
       },
       Mutation: {
-        twoFAGenerate: isAuthenticated,
-        twoFASave: isAuthenticated,
-        twoFADelete: isAuthenticated,
-
         userQuizQuestionUpdateCompleted: isAuthenticated,
         deviceNotificationTokenCreate: isAuthenticated,
 
