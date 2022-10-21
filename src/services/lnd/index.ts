@@ -46,6 +46,7 @@ import {
   ProbeForRouteTimedOutError,
   ProbeForRouteTimedOutFromApplicationError,
   RouteNotFoundError,
+  UnknownNextPeerError,
   SecretDoesNotMatchAnyExistingHodlInvoiceError,
   TemporaryChannelFailureError,
   UnknownLightningServiceError,
@@ -720,6 +721,7 @@ export const KnownLndErrorDetails: { [key: string]: RegExp } = {
   InvoiceNotFound: /unable to locate invoice/,
   InvoiceAlreadyPaid: /invoice is already paid/,
   UnableToFindRoute: /PaymentPathfindingFailedToFindPossibleRoute/,
+  UnknownNextPeer: /UnknownNextPeer/,
   LndDbCorruption: /payment isn't initiated/,
   PaymentRejectedByDestination: /PaymentRejectedByDestination/,
   UnknownPaymentHash: /UnknownPaymentHash/,
@@ -843,6 +845,8 @@ const handleSendPaymentLndErrors = ({
       return new LnAlreadyPaidError()
     case match(KnownLndErrorDetails.UnableToFindRoute):
       return new RouteNotFoundError()
+    case match(KnownLndErrorDetails.UnknownNextPeer):
+      return new UnknownNextPeerError()
     case match(KnownLndErrorDetails.PaymentRejectedByDestination):
     case match(KnownLndErrorDetails.UnknownPaymentHash):
       return new InvoiceExpiredOrBadPaymentHashError(paymentHash)
