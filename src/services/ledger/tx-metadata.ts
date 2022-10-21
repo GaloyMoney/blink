@@ -2,6 +2,9 @@ import { toSats } from "@domain/bitcoin"
 import { toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
 
+const convertCentsToUsdAsDollars = (cents: DisplayCurrencyBaseAmount) =>
+  Number((Number(cents) / 100).toFixed(2))
+
 export const LnSendLedgerMetadata = <S extends WalletCurrency, R extends WalletCurrency>({
   paymentHash,
   pubkey,
@@ -34,9 +37,10 @@ export const LnSendLedgerMetadata = <S extends WalletCurrency, R extends WalletC
     feeKnownInAdvance,
 
     fee: toSats(satsFee),
-    feeUsd: (feeDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
-    usd: ((amountDisplayCurrency + feeDisplayCurrency) /
-      100) as DisplayCurrencyBaseAmount,
+    feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
+    usd: convertCentsToUsdAsDollars(
+      (amountDisplayCurrency + feeDisplayCurrency) as DisplayCurrencyBaseAmount,
+    ),
 
     satsFee: toSats(satsFee),
     displayFee: feeDisplayCurrency,
@@ -71,8 +75,8 @@ export const OnChainSendLedgerMetadata = ({
     hash: onChainTxHash,
     payee_addresses: payeeAddresses,
     fee: Number(fee.amount) as Satoshis,
-    feeUsd: feeDisplayCurrency,
-    usd: amountDisplayCurrency,
+    feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
+    usd: convertCentsToUsdAsDollars(amountDisplayCurrency),
     sendAll,
   }
 
@@ -116,9 +120,6 @@ export const LnReceiveLedgerMetadata = ({
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   pubkey: Pubkey
 }) => {
-  const convertCentsToUsdAsDollars = (cents: DisplayCurrencyBaseAmount) =>
-    Number((Number(cents) / 100).toFixed(2))
-
   const metadata: LnReceiveLedgerMetadata = {
     type: LedgerTransactionType.Invoice,
     pending: false,
