@@ -1,5 +1,10 @@
 import { getFeesConfig } from "@config"
-import { paymentAmountFromNumber, ValidationError, WalletCurrency } from "@domain/shared"
+import {
+  paymentAmountFromNumber,
+  ValidationError,
+  WalletCurrency,
+  ZERO_BANK_FEE,
+} from "@domain/shared"
 import { SelfPaymentError } from "@domain/errors"
 import { OnChainFees, PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
@@ -334,6 +339,7 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       paymentSentAndPending: false,
       btcProtocolFee: onChainFees.intraLedgerFees().btc,
       usdProtocolFee: onChainFees.intraLedgerFees().usd,
+      ...ZERO_BANK_FEE,
     })
   }
 
@@ -390,6 +396,8 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       ...state,
       btcProtocolFee: feeAmounts.totalFee,
       usdProtocolFee: priceRatio.convertFromBtcToCeil(feeAmounts.totalFee),
+      btcBankFee: feeAmounts.bankFee,
+      usdBankFee: priceRatio.convertFromBtcToCeil(feeAmounts.bankFee),
       paymentSentAndPending: false,
     })
   }
