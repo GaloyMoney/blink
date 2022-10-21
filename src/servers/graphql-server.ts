@@ -49,7 +49,6 @@ import { ValidationError } from "@domain/shared"
 import { playgroundTabs } from "../graphql/playground"
 
 import healthzHandler from "./middlewares/healthz"
-import { updateToken } from "./middlewares/update-token"
 import authRouter from "./middlewares/auth-router"
 
 const graphqlLogger = baseLogger.child({
@@ -260,7 +259,9 @@ export const startApolloServer = async ({
     }),
   )
 
-  app.use(updateToken)
+  // skip the updateToken for now
+  // FIXME: revert once phone migration to kratos has been done
+  // app.use(updateToken)
 
   await apolloServer.start()
 
