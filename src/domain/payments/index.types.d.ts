@@ -47,6 +47,8 @@ type PaymentFlowState<
 
 type OnChainPaymentFlowState<S extends WalletCurrency, R extends WalletCurrency> = {
   address: OnChainAddress
+  btcBankFee: BtcPaymentAmount
+  usdBankFee: UsdPaymentAmount
 } & PaymentFlowBaseState<S, R>
 
 type PaymentFlowStateIndex = XorPaymentHashProperty & {
@@ -88,6 +90,7 @@ type OnChainPaymentFlow<
 > = OnChainPaymentFlowState<S, R> &
   PaymentFlowBase<S, R> & {
     addressForFlow(): OnChainAddress | ValidationError
+    bankFees(): { btc: BtcPaymentAmount; usd: UsdPaymentAmount } | ValidationError
   }
 
 type LightningPaymentFlowBuilder<S extends WalletCurrency> = {

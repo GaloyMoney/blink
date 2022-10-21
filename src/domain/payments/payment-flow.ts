@@ -167,9 +167,16 @@ export const OnChainPaymentFlow = <S extends WalletCurrency, R extends WalletCur
     return address
   }
 
+  const bankFees = ():
+    | { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
+    | ValidationError => {
+    return { btc: state.btcBankFee, usd: state.usdBankFee }
+  }
+
   return {
     ...state,
     ...PaymentFlowBase(baseState),
     addressForFlow,
+    bankFees,
   }
 }
