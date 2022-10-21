@@ -17,14 +17,13 @@ it("change default walletId of account", async () => {
 
   const authService = AuthWithPhonePasswordlessService()
 
-  const kratosResult = await authService.createWithSession(phone)
+  const kratosResult = await authService.createIdentityWithSession(phone)
 
   if (kratosResult instanceof Error) throw kratosResult
   const kratosUserId = kratosResult.kratosUserId
-  kratosUserId // FIXME variable will be used/line removed in the follow up PR
 
-  const account = await Accounts.createAccountForPhoneSchema({
-    newUserInfo: { phone },
+  const account = await Accounts.createAccountWithPhoneIdentifier({
+    newAccountInfo: { phone, kratosUserId },
     config: getDefaultAccountsConfig(),
   })
   if (account instanceof Error) throw account

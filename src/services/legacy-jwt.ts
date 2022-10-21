@@ -10,7 +10,7 @@ export const createToken = ({
 }: {
   uid: AccountId
   network: BtcNetwork
-}): JwtToken => {
+}): LegacyJwtToken => {
   return jwt.sign({ uid, network }, JWT_SECRET, {
     // TODO use asymmetric signature
     // and verify the signature from the client
@@ -23,5 +23,5 @@ export const createToken = ({
     //
     // see: https://www.theregister.com/2018/04/24/myetherwallet_dns_hijack/
     algorithm: "HS256",
-  }) as JwtToken
+  }) as LegacyJwtToken
 }

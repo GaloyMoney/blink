@@ -10,7 +10,7 @@ import {
 
 import { User } from "@services/mongoose/schema"
 
-import { toObjectId, fromObjectId, parseRepositoryError } from "./utils"
+import { fromObjectId, parseRepositoryError, toObjectId } from "./utils"
 
 const caseInsensitiveRegex = (input: string) => {
   return new RegExp(`^${input}$`, "i")
@@ -105,6 +105,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     defaultWalletId,
     withdrawFee,
     role,
+    kratosUserId,
   }: Account): Promise<Account | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
@@ -126,6 +127,7 @@ export const AccountsRepository = (): IAccountsRepository => {
           defaultWalletId,
           withdrawFee,
           role,
+          kratosUserId,
         },
         {
           new: true,
@@ -141,12 +143,24 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const persistNewKratosUser = async (
-    kratosUserId: KratosUserId,
-  ): Promise<Account | RepositoryError> => {
+  const persistNew = async ({
+    kratosUserId,
+    phone,
+    phoneMetadata,
+  }: {
+    kratosUserId: KratosUserId
+    phone?: PhoneNumber
+    phoneMetadata?: PhoneMetadata
+  }): Promise<Account | RepositoryError> => {
     try {
       const user = new User()
       user.kratosUserId = kratosUserId
+
+      if (phone) {
+        user.phone = phone
+      }
+
+      user.twilio = phoneMetadata
       await user.save()
       return translateToAccount(user)
     } catch (err) {
@@ -171,7 +185,7 @@ export const AccountsRepository = (): IAccountsRepository => {
   }
 
   return {
-    persistNewKratosUser,
+    persistNew,
     findByKratosUserId,
     listUnlockedAccounts,
     findById,
@@ -221,6 +235,7 @@ const translateToAccount = (result: UserRecord): Account => ({
         completed: true,
       }),
     ) || [],
+  kratosUserId: result.kratosUserId as KratosUserId,
 })
 
 const projection = {
@@ -237,4 +252,5 @@ const projection = {
   withdrawFee: 1,
   role: 1,
   earn: 1,
+  kratosUserId: 1,
 }

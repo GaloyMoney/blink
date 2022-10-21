@@ -40,13 +40,16 @@ import { createComplexityPlugin } from "graphql-query-complexity-apollo-plugin"
 
 import jwksRsa from "jwks-rsa"
 
-import { checkedToAccountId, InvalidAccountIdError } from "@domain/accounts"
+import { checkedToKratosUserId } from "@domain/accounts"
 
 import { sendOathkeeperRequest } from "@services/oathkeeper"
+
+import { ValidationError } from "@domain/shared"
 
 import { playgroundTabs } from "../graphql/playground"
 
 import healthzHandler from "./middlewares/healthz"
+import { updateToken } from "./middlewares/update-token"
 import authRouter from "./middlewares/auth-router"
 
 const graphqlLogger = baseLogger.child({
@@ -88,28 +91,32 @@ const sessionContext = ({
   let domainUser: User | null = null
   let domainAccount: Account | undefined
 
-  // note: value should match (ie: "anon") if not an accountId
-  // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
-  const maybeAid = checkedToAccountId(tokenPayload.sub || "")
-
   return addAttributesToCurrentSpanAndPropagate(
     {
       [SemanticAttributes.ENDUSER_ID]: tokenPayload.sub,
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
     },
     async () => {
-      if (!(maybeAid instanceof InvalidAccountIdError)) {
-        const userId = maybeAid as string as UserId // FIXME: fix until User is attached to kratos
-        const loggedInUser = await Users.getUserForLogin({ userId, ip, logger })
+      // note: value should match (ie: "anon") if not an accountId
+      // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
+      const maybeKratosUserId = checkedToKratosUserId(tokenPayload.sub || "")
+      if (!(maybeKratosUserId instanceof ValidationError)) {
+        const userId = maybeKratosUserId
+
+        const account = await Accounts.getAccountFromKratosUserId(userId)
+        if (account instanceof Error) throw Error
+        domainAccount = account
+
+        const loggedInUser = await Users.getUserForLogin({
+          userId: account.id as string as UserId,
+          ip,
+          logger,
+        })
         if (loggedInUser instanceof Error)
           throw new ApolloError("Invalid user authentication", "INVALID_AUTHENTICATION", {
             reason: loggedInUser,
           })
         domainUser = loggedInUser
-
-        const loggedInDomainAccount = await Accounts.getAccount(maybeAid)
-        if (loggedInDomainAccount instanceof Error) throw Error
-        domainAccount = loggedInDomainAccount
 
         addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
       }
@@ -146,6 +153,7 @@ export const startApolloServer = async ({
       estimators: [fieldExtensionsEstimator(), simpleEstimator({ defaultComplexity: 1 })],
       maximumComplexity: 200,
       onComplete: (complexity) => {
+        // TODO(telemetry): add complexity value to span
         baseLogger.debug({ complexity }, "queryComplexity")
       },
     }),
@@ -252,6 +260,8 @@ export const startApolloServer = async ({
     }),
   )
 
+  app.use(updateToken)
+
   await apolloServer.start()
 
   apolloServer.applyMiddleware({ app, path: "/graphql" })
@@ -277,7 +287,10 @@ export const startApolloServer = async ({
               // TODO: also manage the case where there is a cookie in the request
 
               // make request to oathkeeper
-              const originalToken = authz?.slice(7) ?? undefined
+              const originalToken = authz?.slice(7) as
+                | LegacyJwtToken
+                | SessionToken
+                | undefined
 
               const newToken = await sendOathkeeperRequest(originalToken)
               // TODO: see how returning an error affect the websocket connection

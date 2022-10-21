@@ -20,14 +20,13 @@ const createAccount = async (initialWallets: WalletCurrency[]) => {
 
   const authService = AuthWithPhonePasswordlessService()
 
-  const kratosResult = await authService.createWithSession(phone)
+  const kratosResult = await authService.createIdentityWithSession(phone)
   if (kratosResult instanceof Error) throw kratosResult
 
   const kratosUserId = kratosResult.kratosUserId
-  kratosUserId // FIXME variable will be used/line removed in the follow up PR
 
-  const account = await Accounts.createAccountForPhoneSchema({
-    newUserInfo: { phone },
+  const account = await Accounts.createAccountWithPhoneIdentifier({
+    newAccountInfo: { phone, kratosUserId },
     config: { initialStatus: AccountStatus.Active, initialWallets },
   })
   if (account instanceof Error) throw account
@@ -116,11 +115,11 @@ describe("Users - wallets", () => {
     })
   })
 
-  describe("with 'createAccountForEmailSchema'", () => {
+  describe("with 'createAccountForEmailIdentifier'", () => {
     it("adds a USD wallet for new user if config is set to true", async () => {
       const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
 
-      let account = await Accounts.createAccountForEmailSchema({
+      let account = await Accounts.createAccountForEmailIdentifier({
         kratosUserId: randomKratosId(),
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
@@ -150,7 +149,7 @@ describe("Users - wallets", () => {
     it("does not add a USD wallet for new user if config is set to false", async () => {
       const initialWallets = [WalletCurrency.Btc]
 
-      let account = await Accounts.createAccountForEmailSchema({
+      let account = await Accounts.createAccountForEmailIdentifier({
         kratosUserId: randomKratosId(),
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
@@ -180,7 +179,7 @@ describe("Users - wallets", () => {
     it("sets USD wallet as default if BTC wallet does not exist", async () => {
       const initialWallets = [WalletCurrency.Usd]
 
-      let account = await Accounts.createAccountForEmailSchema({
+      let account = await Accounts.createAccountForEmailIdentifier({
         kratosUserId: randomKratosId(),
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })

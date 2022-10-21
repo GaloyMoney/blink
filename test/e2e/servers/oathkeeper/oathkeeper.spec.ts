@@ -2,6 +2,14 @@ import { OathkeeperUnauthorizedServiceError } from "@domain/oathkeeper/errors"
 import { sendOathkeeperRequest } from "@services/oathkeeper"
 import * as jwt from "jsonwebtoken"
 
+import { UsersRepository } from "@services/mongoose"
+
+import { BTC_NETWORK } from "@config"
+
+import { User } from "@services/mongoose/schema"
+
+import { createToken } from "@services/legacy-jwt"
+
 import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
 
 import {
@@ -25,7 +33,7 @@ afterAll(async () => {
 
 describe("Oathkeeper", () => {
   it("return anon if no bearer assets", async () => {
-    const res = await sendOathkeeperRequest()
+    const res = await sendOathkeeperRequest(undefined)
     if (res instanceof Error) throw res
 
     const decoded = jwt.decode(res, { complete: true })
@@ -33,11 +41,11 @@ describe("Oathkeeper", () => {
   })
 
   it("error if an invalid token is provided", async () => {
-    const res = await sendOathkeeperRequest("invalid.token")
+    const res = await sendOathkeeperRequest("invalid.token" as SessionToken)
     expect(res).toBeInstanceOf(OathkeeperUnauthorizedServiceError)
   })
 
-  it("return account id when token is provided", async () => {
+  it("return KratosUserId when kratos session token is provided", async () => {
     const userRef = "D"
     const { phone, code } = getPhoneAndCodeFromRef(userRef)
 
@@ -51,18 +59,38 @@ describe("Oathkeeper", () => {
     })
     disposeClient()
 
-    const originalToken = result.data.userLogin.authToken
+    const token = result.data.userLogin.authToken
 
-    const res = await sendOathkeeperRequest(originalToken)
+    const res = await sendOathkeeperRequest(token)
     if (res instanceof Error) throw res
 
     const decodedNew = jwt.decode(res, { complete: true })
-    const decodedOriginal = jwt.decode(originalToken, { complete: true })
+    const uidFromJwt = decodedNew?.payload?.sub
 
-    if (typeof decodedOriginal?.payload === "string") {
-      throw Error("should be an object")
-    }
+    expect(uidFromJwt).toHaveLength(36) // uuid-v4 token (kratosUserId)
 
-    expect(decodedNew?.payload?.sub).toBe(decodedOriginal?.payload?.uid)
+    console.log(await User.find({}), "users")
+  })
+
+  it("return KratosUserId when legacy JWT is provided", async () => {
+    const userRef = "D"
+    const { phone } = getPhoneAndCodeFromRef(userRef)
+
+    const usersRepo = UsersRepository()
+    const user = await usersRepo.findByPhone(phone)
+    if (user instanceof Error) throw user
+
+    const jwtToken = createToken({
+      uid: user.id as string as AccountId,
+      network: BTC_NETWORK,
+    })
+
+    const res = await sendOathkeeperRequest(jwtToken)
+    if (res instanceof Error) throw res
+
+    const decodedNew = jwt.decode(res, { complete: true })
+    const uidFromJwt = decodedNew?.payload?.sub
+
+    expect(uidFromJwt).toHaveLength(36) // uuid-v4 token (kratosUserId)
   })
 })

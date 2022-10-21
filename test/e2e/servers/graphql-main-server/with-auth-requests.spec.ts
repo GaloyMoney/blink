@@ -1,3 +1,5 @@
+import axios from "axios"
+
 import { Accounts } from "@app"
 import { WalletType } from "@domain/wallets"
 import { toSats } from "@domain/bitcoin"
@@ -10,6 +12,10 @@ import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 import { baseLogger } from "@services/logger"
 
 import { sleep } from "@utils"
+
+import { BTC_NETWORK } from "@config"
+
+import { createToken } from "@services/legacy-jwt"
 
 import LN_INVOICE_CREATE from "./mutations/ln-invoice-create.gql"
 import LN_USD_INVOICE_CREATE from "./mutations/ln-usd-invoice-create.gql"
@@ -100,6 +106,32 @@ afterAll(async () => {
   cancelOkexPricePublish()
   await killServer(serverPid)
   await killServer(triggerPid)
+})
+
+describe("header", () => {
+  it("getting a kratos header when passing a legacy JWT in the header", async () => {
+    const account = await getAccountByTestUserRef(userRef)
+    const jwtLegacyToken = createToken({ uid: account.id, network: BTC_NETWORK })
+
+    const graphql = JSON.stringify({
+      query: "query nodeIds {\n  globals {\n    nodesIds\n  }\n}\n",
+      variables: {},
+    })
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${jwtLegacyToken}`,
+    }
+
+    const res = await axios({
+      url: defaultTestClientConfig().graphqlUrl,
+      method: "POST",
+      headers,
+      data: graphql,
+    })
+
+    expect(res.headers["kratos-session-token"]).toHaveLength(32)
+  })
 })
 
 describe("graphql", () => {

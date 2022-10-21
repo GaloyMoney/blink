@@ -70,6 +70,7 @@ type Account = {
   readonly isEditor: boolean
   role?: string
   readonly quizQuestions: UserQuizQuestion[]
+  kratosUserId?: KratosUserId // TODO: remove ? after initial kratos migration
 }
 
 type QuizQuestionId = string & { readonly brand: unique symbol }
@@ -136,13 +137,33 @@ type AccountValidator = {
   validateWalletForAccount(wallet: Wallet): true | ValidationError
 }
 
+type NewAccountWithEmailIdentifier = {
+  kratosUserId: KratosUserId
+  phone?: undefined
+  phoneMetadata?: undefined
+}
+
+type NewAccountWithPhoneIdentifier = {
+  kratosUserId: KratosUserId
+  phone: PhoneNumber
+  phoneMetadata?: PhoneMetadata
+}
+
+type NewAccount = NewAccountWithEmailIdentifier | NewAccountWithPhoneIdentifier
+
 interface IAccountsRepository {
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   findByUserId(userId: UserId): Promise<Account | RepositoryError>
 
   findByKratosUserId(kratosUserId: KratosUserId): Promise<Account | RepositoryError>
-  persistNewKratosUser(kratosUserId: KratosUserId): Promise<Account | RepositoryError>
+  persistNew({ kratosUserId }: NewAccount): Promise<Account | RepositoryError>
+
+  persistNew({
+    kratosUserId,
+    phone,
+    phoneMetadata,
+  }: NewAccount): Promise<Account | RepositoryError>
 
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>

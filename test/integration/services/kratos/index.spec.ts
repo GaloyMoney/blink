@@ -5,18 +5,20 @@ import {
   LikelyUserAlreadyExistError,
 } from "@services/kratos/errors"
 import { AdminCreateIdentityBody } from "@ory/client"
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import {
+  AuthWithPhonePasswordlessService,
+  extendSession,
+  listIdentities,
+  listSessions,
+  validateKratosToken,
+} from "@services/kratos"
 import {
   activateUser,
   addTotp,
   deactivateUser,
   elevatingSessionWithTotp,
-  extendSession,
   listIdentitySchemas,
-  listSessions,
-  listUsers,
   revokeSessions,
-  validateKratosToken,
 } from "@services/kratos/tests-but-not-prod"
 import { kratosAdmin, kratosPublic } from "@services/kratos/private"
 import { baseLogger } from "@services/logger"
@@ -32,7 +34,7 @@ describe("phoneNoPassword", () => {
     let kratosUserId: KratosUserId
 
     it("create a user", async () => {
-      const res = await authService.createWithSession(phone)
+      const res = await authService.createIdentityWithSession(phone)
       if (res instanceof Error) throw res
 
       expect(res).toHaveProperty("kratosUserId")
@@ -40,7 +42,7 @@ describe("phoneNoPassword", () => {
     })
 
     it("can't create user twice", async () => {
-      const res = await authService.createWithSession(phone)
+      const res = await authService.createIdentityWithSession(phone)
 
       expect(res).toBeInstanceOf(LikelyUserAlreadyExistError)
     })
@@ -68,7 +70,7 @@ describe("phoneNoPassword", () => {
 
       let totpSecret: string
       {
-        const res0 = await authService.createWithSession(phone)
+        const res0 = await authService.createIdentityWithSession(phone)
         if (res0 instanceof Error) throw res0
 
         const session = res0.sessionToken
@@ -113,7 +115,7 @@ describe("phoneNoPassword", () => {
       const phone = randomPhone()
       const password = randomPassword()
 
-      const res0 = await authService.createWithSession(phone)
+      const res0 = await authService.createIdentityWithSession(phone)
       if (res0 instanceof Error) throw res0
       const { kratosUserId } = res0
 
@@ -131,7 +133,7 @@ describe("phoneNoPassword", () => {
   describe("admin api", () => {
     it("create a user with admin api, and can login with self api", async () => {
       const phone = randomPhone()
-      const kratosUserId = await authService.createNoSession(phone)
+      const kratosUserId = await authService.createIdentityNoSession(phone)
       if (kratosUserId instanceof Error) throw kratosUserId
 
       const res2 = await authService.login(phone)
@@ -144,7 +146,7 @@ describe("phoneNoPassword", () => {
   it("borbidding change of a phone number from publicApi", async () => {
     const phone = randomPhone()
 
-    const res = await authService.createWithSession(phone)
+    const res = await authService.createIdentityWithSession(phone)
     if (res instanceof Error) throw res
 
     const res1 = await validateKratosToken(res.sessionToken)
@@ -185,7 +187,7 @@ describe("phoneNoPassword", () => {
 })
 
 it("list users", async () => {
-  const res = await listUsers()
+  const res = await listIdentities()
   if (res instanceof Error) throw res
 })
 
@@ -194,7 +196,7 @@ const authService = AuthWithPhonePasswordlessService()
 describe("token validation", () => {
   it("validate bearer token", async () => {
     const phone = randomPhone()
-    const res = await authService.createWithSession(phone)
+    const res = await authService.createIdentityWithSession(phone)
     if (res instanceof Error) throw res
 
     const token = res.sessionToken
@@ -212,7 +214,7 @@ describe("token validation", () => {
 describe("session revokation", () => {
   const phone = randomPhone()
   it("revoke user session", async () => {
-    const res = await authService.createWithSession(phone)
+    const res = await authService.createIdentityWithSession(phone)
     if (res instanceof Error) throw res
     const kratosUserId = res.kratosUserId
 
@@ -250,7 +252,7 @@ describe("update status", () => {
 
   it("deactivate user", async () => {
     {
-      const res = await authService.createWithSession(phone)
+      const res = await authService.createIdentityWithSession(phone)
       if (res instanceof Error) throw res
       kratosUserId = res.kratosUserId
     }
@@ -283,7 +285,7 @@ it.skip("list schemas", async () => {
 
 it("extend session", async () => {
   const phone = randomPhone()
-  const res = await authService.createWithSession(phone)
+  const res = await authService.createIdentityWithSession(phone)
   if (res instanceof Error) throw res
 
   expect(res).toHaveProperty("kratosUserId")

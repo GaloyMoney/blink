@@ -1,7 +1,7 @@
 import { getKratosConfig } from "@config"
 import { Configuration, V0alpha2Api, V0alpha2ApiInterface } from "@ory/client"
 
-import { MissingExpiredAtKratosError } from "./errors"
+import { MissingExpiredAtKratosError, UnknownKratosError } from "./errors"
 
 const { publicApi, adminApi } = getKratosConfig()
 
@@ -26,3 +26,15 @@ export const toDomainIdentityPhone = (identity: KratosIdentity): IdentityPhone =
   id: identity.id as KratosUserId,
   phone: identity.traits.phone,
 })
+
+export const listSessionsInternal = async (
+  userId: KratosUserId,
+): Promise<KratosSession[] | KratosError> => {
+  try {
+    const res = await kratosAdmin.adminListIdentitySessions(userId)
+    if (res.data === null) return []
+    return res.data
+  } catch (err) {
+    return new UnknownKratosError(err)
+  }
+}

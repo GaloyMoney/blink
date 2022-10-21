@@ -29,10 +29,10 @@ interface IAuthWithPhonePasswordlessService {
   login(
     phone: PhoneNumber,
   ): Promise<LoginWithPhoneNoPasswordSchemaResponse | AuthenticationError>
-  createWithSession(
+  createIdentityWithSession(
     phone: PhoneNumber,
   ): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>
-  createNoSession(phone: PhoneNumber): Promise<KratosUserId | AuthenticationError>
+  createIdentityNoSession(phone: PhoneNumber): Promise<KratosUserId | AuthenticationError>
   upgradeToPhoneWithPasswordSchema(input: {
     kratosUserId: KratosUserId
     password: IdentityPassword
