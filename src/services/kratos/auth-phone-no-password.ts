@@ -11,6 +11,7 @@ import {
 import {
   AdminCreateIdentityBody,
   AdminUpdateIdentityBody,
+  Identity,
   SuccessfulSelfServiceLoginWithoutBrowser,
   SuccessfulSelfServiceRegistrationWithoutBrowser,
 } from "@ory/client"
@@ -100,9 +101,19 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       traits: { phone },
     }
 
-    const { data: identity } = await kratosAdmin.adminCreateIdentity(adminIdentity)
+    let kratosUserId: KratosUserId
 
-    const kratosUserId = identity.id as KratosUserId
+    try {
+      const { data: identity } = await kratosAdmin.adminCreateIdentity(adminIdentity)
+
+      kratosUserId = identity.id as KratosUserId
+    } catch (err) {
+      if (err.message === "Request failed with status code 400") {
+        return new LikelyUserAlreadyExistError(err)
+      }
+
+      return new UnknownKratosError(err)
+    }
 
     return kratosUserId
   }
@@ -114,7 +125,17 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     kratosUserId: KratosUserId
     password: IdentityPassword
   }) => {
-    const { data: identity } = await kratosAdmin.adminGetIdentity(kratosUserId)
+    let identity: Identity
+
+    try {
+      ;({ data: identity } = await kratosAdmin.adminGetIdentity(kratosUserId))
+    } catch (err) {
+      if (err.message === "Request failed with status code 400") {
+        return new LikelyUserAlreadyExistError(err)
+      }
+
+      return new UnknownKratosError(err)
+    }
 
     if (identity.schema_id !== "phone_no_password_v0") {
       return new IncompatibleSchemaUpgradeError()
