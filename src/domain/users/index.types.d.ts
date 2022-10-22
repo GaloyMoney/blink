@@ -42,7 +42,6 @@ type User = {
   readonly phone?: PhoneNumber
   readonly phoneMetadata?: PhoneMetadata
   language: UserLanguage
-  twoFA: TwoFAForUser
 }
 
 type PhoneMetadataValidator = {

@@ -1,27 +1,22 @@
 import { Accounts } from "@app"
 import { setUsername } from "@app/accounts"
-import { delete2fa } from "@app/users"
 import { UsernameIsImmutableError, UsernameNotAvailableError } from "@domain/accounts"
 import { ValidationError } from "@domain/shared"
 import { CsvWalletsExport } from "@services/ledger/csv-wallet-export"
-import { AccountsRepository, UsersRepository } from "@services/mongoose"
+import { AccountsRepository } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 
 import {
   createMandatoryUsers,
   createUserAndWalletFromUserRef,
-  enable2FA,
-  generateTokenHelper,
   getAccountIdByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  getUserIdByTestUserRef,
   getUserRecordByTestUserRef,
 } from "test/helpers"
 
 let userRecordA: UserRecord, userRecordC: UserRecord
 let walletIdA: WalletId
 let accountIdA: AccountId, accountIdB: AccountId, accountIdC: AccountId
-let userIdA: UserId
 
 describe("UserWallet", () => {
   beforeAll(async () => {
@@ -39,8 +34,6 @@ describe("UserWallet", () => {
     accountIdA = await getAccountIdByTestUserRef("A")
     accountIdB = await getAccountIdByTestUserRef("B")
     accountIdC = await getAccountIdByTestUserRef("C")
-
-    userIdA = await getUserIdByTestUserRef("A")
   })
 
   it("has a role if it was configured", async () => {
@@ -200,35 +193,6 @@ describe("UserWallet", () => {
       }
       expect(account.statusHistory.length).toBe(4)
       expect(account.status).toEqual("active")
-    })
-  })
-
-  describe("save2fa", () => {
-    it("saves 2fa for userA", async () => {
-      const usersRepo = UsersRepository()
-      const user = await usersRepo.findById(userIdA)
-      if (user instanceof Error) throw user
-
-      const secret = await enable2FA(userIdA)
-      if (secret instanceof Error) return secret
-
-      userRecordA = await getUserRecordByTestUserRef("A")
-      expect(userRecordA.twoFA.secret).toBe(secret)
-    })
-  })
-
-  // TODO: reimplement with kratos
-  describe.skip("delete2fa", () => {
-    it("delete 2fa for userA", async () => {
-      const usersRepo = UsersRepository()
-      const user = await usersRepo.findById(userIdA)
-      if (user instanceof Error) throw user
-
-      const token = generateTokenHelper("FIXME userRecordA.twoFA.secret")
-      const result = await delete2fa({ token, userId: userIdA })
-      expect(result).toBeTruthy()
-      userRecordA = await getUserRecordByTestUserRef("A")
-      expect(userRecordA.twoFA.secret).toBeUndefined()
     })
   })
 })

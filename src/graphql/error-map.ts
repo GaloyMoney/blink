@@ -45,16 +45,8 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = error.message
       return new TransactionRestrictedError({ message, logger: baseLogger })
 
-    case "TwoFANewCodeNeededError":
-      message = "Need a 2FA code to proceed with the payment"
-      return new TwoFAError({ message, logger: baseLogger })
-
     case "TwoFALimitsExceededError":
       message = "Need a 2FA code to proceed with the payment"
-      return new TwoFAError({ message, logger: baseLogger })
-
-    case "TwoFAValidationError":
-      message = "Invalid 2FA token passed"
       return new TwoFAError({ message, logger: baseLogger })
 
     case "AlreadyPaidError":
@@ -269,14 +261,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "username is immutable"
       return new UsernameError({ message, logger: baseLogger })
 
-    case "TwoFANeedToBeSetBeforeDeletionError":
-      message = "TwoFA need to be set before removal"
-      return new TwoFAError({ message, logger: baseLogger })
-
-    case "TwoFAAlreadySetError":
-      message = "TwoFA is already set"
-      return new TwoFAError({ message, logger: baseLogger })
-
     case "InvalidWalletId":
       message = "Invalid walletId for account."
       return new ValidationInternalError({ message, logger: baseLogger })
@@ -327,7 +311,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "RateLimitError":
     case "RateLimitServiceError":
     case "CouldNotFindUserError":
-    case "TwoFAError":
     case "LedgerError":
     case "LedgerServiceError":
     case "LedgerFacadeError":
@@ -482,10 +465,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownLightningServiceError":
       message = `Unknown error occurred (code: ${error.name})`
       return new LightningPaymentError({ message, logger: baseLogger })
-
-    case "UnknownTwoFAError":
-      message = `Unknown error occurred (code: ${error.name})`
-      return new TwoFAError({ message, logger: baseLogger })
 
     case "UnknownRateLimitServiceError":
     case "UnknownLockServiceError":

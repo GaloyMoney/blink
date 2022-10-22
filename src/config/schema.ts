@@ -418,15 +418,6 @@ export const configSchema = {
         memoSharingCentsThreshold: 50,
       },
     },
-    twoFALimits: {
-      type: "object",
-      properties: {
-        threshold: { type: "integer" },
-      },
-      required: ["threshold"],
-      additionalProperties: false,
-      default: { threshold: 10000 }, // cents,
-    },
     ipRecording: {
       type: "object",
       properties: {
@@ -649,7 +640,6 @@ export const configSchema = {
     "rateLimits",
     "accountLimits",
     "spamLimits",
-    "twoFALimits",
     "ipRecording",
     "fees",
     "lnds",

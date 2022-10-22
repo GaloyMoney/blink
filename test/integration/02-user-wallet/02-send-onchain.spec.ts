@@ -2,11 +2,11 @@ import { once } from "events"
 
 import { Prices, Wallets } from "@app"
 import {
-  getFeesConfig,
-  getOnChainWalletConfig,
   getAccountLimits,
-  getLocale,
   getDisplayCurrencyConfig,
+  getFeesConfig,
+  getLocale,
+  getOnChainWalletConfig,
   ONE_DAY,
 } from "@config"
 import { toSats, toTargetConfs } from "@domain/bitcoin"
@@ -19,18 +19,16 @@ import {
   SelfPaymentError,
 } from "@domain/errors"
 import { NotificationType } from "@domain/notifications"
-import { TwoFANewCodeNeededError } from "@domain/twoFA"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
-import { baseLogger } from "@services/logger"
 import { sleep, timestampDaysAgo } from "@utils"
 
 import { getCurrentPrice } from "@app/prices"
 
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
-import { add, sub, toCents } from "@domain/fiat"
+import { add, sub } from "@domain/fiat"
 
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
@@ -44,20 +42,16 @@ import {
   createChainAddress,
   createMandatoryUsers,
   createUserAndWalletFromUserRef,
-  enable2FA,
-  generateTokenHelper,
   getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  getUserIdByTestUserRef,
   getUserRecordByTestUserRef,
   lndonchain,
   lndOutside1,
   mineBlockAndSync,
   mineBlockAndSyncAll,
-  RANDOM_ADDRESS,
   subscribeToTransactions,
 } from "test/helpers"
-import { getBalanceHelper, getRemainingTwoFALimit } from "test/helpers/wallet"
+import { getBalanceHelper } from "test/helpers/wallet"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
@@ -74,7 +68,6 @@ let walletIdG: WalletId
 // using walletIdE and walletIdF to sendAll
 let walletIdE: WalletId
 let walletIdF: WalletId
-let userIdA: UserId
 
 const locale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
@@ -91,7 +84,6 @@ beforeAll(async () => {
 
   userA = await getUserRecordByTestUserRef("A")
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
-  userIdA = await getUserIdByTestUserRef("A")
   accountA = await getAccountByTestUserRef("A")
 
   walletIdD = await getDefaultWalletIdByTestUserRef("D")
@@ -689,77 +681,5 @@ describe("UserWallet - onChainPay", () => {
       sendAll: false,
     })
     expect(status).toBeInstanceOf(LessThanDustThresholdError)
-  })
-
-  describe.skip("2FA - to reimplement once kratos 2fa has been added", () => {
-    it("fails to pay above 2fa limit without 2fa token", async () => {
-      await enable2FA(userIdA)
-
-      const price = await getCurrentPrice()
-      if (price instanceof Error) throw price
-      const dCConverter = DisplayCurrencyConverter(price)
-
-      const remainingLimit = await getRemainingTwoFALimit({
-        walletId: walletIdA,
-        satsToCents: dCConverter.fromSatsToCents,
-      })
-      if (remainingLimit instanceof Error) throw remainingLimit
-
-      const aboveThreshold = add(remainingLimit, toCents(10))
-
-      const status = await Wallets.payOnChainByWalletIdWithTwoFA({
-        senderAccount: accountA,
-        senderWalletId: walletIdA,
-        address: RANDOM_ADDRESS,
-        amount: dCConverter.fromCentsToSats(aboveThreshold),
-        targetConfirmations,
-        memo: null,
-        sendAll: false,
-        twoFAToken: "" as TwoFAToken,
-      })
-
-      expect(status).toBeInstanceOf(TwoFANewCodeNeededError)
-    })
-
-    it("sends a successful large payment with a 2fa code", async () => {
-      await enable2FA(userIdA)
-      userA = await getUserRecordByTestUserRef("A")
-
-      const initialBalance = await getBalanceHelper(walletIdA)
-      const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-      const twoFAToken = generateTokenHelper("invalid - FIXME")
-      const amount = userA.twoFA.threshold + 1
-      const paid = await Wallets.payOnChainByWalletIdWithTwoFA({
-        senderAccount: accountA,
-        senderWalletId: walletIdA,
-        address,
-        amount,
-        targetConfirmations,
-        memo: null,
-        sendAll: false,
-        twoFAToken,
-      })
-
-      expect(paid).toBe(PaymentSendStatus.Success)
-
-      await mineBlockAndSyncAll()
-      const result = await Wallets.updateOnChainReceipt({ logger: baseLogger })
-      if (result instanceof Error) {
-        throw result
-      }
-
-      const { result: txs, error } = await Wallets.getTransactionsForWalletId({
-        walletId: walletIdA,
-      })
-
-      if (error instanceof Error || txs === null) {
-        throw error
-      }
-
-      // settlementAmount is negative
-      const expectedBalance = initialBalance + txs[0].settlementAmount
-      const finalBalance = await getBalanceHelper(walletIdA)
-      expect(expectedBalance).toBe(finalBalance)
-    })
   })
 })

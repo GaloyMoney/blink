@@ -96,11 +96,6 @@ const GraphQLUser = GT.Object({
       },
     },
 
-    twoFAEnabled: {
-      type: GT.Boolean,
-      resolve: (source) => source.twoFA.secret !== null,
-    },
-
     createdAt: {
       type: GT.NonNull(Timestamp),
     },

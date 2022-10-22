@@ -1,11 +1,8 @@
 import { createHash, randomBytes } from "crypto"
 
 import { Lightning, Payments, Prices, Wallets } from "@app"
-import { getMidPriceRatio } from "@app/shared"
 
-import { delete2fa } from "@app/users"
-
-import { getDealerConfig, getDisplayCurrencyConfig, getLocale, ONE_DAY } from "@config"
+import { getDisplayCurrencyConfig, getLocale, ONE_DAY } from "@config"
 
 import { toSats } from "@domain/bitcoin"
 import {
@@ -36,7 +33,6 @@ import {
   WalletCurrency,
   ZERO_SATS,
 } from "@domain/shared"
-import { TwoFAError } from "@domain/twoFA"
 import { PaymentInitiationMethod, WithdrawalFeePriceMethod } from "@domain/wallets"
 import { toCents } from "@domain/fiat"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
@@ -71,8 +67,6 @@ import {
   createInvoice,
   createUserAndWalletFromUserRef,
   decodePaymentRequest,
-  enable2FA,
-  generateTokenHelper,
   getAccountByTestUserRef,
   getBalanceHelper,
   getDefaultWalletIdByTestUserRef,
@@ -80,11 +74,9 @@ import {
   getInvoice,
   getInvoiceAttempt,
   getUsdWalletIdByTestUserRef,
-  getUserIdByTestUserRef,
   getUserRecordByTestUserRef,
   lndOutside1,
   lndOutside2,
-  newGetRemainingTwoFALimit,
   publishOkexPrice,
   settleHodlInvoice,
   waitFor,
@@ -140,15 +132,11 @@ jest.mock("@services/lnd", () => {
   }
 })
 
-const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
-
 let initBalanceA: Satoshis, initBalanceB: Satoshis, initBalanceUsdB: UsdCents
 const amountInvoice = toSats(1000)
 
 const invoicesRepo = WalletInvoicesRepository()
 let userRecordA: UserRecord
-
-let userIdA: UserId
 
 let accountA: Account
 let accountB: Account
@@ -175,8 +163,6 @@ beforeAll(async () => {
   await createUserAndWalletFromUserRef("B")
   await createUserAndWalletFromUserRef("C")
   await createUserAndWalletFromUserRef("H")
-
-  userIdA = await getUserIdByTestUserRef("A")
 
   accountA = await getAccountByTestUserRef("A")
   accountB = await getAccountByTestUserRef("B")
@@ -876,12 +862,11 @@ describe("UserWallet - Lightning Pay", () => {
           expect(feeFromProbe).not.toBeNull()
           if (feeFromProbe === null) throw new InvalidFeeProbeStateError()
 
-          const paymentResult = await Payments.payInvoiceByWalletIdWithTwoFA({
+          const paymentResult = await Payments.payInvoiceByWalletId({
             uncheckedPaymentRequest: input.invoice,
             memo: input.memo,
             senderWalletId: walletId,
             senderAccount: account,
-            twoFAToken: input.twoFAToken || null,
           })
           return paymentResult
         }
@@ -892,12 +877,11 @@ describe("UserWallet - Lightning Pay", () => {
       applyMaxFee: true,
       fn: function fn({ walletId, account }: { walletId: WalletId; account: Account }) {
         return async (input): Promise<PaymentSendStatus | ApplicationError> => {
-          const paymentResult = await Payments.payInvoiceByWalletIdWithTwoFA({
+          const paymentResult = await Payments.payInvoiceByWalletId({
             uncheckedPaymentRequest: input.invoice,
             senderAccount: account,
             memo: input.memo,
             senderWalletId: walletId,
-            twoFAToken: input.twoFAToken || null,
           })
           return paymentResult
         }
@@ -986,12 +970,10 @@ describe("UserWallet - Lightning Pay", () => {
 
         const paymentOtherGaloyUser = async ({
           walletIdPayer,
-          twoFASecretPayer,
           accountPayer,
           walletIdPayee,
         }: {
           walletIdPayer: WalletId
-          twoFASecretPayer?: TwoFASecret
           accountPayer: Account
           walletIdPayee: WalletId
         }) => {
@@ -1007,9 +989,6 @@ describe("UserWallet - Lightning Pay", () => {
           const result = await fn({ account: accountPayer, walletId: walletIdPayer })({
             invoice: request,
             memo,
-            twoFAToken: twoFASecretPayer
-              ? generateTokenHelper(twoFASecretPayer)
-              : undefined,
           })
           if (result instanceof Error) throw result
 
@@ -1092,7 +1071,6 @@ describe("UserWallet - Lightning Pay", () => {
         await paymentOtherGaloyUser({
           walletIdPayee: walletIdC,
           walletIdPayer: walletIdA,
-          twoFASecretPayer: userRecordA.twoFA.secret,
           accountPayer: accountA,
         })
         await paymentOtherGaloyUser({
@@ -1479,79 +1457,6 @@ describe("UserWallet - Lightning Pay", () => {
           initBalanceUsdB - Number(amountInvoiceWithFee.amount),
         )
       }, 60000)
-
-      it(`fails to pay above 2fa limit without 2fa token`, async () => {
-        if (userRecordA.twoFA.secret) {
-          await delete2fa({
-            userId: userIdA,
-            token: generateTokenHelper(userRecordA.twoFA.secret),
-          })
-        }
-
-        const secret = await enable2FA(userIdA)
-        userRecordA = await getUserRecordByTestUserRef("A")
-        expect(secret).toBe(userRecordA.twoFA.secret)
-
-        const midPriceRatio = await getMidPriceRatio(usdHedgeEnabled)
-        if (midPriceRatio instanceof Error) return midPriceRatio
-
-        const remainingLimitAmount = await newGetRemainingTwoFALimit({
-          walletDescriptor: {
-            id: walletIdA,
-            currency: WalletCurrency.Btc,
-            accountId: accountA.id,
-          },
-          priceRatio: midPriceRatio,
-        })
-        if (remainingLimitAmount instanceof Error) throw Error
-
-        const thresholdDeltaAmount = paymentAmountFromNumber({
-          amount: 10,
-          currency: WalletCurrency.Usd,
-        })
-        if (thresholdDeltaAmount instanceof Error) throw thresholdDeltaAmount
-
-        const usdAmountAboveThreshold = AmountCalculator().add(
-          remainingLimitAmount,
-          thresholdDeltaAmount,
-        )
-        const btcAmountAboveThreshold = midPriceRatio.convertFromUsd(
-          usdAmountAboveThreshold,
-        )
-
-        const { request } = await createInvoice({
-          lnd: lndOutside1,
-          tokens: Number(btcAmountAboveThreshold.amount),
-        })
-        const result = await fn({ account: accountA, walletId: walletIdA })({
-          invoice: request,
-        })
-
-        expect(result).toBeInstanceOf(TwoFAError)
-
-        const finalBalance = await getBalanceHelper(walletIdA)
-        expect(finalBalance).toBe(initBalanceA)
-      })
-
-      // TODO: reimplement with kratos
-      it.skip(`Makes large payment with a 2fa code`, async () => {
-        await enable2FA(userIdA)
-        const userRecordA = await getUserRecordByTestUserRef("A")
-        const secret = userRecordA.twoFA.secret
-
-        const { request } = await createInvoice({
-          lnd: lndOutside1,
-          tokens: userRecordA.twoFA.threshold + 1,
-        })
-
-        const twoFAToken = generateTokenHelper(secret + "FIXME")
-        const result = await fn({ account: accountA, walletId: walletIdA })({
-          invoice: request,
-          twoFAToken,
-        })
-        if (result instanceof Error) throw result
-        expect(result).toBe(PaymentSendStatus.Success)
-      })
     })
   })
 })
