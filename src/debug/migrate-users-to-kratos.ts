@@ -42,7 +42,7 @@ const main = async () => {
     const kratosUserId = await authService.createIdentityNoSession(phone)
     if (kratosUserId instanceof Error) throw kratosUserId
 
-    await User.updateOne({ _id: account._id }, { kratosUserId })
+    await User.updateOne({ _id: account._id }, { $set: { kratosUserId } })
 
     if (progress % 1000 === 0) {
       console.log(`${progress} users updated`)
