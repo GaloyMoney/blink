@@ -12,9 +12,9 @@ const AuthToken = GT.Scalar({
 })
 
 function validAuthTokenValue(value: string) {
-  if (value.length !== 32) {
-    return "Invalid value for AuthToken"
-  }
+  // if (value.length !== 32) {
+  //   return "Invalid value for AuthToken"
+  // }
 
   return value
 }
