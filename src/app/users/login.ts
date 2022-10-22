@@ -127,7 +127,7 @@ export const loginWithPhone = async ({
   // TODO: apply after migration of the mobile app
   const returnNewKratosToken = false
 
-  if (returnNewKratosToken) {
+  if (!returnNewKratosToken) {
     const account = await AccountsRepository().findByKratosUserId(kratosUserId)
     if (account instanceof Error) return account
 
