@@ -7,11 +7,12 @@ import {
   InvalidContactAlias,
   InvalidWithdrawFeeError,
   InvalidKratosUserId,
+  InvalidAccountLevelError,
 } from "@domain/errors"
 
 import { InvalidAccountIdError } from "./errors"
 
-import { AccountStatus } from "./primitives"
+import { AccountLevel, AccountStatus } from "./primitives"
 
 export * from "./errors"
 export * from "./limits-checker"
@@ -95,4 +96,9 @@ export const checkedToAccountId = (
     return new InvalidAccountIdError(accountId)
   }
   return accountId as AccountId
+}
+
+export const checkedToAccountLevel = (level: number): AccountLevel | ValidationError => {
+  if (Object.values<number>(AccountLevel).includes(level)) return level as AccountLevel
+  return new InvalidAccountLevelError()
 }
