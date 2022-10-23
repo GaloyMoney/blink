@@ -1,6 +1,4 @@
-import { AccountLevel } from "@domain/accounts"
 import {
-  InvalidAccountLevelError,
   InvalidDeviceTokenError,
   InvalidEmailAddress,
   InvalidLanguageError,
@@ -48,11 +46,6 @@ export const checkedToDeviceToken = (token: string): DeviceToken | ValidationErr
   }
 
   return token as DeviceToken
-}
-
-export const checkedToAccountLevel = (level: number): AccountLevel | ValidationError => {
-  if (Object.values<number>(AccountLevel).includes(level)) return level as AccountLevel
-  return new InvalidAccountLevelError()
 }
 
 export { Languages }
