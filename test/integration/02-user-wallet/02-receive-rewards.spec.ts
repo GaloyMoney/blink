@@ -61,7 +61,7 @@ describe("UserWallet - addEarn", () => {
 
     const initialBalance = await getBalanceHelper(walletIdB)
 
-    const userRecordBBeforeEarn = await getAccountRecordByTestUserRef("B")
+    const accountRecordBBeforeEarn = await getAccountRecordByTestUserRef("B")
 
     const getAndVerifyRewards = async () => {
       const promises = onBoardingEarnIds.map((onBoardingEarnId) =>
@@ -74,7 +74,7 @@ describe("UserWallet - addEarn", () => {
       const finalBalance = await getBalanceHelper(walletIdB)
       let rewards = onBoardingEarnAmt
 
-      if (difference(onBoardingEarnIds, userRecordBBeforeEarn.earn).length === 0) {
+      if (difference(onBoardingEarnIds, accountRecordBBeforeEarn.earn).length === 0) {
         rewards = 0
       }
 

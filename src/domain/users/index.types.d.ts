@@ -4,6 +4,7 @@ type PhoneCode = string & { readonly brand: unique symbol }
 type EmailAddress = string & { readonly brand: unique symbol }
 
 type UserLanguage = typeof import("./languages").Languages[number]
+type UserLanguageOrEmpty = UserLanguage | ""
 
 type DeviceToken = string & { readonly brand: unique symbol }
 
@@ -38,20 +39,25 @@ type SetDeviceTokensArgs = {
 
 type SetLanguageArgs = {
   id: KratosUserId
-  language: UserLanguage
+  language: UserLanguageOrEmpty
 }
 
-interface IIdentityRepository {
-  getIdentity(id: KratosUserId): Promise<IdentityPhone | KratosError>
-  listIdentities(): Promise<IdentityPhone[] | KratosError>
-  slowFindByPhone(phone: PhoneNumber): Promise<IdentityPhone | KratosError>
-  setPhoneMetadata({
-    id,
-    phoneMetadata,
-  }: SetPhoneMetadataArgs): Promise<IdentityPhone | RepositoryError>
-  setDeviceTokens({
-    id,
-    deviceTokens,
-  }: SetDeviceTokensArgs): Promise<IdentityPhone | RepositoryError>
-  setLanguage({ id, language }: SetLanguageArgs): Promise<IdentityPhone | RepositoryError>
+type User = {
+  id: KratosUserId
+  languageOrDefault: UserLanguage
+  language: UserLanguageOrEmpty
+  deviceTokens: DeviceToken[]
+  phoneMetadata: PhoneMetadata | undefined
+}
+
+type UserUpdateInput = Omit<Partial<User>, "language"> & {
+  id: KratosUserId
+} & {
+  language?: UserLanguageOrEmpty
+}
+
+interface IUserRepository {
+  findById(id: KratosUserId): Promise<User | RepositoryError>
+  list(): Promise<User[] | RepositoryError>
+  update(user: UserUpdateInput): Promise<User | RepositoryError>
 }

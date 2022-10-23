@@ -27,7 +27,7 @@ import {
 } from "@services/tracing"
 
 import { elapsedSinceTimestamp, runInParallel } from "@utils"
-import { IdentityRepository } from "@services/kratos"
+import { UsersRepository } from "@services/mongoose/users"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()
@@ -242,9 +242,7 @@ const updatePendingInvoiceBeforeFinally = async ({
       currency: displayAmount.currency,
     } as DisplayPaymentAmount<DisplayCurrency>
 
-    const recipientUser = await IdentityRepository().getIdentity(
-      recipientAccount.kratosUserId,
-    )
+    const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 
     const notificationsService = NotificationsService()
@@ -255,7 +253,7 @@ const updatePendingInvoiceBeforeFinally = async ({
       displayPaymentAmount,
       paymentHash,
       recipientDeviceTokens: recipientUser.deviceTokens,
-      recipientLanguage: recipientUser.language,
+      recipientLanguage: recipientUser.languageOrDefault,
     })
 
     return true

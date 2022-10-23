@@ -1,4 +1,4 @@
-import { createAccountWithPhoneIdentifier, addWallet } from "@app/accounts"
+import { addWallet, createAccountWithPhoneIdentifier } from "@app/accounts"
 import { addWalletIfNonexistent } from "@app/accounts/add-wallet"
 import { getDefaultAccountsConfig, yamlConfig } from "@config"
 
@@ -8,8 +8,8 @@ import {
   LikelyNoUserWithThisPhoneExistError,
 } from "@domain/authentication/errors"
 import {
-  CouldNotFindUserFromPhoneError,
   CouldNotFindAccountFromKratosIdError,
+  CouldNotFindUserFromPhoneError,
 } from "@domain/errors"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
@@ -27,17 +27,12 @@ import { sleep } from "@utils"
 
 import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
 
+import { UsersRepository } from "@services/mongoose/users"
+
 import { lndOutside1, safePay } from "./lightning"
 
 const accounts = AccountsRepository()
 const identities = IdentityRepository()
-
-const getPhoneByTestUserRef = (ref: string) => {
-  const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
-  const phone = entry?.phone as PhoneNumber
-
-  return phone
-}
 
 export const getPhoneAndCodeFromRef = (ref: string) => {
   const result = yamlConfig.test_accounts.find((item) => item.ref === ref)
@@ -45,7 +40,7 @@ export const getPhoneAndCodeFromRef = (ref: string) => {
 }
 
 const getUserByTestUserRef = async (ref: string) => {
-  const phone = getPhoneByTestUserRef(ref)
+  const { phone } = getPhoneAndCodeFromRef(ref)
   const user = await identities.slowFindByPhone(phone)
   if (user instanceof Error) throw user
   return user
@@ -68,16 +63,6 @@ export const getAccountIdByTestUserRef = async (ref: string) => {
   return account.id
 }
 
-export const getWalletsByTestUserRef = async (ref: string) => {
-  const account = await getAccountByTestUserRef(ref)
-
-  const walletsRepo = WalletsRepository()
-  const wallets = await walletsRepo.listByAccountId(account.id)
-  if (wallets instanceof Error) throw wallets
-
-  return wallets
-}
-
 export const getDefaultWalletIdByTestUserRef = async (ref: string) => {
   const account = await getAccountByTestUserRef(ref)
   return account.defaultWalletId
@@ -93,15 +78,6 @@ export const getUsdWalletIdByTestUserRef = async (ref: string) => {
   const wallet = wallets.find((w) => w.currency === WalletCurrency.Usd)
   if (wallet === undefined) throw Error("no USD wallet")
   return wallet.id
-}
-
-export const getDefaultWalletIdByRole = async (role: string) => {
-  const entry = adminUsers.find((item) => item.role === role)
-  const user = await identities.slowFindByPhone(entry?.phone as PhoneNumber)
-  if (user instanceof Error) throw user
-  const account = await AccountsRepository().findByKratosUserId(user.id)
-  if (account instanceof Error) throw account
-  return account.defaultWalletId
 }
 
 export const getAccountRecordByTestUserRef = async (ref: string) => {
@@ -150,14 +126,10 @@ export const createUserAndWallet = async (entry: TestEntry) => {
 
     kratosUserId = kratosResult.kratosUserId
 
-    const res = await identities.setDeviceTokens({
-      id: kratosUserId,
-      deviceTokens: [`token-${kratosUserId}`] as DeviceToken[],
-    })
-    if (res instanceof Error) throw res
+    let phoneMetadata
 
     if (entry.phoneMetadataCarrierType) {
-      const phoneMetadata = {
+      phoneMetadata = {
         carrier: {
           type: entry.phoneMetadataCarrierType as CarrierType,
           name: "",
@@ -167,9 +139,14 @@ export const createUserAndWallet = async (entry: TestEntry) => {
         },
         countryCode: "US",
       }
-
-      await identities.setPhoneMetadata({ id: kratosUserId, phoneMetadata })
     }
+
+    const res = await UsersRepository().update({
+      id: kratosUserId,
+      deviceTokens: [`token-${kratosUserId}`] as DeviceToken[],
+      phoneMetadata,
+    })
+    if (res instanceof Error) throw res
   }
   if (kratosResult instanceof AuthenticationError) throw kratosResult
 
@@ -215,11 +192,6 @@ export const createUserAndWallet = async (entry: TestEntry) => {
   }
 
   if (account instanceof Error) throw account
-
-  await Account.findOneAndUpdate(
-    { _id: toObjectId<AccountId>(account.id) },
-    { deviceToken: ["test-token"] },
-  )
 
   if (entry.username) {
     await Account.findOneAndUpdate(

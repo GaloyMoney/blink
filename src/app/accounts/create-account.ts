@@ -1,9 +1,9 @@
 import { ConfigError, getTestAccounts } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
-import { IdentityRepository } from "@services/kratos"
 import { baseLogger } from "@services/logger"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import { UsersRepository } from "@services/mongoose/users"
 import { TwilioClient } from "@services/twilio"
 
 const initializeCreatedAccount = async ({
@@ -64,7 +64,10 @@ export const createAccountWithPhoneIdentifier = async ({
   if (phoneMetadata instanceof Error) {
     baseLogger.warn({ phone }, "impossible to fetch carrier")
   } else {
-    await IdentityRepository().setPhoneMetadata({ id: kratosUserId, phoneMetadata })
+    const user = await UsersRepository().findById(kratosUserId)
+    if (!(user instanceof Error)) {
+      await UsersRepository().update({ ...user, phoneMetadata })
+    }
   }
 
   const accountNew = await AccountsRepository().persistNew(kratosUserId)

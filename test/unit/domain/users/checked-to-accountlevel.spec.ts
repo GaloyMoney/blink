@@ -1,5 +1,5 @@
+import { checkedToAccountLevel } from "@domain/accounts"
 import { InvalidAccountLevelError } from "@domain/errors"
-import { checkedToAccountLevel } from "@domain/users"
 
 describe("account-level-check", () => {
   it("Passes with valid account levels", () => {

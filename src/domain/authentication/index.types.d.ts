@@ -11,10 +11,7 @@ type SessionToken = string & { readonly brand: unique symbol }
 type IdentityPhone = {
   id: KratosUserId
   phone: PhoneNumber
-  language: UserLanguage
-  deviceTokens: DeviceToken[]
   createdAt: Date
-  phoneMetadata: PhoneMetadata | undefined
 }
 
 type Session = {
@@ -42,4 +39,10 @@ interface IAuthWithPhonePasswordlessService {
     kratosUserId: KratosUserId
     password: IdentityPassword
   }): Promise<IdentityPhone | AuthenticationError> // TODO: should be IdentityPhoneWithPassword
+}
+
+interface IIdentityRepository {
+  getIdentity(id: KratosUserId): Promise<IdentityPhone | KratosError>
+  listIdentities(): Promise<IdentityPhone[] | KratosError>
+  slowFindByPhone(phone: PhoneNumber): Promise<IdentityPhone | KratosError>
 }

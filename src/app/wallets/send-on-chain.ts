@@ -39,7 +39,7 @@ import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
-import { IdentityRepository } from "@services/kratos"
+import { UsersRepository } from "@services/mongoose/users"
 
 import { getOnChainFee } from "./get-on-chain-fee"
 import {
@@ -204,9 +204,7 @@ const executePaymentViaIntraledger = async <
 
     if (journal instanceof Error) return journal
 
-    const recipientUser = await IdentityRepository().getIdentity(
-      recipientAccount.kratosUserId,
-    )
+    const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 
     const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {
@@ -219,7 +217,7 @@ const executePaymentViaIntraledger = async <
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId: recipientWallet.id,
       recipientDeviceTokens: recipientUser.deviceTokens,
-      recipientLanguage: recipientUser.language,
+      recipientLanguage: recipientUser.languageOrDefault,
       paymentAmount: { amount: BigInt(amountSats), currency: recipientWallet.currency },
       displayPaymentAmount,
     })

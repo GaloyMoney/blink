@@ -1,5 +1,5 @@
 import { checkedToDeviceToken } from "@domain/users"
-import { IdentityRepository } from "@services/kratos"
+import { UsersRepository } from "@services/mongoose/users"
 
 type AddDeviceTokenArgs = {
   kratosUserId: KratosUserId
@@ -9,13 +9,13 @@ type AddDeviceTokenArgs = {
 export const addDeviceToken = async ({
   kratosUserId,
   deviceToken,
-}: AddDeviceTokenArgs): Promise<IdentityPhone | ApplicationError> => {
-  const identityRepo = IdentityRepository()
+}: AddDeviceTokenArgs): Promise<User | ApplicationError> => {
+  const users = UsersRepository()
 
   const deviceTokenChecked = checkedToDeviceToken(deviceToken)
   if (deviceTokenChecked instanceof Error) return deviceTokenChecked
 
-  const user = await identityRepo.getIdentity(kratosUserId)
+  const user = await users.findById(kratosUserId)
   if (user instanceof Error) return user
 
   const deviceTokens = user.deviceTokens
@@ -24,5 +24,5 @@ export const addDeviceToken = async ({
     deviceTokens.push(deviceTokenChecked)
   }
 
-  return identityRepo.setDeviceTokens({ id: kratosUserId, deviceTokens })
+  return users.update({ ...user, deviceTokens })
 }

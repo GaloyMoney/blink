@@ -150,10 +150,7 @@ describe("GraphQLMutationRoot", () => {
         kratosUser: {
           id: randomKratosUserId(),
           phone: randomPhone(),
-          language: "en" as UserLanguage,
-          deviceTokens: ["token"] as DeviceToken[],
           createdAt: new Date(),
-          phoneMetadata: undefined,
         },
       },
     })

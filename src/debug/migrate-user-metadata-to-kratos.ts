@@ -3,23 +3,23 @@
  * yarn ts-node --files -r tsconfig-paths/register src/debug/create-usd-wallets.ts
  */
 
-import { IdentityRepository } from "@services/kratos"
 import { isUp } from "@services/lnd/health"
 import { params as unauthParams } from "@services/lnd/unauth"
 import { setupMongoConnection } from "@services/mongodb"
 import { Account } from "@services/mongoose/schema"
+import { UsersRepository } from "@services/mongoose/users"
 
 const createUsdWallets = async () => {
   await setupMongoConnection()
-
-  const identitiesRepo = IdentityRepository()
 
   let id: KratosUserId
   let phoneMetadata: PhoneMetadata
   let language: UserLanguage | undefined
   let deviceTokens: DeviceToken[]
 
-  let hasError = false
+  const hasError = false
+
+  const usersRepo = UsersRepository()
 
   const accounts = await Account.find({})
   if (accounts instanceof Error) return accounts
@@ -30,32 +30,7 @@ const createUsdWallets = async () => {
     language = account.language as UserLanguage | undefined
     deviceTokens = account.deviceToken as DeviceToken[]
 
-    if (deviceTokens) {
-      try {
-        await identitiesRepo.setDeviceTokens({ id, deviceTokens })
-      } catch (err) {
-        hasError = true
-        console.log({ id, deviceTokens }, "issue settings up device token")
-      }
-    }
-
-    if (phoneMetadata) {
-      try {
-        await identitiesRepo.setPhoneMetadata({ id, phoneMetadata })
-      } catch (err) {
-        hasError = true
-        console.log({ id, phoneMetadata }, "issue settings up phoneMetadata")
-      }
-    }
-
-    if (language) {
-      try {
-        await identitiesRepo.setLanguage({ id, language })
-      } catch (err) {
-        hasError = true
-        console.log({ id, language }, "issue settings up phoneMetadata")
-      }
-    }
+    await usersRepo.update({ id, phoneMetadata, language, deviceTokens })
 
     progress++
     if (progress % 1000 === 0) {

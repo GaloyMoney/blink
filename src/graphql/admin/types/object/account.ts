@@ -8,6 +8,8 @@ import Wallet from "@graphql/types/abstract/wallet"
 
 import { IdentityRepository } from "@services/kratos"
 
+import { UsersRepository } from "@services/mongoose/users"
+
 import AccountLevel from "../scalar/account-level"
 import AccountStatus from "../scalar/account-status"
 
@@ -43,7 +45,12 @@ const Account: GraphQLObjectType<Account> = GT.Object<Account>({
           throw kratosUser
         }
 
-        return kratosUser
+        const user = await UsersRepository().findById(source.kratosUserId)
+        if (user instanceof Error) {
+          throw user
+        }
+
+        return { ...kratosUser, language: user.language }
       },
     },
     coordinates: {
