@@ -117,6 +117,13 @@ interface AccountRecord {
   save: () => Promise<AccountRecord>
 }
 
+interface UserRecord {
+  userId: string
+  language?: string
+  deviceTokens: string[]
+  phoneMetadata?: TwilioObjectForUser
+}
+
 type PaymentFlowStateRecord = {
   _id: ObjectId
 } & PaymentFlowStateRecordPartial

@@ -322,6 +322,43 @@ AccountSchema.index({
 
 export const Account = mongoose.model<AccountRecord>("Account", AccountSchema)
 
+const UserSchema = new Schema(
+  {
+    userId: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    language: {
+      type: String,
+      enum: [...Languages, ""],
+    },
+    deviceTokens: {
+      type: [String],
+      default: [],
+    },
+    phoneMetadata: {
+      type: {
+        carrier: {
+          error_code: String, // check this is the right syntax
+          mobile_country_code: String,
+          mobile_network_code: String,
+          name: String,
+          type: {
+            types: String,
+            enum: ["landline", "voip", "mobile"],
+          },
+        },
+        countryCode: String,
+      },
+      default: undefined,
+    },
+  },
+  { id: false },
+)
+
+export const User = mongoose.model<UserRecord>("User", UserSchema)
+
 // TODO: this DB should be capped.
 const PhoneCodeSchema = new Schema({
   created_at: {

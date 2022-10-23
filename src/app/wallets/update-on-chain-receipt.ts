@@ -1,28 +1,28 @@
 import {
-  ONCHAIN_SCAN_DEPTH,
-  ONCHAIN_MIN_CONFIRMATIONS,
   BTC_NETWORK,
+  ONCHAIN_MIN_CONFIRMATIONS,
+  ONCHAIN_SCAN_DEPTH,
   SECS_PER_10_MINS,
 } from "@config"
 
 import { getCurrentPrice } from "@app/prices"
 
 import { toSats } from "@domain/bitcoin"
-import { CacheKeys } from "@domain/cache"
-import { DisplayCurrency } from "@domain/fiat"
-import { DepositFeeCalculator } from "@domain/wallets"
 import { OnChainError, TxDecoder } from "@domain/bitcoin/onchain"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import { CacheKeys } from "@domain/cache"
 import { CouldNotFindWalletFromOnChainAddressesError } from "@domain/errors"
+import { DisplayCurrency } from "@domain/fiat"
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import { DepositFeeCalculator } from "@domain/wallets"
 
-import { LockService } from "@services/lock"
-import { LedgerService } from "@services/ledger"
 import { RedisCacheService } from "@services/cache"
 import { ColdStorageService } from "@services/cold-storage"
+import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { NotificationsService } from "@services/notifications"
+import { LockService } from "@services/lock"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
-import { IdentityRepository } from "@services/kratos"
+import { UsersRepository } from "@services/mongoose/users"
+import { NotificationsService } from "@services/notifications"
 
 const redisCache = RedisCacheService()
 
@@ -159,7 +159,7 @@ const processTxForWallet = async (
           const recipientAccount = await AccountsRepository().findById(wallet.accountId)
           if (recipientAccount instanceof Error) return recipientAccount
 
-          const recipientUser = await IdentityRepository().getIdentity(
+          const recipientUser = await UsersRepository().findById(
             recipientAccount.kratosUserId,
           )
           if (recipientUser instanceof Error) return recipientUser
@@ -174,7 +174,7 @@ const processTxForWallet = async (
             },
             txHash: tx.rawTx.txHash,
             recipientDeviceTokens: recipientUser.deviceTokens,
-            recipientLanguage: recipientUser.language,
+            recipientLanguage: recipientUser.languageOrDefault,
           })
         }
       }

@@ -1,5 +1,6 @@
 import { Payments } from "@app"
 import { getRewardsConfig, onboardingEarn } from "@config"
+import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
 import {
   InvalidIPMetadataForRewardError,
   InvalidPhoneMetadataForRewardError,
@@ -7,16 +8,15 @@ import {
   NoBtcWalletExistsForAccountError,
 } from "@domain/errors"
 import { WalletCurrency } from "@domain/shared"
-import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
 import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
 import { getFunderWalletId } from "@services/ledger/caching"
 import {
+  AccountsRepository,
   RewardsRepository,
   WalletsRepository,
-  AccountsRepository,
 } from "@services/mongoose"
 import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
-import { IdentityRepository } from "@services/kratos"
+import { UsersRepository } from "@services/mongoose/users"
 
 export const addEarn = async ({
   quizQuestionId,
@@ -39,7 +39,7 @@ export const addEarn = async ({
   const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
 
-  const user = await IdentityRepository().getIdentity(recipientAccount.kratosUserId)
+  const user = await UsersRepository().findById(recipientAccount.kratosUserId)
   if (user instanceof Error) return user
 
   const validatedPhoneMetadata = PhoneMetadataValidator(rewardsConfig).validateForReward(

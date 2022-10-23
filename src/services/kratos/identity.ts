@@ -1,8 +1,9 @@
 import { assert } from "console"
 
+import { Identity } from "@ory/client"
+
 import { isDev } from "@config"
 import { UnknownKratosError } from "@domain/authentication/errors"
-import { Identity, AdminUpdateIdentityBody, IdentityState } from "@ory/client"
 
 import { KratosError, PhoneIdentityInexistentError } from "./errors"
 import { kratosAdmin, toDomainIdentityPhone } from "./private"
@@ -93,133 +94,9 @@ export const IdentityRepository = (): IIdentityRepository => {
     return toDomainIdentityPhone(identity)
   }
 
-  const setLanguage = async ({
-    id,
-    language,
-  }: {
-    id: KratosUserId
-    language: UserLanguage
-  }) => {
-    let identity: Identity
-
-    try {
-      ;({ data: identity } = await kratosAdmin.adminGetIdentity(id))
-    } catch (err) {
-      return new UnknownKratosError(err)
-    }
-
-    const metadata_public = {
-      // only override language
-      ...identity.metadata_public,
-      language,
-    }
-
-    const updatedIdentity: AdminUpdateIdentityBody = {
-      ...identity,
-      state: identity.state as IdentityState, // FIXME? type bug from ory library?
-      metadata_public,
-    }
-
-    let newIdentity: Identity
-
-    try {
-      ;({ data: newIdentity } = await kratosAdmin.adminUpdateIdentity(
-        id,
-        updatedIdentity,
-      ))
-    } catch (err) {
-      return new UnknownKratosError(err)
-    }
-
-    return toDomainIdentityPhone(newIdentity)
-  }
-
-  const setDeviceTokens = async ({
-    id,
-    deviceTokens,
-  }: {
-    id: KratosUserId
-    deviceTokens: DeviceToken[]
-  }) => {
-    let identity: Identity
-
-    try {
-      ;({ data: identity } = await kratosAdmin.adminGetIdentity(id))
-    } catch (err) {
-      return new UnknownKratosError(err)
-    }
-
-    const metadata_public = {
-      // only override deviceTokens
-      ...identity.metadata_public,
-      deviceTokens,
-    }
-
-    const updatedIdentity: AdminUpdateIdentityBody = {
-      ...identity,
-      state: identity.state as IdentityState, // FIXME? type bug from ory library?
-      metadata_public,
-    }
-
-    let newIdentity: Identity
-
-    try {
-      ;({ data: newIdentity } = await kratosAdmin.adminUpdateIdentity(
-        id,
-        updatedIdentity,
-      ))
-    } catch (err) {
-      return new UnknownKratosError(err)
-    }
-
-    return toDomainIdentityPhone(newIdentity)
-  }
-
-  const setPhoneMetadata = async ({
-    id,
-    phoneMetadata,
-  }: {
-    id: KratosUserId
-    phoneMetadata: PhoneMetadata
-  }) => {
-    let identity: Identity
-
-    try {
-      ;({ data: identity } = await kratosAdmin.adminGetIdentity(id))
-    } catch (err) {
-      return new UnknownKratosError(err)
-    }
-
-    const metadata_admin: KratosAdminMetadata = {
-      phoneMetadata,
-    }
-
-    const updatedIdentity: AdminUpdateIdentityBody = {
-      ...identity,
-      state: identity.state as IdentityState, // FIXME? type bug from ory library?
-      metadata_admin,
-    }
-
-    let newIdentity: Identity
-
-    try {
-      ;({ data: newIdentity } = await kratosAdmin.adminUpdateIdentity(
-        id,
-        updatedIdentity,
-      ))
-    } catch (err) {
-      return new UnknownKratosError(err)
-    }
-
-    return toDomainIdentityPhone(newIdentity)
-  }
-
   return {
     getIdentity,
     listIdentities,
     slowFindByPhone,
-    setPhoneMetadata,
-    setDeviceTokens,
-    setLanguage,
   }
 }

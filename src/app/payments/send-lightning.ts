@@ -1,19 +1,4 @@
-import { WalletCurrency } from "@domain/shared"
-import {
-  LnPaymentRequestNonZeroAmountRequiredError,
-  LnPaymentRequestZeroAmountRequiredError,
-  PriceRatio,
-  InvalidLightningPaymentFlowBuilderStateError,
-  checkedToBtcPaymentAmount,
-  checkedToUsdPaymentAmount,
-  LnPaymentRequestInTransitError,
-} from "@domain/payments"
 import { AccountValidator } from "@domain/accounts"
-import {
-  checkedToWalletId,
-  PaymentInitiationMethod,
-  SettlementMethod,
-} from "@domain/wallets"
 import {
   decodeInvoice,
   defaultTimeToExpiryInSeconds,
@@ -21,22 +6,37 @@ import {
   LnPaymentPendingError,
   PaymentSendStatus,
 } from "@domain/bitcoin/lightning"
-import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
 import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain/errors"
+import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
+import {
+  checkedToBtcPaymentAmount,
+  checkedToUsdPaymentAmount,
+  InvalidLightningPaymentFlowBuilderStateError,
+  LnPaymentRequestInTransitError,
+  LnPaymentRequestNonZeroAmountRequiredError,
+  LnPaymentRequestZeroAmountRequiredError,
+  PriceRatio,
+} from "@domain/payments"
+import { WalletCurrency } from "@domain/shared"
+import {
+  checkedToWalletId,
+  PaymentInitiationMethod,
+  SettlementMethod,
+} from "@domain/wallets"
 
 import { LndService } from "@services/lnd"
 import {
   AccountsRepository,
   LnPaymentsRepository,
+  PaymentFlowStateRepository,
   WalletInvoicesRepository,
   WalletsRepository,
-  PaymentFlowStateRepository,
 } from "@services/mongoose"
 
-import { LockService } from "@services/lock"
-import { LedgerService } from "@services/ledger"
-import { NotificationsService } from "@services/notifications"
 import { NewDealerPriceService } from "@services/dealer-price"
+import { LedgerService } from "@services/ledger"
+import { LockService } from "@services/lock"
+import { NotificationsService } from "@services/notifications"
 
 import * as LedgerFacade from "@services/ledger/facade"
 import { addAttributesToCurrentSpan } from "@services/tracing"
@@ -45,14 +45,14 @@ import { Wallets } from "@app"
 
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 
-import { IdentityRepository } from "@services/kratos"
+import { UsersRepository } from "@services/mongoose/users"
 
 import {
   constructPaymentFlowBuilder,
-  newCheckWithdrawalLimits,
-  newCheckIntraledgerLimits,
   getPriceRatioForLimits,
+  newCheckIntraledgerLimits,
   newCheckTradeIntraAccountLimits,
+  newCheckWithdrawalLimits,
 } from "./helpers"
 
 const dealer = NewDealerPriceService()
@@ -440,9 +440,7 @@ const executePaymentViaIntraledger = async <
     )
     if (recipientAccount instanceof Error) return recipientAccount
 
-    const recipientUser = await IdentityRepository().getIdentity(
-      recipientAccount.kratosUserId,
-    )
+    const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 
     let amount = paymentFlow.btcPaymentAmount.amount
@@ -458,7 +456,7 @@ const executePaymentViaIntraledger = async <
       displayPaymentAmount: { amount: metadata.usd, currency: DisplayCurrency.Usd },
       paymentHash,
       recipientDeviceTokens: recipientUser.deviceTokens,
-      recipientLanguage: recipientUser.language,
+      recipientLanguage: recipientUser.languageOrDefault,
     })
 
     return PaymentSendStatus.Success

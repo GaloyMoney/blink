@@ -36,8 +36,8 @@ let walletIdA: WalletId
 let walletIdD: WalletId
 let walletIdF: WalletId
 
-let userRecordA: AccountRecord
-let userRecordD: AccountRecord
+let accountRecordA: AccountRecord
+let accountRecordD: AccountRecord
 
 const locale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
@@ -49,8 +49,8 @@ beforeAll(async () => {
   walletIdD = await getDefaultWalletIdByTestUserRef("D")
   walletIdF = await getDefaultWalletIdByTestUserRef("F")
 
-  userRecordA = await getAccountRecordByTestUserRef("A")
-  userRecordD = await getAccountRecordByTestUserRef("D")
+  accountRecordA = await getAccountRecordByTestUserRef("A")
+  accountRecordD = await getAccountRecordByTestUserRef("D")
 })
 
 beforeEach(() => {
@@ -171,14 +171,14 @@ describe("onchainBlockEventHandler", () => {
 
     await validateWalletState({
       walletId: walletIdA,
-      userRecord: userRecordA,
+      userRecord: accountRecordA,
       initialState: initWalletAState,
       amount: amount,
       address: address,
     })
     await validateWalletState({
       walletId: walletIdD,
-      userRecord: userRecordD,
+      userRecord: accountRecordD,
       initialState: initWalletDState,
       amount: amount2,
       address: address2,

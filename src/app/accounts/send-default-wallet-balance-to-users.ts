@@ -1,14 +1,14 @@
 import { toSats } from "@domain/bitcoin"
-import { WalletCurrency } from "@domain/shared"
 import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
+import { WalletCurrency } from "@domain/shared"
 
 import { getCurrentPrice } from "@app/prices"
 import { LedgerService } from "@services/ledger"
-import { wrapAsyncToRunInSpan } from "@services/tracing"
-import { NotificationsService } from "@services/notifications"
 import { WalletsRepository } from "@services/mongoose"
+import { NotificationsService } from "@services/notifications"
+import { wrapAsyncToRunInSpan } from "@services/tracing"
 
-import { IdentityRepository } from "@services/kratos"
+import { UsersRepository } from "@services/mongoose/users"
 
 import { getRecentlyActiveAccounts } from "./active-accounts"
 
@@ -25,7 +25,7 @@ export const sendDefaultWalletBalanceToUsers = async () => {
   const notifyUser = wrapAsyncToRunInSpan({
     namespace: "daily-balance-notification",
     fn: async (account: Account): Promise<void | ApplicationError> => {
-      const user = await IdentityRepository().getIdentity(account.kratosUserId)
+      const user = await UsersRepository().findById(account.kratosUserId)
       if (user instanceof Error) return user
       if (user.deviceTokens.length === 0) return
 
@@ -45,7 +45,7 @@ export const sendDefaultWalletBalanceToUsers = async () => {
         balanceAmount,
         recipientDeviceTokens: user.deviceTokens,
         displayBalanceAmount,
-        recipientLanguage: user.language,
+        recipientLanguage: user.languageOrDefault,
       })
     },
   })

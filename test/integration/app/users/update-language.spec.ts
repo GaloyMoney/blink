@@ -1,6 +1,6 @@
 import { Users } from "@app"
 import { InvalidLanguageError } from "@domain/errors"
-import { IdentityRepository } from "@services/kratos"
+import { UsersRepository } from "@services/mongoose/users"
 
 import { createUserAndWalletFromUserRef, getUserIdByTestUserRef } from "test/helpers"
 
@@ -27,7 +27,7 @@ describe("Accounts - updateLanguage", () => {
 
     await Users.updateLanguage({ kratosUserId, language: "de" })
 
-    const user = await IdentityRepository().getIdentity(kratosUserId)
+    const user = await UsersRepository().findById(kratosUserId)
     expect(user).not.toBeInstanceOf(Error)
     expect(user).toEqual(
       expect.objectContaining({

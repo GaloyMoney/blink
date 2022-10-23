@@ -2,11 +2,11 @@ import { once } from "events"
 
 import { Prices, Wallets } from "@app"
 import {
-  getFeesConfig,
-  getOnChainAddressCreateAttemptLimits,
   getAccountLimits,
-  getLocale,
   getDisplayCurrencyConfig,
+  getFeesConfig,
+  getLocale,
+  getOnChainAddressCreateAttemptLimits,
 } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
@@ -15,10 +15,10 @@ import { TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
+import { WalletsRepository } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { elapsedSinceTimestamp, ModifiedSet, sleep } from "@utils"
-import { WalletsRepository } from "@services/mongoose"
 
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
@@ -31,17 +31,16 @@ import {
   bitcoindClient,
   bitcoindOutside,
   checkIsBalanced,
+  confirmSent,
   createMandatoryUsers,
   createUserAndWalletFromUserRef,
   getAccountIdByTestUserRef,
-  getDefaultWalletIdByRole,
-  getDefaultWalletIdByTestUserRef,
   getAccountRecordByTestUserRef,
+  getDefaultWalletIdByTestUserRef,
   lndonchain,
   RANDOM_ADDRESS,
   sendToAddress,
   sendToAddressAndConfirm,
-  confirmSent,
   subscribeToChainAddress,
   subscribeToTransactions,
   waitUntilBlockHeight,
@@ -225,7 +224,7 @@ describe("UserWallet - On chain", () => {
     const address0 = await Wallets.createOnChainAddress(walletIdA)
     if (address0 instanceof Error) throw address0
 
-    const walletId = await getDefaultWalletIdByRole("funder")
+    const walletId = await getFunderWalletId()
 
     const addressDealer = await Wallets.createOnChainAddress(walletId)
     if (addressDealer instanceof Error) throw addressDealer

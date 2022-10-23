@@ -16,7 +16,7 @@ import {
   getAccountRecordByTestUserRef,
 } from "test/helpers"
 
-let userRecordC: AccountRecord
+let accountRecordC: AccountRecord
 let walletIdA: WalletId
 let accountIdA: AccountId, accountIdB: AccountId, accountIdC: AccountId
 
@@ -28,7 +28,7 @@ describe("UserWallet", () => {
     await createUserAndWalletFromUserRef("B")
     await createUserAndWalletFromUserRef("C")
 
-    userRecordC = await getAccountRecordByTestUserRef("C")
+    accountRecordC = await getAccountRecordByTestUserRef("C")
 
     walletIdA = await getDefaultWalletIdByTestUserRef("A")
 
@@ -43,7 +43,7 @@ describe("UserWallet", () => {
   })
 
   it("has a title if it was configured", () => {
-    expect(userRecordC).toHaveProperty("title")
+    expect(accountRecordC).toHaveProperty("title")
   })
 
   describe("setUsername", () => {

@@ -151,61 +151,6 @@ describe("phoneNoPassword", () => {
 
       expect(res2.kratosUserId).toBe(kratosUserId)
     })
-
-    it("set language", async () => {
-      const phone = randomPhone()
-      const id = await authService.createIdentityNoSession(phone)
-      if (id instanceof Error) throw id
-
-      const language = "es" as UserLanguage
-
-      const receivedIdentity = await identityRepo.setLanguage({ id, language })
-      if (receivedIdentity instanceof Error) throw receivedIdentity
-
-      expect(receivedIdentity.language).toBe("es")
-
-      const validateRes = await identityRepo.getIdentity(id)
-      if (validateRes instanceof Error) throw validateRes
-
-      expect(validateRes.language).toBe("es")
-    })
-
-    it("set device token", async () => {
-      const phone = randomPhone()
-      const id = await authService.createIdentityNoSession(phone)
-      if (id instanceof Error) throw id
-
-      const deviceTokens = ["token1", "token2"] as DeviceToken[]
-
-      const receivedIdentity = await identityRepo.setDeviceTokens({ id, deviceTokens })
-      if (receivedIdentity instanceof Error) throw receivedIdentity
-
-      expect(receivedIdentity.deviceTokens).toStrictEqual(deviceTokens)
-
-      const validateRes = await identityRepo.getIdentity(id)
-      if (validateRes instanceof Error) throw validateRes
-
-      expect(validateRes.deviceTokens).toStrictEqual(deviceTokens)
-
-      // set language doesn't override deviceTokens
-      const language = "es" as UserLanguage
-
-      const receivedIdentity2 = await identityRepo.setLanguage({ id, language })
-      if (receivedIdentity2 instanceof Error) throw receivedIdentity2
-
-      expect(receivedIdentity2.deviceTokens).toStrictEqual(deviceTokens)
-
-      // there is no token deep copy
-      const deviceTokens3 = ["token3"] as DeviceToken[]
-
-      const receivedIdentity3 = await identityRepo.setDeviceTokens({
-        id,
-        deviceTokens: deviceTokens3,
-      })
-      if (receivedIdentity3 instanceof Error) throw receivedIdentity3
-
-      expect(receivedIdentity3.deviceTokens).toStrictEqual(deviceTokens3)
-    })
   })
 
   it("forbidding change of a phone number from publicApi", async () => {
