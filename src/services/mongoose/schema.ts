@@ -297,7 +297,7 @@ const UserSchema = new Schema<UserRecord>(
           },
           updatedByUserId: {
             type: Schema.Types.ObjectId,
-            ref: "User",
+            ref: "Account",
             required: false,
           },
           comment: {
@@ -324,7 +324,7 @@ UserSchema.index({
   coordinates: 1,
 })
 
-export const User = mongoose.model<UserRecord>("User", UserSchema)
+export const User = mongoose.model<UserRecord>("Account", UserSchema)
 
 // TODO: this DB should be capped.
 const PhoneCodeSchema = new Schema({
