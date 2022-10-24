@@ -8,6 +8,7 @@ import { AdminCreateIdentityBody } from "@ory/client"
 import {
   AuthWithPhonePasswordlessService,
   extendSession,
+  getNextPage,
   listIdentities,
   listSessions,
   validateKratosToken,
@@ -335,5 +336,21 @@ describe("upgrade", () => {
       phone,
       email,
     })
+  })
+})
+
+describe("decoding link header", () => {
+  const withNext =
+    '<http://0.0.0.0:4434/identities?page=1&per_page=1>; rel="next",<http://0.0.0.0:4434/identities?page=37&per_page=1>; rel="last"'
+
+  const withoutNext =
+    '<http://0.0.0.0:4434/identities?page=0&per_page=1>; rel="first",<http://0.0.0.0:4434/identities?page=46&per_page=1>; rel="prev"'
+
+  it("try decoding link successfully", () => {
+    expect(getNextPage(withNext)).toBe(1)
+  })
+
+  it("should be undefined when no more next is present", () => {
+    expect(getNextPage(withoutNext)).toBe(undefined)
   })
 })

@@ -4,9 +4,7 @@
  * . ./.envrc && yarn ts-node --files -r tsconfig-paths/register src/debug/migrate-users-to-kratos.ts
  *
  */
-import { Identity } from "@ory/client"
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
-import { kratosAdmin } from "@services/kratos/private"
+import { AuthWithPhonePasswordlessService, listIdentities } from "@services/kratos"
 import { setupMongoConnection } from "@services/mongodb"
 import { User } from "@services/mongoose/schema"
 
@@ -19,11 +17,12 @@ const main = async () => {
 
   const authService = AuthWithPhonePasswordlessService()
 
-  let identities: Identity[]
+  let identities: IdentityPhone[]
 
   try {
-    const res = await kratosAdmin.adminListIdentities()
-    identities = res.data
+    const res = await listIdentities()
+    if (res instanceof Error) throw res
+    identities = res
   } catch (err) {
     console.log("issue getting identities")
     return
@@ -35,7 +34,7 @@ const main = async () => {
 
     const phone = account.phone as PhoneNumber
 
-    if (identities.find((identity) => identity.traits.phone === phone)) {
+    if (identities.find((identity) => identity.phone === phone)) {
       continue
     }
 
