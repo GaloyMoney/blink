@@ -116,7 +116,7 @@
     "@types/eslint": "^8.4.7",
     "@types/express": "^4.17.13",
     "@types/google-protobuf": "^3.15.6",
-    "@types/i18n": "^0.13.3",
+    "@types/i18n": "^0.13.5",
     "@types/ioredis": "^4.26.4",
     "@types/jest": "^28.1.1",
     "@types/js-yaml": "^4.0.2",

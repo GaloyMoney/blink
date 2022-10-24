@@ -2628,10 +2628,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/i18n@^0.13.3":
-  version "0.13.4"
-  resolved "https://registry.yarnpkg.com/@types/i18n/-/i18n-0.13.4.tgz#fe3d27d08337f9d4a972d1f460d1471d6f79e163"
-  integrity sha512-PN4ZsplbpHZ2eaYixFNWkZKN51pcB02K2UKvqHVbrzq2jTO0sChPMuKKYAW1ZbElyHUvPgFeYsz9rqktChGyMw==
+"@types/i18n@^0.13.5":
+  version "0.13.5"
+  resolved "https://registry.yarnpkg.com/@types/i18n/-/i18n-0.13.5.tgz#ad75889324185be7a93801c81bac2bcad337bb45"
+  integrity sha512-pEtMt7iBkPBFMcB4TG6NuJIz/3Osp530o3R/3Qci94d59J4ienHyWnC7/AKUoTWqqnK0nG6gd6I2g8aOGdlwIg==
 
 "@types/ioredis@4.26.6":
   version "4.26.6"
