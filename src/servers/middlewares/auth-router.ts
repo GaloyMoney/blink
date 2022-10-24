@@ -8,7 +8,7 @@ import { getKratosConfig, isDev, JWT_SECRET } from "@config"
 import { parseIps } from "@domain/users-ips"
 import { mapError } from "@graphql/error-map"
 import { baseLogger } from "@services/logger"
-import { wrapAsyncToRunInSpan } from "@services/tracing"
+import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { kratosPublic } from "@services/kratos/private"
@@ -82,6 +82,8 @@ authRouter.post(
           res.status(401).send({ error: `${kratosRes.name} ${kratosRes.message}` })
           return
         }
+
+        addAttributesToCurrentSpan({ token: "kratos" })
 
         res.json({ sub: kratosRes.kratosUserId })
         return
@@ -157,6 +159,8 @@ authRouter.post(
           }
         }
       }
+
+      addAttributesToCurrentSpan({ token: "jwt" })
 
       res.json({ sub: kratosUserId || account.kratosUserId })
     },
