@@ -9,6 +9,8 @@ import { UnknownClientError } from "@graphql/error"
 
 import { baseLogger } from "@services/logger"
 
+import { UsersRepository } from "@services/mongoose/users"
+
 import Account from "../abstract/account"
 
 import Timestamp from "../scalar/timestamp"
@@ -45,6 +47,12 @@ const GraphQLUser = GT.Object({
       type: GT.NonNull(Language),
       description: dedent`Preferred language for user.
         When value is 'default' the intent is to use preferred language from OS settings.`,
+      resolve: async (source, args, { kratosUser }) => {
+        if (!kratosUser) throw Error("missing kratosUser")
+        const user = await UsersRepository().findById(kratosUser.id)
+        if (user instanceof Error) return user
+        return user.language
+      },
     },
 
     quizQuestions: {
