@@ -6,8 +6,6 @@ import { UsersRepository } from "@services/mongoose"
 
 import { BTC_NETWORK } from "@config"
 
-import { User } from "@services/mongoose/schema"
-
 import { createToken } from "@services/legacy-jwt"
 
 import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
@@ -68,8 +66,6 @@ describe("Oathkeeper", () => {
     const uidFromJwt = decodedNew?.payload?.sub
 
     expect(uidFromJwt).toHaveLength(36) // uuid-v4 token (kratosUserId)
-
-    console.log(await User.find({}), "users")
   })
 
   it("return KratosUserId when legacy JWT is provided", async () => {
