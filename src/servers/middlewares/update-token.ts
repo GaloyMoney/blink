@@ -4,7 +4,10 @@ import { RedisCacheService } from "@services/cache"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import { LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
-import { recordExceptionInCurrentSpan } from "@services/tracing"
+import {
+  recordExceptionInCurrentSpan,
+  addAttributesToCurrentSpan,
+} from "@services/tracing"
 import { NextFunction, Request, Response } from "express"
 import * as jwt from "jsonwebtoken"
 const jwtAlgorithms: jwt.Algorithm[] = ["HS256"]
@@ -15,6 +18,8 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
   const authz = headers.orgauthorization
 
   if (!authz) {
+    addAttributesToCurrentSpan({ authUpgrade: "no orgauthorization header" })
+
     next()
     return
   }
@@ -26,16 +31,22 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
       algorithms: jwtAlgorithms,
     })
   } catch (err) {
+    addAttributesToCurrentSpan({ authUpgrade: "token decoding issue" })
+
     next()
     return
   }
 
   if (typeof tokenPayload === "string") {
+    addAttributesToCurrentSpan({ authUpgrade: "token not a string" })
+
     next()
     return
   }
 
   if (!tokenPayload) {
+    addAttributesToCurrentSpan({ authUpgrade: "no tokenPayload" })
+
     next()
     return
   }
@@ -43,6 +54,8 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
   const uid = tokenPayload.uid
   const user = await UsersRepository().findById(uid)
   if (user instanceof Error) {
+    addAttributesToCurrentSpan({ authUpgrade: "no uid" })
+
     // TODO: log error
     next()
     return
@@ -51,6 +64,8 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
   const { phone } = user
 
   if (!phone) {
+    addAttributesToCurrentSpan({ authUpgrade: "no phone" })
+
     // TODO: log error
     // is there users who doesn't have phone on bbw?
     next()
@@ -74,6 +89,8 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
   // just because the mobile app would not have update the token by the time another request is been initiated
   const cacheRes = await RedisCacheService().get<SessionToken>(rawToken)
   if (!(cacheRes instanceof Error)) {
+    addAttributesToCurrentSpan({ authUpgrade: "returning token from cache" })
+
     kratosToken = cacheRes
     res.set("kratos-session-token", kratosToken)
     next()
@@ -91,6 +108,8 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
   }
 
   if (kratosResult instanceof Error) {
+    addAttributesToCurrentSpan({ authUpgrade: "kratos issue" })
+
     next()
     return
   }
@@ -99,6 +118,8 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
 
   const account = await AccountsRepository().findById(uid)
   if (account instanceof Error) {
+    addAttributesToCurrentSpan({ authUpgrade: "account findby issue" })
+
     next()
     return
   }
@@ -109,6 +130,8 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
   })
 
   if (updatedAccount instanceof Error) {
+    addAttributesToCurrentSpan({ authUpgrade: "updateAccount issue" })
+
     recordExceptionInCurrentSpan({
       error: `error with attachKratosUser update-token: ${updatedAccount}`,
       level: ErrorLevel.Critical,
@@ -119,6 +142,8 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
   kratosToken = kratosResult.sessionToken
   res.set("kratos-session-token", kratosToken)
   next()
+
+  addAttributesToCurrentSpan({ authUpgrade: "token has been sent (without cache)" })
 
   const twoMonths = (60 * 60 * 24 * 30) as Seconds
 
