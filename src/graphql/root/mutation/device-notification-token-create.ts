@@ -23,11 +23,11 @@ const DeviceNotificationTokenCreateMutation = GT.Field<
   args: {
     input: { type: GT.NonNull(DeviceNotificationTokenCreateInput) },
   },
-  resolve: async (_, args, { kratosUser }) => {
+  resolve: async (_, args, { user }) => {
     const { deviceToken } = args.input
 
     try {
-      await Users.addDeviceToken({ kratosUserId: kratosUser.id, deviceToken })
+      await Users.addDeviceToken({ userId: user.id, deviceToken })
     } catch (err) {
       return { errors: [{ message: err.message }] }
     }

@@ -17,6 +17,7 @@ import {
   AccountsRepository,
   WalletInvoicesRepository,
   WalletsRepository,
+  UsersRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import * as LedgerFacade from "@services/ledger/facade"
@@ -27,7 +28,6 @@ import {
 } from "@services/tracing"
 
 import { elapsedSinceTimestamp, runInParallel } from "@utils"
-import { UsersRepository } from "@services/mongoose/users"
 
 export const handleHeldInvoices = async (logger: Logger): Promise<void> => {
   const invoicesRepo = WalletInvoicesRepository()

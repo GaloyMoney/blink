@@ -44,6 +44,7 @@ import { LndService } from "@services/lnd"
 import { getActiveLnd } from "@services/lnd/utils"
 import { baseLogger } from "@services/logger"
 import {
+  AccountsRepository,
   LnPaymentsRepository,
   PaymentFlowStateRepository,
   WalletInvoicesRepository,

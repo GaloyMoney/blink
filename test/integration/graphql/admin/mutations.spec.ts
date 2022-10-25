@@ -1,3 +1,4 @@
+import { getLocale } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { baseLogger } from "@services/logger"
 
@@ -6,7 +7,6 @@ import {
   getAccountByTestUserRef,
   graphqlAdmin,
   randomKratosUserId,
-  randomPhone,
 } from "test/helpers"
 
 let account: Account
@@ -147,10 +147,12 @@ describe("GraphQLMutationRoot", () => {
     const result = await graphqlAdmin<AccountUpdateStatusMutation>({
       source: mutation,
       contextValue: {
-        kratosUser: {
+        user: {
           id: randomKratosUserId(),
-          phone: randomPhone(),
-          createdAt: new Date(),
+          language: getLocale(),
+          languageOrDefault: getLocale(),
+          deviceTokens: ["token"] as DeviceToken[],
+          phoneMetadata: undefined,
         },
       },
     })

@@ -17,7 +17,11 @@ import { NewDealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import * as LedgerFacade from "@services/ledger/facade"
 import { LockService } from "@services/lock"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  WalletsRepository,
+  UsersRepository,
+} from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import {
   addAttributesToCurrentSpan,
@@ -28,8 +32,6 @@ import { ResourceExpiredLockServiceError } from "@domain/lock"
 
 import { Accounts } from "@app"
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
-
-import { UsersRepository } from "@services/mongoose/users"
 
 import {
   getPriceRatioForLimits,

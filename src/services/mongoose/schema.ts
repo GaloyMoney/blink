@@ -353,6 +353,10 @@ const UserSchema = new Schema(
       },
       default: undefined,
     },
+    phone: {
+      type: String,
+      index: true,
+    },
   },
   { id: false },
 )

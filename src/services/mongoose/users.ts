@@ -1,5 +1,5 @@
 import { getLocale } from "@config"
-import { RepositoryError } from "@domain/errors"
+import { CouldNotFindError, RepositoryError } from "@domain/errors"
 
 import { User } from "./schema"
 
@@ -10,6 +10,7 @@ export const translateToUser = (user: UserRecord): User => {
   const languageOrDefault = language === "" ? getLocale() : language
   const deviceTokens = user.deviceTokens ?? []
   const phoneMetadata = user.phoneMetadata
+  const phone = user.phone
 
   return {
     id: user.userId as KratosUserId,
@@ -17,6 +18,7 @@ export const translateToUser = (user: UserRecord): User => {
     languageOrDefault: languageOrDefault as UserLanguage,
     deviceTokens: deviceTokens as DeviceToken[],
     phoneMetadata,
+    phone,
   }
 }
 
@@ -25,6 +27,18 @@ export const UsersRepository = (): IUserRepository => {
     try {
       const result = await User.findOne({ userId: id })
       if (!result) return translateToUser({ userId: id, deviceTokens: [] })
+
+      return translateToUser(result)
+    } catch (err) {
+      //  else
+      return parseRepositoryError(err)
+    }
+  }
+
+  const findByPhone = async (phone: PhoneNumber): Promise<User | RepositoryError> => {
+    try {
+      const result = await User.findOne({ phone })
+      if (!result) return new CouldNotFindError()
 
       return translateToUser(result)
     } catch (err) {
@@ -47,6 +61,7 @@ export const UsersRepository = (): IUserRepository => {
     language,
     deviceTokens,
     phoneMetadata,
+    phone,
   }: UserUpdateInput): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
@@ -55,6 +70,7 @@ export const UsersRepository = (): IUserRepository => {
           deviceTokens,
           phoneMetadata,
           language,
+          phone,
         },
         {
           new: true,
@@ -72,6 +88,7 @@ export const UsersRepository = (): IUserRepository => {
 
   return {
     findById,
+    findByPhone,
     list,
     update,
   }

@@ -4,11 +4,9 @@ import { WalletCurrency } from "@domain/shared"
 
 import { getCurrentPrice } from "@app/prices"
 import { LedgerService } from "@services/ledger"
-import { WalletsRepository } from "@services/mongoose"
+import { WalletsRepository, UsersRepository } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
-
-import { UsersRepository } from "@services/mongoose/users"
 
 import { getRecentlyActiveAccounts } from "./active-accounts"
 

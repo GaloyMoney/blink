@@ -6,9 +6,7 @@ import Username from "@graphql/types/scalar/username"
 import { GraphQLObjectType } from "graphql"
 import Wallet from "@graphql/types/abstract/wallet"
 
-import { IdentityRepository } from "@services/kratos"
-
-import { UsersRepository } from "@services/mongoose/users"
+import { UsersRepository } from "@services/mongoose"
 
 import AccountLevel from "../scalar/account-level"
 import AccountStatus from "../scalar/account-status"
@@ -40,17 +38,14 @@ const Account: GraphQLObjectType<Account> = GT.Object<Account>({
 
       type: GT.NonNull(GraphQLUser),
       resolve: async (source) => {
-        const kratosUser = await IdentityRepository().getIdentity(source.kratosUserId)
-        if (kratosUser instanceof Error) {
-          throw kratosUser
-        }
-
         const user = await UsersRepository().findById(source.kratosUserId)
         if (user instanceof Error) {
           throw user
         }
 
-        return { ...kratosUser, language: user.language }
+        // for now, use account.createdAt for user.createdAt
+        // FIXME should be using user/kratos createdAt field
+        return { ...user, createdAt: source.createdAt }
       },
     },
     coordinates: {

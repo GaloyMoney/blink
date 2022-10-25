@@ -34,7 +34,7 @@ const AccountUpdateStatusMutation = GT.Field<
   args: {
     input: { type: GT.NonNull(AccountUpdateStatusInput) },
   },
-  resolve: async (_, args, { kratosUser }) => {
+  resolve: async (_, args, { user }) => {
     const { uid, status, comment } = args.input
     for (const input of [uid, status, comment]) {
       if (input instanceof Error) {
@@ -47,7 +47,7 @@ const AccountUpdateStatusMutation = GT.Field<
     const account = await Accounts.updateAccountStatus({
       id: uid,
       status,
-      updatedByUserId: kratosUser.id,
+      updatedByUserId: user.id,
       comment,
     })
     if (account instanceof Error) {

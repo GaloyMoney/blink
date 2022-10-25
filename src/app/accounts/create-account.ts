@@ -2,8 +2,11 @@ import { ConfigError, getTestAccounts } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
-import { UsersRepository } from "@services/mongoose/users"
+import {
+  AccountsRepository,
+  WalletsRepository,
+  UsersRepository,
+} from "@services/mongoose"
 import { TwilioClient } from "@services/twilio"
 
 const initializeCreatedAccount = async ({
@@ -66,7 +69,7 @@ export const createAccountWithPhoneIdentifier = async ({
   } else {
     const user = await UsersRepository().findById(kratosUserId)
     if (!(user instanceof Error)) {
-      await UsersRepository().update({ ...user, phoneMetadata })
+      await UsersRepository().update({ ...user, phone, phoneMetadata })
     }
   }
 
