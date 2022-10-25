@@ -26,6 +26,13 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
 
   const rawToken = authz.slice(7) as LegacyJwtToken
 
+  if (rawToken.length === 32) {
+    addAttributesToCurrentSpan({ authUpgrade: "kratos token" })
+
+    next()
+    return
+  }
+
   try {
     tokenPayload = jwt.verify(rawToken, JWT_SECRET, {
       algorithms: jwtAlgorithms,
