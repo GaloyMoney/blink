@@ -7,7 +7,7 @@ import { isUp } from "@services/lnd/health"
 import { params as unauthParams } from "@services/lnd/unauth"
 import { setupMongoConnection } from "@services/mongodb"
 import { Account } from "@services/mongoose/schema"
-import { UsersRepository } from "@services/mongoose/users"
+import { UsersRepository } from "@services/mongoose"
 
 const createUsdWallets = async () => {
   await setupMongoConnection()
@@ -15,22 +15,23 @@ const createUsdWallets = async () => {
   let id: KratosUserId
   let phoneMetadata: PhoneMetadata
   let language: UserLanguage | undefined
+  let phone: PhoneNumber | undefined
   let deviceTokens: DeviceToken[]
-
-  const hasError = false
 
   const usersRepo = UsersRepository()
 
   const accounts = await Account.find({})
   if (accounts instanceof Error) return accounts
   let progress = 0
+
   for (const account of accounts) {
     id = account.kratosUserId as KratosUserId
     phoneMetadata = account.twilio as PhoneMetadata
     language = account.language as UserLanguage | undefined
     deviceTokens = account.deviceToken as DeviceToken[]
+    phone = account.phone as PhoneNumber | undefined
 
-    await usersRepo.update({ id, phoneMetadata, language, deviceTokens })
+    await usersRepo.update({ id, phoneMetadata, language, deviceTokens, phone })
 
     progress++
     if (progress % 1000 === 0) {
@@ -38,17 +39,16 @@ const createUsdWallets = async () => {
     }
   }
 
-  if (!hasError) {
-    try {
-      const res = Account.updateMany(
-        {},
-        { $unset: { phone: 1, phoneMetadata: 1 } },
-        { multi: true },
-      )
-      console.log({ res }, `update contactEnabled`)
-    } catch (error) {
-      console.log({ error }, `error removing phone`)
-    }
+  // maybe in another migration?
+  try {
+    const res = Account.updateMany(
+      {},
+      { $unset: { phone: 1, phoneMetadata: 1 } },
+      { multi: true },
+    )
+    console.log({ res }, `update contactEnabled`)
+  } catch (error) {
+    console.log({ error }, `error removing phone`)
   }
 
   console.log("completed")

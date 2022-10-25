@@ -1,6 +1,6 @@
 type GraphQLContext = {
   logger: Logger
-  kratosUser: IdentityPhone | undefined
+  user: User | undefined
   domainAccount: Account | undefined
   geetest: GeetestType
   ip: IpAddress | undefined
@@ -8,7 +8,7 @@ type GraphQLContext = {
 
 type GraphQLContextAuth = {
   logger: Logger
-  kratosUser: IdentityPhone
+  user: User
   domainAccount: Account
   geetest: GeetestType
   ip: IpAddress

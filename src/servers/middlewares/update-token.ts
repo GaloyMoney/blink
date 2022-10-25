@@ -1,8 +1,8 @@
 import { JWT_SECRET } from "@config"
 import { ErrorLevel } from "@domain/shared"
 import { RedisCacheService } from "@services/cache"
-import { AuthWithPhonePasswordlessService, IdentityRepository } from "@services/kratos"
-import { AccountsRepository } from "@services/mongoose"
+import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
@@ -91,13 +91,18 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
 
   const kratosUserId = account.kratosUserId
 
-  const kratosUser = await IdentityRepository().getIdentity(kratosUserId)
-  if (kratosUser instanceof Error) {
+  const user = await UsersRepository().findById(kratosUserId)
+  if (user instanceof Error) {
     next()
     return
   }
 
-  const phone = kratosUser.phone
+  if (!user.phone) {
+    next()
+    return
+  }
+
+  const phone = user.phone
 
   const authService = AuthWithPhonePasswordlessService()
 

@@ -14,9 +14,9 @@ import {
   AccountsRepository,
   RewardsRepository,
   WalletsRepository,
+  UsersRepository,
 } from "@services/mongoose"
 import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
-import { UsersRepository } from "@services/mongoose/users"
 
 export const addEarn = async ({
   quizQuestionId,

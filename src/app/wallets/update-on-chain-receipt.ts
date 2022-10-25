@@ -20,8 +20,11 @@ import { ColdStorageService } from "@services/cold-storage"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { LockService } from "@services/lock"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
-import { UsersRepository } from "@services/mongoose/users"
+import {
+  AccountsRepository,
+  WalletsRepository,
+  UsersRepository,
+} from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 
 const redisCache = RedisCacheService()

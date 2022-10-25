@@ -35,11 +35,13 @@ import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { LockService } from "@services/lock"
 import { baseLogger } from "@services/logger"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  WalletsRepository,
+  UsersRepository,
+} from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { addAttributesToCurrentSpan } from "@services/tracing"
-
-import { UsersRepository } from "@services/mongoose/users"
 
 import { getOnChainFee } from "./get-on-chain-fee"
 import {

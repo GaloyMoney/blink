@@ -20,7 +20,7 @@ const UserUpdateLanguageMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserUpdateLanguageInput) },
   },
-  resolve: async (_, args, { kratosUser }: GraphQLContextAuth) => {
+  resolve: async (_, args, { user }: GraphQLContextAuth) => {
     const { language } = args.input
 
     if (language instanceof Error) {
@@ -28,7 +28,7 @@ const UserUpdateLanguageMutation = GT.Field({
     }
 
     const result = await Users.updateLanguage({
-      kratosUserId: kratosUser.id,
+      userId: user.id,
       language,
     })
 

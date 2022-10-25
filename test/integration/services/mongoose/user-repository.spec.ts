@@ -2,7 +2,7 @@
 // update review a new entity
 // can have partial user on update, only the relevant one are updated
 
-import { UsersRepository } from "@services/mongoose/users"
+import { UsersRepository } from "@services/mongoose"
 
 import { randomKratosUserId } from "test/helpers"
 

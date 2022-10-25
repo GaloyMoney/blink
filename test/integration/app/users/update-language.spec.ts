@@ -1,37 +1,37 @@
 import { Users } from "@app"
 import { InvalidLanguageError } from "@domain/errors"
-import { UsersRepository } from "@services/mongoose/users"
+import { UsersRepository } from "@services/mongoose"
 
 import { createUserAndWalletFromUserRef, getUserIdByTestUserRef } from "test/helpers"
 
-let kratosUserId: KratosUserId
+let userId: KratosUserId
 
 beforeAll(async () => {
   await createUserAndWalletFromUserRef("A")
-  kratosUserId = await getUserIdByTestUserRef("A")
+  userId = await getUserIdByTestUserRef("A")
 })
 
 describe("Accounts - updateLanguage", () => {
   it("updates successfully", async () => {
     const result = await Users.updateLanguage({
-      kratosUserId: kratosUserId,
+      userId: userId,
       language: "es",
     })
     expect(result).not.toBeInstanceOf(Error)
     expect(result).toEqual(
       expect.objectContaining({
-        id: kratosUserId,
+        id: userId,
         language: "es",
       }),
     )
 
-    await Users.updateLanguage({ kratosUserId, language: "de" })
+    await Users.updateLanguage({ userId, language: "de" })
 
-    const user = await UsersRepository().findById(kratosUserId)
+    const user = await UsersRepository().findById(userId)
     expect(user).not.toBeInstanceOf(Error)
     expect(user).toEqual(
       expect.objectContaining({
-        id: kratosUserId,
+        id: userId,
         language: "de",
       }),
     )
@@ -39,7 +39,7 @@ describe("Accounts - updateLanguage", () => {
 
   it("fails with invalid language", async () => {
     const result = await Users.updateLanguage({
-      kratosUserId: kratosUserId,
+      userId: userId,
       language: "Klingon",
     })
     expect(result).toBeInstanceOf(InvalidLanguageError)

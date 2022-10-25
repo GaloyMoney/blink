@@ -46,7 +46,7 @@ import { sendOathkeeperRequest } from "@services/oathkeeper"
 
 import { ValidationError } from "@domain/shared"
 
-import { IdentityRepository } from "@services/kratos"
+import { UsersRepository } from "@services/mongoose"
 
 import { playgroundTabs } from "../graphql/playground"
 
@@ -127,7 +127,7 @@ const sessionContext = ({
   const logger = graphqlLogger.child({ tokenPayload, body })
 
   let domainAccount: Account | undefined
-  let kratosUser: IdentityPhone | undefined
+  let user: User | undefined
 
   return addAttributesToCurrentSpanAndPropagate(
     {
@@ -152,9 +152,9 @@ const sessionContext = ({
           logger,
         })
 
-        const kratosRes = await IdentityRepository().getIdentity(account.kratosUserId)
-        if (kratosRes instanceof Error) throw new Error(kratosRes.name)
-        kratosUser = kratosRes
+        const userRes = await UsersRepository().findById(account.kratosUserId)
+        if (userRes instanceof Error) throw new Error(userRes.name)
+        user = userRes
 
         addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
       }
@@ -162,7 +162,7 @@ const sessionContext = ({
       return {
         logger,
         // FIXME: we should not return this for the admin graphql endpoint
-        kratosUser,
+        user,
         domainAccount,
         geetest,
         ip,

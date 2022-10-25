@@ -31,6 +31,7 @@ import {
   PaymentFlowStateRepository,
   WalletInvoicesRepository,
   WalletsRepository,
+  UsersRepository,
 } from "@services/mongoose"
 
 import { NewDealerPriceService } from "@services/dealer-price"
@@ -44,8 +45,6 @@ import { addAttributesToCurrentSpan } from "@services/tracing"
 import { Wallets } from "@app"
 
 import { ResourceExpiredLockServiceError } from "@domain/lock"
-
-import { UsersRepository } from "@services/mongoose/users"
 
 import {
   constructPaymentFlowBuilder,

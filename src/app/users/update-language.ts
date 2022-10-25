@@ -1,13 +1,13 @@
 import { checkedToLanguage } from "@domain/users"
-import { UsersRepository } from "@services/mongoose/users"
+import { UsersRepository } from "@services/mongoose"
 
 type UpdateLanguageArgs = {
-  kratosUserId: KratosUserId
+  userId: KratosUserId
   language: string
 }
 
 export const updateLanguage = async ({
-  kratosUserId,
+  userId,
   language,
 }: UpdateLanguageArgs): Promise<User | ApplicationError> => {
   const users = UsersRepository()
@@ -15,7 +15,7 @@ export const updateLanguage = async ({
   const checkedLanguage = checkedToLanguage(language)
   if (checkedLanguage instanceof Error) return checkedLanguage
 
-  const user = await users.findById(kratosUserId)
+  const user = await users.findById(userId)
   if (user instanceof Error) return user
 
   return users.update({ ...user, language: checkedLanguage })
