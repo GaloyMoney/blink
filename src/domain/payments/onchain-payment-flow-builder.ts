@@ -329,35 +329,40 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     return state
   }
 
-  const withoutMinerFee = async (): Promise<OPFBWithMinerFee<S, R> | OPFBWithError> => {
+  const withoutMinerFee = async (): Promise<
+    OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError
+  > => {
     const state = await stateFromPromise(statePromise)
-    if (state instanceof Error) return OPFBWithError(state)
+    if (state instanceof Error) return state
 
-    return OPFBWithMinerFee({
+    return OnChainPaymentFlow({
       ...state,
       btcProtocolFee: onChainFees.intraLedgerFees().btc,
       usdProtocolFee: onChainFees.intraLedgerFees().usd,
       ...ZERO_BANK_FEE,
+      btcPaymentAmount: state.btcProposedAmount,
+      usdPaymentAmount: state.usdProposedAmount,
+      paymentSentAndPending: false,
     })
   }
 
   const withMinerFee = async (
     minerFee: BtcPaymentAmount,
-  ): Promise<OPFBWithMinerFee<S, R> | OPFBWithError> => {
+  ): Promise<OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError> => {
     const state = await stateFromPromise(statePromise)
-    if (state instanceof Error) return OPFBWithError(state)
+    if (state instanceof Error) return state
 
     const priceRatio = PriceRatio({
       usd: state.usdProposedAmount,
       btc: state.btcProposedAmount,
     })
-    if (priceRatio instanceof Error) return OPFBWithError(priceRatio)
+    if (priceRatio instanceof Error) return priceRatio
 
     const minBankFee = paymentAmountFromNumber({
       amount: state.senderWithdrawFee || feeConfig.withdrawDefaultMin,
       currency: WalletCurrency.Btc,
     })
-    if (minBankFee instanceof Error) return OPFBWithError(minBankFee)
+    if (minBankFee instanceof Error) return minBankFee
 
     const imbalanceCalculator = ImbalanceCalculator({
       method: feeConfig.withdrawMethod,
@@ -370,7 +375,7 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       currency: state.senderWalletCurrency,
       accountId: state.senderAccountId,
     })
-    if (imbalanceForWallet instanceof Error) return OPFBWithError(imbalanceForWallet)
+    if (imbalanceForWallet instanceof Error) return imbalanceForWallet
 
     const imbalance =
       imbalanceForWallet.currency === WalletCurrency.Btc
@@ -390,12 +395,34 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       "onChainPaymentFlow.bankFee": `${feeAmounts.bankFee.amount}`,
     })
 
-    return OPFBWithMinerFee({
+    // Calculate amounts & fees
+    const btcProtocolFee = feeAmounts.totalFee
+    const usdProtocolFee = priceRatio.convertFromBtcToCeil(feeAmounts.totalFee)
+
+    let btcPaymentAmount = state.btcProposedAmount
+    let usdPaymentAmount = state.usdProposedAmount
+    if (state.sendAll) {
+      switch (state.senderWalletCurrency) {
+        case WalletCurrency.Btc:
+          btcPaymentAmount = calc.sub(state.btcProposedAmount, btcProtocolFee)
+          usdPaymentAmount = priceRatio.convertFromBtc(btcPaymentAmount)
+          break
+        case WalletCurrency.Usd:
+          usdPaymentAmount = calc.sub(state.usdProposedAmount, usdProtocolFee)
+          btcPaymentAmount = priceRatio.convertFromUsd(usdPaymentAmount)
+          break
+      }
+    }
+
+    return OnChainPaymentFlow({
       ...state,
-      btcProtocolFee: feeAmounts.totalFee,
-      usdProtocolFee: priceRatio.convertFromBtcToCeil(feeAmounts.totalFee),
+      btcProtocolFee,
+      usdProtocolFee,
       btcBankFee: feeAmounts.bankFee,
       usdBankFee: priceRatio.convertFromBtcToCeil(feeAmounts.bankFee),
+      btcPaymentAmount,
+      usdPaymentAmount,
+      paymentSentAndPending: false,
     })
   }
 
@@ -459,48 +486,6 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   }
 }
 
-const OPFBWithMinerFee = <S extends WalletCurrency, R extends WalletCurrency>(
-  state: OPFBWithMinerFeeState<S, R>,
-): OPFBWithMinerFee<S, R> | OPFBWithError => {
-  const withoutSendAll = (): OnChainPaymentFlow<S, R> => {
-    return OnChainPaymentFlow({
-      ...state,
-      btcPaymentAmount: state.btcProposedAmount,
-      usdPaymentAmount: state.usdProposedAmount,
-      paymentSentAndPending: false,
-    })
-  }
-
-  const withSendAll = (): OnChainPaymentFlow<S, R> | ValidationError => {
-    const priceRatio = PriceRatio({
-      usd: state.usdProposedAmount,
-      btc: state.btcProposedAmount,
-    })
-    if (priceRatio instanceof Error) return priceRatio
-
-    let btcPaymentAmount: BtcPaymentAmount, usdPaymentAmount: UsdPaymentAmount
-    if (state.senderWalletCurrency === WalletCurrency.Btc) {
-      btcPaymentAmount = calc.sub(state.btcProposedAmount, state.btcProtocolFee)
-      usdPaymentAmount = priceRatio.convertFromBtc(btcPaymentAmount)
-    } else {
-      usdPaymentAmount = calc.sub(state.usdProposedAmount, state.usdProtocolFee)
-      btcPaymentAmount = priceRatio.convertFromUsd(usdPaymentAmount)
-    }
-
-    return OnChainPaymentFlow({
-      ...state,
-      btcPaymentAmount,
-      usdPaymentAmount,
-      paymentSentAndPending: false,
-    })
-  }
-
-  return {
-    withoutSendAll,
-    withSendAll,
-  }
-}
-
 const OPFBWithError = (
   error:
     | ValidationError
@@ -524,10 +509,10 @@ const OPFBWithError = (
     return OPFBWithError(error)
   }
   const withMinerFee = () => {
-    return Promise.resolve(OPFBWithError(error))
+    return Promise.resolve(error)
   }
   const withoutMinerFee = () => {
-    return Promise.resolve(OPFBWithError(error))
+    return Promise.resolve(error)
   }
   const isIntraLedger = async () => {
     return Promise.resolve(error)
@@ -552,10 +537,6 @@ const OPFBWithError = (
     return Promise.resolve(error)
   }
 
-  const withoutSendAll = () => error
-
-  const withSendAll = () => error
-
   return {
     withSenderWalletAndAccount,
     withAmount,
@@ -570,7 +551,5 @@ const OPFBWithError = (
     proposedAmounts,
     addressForFlow,
     senderWalletDescriptor,
-    withoutSendAll,
-    withSendAll,
   }
 }

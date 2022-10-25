@@ -216,8 +216,10 @@ type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
 type OPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
   withMinerFee(
     minerFee: BtcPaymentAmount,
-  ): Promise<OPFBWithMinerFee<S, R> | OPFBWithError>
-  withoutMinerFee(): Promise<OPFBWithMinerFee<S, R> | OPFBWithError>
+  ): Promise<OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError>
+  withoutMinerFee(): Promise<
+    OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError
+  >
 
   btcProposedAmount(): Promise<BtcPaymentAmount | DealerPriceServiceError>
   usdProposedAmount(): Promise<UsdPaymentAmount | DealerPriceServiceError>
@@ -228,11 +230,6 @@ type OPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
   isIntraLedger(): Promise<boolean | DealerPriceServiceError>
   addressForFlow(): Promise<OnChainAddress | DealerPriceServiceError>
   senderWalletDescriptor(): Promise<WalletDescriptor<S> | DealerPriceServiceError>
-}
-
-type OPFBWithMinerFee<S extends WalletCurrency, R extends WalletCurrency> = {
-  withoutSendAll(): OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError
-  withSendAll(): OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError
 }
 
 type LPFBTest = {
@@ -259,16 +256,14 @@ type OPFBWithError = {
   withoutRecipientWallet(): OPFBWithError
   withRecipientWallet(): OPFBWithError
   withConversion(): OPFBWithError
-  withMinerFee(): Promise<OPFBWithError>
-  withoutMinerFee(): Promise<OPFBWithError>
+  withMinerFee(): Promise<ValidationError | DealerPriceServiceError>
+  withoutMinerFee(): Promise<ValidationError | DealerPriceServiceError>
   btcProposedAmount(): Promise<ValidationError | DealerPriceServiceError>
   usdProposedAmount(): Promise<ValidationError | DealerPriceServiceError>
   isIntraLedger(): Promise<ValidationError | DealerPriceServiceError>
   proposedAmounts(): Promise<ValidationError | DealerPriceServiceError>
   addressForFlow(): Promise<ValidationError | DealerPriceServiceError>
   senderWalletDescriptor(): Promise<ValidationError | DealerPriceServiceError>
-  withoutSendAll(): ValidationError | DealerPriceServiceError
-  withSendAll(): ValidationError | DealerPriceServiceError
 }
 
 interface IPaymentFlowRepository {
@@ -306,6 +301,7 @@ type OnChainPaymentFlowBuilderConfig = {
   volumeLightningFn
   volumeOnChainFn
   isExternalAddress: (address: OnChainAddress) => Promise<boolean>
+  sendAll: boolean
 }
 
 type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &
@@ -390,16 +386,6 @@ type OPFBWithConversionState<
   R extends WalletCurrency,
 > = RequireField<OPFBWithAmountState<S, R>, "btcProposedAmount" | "usdProposedAmount"> & {
   createdAt: Date
-}
-
-type OPFBWithMinerFeeState<
-  S extends WalletCurrency,
-  R extends WalletCurrency,
-> = OPFBWithConversionState<S, R> & {
-  btcProtocolFee
-  usdProtocolFee
-  btcBankFee
-  usdBankFee
 }
 
 type LPFBWithRouteState<
