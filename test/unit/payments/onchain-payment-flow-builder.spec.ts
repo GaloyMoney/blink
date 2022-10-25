@@ -105,6 +105,7 @@ describe("OnChainPaymentFlowBuilder", () => {
       volumeLightningFn,
       volumeOnChainFn,
       isExternalAddress: async (address: OnChainAddress) => Promise.resolve(!!address),
+      sendAll: false,
     })
 
     describe("with address", () => {
@@ -638,6 +639,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           volumeLightningFn,
           volumeOnChainFn,
           isExternalAddress: async () => Promise.resolve(!isIntraLedger),
+          sendAll: false,
         })
           .withAddress("" as OnChainAddress)
           .withSenderWalletAndAccount({
@@ -666,6 +668,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           volumeLightningFn,
           volumeOnChainFn,
           isExternalAddress: async () => Promise.resolve(!isIntraLedger),
+          sendAll: false,
         })
           .withAddress("address" as OnChainAddress)
           .withSenderWalletAndAccount({
@@ -694,6 +697,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           volumeLightningFn,
           volumeOnChainFn,
           isExternalAddress: async () => Promise.resolve(!isIntraLedger),
+          sendAll: false,
         })
           .withAddress("address" as OnChainAddress)
           .withSenderWalletAndAccount({
@@ -721,6 +725,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           volumeLightningFn,
           volumeOnChainFn,
           isExternalAddress: async () => Promise.resolve(isIntraLedger),
+          sendAll: false,
         })
           .withAddress("address" as OnChainAddress)
           .withSenderWalletAndAccount({
@@ -748,6 +753,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           volumeLightningFn,
           volumeOnChainFn,
           isExternalAddress: async () => Promise.resolve(!isIntraLedger),
+          sendAll: false,
         })
           .withAddress("address" as OnChainAddress)
           .withSenderWalletAndAccount({
