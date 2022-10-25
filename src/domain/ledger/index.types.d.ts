@@ -113,6 +113,11 @@ type AddOnChainTxSendArgs = OnChainTxArgs & {
   totalFeeDisplayCurrency: DisplayCurrencyBaseAmount
 }
 
+type SetOnChainTxSendHashArgs = {
+  journalId: LedgerJournalId
+  newTxHash: OnChainTxHash
+}
+
 type AddColdStorageTxReceiveArgs = {
   txHash: OnChainTxHash
   payeeAddress: OnChainAddress
@@ -235,6 +240,10 @@ type RevertLightningPaymentArgs = {
   paymentHash: PaymentHash
 }
 
+type RevertOnChainPaymentArgs = {
+  journalId: LedgerJournalId
+}
+
 interface ILedgerService {
   updateMetadataByHash(
     ledgerTxMetadata:
@@ -335,6 +344,8 @@ interface ILedgerService {
     args: AddOnChainTxSendArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
 
+  setOnChainTxSendHash(args: SetOnChainTxSendHashArgs): Promise<true | LedgerServiceError>
+
   addOnChainIntraledgerTxTransfer(
     args: AddOnChainIntraledgerTxTransferArgs,
   ): Promise<LedgerJournal | LedgerServiceError>
@@ -350,6 +361,8 @@ interface ILedgerService {
   revertLightningPayment(
     args: RevertLightningPaymentArgs,
   ): Promise<void | LedgerServiceError>
+
+  revertOnChainPayment(args: RevertOnChainPaymentArgs): Promise<void | LedgerServiceError>
 
   getWalletIdByTransactionHash(
     hash: OnChainTxHash,
