@@ -5,7 +5,7 @@
 This setup was last tested with the following tools:
 ```
 $ node --version
-v16.13.1
+v18.12.0
 $ yarn --version
 1.22.17
 $ direnv --version
