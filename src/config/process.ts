@@ -1,4 +1,5 @@
 import { ConfigError } from "./error"
+import { getCronConfig} from "@config"
 
 type TwilioConfig = {
   accountSid: string
@@ -103,11 +104,13 @@ export const LND_HEALTH_REFRESH_TIME_MS = parseInt(
 )
 
 export const getLoopConfig = () => {
-  if (!process.env.LND1_LOOP_TLS) throw new ConfigError("Missing LND1_LOOP_TLS config")
-  if (!process.env.LND2_LOOP_TLS) throw new ConfigError("Missing LND2_LOOP_TLS config")
-  if (!process.env.LND1_LOOP_MACAROON)
+  if (!process.env.LND1_LOOP_TLS && getCronConfig().swapEnabled)
+    throw new ConfigError("Missing LND1_LOOP_TLS config")
+  if (!process.env.LND2_LOOP_TLS && getCronConfig().swapEnabled)
+    throw new ConfigError("Missing LND2_LOOP_TLS config")
+  if (!process.env.LND1_LOOP_MACAROON && getCronConfig().swapEnabled)
     throw new ConfigError("Missing LND1_LOOP_MACAROON config")
-  if (!process.env.LND2_LOOP_MACAROON)
+  if (!process.env.LND2_LOOP_MACAROON && getCronConfig().swapEnabled)
     throw new ConfigError("Missing LND2_LOOP_MACAROON config")
   return {
     lnd1LoopTls: process.env.LND1_LOOP_TLS,
