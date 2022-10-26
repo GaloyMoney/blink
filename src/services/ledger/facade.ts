@@ -153,7 +153,7 @@ export const settlePendingLnSend = async (
 export const recordLnSendRevert = async ({
   journalId,
   paymentHash,
-}: RevertLightningPaymentArgs): Promise<void | LedgerServiceError> => {
+}: RevertLightningPaymentArgs): Promise<true | LedgerServiceError> => {
   const reason = "Payment canceled"
   try {
     const savedEntry = await MainBook.void(journalId, reason)
@@ -164,6 +164,7 @@ export const recordLnSendRevert = async ({
       hash: paymentHash,
     }))
     txMetadataRepo.persistAll(txsMetadataToPersist)
+    return true
   } catch (err) {
     return new UnknownLedgerError(err)
   }

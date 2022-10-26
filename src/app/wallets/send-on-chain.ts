@@ -395,7 +395,8 @@ const executePaymentViaOnChain = async ({
       const reverted = await ledgerService.revertOnChainPayment({
         journalId: journal.journalId,
       })
-      return reverted || txHash
+      if (reverted instanceof Error) return reverted
+      return txHash
     }
     if (txHash instanceof Error) {
       logger.error(

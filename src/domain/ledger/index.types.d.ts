@@ -361,9 +361,9 @@ interface ILedgerService {
 
   revertLightningPayment(
     args: RevertLightningPaymentArgs,
-  ): Promise<void | LedgerServiceError>
+  ): Promise<true | LedgerServiceError>
 
-  revertOnChainPayment(args: RevertOnChainPaymentArgs): Promise<void | LedgerServiceError>
+  revertOnChainPayment(args: RevertOnChainPaymentArgs): Promise<true | LedgerServiceError>
 
   getWalletIdByTransactionHash(
     hash: OnChainTxHash,

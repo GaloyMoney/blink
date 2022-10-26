@@ -120,7 +120,7 @@ export const send = {
   revertLightningPayment: async ({
     journalId,
     paymentHash,
-  }: RevertLightningPaymentArgs): Promise<void | LedgerServiceError> => {
+  }: RevertLightningPaymentArgs): Promise<true | LedgerServiceError> => {
     const reason = "Payment canceled"
     try {
       const savedEntry = await MainBook.void(journalId, reason)
@@ -131,6 +131,7 @@ export const send = {
         hash: paymentHash,
       }))
       txMetadataRepo.persistAll(txsMetadataToPersist)
+      return true
     } catch (err) {
       return new UnknownLedgerError(err)
     }
@@ -139,7 +140,7 @@ export const send = {
   revertOnChainPayment: async ({
     journalId,
     description = "Protocol error",
-  }: RevertOnChainPaymentArgs): Promise<void | LedgerServiceError> => {
+  }: RevertOnChainPaymentArgs): Promise<true | LedgerServiceError> => {
     try {
       // pending update must be before void to avoid pending voided records
       await Transaction.updateMany(
@@ -149,6 +150,7 @@ export const send = {
 
       await MainBook.void(journalId, description)
       // TODO: persist to metadata
+      return true
     } catch (err) {
       return new UnknownLedgerError(err)
     }
