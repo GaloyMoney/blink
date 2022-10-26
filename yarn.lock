@@ -1915,10 +1915,10 @@
     jest-haste-map "^28.1.3"
     slash "^3.0.0"
 
-"@jest/test-sequencer@^29.2.1":
-  version "29.2.1"
-  resolved "https://registry.yarnpkg.com/@jest/test-sequencer/-/test-sequencer-29.2.1.tgz#cafd2c5f3528c70bd4cc243800459ac366e480cc"
-  integrity sha512-O/pnk0/xGj3lxPVNwB6HREJ7AYvUdyP2xo/s14/9Dtf091HoOeyIhWLKQE/4HzB8lNQBMo6J5mg0bHz/uCWK7w==
+"@jest/test-sequencer@^29.2.2":
+  version "29.2.2"
+  resolved "https://registry.yarnpkg.com/@jest/test-sequencer/-/test-sequencer-29.2.2.tgz#4ac7487b237e517a1f55e7866fb5553f6e0168b9"
+  integrity sha512-Cuc1znc1pl4v9REgmmLf0jBd3Y65UXJpioGYtMr/JNpQEIGEzkmHhy6W6DLbSsXeUA13TDzymPv0ZGZ9jH3eIw==
   dependencies:
     "@jest/test-result" "^29.2.1"
     graceful-fs "^4.2.9"
