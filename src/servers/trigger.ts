@@ -47,7 +47,7 @@ import {
 } from "@services/mongoose"
 import { LndService } from "@services/lnd"
 import { LoopService } from "@services/loopd"
-import { LND1_LOOP_CONFIG, LND2_LOOP_CONFIG } from "@app/swap/get-active-loopd"
+import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
 import { SwapTriggerError } from "@domain/swap/errors"
 
 import healthzHandler from "./middlewares/healthz"
@@ -421,8 +421,8 @@ const startSwapMonitor = async (swapService: ISwapService) => {
 
 const listenerSwapMonitor = async () => {
   try {
-    const loopServiceLnd1 = LoopService(LND1_LOOP_CONFIG)
-    const loopServiceLnd2 = LoopService(LND2_LOOP_CONFIG)
+    const loopServiceLnd1 = LoopService(lnd1LoopConfig())
+    const loopServiceLnd2 = LoopService(lnd2LoopConfig())
     startSwapMonitor(loopServiceLnd1)
     startSwapMonitor(loopServiceLnd2)
   } catch (e) {

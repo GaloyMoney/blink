@@ -1,8 +1,8 @@
 import { swapOut } from "@app/swap"
 import {
   getActiveLoopd,
-  LND1_LOOP_CONFIG,
-  LND2_LOOP_CONFIG,
+  lnd1LoopConfig,
+  lnd2LoopConfig,
 } from "@app/swap/get-active-loopd"
 import { getSwapDestAddress } from "@app/swap/get-swap-dest-address"
 
@@ -11,7 +11,7 @@ import {
   SwapErrorChannelBalanceTooLow,
 } from "@domain/swap/errors"
 import { SwapOutChecker } from "@domain/swap"
-import { BtcPaymentAmount, WalletCurrency, ZERO_SATS } from "@domain/shared"
+import { WalletCurrency, ZERO_SATS } from "@domain/shared"
 
 import { baseLogger } from "@services/logger"
 import { LoopService } from "@services/loopd"
@@ -19,7 +19,7 @@ import { lndsBalances } from "@services/lnd/utils"
 
 describe("Swap", () => {
   const activeLoopd = getActiveLoopd()
-  const swapService = LoopService(activeLoopd ?? LND1_LOOP_CONFIG)
+  const swapService = LoopService(activeLoopd ?? lnd1LoopConfig())
   const amount: BtcPaymentAmount = { amount: 250000n, currency: WalletCurrency.Btc }
 
   it("Swap out app returns a SwapOutResult or NoSwapAction", async () => {
@@ -63,7 +63,7 @@ describe("Swap", () => {
   it("Swap out for lnd2-loop node returns successful swap result or error if not enough funds", async () => {
     const isSwapServerUp = await swapService.healthCheck()
     if (isSwapServerUp) {
-      const loopService = LoopService(LND2_LOOP_CONFIG)
+      const loopService = LoopService(lnd2LoopConfig())
       const swapServiceLnd2 = loopService
       const isSwapServerUp2 = await swapServiceLnd2.healthCheck()
       if (isSwapServerUp2) {
