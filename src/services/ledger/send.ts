@@ -138,9 +138,16 @@ export const send = {
 
   revertOnChainPayment: async ({
     journalId,
+    description = "Protocol error",
   }: RevertOnChainPaymentArgs): Promise<void | LedgerServiceError> => {
     try {
-      await MainBook.void(journalId)
+      // pending update must be before void to avoid pending voided records
+      await Transaction.updateMany(
+        { _journal: toObjectId(journalId) },
+        { pending: false },
+      )
+
+      await MainBook.void(journalId, description)
       // TODO: persist to metadata
     } catch (err) {
       return new UnknownLedgerError(err)

@@ -2,6 +2,7 @@ import { once } from "events"
 
 import { Prices, Wallets } from "@app"
 import {
+  BTC_NETWORK,
   getAccountLimits,
   getDisplayCurrencyConfig,
   getFeesConfig,
@@ -36,6 +37,16 @@ import * as PushNotificationsServiceImpl from "@services/notifications/push-noti
 import { WalletCurrency } from "@domain/shared"
 
 import {
+  CPFPAncestorLimitReachedError,
+  InsufficientOnChainFundsError,
+  OnChainServiceUnavailableError,
+  UnknownOnChainServiceError,
+} from "@domain/bitcoin/onchain/errors"
+import * as OnChainServiceImpl from "@services/lnd/onchain-service"
+import { TxDecoder } from "@domain/bitcoin/onchain"
+
+import { getBalanceHelper } from "test/helpers/wallet"
+import {
   bitcoindClient,
   bitcoindOutside,
   checkIsBalanced,
@@ -51,7 +62,6 @@ import {
   mineBlockAndSyncAll,
   subscribeToTransactions,
 } from "test/helpers"
-import { getBalanceHelper } from "test/helpers/wallet"
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
 
@@ -548,6 +558,111 @@ describe("UserWallet - onChainPay", () => {
       expect(finalBalance).toBe(0)
     }
   })
+
+  const lndVoidErrors = [
+    { name: "insufficient funds", error: InsufficientOnChainFundsError },
+    { name: "CPFP limit", error: CPFPAncestorLimitReachedError },
+  ]
+  test.each(lndVoidErrors)(
+    "void transaction if lnd service returns $name error",
+    async ({ error }) => {
+      const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
+
+      jest.spyOn(OnChainServiceImpl, "OnChainService").mockImplementationOnce(() => ({
+        ...onChainService,
+        payToAddress: () => Promise.resolve(new error()),
+      }))
+
+      const initialBalanceUserA = await getBalanceHelper(walletIdA)
+      const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
+
+      const result = await Wallets.payOnChainByWalletId({
+        senderAccount: accountA,
+        senderWalletId: walletIdA,
+        address,
+        amount,
+        targetConfirmations,
+        memo: null,
+        sendAll: false,
+      })
+
+      expect(result).toBeInstanceOf(error)
+
+      const finalBalanceUserA = await getBalanceHelper(walletIdA)
+      expect(finalBalanceUserA).toBe(initialBalanceUserA)
+
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: walletIdA,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        throw txResult.error
+      }
+      const pendingTxs = txResult.result.filter(
+        ({ status }) => status === TxStatus.Pending,
+      )
+      expect(pendingTxs.length).toBe(0)
+    },
+  )
+
+  const lndKeepPendingErrors = [
+    { name: "service unavailable", error: OnChainServiceUnavailableError },
+    { name: "unknown", error: UnknownOnChainServiceError },
+  ]
+  test.each(lndKeepPendingErrors)(
+    "keep pending transaction if lnd service returns $name error",
+    async ({ error }) => {
+      const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
+      if (onChainService instanceof Error) throw onChainService
+
+      jest.spyOn(OnChainServiceImpl, "OnChainService").mockImplementationOnce(() => ({
+        ...onChainService,
+        payToAddress: () => Promise.resolve(new error()),
+      }))
+
+      const initialBalanceUserA = await getBalanceHelper(walletIdA)
+      const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
+
+      const result = await Wallets.payOnChainByWalletId({
+        senderAccount: accountA,
+        senderWalletId: walletIdA,
+        address,
+        amount,
+        targetConfirmations,
+        memo: null,
+        sendAll: false,
+      })
+
+      expect(result).toBeInstanceOf(error)
+
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: walletIdA,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        throw txResult.error
+      }
+      const pendingTxs = txResult.result.filter(
+        ({ status }) => status === TxStatus.Pending,
+      )
+      expect(pendingTxs.length).toBe(1)
+
+      const pendingTx = pendingTxs[0] as WalletOnChainSettledTransaction
+      const finalBalanceUserA = await getBalanceHelper(walletIdA)
+      expect(finalBalanceUserA).toBe(
+        initialBalanceUserA - amount - pendingTx.settlementFee,
+      )
+
+      // clean pending tx to avoid collisions with other tests
+      await onChainService.payToAddress({
+        address: address as OnChainAddress,
+        amount,
+        targetConfirmations,
+      })
+      await mineBlockAndSyncAll()
+      await LedgerService().settlePendingOnChainPayment(
+        pendingTx.settlementVia.transactionHash,
+      )
+    },
+  )
 
   it("fails if try to send a transaction to self", async () => {
     const address = await Wallets.createOnChainAddress(walletIdA)

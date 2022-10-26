@@ -242,6 +242,7 @@ type RevertLightningPaymentArgs = {
 
 type RevertOnChainPaymentArgs = {
   journalId: LedgerJournalId
+  description?: string
 }
 
 interface ILedgerService {
