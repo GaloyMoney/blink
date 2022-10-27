@@ -34,7 +34,6 @@ import * as adminLegacy from "./admin-legacy"
 import { MainBook, Transaction } from "./books"
 import * as caching from "./caching"
 import { TransactionsMetadataRepository } from "./services"
-import { intraledger } from "./intraledger"
 import { receive } from "./receive"
 import { send } from "./send"
 import { volume } from "./volume"
@@ -367,7 +366,6 @@ export const LedgerService = (): ILedgerService => {
       getWalletIdByTransactionHash,
       listWalletIdsWithPendingPayments,
       ...admin,
-      ...intraledger,
       ...volume,
       ...send,
       ...receive,

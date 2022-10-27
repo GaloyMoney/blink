@@ -337,19 +337,7 @@ interface ILedgerService {
     args: AddLnFeeReeimbursementReceiveArgs<S, R>,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  addLnIntraledgerTxTransfer(
-    args: AddLnIntraledgerTxTransferArgs,
-  ): Promise<LedgerJournal | LedgerServiceError>
-
   setOnChainTxSendHash(args: SetOnChainTxSendHashArgs): Promise<true | LedgerServiceError>
-
-  addOnChainIntraledgerTxTransfer(
-    args: AddOnChainIntraledgerTxTransferArgs,
-  ): Promise<LedgerJournal | LedgerServiceError>
-
-  addWalletIdIntraledgerTxTransfer(
-    args: AddIntraLedgerTxSendArgs,
-  ): Promise<LedgerJournal | LedgerServiceError>
 
   settlePendingLnPayment(paymentHash: PaymentHash): Promise<true | LedgerServiceError>
 
