@@ -17,6 +17,8 @@ import { SwapState as DomainSwapState } from "@domain/swap/index"
 
 import { WalletCurrency } from "@domain/shared"
 
+import { ConfigError } from "@config"
+
 import { SwapClientClient } from "./protos/loop_grpc_pb"
 import {
   FailureReason,
@@ -32,8 +34,6 @@ import {
   TermsRequest,
   OutTermsResponse,
 } from "./protos/loop_pb"
-
-import { ConfigError } from "src/config/error"
 
 export const LoopService = ({
   macaroon,
