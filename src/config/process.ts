@@ -1,4 +1,4 @@
-import { getCronConfig } from "@config"
+import { getCronConfig } from "./yaml"
 
 import { ConfigError } from "./error"
 
