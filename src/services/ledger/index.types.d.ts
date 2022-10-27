@@ -133,6 +133,17 @@ type AddOnChainTradeIntraAccountLedgerMetadata = Omit<
   "username"
 >
 
+type NewAddOnChainIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
+  SendAmountsMetadata & {
+    payee_addresses: OnChainAddress[]
+    sendAll: boolean
+  }
+
+type NewAddOnChainTradeIntraAccountLedgerMetadata = Omit<
+  NewAddOnChainIntraledgerSendLedgerMetadata,
+  "username"
+>
+
 type AddWalletIdIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata
 
 type AddWalletIdTradeIntraAccountLedgerMetadata = Omit<

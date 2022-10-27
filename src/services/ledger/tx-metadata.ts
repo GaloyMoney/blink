@@ -177,29 +177,57 @@ export const LnFeeReimbursementReceiveLedgerMetadata = <
   return metadata
 }
 
-export const OnChainIntraledgerLedgerMetadata = ({
-  amountDisplayCurrency,
+export const OnChainIntraledgerLedgerMetadata = <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   payeeAddresses,
   sendAll,
+  paymentFlow,
+  feeDisplayCurrency,
+  amountDisplayCurrency,
+  displayCurrency,
   memoOfPayer,
   senderUsername,
   recipientUsername,
 }: {
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
   payeeAddresses: OnChainAddress[]
   sendAll: boolean
+  paymentFlow: OnChainPaymentFlowState<S, R>
+
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
+
   memoOfPayer?: string
   senderUsername?: Username
   recipientUsername?: Username
 }) => {
-  const metadata: AddOnChainIntraledgerSendLedgerMetadata = {
+  const {
+    btcPaymentAmount: { amount: satsAmount },
+    usdPaymentAmount: { amount: centsAmount },
+    btcProtocolFee: { amount: satsFee },
+    usdProtocolFee: { amount: centsFee },
+  } = paymentFlow
+
+  const metadata: NewAddOnChainIntraledgerSendLedgerMetadata = {
     type: LedgerTransactionType.OnchainIntraLedger,
     pending: false,
-    usd: amountDisplayCurrency,
     memoPayer: undefined,
     username: senderUsername,
     payee_addresses: payeeAddresses,
     sendAll,
+
+    usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+
+    satsFee: toSats(satsFee),
+    displayFee: feeDisplayCurrency,
+    displayAmount: amountDisplayCurrency,
+
+    displayCurrency,
+    centsAmount: toCents(centsAmount),
+    satsAmount: toSats(satsAmount),
+    centsFee: toCents(centsFee),
   }
   const debitAccountAdditionalMetadata = {
     memoPayer: memoOfPayer,
@@ -316,24 +344,51 @@ export const LnIntraledgerLedgerMetadata = <
   return { metadata, debitAccountAdditionalMetadata }
 }
 
-export const OnChainTradeIntraAccountLedgerMetadata = ({
-  amountDisplayCurrency,
+export const OnChainTradeIntraAccountLedgerMetadata = <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   payeeAddresses,
   sendAll,
+  paymentFlow,
+  feeDisplayCurrency,
+  amountDisplayCurrency,
+  displayCurrency,
   memoOfPayer,
 }: {
-  amountDisplayCurrency: DisplayCurrencyBaseAmount
   payeeAddresses: OnChainAddress[]
   sendAll: boolean
+  paymentFlow: OnChainPaymentFlowState<S, R>
+
+  feeDisplayCurrency: DisplayCurrencyBaseAmount
+  amountDisplayCurrency: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
   memoOfPayer?: string
 }) => {
-  const metadata: AddOnChainTradeIntraAccountLedgerMetadata = {
+  const {
+    btcPaymentAmount: { amount: satsAmount },
+    usdPaymentAmount: { amount: centsAmount },
+    btcProtocolFee: { amount: satsFee },
+    usdProtocolFee: { amount: centsFee },
+  } = paymentFlow
+
+  const metadata: NewAddOnChainTradeIntraAccountLedgerMetadata = {
     type: LedgerTransactionType.OnChainTradeIntraAccount,
     pending: false,
-    usd: amountDisplayCurrency,
     memoPayer: undefined,
     payee_addresses: payeeAddresses,
     sendAll,
+
+    usd: (amountDisplayCurrency / 100) as DisplayCurrencyBaseAmount,
+
+    satsFee: toSats(satsFee),
+    displayFee: feeDisplayCurrency,
+    displayAmount: amountDisplayCurrency,
+
+    displayCurrency,
+    centsAmount: toCents(centsAmount),
+    satsAmount: toSats(satsAmount),
+    centsFee: toCents(centsFee),
   }
   const debitAccountAdditionalMetadata = {
     memoPayer: memoOfPayer,

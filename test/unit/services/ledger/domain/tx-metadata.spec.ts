@@ -33,13 +33,25 @@ describe("Tx metadata", () => {
     usdProtocolFee: ZERO_CENTS,
   } as PaymentFlowState<WalletCurrency, WalletCurrency>
 
+  const onChainPaymentFlow = {
+    btcPaymentAmount: receiveAmount.btc,
+    usdPaymentAmount: receiveAmount.usd,
+    btcProtocolFee: ZERO_SATS,
+    usdProtocolFee: ZERO_CENTS,
+  } as OnChainPaymentFlowState<WalletCurrency, WalletCurrency>
+
   describe("intraledger", () => {
     it("onchain", () => {
       const { metadata, debitAccountAdditionalMetadata } =
         OnChainIntraledgerLedgerMetadata({
-          amountDisplayCurrency,
           payeeAddresses,
           sendAll: true,
+          paymentFlow: onChainPaymentFlow,
+
+          amountDisplayCurrency,
+          feeDisplayCurrency,
+          displayCurrency,
+
           memoOfPayer,
           senderUsername,
           recipientUsername,
@@ -62,9 +74,14 @@ describe("Tx metadata", () => {
     it("onchain trade", () => {
       const { metadata, debitAccountAdditionalMetadata } =
         OnChainTradeIntraAccountLedgerMetadata({
-          amountDisplayCurrency,
           payeeAddresses,
           sendAll: true,
+          paymentFlow: onChainPaymentFlow,
+
+          amountDisplayCurrency,
+          feeDisplayCurrency,
+          displayCurrency,
+
           memoOfPayer,
         })
 
