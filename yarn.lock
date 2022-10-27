@@ -8553,7 +8553,7 @@ lightning@6.2.0:
     tiny-secp256k1 "2.2.1"
     type-fest "3.0.0"
 
-lightning@6.2.3, lightning@^6.2.3:
+lightning@6.2.3:
   version "6.2.3"
   resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.2.3.tgz#a59d18242654d25a82b8b1883a4fa97c8089ece6"
   integrity sha512-qJtOofaxb1u6IxL9wXd0jTCwevmL0tMrRO8BBo7stKWIYslENDtaia0DnZJkZM2hh9PYh1736h+oHJWo/QVHTA==
@@ -8579,7 +8579,7 @@ lightning@6.2.3, lightning@^6.2.3:
     tiny-secp256k1 "2.2.1"
     type-fest "3.1.0"
 
-lightning@6.2.4:
+lightning@6.2.4, lightning@^6.2.4:
   version "6.2.4"
   resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.2.4.tgz#85def61d70dd495cd1f2eb6365c9efd84c611b29"
   integrity sha512-cbfuQg3hnEQS3Q43MNH/PJ/oa/znVZTPNN6tIX/aoqwbIS5VU0vbJ3URMdiyYXe1UjMDHU1i4cIbV5orWL8asw==
