@@ -33,6 +33,8 @@ import {
   OutTermsResponse,
 } from "./protos/loop_pb"
 
+import { ConfigError } from "src/config/error"
+
 export const LoopService = ({
   macaroon,
   tlsCert,
@@ -41,6 +43,9 @@ export const LoopService = ({
   lndInstanceName,
 }: LoopdConfig): ISwapService => {
   const mac = Buffer.from(macaroon, "base64").toString("hex") as Macaroon
+  if (!tlsCert) {
+    throw new ConfigError("missing LOOP_TLS")
+  }
   const tls = Buffer.from(tlsCert, "base64")
   const swapClient: ServiceClient = createClient(mac, tls, grpcEndpoint)
 
