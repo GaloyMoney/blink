@@ -1,11 +1,13 @@
 import { LedgerTransactionType } from "@domain/ledger"
-import { NotImplementedError } from "@domain/errors"
+import { NotImplementedError, NoTransactionToUpdateError } from "@domain/errors"
 import {
   LedgerServiceError,
   NoTransactionToSettleError,
   UnknownLedgerError,
 } from "@domain/ledger/errors"
 import { WalletCurrency, paymentAmountFromNumber } from "@domain/shared"
+
+import { toObjectId } from "@services/mongoose/utils"
 
 import { LegacyEntryBuilder, toLedgerAccountId } from "./domain"
 
@@ -63,6 +65,25 @@ export const send = {
     })
   },
 
+  setOnChainTxSendHash: async ({
+    journalId,
+    newTxHash,
+  }: SetOnChainTxSendHashArgs): Promise<true | LedgerServiceError> => {
+    try {
+      const result = await Transaction.updateMany(
+        { _journal: toObjectId(journalId) },
+        { hash: newTxHash },
+      )
+      const success = result.modifiedCount > 0
+      if (!success) {
+        return new NoTransactionToUpdateError()
+      }
+      return true
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  },
+
   settlePendingLnPayment: async (
     paymentHash: PaymentHash,
   ): Promise<true | LedgerServiceError> => {
@@ -99,7 +120,7 @@ export const send = {
   revertLightningPayment: async ({
     journalId,
     paymentHash,
-  }: RevertLightningPaymentArgs): Promise<void | LedgerServiceError> => {
+  }: RevertLightningPaymentArgs): Promise<true | LedgerServiceError> => {
     const reason = "Payment canceled"
     try {
       const savedEntry = await MainBook.void(journalId, reason)
@@ -110,6 +131,26 @@ export const send = {
         hash: paymentHash,
       }))
       txMetadataRepo.persistAll(txsMetadataToPersist)
+      return true
+    } catch (err) {
+      return new UnknownLedgerError(err)
+    }
+  },
+
+  revertOnChainPayment: async ({
+    journalId,
+    description = "Protocol error",
+  }: RevertOnChainPaymentArgs): Promise<true | LedgerServiceError> => {
+    try {
+      // pending update must be before void to avoid pending voided records
+      await Transaction.updateMany(
+        { _journal: toObjectId(journalId) },
+        { pending: false },
+      )
+
+      await MainBook.void(journalId, description)
+      // TODO: persist to metadata
+      return true
     } catch (err) {
       return new UnknownLedgerError(err)
     }

@@ -69,6 +69,7 @@ type PayToAddressArgs = {
   amount: Satoshis
   address: OnChainAddress
   targetConfirmations: TargetConfirmations
+  description?: string
 }
 
 type IncomingOnChainTxHandler = {

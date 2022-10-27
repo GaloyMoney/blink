@@ -1,13 +1,22 @@
-import { getCurrentPrice } from "@app/prices"
+import crypto from "crypto"
+
 import {
   BTC_NETWORK,
   getFeesConfig,
   getOnChainWalletConfig,
   ONCHAIN_SCAN_DEPTH_OUTGOING,
 } from "@config"
-import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
+
+import { getCurrentPrice } from "@app/prices"
+
+import { DisplayCurrency } from "@domain/fiat"
+import { WalletCurrency } from "@domain/shared"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { checkedToOnChainAddress, TxDecoder } from "@domain/bitcoin/onchain"
+import { ResourceExpiredLockServiceError } from "@domain/lock"
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
+import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
 import {
   InsufficientBalanceError,
   LessThanDustThresholdError,
@@ -15,26 +24,24 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
-import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
-import { WalletCurrency } from "@domain/shared"
+import {
+  checkedToOnChainAddress,
+  CPFPAncestorLimitReachedError,
+  InsufficientOnChainFundsError,
+  TxDecoder,
+} from "@domain/bitcoin/onchain"
+
 import { LockService } from "@services/lock"
+import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { baseLogger } from "@services/logger"
+import { addAttributesToCurrentSpan } from "@services/tracing"
+import { NotificationsService } from "@services/notifications"
 import {
   AccountsRepository,
   UsersRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { NotificationsService } from "@services/notifications"
-import { addAttributesToCurrentSpan } from "@services/tracing"
-
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
-
-import { ResourceExpiredLockServiceError } from "@domain/lock"
-
-import { DisplayCurrency } from "@domain/fiat"
 
 import {
   checkIntraledgerLimits,
@@ -322,35 +329,6 @@ const executePaymentViaOnChain = async ({
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
 
-    const txHash = await onChainService.payToAddress({
-      address,
-      amount: amountToSend,
-      targetConfirmations,
-    })
-    if (txHash instanceof Error) {
-      logger.error(
-        { err: txHash, address, tokens: amountToSend, success: false },
-        "Impossible to sendToChainAddress",
-      )
-      return txHash
-    }
-
-    let minerFee: Satoshis
-
-    const minerFee_ = await onChainService.lookupOnChainFee({
-      txHash,
-      scanDepth: ONCHAIN_SCAN_DEPTH_OUTGOING,
-    })
-    if (minerFee_ instanceof Error) {
-      logger.error({ err: minerFee_ }, "impossible to get fee for onchain payment")
-      addAttributesToCurrentSpan({
-        "payOnChainByWalletId.errorGettingMinerFee": true,
-      })
-      minerFee = estimatedFee
-    } else {
-      minerFee = minerFee_
-    }
-
     const imbalanceCalculator = ImbalanceCalculator({
       method: feeConfig.withdrawMethod,
       volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
@@ -361,6 +339,13 @@ const executePaymentViaOnChain = async ({
     const imbalance = await imbalanceCalculator.getSwapOutImbalance(senderWallet.id)
     if (imbalance instanceof Error) return imbalance
 
+    const minerFee = await onChainService.getOnChainFeeEstimate({
+      amount: amountToSend,
+      address,
+      targetConfirmations,
+    })
+    if (minerFee instanceof Error) return minerFee
+
     const fees = withdrawFeeCalculator.onChainWithdrawalFee({
       amount: amountToSend,
       minerFee,
@@ -370,22 +355,22 @@ const executePaymentViaOnChain = async ({
 
     const totalFee = fees.totalFee
     const bankFee = fees.bankFee
+    const sats = toSats(amountToSend + totalFee)
+    const amountDisplayCurrency = dCConverter.fromSats(sats)
+    const totalFeeDisplayCurrency = dCConverter.fromSats(totalFee)
 
     addAttributesToCurrentSpan({
-      "payOnChainByWalletId.actualMinerFee": `${minerFee}`,
+      "payOnChainByWalletId.estimatedFee": `${estimatedFee}`,
+      "payOnChainByWalletId.estimatedMinerFee": `${minerFee}`,
       "payOnChainByWalletId.totalFee": `${totalFee}`,
       "payOnChainByWalletId.bankFee": `${bankFee}`,
     })
 
-    const sats = toSats(amountToSend + totalFee)
-
-    const amountDisplayCurrency = dCConverter.fromSats(sats)
-    const totalFeeDisplayCurrency = dCConverter.fromSats(totalFee)
-
     const journal = await ledgerService.addOnChainTxSend({
       walletId: senderWallet.id,
       walletCurrency: senderWallet.currency,
-      txHash,
+      // we need a temporary hash to be able to search in admin panel
+      txHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
       description: memo || "",
       sats,
       totalFee,
@@ -396,6 +381,51 @@ const executePaymentViaOnChain = async ({
       totalFeeDisplayCurrency,
     })
     if (journal instanceof Error) return journal
+
+    const txHash = await onChainService.payToAddress({
+      address,
+      amount: amountToSend,
+      targetConfirmations,
+      description: `journal-${journal.journalId}`,
+    })
+    if (
+      txHash instanceof InsufficientOnChainFundsError ||
+      txHash instanceof CPFPAncestorLimitReachedError
+    ) {
+      const reverted = await ledgerService.revertOnChainPayment({
+        journalId: journal.journalId,
+      })
+      if (reverted instanceof Error) return reverted
+      return txHash
+    }
+    if (txHash instanceof Error) {
+      logger.error(
+        { err: txHash, address, tokens: amountToSend, success: false },
+        "Impossible to sendToChainAddress",
+      )
+      return txHash
+    }
+
+    const updated = await ledgerService.setOnChainTxSendHash({
+      journalId: journal.journalId,
+      newTxHash: txHash,
+    })
+    if (updated instanceof Error) return updated
+
+    const finalMinerFee = await onChainService.lookupOnChainFee({
+      txHash,
+      scanDepth: ONCHAIN_SCAN_DEPTH_OUTGOING,
+    })
+    if (finalMinerFee instanceof Error) {
+      logger.error({ err: finalMinerFee }, "impossible to get fee for onchain payment")
+      addAttributesToCurrentSpan({
+        "payOnChainByWalletId.errorGettingMinerFee": true,
+      })
+    }
+
+    addAttributesToCurrentSpan({
+      "payOnChainByWalletId.actualMinerFee": `${finalMinerFee}`,
+    })
 
     return PaymentSendStatus.Success
   })

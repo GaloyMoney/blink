@@ -174,6 +174,7 @@ export const OnChainService = (
     amount,
     address,
     targetConfirmations,
+    description,
   }: PayToAddressArgs): Promise<OnChainTxHash | OnChainServiceError> => {
     try {
       const { id } = await sendToChainAddress({
@@ -182,6 +183,7 @@ export const OnChainService = (
         tokens: amount,
         utxo_confirmations: 1,
         target_confirmations: targetConfirmations,
+        description,
       })
 
       return id as OnChainTxHash
@@ -189,6 +191,8 @@ export const OnChainService = (
       const errDetails = parseLndErrorDetails(err)
       const match = (knownErrDetail: RegExp): boolean => knownErrDetail.test(errDetails)
       switch (true) {
+        case match(KnownLndErrorDetails.InsufficientFunds):
+          return new InsufficientOnChainFundsError()
         case match(KnownLndErrorDetails.CPFPAncestorLimitReached):
           return new CPFPAncestorLimitReachedError()
         default:
