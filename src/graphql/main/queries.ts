@@ -1,5 +1,3 @@
-import { GraphQLResolveInfo } from "graphql"
-
 import { GT } from "@graphql/index"
 
 import MeQuery from "@graphql/root/query/me"
@@ -14,12 +12,6 @@ import BusinessMapMarkersQuery from "@graphql/root/query/business-map-markers"
 import AccountDefaultWalletQuery from "@graphql/root/query/account-default-wallet"
 import AccountDefaultWalletIdQuery from "@graphql/root/query/account-default-wallet-id"
 import LnInvoicePaymentStatusQuery from "@graphql/root/query/ln-invoice-payment-status"
-
-import {
-  addAttributesToCurrentSpanAndPropagate,
-  SemanticAttributes,
-  ACCOUNT_USERNAME,
-} from "@services/tracing"
 
 const fields = {
   globals: GlobalsQuery,
@@ -36,35 +28,9 @@ const fields = {
   lnInvoicePaymentStatus: LnInvoicePaymentStatusQuery,
 } as const
 
-const addTracing = (trcFields: typeof fields) => {
-  let key: keyof typeof trcFields
-  for (key in trcFields) {
-    const original = trcFields[key].resolve
-    if (original) {
-      trcFields[key].resolve = (
-        source: unknown,
-        args: unknown,
-        context: GraphQLContext | GraphQLContextForUser,
-        info: GraphQLResolveInfo,
-      ) => {
-        const { ip, domainAccount, domainUser } = context
-        return addAttributesToCurrentSpanAndPropagate(
-          {
-            [SemanticAttributes.ENDUSER_ID]: domainUser?.id,
-            [ACCOUNT_USERNAME]: domainAccount?.username,
-            [SemanticAttributes.HTTP_CLIENT_IP]: ip,
-          },
-          () => original(source, args, context, info),
-        )
-      }
-    }
-  }
-  return trcFields
-}
-
 const QueryType = GT.Object({
   name: "Query",
-  fields: () => addTracing(fields),
+  fields,
 })
 
 export default QueryType
