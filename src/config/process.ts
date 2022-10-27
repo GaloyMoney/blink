@@ -112,13 +112,14 @@ export const getLoopConfig = () => {
       throw new ConfigError("Missing LND1_LOOP_MACAROON config")
     if (!process.env.LND2_LOOP_MACAROON)
       throw new ConfigError("Missing LND2_LOOP_MACAROON config")
+    return {
+      lnd1LoopTls: process.env.LND1_LOOP_TLS,
+      lnd1LoopMacaroon: process.env.LND1_LOOP_MACAROON as Macaroon,
+      lnd2LoopTls: process.env.LND2_LOOP_TLS,
+      lnd2LoopMacaroon: process.env.LND2_LOOP_MACAROON as Macaroon,
+    }
   }
-  return {
-    lnd1LoopTls: process.env.LND1_LOOP_TLS,
-    lnd1LoopMacaroon: process.env.LND1_LOOP_MACAROON as Macaroon,
-    lnd2LoopTls: process.env.LND2_LOOP_TLS,
-    lnd2LoopMacaroon: process.env.LND2_LOOP_MACAROON as Macaroon,
-  }
+  throw new ConfigError("getLoopConfig() was called though swapEnabled is false")
 }
 
 export const getKratosMasterPhonePassword = () => {
