@@ -201,8 +201,9 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
     usdPaymentAmount,
     username: recipientUsername,
     accountId: recipientAccountId,
+    userId: recipientUserId,
   }: WalletDescriptor<R> & {
-    accountId: AccountId
+    userId: UserId
     pubkey?: Pubkey
     usdPaymentAmount?: UsdPaymentAmount
     username?: Username
@@ -222,6 +223,7 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
         ),
       )
     }
+
     return LPFBWithRecipientWallet({
       ...state,
       recipientWalletId,
@@ -229,6 +231,7 @@ const LPFBWithSenderWallet = <S extends WalletCurrency>(
       recipientPubkey,
       recipientAccountId,
       recipientUsername,
+      recipientUserId,
       usdPaymentAmount: usdPaymentAmount || state.usdPaymentAmount,
     })
   }
@@ -448,6 +451,7 @@ const LPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       recipientAccountId: state.recipientAccountId,
       recipientPubkey: state.recipientPubkey,
       recipientUsername: state.recipientUsername,
+      recipientUserId: state.recipientUserId,
 
       descriptionFromInvoice: state.descriptionFromInvoice,
       skipProbeForDestination: state.skipProbeForDestination,

@@ -24,6 +24,7 @@ describe("OnChainPaymentFlowBuilder", () => {
     id: "senderWalletId" as WalletId,
     currency: WalletCurrency.Btc,
     accountId: "senderAccountId" as AccountId,
+    userId: "senderUserId" as UserId,
   }
   const senderAccount = { withdrawFee: toSats(100) } as Account
   const recipientBtcWallet = {
@@ -31,6 +32,7 @@ describe("OnChainPaymentFlowBuilder", () => {
     currency: WalletCurrency.Btc,
     accountId: "recipientAccountId" as AccountId,
     username: "Username" as Username,
+    userId: "recipientUserId" as UserId,
   }
   const senderUsdWallet = {
     id: "walletId" as WalletId,
@@ -42,6 +44,7 @@ describe("OnChainPaymentFlowBuilder", () => {
     currency: WalletCurrency.Usd,
     accountId: "recipientAccountId" as AccountId,
     username: "Username" as Username,
+    userId: "recipientUserId" as UserId,
   }
 
   // ~0.045 ratio (0.045 cents/sat, or $45,455 USD/BTC)

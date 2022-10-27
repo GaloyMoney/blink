@@ -59,6 +59,7 @@ export const PaymentFlowBase = <S extends WalletCurrency, R extends WalletCurren
     walletDescriptor: WalletDescriptor<R> | undefined
     recipientPubkey: Pubkey | undefined
     recipientUsername: Username | undefined
+    recipientUserId: UserId | undefined
   } => ({
     walletDescriptor:
       state.recipientWalletId && state.recipientWalletCurrency && state.recipientAccountId
@@ -70,6 +71,7 @@ export const PaymentFlowBase = <S extends WalletCurrency, R extends WalletCurren
         : undefined,
     recipientPubkey: state.recipientPubkey,
     recipientUsername: state.recipientUsername,
+    recipientUserId: state.recipientUserId,
   })
 
   const senderWalletDescriptor = (): WalletDescriptor<S> => ({

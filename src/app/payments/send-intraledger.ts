@@ -58,7 +58,11 @@ export const intraledgerPaymentSendWalletId = async ({
   const { senderWallet, recipientWallet, recipientAccount } = validatedPaymentInputs
 
   const { id: recipientWalletId, currency: recipientWalletCurrency } = recipientWallet
-  const { id: recipientAccountId, username: recipientUsername } = recipientAccount
+  const {
+    id: recipientAccountId,
+    username: recipientUsername,
+    kratosUserId: recipientUserId,
+  } = recipientAccount
 
   const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: [],
@@ -76,6 +80,7 @@ export const intraledgerPaymentSendWalletId = async ({
     currency: recipientWalletCurrency,
     accountId: recipientAccountId,
     username: recipientUsername,
+    userId: recipientUserId,
     pubkey: undefined,
     usdPaymentAmount: undefined,
   }
