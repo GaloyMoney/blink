@@ -56,13 +56,18 @@ export const PaymentFlowBase = <S extends WalletCurrency, R extends WalletCurren
   }
 
   const recipientDetails = (): {
-    recipientWalletId: WalletId | undefined
-    recipientWalletCurrency: WalletCurrency | undefined
+    walletDescriptor: WalletDescriptor<R> | undefined
     recipientPubkey: Pubkey | undefined
     recipientUsername: Username | undefined
   } => ({
-    recipientWalletId: state.recipientWalletId,
-    recipientWalletCurrency: state.recipientWalletCurrency,
+    walletDescriptor:
+      state.recipientWalletId && state.recipientWalletCurrency && state.recipientAccountId
+        ? {
+            id: state.recipientWalletId,
+            currency: state.recipientWalletCurrency,
+            accountId: state.recipientAccountId,
+          }
+        : undefined,
     recipientPubkey: state.recipientPubkey,
     recipientUsername: state.recipientUsername,
   })

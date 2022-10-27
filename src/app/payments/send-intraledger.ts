@@ -213,13 +213,14 @@ const executePaymentViaIntraledger = async <
   })
   if (limitCheck instanceof Error) return limitCheck
 
-  const { recipientWalletId, recipientWalletCurrency, recipientUsername } =
+  const { walletDescriptor: recipientWalletDescriptor, recipientUsername } =
     paymentFlow.recipientDetails()
-  if (!(recipientWalletId && recipientWalletCurrency)) {
+  if (!recipientWalletDescriptor) {
     return new InvalidLightningPaymentFlowBuilderStateError(
       "Expected recipient details missing",
     )
   }
+  const { currency: recipientWalletCurrency } = recipientWalletDescriptor
 
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
     const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
