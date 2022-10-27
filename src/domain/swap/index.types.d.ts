@@ -76,7 +76,7 @@ type SwapConfig = {
 
 type LoopdConfig = {
   macaroon: Macaroon
-  tlsCert: string
+  tlsCert?: string
   grpcEndpoint: string
   btcNetwork: BtcNetwork
   lndInstanceName: string

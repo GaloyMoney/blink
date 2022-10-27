@@ -17,6 +17,8 @@ import { SwapState as DomainSwapState } from "@domain/swap/index"
 
 import { WalletCurrency } from "@domain/shared"
 
+import { ConfigError } from "@config"
+
 import { SwapClientClient } from "./protos/loop_grpc_pb"
 import {
   FailureReason,
@@ -41,6 +43,9 @@ export const LoopService = ({
   lndInstanceName,
 }: LoopdConfig): ISwapService => {
   const mac = Buffer.from(macaroon, "base64").toString("hex") as Macaroon
+  if (!tlsCert) {
+    throw new ConfigError("missing LOOP_TLS")
+  }
   const tls = Buffer.from(tlsCert, "base64")
   const swapClient: ServiceClient = createClient(mac, tls, grpcEndpoint)
 
