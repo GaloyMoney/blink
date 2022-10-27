@@ -26,7 +26,6 @@ import { AlreadyPaidError, CouldNotFindLightningPaymentFlowError } from "@domain
 
 import { LndService } from "@services/lnd"
 import {
-  AccountsRepository,
   LnPaymentsRepository,
   UsersRepository,
   WalletInvoicesRepository,
@@ -324,8 +323,9 @@ const executePaymentViaIntraledger = async <
     walletDescriptor: recipientWalletDescriptor,
     recipientPubkey,
     recipientUsername,
+    recipientUserId,
   } = paymentFlow.recipientDetails()
-  if (!(recipientWalletDescriptor && recipientPubkey)) {
+  if (!(recipientWalletDescriptor && recipientUserId && recipientPubkey)) {
     return new InvalidLightningPaymentFlowBuilderStateError(
       "Expected recipient details missing",
     )
@@ -432,12 +432,7 @@ const executePaymentViaIntraledger = async <
     const newWalletInvoice = await WalletInvoicesRepository().markAsPaid(paymentHash)
     if (newWalletInvoice instanceof Error) return newWalletInvoice
 
-    const recipientAccount = await AccountsRepository().findById(
-      recipientWallet.accountId,
-    )
-    if (recipientAccount instanceof Error) return recipientAccount
-
-    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+    const recipientUser = await UsersRepository().findById(recipientUserId)
     if (recipientUser instanceof Error) return recipientUser
 
     let amount = paymentFlow.btcPaymentAmount.amount

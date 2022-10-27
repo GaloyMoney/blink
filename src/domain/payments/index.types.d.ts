@@ -32,6 +32,7 @@ type PaymentFlowBaseState<S extends WalletCurrency, R extends WalletCurrency> = 
   recipientAccountId?: AccountId
   recipientPubkey?: Pubkey
   recipientUsername?: Username
+  recipientUserId?: UserId
 
   outgoingNodePubkey?: Pubkey
   cachedRoute?: RawRoute
@@ -68,6 +69,7 @@ type PaymentFlowBase<S extends WalletCurrency, R extends WalletCurrency> = {
     walletDescriptor: WalletDescriptor<R> | undefined
     recipientPubkey: Pubkey | undefined
     recipientUsername: Username | undefined
+    recipientUserId: UserId | undefined
   }
   senderWalletDescriptor(): WalletDescriptor<S>
   recipientWalletDescriptor(): WalletDescriptor<R> | undefined
@@ -137,6 +139,7 @@ type LPFBWithSenderWallet<S extends WalletCurrency> = {
     | LPFBWithError
   withRecipientWallet<R extends WalletCurrency>(
     args: WalletDescriptor<R> & {
+      userId: UserId
       pubkey?: Pubkey
       usdPaymentAmount?: UsdPaymentAmount
       username?: Username
@@ -163,13 +166,13 @@ type OPFBWithSenderWalletAndAccount<S extends WalletCurrency> = {
   withoutRecipientWallet<R extends WalletCurrency>():
     | OPFBWithRecipientWallet<S, R>
     | OPFBWithError
-  withRecipientWallet<R extends WalletCurrency>({
-    id: recipientWalletId,
-    currency: recipientWalletCurrency,
-    usdPaymentAmount,
-  }: WalletDescriptor<R> & {
-    usdPaymentAmount?: UsdPaymentAmount
-  }): OPFBWithRecipientWallet<S, R> | OPFBWithError
+  withRecipientWallet<R extends WalletCurrency>(
+    args: WalletDescriptor<R> & {
+      userId: UserId
+      usdProposedAmount?: UsdPaymentAmount
+      username?: Username
+    },
+  ): OPFBWithRecipientWallet<S, R> | OPFBWithError
 }
 
 type LPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {
@@ -334,6 +337,7 @@ type LPFBWithRecipientWalletState<
   recipientWalletCurrency?: R
   recipientPubkey?: Pubkey
   recipientUsername?: Username
+  recipientUserId?: UserId
   recipientAccountId?: AccountId
 }
 
@@ -367,8 +371,8 @@ type OPFBWithRecipientWalletState<
 
   recipientWalletId?: WalletId
   recipientWalletCurrency?: R
-  recipientPubkey?: Pubkey
   recipientUsername?: Username
+  recipientUserId?: UserId
   recipientAccountId?: AccountId
 }
 

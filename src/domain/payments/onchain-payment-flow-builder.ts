@@ -113,10 +113,11 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
   const withRecipientWallet = <R extends WalletCurrency>({
     id: recipientWalletId,
     currency: recipientWalletCurrency,
-    pubkey: recipientPubkey,
     username: recipientUsername,
+    accountId: recipientAccountId,
+    userId: recipientUserId,
   }: WalletDescriptor<R> & {
-    pubkey?: Pubkey
+    userId: UserId
     usdProposedAmount?: UsdPaymentAmount
     username?: Username
   }): OPFBWithRecipientWallet<S, R> | OPFBWithError => {
@@ -128,7 +129,8 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
       ...settlementMethodFromRecipientWallet(recipientWalletId),
       recipientWalletId,
       recipientWalletCurrency,
-      recipientPubkey,
+      recipientAccountId,
+      recipientUserId,
       recipientUsername,
     })
   }

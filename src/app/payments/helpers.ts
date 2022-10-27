@@ -94,6 +94,7 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
       pubkey: Pubkey
       usdPaymentAmount: UsdPaymentAmount | undefined
       username: Username
+      userId: UserId
     }
   | ApplicationError
 > => {
@@ -118,7 +119,7 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
 
   const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
-  const { username: recipientUsername } = recipientAccount
+  const { username: recipientUsername, ownerId: recipientUserId } = recipientAccount
 
   return {
     id: recipientWalletId,
@@ -127,6 +128,7 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
     pubkey: recipientPubkey,
     usdPaymentAmount,
     username: recipientUsername,
+    userId: recipientUserId,
   }
 }
 
