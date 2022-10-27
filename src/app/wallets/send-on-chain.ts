@@ -1,15 +1,13 @@
 import crypto from "crypto"
 
-import {
-  BTC_NETWORK,
-  getFeesConfig,
-  getOnChainWalletConfig,
-  ONCHAIN_SCAN_DEPTH_OUTGOING,
-} from "@config"
+import { BTC_NETWORK, getOnChainWalletConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 
 import { getCurrentPrice } from "@app/prices"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
+import { getPriceRatioForLimits, newCheckWithdrawalLimits } from "@app/payments/helpers"
 
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
+import { PriceRatio } from "@domain/payments"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   checkedToOnChainAddress,
@@ -25,12 +23,18 @@ import {
   SelfPaymentError,
 } from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+import {
+  DisplayCurrencyConverter,
+  NewDisplayCurrencyConverter,
+} from "@domain/fiat/display-currency"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
-import { WalletCurrency } from "@domain/shared"
-import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { PaymentInputValidator } from "@domain/wallets"
+import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
 
+import * as LedgerFacade from "@services/ledger/facade"
+
+import { NewDealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { LockService } from "@services/lock"
@@ -43,13 +47,10 @@ import {
 import { NotificationsService } from "@services/notifications"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
-import { getOnChainFee } from "./get-on-chain-fee"
-import {
-  checkIntraledgerLimits,
-  checkWithdrawalLimits,
-} from "./private/check-limit-helpers"
+import { checkIntraledgerLimits } from "./private/check-limit-helpers"
 
 const { dustThreshold } = getOnChainWalletConfig()
+const dealer = NewDealerPriceService()
 
 export const payOnChainByWalletId = async ({
   senderAccount,
@@ -97,7 +98,21 @@ export const payOnChainByWalletId = async ({
   const recipientWallet = await wallets.findByAddress(checkedAddress)
   const isIntraLedger = !(recipientWallet instanceof Error)
 
-  if (isIntraLedger)
+  const withSenderBuilder = OnChainPaymentFlowBuilder({
+    usdFromBtcMidPriceFn,
+    btcFromUsdMidPriceFn,
+    volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
+    volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
+    isExternalAddress: async (address: OnChainAddress) => Promise.resolve(!!address),
+    sendAll,
+  })
+    .withAddress(checkedAddress)
+    .withSenderWalletAndAccount({
+      wallet: senderWallet,
+      account: senderAccount,
+    })
+
+  if (isIntraLedger) {
     return executePaymentViaIntraledger({
       senderAccount,
       senderWallet,
@@ -108,12 +123,18 @@ export const payOnChainByWalletId = async ({
       sendAll,
       logger: onchainLogger,
     })
+  }
+
+  const builder = withSenderBuilder
+    .withoutRecipientWallet()
+    .withAmount(amount)
+    .withConversion({
+      usdFromBtc: dealer.getCentsFromSatsForImmediateSell,
+      btcFromUsd: dealer.getSatsFromCentsForImmediateBuy,
+    })
 
   return executePaymentViaOnChain({
-    senderWallet,
-    senderAccount,
-    amount,
-    address: checkedAddress,
+    builder,
     targetConfirmations: checkedTargetConfirmations,
     memo,
     sendAll,
@@ -238,152 +259,156 @@ const executePaymentViaIntraledger = async <
   })
 }
 
-const executePaymentViaOnChain = async ({
-  senderWallet,
-  senderAccount,
-  amount,
-  address,
+const executePaymentViaOnChain = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
+  builder,
   targetConfirmations,
   memo,
   sendAll,
   logger,
 }: {
-  senderWallet: Wallet
-  senderAccount: Account
-  amount: CurrencyBaseAmount
-  address: OnChainAddress
+  builder: OPFBWithConversion<S, R> | OPFBWithError
   targetConfirmations: TargetConfirmations
   memo: string | null
   sendAll: boolean
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
+  const senderWalletDescriptor = await builder.senderWalletDescriptor()
+  if (senderWalletDescriptor instanceof Error) return senderWalletDescriptor
+
   // TODO Usd use case
-  if (senderWallet.currency !== WalletCurrency.Btc) {
+  if (senderWalletDescriptor.currency !== WalletCurrency.Btc) {
     return new NotImplementedError("USD Intraledger")
   }
-
-  const amountSats = toSats(amount)
-
-  const ledgerService = LedgerService()
-
-  const feeConfig = getFeesConfig()
-
-  const withdrawFeeCalculator = WithdrawalFeeCalculator({
-    feeRatio: feeConfig.withdrawRatio,
-    thresholdImbalance: feeConfig.withdrawThreshold,
-  })
 
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
 
-  const displayCurrencyPerSat = await getCurrentPrice()
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+  // Limit check
+  const proposedAmounts = await builder.proposedAmounts()
+  if (proposedAmounts instanceof Error) return proposedAmounts
 
-  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+  const priceRatioForLimits = await getPriceRatioForLimits(proposedAmounts)
+  if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
-  const withdrawalLimitCheck = await checkWithdrawalLimits({
-    amount,
-    dCConverter,
-    walletId: senderWallet.id,
-    walletCurrency: senderWallet.currency,
-    account: senderAccount,
+  const limitCheck = await newCheckWithdrawalLimits({
+    amount: proposedAmounts.usd,
+    wallet: senderWalletDescriptor,
+    priceRatio: priceRatioForLimits,
   })
-  if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
+  if (limitCheck instanceof Error) return limitCheck
 
-  const getFeeEstimate = () =>
-    getOnChainFee({
-      walletId: senderWallet.id,
-      account: senderAccount,
-      amount,
-      address,
-      targetConfirmations,
-    })
+  const address = await builder.addressForFlow()
 
+  // Get estimated miner fee and create 'paymentFlow'
+  const paymentFlow = await getMinerFeeAndPaymentFlow({ builder, targetConfirmations })
+  if (paymentFlow instanceof Error) return paymentFlow
+
+  // Check onchain balance & check if dust
   const onChainAvailableBalance = await onChainService.getBalance()
   if (onChainAvailableBalance instanceof Error) return onChainAvailableBalance
 
-  const estimatedFee = await getFeeEstimate()
-  if (estimatedFee instanceof Error) return estimatedFee
-
-  const amountToSend = sendAll ? toSats(amount - estimatedFee) : amountSats
-  if (onChainAvailableBalance < amountToSend + estimatedFee)
+  // TODO: make a method for this similar to 'checkBalanceForSend'
+  const totalAmounts = paymentFlow.totalAmountsForPayment()
+  if (onChainAvailableBalance < totalAmounts.btc.amount) {
     return new RebalanceNeededError()
+  }
 
-  if (amountToSend < dustThreshold)
+  // TODO: move this check into builder
+  if (paymentFlow.btcPaymentAmount.amount < dustThreshold)
     return new LessThanDustThresholdError(
       `Use lightning to send amounts less than ${dustThreshold}`,
     )
 
-  return LockService().lockWalletId(senderWallet.id, async (signal) => {
-    const balance = await LedgerService().getWalletBalance(senderWallet.id)
-    if (balance instanceof Error) return balance
-    const estimatedFee = await getFeeEstimate()
-    if (estimatedFee instanceof Error) return estimatedFee
-    if (balance < amountToSend + estimatedFee) {
-      return new InsufficientBalanceError(
-        `${amountToSend + estimatedFee} exceeds balance ${balance}`,
-      )
-    }
+  return LockService().lockWalletId(senderWalletDescriptor.id, async (signal) => {
+    // Get estimated miner fee and create 'paymentFlow'
+    const paymentFlowForBalance = await getMinerFeeAndPaymentFlow({
+      builder,
+      targetConfirmations,
+    })
+    if (paymentFlowForBalance instanceof Error) return paymentFlowForBalance
 
+    // Check user balance
+    const balance = await LedgerService().getWalletBalanceAmount(senderWalletDescriptor)
+    if (balance instanceof Error) return balance
+
+    const balanceCheck = paymentFlowForBalance.checkBalanceForSend(balance)
+    if (balanceCheck instanceof Error) return balanceCheck
+
+    // Check lock still intact
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
 
-    const imbalanceCalculator = ImbalanceCalculator({
-      method: feeConfig.withdrawMethod,
-      volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
-      volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
-      sinceDaysAgo: feeConfig.withdrawDaysLookback,
-    })
-
-    const imbalance = await imbalanceCalculator.getSwapOutImbalance(senderWallet)
-    if (imbalance instanceof Error) return imbalance
-
-    const minerFee = await onChainService.getOnChainFeeEstimate({
-      amount: amountToSend,
-      address,
+    // Add fees to tracing
+    const paymentFlow = await getMinerFeeAndPaymentFlow({
+      builder,
       targetConfirmations,
     })
-    if (minerFee instanceof Error) return minerFee
+    if (paymentFlow instanceof Error) return paymentFlow
 
-    const fees = withdrawFeeCalculator.onChainWithdrawalFee({
-      amount: amountToSend,
-      minerFee,
-      minBankFee: toSats(senderAccount.withdrawFee || feeConfig.withdrawDefaultMin),
-      imbalance,
-    })
+    const bankFee = await paymentFlow.bankFees()
+    if (bankFee instanceof Error) return bankFee
+    const btcBankFee = bankFee.btc
 
-    const totalFee = fees.totalFee
-    const bankFee = fees.bankFee
-    const sats = toSats(amountToSend + totalFee)
-    const amountDisplayCurrency = dCConverter.fromSats(sats)
-    const totalFeeDisplayCurrency = dCConverter.fromSats(totalFee)
+    const btcTotalFee = await paymentFlow.btcProtocolFee
+    if (btcTotalFee instanceof Error) return btcTotalFee
 
     addAttributesToCurrentSpan({
-      "payOnChainByWalletId.estimatedFee": `${estimatedFee}`,
-      "payOnChainByWalletId.estimatedMinerFee": `${minerFee}`,
-      "payOnChainByWalletId.totalFee": `${totalFee}`,
-      "payOnChainByWalletId.bankFee": `${bankFee}`,
+      "payOnChainByWalletId.estimatedFee": `${paymentFlow.btcProtocolFee.amount}`,
+      "payOnChainByWalletId.estimatedMinerFee": `${paymentFlow.btcMinerFee}`,
+      "payOnChainByWalletId.totalFee": `${btcTotalFee}`,
+      "payOnChainByWalletId.bankFee": `${btcBankFee}`,
     })
 
-    const journal = await ledgerService.addOnChainTxSend({
-      walletId: senderWallet.id,
-      walletCurrency: senderWallet.currency,
+    // Construct metadata
+    const priceRatio = PriceRatio({
+      usd: paymentFlow.usdPaymentAmount,
+      btc: paymentFlow.btcPaymentAmount,
+    })
+    if (priceRatio instanceof Error) return priceRatio
+    const displayCentsPerSat = priceRatio.usdPerSat()
+
+    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+
+    const metadata = LedgerFacade.OnChainSendLedgerMetadata({
       // we need a temporary hash to be able to search in admin panel
-      txHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
-      description: memo || "",
-      sats,
-      totalFee,
-      bankFee,
-      amountDisplayCurrency,
-      payeeAddress: address,
+      onChainTxHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
+      paymentFlow,
+
+      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+      feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),
+      displayCurrency: DisplayCurrency.Usd,
+
+      payeeAddresses: [paymentFlow.address],
       sendAll,
-      totalFeeDisplayCurrency,
+    })
+
+    // Record transaction
+    const journal = await LedgerFacade.recordSend({
+      description: memo || "",
+      amountToDebitSender: {
+        btc: {
+          currency: paymentFlow.btcPaymentAmount.currency,
+          amount: paymentFlow.btcPaymentAmount.amount + paymentFlow.btcProtocolFee.amount,
+        },
+        usd: {
+          currency: paymentFlow.usdPaymentAmount.currency,
+          amount: paymentFlow.usdPaymentAmount.amount + paymentFlow.usdProtocolFee.amount,
+        },
+      },
+      bankFee,
+      senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
+      metadata,
     })
     if (journal instanceof Error) return journal
 
+    // Execute payment onchain
+    const amountToSend = toSats(paymentFlow.btcPaymentAmount.amount)
     const txHash = await onChainService.payToAddress({
-      address,
+      address: paymentFlow.address,
       amount: amountToSend,
       targetConfirmations,
       description: `journal-${journal.journalId}`,
@@ -392,7 +417,7 @@ const executePaymentViaOnChain = async ({
       txHash instanceof InsufficientOnChainFundsError ||
       txHash instanceof CPFPAncestorLimitReachedError
     ) {
-      const reverted = await ledgerService.revertOnChainPayment({
+      const reverted = await LedgerService().revertOnChainPayment({
         journalId: journal.journalId,
       })
       if (reverted instanceof Error) return reverted
@@ -406,7 +431,8 @@ const executePaymentViaOnChain = async ({
       return txHash
     }
 
-    const updated = await ledgerService.setOnChainTxSendHash({
+    // Reconcile transaction in ledger on successful execution
+    const updated = await LedgerService().setOnChainTxSendHash({
       journalId: journal.journalId,
       newTxHash: txHash,
     })
@@ -429,4 +455,37 @@ const executePaymentViaOnChain = async ({
 
     return PaymentSendStatus.Success
   })
+}
+
+const getMinerFeeAndPaymentFlow = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
+  builder,
+  targetConfirmations,
+}: {
+  builder: OPFBWithConversion<S, R>
+  targetConfirmations: TargetConfirmations
+}): Promise<OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError> => {
+  const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
+  if (onChainService instanceof Error) return onChainService
+
+  const proposedBtcAmount = await builder.btcProposedAmount()
+  if (proposedBtcAmount instanceof Error) return proposedBtcAmount
+
+  const address = await builder.addressForFlow()
+  if (address instanceof Error) return address
+
+  const minerFee = await onChainService.getOnChainFeeEstimate({
+    amount: toSats(proposedBtcAmount.amount),
+    address,
+    targetConfirmations,
+  })
+  if (minerFee instanceof Error) return minerFee
+  const minerFeeAmount = paymentAmountFromNumber({
+    amount: minerFee,
+    currency: WalletCurrency.Btc,
+  })
+  if (minerFeeAmount instanceof Error) return minerFeeAmount
+  return builder.withMinerFee(minerFeeAmount)
 }
