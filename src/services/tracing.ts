@@ -187,7 +187,7 @@ registerInstrumentations({
 const provider = new NodeTracerProvider({
   resource: Resource.default().merge(
     new Resource({
-      [SemanticResourceAttributes.SERVICE_NAME]: tracingConfig.tracingServiceName,
+      [SemanticResourceAttributes.SERVICE_NAME]: tracingConfig?.tracingServiceName,
     }),
   ),
 })
@@ -209,8 +209,8 @@ class SpanProcessorWrapper extends SimpleSpanProcessor {
 provider.addSpanProcessor(
   new SpanProcessorWrapper(
     new JaegerExporter({
-      host: tracingConfig.jaegerHost,
-      port: tracingConfig.jaegerPort,
+      host: tracingConfig?.jaegerHost,
+      port: tracingConfig?.jaegerPort,
     }),
   ),
 )
@@ -218,7 +218,7 @@ provider.addSpanProcessor(
 provider.register()
 
 export const tracer = trace.getTracer(
-  tracingConfig.tracingServiceName,
+  tracingConfig?.tracingServiceName,
   process.env.COMMITHASH || "dev",
 )
 export const addAttributesToCurrentSpan = (attributes: Attributes) => {
