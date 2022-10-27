@@ -45,6 +45,7 @@ export async function startApolloServerForCoreSchema() {
         lnNoAmountUsdInvoicePaymentSend: isAuthenticated,
 
         intraLedgerPaymentSend: isAuthenticated,
+        intraLedgerUsdPaymentSend: isAuthenticated,
 
         onChainAddressCreate: isAuthenticated,
         onChainAddressCurrent: isAuthenticated,
