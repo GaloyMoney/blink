@@ -321,16 +321,18 @@ const executePaymentViaIntraledger = async <
   if (paymentHash instanceof Error) return paymentHash
 
   const {
-    recipientWalletId,
+    walletDescriptor: recipientWalletDescriptor,
     recipientPubkey,
-    recipientWalletCurrency,
     recipientUsername,
   } = paymentFlow.recipientDetails()
-  if (!(recipientWalletId && recipientWalletCurrency && recipientPubkey)) {
+  if (!(recipientWalletDescriptor && recipientPubkey)) {
     return new InvalidLightningPaymentFlowBuilderStateError(
       "Expected recipient details missing",
     )
   }
+  const { id: recipientWalletId, currency: recipientWalletCurrency } =
+    recipientWalletDescriptor
+
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
@@ -404,10 +406,6 @@ const executePaymentViaIntraledger = async <
           recipientUsername,
         }))
     }
-
-    const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
-    if (recipientWalletDescriptor === undefined)
-      return new InvalidLightningPaymentFlowBuilderStateError()
 
     const journal = await LedgerFacade.recordIntraledger({
       description: paymentFlow.descriptionFromInvoice,

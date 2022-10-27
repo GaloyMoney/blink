@@ -65,8 +65,7 @@ type PaymentFlowBase<S extends WalletCurrency, R extends WalletCurrency> = {
     outgoingNodePubkey?: Pubkey
   }
   recipientDetails(): {
-    recipientWalletId: WalletId | undefined
-    recipientWalletCurrency: WalletCurrency | undefined
+    walletDescriptor: WalletDescriptor<R> | undefined
     recipientPubkey: Pubkey | undefined
     recipientUsername: Username | undefined
   }
