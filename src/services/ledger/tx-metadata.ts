@@ -17,9 +17,11 @@ export const LnSendLedgerMetadata = <S extends WalletCurrency, R extends WalletC
   paymentHash: PaymentHash
   pubkey: Pubkey
   paymentFlow: PaymentFlowState<S, R>
+
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
   displayCurrency: DisplayCurrency
+
   feeKnownInAdvance: boolean
 }) => {
   const {
@@ -54,30 +56,54 @@ export const LnSendLedgerMetadata = <S extends WalletCurrency, R extends WalletC
   return metadata
 }
 
-export const OnChainSendLedgerMetadata = ({
+export const OnChainSendLedgerMetadata = <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
   onChainTxHash,
-  fee,
+  paymentFlow,
   feeDisplayCurrency,
   amountDisplayCurrency,
+  displayCurrency,
   payeeAddresses,
   sendAll,
 }: {
   onChainTxHash: OnChainTxHash
-  fee: BtcPaymentAmount
+  paymentFlow: OnChainPaymentFlowState<S, R>
+
   feeDisplayCurrency: DisplayCurrencyBaseAmount
   amountDisplayCurrency: DisplayCurrencyBaseAmount
+  displayCurrency: DisplayCurrency
+
   payeeAddresses: OnChainAddress[]
   sendAll: boolean
 }) => {
+  const {
+    btcPaymentAmount: { amount: satsAmount },
+    usdPaymentAmount: { amount: centsAmount },
+    btcProtocolFee: { amount: satsFee },
+    usdProtocolFee: { amount: centsFee },
+  } = paymentFlow
+
   const metadata: AddOnchainSendLedgerMetadata = {
     type: LedgerTransactionType.OnchainPayment,
     pending: true,
     hash: onChainTxHash,
     payee_addresses: payeeAddresses,
-    fee: Number(fee.amount) as Satoshis,
+    sendAll,
+
+    fee: toSats(satsFee),
     feeUsd: convertCentsToUsdAsDollars(feeDisplayCurrency),
     usd: convertCentsToUsdAsDollars(amountDisplayCurrency),
-    sendAll,
+
+    satsFee: toSats(satsFee),
+    displayFee: feeDisplayCurrency,
+    displayAmount: amountDisplayCurrency,
+
+    displayCurrency,
+    centsAmount: toCents(centsAmount),
+    satsAmount: toSats(satsAmount),
+    centsFee: toCents(centsFee),
   }
 
   return metadata
