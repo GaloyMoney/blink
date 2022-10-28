@@ -95,10 +95,15 @@ export const payOnChainByWalletId = async ({
   const checkedTargetConfirmations = checkedToTargetConfs(targetConfirmations)
   if (checkedTargetConfirmations instanceof Error) return checkedTargetConfirmations
 
-  const isExternalAddress = async (address: OnChainAddress) => {
-    const recipientWallet = await WalletsRepository().findByAddress(address)
-    return recipientWallet instanceof CouldNotFindError
+  const recipientWallet = await WalletsRepository().findByAddress(checkedAddress)
+  if (
+    recipientWallet instanceof Error &&
+    !(recipientWallet instanceof CouldNotFindError)
+  ) {
+    return recipientWallet
   }
+
+  const isExternalAddress = async () => recipientWallet instanceof CouldNotFindError
 
   const withSenderBuilder = OnChainPaymentFlowBuilder({
     usdFromBtcMidPriceFn,
@@ -115,9 +120,7 @@ export const payOnChainByWalletId = async ({
     })
 
   if (await withSenderBuilder.isIntraLedger()) {
-    const recipientWallet = await WalletsRepository().findByAddress(checkedAddress)
-    if (recipientWallet instanceof Error) return recipientWallet
-
+    if (recipientWallet instanceof CouldNotFindError) return recipientWallet
     return executePaymentViaIntraledger({
       senderAccount,
       senderWallet,
