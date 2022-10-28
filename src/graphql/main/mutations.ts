@@ -30,12 +30,6 @@ import OnChainPaymentSendAllMutation from "@graphql/root/mutation/onchain-paymen
 import CaptchaRequestAuthCodeMutation from "@graphql/root/mutation/captcha-request-auth-code"
 import CaptchaCreateChallengeMutation from "@graphql/root/mutation/captcha-create-challenge"
 
-import {
-  addAttributesToCurrentSpanAndPropagate,
-  SemanticAttributes,
-  ACCOUNT_USERNAME,
-} from "@services/tracing"
-
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLContext> }
 const fields = {
   // unauthed
@@ -81,30 +75,9 @@ const fields = {
   onChainPaymentSendAll: OnChainPaymentSendAllMutation,
 }
 
-const addTracing = () => {
-  for (const key in fields) {
-    // @ts-ignore-next-line no-implicit-any error
-    const original = fields[key].resolve
-    /* eslint @typescript-eslint/ban-ts-comment: "off" */
-    // @ts-ignore-next-line no-implicit-any error
-    fields[key].resolve = (source, args, context: GraphQLContextForUser, info) => {
-      const { ip, domainAccount } = context
-      return addAttributesToCurrentSpanAndPropagate(
-        {
-          [SemanticAttributes.ENDUSER_ID]: domainAccount?.id,
-          [ACCOUNT_USERNAME]: domainAccount?.username,
-          [SemanticAttributes.HTTP_CLIENT_IP]: ip,
-        },
-        () => original(source, args, context, info),
-      )
-    }
-  }
-  return fields
-}
-
 const MutationType = GT.Object({
   name: "Mutation",
-  fields: () => addTracing(),
+  fields,
 })
 
 export default MutationType

@@ -16,7 +16,7 @@ import {
   ApolloServerPluginLandingPageGraphQLPlayground,
 } from "apollo-server-core"
 import { ApolloError, ApolloServer } from "apollo-server-express"
-import express from "express"
+import express, { NextFunction, Request, Response } from "express"
 import { expressjwt, GetVerificationKey } from "express-jwt"
 import { execute, GraphQLError, GraphQLSchema, subscribe } from "graphql"
 import { rule } from "graphql-shield"
@@ -77,6 +77,43 @@ const jwtAlgorithms: jsonwebtoken.Algorithm[] = ["RS256"]
 const geeTestConfig = getGeetestConfig()
 const geetest = Geetest(geeTestConfig)
 
+type RequestWithGqlContext = Request & { gqlContext: GraphQLContext | undefined }
+
+const setGqlContext = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  console.log(req)
+  const tokenPayload = req.token
+
+  const body = req.body ?? null
+
+  const ipString = isDev
+    ? req.ip
+    : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
+
+  const ip = parseIps(ipString)
+
+  const gqlContext = await sessionContext({
+    tokenPayload,
+    ip,
+    body,
+  })
+
+  const reqWithGqlContext = req as RequestWithGqlContext
+  reqWithGqlContext.gqlContext = gqlContext
+
+  addAttributesToCurrentSpanAndPropagate(
+    {
+      [SemanticAttributes.HTTP_CLIENT_IP]: ip,
+      [ACCOUNT_USERNAME]: gqlContext.domainAccount?.username,
+      [SemanticAttributes.ENDUSER_ID]: gqlContext.domainAccount?.id || tokenPayload.sub,
+    },
+    next,
+  )
+}
+
 const sessionContext = ({
   tokenPayload,
   ip,
@@ -93,7 +130,7 @@ const sessionContext = ({
 
   return addAttributesToCurrentSpanAndPropagate(
     {
-      [SemanticAttributes.ENDUSER_ID]: tokenPayload.sub,
+      "token.sub": tokenPayload.sub,
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
     },
     async () => {
@@ -176,22 +213,8 @@ export const startApolloServer = async ({
     cache: "bounded",
     introspection: apolloConfig.playground,
     plugins: apolloPlugins,
-    context: async (context) => {
-      const tokenPayload = context.req.token
-
-      const body = context.req?.body ?? null
-
-      const ipString = isDev
-        ? context.req?.ip
-        : context.req?.headers["x-real-ip"] || context.req?.headers["x-forwarded-for"]
-
-      const ip = parseIps(ipString)
-
-      return sessionContext({
-        tokenPayload,
-        ip,
-        body,
-      })
+    context: (context) => {
+      return (context.req as RequestWithGqlContext).gqlContext
     },
     formatError: (err) => {
       try {
@@ -261,6 +284,8 @@ export const startApolloServer = async ({
   )
 
   app.use(updateToken)
+
+  app.use("/graphql", setGqlContext)
 
   await apolloServer.start()
 
