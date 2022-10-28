@@ -16,6 +16,7 @@ import {
   TxDecoder,
 } from "@domain/bitcoin/onchain"
 import {
+  CouldNotFindError,
   InsufficientBalanceError,
   LessThanDustThresholdError,
   NotImplementedError,
@@ -94,16 +95,17 @@ export const payOnChainByWalletId = async ({
   const checkedTargetConfirmations = checkedToTargetConfs(targetConfirmations)
   if (checkedTargetConfirmations instanceof Error) return checkedTargetConfirmations
 
-  const wallets = WalletsRepository()
-  const recipientWallet = await wallets.findByAddress(checkedAddress)
-  const isIntraLedger = !(recipientWallet instanceof Error)
+  const isExternalAddress = async (address: OnChainAddress) => {
+    const recipientWallet = await WalletsRepository().findByAddress(address)
+    return recipientWallet instanceof CouldNotFindError
+  }
 
   const withSenderBuilder = OnChainPaymentFlowBuilder({
     usdFromBtcMidPriceFn,
     btcFromUsdMidPriceFn,
     volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
     volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
-    isExternalAddress: async (address: OnChainAddress) => Promise.resolve(!!address),
+    isExternalAddress,
     sendAll,
   })
     .withAddress(checkedAddress)
@@ -112,7 +114,10 @@ export const payOnChainByWalletId = async ({
       account: senderAccount,
     })
 
-  if (isIntraLedger) {
+  if (await withSenderBuilder.isIntraLedger()) {
+    const recipientWallet = await WalletsRepository().findByAddress(checkedAddress)
+    if (recipientWallet instanceof Error) return recipientWallet
+
     return executePaymentViaIntraledger({
       senderAccount,
       senderWallet,
