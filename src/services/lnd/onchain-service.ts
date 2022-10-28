@@ -265,7 +265,9 @@ export const extractOutgoingTransactions = ({
 }
 
 const getCachedHeight = async (): Promise<number> => {
-  const cachedHeight = await LocalCacheService().get<number>(CacheKeys.BlockHeight)
+  const cachedHeight = await LocalCacheService().get<number>({
+    key: CacheKeys.BlockHeight,
+  })
   if (cachedHeight instanceof Error) return 0
   return cachedHeight
 }

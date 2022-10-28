@@ -94,7 +94,7 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
   // to keep the sessions clean, here we are caching the user credentials, so there is a lower likely that
   // during the migrations, a user is sending many requests simoultaneously and ends up with multiple sessions
   // just because the mobile app would not have update the token by the time another request is been initiated
-  const cacheRes = await RedisCacheService().get<SessionToken>(rawToken)
+  const cacheRes = await RedisCacheService().get<SessionToken>({ key: rawToken })
   if (!(cacheRes instanceof Error)) {
     addAttributesToCurrentSpan({ authUpgrade: "returning token from cache" })
 

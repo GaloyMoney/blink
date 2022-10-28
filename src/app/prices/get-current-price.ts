@@ -21,9 +21,9 @@ export const getCurrentPrice = async (): Promise<
 const getCachedPrice = async (): Promise<
   DisplayCurrencyPerSat | PriceNotAvailableError
 > => {
-  const cachedPrice = await LocalCacheService().get<DisplayCurrencyPerSat>(
-    CacheKeys.CurrentPrice,
-  )
+  const cachedPrice = await LocalCacheService().get<DisplayCurrencyPerSat>({
+    key: CacheKeys.CurrentPrice,
+  })
   if (cachedPrice instanceof Error) return new PriceNotAvailableError()
   return cachedPrice
 }

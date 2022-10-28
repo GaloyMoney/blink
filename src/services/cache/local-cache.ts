@@ -23,7 +23,7 @@ export const LocalCacheService = (): ICacheService => {
     }
   }
 
-  const get = <T>(key: CacheKeys | string): Promise<T | CacheServiceError> => {
+  const get = <T>({ key }: LocalCacheGetArgs): Promise<T | CacheServiceError> => {
     try {
       const value = localCache.get<T>(key)
       if (value === undefined) return Promise.resolve(new CacheUndefinedError())
@@ -38,7 +38,7 @@ export const LocalCacheService = (): ICacheService => {
     getForCaching,
     ttlSecs,
   }: LocalCacheGetOrSetArgs<C, F>): Promise<ReturnType<F>> => {
-    const cachedData = await get<ReturnType<F>>(key)
+    const cachedData = await get<ReturnType<F>>({ key })
     if (!(cachedData instanceof Error)) return cachedData
 
     const data = await getForCaching()
@@ -51,7 +51,7 @@ export const LocalCacheService = (): ICacheService => {
     return data
   }
 
-  const clear = (key: CacheKeys | string): Promise<true | CacheServiceError> => {
+  const clear = ({ key }: LocalCacheClearArgs): Promise<true | CacheServiceError> => {
     try {
       localCache.del(key)
       return Promise.resolve(true)

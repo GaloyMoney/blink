@@ -133,7 +133,7 @@ export const onchainTransactionEventHandler = async (
   } else {
     // incoming transaction
 
-    redisCache.clear(CacheKeys.LastOnChainTransactions)
+    redisCache.clear({ key: CacheKeys.LastOnChainTransactions })
 
     const walletsRepo = WalletsRepository()
 
