@@ -50,6 +50,7 @@ type OnChainPaymentFlowState<S extends WalletCurrency, R extends WalletCurrency>
   address: OnChainAddress
   btcBankFee: BtcPaymentAmount
   usdBankFee: UsdPaymentAmount
+  btcMinerFee?: BtcPaymentAmount
 } & PaymentFlowBaseState<S, R>
 
 type PaymentFlowStateIndex = XorPaymentHashProperty & {

@@ -11,8 +11,6 @@ import { OnChainFees, PaymentInitiationMethod, SettlementMethod } from "@domain/
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
-import { addAttributesToCurrentSpan } from "@services/tracing"
-
 import { InvalidOnChainPaymentFlowBuilderStateError } from "./errors"
 import { PriceRatio } from "./price-ratio"
 import { OnChainPaymentFlow } from "./payment-flow"
@@ -391,12 +389,6 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       imbalance,
     })
 
-    addAttributesToCurrentSpan({
-      "onChainPaymentFlow.actualMinerFee": `${minerFee}`,
-      "onChainPaymentFlow.totalFee": `${feeAmounts.totalFee.amount}`,
-      "onChainPaymentFlow.bankFee": `${feeAmounts.bankFee.amount}`,
-    })
-
     // Calculate amounts & fees
     const btcProtocolFee = feeAmounts.totalFee
     const usdProtocolFee = priceRatio.convertFromBtcToCeil(feeAmounts.totalFee)
@@ -424,6 +416,7 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       usdBankFee: priceRatio.convertFromBtcToCeil(feeAmounts.bankFee),
       btcPaymentAmount,
       usdPaymentAmount,
+      btcMinerFee: minerFee,
       paymentSentAndPending: false,
     })
   }
