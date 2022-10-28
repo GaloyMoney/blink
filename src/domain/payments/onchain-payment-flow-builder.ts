@@ -28,13 +28,6 @@ const onChainFees = OnChainFees({
 export const OnChainPaymentFlowBuilder = <S extends WalletCurrency>(
   config: OnChainPaymentFlowBuilderConfig,
 ): OnChainPaymentFlowBuilder<S> => {
-  const settlementMethodFromAddress = async (
-    address: OnChainAddress,
-  ): Promise<SettlementMethod> => {
-    const isExternal = await config.isExternalAddress(address)
-    return isExternal ? SettlementMethod.OnChain : SettlementMethod.IntraLedger
-  }
-
   const withAddress = (address: OnChainAddress): OPFBWithAddress<S> | OPFBWithError => {
     // TODO: validate onchain address?
     if (!address) {
@@ -47,7 +40,6 @@ export const OnChainPaymentFlowBuilder = <S extends WalletCurrency>(
       ...config,
 
       paymentInitiationMethod: PaymentInitiationMethod.OnChain,
-      settlementMethodPromise: settlementMethodFromAddress(address),
       address,
     })
   }
@@ -90,21 +82,12 @@ const OPFBWithAddress = <S extends WalletCurrency>(
 const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
   state: OPFBWithSenderWalletAndAccountState<S>,
 ): OPFBWithSenderWalletAndAccount<S> | OPFBWithError => {
-  const settlementMethodFromRecipientWallet = (
-    walletId: WalletId | undefined,
-  ): {
-    settlementMethod: SettlementMethod
-  } => ({
-    settlementMethod:
-      walletId === undefined ? SettlementMethod.OnChain : SettlementMethod.IntraLedger,
-  })
-
   const withoutRecipientWallet = <R extends WalletCurrency>():
     | OPFBWithRecipientWallet<S, R>
     | OPFBWithError => {
     return OPFBWithRecipientWallet({
       ...state,
-      ...settlementMethodFromRecipientWallet(undefined),
+      settlementMethod: SettlementMethod.OnChain,
     })
   }
 
@@ -124,7 +107,7 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
     }
     return OPFBWithRecipientWallet({
       ...state,
-      ...settlementMethodFromRecipientWallet(recipientWalletId),
+      settlementMethod: SettlementMethod.IntraLedger,
       recipientWalletId,
       recipientWalletCurrency,
       recipientAccountId,
@@ -133,9 +116,12 @@ const OPFBWithSenderWalletAndAccount = <S extends WalletCurrency>(
     })
   }
 
+  const isIntraLedger = async () => !(await state.isExternalAddress(state))
+
   return {
     withoutRecipientWallet,
     withRecipientWallet,
+    isIntraLedger,
   }
 }
 
@@ -320,8 +306,16 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     const state = await statePromise
     if (state instanceof Error) return state
 
-    const settlementMethod = await state.settlementMethodPromise
-    if (settlementMethod === SettlementMethod.IntraLedger && !state.recipientWalletId) {
+    const isIntraLedger = async () => !(await state.isExternalAddress(state))
+    const settlementMethodFromAddress = (await isIntraLedger())
+      ? SettlementMethod.IntraLedger
+      : SettlementMethod.OnChain
+
+    if (
+      state.settlementMethod !== settlementMethodFromAddress ||
+      (state.settlementMethod === SettlementMethod.IntraLedger &&
+        !state.recipientWalletId)
+    ) {
       return new InvalidOnChainPaymentFlowBuilderStateError(
         "withoutRecipientWallet called but settlementMethod is IntraLedger",
       )
@@ -435,13 +429,6 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     return state.usdProposedAmount
   }
 
-  const isIntraLedger = async () => {
-    const state = await stateFromPromise(statePromise)
-    if (state instanceof Error) return state
-
-    return state.settlementMethod === SettlementMethod.IntraLedger
-  }
-
   const proposedAmounts = async () => {
     const btc = await btcProposedAmount()
     if (btc instanceof Error) return btc
@@ -475,7 +462,6 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     btcProposedAmount,
     usdProposedAmount,
     proposedAmounts,
-    isIntraLedger,
     addressForFlow,
     senderWalletDescriptor,
   }

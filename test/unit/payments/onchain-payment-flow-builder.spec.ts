@@ -107,7 +107,10 @@ describe("OnChainPaymentFlowBuilder", () => {
       btcFromUsdMidPriceFn,
       volumeLightningFn,
       volumeOnChainFn,
-      isExternalAddress: async (address: OnChainAddress) => Promise.resolve(!!address),
+      isExternalAddress: async (state) =>
+        /* eslint @typescript-eslint/ban-ts-comment: "off" */
+        // @ts-ignore-next-line error
+        Promise.resolve(!state.recipientWalletId),
       sendAll: false,
     })
 
@@ -721,13 +724,12 @@ describe("OnChainPaymentFlowBuilder", () => {
 
     describe("no recipient wallet despite IntraLedger", () => {
       it("returns InvalidLightningPaymentFlowBuilderStateError", async () => {
-        const isIntraLedger = false
         const payment = await OnChainPaymentFlowBuilder({
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
           volumeLightningFn,
           volumeOnChainFn,
-          isExternalAddress: async () => Promise.resolve(isIntraLedger),
+          isExternalAddress: async () => Promise.resolve(false),
           sendAll: false,
         })
           .withAddress("address" as OnChainAddress)
@@ -749,13 +751,12 @@ describe("OnChainPaymentFlowBuilder", () => {
 
     describe("sender and recipient are identical", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
-        const isIntraLedger = false
         const payment = await OnChainPaymentFlowBuilder({
           usdFromBtcMidPriceFn,
           btcFromUsdMidPriceFn,
           volumeLightningFn,
           volumeOnChainFn,
-          isExternalAddress: async () => Promise.resolve(!isIntraLedger),
+          isExternalAddress: async () => Promise.resolve(false),
           sendAll: false,
         })
           .withAddress("address" as OnChainAddress)

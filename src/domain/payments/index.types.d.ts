@@ -174,6 +174,7 @@ type OPFBWithSenderWalletAndAccount<S extends WalletCurrency> = {
       username?: Username
     },
   ): OPFBWithRecipientWallet<S, R> | OPFBWithError
+  isIntraLedger(): Promise<boolean | DealerPriceServiceError>
 }
 
 type LPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency> = {
@@ -230,7 +231,6 @@ type OPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
     { btc: BtcPaymentAmount; usd: UsdPaymentAmount } | DealerPriceServiceError
   >
 
-  isIntraLedger(): Promise<boolean | DealerPriceServiceError>
   addressForFlow(): Promise<OnChainAddress | DealerPriceServiceError>
   senderWalletDescriptor(): Promise<WalletDescriptor<S> | DealerPriceServiceError>
 }
@@ -303,7 +303,7 @@ type OnChainPaymentFlowBuilderConfig = {
   btcFromUsdMidPriceFn: BtcFromUsdMidPriceFn
   volumeLightningFn
   volumeOnChainFn
-  isExternalAddress: (address: OnChainAddress) => Promise<boolean>
+  isExternalAddress: (state: { address: OnChainAddress }) => Promise<boolean>
   sendAll: boolean
 }
 
@@ -352,7 +352,6 @@ type LPFBWithConversionState<
 
 type OPFBWithAddressState = OnChainPaymentFlowBuilderConfig & {
   paymentInitiationMethod: PaymentInitiationMethod
-  settlementMethodPromise: Promise<SettlementMethod>
   address: OnChainAddress
 }
 
