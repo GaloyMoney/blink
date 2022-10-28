@@ -20,9 +20,9 @@ jest.mock("@config", () => {
 })
 
 beforeEach(() => {
-  LocalCacheService().clear(
-    `${CacheKeys.PriceHistory}:${PriceRange.OneDay}-${PriceInterval.OneHour}`,
-  )
+  LocalCacheService().clear({
+    key: `${CacheKeys.PriceHistory}:${PriceRange.OneDay}-${PriceInterval.OneHour}`,
+  })
 })
 
 describe("Prices", () => {

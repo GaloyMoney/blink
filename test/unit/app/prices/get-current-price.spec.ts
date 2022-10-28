@@ -13,7 +13,7 @@ jest.mock("@config", () => {
 })
 
 beforeEach(() => {
-  LocalCacheService().clear(CacheKeys.CurrentPrice)
+  LocalCacheService().clear({ key: CacheKeys.CurrentPrice })
 })
 
 describe("Prices", () => {

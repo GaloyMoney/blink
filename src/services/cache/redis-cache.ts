@@ -22,7 +22,7 @@ export const RedisCacheService = (): ICacheService => {
     }
   }
 
-  const get = async <T>(key: CacheKeys | string): Promise<T | CacheServiceError> => {
+  const get = async <T>({ key }: LocalCacheGetArgs): Promise<T | CacheServiceError> => {
     try {
       const value = await redisCache.getCache(key)
       if (value === undefined) return new CacheUndefinedError()
@@ -40,10 +40,10 @@ export const RedisCacheService = (): ICacheService => {
     inflate,
   }: LocalCacheGetOrSetArgs<C, F>): Promise<ReturnType<F>> => {
     if (inflate) {
-      const cachedData = await get<C>(key)
+      const cachedData = await get<C>({ key })
       if (!(cachedData instanceof Error)) return inflate(cachedData)
     } else {
-      const cachedData = await get<ReturnType<F>>(key)
+      const cachedData = await get<ReturnType<F>>({ key })
       if (!(cachedData instanceof Error)) return cachedData
     }
 
@@ -57,7 +57,9 @@ export const RedisCacheService = (): ICacheService => {
     return data
   }
 
-  const clear = async (key: CacheKeys | string): Promise<true | CacheServiceError> => {
+  const clear = async ({
+    key,
+  }: LocalCacheClearArgs): Promise<true | CacheServiceError> => {
     try {
       await redisCache.deleteCache(key)
       return true
