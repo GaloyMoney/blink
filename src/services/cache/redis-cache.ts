@@ -69,5 +69,6 @@ export const RedisCacheService = (): ICacheService => {
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.cache.redis",
     fns: { set, get, getOrSet, clear },
+    redactFnArgs: true,
   })
 }

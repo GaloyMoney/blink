@@ -328,12 +328,14 @@ const resolveFunctionSpanOptions = ({
   functionArgs,
   spanAttributes,
   root,
+  redactFnArgs,
 }: {
   namespace: string
   functionName: string
   functionArgs: Array<unknown>
   spanAttributes?: Attributes
   root?: boolean
+  redactFnArgs?: boolean
 }): SpanOptions => {
   const attributes = {
     [SemanticAttributes.CODE_FUNCTION]: functionName,
@@ -346,7 +348,9 @@ const resolveFunctionSpanOptions = ({
     for (const key in params) {
       // @ts-ignore-next-line no-implicit-any error
       const value = params[key]
-      attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = value
+      attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}`] = redactFnArgs
+        ? "<redacted>"
+        : value
       attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}.null`] =
         value === null
       attributes[`${SemanticAttributes.CODE_FUNCTION}.params.${key}.undefined`] =
@@ -365,12 +369,14 @@ export const wrapToRunInSpan = <
   namespace,
   spanAttributes,
   root,
+  redactFnArgs,
 }: {
   fn: (...args: A) => R
   fnName?: string
   namespace: string
   spanAttributes?: Attributes
   root?: boolean
+  redactFnArgs?: boolean
 }) => {
   const functionName = fnName || fn.name || "unknown"
 
@@ -382,6 +388,7 @@ export const wrapToRunInSpan = <
       functionArgs: args,
       spanAttributes,
       root,
+      redactFnArgs,
     })
     const ret = tracer.startActiveSpan(spanName, spanOptions, (span) => {
       try {
@@ -421,12 +428,14 @@ export const wrapAsyncToRunInSpan = <
   namespace,
   spanAttributes,
   root,
+  redactFnArgs,
 }: {
   fn: (...args: A) => Promise<PromiseReturnType<R>>
   fnName?: string
   namespace: string
   spanAttributes?: Attributes
   root?: boolean
+  redactFnArgs?: boolean
 }) => {
   const functionName = fnName || fn.name || "unknown"
 
@@ -438,6 +447,7 @@ export const wrapAsyncToRunInSpan = <
       functionArgs: args,
       spanAttributes,
       root,
+      redactFnArgs,
     })
     const ret = tracer.startActiveSpan(spanName, spanOptions, async (span) => {
       try {
@@ -469,9 +479,11 @@ export const wrapAsyncToRunInSpan = <
 export const wrapAsyncFunctionsToRunInSpan = <F extends object>({
   namespace,
   fns,
+  redactFnArgs,
 }: {
   namespace: string
   fns: F
+  redactFnArgs?: boolean
 }): F => {
   const functions = { ...fns }
   for (const fn of Object.keys(functions)) {
@@ -481,6 +493,7 @@ export const wrapAsyncFunctionsToRunInSpan = <F extends object>({
         namespace,
         fn: fns[fn],
         fnName: fn,
+        redactFnArgs,
       })
       continue
     }
@@ -490,6 +503,7 @@ export const wrapAsyncFunctionsToRunInSpan = <F extends object>({
         namespace,
         fn: fns[fn],
         fnName: fn,
+        redactFnArgs,
       })
       continue
     }
