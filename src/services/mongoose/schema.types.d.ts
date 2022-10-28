@@ -156,6 +156,7 @@ type PaymentFlowStateRecordPartial = XOR<
   recipientAccountId?: string
   recipientPubkey?: string
   recipientUsername?: string
+  recipientUserId?: string
 
   outgoingNodePubkey?: string
   cachedRoute?: RawRoute

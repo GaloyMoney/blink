@@ -420,6 +420,7 @@ const paymentFlowStateSchema = new Schema<PaymentFlowStateRecord>(
     recipientAccountId: String,
     recipientPubkey: String,
     recipientUsername: String,
+    recipientUserId: String,
 
     outgoingNodePubkey: String,
     cachedRoute: Schema.Types.Mixed,
