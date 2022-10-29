@@ -31,7 +31,7 @@ import {
 import { DisplayCurrency } from "@domain/fiat"
 import { NewDisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import { WalletCurrency } from "@domain/shared"
 import { PaymentInputValidator, SettlementMethod } from "@domain/wallets"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
 
@@ -49,6 +49,8 @@ import {
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import { addAttributesToCurrentSpan } from "@services/tracing"
+
+import { getMinerFeeAndPaymentFlow } from "./get-on-chain-fee"
 
 const { dustThreshold } = getOnChainWalletConfig()
 const dealer = NewDealerPriceService()
@@ -527,37 +529,4 @@ const executePaymentViaOnChain = async <
 
     return PaymentSendStatus.Success
   })
-}
-
-const getMinerFeeAndPaymentFlow = async <
-  S extends WalletCurrency,
-  R extends WalletCurrency,
->({
-  builder,
-  targetConfirmations,
-}: {
-  builder: OPFBWithConversion<S, R>
-  targetConfirmations: TargetConfirmations
-}): Promise<OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError> => {
-  const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
-  if (onChainService instanceof Error) return onChainService
-
-  const proposedBtcAmount = await builder.btcProposedAmount()
-  if (proposedBtcAmount instanceof Error) return proposedBtcAmount
-
-  const address = await builder.addressForFlow()
-  if (address instanceof Error) return address
-
-  const minerFee = await onChainService.getOnChainFeeEstimate({
-    amount: toSats(proposedBtcAmount.amount),
-    address,
-    targetConfirmations,
-  })
-  if (minerFee instanceof Error) return minerFee
-  const minerFeeAmount = paymentAmountFromNumber({
-    amount: minerFee,
-    currency: WalletCurrency.Btc,
-  })
-  if (minerFeeAmount instanceof Error) return minerFeeAmount
-  return builder.withMinerFee(minerFeeAmount)
 }
