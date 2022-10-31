@@ -161,7 +161,7 @@ export const startApolloWsServer = async ({
         // TODO: also manage the case where there is a cookie in the request
 
         // make request to oathkeeper
-        const originalToken = authz?.slice(7) ?? undefined
+        const originalToken = authz?.slice(7) as LegacyJwtToken | SessionToken | undefined
 
         const newToken = await sendOathkeeperRequest(originalToken)
         // TODO: see how returning an error affect the websocket connection
