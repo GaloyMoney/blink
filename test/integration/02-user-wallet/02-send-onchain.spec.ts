@@ -35,7 +35,7 @@ import { add, sub } from "@domain/fiat"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
-import { WalletCurrency } from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import {
   CPFPAncestorLimitReachedError,
@@ -118,6 +118,7 @@ afterAll(async () => {
 })
 
 const amount = toSats(10040)
+const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
 const targetConfirmations = toTargetConfs(1)
 
 describe("UserWallet - onChainPay", () => {
@@ -502,6 +503,61 @@ describe("UserWallet - onChainPay", () => {
     expect(filteredTxsUserD[0].memo).not.toBe(memo)
   })
 
+  it("sends an on us transaction below dust limit", async () => {
+    const address = await Wallets.createOnChainAddress(walletIdD)
+    if (address instanceof Error) throw address
+
+    const amount = amountBelowDustThreshold
+
+    const initialBalanceUserD = await getBalanceHelper(walletIdD)
+
+    const paid = await Wallets.payOnChainByWalletId({
+      senderAccount: accountA,
+      senderWalletId: walletIdA,
+      address,
+      amount,
+      targetConfirmations,
+      memo: null,
+      sendAll: false,
+    })
+
+    const finalBalanceUserA = await getBalanceHelper(walletIdA)
+    const finalBalanceUserD = await getBalanceHelper(walletIdD)
+
+    expect(paid).toBe(PaymentSendStatus.Success)
+    expect(finalBalanceUserA).toBe(initialBalanceUserA - amount)
+    expect(finalBalanceUserD).toBe(initialBalanceUserD + amount)
+
+    {
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: walletIdA,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        throw txResult.error
+      }
+      const pendingTxs = txResult.result.filter(
+        ({ status }) => status === TxStatus.Pending,
+      )
+      expect(pendingTxs.length).toBe(0)
+
+      const settledTxs = txResult.result.filter(
+        ({ status, initiationVia, settlementVia }) =>
+          status === TxStatus.Success &&
+          initiationVia.type === PaymentInitiationMethod.OnChain &&
+          settlementVia.type === SettlementMethod.IntraLedger,
+      )
+
+      const settledTx = settledTxs[0] as WalletTransaction
+
+      expect(settledTx.settlementFee).toBe(0)
+      expect(settledTx.settlementAmount).toBe(-amount)
+      expect(settledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
+
+      const finalBalance = await getBalanceHelper(walletIdA)
+      expect(finalBalance).toBe(initialBalanceUserA - amount)
+    }
+  })
+
   it("sends all with an on us transaction", async () => {
     const initialBalanceUserF = await getBalanceHelper(walletIdF)
 
@@ -817,13 +873,12 @@ describe("UserWallet - onChainPay", () => {
 
   it("fails if the amount is less than on chain dust amount", async () => {
     const address = await bitcoindOutside.getNewAddress()
-    const onChainWalletConfig = getOnChainWalletConfig()
 
     const status = await Wallets.payOnChainByWalletId({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
-      amount: onChainWalletConfig.dustThreshold - 1,
+      amount: amountBelowDustThreshold,
       targetConfirmations,
       memo: null,
       sendAll: false,
