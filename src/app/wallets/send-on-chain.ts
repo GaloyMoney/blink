@@ -24,7 +24,6 @@ import {
 } from "@domain/bitcoin/onchain"
 import {
   CouldNotFindError,
-  LessThanDustThresholdError,
   NotImplementedError,
   RebalanceNeededError,
 } from "@domain/errors"
@@ -114,6 +113,7 @@ export const payOnChainByWalletId = async <R extends WalletCurrency>({
     volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
     isExternalAddress,
     sendAll,
+    dustThreshold,
   })
     .withAddress(checkedAddress)
     .withSenderWalletAndAccount({
@@ -389,12 +389,6 @@ const executePaymentViaOnChain = async <
   if (onChainAvailableBalance < totalAmounts.btc.amount) {
     return new RebalanceNeededError()
   }
-
-  // TODO: move this check into builder
-  if (paymentFlow.btcPaymentAmount.amount < dustThreshold)
-    return new LessThanDustThresholdError(
-      `Use lightning to send amounts less than ${dustThreshold}`,
-    )
 
   return LockService().lockWalletId(senderWalletDescriptor.id, async (signal) => {
     // Get estimated miner fee and create 'paymentFlow'

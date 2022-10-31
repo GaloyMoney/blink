@@ -2,7 +2,7 @@ import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 import { BTC_NETWORK, getOnChainWalletConfig } from "@config"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import { checkedToOnChainAddress, TxDecoder } from "@domain/bitcoin/onchain"
-import { CouldNotFindError, LessThanDustThresholdError } from "@domain/errors"
+import { CouldNotFindError } from "@domain/errors"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { checkedToWalletId } from "@domain/wallets"
@@ -61,6 +61,7 @@ export const getOnChainFee = async <R extends WalletCurrency>({
     volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
     isExternalAddress,
     sendAll: false,
+    dustThreshold,
   })
     .withAddress(checkedAddress)
     .withSenderWalletAndAccount({
@@ -108,12 +109,6 @@ export const getOnChainFee = async <R extends WalletCurrency>({
 
   const btcPaymentAmount = await builder.btcProposedAmount()
   if (btcPaymentAmount instanceof Error) return btcPaymentAmount
-
-  if (btcPaymentAmount.amount < dustThreshold) {
-    return new LessThanDustThresholdError(
-      `Use lightning to send amounts less than ${dustThreshold}`,
-    )
-  }
 
   const balance = await LedgerService().getWalletBalanceAmount(wallet)
   if (balance instanceof Error) return balance
