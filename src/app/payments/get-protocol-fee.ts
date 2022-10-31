@@ -159,10 +159,12 @@ const estimateLightningFee = async ({
       }
 
       PaymentFlowStateRepository(defaultTimeToExpiryInSeconds).persistNew(paymentFlow)
-      return PartialResult.partial(
-        paymentFlow.protocolFeeInSenderWalletCurrency(),
-        routeResult,
-      )
+      return routeResult instanceof SkipProbeForPubkeyError
+        ? PartialResult.ok(paymentFlow.protocolFeeInSenderWalletCurrency())
+        : PartialResult.partial(
+            paymentFlow.protocolFeeInSenderWalletCurrency(),
+            routeResult,
+          )
     }
 
     paymentFlow = await builder.withRoute(routeResult)

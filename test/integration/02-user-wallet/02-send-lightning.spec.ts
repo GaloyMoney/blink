@@ -23,7 +23,6 @@ import {
   LnFees,
   LnPaymentRequestInTransitError,
   PriceRatio,
-  SkipProbeForPubkeyError,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
 import {
@@ -832,7 +831,7 @@ describe("UserWallet - Lightning Pay", () => {
         uncheckedPaymentRequest: muunRequest,
       })
     expect(feeProbeCallCount()).toEqual(feeProbeCallsBefore)
-    expect(errorMuun).toBeInstanceOf(SkipProbeForPubkeyError)
+    expect(errorMuun).toBeUndefined()
     expect(feeMuun).toStrictEqual(LnFees().maxProtocolFee(muunInvoice.paymentAmount))
   })
 
