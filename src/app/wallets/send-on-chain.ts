@@ -22,11 +22,7 @@ import {
   InsufficientOnChainFundsError,
   TxDecoder,
 } from "@domain/bitcoin/onchain"
-import {
-  CouldNotFindError,
-  NotImplementedError,
-  RebalanceNeededError,
-} from "@domain/errors"
+import { CouldNotFindError, NotImplementedError } from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
 import { NewDisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
@@ -380,15 +376,14 @@ const executePaymentViaOnChain = async <
   const paymentFlow = await getMinerFeeAndPaymentFlow({ builder, targetConfirmations })
   if (paymentFlow instanceof Error) return paymentFlow
 
-  // Check onchain balance & check if dust
-  const onChainAvailableBalance = await onChainService.getBalance()
+  // Check onchain balance
+  const onChainAvailableBalance = await onChainService.getBalanceAmount()
   if (onChainAvailableBalance instanceof Error) return onChainAvailableBalance
 
-  // TODO: make a method for this similar to 'checkBalanceForSend'
-  const totalAmounts = paymentFlow.totalAmountsForPayment()
-  if (onChainAvailableBalance < totalAmounts.btc.amount) {
-    return new RebalanceNeededError()
-  }
+  const onChainAvailableBalanceCheck = paymentFlow.checkOnChainAvailableBalanceForSend(
+    onChainAvailableBalance,
+  )
+  if (onChainAvailableBalanceCheck instanceof Error) return onChainAvailableBalanceCheck
 
   return LockService().lockWalletId(senderWalletDescriptor.id, async (signal) => {
     // Get estimated miner fee and create 'paymentFlow'
