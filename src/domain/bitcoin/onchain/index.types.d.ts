@@ -84,6 +84,8 @@ interface IOnChainService {
 
   getBalance(pubkey?: Pubkey): Promise<Satoshis | OnChainServiceError>
 
+  getBalanceAmount(pubkey?: Pubkey): Promise<BtcPaymentAmount | OnChainServiceError>
+
   getPendingBalance(pubkey?: Pubkey): Promise<Satoshis | OnChainServiceError>
 
   listIncomingTransactions(
