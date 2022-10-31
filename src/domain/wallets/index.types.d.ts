@@ -202,23 +202,11 @@ type DepositFeeCalculator = {
 }
 
 type OnchainWithdrawalConfig = {
-  thresholdImbalance: Satoshis
-  feeRatio: number
-}
-
-type NewOnchainWithdrawalConfig = {
   thresholdImbalance: BtcPaymentAmount
   feeRatioAsBasisPoints: bigint
 }
 
 type OnChainWithdrawalFeeArgs = {
-  minerFee: Satoshis
-  minBankFee: Satoshis
-  imbalance: SwapOutImbalance
-  amount: Satoshis
-}
-
-type NewOnChainWithdrawalFeeArgs = {
   minerFee: BtcPaymentAmount
   minBankFee: BtcPaymentAmount
   imbalance: BtcPaymentAmount
@@ -228,18 +216,8 @@ type NewOnChainWithdrawalFeeArgs = {
 type WithdrawalFeePriceMethod =
   typeof import("./index").WithdrawalFeePriceMethod[keyof typeof import("./index").WithdrawalFeePriceMethod]
 
-type WithdrawalFeeCalculatorRes = {
-  totalFee: Satoshis
-  bankFee: Satoshis
-}
-
-type WithdrawalFeeCalculator = {
-  onChainWithdrawalFee(args: OnChainWithdrawalFeeArgs): WithdrawalFeeCalculatorRes
-  onChainIntraLedgerFee(): Satoshis
-}
-
 type OnChainFeeCalculator = {
-  withdrawalFee(args: NewOnChainWithdrawalFeeArgs): {
+  withdrawalFee(args: OnChainWithdrawalFeeArgs): {
     totalFee: BtcPaymentAmount
     bankFee: BtcPaymentAmount
   }
