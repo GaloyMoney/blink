@@ -305,6 +305,7 @@ type OnChainPaymentFlowBuilderConfig = {
   volumeOnChainFn
   isExternalAddress: (state: { address: OnChainAddress }) => Promise<boolean>
   sendAll: boolean
+  dustThreshold: number
 }
 
 type LPFBWithInvoiceState = LightningPaymentFlowBuilderConfig &

@@ -6,7 +6,7 @@ import {
   WalletCurrency,
   ZERO_BANK_FEE,
 } from "@domain/shared"
-import { SelfPaymentError } from "@domain/errors"
+import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
 import { OnChainFees, PaymentInitiationMethod, SettlementMethod } from "@domain/wallets"
 import { checkedToBtcPaymentAmount, checkedToUsdPaymentAmount } from "@domain/payments"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
@@ -329,13 +329,24 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
     const state = await stateFromPromise(statePromise)
     if (state instanceof Error) return state
 
+    const usdPaymentAmount = state.usdProposedAmount
+    const btcPaymentAmount = state.btcProposedAmount
+    if (
+      !(state.settlementMethod === SettlementMethod.IntraLedger) &&
+      btcPaymentAmount.amount < state.dustThreshold
+    ) {
+      return new LessThanDustThresholdError(
+        `Use lightning to send amounts less than ${state.dustThreshold}`,
+      )
+    }
+
     return OnChainPaymentFlow({
       ...state,
       btcProtocolFee: onChainFees.intraLedgerFees().btc,
       usdProtocolFee: onChainFees.intraLedgerFees().usd,
       ...ZERO_BANK_FEE,
-      btcPaymentAmount: state.btcProposedAmount,
-      usdPaymentAmount: state.usdProposedAmount,
+      btcPaymentAmount,
+      usdPaymentAmount,
       paymentSentAndPending: false,
     })
   }
@@ -400,6 +411,15 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
           btcPaymentAmount = priceRatio.convertFromUsd(usdPaymentAmount)
           break
       }
+    }
+
+    if (
+      !(state.settlementMethod === SettlementMethod.IntraLedger) &&
+      btcPaymentAmount.amount < state.dustThreshold
+    ) {
+      return new LessThanDustThresholdError(
+        `Use lightning to send amounts less than ${state.dustThreshold}`,
+      )
     }
 
     return OnChainPaymentFlow({
