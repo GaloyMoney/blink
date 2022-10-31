@@ -93,6 +93,9 @@ type OnChainPaymentFlow<
   PaymentFlowBase<S, R> & {
     addressForFlow(): OnChainAddress | ValidationError
     bankFees(): { btc: BtcPaymentAmount; usd: UsdPaymentAmount } | ValidationError
+    checkOnChainAvailableBalanceForSend(
+      balanceAmount: BtcPaymentAmount,
+    ): true | ValidationError
   }
 
 type LightningPaymentFlowBuilder<S extends WalletCurrency> = {
