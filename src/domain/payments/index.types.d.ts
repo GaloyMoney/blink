@@ -189,17 +189,7 @@ type OPFBWithRecipientWallet<S extends WalletCurrency, R extends WalletCurrency>
 }
 
 type OPFBWithAmount<S extends WalletCurrency, R extends WalletCurrency> = {
-  withConversion({
-    usdFromBtc,
-    btcFromUsd,
-  }: {
-    usdFromBtc(
-      amount: BtcPaymentAmount,
-    ): Promise<UsdPaymentAmount | DealerPriceServiceError>
-    btcFromUsd(
-      amount: UsdPaymentAmount,
-    ): Promise<BtcPaymentAmount | DealerPriceServiceError>
-  }): OPFBWithConversion<S, R> | OPFBWithError
+  withConversion(args: WithConversionArgs): OPFBWithConversion<S, R> | OPFBWithError
 }
 
 type LPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
@@ -302,8 +292,6 @@ type LightningPaymentFlowBuilderConfig = {
 }
 
 type OnChainPaymentFlowBuilderConfig = {
-  usdFromBtcMidPriceFn: UsdFromBtcMidPriceFn
-  btcFromUsdMidPriceFn: BtcFromUsdMidPriceFn
   volumeLightningFn
   volumeOnChainFn
   isExternalAddress: (state: { address: OnChainAddress }) => Promise<boolean>
