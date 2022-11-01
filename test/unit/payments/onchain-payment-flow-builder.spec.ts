@@ -3,17 +3,11 @@ import { getFeesConfig, getOnChainWalletConfig } from "@config"
 import { SettlementMethod, PaymentInitiationMethod, OnChainFees } from "@domain/wallets"
 import { LessThanDustThresholdError, SelfPaymentError } from "@domain/errors"
 import { InvalidOnChainPaymentFlowBuilderStateError, PriceRatio } from "@domain/payments"
-import {
-  AmountCalculator,
-  paymentAmountFromNumber,
-  ValidationError,
-  WalletCurrency,
-} from "@domain/shared"
+import { paymentAmountFromNumber, ValidationError, WalletCurrency } from "@domain/shared"
 import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
 import { toSats } from "@domain/bitcoin"
 import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 
-const calc = AmountCalculator()
 const feeConfig = getFeesConfig()
 const { dustThreshold } = getOnChainWalletConfig()
 
@@ -49,46 +43,92 @@ describe("OnChainPaymentFlowBuilder", () => {
     userId: "recipientUserId" as UserId,
   }
 
-  // ~0.045 ratio (0.045 cents/sat, or $45,455 USD/BTC)
-  const inverseMidPriceRatio = 22n
-  const mulByMidPriceRatio = (amount: bigint): bigint => amount / inverseMidPriceRatio
-  const mulCeilByMidPriceRatio = (amount: bigint): bigint =>
-    calc.divCeil({ amount, currency: WalletCurrency.Btc }, inverseMidPriceRatio).amount
-  const divByMidPriceRatio = (amount: bigint): bigint => amount * inverseMidPriceRatio
+  // 0.02 ratio (0.02 cents/sat, or $20,000 USD/BTC)
+  const midPriceRatio = 0.02
+  const immediateSpread = 0.001 // 0.10 %
+  // const futureSpread = 0.0012 // 0.12%
 
-  // ~0.3448 ratio (~32% spread on 0.045 cents/sat rate)
-  const inverseDealerPriceRatio = 29n
-  const mulByDealerPriceRatio = (amount: bigint): bigint =>
-    calc.divRound({ amount, currency: WalletCurrency.Btc }, inverseDealerPriceRatio)
-      .amount
-  // const mulCeilByDealerPriceRatio = (amount: bigint): bigint =>
-  //   calc.divCeil({ amount, currency: WalletCurrency.Btc }, inverseDealerPriceRatio).amount
-  const divByDealerPriceRatio = (amount: bigint): bigint =>
-    amount * inverseDealerPriceRatio
+  const centsFromSats = ({ sats, spread, round }): bigint =>
+    BigInt(round(sats * midPriceRatio * spread))
+  const satsFromCents = ({ cents, spread, round }): bigint =>
+    BigInt(round((cents / midPriceRatio) * spread))
 
-  const usdFromBtcMidPriceFn = async (amount: BtcPaymentAmount) => {
+  const usdFromBtcMid = async (amount: BtcPaymentAmount) => {
     return Promise.resolve({
-      amount: mulByMidPriceRatio(amount.amount),
+      amount: centsFromSats({
+        sats: Number(amount.amount),
+        spread: 1,
+        round: Math.round,
+      }),
       currency: WalletCurrency.Usd,
     })
   }
-  const btcFromUsdMidPriceFn = async (amount: UsdPaymentAmount) => {
+  const btcFromUsdMid = async (amount: UsdPaymentAmount) => {
     return Promise.resolve({
-      amount: divByMidPriceRatio(amount.amount),
+      amount: satsFromCents({
+        cents: Number(amount.amount),
+        spread: 1,
+        round: Math.round,
+      }),
       currency: WalletCurrency.Btc,
     })
   }
-  const usdFromBtc = async (amount: BtcPaymentAmount) => {
+  const mid = { usdFromBtc: usdFromBtcMid, btcFromUsd: btcFromUsdMid }
+
+  const usdFromBtcBuy = async (amount: BtcPaymentAmount) => {
     return Promise.resolve({
-      amount: mulByDealerPriceRatio(amount.amount),
+      amount: centsFromSats({
+        sats: Number(amount.amount),
+        spread: 1 - immediateSpread,
+        round: Math.floor,
+      }),
       currency: WalletCurrency.Usd,
     })
   }
-  const btcFromUsd = async (amount: UsdPaymentAmount) => {
+  const btcFromUsdBuy = async (amount: UsdPaymentAmount) => {
     return Promise.resolve({
-      amount: divByDealerPriceRatio(amount.amount),
+      amount: satsFromCents({
+        cents: Number(amount.amount),
+        spread: 1 + immediateSpread,
+        round: Math.ceil,
+      }),
       currency: WalletCurrency.Btc,
     })
+  }
+  const hedgeBuyUsd = {
+    usdFromBtc: usdFromBtcBuy,
+    btcFromUsd: btcFromUsdBuy,
+  }
+
+  const usdFromBtcSell = async (amount: BtcPaymentAmount) => {
+    return Promise.resolve({
+      amount: centsFromSats({
+        sats: Number(amount.amount),
+        spread: 1 + immediateSpread,
+        round: Math.ceil,
+      }),
+      currency: WalletCurrency.Usd,
+    })
+  }
+  const btcFromUsdSell = async (amount: UsdPaymentAmount) => {
+    return Promise.resolve({
+      amount: satsFromCents({
+        cents: Number(amount.amount),
+        spread: 1 - immediateSpread,
+        round: Math.floor,
+      }),
+      currency: WalletCurrency.Btc,
+    })
+  }
+  const hedgeSellUsd = {
+    usdFromBtc: usdFromBtcSell,
+    btcFromUsd: btcFromUsdSell,
+  }
+
+  const withConversionArgs = {
+    mid,
+    hedgeBuyUsd,
+    hedgeSellUsd,
   }
 
   const volumeLightningFn = async () =>
@@ -105,8 +145,6 @@ describe("OnChainPaymentFlowBuilder", () => {
 
   describe("onchain initiated", () => {
     const onChainBuilder = OnChainPaymentFlowBuilder({
-      usdFromBtcMidPriceFn,
-      btcFromUsdMidPriceFn,
       volumeLightningFn,
       volumeOnChainFn,
       isExternalAddress: async (state) =>
@@ -183,17 +221,14 @@ describe("OnChainPaymentFlowBuilder", () => {
               it("correctly applies miner, bank and imbalance fees", async () => {
                 const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
                 const payment = await withAmountBuilder
-                  .withConversion({
-                    usdFromBtc,
-                    btcFromUsd,
-                  })
+                  .withConversion(withConversionArgs)
                   .withMinerFee(minerFee)
                 if (payment instanceof Error) throw payment
 
-                const usdPaymentAmount = {
-                  amount: mulByMidPriceRatio(BigInt(uncheckedAmount)),
-                  currency: WalletCurrency.Usd,
-                }
+                const usdPaymentAmount = await usdFromBtcMid({
+                  amount: BigInt(uncheckedAmount),
+                  currency: WalletCurrency.Btc,
+                })
 
                 const sendAmount = paymentAmountFromNumber({
                   amount: uncheckedAmount,
@@ -228,10 +263,7 @@ describe("OnChainPaymentFlowBuilder", () => {
                 expect(withdrawFees).not.toBeInstanceOf(Error)
 
                 const btcProtocolFee = withdrawFees.totalFee
-                const usdProtocolFee = {
-                  amount: mulCeilByMidPriceRatio(btcProtocolFee.amount),
-                  currency: WalletCurrency.Usd,
-                }
+                const usdProtocolFee = await usdFromBtcMid(btcProtocolFee)
 
                 checkAddress(payment)
                 checkSettlementMethod(payment)
@@ -254,20 +286,14 @@ describe("OnChainPaymentFlowBuilder", () => {
                 const paymentBelow = await withBtcWalletBuilder
                   .withoutRecipientWallet()
                   .withAmount(dustAmount)
-                  .withConversion({
-                    usdFromBtc,
-                    btcFromUsd,
-                  })
+                  .withConversion(withConversionArgs)
                   .withMinerFee(minerFee)
                 expect(paymentBelow).toBeInstanceOf(LessThanDustThresholdError)
 
                 const paymentAbove = await withBtcWalletBuilder
                   .withoutRecipientWallet()
                   .withAmount(dustAmount + 1)
-                  .withConversion({
-                    usdFromBtc,
-                    btcFromUsd,
-                  })
+                  .withConversion(withConversionArgs)
                   .withMinerFee(minerFee)
                 expect(paymentAbove).not.toBeInstanceOf(Error)
               })
@@ -322,17 +348,14 @@ describe("OnChainPaymentFlowBuilder", () => {
 
                 it("correctly applies no fees", async () => {
                   const payment = await withAmountBuilder
-                    .withConversion({
-                      usdFromBtc,
-                      btcFromUsd,
-                    })
+                    .withConversion(withConversionArgs)
                     .withoutMinerFee()
                   if (payment instanceof Error) throw payment
 
-                  const usdPaymentAmount = {
-                    amount: mulByMidPriceRatio(BigInt(amount)),
-                    currency: WalletCurrency.Usd,
-                  }
+                  const usdPaymentAmount = await usdFromBtcMid({
+                    amount: BigInt(amount),
+                    currency: WalletCurrency.Btc,
+                  })
 
                   checkAddress(payment)
                   checkSettlementMethod(payment)
@@ -390,17 +413,14 @@ describe("OnChainPaymentFlowBuilder", () => {
 
                 it("correctly applies no fees", async () => {
                   const payment = await withAmountBuilder
-                    .withConversion({
-                      usdFromBtc,
-                      btcFromUsd,
-                    })
+                    .withConversion(withConversionArgs)
                     .withoutMinerFee()
                   if (payment instanceof Error) throw payment
 
-                  const usdPaymentAmount = {
-                    amount: mulByDealerPriceRatio(BigInt(amount)),
-                    currency: WalletCurrency.Usd,
-                  }
+                  const usdPaymentAmount = await usdFromBtcBuy({
+                    amount: BigInt(amount),
+                    currency: WalletCurrency.Btc,
+                  })
 
                   checkAddress(payment)
                   checkSettlementMethod(payment)
@@ -483,17 +503,14 @@ describe("OnChainPaymentFlowBuilder", () => {
               it("correctly applies miner, bank and imbalance fees", async () => {
                 const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
                 const payment = await withAmountBuilder
-                  .withConversion({
-                    usdFromBtc,
-                    btcFromUsd,
-                  })
+                  .withConversion(withConversionArgs)
                   .withMinerFee(minerFee)
                 if (payment instanceof Error) throw payment
 
-                const btcPaymentAmount = {
-                  amount: divByDealerPriceRatio(BigInt(uncheckedAmount)),
-                  currency: WalletCurrency.Btc,
-                }
+                const btcPaymentAmount = await btcFromUsdSell({
+                  amount: BigInt(uncheckedAmount),
+                  currency: WalletCurrency.Usd,
+                })
 
                 const sendAmount = paymentAmountFromNumber({
                   amount: uncheckedAmount,
@@ -517,10 +534,10 @@ describe("OnChainPaymentFlowBuilder", () => {
                   await imbalanceCalculator.getSwapOutImbalanceAmount(senderUsdWallet)
                 if (imbalanceForWallet instanceof Error) throw imbalanceForWallet
 
-                const imbalance = {
-                  amount: divByDealerPriceRatio(imbalanceForWallet.amount),
-                  currency: WalletCurrency.Btc,
-                }
+                const imbalance = await btcFromUsdSell({
+                  amount: imbalanceForWallet.amount,
+                  currency: WalletCurrency.Usd,
+                })
 
                 const withdrawalFees = onChainFees.withdrawalFee({
                   minerFee,
@@ -554,7 +571,7 @@ describe("OnChainPaymentFlowBuilder", () => {
 
             describe("with dust amount", () => {
               it("correctly returns dust error", async () => {
-                const dustUsdAmount = await usdFromBtc({
+                const dustUsdAmount = await usdFromBtcMid({
                   amount: BigInt(dustAmount),
                   currency: WalletCurrency.Btc,
                 })
@@ -564,20 +581,14 @@ describe("OnChainPaymentFlowBuilder", () => {
                 const paymentBelow = await withUsdWalletBuilder
                   .withoutRecipientWallet()
                   .withAmount(Number(dustUsdAmount.amount))
-                  .withConversion({
-                    usdFromBtc,
-                    btcFromUsd,
-                  })
+                  .withConversion(withConversionArgs)
                   .withMinerFee(minerFee)
                 expect(paymentBelow).toBeInstanceOf(LessThanDustThresholdError)
 
                 const paymentAbove = await withUsdWalletBuilder
                   .withoutRecipientWallet()
                   .withAmount(Number(dustUsdAmount.amount + 1n))
-                  .withConversion({
-                    usdFromBtc,
-                    btcFromUsd,
-                  })
+                  .withConversion(withConversionArgs)
                   .withMinerFee(minerFee)
                 expect(paymentAbove).not.toBeInstanceOf(Error)
               })
@@ -632,17 +643,14 @@ describe("OnChainPaymentFlowBuilder", () => {
 
                 it("correctly applies no fees", async () => {
                   const payment = await withAmountBuilder
-                    .withConversion({
-                      usdFromBtc,
-                      btcFromUsd,
-                    })
+                    .withConversion(withConversionArgs)
                     .withoutMinerFee()
                   if (payment instanceof Error) throw payment
 
-                  const btcPaymentAmount = {
-                    amount: divByDealerPriceRatio(BigInt(amount)),
-                    currency: WalletCurrency.Btc,
-                  }
+                  const btcPaymentAmount = await btcFromUsdSell({
+                    amount: BigInt(amount),
+                    currency: WalletCurrency.Usd,
+                  })
 
                   checkAddress(payment)
                   checkSettlementMethod(payment)
@@ -700,17 +708,14 @@ describe("OnChainPaymentFlowBuilder", () => {
 
                 it("correctly applies no fees", async () => {
                   const payment = await withAmountBuilder
-                    .withConversion({
-                      usdFromBtc,
-                      btcFromUsd,
-                    })
+                    .withConversion(withConversionArgs)
                     .withoutMinerFee()
                   if (payment instanceof Error) throw payment
 
-                  const btcPaymentAmount = {
-                    amount: divByMidPriceRatio(BigInt(amount)),
-                    currency: WalletCurrency.Btc,
-                  }
+                  const btcPaymentAmount = await btcFromUsdMid({
+                    amount: BigInt(amount),
+                    currency: WalletCurrency.Usd,
+                  })
 
                   checkAddress(payment)
                   checkSettlementMethod(payment)
@@ -744,8 +749,6 @@ describe("OnChainPaymentFlowBuilder", () => {
         const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
 
         const payment = await OnChainPaymentFlowBuilder({
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
           volumeLightningFn,
           volumeOnChainFn,
           isExternalAddress: async () => Promise.resolve(!isIntraLedger),
@@ -759,10 +762,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           })
           .withoutRecipientWallet()
           .withAmount(uncheckedAmount)
-          .withConversion({
-            usdFromBtc,
-            btcFromUsd,
-          })
+          .withConversion(withConversionArgs)
           .withMinerFee(minerFee)
 
         expect(payment).toBeInstanceOf(InvalidOnChainPaymentFlowBuilderStateError)
@@ -774,8 +774,6 @@ describe("OnChainPaymentFlowBuilder", () => {
         const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
 
         const payment = await OnChainPaymentFlowBuilder({
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
           volumeLightningFn,
           volumeOnChainFn,
           isExternalAddress: async () => Promise.resolve(!isIntraLedger),
@@ -789,10 +787,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           })
           .withoutRecipientWallet()
           .withAmount(0.4)
-          .withConversion({
-            usdFromBtc,
-            btcFromUsd,
-          })
+          .withConversion(withConversionArgs)
           .withMinerFee(minerFee)
 
         expect(payment).toBeInstanceOf(ValidationError)
@@ -804,8 +799,6 @@ describe("OnChainPaymentFlowBuilder", () => {
         const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
 
         const payment = await OnChainPaymentFlowBuilder({
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
           volumeLightningFn,
           volumeOnChainFn,
           isExternalAddress: async () => Promise.resolve(!isIntraLedger),
@@ -819,10 +812,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           })
           .withoutRecipientWallet()
           .withAmount(0)
-          .withConversion({
-            usdFromBtc,
-            btcFromUsd,
-          })
+          .withConversion(withConversionArgs)
           .withMinerFee(minerFee)
 
         expect(payment).toBeInstanceOf(ValidationError)
@@ -832,8 +822,6 @@ describe("OnChainPaymentFlowBuilder", () => {
     describe("no recipient wallet despite IntraLedger", () => {
       it("returns InvalidLightningPaymentFlowBuilderStateError", async () => {
         const payment = await OnChainPaymentFlowBuilder({
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
           volumeLightningFn,
           volumeOnChainFn,
           isExternalAddress: async () => Promise.resolve(false),
@@ -847,10 +835,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           })
           .withoutRecipientWallet()
           .withAmount(uncheckedAmount)
-          .withConversion({
-            usdFromBtc,
-            btcFromUsd,
-          })
+          .withConversion(withConversionArgs)
           .withoutMinerFee()
 
         expect(payment).toBeInstanceOf(InvalidOnChainPaymentFlowBuilderStateError)
@@ -860,8 +845,6 @@ describe("OnChainPaymentFlowBuilder", () => {
     describe("sender and recipient are identical", () => {
       it("returns ImpossibleLightningPaymentFlowBuilderStateError", async () => {
         const payment = await OnChainPaymentFlowBuilder({
-          usdFromBtcMidPriceFn,
-          btcFromUsdMidPriceFn,
           volumeLightningFn,
           volumeOnChainFn,
           isExternalAddress: async () => Promise.resolve(false),
@@ -875,10 +858,7 @@ describe("OnChainPaymentFlowBuilder", () => {
           })
           .withRecipientWallet(senderBtcWallet)
           .withAmount(uncheckedAmount)
-          .withConversion({
-            usdFromBtc,
-            btcFromUsd,
-          })
+          .withConversion(withConversionArgs)
           .withoutMinerFee()
 
         expect(payment).toBeInstanceOf(SelfPaymentError)
