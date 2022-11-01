@@ -81,8 +81,6 @@ let walletIdF: WalletId
 const locale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
-const last = <T>(arr: T[]): T | undefined => arr[arr.length - 1]
-
 beforeAll(async () => {
   await createMandatoryUsers()
 
@@ -220,7 +218,7 @@ describe("UserWallet - onChainPay", () => {
           id === pendingTxHash,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = last(settledTxs) as WalletTransaction
+      const settledTx = settledTxs[0] as WalletTransaction
 
       const feeRates = getFeesConfig()
       const fee = feeRates.withdrawDefaultMin + 7050
@@ -324,7 +322,7 @@ describe("UserWallet - onChainPay", () => {
           id === pendingTxHash,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = last(settledTxs) as WalletTransaction
+      const settledTx = settledTxs[0] as WalletTransaction
 
       const feeRates = getFeesConfig()
       const fee = feeRates.withdrawDefaultMin + 7050
@@ -396,7 +394,7 @@ describe("UserWallet - onChainPay", () => {
           id === pendingTxHash,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = last(settledTxs) as WalletTransaction
+      const settledTx = settledTxs[0] as WalletTransaction
 
       expect(settledTx.memo).toBe(memo)
     }
@@ -448,7 +446,7 @@ describe("UserWallet - onChainPay", () => {
           settlementVia.type === SettlementMethod.IntraLedger,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = last(settledTxs) as WalletTransaction
+      const settledTx = settledTxs[0] as WalletTransaction
 
       expect(settledTx.settlementFee).toBe(0)
       expect(settledTx.settlementAmount).toBe(-amount)
@@ -603,7 +601,7 @@ describe("UserWallet - onChainPay", () => {
           settlementVia.type === SettlementMethod.IntraLedger,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = last(settledTxs) as WalletTransaction
+      const settledTx = settledTxs[0] as WalletTransaction
 
       expect(settledTx.settlementFee).toBe(0)
       expect(settledTx.settlementAmount).toBe(-initialBalanceUserF)
