@@ -84,7 +84,6 @@ const setGqlContext = async (
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
-  console.log(req)
   const tokenPayload = req.token
 
   const body = req.body ?? null
@@ -108,7 +107,7 @@ const setGqlContext = async (
     {
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
       [ACCOUNT_USERNAME]: gqlContext.domainAccount?.username,
-      [SemanticAttributes.ENDUSER_ID]: gqlContext.domainAccount?.id || tokenPayload.sub,
+      [SemanticAttributes.ENDUSER_ID]: gqlContext.domainAccount?.id || tokenPayload?.sub,
     },
     next,
   )
@@ -130,13 +129,13 @@ const sessionContext = ({
 
   return addAttributesToCurrentSpanAndPropagate(
     {
-      "token.sub": tokenPayload.sub,
+      "token.sub": tokenPayload?.sub,
       [SemanticAttributes.HTTP_CLIENT_IP]: ip,
     },
     async () => {
       // note: value should match (ie: "anon") if not an accountId
       // settings from dev/ory/oathkeeper.yml/authenticator/anonymous/config/subjet
-      const maybeKratosUserId = checkedToKratosUserId(tokenPayload.sub || "")
+      const maybeKratosUserId = checkedToKratosUserId(tokenPayload?.sub || "")
       if (!(maybeKratosUserId instanceof ValidationError)) {
         const userId = maybeKratosUserId
 
