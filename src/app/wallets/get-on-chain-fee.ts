@@ -55,8 +55,6 @@ export const getOnChainFee = async <R extends WalletCurrency>({
   const isExternalAddress = async () => recipientWallet instanceof CouldNotFindError
 
   const withSenderBuilder = OnChainPaymentFlowBuilder({
-    usdFromBtcMidPriceFn,
-    btcFromUsdMidPriceFn,
     volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
     volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
     isExternalAddress,
@@ -70,8 +68,15 @@ export const getOnChainFee = async <R extends WalletCurrency>({
     })
 
   const withConversionArgs = {
-    usdFromBtc: dealer.getCentsFromSatsForImmediateSell,
-    btcFromUsd: dealer.getSatsFromCentsForImmediateBuy,
+    hedgeBuyUsd: {
+      usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+      btcFromUsd: dealer.getSatsFromCentsForImmediateBuy,
+    },
+    hedgeSellUsd: {
+      usdFromBtc: dealer.getCentsFromSatsForImmediateSell,
+      btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
+    },
+    mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
   }
 
   if (await withSenderBuilder.isIntraLedger()) {
