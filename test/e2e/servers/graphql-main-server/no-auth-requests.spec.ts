@@ -133,7 +133,7 @@ describe("graphql", () => {
       const input = { phone, code: correctCode }
       const result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userLogin).toHaveProperty("authToken")
-      // expect(result.data.userLogin.authToken).gittoHaveLength(32)
+      expect(result.data.userLogin.authToken).toHaveLength(32)
     })
 
     it("returns error for invalid phone", async () => {
