@@ -3186,10 +3186,10 @@ apollo-reporting-protobuf@^3.3.1, apollo-reporting-protobuf@^3.3.3:
   dependencies:
     "@apollo/protobufjs" "1.2.6"
 
-apollo-server-core@^3.10.3:
-  version "3.10.3"
-  resolved "https://registry.yarnpkg.com/apollo-server-core/-/apollo-server-core-3.10.3.tgz#64db45703785e9e79e7c5dadb6df2f7ee6fcbecc"
-  integrity sha512-PiTirlcaszgnJGzSsGui9XWh0KAh0BUW+GvRKN6O0H0qOSXSLmoqqyL83J+u+HaUZGyyiE0+VOkyCcuF+kKbEw==
+apollo-server-core@^3.10.3, apollo-server-core@^3.10.4:
+  version "3.10.4"
+  resolved "https://registry.yarnpkg.com/apollo-server-core/-/apollo-server-core-3.10.4.tgz#0ea596a65f30eeb476f3a9d98a4340336a67fe29"
+  integrity sha512-eh5AH4b8savvw/9Fd0uH8WIV5EydIS55y5v3Xuu7Ztfdjjd0w1vuc7+4iV+C0w6/KyKQkOnFZCP/sWk2CQCNIQ==
   dependencies:
     "@apollo/utils.keyvaluecache" "^1.0.1"
     "@apollo/utils.logger" "^1.0.0"
@@ -3210,6 +3210,7 @@ apollo-server-core@^3.10.3:
     graphql-tag "^2.11.0"
     loglevel "^1.6.8"
     lru-cache "^6.0.0"
+    node-abort-controller "^3.0.1"
     sha.js "^2.4.11"
     uuid "^9.0.0"
     whatwg-mimetype "^3.0.0"
