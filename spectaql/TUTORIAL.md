@@ -124,6 +124,6 @@ curl --location --request POST $URI --header "$AUTH_TOKEN" --header 'Content-Typ
 
 ## Extra Resources
 
-If you use Postman, we have a collection you can import to test the API. 
+If you use Postman, we have a collection you can import to test the API.
 
-Download it here: [Lightning Integration.postman_collection.json](https://github.com/GaloyMoney/galoy/tree/main/src/graphql/main/docs/Lightning-Integration.postman_collection.json)
+Download it here: [galoy_graphql_main_api.postman_collection.json](https://github.com/GaloyMoney/galoy/tree/main/src/graphql/docs/galoy_graphql_main_api.postman_collection.json)
