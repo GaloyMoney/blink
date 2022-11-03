@@ -12,7 +12,8 @@ import { setupMongoConnection } from "@services/mongodb"
 
 import { activateLndHealthCheck } from "@services/lnd/health"
 import { ColdStorage, Lightning, Wallets, Payments, Swap } from "@app"
-import { getCronConfig, TWO_MONTHS_IN_MS } from "@config"
+import { getCronConfig, TWO_MONTHS_IN_MS, BTC_NETWORK } from "@config"
+import { BtcNetwork } from "@domain/bitcoin"
 
 import { rebalancingInternalChannels, reconnectNodes } from "@services/lnd/utils-bos"
 import { extendSessions } from "@app/auth"
@@ -67,7 +68,7 @@ const main = async () => {
   const tasks = [
     // bitcoin related tasks
     reconnectNodes,
-    rebalancingInternalChannels,
+    ...(BTC_NETWORK != BtcNetwork.signet ? [rebalancingInternalChannels] : []),
     updateEscrows,
     updatePendingLightningInvoices,
     updatePendingLightningPayments,
