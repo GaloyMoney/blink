@@ -39,6 +39,32 @@
 							"response": []
 						},
 						{
+							"name": "mapMarkers",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "query businessMapMarkers {\n  businessMapMarkers {\n    username\n    mapInfo {\n      title\n      coordinates {\n        latitude\n        longitude\n      }\n    }\n  }\n}",
+										"variables": "{\"range\": \"ONE_DAY\"}"
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{domain}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "mobileVersions",
 							"event": [
 								{
@@ -451,7 +477,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query me {\n    me {\n        id\n        phone\n        username\n        language\n        quizQuestions {\n            question {\n                id\n                earnAmount\n            }\n            completed\n        }\n        contacts {\n            id\n            username\n            alias\n            transactionsCount\n        }\n        twoFAEnabled\n        createdAt\n        defaultAccount {\n            id\n            defaultWalletId\n            wallets {\n                id\n                walletCurrency\n                balance\n            }\n        }\n    }\n}",
+										"query": "query me {\n    me {\n        id\n        phone\n        username\n        language\n        quizQuestions {\n            question {\n                id\n                earnAmount\n            }\n            completed\n        }\n        contacts {\n            id\n            username\n            alias\n            transactionsCount\n        }\n        createdAt\n        defaultAccount {\n            id\n            defaultWalletId\n            wallets {\n                id\n                walletCurrency\n                balance\n            }\n        }\n    }\n}",
 										"variables": ""
 									}
 								},
@@ -1172,7 +1198,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "query onChainTxFee($walletId: WalletId!, $address: OnChainAddress!, $amount: SatAmount!, $targetConfirmations: TargetConfirmations) {\n  onChainTxFee(walletId: $walletId, address: $address, amount: $amount, targetConfirmations: $targetConfirmations) {\n    amount\n    targetConfirmations\n  }\n}\n",
+										"query": "query onChainTxFee($walletId: WalletId!, $address: OnChainAddress!, $amount: SatAmount!, $targetConfirmations: TargetConfirmations) {\n  onChainTxFee(walletId: $walletId, address: $address, amount: $amount, targetConfirmations: $targetConfirmations) {\n    amount\n    targetConfirmations\n    errors {\n        message\n    }\n  }\n}\n",
 										"variables": "{\n    \"walletId\": \"{{walletId}}\",\n    \"address\": \"{{regtest-segwitV0-address}}\",\n    \"amount\": \"5000\",\n    \"targetConfirmations\": 3\n} "
 									}
 								},
@@ -1459,7 +1485,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation lnInvoicePaymentSend($input: LnInvoicePaymentInput!) {\n  lnInvoicePaymentSend(input:$input) {\n    status\n    errors {\n      message\n    }\n  }\n}",
+										"query": "mutation lnInvoicePaymentSend($input: LnInvoicePaymentInput!) {\n  lnInvoicePaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n      code\n    }\n  }\n}",
 										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdBtc}}\",\n        \"paymentRequest\": \"lntb10m1p3yr5dvpp5vl8uqmw560pkyqnjvh4aycwtvwjtsa93vk09acwa28kl3t325f0qdqqcqzpuxqyz5vqsp5qpmwaj6rz2dudkhk9svm2xrujchgcpvvgggq0jlysf6rw6pmmtns9qyyssqv307edyth9artgjguulw8nl4cskmcresaepn2ahrm6nksxxu3xr9m7lsw5h6m0ae75kdlctrrkatjp80jyj43qp4su7a9egnsvhffgqpsx9p8q\",\n        \"memo\": \"Test\"\n    }\n}\n"
 									}
 								},
@@ -1501,6 +1527,47 @@
 									"mode": "graphql",
 									"graphql": {
 										"query": "mutation intraLedgerPaymentSend($input: IntraLedgerPaymentSendInput!) {\n  intraLedgerPaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n    }\n  }\n}",
+										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdBtc}}\",\n        \"amount\": 100,\n        \"recipientWalletId\": \"{{walletIdUsd}}\",\n        \"memo\": \"Test\"\n    }\n}\n"
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{domain}}:{{port}}/graphql",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{domain}}"
+									],
+									"port": "{{port}}",
+									"path": [
+										"graphql"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "intraledgerPaymentSend (multiple)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"add invoice\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    const invoice = jsonData.data.invoice.addInvoice",
+											"    pm.expect(invoice.substring(0,2)).to.eql(\"ln\")",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "graphql",
+									"graphql": {
+										"query": "mutation intraLedgerPaymentSend($input: IntraLedgerPaymentSendInput!) {\n  a: intraLedgerPaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n    }\n  }\n\n  b: intraLedgerPaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n    }\n  }\n\n  c: intraLedgerPaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n    }\n  }\n  \n  d: intraLedgerPaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n    }\n  }\n\n  e: intraLedgerPaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n    }\n  }\n\n  f: intraLedgerPaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n    }\n  }\n\n  g: intraLedgerPaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n    }\n  }\n\n  h: intraLedgerPaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n    }\n  }\n\n  i: intraLedgerPaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n    }\n  }\n\n  j: intraLedgerPaymentSend(input:$input) {\n    status\n    errors {\n      message\n      path\n    }\n  }\n}\n",
 										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdBtc}}\",\n        \"amount\": 100,\n        \"recipientWalletId\": \"{{walletIdUsd}}\",\n        \"memo\": \"Test\"\n    }\n}\n"
 									}
 								},
@@ -1705,7 +1772,7 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation lnNoAmountInvoicePaymentSend($input: LnNoAmountInvoicePaymentInput!) {\n  lnNoAmountInvoicePaymentSend(input:$input) {\n    status\n    errors {\n        message\n    }\n  }\n}\n",
+										"query": "mutation lnNoAmountInvoicePaymentSend($input: LnNoAmountInvoicePaymentInput!) {\n  lnNoAmountInvoicePaymentSend(input:$input) {\n    status\n    errors {\n        message\n        path\n        code\n    }\n  }\n}\n",
 										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdBtc}}\",\n        \"paymentRequest\": \"lntb1p3p3e2jpp59cvgj0r0ttuaxw6k5867twrmkhyjp7kf8eujfzjlefus39sjmweqsp59fk3mx7uh87z6aqtml7gc6ugusz2mvhr36qft55hdc0ezt5jsw5qdqqcqzynxqyz5vq9qxpq9qsqrzjqd4hzv9j0g3adlsa2hqa80keumd959cfqkytpq6wsgqwp4gwu6yx5gy7ccqqqpcqqqqqqqlgqqqqqqgq9qrzjqv43we5lgmdwmn8gldtfwc9jm2an0qkjvmtvlwg96dvz4rcaw4746gy7cuqqqpsqqyqqqqlgqqqq86qq9qrzjqt4dhk0824eh29salzmyvam22379e0pwjkesw8kgz4fl3mpvagaccgqd7qqqq0cqqqqqqqlgqqqqqqgq9qx7snq2ye2jszkjj872f0r35xumprt06h853yz3kdnypf2mry00q8c4d8jlun59aantpzc62atc4xx6nwxqvhlcd8sssezp7mn4qr8egq9mlc42\",\n        \"amount\": 10,\n        \"memo\": \"Test\"\n    }\n}"
 									}
 								},
@@ -2130,8 +2197,8 @@
 								"body": {
 									"mode": "graphql",
 									"graphql": {
-										"query": "mutation lnInvoicePaymentSend($input: LnInvoicePaymentInput!) {\n  lnInvoicePaymentSend(input:$input) {\n    status\n    errors {\n      message\n    }\n  }\n}",
-										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdUsd}}\",\n        \"paymentRequest\": \"lntb13323560n1p3pfer8pp5typknzlacpspm2nnrn7uyjf6xddnc9cxc0zrmxhrqpfu5x9e0ktqsp5qqzzshvw2a4hfcsxelqm4h0ps6w9efx0y6uzas08d37y08g8tgusdqdgfex2cttyp5hgcqzynxqyz5vq9qxpq9qsqrzjqd4hzv9j0g3adlsa2hqa80keumd959cfqkytpq6wsgqwp4gwu6yx5gy7ccqqqpcqqqqqqqlgqqqqqqgq9qrzjqt4dhk0824eh29salzmyvam22379e0pwjkesw8kgz4fl3mpvagaccgqd7qqqq0cqqqqqqqlgqqqqqqgq9qrzjqv43we5lgmdwmn8gldtfwc9jm2an0qkjvmtvlwg96dvz4rcaw4746gy7cuqqqpsqqyqqqqlgqqqq86qq9qrmdxj72c0yeallna7m06w00y525zx6y4j0decnvktxgvef459k7ztk2l9epcdwrvmzl4u20j2gg4p6a0apanh5uj7ryclkc40lnk6tqqa5ed5w\",\n        \"memo\": \"Test\"\n    }\n}\n"
+										"query": "mutation lnInvoicePaymentSend($input: LnInvoicePaymentInput!) {\n  lnInvoicePaymentSend(input:$input) {\n    status\n    errors {\n          message\n          path\n          code\n      \n    }\n  }\n}",
+										"variables": "{\n    \"input\": {\n        \"walletId\": \"{{walletIdBtc}}\",\n        \"paymentRequest\": \"lntb13323560n1p3pfer8pp5typknzlacpspm2nnrn7uyjf6xddnc9cxc0zrmxhrqpfu5x9e0ktqsp5qqzzshvw2a4hfcsxelqm4h0ps6w9efx0y6uzas08d37y08g8tgusdqdgfex2cttyp5hgcqzynxqyz5vq9qxpq9qsqrzjqd4hzv9j0g3adlsa2hqa80keumd959cfqkytpq6wsgqwp4gwu6yx5gy7ccqqqpcqqqqqqqlgqqqqqqgq9qrzjqt4dhk0824eh29salzmyvam22379e0pwjkesw8kgz4fl3mpvagaccgqd7qqqq0cqqqqqqqlgqqqqqqgq9qrzjqv43we5lgmdwmn8gldtfwc9jm2an0qkjvmtvlwg96dvz4rcaw4746gy7cuqqqpsqqyqqqqlgqqqq86qq9qrmdxj72c0yeallna7m06w00y525zx6y4j0decnvktxgvef459k7ztk2l9epcdwrvmzl4u20j2gg4p6a0apanh5uj7ryclkc40lnk6tqqa5ed5w\",\n        \"memo\": \"Test\"\n    }\n}\n"
 									}
 								},
 								"url": {
