@@ -36,6 +36,7 @@ type OutgoingOnChainTransaction = {
   confirmations: number
   rawTx: OnChainTransaction
   fee: Satoshis
+  description: string
   createdAt: Date
   uniqueAddresses: () => OnChainAddress[]
 }
@@ -53,6 +54,12 @@ type TxFilterArgs = {
 type TxFilter = {
   apply(txs: IncomingOnChainTransaction[]): IncomingOnChainTransaction[]
 }
+
+type ListTransactionsArgs = {
+  scanDepth: ScanDepth
+}
+type ListIncomingTransactionsArgs = ListTransactionsArgs
+type ListOutgoingTransactionsArgs = ListTransactionsArgs
 
 type LookupOnChainFeeArgs = {
   txHash: OnChainTxHash
@@ -79,6 +86,13 @@ type IncomingOnChainTxHandler = {
   ): { [key: WalletId]: BtcPaymentAmount } | ValidationError
 }
 
+type LookupOnChainPaymentArgs = {
+  txHash: OnChainTxHash
+  scanDepth: ScanDepth
+}
+
+type LookupOnChainReceiptArgs = LookupOnChainPaymentArgs
+
 interface IOnChainService {
   listActivePubkeys(): Pubkey[]
 
@@ -86,14 +100,32 @@ interface IOnChainService {
 
   getPendingBalance(pubkey?: Pubkey): Promise<Satoshis | OnChainServiceError>
 
-  listIncomingTransactions(
-    scanDepth: ScanDepth,
-  ): Promise<IncomingOnChainTransaction[] | OnChainServiceError>
+  listIncomingTransactions({
+    scanDepth,
+  }: ListIncomingTransactionsArgs): Promise<
+    IncomingOnChainTransaction[] | OnChainServiceError
+  >
+
+  listOutgoingTransactions({
+    scanDepth,
+  }: ListOutgoingTransactionsArgs): Promise<
+    OutgoingOnChainTransaction[] | OnChainServiceError
+  >
 
   lookupOnChainFee({
     txHash,
     scanDepth,
   }: LookupOnChainFeeArgs): Promise<Satoshis | OnChainServiceError>
+
+  lookupOnChainPayment({
+    txHash,
+    scanDepth,
+  }: LookupOnChainPaymentArgs): Promise<OutgoingOnChainTransaction | OnChainServiceError>
+
+  lookupOnChainReceipt({
+    txHash,
+    scanDepth,
+  }: LookupOnChainReceiptArgs): Promise<IncomingOnChainTransaction | OnChainServiceError>
 
   createOnChainAddress(): Promise<OnChainAddressIdentifier | OnChainServiceError>
 

@@ -357,7 +357,11 @@ interface ILedgerService {
 
   settlePendingLnPayment(paymentHash: PaymentHash): Promise<true | LedgerServiceError>
 
-  settlePendingOnChainPayment(hash: OnChainTxHash): Promise<true | LedgerServiceError>
+  settlePendingOnChainPayment({
+    txHash,
+  }: {
+    txHash: OnChainTxHash
+  }): Promise<true | LedgerServiceError>
 
   revertLightningPayment(
     args: RevertLightningPaymentArgs,
