@@ -6457,13 +6457,14 @@ graphql-scalars@^1.15.0:
   dependencies:
     tslib "~2.3.0"
 
-graphql-shield@^7.6.3:
-  version "7.6.3"
-  resolved "https://registry.yarnpkg.com/graphql-shield/-/graphql-shield-7.6.3.tgz#41485b044c92d8d02c0a135f65edac937dae305b"
-  integrity sha512-E/7DekFaypEIiWwM2tkBnGsC9tFD0DQc56gs7SQbic/Dyod122q/H6M7c8v59oekKXcVx6QYdkMXs+2hAELbUQ==
+graphql-shield@^7.6.4:
+  version "7.6.4"
+  resolved "https://registry.yarnpkg.com/graphql-shield/-/graphql-shield-7.6.4.tgz#99cb3a120a0222532c569016ba6b64b0e887515a"
+  integrity sha512-AuGqSSOp5LeAeWD2peVl3dNhCoZdRfymB7WWRf+CbCYkWrUz4Y67/JQb9Dn2faEPPuqemUXUKsCAgp93s0hh9A==
   dependencies:
     "@types/yup" "0.29.13"
     object-hash "^3.0.0"
+    tslib "^2.4.0"
     yup "^0.32.0"
 
 graphql-tag@^2.11.0, graphql-tag@^2.12.6:
