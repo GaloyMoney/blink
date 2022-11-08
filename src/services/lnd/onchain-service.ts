@@ -140,11 +140,10 @@ export const OnChainService = (
     txHash,
     scanDepth,
   }: LookupOnChainFeeArgs): Promise<Satoshis | OnChainServiceError> => {
-    const onChainTxs = await listOutgoingTransactions({ scanDepth })
-    if (onChainTxs instanceof Error) return onChainTxs
+    const onChainTx = await lookupOnChainPayment({ txHash, scanDepth })
+    if (onChainTx instanceof Error) return onChainTx
 
-    const tx = onChainTxs.find((tx) => tx.rawTx.txHash === txHash)
-    return (tx && tx.fee) || new CouldNotFindOnChainTransactionError()
+    return onChainTx.fee
   }
 
   const lookupOnChainPayment = async ({
