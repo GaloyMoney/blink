@@ -119,7 +119,7 @@ export const intraledgerPaymentSendWalletId = async ({
   })
   if (paymentSendStatus instanceof Error) return paymentSendStatus
 
-  if (senderAccount?.id !== recipientAccount?.id) {
+  if (senderAccount.id !== recipientAccount.id) {
     const addContactResult = await addContactsAfterSend({
       senderAccount,
       recipientAccount,
