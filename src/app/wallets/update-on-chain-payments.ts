@@ -30,6 +30,10 @@ export const updateOnChainPaymentsByTxHash = async ({
 
   const tx = await onChainService.lookupOnChainPayment({ txHash, scanDepth })
   if (tx instanceof Error) return tx
+
+  // we have to return here because we will not know whose user the the txid belong to
+  // this is because of limitation for lnd onchain wallet. we only know the txid after the
+  // transaction has been sent and this event is trigger before
   if (tx.confirmations === 0) return new UnconfirmedOnChainTxError()
 
   const settled = await LedgerService().settlePendingOnChainPayment({ txHash })
