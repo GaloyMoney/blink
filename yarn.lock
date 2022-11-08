@@ -1878,14 +1878,14 @@
     jest-haste-map "^28.1.3"
     slash "^3.0.0"
 
-"@jest/test-sequencer@^29.2.2":
-  version "29.2.2"
-  resolved "https://registry.yarnpkg.com/@jest/test-sequencer/-/test-sequencer-29.2.2.tgz#4ac7487b237e517a1f55e7866fb5553f6e0168b9"
-  integrity sha512-Cuc1znc1pl4v9REgmmLf0jBd3Y65UXJpioGYtMr/JNpQEIGEzkmHhy6W6DLbSsXeUA13TDzymPv0ZGZ9jH3eIw==
+"@jest/test-sequencer@^29.3.0":
+  version "29.3.0"
+  resolved "https://registry.yarnpkg.com/@jest/test-sequencer/-/test-sequencer-29.3.0.tgz#0c2198fe482c26d763abbcb183992ae769bb7978"
+  integrity sha512-XQlTP/S6Yf6NKV0Mt4oopFKyDxiEkDMD7hIFcCTeltKQszE0Z+LI5KLukwNW6Qxr1YzaZ/s6PlKJusiCLJNTcw==
   dependencies:
     "@jest/test-result" "^29.2.1"
     graceful-fs "^4.2.9"
-    jest-haste-map "^29.2.1"
+    jest-haste-map "^29.3.0"
     slash "^3.0.0"
 
 "@jest/transform@^28.1.2":
@@ -7727,10 +7727,10 @@ jest-haste-map@^28.1.1, jest-haste-map@^28.1.3:
   optionalDependencies:
     fsevents "^2.3.2"
 
-jest-haste-map@^29.0.3, jest-haste-map@^29.2.1:
-  version "29.2.1"
-  resolved "https://registry.yarnpkg.com/jest-haste-map/-/jest-haste-map-29.2.1.tgz#f803fec57f8075e6c55fb5cd551f99a72471c699"
-  integrity sha512-wF460rAFmYc6ARcCFNw4MbGYQjYkvjovb9GBT+W10Um8q5nHq98jD6fHZMDMO3tA56S8XnmNkM8GcA8diSZfnA==
+jest-haste-map@^29.0.3, jest-haste-map@^29.3.0:
+  version "29.3.0"
+  resolved "https://registry.yarnpkg.com/jest-haste-map/-/jest-haste-map-29.3.0.tgz#9786f501ed6ab1c7adc35d3f83c1c21ed4172c77"
+  integrity sha512-ugdLIreycMRRg3+6AjiExECmuFI2D9PS+BmNU7eGvBt3fzVMKybb9USAZXN6kw4Q6Mn8DSK+7OFCloY2rN820Q==
   dependencies:
     "@jest/types" "^29.2.1"
     "@types/graceful-fs" "^4.1.3"
@@ -7740,7 +7740,7 @@ jest-haste-map@^29.0.3, jest-haste-map@^29.2.1:
     graceful-fs "^4.2.9"
     jest-regex-util "^29.2.0"
     jest-util "^29.2.1"
-    jest-worker "^29.2.1"
+    jest-worker "^29.3.0"
     micromatch "^4.0.4"
     walker "^1.0.8"
   optionalDependencies:
@@ -8046,10 +8046,10 @@ jest-worker@^28.1.3:
     merge-stream "^2.0.0"
     supports-color "^8.0.0"
 
-jest-worker@^29.2.1:
-  version "29.2.1"
-  resolved "https://registry.yarnpkg.com/jest-worker/-/jest-worker-29.2.1.tgz#8ba68255438252e1674f990f0180c54dfa26a3b1"
-  integrity sha512-ROHTZ+oj7sBrgtv46zZ84uWky71AoYi0vEV9CdEtc1FQunsoAGe5HbQmW76nI5QWdvECVPrSi1MCVUmizSavMg==
+jest-worker@^29.3.0:
+  version "29.3.0"
+  resolved "https://registry.yarnpkg.com/jest-worker/-/jest-worker-29.3.0.tgz#240a1cd731c7d6645e8bcc37a3d584f122afb44a"
+  integrity sha512-rP8LYClB5NCWW0p8GdQT9vRmZNrDmjypklEYZuGCIU5iNviVWCZK5MILS3rQwD0FY1u96bY7b+KoU17DdZy6Ww==
   dependencies:
     "@types/node" "*"
     jest-util "^29.2.1"
