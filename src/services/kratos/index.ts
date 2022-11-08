@@ -1,4 +1,8 @@
-import { AuthenticationKratosError, UnknownKratosError } from "./errors"
+import {
+  AuthenticationKratosError,
+  UnknownKratosError,
+} from "@domain/authentication/errors"
+
 import { kratosPublic, listSessionsInternal, toDomainSession } from "./private"
 
 export * from "./auth-phone-no-password"

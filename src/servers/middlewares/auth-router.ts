@@ -6,13 +6,17 @@ import * as jwt from "jsonwebtoken"
 import { Users } from "@app"
 import { getKratosConfig, isDev, JWT_SECRET } from "@config"
 import { parseIps } from "@domain/users-ips"
+import {
+  KratosError,
+  LikelyNoUserWithThisPhoneExistError,
+} from "@domain/authentication/errors"
+
 import { mapError } from "@graphql/error-map"
 import { baseLogger } from "@services/logger"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { kratosPublic } from "@services/kratos/private"
-import { KratosError, LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
 import { AuthWithPhonePasswordlessService, validateKratosToken } from "@services/kratos"
 
 const graphqlLogger = baseLogger.child({

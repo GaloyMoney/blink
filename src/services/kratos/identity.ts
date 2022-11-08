@@ -1,9 +1,9 @@
 import { assert } from "console"
 
 import { isDev } from "@config"
+import { UnknownKratosError } from "@domain/authentication/errors"
 import { Identity } from "@ory/client"
 
-import { UnknownKratosError } from "./errors"
 import { kratosAdmin, toDomainIdentityPhone } from "./private"
 
 export const getNextPage = (link: string): number | undefined => {

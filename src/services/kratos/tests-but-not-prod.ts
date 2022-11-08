@@ -5,7 +5,7 @@ import {
   LikelyNoUserWithThisPhoneExistError,
   MissingTotpKratosError,
   UnknownKratosError,
-} from "@services/kratos/errors"
+} from "@domain/authentication/errors"
 import { authenticator } from "otplib"
 
 import { baseLogger } from "@services/logger"

@@ -3,7 +3,7 @@ import {
   AuthenticationKratosError,
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
-} from "@services/kratos/errors"
+} from "@domain/authentication/errors"
 import { AdminCreateIdentityBody } from "@ory/client"
 import {
   AuthWithPhonePasswordlessService,

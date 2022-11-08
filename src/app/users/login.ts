@@ -12,6 +12,7 @@ import {
 
 import { checkedToKratosUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
+import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 import {
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindUserFromPhoneError,
@@ -21,7 +22,6 @@ import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { ErrorLevel } from "@domain/shared"
 import { checkedToEmailAddress } from "@domain/users"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
-import { LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
 
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"

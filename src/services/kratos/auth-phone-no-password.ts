@@ -7,7 +7,7 @@ import {
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
   UnknownKratosError,
-} from "@services/kratos/errors"
+} from "@domain/authentication/errors"
 import {
   AdminCreateIdentityBody,
   AdminUpdateIdentityBody,
