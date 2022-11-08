@@ -119,12 +119,14 @@ export const intraledgerPaymentSendWalletId = async ({
   })
   if (paymentSendStatus instanceof Error) return paymentSendStatus
 
-  const addContactResult = await addContactsAfterSend({
-    senderAccount,
-    recipientAccount,
-  })
-  if (addContactResult instanceof Error) {
-    recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
+  if (senderAccount.id !== recipientAccount.id) {
+    const addContactResult = await addContactsAfterSend({
+      senderAccount,
+      recipientAccount,
+    })
+    if (addContactResult instanceof Error) {
+      recordExceptionInCurrentSpan({ error: addContactResult, level: ErrorLevel.Warn })
+    }
   }
 
   return paymentSendStatus

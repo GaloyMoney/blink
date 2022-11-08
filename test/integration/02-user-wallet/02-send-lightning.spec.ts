@@ -47,6 +47,7 @@ import {
   WalletInvoicesRepository,
   WalletsRepository,
   PaymentFlowStateRepository,
+  AccountsRepository,
 } from "@services/mongoose"
 import { WalletInvoice } from "@services/mongoose/schema"
 import { DealerPriceService, NewDealerPriceService } from "@services/dealer-price"
@@ -1851,6 +1852,47 @@ describe("USD Wallets - Lightning Pay", () => {
     const usdPromise = () =>
       dealerFns.getSatsFromCentsForImmediateSell(toCents(usdSendAmount))
 
+    const checkContactLogic = async ({ senderAccountId, recipientWalletId }) => {
+      const senderAccount = await AccountsRepository().findById(senderAccountId)
+      if (senderAccount instanceof Error) return senderAccount
+      const { username: senderUsername } = senderAccount
+      expect(senderUsername).not.toBeUndefined()
+
+      const recipientWallet = await WalletsRepository().findById(recipientWalletId)
+      if (recipientWallet instanceof Error) return recipientWallet
+      const { accountId: recipientAccountId } = recipientWallet
+
+      const recipientAccount = await AccountsRepository().findById(recipientAccountId)
+      if (recipientAccount instanceof Error) return recipientAccount
+      const { username: recipientUsername } = recipientAccount
+      expect(recipientUsername).not.toBeUndefined()
+
+      if (senderAccount.id === recipientAccount.id) {
+        const senderContactInRecipientAccount = recipientAccount.contacts.find(
+          (contact) => contact.id === senderUsername,
+        )
+        expect(senderContactInRecipientAccount).toBeUndefined()
+      } else {
+        const senderContactInRecipientAccount = recipientAccount.contacts.find(
+          (contact) => contact.id === senderUsername,
+        )
+        senderUsername
+          ? expect(
+              senderContactInRecipientAccount && senderContactInRecipientAccount.id,
+            ).toBe(senderUsername)
+          : expect(senderContactInRecipientAccount).toBeUndefined()
+
+        const recipientContactInSenderAccount = senderAccount.contacts.find(
+          (contact) => contact.id === recipientUsername,
+        )
+        recipientUsername
+          ? expect(
+              recipientContactInSenderAccount && recipientContactInSenderAccount.id,
+            ).toBe(recipientUsername)
+          : expect(recipientContactInSenderAccount).toBeUndefined()
+      }
+    }
+
     const testIntraledgerSend = async ({
       senderWalletId,
       senderAccount,
@@ -1900,6 +1942,8 @@ describe("USD Wallets - Lightning Pay", () => {
       if (txResult.error instanceof Error || txResult.result === null) {
         return txResult.error
       }
+
+      await checkContactLogic({ senderAccountId: senderAccount.id, recipientWalletId })
 
       const senderTxns = await LedgerService().getTransactionsByWalletId(senderWalletId)
       if (senderTxns instanceof Error) throw senderTxns
