@@ -1,5 +1,3 @@
-type KratosError = import("./errors").KratosError
-
 type KratosIdentity = import("@ory/client").Identity
 
 // Kratos SDK is implying that identity always exist for Session

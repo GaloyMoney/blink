@@ -1,8 +1,8 @@
 import { JWT_SECRET } from "@config"
 import { ErrorLevel } from "@domain/shared"
+import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 import { RedisCacheService } from "@services/cache"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
-import { LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import {
   recordExceptionInCurrentSpan,

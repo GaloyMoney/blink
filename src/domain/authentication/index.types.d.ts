@@ -1,6 +1,7 @@
 type SessionId = string & { readonly brand: unique symbol }
 
 type AuthenticationError = import("./errors").AuthenticationError
+type KratosError = import("./errors").KratosError
 
 type IdentityPassword = string & { readonly brand: unique symbol }
 

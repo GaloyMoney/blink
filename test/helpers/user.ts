@@ -1,6 +1,11 @@
 import { getDefaultAccountsConfig, yamlConfig } from "@config"
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
 import {
+  AuthenticationError,
+  LikelyNoUserWithThisPhoneExistError,
+} from "@domain/authentication/errors"
+
+import {
   AccountsRepository,
   UsersRepository,
   WalletsRepository,
@@ -14,9 +19,7 @@ import { adminUsers } from "@domain/admin-users"
 import { UsersIpRepository } from "@services/mongoose/users-ips"
 import { createAccountWithPhoneIdentifier } from "@app/accounts"
 
-import { LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
-import { AuthenticationError } from "@domain/authentication/errors"
 
 const users = UsersRepository()
 
