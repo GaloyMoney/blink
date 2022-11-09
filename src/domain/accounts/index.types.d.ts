@@ -165,6 +165,9 @@ interface IAccountsRepository {
   }: NewAccount): Promise<Account | RepositoryError>
 
   findByUsername(username: Username): Promise<Account | RepositoryError>
+  findByUsernames(
+    usernames: Array<Username>,
+  ): Promise<Array<Account | undefined | RepositoryError>>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>
   update(account: Account): Promise<Account | RepositoryError>
 }

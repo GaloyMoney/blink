@@ -43,6 +43,7 @@ import jwksRsa from "jwks-rsa"
 import { checkedToKratosUserId } from "@domain/accounts"
 
 import { sendOathkeeperRequest } from "@services/oathkeeper"
+import { AccountsLoaders } from "@services/mongoose"
 
 import { ValidationError } from "@domain/shared"
 
@@ -157,8 +158,13 @@ const sessionContext = ({
         addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
       }
 
+      const loaders = {
+        accounts: AccountsLoaders(),
+      }
+
       return {
         logger,
+        loaders,
         // FIXME: we should not return this for the admin graphql endpoint
         domainUser,
         domainAccount,

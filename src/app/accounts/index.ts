@@ -7,7 +7,6 @@ export * from "./update-business-map-info"
 export * from "./send-default-wallet-balance-to-users"
 export * from "./add-earn"
 export * from "./set-username"
-export * from "./username-available"
 export * from "./get-contact-by-username"
 export * from "./update-contact-alias"
 export * from "./add-new-contact"
@@ -18,6 +17,10 @@ export * from "./add-wallet"
 export * from "./create-account"
 
 const accounts = AccountsRepository()
+
+import { usernameAvailable } from "./username-available"
+
+export { usernameAvailable }
 
 export const getAccount = async (
   accountId: AccountId,
@@ -55,3 +58,7 @@ export const getUsernameFromWalletId = async (
   if (account instanceof Error) return account
   return account.username
 }
+
+export default (loaders) => ({
+  usernameAvailable: usernameAvailable(loaders.accounts.findByUsernames),
+})

@@ -1,3 +1,5 @@
+import DataLoader from "dataloader"
+
 import { onboardingEarn } from "@config"
 import { AccountLevel, AccountStatus } from "@domain/accounts"
 import { toSats } from "@domain/bitcoin"
@@ -56,6 +58,28 @@ export const AccountsRepository = (): IAccountsRepository => {
       return translateToAccount(result)
     } catch (err) {
       return parseRepositoryError(err)
+    }
+  }
+
+  const findByUsernames = async (
+    usernames: Array<Username>,
+  ): Promise<Array<Account | undefined | RepositoryError>> => {
+    try {
+      const dbResp = await User.find({ username: { $in: usernames } }, projection)
+
+      const accounts = usernames.map((username) => {
+        const usernameMatch = dbResp.find((dbDoc) => dbDoc.username === username)
+        if (!usernameMatch) {
+          return undefined
+        }
+        return translateToAccount(usernameMatch)
+      })
+
+      return accounts
+    } catch (err) {
+      console.log({ err })
+
+      return [parseRepositoryError(err)]
     }
   }
 
@@ -191,8 +215,17 @@ export const AccountsRepository = (): IAccountsRepository => {
     findById,
     findByUserId,
     findByUsername,
+    findByUsernames,
     listBusinessesForMap,
     update,
+  }
+}
+
+export const AccountsLoaders = () => {
+  const accountsRepo = AccountsRepository()
+
+  return {
+    findByUsernames: new DataLoader((keys: any) => accountsRepo.findByUsernames(keys)),
   }
 }
 

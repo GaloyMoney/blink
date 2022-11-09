@@ -1,5 +1,6 @@
 type GraphQLContext = {
   logger: Logger
+  loaders: Record<string, any>
   domainUser: User | null
   domainAccount: Account | undefined
   geetest: GeetestType
@@ -8,6 +9,7 @@ type GraphQLContext = {
 
 type GraphQLContextForUser = {
   logger: Logger
+  loaders: Record<string, any>
   domainUser: User
   domainAccount: Account
   geetest: GeetestType
