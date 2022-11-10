@@ -118,7 +118,11 @@ const userPayload = (domainUser: User | null) => (updateData: MeResolveUpdate) =
 
 const MeSubscription = {
   type: GT.NonNull(MyUpdatesPayload),
-  resolve: (source: MeResolveSource, _args: unknown, ctx: GraphQLContextForUser) => {
+  resolve: (
+    source: MeResolveSource | undefined,
+    _args: unknown,
+    ctx: GraphQLContextForUser,
+  ) => {
     if (!ctx.domainUser) {
       throw new AuthenticationError({
         message: "Not Authenticated for subscription",
@@ -128,7 +132,8 @@ const MeSubscription = {
 
     if (source === undefined) {
       throw new UnknownClientError({
-        message: "Got 'undefined' payload",
+        message:
+          "Got 'undefined' payload. Check url used to ensure right websocket endpoint was used for subscription.",
         level: "fatal",
         logger: baseLogger,
       })

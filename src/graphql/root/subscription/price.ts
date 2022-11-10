@@ -47,12 +47,13 @@ const PriceSubscription = {
     input: { type: GT.NonNull(PriceInput) },
   },
   resolve: (
-    source: { errors: IError[]; satUsdCentPrice?: number },
+    source: { errors: IError[]; satUsdCentPrice?: number } | undefined,
     args: PriceResolveArgs,
   ) => {
     if (source === undefined) {
       throw new UnknownClientError({
-        message: "Got 'undefined' payload",
+        message:
+          "Got 'undefined' payload. Check url used to ensure right websocket endpoint was used for subscription.",
         level: "fatal",
         logger: baseLogger,
       })

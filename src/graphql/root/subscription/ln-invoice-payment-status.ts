@@ -3,10 +3,12 @@ import { Lightning } from "@app"
 import { customPubSubTrigger, PubSubDefaultTriggers } from "@domain/pubsub"
 
 import { PubSubService } from "@services/pubsub"
+import { baseLogger } from "@services/logger"
 
 import { GT } from "@graphql/index"
 import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
 import LnInvoicePaymentStatusInput from "@graphql/types/object/ln-invoice-payment-status-input"
+import { UnknownClientError } from "@graphql/error"
 
 const pubsub = PubSubService()
 
@@ -28,7 +30,15 @@ const LnInvoicePaymentStatusSubscription = {
     input: { type: GT.NonNull(LnInvoicePaymentStatusInput) },
   },
 
-  resolve: (source: LnInvoicePaymentResolveSource) => {
+  resolve: (source: LnInvoicePaymentResolveSource | undefined) => {
+    if (source === undefined) {
+      throw new UnknownClientError({
+        message:
+          "Got 'undefined' payload. Check url used to ensure right websocket endpoint was used for subscription.",
+        logger: baseLogger,
+      })
+    }
+
     if (source.errors) {
       return { errors: source.errors }
     }
