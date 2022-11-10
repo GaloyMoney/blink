@@ -9,7 +9,7 @@ import { setupMongoConnection } from "@services/mongodb"
 import { Account } from "@services/mongoose/schema"
 import { UsersRepository } from "@services/mongoose"
 
-const createUsdWallets = async () => {
+const MigrateUserMetadata = async () => {
   await setupMongoConnection()
 
   let id: KratosUserId
@@ -38,24 +38,10 @@ const createUsdWallets = async () => {
       console.log(`${progress} accounts iterated`)
     }
   }
-
-  // maybe in another migration?
-  try {
-    const res = Account.updateMany(
-      {},
-      { $unset: { phone: 1, phoneMetadata: 1 } },
-      { multi: true },
-    )
-    console.log({ res }, `update contactEnabled`)
-  } catch (error) {
-    console.log({ error }, `error removing phone`)
-  }
-
-  console.log("completed")
 }
 
 const main = async () => {
-  return createUsdWallets()
+  return MigrateUserMetadata()
 }
 
 setupMongoConnection()
