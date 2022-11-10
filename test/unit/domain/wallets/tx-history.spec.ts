@@ -430,7 +430,12 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const result = history.addPendingIncoming({
       pendingIncoming: incomingTxs,
       addressesByWalletId: { [walletId]: addresses },
-      walletDetailsByWalletId: { [walletId]: { currency: WalletCurrency.Btc } },
+      walletDetailsByWalletId: {
+        [walletId]: {
+          currency: WalletCurrency.Btc,
+          depositFeeRatio: 0 as DepositFeeRatio,
+        },
+      },
       displayCurrencyPerSat: 1 as DisplayCurrencyPerSat,
     })
     const expected = [
@@ -502,7 +507,12 @@ describe("ConfirmedTransactionHistory.addPendingIncoming", () => {
     const result = history.addPendingIncoming({
       pendingIncoming: incomingTxs,
       addressesByWalletId: { [walletId]: addresses },
-      walletDetailsByWalletId: { [walletId]: { currency: WalletCurrency.Btc } },
+      walletDetailsByWalletId: {
+        [walletId]: {
+          currency: WalletCurrency.Btc,
+          depositFeeRatio: 0 as DepositFeeRatio,
+        },
+      },
       displayCurrencyPerSat: NaN as DisplayCurrencyPerSat,
     })
     const expected = [

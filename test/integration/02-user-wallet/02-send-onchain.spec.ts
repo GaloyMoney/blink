@@ -658,9 +658,9 @@ describe("UserWallet - onChainPay", () => {
         targetConfirmations,
       })
       await mineBlockAndSyncAll()
-      await LedgerService().settlePendingOnChainPayment(
-        pendingTx.settlementVia.transactionHash,
-      )
+      await LedgerService().settlePendingOnChainPayment({
+        txHash: pendingTx.settlementVia.transactionHash,
+      })
     },
   )
 

@@ -449,6 +449,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "MissingExpiredAtKratosError":
     case "MissingTotpKratosError":
     case "IncompatibleSchemaUpgradeError":
+    case "UnconfirmedOnChainTxError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`

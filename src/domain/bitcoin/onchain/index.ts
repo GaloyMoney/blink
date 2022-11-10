@@ -51,16 +51,19 @@ export const OutgoingOnChainTransaction = ({
   confirmations,
   rawTx,
   fee,
+  description,
   createdAt,
 }: {
   confirmations: number
   rawTx: OnChainTransaction
   fee: Satoshis
+  description: string
   createdAt: Date
 }): OutgoingOnChainTransaction => ({
   confirmations,
   rawTx,
   fee,
+  description,
   createdAt,
   uniqueAddresses: () => uniqueAddressesForTxn(rawTx),
 })

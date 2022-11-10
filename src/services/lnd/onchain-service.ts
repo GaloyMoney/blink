@@ -99,18 +99,22 @@ export const OnChainService = (
     }
   }
 
-  const listIncomingTransactions = async (
-    scanDepth: ScanDepth,
-  ): Promise<IncomingOnChainTransaction[] | OnChainServiceError> => {
+  const listIncomingTransactions = async ({
+    scanDepth,
+  }: ListIncomingTransactionsArgs): Promise<
+    IncomingOnChainTransaction[] | OnChainServiceError
+  > => {
     const txs = await listTransactions(scanDepth)
     if (txs instanceof Error) return txs
 
     return extractIncomingTransactions({ decoder, txs })
   }
 
-  const listOutgoingTransactions = async (
-    scanDepth: ScanDepth,
-  ): Promise<OutgoingOnChainTransaction[] | OnChainServiceError> => {
+  const listOutgoingTransactions = async ({
+    scanDepth,
+  }: ListOutgoingTransactionsArgs): Promise<
+    OutgoingOnChainTransaction[] | OnChainServiceError
+  > => {
     const txs = await listTransactions(scanDepth)
     if (txs instanceof Error) return txs
 
@@ -136,11 +140,36 @@ export const OnChainService = (
     txHash,
     scanDepth,
   }: LookupOnChainFeeArgs): Promise<Satoshis | OnChainServiceError> => {
-    const onChainTxs = await listOutgoingTransactions(scanDepth)
+    const onChainTx = await lookupOnChainPayment({ txHash, scanDepth })
+    if (onChainTx instanceof Error) return onChainTx
+
+    return onChainTx.fee
+  }
+
+  const lookupOnChainPayment = async ({
+    txHash,
+    scanDepth,
+  }: LookupOnChainPaymentArgs): Promise<
+    OutgoingOnChainTransaction | OnChainServiceError
+  > => {
+    const onChainTxs = await listOutgoingTransactions({ scanDepth })
     if (onChainTxs instanceof Error) return onChainTxs
 
     const tx = onChainTxs.find((tx) => tx.rawTx.txHash === txHash)
-    return (tx && tx.fee) || new CouldNotFindOnChainTransactionError()
+    return tx || new CouldNotFindOnChainTransactionError()
+  }
+
+  const lookupOnChainReceipt = async ({
+    txHash,
+    scanDepth,
+  }: LookupOnChainPaymentArgs): Promise<
+    IncomingOnChainTransaction | OnChainServiceError
+  > => {
+    const onChainTxs = await listIncomingTransactions({ scanDepth })
+    if (onChainTxs instanceof Error) return onChainTxs
+
+    const tx = onChainTxs.find((tx) => tx.rawTx.txHash === txHash)
+    return tx || new CouldNotFindOnChainTransactionError()
   }
 
   const getOnChainFeeEstimate = async ({
@@ -208,7 +237,10 @@ export const OnChainService = (
       getBalance,
       getPendingBalance,
       listIncomingTransactions,
+      listOutgoingTransactions,
       lookupOnChainFee,
+      lookupOnChainPayment,
+      lookupOnChainReceipt,
       createOnChainAddress,
       getOnChainFeeEstimate,
       payToAddress,
@@ -259,6 +291,7 @@ export const extractOutgoingTransactions = ({
           confirmations: tx.confirmation_count || 0,
           rawTx: decoder.decode(tx.transaction as string),
           fee: toSats(tx.fee || 0),
+          description: tx.description || "",
           createdAt: new Date(tx.created_at),
         }),
     )

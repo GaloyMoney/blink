@@ -21,7 +21,7 @@ export const getOnChainTxs = async (): Promise<
         baseLogger.warn({ onChain }, "impossible to create OnChainService")
         return onChain
       }
-      return onChain.listIncomingTransactions(ONCHAIN_MIN_CONFIRMATIONS)
+      return onChain.listIncomingTransactions({ scanDepth: ONCHAIN_MIN_CONFIRMATIONS })
     },
     inflate: async (txnsPromise: Promise<IncomingOnChainTransactionFromCache[]>) => {
       const txns = await txnsPromise
