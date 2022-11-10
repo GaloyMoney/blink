@@ -117,7 +117,7 @@ export const onchainTransactionEventHandler = async (
     const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
     if (senderAccount instanceof Error) return senderAccount
 
-    const senderUser = await UsersRepository().findById(senderAccount.ownerId)
+    const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
 
     await NotificationsService().onChainTxSent({
@@ -128,7 +128,7 @@ export const onchainTransactionEventHandler = async (
       displayPaymentAmount,
       txHash,
       senderDeviceTokens: senderUser.deviceTokens,
-      senderLanguage: senderUser.language,
+      senderLanguage: senderUser.languageOrDefault,
     })
   } else {
     // incoming transaction
@@ -164,7 +164,9 @@ export const onchainTransactionEventHandler = async (
         const recipientAccount = await AccountsRepository().findById(wallet.accountId)
         if (recipientAccount instanceof Error) return recipientAccount
 
-        const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+        const recipientUser = await UsersRepository().findById(
+          recipientAccount.kratosUserId,
+        )
         if (recipientUser instanceof Error) return recipientUser
 
         NotificationsService().onChainTxReceivedPending({
@@ -175,7 +177,7 @@ export const onchainTransactionEventHandler = async (
           displayPaymentAmount,
           txHash,
           recipientDeviceTokens: recipientUser.deviceTokens,
-          recipientLanguage: recipientUser.language,
+          recipientLanguage: recipientUser.languageOrDefault,
         })
       })
     }
