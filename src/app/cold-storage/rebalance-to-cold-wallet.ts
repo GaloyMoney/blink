@@ -1,14 +1,19 @@
 import { getCurrentPrice } from "@app/prices"
+
 import { BTC_NETWORK, getColdStorageConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
+
 import { toSats } from "@domain/bitcoin"
 import { TxDecoder } from "@domain/bitcoin/onchain"
 import { RebalanceChecker } from "@domain/cold-storage"
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
-import { ColdStorageService } from "@services/cold-storage"
-import { LedgerService } from "@services/ledger"
+
 import { LndService } from "@services/lnd"
+import { LedgerService } from "@services/ledger"
+import { ColdStorageService } from "@services/cold-storage"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { addAttributesToCurrentSpan } from "@services/tracing"
+
+import { getOffChainBalance } from "../lightning/get-balances"
 
 export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationError> => {
   const coldStorageConfig = getColdStorageConfig()
@@ -26,22 +31,23 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const displayCurrencyPerSat = await getCurrentPrice()
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
-  const onChain = await onChainService.getBalance()
-  if (onChain instanceof Error) return onChain
+  // we only need active node onchain balance, otherwise we would not be able to rebalance
+  const onChainBalance = await onChainService.getBalance()
+  if (onChainBalance instanceof Error) return onChainBalance
 
-  const offChain = await offChainService.getBalance()
-  if (offChain instanceof Error) return offChain
+  const offChainBalance = await getOffChainBalance()
+  if (offChainBalance instanceof Error) return offChainBalance
 
   const rebalanceAmount = RebalanceChecker(
     coldStorageConfig,
   ).getWithdrawFromHotWalletAmount({
-    onChainHotWalletBalance: onChain,
-    offChainHotWalletBalance: offChain,
+    onChainHotWalletBalance: onChainBalance,
+    offChainHotWalletBalance: offChainBalance,
   })
 
   addAttributesToCurrentSpan({
-    "rebalance.offChainBalance": offChain,
-    "rebalance.onChainBalance": onChain,
+    "rebalance.offChainBalance": offChainBalance,
+    "rebalance.onChainBalance": onChainBalance,
     "rebalance.amount": rebalanceAmount,
   })
 
