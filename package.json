@@ -109,7 +109,7 @@
     "@babel/core": "^7.19.6",
     "@babel/preset-env": "^7.19.4",
     "@graphql-tools/jest-transform": "^1.2.2",
-    "@jest/test-sequencer": "^29.2.2",
+    "@jest/test-sequencer": "^29.3.1",
     "@types/babel__core": "^7.1.15",
     "@types/babel__preset-env": "^7.9.2",
     "@types/dedent": "^0.7.0",
