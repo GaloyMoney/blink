@@ -2766,7 +2766,7 @@
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.5.tgz#1001cc5e6a3704b83c236027e77f2f58ea010f40"
   integrity sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==
 
-"@types/node@*", "@types/node@>=12.12.47", "@types/node@>=13.7.0", "@types/node@^18.11.9":
+"@types/node@*", "@types/node@18.11.9", "@types/node@>=12.12.47", "@types/node@>=13.7.0", "@types/node@^18.11.9":
   version "18.11.9"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.9.tgz#02d013de7058cea16d36168ef2fc653464cfbad4"
   integrity sha512-CRpX21/kGdzjOpFsZSkcrXMGIBWMGNIHXXBVFSH+ggkftxg+XYP20TESbh+zFvFj3EQOl5byk0HTRn1IL6hbqg==
@@ -8478,7 +8478,7 @@ lightning@6.2.4:
     tiny-secp256k1 "2.2.1"
     type-fest "3.1.0"
 
-lightning@6.2.5, lightning@^6.2.4:
+lightning@6.2.5:
   version "6.2.5"
   resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.2.5.tgz#44bddb344ae82d2cb8d24b93c0dd1f80f7cdbc5b"
   integrity sha512-vyG+wBnoDGiL9xMmUBuKJBKrtcnQFi/fv3GK1PBpZQes5LM8IKNwxyxyNn7liILr/dXHhnlT7fCE+N+jvl/4yg==
@@ -8487,6 +8487,32 @@ lightning@6.2.5, lightning@^6.2.4:
     "@grpc/proto-loader" "0.7.3"
     "@types/express" "4.17.14"
     "@types/node" "18.11.7"
+    "@types/request" "2.48.8"
+    "@types/ws" "8.5.3"
+    async "3.2.4"
+    asyncjs-util "1.2.10"
+    bitcoinjs-lib "6.0.2"
+    bn.js "5.2.1"
+    body-parser "1.20.1"
+    bolt07 "1.8.2"
+    bolt09 "0.2.4"
+    cbor "8.1.0"
+    ecpair "2.1.0"
+    express "4.18.2"
+    invoices "2.2.0"
+    psbt "2.7.1"
+    tiny-secp256k1 "2.2.1"
+    type-fest "3.1.0"
+
+lightning@6.2.7, lightning@^6.2.4:
+  version "6.2.7"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.2.7.tgz#e8d76950bf8fe96b4dd918829b4f69248ddafb69"
+  integrity sha512-2O68CU67XWqbahWRG4Ut5OsdqzxWh3Pg2bboiGcSSBA1boRECQLvw3cpnsFZK7Sef5s4NhgslDu7bZxyrDa8pw==
+  dependencies:
+    "@grpc/grpc-js" "1.7.3"
+    "@grpc/proto-loader" "0.7.3"
+    "@types/express" "4.17.14"
+    "@types/node" "18.11.9"
     "@types/request" "2.48.8"
     "@types/ws" "8.5.3"
     async "3.2.4"
@@ -8581,7 +8607,7 @@ ln-service@54.2.3:
     morgan "1.10.0"
     ws "8.9.0"
 
-ln-service@54.2.4, ln-service@^54.2.4:
+ln-service@54.2.4:
   version "54.2.4"
   resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-54.2.4.tgz#a141d94c23745f6d890ef3bfde2e1bf0144828c1"
   integrity sha512-n8OWGBQRxAf1Oqk6p77jidkkljENjkwWqElIZtRz4QLfVHpFCxhNoMOCcG5iUTt0t53P8zo3s0xzOXRPUEUT8g==
@@ -8591,6 +8617,20 @@ ln-service@54.2.4, ln-service@^54.2.4:
     express "4.18.2"
     invoices "2.2.0"
     lightning "6.2.5"
+    macaroon "3.0.4"
+    morgan "1.10.0"
+    ws "8.10.0"
+
+ln-service@^54.2.6:
+  version "54.2.6"
+  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-54.2.6.tgz#a125370bd3fd848fc008bf952e9705e8fa964964"
+  integrity sha512-HEFcTdVj1nYfhkLzPKtCtBZhw+I9FB8qoJhMb4ro8cwMebRSG/lDDcIvkANfi7ccFLbRNB+M7Tk1vHRaFdQAzw==
+  dependencies:
+    bolt07 "1.8.2"
+    cors "2.8.5"
+    express "4.18.2"
+    invoices "2.2.0"
+    lightning "6.2.7"
     macaroon "3.0.4"
     morgan "1.10.0"
     ws "8.10.0"
