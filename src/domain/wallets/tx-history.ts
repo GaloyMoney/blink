@@ -3,15 +3,13 @@ import {
   MEMO_SHARING_SATS_THRESHOLD,
   onboardingEarn,
 } from "@config"
-
-import { toCents } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
-import { WalletCurrency } from "@domain/shared"
+import { toCents } from "@domain/fiat"
 import { LedgerTransactionType } from "@domain/ledger"
+import { WalletCurrency } from "@domain/shared"
 
-import { TxStatus } from "./tx-status"
-import { DepositFeeCalculator } from "./deposit-fee-calculator"
 import { PaymentInitiationMethod, SettlementMethod } from "./tx-methods"
+import { TxStatus } from "./tx-status"
 
 const filterPendingIncoming = ({
   pendingIncoming,
@@ -26,15 +24,11 @@ const filterPendingIncoming = ({
         for (const walletIdString in addressesByWalletId) {
           const walletId = walletIdString as WalletId
           if (addressesByWalletId[walletId].includes(address)) {
-            const fee = DepositFeeCalculator().onChainDepositFee({
-              amount: sats,
-              ratio: walletDetailsByWalletId[walletId].depositFeeRatio,
-            })
             walletTransactions.push({
               id: rawTx.txHash,
               walletId,
-              settlementAmount: toSats(sats - fee),
-              settlementFee: fee,
+              settlementAmount: sats,
+              settlementFee: toSats(0),
               settlementCurrency: walletDetailsByWalletId[walletId].currency,
               displayCurrencyPerSettlementCurrencyUnit: displayCurrencyPerSat,
               status: TxStatus.Pending,
@@ -57,7 +51,7 @@ const filterPendingIncoming = ({
   return walletTransactions
 }
 
-export const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
+const translateLedgerTxnToWalletTxn = <S extends WalletCurrency>(
   txn: LedgerTransaction<S>,
 ) => {
   const { credit, debit, currency, fee, feeUsd, lnMemo, memoFromPayer } = txn

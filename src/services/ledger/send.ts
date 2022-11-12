@@ -102,13 +102,11 @@ export const send = {
     }
   },
 
-  settlePendingOnChainPayment: async ({
-    txHash,
-  }: {
-    txHash: OnChainTxHash
-  }): Promise<true | LedgerServiceError> => {
+  settlePendingOnChainPayment: async (
+    hash: OnChainTxHash,
+  ): Promise<true | LedgerServiceError> => {
     try {
-      const result = await Transaction.updateMany({ hash: txHash }, { pending: false })
+      const result = await Transaction.updateMany({ hash }, { pending: false })
       const success = result.modifiedCount > 0
       if (!success) {
         return new NoTransactionToSettleError()

@@ -41,7 +41,7 @@ export const updateOnChainReceipt = async ({
     return onChain
   }
 
-  const onChainTxs = await onChain.listIncomingTransactions({ scanDepth })
+  const onChainTxs = await onChain.listIncomingTransactions(scanDepth)
   if (onChainTxs instanceof Error) return onChainTxs
 
   redisCache.set({
