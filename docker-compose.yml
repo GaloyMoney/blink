@@ -251,8 +251,9 @@ services:
     image: us.gcr.io/galoy-org/nodejs-concourse
     depends_on:
       - integration-deps
-    command: ["make", "execute-integration-from-within-container"]
     working_dir: /repo
+    command:
+      ["scripts/wait-for-mongodb.sh", "make", "execute-integration-from-within-container"]
     env_file:
       - ${TMP_ENV_CI:-.env.ci}
     volumes:

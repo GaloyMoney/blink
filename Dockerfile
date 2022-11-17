@@ -1,10 +1,12 @@
 FROM node:18-alpine AS BUILD_IMAGE
 
-WORKDIR /app
+# WORKDIR /app
 
 RUN apk update && apk add git
 
 COPY ./*.json ./yarn.lock ./
+
+RUN npm_config_target_arch=x64 yarn add grpc-tools
 
 RUN yarn install --frozen-lockfile
 
@@ -19,7 +21,7 @@ COPY --from=BUILD_IMAGE /app/lib /app/lib
 COPY --from=BUILD_IMAGE /app/src/config/locales /app/lib/config/locales
 COPY --from=BUILD_IMAGE /app/node_modules /app/node_modules
 
-WORKDIR /app
+# WORKDIR /app
 COPY ./*.js ./package.json ./tsconfig.json ./yarn.lock ./.env ./
 
 USER 1000
