@@ -3,6 +3,8 @@ import { User } from "@services/mongoose/schema"
 
 import { listIdentities } from "@services/kratos"
 
+import mongoose from "mongoose"
+
 import {
   lnd1,
   lnd2,
@@ -14,6 +16,27 @@ import {
   getChannels,
   getChainBalance,
 } from "test/helpers"
+
+beforeAll(() => {
+  const MAX_TIMEOUT = 10000
+
+  return new Promise((resolve, reject) => {
+    const interval = setInterval(async () => {
+      try {
+        await mongoose.connection.db.admin().ping()
+        resolve("MongoDB connected")
+        clearInterval(interval)
+        console.log("MongoDB connected")
+      } catch (e) {
+        if (Date.now() > Date.now() + MAX_TIMEOUT) {
+          clearInterval(interval)
+          reject(new Error("MongoDB connection timeout"))
+        }
+        console.log("Waiting for mongo connection...")
+      }
+    }, 1000)
+  })
+})
 
 it("connects to bitcoind", async () => {
   const { chain } = await bitcoindClient.getBlockchainInfo()
