@@ -5,6 +5,7 @@ import { GT } from "@graphql/index"
 
 import { Accounts } from "@app"
 
+import { mapError } from "@graphql/error-map"
 import { UnknownClientError } from "@graphql/error"
 
 import { baseLogger } from "@services/logger"
@@ -89,9 +90,8 @@ const GraphQLUser = GT.Object({
           account: domainAccount,
           contactUsername: username,
         })
-        if (contact instanceof Error) {
-          throw contact
-        }
+        if (contact instanceof Error) throw mapError(contact)
+
         return contact
       },
     },
