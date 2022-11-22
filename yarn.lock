@@ -2165,13 +2165,12 @@
     "@opentelemetry/semantic-conventions" "1.7.0"
     jaeger-client "^3.15.0"
 
-"@opentelemetry/instrumentation-graphql@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-graphql/-/instrumentation-graphql-0.31.0.tgz#ee297faf39138f1e3629851d5260902108c5f87c"
-  integrity sha512-l8Vzu7xp0ybRNao8T59B1wp7MB9yaxTMeF1ETv+YWdYgQcDGLI7f5fb737645ArODBd2DtDsZZwJoyAsfFUyFQ==
+"@opentelemetry/instrumentation-graphql@^0.32.0":
+  version "0.32.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-graphql/-/instrumentation-graphql-0.32.0.tgz#a86143d995747e522b3e28d079fc2dfed69f6612"
+  integrity sha512-5GLoivx+h0YCMDEkFz0bHZCOlwc8QN1DBHN2kf7G1w/aJomB41vpT/pgfXk+SfVMT7kEKY4OIp4pnrkAipA22w==
   dependencies:
     "@opentelemetry/instrumentation" "^0.32.0"
-    graphql "^15.5.1"
 
 "@opentelemetry/instrumentation-grpc@^0.33.0":
   version "0.33.0"
@@ -6484,11 +6483,6 @@ graphql-tools@^8.3.8:
     tslib "^2.4.0"
   optionalDependencies:
     "@apollo/client" "~3.2.5 || ~3.3.0 || ~3.4.0 || ~3.5.0 || ~3.6.0 || ~3.7.0"
-
-graphql@^15.5.1:
-  version "15.8.0"
-  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.8.0.tgz#33410e96b012fa3bdb1091cc99a94769db212b38"
-  integrity sha512-5gghUc24tP9HRznNpV2+FIoq3xKkj5dTQqf4v0CpdPbFVwFkWoxOM+o+2OC9ZSvjEMTjfmG9QT+gcvggTwW1zw==
 
 graphql@^16.3.0, graphql@^16.6.0:
   version "16.6.0"
