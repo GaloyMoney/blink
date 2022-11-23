@@ -143,7 +143,7 @@
     "grpc-tools": "^1.11.3",
     "grpc_tools_node_protoc_ts": "^5.3.2",
     "jest": "^28.1.1",
-    "jest-junit": "^14.0.0",
+    "jest-junit": "^15.0.0",
     "migrate-mongo": "^9.0.0",
     "nodemon": "^2.0.20",
     "pino-pretty": "^9.1.1",
