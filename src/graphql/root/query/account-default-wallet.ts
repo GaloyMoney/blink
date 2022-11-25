@@ -1,6 +1,6 @@
 import { Wallets } from "@app"
 import { CouldNotFindWalletFromUsernameAndCurrencyError } from "@domain/errors"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 import Username from "@graphql/types/scalar/username"
 import WalletCurrency from "@graphql/types/scalar/wallet-currency"
@@ -24,11 +24,11 @@ const AccountDefaultWalletQuery = GT.Field({
 
     const account = await AccountsRepository().findByUsername(username)
     if (account instanceof Error) {
-      throw mapError(account)
+      throw mapAndParseErrorForGqlResponse(account)
     }
 
     const wallets = await Wallets.listWalletsByAccountId(account.id)
-    if (wallets instanceof Error) throw wallets
+    if (wallets instanceof Error) throw mapAndParseErrorForGqlResponse(wallets)
 
     if (!walletCurrency) {
       return wallets.find((wallet) => wallet.id === account.defaultWalletId)
@@ -36,7 +36,9 @@ const AccountDefaultWalletQuery = GT.Field({
 
     const wallet = wallets.find((wallet) => wallet.currency === walletCurrency)
     if (!wallet) {
-      throw mapError(new CouldNotFindWalletFromUsernameAndCurrencyError(username))
+      throw mapAndParseErrorForGqlResponse(
+        new CouldNotFindWalletFromUsernameAndCurrencyError(username),
+      )
     }
 
     return wallet

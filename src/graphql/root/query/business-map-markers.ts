@@ -1,6 +1,7 @@
 import { GT } from "@graphql/index"
 
 import MapMarker from "@graphql/types/object/map-marker"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { Accounts } from "@app"
 
 const BusinessMapMarkersQuery = GT.Field({
@@ -9,7 +10,7 @@ const BusinessMapMarkersQuery = GT.Field({
     const businesses = await Accounts.getBusinessMapMarkers()
 
     if (businesses instanceof Error) {
-      throw businesses
+      throw mapAndParseErrorForGqlResponse(businesses)
     }
 
     return businesses
