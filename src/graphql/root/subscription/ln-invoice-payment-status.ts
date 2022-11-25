@@ -9,6 +9,7 @@ import { GT } from "@graphql/index"
 import LnInvoicePaymentStatusPayload from "@graphql/types/payload/ln-invoice-payment-status"
 import LnInvoicePaymentStatusInput from "@graphql/types/object/ln-invoice-payment-status-input"
 import { UnknownClientError } from "@graphql/error"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 
 const pubsub = PubSubService()
 
@@ -61,7 +62,7 @@ const LnInvoicePaymentStatusSubscription = {
       })
       pubsub.publishImmediate({
         trigger: lnPaymentStatusTrigger,
-        payload: { errors: [{ message: paymentStatusChecker.message }] },
+        payload: { errors: [mapAndParseErrorForGqlResponse(paymentStatusChecker)] },
       })
 
       return pubsub.createAsyncIterator({ trigger: lnPaymentStatusTrigger })
@@ -76,7 +77,7 @@ const LnInvoicePaymentStatusSubscription = {
     if (paid instanceof Error) {
       pubsub.publishImmediate({
         trigger,
-        payload: { errors: [{ message: paid.message }] },
+        payload: { errors: [mapAndParseErrorForGqlResponse(paid)] },
       })
     }
 

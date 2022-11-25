@@ -47,7 +47,7 @@ const LnUsdInvoiceFeeProbeMutation = GT.Field<{
 
     const walletIdChecked = checkedToWalletId(walletId)
     if (walletIdChecked instanceof Error)
-      return { errors: [{ message: walletIdChecked.message }] }
+      return { errors: [mapAndParseErrorForGqlResponse(walletIdChecked)] }
 
     const usdWalletValidated = await validateIsUsdWalletForMutation(walletIdChecked)
     if (usdWalletValidated != true) return usdWalletValidated
