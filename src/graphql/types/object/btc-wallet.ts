@@ -5,7 +5,7 @@ import {
   connectionFromPaginatedArray,
   checkedConnectionArgs,
 } from "@graphql/connections"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse, mapError } from "@graphql/error-map"
 
 import { Wallets } from "@app"
 
@@ -75,7 +75,7 @@ const BtcWallet = GT.Object<Wallet>({
           paginationArgs,
         })
         if (error instanceof Error) {
-          return { errors: [mapAndParseErrorForGqlResponse(error)] }
+          throw mapError(error)
         }
 
         // Non-null signal to type checker; consider fixing in PartialResult type
@@ -113,7 +113,7 @@ const BtcWallet = GT.Object<Wallet>({
           paginationArgs,
         })
         if (error instanceof Error) {
-          return { errors: [mapAndParseErrorForGqlResponse(error)] }
+          throw mapError(error)
         }
 
         // Non-null signal to type checker; consider fixing in PartialResult type

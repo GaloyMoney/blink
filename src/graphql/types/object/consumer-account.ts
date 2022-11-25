@@ -1,7 +1,7 @@
 import { CouldNotFindTransactionsForAccountError } from "@domain/errors"
 
 import { GT } from "@graphql/index"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import {
   connectionArgs,
   connectionFromPaginatedArray,
@@ -86,14 +86,11 @@ const ConsumerAccount = GT.Object({
         }
 
         let { walletIds } = args
-        if (walletIds instanceof Error) {
-          return { errors: [{ message: walletIds.message }] }
-        }
 
         if (walletIds === undefined) {
           const wallets = await WalletsRepository().listByAccountId(source.id)
           if (wallets instanceof Error) {
-            return { errors: [mapAndParseErrorForGqlResponse(wallets)] }
+            throw mapError(wallets)
           }
           walletIds = wallets.map((wallet) => wallet.id)
         }
@@ -105,12 +102,12 @@ const ConsumerAccount = GT.Object({
         })
 
         if (error instanceof Error) {
-          return { errors: [mapAndParseErrorForGqlResponse(error)] }
+          throw mapError(error)
         }
 
         if (!result?.slice) {
           const nullError = new CouldNotFindTransactionsForAccountError()
-          return { errors: [mapAndParseErrorForGqlResponse(nullError)] }
+          throw mapError(nullError)
         }
 
         return connectionFromPaginatedArray<WalletTransaction>(

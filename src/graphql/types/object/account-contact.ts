@@ -7,7 +7,7 @@ import {
   connectionArgs,
   connectionFromPaginatedArray,
 } from "@graphql/connections"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 
 import ContactAlias from "../scalar/contact-alias"
 import Username from "../scalar/username"
@@ -45,7 +45,7 @@ const AccountContact = GT.Object<AccountRecord, GraphQLContextAuth>({
         const contactUsername = checkedToUsername(source.username)
 
         if (contactUsername instanceof Error) {
-          return { errors: [mapAndParseErrorForGqlResponse(contactUsername)] }
+          throw mapError(contactUsername)
         }
 
         const account = domainAccount
@@ -61,7 +61,7 @@ const AccountContact = GT.Object<AccountRecord, GraphQLContextAuth>({
         })
 
         if (resp instanceof Error) {
-          return { errors: [mapAndParseErrorForGqlResponse(resp)] }
+          throw mapError(resp)
         }
 
         return connectionFromPaginatedArray<WalletTransaction>(
