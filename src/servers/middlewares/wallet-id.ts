@@ -1,7 +1,7 @@
 import { GraphQLResolveInfo, GraphQLFieldResolver } from "graphql"
 
 import { Accounts } from "@app"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { mutationFields, queryFields } from "@graphql/main"
 
 type InputArgs = Record<"input", Record<string, unknown>>
@@ -25,7 +25,9 @@ const validateWalletId = async (
     context.domainAccount.id,
     walletId as WalletId,
   )
-  if (hasPermissions instanceof Error) return mapError(hasPermissions)
+  if (hasPermissions instanceof Error) {
+    return mapAndParseErrorForGqlResponse(hasPermissions)
+  }
   if (!hasPermissions) return new Error("Invalid wallet")
 
   return resolve(parent, args, context, info)

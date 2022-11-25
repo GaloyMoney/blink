@@ -6,7 +6,7 @@ import * as jwt from "jsonwebtoken"
 import { Auth } from "@app"
 import { getKratosConfig, isDev, JWT_SECRET } from "@config"
 
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { validateKratosToken } from "@services/kratos"
@@ -40,7 +40,7 @@ authRouter.post("/browser", async (req, res) => {
     })
 
     if (kratosLoginResp instanceof Error) {
-      return res.send({ error: mapError(kratosLoginResp) })
+      return res.send({ error: mapAndParseErrorForGqlResponse(kratosLoginResp) })
     }
 
     res.send({ kratosUserId: data.identity.id, ...kratosLoginResp })
