@@ -21,7 +21,7 @@ const UsernameAvailableQuery = GT.Field({
     const available = await Accounts.usernameAvailable(username)
 
     if (available instanceof Error) {
-      throw mapAndParseErrorForGqlResponse(available)
+      return { errors: [mapAndParseErrorForGqlResponse(available)] }
     }
 
     return available

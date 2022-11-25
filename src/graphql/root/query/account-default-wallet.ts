@@ -24,11 +24,13 @@ const AccountDefaultWalletQuery = GT.Field({
 
     const account = await AccountsRepository().findByUsername(username)
     if (account instanceof Error) {
-      throw mapAndParseErrorForGqlResponse(account)
+      return { errors: [mapAndParseErrorForGqlResponse(account)] }
     }
 
     const wallets = await Wallets.listWalletsByAccountId(account.id)
-    if (wallets instanceof Error) throw mapAndParseErrorForGqlResponse(wallets)
+    if (wallets instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(wallets)] }
+    }
 
     if (!walletCurrency) {
       return wallets.find((wallet) => wallet.id === account.defaultWalletId)

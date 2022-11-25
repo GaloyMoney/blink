@@ -18,7 +18,7 @@ const LightningPaymentQuery = GT.Field({
     if (lightningPayment instanceof Error || !lightningPayment.isCompleteRecord) {
       const lightningPaymentFromLnd = await Lightning.lookupPaymentByHash(hash)
       if (lightningPaymentFromLnd instanceof Error) {
-        throw mapAndParseErrorForGqlResponse(lightningPaymentFromLnd)
+        return { errors: [mapAndParseErrorForGqlResponse(lightningPaymentFromLnd)] }
       }
       const paymentRequest = !(lightningPayment instanceof Error)
         ? lightningPayment.paymentRequest

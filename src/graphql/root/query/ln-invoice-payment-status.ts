@@ -16,10 +16,10 @@ const LnInvoicePaymentStatusQuery = GT.Field({
 
     const paymentStatusChecker = await Lightning.PaymentStatusChecker(paymentRequest)
     if (paymentStatusChecker instanceof Error)
-      throw mapAndParseErrorForGqlResponse(paymentStatusChecker)
+      return { errors: [mapAndParseErrorForGqlResponse(paymentStatusChecker)] }
 
     const paid = await paymentStatusChecker.invoiceIsPaid()
-    if (paid instanceof Error) throw mapAndParseErrorForGqlResponse(paid)
+    if (paid instanceof Error) return { errors: [mapAndParseErrorForGqlResponse(paid)] }
 
     if (paid) return { errors: [], status: "PAID" }
 

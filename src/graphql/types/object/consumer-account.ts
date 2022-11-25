@@ -105,12 +105,12 @@ const ConsumerAccount = GT.Object({
         })
 
         if (error instanceof Error) {
-          throw mapAndParseErrorForGqlResponse(error)
+          return { errors: [mapAndParseErrorForGqlResponse(error)] }
         }
 
         if (!result?.slice) {
           const nullError = new CouldNotFindTransactionsForAccountError()
-          throw mapAndParseErrorForGqlResponse(nullError)
+          return { errors: [mapAndParseErrorForGqlResponse(nullError)] }
         }
 
         return connectionFromPaginatedArray<WalletTransaction>(

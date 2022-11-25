@@ -13,7 +13,9 @@ const TransactionByIdQuery = GT.Field({
     if (id instanceof Error) throw id
 
     const ledgerTx = await Wallets.getTransactionById(id)
-    if (ledgerTx instanceof Error) throw mapAndParseErrorForGqlResponse(ledgerTx)
+    if (ledgerTx instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(ledgerTx)] }
+    }
 
     return ledgerTx
   },

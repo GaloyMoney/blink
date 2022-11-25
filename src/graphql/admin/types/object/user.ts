@@ -19,7 +19,7 @@ const User = GT.Object<IdentityPhone>({
       resolve: async (source) => {
         const account = await Accounts.getAccountFromUserId(source.id)
         if (account instanceof Error) {
-          throw mapAndParseErrorForGqlResponse(account)
+          return { errors: [mapAndParseErrorForGqlResponse(account)] }
         }
         return account
       },

@@ -44,7 +44,7 @@ const UsdWallet = GT.Object<Wallet>({
           logger,
         })
         if (balanceCents instanceof Error) {
-          throw mapAndParseErrorForGqlResponse(balanceCents)
+          return { errors: [mapAndParseErrorForGqlResponse(balanceCents)] }
         }
         return Math.floor(balanceCents)
       },
@@ -67,7 +67,9 @@ const UsdWallet = GT.Object<Wallet>({
           wallets: [source],
           paginationArgs,
         })
-        if (error instanceof Error) throw mapAndParseErrorForGqlResponse(error)
+        if (error instanceof Error) {
+          return { errors: [mapAndParseErrorForGqlResponse(error)] }
+        }
 
         // Non-null signal to type checker; consider fixing in PartialResult type
         if (!result?.slice) throw error
@@ -102,7 +104,9 @@ const UsdWallet = GT.Object<Wallet>({
           addresses: [address],
           paginationArgs,
         })
-        if (error instanceof Error) throw mapAndParseErrorForGqlResponse(error)
+        if (error instanceof Error) {
+          return { errors: [mapAndParseErrorForGqlResponse(error)] }
+        }
 
         // Non-null signal to type checker; consider fixing in PartialResult type
         if (!result?.slice) throw error

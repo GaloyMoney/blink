@@ -30,7 +30,7 @@ import {
 } from "subscriptions-transport-ws"
 
 import { AuthenticationError, AuthorizationError } from "@graphql/error"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 
 import { parseIps } from "@domain/accounts-ips"
 
@@ -235,7 +235,7 @@ export const startApolloServer = async ({
           ? reportedError
           : { message: `Error processing GraphQL request ${reportedError.code}` }
       } catch (err) {
-        throw mapAndParseErrorForGqlResponse(err)
+        throw mapError(err)
       }
     },
   })

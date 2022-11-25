@@ -21,7 +21,7 @@ const AccountDetailsByUserPhoneQuery = GT.Field<{
 
     const account = await Admin.getAccountByUserPhone(phone)
     if (account instanceof Error) {
-      throw mapAndParseErrorForGqlResponse(account)
+      return { errors: [mapAndParseErrorForGqlResponse(account)] }
     }
 
     return account

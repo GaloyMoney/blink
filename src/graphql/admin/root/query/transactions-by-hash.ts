@@ -14,7 +14,9 @@ const TransactionsByHashQuery = GT.Field({
     if (hash instanceof Error) throw hash
 
     const ledgerTxs = await Wallets.getTransactionsByHash(hash)
-    if (ledgerTxs instanceof Error) throw mapAndParseErrorForGqlResponse(ledgerTxs)
+    if (ledgerTxs instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(ledgerTxs)] }
+    }
 
     return ledgerTxs
   },

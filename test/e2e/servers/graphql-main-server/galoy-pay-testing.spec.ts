@@ -108,7 +108,7 @@ describe("galoy-pay", () => {
 
       const result = await apolloClient.query({ query: myQuery, variables: input })
 
-      expect(result.errors).toEqual(
+      expect(result.data.userDefaultWalletId.errors).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ message: expect.stringContaining(message) }),
         ]),

@@ -39,7 +39,7 @@ const Account: GraphQLObjectType<Account> = GT.Object<Account>({
       resolve: async (source) => {
         const user = await Users.getUser(source.kratosUserId)
         if (user instanceof Error) {
-          throw mapAndParseErrorForGqlResponse(user)
+          return { errors: [mapAndParseErrorForGqlResponse(user)] }
         }
 
         return user

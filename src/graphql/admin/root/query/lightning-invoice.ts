@@ -15,7 +15,7 @@ const LightningInvoiceQuery = GT.Field({
     const lightningInvoice = await Lightning.lookupInvoiceByHash(hash)
 
     if (lightningInvoice instanceof Error) {
-      throw mapAndParseErrorForGqlResponse(lightningInvoice)
+      return { errors: [mapAndParseErrorForGqlResponse(lightningInvoice)] }
     }
 
     return lightningInvoice

@@ -38,7 +38,7 @@ const OnChainTxFeeQuery = GT.Field({
       address,
       targetConfirmations,
     })
-    if (fee instanceof Error) throw mapAndParseErrorForGqlResponse(fee)
+    if (fee instanceof Error) return { errors: [mapAndParseErrorForGqlResponse(fee)] }
 
     return {
       amount: normalizePaymentAmount(fee).amount,

@@ -63,7 +63,9 @@ const BtcPriceListQuery = GT.Field({
     if (interval instanceof Error) throw interval
 
     const hourlyPrices = await Prices.getPriceHistory({ range, interval })
-    if (hourlyPrices instanceof Error) throw mapAndParseErrorForGqlResponse(hourlyPrices)
+    if (hourlyPrices instanceof Error) {
+      return { errors: [mapAndParseErrorForGqlResponse(hourlyPrices)] }
+    }
 
     const prices: PricePointType[] = hourlyPrices.map(({ date, price }) => {
       const btcPriceInCents = price * 100 * SATS_PER_BTC

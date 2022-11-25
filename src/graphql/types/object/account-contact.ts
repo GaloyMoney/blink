@@ -45,7 +45,7 @@ const AccountContact = GT.Object<AccountRecord, GraphQLContextAuth>({
         const contactUsername = checkedToUsername(source.username)
 
         if (contactUsername instanceof Error) {
-          throw mapAndParseErrorForGqlResponse(contactUsername)
+          return { errors: [mapAndParseErrorForGqlResponse(contactUsername)] }
         }
 
         const account = domainAccount
@@ -61,7 +61,7 @@ const AccountContact = GT.Object<AccountRecord, GraphQLContextAuth>({
         })
 
         if (resp instanceof Error) {
-          throw mapAndParseErrorForGqlResponse(resp)
+          return { errors: [mapAndParseErrorForGqlResponse(resp)] }
         }
 
         return connectionFromPaginatedArray<WalletTransaction>(

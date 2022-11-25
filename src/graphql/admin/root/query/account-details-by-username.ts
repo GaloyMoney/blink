@@ -18,7 +18,7 @@ const AccountDetailsByUsernameQuery = GT.Field({
 
     const account = await Admin.getAccountByUsername(username)
     if (account instanceof Error) {
-      throw mapAndParseErrorForGqlResponse(account)
+      return { errors: [mapAndParseErrorForGqlResponse(account)] }
     }
 
     return account

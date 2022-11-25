@@ -6,11 +6,11 @@ import { Accounts } from "@app"
 
 const BusinessMapMarkersQuery = GT.Field({
   type: GT.List(MapMarker),
-  resolve: async (): Promise<BusinessMapMarker[]> => {
+  resolve: async (): Promise<BusinessMapMarker[] | { errors: IError[] }> => {
     const businesses = await Accounts.getBusinessMapMarkers()
 
     if (businesses instanceof Error) {
-      throw mapAndParseErrorForGqlResponse(businesses)
+      return { errors: [mapAndParseErrorForGqlResponse(businesses)] }
     }
 
     return businesses

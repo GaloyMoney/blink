@@ -10,7 +10,7 @@ const BtcPriceQuery = GT.Field({
     const satUsdPrice = await Prices.getCurrentPrice()
 
     if (satUsdPrice instanceof Error) {
-      throw mapAndParseErrorForGqlResponse(satUsdPrice)
+      return { errors: [mapAndParseErrorForGqlResponse(satUsdPrice)] }
     }
 
     const price = 100 * satUsdPrice
