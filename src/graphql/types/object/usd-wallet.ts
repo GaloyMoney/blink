@@ -5,7 +5,7 @@ import {
   checkedConnectionArgs,
 } from "@graphql/connections"
 import { notBtcWalletForQueryError } from "@graphql/helpers"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 
 import { Wallets } from "@app"
 
@@ -43,7 +43,9 @@ const UsdWallet = GT.Object<Wallet>({
           walletId: source.id,
           logger,
         })
-        if (balanceCents instanceof Error) throw mapError(balanceCents)
+        if (balanceCents instanceof Error) {
+          throw mapAndParseErrorForGqlResponse(balanceCents)
+        }
         return Math.floor(balanceCents)
       },
     },
@@ -65,7 +67,7 @@ const UsdWallet = GT.Object<Wallet>({
           wallets: [source],
           paginationArgs,
         })
-        if (error instanceof Error) throw mapError(error)
+        if (error instanceof Error) throw mapAndParseErrorForGqlResponse(error)
 
         // Non-null signal to type checker; consider fixing in PartialResult type
         if (!result?.slice) throw error
@@ -100,7 +102,7 @@ const UsdWallet = GT.Object<Wallet>({
           addresses: [address],
           paginationArgs,
         })
-        if (error instanceof Error) throw mapError(error)
+        if (error instanceof Error) throw mapAndParseErrorForGqlResponse(error)
 
         // Non-null signal to type checker; consider fixing in PartialResult type
         if (!result?.slice) throw error
