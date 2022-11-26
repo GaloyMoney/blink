@@ -105,7 +105,7 @@
     "uuid-by-string": "^4.0.0"
   },
   "devDependencies": {
-    "@apollo/client": "^3.7.0",
+    "@apollo/client": "^3.7.1",
     "@babel/core": "^7.19.6",
     "@babel/preset-env": "^7.19.4",
     "@graphql-tools/jest-transform": "^1.2.2",
