@@ -4,7 +4,6 @@ import { gqlAdminSchema } from "@graphql/admin"
 import { ExecutionResult, graphql, Source } from "graphql"
 import { ObjMap } from "graphql/jsutils/ObjMap"
 import { AccountsRepository } from "@services/mongoose"
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
 
 export * from "./apollo-client"
 export * from "./bitcoin-core"
@@ -27,13 +26,9 @@ export const randomPhone = () =>
 
 export const randomKratosUserId = () => randomUUID() as KratosUserId
 
-export const freshAccount = async () => {
-  const phone = randomPhone()
-  const authService = AuthWithPhonePasswordlessService()
-  const kratosUserId = await authService.createIdentityNoSession(phone)
-  if (kratosUserId instanceof Error) throw kratosUserId
-
-  const account = await AccountsRepository().persistNew(kratosUserId)
+// TODO: use same function as createUserAndWallet
+export const randomAccount = async () => {
+  const account = await AccountsRepository().persistNew(randomKratosUserId())
   if (account instanceof Error) throw account
   return account
 }

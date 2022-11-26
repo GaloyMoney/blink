@@ -14,6 +14,7 @@ jest.mock("@services/lnd/unauth", () => {
 })
 
 jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
+jest.mock("@services/twilio", () => require("test/mocks/twilio"))
 
 let mongoose
 

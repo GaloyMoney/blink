@@ -21,7 +21,7 @@ import {
   cancelOkexPricePublish,
   checkIsBalanced,
   createInvoice,
-  freshAccount,
+  randomAccount,
   lndOutside1,
   publishOkexPrice,
   safePay,
@@ -66,7 +66,7 @@ let otherUsdWallet: Wallet // eslint-disable-line @typescript-eslint/no-unused-v
 
 beforeAll(async () => {
   await publishOkexPrice()
-  otherAccountId = (await freshAccount()).id
+  otherAccountId = (await randomAccount()).id
 
   const btcWallet = await addNewWallet({
     accountId: otherAccountId,
@@ -310,7 +310,7 @@ describe("UserWallet Limits - Lightning Pay", () => {
 
   describe("single payment above limit fails limit check", () => {
     it("fails to pay when withdrawalLimit exceeded", async () => {
-      accountId = (await freshAccount()).id
+      accountId = (await randomAccount()).id
 
       // Create new wallet
       const newWallet = await createAndFundNewWallet({

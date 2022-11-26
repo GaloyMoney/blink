@@ -8,7 +8,7 @@ import { createToken } from "@services/legacy-jwt"
 
 import { AccountsRepository } from "@services/mongoose"
 
-import { IdentityRepository } from "@services/kratos"
+import { AuthWithPhonePasswordlessService, IdentityRepository } from "@services/kratos"
 
 import USER_LOGIN from "../../../e2e/servers/graphql-main-server/mutations/user-login.gql"
 
@@ -18,6 +18,7 @@ import {
   getPhoneAndCodeFromRef,
   killServer,
   PID,
+  randomPhone,
   startServer,
 } from "test/helpers"
 
@@ -92,5 +93,20 @@ describe("Oathkeeper", () => {
     const uidFromJwt = decodedNew?.payload?.sub
 
     expect(uidFromJwt).toHaveLength(36) // uuid-v4 token (kratosUserId)
+  })
+})
+
+describe("Kratos", () => {
+  const authService = AuthWithPhonePasswordlessService()
+
+  describe("public selflogin api", () => {
+    const phone = randomPhone()
+
+    it("create a user", async () => {
+      const res = await authService.createIdentityWithSession(phone)
+      if (res instanceof Error) throw res
+
+      expect(res).toHaveProperty("kratosUserId")
+    })
   })
 })
