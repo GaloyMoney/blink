@@ -17,6 +17,7 @@ import {
   WalletInvoice,
   PaymentFlowState,
   Account,
+  User,
 } from "../mongoose/schema"
 
 export const ledgerAdmin = lazyLoadLedgerAdmin({
@@ -96,6 +97,7 @@ export const setupMongoConnection = async (syncIndexes = false) => {
       await Account.syncIndexes()
       await Wallet.syncIndexes()
       await WalletInvoice.syncIndexes()
+      await User.syncIndexes()
     }
   } catch (err) {
     baseLogger.fatal({ err, user, address, db }, `error setting the indexes`)
