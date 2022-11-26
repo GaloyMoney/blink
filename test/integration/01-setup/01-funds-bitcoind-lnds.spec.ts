@@ -1,5 +1,5 @@
 import { getColdStorageConfig } from "@config"
-import { btc2sat } from "@domain/bitcoin"
+import { btc2sat, sat2btc } from "@domain/bitcoin"
 import { BitcoindWalletClient } from "@services/bitcoind"
 import { getFunderWalletId } from "@services/ledger/caching"
 
@@ -24,6 +24,10 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
+})
+
+afterEach(async () => {
+  await checkIsBalanced()
 })
 
 describe("Bitcoind", () => {
@@ -62,29 +66,27 @@ describe("Bitcoind", () => {
   })
 
   it("funds outside lnd node", async () => {
-    const amount = 1
+    const amount = btc2sat(1)
     const { chain_balance: initialBalance } = await getChainBalance({ lnd: lndOutside1 })
-    const sats = initialBalance + btc2sat(amount)
-    await fundLnd(lndOutside1, amount)
+    const sats = initialBalance + amount
+    await fundLnd(lndOutside1, sat2btc(amount))
     const { chain_balance: balance } = await getChainBalance({ lnd: lndOutside1 })
     expect(balance).toBe(sats)
   })
 
   it("funds lnd1 node", async () => {
-    const amount = 1
+    const amount = btc2sat(1)
     const { chain_balance: initialBalance } = await getChainBalance({ lnd: lnd1 })
-    const sats = initialBalance + btc2sat(amount)
+    const sats = initialBalance + amount
 
     const funderWalletId = await getFunderWalletId()
     await fundWalletIdFromOnchain({
       walletId: funderWalletId,
-      amountInBitcoin: amount,
+      amountInBitcoin: sat2btc(amount),
       lnd: lnd1,
     })
 
     const { chain_balance: balance } = await getChainBalance({ lnd: lnd1 })
     expect(balance).toBe(sats)
-
-    await checkIsBalanced()
   })
 })

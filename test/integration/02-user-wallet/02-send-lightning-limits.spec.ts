@@ -16,7 +16,7 @@ import {
   checkIsBalanced,
   createAndFundNewWallet,
   createInvoice,
-  freshAccount,
+  randomAccount,
   lndOutside1,
   publishOkexPrice,
 } from "test/helpers"
@@ -61,7 +61,7 @@ let otherUsdWallet: Wallet // eslint-disable-line @typescript-eslint/no-unused-v
 
 beforeAll(async () => {
   await publishOkexPrice()
-  otherAccountId = (await freshAccount()).id
+  otherAccountId = (await randomAccount()).id
 
   const btcWallet = await addNewWallet({
     accountId: otherAccountId,
@@ -79,7 +79,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  accountId = (await freshAccount()).id
+  accountId = (await randomAccount()).id
 })
 
 afterEach(async () => {

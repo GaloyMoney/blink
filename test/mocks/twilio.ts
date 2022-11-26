@@ -1,10 +1,27 @@
+import { yamlConfig } from "@config"
+
 export const TwilioClient = () => {
   const sendText = async () => {
     return new Promise((resolve) => resolve(true))
   }
 
-  const getCarrier = async () => {
-    return new Promise((resolve) => resolve(null))
+  const getCarrier = async (phone: PhoneNumber) => {
+    const entry = yamlConfig.test_accounts.find((item) => item.phone === phone)
+
+    return new Promise((resolve) => {
+      if (!entry) return resolve(null)
+
+      return resolve({
+        carrier: {
+          type: entry.phoneMetadataCarrierType as CarrierType,
+          name: "",
+          mobile_network_code: "",
+          mobile_country_code: "",
+          error_code: "",
+        },
+        countryCode: "US",
+      })
+    })
   }
 
   return { sendText, getCarrier }
