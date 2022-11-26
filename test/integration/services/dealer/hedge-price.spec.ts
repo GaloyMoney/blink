@@ -106,8 +106,7 @@ const getBtcForUsdEquivalentIntraledger = async ({
     return result
   }
   const afterBtc = await getBalanceHelper(newBtcWallet.id)
-  const diff = (beforeBtc - afterBtc) as CurrencyBaseAmount
-  return diff
+  return (beforeBtc - afterBtc) as CurrencyBaseAmount
 }
 
 const getUsdForBtcEquivalentWithAmountInvoice = async ({
@@ -133,8 +132,7 @@ const getUsdForBtcEquivalentWithAmountInvoice = async ({
   })
   if (result instanceof Error) throw result
   const afterUsd = await getBalanceHelper(newUsdWallet.id)
-  const diff = (beforeUsd - afterUsd) as CurrencyBaseAmount
-  return diff
+  return (beforeUsd - afterUsd) as CurrencyBaseAmount
 }
 
 const getUsdForBtcEquivalentWithAmountInvoiceAndProbe = async ({
@@ -166,8 +164,7 @@ const getUsdForBtcEquivalentWithAmountInvoiceAndProbe = async ({
   })
   if (payResult instanceof Error) throw payResult
   const afterUsd = await getBalanceHelper(newUsdWallet.id)
-  const diff = (beforeUsd - afterUsd) as CurrencyBaseAmount
-  return diff
+  return (beforeUsd - afterUsd) as CurrencyBaseAmount
 }
 
 const getBtcForUsdEquivalentNoAmountInvoice = async ({
@@ -197,8 +194,7 @@ const getBtcForUsdEquivalentNoAmountInvoice = async ({
     return result
   }
   const afterBtc = await getBalanceHelper(newBtcWallet.id)
-  const diff = (beforeBtc - afterBtc) as CurrencyBaseAmount
-  return diff
+  return (beforeBtc - afterBtc) as CurrencyBaseAmount
 }
 
 const getBtcForUsdEquivalentNoAmountInvoiceAndProbe = async ({
@@ -239,8 +235,7 @@ const getBtcForUsdEquivalentNoAmountInvoiceAndProbe = async ({
     return result
   }
   const afterBtc = await getBalanceHelper(newBtcWallet.id)
-  const diff = (beforeBtc - afterBtc) as CurrencyBaseAmount
-  return diff
+  return (beforeBtc - afterBtc) as CurrencyBaseAmount
 }
 
 const getMaxBtcAmountToEarn = async ({
