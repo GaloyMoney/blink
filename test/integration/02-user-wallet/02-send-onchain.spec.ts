@@ -63,8 +63,6 @@ import {
   subscribeToTransactions,
 } from "test/helpers"
 
-jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-
 let initialBalanceUserA: Satoshis
 let userA: UserRecord
 

@@ -32,8 +32,6 @@ let walletIdBtc: WalletId
 let walletIdUsd: WalletId
 let accountIdB: AccountId
 
-jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-
 const walletInvoices = WalletInvoicesRepository()
 
 beforeAll(async () => {

@@ -1,10 +1,28 @@
 version: "2"
 services:
-  integration-deps:
+  e2e-deps:
     image: busybox
     depends_on:
       - kratos
       - price
+      - price-history
+      - price-history-migrate
+      - stablesats
+      - redis
+      - mongodb
+      - postgres-price-history
+      - bitcoind
+      - lnd1
+      - lnd2
+      - lnd-outside-1
+      - lnd-outside-2
+      - otel-agent
+      - oathkeeper
+    restart: on-failure:10
+  integration-deps:
+    image: busybox
+    depends_on:
+      - kratos
       - price-history
       - price-history-migrate
       - stablesats
@@ -240,7 +258,7 @@ services:
   e2e-tests:
     image: us.gcr.io/galoy-org/nodejs-concourse
     depends_on:
-      - integration-deps
+      - e2e-deps
     command: ["make", "execute-e2e-from-within-container"]
     working_dir: /repo
     env_file:

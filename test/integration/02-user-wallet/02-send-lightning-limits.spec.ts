@@ -24,8 +24,6 @@ import {
   safePay,
 } from "test/helpers"
 
-jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-
 const MOCKED_LIMIT = 100 as UsdCents
 const AMOUNT_ABOVE_THRESHOLD = 10 as UsdCents
 const MOCKED_BALANCE_ABOVE_THRESHOLD = (MOCKED_LIMIT + 20) as UsdCents

@@ -49,8 +49,6 @@ import {
 import { resetOnChainAddressAccountIdLimits } from "test/helpers/rate-limit"
 import { getBalanceHelper } from "test/helpers/wallet"
 
-jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-
 let walletIdA: WalletId
 let walletIdB: WalletId
 let accountIdA: AccountId
