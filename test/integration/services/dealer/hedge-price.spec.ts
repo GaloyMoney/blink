@@ -238,44 +238,44 @@ const getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd = async ({
 const getMaxBtcAmountToEarn = async ({
   startingBtcAmount,
   accountAndWallets,
-  diffFn,
+  sentAmountFn,
 }: {
   startingBtcAmount: BtcPaymentAmount
   accountAndWallets: AccountAndWallets
-  diffFn
+  sentAmountFn
 }): Promise<BtcPaymentAmount> => {
   // 3 steps here to:
-  // - check diff is greater than 1 to start (push up if not)
-  // - bring the diff down, in case starting diff is already past max
-  // - push up to find max, from place where we are sure diff is 1
+  // - check sentAmount is greater than 1 to start (push up if not)
+  // - bring the sentAmount down, in case starting sentAmount is already past max
+  // - push up to find max, from place where we are sure sentAmount is 1
 
   let maxBtcAmountToEarn = startingBtcAmount
 
-  // Ensure diff is '> 1' for starting amount
-  let diff = await diffFn({
+  // Ensure sentAmount is '> 1' for starting amount
+  let sentAmount = await sentAmountFn({
     btcPaymentAmount: maxBtcAmountToEarn,
     accountAndWallets,
   })
-  while (diff <= 1) {
+  while (sentAmount <= 1) {
     maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-    diff = await diffFn({
+    sentAmount = await sentAmountFn({
       btcPaymentAmount: maxBtcAmountToEarn,
       accountAndWallets,
     })
   }
-  // Decrement until diff is 1
-  while (diff > 1) {
+  // Decrement until sentAmount is 1
+  while (sentAmount > 1) {
     maxBtcAmountToEarn = calc.sub(maxBtcAmountToEarn, ONE_SAT)
-    diff = await diffFn({
+    sentAmount = await sentAmountFn({
       btcPaymentAmount: maxBtcAmountToEarn,
       accountAndWallets,
     })
   }
-  expect(diff).toEqual(1)
+  expect(sentAmount).toEqual(1)
   // Increment to discover max BTC amount to buy for $0.01
-  while (diff === 1) {
+  while (sentAmount === 1) {
     maxBtcAmountToEarn = calc.add(maxBtcAmountToEarn, ONE_SAT)
-    diff = await diffFn({
+    sentAmount = await sentAmountFn({
       btcPaymentAmount: maxBtcAmountToEarn,
       accountAndWallets,
     })
@@ -288,51 +288,60 @@ const getMaxBtcAmountToEarn = async ({
 const getMinBtcAmountToSpend = async ({
   startingBtcAmount,
   accountAndWallets,
-  diffFn,
+  sentAmountFn,
 }: {
   startingBtcAmount: BtcPaymentAmount
   accountAndWallets: AccountAndWallets
-  diffFn
+  sentAmountFn
 }): Promise<BtcPaymentAmount> => {
   let minBtcAmountToSpend = startingBtcAmount
-  let diff = await diffFn({
+  let sentAmount = await sentAmountFn({
     btcPaymentAmount: minBtcAmountToSpend,
     accountAndWallets,
   })
-  // Ensure diff is 'Success' for starting amount
-  while (diff instanceof ZeroAmountForUsdRecipientError) {
+  // Ensure sentAmount is 'Success' for starting amount
+  while (sentAmount instanceof ZeroAmountForUsdRecipientError) {
     minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-    diff = await diffFn({
+    sentAmount = await sentAmountFn({
       btcPaymentAmount: minBtcAmountToSpend,
       accountAndWallets,
     })
-    if (diff instanceof Error && !(diff instanceof ZeroAmountForUsdRecipientError)) {
-      throw diff
+    if (
+      sentAmount instanceof Error &&
+      !(sentAmount instanceof ZeroAmountForUsdRecipientError)
+    ) {
+      throw sentAmount
     }
   }
-  // Decrement until diff fails
+  // Decrement until sentAmount fails
   while (
-    !(diff instanceof ZeroAmountForUsdRecipientError) &&
+    !(sentAmount instanceof ZeroAmountForUsdRecipientError) &&
     minBtcAmountToSpend.amount > 1n
   ) {
     minBtcAmountToSpend = calc.sub(minBtcAmountToSpend, ONE_SAT)
-    diff = await diffFn({
+    sentAmount = await sentAmountFn({
       btcPaymentAmount: minBtcAmountToSpend,
       accountAndWallets,
     })
-    if (diff instanceof Error && !(diff instanceof ZeroAmountForUsdRecipientError)) {
-      throw diff
+    if (
+      sentAmount instanceof Error &&
+      !(sentAmount instanceof ZeroAmountForUsdRecipientError)
+    ) {
+      throw sentAmount
     }
   }
   // Increment to discover min BTC amount to sell for $0.01
-  while (diff instanceof ZeroAmountForUsdRecipientError) {
+  while (sentAmount instanceof ZeroAmountForUsdRecipientError) {
     minBtcAmountToSpend = calc.add(minBtcAmountToSpend, ONE_SAT)
-    diff = await diffFn({
+    sentAmount = await sentAmountFn({
       btcPaymentAmount: minBtcAmountToSpend,
       accountAndWallets,
     })
-    if (diff instanceof Error && !(diff instanceof ZeroAmountForUsdRecipientError)) {
-      throw diff
+    if (
+      sentAmount instanceof Error &&
+      !(sentAmount instanceof ZeroAmountForUsdRecipientError)
+    ) {
+      throw sentAmount
     }
   }
 
@@ -374,7 +383,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -416,12 +425,12 @@ describe("arbitrage strategies", () => {
 
           // Step 4: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
 
         it("via usd-denominated fee probe", async () => {
@@ -438,7 +447,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -486,12 +495,12 @@ describe("arbitrage strategies", () => {
 
           // Step 4: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
       })
 
@@ -510,7 +519,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -518,7 +527,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getBtcEquivalentForIntraledgerSendToUsd,
+            sentAmountFn: getBtcEquivalentForIntraledgerSendToUsd,
           })
 
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
@@ -561,12 +570,12 @@ describe("arbitrage strategies", () => {
 
           // Step 4: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
 
         it("via no-amount invoice", async () => {
@@ -583,7 +592,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -591,7 +600,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -633,12 +642,12 @@ describe("arbitrage strategies", () => {
 
           // Step 4: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
 
         it("via no-amount fee probe", async () => {
@@ -655,7 +664,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -663,7 +672,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -712,12 +721,12 @@ describe("arbitrage strategies", () => {
 
           // Step 4: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
       })
     })
@@ -738,7 +747,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -786,12 +795,12 @@ describe("arbitrage strategies", () => {
 
           // Step 4: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
 
         it("via usd-denominated fee probe", async () => {
@@ -808,7 +817,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -862,12 +871,12 @@ describe("arbitrage strategies", () => {
 
           // Step 4: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
       })
 
@@ -886,7 +895,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -894,7 +903,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getBtcEquivalentForIntraledgerSendToUsd,
+            sentAmountFn: getBtcEquivalentForIntraledgerSendToUsd,
           })
 
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
@@ -943,12 +952,12 @@ describe("arbitrage strategies", () => {
 
           // Step 4: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
 
         it("via no-amount min btc invoice", async () => {
@@ -965,7 +974,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -973,7 +982,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1021,12 +1030,12 @@ describe("arbitrage strategies", () => {
 
           // Step 4: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
 
         it("via no-amount min btc fee probe", async () => {
@@ -1043,7 +1052,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -1051,7 +1060,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1106,12 +1115,12 @@ describe("arbitrage strategies", () => {
 
           // Step 4: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
       })
     })
@@ -1142,7 +1151,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcEquivalentForIntraledgerSendToUsd,
+            sentAmountFn: getBtcEquivalentForIntraledgerSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1170,12 +1179,12 @@ describe("arbitrage strategies", () => {
 
           // Step 3: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
       })
     })
@@ -1192,7 +1201,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1228,12 +1237,12 @@ describe("arbitrage strategies", () => {
 
           // Step 3: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
 
         it("via no-amount invoice", async () => {
@@ -1246,7 +1255,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1287,12 +1296,12 @@ describe("arbitrage strategies", () => {
 
           // Step 3: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
 
         it("via no-amount fee probe", async () => {
@@ -1305,7 +1314,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1353,12 +1362,12 @@ describe("arbitrage strategies", () => {
 
           // Step 3: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
       })
 
@@ -1377,7 +1386,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1385,7 +1394,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -1426,12 +1435,12 @@ describe("arbitrage strategies", () => {
 
           // Step 3: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
 
         it("via fee probe", async () => {
@@ -1448,7 +1457,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1456,7 +1465,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -1503,12 +1512,12 @@ describe("arbitrage strategies", () => {
 
           // Step 3: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
       })
     })
@@ -1525,7 +1534,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1568,12 +1577,12 @@ describe("arbitrage strategies", () => {
 
           // Step 3: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
 
         it("via no-amount invoice", async () => {
@@ -1586,7 +1595,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1634,12 +1643,12 @@ describe("arbitrage strategies", () => {
 
           // Step 3: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
 
         it("via no-amount fee probe", async () => {
@@ -1652,7 +1661,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1707,12 +1716,12 @@ describe("arbitrage strategies", () => {
 
           // Step 3: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
       })
 
@@ -1731,7 +1740,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1739,7 +1748,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -1787,12 +1796,12 @@ describe("arbitrage strategies", () => {
 
           // Step 3: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
 
         it("via fee probe", async () => {
@@ -1809,7 +1818,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
+            sentAmountFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1817,7 +1826,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
+            sentAmountFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -1871,12 +1880,12 @@ describe("arbitrage strategies", () => {
 
           // Step 3: Check that no profit was made in the process
           const btcBalanceAfter = await getBalanceHelper(newBtcWallet.id)
-          const diffBtc = btcBalanceAfter - btcBalanceBefore
-          expect(diffBtc).toBeLessThanOrEqual(0)
+          const sentAmountBtc = btcBalanceAfter - btcBalanceBefore
+          expect(sentAmountBtc).toBeLessThanOrEqual(0)
 
           const usdBalanceAfter = await getBalanceHelper(newUsdWallet.id)
-          const diffUsd = usdBalanceAfter - usdBalanceBefore
-          expect(diffUsd).toBeLessThanOrEqual(0)
+          const sentAmountUsd = usdBalanceAfter - usdBalanceBefore
+          expect(sentAmountUsd).toBeLessThanOrEqual(0)
         })
       })
     })
