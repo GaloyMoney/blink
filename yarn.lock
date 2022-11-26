@@ -2891,10 +2891,10 @@
     "@opentelemetry/semantic-conventions" "^1.0.0"
     "@types/ioredis" "4.26.6"
 
-"@opentelemetry/instrumentation-mongodb@^0.32.1":
-  version "0.32.1"
-  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-mongodb/-/instrumentation-mongodb-0.32.1.tgz#96189472f490c38dbf0773f641777cf875f9c31c"
-  integrity sha512-28AAgn4ygL2ZAhV38csm3Tk+XfVj2aDxOEhJGJ/gQ8g/eiCcE9x/LRjLZPtCc0kJ4zq3m2yVnyVooin/L0Bv9g==
+"@opentelemetry/instrumentation-mongodb@^0.32.2":
+  version "0.32.2"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/instrumentation-mongodb/-/instrumentation-mongodb-0.32.2.tgz#bfbf7f59b1bd7a019dc0586488447c6df15526c5"
+  integrity sha512-C3OWsc1Fan+xl+ly0C8VxiICb30xevoG82Ytx+4LOemiZc37WPcTdJMrXi2MyOtRc7kqN6xYf2zbU/n+y8BsUQ==
   dependencies:
     "@opentelemetry/instrumentation" "^0.32.0"
     "@opentelemetry/semantic-conventions" "^1.0.0"
