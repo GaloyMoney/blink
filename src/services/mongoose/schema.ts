@@ -356,6 +356,8 @@ const UserSchema = new Schema(
     phone: {
       type: String,
       index: true,
+      unique: true,
+      sparse: true,
     },
   },
   { id: false },
