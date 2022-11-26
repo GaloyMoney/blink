@@ -80,7 +80,7 @@ const newAccountAndWallets = async () => {
   return { newBtcWallet, newUsdWallet, newAccount }
 }
 
-const getBtcForUsdEquivalentIntraledger = async ({
+const getBtcEquivalentForIntraledgerSendToUsd = async ({
   btcPaymentAmount,
   accountAndWallets,
 }: {
@@ -108,7 +108,7 @@ const getBtcForUsdEquivalentIntraledger = async ({
   return (beforeBtc - afterBtc) as CurrencyBaseAmount
 }
 
-const getUsdForBtcEquivalentWithAmountInvoice = async ({
+const getUsdEquivalentForWithAmountInvoiceSendToBtc = async ({
   btcPaymentAmount,
   accountAndWallets,
 }: {
@@ -134,7 +134,7 @@ const getUsdForBtcEquivalentWithAmountInvoice = async ({
   return (beforeUsd - afterUsd) as CurrencyBaseAmount
 }
 
-const getUsdForBtcEquivalentWithAmountInvoiceAndProbe = async ({
+const getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc = async ({
   btcPaymentAmount,
   accountAndWallets,
 }: {
@@ -166,7 +166,7 @@ const getUsdForBtcEquivalentWithAmountInvoiceAndProbe = async ({
   return (beforeUsd - afterUsd) as CurrencyBaseAmount
 }
 
-const getBtcForUsdEquivalentNoAmountInvoice = async ({
+const getBtcEquivalentForNoAmountInvoiceSendToUsd = async ({
   btcPaymentAmount,
   accountAndWallets,
 }: {
@@ -195,7 +195,7 @@ const getBtcForUsdEquivalentNoAmountInvoice = async ({
   return (beforeBtc - afterBtc) as CurrencyBaseAmount
 }
 
-const getBtcForUsdEquivalentNoAmountInvoiceAndProbe = async ({
+const getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd = async ({
   btcPaymentAmount,
   accountAndWallets,
 }: {
@@ -374,7 +374,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -438,7 +438,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -510,7 +510,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -518,7 +518,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentIntraledger,
+            diffFn: getBtcEquivalentForIntraledgerSendToUsd,
           })
 
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
@@ -583,7 +583,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -591,7 +591,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -655,7 +655,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -663,7 +663,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -738,7 +738,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -808,7 +808,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -886,7 +886,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -894,7 +894,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentIntraledger,
+            diffFn: getBtcEquivalentForIntraledgerSendToUsd,
           })
 
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
@@ -965,7 +965,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -973,7 +973,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1043,7 +1043,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -1051,7 +1051,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1142,7 +1142,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentIntraledger,
+            diffFn: getBtcEquivalentForIntraledgerSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1192,7 +1192,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1246,7 +1246,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1305,7 +1305,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1377,7 +1377,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1385,7 +1385,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -1448,7 +1448,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoice,
+            diffFn: getBtcEquivalentForNoAmountInvoiceSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1456,7 +1456,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -1525,7 +1525,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1586,7 +1586,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1652,7 +1652,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1731,7 +1731,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1739,7 +1739,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoice,
+            diffFn: getUsdEquivalentForWithAmountInvoiceSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
@@ -1809,7 +1809,7 @@ describe("arbitrage strategies", () => {
           const minBtcAmountToSpend = await getMinBtcAmountToSpend({
             startingBtcAmount: ONE_SAT,
             accountAndWallets,
-            diffFn: getBtcForUsdEquivalentNoAmountInvoiceAndProbe,
+            diffFn: getBtcEquivalentForNoAmountInvoiceProbeAndSendToUsd,
           })
           baseLogger.info("Discovered:", { minBtcAmountToSpend })
 
@@ -1817,7 +1817,7 @@ describe("arbitrage strategies", () => {
           const maxBtcAmountToEarn = await getMaxBtcAmountToEarn({
             startingBtcAmount,
             accountAndWallets,
-            diffFn: getUsdForBtcEquivalentWithAmountInvoiceAndProbe,
+            diffFn: getUsdEquivalentForWithAmountInvoiceProbeAndSendToBtc,
           })
           baseLogger.info("Discovered:", { maxBtcAmountToEarn })
 
