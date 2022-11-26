@@ -3,9 +3,8 @@ import { assert } from "console"
 import { Identity } from "@ory/client"
 
 import { isDev } from "@config"
-import { UnknownKratosError } from "@domain/authentication/errors"
 
-import { KratosError, PhoneIdentityInexistentError } from "./errors"
+import { KratosError, PhoneIdentityInexistentError, UnknownKratosError } from "./errors"
 import { kratosAdmin, toDomainIdentityPhone } from "./private"
 
 export const getNextPage = (link: string): number | undefined => {
@@ -63,7 +62,10 @@ export const IdentityRepository = (): IIdentityRepository => {
       const uniqueIdentities = identities.filter(
         (value, index, self) => index === self.findIndex((t) => t.id === value.id),
       )
-      assert(totalCount == uniqueIdentities.length)
+      assert(
+        totalCount == uniqueIdentities.length,
+        "count doesn't match uniqueIdentities.length",
+      )
 
       return uniqueIdentities.map(toDomainIdentityPhone)
     } catch (err) {

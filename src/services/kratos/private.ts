@@ -1,11 +1,10 @@
 import { getKratosConfig } from "@config"
-import {
-  MissingExpiredAtKratosError,
-  UnknownKratosError,
-} from "@domain/authentication/errors"
+
 import { ErrorLevel } from "@domain/shared"
 import { Configuration, V0alpha2Api, V0alpha2ApiInterface } from "@ory/client"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
+
+import { MissingExpiredAtKratosError, UnknownKratosError } from "./errors"
 
 const { publicApi, adminApi } = getKratosConfig()
 

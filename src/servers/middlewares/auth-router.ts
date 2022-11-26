@@ -5,7 +5,6 @@ import * as jwt from "jsonwebtoken"
 
 import { Auth } from "@app"
 import { getKratosConfig, isDev, JWT_SECRET } from "@config"
-import { KratosError } from "@domain/authentication/errors"
 
 import { mapError } from "@graphql/error-map"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
@@ -14,6 +13,7 @@ import { validateKratosToken } from "@services/kratos"
 import { kratosPublic } from "@services/kratos/private"
 import { AccountsRepository } from "@services/mongoose"
 import { parseIps } from "@domain/accounts-ips"
+import { KratosError } from "@services/kratos/errors"
 
 const authRouter = express.Router({ caseSensitive: true })
 

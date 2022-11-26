@@ -3,7 +3,7 @@ module.exports = {
   rootDir: "../",
   roots: ["<rootDir>/test/integration"],
   transform: {
-    "^.+\\.(ts)$": "ts-jest"
+    "^.+\\.(ts)$": "ts-jest",
   },
   testRegex: ".*\\.spec\\.ts$",
   testSequencer: "<rootDir>/test/jest-test-sequencer.js",

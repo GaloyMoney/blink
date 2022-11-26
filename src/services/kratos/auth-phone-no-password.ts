@@ -1,14 +1,6 @@
 import { getKratosMasterPhonePassword } from "@config"
 
 import {
-  AuthenticationKratosError,
-  IncompatibleSchemaUpgradeError,
-  KratosError,
-  LikelyNoUserWithThisPhoneExistError,
-  LikelyUserAlreadyExistError,
-  UnknownKratosError,
-} from "@domain/authentication/errors"
-import {
   AdminCreateIdentityBody,
   AdminUpdateIdentityBody,
   Identity,
@@ -18,6 +10,15 @@ import {
 } from "@ory/client"
 
 import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
+
+import {
+  LikelyUserAlreadyExistOrCallBackServerDownError,
+  UnknownKratosError,
+  AuthenticationKratosError,
+  IncompatibleSchemaUpgradeError,
+  KratosError,
+  LikelyNoUserWithThisPhoneExistError,
+} from "./errors"
 
 import { kratosAdmin, kratosPublic, toDomainIdentityPhone } from "./private"
 
@@ -80,7 +81,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       })
     } catch (err) {
       if (err.message === "Request failed with status code 400") {
-        return new LikelyUserAlreadyExistError(err)
+        return new LikelyUserAlreadyExistOrCallBackServerDownError(err)
       }
 
       return new UnknownKratosError(err)
@@ -110,7 +111,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       kratosUserId = identity.id as UserId
     } catch (err) {
       if (err.message === "Request failed with status code 400") {
-        return new LikelyUserAlreadyExistError(err)
+        return new LikelyUserAlreadyExistOrCallBackServerDownError(err)
       }
 
       return new UnknownKratosError(err)
@@ -132,7 +133,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       ;({ data: identity } = await kratosAdmin.adminGetIdentity(kratosUserId))
     } catch (err) {
       if (err.message === "Request failed with status code 400") {
-        return new LikelyUserAlreadyExistError(err)
+        return new LikelyUserAlreadyExistOrCallBackServerDownError(err)
       }
 
       return new UnknownKratosError(err)

@@ -1,29 +1,14 @@
-import { randomUUID } from "crypto"
-
 import { Accounts } from "@app"
 import { AccountStatus } from "@domain/accounts"
 import { WalletCurrency } from "@domain/shared"
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
-const randomPhoneNumber = () => {
-  const numDigits = 14
-  return `+${Math.floor(Math.random() * 10 ** numDigits)}` as PhoneNumber
-}
-
-const randomKratosId = () => {
-  return randomUUID() as UserId
-}
+import { randomUserId, randomPhone } from "test/helpers"
 
 const createAccount = async (initialWallets: WalletCurrency[]) => {
-  const phone = randomPhoneNumber()
+  const phone = randomPhone()
 
-  const authService = AuthWithPhonePasswordlessService()
-
-  const kratosResult = await authService.createIdentityWithSession(phone)
-  if (kratosResult instanceof Error) throw kratosResult
-
-  const kratosUserId = kratosResult.kratosUserId
+  const kratosUserId = randomUserId()
 
   const account = await Accounts.createAccountWithPhoneIdentifier({
     newAccountInfo: { phone, kratosUserId },
@@ -120,7 +105,7 @@ describe("Users - wallets", () => {
       const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
 
       let account = await Accounts.createAccountForEmailIdentifier({
-        kratosUserId: randomKratosId(),
+        kratosUserId: randomKratosUserId(),
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
       if (account instanceof Error) throw account
@@ -150,7 +135,7 @@ describe("Users - wallets", () => {
       const initialWallets = [WalletCurrency.Btc]
 
       let account = await Accounts.createAccountForEmailIdentifier({
-        kratosUserId: randomKratosId(),
+        kratosUserId: randomKratosUserId(),
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
       if (account instanceof Error) throw account
@@ -180,7 +165,7 @@ describe("Users - wallets", () => {
       const initialWallets = [WalletCurrency.Usd]
 
       let account = await Accounts.createAccountForEmailIdentifier({
-        kratosUserId: randomKratosId(),
+        kratosUserId: randomKratosUserId(),
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
       if (account instanceof Error) throw account

@@ -12,12 +12,13 @@ import {
 
 import { checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
-import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
+
 import { CouldNotFindAccountFromKratosIdError } from "@domain/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToEmailAddress } from "@domain/users"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import { LikelyNoUserWithThisPhoneExistError } from "@services/kratos/errors"
 
 import { AccountsRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"

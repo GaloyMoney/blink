@@ -3,7 +3,7 @@ import { ErrorLevel } from "@domain/shared"
 
 export class KratosError extends AuthenticationError {}
 export class LikelyNoUserWithThisPhoneExistError extends KratosError {}
-export class LikelyUserAlreadyExistError extends KratosError {}
+export class LikelyUserAlreadyExistOrCallBackServerDownError extends KratosError {}
 export class AuthenticationKratosError extends KratosError {}
 
 export class PhoneIdentityInexistentError extends KratosError {}

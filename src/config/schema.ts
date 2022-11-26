@@ -280,6 +280,12 @@ export const configSchema = {
           role: "editor",
           username: "editor",
         },
+        {
+          ref: "J",
+          phone: "+19876543211",
+          code: "321321",
+          username: "tester2",
+        },
       ],
       uniqueItems: true,
     },
