@@ -101,10 +101,9 @@ const getBtcForUsdEquivalentIntraledger = async ({
     amount: Number(btcPaymentAmount.amount),
     ...sendArgs,
   })
-  if (result instanceof Error) {
-    if (!(result instanceof ZeroAmountForUsdRecipientError)) throw result
-    return result
-  }
+  if (result instanceof ZeroAmountForUsdRecipientError) return result
+  if (result instanceof Error) throw result
+
   const afterBtc = await getBalanceHelper(newBtcWallet.id)
   return (beforeBtc - afterBtc) as CurrencyBaseAmount
 }
@@ -189,10 +188,9 @@ const getBtcForUsdEquivalentNoAmountInvoice = async ({
     senderWalletId: newBtcWallet.id,
     senderAccount: newAccount,
   })
-  if (result instanceof Error) {
-    if (!(result instanceof ZeroAmountForUsdRecipientError)) throw result
-    return result
-  }
+  if (result instanceof ZeroAmountForUsdRecipientError) return result
+  if (result instanceof Error) throw result
+
   const afterBtc = await getBalanceHelper(newBtcWallet.id)
   return (beforeBtc - afterBtc) as CurrencyBaseAmount
 }
@@ -230,10 +228,9 @@ const getBtcForUsdEquivalentNoAmountInvoiceAndProbe = async ({
     senderWalletId: newBtcWallet.id,
     senderAccount: newAccount,
   })
-  if (result instanceof Error) {
-    if (!(result instanceof ZeroAmountForUsdRecipientError)) throw result
-    return result
-  }
+  if (result instanceof ZeroAmountForUsdRecipientError) return result
+  if (result instanceof Error) throw result
+
   const afterBtc = await getBalanceHelper(newBtcWallet.id)
   return (beforeBtc - afterBtc) as CurrencyBaseAmount
 }
