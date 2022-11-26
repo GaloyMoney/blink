@@ -53,8 +53,6 @@ let walletIdUsdF: WalletId
 let initBalanceB: Satoshis
 let initBalanceUsdB: UsdCents
 
-jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-
 beforeAll(async () => {
   await publishOkexPrice()
   await createUserAndWalletFromUserRef("B")

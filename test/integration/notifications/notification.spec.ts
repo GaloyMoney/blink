@@ -9,8 +9,6 @@ import { createPushNotificationContent } from "@services/notifications/create-pu
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { UsersRepository, WalletsRepository } from "@services/mongoose"
 
-jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 let price, spy

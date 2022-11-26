@@ -13,6 +13,8 @@ jest.mock("@services/lnd/unauth", () => {
   return module
 })
 
+jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
+
 let mongoose
 
 beforeAll(async () => {

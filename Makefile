@@ -1,6 +1,9 @@
 BIN_DIR=node_modules/.bin
 
 start-deps:
+	docker compose up e2e-deps -d
+
+start-deps-integration:
 	docker compose up integration-deps -d
 
 update-price-history:
@@ -58,6 +61,7 @@ clean-deps:
 	docker compose down
 
 reset-deps: clean-deps start-deps
+reset-deps-integration: clean-deps start-deps-integration
 
 test: unit integration
 
@@ -129,7 +133,7 @@ integration:
 	yarn build && \
 	yarn test:integration
 
-reset-integration: reset-deps integration
+reset-integration: reset-deps-integration integration
 
 e2e:
 	yarn build && \

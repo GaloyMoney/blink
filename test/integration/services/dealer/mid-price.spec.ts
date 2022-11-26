@@ -4,8 +4,6 @@ import { NewDealerPriceService } from "@services/dealer-price"
 
 import { cancelOkexPricePublish, publishOkexPrice } from "test/helpers"
 
-jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-
 beforeAll(async () => {
   await publishOkexPrice()
 })

@@ -87,8 +87,6 @@ const dealerFns = DealerPriceService()
 const newDealerFns = NewDealerPriceService()
 const calc = AmountCalculator()
 
-jest.mock("@app/prices/get-current-price", () => require("test/mocks/get-current-price"))
-
 jest.mock("@config", () => {
   return {
     ...jest.requireActual("@config"),
