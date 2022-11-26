@@ -4,7 +4,7 @@
 
 import { UsersRepository } from "@services/mongoose"
 
-import { randomKratosUserId } from "test/helpers"
+import { randomKratosUserId, randomPhone } from "test/helpers"
 
 const users = UsersRepository()
 
@@ -27,6 +27,19 @@ describe("Testing Users Repository", () => {
     const user2 = await users.findById(userId)
     if (user2 instanceof Error) throw user
     expect(user2.id).toBe(userId)
+  })
+
+  it("can't create 2 entities with same phone", async () => {
+    const userId1 = randomKratosUserId()
+    const userId2 = randomKratosUserId()
+    const phone = randomPhone()
+
+    const user = await users.update({ id: userId1, phone })
+    if (user instanceof Error) throw user
+    expect(user.id).toBe(userId1)
+
+    const user2 = await users.update({ id: userId2, phone })
+    expect(user2).toBeInstanceOf(Error)
   })
 
   it("updating one field doesn't change the other fields", async () => {
