@@ -25,9 +25,34 @@ import {
 import { baseLogger } from "@services/logger"
 import { authenticator } from "otplib"
 
+import { sleep } from "@utils"
+
 import { randomEmail, randomPassword, randomPhone } from "test/helpers"
 
 const identityRepo = IdentityRepository()
+
+// NB: kratos sometimes returning 500 on my machine.
+// not sure why, but I notice that this happen only if deps has just been reset
+// although kratos claim to be ready from the logs
+// this seems to be a workaround for now?
+const retry = async (fn) => {
+  let counter = 12
+  const sleepTime = 250
+  let res
+
+  while (counter) {
+    res = await fn()
+    if (res instanceof Error) {
+      console.log(`will retry in ${sleepTime / 1000} s`)
+      await sleep(sleepTime)
+    } else {
+      return res
+    }
+
+    counter -= 1
+  }
+  throw res
+}
 
 describe("phoneNoPassword", () => {
   const authService = AuthWithPhonePasswordlessService()
@@ -37,7 +62,7 @@ describe("phoneNoPassword", () => {
     let kratosUserId: UserId
 
     it("create a user", async () => {
-      const res = await authService.createIdentityWithSession(phone)
+      const res = await retry(() => authService.createIdentityWithSession(phone))
       if (res instanceof Error) throw res
 
       expect(res).toHaveProperty("kratosUserId")
