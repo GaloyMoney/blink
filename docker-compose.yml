@@ -270,6 +270,16 @@ services:
       - ${TMP_ENV_CI:-.env.ci}
     volumes:
       - ./:/repo
+  integration-tests-cached:
+    image: us.gcr.io/galoy-org/nodejs-concourse
+    depends_on:
+      - integration-deps
+    command: ["make", "execute-integration-from-within-container-cached"]
+    working_dir: /repo
+    env_file:
+      - ${TMP_ENV_CI:-.env.ci}
+    volumes:
+      - ./:/repo
   stablesats:
     image: us.gcr.io/galoy-org/stablesats-rs:latest
     command: ["stablesats", "run"]
