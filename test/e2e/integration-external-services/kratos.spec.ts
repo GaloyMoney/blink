@@ -25,30 +25,9 @@ import {
 import { baseLogger } from "@services/logger"
 import { authenticator } from "otplib"
 
-import { sleep } from "@utils"
-
 import { randomEmail, randomPassword, randomPhone } from "test/helpers"
 
 const identityRepo = IdentityRepository()
-
-const retry = async (fn) => {
-  let counter = 24
-  const sleepTime = 500
-  let res
-
-  while (counter) {
-    res = await fn()
-    if (res instanceof Error) {
-      console.log(`will retry in ${sleepTime / 1000} s`)
-      await sleep(sleepTime)
-    } else {
-      return res
-    }
-
-    counter -= 1
-  }
-  throw res
-}
 
 describe("phoneNoPassword", () => {
   const authService = AuthWithPhonePasswordlessService()
@@ -58,7 +37,8 @@ describe("phoneNoPassword", () => {
     let kratosUserId: UserId
 
     it("create a user", async () => {
-      const res = await retry(() => authService.createIdentityWithSession(phone))
+      const res = await authService.createIdentityWithSession(phone)
+      if (res instanceof Error) throw res
 
       expect(res).toHaveProperty("kratosUserId")
       kratosUserId = res.kratosUserId

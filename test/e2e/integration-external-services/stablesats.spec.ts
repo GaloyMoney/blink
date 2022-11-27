@@ -69,7 +69,7 @@ const centsFromSats = async (btc: BtcPaymentAmount) => {
 }
 
 const satsFromCents = async (usd: UsdPaymentAmount) => {
-  // Conversions with spreads
+  //  Conversions with spreads
   const getSatsFromCentsForImmediateBuy =
     await newDealerFns.getSatsFromCentsForImmediateBuy(usd)
   if (getSatsFromCentsForImmediateBuy instanceof Error) {
