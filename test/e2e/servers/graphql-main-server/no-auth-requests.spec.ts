@@ -25,6 +25,7 @@ import {
   getPhoneAndCodeFromRef,
   initializeTestingState,
   killServer,
+  loginFromPhoneAndCode,
   PID,
   startServer,
 } from "test/helpers"
@@ -38,8 +39,10 @@ const { phone, code } = getPhoneAndCodeFromRef("G")
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
-  correctCode = `${code}` as PhoneCode
   serverPid = await startServer("start-main-ci")
+  await loginFromPhoneAndCode({ phone, code })
+
+  correctCode = `${code}` as PhoneCode
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
 })
 

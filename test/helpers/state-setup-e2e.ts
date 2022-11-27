@@ -1,7 +1,5 @@
-import { yamlConfig } from "@config"
 import { setupMongoConnection } from "@services/mongodb"
 
-import { adminUsers } from "@domain/admin-users"
 import { getFunderWalletId } from "@services/ledger/caching"
 
 import { baseLogger } from "@services/logger"
@@ -22,7 +20,7 @@ import {
   bitcoindClient,
   bitcoindOutside,
   checkIsBalanced,
-  createUserAndWallet,
+  createMandatoryUsers,
   fundWalletIdFromOnchain,
   lnd1,
   lnd2,
@@ -36,13 +34,6 @@ import {
 
 export type TestingStateConfig = {
   resetState: boolean
-  userAccounts: {
-    phone: PhoneNumber
-    phoneMetadataCarrierType?: string
-    username?: string
-    role?: string
-    title?: string
-  }[]
   outsideWalletBlocksToMineAndConfirm: number
   fundFunderWallet?: {
     amountInBitcoin: number
@@ -57,14 +48,8 @@ export type TestingStateConfig = {
   }[]
 }
 
-const testAccounts = yamlConfig.test_accounts.map((account) => ({
-  ...account,
-  phone: account.phone as PhoneNumber,
-}))
-
 export const defaultStateConfig = (): TestingStateConfig => ({
   resetState: true,
-  userAccounts: [...testAccounts, ...adminUsers],
   outsideWalletBlocksToMineAndConfirm: 10,
   fundFunderWallet: {
     amountInBitcoin: 1,
@@ -143,11 +128,9 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
     )
   }
 
-  // Create test users and mandatory users
-  await Promise.all(
-    stateConfig.userAccounts.map((accountEntry) => createUserAndWallet(accountEntry)),
-  )
-  baseLogger.info("Created all test users.")
+  // Create mandatory users
+  await createMandatoryUsers()
+  baseLogger.info("Created all admin users.")
 
   // Fund special wallets
   if (stateConfig.fundFunderWallet) {

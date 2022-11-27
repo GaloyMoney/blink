@@ -16,7 +16,10 @@ import { toObjectId } from "@services/mongoose/utils"
 
 import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@domain/errors"
 
-import { randomKratosUserId } from "."
+import { AccountStatus } from "@domain/accounts"
+import { Accounts } from "@app"
+
+import { randomKratosUserId, randomPhone } from "."
 
 const accounts = AccountsRepository()
 
@@ -95,6 +98,20 @@ export const createUserAndWalletFromUserRef = async (ref: string) => {
   const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
   if (entry === undefined) throw new Error("no ref matching entry for test")
   await createUserAndWallet(entry)
+}
+
+export const createAccount = async (initialWallets: WalletCurrency[]) => {
+  const phone = randomPhone()
+
+  const kratosUserId = randomKratosUserId()
+
+  const account = await Accounts.createAccountWithPhoneIdentifier({
+    newAccountInfo: { phone, kratosUserId },
+    config: { initialStatus: AccountStatus.Active, initialWallets },
+  })
+  if (account instanceof Error) throw account
+
+  return account
 }
 
 export const createUserAndWallet = async (entry: TestEntry) => {
