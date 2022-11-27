@@ -286,6 +286,18 @@ export const configSchema = {
           code: "321321",
           username: "tester2",
         },
+        {
+          ref: "K",
+          phone: "+198765432112",
+          code: "321321",
+          username: "tester3",
+        },
+        {
+          ref: "L",
+          phone: "+198765432113",
+          code: "321321",
+          username: "tester4",
+        },
       ],
       uniqueItems: true,
     },
