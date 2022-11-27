@@ -52,8 +52,8 @@ import {
   publishOkexPrice,
   PID,
   startServer,
-  loginFromPhoneAndCode,
 } from "test/helpers"
+import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,

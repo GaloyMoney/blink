@@ -25,10 +25,10 @@ import {
   getPhoneAndCodeFromRef,
   initializeTestingState,
   killServer,
-  loginFromPhoneAndCode,
   PID,
   startServer,
 } from "test/helpers"
+import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"
 
 let correctCode: PhoneCode,
   apolloClient: ApolloClient<NormalizedCacheObject>,
