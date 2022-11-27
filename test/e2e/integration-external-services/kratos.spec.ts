@@ -32,13 +32,14 @@ import { randomEmail, randomPassword, randomPhone } from "test/helpers"
 const identityRepo = IdentityRepository()
 
 const retry = async (fn) => {
-  let counter = 10
-  const sleepTime = 250
+  let counter = 24
+  const sleepTime = 500
   let res
 
   while (counter) {
     res = await fn()
     if (res instanceof Error) {
+      console.log(`will retry in ${sleepTime / 1000} s`)
       await sleep(sleepTime)
     } else {
       return res
