@@ -24,11 +24,22 @@ export const TxDecoder = (networkName: BtcNetwork): TxDecoder => {
   }
 }
 
-const decodeOutput = (tx: Transaction, network: Network): TxOut[] => {
+// FIXME: https://github.com/bitcoinjs/bitcoinjs-lib/issues/1800#issuecomment-1126629937
+const wrappedFromOutputScript = (script: Buffer, network: networks.Network) => {
+  const oldWarn = console.warn
+  console.warn = () => {
+    //
+  }
+  const result = address.fromOutputScript(script, network)
+  console.warn = oldWarn
+  return result
+}
+
+function decodeOutput(tx: Transaction, network: Network): TxOut[] {
   const format = (out: TxOutput, network: Network) => {
     let decodedAddress: OnChainAddress | null = null
     try {
-      decodedAddress = address.fromOutputScript(out.script, network) as OnChainAddress
+      decodedAddress = wrappedFromOutputScript(out.script, network) as OnChainAddress
     } catch (_) {
       // OP_RETURN outputs don't have a valid address associated with them
     }
