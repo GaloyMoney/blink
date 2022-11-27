@@ -62,7 +62,7 @@ let apolloClient: ApolloClient<NormalizedCacheObject>,
   serverPid: PID,
   triggerPid: PID
 
-const userRef = "G"
+const userRef = "K"
 const { phone, code } = getPhoneAndCodeFromRef(userRef)
 
 const otherRef = "A"
