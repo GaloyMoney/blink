@@ -53,7 +53,6 @@ import { playgroundTabs } from "../graphql/playground"
 import healthzHandler from "./middlewares/healthz"
 import authRouter from "./middlewares/auth-router"
 import { updateToken } from "./middlewares/update-token"
-import kratosRouter from "./middlewares/kratos-router"
 
 const graphqlLogger = baseLogger.child({
   module: "graphql",
@@ -240,7 +239,6 @@ export const startApolloServer = async ({
   })
 
   app.use("/auth", authRouter)
-  app.use("/kratos", kratosRouter)
 
   const enablePolicy = apolloConfig.playground ? false : undefined
 
