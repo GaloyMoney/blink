@@ -22,10 +22,10 @@ services:
   integration-deps:
     image: busybox
     depends_on:
-      - stablesats
       - redis
       - mongodb
       - bitcoind
+      - stablesats
       - lnd1
       - lnd2
       - lnd-outside-1

@@ -15,6 +15,8 @@ jest.mock("@services/lnd/unauth", () => {
 
 let mongoose
 
+jest.mock("@services/twilio", () => require("test/mocks/twilio"))
+
 beforeAll(async () => {
   mongoose = await setupMongoConnection(true)
 })
