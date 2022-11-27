@@ -3,21 +3,7 @@ import { AccountStatus } from "@domain/accounts"
 import { WalletCurrency } from "@domain/shared"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
-import { randomUserId, randomPhone } from "test/helpers"
-
-const createAccount = async (initialWallets: WalletCurrency[]) => {
-  const phone = randomPhone()
-
-  const kratosUserId = randomUserId()
-
-  const account = await Accounts.createAccountWithPhoneIdentifier({
-    newAccountInfo: { phone, kratosUserId },
-    config: { initialStatus: AccountStatus.Active, initialWallets },
-  })
-  if (account instanceof Error) throw account
-
-  return account
-}
+import { createAccount } from "test/helpers"
 
 describe("Users - wallets", () => {
   describe("with 'createUser'", () => {

@@ -13,7 +13,7 @@ export * from "./lightning"
 export * from "./price"
 export * from "./rate-limit"
 export * from "./redis"
-export * from "./state-setup"
+export * from "./state-setup-e2e"
 export * from "./user"
 export * from "./wallet"
 

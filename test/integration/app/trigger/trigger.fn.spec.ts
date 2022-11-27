@@ -4,7 +4,7 @@ import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
 import { WalletCurrency } from "@domain/shared"
 import { TxStatus } from "@domain/wallets"
-import { onchainBlockEventHandler, invoiceUpdateEventHandler } from "@servers/trigger"
+import { invoiceUpdateEventHandler, onchainBlockEventHandler } from "@servers/trigger"
 import { LedgerService } from "@services/ledger"
 import { baseLogger } from "@services/logger"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
@@ -15,20 +15,20 @@ import {
   amountAfterFeeDeduction,
   bitcoindClient,
   bitcoindOutside,
+  createMandatoryUsers,
+  createUserAndWalletFromUserRef,
+  getAccountRecordByTestUserRef,
   getDefaultWalletIdByTestUserRef,
   getHash,
   getInvoice,
-  getAccountRecordByTestUserRef,
   lnd1,
   lndOutside1,
   mineBlockAndSyncAll,
   RANDOM_ADDRESS,
+  safePay,
   subscribeToBlocks,
   waitFor,
   waitUntilSyncAll,
-  initializeTestingState,
-  defaultStateConfig,
-  safePay,
 } from "test/helpers"
 import { getBalanceHelper } from "test/helpers/wallet"
 
@@ -43,7 +43,13 @@ const locale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 beforeAll(async () => {
-  await initializeTestingState(defaultStateConfig())
+  await createMandatoryUsers()
+
+  await bitcoindClient.loadWallet({ filename: "outside" })
+
+  await createUserAndWalletFromUserRef("A")
+  await createUserAndWalletFromUserRef("D")
+  await createUserAndWalletFromUserRef("F")
 
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   walletIdD = await getDefaultWalletIdByTestUserRef("D")
