@@ -29,9 +29,8 @@ import {
   killServer,
   PID,
   startServer,
-  loginFromPhoneAndCode,
-  updateUsername,
 } from "test/helpers"
+import { loginFromPhoneAndCode, updateUsername } from "test/helpers/account-creation-e2e"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,
