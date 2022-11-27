@@ -150,7 +150,7 @@ integration-in-ci:
 execute-integration-from-within-container:
 	yarn install && \
 	NODE_OPTIONS="--max-old-space-size=4096" \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest kratos --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 execute-integration-from-within-container-cached:
 	NODE_OPTIONS="--max-old-space-size=3072" \

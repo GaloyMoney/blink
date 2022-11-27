@@ -30,6 +30,7 @@ import {
   PID,
   startServer,
 } from "test/helpers"
+import { baseLogger } from "@services/logger"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,
@@ -252,6 +253,7 @@ describe("galoy-pay", () => {
         mutation: LN_INVOICE_PAYMENT_SEND,
         variables: { input: makePaymentInput },
       })
+      baseLogger.warn({ makePayment })
       expect(makePayment.data.lnInvoicePaymentSend.status).toEqual("SUCCESS")
 
       const result = (await promisifiedSubscription(subscription)) as { data }
