@@ -63,15 +63,16 @@ export const createAccountWithPhoneIdentifier = async ({
   newAccountInfo: NewAccountWithPhoneIdentifier
   config: AccountsConfig
 }): Promise<Account | RepositoryError> => {
-  const phoneMetadata = await TwilioClient().getCarrier(phone)
+  let phoneMetadata: PhoneMetadata | PhoneProviderServiceError | undefined =
+    await TwilioClient().getCarrier(phone)
+
   if (phoneMetadata instanceof Error) {
     baseLogger.warn({ phone }, "impossible to fetch carrier")
-  } else {
-    const user = await UsersRepository().findById(kratosUserId)
-    if (!(user instanceof Error)) {
-      await UsersRepository().update({ ...user, phone, phoneMetadata })
-    }
+    phoneMetadata = undefined
   }
+
+  const user = await UsersRepository().update({ id: kratosUserId, phone, phoneMetadata })
+  if (user instanceof Error) return user
 
   const accountNew = await AccountsRepository().persistNew(kratosUserId)
   if (accountNew instanceof Error) return accountNew
