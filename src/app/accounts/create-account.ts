@@ -92,7 +92,7 @@ export const createAccountForEmailIdentifier = async ({
   kratosUserId,
   config,
 }: {
-  kratosUserId: KratosUserId
+  kratosUserId: UserId
   config: AccountsConfig
 }): Promise<Account | RepositoryError> => {
   let account = await AccountsRepository().persistNew(kratosUserId)

@@ -13,7 +13,7 @@ type IdentitySchemaContainer = import("@ory/client").IdentitySchemaContainer
 type KratosEmail = string & { readonly brand: unique symbol }
 
 type ValidateKratosTokenResult = {
-  kratosUserId: KratosUserId
+  kratosUserId: UserId
   session: Session
 }
 

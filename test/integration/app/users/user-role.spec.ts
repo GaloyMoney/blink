@@ -6,7 +6,7 @@ describe("Users - role", () => {
   it("persists a role set in test accounts", async () => {
     await createUserAndWalletFromUserRef("I")
     const userId = await getUserIdByTestUserRef("I")
-    const account = await AccountsRepository().findByKratosUserId(userId)
+    const account = await AccountsRepository().findByUserId(userId)
     expect(account).not.toBeInstanceOf(Error)
     if (account instanceof Error) throw account
     expect(account.isEditor).toEqual(true)

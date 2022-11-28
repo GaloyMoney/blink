@@ -25,7 +25,7 @@ export const randomPassword = () => Math.random().toString(36) as IdentityPasswo
 export const randomPhone = () =>
   `+1415${Math.floor(Math.random() * 900000 + 100000)}` as PhoneNumber
 
-export const randomKratosUserId = () => randomUUID() as KratosUserId
+export const randomUserId = () => randomUUID() as UserId
 
 export const freshAccount = async () => {
   const phone = randomPhone()

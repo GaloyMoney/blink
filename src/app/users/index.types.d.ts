@@ -1,9 +1,9 @@
 type AddDeviceTokenArgs = {
-  userId: KratosUserId
+  userId: UserId
   deviceToken: string
 }
 
 type UpdateLanguageArgs = {
-  userId: KratosUserId
+  userId: UserId
   language: string
 }

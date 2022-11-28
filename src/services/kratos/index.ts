@@ -9,9 +9,7 @@ export * from "./auth-phone-no-password"
 export * from "./cron"
 export * from "./identity"
 
-export const listSessions = async (
-  userId: KratosUserId,
-): Promise<Session[] | KratosError> => {
+export const listSessions = async (userId: UserId): Promise<Session[] | KratosError> => {
   const res = await listSessionsInternal(userId)
   if (res instanceof Error) return res
   return res.map(toDomainSession)

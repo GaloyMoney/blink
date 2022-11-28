@@ -46,7 +46,7 @@ export const LoginWithPhoneAndPasswordSchema = async ({
   }
 
   const sessionToken = result.data.session_token as SessionToken
-  const kratosUserId = result.data.session.identity.id as KratosUserId
+  const kratosUserId = result.data.session.identity.id as UserId
 
   return { sessionToken, kratosUserId }
 }
@@ -87,9 +87,7 @@ export const addTotp = async (token: SessionToken) => {
   }
 }
 
-export const activateUser = async (
-  kratosUserId: KratosUserId,
-): Promise<void | KratosError> => {
+export const activateUser = async (kratosUserId: UserId): Promise<void | KratosError> => {
   let identity: KratosIdentity
   try {
     const res = await kratosAdmin.adminGetIdentity(kratosUserId)
@@ -109,7 +107,7 @@ export const activateUser = async (
 }
 
 export const deactivateUser = async (
-  kratosUserId: KratosUserId,
+  kratosUserId: UserId,
 ): Promise<void | KratosError> => {
   let identity: KratosIdentity
   try {
@@ -130,7 +128,7 @@ export const deactivateUser = async (
 }
 
 export const revokeSessions = async (
-  kratosUserId: KratosUserId,
+  kratosUserId: UserId,
 ): Promise<void | KratosError> => {
   try {
     await kratosAdmin.adminDeleteIdentitySessions(kratosUserId)
@@ -188,6 +186,6 @@ export const elevatingSessionWithTotp = async ({
   }
 
   const sessionToken = result.data.session_token as SessionToken
-  const kratosUserId = result.data.session.identity.id as KratosUserId
+  const kratosUserId = result.data.session.identity.id as UserId
   return { sessionToken, kratosUserId }
 }

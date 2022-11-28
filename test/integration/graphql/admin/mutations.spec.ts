@@ -6,7 +6,7 @@ import {
   createUserAndWalletFromUserRef,
   getAccountByTestUserRef,
   graphqlAdmin,
-  randomKratosUserId,
+  randomUserId,
 } from "test/helpers"
 
 let account: Account
@@ -148,7 +148,7 @@ describe("GraphQLMutationRoot", () => {
       source: mutation,
       contextValue: {
         user: {
-          id: randomKratosUserId(),
+          id: randomUserId(),
           language: getLocale(),
           languageOrDefault: getLocale(),
           deviceTokens: ["token"] as DeviceToken[],

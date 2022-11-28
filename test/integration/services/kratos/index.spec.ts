@@ -34,7 +34,7 @@ describe("phoneNoPassword", () => {
 
   describe("public selflogin api", () => {
     const phone = randomPhone()
-    let kratosUserId: KratosUserId
+    let kratosUserId: UserId
 
     it("create a user", async () => {
       const res = await authService.createIdentityWithSession(phone)
@@ -257,7 +257,7 @@ describe("session revokation", () => {
 })
 
 describe("update status", () => {
-  let kratosUserId: KratosUserId
+  let kratosUserId: UserId
   const phone = randomPhone()
 
   it("deactivate user", async () => {

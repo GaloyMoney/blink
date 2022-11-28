@@ -135,9 +135,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const persistNew = async (
-    kratosUserId: KratosUserId,
-  ): Promise<Account | RepositoryError> => {
+  const persistNew = async (kratosUserId: UserId): Promise<Account | RepositoryError> => {
     try {
       const account = new Account()
       account.kratosUserId = kratosUserId
@@ -148,8 +146,8 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const findByKratosUserId = async (
-    kratosUserId: KratosUserId,
+  const findByUserId = async (
+    kratosUserId: UserId,
   ): Promise<Account | RepositoryError> => {
     try {
       const result = await Account.findOne({ kratosUserId })
@@ -166,7 +164,7 @@ export const AccountsRepository = (): IAccountsRepository => {
 
   return {
     persistNew,
-    findByKratosUserId,
+    findByUserId,
     listUnlockedAccounts,
     findById,
     findByUsername,
@@ -213,5 +211,5 @@ const translateToAccount = (result: AccountRecord): Account => ({
         completed: true,
       }),
     ) || [],
-  kratosUserId: result.kratosUserId as KratosUserId,
+  kratosUserId: result.kratosUserId as UserId,
 })

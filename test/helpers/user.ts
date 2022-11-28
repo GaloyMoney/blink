@@ -38,7 +38,7 @@ const getUserByTestUserRef = async (ref: string) => {
 
 export const getAccountByTestUserRef = async (ref: string) => {
   const user = await getUserByTestUserRef(ref)
-  const account = await AccountsRepository().findByKratosUserId(user.id)
+  const account = await AccountsRepository().findByUserId(user.id)
   if (account instanceof Error) throw account
   return account
 }
@@ -139,7 +139,7 @@ export const createUserAndWallet = async (entry: TestEntry) => {
   })
   if (res instanceof Error) throw res
 
-  let account = await accounts.findByKratosUserId(kratosUserId)
+  let account = await accounts.findByUserId(kratosUserId)
 
   if (account instanceof CouldNotFindAccountFromKratosIdError) {
     account = await createAccountWithPhoneIdentifier({

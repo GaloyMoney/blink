@@ -48,7 +48,7 @@ type AccountContact = {
 type AccountStatusHistory = Array<{
   status: AccountStatus
   updatedAt?: Date
-  updatedByUserId?: KratosUserId
+  updatedByUserId?: UserId
   comment?: string
 }>
 
@@ -68,7 +68,7 @@ type Account = {
   readonly contacts: AccountContact[]
   readonly isEditor: boolean
   readonly quizQuestions: UserQuizQuestion[]
-  kratosUserId: KratosUserId
+  kratosUserId: UserId
 
   // temp
   role?: string
@@ -140,9 +140,9 @@ type AccountValidator = {
 interface IAccountsRepository {
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
-  findByKratosUserId(kratosUserId: KratosUserId): Promise<Account | RepositoryError>
+  findByUserId(kratosUserId: UserId): Promise<Account | RepositoryError>
 
-  persistNew(kratosUserId: KratosUserId): Promise<Account | RepositoryError>
+  persistNew(kratosUserId: UserId): Promise<Account | RepositoryError>
 
   findByUsername(username: Username): Promise<Account | RepositoryError>
   listBusinessesForMap(): Promise<BusinessMapMarker[] | RepositoryError>

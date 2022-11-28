@@ -10,7 +10,7 @@ import {
   MAX_AGE_TIME_CODE,
 } from "@config"
 
-import { checkedToKratosUserId } from "@domain/accounts"
+import { checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 import { CouldNotFindAccountFromKratosIdError } from "@domain/errors"
@@ -55,7 +55,7 @@ export const loginWithPhone = async ({
   await rewardFailedLoginAttemptPerPhoneLimits(phone)
 
   let kratosToken: SessionToken
-  let kratosUserId: KratosUserId
+  let kratosUserId: UserId
 
   const authService = AuthWithPhonePasswordlessService()
 
@@ -99,7 +99,7 @@ export const loginWithEmail = async ({
   emailAddress: string
   ip: IpAddress
 }): Promise<{ accountStatus: string } | ApplicationError> => {
-  const kratosUserIdValid = checkedToKratosUserId(kratosUserId)
+  const kratosUserIdValid = checkedToUserId(kratosUserId)
   if (kratosUserIdValid instanceof Error) return kratosUserIdValid
 
   const emailAddressValid = checkedToEmailAddress(emailAddress)
@@ -115,7 +115,7 @@ export const loginWithEmail = async ({
     if (limitOk instanceof Error) return limitOk
   }
 
-  let account = await AccountsRepository().findByKratosUserId(kratosUserIdValid)
+  let account = await AccountsRepository().findByUserId(kratosUserIdValid)
 
   if (account instanceof CouldNotFindAccountFromKratosIdError) {
     addAttributesToCurrentSpan({ "login.newAccount": true })
