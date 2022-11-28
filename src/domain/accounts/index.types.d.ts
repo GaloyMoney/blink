@@ -111,7 +111,7 @@ type LimiterCheckInputs = {
 
 type LimitsCheckerFn = (args: LimiterCheckInputs) => Promise<true | LimitsExceededError>
 
-type LimitsVolumesFn = (args: LimiterCheckInputs) => Promise<
+type LimitsVolumesFn = (walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]) => Promise<
   | {
       volumeTotalLimit: UsdPaymentAmount
       volumeUsed: UsdPaymentAmount

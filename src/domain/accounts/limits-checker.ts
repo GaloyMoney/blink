@@ -10,6 +10,7 @@ import {
   WalletCurrency,
   ZERO_CENTS,
 } from "@domain/shared"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { calculateLimitsInUsd } from "./limits-volume"
 
@@ -55,12 +56,15 @@ const checkLimitBase =
     })
     if (limitAmount instanceof Error) return limitAmount
 
+    addAttributesToCurrentSpan({
+      "txVolume.amountInBase": `${amount.amount}`,
+    })
+
     const { volumeRemaining } = await calculateLimitsInUsd({
       limitName,
       limitAmount,
       priceRatio,
 
-      amount,
       walletVolumes,
     })
     return volumeRemaining.amount < amount.amount ? new limitError(limitErrMsg) : true

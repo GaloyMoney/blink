@@ -13,7 +13,6 @@ export const calculateLimitsInUsd = async ({
   limitAmount,
   priceRatio,
 
-  amount,
   walletVolumes,
 }: {
   limitName:
@@ -27,7 +26,8 @@ export const calculateLimitsInUsd = async ({
     | "volumesTwoFA"
   limitAmount: UsdPaymentAmount
   priceRatio: PriceRatio
-} & LimiterCheckInputs): Promise<{
+  walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+}): Promise<{
   volumeTotalLimit: UsdPaymentAmount
   volumeUsed: UsdPaymentAmount
   volumeRemaining: UsdPaymentAmount
@@ -47,7 +47,6 @@ export const calculateLimitsInUsd = async ({
   addAttributesToCurrentSpan({
     "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
     "txVolume.threshold": `${limitAmount.amount}`,
-    "txVolume.amountInBase": `${amount.amount}`,
     "txVolume.limitCheck": limitName,
   })
 
@@ -72,13 +71,12 @@ const volumeLimitBase =
     limitAmount: UsdPaymentAmount
     priceRatio: PriceRatio
   }) =>
-  async ({ amount, walletVolumes }: LimiterCheckInputs) =>
+  async (walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]) =>
     calculateLimitsInUsd({
       limitName,
       limitAmount,
       priceRatio,
 
-      amount,
       walletVolumes,
     })
 
