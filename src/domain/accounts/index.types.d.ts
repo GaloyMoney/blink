@@ -38,6 +38,8 @@ interface IAccountLimits {
   tradeIntraAccountLimit: UsdCents
 }
 
+type IAccountLimitAmounts = { [key in keyof IAccountLimits]: UsdPaymentAmount }
+
 type AccountContact = {
   readonly id: Username
   readonly username: Username
@@ -109,15 +111,38 @@ type LimiterCheckInputs = {
 
 type LimitsCheckerFn = (args: LimiterCheckInputs) => Promise<true | LimitsExceededError>
 
+type LimitsVolumesFn = (args: LimiterCheckInputs) => Promise<
+  | {
+      volumeTotalLimit: UsdPaymentAmount
+      volumeUsed: UsdPaymentAmount
+      volumeRemaining: UsdPaymentAmount
+    }
+  | ValidationError
+>
+
 type AccountLimitsChecker = {
   checkIntraledger: LimitsCheckerFn
   checkWithdrawal: LimitsCheckerFn
   checkTradeIntraAccount: LimitsCheckerFn
 }
 
+type AccountLimitsVolumes =
+  | {
+      volumesIntraledger: LimitsVolumesFn
+      volumesWithdrawal: LimitsVolumesFn
+      volumesTradeIntraAccount: LimitsVolumesFn
+    }
+  | ValidationError
+
 type TwoFALimitsChecker = {
   checkTwoFA: LimitsCheckerFn
 }
+
+type TwoFALimitsVolumes =
+  | {
+      volumesTwoFA: LimitsVolumesFn
+    }
+  | ValidationError
 
 type AccountValidator = {
   validateWalletForAccount(wallet: Wallet): true | ValidationError
@@ -156,6 +181,8 @@ type TestAccountsChecker = (testAccounts: TestAccount[]) => {
 type TwoFALimits = {
   threshold: UsdCents
 }
+
+type TwoFALimitAmounts = { [key in keyof TwoFALimits]: UsdPaymentAmount }
 
 type FeesConfig = {
   depositFeeVariable: number
