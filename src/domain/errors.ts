@@ -104,6 +104,7 @@ export class InvalidDeviceTokenError extends ValidationError {}
 
 export class InvalidLanguageError extends ValidationError {}
 export class InvalidAccountLevelError extends ValidationError {}
+export class InvalidAccountLimitTypeError extends ValidationError {}
 
 export class LimitsExceededError extends ValidationError {}
 export class WithdrawalLimitsExceededError extends LimitsExceededError {}

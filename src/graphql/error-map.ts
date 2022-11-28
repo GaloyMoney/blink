@@ -402,6 +402,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InsufficientBalanceForLnPaymentError":
     case "InvalidLanguageError":
     case "InvalidAccountLevelError":
+    case "InvalidAccountLimitTypeError":
     case "InvalidWithdrawFeeError":
     case "InvalidUsdCents":
     case "NonIntegerError":
