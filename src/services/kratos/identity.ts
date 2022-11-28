@@ -27,7 +27,7 @@ export const IdentityRepository = (): IIdentityRepository => {
   // TODO: test
   // TODO: manage email as well
   const getIdentity = async (
-    kratosUserId: KratosUserId,
+    kratosUserId: UserId,
   ): Promise<IdentityPhone | KratosError> => {
     let data: Identity
 

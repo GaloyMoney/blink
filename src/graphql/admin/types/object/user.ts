@@ -16,7 +16,7 @@ const User = GT.Object<IdentityPhone>({
     defaultAccount: {
       type: GT.NonNull(Account),
       resolve: async (source) => {
-        const account = await Accounts.getAccountFromKratosUserId(source.id)
+        const account = await Accounts.getAccountFromUserId(source.id)
         if (account instanceof Error) {
           throw account
         }

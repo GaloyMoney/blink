@@ -4,7 +4,7 @@ import { UsersRepository } from "@services/mongoose"
 
 import { createUserAndWalletFromUserRef, getUserIdByTestUserRef } from "test/helpers"
 
-let userId: KratosUserId
+let userId: UserId
 
 beforeAll(async () => {
   await createUserAndWalletFromUserRef("A")

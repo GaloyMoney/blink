@@ -73,7 +73,7 @@ export class InvalidContactAlias extends ValidationError {}
 export class InvalidCoordinatesError extends ValidationError {}
 export class InvalidBusinessTitleLengthError extends ValidationError {}
 export class InvalidPhoneNumber extends ValidationError {}
-export class InvalidKratosUserId extends ValidationError {}
+export class InvalidUserId extends ValidationError {}
 export class InvalidEmailAddress extends ValidationError {}
 export class InvalidWalletId extends ValidationError {}
 export class InvalidLedgerTransactionId extends ValidationError {}

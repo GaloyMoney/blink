@@ -1,4 +1,4 @@
 type NewAccountWithPhoneIdentifier = {
-  kratosUserId: KratosUserId
+  kratosUserId: UserId
   phone: PhoneNumber
 }

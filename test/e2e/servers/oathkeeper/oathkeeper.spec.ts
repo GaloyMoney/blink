@@ -45,7 +45,7 @@ describe("Oathkeeper", () => {
     expect(res).toBeInstanceOf(OathkeeperUnauthorizedServiceError)
   })
 
-  it("return KratosUserId when kratos session token is provided", async () => {
+  it("return UserId when kratos session token is provided", async () => {
     const userRef = "D"
     const { phone, code } = getPhoneAndCodeFromRef(userRef)
 
@@ -70,14 +70,14 @@ describe("Oathkeeper", () => {
     expect(uidFromJwt).toHaveLength(36) // uuid-v4 token (kratosUserId)
   })
 
-  it("return KratosUserId when legacy JWT is provided", async () => {
+  it("return UserId when legacy JWT is provided", async () => {
     const userRef = "D"
     const { phone } = getPhoneAndCodeFromRef(userRef)
 
     const user = await IdentityRepository().slowFindByPhone(phone)
     if (user instanceof Error) throw user
 
-    const account = await AccountsRepository().findByKratosUserId(user.id)
+    const account = await AccountsRepository().findByUserId(user.id)
     if (account instanceof Error) throw account
 
     const jwtToken = createToken({

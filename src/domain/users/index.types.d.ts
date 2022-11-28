@@ -28,22 +28,22 @@ type PhoneMetadataValidator = {
 }
 
 type SetPhoneMetadataArgs = {
-  id: KratosUserId
+  id: UserId
   phoneMetadata: PhoneMetadata
 }
 
 type SetDeviceTokensArgs = {
-  id: KratosUserId
+  id: UserId
   deviceTokens: DeviceToken[]
 }
 
 type SetLanguageArgs = {
-  id: KratosUserId
+  id: UserId
   language: UserLanguageOrEmpty
 }
 
 type User = {
-  id: KratosUserId
+  id: UserId
   languageOrDefault: UserLanguage
   language: UserLanguageOrEmpty
   deviceTokens: DeviceToken[]
@@ -52,13 +52,13 @@ type User = {
 }
 
 type UserUpdateInput = Omit<Partial<User>, "language"> & {
-  id: KratosUserId
+  id: UserId
 } & {
   language?: UserLanguageOrEmpty
 }
 
 interface IUserRepository {
-  findById(id: KratosUserId): Promise<User | RepositoryError>
+  findById(id: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
   update(user: UserUpdateInput): Promise<User | RepositoryError>
 }

@@ -156,7 +156,7 @@ describe("UserWallet", () => {
     it("sets account status (with history) for given user id", async () => {
       let account
 
-      const updatedByUserId = randomUUID() as KratosUserId
+      const updatedByUserId = randomUUID() as UserId
 
       account = await Accounts.updateAccountStatus({
         id: accountIdC,

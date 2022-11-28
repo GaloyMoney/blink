@@ -4,13 +4,13 @@
 
 import { UsersRepository } from "@services/mongoose"
 
-import { randomKratosUserId, randomPhone } from "test/helpers"
+import { randomUserId, randomPhone } from "test/helpers"
 
 const users = UsersRepository()
 
 describe("Testing Users Repository", () => {
   it("return default value if userId doesn't exist", async () => {
-    const userId = randomKratosUserId()
+    const userId = randomUserId()
 
     const user = await users.findById(userId)
     if (user instanceof Error) throw user
@@ -18,7 +18,7 @@ describe("Testing Users Repository", () => {
   })
 
   it("can create entity with update", async () => {
-    const userId = randomKratosUserId()
+    const userId = randomUserId()
 
     const user = await users.update({ id: userId })
     if (user instanceof Error) throw user
@@ -30,8 +30,8 @@ describe("Testing Users Repository", () => {
   })
 
   it("can't create 2 entities with same phone", async () => {
-    const userId1 = randomKratosUserId()
-    const userId2 = randomKratosUserId()
+    const userId1 = randomUserId()
+    const userId2 = randomUserId()
     const phone = randomPhone()
 
     const user = await users.update({ id: userId1, phone })
@@ -43,7 +43,7 @@ describe("Testing Users Repository", () => {
   })
 
   it("updating one field doesn't change the other fields", async () => {
-    const userId = randomKratosUserId()
+    const userId = randomUserId()
 
     const deviceTokens = ["token"] as DeviceToken[]
 

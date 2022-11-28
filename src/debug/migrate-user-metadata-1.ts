@@ -12,7 +12,7 @@ import { UsersRepository } from "@services/mongoose"
 const MigrateUserMetadata = async () => {
   await setupMongoConnection()
 
-  let id: KratosUserId
+  let id: UserId
   let phoneMetadata: PhoneMetadata
   let language: UserLanguage | undefined
   let phone: PhoneNumber | undefined
@@ -25,7 +25,7 @@ const MigrateUserMetadata = async () => {
   let progress = 0
 
   for (const account of accounts) {
-    id = account.kratosUserId as KratosUserId
+    id = account.kratosUserId as UserId
     phoneMetadata = account.twilio as PhoneMetadata
     language = account.language as UserLanguage | undefined
     deviceTokens = account.deviceToken as DeviceToken[]

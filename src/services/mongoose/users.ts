@@ -13,7 +13,7 @@ export const translateToUser = (user: UserRecord): User => {
   const phone = user.phone
 
   return {
-    id: user.userId as KratosUserId,
+    id: user.userId as UserId,
     language: language,
     languageOrDefault: languageOrDefault as UserLanguage,
     deviceTokens: deviceTokens as DeviceToken[],
@@ -23,7 +23,7 @@ export const translateToUser = (user: UserRecord): User => {
 }
 
 export const UsersRepository = (): IUserRepository => {
-  const findById = async (id: KratosUserId): Promise<User | RepositoryError> => {
+  const findById = async (id: UserId): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOne({ userId: id })
       if (!result) return translateToUser({ userId: id, deviceTokens: [] })

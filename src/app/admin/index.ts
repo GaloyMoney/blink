@@ -14,5 +14,5 @@ export const getAccountByUserPhone = async (phone: PhoneNumber) => {
   if (user instanceof Error) return user
 
   const accounts = AccountsRepository()
-  return accounts.findByKratosUserId(user.id)
+  return accounts.findByUserId(user.id)
 }

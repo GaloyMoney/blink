@@ -39,14 +39,14 @@ export const toDomainIdentityPhone = (identity: KratosIdentity): IdentityPhone =
   }
 
   return {
-    id: identity.id as KratosUserId,
+    id: identity.id as UserId,
     phone: identity.traits.phone as PhoneNumber,
     createdAt,
   }
 }
 
 export const listSessionsInternal = async (
-  userId: KratosUserId,
+  userId: UserId,
 ): Promise<KratosSession[] | KratosError> => {
   try {
     const res = await kratosAdmin.adminListIdentitySessions(userId)

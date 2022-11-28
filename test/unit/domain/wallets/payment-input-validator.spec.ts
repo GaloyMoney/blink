@@ -29,7 +29,7 @@ describe("PaymentInputValidator", () => {
     contacts: [],
     isEditor: false,
     quizQuestions: [],
-    kratosUserId: "kratosUserId" as KratosUserId,
+    kratosUserId: "kratosUserId" as UserId,
   }
 
   const dummySenderWallet: Wallet = {

@@ -12,7 +12,7 @@ const randomPhoneNumber = () => {
 }
 
 const randomKratosId = () => {
-  return randomUUID() as KratosUserId
+  return randomUUID() as UserId
 }
 
 const createAccount = async (initialWallets: WalletCurrency[]) => {
