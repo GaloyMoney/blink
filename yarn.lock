@@ -2137,20 +2137,12 @@
     "@graphql-tools/utils" "8.9.0"
     tslib "^2.4.0"
 
-"@graphql-tools/merge@8.3.8":
+"@graphql-tools/merge@8.3.8", "@graphql-tools/merge@^8.1.2":
   version "8.3.8"
   resolved "https://registry.yarnpkg.com/@graphql-tools/merge/-/merge-8.3.8.tgz#6d1232b7d0e927edec27789b78853e01233a8f29"
   integrity sha512-L9YE8OpxSlzADcdrc4IG7/33H/iWVXTJXX2ie67cWAb5MFN2t3JBdQMa0bnBcAoOrKB7A8g2+dIp8oXTpdzxjg==
   dependencies:
     "@graphql-tools/utils" "8.13.1"
-    tslib "^2.4.0"
-
-"@graphql-tools/merge@^8.1.2":
-  version "8.3.6"
-  resolved "https://registry.yarnpkg.com/@graphql-tools/merge/-/merge-8.3.6.tgz#97a936d4c8e8f935e58a514bb516c476437b5b2c"
-  integrity sha512-uUBokxXi89bj08P+iCvQk3Vew4vcfL5ZM6NTylWi8PIpoq4r5nJ625bRuN8h2uubEdRiH8ntN9M4xkd/j7AybQ==
-  dependencies:
-    "@graphql-tools/utils" "8.12.0"
     tslib "^2.4.0"
 
 "@graphql-tools/mock@^8.1.2":
@@ -2200,14 +2192,7 @@
     tslib "^2.4.0"
     value-or-promise "1.0.11"
 
-"@graphql-tools/utils@8.12.0", "@graphql-tools/utils@^8.8.0":
-  version "8.12.0"
-  resolved "https://registry.yarnpkg.com/@graphql-tools/utils/-/utils-8.12.0.tgz#243bc4f5fc2edbc9e8fd1038189e57d837cbe31f"
-  integrity sha512-TeO+MJWGXjUTS52qfK4R8HiPoF/R7X+qmgtOYd8DTH0l6b+5Y/tlg5aGeUJefqImRq7nvi93Ms40k/Uz4D5CWw==
-  dependencies:
-    tslib "^2.4.0"
-
-"@graphql-tools/utils@8.13.1":
+"@graphql-tools/utils@8.13.1", "@graphql-tools/utils@^8.8.0":
   version "8.13.1"
   resolved "https://registry.yarnpkg.com/@graphql-tools/utils/-/utils-8.13.1.tgz#b247607e400365c2cd87ff54654d4ad25a7ac491"
   integrity sha512-qIh9yYpdUFmctVqovwMdheVNJqFh+DQNWIhX87FJStfXYnmweBUDATok9fWPleKeFwxnW8IapKmY8m8toJEkAw==
@@ -7368,7 +7353,7 @@ grunt-sass@^3.0.2:
   resolved "https://registry.yarnpkg.com/grunt-sass/-/grunt-sass-3.1.0.tgz#a5936cc2a80ec08092d9f31c101dc307d1e4f71c"
   integrity sha512-90s27H7FoCDcA8C8+R0GwC+ntYD3lG6S/jqcavWm3bn9RiJTmSfOvfbFa1PXx4NbBWuiGQMLfQTj/JvvqT5w6A==
 
-grunt@^1.4.1:
+grunt@^1.5.3:
   version "1.5.3"
   resolved "https://registry.yarnpkg.com/grunt/-/grunt-1.5.3.tgz#3214101d11257b7e83cf2b38ea173b824deab76a"
   integrity sha512-mKwmo4X2d8/4c/BmcOETHek675uOqw0RuA/zy12jaspWqvTp4+ZeQF1W+OTpcbncnaBsfbQJ6l0l4j+Sn/GmaQ==
@@ -12079,10 +12064,10 @@ spawn-sync@^1.0.15:
     concat-stream "^1.4.7"
     os-shim "^0.1.2"
 
-spectaql@^1.5.6:
-  version "1.5.6"
-  resolved "https://registry.yarnpkg.com/spectaql/-/spectaql-1.5.6.tgz#82ea0b324f7bce4db7ab3a6b90596303d4a97228"
-  integrity sha512-FoTzuVomXEEl7XbwC0bK8zvFqp9HZaaCJfslA+v9RU8TxNe77XyE+iBGyWPNM6gQYiX6MprHqf6zIjOkyu07cQ==
+spectaql@^1.5.9:
+  version "1.5.9"
+  resolved "https://registry.yarnpkg.com/spectaql/-/spectaql-1.5.9.tgz#397b099c2245226d985c10e302767cf1cd69b607"
+  integrity sha512-8vmnqtEvTTUn9nZGq7weQWwOcWYPbdJfaJt+ckKUW5L3urMQSXP4bQSCOr/PDVvSbFbuh0DkkElSl3EzBNgYBQ==
   dependencies:
     "@anvilco/apollo-server-plugin-introspection-metadata" "^1.2.0"
     "@anvilco/grunt-embed" "^0.0.1"
@@ -12096,7 +12081,7 @@ spectaql@^1.5.6:
     foundation-sites "^6.7.2"
     graphql "^16.3.0"
     graphql-scalars "^1.15.0"
-    grunt "^1.4.1"
+    grunt "^1.5.3"
     grunt-compile-handlebars "^2.0.2"
     grunt-contrib-clean "^2.0.0"
     grunt-contrib-concat "^2.1.0"
