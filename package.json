@@ -148,7 +148,7 @@
     "nodemon": "^2.0.20",
     "pino-pretty": "^9.1.1",
     "prettier": "^2.8.0",
-    "spectaql": "^1.5.6",
+    "spectaql": "^1.5.9",
     "tiny-secp256k1": "^2.2.1",
     "tree-kill": "^1.2.2",
     "ts-jest": "^28.0.8",
