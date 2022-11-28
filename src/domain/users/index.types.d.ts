@@ -60,6 +60,5 @@ type UserUpdateInput = Omit<Partial<User>, "language"> & {
 interface IUserRepository {
   findById(id: KratosUserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
-  list(): Promise<User[] | RepositoryError>
   update(user: UserUpdateInput): Promise<User | RepositoryError>
 }
