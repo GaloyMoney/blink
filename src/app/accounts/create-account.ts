@@ -12,11 +12,11 @@ import { TwilioClient } from "@services/twilio"
 const initializeCreatedAccount = async ({
   account,
   config,
-  phoneNumberValid,
+  phone,
 }: {
   account: Account
   config: AccountsConfig
-  phoneNumberValid?: PhoneNumber
+  phone?: PhoneNumber
 }): Promise<Account | ApplicationError> => {
   const newWallet = (currency: WalletCurrency) =>
     WalletsRepository().persistNew({
@@ -46,7 +46,7 @@ const initializeCreatedAccount = async ({
   account.defaultWalletId = defaultWalletId
 
   // FIXME: to remove when Casbin is been introduced
-  const role = getTestAccounts().find(({ phone }) => phone === phoneNumberValid)?.role
+  const role = getTestAccounts().find(({ phone: phoneTest }) => phoneTest === phone)?.role
   account.role = role || "user"
   account.contactEnabled = account.role === "user" || account.role === "editor"
 
@@ -80,7 +80,7 @@ export const createAccountWithPhoneIdentifier = async ({
   const account = await initializeCreatedAccount({
     account: accountNew,
     config,
-    phoneNumberValid: phone,
+    phone,
   })
   if (account instanceof Error) return account
 
