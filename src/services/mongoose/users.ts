@@ -47,15 +47,6 @@ export const UsersRepository = (): IUserRepository => {
     }
   }
 
-  const list = async (): Promise<User[] | RepositoryError> => {
-    try {
-      const result = await User.find({})
-      return result.map((a) => translateToUser(a))
-    } catch (err) {
-      return parseRepositoryError(err)
-    }
-  }
-
   const update = async ({
     id,
     language,
@@ -89,7 +80,6 @@ export const UsersRepository = (): IUserRepository => {
   return {
     findById,
     findByPhone,
-    list,
     update,
   }
 }
