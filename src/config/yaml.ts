@@ -332,6 +332,7 @@ export const getSwapConfig = (): SwapConfig => {
     lnd1loopRpcEndpoint: config.lnd1loopRpcEndpoint,
     lnd2loopRpcEndpoint: config.lnd2loopRpcEndpoint,
     swapProviders: config.swapProviders,
+    feeAccountingEnabled: config.feeAccountingEnabled,
   }
 }
 

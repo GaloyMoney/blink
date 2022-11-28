@@ -56,6 +56,7 @@ swap:
   lnd1loopRpcEndpoint: "localhost:11010"
   lnd2loopRestEndpoint: "https://localhost:8082"
   lnd2loopRpcEndpoint: "localhost:11011"
+  feeAccountingEnabled: true
 ```
 
 When testing in dev you want to override this config by creating a `/var/yaml/custom.yaml` file
@@ -76,6 +77,7 @@ swap:
   lnd1loopRpcEndpoint: "localhost:11010"
   lnd2loopRestEndpoint: "https://localhost:8082"
   lnd2loopRpcEndpoint: "localhost:11011"
+  feeAccountingEnabled: true
 ```
 
 (3) Choose the swap provider

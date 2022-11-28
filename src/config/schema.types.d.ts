@@ -128,6 +128,7 @@ type YamlSchema = {
     lnd2loopRpcEndpoint: string
     swapOutAmount: number
     swapProviders: Array<SwapProvider>
+    feeAccountingEnabled: boolean
   }
   apollo: {
     playground: boolean

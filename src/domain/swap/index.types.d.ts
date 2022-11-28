@@ -72,6 +72,7 @@ type SwapConfig = {
   lnd1loopRpcEndpoint: string
   lnd2loopRpcEndpoint: string
   swapProviders: Array<SwapProvider>
+  feeAccountingEnabled: boolean
 }
 
 type LoopdConfig = {
