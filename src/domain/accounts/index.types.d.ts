@@ -138,7 +138,6 @@ type AccountValidator = {
 }
 
 interface IAccountsRepository {
-  list(): Promise<Account[] | RepositoryError>
   listUnlockedAccounts(): Promise<Account[] | RepositoryError>
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   findByKratosUserId(kratosUserId: KratosUserId): Promise<Account | RepositoryError>

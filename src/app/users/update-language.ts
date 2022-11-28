@@ -1,11 +1,6 @@
 import { checkedToLanguage } from "@domain/users"
 import { UsersRepository } from "@services/mongoose"
 
-type UpdateLanguageArgs = {
-  userId: KratosUserId
-  language: string
-}
-
 export const updateLanguage = async ({
   userId,
   language,

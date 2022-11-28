@@ -17,15 +17,6 @@ const caseInsensitiveRegex = (input: string) => {
 }
 
 export const AccountsRepository = (): IAccountsRepository => {
-  const list = async (): Promise<Account[] | RepositoryError> => {
-    try {
-      const result = await Account.find({})
-      return result.map((a) => translateToAccount(a))
-    } catch (err) {
-      return parseRepositoryError(err)
-    }
-  }
-
   const listUnlockedAccounts = async (): Promise<Account[] | RepositoryError> => {
     try {
       const result = await Account.find({
@@ -179,7 +170,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     listUnlockedAccounts,
     findById,
     findByUsername,
-    list,
     listBusinessesForMap,
     update,
   }

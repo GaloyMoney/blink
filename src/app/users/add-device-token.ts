@@ -1,11 +1,6 @@
 import { checkedToDeviceToken } from "@domain/users"
 import { UsersRepository } from "@services/mongoose"
 
-type AddDeviceTokenArgs = {
-  userId: KratosUserId
-  deviceToken: string
-}
-
 export const addDeviceToken = async ({
   userId,
   deviceToken,
