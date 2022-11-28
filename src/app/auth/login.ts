@@ -73,7 +73,6 @@ export const loginWithPhone = async ({
     kratosToken = kratosResult.sessionToken
     kratosUserId = kratosResult.kratosUserId
 
-    // TODO: look at where is phone metadata stored
     const accountRaw: NewAccountWithPhoneIdentifier = { kratosUserId, phone }
     const account = await createAccountWithPhoneIdentifier({
       newAccountInfo: accountRaw,
