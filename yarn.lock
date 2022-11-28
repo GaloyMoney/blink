@@ -9236,7 +9236,7 @@ lightning@6.2.5:
     tiny-secp256k1 "2.2.1"
     type-fest "3.1.0"
 
-lightning@6.3.0, lightning@^6.2.4:
+lightning@6.3.0:
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.3.0.tgz#7d14064d2eb50bafe3f9bb5395987662dcc7f238"
   integrity sha512-d42srlAbG/XPw24GjJGLcHx2/zQUfBMB3tIpUiXrBqOWlcCaab+wHChkunMl0N8G6FMyiT3wNjI9MRHgclSL4g==
@@ -9258,6 +9258,32 @@ lightning@6.3.0, lightning@^6.2.4:
     ecpair "2.1.0"
     express "4.18.2"
     invoices "2.2.1"
+    psbt "2.7.1"
+    tiny-secp256k1 "2.2.1"
+    type-fest "3.2.0"
+
+lightning@^6.3.1:
+  version "6.3.1"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.3.1.tgz#78f06e94c1e6474a95fba6db4d23bbd56363c19e"
+  integrity sha512-ItcPt/FbMXZcCY65P0alYwMQCmhX4HEDlNaM54qjYsVmrDRGML5PN+zBlBvosvIoo47/0rQsdKpFnBSbo4oPEQ==
+  dependencies:
+    "@grpc/grpc-js" "1.7.3"
+    "@grpc/proto-loader" "0.7.3"
+    "@types/express" "4.17.14"
+    "@types/node" "18.11.9"
+    "@types/request" "2.48.8"
+    "@types/ws" "8.5.3"
+    async "3.2.4"
+    asyncjs-util "1.2.10"
+    bitcoinjs-lib "6.0.2"
+    bn.js "5.2.1"
+    body-parser "1.20.1"
+    bolt07 "1.8.2"
+    bolt09 "0.2.4"
+    cbor "8.1.0"
+    ecpair "2.1.0"
+    express "4.18.2"
+    invoices "2.2.2"
     psbt "2.7.1"
     tiny-secp256k1 "2.2.1"
     type-fest "3.2.0"
@@ -12871,12 +12897,12 @@ type-fest@2.19.0:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-2.19.0.tgz#88068015bb33036a598b952e55e9311a60fd3a9b"
   integrity sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==
 
-type-fest@3.1.0, type-fest@^3.0.0:
+type-fest@3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.1.0.tgz#157b74044d9c27fd796b9c6aa46eae6658b1e9b8"
   integrity sha512-StmrZmK3eD9mDF9Vt7UhqthrDSk66O9iYl5t5a0TSoVkHjl0XZx/xuc/BRz4urAXXGHOY5OLsE0RdJFIApSFmw==
 
-type-fest@3.2.0:
+type-fest@3.2.0, type-fest@^3.0.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.2.0.tgz#2c8b49e775d9e314a73ea6fcee0b2e8549d5f886"
   integrity sha512-Il3wdLRzWvbAEtocgxGQA9YOoRVeVUGOMBtel5LdEpNeEAol6GJTLw8GbX6Z8EIMfvfhoOXs2bwOijtAZdK5og==
