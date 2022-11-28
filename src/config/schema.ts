@@ -536,6 +536,7 @@ export const configSchema = {
           items: { enum: ["Loop"] },
           uniqueItems: true,
         },
+        feeAccountingEnabled: { type: "boolean" },
       },
       default: {
         loopOutWhenHotWalletLessThan: 200000000,
@@ -545,6 +546,7 @@ export const configSchema = {
         lnd1loopRpcEndpoint: "localhost:11010",
         lnd2loopRestEndpoint: "https://localhost:8082",
         lnd2loopRpcEndpoint: "localhost:11011",
+        feeAccountingEnabled: true,
       },
     },
     apollo: {

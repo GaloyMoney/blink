@@ -15,7 +15,7 @@ import {
   SubscribeToTransactionsChainTransactionEvent,
 } from "lightning"
 
-import { getCronConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
+import { getSwapConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
 import {
   Prices as PricesWithSpans,
@@ -450,7 +450,7 @@ const main = () => {
   activateLndHealthCheck()
   publishCurrentPrice()
 
-  if (getCronConfig().swapEnabled) listenerSwapMonitor()
+  if (getSwapConfig().feeAccountingEnabled) listenerSwapMonitor()
 
   console.log("trigger server ready")
 }

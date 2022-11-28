@@ -169,6 +169,7 @@ swap:
   lnd1loopRpcEndpoint: localhost:11010
   lnd2loopRestEndpoint: https://localhost:8082
   lnd2loopRpcEndpoint: localhost:11011
+  feeAccountingEnabled: true
 apollo:
   playground: true
   playgroundUrl: https://api.staging.galoy.io/graphql
