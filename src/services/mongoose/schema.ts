@@ -324,6 +324,10 @@ export const Account = mongoose.model<AccountRecord>("Account", AccountSchema)
 
 const UserSchema = new Schema(
   {
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
     userId: {
       type: String,
       required: true,

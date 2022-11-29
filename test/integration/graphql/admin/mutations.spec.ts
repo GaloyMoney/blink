@@ -153,6 +153,7 @@ describe("GraphQLMutationRoot", () => {
           languageOrDefault: getLocale(),
           deviceTokens: ["token"] as DeviceToken[],
           phoneMetadata: undefined,
+          createdAt: new Date(),
         },
       },
     })

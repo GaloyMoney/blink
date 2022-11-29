@@ -43,9 +43,7 @@ const Account: GraphQLObjectType<Account> = GT.Object<Account>({
           throw user
         }
 
-        // for now, use account.createdAt for user.createdAt
-        // FIXME should be using user/kratos createdAt field
-        return { ...user, createdAt: source.createdAt }
+        return user
       },
     },
     coordinates: {
