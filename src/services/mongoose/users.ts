@@ -32,7 +32,7 @@ export const UsersRepository = (): IUsersRepository => {
       // return default values if not present
       // we can do because user collection is an optional collection from the backend
       // as authentication is handled outside the stack
-      // and user collection is only about metadata for notification and langugage
+      // and user collection is only about metadata for notification and language
       if (!result)
         return translateToUser({ userId: id, deviceTokens: [], createdAt: new Date() })
 
