@@ -1,7 +1,3 @@
-// findById return an entity
-// update review a new entity
-// can have partial user on update, only the relevant one are updated
-
 import { UsersRepository } from "@services/mongoose"
 
 import { randomUserId, randomPhone } from "test/helpers"
