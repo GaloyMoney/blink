@@ -7847,18 +7847,6 @@ invoices@2.2.0:
     bolt09 "0.2.3"
     tiny-secp256k1 "2.2.1"
 
-invoices@2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/invoices/-/invoices-2.2.1.tgz#3c7349fec0f0f137a3117a95d6fb3bac07ff7710"
-  integrity sha512-VSyzBmdKuTIMjeKAPvdCN9+w7RI1AprZVuPe6L5zmPxnYfU56EMhXa6qFybS1K9SxwBCp8QuilJywnAT3NAOIg==
-  dependencies:
-    bech32 "2.0.0"
-    bitcoinjs-lib "6.0.2"
-    bn.js "5.2.1"
-    bolt07 "1.8.2"
-    bolt09 "0.2.4"
-    tiny-secp256k1 "2.2.1"
-
 invoices@2.2.2, invoices@^2.2.0:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/invoices/-/invoices-2.2.2.tgz#209923ce328dfb209f60f12f68dd3ef5b814185a"
@@ -9221,33 +9209,7 @@ lightning@6.2.5:
     tiny-secp256k1 "2.2.1"
     type-fest "3.1.0"
 
-lightning@6.3.0:
-  version "6.3.0"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.3.0.tgz#7d14064d2eb50bafe3f9bb5395987662dcc7f238"
-  integrity sha512-d42srlAbG/XPw24GjJGLcHx2/zQUfBMB3tIpUiXrBqOWlcCaab+wHChkunMl0N8G6FMyiT3wNjI9MRHgclSL4g==
-  dependencies:
-    "@grpc/grpc-js" "1.7.3"
-    "@grpc/proto-loader" "0.7.3"
-    "@types/express" "4.17.14"
-    "@types/node" "18.11.9"
-    "@types/request" "2.48.8"
-    "@types/ws" "8.5.3"
-    async "3.2.4"
-    asyncjs-util "1.2.10"
-    bitcoinjs-lib "6.0.2"
-    bn.js "5.2.1"
-    body-parser "1.20.1"
-    bolt07 "1.8.2"
-    bolt09 "0.2.4"
-    cbor "8.1.0"
-    ecpair "2.1.0"
-    express "4.18.2"
-    invoices "2.2.1"
-    psbt "2.7.1"
-    tiny-secp256k1 "2.2.1"
-    type-fest "3.2.0"
-
-lightning@^6.3.1:
+lightning@6.3.1, lightning@^6.3.1:
   version "6.3.1"
   resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.3.1.tgz#78f06e94c1e6474a95fba6db4d23bbd56363c19e"
   integrity sha512-ItcPt/FbMXZcCY65P0alYwMQCmhX4HEDlNaM54qjYsVmrDRGML5PN+zBlBvosvIoo47/0rQsdKpFnBSbo4oPEQ==
@@ -9364,16 +9326,16 @@ ln-service@54.2.4:
     morgan "1.10.0"
     ws "8.10.0"
 
-ln-service@^54.3.1:
-  version "54.3.1"
-  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-54.3.1.tgz#80ee902ac73f9290b7df750220608b1761fdf4ad"
-  integrity sha512-hEsA6BlUl4twgcnQZL1gTfonzzlwJr5Hg29zUBZlDDL43cj1y1OFXs2rJcraaoM5+aJytt5aKoJdcTyKC31w8g==
+ln-service@^54.3.2:
+  version "54.3.2"
+  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-54.3.2.tgz#751bf2cca577de257405de290bde14291e810545"
+  integrity sha512-3wIZfpHKOo2L+MgqH4PtLdYQerRQTpd4Rdjhs9U7PMi9ar3PSZ/20URv0bPgA05DSc9Q7NGYmmj4vUY504iNaw==
   dependencies:
     bolt07 "1.8.2"
     cors "2.8.5"
     express "4.18.2"
     invoices "2.2.2"
-    lightning "6.3.0"
+    lightning "6.3.1"
     macaroon "3.0.4"
     morgan "1.10.0"
     ws "8.11.0"
