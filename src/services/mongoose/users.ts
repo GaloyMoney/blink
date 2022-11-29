@@ -28,12 +28,16 @@ export const UsersRepository = (): IUsersRepository => {
   const findById = async (id: UserId): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOne({ userId: id })
+
+      // return default values if not present
+      // we can do because user collection is an optional collection from the backend
+      // as authentication is handled outside the stack
+      // and user collection is only about metadata for notification and langugage
       if (!result)
         return translateToUser({ userId: id, deviceTokens: [], createdAt: new Date() })
 
       return translateToUser(result)
     } catch (err) {
-      //  else
       return parseRepositoryError(err)
     }
   }
