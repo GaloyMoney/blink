@@ -1,7 +1,7 @@
 import mongoose from "mongoose"
 import * as Medici from "medici"
 
-import { ConfigError } from "@config"
+import { ConfigError, mongodbCredentials } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { LnPayment } from "@services/lnd/schema"
 import { lazyLoadLedgerAdmin } from "@services/ledger"
@@ -70,18 +70,18 @@ export const ledgerAdmin = lazyLoadLedgerAdmin({
 // TODO add an event listenever if we got disconnecter from MongoDb
 // after a first successful connection
 
-const user = process.env.MONGODB_USER ?? "testGaloy"
-const password = process.env.MONGODB_PASSWORD
-const address = process.env.MONGODB_ADDRESS ?? "mongodb"
-const db = process.env.MONGODB_DATABASE ?? "galoy"
+const mgCred = mongodbCredentials()
 
-const path = `mongodb://${user}:${password}@${address}/${db}`
+const path = `mongodb://${mgCred.user}:${mgCred.password}@${mgCred.address}/${mgCred.db}`
 
 export const setupMongoConnection = async (syncIndexes = false) => {
   try {
     await mongoose.connect(path, { autoIndex: false })
   } catch (err) {
-    baseLogger.fatal({ err, user, address, db }, `error connecting to mongodb`)
+    baseLogger.fatal(
+      { err, user: mgCred.user, address: mgCred.address, db: mgCred.db },
+      `error connecting to mongodb`,
+    )
     throw err
   }
 
@@ -100,7 +100,10 @@ export const setupMongoConnection = async (syncIndexes = false) => {
       await User.syncIndexes()
     }
   } catch (err) {
-    baseLogger.fatal({ err, user, address, db }, `error setting the indexes`)
+    baseLogger.fatal(
+      { err, user: mgCred.user, address: mgCred.address, db: mgCred.db },
+      `error setting the indexes`,
+    )
     throw err
   }
 
