@@ -31,11 +31,11 @@ export const checkedToEmailAddress = (
   return emailAddress as EmailAddress
 }
 
-export const checkedToLanguage = (language: string): UserLanguage | ValidationError => {
-  // FIXME: "" is not in the Languages list and this can lead to error
-  // (NB: have seen that in tests. need to reproduce)
-  if (language === "DEFAULT" || language === "") return "" as UserLanguage
-  if (Languages.includes(language)) return language as UserLanguage
+export const checkedToLanguage = (
+  language: string,
+): UserLanguageOrEmpty | ValidationError => {
+  if (language === "DEFAULT" || language === "") return "" as UserLanguageOrEmpty
+  if (Languages.includes(language)) return language as UserLanguageOrEmpty
   return new InvalidLanguageError()
 }
 
