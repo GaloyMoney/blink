@@ -51,7 +51,7 @@ describe("notification", () => {
       let usersWithDeviceTokens = 0
       for (const { kratosUserId } of activeAccounts) {
         const user = await UsersRepository().findById(kratosUserId)
-        if (user instanceof Error) return user
+        if (user instanceof Error) throw user
 
         if (user.deviceTokens.length > 0) usersWithDeviceTokens++
       }
@@ -63,7 +63,7 @@ describe("notification", () => {
         const { defaultWalletId, kratosUserId } = activeAccounts[i]
 
         const user = await UsersRepository().findById(kratosUserId)
-        if (user instanceof Error) return user
+        if (user instanceof Error) throw user
 
         const wallet = await WalletsRepository().findById(defaultWalletId)
         if (wallet instanceof Error) {
