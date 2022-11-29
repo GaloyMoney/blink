@@ -142,10 +142,13 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       return new IncompatibleSchemaUpgradeError()
     }
 
+    if (identity.state === undefined)
+      throw new KratosError("state undefined, probably impossible state") // type issue
+
     const adminIdentity: AdminUpdateIdentityBody = {
       ...identity,
       credentials: { password: { config: { password } } },
-      state: identity.state as IdentityState, // FIXME? type bug from ory library?
+      state: identity.state,
       schema_id: "phone_with_password_v0",
     }
 
