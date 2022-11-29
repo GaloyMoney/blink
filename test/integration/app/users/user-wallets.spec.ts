@@ -3,7 +3,7 @@ import { AccountStatus } from "@domain/accounts"
 import { WalletCurrency } from "@domain/shared"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
-import { createAccount } from "test/helpers"
+import { createAccount, randomUserId } from "test/helpers"
 
 describe("Users - wallets", () => {
   describe("with 'createUser'", () => {
@@ -91,7 +91,7 @@ describe("Users - wallets", () => {
       const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
 
       let account = await Accounts.createAccountForEmailIdentifier({
-        kratosUserId: randomKratosUserId(),
+        kratosUserId: randomUserId(),
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
       if (account instanceof Error) throw account
@@ -121,7 +121,7 @@ describe("Users - wallets", () => {
       const initialWallets = [WalletCurrency.Btc]
 
       let account = await Accounts.createAccountForEmailIdentifier({
-        kratosUserId: randomKratosUserId(),
+        kratosUserId: randomUserId(),
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
       if (account instanceof Error) throw account
@@ -151,7 +151,7 @@ describe("Users - wallets", () => {
       const initialWallets = [WalletCurrency.Usd]
 
       let account = await Accounts.createAccountForEmailIdentifier({
-        kratosUserId: randomKratosUserId(),
+        kratosUserId: randomUserId(),
         config: { initialStatus: AccountStatus.Active, initialWallets },
       })
       if (account instanceof Error) throw account

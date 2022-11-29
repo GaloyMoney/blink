@@ -9,13 +9,13 @@ import {
   createUserAndWalletFromUserRef,
   getAccountByTestUserRef,
   getUsdWalletIdByTestUserRef,
-  randomKratosUserId,
+  randomUserId,
 } from "test/helpers"
 
 it("change default walletId of account", async () => {
   const phone = "+123456789" as PhoneNumber
 
-  const kratosUserId = randomKratosUserId()
+  const kratosUserId = randomUserId()
 
   const account = await Accounts.createAccountWithPhoneIdentifier({
     newAccountInfo: { phone, kratosUserId },

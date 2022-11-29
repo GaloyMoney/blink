@@ -28,7 +28,7 @@ export const randomUserId = () => randomUUID() as UserId
 
 // TODO: use same function as createUserAndWallet
 export const randomAccount = async () => {
-  const account = await AccountsRepository().persistNew(randomKratosUserId())
+  const account = await AccountsRepository().persistNew(randomUserId())
   if (account instanceof Error) throw account
   return account
 }
