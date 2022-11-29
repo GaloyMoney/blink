@@ -40,7 +40,7 @@ export const PushNotificationsService = (): IPushNotificationsService => {
 
     const tokens = deviceTokens.filter((token) => token.length === 163)
     if (tokens.length <= 0) {
-      logger.info({ message, tokens }, "invalid tokens. skipping notification")
+      logger.info({ message, tokens }, "no token. skipping notification")
       return new InvalidDeviceNotificationsServiceError()
     }
 
