@@ -2,6 +2,7 @@ interface Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+  limits: AccountLimits!
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -25,6 +26,35 @@ interface Account {
     walletIds: [WalletId]
   ): TransactionConnection
   wallets: [Wallet!]!
+}
+
+interface AccountLimit {
+  """
+  The amount of cents remaining below the limit for the current 24 hour period.
+  """
+  remainingLimit: CentAmountPayload
+
+  """
+  The current maximum limit for a given 24 hour period.
+  """
+  totalLimit: CentAmountPayload!
+}
+
+type AccountLimits {
+  """
+  Limits for converting between currencies among a account's own wallets.
+  """
+  convert: TradeIntraAccountAccountLimit!
+
+  """
+  Limits for sending to other internal accounts.
+  """
+  internalSend: IntraLedgerAccountLimit!
+
+  """
+  Limits for withdrawing to external onchain or lightning destinations.
+  """
+  withdrawal: WithdrawalAccountLimit!
 }
 
 input AccountUpdateDefaultWalletIdInput {
@@ -158,6 +188,7 @@ type ConsumerAccount implements Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+  limits: AccountLimits!
 
   """
   A list of all transactions associated with walletIds optionally passed.
@@ -260,6 +291,18 @@ type InitiationViaLn {
 
 type InitiationViaOnChain {
   address: OnChainAddress!
+}
+
+type IntraLedgerAccountLimit implements AccountLimit {
+  """
+  The amount of cents remaining below the internal send limit for the current 24 hour period.
+  """
+  remainingLimit: CentAmountPayload
+
+  """
+  The current maximum internal send limit for a given 24 hour period.
+  """
+  totalLimit: CentAmountPayload!
 }
 
 input IntraLedgerPaymentSendInput {
@@ -935,6 +978,18 @@ Timestamp field, serialized as Unix time (the number of seconds since the Unix e
 """
 scalar Timestamp
 
+type TradeIntraAccountAccountLimit implements AccountLimit {
+  """
+  The amount of cents remaining below the conversion limit for the current 24 hour period.
+  """
+  remainingLimit: CentAmountPayload
+
+  """
+  The current maximum conversion limit for a given 24 hour period.
+  """
+  totalLimit: CentAmountPayload!
+}
+
 """
 Give details about an individual transaction.
 Galoy have a smart routing system which is automatically
@@ -1302,3 +1357,15 @@ enum WalletCurrency {
 Unique identifier of a wallet
 """
 scalar WalletId
+
+type WithdrawalAccountLimit implements AccountLimit {
+  """
+  The amount of cents remaining below the withdrawal limit for the current 24 hour period.
+  """
+  remainingLimit: CentAmountPayload
+
+  """
+  The current maximum withdrawal limit for a given 24 hour period.
+  """
+  totalLimit: CentAmountPayload!
+}
