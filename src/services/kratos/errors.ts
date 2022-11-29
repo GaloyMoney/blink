@@ -6,7 +6,7 @@ export class LikelyNoUserWithThisPhoneExistError extends KratosError {}
 export class LikelyUserAlreadyExistError extends KratosError {}
 export class AuthenticationKratosError extends KratosError {}
 
-export class PhoneIdentityInexistentError extends KratosError {}
+export class PhoneIdentityDoesNotError extends KratosError {}
 
 export class MissingExpiredAtKratosError extends KratosError {
   level = ErrorLevel.Critical

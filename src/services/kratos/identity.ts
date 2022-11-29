@@ -5,7 +5,7 @@ import { Identity } from "@ory/client"
 import { isDev } from "@config"
 import { UnknownKratosError } from "@domain/authentication/errors"
 
-import { KratosError, PhoneIdentityInexistentError } from "./errors"
+import { KratosError, PhoneIdentityDoesNotError } from "./errors"
 import { kratosAdmin, toDomainIdentityPhone } from "./private"
 
 export const getNextPage = (link: string): number | undefined => {
@@ -87,7 +87,7 @@ export const IdentityRepository = (): IIdentityRepository => {
 
     const identity = identities.find((identity) => identity.traits.phone === phone)
 
-    if (!identity) return new PhoneIdentityInexistentError(phone)
+    if (!identity) return new PhoneIdentityDoesNotError(phone)
 
     return toDomainIdentityPhone(identity)
   }
