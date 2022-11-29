@@ -41,8 +41,11 @@ export const checkedToLanguage = (language: string): UserLanguage | ValidationEr
 
 export const checkedToDeviceToken = (token: string): DeviceToken | ValidationError => {
   // token from firebase have a length of 163
-  if (token.length !== 163) {
-    return new InvalidDeviceTokenError("wrong length, expected")
+  const correctLength = 163
+  if (token.length !== correctLength) {
+    return new InvalidDeviceTokenError(
+      `wrong length, expected ${correctLength}, got ${token.length}`,
+    )
   }
 
   return token as DeviceToken
