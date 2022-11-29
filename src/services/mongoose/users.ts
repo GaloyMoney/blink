@@ -60,6 +60,7 @@ export const UsersRepository = (): IUsersRepository => {
     deviceTokens,
     phoneMetadata,
     phone,
+    createdAt,
   }: UserUpdateInput): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOneAndUpdate(
@@ -69,6 +70,8 @@ export const UsersRepository = (): IUsersRepository => {
           phoneMetadata,
           language,
           phone,
+
+          createdAt, // TODO: remove post migration
         },
         {
           new: true,
