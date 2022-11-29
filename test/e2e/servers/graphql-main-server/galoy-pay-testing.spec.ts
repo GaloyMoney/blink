@@ -46,7 +46,6 @@ const { phone: phoneRecipient, code: codeRecipient } =
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
-
   serverPid = await startServer("start-main-ci")
 
   await loginFromPhoneAndCode({ phone, code })

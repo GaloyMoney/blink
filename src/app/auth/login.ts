@@ -1,7 +1,4 @@
-import {
-  createAccountForEmailIdentifier,
-  createAccountWithPhoneIdentifier,
-} from "@app/accounts/create-account"
+import { createAccountForEmailIdentifier } from "@app/accounts/create-account"
 import {
   getDefaultAccountsConfig,
   getFailedLoginAttemptPerIpLimits,
@@ -56,7 +53,6 @@ export const loginWithPhone = async ({
   await rewardFailedLoginAttemptPerPhoneLimits(phone)
 
   let kratosToken: SessionToken
-  let kratosUserId: UserId
 
   const authService = AuthWithPhonePasswordlessService()
 
@@ -72,25 +68,16 @@ export const loginWithPhone = async ({
     addAttributesToCurrentSpan({ "login.newAccount": true })
 
     kratosToken = kratosResult.sessionToken
-    kratosUserId = kratosResult.kratosUserId
-
-    const accountRaw: NewAccountWithPhoneIdentifier = { kratosUserId, phone }
-    const account = await createAccountWithPhoneIdentifier({
-      newAccountInfo: accountRaw,
-      config: getDefaultAccountsConfig(),
-    })
-
-    if (account instanceof Error) return account
   } else if (kratosResult instanceof Error) {
     return kratosResult
   } else {
     kratosToken = kratosResult.sessionToken
-    kratosUserId = kratosResult.kratosUserId
   }
 
   return kratosToken
 }
 
+// deprecated
 export const loginWithEmail = async ({
   kratosUserId,
   emailAddress,

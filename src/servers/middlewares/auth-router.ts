@@ -21,6 +21,7 @@ const { corsAllowedOrigins } = getKratosConfig()
 
 authRouter.use(cors({ origin: corsAllowedOrigins, credentials: true }))
 
+// deprecated
 authRouter.post("/browser", async (req, res) => {
   const ipString = isDev ? req?.ip : req?.headers["x-real-ip"]
   const ip = parseIps(ipString)
