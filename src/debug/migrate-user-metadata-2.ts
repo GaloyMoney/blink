@@ -3,34 +3,27 @@
  * yarn ts-node --files -r tsconfig-paths/register src/debug/create-usd-wallets.ts
  */
 
-import { isUp } from "@services/lnd/health"
-import { params as unauthParams } from "@services/lnd/unauth"
 import { setupMongoConnection } from "@services/mongodb"
 import { Account } from "@services/mongoose/schema"
 
-const MigrateUserMetadata = async () => {
+const migrateUserMetadata = async () => {
   try {
     const res = Account.updateMany(
       {},
-      { $unset: { phone: 1, phoneMetadata: 1 } },
+      { $unset: { phone: 1, phoneMetadata: 1, language: 1, deviceTokens: 1 } },
       { multi: true },
     )
-    console.log({ res }, `update contactEnabled`)
+    console.log({ res }, `removing deprecated fields`)
   } catch (error) {
-    console.log({ error }, `error removing phone`)
+    console.log({ error }, `error removing deprecated fields`)
   }
 
   console.log("completed")
 }
 
-const main = async () => {
-  return MigrateUserMetadata()
-}
-
 setupMongoConnection()
   .then(async (mongoose) => {
-    await Promise.all(unauthParams.map((lndParams) => isUp(lndParams)))
-    await main()
+    await migrateUserMetadata()
     return mongoose.connection.close()
   })
   .catch((err) => console.log(err))
