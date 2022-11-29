@@ -14,7 +14,7 @@ export const translateToUser = (user: UserRecord): User => {
 
   return {
     id: user.userId as UserId,
-    language: language,
+    language,
     languageOrDefault: languageOrDefault as UserLanguage,
     deviceTokens: deviceTokens as DeviceToken[],
     phoneMetadata,
