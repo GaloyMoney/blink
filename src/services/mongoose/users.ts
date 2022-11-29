@@ -22,7 +22,7 @@ export const translateToUser = (user: UserRecord): User => {
   }
 }
 
-export const UsersRepository = (): IUserRepository => {
+export const UsersRepository = (): IUsersRepository => {
   const findById = async (id: UserId): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOne({ userId: id })

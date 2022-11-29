@@ -57,7 +57,7 @@ type UserUpdateInput = Omit<Partial<User>, "language"> & {
   language?: UserLanguageOrEmpty
 }
 
-interface IUserRepository {
+interface IUsersRepository {
   findById(id: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
   update(user: UserUpdateInput): Promise<User | RepositoryError>
