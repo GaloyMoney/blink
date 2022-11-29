@@ -24,8 +24,6 @@ export const getNextPage = (link: string): number | undefined => {
 const perPage = isDev ? 3 : 50
 
 export const IdentityRepository = (): IIdentityRepository => {
-  // TODO: test
-  // TODO: manage email as well
   const getIdentity = async (
     kratosUserId: UserId,
   ): Promise<IdentityPhone | KratosError> => {

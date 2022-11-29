@@ -645,6 +645,7 @@ describe("graphql", () => {
       let status = ""
       let hash = ""
       let i = 0
+      // this is a hacky workaround, sometimes the price subscription event will arrive first
       while (i < 5) {
         try {
           const result_sub = (await promisifiedSubscription(subscription)) as { data }
@@ -652,13 +653,13 @@ describe("graphql", () => {
           else {
             status = result_sub.data.myUpdates.update.status
             hash = result_sub.data.myUpdates.update.paymentHash
-            i = 5
+            break
           }
         } catch (err) {
           baseLogger.warn({ err }, "error with subscription")
         }
 
-        // we need to wait here because other promisifiedSubscription
+        // we need to wait here, otherwise promisifiedSubscription
         // would give back the same event and not wait for the next event
         // so if Price were to be the event that came back at first, it would fail
         await sleep(100)
