@@ -136,3 +136,12 @@ export const getKratosMasterPhonePassword = () => {
 export const googleApplicationCredentialsIsSet = (): boolean => {
   return !!process.env.GOOGLE_APPLICATION_CREDENTIALS
 }
+
+export const mongodbCredentials = () => {
+  const user = process.env.MONGODB_USER ?? "testGaloy"
+  const password = process.env.MONGODB_PASSWORD
+  const address = process.env.MONGODB_ADDRESS ?? "mongodb"
+  const db = process.env.MONGODB_DATABASE ?? "galoy"
+
+  return { user, password, address, db }
+}
