@@ -1,5 +1,5 @@
 import { getLocale } from "@config"
-import { CouldNotFindError, RepositoryError } from "@domain/errors"
+import { CouldNotFindUserFromPhoneError, RepositoryError } from "@domain/errors"
 
 import { User } from "./schema"
 
@@ -45,7 +45,7 @@ export const UsersRepository = (): IUsersRepository => {
   const findByPhone = async (phone: PhoneNumber): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOne({ phone })
-      if (!result) return new CouldNotFindError()
+      if (!result) return new CouldNotFindUserFromPhoneError()
 
       return translateToUser(result)
     } catch (err) {
