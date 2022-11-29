@@ -12,7 +12,6 @@ import {
   AdminCreateIdentityBody,
   AdminUpdateIdentityBody,
   Identity,
-  IdentityState,
   SuccessfulSelfServiceLoginWithoutBrowser,
   SuccessfulSelfServiceRegistrationWithoutBrowser,
 } from "@ory/client"
