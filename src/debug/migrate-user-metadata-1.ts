@@ -13,6 +13,7 @@ const migrateUserMetadata = async () => {
   let language: UserLanguage | undefined
   let phone: PhoneNumber | undefined
   let deviceTokens: DeviceToken[]
+  let createdAt: Date
 
   const usersRepo = UsersRepository()
 
@@ -26,8 +27,16 @@ const migrateUserMetadata = async () => {
     language = account.language as UserLanguage | undefined
     deviceTokens = account.deviceToken as DeviceToken[]
     phone = account.phone as PhoneNumber | undefined
+    createdAt = account.created_at
 
-    await usersRepo.update({ id, phoneMetadata, language, deviceTokens, phone })
+    await usersRepo.update({
+      id,
+      phoneMetadata,
+      language,
+      deviceTokens,
+      phone,
+      createdAt,
+    })
 
     progress++
     if (progress % 1000 === 0) {

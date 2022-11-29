@@ -11,6 +11,7 @@ export const translateToUser = (user: UserRecord): User => {
   const deviceTokens = user.deviceTokens ?? []
   const phoneMetadata = user.phoneMetadata
   const phone = user.phone
+  const createdAt = user.createdAt
 
   return {
     id: user.userId as UserId,
@@ -19,6 +20,7 @@ export const translateToUser = (user: UserRecord): User => {
     deviceTokens: deviceTokens as DeviceToken[],
     phoneMetadata,
     phone,
+    createdAt,
   }
 }
 
@@ -26,7 +28,8 @@ export const UsersRepository = (): IUsersRepository => {
   const findById = async (id: UserId): Promise<User | RepositoryError> => {
     try {
       const result = await User.findOne({ userId: id })
-      if (!result) return translateToUser({ userId: id, deviceTokens: [] })
+      if (!result)
+        return translateToUser({ userId: id, deviceTokens: [], createdAt: new Date() })
 
       return translateToUser(result)
     } catch (err) {

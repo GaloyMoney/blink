@@ -123,6 +123,7 @@ interface UserRecord {
   deviceTokens: string[]
   phoneMetadata?: TwilioObjectForUser
   phone?: PhoneNumber
+  createdAt: Date
 }
 
 type PaymentFlowStateRecord = {
