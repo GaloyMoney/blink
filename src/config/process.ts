@@ -129,8 +129,8 @@ export const getKratosMasterPhonePassword = () => {
   return process.env.KRATOS_MASTER_PHONE_PASSWORD
 }
 
-// The key GOOGLE_APPLICATION_CREDENTIALS should be set in production
-// This key defined the path of the config file that include the key
+// The value GOOGLE_APPLICATION_CREDENTIALS should be set in production
+// This value defined the path of the config file that include the key/password
 // more info at https://firebase.google.com/docs/admin/setup
 // TODO: mock up the function for devnet
 export const googleApplicationCredentialsIsSet = (): boolean => {
