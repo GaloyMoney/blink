@@ -1,4 +1,5 @@
 import { Accounts } from "@app"
+import { UsernameIsImmutableError } from "@domain/accounts"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 
@@ -21,7 +22,7 @@ const UserUpdateUsernameMutation = GT.Field({
     input: { type: GT.NonNull(UserUpdateUsernameInput) },
   },
   deprecationReason:
-    "Username will be moved to @Handle in Accounts. Also SetUsername should be used instead of UpdateUsername to reflect the idempotency of Handles",
+    "Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles",
   resolve: async (_, args, { domainAccount }: GraphQLContextAuth) => {
     const { username } = args.input
 
@@ -36,7 +37,7 @@ const UserUpdateUsernameMutation = GT.Field({
         errors: [mapAndParseErrorForGqlResponse(result)],
 
         // FIXME: what is this return for?
-        // ...(result instanceof UsernameIsImmutableError ? { user: domainUser } : {}),
+        ...(result instanceof UsernameIsImmutableError ? { user: domainAccount } : {}),
       }
     }
 
