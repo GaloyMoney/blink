@@ -2931,7 +2931,7 @@
     "@opentelemetry/core" "1.7.0"
     "@opentelemetry/semantic-conventions" "1.7.0"
 
-"@opentelemetry/resources@^1.8.0":
+"@opentelemetry/resources@1.8.0", "@opentelemetry/resources@^1.8.0":
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/resources/-/resources-1.8.0.tgz#260be9742cf7bceccc0db928d8ca8d64391acfe3"
   integrity sha512-KSyMH6Jvss/PFDy16z5qkCK0ERlpyqixb1xwb73wLMvVq+j7i89lobDjw3JkpCcd1Ws0J6jAI4fw28Zufj2ssg==
@@ -2949,7 +2949,7 @@
     "@opentelemetry/resources" "1.7.0"
     lodash.merge "4.6.2"
 
-"@opentelemetry/sdk-trace-base@1.7.0", "@opentelemetry/sdk-trace-base@^1.7.0":
+"@opentelemetry/sdk-trace-base@1.7.0":
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/@opentelemetry/sdk-trace-base/-/sdk-trace-base-1.7.0.tgz#b498424e0c6340a9d80de63fd408c5c2130a60a5"
   integrity sha512-Iz84C+FVOskmauh9FNnj4+VrA+hG5o+tkMzXuoesvSfunVSioXib0syVFeNXwOm4+M5GdWCuW632LVjqEXStIg==
@@ -2957,6 +2957,15 @@
     "@opentelemetry/core" "1.7.0"
     "@opentelemetry/resources" "1.7.0"
     "@opentelemetry/semantic-conventions" "1.7.0"
+
+"@opentelemetry/sdk-trace-base@^1.8.0":
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/sdk-trace-base/-/sdk-trace-base-1.8.0.tgz#70713aab90978a16dea188c8335209f857be7384"
+  integrity sha512-iH41m0UTddnCKJzZx3M85vlhKzRcmT48pUeBbnzsGrq4nIay1oWVHKM5nhB5r8qRDGvd/n7f/YLCXClxwM0tvA==
+  dependencies:
+    "@opentelemetry/core" "1.8.0"
+    "@opentelemetry/resources" "1.8.0"
+    "@opentelemetry/semantic-conventions" "1.8.0"
 
 "@opentelemetry/sdk-trace-node@^1.7.0":
   version "1.7.0"
