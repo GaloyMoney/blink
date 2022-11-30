@@ -7156,10 +7156,10 @@ graphql-scalars@^1.15.0:
   dependencies:
     tslib "~2.3.0"
 
-graphql-shield@^7.6.4:
-  version "7.6.4"
-  resolved "https://registry.yarnpkg.com/graphql-shield/-/graphql-shield-7.6.4.tgz#99cb3a120a0222532c569016ba6b64b0e887515a"
-  integrity sha512-AuGqSSOp5LeAeWD2peVl3dNhCoZdRfymB7WWRf+CbCYkWrUz4Y67/JQb9Dn2faEPPuqemUXUKsCAgp93s0hh9A==
+graphql-shield@^7.6.5:
+  version "7.6.5"
+  resolved "https://registry.yarnpkg.com/graphql-shield/-/graphql-shield-7.6.5.tgz#91683254e498e120ce58d560b8b4f118e10530ea"
+  integrity sha512-etbzf7UIhQW6vadn/UR+ds0LJOceO8ITDXwbUkQMlP2KqPgSKTZRE2zci+AUfqP+cpV9zDQdbTJfPfW5OCEamg==
   dependencies:
     "@types/yup" "0.29.13"
     object-hash "^3.0.0"
