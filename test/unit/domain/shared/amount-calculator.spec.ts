@@ -208,6 +208,14 @@ describe("AmountCalculator", () => {
       const minimum = calc.min(...paymentAmounts)
       expect(minimum).toStrictEqual({ amount: 3n, currency: WalletCurrency.Btc })
     })
+
+    it("returns the min from 2 payment amounts of the same value", () => {
+      const minimum = calc.min(
+        { amount: 3n, currency: WalletCurrency.Btc },
+        { amount: 3n, currency: WalletCurrency.Btc },
+      )
+      expect(minimum).toStrictEqual({ amount: 3n, currency: WalletCurrency.Btc })
+    })
   })
 
   describe("max", () => {
@@ -226,6 +234,14 @@ describe("AmountCalculator", () => {
         { amount: 7n, currency: WalletCurrency.Btc },
       ]
       const maximum = calc.max(...paymentAmounts)
+      expect(maximum).toStrictEqual({ amount: 10n, currency: WalletCurrency.Btc })
+    })
+
+    it("returns the max from 2 payment amounts of the same value", () => {
+      const maximum = calc.max(
+        { amount: 10n, currency: WalletCurrency.Btc },
+        { amount: 10n, currency: WalletCurrency.Btc },
+      )
       expect(maximum).toStrictEqual({ amount: 10n, currency: WalletCurrency.Btc })
     })
   })
