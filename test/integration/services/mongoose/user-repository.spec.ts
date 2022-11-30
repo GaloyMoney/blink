@@ -1,3 +1,4 @@
+import { UnknownRepositoryError } from "@domain/errors"
 import { UsersRepository } from "@services/mongoose"
 
 import { randomUserId, randomPhone } from "test/helpers"
@@ -35,7 +36,7 @@ describe("Testing Users Repository", () => {
     expect(user.id).toBe(userId1)
 
     const user2 = await users.update({ id: userId2, phone })
-    expect(user2).toBeInstanceOf(Error)
+    expect(user2).toBeInstanceOf(UnknownRepositoryError)
   })
 
   it("updating one field doesn't change the other fields", async () => {
