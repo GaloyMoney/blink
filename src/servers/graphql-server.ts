@@ -142,7 +142,7 @@ const sessionContext = ({
         const userId = maybeUserId
 
         const account = await Accounts.getAccountFromUserId(userId)
-        if (account instanceof Error) throw new Error(account.name)
+        if (account instanceof Error) throw mapError(account)
         domainAccount = account
 
         // not awaiting on purpose. just updating metadata
@@ -153,7 +153,7 @@ const sessionContext = ({
         })
 
         const userRes = await UsersRepository().findById(account.kratosUserId)
-        if (userRes instanceof Error) throw new Error(userRes.name)
+        if (userRes instanceof Error) throw mapError(userRes)
         user = userRes
 
         addAttributesToCurrentSpan({ [ACCOUNT_USERNAME]: domainAccount?.username })
