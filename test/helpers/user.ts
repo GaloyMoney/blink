@@ -7,10 +7,7 @@ import {
   AuthenticationError,
   LikelyNoUserWithThisPhoneExistError,
 } from "@domain/authentication/errors"
-import {
-  CouldNotFindAccountFromKratosIdError,
-  CouldNotFindUserFromPhoneError,
-} from "@domain/errors"
+import { CouldNotFindAccountFromKratosIdError } from "@domain/errors"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 
@@ -214,60 +211,39 @@ export const createUserAndWallet = async (entry: TestEntry) => {
   }
 }
 
-export const createNewWalletFromPhone = async ({
-  phone,
+export const addNewWallet = async ({
+  accountId,
   currency,
 }: {
-  phone: PhoneNumber
+  accountId: AccountId
   currency: WalletCurrency
 }): Promise<Wallet> => {
-  // Fetch user (account) or create if doesn't exist
-  let user = await UsersRepository().findByPhone(phone)
-  if (user instanceof CouldNotFindUserFromPhoneError) {
-    const account = await createNewAccount({
-      phone,
-    })
-    if (account instanceof Error) throw account
-
-    user = await UsersRepository().findByPhone(phone)
-  }
-  if (user instanceof Error) throw user
-
   // Create wallet for account (phone number)
   const wallet = await addWallet({
     currency,
-    accountId: user.defaultAccountId,
+    accountId,
     type: WalletType.Checking,
   })
   if (wallet instanceof Error) throw wallet
 
-  // FIXME
-  // Needed for 'notifications.spec.ts' test to be included in 'sendBalance' function
-  // await User.findOneAndUpdate(
-  //   { _id: toObjectId<UserId>(user.id) },
-  //   { deviceToken: ["test-token"] },
-  // )
-
   return wallet
 }
 
-export const createAndFundNewWalletForPhone = async <S extends WalletCurrency>({
-  phone,
+export const createAndFundNewWallet = async <S extends WalletCurrency>({
+  accountId,
   balanceAmount,
 }: {
-  phone: PhoneNumber
+  accountId: AccountId
   balanceAmount: PaymentAmount<S>
 }) => {
   // Create new wallet
-  const wallet = await createNewWalletFromPhone({
-    phone,
+  const wallet = await addNewWallet({
+    accountId,
     currency: balanceAmount.currency,
   })
   if (wallet instanceof Error) throw wallet
-
   // Fund new wallet if a non-zero balance is passed
   if (balanceAmount.amount === 0n) return wallet
-
   const lnInvoice = await Wallets.addInvoiceForSelf({
     walletId: wallet.id,
     amount: Number(balanceAmount.amount),
@@ -275,13 +251,11 @@ export const createAndFundNewWalletForPhone = async <S extends WalletCurrency>({
   })
   if (lnInvoice instanceof Error) throw lnInvoice
   const { paymentRequest: invoice, paymentHash } = lnInvoice
-
   const updateInvoice = () =>
     Wallets.updatePendingInvoiceByPaymentHash({
       paymentHash,
       logger: baseLogger,
     })
-
   const promises = Promise.all([
     safePay({ lnd: lndOutside1, request: invoice }),
     (async () => {
@@ -290,12 +264,10 @@ export const createAndFundNewWalletForPhone = async <S extends WalletCurrency>({
       return updateInvoice()
     })(),
   ])
-
   {
     // first arg is the outsideLndpayResult
     const [, result] = await promises
     expect(result).not.toBeInstanceOf(Error)
   }
-
   return wallet
 }

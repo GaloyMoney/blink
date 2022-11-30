@@ -11,8 +11,10 @@ import { NewDealerPriceService } from "@services/dealer-price"
 import { AccountsRepository } from "@services/mongoose"
 
 import {
+  addNewWallet,
   cancelOkexPricePublish,
   checkIsBalanced,
+  createAndFundNewWallet,
   createInvoice,
   freshAccount,
   lndOutside1,

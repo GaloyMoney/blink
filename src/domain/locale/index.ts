@@ -1,4 +1,4 @@
 import { getLocale } from "@config"
 
-export const getLangageOrDefault = (userLang: UserLanguageOrEmpty) =>
+export const getLanguageOrDefault = (userLang: UserLanguageOrEmpty) =>
   userLang || (getLocale() as UserLanguage)
