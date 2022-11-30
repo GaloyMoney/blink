@@ -1,5 +1,9 @@
 import { getDefaultAccountsConfig, yamlConfig } from "@config"
+
 import { CouldNotFindUserFromPhoneError } from "@domain/errors"
+import { WalletCurrency } from "@domain/shared"
+import { WalletType } from "@domain/wallets"
+import { adminUsers } from "@domain/admin-users"
 import {
   AuthenticationError,
   LikelyNoUserWithThisPhoneExistError,
@@ -12,14 +16,21 @@ import {
 } from "@services/mongoose"
 import { User } from "@services/mongoose/schema"
 import { toObjectId } from "@services/mongoose/utils"
-import { addWallet, addWalletIfNonexistent } from "@app/accounts/add-wallet"
-import { WalletCurrency } from "@domain/shared"
-import { WalletType } from "@domain/wallets"
-import { adminUsers } from "@domain/admin-users"
 import { UsersIpRepository } from "@services/mongoose/users-ips"
-import { createAccountWithPhoneIdentifier } from "@app/accounts"
 
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import { baseLogger } from "@services/logger"
+
+import { Wallets } from "@app"
+import {
+  addWallet,
+  addWalletIfNonexistent,
+  createAccountWithPhoneIdentifier,
+} from "@app/accounts"
+
+import { sleep } from "@utils"
+
+import { lndOutside1, safePay } from "./lightning"
 
 const users = UsersRepository()
 
@@ -286,6 +297,55 @@ export const createNewWalletFromPhone = async ({
     { _id: toObjectId<UserId>(user.id) },
     { deviceToken: ["test-token"] },
   )
+
+  return wallet
+}
+
+export const createAndFundNewWalletForPhone = async <S extends WalletCurrency>({
+  phone,
+  balanceAmount,
+}: {
+  phone: PhoneNumber
+  balanceAmount: PaymentAmount<S>
+}) => {
+  // Create new wallet
+  const wallet = await createNewWalletFromPhone({
+    phone,
+    currency: balanceAmount.currency,
+  })
+  if (wallet instanceof Error) throw wallet
+
+  // Fund new wallet if a non-zero balance is passed
+  if (balanceAmount.amount === 0n) return wallet
+
+  const lnInvoice = await Wallets.addInvoiceForSelf({
+    walletId: wallet.id,
+    amount: Number(balanceAmount.amount),
+    memo: `Fund new wallet ${wallet.id}`,
+  })
+  if (lnInvoice instanceof Error) throw lnInvoice
+  const { paymentRequest: invoice, paymentHash } = lnInvoice
+
+  const updateInvoice = () =>
+    Wallets.updatePendingInvoiceByPaymentHash({
+      paymentHash,
+      logger: baseLogger,
+    })
+
+  const promises = Promise.all([
+    safePay({ lnd: lndOutside1, request: invoice }),
+    (async () => {
+      // TODO: we could use event instead of a sleep to lower test latency
+      await sleep(500)
+      return updateInvoice()
+    })(),
+  ])
+
+  {
+    // first arg is the outsideLndpayResult
+    const [, result] = await promises
+    expect(result).not.toBeInstanceOf(Error)
+  }
 
   return wallet
 }
