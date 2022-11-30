@@ -44,7 +44,6 @@ type SetLanguageArgs = {
 
 type User = {
   id: UserId
-  languageOrDefault: UserLanguage
   language: UserLanguageOrEmpty
   deviceTokens: DeviceToken[]
   phoneMetadata: PhoneMetadata | undefined

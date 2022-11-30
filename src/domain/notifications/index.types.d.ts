@@ -13,14 +13,14 @@ type TransactionReceivedNotificationBaseArgs = TransactionNotificationBaseArgs &
   recipientAccountId: AccountId
   recipientWalletId: WalletId
   recipientDeviceTokens: DeviceToken[]
-  recipientLanguage: UserLanguage
+  recipientLanguage: UserLanguageOrEmpty
 }
 
 type TransactionSentNotificationBaseArgs = TransactionNotificationBaseArgs & {
   senderAccountId: AccountId
   senderWalletId: WalletId
   senderDeviceTokens: DeviceToken[]
-  senderLanguage: UserLanguage
+  senderLanguage: UserLanguageOrEmpty
 }
 
 type IntraLedgerTxReceivedArgs = TransactionReceivedNotificationBaseArgs
@@ -42,7 +42,7 @@ type SendBalanceArgs = {
   balanceAmount: BalanceAmount<WalletCurrency>
   recipientDeviceTokens: DeviceToken[]
   displayBalanceAmount?: DisplayBalanceAmount<DisplayCurrency>
-  recipientLanguage: UserLanguage
+  recipientLanguage: UserLanguageOrEmpty
 }
 
 interface INotificationsService {

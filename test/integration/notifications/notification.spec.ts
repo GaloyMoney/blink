@@ -85,7 +85,7 @@ describe("notification", () => {
 
         const { title, body } = createPushNotificationContent({
           type: "balance",
-          userLanguage: user.languageOrDefault,
+          userLanguage: user.language,
           amount: paymentAmount,
           displayAmount: displayPaymentAmount,
         })

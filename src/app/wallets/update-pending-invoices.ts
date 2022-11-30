@@ -253,7 +253,7 @@ const updatePendingInvoiceBeforeFinally = async ({
       displayPaymentAmount,
       paymentHash,
       recipientDeviceTokens: recipientUser.deviceTokens,
-      recipientLanguage: recipientUser.languageOrDefault,
+      recipientLanguage: recipientUser.language,
     })
 
     return true

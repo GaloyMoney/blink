@@ -303,7 +303,7 @@ const executePaymentViaIntraledger = async <
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId: recipientWallet.id,
       recipientDeviceTokens: recipientUser.deviceTokens,
-      recipientLanguage: recipientUser.languageOrDefault,
+      recipientLanguage: recipientUser.language,
       paymentAmount: { amount, currency: recipientWallet.currency },
       displayPaymentAmount: { amount: metadata.usd, currency: DisplayCurrency.Usd },
     })

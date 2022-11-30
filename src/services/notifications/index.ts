@@ -147,7 +147,7 @@ export const NotificationsService = (): INotificationsService => {
     paymentAmount: PaymentAmount<WalletCurrency>
     displayPaymentAmount?: DisplayPaymentAmount<DisplayCurrency>
     deviceTokens: DeviceToken[]
-    language: UserLanguage
+    language: UserLanguageOrEmpty
     txHash: OnChainTxHash
   }): Promise<void | NotificationsServiceError> => {
     try {

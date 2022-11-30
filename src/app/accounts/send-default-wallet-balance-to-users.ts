@@ -43,7 +43,7 @@ export const sendDefaultWalletBalanceToUsers = async () => {
         balanceAmount,
         recipientDeviceTokens: user.deviceTokens,
         displayBalanceAmount,
-        recipientLanguage: user.languageOrDefault,
+        recipientLanguage: user.language,
       })
     },
   })

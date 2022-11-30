@@ -128,7 +128,7 @@ export const onchainTransactionEventHandler = async (
       displayPaymentAmount,
       txHash,
       senderDeviceTokens: senderUser.deviceTokens,
-      senderLanguage: senderUser.languageOrDefault,
+      senderLanguage: senderUser.language,
     })
   } else {
     // incoming transaction
@@ -177,7 +177,7 @@ export const onchainTransactionEventHandler = async (
           displayPaymentAmount,
           txHash,
           recipientDeviceTokens: recipientUser.deviceTokens,
-          recipientLanguage: recipientUser.languageOrDefault,
+          recipientLanguage: recipientUser.language,
         })
       })
     }

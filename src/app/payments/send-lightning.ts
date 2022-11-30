@@ -455,7 +455,7 @@ const executePaymentViaIntraledger = async <
       displayPaymentAmount: { amount: metadata.usd, currency: DisplayCurrency.Usd },
       paymentHash,
       recipientDeviceTokens: recipientUser.deviceTokens,
-      recipientLanguage: recipientUser.languageOrDefault,
+      recipientLanguage: recipientUser.language,
     })
 
     return PaymentSendStatus.Success

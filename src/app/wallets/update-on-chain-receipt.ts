@@ -177,7 +177,7 @@ const processTxForWallet = async (
             },
             txHash: tx.rawTx.txHash,
             recipientDeviceTokens: recipientUser.deviceTokens,
-            recipientLanguage: recipientUser.languageOrDefault,
+            recipientLanguage: recipientUser.language,
           })
         }
       }

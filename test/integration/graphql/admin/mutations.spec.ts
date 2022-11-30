@@ -150,7 +150,6 @@ describe("GraphQLMutationRoot", () => {
         user: {
           id: randomUserId(),
           language: getLocale(),
-          languageOrDefault: getLocale(),
           deviceTokens: ["token"] as DeviceToken[],
           phoneMetadata: undefined,
           createdAt: new Date(),

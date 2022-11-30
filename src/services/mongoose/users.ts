@@ -1,4 +1,3 @@
-import { getLocale } from "@config"
 import { CouldNotFindUserFromPhoneError, RepositoryError } from "@domain/errors"
 
 import { User } from "./schema"
@@ -7,7 +6,6 @@ import { parseRepositoryError } from "./utils"
 
 export const translateToUser = (user: UserRecord): User => {
   const language = (user?.language ?? "") as UserLanguageOrEmpty
-  const languageOrDefault = language || getLocale()
   const deviceTokens = user.deviceTokens ?? []
   const phoneMetadata = user.phoneMetadata
   const phone = user.phone
@@ -16,7 +14,6 @@ export const translateToUser = (user: UserRecord): User => {
   return {
     id: user.userId as UserId,
     language,
-    languageOrDefault: languageOrDefault as UserLanguage,
     deviceTokens: deviceTokens as DeviceToken[],
     phoneMetadata,
     phone,
