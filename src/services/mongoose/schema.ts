@@ -95,7 +95,12 @@ const WalletSchema = new Schema<WalletRecord>({
     required: true,
     default: () => crypto.randomUUID(),
   },
-  _accountId: { type: Schema.Types.ObjectId, ref: "User", index: true, required: true },
+  _accountId: {
+    type: Schema.Types.ObjectId,
+    ref: "Account",
+    index: true,
+    required: true,
+  },
   type: {
     type: String,
     enum: Object.values(WalletType),
