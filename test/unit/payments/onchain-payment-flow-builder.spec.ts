@@ -260,7 +260,6 @@ describe("OnChainPaymentFlowBuilder", () => {
                   imbalance,
                 })
                 if (withdrawFees instanceof Error) throw withdrawFees
-                expect(withdrawFees).not.toBeInstanceOf(Error)
 
                 const btcProtocolFee = withdrawFees.totalFee
                 const usdProtocolFee = await usdFromBtcMid(btcProtocolFee)
