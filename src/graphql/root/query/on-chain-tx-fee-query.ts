@@ -1,15 +1,15 @@
 import { GT } from "@graphql/index"
 import { Wallets } from "@app"
-import { mapError } from "@graphql/error-map"
+import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmount from "@graphql/types/scalar/sat-amount"
-import OnChainTxFee from "@graphql/types/object/onchain-tx-fee"
+import OnChainTxFeePayload from "@graphql/types/payload/onchain-tx-fee"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 
 const OnChainTxFeeQuery = GT.Field({
-  type: GT.NonNull(OnChainTxFee),
+  type: GT.NonNull(OnChainTxFeePayload),
   args: {
     walletId: { type: GT.NonNull(WalletId) },
     address: { type: GT.NonNull(OnChainAddress) },
@@ -33,11 +33,12 @@ const OnChainTxFeeQuery = GT.Field({
       address,
       targetConfirmations,
     })
-    if (fee instanceof Error) throw mapError(fee)
+    if (fee instanceof Error) return { errors: [mapAndParseErrorForGqlResponse(fee)] }
 
     return {
       amount: fee,
       targetConfirmations,
+      errors: [],
     }
   },
 })
