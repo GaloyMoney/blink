@@ -1,6 +1,5 @@
 import { getKratosMasterPhonePassword } from "@config"
 import {
-  AuthenticationKratosError,
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
 } from "@domain/authentication/errors"
@@ -13,6 +12,7 @@ import {
   listSessions,
   validateKratosToken,
 } from "@services/kratos"
+import { AuthenticationKratosError } from "@services/kratos/errors"
 import { kratosAdmin, kratosPublic } from "@services/kratos/private"
 import {
   activateUser,

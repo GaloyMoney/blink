@@ -442,13 +442,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InvalidNonHodlInvoiceError":
     case "InvalidAccountIdError":
     case "AuthenticationError":
-    case "KratosError":
     case "LikelyNoUserWithThisPhoneExistError":
     case "LikelyUserAlreadyExistError":
-    case "AuthenticationKratosError":
-    case "MissingExpiredAtKratosError":
-    case "MissingTotpKratosError":
-    case "IncompatibleSchemaUpgradeError":
+    case "PhoneIdentityDoesNotExistError":
     case "InvalidDeviceTokenError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
@@ -487,7 +483,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "UnknownDealerPriceServiceError":
     case "UnknownPubSubError":
     case "UnknownBigIntConversionError":
-    case "UnknownKratosError":
       message = `Unknown error occurred (code: ${error.name})`
       return new UnknownClientError({ message, logger: baseLogger })
 

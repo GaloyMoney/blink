@@ -1,12 +1,8 @@
 import { getKratosMasterPhonePassword } from "@config"
 
 import {
-  AuthenticationKratosError,
-  IncompatibleSchemaUpgradeError,
-  KratosError,
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
-  UnknownKratosError,
 } from "@domain/authentication/errors"
 import {
   AdminCreateIdentityBody,
@@ -17,6 +13,13 @@ import {
 } from "@ory/client"
 
 import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
+
+import {
+  AuthenticationKratosError,
+  IncompatibleSchemaUpgradeError,
+  KratosError,
+  UnknownKratosError,
+} from "./errors"
 
 import { kratosAdmin, kratosPublic, toDomainIdentityPhone } from "./private"
 

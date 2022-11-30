@@ -1,17 +1,16 @@
 import { SuccessfulSelfServiceLoginWithoutBrowser } from "@ory/client"
-import {
-  AuthenticationKratosError,
-  KratosError,
-  LikelyNoUserWithThisPhoneExistError,
-  MissingTotpKratosError,
-  UnknownKratosError,
-} from "@domain/authentication/errors"
+import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 import { authenticator } from "otplib"
 
 import { baseLogger } from "@services/logger"
 import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
 
 import { kratosAdmin, kratosPublic } from "./private"
+import {
+  AuthenticationKratosError,
+  MissingTotpKratosError,
+  UnknownKratosError,
+} from "./errors"
 
 export const LoginWithPhoneAndPasswordSchema = async ({
   phone,
