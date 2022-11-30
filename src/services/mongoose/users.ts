@@ -7,7 +7,7 @@ import { parseRepositoryError } from "./utils"
 
 export const translateToUser = (user: UserRecord): User => {
   const language = (user?.language ?? "") as UserLanguageOrEmpty
-  const languageOrDefault = language === "" ? getLocale() : language
+  const languageOrDefault = language ?? getLocale()
   const deviceTokens = user.deviceTokens ?? []
   const phoneMetadata = user.phoneMetadata
   const phone = user.phone
