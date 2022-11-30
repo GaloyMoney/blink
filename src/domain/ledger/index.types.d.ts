@@ -197,7 +197,7 @@ type AddLnFeeReeimbursementReceiveArgs<
 type FeeReimbursement = {
   getReimbursement(
     actualFee: BtcPaymentAmount,
-  ): { btc: BtcPaymentAmount; usd: UsdPaymentAmount } | FeeDifferenceError
+  ): PaymentAmountInAllCurrencies | FeeDifferenceError
 }
 
 type TxBaseVolume = {

@@ -221,7 +221,7 @@ type OnChainFeeCalculator = {
     totalFee: BtcPaymentAmount
     bankFee: BtcPaymentAmount
   }
-  intraLedgerFees(): { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
+  intraLedgerFees(): PaymentAmountInAllCurrencies
 }
 
 type PaymentInputValidatorConfig = (

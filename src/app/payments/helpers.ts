@@ -248,7 +248,7 @@ export const newCheckWithdrawalLimits = async ({
 export const getPriceRatioForLimits = wrapAsyncToRunInSpan({
   namespace: "app.payments",
   fnName: "getPriceRatioForLimits",
-  fn: async (paymentAmounts: { btc: BtcPaymentAmount; usd: UsdPaymentAmount }) => {
+  fn: async (paymentAmounts: PaymentAmountInAllCurrencies) => {
     const amount = MIN_SATS_FOR_PRICE_RATIO_PRECISION
 
     if (paymentAmounts.btc.amount < amount) {

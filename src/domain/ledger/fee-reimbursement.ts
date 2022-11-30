@@ -14,7 +14,7 @@ export const FeeReimbursement = ({
 }): FeeReimbursement => {
   const getReimbursement = (
     actualFee: BtcPaymentAmount,
-  ): { btc: BtcPaymentAmount; usd: UsdPaymentAmount } | FeeDifferenceError => {
+  ): PaymentAmountInAllCurrencies | FeeDifferenceError => {
     const feeDifferenceBtc = prepaidFeeAmount.btc.amount - actualFee.amount
     if (feeDifferenceBtc < 0) return new FeeDifferenceError()
     const feeDifferenceBtcAmount = {

@@ -23,7 +23,7 @@ export const PaymentFlowBase = <S extends WalletCurrency, R extends WalletCurren
       : (state.usdProtocolFee as PaymentAmount<S>)
   }
 
-  const paymentAmounts = (): { btc: BtcPaymentAmount; usd: UsdPaymentAmount } => ({
+  const paymentAmounts = (): PaymentAmountInAllCurrencies => ({
     btc: state.btcPaymentAmount,
     usd: state.usdPaymentAmount,
   })
@@ -178,9 +178,7 @@ export const OnChainPaymentFlow = <S extends WalletCurrency, R extends WalletCur
     return address
   }
 
-  const bankFees = ():
-    | { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
-    | ValidationError => {
+  const bankFees = (): PaymentAmountInAllCurrencies | ValidationError => {
     return { btc: state.btcBankFee, usd: state.usdBankFee }
   }
 

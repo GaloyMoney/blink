@@ -58,10 +58,12 @@ type PaymentFlowStateIndex = XorPaymentHashProperty & {
   inputAmount: bigint
 }
 
+type PaymentAmountInAllCurrencies = { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
+
 type PaymentFlowBase<S extends WalletCurrency, R extends WalletCurrency> = {
   protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
-  paymentAmounts(): { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
-  totalAmountsForPayment(): { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
+  paymentAmounts(): PaymentAmountInAllCurrencies
+  totalAmountsForPayment(): PaymentAmountInAllCurrencies
   routeDetails(): {
     rawRoute?: RawRoute
     outgoingNodePubkey?: Pubkey
@@ -92,7 +94,7 @@ type OnChainPaymentFlow<
 > = OnChainPaymentFlowState<S, R> &
   PaymentFlowBase<S, R> & {
     addressForFlow(): OnChainAddress | ValidationError
-    bankFees(): { btc: BtcPaymentAmount; usd: UsdPaymentAmount } | ValidationError
+    bankFees(): PaymentAmountInAllCurrencies | ValidationError
     checkOnChainAvailableBalanceForSend(
       balanceAmount: BtcPaymentAmount,
     ): true | ValidationError
@@ -220,9 +222,7 @@ type OPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
 
   btcProposedAmount(): Promise<BtcPaymentAmount | DealerPriceServiceError>
   usdProposedAmount(): Promise<UsdPaymentAmount | DealerPriceServiceError>
-  proposedAmounts(): Promise<
-    { btc: BtcPaymentAmount; usd: UsdPaymentAmount } | DealerPriceServiceError
-  >
+  proposedAmounts(): Promise<PaymentAmountInAllCurrencies | DealerPriceServiceError>
 
   addressForFlow(): Promise<OnChainAddress | DealerPriceServiceError>
   senderWalletDescriptor(): Promise<WalletDescriptor<S> | DealerPriceServiceError>
