@@ -4,14 +4,14 @@ module.exports = {
     const accounts = db.collection("accounts").find({})
 
     let progress = 0
-    for (const account of accounts) {
+    for await (const account of accounts) {
       progress++
 
-      const id = account.kratosUserId as UserId
-      const phoneMetadata = account.twilio as PhoneMetadata
-      const language = account.language as UserLanguage | undefined
-      const deviceTokens = account.deviceToken as DeviceToken[]
-      const phone = account.phone as PhoneNumber | undefined
+      const id = account.kratosUserId
+      const phoneMetadata = account.twilio
+      const language = account.language
+      const deviceTokens = account.deviceToken
+      const phone = account.phone
       const createdAt = account.created_at
 
       await db.collection("users").insertOne({
