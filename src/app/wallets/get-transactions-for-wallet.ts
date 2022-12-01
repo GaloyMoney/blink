@@ -10,7 +10,7 @@ import { TxFilter } from "@domain/bitcoin/onchain"
 
 import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
-import { WalletsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
 import { getOnChainTxs } from "./private/get-on-chain-txs"
 
@@ -46,14 +46,20 @@ export const getTransactionsForWallets = async (
 
   const addresses: OnChainAddress[] = []
   const addressesByWalletId: { [walletid: string]: OnChainAddress[] } = {}
-  const walletDetailsByWalletId: { [walletid: string]: { currency: WalletCurrency } } = {}
+  const walletDetailsByWalletId: {
+    [walletid: string]: { currency: WalletCurrency; depositFeeRatio: DepositFeeRatio }
+  } = {}
 
+  const accountRepo = AccountsRepository()
   for (const wallet of wallets) {
     const walletAddresses = wallet.onChainAddresses()
     addressesByWalletId[wallet.id] = walletAddresses
     addresses.push(...walletAddresses)
 
-    walletDetailsByWalletId[wallet.id] = { currency: wallet.currency }
+    const account = await accountRepo.findById(wallet.accountId)
+    const depositFeeRatio =
+      account instanceof Error ? (0 as DepositFeeRatio) : account.depositFeeRatio
+    walletDetailsByWalletId[wallet.id] = { currency: wallet.currency, depositFeeRatio }
   }
 
   const filter = TxFilter({
