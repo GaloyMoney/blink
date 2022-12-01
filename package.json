@@ -24,7 +24,8 @@
     "fix-yaml": "prettier --write '**/*.(yaml|yml)'",
     "check-yaml": "prettier --check '**/*.(yaml|yml)'",
     "watch-main": "nodemon -V -e ts,graphql -w ./src --exec yarn run start-main",
-    "start-main": ". ./.envrc && yarn run build && node --inspect -r ./lib/services/tracing.js ./lib/servers/graphql-main-server.js"
+    "start-main": ". ./.envrc && yarn run build && node --inspect -r ./lib/services/tracing.js ./lib/servers/graphql-main-server.js",
+    "migrate-mongo-up": "migrate-mongo up -f './src/migrations/migrate-mongo-config.js'"
   },
   "engines": {
     "node": "18"

@@ -1,6 +1,5 @@
 import { getKratosMasterPhonePassword } from "@config"
 import {
-  AuthenticationKratosError,
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
 } from "@domain/authentication/errors"
@@ -9,10 +8,12 @@ import {
   AuthWithPhonePasswordlessService,
   extendSession,
   getNextPage,
-  listIdentities,
+  IdentityRepository,
   listSessions,
   validateKratosToken,
 } from "@services/kratos"
+import { AuthenticationKratosError } from "@services/kratos/errors"
+import { kratosAdmin, kratosPublic } from "@services/kratos/private"
 import {
   activateUser,
   addTotp,
@@ -21,18 +22,19 @@ import {
   listIdentitySchemas,
   revokeSessions,
 } from "@services/kratos/tests-but-not-prod"
-import { kratosAdmin, kratosPublic } from "@services/kratos/private"
 import { baseLogger } from "@services/logger"
 import { authenticator } from "otplib"
 
 import { randomEmail, randomPassword, randomPhone } from "test/helpers"
+
+const identityRepo = IdentityRepository()
 
 describe("phoneNoPassword", () => {
   const authService = AuthWithPhonePasswordlessService()
 
   describe("public selflogin api", () => {
     const phone = randomPhone()
-    let kratosUserId: KratosUserId
+    let kratosUserId: UserId
 
     it("create a user", async () => {
       const res = await authService.createIdentityWithSession(phone)
@@ -129,6 +131,13 @@ describe("phoneNoPassword", () => {
       const newIdentity = await kratosAdmin.adminGetIdentity(kratosUserId)
       expect(newIdentity.data.schema_id).toBe("phone_with_password_v0")
     })
+
+    it("can get the user with slowFindByPhone", async () => {
+      const identity = await identityRepo.slowFindByPhone(phone)
+      if (identity instanceof Error) throw identity
+
+      expect(identity.phone).toBe(phone)
+    })
   })
 
   describe("admin api", () => {
@@ -144,7 +153,7 @@ describe("phoneNoPassword", () => {
     })
   })
 
-  it("borbidding change of a phone number from publicApi", async () => {
+  it("forbidding change of a phone number from publicApi", async () => {
     const phone = randomPhone()
 
     const res = await authService.createIdentityWithSession(phone)
@@ -188,7 +197,7 @@ describe("phoneNoPassword", () => {
 })
 
 it("list users", async () => {
-  const res = await listIdentities()
+  const res = await identityRepo.listIdentities()
   if (res instanceof Error) throw res
 })
 
@@ -248,7 +257,7 @@ describe("session revokation", () => {
 })
 
 describe("update status", () => {
-  let kratosUserId: KratosUserId
+  let kratosUserId: UserId
   const phone = randomPhone()
 
   it("deactivate user", async () => {
@@ -270,6 +279,7 @@ describe("update status", () => {
   })
 })
 
+// FIXME: not sure why this one is failing on github actions
 it.skip("list schemas", async () => {
   const res = await listIdentitySchemas()
   if (res instanceof Error) throw res

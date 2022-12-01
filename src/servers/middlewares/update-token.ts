@@ -1,12 +1,11 @@
 import { JWT_SECRET } from "@config"
 import { ErrorLevel } from "@domain/shared"
-import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 import { RedisCacheService } from "@services/cache"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import { AccountsRepository, UsersRepository } from "@services/mongoose"
 import {
-  recordExceptionInCurrentSpan,
   addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
 } from "@services/tracing"
 import { NextFunction, Request, Response } from "express"
 import * as jwt from "jsonwebtoken"
@@ -58,27 +57,6 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
     return
   }
 
-  const uid = tokenPayload.uid
-  const user = await UsersRepository().findById(uid)
-  if (user instanceof Error) {
-    addAttributesToCurrentSpan({ authUpgrade: "no uid" })
-
-    // TODO: log error
-    next()
-    return
-  }
-
-  const { phone } = user
-
-  if (!phone) {
-    addAttributesToCurrentSpan({ authUpgrade: "no phone" })
-
-    // TODO: log error
-    // is there users who doesn't have phone on bbw?
-    next()
-    return
-  }
-
   let kratosToken: SessionToken
 
   // the cache aim to limit to 1 session per kratos user on mobile phone
@@ -104,28 +82,33 @@ export const updateToken = async (req: Request, res: Response, next: NextFunctio
     return
   }
 
-  const authService = AuthWithPhonePasswordlessService()
-
-  let kratosResult = await authService.login(phone)
-
-  // FIXME: only if we don't run the migration before
-  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
-    // user has not migrated to kratos or it's a new user
-    kratosResult = await authService.createIdentityWithSession(phone)
-  }
-
-  if (kratosResult instanceof Error) {
-    addAttributesToCurrentSpan({ authUpgrade: "kratos issue" })
-
+  const uid = tokenPayload.uid as AccountId
+  const account = await AccountsRepository().findById(uid)
+  if (account instanceof Error) {
     next()
     return
   }
 
-  const kratosUserId = kratosResult.kratosUserId
+  const kratosUserId = account.kratosUserId
 
-  const account = await AccountsRepository().findById(uid)
-  if (account instanceof Error) {
-    addAttributesToCurrentSpan({ authUpgrade: "account findby issue" })
+  const user = await UsersRepository().findById(kratosUserId)
+  if (user instanceof Error) {
+    next()
+    return
+  }
+
+  if (!user.phone) {
+    next()
+    return
+  }
+
+  const phone = user.phone
+
+  const authService = AuthWithPhonePasswordlessService()
+
+  const kratosResult = await authService.login(phone)
+  if (kratosResult instanceof Error) {
+    addAttributesToCurrentSpan({ authUpgrade: "kratos issue" })
 
     next()
     return

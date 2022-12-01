@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import Phone from "@graphql/types/scalar/phone"
 import SuccessPayload from "@graphql/types/payload/success-payload"
-import { Users } from "@app"
+import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 
 const CaptchaRequestAuthCodeInput = GT.Input({
@@ -41,7 +41,7 @@ const CaptchaRequestAuthCodeMutation = GT.Field({
       return { errors: [{ message: "ip is undefined" }] }
     }
 
-    const result = await Users.requestPhoneCodeWithCaptcha({
+    const result = await Auth.requestPhoneCodeWithCaptcha({
       phone,
       geetest,
       geetestChallenge,

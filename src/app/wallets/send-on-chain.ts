@@ -9,14 +9,14 @@ import {
 
 import { getCurrentPrice } from "@app/prices"
 
-import { DisplayCurrency } from "@domain/fiat"
-import { WalletCurrency } from "@domain/shared"
-import { PaymentSendStatus } from "@domain/bitcoin/lightning"
-import { ResourceExpiredLockServiceError } from "@domain/lock"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
-import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
+import { PaymentSendStatus } from "@domain/bitcoin/lightning"
+import {
+  checkedToOnChainAddress,
+  CPFPAncestorLimitReachedError,
+  InsufficientOnChainFundsError,
+  TxDecoder,
+} from "@domain/bitcoin/onchain"
 import {
   InsufficientBalanceError,
   LessThanDustThresholdError,
@@ -24,30 +24,30 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
-import {
-  checkedToOnChainAddress,
-  CPFPAncestorLimitReachedError,
-  InsufficientOnChainFundsError,
-  TxDecoder,
-} from "@domain/bitcoin/onchain"
+import { DisplayCurrency } from "@domain/fiat"
+import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
+import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+import { ResourceExpiredLockServiceError } from "@domain/lock"
+import { WalletCurrency } from "@domain/shared"
+import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
 
-import { LockService } from "@services/lock"
-import { baseLogger } from "@services/logger"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
-import { addAttributesToCurrentSpan } from "@services/tracing"
-import { NotificationsService } from "@services/notifications"
+import { LockService } from "@services/lock"
+import { baseLogger } from "@services/logger"
 import {
   AccountsRepository,
-  UsersRepository,
   WalletsRepository,
+  UsersRepository,
 } from "@services/mongoose"
+import { NotificationsService } from "@services/notifications"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
+import { getOnChainFee } from "./get-on-chain-fee"
 import {
   checkIntraledgerLimits,
   checkWithdrawalLimits,
 } from "./private/check-limit-helpers"
-import { getOnChainFee } from "./get-on-chain-fee"
 
 const { dustThreshold } = getOnChainWalletConfig()
 
@@ -206,7 +206,7 @@ const executePaymentViaIntraledger = async <
 
     if (journal instanceof Error) return journal
 
-    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+    const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 
     const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {

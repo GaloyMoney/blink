@@ -4,20 +4,9 @@ type PhoneCode = string & { readonly brand: unique symbol }
 type EmailAddress = string & { readonly brand: unique symbol }
 
 type UserLanguage = typeof import("./languages").Languages[number]
+type UserLanguageOrEmpty = UserLanguage | ""
 
 type DeviceToken = string & { readonly brand: unique symbol }
-
-// TODO: move to camelCase base // migration needed
-// type PhoneMetadata = {
-//   carrier: {
-//     errorCode: string | undefined // check this is the right syntax
-//     mobileCountryCode: string | undefined
-//     mobileNetworkCode: string | undefined
-//     name: string | undefined
-//     type: "landline" | "voip" | "mobile"
-//   }
-//   countryCode: string | undefined
-// }
 
 type CarrierType =
   typeof import("../phone-provider/index").CarrierType[keyof typeof import("../phone-provider/index").CarrierType]
@@ -34,22 +23,42 @@ type PhoneMetadata = {
   countryCode: string
 }
 
-type User = {
-  readonly id: UserId
-  readonly defaultAccountId: AccountId
-  readonly deviceTokens: DeviceToken[]
-  readonly createdAt: Date
-  readonly phone?: PhoneNumber
-  readonly phoneMetadata?: PhoneMetadata
-  language: UserLanguage
-}
-
 type PhoneMetadataValidator = {
   validateForReward(phoneMetadata?: PhoneMetadata): true | ValidationError
 }
 
+type SetPhoneMetadataArgs = {
+  id: UserId
+  phoneMetadata: PhoneMetadata
+}
+
+type SetDeviceTokensArgs = {
+  id: UserId
+  deviceTokens: DeviceToken[]
+}
+
+type SetLanguageArgs = {
+  id: UserId
+  language: UserLanguageOrEmpty
+}
+
+type User = {
+  id: UserId
+  language: UserLanguageOrEmpty
+  deviceTokens: DeviceToken[]
+  phoneMetadata: PhoneMetadata | undefined
+  phone?: PhoneNumber | undefined
+  createdAt: Date
+}
+
+type UserUpdateInput = Omit<Partial<User>, "language"> & {
+  id: UserId
+} & {
+  language?: UserLanguageOrEmpty
+}
+
 interface IUsersRepository {
-  findById(userId: UserId): Promise<User | RepositoryError>
+  findById(id: UserId): Promise<User | RepositoryError>
   findByPhone(phone: PhoneNumber): Promise<User | RepositoryError>
-  update(user: User): Promise<User | RepositoryError>
+  update(user: UserUpdateInput): Promise<User | RepositoryError>
 }

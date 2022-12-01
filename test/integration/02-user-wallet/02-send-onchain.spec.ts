@@ -55,7 +55,7 @@ import {
   createUserAndWalletFromUserRef,
   getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  getUserRecordByTestUserRef,
+  getAccountRecordByTestUserRef,
   lndonchain,
   lndOutside1,
   mineBlockAndSync,
@@ -64,7 +64,7 @@ import {
 } from "test/helpers"
 
 let initialBalanceUserA: Satoshis
-let userA: UserRecord
+let accountRecordA: AccountRecord
 
 let accountA: Account
 let accountG: Account
@@ -90,7 +90,7 @@ beforeAll(async () => {
   await createUserAndWalletFromUserRef("E")
   await createUserAndWalletFromUserRef("F")
 
-  userA = await getUserRecordByTestUserRef("A")
+  accountRecordA = await getAccountRecordByTestUserRef("A")
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   accountA = await getAccountByTestUserRef("A")
 
@@ -751,7 +751,7 @@ describe("UserWallet - onChainPay", () => {
 
     const { outgoingBaseAmount } = walletVolume
 
-    if (!userA.level) throw new Error("Invalid or non existent user level")
+    if (!accountRecordA.level) throw new Error("Invalid or non existent user level")
 
     const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
 

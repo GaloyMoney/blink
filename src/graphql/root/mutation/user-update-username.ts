@@ -22,8 +22,8 @@ const UserUpdateUsernameMutation = GT.Field({
     input: { type: GT.NonNull(UserUpdateUsernameInput) },
   },
   deprecationReason:
-    "Username will be moved to @Handle in Accounts. Also SetUsername should be used instead of UpdateUsername to reflect the idempotency of Handles",
-  resolve: async (_, args, { domainAccount, domainUser }: GraphQLContextForUser) => {
+    "Username will be moved to @Handle in Accounts. Also SetUsername naming should be used instead of UpdateUsername to reflect the idempotency of Handles",
+  resolve: async (_, args, { domainAccount }: GraphQLContextAuth) => {
     const { username } = args.input
 
     if (username instanceof Error) {
@@ -35,7 +35,9 @@ const UserUpdateUsernameMutation = GT.Field({
     if (result instanceof Error) {
       return {
         errors: [mapAndParseErrorForGqlResponse(result)],
-        ...(result instanceof UsernameIsImmutableError ? { user: domainUser } : {}),
+
+        // FIXME: what is this return for?
+        ...(result instanceof UsernameIsImmutableError ? { user: domainAccount } : {}),
       }
     }
 

@@ -1,16 +1,16 @@
 type SessionId = string & { readonly brand: unique symbol }
 
 type AuthenticationError = import("./errors").AuthenticationError
-type KratosError = import("./errors").KratosError
 
 type IdentityPassword = string & { readonly brand: unique symbol }
 
-type KratosUserId = string & { readonly brand: unique symbol }
+type UserId = string & { readonly brand: unique symbol }
 type SessionToken = string & { readonly brand: unique symbol }
 
 type IdentityPhone = {
-  id: KratosUserId
+  id: UserId
   phone: PhoneNumber
+  createdAt: Date
 }
 
 type Session = {
@@ -20,7 +20,7 @@ type Session = {
 
 type WithSessionResponse = {
   sessionToken: SessionToken
-  kratosUserId: KratosUserId
+  kratosUserId: UserId
 }
 
 type LoginWithPhoneNoPasswordSchemaResponse = WithSessionResponse
@@ -33,9 +33,15 @@ interface IAuthWithPhonePasswordlessService {
   createIdentityWithSession(
     phone: PhoneNumber,
   ): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>
-  createIdentityNoSession(phone: PhoneNumber): Promise<KratosUserId | AuthenticationError>
+  createIdentityNoSession(phone: PhoneNumber): Promise<UserId | AuthenticationError>
   upgradeToPhoneWithPasswordSchema(input: {
-    kratosUserId: KratosUserId
+    kratosUserId: UserId
     password: IdentityPassword
   }): Promise<IdentityPhone | AuthenticationError> // TODO: should be IdentityPhoneWithPassword
+}
+
+interface IIdentityRepository {
+  getIdentity(id: UserId): Promise<IdentityPhone | KratosError>
+  listIdentities(): Promise<IdentityPhone[] | KratosError>
+  slowFindByPhone(phone: PhoneNumber): Promise<IdentityPhone | KratosError>
 }

@@ -8,7 +8,7 @@ import {
   RepositoryError,
 } from "@domain/errors"
 
-import { User } from "@services/mongoose/schema"
+import { Account } from "@services/mongoose/schema"
 
 import { fromObjectId, parseRepositoryError, toObjectId } from "./utils"
 
@@ -19,11 +19,9 @@ const caseInsensitiveRegex = (input: string) => {
 export const AccountsRepository = (): IAccountsRepository => {
   const listUnlockedAccounts = async (): Promise<Account[] | RepositoryError> => {
     try {
-      const result: UserRecord[] /* UserRecord actually not correct with {projection} */ =
-        await User.find(
-          { $expr: { $eq: [{ $last: "$statusHistory.status" }, AccountStatus.Active] } },
-          projection,
-        )
+      const result = await Account.find({
+        $expr: { $eq: [{ $last: "$statusHistory.status" }, AccountStatus.Active] },
+      })
       if (result.length === 0) return new CouldNotFindError()
       return result.map((a) => translateToAccount(a))
     } catch (err) {
@@ -33,8 +31,9 @@ export const AccountsRepository = (): IAccountsRepository => {
 
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
     try {
-      const result: UserRecord | null /* UserRecord actually not correct with {projection} */ =
-        await User.findOne({ _id: toObjectId<AccountId>(accountId) }, projection)
+      const result = await Account.findOne({
+        _id: toObjectId<AccountId>(accountId),
+      })
       if (!result) return new CouldNotFindError()
       return translateToAccount(result)
     } catch (err) {
@@ -46,10 +45,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     username: Username,
   ): Promise<Account | RepositoryError> => {
     try {
-      const result = await User.findOne(
-        { username: caseInsensitiveRegex(username) },
-        projection,
-      )
+      const result = await Account.findOne({ username: caseInsensitiveRegex(username) })
       if (!result) {
         return new CouldNotFindAccountFromUsernameError(username)
       }
@@ -59,16 +55,12 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const findByUserId = async (userId: UserId): Promise<Account | RepositoryError> => {
-    return findById(userId as string as AccountId)
-  }
-
   // FIXME: could be in a different file? does not return an Account
   const listBusinessesForMap = async (): Promise<
     BusinessMapMarker[] | RepositoryError
   > => {
     try {
-      const accounts = await User.find(
+      const accounts = await Account.find(
         {
           title: { $exists: true, $ne: undefined },
           coordinates: { $exists: true, $ne: undefined },
@@ -92,7 +84,6 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  // currently only used by Admin
   const update = async ({
     id,
     level,
@@ -104,11 +95,12 @@ export const AccountsRepository = (): IAccountsRepository => {
     username,
     defaultWalletId,
     withdrawFee,
-    role,
     kratosUserId,
+
+    role,
   }: Account): Promise<Account | RepositoryError> => {
     try {
-      const result = await User.findOneAndUpdate(
+      const result = await Account.findOneAndUpdate(
         { _id: toObjectId<AccountId>(id) },
         {
           level,
@@ -126,12 +118,12 @@ export const AccountsRepository = (): IAccountsRepository => {
           ),
           defaultWalletId,
           withdrawFee,
-          role,
           kratosUserId,
+
+          role,
         },
         {
           new: true,
-          projection,
         },
       )
       if (!result) {
@@ -143,36 +135,22 @@ export const AccountsRepository = (): IAccountsRepository => {
     }
   }
 
-  const persistNew = async ({
-    kratosUserId,
-    phone,
-    phoneMetadata,
-  }: {
-    kratosUserId: KratosUserId
-    phone?: PhoneNumber
-    phoneMetadata?: PhoneMetadata
-  }): Promise<Account | RepositoryError> => {
+  const persistNew = async (kratosUserId: UserId): Promise<Account | RepositoryError> => {
     try {
-      const user = new User()
-      user.kratosUserId = kratosUserId
-
-      if (phone) {
-        user.phone = phone
-      }
-
-      user.twilio = phoneMetadata
-      await user.save()
-      return translateToAccount(user)
+      const account = new Account()
+      account.kratosUserId = kratosUserId
+      await account.save()
+      return translateToAccount(account)
     } catch (err) {
       return parseRepositoryError(err)
     }
   }
 
-  const findByKratosUserId = async (
-    kratosUserId: KratosUserId,
+  const findByUserId = async (
+    kratosUserId: UserId,
   ): Promise<Account | RepositoryError> => {
     try {
-      const result = await User.findOne({ kratosUserId }, projection)
+      const result = await Account.findOne({ kratosUserId })
 
       if (!result) {
         return new CouldNotFindAccountFromKratosIdError(kratosUserId)
@@ -186,17 +164,16 @@ export const AccountsRepository = (): IAccountsRepository => {
 
   return {
     persistNew,
-    findByKratosUserId,
+    findByUserId,
     listUnlockedAccounts,
     findById,
-    findByUserId,
     findByUsername,
     listBusinessesForMap,
     update,
   }
 }
 
-const translateToAccount = (result: UserRecord): Account => ({
+const translateToAccount = (result: AccountRecord): Account => ({
   id: fromObjectId<AccountId>(result._id),
   createdAt: new Date(result.created_at),
   defaultWalletId: result.defaultWalletId as WalletId,
@@ -206,7 +183,6 @@ const translateToAccount = (result: UserRecord): Account => ({
   statusHistory: (result.statusHistory || []) as AccountStatusHistory,
   title: result.title as BusinessMapTitle,
   coordinates: result.coordinates as Coordinates,
-  ownerId: fromObjectId<UserId>(result._id),
   contactEnabled: !!result.contactEnabled,
   contacts: result.contacts.reduce(
     (res: AccountContact[], contact: ContactObjectForUser): AccountContact[] => {
@@ -235,22 +211,5 @@ const translateToAccount = (result: UserRecord): Account => ({
         completed: true,
       }),
     ) || [],
-  kratosUserId: result.kratosUserId as KratosUserId,
+  kratosUserId: result.kratosUserId as UserId,
 })
-
-const projection = {
-  level: 1,
-  statusHistory: 1,
-  coordinates: 1,
-  defaultWalletId: 1,
-  username: 1,
-  title: 1,
-  created_at: 1,
-  contactEnabled: 1,
-  contacts: 1,
-  depositFeeRatio: 1,
-  withdrawFee: 1,
-  role: 1,
-  earn: 1,
-  kratosUserId: 1,
-}

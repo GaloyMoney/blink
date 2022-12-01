@@ -2,17 +2,21 @@ import { ConfigError, getTestAccounts } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
-import { AccountsRepository, WalletsRepository } from "@services/mongoose"
+import {
+  AccountsRepository,
+  WalletsRepository,
+  UsersRepository,
+} from "@services/mongoose"
 import { TwilioClient } from "@services/twilio"
 
 const initializeCreatedAccount = async ({
   account,
   config,
-  phoneNumberValid,
+  phone,
 }: {
   account: Account
   config: AccountsConfig
-  phoneNumberValid?: PhoneNumber
+  phone?: PhoneNumber
 }): Promise<Account | ApplicationError> => {
   const newWallet = (currency: WalletCurrency) =>
     WalletsRepository().persistNew({
@@ -42,7 +46,7 @@ const initializeCreatedAccount = async ({
   account.defaultWalletId = defaultWalletId
 
   // FIXME: to remove when Casbin is been introduced
-  const role = getTestAccounts().find(({ phone }) => phone === phoneNumberValid)?.role
+  const role = getTestAccounts().find(({ phone: phoneTest }) => phoneTest === phone)?.role
   account.role = role || "user"
   account.contactEnabled = account.role === "user" || account.role === "editor"
 
@@ -53,34 +57,31 @@ const initializeCreatedAccount = async ({
 }
 
 export const createAccountWithPhoneIdentifier = async ({
-  newAccountInfo: { kratosUserId, phone, phoneMetadata },
+  newAccountInfo: { kratosUserId, phone },
   config,
 }: {
   newAccountInfo: NewAccountWithPhoneIdentifier
   config: AccountsConfig
 }): Promise<Account | RepositoryError> => {
-  const accountsRepo = AccountsRepository()
+  let phoneMetadata: PhoneMetadata | PhoneProviderServiceError | undefined =
+    await TwilioClient().getCarrier(phone)
 
-  const accountRaw: NewAccountWithPhoneIdentifier = {
+  if (phoneMetadata instanceof Error) {
+    baseLogger.warn({ phone }, "impossible to fetch carrier")
+    phoneMetadata = undefined
+  }
+
+  const user = await UsersRepository().update({ id: kratosUserId, phone, phoneMetadata })
+  if (user instanceof Error) return user
+
+  const accountNew = await AccountsRepository().persistNew(kratosUserId)
+  if (accountNew instanceof Error) return accountNew
+
+  const account = await initializeCreatedAccount({
+    account: accountNew,
+    config,
     phone,
-    phoneMetadata,
-    kratosUserId,
-  }
-
-  if (!phoneMetadata && !!phone) {
-    const carrierInfo = await TwilioClient().getCarrier(phone)
-    if (carrierInfo instanceof Error) {
-      // non fatal error
-      baseLogger.warn({ phone }, "impossible to fetch carrier")
-    } else {
-      accountRaw.phoneMetadata = carrierInfo
-    }
-  }
-
-  let account = await accountsRepo.persistNew(accountRaw)
-  if (account instanceof Error) return account
-
-  account = await initializeCreatedAccount({ account, config, phoneNumberValid: phone })
+  })
   if (account instanceof Error) return account
 
   return account
@@ -91,10 +92,10 @@ export const createAccountForEmailIdentifier = async ({
   kratosUserId,
   config,
 }: {
-  kratosUserId: KratosUserId
+  kratosUserId: UserId
   config: AccountsConfig
 }): Promise<Account | RepositoryError> => {
-  let account = await AccountsRepository().persistNew({ kratosUserId })
+  let account = await AccountsRepository().persistNew(kratosUserId)
   if (account instanceof Error) return account
 
   account = await initializeCreatedAccount({ account, config })

@@ -10,10 +10,9 @@ export const getAccountByUsername = async (username: string) => {
 }
 
 export const getAccountByUserPhone = async (phone: PhoneNumber) => {
-  const users = UsersRepository()
-  const user = await users.findByPhone(phone)
+  const user = await UsersRepository().findByPhone(phone)
   if (user instanceof Error) return user
 
   const accounts = AccountsRepository()
-  return accounts.findById(user.defaultAccountId)
+  return accounts.findByUserId(user.id)
 }

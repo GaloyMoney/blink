@@ -4,8 +4,9 @@ import { getDefaultAccountsConfig, getFeesConfig, levels } from "@config"
 import { AccountStatus, UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
-import { Languages } from "@domain/users"
 import mongoose from "mongoose"
+
+import { Languages } from "@domain/users"
 
 import { WalletRecord } from "./wallets"
 
@@ -94,7 +95,12 @@ const WalletSchema = new Schema<WalletRecord>({
     required: true,
     default: () => crypto.randomUUID(),
   },
-  _accountId: { type: Schema.Types.ObjectId, ref: "User", index: true, required: true },
+  _accountId: {
+    type: Schema.Types.ObjectId,
+    ref: "Account",
+    index: true,
+    required: true,
+  },
   type: {
     type: String,
     enum: Object.values(WalletType),
@@ -127,7 +133,7 @@ const WalletSchema = new Schema<WalletRecord>({
 
 export const Wallet = mongoose.model<WalletRecord>("Wallet", WalletSchema)
 
-const UserSchema = new Schema<UserRecord>(
+const AccountSchema = new Schema<AccountRecord>(
   {
     depositFeeRatio: {
       type: Number,
@@ -189,28 +195,6 @@ const UserSchema = new Schema<UserRecord>(
       default: 1,
     },
 
-    // TODO: refactor, have phone and twilio metadata in the same sub-object.
-    phone: {
-      type: String,
-      index: true,
-      unique: true,
-      sparse: true,
-    },
-    twilio: {
-      // TODO: rename to PhoneMetadata
-      carrier: {
-        error_code: String, // check this is the right syntax
-        mobile_country_code: String,
-        mobile_network_code: String,
-        name: String,
-        type: {
-          types: String,
-          enum: ["landline", "voip", "mobile"],
-        },
-      },
-      countryCode: String,
-    },
-
     kratosUserId: {
       type: String,
       index: true,
@@ -228,10 +212,6 @@ const UserSchema = new Schema<UserRecord>(
         collation: { locale: "en", strength: 2 },
         partialFilterExpression: { username: { $type: "string" } },
       },
-    },
-    deviceToken: {
-      type: [String],
-      default: [],
     },
     contactEnabled: {
       type: Boolean,
@@ -256,15 +236,6 @@ const UserSchema = new Schema<UserRecord>(
       ],
       default: [],
     },
-    language: {
-      type: String,
-      enum: [...Languages, ""],
-      default: "",
-    },
-    // firstName,
-    // lastName,
-    // activated,
-    // etc
 
     title: {
       type: String,
@@ -296,8 +267,7 @@ const UserSchema = new Schema<UserRecord>(
             required: true,
           },
           updatedByUserId: {
-            type: Schema.Types.ObjectId,
-            ref: "Account",
+            type: String,
             required: false,
           },
           comment: {
@@ -315,16 +285,94 @@ const UserSchema = new Schema<UserRecord>(
       type: String,
       index: true,
     },
+
+    // TODO: delete post migration
+    phone: {
+      type: String,
+      index: true,
+      unique: true,
+      sparse: true,
+    },
+    twilio: {
+      carrier: {
+        error_code: String, // check this is the right syntax
+        mobile_country_code: String,
+        mobile_network_code: String,
+        name: String,
+        type: {
+          types: String,
+          enum: ["landline", "voip", "mobile"],
+        },
+      },
+      countryCode: String,
+    },
+    deviceToken: {
+      type: [String],
+      default: [],
+    },
+    language: {
+      type: String,
+      enum: [...Languages, ""],
+      default: "",
+    },
+    // END TODO
   },
   { id: false },
 )
 
-UserSchema.index({
+AccountSchema.index({
   title: 1,
   coordinates: 1,
 })
 
-export const User = mongoose.model<UserRecord>("Account", UserSchema)
+export const Account = mongoose.model<AccountRecord>("Account", AccountSchema)
+
+const UserSchema = new Schema(
+  {
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    userId: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    language: {
+      type: String,
+      enum: [...Languages, ""],
+    },
+    deviceTokens: {
+      type: [String],
+      default: [],
+    },
+    phoneMetadata: {
+      type: {
+        carrier: {
+          error_code: String, // check this is the right syntax
+          mobile_country_code: String,
+          mobile_network_code: String,
+          name: String,
+          type: {
+            types: String,
+            enum: ["landline", "voip", "mobile"],
+          },
+        },
+        countryCode: String,
+      },
+      default: undefined,
+    },
+    phone: {
+      type: String,
+      index: true,
+      unique: true,
+      sparse: true,
+    },
+  },
+  { id: false },
+)
+
+export const User = mongoose.model<UserRecord>("User", UserSchema)
 
 // TODO: this DB should be capped.
 const PhoneCodeSchema = new Schema({

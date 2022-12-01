@@ -11,7 +11,7 @@ import {
   createUserAndWalletFromUserRef,
   getAccountIdByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  getUserRecordByTestUserRef,
+  getAccountRecordByTestUserRef,
 } from "test/helpers"
 import { resetSelfAccountIdLimits } from "test/helpers/rate-limit"
 import { getBalanceHelper } from "test/helpers/wallet"
@@ -61,7 +61,7 @@ describe("UserWallet - addEarn", () => {
 
     const initialBalance = await getBalanceHelper(walletIdB)
 
-    const userRecordBBeforeEarn = await getUserRecordByTestUserRef("B")
+    const accountRecordBBeforeEarn = await getAccountRecordByTestUserRef("B")
 
     const getAndVerifyRewards = async () => {
       const promises = onBoardingEarnIds.map((onBoardingEarnId) =>
@@ -74,7 +74,7 @@ describe("UserWallet - addEarn", () => {
       const finalBalance = await getBalanceHelper(walletIdB)
       let rewards = onBoardingEarnAmt
 
-      if (difference(onBoardingEarnIds, userRecordBBeforeEarn.earn).length === 0) {
+      if (difference(onBoardingEarnIds, accountRecordBBeforeEarn.earn).length === 0) {
         rewards = 0
       }
 

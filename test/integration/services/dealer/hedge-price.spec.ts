@@ -11,10 +11,10 @@ import { AccountsRepository } from "@services/mongoose"
 
 import {
   cancelOkexPricePublish,
-  createAndFundNewWalletForPhone,
+  createAndFundNewWallet,
+  freshAccount,
   getBalanceHelper,
   publishOkexPrice,
-  randomPhone,
 } from "test/helpers"
 
 jest.mock("@config", () => {
@@ -63,14 +63,15 @@ const usdFundingAmount = paymentAmountFromNumber({
 if (usdFundingAmount instanceof Error) throw usdFundingAmount
 
 const newAccountAndWallets = async () => {
-  const phone = randomPhone()
-  const newBtcWallet = await createAndFundNewWalletForPhone({
-    phone,
+  const accountId = (await freshAccount()).id
+
+  const newBtcWallet = await createAndFundNewWallet({
+    accountId,
     balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
   })
 
-  const newUsdWallet = await createAndFundNewWalletForPhone({
-    phone,
+  const newUsdWallet = await createAndFundNewWallet({
+    accountId,
     balanceAmount: usdFundingAmount,
   })
 

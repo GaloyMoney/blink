@@ -4,10 +4,7 @@ import GraphQLUser from "@graphql/types/object/graphql-user"
 
 const MeQuery = GT.Field({
   type: GraphQLUser,
-  resolve: async (_, __, { domainUser, domainAccount }) => ({
-    ...domainUser,
-    quizQuestions: domainAccount?.quizQuestions,
-  }),
+  resolve: async (_, __, { user }) => user,
 })
 
 export default MeQuery

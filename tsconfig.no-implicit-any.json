@@ -2,7 +2,6 @@
   "extends": "./tsconfig.d.json",
   "include": ["src/"],
   "exclude": [
-    "test/",
     "src/debug",
     "src/migrations",
     "src/services/swap/providers/lightning-labs/protos"

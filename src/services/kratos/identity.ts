@@ -1,9 +1,12 @@
 import { assert } from "console"
 
-import { isDev } from "@config"
-import { UnknownKratosError } from "@domain/authentication/errors"
 import { Identity } from "@ory/client"
 
+import { isDev } from "@config"
+
+import { PhoneIdentityDoesNotExistError } from "@domain/authentication/errors"
+
+import { KratosError, UnknownKratosError } from "./errors"
 import { kratosAdmin, toDomainIdentityPhone } from "./private"
 
 export const getNextPage = (link: string): number | undefined => {
@@ -21,34 +24,78 @@ export const getNextPage = (link: string): number | undefined => {
 // with 1, only 1 entry will be missing in the result
 const perPage = isDev ? 3 : 50
 
-export const listIdentities = async (): Promise<IdentityPhone[] | KratosError> => {
-  try {
-    const identities: Identity[] = []
-    let totalCount = 0
+export const IdentityRepository = (): IIdentityRepository => {
+  const getIdentity = async (
+    kratosUserId: UserId,
+  ): Promise<IdentityPhone | KratosError> => {
+    let data: Identity
 
-    let hasNext = true
-
-    let page: number | undefined = 0
-
-    while (hasNext) {
-      // Note: this call is paginated, return 250 records `perPage` by default
-      const res = await kratosAdmin.adminListIdentities(perPage, page)
-      identities.push(...res.data)
-
-      totalCount = Number(res.headers["x-total-count"])
-
-      page = getNextPage(res.headers.link)
-      hasNext = page !== undefined && totalCount !== 0
+    try {
+      const res = await kratosAdmin.adminGetIdentity(kratosUserId)
+      data = res.data
+    } catch (err) {
+      return new UnknownKratosError(err)
     }
 
-    // FIXME(nb) function above return duplicated query for the first 2 calls, so removing them here
-    const uniqueIdentities = identities.filter(
-      (value, index, self) => index === self.findIndex((t) => t.id === value.id),
-    )
-    assert(totalCount == uniqueIdentities.length)
+    return toDomainIdentityPhone(data)
+  }
 
-    return uniqueIdentities.map(toDomainIdentityPhone)
-  } catch (err) {
-    return new UnknownKratosError(err)
+  const listIdentities = async (): Promise<IdentityPhone[] | KratosError> => {
+    try {
+      const identities: Identity[] = []
+      let totalCount = 0
+
+      let hasNext = true
+
+      let page: number | undefined = 0
+
+      while (hasNext) {
+        // Note: this call is paginated, return 250 records `perPage` by default
+        const res = await kratosAdmin.adminListIdentities(perPage, page)
+        identities.push(...res.data)
+
+        totalCount = Number(res.headers["x-total-count"])
+
+        page = getNextPage(res.headers.link)
+        hasNext = page !== undefined && totalCount !== 0
+      }
+
+      // FIXME(nb) function above return duplicated query for the first 2 calls, so removing them here
+      const uniqueIdentities = identities.filter(
+        (value, index, self) => index === self.findIndex((t) => t.id === value.id),
+      )
+      assert(totalCount == uniqueIdentities.length)
+
+      return uniqueIdentities.map(toDomainIdentityPhone)
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
+  }
+
+  // only use for non public endpoint for now
+  // because there is no index/go through all records
+  const slowFindByPhone = async (
+    phone: PhoneNumber,
+  ): Promise<IdentityPhone | KratosError> => {
+    let identities: Identity[]
+
+    try {
+      const res = await kratosAdmin.adminListIdentities()
+      identities = res.data
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
+
+    const identity = identities.find((identity) => identity.traits.phone === phone)
+
+    if (!identity) return new PhoneIdentityDoesNotExistError(phone)
+
+    return toDomainIdentityPhone(identity)
+  }
+
+  return {
+    getIdentity,
+    listIdentities,
+    slowFindByPhone,
   }
 }

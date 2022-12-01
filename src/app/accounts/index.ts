@@ -16,6 +16,7 @@ export * from "./get-csv-for-account"
 export * from "./get-transactions-for-account"
 export * from "./add-wallet"
 export * from "./create-account"
+export * from "./update-account-ip"
 
 const accounts = AccountsRepository()
 
@@ -25,10 +26,10 @@ export const getAccount = async (
   return accounts.findById(accountId)
 }
 
-export const getAccountFromKratosUserId = async (
-  kratosUserId: KratosUserId,
+export const getAccountFromUserId = async (
+  kratosUserId: UserId,
 ): Promise<Account | RepositoryError> => {
-  return accounts.findByKratosUserId(kratosUserId)
+  return accounts.findByUserId(kratosUserId)
 }
 
 export const hasPermissions = async (

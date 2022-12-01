@@ -19,36 +19,36 @@ import { getSwapConfig, ONCHAIN_MIN_CONFIRMATIONS } from "@config"
 
 import {
   Prices as PricesWithSpans,
-  Wallets as WalletWithSpans,
   Swap as SwapWithSpans,
+  Wallets as WalletWithSpans,
 } from "@app"
-import * as Wallets from "@app/wallets"
 import { uploadBackup } from "@app/admin/backup"
+import * as Wallets from "@app/wallets"
 
 import { toSats } from "@domain/bitcoin"
 import { CacheKeys } from "@domain/cache"
+import { CouldNotFindWalletInvoiceError } from "@domain/errors"
 import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
 import { ErrorLevel, WalletCurrency } from "@domain/shared"
-import { CouldNotFindWalletInvoiceError } from "@domain/errors"
 
-import { baseLogger } from "@services/logger"
-import { LedgerService } from "@services/ledger"
+import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
+import { SwapTriggerError } from "@domain/swap/errors"
 import { RedisCacheService } from "@services/cache"
-import { onChannelUpdated } from "@services/lnd/utils"
-import { setupMongoConnection } from "@services/mongodb"
-import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
-import { NotificationsService } from "@services/notifications"
+import { LedgerService } from "@services/ledger"
+import { LndService } from "@services/lnd"
 import { activateLndHealthCheck, lndStatusEvent } from "@services/lnd/health"
+import { onChannelUpdated } from "@services/lnd/utils"
+import { baseLogger } from "@services/logger"
+import { LoopService } from "@services/loopd"
+import { setupMongoConnection } from "@services/mongodb"
 import {
   AccountsRepository,
   UsersRepository,
   WalletInvoicesRepository,
   WalletsRepository,
 } from "@services/mongoose"
-import { LndService } from "@services/lnd"
-import { LoopService } from "@services/loopd"
-import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
-import { SwapTriggerError } from "@domain/swap/errors"
+import { NotificationsService } from "@services/notifications"
+import { recordExceptionInCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -117,7 +117,7 @@ export const onchainTransactionEventHandler = async (
     const senderAccount = await AccountsRepository().findById(senderWallet.accountId)
     if (senderAccount instanceof Error) return senderAccount
 
-    const senderUser = await UsersRepository().findById(senderAccount.ownerId)
+    const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
 
     await NotificationsService().onChainTxSent({
@@ -164,7 +164,9 @@ export const onchainTransactionEventHandler = async (
         const recipientAccount = await AccountsRepository().findById(wallet.accountId)
         if (recipientAccount instanceof Error) return recipientAccount
 
-        const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+        const recipientUser = await UsersRepository().findById(
+          recipientAccount.kratosUserId,
+        )
         if (recipientUser instanceof Error) return recipientUser
 
         NotificationsService().onChainTxReceivedPending({

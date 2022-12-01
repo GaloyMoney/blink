@@ -1,8 +1,8 @@
-import { getI18nInstance, getLocale } from "@config"
+import { getI18nInstance } from "@config"
+import { getLanguageOrDefault } from "@domain/locale"
 import { WalletCurrency } from "@domain/shared"
 
 const i18n = getI18nInstance()
-const defaultLocale = getLocale()
 
 export const createPushNotificationContent = ({
   type,
@@ -13,12 +13,12 @@ export const createPushNotificationContent = ({
   type: NotificationType | "balance"
   amount: Amount<WalletCurrency>
   displayAmount?: DisplayAmount<DisplayCurrency>
-  userLanguage?: UserLanguage
+  userLanguage: UserLanguageOrEmpty
 }): {
   title: string
   body: string
 } => {
-  const locale = userLanguage || defaultLocale
+  const locale = getLanguageOrDefault(userLanguage)
   const baseCurrency = amount.currency
   const notificationType = type === "balance" ? type : `transaction.${type}`
   const title = i18n.__(

@@ -3,22 +3,22 @@ import { getMidPriceRatio } from "@app/shared"
 
 import { getDealerConfig } from "@config"
 
-import { LimitsExceededError } from "@domain/errors"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
+import { LimitsExceededError } from "@domain/errors"
 import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { NewDealerPriceService } from "@services/dealer-price"
 
 import { AccountsRepository } from "@services/mongoose"
 
 import {
+  addNewWallet,
   cancelOkexPricePublish,
   checkIsBalanced,
-  createAndFundNewWalletForPhone,
+  createAndFundNewWallet,
   createInvoice,
-  createNewWalletFromPhone,
+  freshAccount,
   lndOutside1,
   publishOkexPrice,
-  randomPhone,
 } from "test/helpers"
 
 const MOCKED_LIMIT = 100 as UsdCents
@@ -54,23 +54,23 @@ const dealerUsdFromBtc = newDealerFns.getCentsFromSatsForImmediateSell
 
 const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
-let otherPhone: PhoneNumber
+let otherAccountId: AccountId
 let otherBtcWallet: Wallet
 let otherUsdWallet: Wallet // eslint-disable-line @typescript-eslint/no-unused-vars
 
 beforeAll(async () => {
   await publishOkexPrice()
-  otherPhone = randomPhone()
+  otherAccountId = (await freshAccount()).id
 
-  const btcWallet = await createNewWalletFromPhone({
-    phone: otherPhone,
+  const btcWallet = await addNewWallet({
+    accountId: otherAccountId,
     currency: WalletCurrency.Btc,
   })
   if (btcWallet instanceof Error) throw btcWallet
   otherBtcWallet = btcWallet
 
-  const usdWallet = await createNewWalletFromPhone({
-    phone: otherPhone,
+  const usdWallet = await addNewWallet({
+    accountId: otherAccountId,
     currency: WalletCurrency.Usd,
   })
   if (usdWallet instanceof Error) throw usdWallet
@@ -233,13 +233,15 @@ const successLimitsPaymentTests = ({
 }
 
 describe("UserWallet Limits - Lightning Pay", () => {
-  const phone = randomPhone()
+  let accountId: AccountId
 
   describe("single payment above limit fails limit check", () => {
     it("fails to pay when withdrawalLimit exceeded", async () => {
+      accountId = (await freshAccount()).id
+
       // Create new wallet
-      const newWallet = await createAndFundNewWalletForPhone({
-        phone,
+      const newWallet = await createAndFundNewWallet({
+        accountId,
         balanceAmount: await btcAmountFromUsdNumber(MOCKED_BALANCE_ABOVE_THRESHOLD),
       })
 
@@ -259,8 +261,8 @@ describe("UserWallet Limits - Lightning Pay", () => {
 
     it("fails to pay when amount exceeds intraLedger limit", async () => {
       // Create new wallet
-      const newWallet = await createAndFundNewWalletForPhone({
-        phone,
+      const newWallet = await createAndFundNewWallet({
+        accountId,
         balanceAmount: await btcAmountFromUsdNumber(MOCKED_BALANCE_ABOVE_THRESHOLD),
       })
 
@@ -286,13 +288,13 @@ describe("UserWallet Limits - Lightning Pay", () => {
       if (usdFundingAmount instanceof Error) throw usdFundingAmount
 
       // Create new wallets
-      const newBtcWallet = await createAndFundNewWalletForPhone({
-        phone,
+      const newBtcWallet = await createAndFundNewWallet({
+        accountId,
         balanceAmount: await btcAmountFromUsdNumber(usdFundingAmount.amount),
       })
 
-      const newUsdWallet = await createAndFundNewWalletForPhone({
-        phone,
+      const newUsdWallet = await createAndFundNewWallet({
+        accountId,
         balanceAmount: usdFundingAmount,
       })
 
@@ -326,13 +328,13 @@ describe("UserWallet Limits - Lightning Pay", () => {
       })
       if (usdFundingAmount instanceof Error) throw usdFundingAmount
 
-      const newBtcWallet = await createAndFundNewWalletForPhone({
-        phone,
+      const newBtcWallet = await createAndFundNewWallet({
+        accountId,
         balanceAmount: await btcAmountFromUsdNumber(MOCKED_BALANCE_ABOVE_THRESHOLD),
       })
 
-      const newUsdWallet = await createAndFundNewWalletForPhone({
-        phone,
+      const newUsdWallet = await createAndFundNewWallet({
+        accountId,
         balanceAmount: usdFundingAmount,
       })
 

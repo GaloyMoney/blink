@@ -6,12 +6,13 @@ import {
   InvalidUsername,
   InvalidContactAlias,
   InvalidWithdrawFeeError,
-  InvalidKratosUserId,
+  InvalidUserId,
+  InvalidAccountLevelError,
 } from "@domain/errors"
 
 import { InvalidAccountIdError } from "./errors"
 
-import { AccountStatus } from "./primitives"
+import { AccountLevel, AccountStatus } from "./primitives"
 
 export * from "./errors"
 export * from "./limits-checker"
@@ -19,14 +20,14 @@ export * from "./new-limits-checker"
 export * from "./account-validator"
 export * from "./primitives"
 
-const KratosUserIdRegex =
+const UserIdRegex =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-export const checkedToKratosUserId = (userId: string): KratosUserId | ValidationError => {
-  if (!userId.match(KratosUserIdRegex)) {
-    return new InvalidKratosUserId(userId)
+export const checkedToUserId = (userId: string): UserId | ValidationError => {
+  if (!userId.match(UserIdRegex)) {
+    return new InvalidUserId(userId)
   }
-  return userId as KratosUserId
+  return userId as UserId
 }
 
 export const checkedCoordinates = ({
@@ -95,4 +96,9 @@ export const checkedToAccountId = (
     return new InvalidAccountIdError(accountId)
   }
   return accountId as AccountId
+}
+
+export const checkedToAccountLevel = (level: number): AccountLevel | ValidationError => {
+  if (Object.values<number>(AccountLevel).includes(level)) return level as AccountLevel
+  return new InvalidAccountLevelError()
 }

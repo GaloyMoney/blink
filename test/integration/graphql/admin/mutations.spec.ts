@@ -1,12 +1,15 @@
+import { getLocale } from "@config"
 import { WalletCurrency } from "@domain/shared"
+import { baseLogger } from "@services/logger"
 
 import {
   createUserAndWalletFromUserRef,
-  getUserRecordByTestUserRef,
+  getAccountByTestUserRef,
   graphqlAdmin,
+  randomUserId,
 } from "test/helpers"
 
-let user: UserRecord
+let account: Account
 
 // TODO?: use generated types
 
@@ -77,14 +80,14 @@ type BusinessUpdateMapInfoQuery = GraphQLResult<{
 
 beforeAll(async () => {
   await createUserAndWalletFromUserRef("H")
-  user = await getUserRecordByTestUserRef("H")
+  account = await getAccountByTestUserRef("H")
 })
 
 describe("GraphQLMutationRoot", () => {
   it("exposes accountUpdateLevel", async () => {
     const mutation = `
       mutation {
-        accountUpdateLevel(input: { uid: "${user._id}", level: TWO}) {
+        accountUpdateLevel(input: { uid: "${account.id}", level: TWO}) {
           errors {
             message
           }
@@ -128,7 +131,7 @@ describe("GraphQLMutationRoot", () => {
   it("exposes accountUpdateStatus", async () => {
     const mutation = `
       mutation {
-        accountUpdateStatus(input: { uid: "${user._id}", status: LOCKED}) {
+        accountUpdateStatus(input: { uid: "${account.id}", status: LOCKED}) {
           errors {
             message
           }
@@ -143,7 +146,15 @@ describe("GraphQLMutationRoot", () => {
 
     const result = await graphqlAdmin<AccountUpdateStatusMutation>({
       source: mutation,
-      contextValue: { domainUser: { id: user._id } },
+      contextValue: {
+        user: {
+          id: randomUserId(),
+          language: getLocale(),
+          deviceTokens: ["token"] as DeviceToken[],
+          phoneMetadata: undefined,
+          createdAt: new Date(),
+        },
+      },
     })
     const { data: dataMutation, errors } = result
 
@@ -173,7 +184,7 @@ describe("GraphQLMutationRoot", () => {
   it("exposes businessUpdateMapInfo", async () => {
     const mutation = `
       mutation {
-        businessUpdateMapInfo(input: { username: "${user.username}", title: "MapTest", longitude: 1, latitude: -1 }) {
+        businessUpdateMapInfo(input: { username: "${account.username}", title: "MapTest", longitude: 1, latitude: -1 }) {
           errors {
             message
           }
@@ -227,7 +238,7 @@ describe("GraphQLMutationRoot", () => {
   it("exposes accountsAddUsdWallet", async () => {
     const mutation = `
       mutation {
-        accountsAddUsdWallet(input: { accountIds: ["${user._id}"]}) {
+        accountsAddUsdWallet(input: { accountIds: ["${account.id}"]}) {
           errors {
             message
           }
@@ -243,7 +254,7 @@ describe("GraphQLMutationRoot", () => {
 
     const result = await graphqlAdmin<AccountsAddUsdWalletMutation>({
       source: mutation,
-      contextValue: { domainUser: { id: user._id } },
+      contextValue: { logger: baseLogger },
     })
     const { data: dataMutation, errors } = result
 
@@ -255,7 +266,7 @@ describe("GraphQLMutationRoot", () => {
           expect.objectContaining({
             walletCurrency: WalletCurrency.Usd,
             id: expect.any(String),
-            accountId: user._id.toString(),
+            accountId: account.id,
             balance: 0,
           }),
         ],

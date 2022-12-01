@@ -1,5 +1,6 @@
 import { Payments } from "@app"
 import { getRewardsConfig, onboardingEarn } from "@config"
+import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
 import {
   InvalidIPMetadataForRewardError,
   InvalidPhoneMetadataForRewardError,
@@ -7,18 +8,15 @@ import {
   NoBtcWalletExistsForAccountError,
 } from "@domain/errors"
 import { WalletCurrency } from "@domain/shared"
-import { IPMetadataValidator } from "@domain/users-ips/ip-metadata-validator"
 import { PhoneMetadataValidator } from "@domain/users/phone-metadata-validator"
 import { getFunderWalletId } from "@services/ledger/caching"
 import {
+  AccountsRepository,
   RewardsRepository,
   WalletsRepository,
-  AccountsRepository,
   UsersRepository,
 } from "@services/mongoose"
-import { UsersIpRepository } from "@services/mongoose/users-ips"
-
-const rewardsConfig = getRewardsConfig()
+import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
 
 export const addEarn = async ({
   quizQuestionId,
@@ -27,6 +25,8 @@ export const addEarn = async ({
   quizQuestionId: QuizQuestionId
   accountId: AccountId /* AccountId: aid validation */
 }): Promise<QuizQuestion | ApplicationError> => {
+  const rewardsConfig = getRewardsConfig()
+
   const amount = onboardingEarn[quizQuestionId]
   if (!amount) return new InvalidQuizQuestionIdError()
 
@@ -39,19 +39,20 @@ export const addEarn = async ({
   const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
 
-  const user = await UsersRepository().findById(recipientAccount.ownerId)
+  const user = await UsersRepository().findById(recipientAccount.kratosUserId)
   if (user instanceof Error) return user
 
   const validatedPhoneMetadata = PhoneMetadataValidator(rewardsConfig).validateForReward(
     user.phoneMetadata,
   )
+
   if (validatedPhoneMetadata instanceof Error)
     return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
 
-  const userIps = await UsersIpRepository().findById(recipientAccount.ownerId)
-  if (userIps instanceof Error) return userIps
+  const accountsIp = await AccountsIpRepository().findById(recipientAccount.id)
+  if (accountsIp instanceof Error) return accountsIp
 
-  const lastIPs = userIps.lastIPs
+  const lastIPs = accountsIp.lastIPs
   const lastIp = lastIPs.length > 0 ? lastIPs[lastIPs.length - 1] : undefined
   const validatedIPMetadata = IPMetadataValidator(rewardsConfig).validateForReward(lastIp)
   if (validatedIPMetadata instanceof Error) {

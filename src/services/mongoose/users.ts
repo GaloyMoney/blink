@@ -1,22 +1,39 @@
-import {
-  CouldNotFindUserFromIdError,
-  CouldNotFindUserFromPhoneError,
-  RepositoryError,
-} from "@domain/errors"
-import { User } from "@services/mongoose/schema"
+import { CouldNotFindUserFromPhoneError, RepositoryError } from "@domain/errors"
 
-import { fromObjectId, toObjectId, parseRepositoryError } from "./utils"
+import { User } from "./schema"
+
+import { parseRepositoryError } from "./utils"
+
+export const translateToUser = (user: UserRecord): User => {
+  const language = (user?.language ?? "") as UserLanguageOrEmpty
+  const deviceTokens = user.deviceTokens ?? []
+  const phoneMetadata = user.phoneMetadata
+  const phone = user.phone
+  const createdAt = user.createdAt
+
+  return {
+    id: user.userId as UserId,
+    language,
+    deviceTokens: deviceTokens as DeviceToken[],
+    phoneMetadata,
+    phone,
+    createdAt,
+  }
+}
 
 export const UsersRepository = (): IUsersRepository => {
-  const findById = async (userId: UserId): Promise<User | RepositoryError> => {
+  const findById = async (id: UserId): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOne({ _id: toObjectId<UserId>(userId) }, projection)
+      const result = await User.findOne({ userId: id })
 
-      if (!result) {
-        return new CouldNotFindUserFromIdError(userId)
-      }
+      // return default values if not present
+      // we can do because user collection is an optional collection from the backend
+      // as authentication is handled outside the stack
+      // and user collection is only about metadata for notification and language
+      if (!result)
+        return translateToUser({ userId: id, deviceTokens: [], createdAt: new Date() })
 
-      return userFromRaw(result)
+      return translateToUser(result)
     } catch (err) {
       return parseRepositoryError(err)
     }
@@ -24,37 +41,44 @@ export const UsersRepository = (): IUsersRepository => {
 
   const findByPhone = async (phone: PhoneNumber): Promise<User | RepositoryError> => {
     try {
-      const result = await User.findOne({ phone }, projection)
-      if (!result) {
-        return new CouldNotFindUserFromPhoneError(phone)
-      }
+      const result = await User.findOne({ phone })
+      if (!result) return new CouldNotFindUserFromPhoneError()
 
-      return userFromRaw(result)
+      return translateToUser(result)
     } catch (err) {
+      //  else
       return parseRepositoryError(err)
     }
   }
 
   const update = async ({
     id,
-    phone,
     language,
     deviceTokens,
-  }: User): Promise<User | RepositoryError> => {
+    phoneMetadata,
+    phone,
+    createdAt,
+  }: UserUpdateInput): Promise<User | RepositoryError> => {
     try {
-      const data = {
-        phone,
-        language,
-        deviceToken: deviceTokens,
-      }
-      const result = await User.findOneAndUpdate({ _id: toObjectId<UserId>(id) }, data, {
-        projection,
-        new: true,
-      })
+      const result = await User.findOneAndUpdate(
+        { userId: id },
+        {
+          deviceTokens,
+          phoneMetadata,
+          language,
+          phone,
+
+          createdAt, // TODO: remove post migration
+        },
+        {
+          new: true,
+          upsert: true,
+        },
+      )
       if (!result) {
         return new RepositoryError("Couldn't update user")
       }
-      return userFromRaw(result)
+      return translateToUser(result)
     } catch (err) {
       return parseRepositoryError(err)
     }
@@ -65,23 +89,4 @@ export const UsersRepository = (): IUsersRepository => {
     findByPhone,
     update,
   }
-}
-
-const userFromRaw = (result: UserRecord): User => ({
-  id: fromObjectId<UserId>(result._id),
-  phone: result.phone as PhoneNumber,
-  language: result.language as UserLanguage,
-  defaultAccountId: fromObjectId<AccountId>(result._id),
-  deviceTokens: (result.deviceToken || []) as DeviceToken[],
-  createdAt: new Date(result.created_at),
-  phoneMetadata: result.twilio as PhoneMetadata,
-})
-
-const projection = {
-  phone: 1,
-  language: 1,
-  twoFA: 1,
-  deviceToken: 1,
-  created_at: 1,
-  twilio: 1,
 }

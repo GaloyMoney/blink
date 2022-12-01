@@ -18,7 +18,7 @@ import {
   getDefaultWalletIdByTestUserRef,
   getHash,
   getInvoice,
-  getUserRecordByTestUserRef,
+  getAccountRecordByTestUserRef,
   lnd1,
   lndOutside1,
   mineBlockAndSyncAll,
@@ -36,8 +36,8 @@ let walletIdA: WalletId
 let walletIdD: WalletId
 let walletIdF: WalletId
 
-let userRecordA: UserRecord
-let userRecordD: UserRecord
+let accountRecordA: AccountRecord
+let accountRecordD: AccountRecord
 
 const locale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
@@ -49,8 +49,8 @@ beforeAll(async () => {
   walletIdD = await getDefaultWalletIdByTestUserRef("D")
   walletIdF = await getDefaultWalletIdByTestUserRef("F")
 
-  userRecordA = await getUserRecordByTestUserRef("A")
-  userRecordD = await getUserRecordByTestUserRef("D")
+  accountRecordA = await getAccountRecordByTestUserRef("A")
+  accountRecordD = await getAccountRecordByTestUserRef("D")
 })
 
 beforeEach(() => {
@@ -147,7 +147,7 @@ describe("onchainBlockEventHandler", () => {
       address,
     }: {
       walletId: WalletId
-      userRecord: UserRecord
+      userRecord: AccountRecord
       initialState: WalletState
       amount: Satoshis
       address: string
@@ -171,14 +171,14 @@ describe("onchainBlockEventHandler", () => {
 
     await validateWalletState({
       walletId: walletIdA,
-      userRecord: userRecordA,
+      userRecord: accountRecordA,
       initialState: initWalletAState,
       amount: amount,
       address: address,
     })
     await validateWalletState({
       walletId: walletIdD,
-      userRecord: userRecordD,
+      userRecord: accountRecordD,
       initialState: initWalletDState,
       amount: amount2,
       address: address2,

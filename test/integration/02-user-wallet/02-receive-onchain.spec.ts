@@ -2,11 +2,11 @@ import { once } from "events"
 
 import { Prices, Wallets } from "@app"
 import {
-  getFeesConfig,
-  getOnChainAddressCreateAttemptLimits,
   getAccountLimits,
-  getLocale,
   getDisplayCurrencyConfig,
+  getFeesConfig,
+  getLocale,
+  getOnChainAddressCreateAttemptLimits,
 } from "@config"
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
@@ -15,10 +15,10 @@ import { TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
+import { WalletsRepository } from "@services/mongoose"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 import { elapsedSinceTimestamp, ModifiedSet, sleep } from "@utils"
-import { WalletsRepository } from "@services/mongoose"
 
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
@@ -31,17 +31,16 @@ import {
   bitcoindClient,
   bitcoindOutside,
   checkIsBalanced,
+  confirmSent,
   createMandatoryUsers,
   createUserAndWalletFromUserRef,
   getAccountIdByTestUserRef,
-  getDefaultWalletIdByRole,
+  getAccountRecordByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  getUserRecordByTestUserRef,
   lndonchain,
   RANDOM_ADDRESS,
   sendToAddress,
   sendToAddressAndConfirm,
-  confirmSent,
   subscribeToChainAddress,
   subscribeToTransactions,
   waitUntilBlockHeight,
@@ -225,7 +224,7 @@ describe("UserWallet - On chain", () => {
     const address0 = await Wallets.createOnChainAddress(walletIdA)
     if (address0 instanceof Error) throw address0
 
-    const walletId = await getDefaultWalletIdByRole("funder")
+    const walletId = await getFunderWalletId()
 
     const addressDealer = await Wallets.createOnChainAddress(walletId)
     if (addressDealer instanceof Error) throw addressDealer
@@ -352,7 +351,7 @@ describe("UserWallet - On chain", () => {
 
     const pendingNotification = createPushNotificationContent({
       type: NotificationType.OnchainReceiptPending,
-      userLanguage: locale as UserLanguage,
+      userLanguage: locale,
       amount: paymentAmount,
       displayAmount: displayPaymentAmount,
     })
@@ -373,9 +372,9 @@ describe("UserWallet - On chain", () => {
   it("allows fee exemption for specific users", async () => {
     const amountSats = getRandomAmountOfSats()
 
-    const userRecordC = await getUserRecordByTestUserRef("C")
-    userRecordC.depositFeeRatio = 0
-    await userRecordC.save()
+    const accountRecordC = await getAccountRecordByTestUserRef("C")
+    accountRecordC.depositFeeRatio = 0
+    await accountRecordC.save()
     const walletC = await getDefaultWalletIdByTestUserRef("C")
 
     const initBalanceUserC = await getBalanceHelper(walletC)

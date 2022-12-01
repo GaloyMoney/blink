@@ -1,4 +1,8 @@
-import { createUserAndWalletFromUserRef, graphqlAdmin } from "test/helpers"
+import {
+  createUserAndWalletFromUserRef,
+  getPhoneAndCodeFromRef,
+  graphqlAdmin,
+} from "test/helpers"
 
 // TODO?: use generated types
 
@@ -31,8 +35,10 @@ type AccountDetailsQuery = GraphQLResult<{
   }
 }>
 
+const userRef = "H"
+
 beforeAll(async () => {
-  await createUserAndWalletFromUserRef("H")
+  await createUserAndWalletFromUserRef(userRef)
 })
 
 describe("GraphQLQueryRoot", () => {
@@ -48,7 +54,7 @@ describe("GraphQLQueryRoot", () => {
   })
 
   it("exposes accountDetails by phone", async () => {
-    const phone = "+19876543210"
+    const { phone } = getPhoneAndCodeFromRef(userRef)
     const query = `
       query Q {
         accountDetails: accountDetailsByUserPhone(phone: "${phone}") {

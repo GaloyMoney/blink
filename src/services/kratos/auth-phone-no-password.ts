@@ -1,12 +1,8 @@
 import { getKratosMasterPhonePassword } from "@config"
 
 import {
-  AuthenticationKratosError,
-  IncompatibleSchemaUpgradeError,
-  KratosError,
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
-  UnknownKratosError,
 } from "@domain/authentication/errors"
 import {
   AdminCreateIdentityBody,
@@ -17,6 +13,13 @@ import {
 } from "@ory/client"
 
 import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
+
+import {
+  AuthenticationKratosError,
+  IncompatibleSchemaUpgradeError,
+  KratosError,
+  UnknownKratosError,
+} from "./errors"
 
 import { kratosAdmin, kratosPublic, toDomainIdentityPhone } from "./private"
 
@@ -56,7 +59,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     const sessionToken = result.data.session_token as SessionToken
 
     // note: this only works when whoami: required_aal = aal1
-    const kratosUserId = result.data.session.identity.id as KratosUserId
+    const kratosUserId = result.data.session.identity.id as UserId
 
     return { sessionToken, kratosUserId }
   }
@@ -86,14 +89,14 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     }
 
     const sessionToken = result.data.session_token as SessionToken
-    const kratosUserId = result.data.identity.id as KratosUserId
+    const kratosUserId = result.data.identity.id as UserId
 
     return { sessionToken, kratosUserId }
   }
 
   const createIdentityNoSession = async (
     phone: PhoneNumber,
-  ): Promise<KratosUserId | KratosError> => {
+  ): Promise<UserId | KratosError> => {
     const adminIdentity: AdminCreateIdentityBody = {
       credentials: { password: { config: { password } } },
       state: "active",
@@ -101,12 +104,12 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       traits: { phone },
     }
 
-    let kratosUserId: KratosUserId
+    let kratosUserId: UserId
 
     try {
       const { data: identity } = await kratosAdmin.adminCreateIdentity(adminIdentity)
 
-      kratosUserId = identity.id as KratosUserId
+      kratosUserId = identity.id as UserId
     } catch (err) {
       if (err.message === "Request failed with status code 400") {
         return new LikelyUserAlreadyExistError(err)
@@ -122,7 +125,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     kratosUserId,
     password,
   }: {
-    kratosUserId: KratosUserId
+    kratosUserId: UserId
     password: IdentityPassword
   }) => {
     let identity: Identity
@@ -141,10 +144,13 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
       return new IncompatibleSchemaUpgradeError()
     }
 
+    if (identity.state === undefined)
+      throw new KratosError("state undefined, probably impossible state") // type issue
+
     const adminIdentity: AdminUpdateIdentityBody = {
       ...identity,
       credentials: { password: { config: { password } } },
-      state: "active",
+      state: identity.state,
       schema_id: "phone_with_password_v0",
     }
 

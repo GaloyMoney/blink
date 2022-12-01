@@ -89,9 +89,6 @@ type YamlSchema = {
     memoSharingSatsThreshold: number
     memoSharingCentsThreshold: number
   }
-  twoFALimits: {
-    threshold: number
-  }
   ipRecording: {
     enabled: boolean
     proxyChecking: {

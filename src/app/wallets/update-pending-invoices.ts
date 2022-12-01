@@ -15,9 +15,9 @@ import { NewDealerPriceService } from "@services/dealer-price"
 import { LndService } from "@services/lnd"
 import {
   AccountsRepository,
-  UsersRepository,
   WalletInvoicesRepository,
   WalletsRepository,
+  UsersRepository,
 } from "@services/mongoose"
 import { NotificationsService } from "@services/notifications"
 import * as LedgerFacade from "@services/ledger/facade"
@@ -242,7 +242,7 @@ const updatePendingInvoiceBeforeFinally = async ({
       currency: displayAmount.currency,
     } as DisplayPaymentAmount<DisplayCurrency>
 
-    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+    const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 
     const notificationsService = NotificationsService()

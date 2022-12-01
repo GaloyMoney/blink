@@ -1,10 +1,8 @@
 import { getPubkeysToSkipProbe } from "@config"
 
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
-import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
 import { AccountValidator } from "@domain/accounts"
-import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
+import { DisplayCurrency, NewDisplayCurrencyConverter } from "@domain/fiat"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   InvalidZeroAmountPriceRatioInputError,
@@ -12,21 +10,23 @@ import {
   PriceRatio,
   ZeroAmountForUsdRecipientError,
 } from "@domain/payments"
+import { ErrorLevel, WalletCurrency } from "@domain/shared"
+import { checkedToWalletId, SettlementMethod } from "@domain/wallets"
 
+import { NewDealerPriceService } from "@services/dealer-price"
+import { LedgerService } from "@services/ledger"
+import * as LedgerFacade from "@services/ledger/facade"
+import { LockService } from "@services/lock"
+import {
+  AccountsRepository,
+  WalletsRepository,
+  UsersRepository,
+} from "@services/mongoose"
+import { NotificationsService } from "@services/notifications"
 import {
   addAttributesToCurrentSpan,
   recordExceptionInCurrentSpan,
 } from "@services/tracing"
-import { NewDealerPriceService } from "@services/dealer-price"
-import {
-  AccountsRepository,
-  UsersRepository,
-  WalletsRepository,
-} from "@services/mongoose"
-import { LockService } from "@services/lock"
-import { LedgerService } from "@services/ledger"
-import * as LedgerFacade from "@services/ledger/facade"
-import { NotificationsService } from "@services/notifications"
 
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 
@@ -34,8 +34,8 @@ import { Accounts } from "@app"
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 
 import {
-  newCheckIntraledgerLimits,
   getPriceRatioForLimits,
+  newCheckIntraledgerLimits,
   newCheckTradeIntraAccountLimits,
 } from "./helpers"
 
@@ -290,7 +290,7 @@ const executePaymentViaIntraledger = async <
 
     const totalSendAmounts = paymentFlow.totalAmountsForPayment()
 
-    const recipientUser = await UsersRepository().findById(recipientAccount.ownerId)
+    const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
     if (recipientUser instanceof Error) return recipientUser
 
     let amount = totalSendAmounts.btc.amount

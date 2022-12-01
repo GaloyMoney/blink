@@ -1,6 +1,5 @@
-import { AccountLevel } from "@domain/accounts"
 import {
-  InvalidAccountLevelError,
+  InvalidDeviceTokenError,
   InvalidEmailAddress,
   InvalidLanguageError,
   InvalidPhoneNumber,
@@ -32,15 +31,24 @@ export const checkedToEmailAddress = (
   return emailAddress as EmailAddress
 }
 
-export const checkedToLanguage = (language: string): UserLanguage | ValidationError => {
-  if (language === "DEFAULT" || language === "") return "" as UserLanguage
-  if (Languages.includes(language)) return language as UserLanguage
+export const checkedToLanguage = (
+  language: string,
+): UserLanguageOrEmpty | ValidationError => {
+  if (language === "DEFAULT" || language === "") return "" as UserLanguageOrEmpty
+  if (Languages.includes(language)) return language as UserLanguageOrEmpty
   return new InvalidLanguageError()
 }
 
-export const checkedToAccountLevel = (level: number): AccountLevel | ValidationError => {
-  if (Object.values<number>(AccountLevel).includes(level)) return level as AccountLevel
-  return new InvalidAccountLevelError()
+export const checkedToDeviceToken = (token: string): DeviceToken | ValidationError => {
+  // token from firebase have a length of 163
+  const correctLength = 163
+  if (token.length !== correctLength) {
+    return new InvalidDeviceTokenError(
+      `wrong length, expected ${correctLength}, got ${token.length}`,
+    )
+  }
+
+  return token as DeviceToken
 }
 
 export { Languages }

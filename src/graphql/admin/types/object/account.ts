@@ -1,4 +1,4 @@
-import { Users, Wallets } from "@app"
+import { Wallets, Users } from "@app"
 import { GT } from "@graphql/index"
 import Coordinates from "@graphql/types/object/coordinates"
 import Timestamp from "@graphql/types/scalar/timestamp"
@@ -36,7 +36,7 @@ const Account: GraphQLObjectType<Account> = GT.Object<Account>({
 
       type: GT.NonNull(GraphQLUser),
       resolve: async (source) => {
-        const user = await Users.getUser(source.ownerId)
+        const user = await Users.getUser(source.kratosUserId)
         if (user instanceof Error) {
           throw user
         }

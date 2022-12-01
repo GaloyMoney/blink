@@ -1,14 +1,14 @@
 type GraphQLContext = {
   logger: Logger
-  domainUser: User | null
+  user: User | undefined
   domainAccount: Account | undefined
   geetest: GeetestType
   ip: IpAddress | undefined
 }
 
-type GraphQLContextForUser = {
+type GraphQLContextAuth = {
   logger: Logger
-  domainUser: User
+  user: User
   domainAccount: Account
   geetest: GeetestType
   ip: IpAddress

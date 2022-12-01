@@ -8,11 +8,22 @@ type KratosIdentity = import("@ory/client").Identity
 // in that case the session would be valid but identity would not be returned
 type KratosSession = import("@ory/client").Session
 
+type KratosError = import("./errors").KratosError
+
 type IdentitySchemaContainer = import("@ory/client").IdentitySchemaContainer
 
 type KratosEmail = string & { readonly brand: unique symbol }
 
 type ValidateKratosTokenResult = {
-  kratosUserId: KratosUserId
+  kratosUserId: UserId
   session: Session
+}
+
+type KratosPublicMetadata = {
+  language: UserLanguage
+  deviceTokens: DeviceToken[]
+}
+
+type KratosAdminMetadata = {
+  phoneMetadata: PhoneMetadata | undefined
 }
