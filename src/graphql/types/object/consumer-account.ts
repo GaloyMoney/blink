@@ -11,6 +11,7 @@ import {
 import IAccount from "@graphql/types/abstract/account"
 import Wallet from "@graphql/types/abstract/wallet"
 import WalletId from "@graphql/types/scalar/wallet-id"
+import AccountLimitsRange from "@graphql/types/scalar/account-limits-range"
 
 import { WalletsRepository } from "@services/mongoose"
 
@@ -60,7 +61,15 @@ const ConsumerAccount = GT.Object({
 
     limits: {
       type: GT.NonNull(AccountLimits),
-      resolve: (source: Account) => source,
+      args: {
+        range: {
+          type: GT.NonNull(AccountLimitsRange),
+        },
+      },
+      resolve: (source: Account, args: { range: AccountLimitsRange }) => ({
+        account: source,
+        range: args.range,
+      }),
     },
 
     transactions: {

@@ -4,6 +4,7 @@ import { connectionArgs } from "@graphql/connections"
 import AccountLimits from "@graphql/types/object/account-limits"
 import { TransactionConnection } from "@graphql/types/object/transaction"
 import WalletId from "@graphql/types/scalar/wallet-id"
+import AccountLimitsRange from "@graphql/types/scalar/account-limits-range"
 
 import Wallet from "./wallet"
 
@@ -29,6 +30,11 @@ const IAccount = GT.Interface({
     },
     limits: {
       type: GT.NonNull(AccountLimits),
+      args: {
+        range: {
+          type: GT.NonNull(AccountLimitsRange),
+        },
+      },
     },
     transactions: {
       type: TransactionConnection,

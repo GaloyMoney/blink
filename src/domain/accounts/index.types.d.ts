@@ -7,6 +7,9 @@ type AccountLevel =
 type AccountStatus =
   typeof import("./index").AccountStatus[keyof typeof import("./index").AccountStatus]
 
+type AccountLimitsRange =
+  typeof import("./index").AccountLimitsRange[keyof typeof import("./index").AccountLimitsRange]
+
 type DepositFeeRatio = number & { readonly brand: unique symbol }
 
 type ContactAlias = string & { readonly brand: unique symbol }

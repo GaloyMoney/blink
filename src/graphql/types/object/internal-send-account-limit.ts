@@ -9,6 +9,7 @@ import { Accounts } from "@app"
 const IntraLedgerAccountLimit = GT.Object<{
   account: Account
   limitType: "Withdrawal" | "Intraledger" | "TradeIntraAccount"
+  range: AccountLimitsRange
 }>({
   name: "IntraLedgerAccountLimit",
   interfaces: () => [IAccountLimit],

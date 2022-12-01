@@ -13,17 +13,29 @@ const AccountLimits = GT.Object({
       // TODO: Try to get these to be 'IAccountLimit' with isTypeOf instead
       type: GT.NonNull(WithdrawalAccountLimit),
       description: `Limits for withdrawing to external onchain or lightning destinations.`,
-      resolve: (source: Account) => ({ account: source, limitType: "Withdrawal" }),
+      resolve: (source: { account: Account; range: AccountLimitsRange }) => ({
+        account: source.account,
+        limitType: "Withdrawal",
+        range: source.range,
+      }),
     },
     internalSend: {
       type: GT.NonNull(IntraledgerAccountLimit),
       description: `Limits for sending to other internal accounts.`,
-      resolve: (source: Account) => ({ account: source, limitType: "Intraledger" }),
+      resolve: (source: { account: Account; range: AccountLimitsRange }) => ({
+        account: source,
+        limitType: "Intraledger",
+        range: source.range,
+      }),
     },
     convert: {
       type: GT.NonNull(TradeIntraAccountAccountLimit),
       description: `Limits for converting between currencies among a account's own wallets.`,
-      resolve: (source: Account) => ({ account: source, limitType: "TradeIntraAccount" }),
+      resolve: (source: { account: Account; range: AccountLimitsRange }) => ({
+        account: source,
+        limitType: "TradeIntraAccount",
+        range: source.range,
+      }),
     },
   }),
 })
