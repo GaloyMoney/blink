@@ -52,7 +52,7 @@
     "apollo-server-core": "^3.11.1",
     "apollo-server-errors": "^3.3.1",
     "apollo-server-express": "^3.10.3",
-    "axios": "1.1",
+    "axios": "1.2",
     "balanceofsatoshis": "^13.3.3",
     "bip32": "^3.1.0",
     "bitcoin-core-ts": "^3.0.3",
