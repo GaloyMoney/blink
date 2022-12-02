@@ -30,7 +30,7 @@ authRouter.post("/browser", async (req, res) => {
   }
 
   try {
-    const { data } = await kratosPublic.toSession(undefined, req.header("Cookie"))
+    const { data } = await kratosPublic.toSession({ cookie: req.header("Cookie") })
 
     const kratosLoginResp = await Auth.loginWithEmail({
       kratosUserId: data.identity.id,

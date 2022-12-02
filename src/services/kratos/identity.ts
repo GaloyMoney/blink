@@ -31,7 +31,7 @@ export const IdentityRepository = (): IIdentityRepository => {
     let data: Identity
 
     try {
-      const res = await kratosAdmin.adminGetIdentity(kratosUserId)
+      const res = await kratosAdmin.getIdentity({ id: kratosUserId })
       data = res.data
     } catch (err) {
       return new UnknownKratosError(err)
@@ -51,7 +51,7 @@ export const IdentityRepository = (): IIdentityRepository => {
 
       while (hasNext) {
         // Note: this call is paginated, return 250 records `perPage` by default
-        const res = await kratosAdmin.adminListIdentities(perPage, page)
+        const res = await kratosAdmin.listIdentities({ perPage, page })
         identities.push(...res.data)
 
         totalCount = Number(res.headers["x-total-count"])
@@ -80,7 +80,7 @@ export const IdentityRepository = (): IIdentityRepository => {
     let identities: Identity[]
 
     try {
-      const res = await kratosAdmin.adminListIdentities()
+      const res = await kratosAdmin.listIdentities()
       identities = res.data
     } catch (err) {
       return new UnknownKratosError(err)
