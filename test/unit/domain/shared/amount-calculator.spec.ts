@@ -23,27 +23,6 @@ describe("AmountCalculator", () => {
     })
   })
 
-  describe("adds list", () => {
-    const currency = WalletCurrency.Btc
-    const a = { amount: 200n, currency }
-    const b = { amount: 100n, currency }
-    const c = { amount: 50n, currency }
-    const d = { amount: 25n, currency }
-
-    it("adds two payment amounts", () => {
-      const res = calc.addList([a, b])
-      expect(res).toStrictEqual({ amount: 300n, currency })
-    })
-
-    it("adds multiple amounts", () => {
-      const res1 = calc.addList([a, b, c])
-      expect(res1).toStrictEqual({ amount: 350n, currency })
-
-      const res2 = calc.addList([a, b, c, d])
-      expect(res2).toStrictEqual({ amount: 375n, currency })
-    })
-  })
-
   describe("subs", () => {
     const currency = WalletCurrency.Btc
     const a = { amount: 200n, currency }
