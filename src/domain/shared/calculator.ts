@@ -6,6 +6,13 @@ export const AmountCalculator = (): AmountCalculator => {
     }
   }
 
+  const addList = <T extends WalletCurrency>(values: PaymentAmount<T>[]) => {
+    return values.reduce((accumulator, currentValue) => add(accumulator, currentValue), {
+      amount: 0n,
+      currency: values[0].currency,
+    })
+  }
+
   const sub = <T extends WalletCurrency>(a: PaymentAmount<T>, b: PaymentAmount<T>) => {
     return {
       currency: a.currency,
@@ -56,6 +63,7 @@ export const AmountCalculator = (): AmountCalculator => {
   return {
     sub,
     add,
+    addList,
     divRound,
     divFloor,
     divCeil,

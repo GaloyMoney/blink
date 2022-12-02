@@ -51,6 +51,7 @@ type AmountCalculator = {
     a: PaymentAmount<T>,
     b: PaymentAmount<T>,
   ) => PaymentAmount<T>
+  addList: <T extends WalletCurrency>(values: PaymentAmount<T>[]) => PaymentAmount<T>
   sub: <T extends WalletCurrency>(
     a: PaymentAmount<T>,
     b: PaymentAmount<T>,
