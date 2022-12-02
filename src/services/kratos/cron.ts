@@ -14,5 +14,5 @@ export const extendSession = async ({
 }): Promise<void | KratosError> => {
   if (!schemaIdsToExtend.includes(session.identity.schema_id)) return
 
-  await kratosAdmin.adminExtendSession(session.id)
+  await kratosAdmin.extendSession({ id: session.id })
 }

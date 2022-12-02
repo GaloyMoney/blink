@@ -1,18 +1,15 @@
 import { getKratosConfig } from "@config"
 
 import { ErrorLevel } from "@domain/shared"
-import { Configuration, V0alpha2Api, V0alpha2ApiInterface } from "@ory/client"
+import { Configuration, FrontendApi, IdentityApi } from "@ory/client"
 import { recordExceptionInCurrentSpan } from "@services/tracing"
 
 import { MissingExpiredAtKratosError, UnknownKratosError } from "./errors"
 
 const { publicApi, adminApi } = getKratosConfig()
 
-const KratosSdk: (kratosEndpoint: string) => V0alpha2ApiInterface = (kratosEndpoint) =>
-  new V0alpha2Api(new Configuration({ basePath: kratosEndpoint }))
-
-export const kratosPublic = KratosSdk(publicApi)
-export const kratosAdmin = KratosSdk(adminApi)
+export const kratosPublic = new FrontendApi(new Configuration({ basePath: publicApi }))
+export const kratosAdmin = new IdentityApi(new Configuration({ basePath: adminApi }))
 
 export const toDomainSession = (session: KratosSession): Session => {
   // is throw ok? this should not happen I (nb) believe but the type say it can
@@ -48,7 +45,7 @@ export const listSessionsInternal = async (
   userId: UserId,
 ): Promise<KratosSession[] | KratosError> => {
   try {
-    const res = await kratosAdmin.adminListIdentitySessions(userId)
+    const res = await kratosAdmin.listIdentitySessions({ id: userId })
     if (res.data === null) return []
     return res.data
   } catch (err) {

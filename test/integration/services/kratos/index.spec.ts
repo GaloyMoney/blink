@@ -3,7 +3,7 @@ import {
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
 } from "@domain/authentication/errors"
-import { AdminCreateIdentityBody } from "@ory/client"
+import { CreateIdentityBody } from "@ory/client"
 import {
   AuthWithPhonePasswordlessService,
   extendSession,
@@ -128,7 +128,7 @@ describe("phoneNoPassword", () => {
       })
       if (res instanceof Error) throw res
 
-      const newIdentity = await kratosAdmin.adminGetIdentity(kratosUserId)
+      const newIdentity = await kratosAdmin.getIdentity({ id: kratosUserId })
       expect(newIdentity.data.schema_id).toBe("phone_with_password_v0")
     })
 
@@ -163,23 +163,23 @@ describe("phoneNoPassword", () => {
     if (res1 instanceof Error) throw res1
     expect(res1.session.identity.phone).toStrictEqual(phone)
 
-    const res2 = await kratosPublic.initializeSelfServiceSettingsFlowWithoutBrowser(
-      res.sessionToken,
-    )
+    const res2 = await kratosPublic.createNativeSettingsFlow({
+      xSessionToken: res.sessionToken,
+    })
 
     const newPhone = randomPhone()
 
     try {
-      await kratosPublic.submitSelfServiceSettingsFlow(
-        res2.data.id,
-        {
+      await kratosPublic.updateSettingsFlow({
+        flow: res2.data.id,
+        updateSettingsFlowBody: {
           method: "profile",
           traits: {
             phone: newPhone,
           },
         },
-        res.sessionToken,
-      )
+        xSessionToken: res.sessionToken,
+      })
 
       // should throw
       expect(true).toBeFalsy()
@@ -229,14 +229,14 @@ describe("session revokation", () => {
     const kratosUserId = res.kratosUserId
 
     {
-      const { data } = await kratosAdmin.adminListIdentitySessions(kratosUserId)
+      const { data } = await kratosAdmin.listIdentitySessions({ id: kratosUserId })
       expect(data.length).toBeGreaterThan(0)
     }
 
     await revokeSessions(kratosUserId)
 
     {
-      const { data } = await kratosAdmin.adminListIdentitySessions(kratosUserId)
+      const { data } = await kratosAdmin.listIdentitySessions({ id: kratosUserId })
       expect(data).toBeFalsy()
     }
   })
@@ -300,14 +300,14 @@ it("extend session", async () => {
   if (res instanceof Error) throw res
 
   expect(res).toHaveProperty("kratosUserId")
-  const res2 = await kratosPublic.toSession(res.sessionToken)
+  const res2 = await kratosPublic.toSession({ xSessionToken: res.sessionToken })
   const session = res2.data
   if (!session.expires_at) throw Error("should have expired_at")
   const initialExpiresAt = new Date(session.expires_at)
 
   await extendSession({ session })
 
-  const res3 = await kratosPublic.toSession(res.sessionToken)
+  const res3 = await kratosPublic.toSession({ xSessionToken: res.sessionToken })
   const newSession = res3.data
   if (!newSession.expires_at) throw Error("should have expired_at")
   const newExpiresAt = new Date(newSession.expires_at)
@@ -321,7 +321,7 @@ describe("upgrade", () => {
   it("move from email to email + phone", async () => {
     const phone = randomPhone()
     const email = randomEmail()
-    const adminIdentity: AdminCreateIdentityBody = {
+    const adminIdentity: CreateIdentityBody = {
       credentials: { password: { config: { password } } },
       state: "active",
       schema_id: "email_and_phone_with_password_v0",
@@ -330,14 +330,19 @@ describe("upgrade", () => {
       },
     }
 
-    const { data: identity } = await kratosAdmin.adminCreateIdentity(adminIdentity)
+    const { data: identity } = await kratosAdmin.createIdentity({
+      createIdentityBody: adminIdentity,
+    })
 
-    const { data: identity2 } = await kratosAdmin.adminUpdateIdentity(identity.id, {
-      schema_id: "email_and_phone_with_password_v0",
-      state: "active",
-      traits: {
-        phone,
-        email,
+    const { data: identity2 } = await kratosAdmin.updateIdentity({
+      id: identity.id,
+      updateIdentityBody: {
+        schema_id: "email_and_phone_with_password_v0",
+        state: "active",
+        traits: {
+          phone,
+          email,
+        },
       },
     })
 
