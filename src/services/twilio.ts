@@ -67,7 +67,18 @@ export const TwilioClient = (): IPhoneProviderService => {
       //   countryCode: result.countryCode,
       // }
 
-      return result
+      const phoneMetadata: PhoneMetadata = {
+        carrier: {
+          error_code: result.carrier.error_code,
+          mobile_country_code: result.carrier.mobile_country_code,
+          mobile_network_code: result.carrier.mobile_network_code,
+          name: result.carrier.name,
+          type: result.carrier.type,
+        },
+        countryCode: result.countryCode,
+      }
+
+      return phoneMetadata
     } catch (err) {
       return new UnknownPhoneProviderServiceError(err)
     }
