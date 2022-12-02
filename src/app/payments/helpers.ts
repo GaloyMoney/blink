@@ -130,20 +130,20 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   }
 }
 
-const checkLimitsBase = async <S extends WalletCurrency>({
-  wallet,
+const checkLimitsBase = async ({
+  accountId,
   volumeAmountSinceFn,
 }: {
-  wallet: WalletDescriptor<S>
+  accountId: AccountId
   volumeAmountSinceFn: GetVolumeAmountSinceFn
 }) => {
   const timestamp1Day = timestampDaysAgo(ONE_DAY)
   if (timestamp1Day instanceof Error) return timestamp1Day
 
-  const account = await AccountsRepository().findById(wallet.accountId)
+  const account = await AccountsRepository().findById(accountId)
   if (account instanceof Error) return account
 
-  const wallets = await WalletsRepository().listByAccountId(wallet.accountId)
+  const wallets = await WalletsRepository().listByAccountId(accountId)
   if (wallets instanceof Error) return wallets
 
   const walletVolumesWithErrors = await Promise.all(
@@ -168,17 +168,17 @@ const checkLimitsBase = async <S extends WalletCurrency>({
   }
 }
 
-export const newCheckIntraledgerLimits = async <S extends WalletCurrency>({
+export const newCheckIntraledgerLimits = async ({
   amount,
-  wallet,
+  accountId,
   priceRatio,
 }: {
   amount: UsdPaymentAmount
-  wallet: WalletDescriptor<S>
+  accountId: AccountId
   priceRatio: PriceRatio
 }) => {
   const volumesAndLimits = await checkLimitsBase({
-    wallet,
+    accountId,
     volumeAmountSinceFn: ledger.intraledgerTxBaseVolumeAmountSince,
   })
   if (volumesAndLimits instanceof Error) return volumesAndLimits
@@ -193,17 +193,17 @@ export const newCheckIntraledgerLimits = async <S extends WalletCurrency>({
   })
 }
 
-export const newCheckTradeIntraAccountLimits = async <S extends WalletCurrency>({
+export const newCheckTradeIntraAccountLimits = async ({
   amount,
-  wallet,
+  accountId,
   priceRatio,
 }: {
   amount: UsdPaymentAmount
-  wallet: WalletDescriptor<S>
+  accountId: AccountId
   priceRatio: PriceRatio
 }) => {
   const volumesAndLimits = await checkLimitsBase({
-    wallet,
+    accountId,
     volumeAmountSinceFn: ledger.tradeIntraAccountTxBaseVolumeAmountSince,
   })
   if (volumesAndLimits instanceof Error) return volumesAndLimits
@@ -218,17 +218,17 @@ export const newCheckTradeIntraAccountLimits = async <S extends WalletCurrency>(
   })
 }
 
-export const newCheckWithdrawalLimits = async <S extends WalletCurrency>({
+export const newCheckWithdrawalLimits = async ({
   amount,
-  wallet,
+  accountId,
   priceRatio,
 }: {
   amount: UsdPaymentAmount
-  wallet: WalletDescriptor<S>
+  accountId: AccountId
   priceRatio: PriceRatio
 }) => {
   const volumesAndLimits = await checkLimitsBase({
-    wallet,
+    accountId,
     volumeAmountSinceFn: ledger.externalPaymentVolumeAmountSince,
   })
   if (volumesAndLimits instanceof Error) return volumesAndLimits

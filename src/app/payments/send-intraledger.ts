@@ -210,7 +210,7 @@ const executePaymentViaIntraledger = async <
       : newCheckIntraledgerLimits
   const limitCheck = await checkLimits({
     amount: paymentFlow.usdPaymentAmount,
-    wallet: senderWallet,
+    accountId: senderWallet.accountId,
     priceRatio: priceRatioForLimits,
   })
   if (limitCheck instanceof Error) return limitCheck
