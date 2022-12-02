@@ -4,31 +4,15 @@ import {
   TwoFALimitsExceededError,
   WithdrawalLimitsExceededError,
 } from "@domain/errors"
-import { AmountCalculator, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  AmountCalculator,
+  paymentAmountFromNumber,
+  WalletCurrency,
+  ZERO_CENTS,
+} from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 const calc = AmountCalculator()
-
-const volumeInUsdAmount = async ({
-  walletVolumes,
-  priceRatio,
-}: {
-  walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
-  priceRatio: PriceRatio
-}): Promise<UsdPaymentAmount> => {
-  const outgoingBaseAmounts: UsdPaymentAmount[] = []
-  for (const walletVolume of walletVolumes) {
-    const outgoingUsdAmount =
-      walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
-        ? await priceRatio.convertFromBtc(
-            walletVolume.outgoingBaseAmount as BtcPaymentAmount,
-          )
-        : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
-    outgoingBaseAmounts.push(outgoingUsdAmount)
-  }
-
-  return calc.addList(outgoingBaseAmounts)
-}
 
 const checkLimitBase =
   ({
@@ -52,10 +36,17 @@ const checkLimitBase =
     amount,
     walletVolumes,
   }: NewLimiterCheckInputs): Promise<true | LimitsExceededError> => {
-    const usdVolumeAmount = await volumeInUsdAmount({
-      walletVolumes,
-      priceRatio,
-    })
+    let volumeInUsdAmount = ZERO_CENTS
+    for (const walletVolume of walletVolumes) {
+      const outgoingUsdAmount =
+        walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
+          ? await priceRatio.convertFromBtc(
+              walletVolume.outgoingBaseAmount as BtcPaymentAmount,
+            )
+          : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
+
+      volumeInUsdAmount = calc.add(volumeInUsdAmount, outgoingUsdAmount)
+    }
 
     const limit = paymentAmountFromNumber({
       amount: limitAmount,
@@ -63,13 +54,13 @@ const checkLimitBase =
     })
     if (limit instanceof Error) return limit
     addAttributesToCurrentSpan({
-      "txVolume.outgoingInBase": `${usdVolumeAmount.amount}`,
+      "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
       "txVolume.threshold": `${limit.amount}`,
       "txVolume.amountInBase": `${amount.amount}`,
       "txVolume.limitCheck": limitName,
     })
 
-    const remainingLimit = limit.amount - usdVolumeAmount.amount
+    const remainingLimit = limit.amount - volumeInUsdAmount.amount
     if (remainingLimit < amount.amount) {
       return new limitError(limitErrMsg)
     }
