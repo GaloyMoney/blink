@@ -20,11 +20,14 @@ import {
   PID,
   startServer,
 } from "test/helpers"
+import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"
 
 let serverPid: PID
 
 beforeAll(async () => {
   serverPid = await startServer("start-main-ci")
+  const { phone, code } = getPhoneAndCodeFromRef("G")
+  await loginFromPhoneAndCode({ phone, code })
 })
 
 afterAll(async () => {
