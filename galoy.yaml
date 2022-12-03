@@ -73,6 +73,18 @@ test_accounts:
     code: "321321"
     role: editor
     username: editor
+  - ref: J
+    phone: "+19876543211"
+    code: "321321"
+    username: tester2
+  - ref: K
+    phone: "+198765432112"
+    code: "321321"
+    username: tester3
+  - ref: L
+    phone: "+198765432113"
+    code: "321321"
+    username: tester4
 rateLimits:
   requestPhoneCodePerPhone:
     points: 4
