@@ -20,19 +20,17 @@ import {
   PID,
   startServer,
 } from "test/helpers"
-import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"
-
 let serverPid: PID
 
 beforeAll(async () => {
   serverPid = await startServer("start-main-ci")
-  const { phone, code } = getPhoneAndCodeFromRef("G")
-  await loginFromPhoneAndCode({ phone, code })
 })
 
 afterAll(async () => {
   await killServer(serverPid)
 })
+
+const userRef = "D"
 
 describe("Oathkeeper", () => {
   it("return anon if no bearer assets", async () => {
@@ -49,7 +47,6 @@ describe("Oathkeeper", () => {
   })
 
   it("return UserId when kratos session token is provided", async () => {
-    const userRef = "D"
     const { phone, code } = getPhoneAndCodeFromRef(userRef)
 
     const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
@@ -74,7 +71,6 @@ describe("Oathkeeper", () => {
   })
 
   it("return UserId when legacy JWT is provided", async () => {
-    const userRef = "D"
     const { phone } = getPhoneAndCodeFromRef(userRef)
 
     const user = await IdentityRepository().slowFindByPhone(phone)
