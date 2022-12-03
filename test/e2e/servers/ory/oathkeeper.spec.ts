@@ -30,7 +30,7 @@ afterAll(async () => {
   await killServer(serverPid)
 })
 
-const userRef = "D"
+const userRef = "L"
 
 describe("Oathkeeper", () => {
   it("return anon if no bearer assets", async () => {
