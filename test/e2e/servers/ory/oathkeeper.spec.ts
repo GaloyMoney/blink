@@ -30,6 +30,9 @@ afterAll(async () => {
   await killServer(serverPid)
 })
 
+// TODO: if "D" failed silently.
+// should have a fail safe error fallback when therer is mismatch
+// between account/user on mongoose and kratos
 const userRef = "L"
 
 describe("Oathkeeper", () => {
