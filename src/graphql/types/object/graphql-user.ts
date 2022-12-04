@@ -5,6 +5,7 @@ import { GT } from "@graphql/index"
 import { Accounts } from "@app"
 
 import { mapError } from "@graphql/error-map"
+import { getLanguageOrDefault } from "@domain/locale"
 import { UnknownClientError } from "@graphql/error"
 
 import { baseLogger } from "@services/logger"
@@ -45,6 +46,7 @@ const GraphQLUser = GT.Object({
       type: GT.NonNull(Language),
       description: dedent`Preferred language for user.
         When value is 'default' the intent is to use preferred language from OS settings.`,
+      resolve: async (source) => getLanguageOrDefault(source.language),
     },
 
     quizQuestions: {
