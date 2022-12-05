@@ -341,6 +341,7 @@ const UserSchema = new Schema(
     language: {
       type: String,
       enum: [...Languages, ""],
+      default: "",
     },
     deviceTokens: {
       type: [String],
