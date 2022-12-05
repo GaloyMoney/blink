@@ -4,8 +4,15 @@ import {
   TwoFALimitsExceededError,
   WithdrawalLimitsExceededError,
 } from "@domain/errors"
-import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  AmountCalculator,
+  paymentAmountFromNumber,
+  WalletCurrency,
+  ZERO_CENTS,
+} from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
+
+const calc = AmountCalculator()
 
 const checkLimitBase =
   ({
@@ -27,14 +34,19 @@ const checkLimitBase =
   }) =>
   async ({
     amount,
-    walletVolume,
+    walletVolumes,
   }: NewLimiterCheckInputs): Promise<true | LimitsExceededError> => {
-    const volumeInUsdAmount =
-      walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
-        ? await priceRatio.convertFromBtc(
-            walletVolume.outgoingBaseAmount as BtcPaymentAmount,
-          )
-        : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
+    let volumeInUsdAmount = ZERO_CENTS
+    for (const walletVolume of walletVolumes) {
+      const outgoingUsdAmount =
+        walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
+          ? await priceRatio.convertFromBtc(
+              walletVolume.outgoingBaseAmount as BtcPaymentAmount,
+            )
+          : (walletVolume.outgoingBaseAmount as UsdPaymentAmount)
+
+      volumeInUsdAmount = calc.add(volumeInUsdAmount, outgoingUsdAmount)
+    }
 
     const limit = paymentAmountFromNumber({
       amount: limitAmount,

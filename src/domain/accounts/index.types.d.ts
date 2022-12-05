@@ -116,7 +116,7 @@ type LimitsChecker = {
 
 type NewLimiterCheckInputs = {
   amount: UsdPaymentAmount
-  walletVolume: TxBaseVolumeAmount<WalletCurrency>
+  walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
 }
 
 type NewLimitsCheckerFn = (
