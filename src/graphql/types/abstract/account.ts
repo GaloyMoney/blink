@@ -1,5 +1,5 @@
 import { GT } from "@graphql/index"
-import { connectionArgs } from "graphql-relay"
+import { connectionArgs } from "@graphql/connections"
 
 import { TransactionConnection } from "../object/transaction"
 

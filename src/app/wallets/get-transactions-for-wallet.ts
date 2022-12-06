@@ -23,16 +23,23 @@ export const getTransactionsForWalletId = async ({
   const wallets = WalletsRepository()
   const wallet = await wallets.findById(walletId)
   if (wallet instanceof RepositoryError) return PartialResult.err(wallet)
-  return getTransactionsForWallets([wallet])
+  return getTransactionsForWallets({ wallets: [wallet] })
 }
 
-export const getTransactionsForWallets = async (
-  wallets: Wallet[],
-): Promise<PartialResult<WalletTransaction[]>> => {
+export const getTransactionsForWallets = async ({
+  wallets,
+  paginationArgs,
+}: {
+  wallets: Wallet[]
+  paginationArgs?: PaginationArgs
+}): Promise<PartialResult<WalletTransaction[]>> => {
   const walletIds = wallets.map((wallet) => wallet.id)
 
   const ledger = LedgerService()
-  const ledgerTransactions = await ledger.getTransactionsByWalletIds(walletIds)
+  const ledgerTransactions = await ledger.getTransactionsByWalletIds({
+    walletIds,
+    paginationArgs,
+  })
   if (ledgerTransactions instanceof LedgerError)
     return PartialResult.err(ledgerTransactions)
 

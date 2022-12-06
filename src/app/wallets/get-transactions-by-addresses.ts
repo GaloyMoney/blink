@@ -16,14 +16,19 @@ import { getOnChainTxs } from "./private/get-on-chain-txs"
 export const getTransactionsForWalletsByAddresses = async ({
   wallets,
   addresses,
+  paginationArgs,
 }: {
   wallets: Wallet[]
   addresses: OnChainAddress[]
+  paginationArgs?: PaginationArgs
 }): Promise<PartialResult<WalletTransaction[]>> => {
   const walletIds = wallets.map((wallet) => wallet.id)
 
   const ledger = LedgerService()
-  const ledgerTransactionsForWallets = await ledger.getTransactionsByWalletIds(walletIds)
+  const ledgerTransactionsForWallets = await ledger.getTransactionsByWalletIds({
+    walletIds,
+    paginationArgs,
+  })
   if (ledgerTransactionsForWallets instanceof LedgerError)
     return PartialResult.err(ledgerTransactionsForWallets)
   const ledgerTransactions = ledgerTransactionsForWallets.filter(
