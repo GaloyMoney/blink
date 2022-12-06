@@ -264,21 +264,21 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
         (state.recipientWalletCurrency as WalletCurrency)
 
     if (noConversionRequired) {
-      if (btcPaymentAmount && btcProtocolFee) {
-        if (usdPaymentAmount && usdProtocolFee) {
-          return LPFBWithConversion(
-            new Promise((res) =>
-              res({
-                ...stateWithCreatedAt,
-                btcPaymentAmount,
-                usdPaymentAmount,
-                btcProtocolFee,
-                usdProtocolFee,
-              }),
-            ),
-          )
-        }
+      if (btcPaymentAmount && btcProtocolFee && usdPaymentAmount && usdProtocolFee) {
+        return LPFBWithConversion(
+          new Promise((res) =>
+            res({
+              ...stateWithCreatedAt,
+              btcPaymentAmount,
+              usdPaymentAmount,
+              btcProtocolFee,
+              usdProtocolFee,
+            }),
+          ),
+        )
+      }
 
+      if (btcPaymentAmount && btcProtocolFee) {
         const updatedStateFromBtcPaymentAmount = async (
           btcPaymentAmount: BtcPaymentAmount,
         ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
@@ -302,7 +302,8 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
         }
 
         return LPFBWithConversion(updatedStateFromBtcPaymentAmount(btcPaymentAmount))
-      } else if (usdPaymentAmount && usdProtocolFee) {
+      }
+      if (usdPaymentAmount && usdProtocolFee) {
         const updatedStateFromUsdPaymentAmount = async (
           usdPaymentAmount: UsdPaymentAmount,
         ): Promise<LPFBWithConversionState<S, R> | DealerPriceServiceError> => {
@@ -326,13 +327,13 @@ const LPFBWithRecipientWallet = <S extends WalletCurrency, R extends WalletCurre
         }
 
         return LPFBWithConversion(updatedStateFromUsdPaymentAmount(usdPaymentAmount))
-      } else {
-        return LPFBWithError(
-          new InvalidLightningPaymentFlowBuilderStateError(
-            "withConversion - btcPaymentAmount || btcProtocolFee not set",
-          ),
-        )
       }
+
+      return LPFBWithError(
+        new InvalidLightningPaymentFlowBuilderStateError(
+          "withConversion - btcPaymentAmount || btcProtocolFee not set",
+        ),
+      )
     }
 
     // Convert to usd if necessary

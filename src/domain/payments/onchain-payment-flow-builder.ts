@@ -178,19 +178,19 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
         (state.recipientWalletCurrency as WalletCurrency)
 
     if (noConversionRequired) {
-      if (btcProposedAmount) {
-        if (usdProposedAmount) {
-          return OPFBWithConversion(
-            new Promise((res) =>
-              res({
-                ...stateWithCreatedAt,
-                btcProposedAmount,
-                usdProposedAmount,
-              }),
-            ),
-          )
-        }
+      if (btcProposedAmount && usdProposedAmount) {
+        return OPFBWithConversion(
+          new Promise((res) =>
+            res({
+              ...stateWithCreatedAt,
+              btcProposedAmount,
+              usdProposedAmount,
+            }),
+          ),
+        )
+      }
 
+      if (btcProposedAmount) {
         const updatedStateFromBtcProposedAmount = async (
           btcProposedAmount: BtcPaymentAmount,
         ): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
@@ -211,7 +211,9 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
         }
 
         return OPFBWithConversion(updatedStateFromBtcProposedAmount(btcProposedAmount))
-      } else if (usdProposedAmount) {
+      }
+
+      if (usdProposedAmount) {
         const updatedStateFromUsdProposedAmount = async (
           usdProposedAmount: UsdPaymentAmount,
         ): Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError> => {
@@ -232,13 +234,13 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
         }
 
         return OPFBWithConversion(updatedStateFromUsdProposedAmount(usdProposedAmount))
-      } else {
-        return OPFBWithError(
-          new InvalidOnChainPaymentFlowBuilderStateError(
-            "withConversion - btcProposedAmount || btcProtocolFee not set",
-          ),
-        )
       }
+
+      return OPFBWithError(
+        new InvalidOnChainPaymentFlowBuilderStateError(
+          "withConversion - btcProposedAmount || btcProtocolFee not set",
+        ),
+      )
     }
 
     // Convert to usd if necessary
