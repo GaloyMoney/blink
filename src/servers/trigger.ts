@@ -27,9 +27,10 @@ import * as Wallets from "@app/wallets"
 
 import { toSats } from "@domain/bitcoin"
 import { CacheKeys } from "@domain/cache"
+import { ErrorLevel, WalletCurrency } from "@domain/shared"
 import { CouldNotFindWalletInvoiceError } from "@domain/errors"
 import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
+import { DepositFeeCalculator } from "@domain/wallets/deposit-fee-calculator"
 
 import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
 import { SwapTriggerError } from "@domain/swap/errors"
@@ -153,27 +154,33 @@ export const onchainTransactionEventHandler = async (
 
       const price = await PricesWithSpans.getCurrentPrice()
       const displayCurrencyPerSat = price instanceof Error ? undefined : price
-      if (displayCurrencyPerSat) {
-        const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
-        // TODO: tx.tokens represent the total sum, need to segregate amount by address
-        const amount = converter.fromSats(toSats(tx.tokens))
-        displayPaymentAmount = { amount, currency: DisplayCurrency.Usd }
-      }
 
       wallets.forEach(async (wallet) => {
         const recipientAccount = await AccountsRepository().findById(wallet.accountId)
         if (recipientAccount instanceof Error) return recipientAccount
+
+        const fee = DepositFeeCalculator().onChainDepositFee({
+          amount: toSats(tx.tokens),
+          ratio: recipientAccount.depositFeeRatio,
+        })
 
         const recipientUser = await UsersRepository().findById(
           recipientAccount.kratosUserId,
         )
         if (recipientUser instanceof Error) return recipientUser
 
+        if (displayCurrencyPerSat) {
+          const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
+          // TODO: tx.tokens represent the total sum, need to segregate amount by address
+          const amount = converter.fromSats(toSats(tx.tokens - fee))
+          displayPaymentAmount = { amount, currency: DisplayCurrency.Usd }
+        }
+
         NotificationsService().onChainTxReceivedPending({
           recipientAccountId: wallet.accountId,
           recipientWalletId: wallet.id,
           // TODO: tx.tokens represent the total sum, need to segregate amount by address
-          paymentAmount: { amount: BigInt(tx.tokens), currency: wallet.currency },
+          paymentAmount: { amount: BigInt(tx.tokens - fee), currency: wallet.currency },
           displayPaymentAmount,
           txHash,
           recipientDeviceTokens: recipientUser.deviceTokens,

@@ -1,6 +1,6 @@
 import { once } from "events"
 
-import { Prices, Wallets } from "@app"
+import { Prices, Wallets, Accounts } from "@app"
 import {
   getAccountLimits,
   getDisplayCurrencyConfig,
@@ -11,7 +11,7 @@ import {
 import { sat2btc, toSats } from "@domain/bitcoin"
 import { NotificationType } from "@domain/notifications"
 import { OnChainAddressCreateRateLimiterExceededError } from "@domain/rate-limit/errors"
-import { TxStatus } from "@domain/wallets"
+import { DepositFeeCalculator, TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { baseLogger } from "@services/logger"
@@ -296,6 +296,14 @@ describe("UserWallet - On chain", () => {
     const address = await Wallets.createOnChainAddress(walletIdA)
     if (address instanceof Error) throw address
 
+    const account = await Accounts.getAccount(accountIdA)
+    if (account instanceof Error) throw account
+
+    const feeSats = DepositFeeCalculator().onChainDepositFee({
+      amount: amountSats,
+      ratio: account.depositFeeRatio,
+    })
+
     const sub = subscribeToTransactions({ lnd: lndonchain })
     sub.on("chain_transaction", onchainTransactionEventHandler)
 
@@ -321,7 +329,8 @@ describe("UserWallet - On chain", () => {
 
     const pendingTx = pendingTxs[0] as WalletOnChainTransaction
     expect(pendingTx.settlementVia.type).toBe("onchain")
-    expect(pendingTx.settlementAmount).toBe(amountSats)
+    expect(pendingTx.settlementAmount).toBe(amountSats - feeSats)
+    expect(pendingTx.settlementFee).toBe(feeSats)
     expect(pendingTx.initiationVia.address).toBe(address)
     expect(pendingTx.createdAt).toBeInstanceOf(Date)
 
@@ -343,9 +352,12 @@ describe("UserWallet - On chain", () => {
     const satsPrice = await Prices.getCurrentPrice()
     if (satsPrice instanceof Error) throw satsPrice
 
-    const paymentAmount = { amount: BigInt(amountSats), currency: WalletCurrency.Btc }
+    const paymentAmount = {
+      amount: BigInt(pendingTx.settlementAmount),
+      currency: WalletCurrency.Btc,
+    }
     const displayPaymentAmount = {
-      amount: amountSats * satsPrice,
+      amount: pendingTx.settlementAmount * satsPrice,
       currency: DefaultDisplayCurrency,
     }
 

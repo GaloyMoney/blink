@@ -138,7 +138,9 @@ type WalletTransactionWithMetadata =
 type AddPendingIncomingArgs = {
   pendingIncoming: IncomingOnChainTransaction[]
   addressesByWalletId: { [key: WalletId]: OnChainAddress[] }
-  walletDetailsByWalletId: { [key: WalletId]: { currency: WalletCurrency } }
+  walletDetailsByWalletId: {
+    [key: WalletId]: { currency: WalletCurrency; depositFeeRatio: DepositFeeRatio }
+  }
   displayCurrencyPerSat: DisplayCurrencyPerSat
 }
 
