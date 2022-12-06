@@ -34,10 +34,12 @@ export const ImbalanceCalculator = ({
       : toCents(volume_.incomingBaseAmount - volume_.outgoingBaseAmount)
   }
 
-  const getSwapOutImbalance = async <T extends WalletCurrency>(
+  const getSwapOutImbalanceAmount = async <T extends WalletCurrency>(
     wallet: WalletDescriptor<T>,
-  ) => {
-    if (method === WithdrawalFeePriceMethod.flat) return 0 as SwapOutImbalance
+  ): Promise<PaymentAmount<T> | LedgerServiceError | ValidationError> => {
+    if (method === WithdrawalFeePriceMethod.flat) {
+      return paymentAmountFromNumber<T>({ amount: 0, currency: wallet.currency })
+    }
 
     const lnNetInbound = await getNetInboundFlow({
       since,
@@ -53,20 +55,12 @@ export const ImbalanceCalculator = ({
     })
     if (onChainNetInbound instanceof Error) return onChainNetInbound
 
-    return (lnNetInbound - onChainNetInbound) as SwapOutImbalance
-  }
-
-  const getSwapOutImbalanceAmount = async <T extends WalletCurrency>(
-    wallet: WalletDescriptor<T>,
-  ): Promise<PaymentAmount<T> | LedgerServiceError | ValidationError> => {
-    const imbalance = await getSwapOutImbalance(wallet)
-    if (imbalance instanceof Error) return imbalance
+    const imbalance = (lnNetInbound - onChainNetInbound) as SwapOutImbalance
 
     return paymentAmountFromNumber<T>({ amount: imbalance, currency: wallet.currency })
   }
 
   return {
-    getSwapOutImbalance,
     getSwapOutImbalanceAmount,
   }
 }

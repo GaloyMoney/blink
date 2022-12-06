@@ -458,7 +458,7 @@ describe("UserWallet - Lightning Pay", () => {
       volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
     })
 
-    const imbalanceInit = await imbalanceCalc.getSwapOutImbalance(walletDescriptorB)
+    const imbalanceInit = await imbalanceCalc.getSwapOutImbalanceAmount(walletDescriptorB)
     if (imbalanceInit instanceof Error) throw imbalanceInit
 
     const { request, secret, id } = await createInvoice({ lnd: lndOutside1 })
@@ -564,11 +564,15 @@ describe("UserWallet - Lightning Pay", () => {
     const finalBalance = await getBalanceHelper(walletIdB)
     expect(finalBalance).toBe(initBalanceB - amountInvoice)
 
-    const imbalanceFinal = await imbalanceCalc.getSwapOutImbalance(walletDescriptorB)
+    const imbalanceFinal = await imbalanceCalc.getSwapOutImbalanceAmount(
+      walletDescriptorB,
+    )
     if (imbalanceFinal instanceof Error) throw imbalanceFinal
 
     // imbalance is reduced with lightning payment
-    expect(imbalanceFinal).toBe(imbalanceInit - amountInvoice)
+    expect(Number(imbalanceFinal.amount)).toBe(
+      Number(imbalanceInit.amount) - amountInvoice,
+    )
   })
 
   it("pay zero amount invoice with amount less than 1 cent", async () => {
@@ -579,7 +583,7 @@ describe("UserWallet - Lightning Pay", () => {
       volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
     })
 
-    const imbalanceInit = await imbalanceCalc.getSwapOutImbalance(walletDescriptorB)
+    const imbalanceInit = await imbalanceCalc.getSwapOutImbalanceAmount(walletDescriptorB)
     if (imbalanceInit instanceof Error) throw imbalanceInit
 
     const { request } = await createInvoice({ lnd: lndOutside1 })

@@ -185,10 +185,10 @@ describe("UserWallet - Lightning", () => {
     })
 
     // FIXME: Needs to be in the first test so that previous volume for wallet is 0.
-    const imbalance = await imbalanceCalc.getSwapOutImbalance(walletDescriptorB)
+    const imbalance = await imbalanceCalc.getSwapOutImbalanceAmount(walletDescriptorB)
     if (imbalance instanceof Error) throw imbalance
 
-    expect(imbalance).toBe(sats)
+    expect(Number(imbalance.amount)).toBe(sats)
   })
 
   it("if trigger is missing the USD invoice, then it should be denied", async () => {
