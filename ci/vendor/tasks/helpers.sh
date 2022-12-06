@@ -1,6 +1,3 @@
-export CARGO_HOME="$(pwd)/cargo-home"
-export CARGO_TARGET_DIR="$(pwd)/cargo-target-dir"
-
 function unpack_deps() {
   REPO_PATH=${REPO_PATH:-repo}
 
