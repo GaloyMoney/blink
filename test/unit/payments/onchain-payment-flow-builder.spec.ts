@@ -742,31 +742,6 @@ describe("OnChainPaymentFlowBuilder", () => {
   })
 
   describe("error states", () => {
-    describe("pass an empty value to withAddress", () => {
-      it("returns a ValidationError", async () => {
-        const isIntraLedger = false
-        const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
-
-        const payment = await OnChainPaymentFlowBuilder({
-          volumeLightningFn,
-          volumeOnChainFn,
-          isExternalAddress: async () => Promise.resolve(!isIntraLedger),
-          sendAll: false,
-          dustThreshold,
-        })
-          .withAddress("" as OnChainAddress)
-          .withSenderWalletAndAccount({
-            wallet: senderBtcWallet,
-            account: senderAccount,
-          })
-          .withoutRecipientWallet()
-          .withAmount(uncheckedAmount)
-          .withConversion(withConversionArgs)
-          .withMinerFee(minerFee)
-
-        expect(payment).toBeInstanceOf(InvalidOnChainPaymentFlowBuilderStateError)
-      })
-    })
     describe("non-integer uncheckedAmount", () => {
       it("returns a ValidationError", async () => {
         const isIntraLedger = false

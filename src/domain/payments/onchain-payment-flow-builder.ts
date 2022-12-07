@@ -29,13 +29,6 @@ export const OnChainPaymentFlowBuilder = <S extends WalletCurrency>(
   config: OnChainPaymentFlowBuilderConfig,
 ): OnChainPaymentFlowBuilder<S> => {
   const withAddress = (address: OnChainAddress): OPFBWithAddress<S> | OPFBWithError => {
-    // TODO: validate onchain address?
-    if (!address) {
-      return OPFBWithError(
-        new InvalidOnChainPaymentFlowBuilderStateError("invalid address"),
-      )
-    }
-
     return OPFBWithAddress({
       ...config,
 
