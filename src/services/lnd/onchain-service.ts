@@ -1,3 +1,4 @@
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindOnChainTransactionError,
@@ -55,6 +56,15 @@ export const OnChainService = (
 
       return new OnChainServiceUnavailableError(errDetails)
     }
+  }
+
+  const getBalanceAmount = async (
+    pubkey?: Pubkey,
+  ): Promise<BtcPaymentAmount | OnChainServiceError> => {
+    const balance = await getBalance(pubkey)
+    if (balance instanceof Error) return balance
+
+    return paymentAmountFromNumber({ amount: balance, currency: WalletCurrency.Btc })
   }
 
   const getPendingBalance = async (
@@ -206,6 +216,7 @@ export const OnChainService = (
     fns: {
       listActivePubkeys,
       getBalance,
+      getBalanceAmount,
       getPendingBalance,
       listIncomingTransactions,
       lookupOnChainFee,

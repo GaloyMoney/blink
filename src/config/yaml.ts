@@ -159,14 +159,16 @@ export const getLndParams = (): LndParams[] => {
 
 export const getFeesConfig = (feesConfig = yamlConfig.fees): FeesConfig => {
   const method = feesConfig.withdraw.method as WithdrawalFeePriceMethod
-  const withdrawRatio =
-    method === WithdrawalFeePriceMethod.flat ? 0 : feesConfig.withdraw.ratio
+  const withdrawRatioAsBasisPoints =
+    method === WithdrawalFeePriceMethod.flat
+      ? 0n
+      : BigInt(feesConfig.withdraw.ratioAsBasisPoints)
 
   return {
     depositFeeVariable: feesConfig.deposit,
     depositFeeFixed: toSats(0),
     withdrawMethod: method,
-    withdrawRatio,
+    withdrawRatioAsBasisPoints,
     withdrawThreshold: toSats(feesConfig.withdraw.threshold),
     withdrawDaysLookback: toDays(feesConfig.withdraw.daysLookback),
     withdrawDefaultMin: toSats(feesConfig.withdraw.defaultMin),

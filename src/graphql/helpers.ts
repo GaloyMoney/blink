@@ -1,9 +1,17 @@
-import { WalletsRepository } from "@services/mongoose"
 import { WalletCurrency } from "@domain/shared"
 
-import { mapAndParseErrorForGqlResponse } from "./error-map"
+import { WalletsRepository } from "@services/mongoose"
+import { baseLogger } from "@services/logger"
 
-const QueryDoesNotMatchWalletCurrencyError = "QueryDoesNotMatchWalletCurrencyError"
+import { mapAndParseErrorForGqlResponse, mapError } from "./error-map"
+import { ValidationInternalError } from "./error"
+
+const QueryDoesNotMatchWalletCurrencyErrorMessage = "QueryDoesNotMatchWalletCurrencyError"
+const QueryDoesNotMatchWalletCurrencyError = new ValidationInternalError({
+  message: QueryDoesNotMatchWalletCurrencyErrorMessage,
+  logger: baseLogger,
+})
+
 const MutationDoesNotMatchWalletCurrencyError = "MutationDoesNotMatchWalletCurrencyError"
 
 export const validateIsBtcWalletForMutation = async (
@@ -31,5 +39,17 @@ export const validateIsUsdWalletForMutation = async (
 }
 
 export const notBtcWalletForQueryError: { errors: [{ message: string }] } = {
-  errors: [{ message: QueryDoesNotMatchWalletCurrencyError }],
+  errors: [{ message: QueryDoesNotMatchWalletCurrencyErrorMessage }],
+}
+
+export const validateIsBtcWalletForQuery = async (
+  walletId: WalletId,
+): Promise<true | CustomApolloError> => {
+  const wallet = await WalletsRepository().findById(walletId)
+  if (wallet instanceof Error) return mapError(wallet)
+
+  if (wallet.currency === WalletCurrency.Usd) {
+    return QueryDoesNotMatchWalletCurrencyError
+  }
+  return true
 }

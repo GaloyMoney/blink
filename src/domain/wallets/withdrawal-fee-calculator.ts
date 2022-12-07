@@ -1,33 +1,43 @@
-import { toSats } from "@domain/bitcoin"
+import { AmountCalculator, ZERO_CENTS, ZERO_SATS } from "@domain/shared"
 
-export const WithdrawalFeeCalculator = ({
+const calc = AmountCalculator()
+
+export const OnChainFees = ({
   thresholdImbalance,
-  feeRatio,
-}: OnchainWithdrawalConfig): WithdrawalFeeCalculator => {
-  const onChainWithdrawalFee = ({
+  feeRatioAsBasisPoints,
+}: OnchainWithdrawalConfig): OnChainFeeCalculator => {
+  const withdrawalFee = ({
     minerFee,
     amount,
     minBankFee,
     imbalance,
   }: {
-    minerFee: Satoshis
-    amount: Satoshis
-    minBankFee: Satoshis
-    imbalance: SwapOutImbalance
+    minerFee: BtcPaymentAmount
+    amount: BtcPaymentAmount
+    minBankFee: BtcPaymentAmount
+    imbalance: BtcPaymentAmount
   }) => {
-    const baseAmount = Math.max(
-      Math.min(imbalance - thresholdImbalance + amount, amount),
-      0,
+    const amountWithImbalanceCalcs = {
+      amount: imbalance.amount - thresholdImbalance.amount + amount.amount,
+      currency: amount.currency,
+    }
+    const baseAmount = calc.max(calc.min(amountWithImbalanceCalcs, amount), ZERO_SATS)
+    const bankFee = calc.max(
+      minBankFee,
+      calc.mulBasisPoints(baseAmount, feeRatioAsBasisPoints),
     )
-    const bankFee = toSats(Math.max(minBankFee, Math.ceil(baseAmount * feeRatio)))
+
     return {
-      totalFee: toSats(bankFee + minerFee),
+      totalFee: calc.add(bankFee, minerFee),
       bankFee,
     }
   }
 
   return {
-    onChainWithdrawalFee,
-    onChainIntraLedgerFee: (): Satoshis => toSats(0),
+    withdrawalFee,
+    intraLedgerFees: () => ({
+      btc: ZERO_SATS,
+      usd: ZERO_CENTS,
+    }),
   }
 }

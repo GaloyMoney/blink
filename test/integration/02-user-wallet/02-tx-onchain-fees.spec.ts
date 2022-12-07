@@ -96,6 +96,9 @@ describe("UserWallet - getOnchainFee", () => {
       targetConfirmations: defaultTarget,
     })
     expect(fee).toBeInstanceOf(InsufficientBalanceError)
-    expect(fee).toHaveProperty("message", "Balance is too low")
+    expect(fee).toHaveProperty(
+      "message",
+      expect.stringMatching(/Payment amount '\d+' sats exceeds balance '\d+'/),
+    )
   })
 })

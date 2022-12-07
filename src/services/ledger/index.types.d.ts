@@ -80,11 +80,12 @@ type AddLnSendLedgerMetadata = NonIntraledgerLedgerMetadata &
     feeKnownInAdvance: boolean
   }
 
-type AddOnchainSendLedgerMetadata = NonIntraledgerLedgerMetadata & {
-  hash: OnChainTxHash
-  payee_addresses: OnChainAddress[]
-  sendAll: boolean
-}
+type AddOnchainSendLedgerMetadata = NonIntraledgerLedgerMetadata &
+  SendAmountsMetadata & {
+    hash: OnChainTxHash
+    payee_addresses: OnChainAddress[]
+    sendAll: boolean
+  }
 
 type AddColdStorageLedgerMetadata = NonIntraledgerLedgerMetadata & {
   hash: OnChainTxHash
@@ -130,6 +131,17 @@ type AddOnChainIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata & {
 
 type AddOnChainTradeIntraAccountLedgerMetadata = Omit<
   AddOnChainIntraledgerSendLedgerMetadata,
+  "username"
+>
+
+type NewAddOnChainIntraledgerSendLedgerMetadata = IntraledgerBaseMetadata &
+  SendAmountsMetadata & {
+    payee_addresses: OnChainAddress[]
+    sendAll: boolean
+  }
+
+type NewAddOnChainTradeIntraAccountLedgerMetadata = Omit<
+  NewAddOnChainIntraledgerSendLedgerMetadata,
   "username"
 >
 

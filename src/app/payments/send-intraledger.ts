@@ -58,7 +58,11 @@ export const intraledgerPaymentSendWalletId = async ({
   const { senderWallet, recipientWallet, recipientAccount } = validatedPaymentInputs
 
   const { id: recipientWalletId, currency: recipientWalletCurrency } = recipientWallet
-  const { id: recipientAccountId, username: recipientUsername } = recipientAccount
+  const {
+    id: recipientAccountId,
+    username: recipientUsername,
+    kratosUserId: recipientUserId,
+  } = recipientAccount
 
   const paymentBuilder = LightningPaymentFlowBuilder({
     localNodeIds: [],
@@ -76,6 +80,7 @@ export const intraledgerPaymentSendWalletId = async ({
     currency: recipientWalletCurrency,
     accountId: recipientAccountId,
     username: recipientUsername,
+    userId: recipientUserId,
     pubkey: undefined,
     usdPaymentAmount: undefined,
   }
@@ -201,7 +206,7 @@ const executePaymentViaIntraledger = async <
     "payment.settlement_method": SettlementMethod.IntraLedger,
   })
 
-  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
+  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const checkLimits =
@@ -215,13 +220,14 @@ const executePaymentViaIntraledger = async <
   })
   if (limitCheck instanceof Error) return limitCheck
 
-  const { recipientWalletId, recipientWalletCurrency, recipientUsername } =
+  const { walletDescriptor: recipientWalletDescriptor, recipientUsername } =
     paymentFlow.recipientDetails()
-  if (!(recipientWalletId && recipientWalletCurrency)) {
+  if (!recipientWalletDescriptor) {
     return new InvalidLightningPaymentFlowBuilderStateError(
       "Expected recipient details missing",
     )
   }
+  const { currency: recipientWalletCurrency } = recipientWalletDescriptor
 
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
     const balance = await LedgerService().getWalletBalanceAmount(senderWallet)

@@ -94,6 +94,7 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
       pubkey: Pubkey
       usdPaymentAmount: UsdPaymentAmount | undefined
       username: Username
+      userId: UserId
     }
   | ApplicationError
 > => {
@@ -118,7 +119,7 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
 
   const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
-  const { username: recipientUsername } = recipientAccount
+  const { username: recipientUsername, kratosUserId: recipientUserId } = recipientAccount
 
   return {
     id: recipientWalletId,
@@ -127,6 +128,7 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
     pubkey: recipientPubkey,
     usdPaymentAmount,
     username: recipientUsername,
+    userId: recipientUserId,
   }
 }
 
@@ -246,12 +248,10 @@ export const newCheckWithdrawalLimits = async ({
 export const getPriceRatioForLimits = wrapAsyncToRunInSpan({
   namespace: "app.payments",
   fnName: "getPriceRatioForLimits",
-  fn: async <S extends WalletCurrency, R extends WalletCurrency>(
-    paymentFlow: PaymentFlow<S, R>,
-  ) => {
+  fn: async (paymentAmounts: PaymentAmountInAllCurrencies) => {
     const amount = MIN_SATS_FOR_PRICE_RATIO_PRECISION
 
-    if (paymentFlow.btcPaymentAmount.amount < amount) {
+    if (paymentAmounts.btc.amount < amount) {
       const btcPaymentAmountForRatio = {
         amount,
         currency: WalletCurrency.Btc,
@@ -267,9 +267,6 @@ export const getPriceRatioForLimits = wrapAsyncToRunInSpan({
       })
     }
 
-    return PriceRatio({
-      usd: paymentFlow.usdPaymentAmount,
-      btc: paymentFlow.btcPaymentAmount,
-    })
+    return PriceRatio(paymentAmounts)
   },
 })

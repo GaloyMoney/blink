@@ -247,6 +247,7 @@ const paymentFlowFromRaw = <S extends WalletCurrency, R extends WalletCurrency>(
     recipientAccountId: (paymentFlowState.recipientAccountId as AccountId) || undefined,
     recipientPubkey: (paymentFlowState.recipientPubkey as Pubkey) || undefined,
     recipientUsername: (paymentFlowState.recipientUsername as Username) || undefined,
+    recipientUserId: (paymentFlowState.recipientUserId as UserId) || undefined,
 
     outgoingNodePubkey: (paymentFlowState.outgoingNodePubkey as Pubkey) || undefined,
     cachedRoute: paymentFlowState.cachedRoute,
@@ -291,6 +292,7 @@ const rawFromPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
     recipientAccountId: paymentFlow.recipientAccountId,
     recipientPubkey: paymentFlow.recipientPubkey,
     recipientUsername: paymentFlow.recipientUsername,
+    recipientUserId: paymentFlow.recipientUserId,
 
     outgoingNodePubkey: paymentFlow.outgoingNodePubkey,
     cachedRoute: paymentFlow.cachedRoute,

@@ -1,15 +1,20 @@
 import crypto from "crypto"
 
-import {
-  BTC_NETWORK,
-  getFeesConfig,
-  getOnChainWalletConfig,
-  ONCHAIN_SCAN_DEPTH_OUTGOING,
-} from "@config"
+import { BTC_NETWORK, getOnChainWalletConfig, ONCHAIN_SCAN_DEPTH_OUTGOING } from "@config"
 
-import { getCurrentPrice } from "@app/prices"
+import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
+import {
+  getPriceRatioForLimits,
+  newCheckIntraledgerLimits,
+  newCheckTradeIntraAccountLimits,
+  newCheckWithdrawalLimits,
+} from "@app/payments/helpers"
 
 import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
+import {
+  InvalidLightningPaymentFlowBuilderStateError,
+  PriceRatio,
+} from "@domain/payments"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   checkedToOnChainAddress,
@@ -17,20 +22,17 @@ import {
   InsufficientOnChainFundsError,
   TxDecoder,
 } from "@domain/bitcoin/onchain"
-import {
-  InsufficientBalanceError,
-  LessThanDustThresholdError,
-  NotImplementedError,
-  RebalanceNeededError,
-  SelfPaymentError,
-} from "@domain/errors"
+import { CouldNotFindError, NotImplementedError } from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
-import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
-import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
+import { NewDisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
 import { WalletCurrency } from "@domain/shared"
-import { PaymentInputValidator, WithdrawalFeeCalculator } from "@domain/wallets"
+import { PaymentInputValidator, SettlementMethod } from "@domain/wallets"
+import { OnChainPaymentFlowBuilder } from "@domain/payments/onchain-payment-flow-builder"
 
+import * as LedgerFacade from "@services/ledger/facade"
+
+import { NewDealerPriceService } from "@services/dealer-price"
 import { LedgerService } from "@services/ledger"
 import { OnChainService } from "@services/lnd/onchain-service"
 import { LockService } from "@services/lock"
@@ -43,15 +45,12 @@ import {
 import { NotificationsService } from "@services/notifications"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
-import { getOnChainFee } from "./get-on-chain-fee"
-import {
-  checkIntraledgerLimits,
-  checkWithdrawalLimits,
-} from "./private/check-limit-helpers"
+import { getMinerFeeAndPaymentFlow } from "./get-on-chain-fee"
 
 const { dustThreshold } = getOnChainWalletConfig()
+const dealer = NewDealerPriceService()
 
-export const payOnChainByWalletId = async ({
+export const payOnChainByWalletId = async <R extends WalletCurrency>({
   senderAccount,
   senderWalletId,
   amount: amountRaw,
@@ -93,27 +92,80 @@ export const payOnChainByWalletId = async ({
   const checkedTargetConfirmations = checkedToTargetConfs(targetConfirmations)
   if (checkedTargetConfirmations instanceof Error) return checkedTargetConfirmations
 
-  const wallets = WalletsRepository()
-  const recipientWallet = await wallets.findByAddress(checkedAddress)
-  const isIntraLedger = !(recipientWallet instanceof Error)
+  const recipientWallet = await WalletsRepository().findByAddress(checkedAddress)
+  if (
+    recipientWallet instanceof Error &&
+    !(recipientWallet instanceof CouldNotFindError)
+  ) {
+    return recipientWallet
+  }
 
-  if (isIntraLedger)
-    return executePaymentViaIntraledger({
-      senderAccount,
-      senderWallet,
-      recipientWallet,
-      amount,
-      address: checkedAddress,
-      memo,
-      sendAll,
-      logger: onchainLogger,
+  const isExternalAddress = async () => recipientWallet instanceof CouldNotFindError
+
+  const withSenderBuilder = OnChainPaymentFlowBuilder({
+    volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
+    volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
+    isExternalAddress,
+    sendAll,
+    dustThreshold,
+  })
+    .withAddress(checkedAddress)
+    .withSenderWalletAndAccount({
+      wallet: senderWallet,
+      account: senderAccount,
     })
 
+  const withConversionArgs = {
+    hedgeBuyUsd: {
+      usdFromBtc: dealer.getCentsFromSatsForImmediateBuy,
+      btcFromUsd: dealer.getSatsFromCentsForImmediateBuy,
+    },
+    hedgeSellUsd: {
+      usdFromBtc: dealer.getCentsFromSatsForImmediateSell,
+      btcFromUsd: dealer.getSatsFromCentsForImmediateSell,
+    },
+    mid: { usdFromBtc: usdFromBtcMidPriceFn, btcFromUsd: btcFromUsdMidPriceFn },
+  }
+
+  if (await withSenderBuilder.isIntraLedger()) {
+    if (recipientWallet instanceof CouldNotFindError) return recipientWallet
+
+    const recipientWalletDescriptor: WalletDescriptor<R> = {
+      id: recipientWallet.id,
+      currency: recipientWallet.currency as R,
+      accountId: recipientWallet.accountId,
+    }
+
+    const recipientAccount = await AccountsRepository().findById(
+      recipientWallet.accountId,
+    )
+    if (recipientAccount instanceof Error) return recipientAccount
+
+    const builder = withSenderBuilder
+      .withRecipientWallet({
+        ...recipientWalletDescriptor,
+        userId: recipientAccount.kratosUserId,
+        username: recipientAccount.username,
+      })
+      .withAmount(amount)
+      .withConversion(withConversionArgs)
+
+    return executePaymentViaIntraledger({
+      builder,
+      senderWallet,
+      senderUsername: senderAccount.username,
+      memo,
+      sendAll,
+    })
+  }
+
+  const builder = withSenderBuilder
+    .withoutRecipientWallet()
+    .withAmount(amount)
+    .withConversion(withConversionArgs)
+
   return executePaymentViaOnChain({
-    senderWallet,
-    senderAccount,
-    amount,
-    address: checkedAddress,
+    builder,
     targetConfirmations: checkedTargetConfirmations,
     memo,
     sendAll,
@@ -125,25 +177,40 @@ const executePaymentViaIntraledger = async <
   S extends WalletCurrency,
   R extends WalletCurrency,
 >({
-  senderAccount,
+  builder,
   senderWallet,
-  recipientWallet,
-  amount,
-  address,
+  senderUsername,
   memo,
   sendAll,
-  logger,
 }: {
-  senderAccount: Account
+  builder: OPFBWithConversion<S, R> | OPFBWithError
   senderWallet: WalletDescriptor<S>
-  recipientWallet: WalletDescriptor<R>
-  amount: CurrencyBaseAmount
-  address: OnChainAddress
+  senderUsername: Username | undefined
   memo: string | null
   sendAll: boolean
-  logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
-  if (recipientWallet.id === senderWallet.id) return new SelfPaymentError()
+  const paymentFlow = await builder.withoutMinerFee()
+  if (paymentFlow instanceof Error) return paymentFlow
+
+  addAttributesToCurrentSpan({
+    "payment.settlement_method": SettlementMethod.IntraLedger,
+  })
+
+  const {
+    walletDescriptor: recipientWalletDescriptor,
+    recipientUsername,
+    recipientUserId,
+  } = paymentFlow.recipientDetails()
+  if (!(recipientWalletDescriptor && recipientUserId)) {
+    return new InvalidLightningPaymentFlowBuilderStateError(
+      "Expected recipient details missing",
+    )
+  }
+  const { id: recipientWalletId, currency: recipientWalletCurrency } =
+    recipientWalletDescriptor
+
+  const recipientWallet = await WalletsRepository().findById(recipientWalletId)
+  if (recipientWallet instanceof Error) return recipientWallet
 
   // TODO Usd use case
   if (
@@ -154,236 +221,262 @@ const executePaymentViaIntraledger = async <
   ) {
     return new NotImplementedError("USD intraledger")
   }
-  const amountSats = toSats(amount)
 
-  const displayCurrencyPerSat = await getCurrentPrice()
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+  // Limit check
+  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
+  if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
-  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
-
-  const intraledgerLimitCheck = await checkIntraledgerLimits({
-    amount,
-    dCConverter,
-    walletId: senderWallet.id,
-    walletCurrency: senderWallet.currency,
-    account: senderAccount,
+  const checkLimits =
+    senderWallet.accountId === recipientWallet.accountId
+      ? newCheckTradeIntraAccountLimits
+      : newCheckIntraledgerLimits
+  const limitCheck = await checkLimits({
+    amount: paymentFlow.usdPaymentAmount,
+    accountId: senderWallet.accountId,
+    priceRatio: priceRatioForLimits,
   })
-  if (intraledgerLimitCheck instanceof Error) return intraledgerLimitCheck
-
-  const amountDisplayCurrency = dCConverter.fromSats(amountSats)
-
-  const recipientAccount = await AccountsRepository().findById(recipientWallet.accountId)
-  if (recipientAccount instanceof Error) return recipientAccount
+  if (limitCheck instanceof Error) return limitCheck
 
   return LockService().lockWalletId(senderWallet.id, async (signal) => {
-    const balance = await LedgerService().getWalletBalance(senderWallet.id)
+    // Check user balance
+    const balance = await LedgerService().getWalletBalanceAmount(senderWallet)
     if (balance instanceof Error) return balance
-    if (balance < amount)
-      return new InsufficientBalanceError(
-        `Payment amount '${amount}' exceeds balance '${balance}'`,
-      )
 
-    const onchainLoggerOnUs = logger.child({ balance, onUs: true })
+    const balanceCheck = paymentFlow.checkBalanceForSend(balance)
+    if (balanceCheck instanceof Error) return balanceCheck
 
+    // Check lock still intact
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
 
-    const journal = await LedgerService().addOnChainIntraledgerTxTransfer({
-      senderWalletId: senderWallet.id,
-      senderWalletCurrency: senderWallet.currency,
-      senderUsername: senderAccount.username,
-      description: "",
-      sats: amountSats,
-      amountDisplayCurrency,
-      payeeAddresses: [address],
-      sendAll,
-      recipientWalletId: recipientWallet.id,
-      recipientWalletCurrency: recipientWallet.currency,
-      recipientUsername: recipientAccount.username,
-      memoPayer: memo || undefined,
+    // Construct metadata
+    const address = await builder.addressForFlow()
+    if (address instanceof Error) return address
+    const payeeAddresses = [address]
+
+    const priceRatio = PriceRatio({
+      usd: paymentFlow.usdPaymentAmount,
+      btc: paymentFlow.btcPaymentAmount,
     })
+    if (priceRatio instanceof Error) return priceRatio
+    const displayCentsPerSat = priceRatio.usdPerSat()
+    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
 
-    if (journal instanceof Error) return journal
+    let metadata:
+      | NewAddOnChainIntraledgerSendLedgerMetadata
+      | NewAddOnChainTradeIntraAccountLedgerMetadata
+    let additionalDebitMetadata: { [key: string]: string | undefined } = {}
+    if (senderWallet.accountId === recipientWallet.accountId) {
+      ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
+        LedgerFacade.OnChainTradeIntraAccountLedgerMetadata({
+          payeeAddresses,
+          sendAll,
+          paymentFlow,
 
-    const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
-    if (recipientUser instanceof Error) return recipientUser
+          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+          displayCurrency: DisplayCurrency.Usd,
 
-    const displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> = {
-      amount: amountDisplayCurrency,
-      currency: DisplayCurrency.Usd,
+          memoOfPayer: memo || undefined,
+        }))
+    } else {
+      ;({ metadata, debitAccountAdditionalMetadata: additionalDebitMetadata } =
+        LedgerFacade.OnChainIntraledgerLedgerMetadata({
+          payeeAddresses,
+          sendAll,
+          paymentFlow,
+
+          amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+          feeDisplayCurrency: 0 as DisplayCurrencyBaseAmount,
+          displayCurrency: DisplayCurrency.Usd,
+
+          memoOfPayer: memo || undefined,
+          senderUsername,
+          recipientUsername,
+        }))
     }
 
+    // Record transaction
+    const journal = await LedgerFacade.recordIntraledger({
+      description: "",
+      amount: {
+        btc: paymentFlow.btcPaymentAmount,
+        usd: paymentFlow.usdPaymentAmount,
+      },
+      senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
+      recipientWalletDescriptor,
+      metadata,
+      additionalDebitMetadata,
+    })
+    if (journal instanceof Error) return journal
+
+    const recipientUser = await UsersRepository().findById(recipientUserId)
+    if (recipientUser instanceof Error) return recipientUser
+
+    let amount = paymentFlow.btcPaymentAmount.amount
+    if (recipientWalletCurrency === WalletCurrency.Usd) {
+      amount = paymentFlow.usdPaymentAmount.amount
+    }
+
+    // Send 'received'-side intraledger notification
     const notificationsService = NotificationsService()
     notificationsService.intraLedgerTxReceived({
       recipientAccountId: recipientWallet.accountId,
       recipientWalletId: recipientWallet.id,
+      paymentAmount: { amount, currency: recipientWalletCurrency },
+      displayPaymentAmount: { amount: metadata.usd, currency: DisplayCurrency.Usd },
       recipientDeviceTokens: recipientUser.deviceTokens,
       recipientLanguage: recipientUser.language,
-      paymentAmount: { amount: BigInt(amountSats), currency: recipientWallet.currency },
-      displayPaymentAmount,
     })
-
-    onchainLoggerOnUs.info(
-      {
-        success: true,
-        type: "onchain_on_us",
-        pending: false,
-        amountDisplayCurrency,
-      },
-      "onchain payment succeed",
-    )
 
     return PaymentSendStatus.Success
   })
 }
 
-const executePaymentViaOnChain = async ({
-  senderWallet,
-  senderAccount,
-  amount,
-  address,
+const executePaymentViaOnChain = async <
+  S extends WalletCurrency,
+  R extends WalletCurrency,
+>({
+  builder,
   targetConfirmations,
   memo,
   sendAll,
   logger,
 }: {
-  senderWallet: Wallet
-  senderAccount: Account
-  amount: CurrencyBaseAmount
-  address: OnChainAddress
+  builder: OPFBWithConversion<S, R> | OPFBWithError
   targetConfirmations: TargetConfirmations
   memo: string | null
   sendAll: boolean
   logger: Logger
 }): Promise<PaymentSendStatus | ApplicationError> => {
+  const senderWalletDescriptor = await builder.senderWalletDescriptor()
+  if (senderWalletDescriptor instanceof Error) return senderWalletDescriptor
+
   // TODO Usd use case
-  if (senderWallet.currency !== WalletCurrency.Btc) {
+  if (senderWalletDescriptor.currency !== WalletCurrency.Btc) {
     return new NotImplementedError("USD Intraledger")
   }
-
-  const amountSats = toSats(amount)
-
-  const ledgerService = LedgerService()
-
-  const feeConfig = getFeesConfig()
-
-  const withdrawFeeCalculator = WithdrawalFeeCalculator({
-    feeRatio: feeConfig.withdrawRatio,
-    thresholdImbalance: feeConfig.withdrawThreshold,
-  })
 
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
 
-  const displayCurrencyPerSat = await getCurrentPrice()
-  if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
+  // Limit check
+  const proposedAmounts = await builder.proposedAmounts()
+  if (proposedAmounts instanceof Error) return proposedAmounts
 
-  const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)
+  const priceRatioForLimits = await getPriceRatioForLimits(proposedAmounts)
+  if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
-  const withdrawalLimitCheck = await checkWithdrawalLimits({
-    amount,
-    dCConverter,
-    walletId: senderWallet.id,
-    walletCurrency: senderWallet.currency,
-    account: senderAccount,
+  const limitCheck = await newCheckWithdrawalLimits({
+    amount: proposedAmounts.usd,
+    accountId: senderWalletDescriptor.accountId,
+    priceRatio: priceRatioForLimits,
   })
-  if (withdrawalLimitCheck instanceof Error) return withdrawalLimitCheck
+  if (limitCheck instanceof Error) return limitCheck
 
-  const getFeeEstimate = () =>
-    getOnChainFee({
-      walletId: senderWallet.id,
-      account: senderAccount,
-      amount,
-      address,
-      targetConfirmations,
-    })
+  const address = await builder.addressForFlow()
 
-  const onChainAvailableBalance = await onChainService.getBalance()
+  // Get estimated miner fee and create 'paymentFlow'
+  const paymentFlow = await getMinerFeeAndPaymentFlow({ builder, targetConfirmations })
+  if (paymentFlow instanceof Error) return paymentFlow
+
+  // Check onchain balance
+  const onChainAvailableBalance = await onChainService.getBalanceAmount()
   if (onChainAvailableBalance instanceof Error) return onChainAvailableBalance
 
-  const estimatedFee = await getFeeEstimate()
-  if (estimatedFee instanceof Error) return estimatedFee
+  const onChainAvailableBalanceCheck = paymentFlow.checkOnChainAvailableBalanceForSend(
+    onChainAvailableBalance,
+  )
+  if (onChainAvailableBalanceCheck instanceof Error) return onChainAvailableBalanceCheck
 
-  const amountToSend = sendAll ? toSats(amount - estimatedFee) : amountSats
-  if (onChainAvailableBalance < amountToSend + estimatedFee)
-    return new RebalanceNeededError()
+  return LockService().lockWalletId(senderWalletDescriptor.id, async (signal) => {
+    // Get estimated miner fee and create 'paymentFlow'
+    const paymentFlowForBalance = await getMinerFeeAndPaymentFlow({
+      builder,
+      targetConfirmations,
+    })
+    if (paymentFlowForBalance instanceof Error) return paymentFlowForBalance
 
-  if (amountToSend < dustThreshold)
-    return new LessThanDustThresholdError(
-      `Use lightning to send amounts less than ${dustThreshold}`,
-    )
-
-  return LockService().lockWalletId(senderWallet.id, async (signal) => {
-    const balance = await LedgerService().getWalletBalance(senderWallet.id)
+    // Check user balance
+    const balance = await LedgerService().getWalletBalanceAmount(senderWalletDescriptor)
     if (balance instanceof Error) return balance
-    const estimatedFee = await getFeeEstimate()
-    if (estimatedFee instanceof Error) return estimatedFee
-    if (balance < amountToSend + estimatedFee) {
-      return new InsufficientBalanceError(
-        `${amountToSend + estimatedFee} exceeds balance ${balance}`,
-      )
-    }
 
+    const balanceCheck = paymentFlowForBalance.checkBalanceForSend(balance)
+    if (balanceCheck instanceof Error) return balanceCheck
+
+    // Check lock still intact
     if (signal.aborted) {
       return new ResourceExpiredLockServiceError(signal.error?.message)
     }
 
-    const imbalanceCalculator = ImbalanceCalculator({
-      method: feeConfig.withdrawMethod,
-      volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
-      volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
-      sinceDaysAgo: feeConfig.withdrawDaysLookback,
-    })
-
-    const imbalance = await imbalanceCalculator.getSwapOutImbalance(senderWallet.id)
-    if (imbalance instanceof Error) return imbalance
-
-    const minerFee = await onChainService.getOnChainFeeEstimate({
-      amount: amountToSend,
-      address,
+    // Add fees to tracing
+    const paymentFlow = await getMinerFeeAndPaymentFlow({
+      builder,
       targetConfirmations,
     })
-    if (minerFee instanceof Error) return minerFee
+    if (paymentFlow instanceof Error) return paymentFlow
 
-    const fees = withdrawFeeCalculator.onChainWithdrawalFee({
-      amount: amountToSend,
-      minerFee,
-      minBankFee: toSats(senderAccount.withdrawFee || feeConfig.withdrawDefaultMin),
-      imbalance,
-    })
+    const bankFee = await paymentFlow.bankFees()
+    if (bankFee instanceof Error) return bankFee
+    const btcBankFee = bankFee.btc
 
-    const totalFee = fees.totalFee
-    const bankFee = fees.bankFee
-    const sats = toSats(amountToSend + totalFee)
-    const amountDisplayCurrency = dCConverter.fromSats(sats)
-    const totalFeeDisplayCurrency = dCConverter.fromSats(totalFee)
+    const btcTotalFee = await paymentFlow.btcProtocolFee
+    if (btcTotalFee instanceof Error) return btcTotalFee
 
     addAttributesToCurrentSpan({
-      "payOnChainByWalletId.estimatedFee": `${estimatedFee}`,
-      "payOnChainByWalletId.estimatedMinerFee": `${minerFee}`,
-      "payOnChainByWalletId.totalFee": `${totalFee}`,
-      "payOnChainByWalletId.bankFee": `${bankFee}`,
+      "payOnChainByWalletId.estimatedFee": `${paymentFlow.btcProtocolFee.amount}`,
+      "payOnChainByWalletId.estimatedMinerFee": `${paymentFlow.btcMinerFee}`,
+      "payOnChainByWalletId.totalFee": `${btcTotalFee}`,
+      "payOnChainByWalletId.bankFee": `${btcBankFee}`,
     })
 
-    const journal = await ledgerService.addOnChainTxSend({
-      walletId: senderWallet.id,
-      walletCurrency: senderWallet.currency,
+    // Construct metadata
+    const priceRatio = PriceRatio({
+      usd: paymentFlow.usdPaymentAmount,
+      btc: paymentFlow.btcPaymentAmount,
+    })
+    if (priceRatio instanceof Error) return priceRatio
+    const displayCentsPerSat = priceRatio.usdPerSat()
+
+    const converter = NewDisplayCurrencyConverter(displayCentsPerSat)
+
+    const metadata = LedgerFacade.OnChainSendLedgerMetadata({
       // we need a temporary hash to be able to search in admin panel
-      txHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
-      description: memo || "",
-      sats,
-      totalFee,
-      bankFee,
-      amountDisplayCurrency,
-      payeeAddress: address,
+      onChainTxHash: crypto.randomBytes(32).toString("hex") as OnChainTxHash,
+      paymentFlow,
+
+      amountDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdPaymentAmount),
+      feeDisplayCurrency: converter.fromUsdAmount(paymentFlow.usdProtocolFee),
+      displayCurrency: DisplayCurrency.Usd,
+
+      payeeAddresses: [paymentFlow.address],
       sendAll,
-      totalFeeDisplayCurrency,
+    })
+
+    // Record transaction
+    const journal = await LedgerFacade.recordSend({
+      description: memo || "",
+      amountToDebitSender: {
+        btc: {
+          currency: paymentFlow.btcPaymentAmount.currency,
+          amount: paymentFlow.btcPaymentAmount.amount + paymentFlow.btcProtocolFee.amount,
+        },
+        usd: {
+          currency: paymentFlow.usdPaymentAmount.currency,
+          amount: paymentFlow.usdPaymentAmount.amount + paymentFlow.usdProtocolFee.amount,
+        },
+      },
+      bankFee,
+      senderWalletDescriptor: paymentFlow.senderWalletDescriptor(),
+      metadata,
     })
     if (journal instanceof Error) return journal
 
+    // Execute payment onchain
+    const amountToSend = toSats(paymentFlow.btcPaymentAmount.amount)
     const txHash = await onChainService.payToAddress({
-      address,
+      address: paymentFlow.address,
       amount: amountToSend,
       targetConfirmations,
       description: `journal-${journal.journalId}`,
@@ -392,7 +485,7 @@ const executePaymentViaOnChain = async ({
       txHash instanceof InsufficientOnChainFundsError ||
       txHash instanceof CPFPAncestorLimitReachedError
     ) {
-      const reverted = await ledgerService.revertOnChainPayment({
+      const reverted = await LedgerService().revertOnChainPayment({
         journalId: journal.journalId,
       })
       if (reverted instanceof Error) return reverted
@@ -406,7 +499,8 @@ const executePaymentViaOnChain = async ({
       return txHash
     }
 
-    const updated = await ledgerService.setOnChainTxSendHash({
+    // Reconcile transaction in ledger on successful execution
+    const updated = await LedgerService().setOnChainTxSendHash({
       journalId: journal.journalId,
       newTxHash: txHash,
     })

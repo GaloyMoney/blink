@@ -17,6 +17,7 @@ import {
   InvalidSatoshiAmountError,
   LessThanDustThresholdError,
   LimitsExceededError,
+  RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
 import { NotificationType } from "@domain/notifications"
@@ -34,7 +35,7 @@ import { add, sub } from "@domain/fiat"
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
 
-import { WalletCurrency } from "@domain/shared"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 
 import {
   CPFPAncestorLimitReachedError,
@@ -80,8 +81,6 @@ let walletIdF: WalletId
 const locale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
-const last = <T>(arr: T[]): T | undefined => arr[arr.length - 1]
-
 beforeAll(async () => {
   await createMandatoryUsers()
 
@@ -117,6 +116,7 @@ afterAll(async () => {
 })
 
 const amount = toSats(10040)
+const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
 const targetConfirmations = toTargetConfs(1)
 
 describe("UserWallet - onChainPay", () => {
@@ -218,7 +218,7 @@ describe("UserWallet - onChainPay", () => {
           id === pendingTxHash,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = last(settledTxs) as WalletTransaction
+      const settledTx = settledTxs[0] as WalletTransaction
 
       const feeRates = getFeesConfig()
       const fee = feeRates.withdrawDefaultMin + 7050
@@ -322,7 +322,7 @@ describe("UserWallet - onChainPay", () => {
           id === pendingTxHash,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = last(settledTxs) as WalletTransaction
+      const settledTx = settledTxs[0] as WalletTransaction
 
       const feeRates = getFeesConfig()
       const fee = feeRates.withdrawDefaultMin + 7050
@@ -394,7 +394,7 @@ describe("UserWallet - onChainPay", () => {
           id === pendingTxHash,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = last(settledTxs) as WalletTransaction
+      const settledTx = settledTxs[0] as WalletTransaction
 
       expect(settledTx.memo).toBe(memo)
     }
@@ -446,7 +446,7 @@ describe("UserWallet - onChainPay", () => {
           settlementVia.type === SettlementMethod.IntraLedger,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = last(settledTxs) as WalletTransaction
+      const settledTx = settledTxs[0] as WalletTransaction
 
       expect(settledTx.settlementFee).toBe(0)
       expect(settledTx.settlementAmount).toBe(-amount)
@@ -501,6 +501,61 @@ describe("UserWallet - onChainPay", () => {
     expect(filteredTxsUserD[0].memo).not.toBe(memo)
   })
 
+  it("sends an on us transaction below dust limit", async () => {
+    const address = await Wallets.createOnChainAddress(walletIdD)
+    if (address instanceof Error) throw address
+
+    const amount = amountBelowDustThreshold
+
+    const initialBalanceUserD = await getBalanceHelper(walletIdD)
+
+    const paid = await Wallets.payOnChainByWalletId({
+      senderAccount: accountA,
+      senderWalletId: walletIdA,
+      address,
+      amount,
+      targetConfirmations,
+      memo: null,
+      sendAll: false,
+    })
+
+    const finalBalanceUserA = await getBalanceHelper(walletIdA)
+    const finalBalanceUserD = await getBalanceHelper(walletIdD)
+
+    expect(paid).toBe(PaymentSendStatus.Success)
+    expect(finalBalanceUserA).toBe(initialBalanceUserA - amount)
+    expect(finalBalanceUserD).toBe(initialBalanceUserD + amount)
+
+    {
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: walletIdA,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        throw txResult.error
+      }
+      const pendingTxs = txResult.result.filter(
+        ({ status }) => status === TxStatus.Pending,
+      )
+      expect(pendingTxs.length).toBe(0)
+
+      const settledTxs = txResult.result.filter(
+        ({ status, initiationVia, settlementVia }) =>
+          status === TxStatus.Success &&
+          initiationVia.type === PaymentInitiationMethod.OnChain &&
+          settlementVia.type === SettlementMethod.IntraLedger,
+      )
+
+      const settledTx = settledTxs[0] as WalletTransaction
+
+      expect(settledTx.settlementFee).toBe(0)
+      expect(settledTx.settlementAmount).toBe(-amount)
+      expect(settledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
+
+      const finalBalance = await getBalanceHelper(walletIdA)
+      expect(finalBalance).toBe(initialBalanceUserA - amount)
+    }
+  })
+
   it("sends all with an on us transaction", async () => {
     const initialBalanceUserF = await getBalanceHelper(walletIdF)
 
@@ -546,7 +601,7 @@ describe("UserWallet - onChainPay", () => {
           settlementVia.type === SettlementMethod.IntraLedger,
       )
       expect(settledTxs.length).toBe(1)
-      const settledTx = last(settledTxs) as WalletTransaction
+      const settledTx = settledTxs[0] as WalletTransaction
 
       expect(settledTx.settlementFee).toBe(0)
       expect(settledTx.settlementAmount).toBe(-initialBalanceUserF)
@@ -717,6 +772,40 @@ describe("UserWallet - onChainPay", () => {
     expect(status).toBeInstanceOf(InsufficientBalanceError)
   })
 
+  it("fails if onchain service has insufficient balance", async () => {
+    const { address } = await createChainAddress({
+      lnd: lndOutside1,
+      format: "p2wpkh",
+    })
+    const initialBalanceUserG = await getBalanceHelper(walletIdG)
+
+    const onChainService = OnChainServiceImpl.OnChainService(TxDecoder(BTC_NETWORK))
+    if (onChainService instanceof Error) throw onChainService
+    jest.spyOn(OnChainServiceImpl, "OnChainService").mockImplementationOnce(() => ({
+      ...onChainService,
+      getBalanceAmount: () =>
+        Promise.resolve(
+          paymentAmountFromNumber({
+            amount: initialBalanceUserG,
+            currency: WalletCurrency.Btc,
+          }),
+        ),
+    }))
+
+    const status = await Wallets.payOnChainByWalletId({
+      senderAccount: accountG,
+      senderWalletId: walletIdG,
+      address,
+      amount: initialBalanceUserG,
+      targetConfirmations,
+      memo: null,
+      sendAll: false,
+    })
+
+    //should fail because onchain does not have balance to pay for on-chain fee
+    expect(status).toBeInstanceOf(RebalanceNeededError)
+  })
+
   it("fails if has negative amount", async () => {
     const amount = -1000
     const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
@@ -782,13 +871,12 @@ describe("UserWallet - onChainPay", () => {
 
   it("fails if the amount is less than on chain dust amount", async () => {
     const address = await bitcoindOutside.getNewAddress()
-    const onChainWalletConfig = getOnChainWalletConfig()
 
     const status = await Wallets.payOnChainByWalletId({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       address,
-      amount: onChainWalletConfig.dustThreshold - 1,
+      amount: amountBelowDustThreshold,
       targetConfirmations,
       memo: null,
       sendAll: false,

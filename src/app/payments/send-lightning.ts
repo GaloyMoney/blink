@@ -26,7 +26,6 @@ import {
 
 import { LndService } from "@services/lnd"
 import {
-  AccountsRepository,
   LnPaymentsRepository,
   PaymentFlowStateRepository,
   WalletInvoicesRepository,
@@ -314,23 +313,26 @@ const executePaymentViaIntraledger = async <
     "payment.settlement_method": SettlementMethod.IntraLedger,
   })
 
-  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
+  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const paymentHash = paymentFlow.paymentHashForFlow()
   if (paymentHash instanceof Error) return paymentHash
 
   const {
-    recipientWalletId,
+    walletDescriptor: recipientWalletDescriptor,
     recipientPubkey,
-    recipientWalletCurrency,
     recipientUsername,
+    recipientUserId,
   } = paymentFlow.recipientDetails()
-  if (!(recipientWalletId && recipientWalletCurrency && recipientPubkey)) {
+  if (!(recipientWalletDescriptor && recipientUserId && recipientPubkey)) {
     return new InvalidLightningPaymentFlowBuilderStateError(
       "Expected recipient details missing",
     )
   }
+  const { id: recipientWalletId, currency: recipientWalletCurrency } =
+    recipientWalletDescriptor
+
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
@@ -405,10 +407,6 @@ const executePaymentViaIntraledger = async <
         }))
     }
 
-    const recipientWalletDescriptor = paymentFlow.recipientWalletDescriptor()
-    if (recipientWalletDescriptor === undefined)
-      return new InvalidLightningPaymentFlowBuilderStateError()
-
     const journal = await LedgerFacade.recordIntraledger({
       description: paymentFlow.descriptionFromInvoice,
       amount: {
@@ -434,12 +432,7 @@ const executePaymentViaIntraledger = async <
     const newWalletInvoice = await WalletInvoicesRepository().markAsPaid(paymentHash)
     if (newWalletInvoice instanceof Error) return newWalletInvoice
 
-    const recipientAccount = await AccountsRepository().findById(
-      recipientWallet.accountId,
-    )
-    if (recipientAccount instanceof Error) return recipientAccount
-
-    const recipientUser = await UsersRepository().findById(recipientAccount.kratosUserId)
+    const recipientUser = await UsersRepository().findById(recipientUserId)
     if (recipientUser instanceof Error) return recipientUser
 
     let amount = paymentFlow.btcPaymentAmount.amount
@@ -475,7 +468,7 @@ const executePaymentViaLn = async ({
     "payment.settlement_method": SettlementMethod.Lightning,
   })
 
-  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow)
+  const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
 
   const limitCheck = await newCheckWithdrawalLimits({

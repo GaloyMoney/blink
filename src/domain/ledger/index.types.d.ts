@@ -197,7 +197,7 @@ type AddLnFeeReeimbursementReceiveArgs<
 type FeeReimbursement = {
   getReimbursement(
     actualFee: BtcPaymentAmount,
-  ): { btc: BtcPaymentAmount; usd: UsdPaymentAmount } | FeeDifferenceError
+  ): PaymentAmountInAllCurrencies | FeeDifferenceError
 }
 
 type TxBaseVolume = {
@@ -337,23 +337,7 @@ interface ILedgerService {
     args: AddLnFeeReeimbursementReceiveArgs<S, R>,
   ): Promise<LedgerJournal | LedgerServiceError>
 
-  addLnIntraledgerTxTransfer(
-    args: AddLnIntraledgerTxTransferArgs,
-  ): Promise<LedgerJournal | LedgerServiceError>
-
-  addOnChainTxSend(
-    args: AddOnChainTxSendArgs,
-  ): Promise<LedgerJournal | LedgerServiceError>
-
   setOnChainTxSendHash(args: SetOnChainTxSendHashArgs): Promise<true | LedgerServiceError>
-
-  addOnChainIntraledgerTxTransfer(
-    args: AddOnChainIntraledgerTxTransferArgs,
-  ): Promise<LedgerJournal | LedgerServiceError>
-
-  addWalletIdIntraledgerTxTransfer(
-    args: AddIntraLedgerTxSendArgs,
-  ): Promise<LedgerJournal | LedgerServiceError>
 
   settlePendingLnPayment(paymentHash: PaymentHash): Promise<true | LedgerServiceError>
 
@@ -398,7 +382,7 @@ type ImbalanceCalculatorConfig = {
 }
 
 type ImbalanceCalculator = {
-  getSwapOutImbalance: (
-    walletId: WalletId,
-  ) => Promise<SwapOutImbalance | LedgerServiceError>
+  getSwapOutImbalanceAmount: <T extends WalletCurrency>(
+    wallet: WalletDescriptor<T>,
+  ) => Promise<PaymentAmount<T> | LedgerServiceError | ValidationError>
 }

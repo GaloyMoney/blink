@@ -1,4 +1,6 @@
 import { toSats } from "@domain/bitcoin"
+import { toCents } from "@domain/fiat"
+import { paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
 import { WithdrawalFeePriceMethod } from "@domain/wallets"
 
 const MS_PER_HOUR = (60 * 60 * 1000) as MilliSeconds
@@ -12,45 +14,53 @@ export const ImbalanceCalculator = ({
 }: ImbalanceCalculatorConfig): ImbalanceCalculator => {
   const since = new Date(new Date().getTime() - sinceDaysAgo * MS_PER_DAY)
 
-  const getNetInboundFlow = async ({
+  const getNetInboundFlow = async <T extends WalletCurrency>({
     volumeFn,
-    walletId,
+    wallet,
     since,
   }: {
     volumeFn: GetVolumeSinceFn
-    walletId: WalletId
+    wallet: WalletDescriptor<T>
     since: Date
   }) => {
     const volume_ = await volumeFn({
-      walletId,
+      walletId: wallet.id,
       timestamp: since,
     })
     if (volume_ instanceof Error) return volume_
 
-    return toSats(volume_.incomingBaseAmount - volume_.outgoingBaseAmount)
+    return wallet.currency === WalletCurrency.Btc
+      ? toSats(volume_.incomingBaseAmount - volume_.outgoingBaseAmount)
+      : toCents(volume_.incomingBaseAmount - volume_.outgoingBaseAmount)
   }
 
-  const getSwapOutImbalance = async (walletId: WalletId) => {
-    if (method === WithdrawalFeePriceMethod.flat) return 0 as SwapOutImbalance
+  const getSwapOutImbalanceAmount = async <T extends WalletCurrency>(
+    wallet: WalletDescriptor<T>,
+  ): Promise<PaymentAmount<T> | LedgerServiceError | ValidationError> => {
+    if (method === WithdrawalFeePriceMethod.flat) {
+      return paymentAmountFromNumber<T>({ amount: 0, currency: wallet.currency })
+    }
 
     const lnNetInbound = await getNetInboundFlow({
       since,
-      walletId,
+      wallet,
       volumeFn: volumeLightningFn,
     })
     if (lnNetInbound instanceof Error) return lnNetInbound
 
     const onChainNetInbound = await getNetInboundFlow({
       since,
-      walletId,
+      wallet,
       volumeFn: volumeOnChainFn,
     })
     if (onChainNetInbound instanceof Error) return onChainNetInbound
 
-    return (lnNetInbound - onChainNetInbound) as SwapOutImbalance
+    const imbalance = (lnNetInbound - onChainNetInbound) as SwapOutImbalance
+
+    return paymentAmountFromNumber<T>({ amount: imbalance, currency: wallet.currency })
   }
 
   return {
-    getSwapOutImbalance,
+    getSwapOutImbalanceAmount,
   }
 }
