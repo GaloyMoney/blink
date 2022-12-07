@@ -10,6 +10,7 @@ import {
   InvalidLightningPaymentFlowBuilderStateError,
   IntraLedgerHashPresentInLnFlowError,
   LnHashPresentInIntraLedgerFlowError,
+  InvalidOnChainPaymentFlowBuilderStateError,
 } from "./errors"
 
 import { RouteValidator } from "./route-validator"
@@ -172,7 +173,7 @@ export const OnChainPaymentFlow = <S extends WalletCurrency, R extends WalletCur
 
   const addressForFlow = (): OnChainAddress | ValidationError => {
     if (address === undefined) {
-      return new InvalidLightningPaymentFlowBuilderStateError()
+      return new InvalidOnChainPaymentFlowBuilderStateError()
     }
 
     return address
