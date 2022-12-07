@@ -8521,6 +8521,11 @@ jose@^2.0.6:
   dependencies:
     "@panva/asn1.js" "^1.0.0"
 
+jose@^4.10.3:
+  version "4.11.1"
+  resolved "https://registry.yarnpkg.com/jose/-/jose-4.11.1.tgz#8f7443549befe5bddcf4bae664a9cbc1a62da4fa"
+  integrity sha512-YRv4Tk/Wlug8qicwqFNFVEZSdbROCHRAC6qu/i0dyNKr5JQdoa2pIGoS04lLO/jXQX7Z9omoNewYIVIxqZBd9Q==
+
 joycon@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/joycon/-/joycon-3.1.1.tgz#bce8596d6ae808f8b68168f5fc69280996894f03"
@@ -8739,7 +8744,7 @@ jwa@^2.0.0:
     ecdsa-sig-formatter "1.0.11"
     safe-buffer "^5.0.1"
 
-jwks-rsa@^2.1.4, jwks-rsa@^2.1.5:
+jwks-rsa@^2.1.4:
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-2.1.5.tgz#bb7bf8c5767836bc273bf5b27870066aca39c1bb"
   integrity sha512-IODtn1SwEm7n6GQZnQLY0oxKDrMh7n/jRH1MzE8mlxWMrh2NnMyOsXTebu8vJ1qCpmuTJcL4DdiE0E4h8jnwsA==
@@ -8748,6 +8753,18 @@ jwks-rsa@^2.1.4, jwks-rsa@^2.1.5:
     "@types/jsonwebtoken" "^8.5.9"
     debug "^4.3.4"
     jose "^2.0.6"
+    limiter "^1.1.5"
+    lru-memoizer "^2.1.4"
+
+jwks-rsa@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/jwks-rsa/-/jwks-rsa-3.0.0.tgz#5c0b298efbf4b4a47069184b2005fe94e8c088da"
+  integrity sha512-x9qNrP/kD6tOfrLzBVC5HaneBTR+fCEGIjwk/xSdl+KA7Tzf+R3oiY9ibrONKVLF9fR0V03enkitYPZkO65fAQ==
+  dependencies:
+    "@types/express" "^4.17.14"
+    "@types/jsonwebtoken" "^8.5.9"
+    debug "^4.3.4"
+    jose "^4.10.3"
     limiter "^1.1.5"
     lru-memoizer "^2.1.4"
 
