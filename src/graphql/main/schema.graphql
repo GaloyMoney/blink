@@ -725,10 +725,9 @@ input OnChainPaymentSendInput {
   walletId: WalletId!
 }
 
-type OnChainTxFeePayload {
-  amount: SatAmount
-  errors: [Error!]!
-  targetConfirmations: TargetConfirmations
+type OnChainTxFee {
+  amount: SatAmount!
+  targetConfirmations: TargetConfirmations!
 }
 
 scalar OnChainTxHash
@@ -856,7 +855,7 @@ type Query {
     amount: SatAmount!
     targetConfirmations: TargetConfirmations = 1
     walletId: WalletId!
-  ): OnChainTxFeePayload!
+  ): OnChainTxFee!
   quizQuestions: [QuizQuestion]
   userDefaultWalletId(username: Username!): WalletId!
     @deprecated(reason: "will be migrated to AccountDefaultWalletId")
