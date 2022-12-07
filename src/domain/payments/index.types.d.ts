@@ -11,7 +11,7 @@ type XorPaymentHashProperty = XOR<
   { intraLedgerHash: IntraLedgerHash }
 >
 
-type PaymentFlowBaseState<S extends WalletCurrency, R extends WalletCurrency> = {
+type PaymentFlowCommonState<S extends WalletCurrency, R extends WalletCurrency> = {
   senderWalletId: WalletId
   senderWalletCurrency: S
   senderAccountId: AccountId
@@ -44,14 +44,14 @@ type PaymentFlowState<
 > = XorPaymentHashProperty & {
   descriptionFromInvoice: string
   skipProbeForDestination: boolean
-} & PaymentFlowBaseState<S, R>
+} & PaymentFlowCommonState<S, R>
 
 type OnChainPaymentFlowState<S extends WalletCurrency, R extends WalletCurrency> = {
   address: OnChainAddress
   btcBankFee: BtcPaymentAmount
   usdBankFee: UsdPaymentAmount
   btcMinerFee?: BtcPaymentAmount
-} & PaymentFlowBaseState<S, R>
+} & PaymentFlowCommonState<S, R>
 
 type PaymentFlowStateIndex = XorPaymentHashProperty & {
   walletId: WalletId
@@ -60,7 +60,7 @@ type PaymentFlowStateIndex = XorPaymentHashProperty & {
 
 type PaymentAmountInAllCurrencies = { btc: BtcPaymentAmount; usd: UsdPaymentAmount }
 
-type PaymentFlowBase<S extends WalletCurrency, R extends WalletCurrency> = {
+type PaymentFlowCommon<S extends WalletCurrency, R extends WalletCurrency> = {
   protocolFeeInSenderWalletCurrency(): PaymentAmount<S>
   paymentAmounts(): PaymentAmountInAllCurrencies
   totalAmountsForPayment(): PaymentAmountInAllCurrencies
@@ -83,7 +83,7 @@ type PaymentFlow<S extends WalletCurrency, R extends WalletCurrency> = PaymentFl
   S,
   R
 > &
-  PaymentFlowBase<S, R> & {
+  PaymentFlowCommon<S, R> & {
     paymentHashForFlow(): PaymentHash | ValidationError
     intraLedgerHashForFlow(): IntraLedgerHash | ValidationError
   }
@@ -92,7 +92,7 @@ type OnChainPaymentFlow<
   S extends WalletCurrency,
   R extends WalletCurrency,
 > = OnChainPaymentFlowState<S, R> &
-  PaymentFlowBase<S, R> & {
+  PaymentFlowCommon<S, R> & {
     addressForFlow(): OnChainAddress | ValidationError
     bankFees(): PaymentAmountInAllCurrencies | ValidationError
     checkOnChainAvailableBalanceForSend(

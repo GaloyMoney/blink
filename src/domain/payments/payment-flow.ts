@@ -15,9 +15,9 @@ import {
 
 import { RouteValidator } from "./route-validator"
 
-export const PaymentFlowBase = <S extends WalletCurrency, R extends WalletCurrency>(
-  state: PaymentFlowBaseState<S, R>,
-): PaymentFlowBase<S, R> => {
+export const PaymentFlowCommon = <S extends WalletCurrency, R extends WalletCurrency>(
+  state: PaymentFlowCommonState<S, R>,
+): PaymentFlowCommon<S, R> => {
   const protocolFeeInSenderWalletCurrency = (): PaymentAmount<S> => {
     return state.senderWalletCurrency === WalletCurrency.Btc
       ? (state.btcProtocolFee as PaymentAmount<S>)
@@ -132,7 +132,7 @@ export const PaymentFlowBase = <S extends WalletCurrency, R extends WalletCurren
 export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
   state: PaymentFlowState<S, R>,
 ): PaymentFlow<S, R> | ValidationError => {
-  const { paymentHash, intraLedgerHash, ...baseState } = state
+  const { paymentHash, intraLedgerHash, ...commonState } = state
 
   const paymentHashForFlow = (): PaymentHash | ValidationError => {
     if (!!paymentHash === !!intraLedgerHash) {
@@ -160,7 +160,7 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
 
   return {
     ...state,
-    ...PaymentFlowBase(baseState),
+    ...PaymentFlowCommon(commonState),
     paymentHashForFlow,
     intraLedgerHashForFlow,
   }
@@ -169,7 +169,7 @@ export const PaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
 export const OnChainPaymentFlow = <S extends WalletCurrency, R extends WalletCurrency>(
   state: OnChainPaymentFlowState<S, R>,
 ): OnChainPaymentFlow<S, R> => {
-  const { address, ...baseState } = state
+  const { address, ...commonState } = state
 
   const addressForFlow = (): OnChainAddress | ValidationError => {
     if (address === undefined) {
@@ -200,7 +200,7 @@ export const OnChainPaymentFlow = <S extends WalletCurrency, R extends WalletCur
 
   return {
     ...state,
-    ...PaymentFlowBase(baseState),
+    ...PaymentFlowCommon(commonState),
     addressForFlow,
     bankFees,
     checkOnChainAvailableBalanceForSend,
