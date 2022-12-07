@@ -7,7 +7,7 @@ module.exports = {
     for await (const account of accounts) {
       progress++
 
-      const id = account.kratosUserId
+      const userId = account.kratosUserId
       const phoneMetadata = account.twilio
       const language = account.language
       const deviceTokens = account.deviceToken
@@ -15,7 +15,7 @@ module.exports = {
       const createdAt = account.created_at
 
       await db.collection("users").insertOne({
-        id,
+        userId,
         phoneMetadata,
         language,
         deviceTokens,

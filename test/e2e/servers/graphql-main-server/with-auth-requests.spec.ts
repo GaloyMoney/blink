@@ -151,7 +151,7 @@ describe("graphql", () => {
         expect.objectContaining({
           id: expect.any(String),
           language: expect.any(String),
-          phone: expect.any(String),
+          phone: expect.stringContaining("+1"),
           defaultAccount: expect.objectContaining({
             id: expect.any(String),
             defaultWalletId: expect.any(String),
