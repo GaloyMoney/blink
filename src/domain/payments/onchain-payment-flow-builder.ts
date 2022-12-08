@@ -308,6 +308,25 @@ const OPFBWithAmount = <S extends WalletCurrency, R extends WalletCurrency>(
 const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
   statePromise: Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError>,
 ): OPFBWithConversion<S, R> | OPFBWithError => {
+  const validateBtcPaymentAmountForDust = ({
+    state,
+    btcPaymentAmount,
+  }: {
+    state: OPFBWithConversionState<S, R>
+    btcPaymentAmount: BtcPaymentAmount
+  }): BtcPaymentAmount | ValidationError => {
+    if (
+      !(state.settlementMethod === SettlementMethod.IntraLedger) &&
+      btcPaymentAmount.amount < state.dustThreshold
+    ) {
+      return new LessThanDustThresholdError(
+        `Use lightning to send amounts less than ${state.dustThreshold}`,
+      )
+    }
+
+    return btcPaymentAmount
+  }
+
   const stateFromPromise = async (
     statePromise: Promise<OPFBWithConversionState<S, R> | DealerPriceServiceError>,
   ) => {
@@ -328,6 +347,13 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
         "withoutRecipientWallet called but settlementMethod is IntraLedger",
       )
     }
+
+    const btcProposedAmount = validateBtcPaymentAmountForDust({
+      state,
+      btcPaymentAmount: state.btcProposedAmount,
+    })
+    if (btcProposedAmount instanceof Error) return btcProposedAmount
+
     return state
   }
 
@@ -339,14 +365,6 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
 
     const usdPaymentAmount = state.usdProposedAmount
     const btcPaymentAmount = state.btcProposedAmount
-    if (
-      !(state.settlementMethod === SettlementMethod.IntraLedger) &&
-      btcPaymentAmount.amount < state.dustThreshold
-    ) {
-      return new LessThanDustThresholdError(
-        `Use lightning to send amounts less than ${state.dustThreshold}`,
-      )
-    }
 
     return OnChainPaymentFlow({
       ...state,
@@ -421,14 +439,11 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       }
     }
 
-    if (
-      !(state.settlementMethod === SettlementMethod.IntraLedger) &&
-      btcPaymentAmount.amount < state.dustThreshold
-    ) {
-      return new LessThanDustThresholdError(
-        `Use lightning to send amounts less than ${state.dustThreshold}`,
-      )
-    }
+    const validatedBtcPaymentAmount = validateBtcPaymentAmountForDust({
+      state,
+      btcPaymentAmount,
+    })
+    if (validatedBtcPaymentAmount instanceof Error) return validatedBtcPaymentAmount
 
     return OnChainPaymentFlow({
       ...state,
@@ -436,7 +451,7 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       usdProtocolFee,
       btcBankFee: feeAmounts.bankFee,
       usdBankFee: priceRatio.convertFromBtcToCeil(feeAmounts.bankFee),
-      btcPaymentAmount,
+      btcPaymentAmount: validatedBtcPaymentAmount,
       usdPaymentAmount,
       btcMinerFee: minerFee,
       paymentSentAndPending: false,
