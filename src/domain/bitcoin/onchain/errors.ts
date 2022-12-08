@@ -11,6 +11,9 @@ export class CPFPAncestorLimitReachedError extends OnChainServiceError {
 export class InsufficientOnChainFundsError extends OnChainServiceError {
   level = ErrorLevel.Critical
 }
+export class UnexpectedDustAmountError extends OnChainServiceError {
+  level = ErrorLevel.Critical
+}
 export class UnknownOnChainServiceError extends OnChainServiceError {
   level = ErrorLevel.Critical
 }

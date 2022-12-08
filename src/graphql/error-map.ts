@@ -240,6 +240,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "Onchain withdrawals halted while we replenish the hot wallet. Withdrawals will be resumed shortly, and Lightning withdrawals are still available."
       return new InsufficientLiquidityError({ message, logger: baseLogger })
 
+    case "UnexpectedDustAmountError":
+      message = "Use lightning to very small dust amounts."
+      return new OnChainPaymentError({ message, logger: baseLogger })
+
     case "CPFPAncestorLimitReachedError":
       message =
         "Onchain payments temporarily unavailable because of busy mempool queue. Withdraw via Lightning until queue is cleared."

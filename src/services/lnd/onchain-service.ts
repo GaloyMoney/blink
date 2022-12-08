@@ -7,6 +7,7 @@ import {
   InsufficientOnChainFundsError,
   OnChainServiceUnavailableError,
   OutgoingOnChainTransaction,
+  UnexpectedDustAmountError,
   UnknownOnChainServiceError,
 } from "@domain/bitcoin/onchain"
 import {
@@ -174,6 +175,8 @@ export const OnChainService = (
       switch (true) {
         case match(KnownLndErrorDetails.InsufficientFunds):
           return new InsufficientOnChainFundsError()
+        case match(KnownLndErrorDetails.DustAmount):
+          return new UnexpectedDustAmountError()
         default:
           return handleCommonOnChainServiceErrors(err)
       }
@@ -203,6 +206,8 @@ export const OnChainService = (
       switch (true) {
         case match(KnownLndErrorDetails.InsufficientFunds):
           return new InsufficientOnChainFundsError()
+        case match(KnownLndErrorDetails.DustAmount):
+          return new UnexpectedDustAmountError()
         case match(KnownLndErrorDetails.CPFPAncestorLimitReached):
           return new CPFPAncestorLimitReachedError()
         default:
@@ -232,6 +237,7 @@ const KnownLndErrorDetails = {
   ConnectionDropped: /Connection dropped/,
   CPFPAncestorLimitReached:
     /unmatched backend error: -26: too-long-mempool-chain, too many .* \[limit: \d+\]/,
+  DustAmount: /transaction output is dust/,
   NoConnectionEstablished: /No connection established/,
 } as const
 
