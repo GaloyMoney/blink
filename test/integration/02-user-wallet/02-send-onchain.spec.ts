@@ -869,6 +869,32 @@ describe("UserWallet - onChainPay", () => {
     expect(status).toBeInstanceOf(LimitsExceededError)
   })
 
+  it("fee probe fails if the amount is less than on chain dust amount", async () => {
+    const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
+
+    const status = await Wallets.getOnChainFee({
+      account: accountA,
+      walletId: walletIdA,
+      address,
+      amount: amountBelowDustThreshold,
+      targetConfirmations,
+    })
+    expect(status).toBeInstanceOf(LessThanDustThresholdError)
+  })
+
+  it("fee probe fails if the amount is less than lnd on-chain dust amount", async () => {
+    const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
+
+    const status = await Wallets.getOnChainFee({
+      account: accountA,
+      walletId: walletIdA,
+      address,
+      amount: 1,
+      targetConfirmations,
+    })
+    expect(status).toBeInstanceOf(LessThanDustThresholdError)
+  })
+
   it("fails if the amount is less than on chain dust amount", async () => {
     const address = await bitcoindOutside.getNewAddress()
 
@@ -877,6 +903,21 @@ describe("UserWallet - onChainPay", () => {
       senderWalletId: walletIdA,
       address,
       amount: amountBelowDustThreshold,
+      targetConfirmations,
+      memo: null,
+      sendAll: false,
+    })
+    expect(status).toBeInstanceOf(LessThanDustThresholdError)
+  })
+
+  it("fails if the amount is less than lnd on-chain dust amount", async () => {
+    const address = await bitcoindOutside.getNewAddress()
+
+    const status = await Wallets.payOnChainByWalletId({
+      senderAccount: accountA,
+      senderWalletId: walletIdA,
+      address,
+      amount: 1,
       targetConfirmations,
       memo: null,
       sendAll: false,
