@@ -220,9 +220,15 @@ type OPFBWithConversion<S extends WalletCurrency, R extends WalletCurrency> = {
     OnChainPaymentFlow<S, R> | ValidationError | DealerPriceServiceError
   >
 
-  btcProposedAmount(): Promise<BtcPaymentAmount | DealerPriceServiceError>
-  usdProposedAmount(): Promise<UsdPaymentAmount | DealerPriceServiceError>
-  proposedAmounts(): Promise<PaymentAmountInAllCurrencies | DealerPriceServiceError>
+  btcProposedAmount(): Promise<
+    BtcPaymentAmount | DealerPriceServiceError | ValidationError
+  >
+  usdProposedAmount(): Promise<
+    UsdPaymentAmount | DealerPriceServiceError | ValidationError
+  >
+  proposedAmounts(): Promise<
+    PaymentAmountInAllCurrencies | DealerPriceServiceError | ValidationError
+  >
 
   addressForFlow(): Promise<OnChainAddress | DealerPriceServiceError>
   senderWalletDescriptor(): Promise<WalletDescriptor<S> | DealerPriceServiceError>
