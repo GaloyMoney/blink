@@ -282,6 +282,13 @@ describe("OnChainPaymentFlowBuilder", () => {
               it("correctly returns dust error", async () => {
                 const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
 
+                const paymentLowest = await withBtcWalletBuilder
+                  .withoutRecipientWallet()
+                  .withAmount(51) // Close to 1 cent
+                  .withConversion(withConversionArgs)
+                  .withMinerFee(minerFee)
+                expect(paymentLowest).toBeInstanceOf(LessThanDustThresholdError)
+
                 const paymentBelow = await withBtcWalletBuilder
                   .withoutRecipientWallet()
                   .withAmount(dustAmount)
@@ -326,6 +333,7 @@ describe("OnChainPaymentFlowBuilder", () => {
             const withAmountDescribes = [
               { name: "with amount", amount: uncheckedAmount },
               { name: "with dust amount", amount: dustAmount },
+              { name: "with min amount", amount: 51 }, // Close to 1 cent
             ]
 
             const describeWithAmount = ({ name, amount }) => {
@@ -391,6 +399,7 @@ describe("OnChainPaymentFlowBuilder", () => {
             const withAmountDescribes = [
               { name: "with amount", amount: uncheckedAmount },
               { name: "with dust amount", amount: dustAmount },
+              { name: "with min amount", amount: 51 }, // Close to 1 cent
             ]
 
             const describeWithAmount = ({ name, amount }) => {
@@ -576,6 +585,13 @@ describe("OnChainPaymentFlowBuilder", () => {
                 })
                 expect(dustUsdAmount.amount).toBeGreaterThan(1n)
                 const minerFee = { amount: 300n, currency: WalletCurrency.Btc }
+
+                const paymentLowest = await withUsdWalletBuilder
+                  .withoutRecipientWallet()
+                  .withAmount(1)
+                  .withConversion(withConversionArgs)
+                  .withMinerFee(minerFee)
+                expect(paymentLowest).toBeInstanceOf(LessThanDustThresholdError)
 
                 const paymentBelow = await withUsdWalletBuilder
                   .withoutRecipientWallet()
@@ -836,6 +852,32 @@ describe("OnChainPaymentFlowBuilder", () => {
           .withoutMinerFee()
 
         expect(payment).toBeInstanceOf(SelfPaymentError)
+      })
+    })
+
+    describe("btcProposedAmount below dust from withConversion builder", () => {
+      it("returns LessThanDustThresholdError", async () => {
+        const builder = await OnChainPaymentFlowBuilder({
+          volumeLightningFn,
+          volumeOnChainFn,
+          isExternalAddress: async () => Promise.resolve(true),
+          sendAll: false,
+          dustThreshold,
+        })
+          .withAddress("address" as OnChainAddress)
+          .withSenderWalletAndAccount({
+            wallet: senderBtcWallet,
+            account: senderAccount,
+          })
+          .withoutRecipientWallet()
+          .withAmount(dustAmount)
+          .withConversion(withConversionArgs)
+
+        const proposedBtcAmount = await builder.btcProposedAmount()
+        expect(proposedBtcAmount).toBeInstanceOf(LessThanDustThresholdError)
+
+        const proposedAmounts = await builder.proposedAmounts()
+        expect(proposedAmounts).toBeInstanceOf(LessThanDustThresholdError)
       })
     })
   })
