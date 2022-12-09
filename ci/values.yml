@@ -26,3 +26,8 @@ gh_repository: galoy
 slack_channel: galoy-main-github
 slack_username: concourse
 slack_webhook_url: ((galoy-main-slack.api_url))
+
+browserstack_user: ((browserstack.user))
+browserstack_access_key: ((browserstack.access_key))
+browserstack_galoy_token: ((browserstack.galoy_token))
+browserstack_galoy_token_2: ((browserstack.galoy_token_2))

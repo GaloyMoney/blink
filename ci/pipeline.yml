@@ -436,6 +436,31 @@ jobs:
           run:
             path: pipeline-tasks/ci/tasks/open-bump-proto-pr.sh
 
+  - name: test-android
+    plan:
+      - in_parallel:
+          - { get: galoy-mobile-repo, passed: "release", trigger: true }
+          - { get: pipeline-tasks }
+          - { get: bundled-deps, tags: ["galoy-staging"], trigger: true }
+      - task: browserstack-test-android
+        timeout: 12m
+        config:
+          platform: linux
+          image_resource: #@ nodejs_task_image_config()
+          inputs:
+            - name: bundled-deps
+            - name: pipeline-tasks
+            - name: galoy-mobile-repo
+              path: src-repo
+          params:
+            BROWSERSTACK_USER: #@ data.values.browserstack_user
+            BROWSERSTACK_ACCESS_KEY: #@ data.values.browserstack_access_key
+            GALOY_TOKEN: #@ data.values.browserstack_galoy_token
+            GALOY_TOKEN_2: #@ data.values.browserstack_galoy_token_2
+          run:
+            path: pipeline-tasks/ci/tasks/test-mobile.sh
+    on_failure: #@ slack_failure_notification()
+
 resources:
   -  #@ repo_resource()
   -  #@ pipeline_tasks_resource()
@@ -444,6 +469,12 @@ resources:
   -  #@ deps_version_resource()
   -  #@ bundled_deps_resource()
   -  #@ slack_resource()
+  - name: galoy-mobile-repo
+    type: git
+    icon: github
+    source:
+      uri: https://github.com/GaloyMoney/galoy-mobile
+      branch: main
 
   - name: charts-repo-bot-branch
     type: git
