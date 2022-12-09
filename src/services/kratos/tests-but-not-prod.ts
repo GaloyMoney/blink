@@ -1,4 +1,4 @@
-import { SuccessfulSelfServiceLoginWithoutBrowser } from "@ory/client"
+import { SuccessfulNativeLogin } from "@ory/client"
 import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 import { authenticator } from "otplib"
 
@@ -19,18 +19,21 @@ export const LoginWithPhoneAndPasswordSchema = async ({
   phone: PhoneNumber
   password: IdentityPassword
 }): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError> => {
-  const flow = await kratosPublic.initializeSelfServiceLoginFlowWithoutBrowser()
+  const flow = await kratosPublic.createNativeLoginFlow()
 
   const identifier = phone
   const method = "password"
 
-  let result: AxiosResponse<SuccessfulSelfServiceLoginWithoutBrowser>
+  let result: AxiosResponse<SuccessfulNativeLogin>
 
   try {
-    result = await kratosPublic.submitSelfServiceLoginFlow(flow.data.id, {
-      identifier,
-      method,
-      password,
+    result = await kratosPublic.updateLoginFlow({
+      flow: flow.data.id,
+      updateLoginFlowBody: {
+        identifier,
+        method,
+        password,
+      },
     })
   } catch (err) {
     if (err.message === "Request failed with status code 400") {
@@ -59,7 +62,7 @@ export const addTotp = async (token: SessionToken) => {
   }
 
   try {
-    const res = await kratosPublic.initializeSelfServiceSettingsFlowWithoutBrowser(token)
+    const res = await kratosPublic.createNativeSettingsFlow({ xSessionToken: token })
     const totpAttributes = res.data.ui.nodes.find(
       (node) => (node.attributes as TotpAttributes).id === "totp_secret_key",
     )
@@ -70,14 +73,14 @@ export const addTotp = async (token: SessionToken) => {
     const totpSecret = (totpAttributes.attributes as TotpAttributes).text.text
     const totp_code = authenticator.generate(totpSecret)
 
-    const res2 = await kratosPublic.submitSelfServiceSettingsFlow(
-      res.data.id,
-      {
+    const res2 = await kratosPublic.updateSettingsFlow({
+      flow: res.data.id,
+      updateSettingsFlowBody: {
         method: "totp",
         totp_code,
       },
-      token,
-    )
+      xSessionToken: token,
+    })
     baseLogger.error(res2.data, "submitSelfService")
 
     return totpSecret
@@ -89,16 +92,19 @@ export const addTotp = async (token: SessionToken) => {
 export const activateUser = async (kratosUserId: UserId): Promise<void | KratosError> => {
   let identity: KratosIdentity
   try {
-    const res = await kratosAdmin.adminGetIdentity(kratosUserId)
+    const res = await kratosAdmin.getIdentity({ id: kratosUserId })
     identity = res.data
   } catch (err) {
     return new UnknownKratosError(err)
   }
 
   try {
-    await kratosAdmin.adminUpdateIdentity(kratosUserId, {
-      ...identity,
-      state: "active",
+    await kratosAdmin.updateIdentity({
+      id: kratosUserId,
+      updateIdentityBody: {
+        ...identity,
+        state: "active",
+      },
     })
   } catch (err) {
     return new UnknownKratosError(err)
@@ -110,16 +116,19 @@ export const deactivateUser = async (
 ): Promise<void | KratosError> => {
   let identity: KratosIdentity
   try {
-    const res = await kratosAdmin.adminGetIdentity(kratosUserId)
+    const res = await kratosAdmin.getIdentity({ id: kratosUserId })
     identity = res.data
   } catch (err) {
     return new UnknownKratosError(err)
   }
 
   try {
-    await kratosAdmin.adminUpdateIdentity(kratosUserId, {
-      ...identity,
-      state: "inactive",
+    await kratosAdmin.updateIdentity({
+      id: kratosUserId,
+      updateIdentityBody: {
+        ...identity,
+        state: "inactive",
+      },
     })
   } catch (err) {
     return new UnknownKratosError(err)
@@ -130,7 +139,7 @@ export const revokeSessions = async (
   kratosUserId: UserId,
 ): Promise<void | KratosError> => {
   try {
-    await kratosAdmin.adminDeleteIdentitySessions(kratosUserId)
+    await kratosAdmin.deleteIdentitySessions({ id: kratosUserId })
   } catch (err) {
     return new UnknownKratosError(err)
   }
@@ -156,21 +165,24 @@ export const elevatingSessionWithTotp = async ({
   code: string
   password: string
 }): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError> => {
-  const flow = await kratosPublic.initializeSelfServiceLoginFlowWithoutBrowser(
-    undefined, // refresh?
-    "aal2",
-    session,
-  )
+  const flow = await kratosPublic.createNativeLoginFlow({
+    refresh: false,
+    aal: "aal2",
+    xSessionToken: session,
+  })
 
   const method = "totp"
 
-  let result: AxiosResponse<SuccessfulSelfServiceLoginWithoutBrowser>
+  let result: AxiosResponse<SuccessfulNativeLogin>
 
   try {
-    result = await kratosPublic.submitSelfServiceLoginFlow(flow.data.id, {
-      method,
-      totp_code: code,
-      password,
+    result = await kratosPublic.updateLoginFlow({
+      flow: flow.data.id,
+      updateLoginFlowBody: {
+        method,
+        totp_code: code,
+        password,
+      },
     })
   } catch (err) {
     if (err.message === "Request failed with status code 400") {

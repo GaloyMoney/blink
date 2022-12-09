@@ -12,12 +12,12 @@ export const listSessions = async (userId: UserId): Promise<Session[] | KratosEr
 }
 
 export const validateKratosToken = async (
-  SessionToken: SessionToken,
+  sessionToken: SessionToken,
 ): Promise<ValidateKratosTokenResult | KratosError> => {
   let session: Session
 
   try {
-    const { data } = await kratosPublic.toSession(SessionToken)
+    const { data } = await kratosPublic.toSession({ xSessionToken: sessionToken })
     session = toDomainSession(data)
   } catch (err) {
     if (err.message === "Request failed with status code 401") {

@@ -5,11 +5,11 @@ import {
   LikelyUserAlreadyExistError,
 } from "@domain/authentication/errors"
 import {
-  AdminCreateIdentityBody,
-  AdminUpdateIdentityBody,
+  CreateIdentityBody,
+  UpdateIdentityBody,
   Identity,
-  SuccessfulSelfServiceLoginWithoutBrowser,
-  SuccessfulSelfServiceRegistrationWithoutBrowser,
+  SuccessfulNativeLogin,
+  SuccessfulNativeRegistration,
 } from "@ory/client"
 
 import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
@@ -31,18 +31,21 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
   const login = async (
     phone: PhoneNumber,
   ): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError> => {
-    const flow = await kratosPublic.initializeSelfServiceLoginFlowWithoutBrowser()
+    const flow = await kratosPublic.createNativeLoginFlow()
 
     const identifier = phone
     const method = "password"
 
-    let result: AxiosResponse<SuccessfulSelfServiceLoginWithoutBrowser>
+    let result: AxiosResponse<SuccessfulNativeLogin>
 
     try {
-      result = await kratosPublic.submitSelfServiceLoginFlow(flow.data.id, {
-        identifier,
-        method,
-        password,
+      result = await kratosPublic.updateLoginFlow({
+        flow: flow.data.id,
+        updateLoginFlowBody: {
+          identifier,
+          method,
+          password,
+        },
       })
     } catch (err) {
       if (err.message === "Request failed with status code 400") {
@@ -67,18 +70,21 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
   const createIdentityWithSession = async (
     phone: PhoneNumber,
   ): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | KratosError> => {
-    const flow = await kratosPublic.initializeSelfServiceRegistrationFlowWithoutBrowser()
+    const flow = await kratosPublic.createNativeRegistrationFlow()
 
     const traits = { phone }
     const method = "password"
 
-    let result: AxiosResponse<SuccessfulSelfServiceRegistrationWithoutBrowser>
+    let result: AxiosResponse<SuccessfulNativeRegistration>
 
     try {
-      result = await kratosPublic.submitSelfServiceRegistrationFlow(flow.data.id, {
-        traits,
-        method,
-        password,
+      result = await kratosPublic.updateRegistrationFlow({
+        flow: flow.data.id,
+        updateRegistrationFlowBody: {
+          traits,
+          method,
+          password,
+        },
       })
     } catch (err) {
       if (err.message === "Request failed with status code 400") {
@@ -97,7 +103,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
   const createIdentityNoSession = async (
     phone: PhoneNumber,
   ): Promise<UserId | KratosError> => {
-    const adminIdentity: AdminCreateIdentityBody = {
+    const adminIdentity: CreateIdentityBody = {
       credentials: { password: { config: { password } } },
       state: "active",
       schema_id: "phone_no_password_v0",
@@ -107,7 +113,9 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     let kratosUserId: UserId
 
     try {
-      const { data: identity } = await kratosAdmin.adminCreateIdentity(adminIdentity)
+      const { data: identity } = await kratosAdmin.createIdentity({
+        createIdentityBody: adminIdentity,
+      })
 
       kratosUserId = identity.id as UserId
     } catch (err) {
@@ -131,7 +139,7 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     let identity: Identity
 
     try {
-      ;({ data: identity } = await kratosAdmin.adminGetIdentity(kratosUserId))
+      ;({ data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId }))
     } catch (err) {
       if (err.message === "Request failed with status code 400") {
         return new LikelyUserAlreadyExistError(err)
@@ -147,17 +155,17 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     if (identity.state === undefined)
       throw new KratosError("state undefined, probably impossible state") // type issue
 
-    const adminIdentity: AdminUpdateIdentityBody = {
+    const adminIdentity: UpdateIdentityBody = {
       ...identity,
       credentials: { password: { config: { password } } },
       state: identity.state,
       schema_id: "phone_with_password_v0",
     }
 
-    const { data: newIdentity } = await kratosAdmin.adminUpdateIdentity(
-      kratosUserId,
-      adminIdentity,
-    )
+    const { data: newIdentity } = await kratosAdmin.updateIdentity({
+      id: kratosUserId,
+      updateIdentityBody: adminIdentity,
+    })
 
     return toDomainIdentityPhone(newIdentity)
   }
