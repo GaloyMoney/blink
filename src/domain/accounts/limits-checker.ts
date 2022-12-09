@@ -10,14 +10,15 @@ import {
   WalletCurrency,
   ZERO_CENTS,
 } from "@domain/shared"
-import { addAttributesToCurrentSpan } from "@services/tracing"
+
+import { calculateLimitsInUsd } from "./limits-volume"
 
 const calc = AmountCalculator()
 
 const checkLimitBase =
   ({
     limitName,
-    limitAmount,
+    limitAmount: limit,
     limitError,
     limitErrMsg,
     priceRatio,
@@ -48,23 +49,21 @@ const checkLimitBase =
       volumeInUsdAmount = calc.add(volumeInUsdAmount, outgoingUsdAmount)
     }
 
-    const limit = paymentAmountFromNumber({
-      amount: limitAmount,
+    const limitAmount = paymentAmountFromNumber({
+      amount: limit,
       currency: WalletCurrency.Usd,
     })
-    if (limit instanceof Error) return limit
-    addAttributesToCurrentSpan({
-      "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
-      "txVolume.threshold": `${limit.amount}`,
-      "txVolume.amountInBase": `${amount.amount}`,
-      "txVolume.limitCheck": limitName,
-    })
+    if (limitAmount instanceof Error) return limitAmount
 
-    const remainingLimit = limit.amount - volumeInUsdAmount.amount
-    if (remainingLimit < amount.amount) {
-      return new limitError(limitErrMsg)
-    }
-    return true
+    const { volumeRemaining } = await calculateLimitsInUsd({
+      limitName,
+      limitAmount,
+      priceRatio,
+
+      amount,
+      walletVolumes,
+    })
+    return volumeRemaining.amount < amount.amount ? new limitError(limitErrMsg) : true
   }
 
 export const AccountLimitsChecker = ({
