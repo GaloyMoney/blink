@@ -103,34 +103,20 @@ type BusinessMapMarker = {
 }
 
 type LimiterCheckInputs = {
-  amount: UsdCents
-  walletVolume: TxBaseVolume
-}
-
-type LimitsCheckerFn = (args: LimiterCheckInputs) => true | LimitsExceededError
-
-type LimitsChecker = {
-  checkIntraledger: LimitsCheckerFn
-  checkWithdrawal: LimitsCheckerFn
-}
-
-type NewLimiterCheckInputs = {
   amount: UsdPaymentAmount
   walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
 }
 
-type NewLimitsCheckerFn = (
-  args: NewLimiterCheckInputs,
-) => Promise<true | LimitsExceededError>
+type LimitsCheckerFn = (args: LimiterCheckInputs) => Promise<true | LimitsExceededError>
 
 type AccountLimitsChecker = {
-  checkIntraledger: NewLimitsCheckerFn
-  checkWithdrawal: NewLimitsCheckerFn
-  checkTradeIntraAccount: NewLimitsCheckerFn
+  checkIntraledger: LimitsCheckerFn
+  checkWithdrawal: LimitsCheckerFn
+  checkTradeIntraAccount: LimitsCheckerFn
 }
 
 type TwoFALimitsChecker = {
-  checkTwoFA: NewLimitsCheckerFn
+  checkTwoFA: LimitsCheckerFn
 }
 
 type AccountValidator = {
