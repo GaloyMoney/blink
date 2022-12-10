@@ -1,6 +1,6 @@
 import { Prices } from "@app"
 import { getRecentlyActiveAccounts } from "@app/accounts/active-accounts"
-import { sendDefaultWalletBalanceToUsers } from "@app/accounts/send-default-wallet-balance-to-users"
+import { sendDefaultWalletBalanceToAccounts } from "@app/accounts/send-default-wallet-balance-to-users"
 import { getDisplayCurrencyConfig } from "@config"
 import { toSats } from "@domain/bitcoin"
 import * as serviceLedger from "@services/ledger"
@@ -49,7 +49,7 @@ describe("notification", () => {
         .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
         .mockImplementation(() => ({ sendNotification }))
 
-      await sendDefaultWalletBalanceToUsers()
+      await sendDefaultWalletBalanceToAccounts()
       const activeAccounts = getRecentlyActiveAccounts()
       if (activeAccounts instanceof Error) throw activeAccounts
 
