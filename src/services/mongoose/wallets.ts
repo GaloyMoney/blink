@@ -63,7 +63,7 @@ export const WalletsRepository = (): IWalletsRepository => {
         _accountId: toObjectId<AccountId>(accountId),
       })
       if (!result || result.length === 0) {
-        return new CouldNotListWalletsFromAccountIdError()
+        return new CouldNotListWalletsFromAccountIdError(`accountId: ${accountId}}`)
       }
       return result.map(resultToWallet)
     } catch (err) {
