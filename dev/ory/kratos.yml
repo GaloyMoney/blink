@@ -81,6 +81,7 @@ selfservice:
               config:
                 url: http://e2e-tests:4012/kratos/registration
                 method: POST
+                can_interrupt: true
                 body: file:///home/ory/body.jsonnet # TODO: use a base64 encoding instead
                 auth:
                   type: api_key
