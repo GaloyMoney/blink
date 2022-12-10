@@ -50,7 +50,6 @@ import {
   lndOutside2,
   pay,
   publishOkexPrice,
-  PID,
   startServer,
 } from "test/helpers"
 import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"

@@ -27,7 +27,6 @@ import {
   promisifiedSubscription,
   initializeTestingState,
   killServer,
-  PID,
   startServer,
 } from "test/helpers"
 import { loginFromPhoneAndCode, updateUsername } from "test/helpers/account-creation-e2e"
