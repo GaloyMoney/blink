@@ -63,6 +63,7 @@ describe("phoneNoPassword", () => {
 
     it("create a user", async () => {
       const res = await retry(() => authService.createIdentityWithSession(phone))
+      // const res = await authService.createIdentityWithSession(phone)
       if (res instanceof Error) throw res
 
       expect(res).toHaveProperty("kratosUserId")
@@ -163,6 +164,48 @@ describe("phoneNoPassword", () => {
 
       expect(identity.phone).toBe(phone)
     })
+
+    it("forbidding change of a phone number from publicApi", async () => {
+      const phone = randomPhone()
+
+      const res = await authService.createIdentityWithSession(phone)
+      if (res instanceof Error) throw res
+
+      const res1 = await validateKratosToken(res.sessionToken)
+      if (res1 instanceof Error) throw res1
+      expect(res1.session.identity.phone).toStrictEqual(phone)
+
+      const res2 = await kratosPublic.createNativeSettingsFlow({
+        xSessionToken: res.sessionToken,
+      })
+
+      const newPhone = randomPhone()
+
+      try {
+        await kratosPublic.updateSettingsFlow({
+          flow: res2.data.id,
+          updateSettingsFlowBody: {
+            method: "profile",
+            traits: {
+              phone: newPhone,
+            },
+          },
+          xSessionToken: res.sessionToken,
+        })
+
+        // should throw
+        expect(true).toBeFalsy()
+      } catch (err) {
+        expect(true).toBeTruthy()
+        baseLogger.debug({ err }, "err impossible to update profile")
+      }
+
+      // should pass if kratos.yaml/serve.selfservice.after.profile is been deleted
+
+      // const res3 = await validateKratosToken(res.sessionToken)
+      // if (res3 instanceof Error) throw res3
+      // expect(res3.session.identity.traits).toStrictEqual({ phone: newPhone })
+    })
   })
 
   describe("admin api", () => {
@@ -176,48 +219,6 @@ describe("phoneNoPassword", () => {
 
       expect(res2.kratosUserId).toBe(kratosUserId)
     })
-  })
-
-  it("forbidding change of a phone number from publicApi", async () => {
-    const phone = randomPhone()
-
-    const res = await authService.createIdentityWithSession(phone)
-    if (res instanceof Error) throw res
-
-    const res1 = await validateKratosToken(res.sessionToken)
-    if (res1 instanceof Error) throw res1
-    expect(res1.session.identity.phone).toStrictEqual(phone)
-
-    const res2 = await kratosPublic.createNativeSettingsFlow({
-      xSessionToken: res.sessionToken,
-    })
-
-    const newPhone = randomPhone()
-
-    try {
-      await kratosPublic.updateSettingsFlow({
-        flow: res2.data.id,
-        updateSettingsFlowBody: {
-          method: "profile",
-          traits: {
-            phone: newPhone,
-          },
-        },
-        xSessionToken: res.sessionToken,
-      })
-
-      // should throw
-      expect(true).toBeFalsy()
-    } catch (err) {
-      expect(true).toBeTruthy()
-      baseLogger.debug({ err }, "err impossible to update profile")
-    }
-
-    // should pass if kratos.yaml/serve.selfservice.after.profile is been deleted
-
-    // const res3 = await validateKratosToken(res.sessionToken)
-    // if (res3 instanceof Error) throw res3
-    // expect(res3.session.identity.traits).toStrictEqual({ phone: newPhone })
   })
 })
 
