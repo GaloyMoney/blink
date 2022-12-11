@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 services:
   e2e-deps:
     image: busybox
@@ -300,6 +300,8 @@ services:
       - type: bind
         source: dev/ory
         target: /home/ory
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   kratos-pg:
     image: postgres:14.1
     expose:

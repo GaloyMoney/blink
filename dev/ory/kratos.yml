@@ -1,4 +1,4 @@
-version: v0.10.1
+version: v0.11.0
 
 dsn: "overrided-by-env"
 
@@ -73,13 +73,13 @@ selfservice:
 
     registration:
       lifespan: 10m
-      ui_url: http://e2e-tests:4012/kratos/registration
+      ui_url: http://host.docker.internal:4012/kratos/registration
       after:
         password:
           hooks:
             - hook: web_hook
               config:
-                url: http://e2e-tests:4012/kratos/registration
+                url: http://host.docker.internal:4012/kratos/registration
                 method: POST
                 can_interrupt: true
                 body: file:///home/ory/body.jsonnet # TODO: use a base64 encoding instead
@@ -93,7 +93,7 @@ selfservice:
 
 log:
   level: debug
-  format: text
+  format: json
   leak_sensitive_values: true
 
 secrets:

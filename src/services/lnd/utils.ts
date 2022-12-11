@@ -1,4 +1,4 @@
-import assert from "assert"
+import { assert } from "console"
 
 import { MS_PER_DAY, ONCHAIN_SCAN_DEPTH_CHANNEL_UPDATE, ONE_DAY } from "@config"
 import { toSats } from "@domain/bitcoin"

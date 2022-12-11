@@ -1,9 +1,10 @@
-import { SuccessfulNativeLogin } from "@ory/client"
+import { IdentityState, SuccessfulNativeLogin } from "@ory/client"
 import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 import { authenticator } from "otplib"
 
-import { baseLogger } from "@services/logger"
 import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
+
+import { baseLogger } from "@services/logger"
 
 import { kratosAdmin, kratosPublic } from "./private"
 import {
@@ -73,7 +74,7 @@ export const addTotp = async (token: SessionToken) => {
     const totpSecret = (totpAttributes.attributes as TotpAttributes).text.text
     const totp_code = authenticator.generate(totpSecret)
 
-    const res2 = await kratosPublic.updateSettingsFlow({
+    await kratosPublic.updateSettingsFlow({
       flow: res.data.id,
       updateSettingsFlowBody: {
         method: "totp",
@@ -81,7 +82,6 @@ export const addTotp = async (token: SessionToken) => {
       },
       xSessionToken: token,
     })
-    baseLogger.error(res2.data, "submitSelfService")
 
     return totpSecret
   } catch (err) {
@@ -103,7 +103,7 @@ export const activateUser = async (kratosUserId: UserId): Promise<void | KratosE
       id: kratosUserId,
       updateIdentityBody: {
         ...identity,
-        state: "active",
+        state: IdentityState.Active,
       },
     })
   } catch (err) {
@@ -123,14 +123,17 @@ export const deactivateUser = async (
   }
 
   try {
-    await kratosAdmin.updateIdentity({
+    baseLogger.warn({ identity }, "identity")
+    const res = await kratosAdmin.updateIdentity({
       id: kratosUserId,
       updateIdentityBody: {
         ...identity,
-        state: "inactive",
+        state: IdentityState.Inactive,
       },
     })
+    console.log({ res }, "res")
   } catch (err) {
+    console.log({ err }, "err1")
     return new UnknownKratosError(err)
   }
 }
