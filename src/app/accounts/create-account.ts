@@ -1,4 +1,4 @@
-import { ConfigError, getTestAccounts, getTwilioConfig } from "@config"
+import { ConfigError, getTestAccounts, getTwilioConfig, isRunningJest } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
@@ -68,7 +68,10 @@ export const createAccountWithPhoneIdentifier = async ({
   // we can't mock this function properly because in the end to end test,
   // the server is been launched as a sub process,
   // so it's not been mocked by jest
-  if (getTwilioConfig().accountSid !== "AC_twilio_id") {
+  if (
+    isRunningJest /* TwilioClient will be mocked */ ||
+    getTwilioConfig().accountSid !== "AC_twilio_id" /* true in prod, false in e2e */
+  ) {
     phoneMetadata = await TwilioClient().getCarrier(phone)
   }
 

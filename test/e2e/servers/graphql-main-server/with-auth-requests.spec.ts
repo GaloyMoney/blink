@@ -91,7 +91,7 @@ afterAll(async () => {
   await killServer(triggerPid)
 })
 
-describe.only("setup", () => {
+describe("setup", () => {
   it("create main user", async () => {
     await loginFromPhoneAndCode({ phone, code })
   })
