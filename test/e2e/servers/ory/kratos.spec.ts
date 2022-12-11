@@ -25,8 +25,6 @@ import {
 import { baseLogger } from "@services/logger"
 import { authenticator } from "otplib"
 
-import { sleep } from "@utils"
-
 import {
   killServer,
   randomEmail,
@@ -36,29 +34,6 @@ import {
 } from "test/helpers"
 
 const identityRepo = IdentityRepository()
-
-// NB: kratos sometimes returning 500 on my machine.
-// not sure why, but I notice that this happen only if deps has just been reset
-// although kratos claim to be ready from the logs
-// this seems to be a workaround for now?
-const retry = async (fn) => {
-  let counter = 12
-  const sleepTime = 250
-  let res
-
-  while (counter) {
-    res = await fn()
-    if (res instanceof Error) {
-      console.log(`will retry in ${sleepTime / 1000} s`)
-      await sleep(sleepTime)
-    } else {
-      return res
-    }
-
-    counter -= 1
-  }
-  throw res
-}
 
 let serverPid: PID
 
