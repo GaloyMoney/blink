@@ -34,7 +34,7 @@ services:
     restart: on-failure:10
   otel-agent:
     image: otel/opentelemetry-collector-contrib:0.61.0
-    command: [ "--config=/etc/otel-agent-config.yaml" ]
+    command: ["--config=/etc/otel-agent-config.yaml"]
     environment:
       - HONEYCOMB_DATASET=${HONEYCOMB_DATASET}
       - HONEYCOMB_API_KEY=${HONEYCOMB_API_KEY}
@@ -68,14 +68,14 @@ services:
       - DB_POOL_MIN=1
       - DB_POOL_MAX=5
       - DB_DEBUG=false
-    depends_on: [ postgres-price-history ]
+    depends_on: [postgres-price-history]
   redis:
     image: bitnami/redis:7.0.7
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
   mongodb-migrate:
-    depends_on: [ mongodb ]
+    depends_on: [mongodb]
     build:
       context: .
       dockerfile: Dockerfile-migrate
@@ -109,8 +109,8 @@ services:
       - ${PWD}/dev/lnd/regtest/lnd1.wallet.db:/root/.lnd/wallet.db
       - ${PWD}/dev/lnd/regtest/lnd1.macaroons.db:/root/.lnd/macaroons.db
       - ${PWD}/dev/lnd/regtest/lnd1.admin.macaroon:/root/.lnd/admin.macaroon
-    depends_on: [ bitcoind ]
-    entrypoint: [ "/bin/sh", "-c" ]
+    depends_on: [bitcoind]
+    entrypoint: ["/bin/sh", "-c"]
     command:
       - |
         mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
@@ -127,8 +127,8 @@ services:
       - ${PWD}/dev/lnd/regtest/lnd2.wallet.db:/root/.lnd/wallet.db
       - ${PWD}/dev/lnd/regtest/lnd2.macaroons.db:/root/.lnd/macaroons.db
       - ${PWD}/dev/lnd/regtest/lnd2.admin.macaroon:/root/.lnd/admin.macaroon
-    depends_on: [ bitcoind ]
-    entrypoint: [ "/bin/sh", "-c" ]
+    depends_on: [bitcoind]
+    entrypoint: ["/bin/sh", "-c"]
     command:
       - |
         mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
@@ -145,7 +145,7 @@ services:
       - ${PWD}/dev/lnd/regtest/lnd-outside-1.wallet.db:/root/.lnd/wallet.db
       - ${PWD}/dev/lnd/regtest/lnd-outside-1.macaroons.db:/root/.lnd/macaroons.db
       - ${PWD}/dev/lnd/regtest/lnd-outside-1.admin.macaroon:/root/.lnd/admin.macaroon
-    entrypoint: [ "/bin/sh", "-c" ]
+    entrypoint: ["/bin/sh", "-c"]
     command:
       - |
         mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
@@ -153,7 +153,7 @@ services:
         cp /root/.lnd/macaroons.db /root/.lnd/data/chain/bitcoin/regtest/macaroons.db
         cp /root/.lnd/admin.macaroon /root/.lnd/data/chain/bitcoin/regtest/admin.macaroon
         /bin/lnd
-    depends_on: [ bitcoind ]
+    depends_on: [bitcoind]
   lnd-outside-2:
     image: lightninglabs/lnd:v0.15.4-beta
     volumes:
@@ -163,8 +163,8 @@ services:
       - ${PWD}/dev/lnd/regtest/lnd-outside-2.wallet.db:/root/.lnd/wallet.db
       - ${PWD}/dev/lnd/regtest/lnd-outside-2.macaroons.db:/root/.lnd/macaroons.db
       - ${PWD}/dev/lnd/regtest/lnd-outside-2.admin.macaroon:/root/.lnd/admin.macaroon
-    depends_on: [ bitcoind ]
-    entrypoint: [ "/bin/sh", "-c" ]
+    depends_on: [bitcoind]
+    entrypoint: ["/bin/sh", "-c"]
     command:
       - |
         mkdir -p /root/.lnd/data/chain/bitcoin/regtest/
@@ -206,7 +206,19 @@ services:
       - loopserver
     environment:
       - LOOP_SERVER_INTERNAL_IP=${LOOP_SERVER_INTERNAL_IP}
-    command: bash -c " mkdir -p /root/.loop/regtest/ && cp /root/.loop/tmp/* /root/.loop/regtest/ && loopd\ --network=regtest\ --debuglevel=debug\ --server.host=${LOOP_SERVER_INTERNAL_IP}:11009\ --server.notls --lnd.host=lnd1:10009\ --lnd.macaroonpath=/root/.lnd/lnd1.admin.macaroon\ --lnd.tlspath=/root/.lnd/tls.cert\ --tlsautorefresh\ --restlisten=0.0.0.0:8081\ --rpclisten=0.0.0.0:11010"
+    command: bash -c "
+      mkdir -p /root/.loop/regtest/ &&
+      cp /root/.loop/tmp/* /root/.loop/regtest/ &&
+      loopd\
+      --network=regtest\
+      --debuglevel=debug\
+      --server.host=${LOOP_SERVER_INTERNAL_IP}:11009\
+      --server.notls --lnd.host=lnd1:10009\
+      --lnd.macaroonpath=/root/.lnd/lnd1.admin.macaroon\
+      --lnd.tlspath=/root/.lnd/tls.cert\
+      --tlsautorefresh\
+      --restlisten=0.0.0.0:8081\
+      --rpclisten=0.0.0.0:11010"
   loopd2:
     image: lightninglabs/loop:v0.20.1-beta
     restart: unless-stopped
@@ -225,12 +237,24 @@ services:
       - loopserver
     environment:
       - LOOP_SERVER_INTERNAL_IP=${LOOP_SERVER_INTERNAL_IP}
-    command: bash -c " mkdir -p /root/.loop/regtest/ && cp /root/.loop/tmp/* /root/.loop/regtest/ && loopd\ --network=regtest\ --debuglevel=debug\ --server.host=${LOOP_SERVER_INTERNAL_IP}:11009\ --server.notls --lnd.host=lnd2:10009\ --lnd.macaroonpath=/root/.lnd/lnd2.admin.macaroon\ --lnd.tlspath=/root/.lnd/tls.cert\ --tlsautorefresh\ --restlisten=0.0.0.0:8081\ --rpclisten=0.0.0.0:11010"
+    command: bash -c "
+      mkdir -p /root/.loop/regtest/ &&
+      cp /root/.loop/tmp/* /root/.loop/regtest/ &&
+      loopd\
+      --network=regtest\
+      --debuglevel=debug\
+      --server.host=${LOOP_SERVER_INTERNAL_IP}:11009\
+      --server.notls --lnd.host=lnd2:10009\
+      --lnd.macaroonpath=/root/.lnd/lnd2.admin.macaroon\
+      --lnd.tlspath=/root/.lnd/tls.cert\
+      --tlsautorefresh\
+      --restlisten=0.0.0.0:8081\
+      --rpclisten=0.0.0.0:11010"
   e2e-tests:
     image: us.gcr.io/galoy-org/nodejs-concourse
     depends_on:
       - e2e-deps
-    command: [ "make", "execute-e2e-from-within-container" ]
+    command: ["make", "execute-e2e-from-within-container"]
     working_dir: /repo
     env_file:
       - ${TMP_ENV_CI:-.env.ci}
@@ -240,7 +264,7 @@ services:
     image: us.gcr.io/galoy-org/nodejs-concourse
     depends_on:
       - integration-deps
-    command: [ "make", "execute-integration-from-within-container" ]
+    command: ["make", "execute-integration-from-within-container"]
     working_dir: /repo
     env_file:
       - ${TMP_ENV_CI:-.env.ci}
@@ -248,7 +272,7 @@ services:
       - ./:/repo
   stablesats:
     image: us.gcr.io/galoy-org/stablesats-rs:latest
-    command: [ "stablesats", "run" ]
+    command: ["stablesats", "run"]
     working_dir: /repo/dev
     depends_on:
       - otel-agent
