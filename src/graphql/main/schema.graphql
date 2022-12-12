@@ -44,17 +44,17 @@ type AccountLimits {
   """
   Limits for converting between currencies among a account's own wallets.
   """
-  convert: TradeIntraAccountAccountLimit!
+  convert: [AccountLimit!]!
 
   """
   Limits for sending to other internal accounts.
   """
-  internalSend: IntraLedgerAccountLimit!
+  internalSend: [AccountLimit!]!
 
   """
   Limits for withdrawing to external onchain or lightning destinations.
   """
-  withdrawal: WithdrawalAccountLimit!
+  withdrawal: [AccountLimit!]!
 }
 
 """
@@ -235,6 +235,18 @@ type Coordinates {
   longitude: Float!
 }
 
+type DailyAccountLimit implements AccountLimit {
+  """
+  The amount of cents remaining below the limit for the current 24 hour period.
+  """
+  remainingLimit: CentAmount
+
+  """
+  The current maximum limit for a given 24 hour period.
+  """
+  totalLimit: CentAmount!
+}
+
 input DeviceNotificationTokenCreateInput {
   deviceToken: String!
 }
@@ -298,18 +310,6 @@ type InitiationViaLn {
 
 type InitiationViaOnChain {
   address: OnChainAddress!
-}
-
-type IntraLedgerAccountLimit implements AccountLimit {
-  """
-  The amount of cents remaining below the internal send limit for the current 24 hour period.
-  """
-  remainingLimit: CentAmount
-
-  """
-  The current maximum internal send limit for a given 24 hour period.
-  """
-  totalLimit: CentAmount!
 }
 
 input IntraLedgerPaymentSendInput {
@@ -985,18 +985,6 @@ Timestamp field, serialized as Unix time (the number of seconds since the Unix e
 """
 scalar Timestamp
 
-type TradeIntraAccountAccountLimit implements AccountLimit {
-  """
-  The amount of cents remaining below the conversion limit for the current 24 hour period.
-  """
-  remainingLimit: CentAmount
-
-  """
-  The current maximum conversion limit for a given 24 hour period.
-  """
-  totalLimit: CentAmount!
-}
-
 """
 Give details about an individual transaction.
 Galoy have a smart routing system which is automatically
@@ -1364,15 +1352,3 @@ enum WalletCurrency {
 Unique identifier of a wallet
 """
 scalar WalletId
-
-type WithdrawalAccountLimit implements AccountLimit {
-  """
-  The amount of cents remaining below the withdrawal limit for the current 24 hour period.
-  """
-  remainingLimit: CentAmount
-
-  """
-  The current maximum withdrawal limit for a given 24 hour period.
-  """
-  totalLimit: CentAmount!
-}

@@ -5,20 +5,21 @@ import CentAmount from "@graphql/types/scalar/cent-amount"
 import { normalizePaymentAmount } from "@graphql/root/mutation"
 
 import { Accounts } from "@app"
+import { AccountLimitsRange } from "@domain/accounts"
 
-const WithdrawalAccountLimit = GT.Object<{
+const DailyAccountLimit = GT.Object<{
   account: Account
   limitType: "Withdrawal" | "Intraledger" | "TradeIntraAccount"
   range: AccountLimitsRange
 }>({
-  name: "WithdrawalAccountLimit",
+  name: "DailyAccountLimit",
   interfaces: () => [IAccountLimit],
-  isTypeOf: ({ limitType }) => limitType === "Withdrawal",
+  isTypeOf: ({ range }) => range === AccountLimitsRange.ONE_DAY,
 
   fields: () => ({
     totalLimit: {
       type: GT.NonNull(CentAmount),
-      description: `The current maximum withdrawal limit for a given 24 hour period.`,
+      description: `The current maximum limit for a given 24 hour period.`,
       resolve: async (source) => {
         const { account, limitType } = source
         const limit = await Accounts.getAccountLimitsFromConfig({
@@ -32,7 +33,7 @@ const WithdrawalAccountLimit = GT.Object<{
     },
     remainingLimit: {
       type: CentAmount,
-      description: `The amount of cents remaining below the withdrawal limit for the current 24 hour period.`,
+      description: `The amount of cents remaining below the limit for the current 24 hour period.`,
       resolve: async (source) => {
         const { account, limitType } = source
         const volumes = await Accounts.accountLimit({
@@ -47,4 +48,4 @@ const WithdrawalAccountLimit = GT.Object<{
   }),
 })
 
-export default WithdrawalAccountLimit
+export default DailyAccountLimit
