@@ -2,7 +2,7 @@ interface Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
-  limits(range: AccountLimitsRange!): AccountLimits!
+  limits: AccountLimits!
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -55,13 +55,6 @@ type AccountLimits {
   Limits for withdrawing to external onchain or lightning destinations.
   """
   withdrawal: [AccountLimit!]!
-}
-
-"""
-The period to apply for a given limit check based on transaction volume
-"""
-enum AccountLimitsRange {
-  ONE_DAY
 }
 
 input AccountUpdateDefaultWalletIdInput {
@@ -195,7 +188,7 @@ type ConsumerAccount implements Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
-  limits(range: AccountLimitsRange!): AccountLimits!
+  limits: AccountLimits!
 
   """
   A list of all transactions associated with walletIds optionally passed.

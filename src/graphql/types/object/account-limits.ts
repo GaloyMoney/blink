@@ -1,3 +1,4 @@
+import { AccountLimitsRange } from "@domain/accounts"
 import { GT } from "@graphql/index"
 
 import AccountLimit from "@graphql/types/abstract/account-limit"
@@ -8,41 +9,47 @@ const AccountLimits = GT.Object({
     withdrawal: {
       type: GT.NonNullList(AccountLimit),
       description: `Limits for withdrawing to external onchain or lightning destinations.`,
-      resolve: (source: { account: Account; range: AccountLimitsRange }) => {
+      resolve: (source: Account) => {
         const commonProperties = {
-          account: source.account,
+          account: source,
           limitType: "Withdrawal",
         }
 
-        return [
-          {
-            ...commonProperties,
-            range: source.range,
-          },
-        ]
+        return Object.values(AccountLimitsRange).map((range) => ({
+          ...commonProperties,
+          range,
+        }))
       },
     },
     internalSend: {
       type: GT.NonNullList(AccountLimit),
       description: `Limits for sending to other internal accounts.`,
-      resolve: (source: { account: Account; range: AccountLimitsRange }) => [
-        {
-          account: source.account,
+      resolve: (source: Account) => {
+        const commonProperties = {
+          account: source,
           limitType: "Intraledger",
-          range: source.range,
-        },
-      ],
+        }
+
+        return Object.values(AccountLimitsRange).map((range) => ({
+          ...commonProperties,
+          range,
+        }))
+      },
     },
     convert: {
       type: GT.NonNullList(AccountLimit),
       description: `Limits for converting between currencies among a account's own wallets.`,
-      resolve: (source: { account: Account; range: AccountLimitsRange }) => [
-        {
-          account: source.account,
+      resolve: (source: Account) => {
+        const commonProperties = {
+          account: source,
           limitType: "TradeIntraAccount",
-          range: source.range,
-        },
-      ],
+        }
+
+        return Object.values(AccountLimitsRange).map((range) => ({
+          ...commonProperties,
+          range,
+        }))
+      },
     },
   }),
 })
