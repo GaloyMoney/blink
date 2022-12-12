@@ -50,8 +50,11 @@ beforeAll(async () => {
   serverPid = await startServer("start-main-ci")
 
   await loginFromPhoneAndCode({ phone, code })
-  const c = await loginFromPhoneAndCode({ phone: phoneRecipient, code: codeRecipient })
-  await updateUsername({ apolloClient: c, username: receivingUsername })
+  const client = await loginFromPhoneAndCode({
+    phone: phoneRecipient,
+    code: codeRecipient,
+  })
+  await updateUsername({ apolloClient: client, username: receivingUsername })
 
   const sendingWalletId = await getDefaultWalletIdByTestUserRef(sendingUserRef)
   await fundWalletIdFromLightning({ walletId: sendingWalletId, amount: toSats(50_000) })
