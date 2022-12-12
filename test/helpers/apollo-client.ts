@@ -1,11 +1,11 @@
 import {
   ApolloClient,
-  InMemoryCache,
   ApolloLink,
   from,
   HttpLink,
-  split,
+  InMemoryCache,
   NormalizedCacheObject,
+  split,
 } from "@apollo/client/core"
 import { WebSocketLink } from "@apollo/client/link/ws"
 import { getMainDefinition } from "@apollo/client/utilities"
@@ -18,12 +18,14 @@ import { baseLogger } from "@services/logger"
 export const localIpAddress = "127.0.0.1" as IpAddress
 
 export type ApolloTestClientConfig = {
-  authToken?: string
+  authToken?: SessionToken
   graphqlUrl: string
   graphqlSubscriptionUrl: string
 }
 
-export const defaultTestClientConfig = (authToken?: string): ApolloTestClientConfig => {
+export const defaultTestClientConfig = (
+  authToken?: SessionToken,
+): ApolloTestClientConfig => {
   const OATHKEEPER_HOST = process.env.OATHKEEPER_HOST ?? "oathkeeper"
   const OATHKEEPER_PORT = process.env.OATHKEEPER_PORT ?? "4002"
 

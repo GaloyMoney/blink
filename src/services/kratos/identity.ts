@@ -64,7 +64,10 @@ export const IdentityRepository = (): IIdentityRepository => {
       const uniqueIdentities = identities.filter(
         (value, index, self) => index === self.findIndex((t) => t.id === value.id),
       )
-      assert(totalCount == uniqueIdentities.length)
+      assert(
+        totalCount == uniqueIdentities.length,
+        "count doesn't match uniqueIdentities.length",
+      )
 
       return uniqueIdentities.map(toDomainIdentityPhone)
     } catch (err) {

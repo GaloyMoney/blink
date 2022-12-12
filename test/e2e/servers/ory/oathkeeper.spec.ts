@@ -20,7 +20,6 @@ import {
   PID,
   startServer,
 } from "test/helpers"
-
 let serverPid: PID
 
 beforeAll(async () => {
@@ -30,6 +29,11 @@ beforeAll(async () => {
 afterAll(async () => {
   await killServer(serverPid)
 })
+
+// TODO: if "D" failed silently.
+// should have a fail safe error fallback when therer is mismatch
+// between account/user on mongoose and kratos
+const userRef = "L"
 
 describe("Oathkeeper", () => {
   it("return anon if no bearer assets", async () => {
@@ -46,7 +50,6 @@ describe("Oathkeeper", () => {
   })
 
   it("return UserId when kratos session token is provided", async () => {
-    const userRef = "D"
     const { phone, code } = getPhoneAndCodeFromRef(userRef)
 
     const { apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig())
@@ -71,7 +74,6 @@ describe("Oathkeeper", () => {
   })
 
   it("return UserId when legacy JWT is provided", async () => {
-    const userRef = "D"
     const { phone } = getPhoneAndCodeFromRef(userRef)
 
     const user = await IdentityRepository().slowFindByPhone(phone)

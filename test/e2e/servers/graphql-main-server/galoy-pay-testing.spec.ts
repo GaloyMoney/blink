@@ -30,24 +30,35 @@ import {
   PID,
   startServer,
 } from "test/helpers"
+import { loginFromPhoneAndCode, updateUsername } from "test/helpers/account-creation-e2e"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,
   receivingWalletId: WalletId,
   serverPid: PID
-const receivingUsername = "user15"
+const receivingUsername = "user15" as Username
 const receivingUserRef = "G"
 const sendingUserRef = "D"
 
 const { phone, code } = getPhoneAndCodeFromRef(sendingUserRef)
+const { phone: phoneRecipient, code: codeRecipient } =
+  getPhoneAndCodeFromRef(receivingUserRef)
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
+
+  serverPid = await startServer("start-main-ci")
+
+  await loginFromPhoneAndCode({ phone, code })
+  const client = await loginFromPhoneAndCode({
+    phone: phoneRecipient,
+    code: codeRecipient,
+  })
+  await updateUsername({ apolloClient: client, username: receivingUsername })
+
   const sendingWalletId = await getDefaultWalletIdByTestUserRef(sendingUserRef)
   await fundWalletIdFromLightning({ walletId: sendingWalletId, amount: toSats(50_000) })
   receivingWalletId = await getDefaultWalletIdByTestUserRef(receivingUserRef)
-
-  serverPid = await startServer("start-main-ci")
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
   const input = { phone, code }
   const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })

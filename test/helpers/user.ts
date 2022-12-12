@@ -3,11 +3,8 @@ import { addWalletIfNonexistent } from "@app/accounts/add-wallet"
 import { getDefaultAccountsConfig, yamlConfig } from "@config"
 
 import { adminUsers } from "@domain/admin-users"
-import {
-  AuthenticationError,
-  LikelyNoUserWithThisPhoneExistError,
-} from "@domain/authentication/errors"
-import { CouldNotFindAccountFromKratosIdError } from "@domain/errors"
+
+import { CouldNotFindAccountFromKratosIdError, CouldNotFindError } from "@domain/errors"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 
@@ -20,17 +17,19 @@ import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
 import { Account } from "@services/mongoose/schema"
 import { toObjectId } from "@services/mongoose/utils"
 
-import { AuthWithPhonePasswordlessService, IdentityRepository } from "@services/kratos"
 import { baseLogger } from "@services/logger"
 
-import { Wallets } from "@app"
+import { Accounts, Wallets } from "@app"
 
 import { sleep } from "@utils"
 
+import { AccountStatus } from "@domain/accounts"
+
 import { lndOutside1, safePay } from "./lightning"
 
+import { randomPhone, randomUserId } from "."
+
 const accounts = AccountsRepository()
-const identities = IdentityRepository()
 
 export const getPhoneAndCodeFromRef = (ref: string) => {
   const result = yamlConfig.test_accounts.find((item) => item.ref === ref)
@@ -39,7 +38,7 @@ export const getPhoneAndCodeFromRef = (ref: string) => {
 
 const getUserByTestUserRef = async (ref: string) => {
   const { phone } = getPhoneAndCodeFromRef(ref)
-  const user = await identities.slowFindByPhone(phone)
+  const user = await UsersRepository().findByPhone(phone)
   if (user instanceof Error) throw user
   return user
 }
@@ -80,7 +79,7 @@ export const getUsdWalletIdByTestUserRef = async (ref: string) => {
 
 export const getAccountRecordByTestUserRef = async (ref: string) => {
   const entry = yamlConfig.test_accounts.find((item) => item.ref === ref)
-  const user = await identities.slowFindByPhone(entry?.phone as PhoneNumber)
+  const user = await UsersRepository().findByPhone(entry?.phone as PhoneNumber)
   if (user instanceof Error) throw user
   const accountRecord = await Account.findOne({ kratosUserId: user.id })
   if (!accountRecord) throw Error("missing account")
@@ -109,43 +108,40 @@ export const createUserAndWalletFromUserRef = async (ref: string) => {
   await createUserAndWallet(entry)
 }
 
+export const createAccount = async (initialWallets: WalletCurrency[]) => {
+  const phone = randomPhone()
+
+  const kratosUserId = randomUserId()
+
+  const account = await Accounts.createAccountWithPhoneIdentifier({
+    newAccountInfo: { phone, kratosUserId },
+    config: { initialStatus: AccountStatus.Active, initialWallets },
+  })
+  if (account instanceof Error) throw account
+
+  return account
+}
+
 export const createUserAndWallet = async (entry: TestEntry) => {
+  let kratosUserId: UserId
+
   const phone = entry.phone as PhoneNumber
 
-  const authService = AuthWithPhonePasswordlessService()
+  const user = await UsersRepository().findByPhone(phone)
+  if (user instanceof CouldNotFindError) {
+    kratosUserId = randomUserId()
 
-  let kratosResult = await authService.login(phone)
+    const res = await UsersRepository().update({
+      id: kratosUserId,
+      deviceTokens: [`token-${kratosUserId}`] as DeviceToken[],
+      phone,
+    })
+    if (res instanceof Error) throw res
+  } else {
+    if (user instanceof Error) throw user
 
-  // currently kratos users are not been reset between tests, but accounts and wallets are.
-  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
-    kratosResult = await authService.createIdentityWithSession(phone)
+    kratosUserId = user.id
   }
-  if (kratosResult instanceof AuthenticationError) throw kratosResult
-
-  const kratosUserId = kratosResult.kratosUserId
-
-  let phoneMetadata
-
-  if (entry.phoneMetadataCarrierType) {
-    phoneMetadata = {
-      carrier: {
-        type: entry.phoneMetadataCarrierType as CarrierType,
-        name: "",
-        mobile_network_code: "",
-        mobile_country_code: "",
-        error_code: "",
-      },
-      countryCode: "US",
-    }
-  }
-
-  const res = await UsersRepository().update({
-    id: kratosUserId,
-    deviceTokens: [`token-${kratosUserId}`] as DeviceToken[],
-    phoneMetadata,
-    phone,
-  })
-  if (res instanceof Error) throw res
 
   let account = await accounts.findByUserId(kratosUserId)
 

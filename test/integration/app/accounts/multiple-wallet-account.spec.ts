@@ -2,7 +2,6 @@ import { Accounts } from "@app"
 import { getDefaultAccountsConfig } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import { WalletsRepository } from "@services/mongoose"
 import mongoose from "mongoose"
 
@@ -10,17 +9,13 @@ import {
   createUserAndWalletFromUserRef,
   getAccountByTestUserRef,
   getUsdWalletIdByTestUserRef,
+  randomUserId,
 } from "test/helpers"
 
 it("change default walletId of account", async () => {
   const phone = "+123456789" as PhoneNumber
 
-  const authService = AuthWithPhonePasswordlessService()
-
-  const kratosResult = await authService.createIdentityWithSession(phone)
-
-  if (kratosResult instanceof Error) throw kratosResult
-  const kratosUserId = kratosResult.kratosUserId
+  const kratosUserId = randomUserId()
 
   const account = await Accounts.createAccountWithPhoneIdentifier({
     newAccountInfo: { phone, kratosUserId },

@@ -354,7 +354,7 @@ export const onChannelUpdated = async ({
   // either calculate it from the input, or use an indexer
   // const { fee } = tx.fee
 
-  assert(fee > 0)
+  assert(fee > 0, "fee not positive")
 
   const data = {
     description: `channel ${stateChange} onchain fee`,

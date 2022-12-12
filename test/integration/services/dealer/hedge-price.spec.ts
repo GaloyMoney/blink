@@ -12,9 +12,9 @@ import { AccountsRepository } from "@services/mongoose"
 import {
   cancelOkexPricePublish,
   createAndFundNewWallet,
-  freshAccount,
   getBalanceHelper,
   publishOkexPrice,
+  randomAccount,
 } from "test/helpers"
 
 jest.mock("@config", () => {
@@ -63,7 +63,7 @@ const usdFundingAmount = paymentAmountFromNumber({
 if (usdFundingAmount instanceof Error) throw usdFundingAmount
 
 const newAccountAndWallets = async () => {
-  const accountId = (await freshAccount()).id
+  const accountId = (await randomAccount()).id
 
   const newBtcWallet = await createAndFundNewWallet({
     accountId,

@@ -20,7 +20,7 @@ import {
 //this is the fixed opening and closing channel fee on devnet
 const channelFee = 7700
 const lnds = [lnd1, lnd2, lndOutside1, lndOutside1]
-let channelLengthMain, channelLengthOutside1
+let channelLengthMain: number, channelLengthOutside1: number
 
 beforeEach(async () => {
   await waitUntilSync({ lnds })

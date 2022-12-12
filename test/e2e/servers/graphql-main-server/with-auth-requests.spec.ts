@@ -53,6 +53,7 @@ import {
   PID,
   startServer,
 } from "test/helpers"
+import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"
 
 let apolloClient: ApolloClient<NormalizedCacheObject>,
   disposeClient: () => void = () => null,
@@ -60,16 +61,25 @@ let apolloClient: ApolloClient<NormalizedCacheObject>,
   usdWalletId: WalletId,
   serverPid: PID,
   triggerPid: PID
-const userRef = "D"
 
+const userRef = "K"
 const { phone, code } = getPhoneAndCodeFromRef(userRef)
+
+const otherRef = "A"
+const { phone: phoneOther, code: codeOther } = getPhoneAndCodeFromRef(otherRef)
 
 const satsAmount = toSats(50_000)
 const centsAmount = toCents(4_000)
 
 beforeAll(async () => {
-  await publishOkexPrice()
   await initializeTestingState(defaultStateConfig())
+  serverPid = await startServer("start-main-ci")
+  await loginFromPhoneAndCode({ phone, code })
+  await loginFromPhoneAndCode({ phone: phoneOther, code: codeOther })
+
+  triggerPid = await startServer("start-trigger-ci")
+  await publishOkexPrice()
+
   const account = await getAccountByTestUserRef(userRef)
   const usdWallet = await Accounts.addWalletIfNonexistent({
     accountId: account.id,
@@ -81,8 +91,6 @@ beforeAll(async () => {
   walletId = await getDefaultWalletIdByTestUserRef(userRef)
 
   await fundWalletIdFromLightning({ walletId, amount: satsAmount })
-  serverPid = await startServer("start-main-ci")
-  triggerPid = await startServer("start-trigger-ci")
   ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
   const input = { phone, code }
   const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
@@ -285,7 +293,7 @@ describe("graphql", () => {
 
     it("returns an error if non-owned walletId is included", async () => {
       const expectedErrorMessage = "Invalid walletId for account."
-      const otherWalletId = await getDefaultWalletIdByTestUserRef("A")
+      const otherWalletId = await getDefaultWalletIdByTestUserRef(otherRef)
 
       const walletIdsCases = [
         [otherWalletId, walletId],
