@@ -23,7 +23,7 @@ const AccountLimits = GT.Object({
       type: GT.NonNull(IntraledgerAccountLimit),
       description: `Limits for sending to other internal accounts.`,
       resolve: (source: { account: Account; range: AccountLimitsRange }) => ({
-        account: source,
+        account: source.account,
         limitType: "Intraledger",
         range: source.range,
       }),
@@ -32,7 +32,7 @@ const AccountLimits = GT.Object({
       type: GT.NonNull(TradeIntraAccountAccountLimit),
       description: `Limits for converting between currencies among a account's own wallets.`,
       resolve: (source: { account: Account; range: AccountLimitsRange }) => ({
-        account: source,
+        account: source.account,
         limitType: "TradeIntraAccount",
         range: source.range,
       }),

@@ -32,12 +32,12 @@ interface AccountLimit {
   """
   The amount of cents remaining below the limit for the current 24 hour period.
   """
-  remainingLimit: CentAmountPayload
+  remainingLimit: CentAmount
 
   """
   The current maximum limit for a given 24 hour period.
   """
-  totalLimit: CentAmountPayload!
+  totalLimit: CentAmount!
 }
 
 type AccountLimits {
@@ -304,12 +304,12 @@ type IntraLedgerAccountLimit implements AccountLimit {
   """
   The amount of cents remaining below the internal send limit for the current 24 hour period.
   """
-  remainingLimit: CentAmountPayload
+  remainingLimit: CentAmount
 
   """
   The current maximum internal send limit for a given 24 hour period.
   """
-  totalLimit: CentAmountPayload!
+  totalLimit: CentAmount!
 }
 
 input IntraLedgerPaymentSendInput {
@@ -989,12 +989,12 @@ type TradeIntraAccountAccountLimit implements AccountLimit {
   """
   The amount of cents remaining below the conversion limit for the current 24 hour period.
   """
-  remainingLimit: CentAmountPayload
+  remainingLimit: CentAmount
 
   """
   The current maximum conversion limit for a given 24 hour period.
   """
-  totalLimit: CentAmountPayload!
+  totalLimit: CentAmount!
 }
 
 """
@@ -1369,10 +1369,10 @@ type WithdrawalAccountLimit implements AccountLimit {
   """
   The amount of cents remaining below the withdrawal limit for the current 24 hour period.
   """
-  remainingLimit: CentAmountPayload
+  remainingLimit: CentAmount
 
   """
   The current maximum withdrawal limit for a given 24 hour period.
   """
-  totalLimit: CentAmountPayload!
+  totalLimit: CentAmount!
 }

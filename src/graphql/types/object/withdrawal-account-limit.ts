@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import IAccountLimit from "@graphql/types/abstract/account-limit"
-import CentAmountPayload from "@graphql/types/payload/cent-amount"
+import CentAmount from "@graphql/types/scalar/cent-amount"
 import { normalizePaymentAmount } from "@graphql/root/mutation"
 
 import { Accounts } from "@app"
@@ -17,7 +17,7 @@ const WithdrawalAccountLimit = GT.Object<{
 
   fields: () => ({
     totalLimit: {
-      type: GT.NonNull(CentAmountPayload),
+      type: GT.NonNull(CentAmount),
       description: `The current maximum withdrawal limit for a given 24 hour period.`,
       resolve: async (source) => {
         const { account, limitType } = source
@@ -25,15 +25,13 @@ const WithdrawalAccountLimit = GT.Object<{
           level: account.level,
           limitType,
         })
-        if (limit instanceof Error) {
-          return { errors: [mapAndParseErrorForGqlResponse(limit)] }
-        }
+        if (limit instanceof Error) throw mapError(limit)
 
-        return { amount: limit, errors: [] }
+        return limit
       },
     },
     remainingLimit: {
-      type: CentAmountPayload,
+      type: CentAmount,
       description: `The amount of cents remaining below the withdrawal limit for the current 24 hour period.`,
       resolve: async (source) => {
         const { account, limitType } = source
@@ -41,11 +39,9 @@ const WithdrawalAccountLimit = GT.Object<{
           account,
           limitType,
         })
-        if (volumes instanceof Error) {
-          return { errors: [mapAndParseErrorForGqlResponse(volumes)] }
-        }
+        if (volumes instanceof Error) throw mapError(volumes)
 
-        return { ...normalizePaymentAmount(volumes.volumeRemaining), errors: [] }
+        return normalizePaymentAmount(volumes.volumeRemaining).amount
       },
     },
   }),
