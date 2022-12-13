@@ -6,26 +6,25 @@ import { WalletsRepository } from "@services/mongoose"
 export const getAccountTransactionsForContact = async ({
   account,
   contactUsername,
+  paginationArgs,
 }: {
   account: Account
   contactUsername: Username
+  paginationArgs?: PaginationArgs
 }): Promise<WalletTransaction[] | ApplicationError> => {
   const ledger = LedgerService()
-  let transactions: WalletTransaction[] = []
 
   const wallets = await WalletsRepository().listByAccountId(account.id)
   if (wallets instanceof Error) return wallets
 
-  for (const wallet of wallets) {
-    const ledgerTransactions = await ledger.getTransactionsByWalletIdAndContactUsername(
-      wallet.id,
-      contactUsername,
-    )
-    if (ledgerTransactions instanceof LedgerError) return ledgerTransactions
+  const ledgerTransactions = await ledger.getTransactionsByWalletIdAndContactUsername({
+    walletIds: wallets.map((wallet) => wallet.id),
+    contactUsername,
+    paginationArgs,
+  })
+  if (ledgerTransactions instanceof LedgerError) return ledgerTransactions
 
-    const confirmedHistory = WalletTransactionHistory.fromLedger(ledgerTransactions)
-    transactions = transactions.concat(confirmedHistory.transactions)
-  }
+  const confirmedHistory = WalletTransactionHistory.fromLedger(ledgerTransactions)
 
-  return transactions
+  return confirmedHistory.transactions
 }

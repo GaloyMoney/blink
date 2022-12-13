@@ -32,6 +32,7 @@ import {
 import { admin } from "./admin"
 import * as adminLegacy from "./admin-legacy"
 import { MainBook, Transaction } from "./books"
+import { paginatedLedger } from "./paginated-ledger"
 import * as caching from "./caching"
 import { TransactionsMetadataRepository } from "./services"
 import { receive } from "./receive"
@@ -112,14 +113,20 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const getTransactionsByWalletIds = async (
-    walletIds: WalletId[],
-  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
+  const getTransactionsByWalletIds = async ({
+    walletIds,
+    paginationArgs = {} as PaginationArgs,
+  }: {
+    walletIds: WalletId[]
+    paginationArgs: PaginationArgs
+  }): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
     const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
     try {
-      const { results } = await MainBook.ledger({
+      const results = await paginatedLedger({
         account: liabilitiesWalletIds,
+        ...paginationArgs,
       })
+
       // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))
     } catch (err) {
@@ -127,16 +134,21 @@ export const LedgerService = (): ILedgerService => {
     }
   }
 
-  const getTransactionsByWalletIdAndContactUsername = async (
-    walletId: WalletId,
-    // @ts-ignore-next-line no-implicit-any error
+  const getTransactionsByWalletIdAndContactUsername = async ({
+    walletIds,
     contactUsername,
-  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
-    const liabilitiesWalletId = toLiabilitiesWalletId(walletId)
+    paginationArgs,
+  }: {
+    walletIds: WalletId[]
+    contactUsername: Username
+    paginationArgs?: PaginationArgs
+  }): Promise<LedgerTransaction<WalletCurrency>[] | LedgerError> => {
+    const liabilitiesWalletIds = walletIds.map(toLiabilitiesWalletId)
     try {
-      const { results } = await MainBook.ledger({
-        account: liabilitiesWalletId,
+      const results = await paginatedLedger({
+        account: liabilitiesWalletIds,
         username: contactUsername,
+        ...paginationArgs,
       })
       // @ts-ignore-next-line no-implicit-any error
       return results.map((tx) => translateToLedgerTx(tx))

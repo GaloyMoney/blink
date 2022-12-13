@@ -264,14 +264,16 @@ interface ILedgerService {
     walletId: WalletId,
   ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
-  getTransactionsByWalletIds(
-    walletIds: WalletId[],
-  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
+  getTransactionsByWalletIds(args: {
+    walletIds: WalletId[]
+    paginationArgs?: PaginationArgs
+  }): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
-  getTransactionsByWalletIdAndContactUsername(
-    walletId: WalletId,
-    contactUsername: Username,
-  ): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
+  getTransactionsByWalletIdAndContactUsername(args: {
+    walletIds: WalletId[]
+    contactUsername: Username
+    paginationArgs?: PaginationArgs
+  }): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
 
   listPendingPayments(
     walletId: WalletId,

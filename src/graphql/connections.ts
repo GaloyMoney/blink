@@ -1,3 +1,4 @@
+import { DEFAULT_MAX_CONNECTION_LIMIT } from "@services/ledger/paginated-ledger"
 import { getNamedType, resolveObjMapThunk } from "graphql"
 import {
   ConnectionArguments,
@@ -145,3 +146,31 @@ export const connectionDefinitions = (
 }
 
 export { connectionArgs } from "graphql-relay"
+
+export const checkedConnectionArgs = (
+  args: ConnectionArguments,
+): PaginationArgs | Error => {
+  // FIXME: make first or last required (after making sure no one is using them as optional)
+  // if (!args.first && !args.last) {
+  //   return new Error(
+  //     "You must provide a `first` or `last` value to properly paginate this connection.",
+  //   )
+  // }
+
+  if (args.first && args.first > DEFAULT_MAX_CONNECTION_LIMIT) {
+    return new Error(
+      `Requesting ${args.first} records on this connection exceeds the "first" limit of ${DEFAULT_MAX_CONNECTION_LIMIT} records.`,
+    )
+  }
+
+  if (args.last && args.last > DEFAULT_MAX_CONNECTION_LIMIT) {
+    return new Error(
+      `Requesting ${args.last} records on this connection exceeds the "last" limit of ${DEFAULT_MAX_CONNECTION_LIMIT} records.`,
+    )
+  }
+
+  return {
+    after: args.after,
+    before: args.before,
+  } as PaginationArgs
+}

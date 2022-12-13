@@ -1,7 +1,11 @@
 import { CouldNotFindTransactionsForAccountError } from "@domain/errors"
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
-import { connectionArgs, connectionFromArray } from "@graphql/connections"
+import {
+  connectionArgs,
+  connectionFromArray,
+  checkedConnectionArgs,
+} from "@graphql/connections"
 
 import { WalletsRepository } from "@services/mongoose"
 
@@ -62,6 +66,11 @@ const BusinessAccount = GT.Object({
         },
       },
       resolve: async (source, args) => {
+        const paginationArgs = checkedConnectionArgs(args)
+        if (paginationArgs instanceof Error) {
+          throw paginationArgs
+        }
+
         let { walletIds } = args
         if (walletIds instanceof Error) {
           return { errors: [{ message: walletIds.message }] }
@@ -79,6 +88,7 @@ const BusinessAccount = GT.Object({
           await Accounts.getTransactionsForAccountByWalletIds({
             account: source,
             walletIds,
+            paginationArgs,
           })
         if (error instanceof Error) {
           throw mapError(error)

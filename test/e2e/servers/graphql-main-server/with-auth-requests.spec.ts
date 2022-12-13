@@ -269,6 +269,7 @@ describe("graphql", () => {
 
       const { data } = await apolloClient.query({
         query: TRANSACTIONS_BY_WALLET_IDS,
+        variables: { first: 100 },
       })
 
       const { edges: txns } = data.me.defaultAccount.transactions
@@ -304,7 +305,7 @@ describe("graphql", () => {
       for (const walletIds of walletIdsCases) {
         const { data, errors } = await apolloClient.query({
           query: TRANSACTIONS_BY_WALLET_IDS,
-          variables: { walletIds },
+          variables: { walletIds, first: 100 },
         })
         expect(data.me.defaultAccount.transactions).toBeNull()
         expect(errors).not.toBeUndefined()

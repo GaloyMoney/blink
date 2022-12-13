@@ -1,6 +1,10 @@
 import { GT } from "@graphql/index"
 import { normalizePaymentAmount } from "@graphql/root/mutation"
-import { connectionArgs, connectionFromArray } from "@graphql/connections"
+import {
+  connectionArgs,
+  connectionFromArray,
+  checkedConnectionArgs,
+} from "@graphql/connections"
 import { mapError } from "@graphql/error-map"
 
 import { Wallets } from "@app"
@@ -57,9 +61,15 @@ const BtcWallet = GT.Object<Wallet>({
       type: TransactionConnection,
       args: connectionArgs,
       resolve: async (source, args) => {
-        const { result: transactions, error } = await Wallets.getTransactionsForWallets([
-          source,
-        ])
+        const paginationArgs = checkedConnectionArgs(args)
+        if (paginationArgs instanceof Error) {
+          throw paginationArgs
+        }
+
+        const { result: transactions, error } = await Wallets.getTransactionsForWallets({
+          wallets: [source],
+          paginationArgs,
+        })
         if (error instanceof Error) throw mapError(error)
 
         // Non-null signal to type checker; consider fixing in PartialResult type
@@ -78,6 +88,11 @@ const BtcWallet = GT.Object<Wallet>({
         },
       },
       resolve: async (source, args) => {
+        const paginationArgs = checkedConnectionArgs(args)
+        if (paginationArgs instanceof Error) {
+          throw paginationArgs
+        }
+
         const { address } = args
         if (address instanceof Error) throw address
 
@@ -85,6 +100,7 @@ const BtcWallet = GT.Object<Wallet>({
           await Wallets.getTransactionsForWalletsByAddresses({
             wallets: [source],
             addresses: [address],
+            paginationArgs,
           })
         if (error instanceof Error) throw mapError(error)
 

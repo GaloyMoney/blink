@@ -8,9 +8,11 @@ import { PartialResult } from "../partial-result"
 export const getTransactionsForAccountByWalletIds = async ({
   account,
   walletIds,
+  paginationArgs,
 }: {
   account: Account
   walletIds: WalletId[]
+  paginationArgs?: PaginationArgs
 }): Promise<PartialResult<WalletTransaction[]>> => {
   const walletsRepo = WalletsRepository()
 
@@ -27,5 +29,5 @@ export const getTransactionsForAccountByWalletIds = async ({
     wallets.push(wallet)
   }
 
-  return getTransactionsForWallets(wallets)
+  return getTransactionsForWallets({ wallets, paginationArgs })
 }

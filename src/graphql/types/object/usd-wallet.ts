@@ -1,5 +1,9 @@
 import { GT } from "@graphql/index"
-import { connectionArgs, connectionFromArray } from "@graphql/connections"
+import {
+  connectionArgs,
+  connectionFromArray,
+  checkedConnectionArgs,
+} from "@graphql/connections"
 import { notBtcWalletForQueryError } from "@graphql/helpers"
 import { mapError } from "@graphql/error-map"
 
@@ -52,9 +56,15 @@ const UsdWallet = GT.Object<Wallet>({
       type: TransactionConnection,
       args: connectionArgs,
       resolve: async (source, args) => {
-        const { result: transactions, error } = await Wallets.getTransactionsForWallets([
-          source,
-        ])
+        const paginationArgs = checkedConnectionArgs(args)
+        if (paginationArgs instanceof Error) {
+          throw paginationArgs
+        }
+
+        const { result: transactions, error } = await Wallets.getTransactionsForWallets({
+          wallets: [source],
+          paginationArgs,
+        })
         if (error instanceof Error) throw mapError(error)
 
         // Non-null signal to type checker; consider fixing in PartialResult type

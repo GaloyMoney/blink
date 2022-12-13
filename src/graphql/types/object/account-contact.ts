@@ -2,7 +2,11 @@ import { Accounts } from "@app"
 import { checkedToUsername } from "@domain/accounts"
 import { GT } from "@graphql/index"
 import dedent from "dedent"
-import { connectionArgs, connectionFromArray } from "@graphql/connections"
+import {
+  checkedConnectionArgs,
+  connectionArgs,
+  connectionFromArray,
+} from "@graphql/connections"
 
 import ContactAlias from "../scalar/contact-alias"
 import Username from "../scalar/username"
@@ -29,6 +33,11 @@ const AccountContact = GT.Object<AccountRecord, GraphQLContextAuth>({
       type: TransactionConnection,
       args: connectionArgs,
       resolve: async (source, args, { domainAccount }) => {
+        const paginationArgs = checkedConnectionArgs(args)
+        if (paginationArgs instanceof Error) {
+          throw paginationArgs
+        }
+
         if (!source.username) {
           throw new Error("Missing username for contact")
         }
@@ -47,6 +56,7 @@ const AccountContact = GT.Object<AccountRecord, GraphQLContextAuth>({
         const transactions = await Accounts.getAccountTransactionsForContact({
           account,
           contactUsername,
+          paginationArgs,
         })
 
         if (transactions instanceof Error) {
