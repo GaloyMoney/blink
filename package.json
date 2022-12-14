@@ -135,7 +135,7 @@
     "@types/nodemon": "^1.19.2",
     "@types/prettier": "^2.7.1",
     "@typescript-eslint/eslint-plugin": "^5.45.0",
-    "@typescript-eslint/parser": "^5.44.0",
+    "@typescript-eslint/parser": "^5.46.1",
     "axios-mock-adapter": "^1.21.2",
     "eslint": "^8.28.0",
     "eslint-config-prettier": "^8.3.0",
