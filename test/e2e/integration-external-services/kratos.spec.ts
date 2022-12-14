@@ -248,7 +248,7 @@ describe("token validation", () => {
 
 describe("session revokation", () => {
   const phone = randomPhone()
-  it("revoke user session", async () => {
+  it("revoke user sessions", async () => {
     const res = await authService.createIdentityWithSession(phone)
     if (res instanceof Error) throw res
     const kratosUserId = res.kratosUserId
@@ -264,6 +264,18 @@ describe("session revokation", () => {
       const { data } = await kratosAdmin.listIdentitySessions({ id: kratosUserId })
       expect(data).toBeFalsy()
     }
+  })
+
+  it("revoke user session", async () => {
+    const res = await authService.createIdentityWithSession(phone)
+    if (res instanceof Error) throw res
+
+    await kratosPublic.disableMySession({
+      id: res.kratosUserId,
+      xSessionToken: res.sessionToken,
+    })
+
+    // TODO: make sure we can't log in back with the sessionToken
   })
 
   it("return error on revoked session", async () => {
