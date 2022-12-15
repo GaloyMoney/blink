@@ -76,7 +76,7 @@ export const getTransactionsForWallets = async ({
 
   const pendingIncoming = filter.apply(onChainTxs)
 
-  let price = await getCurrentPrice()
+  let price = await getCurrentPrice({})
   if (price instanceof Error) {
     price = NaN as DisplayCurrencyPerSat
   }

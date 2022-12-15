@@ -115,7 +115,7 @@ const processTxForWallet = async (
 
   const walletAddresses = wallet.onChainAddresses()
 
-  const displayCurrencyPerSat = await getCurrentPrice()
+  const displayCurrencyPerSat = await getCurrentPrice({})
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   const lockService = LockService()
@@ -204,7 +204,7 @@ const processTxForHotWallet = async ({
 
   const ledger = LedgerService()
 
-  const displayCurrencyPerSat = await getCurrentPrice()
+  const displayCurrencyPerSat = await getCurrentPrice({})
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   const lockService = LockService()

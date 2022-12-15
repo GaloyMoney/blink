@@ -179,7 +179,7 @@ describe("UserWallet - onChainPay", () => {
 
     await sleep(3000)
 
-    const satsPrice = await Prices.getCurrentPrice()
+    const satsPrice = await Prices.getCurrentPrice({})
     if (satsPrice instanceof Error) throw satsPrice
 
     const paymentAmount = { amount: BigInt(amount), currency: WalletCurrency.Btc }
@@ -844,7 +844,7 @@ describe("UserWallet - onChainPay", () => {
 
     const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
 
-    const price = await getCurrentPrice()
+    const price = await getCurrentPrice({})
     if (price instanceof Error) throw price
     const dCConverter = DisplayCurrencyConverter(price)
 

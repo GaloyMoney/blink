@@ -87,7 +87,7 @@ export const btcFromUsdMidPriceFn = async (
 export const getCurrentPriceInCentsPerSat = async (): Promise<
   PriceRatio | PriceServiceError
 > => {
-  const price = await getCurrentPrice()
+  const price = await getCurrentPrice({})
   if (price instanceof Error) return price
 
   return toPriceRatio(price * CENTS_PER_USD)

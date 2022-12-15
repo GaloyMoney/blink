@@ -30,10 +30,10 @@ describe("Prices", () => {
           getRealTimePrice: () => Promise.resolve(new PriceNotAvailableError()),
         }))
 
-      let price = await Prices.getCurrentPrice()
+      let price = await Prices.getCurrentPrice({})
       expect(price).toEqual(0.05)
 
-      price = await Prices.getCurrentPrice()
+      price = await Prices.getCurrentPrice({})
       expect(price).toEqual(0.05)
     })
 
@@ -43,7 +43,7 @@ describe("Prices", () => {
         getRealTimePrice: () => Promise.resolve(new PriceNotAvailableError()),
       }))
 
-      const price = await Prices.getCurrentPrice()
+      const price = await Prices.getCurrentPrice({})
       expect(price).toBeInstanceOf(PriceNotAvailableError)
     })
   })

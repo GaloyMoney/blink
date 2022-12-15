@@ -11,7 +11,7 @@ export const getRecentlyActiveAccounts = async (): Promise<
   const unlockedAccounts = await AccountsRepository().listUnlockedAccounts()
   if (unlockedAccounts instanceof Error) return unlockedAccounts
 
-  const displayCurrencyPerSat = await getCurrentPrice()
+  const displayCurrencyPerSat = await getCurrentPrice({})
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   const dCConverter = DisplayCurrencyConverter(displayCurrencyPerSat)

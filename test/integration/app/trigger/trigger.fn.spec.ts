@@ -228,7 +228,7 @@ describe("onchainBlockEventHandler", () => {
     expect(ledgerTx.credit).toBe(sats)
     expect(ledgerTx.pendingConfirmation).toBe(false)
 
-    const satsPrice = await Prices.getCurrentPrice()
+    const satsPrice = await Prices.getCurrentPrice({})
     if (satsPrice instanceof Error) throw satsPrice
 
     const paymentAmount = { amount: BigInt(sats), currency: WalletCurrency.Btc }

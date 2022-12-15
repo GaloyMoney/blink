@@ -28,7 +28,7 @@ export const rebalanceToColdWallet = async (): Promise<boolean | ApplicationErro
   const offChainService = LndService()
   if (offChainService instanceof Error) return offChainService
 
-  const displayCurrencyPerSat = await getCurrentPrice()
+  const displayCurrencyPerSat = await getCurrentPrice({})
   if (displayCurrencyPerSat instanceof Error) return displayCurrencyPerSat
 
   // we only need active node onchain balance, otherwise we would not be able to rebalance

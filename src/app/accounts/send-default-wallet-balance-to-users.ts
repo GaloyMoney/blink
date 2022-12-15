@@ -14,7 +14,7 @@ export const sendDefaultWalletBalanceToUsers = async () => {
   const accounts = await getRecentlyActiveAccounts()
   if (accounts instanceof Error) throw accounts
 
-  const price = await getCurrentPrice()
+  const price = await getCurrentPrice({})
   const displayCurrencyPerSat = price instanceof Error ? undefined : price
   const converter = displayCurrencyPerSat
     ? DisplayCurrencyConverter(displayCurrencyPerSat)

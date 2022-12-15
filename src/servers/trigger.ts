@@ -104,7 +104,7 @@ export const onchainTransactionEventHandler = async (
 
     let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-    const price = await PricesWithSpans.getCurrentPrice()
+    const price = await PricesWithSpans.getCurrentPrice({})
     const displayCurrencyPerSat = price instanceof Error ? undefined : price
     if (displayCurrencyPerSat) {
       const converter = DisplayCurrencyConverter(displayCurrencyPerSat)
@@ -152,7 +152,7 @@ export const onchainTransactionEventHandler = async (
 
       let displayPaymentAmount: DisplayPaymentAmount<DisplayCurrency> | undefined
 
-      const price = await PricesWithSpans.getCurrentPrice()
+      const price = await PricesWithSpans.getCurrentPrice({})
       const displayCurrencyPerSat = price instanceof Error ? undefined : price
 
       wallets.forEach(async (wallet) => {
@@ -217,7 +217,7 @@ export const invoiceUpdateEventHandler = async (
 }
 
 export const publishSingleCurrentPrice = async () => {
-  const displayCurrencyPerSat = await PricesWithSpans.getCurrentPrice()
+  const displayCurrencyPerSat = await PricesWithSpans.getCurrentPrice({})
   if (displayCurrencyPerSat instanceof Error) {
     return logger.error({ err: displayCurrencyPerSat }, "can't publish the price")
   }

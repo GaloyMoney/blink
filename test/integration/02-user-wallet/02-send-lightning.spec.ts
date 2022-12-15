@@ -381,7 +381,7 @@ describe("UserWallet - Lightning Pay", () => {
 
     await sleep(1000)
 
-    const satsPrice = await Prices.getCurrentPrice()
+    const satsPrice = await Prices.getCurrentPrice({})
     if (satsPrice instanceof Error) throw satsPrice
 
     const paymentAmount = { amount: BigInt(amountInvoice), currency: WalletCurrency.Btc }
@@ -1008,7 +1008,7 @@ describe("UserWallet - Lightning Pay", () => {
           expect(payerFinalBalance).toBe(payerInitialBalance - amountInvoice)
           expect(payeeFinalBalance).toBe(payeeInitialBalance + amountInvoice)
 
-          const satsPrice = await Prices.getCurrentPrice()
+          const satsPrice = await Prices.getCurrentPrice({})
           if (satsPrice instanceof Error) throw satsPrice
 
           const paymentAmount = {

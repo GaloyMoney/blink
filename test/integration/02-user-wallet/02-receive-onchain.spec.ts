@@ -197,7 +197,7 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("G")
     const walletIdG = await getDefaultWalletIdByTestUserRef("G")
 
-    const price = await getCurrentPrice()
+    const price = await getCurrentPrice({})
     if (price instanceof Error) throw price
     const dCConverter = DisplayCurrencyConverter(price)
     const amountSats = dCConverter.fromCentsToSats(withdrawalLimitAccountLevel1)
@@ -212,7 +212,7 @@ describe("UserWallet - On chain", () => {
     await createUserAndWalletFromUserRef("F")
     const walletId = await getDefaultWalletIdByTestUserRef("F")
 
-    const price = await getCurrentPrice()
+    const price = await getCurrentPrice({})
     if (price instanceof Error) throw price
     const dCConverter = DisplayCurrencyConverter(price)
     const amountSats = dCConverter.fromCentsToSats(intraLedgerLimitAccountLevel1)
@@ -349,7 +349,7 @@ describe("UserWallet - On chain", () => {
 
     await sleep(1000)
 
-    const satsPrice = await Prices.getCurrentPrice()
+    const satsPrice = await Prices.getCurrentPrice({})
     if (satsPrice instanceof Error) throw satsPrice
 
     const paymentAmount = {

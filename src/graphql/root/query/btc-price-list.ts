@@ -80,7 +80,7 @@ const BtcPriceListQuery = GT.Field({
 
     // Add the current price as the last item in the array
     // This is used by the mobile app to convert prices
-    const currentPrice = await Prices.getCurrentPrice()
+    const currentPrice = await Prices.getCurrentPrice({})
     if (!(currentPrice instanceof Error)) {
       const currentBtcPriceInCents = currentPrice * 100 * SATS_PER_BTC
       prices.push({

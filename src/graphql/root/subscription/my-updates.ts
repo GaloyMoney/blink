@@ -188,7 +188,7 @@ const MeSubscription = {
       suffix: ctx.domainAccount.id,
     })
 
-    const satUsdPrice = await Prices.getCurrentPrice()
+    const satUsdPrice = await Prices.getCurrentPrice({})
     if (!(satUsdPrice instanceof Error)) {
       pubsub.publishImmediate({
         trigger: accountUpdatedTrigger,
