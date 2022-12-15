@@ -53,7 +53,7 @@ After running `make start-deps` or `make reset-deps`, the lightning network - ru
 
 To seed the channels and accounts, run: `TEST="with-auth" make e2e`
 
-You can then login with the following credentials to get an account with an existing balance: `phone: +16505554325`, `code: 321321`
+You can then login with the following credentials to get an account with an existing balance: `phone: +16505554328`, `code: 321321`
 
 Alernatively, to start the GraphQL server in watch mode (with automatic restart on changes):
 ```
