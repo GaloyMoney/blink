@@ -51,7 +51,9 @@ $ make start
 
 After running `make start-deps` or `make reset-deps`, the lightning network - running on regtest - will not have any channel, and the mongodb database - that includes some mandatory accounts for Galoy to work - will be empty. 
 
-To seed the channels and accounts, run: `TEST="01|02" make reset-integration`
+To seed the channels and accounts, run: `TEST="with-auth" make e2e`
+
+You can then login with the following credentials to get an account with an existing balance: `phone: +16505554325`, `code: 321321`
 
 Alernatively, to start the GraphQL server in watch mode (with automatic restart on changes):
 ```
