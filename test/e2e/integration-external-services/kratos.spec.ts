@@ -266,16 +266,43 @@ describe("session revokation", () => {
     }
   })
 
-  it("revoke user session", async () => {
-    const res = await authService.createIdentityWithSession(phone)
-    if (res instanceof Error) throw res
-
-    await kratosPublic.disableMySession({
-      id: res.kratosUserId,
-      xSessionToken: res.sessionToken,
+  it("revoke a user's second session only", async () => {
+    const session1 = await authService.login(phone)
+    const session2 = await authService.login(phone)
+    if (session1 instanceof Error) throw session1
+    if (session2 instanceof Error) throw session2
+    const session2Token = session2.sessionToken
+    const initialSessions = await kratosAdmin.listIdentitySessions({
+      id: session2.kratosUserId,
+      active: true,
     })
+    const initialSessionsCount = initialSessions.data.length // should be 2 sessions
+    const session2Details = await kratosPublic.listMySessions({
+      xSessionToken: session2Token,
+    })
+    const session2Id = session2Details.data[0].id
+    await kratosPublic.disableMySession({
+      id: session2Id,
+      xSessionToken: session2Token,
+    })
+    const activeSessions = await kratosAdmin.listIdentitySessions({
+      id: session2.kratosUserId,
+      active: true,
+    })
+    const activeSessionsCount = activeSessions.data.length // should be only 1 session
+    expect(initialSessionsCount).toBeGreaterThan(activeSessionsCount)
 
-    // TODO: make sure we can't log in back with the sessionToken
+    // TODO - validateKratosToken should throw an error,
+    //  but it does not because it does not check if a token is active
+
+    // const revokedResp = await validateKratosToken(session2Token)
+    // expect(revokedResp).toBeInstanceOf(AuthenticationKratosError)
+
+    // TODO - check that revoked tokens do not work
+
+    // TODO - test that if an account only has 1 session that a logout flow
+    // is called instead, because revoking a user with only 1 session does not work
+    // and throws a 400 error
   })
 
   it("return error on revoked session", async () => {
