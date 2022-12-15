@@ -288,7 +288,7 @@ export const configSchema = {
         },
         {
           ref: "K",
-          phone: "+198765432112",
+          phone: "+16505554328",
           code: "321321",
           username: "tester3",
         },
