@@ -1,6 +1,7 @@
 type SessionId = string & { readonly brand: unique symbol }
 
 type AuthenticationError = import("./errors").AuthenticationError
+type CodeInvalidError = import("./errors").CodeInvalidError
 
 type IdentityPassword = string & { readonly brand: unique symbol }
 

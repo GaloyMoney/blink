@@ -7,8 +7,11 @@ import {
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
   getTestAccounts,
-  MAX_AGE_TIME_CODE,
+  getTwilioConfig,
+  isProd,
+  isRunningJest,
 } from "@config"
+import { TwilioClient } from "@services/twilio"
 
 import { checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
@@ -21,7 +24,6 @@ import { checkedToEmailAddress } from "@domain/users"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
 
 import { AccountsRepository } from "@services/mongoose"
-import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
@@ -48,9 +50,24 @@ export const loginWithPhone = async ({
   // add fibonachi on failed login
   // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
 
-  const age = MAX_AGE_TIME_CODE
-  const validCode = await isCodeValid({ phone, code, age })
-  if (validCode instanceof Error) return validCode
+  const test = true
+
+  console.log({ isRunningJest, isProd })
+
+  // we can't mock this function properly because in the e2e test,
+  // the server is been launched as a sub process,
+  // so it's not been mocked by jest
+  if (
+    // isProd ||
+    // getTwilioConfig().accountSid !== "AC_twilio_id" /* true in prod, false in e2e */
+    test
+  ) {
+    const validCode = await isCodeValid({ phone, code })
+    if (validCode instanceof Error) return validCode
+  } else {
+    // only in e2e
+    // TODO: make a critical alert on opentelemetry?
+  }
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
   await rewardFailedLoginAttemptPerPhoneLimits(phone)
@@ -177,15 +194,7 @@ const checkfailedLoginAttemptPerEmailAddressLimits = async (
     keyToConsume: emailAddress,
   })
 
-const isCodeValid = async ({
-  code,
-  phone,
-  age,
-}: {
-  phone: PhoneNumber
-  code: PhoneCode
-  age: Seconds
-}) => {
+const isCodeValid = async ({ code, phone }: { phone: PhoneNumber; code: PhoneCode }) => {
   const testAccounts = getTestAccounts()
   const validTestCode = TestAccountsChecker(testAccounts).isPhoneAndCodeValid({
     code,
@@ -193,5 +202,5 @@ const isCodeValid = async ({
   })
   if (validTestCode) return true
 
-  return PhoneCodesRepository().existNewerThan({ code, phone, age })
+  return TwilioClient().validateVerify({ to: phone, code })
 }

@@ -10,9 +10,12 @@ type SendTextArguments = {
 
 interface IPhoneProviderService {
   getCarrier(phone: PhoneNumber): Promise<PhoneMetadata | PhoneProviderServiceError>
-  sendText({
-    body,
+  initiateVerify(to: PhoneNumber): Promise<true | PhoneProviderServiceError>
+  validateVerify({
     to,
-    logger,
-  }: SendTextArguments): Promise<true | PhoneProviderServiceError>
+    code,
+  }: {
+    to: PhoneNumber
+    code: PhoneCode
+  }): Promise<true | PhoneProviderServiceError | CodeInvalidError>
 }

@@ -2,6 +2,7 @@ import { DomainError, ErrorLevel } from "@domain/shared"
 
 export class PhoneProviderServiceError extends DomainError {}
 
+export class ExpiredOrNonExistantPhoneNumber extends PhoneProviderServiceError {}
 export class InvalidPhoneNumberPhoneProviderError extends PhoneProviderServiceError {}
 export class RestrictedRegionPhoneProviderError extends PhoneProviderServiceError {}
 export class UnsubscribedRecipientPhoneProviderError extends PhoneProviderServiceError {}

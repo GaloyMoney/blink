@@ -1,10 +1,7 @@
-import { randomInt } from "crypto"
-
-import { getGaloyInstanceName, getTestAccounts } from "@config"
+import { getTestAccounts } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import { PhoneCodesRepository } from "@services/mongoose/phone-code"
 import { consumeLimiter } from "@services/rate-limit"
 import { TwilioClient } from "@services/twilio"
 
@@ -72,19 +69,7 @@ export const requestPhoneCode = async ({
     return true
   }
 
-  const code = String(randomInt(100000, 999999)) as PhoneCode
-  const galoyInstanceName = getGaloyInstanceName()
-  const body = `${code} is your verification code for ${galoyInstanceName}`
-
-  const result = await PhoneCodesRepository().persistNew({
-    phone,
-    code,
-  })
-  if (result instanceof Error) return result
-
-  const sendTextArguments = { body, to: phone, logger }
-
-  return TwilioClient().sendText(sendTextArguments)
+  return TwilioClient().initiateVerify(phone)
 }
 
 const checkPhoneCodeAttemptPerIpLimits = async (

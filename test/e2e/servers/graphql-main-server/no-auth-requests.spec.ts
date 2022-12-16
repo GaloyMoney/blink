@@ -11,6 +11,8 @@ import {
 
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
 
+import { baseLogger } from "@services/logger"
+
 import USER_LOGIN from "./mutations/user-login.gql"
 import USER_REQUEST_AUTH_CODE from "./mutations/user-request-auth-code.gql"
 import MAIN from "./queries/main.gql"
@@ -101,7 +103,7 @@ describe("graphql", () => {
     })
 
     it("returns error for invalid phone", async () => {
-      const message = "Invalid value for Phone"
+      const message = "Phone number is not a valid phone number"
       let input = { phone: "+123" }
 
       let result = await apolloClient.mutate({ mutation, variables: { input } })
@@ -139,19 +141,14 @@ describe("graphql", () => {
       expect(result.data.userLogin.authToken).toHaveLength(32)
     })
 
-    it("returns error for invalid phone", async () => {
+    it.only("returns error for invalid phone", async () => {
       let phone = "+19999999999"
-      let message = "Invalid or incorrect phone code entered."
+      const message = "Phone number is not a valid phone number"
       let input = { phone, code: correctCode }
       let result = await apolloClient.mutate({ mutation, variables: { input } })
-      expect(result.data.userLogin.errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ message })]),
-      )
 
-      phone = "+1999"
-      message = "Invalid value for Phone"
-      input = { phone, code: correctCode }
-      result = await apolloClient.mutate({ mutation, variables: { input } })
+      baseLogger.warn(result)
+
       expect(result.data.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
@@ -216,7 +213,7 @@ describe("graphql", () => {
     it("rate limits too many invalid login requests by IP, wrong phone", async () => {
       const args = {
         input: { phone: "+19999999999" as PhoneNumber, code: correctCode },
-        expectedMessage: "Invalid or incorrect phone code entered.",
+        expectedMessage: "Phone number is not a valid phone number",
         mutation,
       }
       await testRateLimitLoginByPhone(args)
@@ -226,7 +223,7 @@ describe("graphql", () => {
     it.skip("rate limits too many invalid login requests by IP, invalid phone", async () => {
       const args = {
         input: { phone: "<invalid>" as PhoneNumber, code: correctCode },
-        expectedMessage: "Invalid value for Phone",
+        expectedMessage: "Phone number is not a valid phone number",
         mutation,
       }
       await testRateLimitLoginByPhone(args)

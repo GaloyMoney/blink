@@ -2,6 +2,7 @@ import twilio from "twilio"
 
 import { getTwilioConfig } from "@config"
 import {
+  ExpiredOrNonExistantPhoneNumber,
   InvalidPhoneNumberPhoneProviderError,
   PhoneProviderConnectionError,
   RestrictedRegionPhoneProviderError,
@@ -9,21 +10,26 @@ import {
   UnsubscribedRecipientPhoneProviderError,
 } from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
-import { wrapAsyncFunctionsToRunInSpan } from "@services/tracing"
+
+import { VerificationInstance } from "twilio/lib/rest/verify/v2/service/verification"
+import { VerificationCheckInstance } from "twilio/lib/rest/verify/v2/service/verificationCheck"
+
+import { CodeInvalidError } from "@domain/authentication/errors"
+
+import { wrapAsyncFunctionsToRunInSpan } from "./tracing"
 
 export const TwilioClient = (): IPhoneProviderService => {
   const client = twilio(getTwilioConfig().accountSid, getTwilioConfig().authToken)
+  const verify = client.verify.v2.services(getTwilioConfig().verifyService)
 
-  const sendText = async ({ body, to, logger }: SendTextArguments) => {
-    const twilioPhoneNumber = getTwilioConfig().twilioPhoneNumber
+  const initiateVerify = async (to: PhoneNumber) => {
+    let verification: VerificationInstance
+    console.log("initiateVerify")
+
     try {
-      await client.messages.create({
-        from: twilioPhoneNumber,
-        to,
-        body,
-      })
+      verification = await verify.verifications.create({ to, channel: "sms" })
     } catch (err) {
-      logger.error({ err }, "impossible to send text")
+      baseLogger.error({ err }, "impossible to send text")
 
       const invalidNumberMessages = ["not a valid phone number", "not a mobile number"]
       if (invalidNumberMessages.some((m) => err.message.includes(m))) {
@@ -42,10 +48,44 @@ export const TwilioClient = (): IPhoneProviderService => {
         return new PhoneProviderConnectionError(err)
       }
 
+      console.log({ err })
       return new UnknownPhoneProviderServiceError(err)
     }
 
-    logger.info({ to }, "sent text successfully")
+    verification
+    return true
+  }
+
+  const validateVerify = async ({
+    to,
+    code,
+  }: {
+    to: PhoneNumber
+    code: PhoneCode
+  }): Promise<true | UnknownPhoneProviderServiceError | CodeInvalidError> => {
+    let verification: VerificationCheckInstance
+
+    console.log("validateVerify")
+
+    try {
+      verification = await verify.verificationChecks.create({ to, code })
+    } catch (err) {
+      if (err.message.includes("Invalid parameter `To`")) {
+        return new InvalidPhoneNumberPhoneProviderError(err)
+      }
+
+      if (err.status === 404) {
+        return new ExpiredOrNonExistantPhoneNumber(err)
+      }
+
+      console.log({ err }, "verify123")
+      return new UnknownPhoneProviderServiceError(err)
+    }
+
+    if (verification.status !== "approved") {
+      return new CodeInvalidError()
+    }
+
     return true
   }
 
@@ -86,6 +126,6 @@ export const TwilioClient = (): IPhoneProviderService => {
 
   return wrapAsyncFunctionsToRunInSpan({
     namespace: "services.twilio",
-    fns: { getCarrier, sendText },
+    fns: { getCarrier, validateVerify, initiateVerify },
   })
 }
