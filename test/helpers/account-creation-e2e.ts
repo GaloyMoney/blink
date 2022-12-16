@@ -1,5 +1,4 @@
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
-import { baseLogger } from "@services/logger"
 
 import USER_LOGIN from "../e2e/servers/graphql-main-server/mutations/user-login.gql"
 import USER_UPDATE_MUTATION from "../e2e/servers/graphql-main-server/mutations/user-update-username.gql"
