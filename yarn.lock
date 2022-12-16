@@ -3087,7 +3087,7 @@
     "@types/qs" "*"
     "@types/serve-static" "*"
 
-"@types/express@^4.17.14", "@types/express@^4.17.15":
+"@types/express@4.17.15", "@types/express@^4.17.14", "@types/express@^4.17.15":
   version "4.17.15"
   resolved "https://registry.yarnpkg.com/@types/express/-/express-4.17.15.tgz#9290e983ec8b054b65a5abccb610411953d417ff"
   integrity sha512-Yv0k4bXGOH+8a+7bELd2PqHQsuiANB+A8a4gnQrkRWzrkKlb6KHaVvyXhqs04sVW/OWlbPyYxRgYlIXLfrufMQ==
@@ -3280,7 +3280,7 @@
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-3.0.1.tgz#5f8f2bca0a5863cb69bc0b0acd88c96cb1d4ae10"
   integrity sha512-Y4XFY5VJAuw0FgAqPNd6NNoV44jbq9Bz2L7Rh/J6jLTiHBSBJa9fxqQIvkIld4GsoDOcCbvzOUAbLPsSKKg+uA==
 
-"@types/node@*", "@types/node@>=12.12.47", "@types/node@>=13.7.0", "@types/node@^18.11.15":
+"@types/node@*", "@types/node@18.11.15", "@types/node@>=12.12.47", "@types/node@>=13.7.0", "@types/node@^18.11.15":
   version "18.11.15"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.15.tgz#de0e1fbd2b22b962d45971431e2ae696643d3f5d"
   integrity sha512-VkhBbVo2+2oozlkdHXLrb3zjsRkpdnaU2bXmX8Wgle3PUi569eLRaHGlgETQHR7lLL1w7GiG3h9SnePhxNDecw==
@@ -8629,7 +8629,7 @@ lightning@6.3.1:
     tiny-secp256k1 "2.2.1"
     type-fest "3.2.0"
 
-lightning@6.5.0, lightning@^6.5.0:
+lightning@6.5.0:
   version "6.5.0"
   resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.5.0.tgz#1c5a7f400b0cdce9bf67e567277d5caf532121f3"
   integrity sha512-NLBkoiaPELMCuGSzgs0EtecniRCK2VcybIpGhmKKAVy98DzvFZxFNxbn56Fabs1jznlyWy71EDueeLXpCU4AEg==
@@ -8654,6 +8654,32 @@ lightning@6.5.0, lightning@^6.5.0:
     psbt "2.7.1"
     tiny-secp256k1 "2.2.1"
     type-fest "3.3.0"
+
+lightning@^6.6.0:
+  version "6.6.0"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.6.0.tgz#30b6862fa09d3122b224a943fc886f13dcf7fab4"
+  integrity sha512-S+lUitqP/fbQWNYffor/74jKoyjbT/hZuzgHlCH/WH5bmoognl6BpcK7qAJ6Qw9hDQPnDXUB5CyfjJmmOCtOlw==
+  dependencies:
+    "@grpc/grpc-js" "1.8.0"
+    "@grpc/proto-loader" "0.7.4"
+    "@types/express" "4.17.15"
+    "@types/node" "18.11.15"
+    "@types/request" "2.48.8"
+    "@types/ws" "8.5.3"
+    async "3.2.4"
+    asyncjs-util "1.2.10"
+    bitcoinjs-lib "6.1.0"
+    bn.js "5.2.1"
+    body-parser "1.20.1"
+    bolt07 "1.8.2"
+    bolt09 "0.2.4"
+    cbor "8.1.0"
+    ecpair "2.1.0"
+    express "4.18.2"
+    invoices "2.2.2"
+    psbt "2.7.1"
+    tiny-secp256k1 "2.2.1"
+    type-fest "3.4.0"
 
 limiter@^1.1.5:
   version "1.1.5"
@@ -11948,10 +11974,15 @@ type-fest@3.2.0:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.2.0.tgz#2c8b49e775d9e314a73ea6fcee0b2e8549d5f886"
   integrity sha512-Il3wdLRzWvbAEtocgxGQA9YOoRVeVUGOMBtel5LdEpNeEAol6GJTLw8GbX6Z8EIMfvfhoOXs2bwOijtAZdK5og==
 
-type-fest@3.3.0, type-fest@^3.0.0:
+type-fest@3.3.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.3.0.tgz#3378c9664eecfd1eb4f0522b13cb0630bc1ec044"
   integrity sha512-gezeeOIZyQLGW5uuCeEnXF1aXmtt2afKspXz3YqoOcZ3l/YMJq1pujvgT+cz/Nw1O/7q/kSav5fihJHsC/AOUg==
+
+type-fest@3.4.0, type-fest@^3.0.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.4.0.tgz#64a35b7748ab4a96b3e0c324475ea66643c5f9df"
+  integrity sha512-PEPg6RHlB9cFwoTMNENNrQFL0cXX04voWr2UPwQBJ3pVs7Mt8Y1oLWdUeMdGEwZE8HFFlujq8gS9enmyiQ8pLg==
 
 type-fest@^0.20.2:
   version "0.20.2"
