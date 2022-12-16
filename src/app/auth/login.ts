@@ -9,7 +9,6 @@ import {
   getTestAccounts,
   getTwilioConfig,
   isProd,
-  isRunningJest,
 } from "@config"
 import { TwilioClient } from "@services/twilio"
 
@@ -50,24 +49,8 @@ export const loginWithPhone = async ({
   // add fibonachi on failed login
   // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
 
-  const test = true
-
-  console.log({ isRunningJest, isProd })
-
-  // we can't mock this function properly because in the e2e test,
-  // the server is been launched as a sub process,
-  // so it's not been mocked by jest
-  if (
-    // isProd ||
-    // getTwilioConfig().accountSid !== "AC_twilio_id" /* true in prod, false in e2e */
-    test
-  ) {
-    const validCode = await isCodeValid({ phone, code })
-    if (validCode instanceof Error) return validCode
-  } else {
-    // only in e2e
-    // TODO: make a critical alert on opentelemetry?
-  }
+  const validCode = await isCodeValid({ phone, code })
+  if (validCode instanceof Error) return validCode
 
   await rewardFailedLoginAttemptPerIpLimits(ip)
   await rewardFailedLoginAttemptPerPhoneLimits(phone)
@@ -202,5 +185,18 @@ const isCodeValid = async ({ code, phone }: { phone: PhoneNumber; code: PhoneCod
   })
   if (validTestCode) return true
 
-  return TwilioClient().validateVerify({ to: phone, code })
+  // we can't mock this function properly because in the e2e test,
+  // the server is been launched as a sub process,
+  // so it's not been mocked by jest
+  if (
+    isProd ||
+    getTwilioConfig().accountSid !== "AC_twilio_id" /* true in prod, false in e2e */
+  ) {
+    return TwilioClient().validateVerify({ to: phone, code })
+  } else {
+    // only in e2e
+    // TODO: make a critical alert on opentelemetry?
+
+    return true
+  }
 }
