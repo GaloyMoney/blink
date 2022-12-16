@@ -2,7 +2,7 @@ import twilio from "twilio"
 
 import { getTwilioConfig } from "@config"
 import {
-  ExpiredOrNonExistantPhoneNumber,
+  ExpiredOrNonExistentPhoneNumber,
   InvalidPhoneNumberPhoneProviderError,
   PhoneProviderConnectionError,
   RestrictedRegionPhoneProviderError,
@@ -75,7 +75,7 @@ export const TwilioClient = (): IPhoneProviderService => {
       }
 
       if (err.status === 404) {
-        return new ExpiredOrNonExistantPhoneNumber(err)
+        return new ExpiredOrNonExistentPhoneNumber(err)
       }
 
       console.log({ err }, "verify123")
