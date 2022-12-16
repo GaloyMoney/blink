@@ -141,7 +141,7 @@ describe("graphql", () => {
       expect(result.data.userLogin.authToken).toHaveLength(32)
     })
 
-    it.only("returns error for invalid phone", async () => {
+    it("returns error for invalid phone", async () => {
       let phone = "+19999999999"
       const message = "Phone number is not a valid phone number"
       let input = { phone, code: correctCode }
