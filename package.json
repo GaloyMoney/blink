@@ -96,7 +96,7 @@
     "mongoose": "^6.8.0",
     "node-cache": "^5.1.2",
     "otplib": "^12.0.1",
-    "pino": "^8.7.0",
+    "pino": "^8.8.0",
     "pino-http": "^8.2.1",
     "prom-client": "^14.1.0",
     "rate-limiter-flexible": "^2.4.1",
