@@ -6138,10 +6138,10 @@ fined@^1.2.0:
     object.pick "^1.2.0"
     parse-filepath "^1.0.1"
 
-firebase-admin@^11.3.0:
-  version "11.3.0"
-  resolved "https://registry.yarnpkg.com/firebase-admin/-/firebase-admin-11.3.0.tgz#0c80a47d85471f6b988ecef7439a706aca052b88"
-  integrity sha512-8ENXUu9Lm6YTc5zzOqlF222M/KwsV/EDZ5UwwPPEU5XfCa1Ebj7K/SgLFdinjGu1NxkSnqu07UDpPhmAtW3b5w==
+firebase-admin@^11.4.0:
+  version "11.4.0"
+  resolved "https://registry.yarnpkg.com/firebase-admin/-/firebase-admin-11.4.0.tgz#8ad3f848f1814b6e271bafa3b4dae62a8befc53c"
+  integrity sha512-Nuw7j3mr0qSQqq0lx7yh8F+vVDDojd8FBDibmoiIjFDUu/YQ18fye8CNzS5tdi9YYGN4A/tkVz5bCqxYrf5bvA==
   dependencies:
     "@fastify/busboy" "^1.1.0"
     "@firebase/database-compat" "^0.2.6"
