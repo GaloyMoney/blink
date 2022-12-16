@@ -8,15 +8,17 @@ import {
   getFailedLoginAttemptPerPhoneLimits,
   getTestAccounts,
   getTwilioConfig,
-  isProd,
 } from "@config"
 import { TwilioClient } from "@services/twilio"
 
 import { checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
-import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
+import {
+  CodeInvalidError,
+  LikelyNoUserWithThisPhoneExistError,
+} from "@domain/authentication/errors"
 
-import { CouldNotFindAccountFromKratosIdError } from "@domain/errors"
+import { CouldNotFindAccountFromKratosIdError, NotImplementedError } from "@domain/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToEmailAddress } from "@domain/users"
@@ -179,24 +181,25 @@ const checkfailedLoginAttemptPerEmailAddressLimits = async (
 
 const isCodeValid = async ({ code, phone }: { phone: PhoneNumber; code: PhoneCode }) => {
   const testAccounts = getTestAccounts()
-  const validTestCode = TestAccountsChecker(testAccounts).isPhoneAndCodeValid({
-    code,
-    phone,
-  })
-  if (validTestCode) return true
+  if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
+    const validTestCode = TestAccountsChecker(testAccounts).isPhoneAndCodeValid({
+      code,
+      phone,
+    })
+    if (!validTestCode) {
+      return new CodeInvalidError()
+    }
+    return true
+  }
 
   // we can't mock this function properly because in the e2e test,
   // the server is been launched as a sub process,
   // so it's not been mocked by jest
   if (
-    isProd ||
-    getTwilioConfig().accountSid !== "AC_twilio_id" /* true in prod, false in e2e */
+    getTwilioConfig().accountSid !== "AC_twilio_id" /* true in prod, false for tests */
   ) {
     return TwilioClient().validateVerify({ to: phone, code })
   } else {
-    // only in e2e
-    // TODO: make a critical alert on opentelemetry?
-
-    return true
+    return new NotImplementedError("use test account for local dev")
   }
 }

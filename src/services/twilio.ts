@@ -11,7 +11,6 @@ import {
 } from "@domain/phone-provider"
 import { baseLogger } from "@services/logger"
 
-import { VerificationInstance } from "twilio/lib/rest/verify/v2/service/verification"
 import { VerificationCheckInstance } from "twilio/lib/rest/verify/v2/service/verificationCheck"
 
 import { CodeInvalidError } from "@domain/authentication/errors"
@@ -23,14 +22,13 @@ export const TwilioClient = (): IPhoneProviderService => {
   const verify = client.verify.v2.services(getTwilioConfig().verifyService)
 
   const initiateVerify = async (to: PhoneNumber) => {
-    let verification: VerificationInstance
-    console.log("initiateVerify")
-
     try {
-      verification = await verify.verifications.create({ to, channel: "sms" })
+      await verify.verifications.create({ to, channel: "sms" })
     } catch (err) {
       baseLogger.error({ err }, "impossible to send text")
 
+      // TODO: the error below were initially drafted for twilio send message.
+      // twilio verify might have a different behavior in term of error
       const invalidNumberMessages = ["not a valid phone number", "not a mobile number"]
       if (invalidNumberMessages.some((m) => err.message.includes(m))) {
         return new InvalidPhoneNumberPhoneProviderError(err)
@@ -48,11 +46,9 @@ export const TwilioClient = (): IPhoneProviderService => {
         return new PhoneProviderConnectionError(err)
       }
 
-      console.log({ err })
       return new UnknownPhoneProviderServiceError(err)
     }
 
-    verification
     return true
   }
 
@@ -65,11 +61,11 @@ export const TwilioClient = (): IPhoneProviderService => {
   }): Promise<true | UnknownPhoneProviderServiceError | CodeInvalidError> => {
     let verification: VerificationCheckInstance
 
-    console.log("validateVerify")
-
     try {
       verification = await verify.verificationChecks.create({ to, code })
     } catch (err) {
+      baseLogger.error({ err }, "impossible to verify phone and code")
+
       if (err.message.includes("Invalid parameter `To`")) {
         return new InvalidPhoneNumberPhoneProviderError(err)
       }
@@ -78,7 +74,6 @@ export const TwilioClient = (): IPhoneProviderService => {
         return new ExpiredOrNonExistentPhoneNumber(err)
       }
 
-      console.log({ err }, "verify123")
       return new UnknownPhoneProviderServiceError(err)
     }
 
