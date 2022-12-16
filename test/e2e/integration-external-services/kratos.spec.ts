@@ -12,7 +12,7 @@ import {
   listSessions,
   validateKratosToken,
 } from "@services/kratos"
-import { AuthenticationKratosError } from "@services/kratos/errors"
+import { AuthenticationKratosError, KratosError } from "@services/kratos/errors"
 import { kratosAdmin, kratosPublic } from "@services/kratos/private"
 import {
   activateUser,
@@ -300,20 +300,19 @@ describe("session revokation", () => {
       id: session2.kratosUserId,
       active: true,
     })
-    // session1Id should be in the list
+
     const isSession1Revoked = activeSessions.data.find((s) => s.id === session1Id)
-    // session2Id should NOT be in the list
     const isSession2Revoked = activeSessions.data.find((s) => s.id === session2Id)
-    expect(isSession1Revoked).toBeDefined()
-    expect(isSession2Revoked).toBeUndefined()
+    expect(isSession1Revoked).toBeDefined() // session1Id should be in the list
+    expect(isSession2Revoked).toBeUndefined() // session2Id should NOT be in the list
 
     // * validateKratosToken has a weird bug with multiple sessions
     //  it throws an error on session1 and thinks session2 is valid
     //  this is the opposite of what should happen
-    const isSession1Valid = await validateKratosToken(session1Token) // * this should be valid (but its the opposite)
-    const isSession2Valid = await validateKratosToken(session2Token) // * this should be invalid (but its the opposite, and its the wrong sessionId, it returns session1Id)
-    // expect(isSession1Valid).toBeInstanceOf(KratosError)
-    // expect(isSession2Valid).toBeDefined()
+    const isSession1Valid = await validateKratosToken(session1Token)
+    const isSession2Valid = await validateKratosToken(session2Token)
+    expect(isSession1Valid).toBeDefined() // * BUG? this should be valid (but its not)
+    expect(isSession2Valid).toBeInstanceOf(KratosError) // * BUG? this should be invalid (but its valid, and its the wrong sessionId, it returns session1's Id)
   })
 
   it("return error on revoked session", async () => {
