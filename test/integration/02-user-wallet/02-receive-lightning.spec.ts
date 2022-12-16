@@ -167,7 +167,7 @@ describe("UserWallet - Lightning", () => {
     if (error instanceof Error || txns === null) {
       throw error
     }
-    const noSpamTxn = txns.find(
+    const noSpamTxn = txns.slice.find(
       (txn) =>
         txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
         txn.initiationVia.paymentHash === hash,
@@ -422,11 +422,11 @@ describe("UserWallet - Lightning", () => {
     const { result: txns } = await Wallets.getTransactionsForWalletId({
       walletId: walletIdUsdB,
     })
-    expect(txns?.length).toBe(1)
+    expect(txns?.slice.length).toBe(1)
 
     // FIXME(nicolas) need to have spam memo working USD wallet
     // if (error instanceof Error || txns === null) throw error
-    // const noSpamTxn = txns.find(
+    // const noSpamTxn = txns.slice.find(
     //   (txn) =>
     //     txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
     //     txn.initiationVia.paymentHash === hash,
@@ -492,11 +492,11 @@ describe("UserWallet - Lightning", () => {
     const { result: txns } = await Wallets.getTransactionsForWalletId({
       walletId: walletIdUsdB,
     })
-    expect(txns?.length).toBe(2)
+    expect(txns?.slice.length).toBe(2)
 
     // FIXME(nicolas) need to have spam memo working USD wallet
     // if (error instanceof Error || txns === null) throw error
-    // const noSpamTxn = txns.find(
+    // const noSpamTxn = txns.slice.find(
     //   (txn) =>
     //     txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
     //     txn.initiationVia.paymentHash === hash,
@@ -657,7 +657,7 @@ describe("UserWallet - Lightning", () => {
     if (error instanceof Error || txns === null) throw error
     expect(ledgerTx.type).toBe("invoice")
 
-    const spamTxn = txns.find(
+    const spamTxn = txns.slice.find(
       (txn) =>
         txn.initiationVia.type === PaymentInitiationMethod.Lightning &&
         txn.initiationVia.paymentHash === hash,

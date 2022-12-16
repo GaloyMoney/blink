@@ -21,17 +21,16 @@ export const getTransactionsForWalletsByAddresses = async ({
   wallets: Wallet[]
   addresses: OnChainAddress[]
   paginationArgs?: PaginationArgs
-}): Promise<PartialResult<WalletTransaction[]>> => {
+}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
   const walletIds = wallets.map((wallet) => wallet.id)
 
   const ledger = LedgerService()
-  const ledgerTransactionsForWallets = await ledger.getTransactionsByWalletIds({
+  const resp = await ledger.getTransactionsByWalletIds({
     walletIds,
     paginationArgs,
   })
-  if (ledgerTransactionsForWallets instanceof LedgerError)
-    return PartialResult.err(ledgerTransactionsForWallets)
-  const ledgerTransactions = ledgerTransactionsForWallets.filter(
+  if (resp instanceof LedgerError) return PartialResult.err(resp)
+  const ledgerTransactions = resp.slice.filter(
     (tx) => tx.address && addresses.includes(tx.address),
   )
 
@@ -40,7 +39,10 @@ export const getTransactionsForWalletsByAddresses = async ({
   const onChainTxs = await getOnChainTxs()
   if (onChainTxs instanceof Error) {
     baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
-    return PartialResult.partial(confirmedHistory.transactions, onChainTxs)
+    return PartialResult.partial(
+      { slice: confirmedHistory.transactions, total: resp.total },
+      onChainTxs,
+    )
   }
 
   const allAddresses: OnChainAddress[] = []
@@ -76,12 +78,13 @@ export const getTransactionsForWalletsByAddresses = async ({
     price = NaN as DisplayCurrencyPerSat
   }
 
-  return PartialResult.ok(
-    confirmedHistory.addPendingIncoming({
+  return PartialResult.ok({
+    slice: confirmedHistory.addPendingIncoming({
       pendingIncoming,
       addressesByWalletId,
       walletDetailsByWalletId,
       displayCurrencyPerSat: price,
     }).transactions,
-  )
+    total: resp.total,
+  })
 }

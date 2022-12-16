@@ -5,7 +5,7 @@ import dedent from "dedent"
 import {
   checkedConnectionArgs,
   connectionArgs,
-  connectionFromArray,
+  connectionFromPaginatedArray,
 } from "@graphql/connections"
 
 import ContactAlias from "../scalar/contact-alias"
@@ -53,17 +53,21 @@ const AccountContact = GT.Object<AccountRecord, GraphQLContextAuth>({
           throw account
         }
 
-        const transactions = await Accounts.getAccountTransactionsForContact({
+        const resp = await Accounts.getAccountTransactionsForContact({
           account,
           contactUsername,
           paginationArgs,
         })
 
-        if (transactions instanceof Error) {
-          throw transactions
+        if (resp instanceof Error) {
+          throw resp
         }
 
-        return connectionFromArray<WalletTransaction>(transactions, args)
+        return connectionFromPaginatedArray<WalletTransaction>(
+          resp.slice,
+          resp.total,
+          paginationArgs,
+        )
       },
       description: "Paginated list of transactions sent to/from this contact.",
     },

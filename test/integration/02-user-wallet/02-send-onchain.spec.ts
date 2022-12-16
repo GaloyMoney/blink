@@ -160,7 +160,7 @@ describe("UserWallet - onChainPay", () => {
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
-      const pendingTxs = txResult.result.filter(
+      const pendingTxs = txResult.result.slice.filter(
         ({ status }) => status === TxStatus.Pending,
       )
       expect(pendingTxs.length).toBe(1)
@@ -206,12 +206,12 @@ describe("UserWallet - onChainPay", () => {
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
-      const pendingTxs = txResult.result.filter(
+      const pendingTxs = txResult.result.slice.filter(
         ({ status }) => status === TxStatus.Pending,
       )
       expect(pendingTxs.length).toBe(0)
 
-      const settledTxs = txResult.result.filter(
+      const settledTxs = txResult.result.slice.filter(
         ({ status, initiationVia, id }) =>
           status === TxStatus.Success &&
           initiationVia.type === PaymentInitiationMethod.OnChain &&
@@ -278,7 +278,7 @@ describe("UserWallet - onChainPay", () => {
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
-      const pendingTxs = txResult.result.filter(
+      const pendingTxs = txResult.result.slice.filter(
         ({ status }) => status === TxStatus.Pending,
       )
       expect(pendingTxs.length).toBe(1)
@@ -310,12 +310,12 @@ describe("UserWallet - onChainPay", () => {
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
-      const pendingTxs = txResult.result.filter(
+      const pendingTxs = txResult.result.slice.filter(
         ({ status }) => status === TxStatus.Pending,
       )
       expect(pendingTxs.length).toBe(0)
 
-      const settledTxs = txResult.result.filter(
+      const settledTxs = txResult.result.slice.filter(
         ({ status, initiationVia, id }) =>
           status === TxStatus.Success &&
           initiationVia.type === PaymentInitiationMethod.OnChain &&
@@ -357,10 +357,11 @@ describe("UserWallet - onChainPay", () => {
     if (error instanceof Error || txs === null) {
       throw error
     }
-    if (txs.length === 0) {
+    if (txs.slice.length === 0) {
       throw Error("No transactions found")
     }
-    const firstTxs = txs[0]
+
+    const firstTxs = txs.slice[0]
     expect(firstTxs.memo).toBe(memo)
     const pendingTxHash = firstTxs.id
 
@@ -382,12 +383,12 @@ describe("UserWallet - onChainPay", () => {
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
-      const pendingTxs = txResult.result.filter(
+      const pendingTxs = txResult.result.slice.filter(
         ({ status }) => status === TxStatus.Pending,
       )
       expect(pendingTxs.length).toBe(0)
 
-      const settledTxs = txResult.result.filter(
+      const settledTxs = txResult.result.slice.filter(
         ({ status, initiationVia, id }) =>
           status === TxStatus.Success &&
           initiationVia.type === PaymentInitiationMethod.OnChain &&
@@ -434,12 +435,12 @@ describe("UserWallet - onChainPay", () => {
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
-      const pendingTxs = txResult.result.filter(
+      const pendingTxs = txResult.result.slice.filter(
         ({ status }) => status === TxStatus.Pending,
       )
       expect(pendingTxs.length).toBe(0)
 
-      const settledTxs = txResult.result.filter(
+      const settledTxs = txResult.result.slice.filter(
         ({ status, initiationVia, settlementVia }) =>
           status === TxStatus.Success &&
           initiationVia.type === PaymentInitiationMethod.OnChain &&
@@ -485,7 +486,7 @@ describe("UserWallet - onChainPay", () => {
     if (error instanceof Error || txs === null) {
       throw error
     }
-    const filteredTxs = txs.filter(matchTx)
+    const filteredTxs = txs.slice.filter(matchTx)
     expect(filteredTxs.length).toBe(1)
     expect(filteredTxs[0].memo).toBe(memo)
 
@@ -496,7 +497,7 @@ describe("UserWallet - onChainPay", () => {
     if (error2 instanceof Error || txsUserD === null) {
       throw error2
     }
-    const filteredTxsUserD = txsUserD.filter(matchTx)
+    const filteredTxsUserD = txsUserD.slice.filter(matchTx)
     expect(filteredTxsUserD.length).toBe(1)
     expect(filteredTxsUserD[0].memo).not.toBe(memo)
   })
@@ -533,12 +534,12 @@ describe("UserWallet - onChainPay", () => {
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
-      const pendingTxs = txResult.result.filter(
+      const pendingTxs = txResult.result.slice.filter(
         ({ status }) => status === TxStatus.Pending,
       )
       expect(pendingTxs.length).toBe(0)
 
-      const settledTxs = txResult.result.filter(
+      const settledTxs = txResult.result.slice.filter(
         ({ status, initiationVia, settlementVia }) =>
           status === TxStatus.Success &&
           initiationVia.type === PaymentInitiationMethod.OnChain &&
@@ -589,12 +590,12 @@ describe("UserWallet - onChainPay", () => {
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
-      const pendingTxs = txResult.result.filter(
+      const pendingTxs = txResult.result.slice.filter(
         ({ status }) => status === TxStatus.Pending,
       )
       expect(pendingTxs.length).toBe(0)
 
-      const settledTxs = txResult.result.filter(
+      const settledTxs = txResult.result.slice.filter(
         ({ status, initiationVia, settlementVia }) =>
           status === TxStatus.Success &&
           initiationVia.type === PaymentInitiationMethod.OnChain &&
@@ -650,7 +651,7 @@ describe("UserWallet - onChainPay", () => {
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
-      const pendingTxs = txResult.result.filter(
+      const pendingTxs = txResult.result.slice.filter(
         ({ status }) => status === TxStatus.Pending,
       )
       expect(pendingTxs.length).toBe(0)
@@ -693,7 +694,7 @@ describe("UserWallet - onChainPay", () => {
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
-      const pendingTxs = txResult.result.filter(
+      const pendingTxs = txResult.result.slice.filter(
         ({ status }) => status === TxStatus.Pending,
       )
       expect(pendingTxs.length).toBe(1)

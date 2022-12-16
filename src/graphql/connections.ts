@@ -1,11 +1,8 @@
-import { DEFAULT_MAX_CONNECTION_LIMIT } from "@services/ledger/paginated-ledger"
-import { InputValidationError } from "@graphql/error"
 import { getNamedType, resolveObjMapThunk } from "graphql"
-import {
-  ConnectionArguments,
-  ConnectionConfig,
-  GraphQLConnectionDefinitions,
-} from "graphql-relay"
+import { ConnectionConfig, GraphQLConnectionDefinitions } from "graphql-relay"
+
+import { InputValidationError } from "@graphql/error"
+import { DEFAULT_MAX_CONNECTION_LIMIT } from "@services/ledger/paginated-ledger"
 
 import { GT } from "."
 
@@ -19,41 +16,34 @@ import { GT } from "."
 // This modified version uses the identity of the objects in array
 // for cursor values instead.
 
-export const connectionFromArray = <T extends { id: string }>(
+export const connectionFromPaginatedArray = <T extends { id: string }>(
   array: ReadonlyArray<T>,
-  args: ConnectionArguments,
+  totalLength: number,
+  args: PaginationArgs,
 ) => {
   const { after, before, first, last } = args
+
   const sliceStart = 0
-  const arrayLength = array.length
   const sliceEnd = sliceStart + array.length
 
   let startOffset = Math.max(sliceStart, 0)
-  let endOffset = Math.min(sliceEnd, arrayLength)
+  let endOffset = Math.min(sliceEnd, totalLength)
 
   const afterOffset = after ? array.findIndex((obj) => obj.id === after) : -1
-  if (0 <= afterOffset && afterOffset < arrayLength) {
+  if (0 <= afterOffset && afterOffset < totalLength) {
     startOffset = Math.max(startOffset, afterOffset + 1)
   }
 
   const beforeOffset = before ? array.findIndex((obj) => obj.id === before) : endOffset
-  if (0 <= beforeOffset && beforeOffset < arrayLength) {
+  if (0 <= beforeOffset && beforeOffset < totalLength) {
     endOffset = Math.min(endOffset, beforeOffset)
   }
 
-  if (typeof first === "number") {
-    if (first < 0) {
-      throw new Error('Argument "first" must be a non-negative integer')
-    }
-
+  if (first) {
     endOffset = Math.min(endOffset, startOffset + first)
   }
 
-  if (typeof last === "number") {
-    if (last < 0) {
-      throw new Error('Argument "last" must be a non-negative integer')
-    }
-
+  if (last) {
     startOffset = Math.max(startOffset, endOffset - last)
   }
 
@@ -65,7 +55,7 @@ export const connectionFromArray = <T extends { id: string }>(
   const firstEdge = edges[0]
   const lastEdge = edges[edges.length - 1]
   const lowerBound = after != null ? afterOffset + 1 : 0
-  const upperBound = before != null ? beforeOffset : arrayLength
+  const upperBound = before != null ? beforeOffset : totalLength
 
   return {
     edges,
@@ -148,30 +138,31 @@ export const connectionDefinitions = (
 
 export { connectionArgs } from "graphql-relay"
 
-export const checkedConnectionArgs = (
-  args: ConnectionArguments,
-): PaginationArgs | Error => {
-  // FIXME: make first or last required (after making sure no one is using them as optional)
-  // if (!args.first && !args.last) {
-  //   return new Error(
-  //     "You must provide a `first` or `last` value to properly paginate this connection.",
-  //   )
-  // }
-
-  if (args.first && args.first > DEFAULT_MAX_CONNECTION_LIMIT) {
+export const checkedConnectionArgs = (args: PaginationArgs): PaginationArgs | Error => {
+  if (typeof args.first === "number" && args.first > DEFAULT_MAX_CONNECTION_LIMIT) {
     return new InputValidationError({
       message: `Requesting ${args.first} records on this connection exceeds the "first" limit of ${DEFAULT_MAX_CONNECTION_LIMIT} records.`,
     })
   }
 
-  if (args.last && args.last > DEFAULT_MAX_CONNECTION_LIMIT) {
+  if (typeof args.last === "number" && args.last > DEFAULT_MAX_CONNECTION_LIMIT) {
     return new InputValidationError({
       message: `Requesting ${args.last} records on this connection exceeds the "last" limit of ${DEFAULT_MAX_CONNECTION_LIMIT} records.`,
     })
   }
 
-  return {
-    after: args.after,
-    before: args.before,
-  } as PaginationArgs
+  if (typeof args.first === "number" && args.first <= 0) {
+    throw new InputValidationError({ message: 'Argument "first" must be greater than 0' })
+  }
+
+  if (typeof args.last === "number" && args.last <= 0) {
+    throw new InputValidationError({ message: 'Argument "last" must be greater than 0' })
+  }
+
+  // FIXME: make first or last required (after making sure no one is using them as optional)
+  if (args.first === undefined && args.last === undefined) {
+    args.first = DEFAULT_MAX_CONNECTION_LIMIT
+  }
+
+  return args
 }

@@ -11,20 +11,20 @@ export const getAccountTransactionsForContact = async ({
   account: Account
   contactUsername: Username
   paginationArgs?: PaginationArgs
-}): Promise<WalletTransaction[] | ApplicationError> => {
+}): Promise<PaginatedArray<WalletTransaction> | ApplicationError> => {
   const ledger = LedgerService()
 
   const wallets = await WalletsRepository().listByAccountId(account.id)
   if (wallets instanceof Error) return wallets
 
-  const ledgerTransactions = await ledger.getTransactionsByWalletIdAndContactUsername({
+  const resp = await ledger.getTransactionsByWalletIdAndContactUsername({
     walletIds: wallets.map((wallet) => wallet.id),
     contactUsername,
     paginationArgs,
   })
-  if (ledgerTransactions instanceof LedgerError) return ledgerTransactions
+  if (resp instanceof LedgerError) return resp
 
-  const confirmedHistory = WalletTransactionHistory.fromLedger(ledgerTransactions)
+  const confirmedHistory = WalletTransactionHistory.fromLedger(resp.slice)
 
-  return confirmedHistory.transactions
+  return { slice: confirmedHistory.transactions, total: resp.total }
 }

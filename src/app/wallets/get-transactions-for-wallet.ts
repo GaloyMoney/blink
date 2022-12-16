@@ -19,7 +19,7 @@ export const getTransactionsForWalletId = async ({
   walletId,
 }: {
   walletId: WalletId
-}): Promise<PartialResult<WalletTransaction[]>> => {
+}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
   const wallets = WalletsRepository()
   const wallet = await wallets.findById(walletId)
   if (wallet instanceof RepositoryError) return PartialResult.err(wallet)
@@ -32,23 +32,26 @@ export const getTransactionsForWallets = async ({
 }: {
   wallets: Wallet[]
   paginationArgs?: PaginationArgs
-}): Promise<PartialResult<WalletTransaction[]>> => {
+}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
   const walletIds = wallets.map((wallet) => wallet.id)
 
   const ledger = LedgerService()
-  const ledgerTransactions = await ledger.getTransactionsByWalletIds({
+  const resp = await ledger.getTransactionsByWalletIds({
     walletIds,
     paginationArgs,
   })
-  if (ledgerTransactions instanceof LedgerError)
-    return PartialResult.err(ledgerTransactions)
 
-  const confirmedHistory = WalletTransactionHistory.fromLedger(ledgerTransactions)
+  if (resp instanceof LedgerError) return PartialResult.err(resp)
+
+  const confirmedHistory = WalletTransactionHistory.fromLedger(resp.slice)
 
   const onChainTxs = await getOnChainTxs()
   if (onChainTxs instanceof Error) {
     baseLogger.warn({ onChainTxs }, "impossible to get listIncomingTransactions")
-    return PartialResult.partial(confirmedHistory.transactions, onChainTxs)
+    return PartialResult.partial(
+      { slice: confirmedHistory.transactions, total: resp.total },
+      onChainTxs,
+    )
   }
 
   const addresses: OnChainAddress[] = []
@@ -81,12 +84,13 @@ export const getTransactionsForWallets = async ({
     price = NaN as DisplayCurrencyPerSat
   }
 
-  return PartialResult.ok(
-    confirmedHistory.addPendingIncoming({
+  return PartialResult.ok({
+    slice: confirmedHistory.addPendingIncoming({
       pendingIncoming,
       addressesByWalletId,
       walletDetailsByWalletId,
       displayCurrencyPerSat: price,
     }).transactions,
-  )
+    total: resp.total,
+  })
 }

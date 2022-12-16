@@ -2,6 +2,8 @@ type LedgerError = import("./errors").LedgerError
 type FeeDifferenceError = import("./errors").FeeDifferenceError
 type LedgerServiceError = import("./errors").LedgerServiceError
 
+type PaginationArgs = import("graphql-relay").ConnectionArguments
+
 declare const liabilitiesWalletId: unique symbol
 type LiabilitiesWalletId = string & { [liabilitiesWalletId]: never }
 
@@ -267,13 +269,13 @@ interface ILedgerService {
   getTransactionsByWalletIds(args: {
     walletIds: WalletId[]
     paginationArgs?: PaginationArgs
-  }): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
+  }): Promise<PaginatedArray<LedgerTransaction<WalletCurrency>> | LedgerServiceError>
 
   getTransactionsByWalletIdAndContactUsername(args: {
     walletIds: WalletId[]
     contactUsername: Username
     paginationArgs?: PaginationArgs
-  }): Promise<LedgerTransaction<WalletCurrency>[] | LedgerServiceError>
+  }): Promise<PaginatedArray<LedgerTransaction<WalletCurrency>> | LedgerServiceError>
 
   listPendingPayments(
     walletId: WalletId,
