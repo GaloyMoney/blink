@@ -24,5 +24,7 @@ Tests
 
 Rest Endpoints
 ----------
+Docs: https://www.ory.sh/docs/kratos/reference/api
+
 Sessions
 - `http://localhost:4434/admin/identities/{kratosId}/sessions`

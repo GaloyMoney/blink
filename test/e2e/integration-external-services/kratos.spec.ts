@@ -267,42 +267,53 @@ describe("session revokation", () => {
   })
 
   it("revoke a user's second session only", async () => {
+    // Session 1
     const session1 = await authService.login(phone)
-    const session2 = await authService.login(phone)
     if (session1 instanceof Error) throw session1
+    const session1Token = session1.sessionToken
+
+    // Session 2
+    const session2 = await authService.login(phone)
     if (session2 instanceof Error) throw session2
     const session2Token = session2.sessionToken
-    const initialSessions = await kratosAdmin.listIdentitySessions({
-      id: session2.kratosUserId,
-      active: true,
+
+    // Session Details
+    //  * caveat, you need to have at least 2 active sessions for 'listMySessions' to work properly
+    //  if you only have 1 active session the data will come back null
+    const session1Details = await kratosPublic.listMySessions({
+      xSessionToken: session1Token,
     })
-    const initialSessionsCount = initialSessions.data.length // should be 2 sessions
+    const session1Id = session1Details.data[0].id
     const session2Details = await kratosPublic.listMySessions({
       xSessionToken: session2Token,
     })
     const session2Id = session2Details.data[0].id
+
+    // Revoke Session 2
     await kratosPublic.disableMySession({
       id: session2Id,
       xSessionToken: session2Token,
     })
+
+    // Check that session 2 was revoked
     const activeSessions = await kratosAdmin.listIdentitySessions({
       id: session2.kratosUserId,
       active: true,
     })
-    const activeSessionsCount = activeSessions.data.length // should be only 1 session
-    expect(initialSessionsCount).toBeGreaterThan(activeSessionsCount)
+    // session1Id should be in the list
+    const isSession1Revoked = activeSessions.data.find((s) => s.id === session1Id)
+    // session2Id should NOT be in the list
+    const isSession2Revoked = activeSessions.data.find((s) => s.id === session2Id)
+    expect(isSession1Revoked).toBeDefined()
+    expect(isSession2Revoked).toBeUndefined()
 
-    // TODO - validateKratosToken should throw an error,
-    //  but it does not because it does not check if a token is active
-
-    // const revokedResp = await validateKratosToken(session2Token)
-    // expect(revokedResp).toBeInstanceOf(AuthenticationKratosError)
-
-    // TODO - check that revoked tokens do not work
-
-    // TODO - test that if an account only has 1 session that a logout flow
-    // is called instead, because revoking a user with only 1 session does not work
-    // and throws a 400 error
+    // * validateKratosToken has a weird bug with multiple sessions
+    //  it throws an error on session1 and thinks session2 is valid
+    //  this is the opposite of what should happen
+    const isSession1Valid = await validateKratosToken(session1Token) // * this should be valid (but its the opposite)
+    const isSession2Valid = await validateKratosToken(session2Token) // * this should be invalid (but its the opposite, and its the wrong sessionId, it returns session1Id)
+    // expect(isSession1Valid).toBeInstanceOf(KratosError)
+    // expect(isSession2Valid).toBeDefined()
   })
 
   it("return error on revoked session", async () => {
