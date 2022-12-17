@@ -71,7 +71,7 @@ export const TwilioClient = (): IPhoneProviderService => {
       }
 
       if (err.status === 404) {
-        return new ExpiredOrNonExistentPhoneNumber(err)
+        return new ExpiredOrNonExistentPhoneNumber(err.message || err)
       }
 
       return new UnknownPhoneProviderServiceError(err)
