@@ -14,10 +14,10 @@ import { AccountsRepository } from "@services/mongoose"
 const createUsdWallets = async () => {
   await setupMongoConnection()
 
-  const accounts = await AccountsRepository().listUnlockedAccounts()
+  const accounts = AccountsRepository().listUnlockedAccounts()
   if (accounts instanceof Error) return accounts
   let progress = 0
-  for (const account of accounts) {
+  for await (const account of accounts) {
     await AccountsWithSpans.addWalletIfNonexistent({
       accountId: account.id,
       type: WalletType.Checking,

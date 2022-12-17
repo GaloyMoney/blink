@@ -11,7 +11,7 @@ import { wrapAsyncToRunInSpan } from "@services/tracing"
 import { getRecentlyActiveAccounts } from "./active-accounts"
 
 export const sendDefaultWalletBalanceToUsers = async () => {
-  const accounts = await getRecentlyActiveAccounts()
+  const accounts = getRecentlyActiveAccounts()
   if (accounts instanceof Error) throw accounts
 
   const price = await getCurrentPrice()
@@ -48,7 +48,7 @@ export const sendDefaultWalletBalanceToUsers = async () => {
     },
   })
 
-  for (const account of accounts) {
+  for await (const account of accounts) {
     await notifyUser(account)
   }
 }

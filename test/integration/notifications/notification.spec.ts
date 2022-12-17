@@ -45,11 +45,13 @@ describe("notification", () => {
       const activeAccounts = await getRecentlyActiveAccounts()
       if (activeAccounts instanceof Error) throw activeAccounts
 
-      expect(activeAccounts.length).toBeGreaterThan(0)
+      const activeAccountsArray = activeAccounts[Symbol.iterator]()
+
+      expect(activeAccountsArray).toBeGreaterThan(0)
       expect(sendNotification.mock.calls.length).toBeGreaterThan(0)
 
       let usersWithDeviceTokens = 0
-      for (const { kratosUserId } of activeAccounts) {
+      for (const { kratosUserId } of activeAccountsArray) {
         const user = await UsersRepository().findById(kratosUserId)
         if (user instanceof Error) throw user
 

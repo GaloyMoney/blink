@@ -17,15 +17,20 @@ const caseInsensitiveRegex = (input: string) => {
 }
 
 export const AccountsRepository = (): IAccountsRepository => {
-  const listUnlockedAccounts = async (): Promise<Account[] | RepositoryError> => {
+  const listUnlockedAccounts = async function* ():
+    | AsyncGenerator<Account>
+    | RepositoryError {
+    let accounts
     try {
-      const result = await Account.find({
+      accounts = Account.find({
         $expr: { $eq: [{ $last: "$statusHistory.status" }, AccountStatus.Active] },
       })
-      if (result.length === 0) return new CouldNotFindError()
-      return result.map((a) => translateToAccount(a))
     } catch (err) {
       return parseRepositoryError(err)
+    }
+
+    for await (const account of accounts) {
+      yield translateToAccount(account)
     }
   }
 

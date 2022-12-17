@@ -1,8 +1,12 @@
-import { CouldNotFindWalletInvoiceError, RepositoryError } from "@domain/errors"
+import {
+  CouldNotFindWalletInvoiceError,
+  RepositoryError,
+  UnknownRepositoryError,
+} from "@domain/errors"
 import { UsdPaymentAmount } from "@domain/shared"
 
-import { parseRepositoryError } from "./utils"
 import { WalletInvoice } from "./schema"
+import { parseRepositoryError } from "./utils"
 
 export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
   const persistNew = async ({
@@ -72,7 +76,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
         batchSize: 100,
       })
     } catch (error) {
-      return new RepositoryError(error)
+      return new UnknownRepositoryError(error)
     }
 
     for await (const walletInvoice of pending) {
@@ -90,7 +94,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       }
       return true
     } catch (error) {
-      return new RepositoryError(error)
+      return new UnknownRepositoryError(error)
     }
   }
 
@@ -104,7 +108,7 @@ export const WalletInvoicesRepository = (): IWalletInvoicesRepository => {
       })
       return result.deletedCount
     } catch (error) {
-      return new RepositoryError(error)
+      return new UnknownRepositoryError(error)
     }
   }
 

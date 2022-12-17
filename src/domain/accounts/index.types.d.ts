@@ -124,7 +124,7 @@ type AccountValidator = {
 }
 
 interface IAccountsRepository {
-  listUnlockedAccounts(): Promise<Account[] | RepositoryError>
+  listUnlockedAccounts(): AsyncGenerator<Account> | RepositoryError
   findById(accountId: AccountId): Promise<Account | RepositoryError>
   findByUserId(kratosUserId: UserId): Promise<Account | RepositoryError>
 
