@@ -11,6 +11,8 @@ import { wrapAsyncToRunInSpan } from "@services/tracing"
 import { getRecentlyActiveAccounts } from "./active-accounts"
 
 export const sendDefaultWalletBalanceToUsers = async () => {
+  const notifications = NotificationsService()
+
   const accounts = getRecentlyActiveAccounts()
   if (accounts instanceof Error) throw accounts
 
@@ -39,7 +41,7 @@ export const sendDefaultWalletBalanceToUsers = async () => {
         displayBalanceAmount = { amount, currency: DisplayCurrency.Usd }
       }
 
-      return NotificationsService().sendBalance({
+      return notifications.sendBalance({
         balanceAmount,
         recipientDeviceTokens: user.deviceTokens,
         displayBalanceAmount,

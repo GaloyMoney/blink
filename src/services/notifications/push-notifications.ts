@@ -6,16 +6,21 @@ import {
 } from "@domain/notifications"
 import { baseLogger } from "@services/logger"
 import { googleApplicationCredentialsIsSet } from "@config"
+import { Messaging } from "firebase-admin/lib/messaging/messaging"
 
 const logger = baseLogger.child({ module: "notifications" })
 
 type MessagingPayload = admin.messaging.MessagingPayload
 type NotificationMessagePayload = admin.messaging.NotificationMessagePayload
 
+let messaging: Messaging
+
 if (googleApplicationCredentialsIsSet()) {
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
   })
+
+  messaging = admin.messaging()
 }
 
 export const PushNotificationsService = (): IPushNotificationsService => {
@@ -45,8 +50,30 @@ export const PushNotificationsService = (): IPushNotificationsService => {
     }
 
     try {
-      const response = await admin.messaging().sendToDevice(tokens, message)
+      const response = await messaging.sendToDevice(tokens, message)
       logger.info({ response, tokens, message }, "notification was sent successfully")
+
+      // TODO token clean up
+      // ie, when the message below is received
+
+      //   "response": {
+      //   "results": [
+      //     {
+      //       "error": {
+      //         "code": "messaging/registration-token-not-registered",
+      //         "message": "The provided registration token is not registered. A previously valid registration token can be unregistered for a variety of reasons. See the error documentation for more details. Remove this registration token and stop using it to send messages."
+      //       }
+      //     },
+      //     {
+      //       "messageId": "0:1671300966132147%7c88793f7c88793f"
+      //     }
+      //   ],
+      //   "canonicalRegistrationTokenCount": 0,
+      //   "failureCount": 1,
+      //   "successCount": 1,
+      //   "multicastId": 2601374049640558600
+      // },
+
       return true
     } catch (err) {
       logger.error({ err, tokens, message }, "impossible to send notification")

@@ -284,8 +284,13 @@ export const NotificationsService = (): INotificationsService => {
         displayAmount: displayBalanceAmount,
       })
 
-      // Do not await this call for quicker processing
-      pushNotification.sendNotification({
+      // NB: await for this notification to avoid timeout issue?
+      // it seems firebase is batching the processing otherwise but this eventually timeout with
+      // Error: Error while making request: timeout of 15000ms exceeded.\n
+      // at /app/node_modules/firebase-admin/lib/utils/api-request.js:176:23\n
+      // at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n
+      // at async Object.sendNotification (/app/lib/services/notifications/push-notifications.js:56:30)
+      await pushNotification.sendNotification({
         deviceTokens: recipientDeviceTokens,
         title,
         body,
