@@ -2,7 +2,8 @@ import twilio from "twilio"
 
 import { getTwilioConfig } from "@config"
 import {
-  ExpiredOrNonExistentPhoneNumber,
+  PhoneCodeInvalidError,
+  ExpiredOrNonExistentPhoneNumberError,
   InvalidPhoneNumberPhoneProviderError,
   PhoneProviderConnectionError,
   RestrictedRegionPhoneProviderError,
@@ -13,15 +14,17 @@ import { baseLogger } from "@services/logger"
 
 import { VerificationCheckInstance } from "twilio/lib/rest/verify/v2/service/verificationCheck"
 
-import { CodeInvalidError } from "@domain/authentication/errors"
-
 import { wrapAsyncFunctionsToRunInSpan } from "./tracing"
 
 export const TwilioClient = (): IPhoneProviderService => {
-  const client = twilio(getTwilioConfig().accountSid, getTwilioConfig().authToken)
-  const verify = client.verify.v2.services(getTwilioConfig().verifyService)
+  const { accountSid, authToken, verifyService } = getTwilioConfig()
 
-  const initiateVerify = async (to: PhoneNumber) => {
+  const client = twilio(accountSid, authToken)
+  const verify = client.verify.v2.services(verifyService)
+
+  const initiateVerify = async (
+    to: PhoneNumber,
+  ): Promise<true | PhoneProviderServiceError> => {
     try {
       await verify.verifications.create({ to, channel: "sms" })
     } catch (err) {
@@ -58,7 +61,7 @@ export const TwilioClient = (): IPhoneProviderService => {
   }: {
     to: PhoneNumber
     code: PhoneCode
-  }): Promise<true | UnknownPhoneProviderServiceError | CodeInvalidError> => {
+  }): Promise<true | PhoneProviderServiceError> => {
     let verification: VerificationCheckInstance
 
     try {
@@ -67,18 +70,18 @@ export const TwilioClient = (): IPhoneProviderService => {
       baseLogger.error({ err }, "impossible to verify phone and code")
 
       if (err.message.includes("Invalid parameter `To`")) {
-        return new InvalidPhoneNumberPhoneProviderError(err)
+        return new InvalidPhoneNumberPhoneProviderError(err.message || err)
       }
 
       if (err.status === 404) {
-        return new ExpiredOrNonExistentPhoneNumber(err.message || err)
+        return new ExpiredOrNonExistentPhoneNumberError(err.message || err)
       }
 
-      return new UnknownPhoneProviderServiceError(err)
+      return new UnknownPhoneProviderServiceError(err.message || err)
     }
 
     if (verification.status !== "approved") {
-      return new CodeInvalidError()
+      return new PhoneCodeInvalidError()
     }
 
     return true

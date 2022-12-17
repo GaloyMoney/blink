@@ -1,12 +1,7 @@
 type PhoneProviderServiceError = import("./errors").PhoneProviderServiceError
 type UnknownPhoneProviderServiceError =
   import("@domain/phone-provider").UnknownPhoneProviderServiceError
-
-type SendTextArguments = {
-  body: string
-  to: PhoneNumber
-  logger: Logger
-}
+type PhoneCodeInvalidError = import("./errors").PhoneCodeInvalidError
 
 interface IPhoneProviderService {
   getCarrier(phone: PhoneNumber): Promise<PhoneMetadata | PhoneProviderServiceError>
@@ -17,5 +12,5 @@ interface IPhoneProviderService {
   }: {
     to: PhoneNumber
     code: PhoneCode
-  }): Promise<true | PhoneProviderServiceError | CodeInvalidError>
+  }): Promise<true | PhoneProviderServiceError>
 }

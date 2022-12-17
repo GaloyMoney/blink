@@ -13,10 +13,7 @@ import { TwilioClient } from "@services/twilio"
 
 import { checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
-import {
-  CodeInvalidError,
-  LikelyNoUserWithThisPhoneExistError,
-} from "@domain/authentication/errors"
+import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 
 import { CouldNotFindAccountFromKratosIdError, NotImplementedError } from "@domain/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
@@ -27,6 +24,7 @@ import { AuthWithPhonePasswordlessService } from "@services/kratos"
 import { AccountsRepository } from "@services/mongoose"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
 import { addAttributesToCurrentSpan } from "@services/tracing"
+import { PhoneCodeInvalidError } from "@domain/phone-provider"
 
 export const loginWithPhone = async ({
   phone,
@@ -187,7 +185,7 @@ const isCodeValid = async ({ code, phone }: { phone: PhoneNumber; code: PhoneCod
       phone,
     })
     if (!validTestCode) {
-      return new CodeInvalidError()
+      return new PhoneCodeInvalidError()
     }
     return true
   }
@@ -195,11 +193,9 @@ const isCodeValid = async ({ code, phone }: { phone: PhoneNumber; code: PhoneCod
   // we can't mock this function properly because in the e2e test,
   // the server is been launched as a sub process,
   // so it's not been mocked by jest
-  if (
-    getTwilioConfig().accountSid !== "AC_twilio_id" /* true in prod, false for tests */
-  ) {
-    return TwilioClient().validateVerify({ to: phone, code })
-  } else {
-    return new NotImplementedError("use test account for local dev")
+  if (getTwilioConfig().accountSid === "AC_twilio_id") {
+    return new NotImplementedError("use test account for local dev and tests")
   }
+
+  return TwilioClient().validateVerify({ to: phone, code })
 }
