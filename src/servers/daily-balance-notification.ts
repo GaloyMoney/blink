@@ -11,6 +11,8 @@ const main = async () => {
   await sendDefaultWalletBalanceToUsers()
 
   await mongoose.connection.close()
+
+  process.exit(0)
 }
 
 if (require.main === module) {
