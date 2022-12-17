@@ -33,6 +33,14 @@ afterAll(() => {
   // jest.restoreAllMocks()
 })
 
+async function toArray<T>(gen: AsyncIterable<T>): Promise<T[]> {
+  const out: T[] = []
+  for await (const x of gen) {
+    out.push(x)
+  }
+  return out
+}
+
 describe("notification", () => {
   describe("sendNotification", () => {
     it("sends daily balance to active users", async () => {
@@ -42,14 +50,16 @@ describe("notification", () => {
         .mockImplementation(() => ({ sendNotification }))
 
       await sendDefaultWalletBalanceToUsers()
-      const activeAccounts = await getRecentlyActiveAccounts()
+      const activeAccounts = getRecentlyActiveAccounts()
       if (activeAccounts instanceof Error) throw activeAccounts
 
-      expect(activeAccounts.length).toBeGreaterThan(0)
+      const activeAccountsArray = await toArray(activeAccounts)
+
+      expect(activeAccountsArray.length).toBeGreaterThan(0)
       expect(sendNotification.mock.calls.length).toBeGreaterThan(0)
 
       let usersWithDeviceTokens = 0
-      for (const { kratosUserId } of activeAccounts) {
+      for (const { kratosUserId } of activeAccountsArray) {
         const user = await UsersRepository().findById(kratosUserId)
         if (user instanceof Error) throw user
 
@@ -60,7 +70,7 @@ describe("notification", () => {
 
       for (let i = 0; i < sendNotification.mock.calls.length; i++) {
         const [call] = sendNotification.mock.calls[i]
-        const { defaultWalletId, kratosUserId } = activeAccounts[i]
+        const { defaultWalletId, kratosUserId } = activeAccountsArray[i]
 
         const user = await UsersRepository().findById(kratosUserId)
         if (user instanceof Error) throw user
