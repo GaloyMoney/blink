@@ -77,6 +77,11 @@ const sendToDevice = async (
 
     return true
   } catch (err) {
+    recordExceptionInCurrentSpan({
+      error: err.message,
+      level: ErrorLevel.Warn,
+    })
+
     logger.error({ err, tokens, message }, "impossible to send notification")
     return new UnknownNotificationsServiceError(err?.message)
   }

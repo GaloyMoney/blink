@@ -40,7 +40,7 @@ type OnChainTxSentArgs = TransactionSentNotificationBaseArgs & OnChainTxBaseArgs
 
 type SendBalanceArgs = {
   balanceAmount: BalanceAmount<WalletCurrency>
-  recipientDeviceTokens: DeviceToken[]
+  deviceTokens: DeviceToken[]
   displayBalanceAmount?: DisplayBalanceAmount<DisplayCurrency>
   recipientLanguage: UserLanguageOrEmpty
 }

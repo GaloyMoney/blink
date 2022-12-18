@@ -269,11 +269,11 @@ export const NotificationsService = (): INotificationsService => {
 
   const sendBalance = async ({
     balanceAmount,
-    recipientDeviceTokens,
+    deviceTokens,
     displayBalanceAmount,
     recipientLanguage,
   }: SendBalanceArgs): Promise<void | NotificationsServiceError> => {
-    const hasDeviceTokens = recipientDeviceTokens && recipientDeviceTokens.length > 0
+    const hasDeviceTokens = deviceTokens && deviceTokens.length > 0
     if (!hasDeviceTokens) return
 
     try {
@@ -291,7 +291,7 @@ export const NotificationsService = (): INotificationsService => {
       // at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n
       // at async Object.sendNotification (/app/lib/services/notifications/push-notifications.js:56:30)
       await pushNotification.sendNotification({
-        deviceTokens: recipientDeviceTokens,
+        deviceTokens,
         title,
         body,
       })
