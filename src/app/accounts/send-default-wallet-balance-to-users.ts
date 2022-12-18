@@ -19,7 +19,6 @@ export const sendDefaultWalletBalanceToUsers = async () => {
   const converter = displayCurrencyPerSat
     ? DisplayCurrencyConverter(displayCurrencyPerSat)
     : undefined
-
   const notifyUser = wrapAsyncToRunInSpan({
     namespace: "daily-balance-notification",
     fn: async (account: Account): Promise<void | ApplicationError> => {
@@ -41,7 +40,7 @@ export const sendDefaultWalletBalanceToUsers = async () => {
 
       return NotificationsService().sendBalance({
         balanceAmount,
-        recipientDeviceTokens: user.deviceTokens,
+        deviceTokens: user.deviceTokens,
         displayBalanceAmount,
         recipientLanguage: user.language,
       })

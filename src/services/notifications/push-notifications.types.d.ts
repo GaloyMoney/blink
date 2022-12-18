@@ -1,7 +1,7 @@
 type SendPushNotificationArgs = {
   deviceTokens: DeviceToken[]
   title: string
-  body?: string
+  body: string
   data?: { [key: string]: string }
 }
 
