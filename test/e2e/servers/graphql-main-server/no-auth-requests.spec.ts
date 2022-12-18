@@ -101,7 +101,7 @@ describe("graphql", () => {
     })
 
     it("returns error for invalid phone", async () => {
-      const message = "Invalid value for Phone"
+      const message = "Phone number is not a valid phone number"
       let input = { phone: "+123" }
 
       let result = await apolloClient.mutate({ mutation, variables: { input } })
@@ -140,18 +140,11 @@ describe("graphql", () => {
     })
 
     it("returns error for invalid phone", async () => {
-      let phone = "+19999999999"
-      let message = "Invalid or incorrect phone code entered."
+      let phone = "+1999"
+      const message = "Phone number is not a valid phone number"
       let input = { phone, code: correctCode }
       let result = await apolloClient.mutate({ mutation, variables: { input } })
-      expect(result.data.userLogin.errors).toEqual(
-        expect.arrayContaining([expect.objectContaining({ message })]),
-      )
 
-      phone = "+1999"
-      message = "Invalid value for Phone"
-      input = { phone, code: correctCode }
-      result = await apolloClient.mutate({ mutation, variables: { input } })
       expect(result.data.userLogin.errors).toEqual(
         expect.arrayContaining([expect.objectContaining({ message })]),
       )
@@ -213,10 +206,10 @@ describe("graphql", () => {
       await testRateLimitLoginByIp(args)
     })
 
-    it("rate limits too many invalid login requests by IP, wrong phone", async () => {
+    it.skip("rate limits too many invalid login requests by IP, wrong phone", async () => {
       const args = {
         input: { phone: "+19999999999" as PhoneNumber, code: correctCode },
-        expectedMessage: "Invalid or incorrect phone code entered.",
+        expectedMessage: "Phone number is not a valid phone number",
         mutation,
       }
       await testRateLimitLoginByPhone(args)
@@ -226,7 +219,7 @@ describe("graphql", () => {
     it.skip("rate limits too many invalid login requests by IP, invalid phone", async () => {
       const args = {
         input: { phone: "<invalid>" as PhoneNumber, code: correctCode },
-        expectedMessage: "Invalid value for Phone",
+        expectedMessage: "Phone number is not a valid phone number",
         mutation,
       }
       await testRateLimitLoginByPhone(args)

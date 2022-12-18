@@ -12,7 +12,6 @@ import { TransactionMetadata } from "@services/ledger/schema"
 import { baseLogger } from "../logger"
 import {
   DbMetadata,
-  PhoneCode,
   Wallet,
   WalletInvoice,
   PaymentFlowState,
@@ -92,7 +91,6 @@ export const setupMongoConnection = async (syncIndexes = false) => {
       await LnPayment.syncIndexes()
       await Medici.syncIndexes()
       await PaymentFlowState.syncIndexes()
-      await PhoneCode.syncIndexes()
       await TransactionMetadata.syncIndexes()
       await Account.syncIndexes()
       await Wallet.syncIndexes()

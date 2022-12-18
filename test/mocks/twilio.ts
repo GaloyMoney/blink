@@ -1,7 +1,11 @@
 import { yamlConfig } from "@config"
 
 export const TwilioClient = () => {
-  const sendText = async () => {
+  const initiateVerify = async () => {
+    return new Promise((resolve) => resolve(true))
+  }
+
+  const validateVerify = async () => {
     return new Promise((resolve) => resolve(true))
   }
 
@@ -24,5 +28,5 @@ export const TwilioClient = () => {
     })
   }
 
-  return { sendText, getCarrier }
+  return { initiateVerify, validateVerify, getCarrier }
 }

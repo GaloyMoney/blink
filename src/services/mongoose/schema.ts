@@ -375,26 +375,6 @@ const UserSchema = new Schema(
 
 export const User = mongoose.model<UserRecord>("User", UserSchema)
 
-// TODO: this DB should be capped.
-const PhoneCodeSchema = new Schema({
-  created_at: {
-    type: Date,
-    default: Date.now,
-    required: true,
-  },
-  phone: {
-    // TODO we should store country as a separate string
-    type: String,
-    required: true,
-  },
-  code: {
-    type: Number,
-    required: true,
-  },
-})
-
-export const PhoneCode = mongoose.model("PhoneCode", PhoneCodeSchema)
-
 const paymentFlowStateSchema = new Schema<PaymentFlowStateRecord>(
   {
     senderWalletId: { type: String, required: true },

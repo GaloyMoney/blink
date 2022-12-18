@@ -5,7 +5,7 @@ import { ConfigError } from "./error"
 type TwilioConfig = {
   accountSid: string
   authToken: string
-  twilioPhoneNumber: string
+  verifyService: string
 }
 
 export const GALOY_API_PORT = process.env.GALOY_API_PORT || 4012
@@ -55,16 +55,16 @@ export const getGeetestConfig = () => {
 export const getTwilioConfig = (): TwilioConfig => {
   const accountSid = process.env.TWILIO_ACCOUNT_SID
   const authToken = process.env.TWILIO_AUTH_TOKEN
-  const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
+  const verifyService = process.env.TWILIO_VERIFY_SERVICE_ID
 
-  if (!accountSid || !authToken || !twilioPhoneNumber) {
-    throw new ConfigError("missing key for twilio")
+  if (!accountSid || !authToken || !verifyService) {
+    throw new ConfigError("missing auth credentials for twilio")
   }
 
   return {
     accountSid,
     authToken,
-    twilioPhoneNumber,
+    verifyService,
   }
 }
 

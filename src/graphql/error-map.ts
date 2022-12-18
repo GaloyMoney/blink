@@ -180,7 +180,11 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
         "Too many phone code attempts on same network, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
-    case "CouldNotFindPhoneCodeError":
+    case "PhoneCodeInvalidError":
+      message = "Invalid or incorrect phone code entered."
+      return new PhoneCodeError({ message, logger: baseLogger })
+
+    case "ExpiredOrNonExistentPhoneNumberError":
       message = "Invalid or incorrect phone code entered."
       return new PhoneCodeError({ message, logger: baseLogger })
 

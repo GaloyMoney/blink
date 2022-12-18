@@ -22,7 +22,9 @@ const Phone = GT.Scalar({
 function validPhoneValue(value: string) {
   const phoneNumberValid = checkedToPhoneNumber(value)
   if (phoneNumberValid instanceof Error)
-    return new InputValidationError({ message: "Invalid value for Phone" })
+    return new InputValidationError({
+      message: "Phone number is not a valid phone number",
+    })
   return phoneNumberValid
 }
 
