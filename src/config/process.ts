@@ -55,7 +55,7 @@ export const getGeetestConfig = () => {
 export const getTwilioConfig = (): TwilioConfig => {
   const accountSid = process.env.TWILIO_ACCOUNT_SID
   const authToken = process.env.TWILIO_AUTH_TOKEN
-  const verifyService = process.env.TWILIO_VERIFY_SERVICE
+  const verifyService = process.env.TWILIO_VERIFY_SERVICE_ID
 
   if (!accountSid || !authToken || !verifyService) {
     throw new ConfigError("missing auth credentials for twilio")
