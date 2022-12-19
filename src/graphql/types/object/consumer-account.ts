@@ -19,7 +19,7 @@ import { Accounts, Wallets } from "@app"
 import getUuidByString from "uuid-by-string"
 
 import { TransactionConnection } from "./transaction"
-import AccountLimits from "./account-limits"
+import AccountLimitCategories from "./account-limit-categories"
 
 const ConsumerAccount = GT.Object({
   name: "ConsumerAccount",
@@ -59,7 +59,7 @@ const ConsumerAccount = GT.Object({
     },
 
     limits: {
-      type: GT.NonNull(AccountLimits),
+      type: GT.NonNull(AccountLimitCategories),
       resolve: (source: Account) => source,
     },
 

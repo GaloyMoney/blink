@@ -1,19 +1,21 @@
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
-import IAccountLimit from "@graphql/types/abstract/account-limit"
+import RollingAccountLimit from "@graphql/types/abstract/rolling-account-limit"
 import CentAmount from "@graphql/types/scalar/cent-amount"
+import Seconds from "@graphql/types/scalar/seconds"
 import { normalizePaymentAmount } from "@graphql/root/mutation"
 
 import { Accounts } from "@app"
+import { SECS_PER_DAY } from "@config"
 import { AccountLimitsRange } from "@domain/accounts"
 
-const OneDayAccountLimit = GT.Object<{
+const OneDayAccountLimitRolling = GT.Object<{
   account: Account
   limitType: AccountLimitsType
   range: AccountLimitsRange
 }>({
-  name: "OneDayAccountLimit",
-  interfaces: () => [IAccountLimit],
+  name: "OneDayAccountLimitRolling",
+  interfaces: () => [RollingAccountLimit],
   isTypeOf: ({ range }) => range === AccountLimitsRange.ONE_DAY,
 
   fields: () => ({
@@ -45,7 +47,12 @@ const OneDayAccountLimit = GT.Object<{
         return normalizePaymentAmount(volumes.volumeRemaining).amount
       },
     },
+    interval: {
+      type: Seconds,
+      description: `The rolling time interval value in seconds for the current 24 hour period.`,
+      resolve: () => SECS_PER_DAY,
+    },
   }),
 })
 
-export default OneDayAccountLimit
+export default OneDayAccountLimitRolling
