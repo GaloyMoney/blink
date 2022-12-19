@@ -1,6 +1,7 @@
 import axios from "axios"
 import { UnknownIpFetcherServiceError } from "@domain/ipfetcher"
 import { PROXY_CHECK_APIKEY } from "@config"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 export const IpFetcher = (): IIpFetcherService => {
   const fetchIPInfo = async (ip: string): Promise<IPInfo | IpFetcherServiceError> => {
@@ -10,6 +11,14 @@ export const IpFetcher = (): IIpFetcherService => {
       )
       const proxy = !!(data[ip] && data[ip].proxy && data[ip].proxy === "yes")
       const isoCode = data[ip] && data[ip].isocode
+
+      addAttributesToCurrentSpan({
+        ...data[ip],
+        isoCode,
+        proxy,
+        status: data.status,
+      })
+
       return { ...data[ip], isoCode, proxy, status: data.status }
     } catch (err) {
       return new UnknownIpFetcherServiceError(err)
