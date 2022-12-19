@@ -77,7 +77,7 @@ type Account = {
   readonly isEditor: boolean
   readonly quizQuestions: UserQuizQuestion[]
   kratosUserId: UserId
-
+  displayCurrency: string
   // temp
   role?: string
 }

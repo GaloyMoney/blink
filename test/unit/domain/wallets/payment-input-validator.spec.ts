@@ -1,5 +1,6 @@
 import crypto from "crypto"
 
+import { DisplayCurrency } from "@domain/fiat"
 import { AccountLevel, AccountStatus } from "@domain/accounts"
 import {
   InvalidAccountStatusError,
@@ -30,6 +31,7 @@ describe("PaymentInputValidator", () => {
     isEditor: false,
     quizQuestions: [],
     kratosUserId: "kratosUserId" as UserId,
+    displayCurrency: DisplayCurrency.Usd,
   }
 
   const dummySenderWallet: Wallet = {

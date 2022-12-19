@@ -286,6 +286,8 @@ const AccountSchema = new Schema<AccountRecord>(
       index: true,
     },
 
+    displayCurrency: { type: String, maxLength: 3, default: "" },
+
     // TODO: delete post migration
     phone: {
       type: String,
