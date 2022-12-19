@@ -7,12 +7,12 @@ import { normalizePaymentAmount } from "@graphql/root/mutation"
 import { Accounts } from "@app"
 import { AccountLimitsRange } from "@domain/accounts"
 
-const DailyAccountLimit = GT.Object<{
+const OneDayAccountLimit = GT.Object<{
   account: Account
   limitType: "Withdrawal" | "Intraledger" | "TradeIntraAccount"
   range: AccountLimitsRange
 }>({
-  name: "DailyAccountLimit",
+  name: "OneDayAccountLimit",
   interfaces: () => [IAccountLimit],
   isTypeOf: ({ range }) => range === AccountLimitsRange.ONE_DAY,
 
@@ -48,4 +48,4 @@ const DailyAccountLimit = GT.Object<{
   }),
 })
 
-export default DailyAccountLimit
+export default OneDayAccountLimit

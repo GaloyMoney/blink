@@ -228,18 +228,6 @@ type Coordinates {
   longitude: Float!
 }
 
-type DailyAccountLimit implements AccountLimit {
-  """
-  The amount of cents remaining below the limit for the current 24 hour period.
-  """
-  remainingLimit: CentAmount
-
-  """
-  The current maximum limit for a given 24 hour period.
-  """
-  totalLimit: CentAmount!
-}
-
 input DeviceNotificationTokenCreateInput {
   deviceToken: String!
 }
@@ -782,6 +770,18 @@ type OnChainUpdate {
   txNotificationType: TxNotificationType!
   usdPerSat: Float! @deprecated(reason: "updated over displayCurrencyPerSat")
   walletId: WalletId!
+}
+
+type OneDayAccountLimit implements AccountLimit {
+  """
+  The amount of cents remaining below the limit for the current 24 hour period.
+  """
+  remainingLimit: CentAmount
+
+  """
+  The current maximum limit for a given 24 hour period.
+  """
+  totalLimit: CentAmount!
 }
 
 """
