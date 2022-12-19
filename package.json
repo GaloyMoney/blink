@@ -69,7 +69,7 @@
     "graphql-middleware": "^6.1.33",
     "graphql-query-complexity": "^0.12.0",
     "graphql-query-complexity-apollo-plugin": "^1.0.2",
-    "graphql-redis-subscriptions": "^2.4.2",
+    "graphql-redis-subscriptions": "^2.6.0",
     "graphql-relay": "^0.10.0",
     "graphql-shield": "^7.6.4",
     "graphql-tools": "^8.3.14",
