@@ -32,7 +32,7 @@ Sessions
 
 Kratos Create Account Flow
 ----------------------
-To create a brand new new account we use a combination of the Twilio api to verify codes and kratos to create a user account with session tokens. Here is the flow to create a new acount.
+To create a brand new new account we use a combination of the Twilio api to verify codes and kratos to create a user account with session tokens. Here is the flow to create a new account.
 1. The client hits the login endpoint (we don't have a registration endpoint, so even if the user does not exist they hit this endpoint)
 ```gql
 mutation {
