@@ -82,7 +82,7 @@ services:
     environment:
       - MONGODB_ADDRESS=mongodb
   mongodb:
-    image: bitnami/mongodb:6.0.3
+    image: bitnami/mongodb:5.0.10-debian-11-r3
     environment:
       - MONGODB_PASSWORD=password
       - MONGODB_USERNAME=testGaloy
