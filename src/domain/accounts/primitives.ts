@@ -12,10 +12,6 @@ export const AccountStatus = {
 
 export const AccountLimitsRange = {
   ONE_DAY: "ONE_DAY",
-  // ONE_WEEK: "ONE_WEEK",
-  // ONE_MONTH: "ONE_MONTH",
-  // ONE_YEAR: "ONE_YEAR",
-  // FIVE_YEARS: "FIVE_YEARS",
 } as const
 
 export const AccountLimitsType = {
