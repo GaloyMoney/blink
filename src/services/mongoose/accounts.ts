@@ -22,9 +22,12 @@ export const AccountsRepository = (): IAccountsRepository => {
     | RepositoryError {
     let accounts
     try {
-      accounts = Account.find({
-        $expr: { $eq: [{ $last: "$statusHistory.status" }, AccountStatus.Active] },
-      })
+      accounts = Account.find(
+        {
+          $expr: { $eq: [{ $last: "$statusHistory.status" }, AccountStatus.Active] },
+        },
+        { lastIPs: 0 },
+      )
     } catch (err) {
       return parseRepositoryError(err)
     }
@@ -36,9 +39,12 @@ export const AccountsRepository = (): IAccountsRepository => {
 
   const findById = async (accountId: AccountId): Promise<Account | RepositoryError> => {
     try {
-      const result = await Account.findOne({
-        _id: toObjectId<AccountId>(accountId),
-      })
+      const result = await Account.findOne(
+        {
+          _id: toObjectId<AccountId>(accountId),
+        },
+        { lastIPs: 0 },
+      )
       if (!result) return new CouldNotFindError()
       return translateToAccount(result)
     } catch (err) {
@@ -50,7 +56,10 @@ export const AccountsRepository = (): IAccountsRepository => {
     username: Username,
   ): Promise<Account | RepositoryError> => {
     try {
-      const result = await Account.findOne({ username: caseInsensitiveRegex(username) })
+      const result = await Account.findOne(
+        { username: caseInsensitiveRegex(username) },
+        { lastIPs: 0 },
+      )
       if (!result) {
         return new CouldNotFindAccountFromUsernameError(username)
       }
