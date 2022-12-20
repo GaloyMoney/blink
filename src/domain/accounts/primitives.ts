@@ -17,3 +17,9 @@ export const AccountLimitsRange = {
   // ONE_YEAR: "ONE_YEAR",
   // FIVE_YEARS: "FIVE_YEARS",
 } as const
+
+export const AccountLimitsType = {
+  Withdrawal: "Withdrawal",
+  IntraLedger: "IntraLedger",
+  SelfTrade: "TradeIntraAccount",
+} as const

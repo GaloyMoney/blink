@@ -9,7 +9,7 @@ import { AccountLimitsRange } from "@domain/accounts"
 
 const OneDayAccountLimit = GT.Object<{
   account: Account
-  limitType: "Withdrawal" | "Intraledger" | "TradeIntraAccount"
+  limitType: AccountLimitsType
   range: AccountLimitsRange
 }>({
   name: "OneDayAccountLimit",

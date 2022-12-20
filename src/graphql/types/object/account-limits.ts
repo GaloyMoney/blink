@@ -1,4 +1,4 @@
-import { AccountLimitsRange } from "@domain/accounts"
+import { AccountLimitsRange, AccountLimitsType } from "@domain/accounts"
 import { GT } from "@graphql/index"
 
 import AccountLimit from "@graphql/types/abstract/account-limit"
@@ -12,7 +12,7 @@ const AccountLimits = GT.Object({
       resolve: (source: Account) => {
         const commonProperties = {
           account: source,
-          limitType: "Withdrawal",
+          limitType: AccountLimitsType.Withdrawal,
         }
 
         return Object.values(AccountLimitsRange).map((range) => ({
@@ -27,7 +27,7 @@ const AccountLimits = GT.Object({
       resolve: (source: Account) => {
         const commonProperties = {
           account: source,
-          limitType: "Intraledger",
+          limitType: AccountLimitsType.IntraLedger,
         }
 
         return Object.values(AccountLimitsRange).map((range) => ({
@@ -42,7 +42,7 @@ const AccountLimits = GT.Object({
       resolve: (source: Account) => {
         const commonProperties = {
           account: source,
-          limitType: "TradeIntraAccount",
+          limitType: AccountLimitsType.SelfTrade,
         }
 
         return Object.values(AccountLimitsRange).map((range) => ({

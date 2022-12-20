@@ -1,6 +1,7 @@
 import { volumesForAccountId } from "@app/payments/helpers"
 import { getMidPriceRatio } from "@app/shared"
 import { getAccountLimits, getDealerConfig, ONE_DAY } from "@config"
+import { AccountLimitsType } from "@domain/accounts"
 import { AccountLimitsVolumes } from "@domain/accounts/limits-volume"
 import { InvalidAccountLimitTypeError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
@@ -10,7 +11,7 @@ export const accountLimit = async ({
   limitType,
 }: {
   account: Account
-  limitType: "Intraledger" | "Withdrawal" | "TradeIntraAccount"
+  limitType: AccountLimitsType
 }): Promise<
   | {
       volumeTotalLimit: UsdPaymentAmount
@@ -34,15 +35,15 @@ export const accountLimit = async ({
   let limitsVolumeFn: LimitsVolumesFn
   let getVolumeFn: GetVolumeAmountSinceFn
   switch (limitType) {
-    case "Intraledger":
+    case AccountLimitsType.IntraLedger:
       limitsVolumeFn = accountVolumes.volumesIntraledger
       getVolumeFn = ledger.intraledgerTxBaseVolumeAmountSince
       break
-    case "Withdrawal":
+    case AccountLimitsType.Withdrawal:
       limitsVolumeFn = accountVolumes.volumesWithdrawal
       getVolumeFn = ledger.externalPaymentVolumeAmountSince
       break
-    case "TradeIntraAccount":
+    case AccountLimitsType.SelfTrade:
       limitsVolumeFn = accountVolumes.volumesTradeIntraAccount
       getVolumeFn = ledger.tradeIntraAccountTxBaseVolumeAmountSince
       break
@@ -65,15 +66,15 @@ export const getAccountLimitsFromConfig = async ({
   limitType,
 }: {
   level: AccountLevel
-  limitType: "Withdrawal" | "Intraledger" | "TradeIntraAccount"
+  limitType: AccountLimitsType
 }) => {
   const config = getAccountLimits({ level })
   switch (limitType) {
-    case "Intraledger":
+    case AccountLimitsType.IntraLedger:
       return config.intraLedgerLimit
-    case "Withdrawal":
+    case AccountLimitsType.Withdrawal:
       return config.withdrawalLimit
-    case "TradeIntraAccount":
+    case AccountLimitsType.SelfTrade:
       return config.tradeIntraAccountLimit
     default:
       return new InvalidAccountLimitTypeError(limitType)
