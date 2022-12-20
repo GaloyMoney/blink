@@ -26,6 +26,8 @@ import { LocalCacheService } from "@services/cache"
 import { toSeconds } from "@domain/primitives"
 import { timeout } from "@utils"
 
+import { getPendingPaymentCount } from "@services/lnd/utils-ln-service"
+
 import healthzHandler from "./middlewares/healthz"
 
 const TIMEOUT_WALLET_BALANCE = 30000
@@ -311,3 +313,23 @@ export const getBookingVersusRealWorldAssets = async () => {
     (lightning + bitcoin)
   ) // value in accounting
 }
+
+createGauge({
+  name: "pendingPaymentsCount",
+  description: "How many pending HTLCs there are in the channels of the active nodes",
+  collect: async () => {
+    const pendingPaymentsCount = await getPendingPaymentCount()
+    if (getPendingPaymentCount instanceof Error) return 0
+    return pendingPaymentsCount
+  },
+})
+
+createGauge({
+  name: "inboundBalance",
+  description: "How much inbound balance there is on the active nodes",
+  collect: async () => {
+    const balance = await Lightning.getInboundBalance()
+    if (balance instanceof Error) return 0
+    return balance
+  },
+})

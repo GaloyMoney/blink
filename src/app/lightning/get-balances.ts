@@ -23,6 +23,21 @@ export const getTotalBalance = async (): Promise<Satoshis | ApplicationError> =>
   return sumBalances(balances)
 }
 
+export const getInboundBalance = async (): Promise<Satoshis | ApplicationError> =>
+  cache.getOrSet({
+    key: CacheKeys.OffChainBalance,
+    ttlSecs: SECS_PER_MIN,
+    getForCaching: async () => {
+      const offChainService = LndService()
+      if (offChainService instanceof Error) return offChainService
+      const offChainChannelBalances = await offChainService.getInboundOutboundBalance()
+      if (offChainChannelBalances instanceof Error) return offChainChannelBalances
+      const inbound = offChainChannelBalances.inbound
+
+      return inbound
+    },
+  })
+
 export const getOffChainBalance = async (): Promise<Satoshis | ApplicationError> =>
   cache.getOrSet({
     key: CacheKeys.OffChainBalance,
