@@ -1,5 +1,6 @@
 import { GT } from "@graphql/index"
 import CentAmount from "@graphql/types/scalar/cent-amount"
+import Seconds from "@graphql/types/scalar/seconds"
 
 const IAccountLimit = GT.Interface({
   name: "AccountLimit",
@@ -11,6 +12,10 @@ const IAccountLimit = GT.Interface({
     remainingLimit: {
       type: CentAmount,
       description: `The amount of cents remaining below the limit for the current 24 hour period.`,
+    },
+    interval: {
+      type: Seconds,
+      description: `The rolling time interval in seconds that the limits would apply for.`,
     },
   }),
 })
