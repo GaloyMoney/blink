@@ -59,10 +59,8 @@ export const updateAccountIPsInfo = async ({
 
   if (
     ipConfig.proxyCheckingEnabled &&
-    (!ipInfo.isoCode || !ipInfo.proxy || !ipInfo.asn)
+    (!ipInfo.isoCode || ipInfo.proxy === undefined || !ipInfo.asn)
   ) {
-    console.log({ ipInfo }, "ipInfo")
-
     const ipFetcher = IpFetcher()
     const ipFetcherInfo = await ipFetcher.fetchIPInfo(ip)
 
@@ -90,7 +88,11 @@ export const updateAccountIPsInfo = async ({
 
     addAttributesToCurrentSpan(ipFetcherInfoForOtel)
 
-    if (!ipFetcherInfo.isoCode || !ipFetcherInfo.proxy || !ipFetcherInfo.asn) {
+    if (
+      !ipFetcherInfo.isoCode ||
+      ipFetcherInfo.proxy === undefined ||
+      !ipFetcherInfo.asn
+    ) {
       const error = `missing mandatory fields. isoCode: ${ipFetcherInfo.isoCode}, proxy: ${ipFetcherInfo.proxy}, asn: ${ipFetcherInfo.asn}`
       recordExceptionInCurrentSpan({
         error,
