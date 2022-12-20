@@ -166,7 +166,7 @@ export const volumesForAccountId = async ({
   return walletVolumes
 }
 
-const checkLimitsBase = async ({
+const volumesAndLimitsForAccountId = async ({
   accountId,
   volumeAmountSinceFn,
 }: {
@@ -198,7 +198,7 @@ export const newCheckIntraledgerLimits = async ({
   accountId: AccountId
   priceRatio: PriceRatio
 }) => {
-  const volumesAndLimits = await checkLimitsBase({
+  const volumesAndLimits = await volumesAndLimitsForAccountId({
     accountId,
     volumeAmountSinceFn: ledger.intraledgerTxBaseVolumeAmountSince,
   })
@@ -223,7 +223,7 @@ export const newCheckTradeIntraAccountLimits = async ({
   accountId: AccountId
   priceRatio: PriceRatio
 }) => {
-  const volumesAndLimits = await checkLimitsBase({
+  const volumesAndLimits = await volumesAndLimitsForAccountId({
     accountId,
     volumeAmountSinceFn: ledger.tradeIntraAccountTxBaseVolumeAmountSince,
   })
@@ -248,7 +248,7 @@ export const newCheckWithdrawalLimits = async ({
   accountId: AccountId
   priceRatio: PriceRatio
 }) => {
-  const volumesAndLimits = await checkLimitsBase({
+  const volumesAndLimits = await volumesAndLimitsForAccountId({
     accountId,
     volumeAmountSinceFn: ledger.externalPaymentVolumeAmountSince,
   })

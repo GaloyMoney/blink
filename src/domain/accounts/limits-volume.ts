@@ -57,7 +57,7 @@ export const calculateLimitsInUsd = async ({
   }
 }
 
-const volumeLimitBase =
+const volumesForLimit =
   ({
     limitName,
     limitAmount,
@@ -99,17 +99,17 @@ export const AccountLimitsVolumes = ({
   }
 
   return {
-    volumesIntraledger: volumeLimitBase({
+    volumesIntraledger: volumesForLimit({
       limitName: "volumesIntraledger",
       limitAmount: accountLimitAmounts.intraLedgerLimit,
       priceRatio,
     }),
-    volumesWithdrawal: volumeLimitBase({
+    volumesWithdrawal: volumesForLimit({
       limitName: "volumesWithdrawal",
       limitAmount: accountLimitAmounts.withdrawalLimit,
       priceRatio,
     }),
-    volumesTradeIntraAccount: volumeLimitBase({
+    volumesTradeIntraAccount: volumesForLimit({
       limitName: "volumesTradeIntraAccount",
       limitAmount: accountLimitAmounts.tradeIntraAccountLimit,
       priceRatio,
@@ -136,7 +136,7 @@ export const TwoFALimitsVolumes = ({
   }
 
   return {
-    volumesTwoFA: volumeLimitBase({
+    volumesTwoFA: volumesForLimit({
       limitName: "volumesTwoFA",
       limitAmount: twoFALimitAmounts.threshold,
       priceRatio,
