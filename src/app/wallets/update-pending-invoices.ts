@@ -124,6 +124,16 @@ const updatePendingInvoiceBeforeFinally = async ({
     roundedDownReceived: uncheckedRoundedDownReceived,
   } = lnInvoiceLookup
 
+  if (walletInvoice.paid) {
+    pendingInvoiceLogger.info("invoice has already been processed")
+    return true
+  }
+
+  if (!lnInvoiceLookup.isHeld && !lnInvoiceLookup.isSettled) {
+    pendingInvoiceLogger.info("invoice has not been paid yet")
+    return false
+  }
+
   // TODO: validate roundedDownReceived as user input
   const roundedDownReceived = checkedToSats(uncheckedRoundedDownReceived)
   if (roundedDownReceived instanceof Error) {
@@ -136,16 +146,6 @@ const updatePendingInvoiceBeforeFinally = async ({
       paymentHash: walletInvoice.paymentHash,
       logger,
     })
-  }
-
-  if (walletInvoice.paid) {
-    pendingInvoiceLogger.info("invoice has already been processed")
-    return true
-  }
-
-  if (!lnInvoiceLookup.isHeld && !lnInvoiceLookup.isSettled) {
-    pendingInvoiceLogger.info("invoice has not been paid yet")
-    return false
   }
 
   const receivedBtc = paymentAmountFromNumber({
