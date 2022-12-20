@@ -6,9 +6,7 @@ import { IpFetcher } from "@services/ipfetcher"
 import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
 import {
   addAttributesToCurrentSpan,
-  asyncRunInSpan,
   recordExceptionInCurrentSpan,
-  SemanticAttributes,
 } from "@services/tracing"
 
 const accountsIp = AccountsIpRepository()
@@ -21,116 +19,102 @@ export const updateAccountIPsInfo = async ({
   accountId: AccountId
   ip?: IpAddress
   logger: Logger
-}): Promise<void | RepositoryError> =>
-  asyncRunInSpan(
-    "app.accounts.updateAccountIPsInfo",
-    {
-      attributes: {
-        [SemanticAttributes.CODE_FUNCTION]: "updateAccountIPsInfo",
-        [SemanticAttributes.CODE_NAMESPACE]: "app.accounts",
-      },
-    },
-    async () => {
-      const ipConfig = getIpConfig()
+}): Promise<void | RepositoryError> => {
+  const ipConfig = getIpConfig()
 
-      const lastConnection = new Date()
+  const lastConnection = new Date()
 
-      const accountIP = await accountsIp.findById(accountId)
-      if (accountIP instanceof RepositoryError) return accountIP
+  const accountIP = await accountsIp.findById(accountId)
+  if (accountIP instanceof RepositoryError) return accountIP
 
-      if (!ip || !ipConfig.ipRecordingEnabled) {
-        const result = await accountsIp.update(accountIP)
+  if (!ip || !ipConfig.ipRecordingEnabled) {
+    const result = await accountsIp.update(accountIP)
 
-        if (result instanceof Error) {
-          logger.error(
-            { result, accountId, ip },
-            "impossible to update account last connection",
-          )
+    if (result instanceof Error) {
+      logger.error(
+        { result, accountId, ip },
+        "impossible to update account last connection",
+      )
 
-          return result
-        }
+      return result
+    }
 
-        return
-      }
+    return
+  }
 
-      let ipInfo: IPType
+  let ipInfo: IPType
 
-      const ipFromDb = accountIP.lastIPs.find((ipObject) => ipObject.ip === ip)
+  const ipFromDb = accountIP.lastIPs.find((ipObject) => ipObject.ip === ip)
 
-      if (ipFromDb) {
-        ipInfo = ipFromDb
-        ipInfo.lastConnection = lastConnection
-      } else {
-        ipInfo = {
+  if (ipFromDb) {
+    ipInfo = ipFromDb
+    ipInfo.lastConnection = lastConnection
+  } else {
+    ipInfo = {
+      ip,
+      firstConnection: lastConnection,
+      lastConnection: lastConnection,
+    }
+  }
+
+  if (
+    ipConfig.proxyCheckingEnabled &&
+    (!ipInfo.isoCode || !ipInfo.proxy || !ipInfo.asn)
+  ) {
+    console.log({ ipInfo }, "ipInfo")
+
+    const ipFetcher = IpFetcher()
+    const ipFetcherInfo = await ipFetcher.fetchIPInfo(ip)
+
+    if (ipFetcherInfo instanceof IpFetcherServiceError) {
+      recordExceptionInCurrentSpan({
+        error: ipFetcherInfo.message,
+        level: ErrorLevel.Warn,
+        attributes: {
           ip,
-          firstConnection: lastConnection,
-          lastConnection: lastConnection,
-        }
-      }
+          accountId,
+        },
+      })
 
-      if (
-        ipConfig.proxyCheckingEnabled &&
-        (ipInfo.isoCode === undefined ||
-          ipInfo.proxy === undefined ||
-          ipInfo.asn === undefined)
-      ) {
-        const ipFetcher = IpFetcher()
-        const ipFetcherInfo = await ipFetcher.fetchIPInfo(ip)
+      logger.error({ accountId, ip }, "impossible to get ip detail")
+      return ipFetcherInfo
+    }
 
-        if (ipFetcherInfo instanceof IpFetcherServiceError) {
-          recordExceptionInCurrentSpan({
-            error: ipFetcherInfo.message,
-            level: ErrorLevel.Warn,
-            attributes: {
-              ip,
-              accountId,
-            },
-          })
+    // deep copy
+    const ipFetcherInfoForOtel = JSON.parse(JSON.stringify(ipFetcherInfo))
 
-          logger.error({ accountId, ip }, "impossible to get ip detail")
-          return ipFetcherInfo
-        }
+    for (const key in ipFetcherInfoForOtel) {
+      ipFetcherInfoForOtel["proxycheck." + key] = ipFetcherInfoForOtel[key]
+      delete ipFetcherInfoForOtel[key]
+    }
 
-        // deep copy
-        const ipFetcherInfoForOtel = JSON.parse(JSON.stringify(ipFetcherInfo))
+    addAttributesToCurrentSpan(ipFetcherInfoForOtel)
 
-        for (const key in ipFetcherInfoForOtel) {
-          ipFetcherInfoForOtel["proxycheck." + key] = ipFetcherInfoForOtel[key]
-          delete ipFetcherInfoForOtel[key]
-        }
+    if (!ipFetcherInfo.isoCode || !ipFetcherInfo.proxy || !ipFetcherInfo.asn) {
+      const error = `missing mandatory fields. isoCode: ${ipFetcherInfo.isoCode}, proxy: ${ipFetcherInfo.proxy}, asn: ${ipFetcherInfo.asn}`
+      recordExceptionInCurrentSpan({
+        error,
+        level: ErrorLevel.Warn,
+        attributes: {
+          ip,
+          accountId,
+        },
+      })
+    } else {
+      // using Object.assign instead of ... because of conflict with mongoose hidden properties
+      ipInfo = Object.assign(ipInfo, ipFetcherInfo)
 
-        addAttributesToCurrentSpan(ipFetcherInfoForOtel)
+      // removing current ip from lastIPs - if it exists
+      accountIP.lastIPs = accountIP.lastIPs.filter((ipDb) => ipDb.ip !== ip)
 
-        if (
-          ipFetcherInfo.isoCode === undefined ||
-          ipFetcherInfo.proxy === undefined ||
-          ipFetcherInfo.asn === undefined
-        ) {
-          const error = `missing mandatory fields. isoCode: ${ipFetcherInfo.isoCode}, proxy: ${ipFetcherInfo.proxy}, asn: ${ipFetcherInfo.asn}`
-          recordExceptionInCurrentSpan({
-            error,
-            level: ErrorLevel.Warn,
-            attributes: {
-              ip,
-              accountId,
-            },
-          })
-        } else {
-          // using Object.assign instead of ... because of conflict with mongoose hidden properties
-          ipInfo = Object.assign(ipInfo, ipFetcherInfo)
+      // adding it back with the correct info
+      accountIP.lastIPs.push(ipInfo)
+    }
+  }
+  const result = await accountsIp.update(accountIP)
 
-          // removing current ip from lastIPs - if it exists
-          accountIP.lastIPs = accountIP.lastIPs.filter((ipDb) => ipDb.ip !== ip)
-
-          // adding it back with the correct info
-          accountIP.lastIPs.push(ipInfo)
-        }
-      }
-      const result = await accountsIp.update(accountIP)
-
-      if (result instanceof Error) {
-        logger.error({ result, accountId, ip }, "impossible to update ip")
-        return result
-      }
-    },
-  )
+  if (result instanceof Error) {
+    logger.error({ result, accountId, ip }, "impossible to update ip")
+    return result
+  }
+}

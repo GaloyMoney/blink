@@ -143,9 +143,9 @@ spamLimits:
   memoSharingSatsThreshold: 1000
   memoSharingCentsThreshold: 50
 ipRecording:
-  enabled: true
+  enabled: false
   proxyChecking:
-    enabled: true
+    enabled: false
 fees:
   withdraw:
     method: flat
