@@ -1,4 +1,5 @@
 import { DEFAULT_MAX_CONNECTION_LIMIT } from "@services/ledger/paginated-ledger"
+import { InputValidationError } from "@graphql/error"
 import { getNamedType, resolveObjMapThunk } from "graphql"
 import {
   ConnectionArguments,
@@ -158,15 +159,15 @@ export const checkedConnectionArgs = (
   // }
 
   if (args.first && args.first > DEFAULT_MAX_CONNECTION_LIMIT) {
-    return new Error(
-      `Requesting ${args.first} records on this connection exceeds the "first" limit of ${DEFAULT_MAX_CONNECTION_LIMIT} records.`,
-    )
+    return new InputValidationError({
+      message: `Requesting ${args.first} records on this connection exceeds the "first" limit of ${DEFAULT_MAX_CONNECTION_LIMIT} records.`,
+    })
   }
 
   if (args.last && args.last > DEFAULT_MAX_CONNECTION_LIMIT) {
-    return new Error(
-      `Requesting ${args.last} records on this connection exceeds the "last" limit of ${DEFAULT_MAX_CONNECTION_LIMIT} records.`,
-    )
+    return new InputValidationError({
+      message: `Requesting ${args.last} records on this connection exceeds the "last" limit of ${DEFAULT_MAX_CONNECTION_LIMIT} records.`,
+    })
   }
 
   return {
