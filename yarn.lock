@@ -3285,10 +3285,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.16.tgz#966cae211e970199559cfbd295888fca189e49af"
   integrity sha512-6T7P5bDkRhqRxrQtwj7vru+bWTpelgtcETAZEUSdq0YISKz8WKdoBukQLYQQ6DFHvU9JRsbFq0JH5C51X2ZdnA==
 
-"@types/node@18.11.13":
-  version "18.11.13"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.13.tgz#dff34f226ec1ac0432ae3b136ec5552bd3b9c0fe"
-  integrity sha512-IASpMGVcWpUsx5xBOrxMj7Bl8lqfuTY7FKAnPmu5cHkfQVWF8GulWS1jbRqA934qZL35xh5xN/+Xe/i26Bod4w==
+"@types/node@18.11.15":
+  version "18.11.15"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.15.tgz#de0e1fbd2b22b962d45971431e2ae696643d3f5d"
+  integrity sha512-VkhBbVo2+2oozlkdHXLrb3zjsRkpdnaU2bXmX8Wgle3PUi569eLRaHGlgETQHR7lLL1w7GiG3h9SnePhxNDecw==
 
 "@types/node@18.11.7":
   version "18.11.7"
@@ -4078,10 +4078,10 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-balanceofsatoshis@^13.10.6:
-  version "13.10.6"
-  resolved "https://registry.yarnpkg.com/balanceofsatoshis/-/balanceofsatoshis-13.10.6.tgz#091405a939a709ddc26bba1a4a5283f48882019c"
-  integrity sha512-97LB4JXY1zmehOcf2RmhYZ9VIt/pzfYQBMTauraow2ybhq8ViLX7ZX9WyAu3qd1Ty6pobMQYVZTzdHcPTAFARw==
+balanceofsatoshis@^13.10.7:
+  version "13.10.7"
+  resolved "https://registry.yarnpkg.com/balanceofsatoshis/-/balanceofsatoshis-13.10.7.tgz#7c6fd8dfbce3708b60e8b9ce19d86fae0a431c8e"
+  integrity sha512-pmdso9LB//jfUtTHjegJ81rNyMJPNp3gKCvIoff9W4MBB677iiT/XmkgOmtUXuFID2wMSC3QZ82HzQVIsndPxg==
   dependencies:
     "@alexbosworth/caporal" "1.4.4"
     "@alexbosworth/fiat" "1.0.3"
@@ -4109,7 +4109,7 @@ balanceofsatoshis@^13.10.6:
     ini "3.0.1"
     inquirer "9.1.4"
     ln-accounting "6.1.1"
-    ln-service "54.5.0"
+    ln-service "54.6.0"
     ln-sync "4.0.5"
     ln-telegram "4.3.1"
     moment "2.29.4"
@@ -8593,15 +8593,15 @@ lightning@6.3.1:
     tiny-secp256k1 "2.2.1"
     type-fest "3.2.0"
 
-lightning@6.5.0:
-  version "6.5.0"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.5.0.tgz#1c5a7f400b0cdce9bf67e567277d5caf532121f3"
-  integrity sha512-NLBkoiaPELMCuGSzgs0EtecniRCK2VcybIpGhmKKAVy98DzvFZxFNxbn56Fabs1jznlyWy71EDueeLXpCU4AEg==
+lightning@6.6.0:
+  version "6.6.0"
+  resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.6.0.tgz#30b6862fa09d3122b224a943fc886f13dcf7fab4"
+  integrity sha512-S+lUitqP/fbQWNYffor/74jKoyjbT/hZuzgHlCH/WH5bmoognl6BpcK7qAJ6Qw9hDQPnDXUB5CyfjJmmOCtOlw==
   dependencies:
     "@grpc/grpc-js" "1.8.0"
     "@grpc/proto-loader" "0.7.4"
-    "@types/express" "4.17.14"
-    "@types/node" "18.11.13"
+    "@types/express" "4.17.15"
+    "@types/node" "18.11.15"
     "@types/request" "2.48.8"
     "@types/ws" "8.5.3"
     async "3.2.4"
@@ -8617,7 +8617,7 @@ lightning@6.5.0:
     invoices "2.2.2"
     psbt "2.7.1"
     tiny-secp256k1 "2.2.1"
-    type-fest "3.3.0"
+    type-fest "3.4.0"
 
 lightning@6.8.0, lightning@^6.8.0:
   version "6.8.0"
@@ -8764,16 +8764,16 @@ ln-service@54.3.2:
     morgan "1.10.0"
     ws "8.11.0"
 
-ln-service@54.5.0:
-  version "54.5.0"
-  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-54.5.0.tgz#bcb6e510f1d131fb86f407d0e8c253135794a8af"
-  integrity sha512-lKpszDp6ZKUoWzGshwusXOhlqOXXGiMy3pNqlxB2nMCJ+EGEypSn+IHGlok9no1k1eftpFW6SiAt2Ti+aKkB6Q==
+ln-service@54.6.0:
+  version "54.6.0"
+  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-54.6.0.tgz#6c51eb8d08e88bc58ddeaa5d06a283e34cd001bd"
+  integrity sha512-kDbClE4eTNCaaipDkj2o0TsqZWv8TKyxgUXah4Bs3mM92lL1tqLHPAfSMdE/EFzA82tBLkvByXwNUL4xTqSGrA==
   dependencies:
     bolt07 "1.8.2"
     cors "2.8.5"
     express "4.18.2"
     invoices "2.2.2"
-    lightning "6.5.0"
+    lightning "6.6.0"
     macaroon "3.0.4"
     morgan "1.10.0"
     ws "8.11.0"
@@ -11951,11 +11951,6 @@ type-fest@3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.2.0.tgz#2c8b49e775d9e314a73ea6fcee0b2e8549d5f886"
   integrity sha512-Il3wdLRzWvbAEtocgxGQA9YOoRVeVUGOMBtel5LdEpNeEAol6GJTLw8GbX6Z8EIMfvfhoOXs2bwOijtAZdK5og==
-
-type-fest@3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.3.0.tgz#3378c9664eecfd1eb4f0522b13cb0630bc1ec044"
-  integrity sha512-gezeeOIZyQLGW5uuCeEnXF1aXmtt2afKspXz3YqoOcZ3l/YMJq1pujvgT+cz/Nw1O/7q/kSav5fihJHsC/AOUg==
 
 type-fest@3.4.0, type-fest@^3.0.0:
   version "3.4.0"
