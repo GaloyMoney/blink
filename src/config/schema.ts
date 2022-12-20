@@ -452,9 +452,9 @@ export const configSchema = {
       required: ["enabled"],
       additionalProperties: false,
       default: {
-        enabled: true,
+        enabled: false,
         proxyChecking: {
-          enabled: true,
+          enabled: false,
         },
       },
     },

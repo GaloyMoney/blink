@@ -264,9 +264,8 @@ export const getBuildVersions = (): {
 export const PROXY_CHECK_APIKEY = yamlConfig?.PROXY_CHECK_APIKEY
 
 export const getIpConfig = (config = yamlConfig): IpConfig => ({
-  ipRecordingEnabled:
-    process.env.NODE_ENV === "test" ? false : config.ipRecording?.enabled,
-  proxyCheckingEnabled: config.ipRecording?.proxyChecking?.enabled,
+  ipRecordingEnabled: config.ipRecording.enabled,
+  proxyCheckingEnabled: config.ipRecording.proxyChecking.enabled,
 })
 
 export const getApolloConfig = (config = yamlConfig): ApolloConfig => config.apollo

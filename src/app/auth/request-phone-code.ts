@@ -1,5 +1,6 @@
-import { getTestAccounts } from "@config"
+import { getTestAccounts, getTwilioConfig } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
+import { NotImplementedError } from "@domain/errors"
 import { RateLimitConfig } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { consumeLimiter } from "@services/rate-limit"
@@ -67,6 +68,10 @@ export const requestPhoneCode = async ({
   const testAccounts = getTestAccounts()
   if (TestAccountsChecker(testAccounts).isPhoneValid(phone)) {
     return true
+  }
+
+  if (getTwilioConfig().accountSid === "AC_twilio_id") {
+    return new NotImplementedError("use test account for local dev and tests")
   }
 
   return TwilioClient().initiateVerify(phone)
