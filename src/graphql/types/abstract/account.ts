@@ -1,7 +1,7 @@
 import { GT } from "@graphql/index"
 import { connectionArgs } from "@graphql/connections"
 
-import AccountLimitCategories from "@graphql/types/object/account-limit-categories"
+import AccountLimits from "@graphql/types/object/account-limits"
 import { TransactionConnection } from "@graphql/types/object/transaction"
 import WalletId from "@graphql/types/scalar/wallet-id"
 
@@ -28,7 +28,7 @@ const IAccount = GT.Interface({
       },
     },
     limits: {
-      type: GT.NonNull(AccountLimitCategories),
+      type: GT.NonNull(AccountLimits),
     },
     transactions: {
       type: TransactionConnection,

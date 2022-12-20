@@ -2,7 +2,7 @@ interface Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
-  limits: AccountLimitCategories!
+  limits: AccountLimits!
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -28,28 +28,33 @@ interface Account {
   wallets: [Wallet!]!
 }
 
-type AccountLimitCategories {
+interface AccountLimit {
   """
-  Limits calculated on a rolling basis for the given time interval.
+  The amount of cents remaining below the limit for the current 24 hour period.
   """
-  rolling: [AccountLimitsRolling!]!
+  remainingLimit: CentAmount
+
+  """
+  The current maximum limit for a given 24 hour period.
+  """
+  totalLimit: CentAmount!
 }
 
-type AccountLimitsRolling {
+type AccountLimits {
   """
   Limits for converting between currencies among a account's own wallets.
   """
-  convert: [RollingAccountLimit!]!
+  convert: [AccountLimit!]!
 
   """
   Limits for sending to other internal accounts.
   """
-  internalSend: [RollingAccountLimit!]!
+  internalSend: [AccountLimit!]!
 
   """
   Limits for withdrawing to external onchain or lightning destinations.
   """
-  withdrawal: [RollingAccountLimit!]!
+  withdrawal: [AccountLimit!]!
 }
 
 input AccountUpdateDefaultWalletIdInput {
@@ -183,7 +188,7 @@ type ConsumerAccount implements Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
-  limits: AccountLimitCategories!
+  limits: AccountLimits!
 
   """
   A list of all transactions associated with walletIds optionally passed.
@@ -767,12 +772,7 @@ type OnChainUpdate {
   walletId: WalletId!
 }
 
-type OneDayAccountLimitRolling implements RollingAccountLimit {
-  """
-  The rolling time interval value in seconds for the current 24 hour period.
-  """
-  interval: Seconds
-
+type OneDayAccountLimit implements AccountLimit {
   """
   The amount of cents remaining below the limit for the current 24 hour period.
   """
@@ -913,23 +913,6 @@ type QuizQuestion {
   id: ID!
 }
 
-interface RollingAccountLimit {
-  """
-  The rolling time interval in seconds that the limits would apply for.
-  """
-  interval: Seconds
-
-  """
-  The amount of cents remaining below the limit for the current time interval.
-  """
-  remainingLimit: CentAmount
-
-  """
-  The current maximum limit for a given time interval.
-  """
-  totalLimit: CentAmount!
-}
-
 """
 Non-fractional signed whole numeric value between -(2^53) + 1 and 2^53 - 1
 """
@@ -944,11 +927,6 @@ type SatAmountPayload {
   amount: SatAmount
   errors: [Error!]!
 }
-
-"""
-(Positive) amount of seconds
-"""
-scalar Seconds
 
 union SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain
 

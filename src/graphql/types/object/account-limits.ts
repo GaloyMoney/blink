@@ -1,13 +1,13 @@
 import { AccountLimitsRange, AccountLimitsType } from "@domain/accounts"
 import { GT } from "@graphql/index"
 
-import RollingAccountLimit from "@graphql/types/abstract/rolling-account-limit"
+import AccountLimit from "@graphql/types/abstract/account-limit"
 
-const AccountLimitsRolling = GT.Object({
-  name: "AccountLimitsRolling",
+const AccountLimits = GT.Object({
+  name: "AccountLimits",
   fields: () => ({
     withdrawal: {
-      type: GT.NonNullList(RollingAccountLimit),
+      type: GT.NonNullList(AccountLimit),
       description: `Limits for withdrawing to external onchain or lightning destinations.`,
       resolve: (source: Account) => {
         const commonProperties = {
@@ -22,7 +22,7 @@ const AccountLimitsRolling = GT.Object({
       },
     },
     internalSend: {
-      type: GT.NonNullList(RollingAccountLimit),
+      type: GT.NonNullList(AccountLimit),
       description: `Limits for sending to other internal accounts.`,
       resolve: (source: Account) => {
         const commonProperties = {
@@ -37,7 +37,7 @@ const AccountLimitsRolling = GT.Object({
       },
     },
     convert: {
-      type: GT.NonNullList(RollingAccountLimit),
+      type: GT.NonNullList(AccountLimit),
       description: `Limits for converting between currencies among a account's own wallets.`,
       resolve: (source: Account) => {
         const commonProperties = {
@@ -54,4 +54,4 @@ const AccountLimitsRolling = GT.Object({
   }),
 })
 
-export default AccountLimitsRolling
+export default AccountLimits
