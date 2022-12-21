@@ -19,7 +19,7 @@ import { AccountLimitsType } from "./primitives"
 
 const calc = AmountCalculator()
 
-const checkLimitBase =
+const checkLimit =
   ({
     level,
     limitType,
@@ -99,17 +99,17 @@ export const AccountLimitsChecker = ({
   level: AccountLevel
   priceRatio: PriceRatio
 }): AccountLimitsChecker => ({
-  checkIntraledger: checkLimitBase({
+  checkIntraledger: checkLimit({
     level,
     limitType: AccountLimitsType.IntraLedger,
     priceRatio,
   }),
-  checkWithdrawal: checkLimitBase({
+  checkWithdrawal: checkLimit({
     level,
     limitType: AccountLimitsType.Withdrawal,
     priceRatio,
   }),
-  checkTradeIntraAccount: checkLimitBase({
+  checkTradeIntraAccount: checkLimit({
     level,
     limitType: AccountLimitsType.SelfTrade,
     priceRatio,
@@ -123,7 +123,7 @@ export const TwoFALimitsChecker = ({
   level: AccountLevel
   priceRatio: PriceRatio
 }): TwoFALimitsChecker => ({
-  checkTwoFA: checkLimitBase({
+  checkTwoFA: checkLimit({
     level,
     limitType: AccountLimitsType.TwoFA,
     priceRatio,
