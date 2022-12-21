@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto"
+import { randomUUID, randomBytes } from "crypto"
 
 import { gqlAdminSchema } from "@graphql/admin"
 import { ExecutionResult, graphql, Source } from "graphql"
@@ -17,9 +17,10 @@ export * from "./state-setup-e2e"
 export * from "./user"
 export * from "./wallet"
 
-export const randomEmail = () => (Math.random().toString(36) + "@galoy.io") as KratosEmail
+export const randomEmail = () =>
+  (randomBytes(20).toString("hex") + "@galoy.io") as EmailAddress
 
-export const randomPassword = () => Math.random().toString(36) as IdentityPassword
+export const randomPassword = () => randomBytes(20).toString("hex") as IdentityPassword
 
 export const randomPhone = () =>
   `+1415${Math.floor(Math.random() * 900000 + 100000)}` as PhoneNumber

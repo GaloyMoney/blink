@@ -12,8 +12,6 @@ type KratosError = import("./errors").KratosError
 
 type IdentitySchemaContainer = import("@ory/client").IdentitySchemaContainer
 
-type KratosEmail = string & { readonly brand: unique symbol }
-
 type ValidateKratosTokenResult = {
   kratosUserId: UserId
   session: Session
