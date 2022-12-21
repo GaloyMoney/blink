@@ -6,6 +6,8 @@ import {
 } from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
+import { AccountLimitsType } from "./primitives"
+
 const calc = AmountCalculator()
 
 export const calculateLimitsInUsd = async ({
@@ -15,13 +17,7 @@ export const calculateLimitsInUsd = async ({
 
   walletVolumes,
 }: {
-  limitName:
-    | "checkIntraledger"
-    | "checkWithdrawal"
-    | "checkTradeIntraAccount"
-    | "volumesIntraledger"
-    | "volumesWithdrawal"
-    | "volumesTradeIntraAccount"
+  limitName: AccountLimitsType
   limitAmount: UsdPaymentAmount
   priceRatio: PriceRatio
   walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
@@ -61,7 +57,7 @@ const volumesForLimit =
     limitAmount,
     priceRatio,
   }: {
-    limitName: "volumesIntraledger" | "volumesWithdrawal" | "volumesTradeIntraAccount"
+    limitName: AccountLimitsType
     limitAmount: UsdPaymentAmount
     priceRatio: PriceRatio
   }) =>
@@ -94,17 +90,17 @@ export const AccountLimitsVolumes = ({
 
   return {
     volumesIntraledger: volumesForLimit({
-      limitName: "volumesIntraledger",
+      limitName: AccountLimitsType.IntraLedger,
       limitAmount: accountLimitAmounts.intraLedgerLimit,
       priceRatio,
     }),
     volumesWithdrawal: volumesForLimit({
-      limitName: "volumesWithdrawal",
+      limitName: AccountLimitsType.Withdrawal,
       limitAmount: accountLimitAmounts.withdrawalLimit,
       priceRatio,
     }),
     volumesTradeIntraAccount: volumesForLimit({
-      limitName: "volumesTradeIntraAccount",
+      limitName: AccountLimitsType.SelfTrade,
       limitAmount: accountLimitAmounts.tradeIntraAccountLimit,
       priceRatio,
     }),

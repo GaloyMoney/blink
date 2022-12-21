@@ -12,6 +12,7 @@ import {
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { calculateLimitsInUsd } from "./limits-volume"
+import { AccountLimitsType } from "./primitives"
 
 const calc = AmountCalculator()
 
@@ -23,7 +24,7 @@ const checkLimit =
     limitErrMsg,
     priceRatio,
   }: {
-    limitName: "checkIntraledger" | "checkWithdrawal" | "checkTradeIntraAccount"
+    limitName: AccountLimitsType
     limitAmount: UsdCents
     limitError: LimitsExceededErrorConstructor
     limitErrMsg: string | undefined
@@ -73,21 +74,21 @@ export const AccountLimitsChecker = ({
   priceRatio: PriceRatio
 }): AccountLimitsChecker => ({
   checkIntraledger: checkLimit({
-    limitName: "checkIntraledger",
+    limitName: AccountLimitsType.IntraLedger,
     limitAmount: accountLimits.intraLedgerLimit,
     limitError: IntraledgerLimitsExceededError,
     limitErrMsg: `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`,
     priceRatio,
   }),
   checkWithdrawal: checkLimit({
-    limitName: "checkWithdrawal",
+    limitName: AccountLimitsType.Withdrawal,
     limitAmount: accountLimits.withdrawalLimit,
     limitError: WithdrawalLimitsExceededError,
     limitErrMsg: `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`,
     priceRatio,
   }),
   checkTradeIntraAccount: checkLimit({
-    limitName: "checkTradeIntraAccount",
+    limitName: AccountLimitsType.SelfTrade,
     limitAmount: accountLimits.tradeIntraAccountLimit,
     limitError: TradeIntraAccountLimitsExceededError,
     limitErrMsg: `Cannot transfer more than ${accountLimits.tradeIntraAccountLimit} cents in 24 hours`,
