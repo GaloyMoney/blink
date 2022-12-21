@@ -1,7 +1,6 @@
 import {
   IntraledgerLimitsExceededError,
   TradeIntraAccountLimitsExceededError,
-  TwoFALimitsExceededError,
   WithdrawalLimitsExceededError,
 } from "@domain/errors"
 import {
@@ -24,11 +23,7 @@ const checkLimitBase =
     limitErrMsg,
     priceRatio,
   }: {
-    limitName:
-      | "checkIntraledger"
-      | "checkWithdrawal"
-      | "checkTradeIntraAccount"
-      | "checkTwoFA"
+    limitName: "checkIntraledger" | "checkWithdrawal" | "checkTradeIntraAccount"
     limitAmount: UsdCents
     limitError: LimitsExceededErrorConstructor
     limitErrMsg: string | undefined
@@ -96,22 +91,6 @@ export const AccountLimitsChecker = ({
     limitAmount: accountLimits.tradeIntraAccountLimit,
     limitError: TradeIntraAccountLimitsExceededError,
     limitErrMsg: `Cannot transfer more than ${accountLimits.tradeIntraAccountLimit} cents in 24 hours`,
-    priceRatio,
-  }),
-})
-
-export const TwoFALimitsChecker = ({
-  twoFALimits,
-  priceRatio,
-}: {
-  twoFALimits: TwoFALimits
-  priceRatio: PriceRatio
-}): TwoFALimitsChecker => ({
-  checkTwoFA: checkLimitBase({
-    limitName: "checkTwoFA",
-    limitAmount: twoFALimits.threshold,
-    limitError: TwoFALimitsExceededError,
-    limitErrMsg: undefined,
     priceRatio,
   }),
 })

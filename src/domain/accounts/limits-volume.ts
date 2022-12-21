@@ -19,11 +19,9 @@ export const calculateLimitsInUsd = async ({
     | "checkIntraledger"
     | "checkWithdrawal"
     | "checkTradeIntraAccount"
-    | "checkTwoFA"
     | "volumesIntraledger"
     | "volumesWithdrawal"
     | "volumesTradeIntraAccount"
-    | "volumesTwoFA"
   limitAmount: UsdPaymentAmount
   priceRatio: PriceRatio
   walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
@@ -63,11 +61,7 @@ const volumesForLimit =
     limitAmount,
     priceRatio,
   }: {
-    limitName:
-      | "volumesIntraledger"
-      | "volumesWithdrawal"
-      | "volumesTradeIntraAccount"
-      | "volumesTwoFA"
+    limitName: "volumesIntraledger" | "volumesWithdrawal" | "volumesTradeIntraAccount"
     limitAmount: UsdPaymentAmount
     priceRatio: PriceRatio
   }) =>
@@ -112,33 +106,6 @@ export const AccountLimitsVolumes = ({
     volumesTradeIntraAccount: volumesForLimit({
       limitName: "volumesTradeIntraAccount",
       limitAmount: accountLimitAmounts.tradeIntraAccountLimit,
-      priceRatio,
-    }),
-  }
-}
-
-export const TwoFALimitsVolumes = ({
-  twoFALimits,
-  priceRatio,
-}: {
-  twoFALimits: TwoFALimits
-  priceRatio: PriceRatio
-}): TwoFALimitsVolumes => {
-  const twoFALimitAmounts = {} as TwoFALimitAmounts
-  for (const rawKey of Object.keys(twoFALimits)) {
-    const key = rawKey as keyof TwoFALimits
-    const limitAmount = paymentAmountFromNumber({
-      amount: twoFALimits[key],
-      currency: WalletCurrency.Usd,
-    })
-    if (limitAmount instanceof Error) return limitAmount
-    twoFALimitAmounts[key] = limitAmount
-  }
-
-  return {
-    volumesTwoFA: volumesForLimit({
-      limitName: "volumesTwoFA",
-      limitAmount: twoFALimitAmounts.threshold,
       priceRatio,
     }),
   }

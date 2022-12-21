@@ -140,16 +140,6 @@ type AccountLimitsVolumes =
     }
   | ValidationError
 
-type TwoFALimitsChecker = {
-  checkTwoFA: LimitsCheckerFn
-}
-
-type TwoFALimitsVolumes =
-  | {
-      volumesTwoFA: LimitsVolumesFn
-    }
-  | ValidationError
-
 type AccountValidator = {
   validateWalletForAccount(wallet: Wallet): true | ValidationError
 }
@@ -183,12 +173,6 @@ type TestAccountsChecker = (testAccounts: TestAccount[]) => {
     phone: PhoneNumber
   }) => boolean
 }
-
-type TwoFALimits = {
-  threshold: UsdCents
-}
-
-type TwoFALimitAmounts = { [key in keyof TwoFALimits]: UsdPaymentAmount }
 
 type FeesConfig = {
   depositFeeVariable: number
