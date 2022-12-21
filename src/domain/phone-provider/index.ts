@@ -5,3 +5,8 @@ export const CarrierType = {
   Void: "voip",
   Mobile: "mobile",
 } as const
+
+export const ChannelType = {
+  sms: "sms",
+  whatsapp: "whatsapp",
+} as const

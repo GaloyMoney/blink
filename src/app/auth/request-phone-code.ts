@@ -14,6 +14,7 @@ export const requestPhoneCodeWithCaptcha = async ({
   geetestSeccode,
   logger,
   ip,
+  channel,
 }: {
   phone: PhoneNumber
   geetest: GeetestType
@@ -22,6 +23,7 @@ export const requestPhoneCodeWithCaptcha = async ({
   geetestSeccode: string
   logger: Logger
   ip: IpAddress
+  channel: ChannelType
 }): Promise<true | ApplicationError> => {
   logger.info({ phone, ip }, "RequestPhoneCodeGeetest called")
 
@@ -36,6 +38,7 @@ export const requestPhoneCodeWithCaptcha = async ({
     phone,
     logger,
     ip,
+    channel,
   })
 }
 
@@ -43,10 +46,12 @@ export const requestPhoneCode = async ({
   phone,
   logger,
   ip,
+  channel,
 }: {
   phone: PhoneNumber
   logger: Logger
   ip: IpAddress
+  channel: ChannelType
 }): Promise<true | PhoneProviderServiceError> => {
   logger.info({ phone, ip }, "RequestPhoneCode called")
 
@@ -74,7 +79,7 @@ export const requestPhoneCode = async ({
     return new NotImplementedError("use test account for local dev and tests")
   }
 
-  return TwilioClient().initiateVerify(phone)
+  return TwilioClient().initiateVerify({ to: phone, channel })
 }
 
 const checkPhoneCodeAttemptPerIpLimits = async (

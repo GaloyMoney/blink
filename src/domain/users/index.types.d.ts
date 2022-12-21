@@ -11,6 +11,9 @@ type DeviceToken = string & { readonly brand: unique symbol }
 type CarrierType =
   typeof import("../phone-provider/index").CarrierType[keyof typeof import("../phone-provider/index").CarrierType]
 
+type ChannelType =
+  typeof import("../phone-provider/index").ChannelType[keyof typeof import("../phone-provider/index").ChannelType]
+
 type PhoneMetadata = {
   // from twilio
   carrier: {
