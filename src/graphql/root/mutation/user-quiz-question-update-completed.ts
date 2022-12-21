@@ -11,7 +11,11 @@ const UserQuizQuestionUpdateCompletedInput = GT.Input({
   }),
 })
 
-const UserQuizQuestionUpdateCompletedMutation = GT.Field({
+const UserQuizQuestionUpdateCompletedMutation = GT.Field<
+  { input: { id: string } },
+  null,
+  GraphQLContextAuth
+>({
   extensions: {
     complexity: 120,
   },
@@ -19,12 +23,13 @@ const UserQuizQuestionUpdateCompletedMutation = GT.Field({
   args: {
     input: { type: GT.NonNull(UserQuizQuestionUpdateCompletedInput) },
   },
-  resolve: async (_, args, { domainAccount }: { domainAccount: Account }) => {
+  resolve: async (_, args, { domainAccount, ip }) => {
     const { id } = args.input
 
     const question = await Accounts.addEarn({
       quizQuestionId: id,
       accountId: domainAccount.id,
+      ip,
     })
     if (question instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(question)] }

@@ -19,13 +19,18 @@ import {
 import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
 
 export const addEarn = async ({
-  quizQuestionId,
+  quizQuestionId: quizQuestionIdString,
   accountId,
+  ip,
 }: {
-  quizQuestionId: QuizQuestionId
+  quizQuestionId: string
   accountId: AccountId /* AccountId: aid validation */
+  ip: IpAddress
 }): Promise<QuizQuestion | ApplicationError> => {
   const rewardsConfig = getRewardsConfig()
+
+  // TODO: quizQuestionId checkedFor
+  const quizQuestionId = quizQuestionIdString as QuizQuestionId
 
   const amount = onboardingEarn[quizQuestionId]
   if (!amount) return new InvalidQuizQuestionIdError()
@@ -49,12 +54,12 @@ export const addEarn = async ({
   if (validatedPhoneMetadata instanceof Error)
     return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
 
-  const accountsIp = await AccountsIpRepository().findById(recipientAccount.id)
-  if (accountsIp instanceof Error) return accountsIp
+  const accountIP = await AccountsIpRepository().findById(recipientAccount.id)
+  if (accountIP instanceof Error) return accountIP
 
-  const lastIPs = accountsIp.lastIPs
-  const lastIp = lastIPs.length > 0 ? lastIPs[lastIPs.length - 1] : undefined
-  const validatedIPMetadata = IPMetadataValidator(rewardsConfig).validateForReward(lastIp)
+  const ipFromDb = accountIP.lastIPs.find((ipObject) => ipObject.ip === ip)
+  const validatedIPMetadata =
+    IPMetadataValidator(rewardsConfig).validateForReward(ipFromDb)
   if (validatedIPMetadata instanceof Error) {
     return new InvalidIPMetadataForRewardError(validatedIPMetadata.name)
   }
