@@ -41,6 +41,12 @@ jest.mock("@config", () => {
   return config
 })
 
+jest.mock("@domain/accounts-ips/ip-metadata-validator", () => ({
+  IPMetadataValidator: () => ({
+    validateForReward: () => true,
+  }),
+}))
+
 beforeAll(async () => {
   await createUserAndWalletFromUserRef("B")
 
@@ -68,6 +74,7 @@ describe("UserWallet - addEarn", () => {
         Accounts.addEarn({
           quizQuestionId: onBoardingEarnId as QuizQuestionId,
           accountId: accountIdB,
+          ip: "ipaddress" as IpAddress,
         }),
       )
       await Promise.all(promises)
