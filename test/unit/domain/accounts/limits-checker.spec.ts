@@ -36,7 +36,7 @@ beforeAll(async () => {
   }
 
   limitsChecker = AccountLimitsChecker({
-    accountLimits,
+    level,
     priceRatio,
   })
 

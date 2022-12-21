@@ -1,6 +1,5 @@
 import { btcFromUsdMidPriceFn, usdFromBtcMidPriceFn } from "@app/shared"
 import {
-  getAccountLimits,
   getPubkeysToSkipProbe,
   MIN_SATS_FOR_PRICE_RATIO_PRECISION,
   ONE_DAY,
@@ -166,29 +165,6 @@ export const volumesForAccountId = async ({
   return walletVolumes
 }
 
-const volumesAndLimitsForAccountId = async ({
-  accountId,
-  volumeAmountSinceFn,
-}: {
-  accountId: AccountId
-  volumeAmountSinceFn: GetVolumeAmountSinceFn
-}) => {
-  const account = await AccountsRepository().findById(accountId)
-  if (account instanceof Error) return account
-
-  const walletVolumes = await volumesForAccountId({
-    accountId,
-    period: ONE_DAY,
-    volumeAmountSinceFn,
-  })
-  if (walletVolumes instanceof Error) return walletVolumes
-
-  return {
-    accountLimits: getAccountLimits({ level: account.level }),
-    walletVolumes,
-  }
-}
-
 export const newCheckIntraledgerLimits = async ({
   amount,
   accountId,
@@ -198,15 +174,18 @@ export const newCheckIntraledgerLimits = async ({
   accountId: AccountId
   priceRatio: PriceRatio
 }) => {
-  const volumesAndLimits = await volumesAndLimitsForAccountId({
+  const walletVolumes = await volumesForAccountId({
     accountId,
+    period: ONE_DAY,
     volumeAmountSinceFn: ledger.intraledgerTxBaseVolumeAmountSince,
   })
-  if (volumesAndLimits instanceof Error) return volumesAndLimits
-  const { walletVolumes, accountLimits } = volumesAndLimits
+  if (walletVolumes instanceof Error) return walletVolumes
+
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof Error) return account
 
   return AccountLimitsChecker({
-    accountLimits,
+    level: account.level,
     priceRatio,
   }).checkIntraledger({
     amount,
@@ -223,15 +202,18 @@ export const newCheckTradeIntraAccountLimits = async ({
   accountId: AccountId
   priceRatio: PriceRatio
 }) => {
-  const volumesAndLimits = await volumesAndLimitsForAccountId({
+  const walletVolumes = await volumesForAccountId({
     accountId,
+    period: ONE_DAY,
     volumeAmountSinceFn: ledger.tradeIntraAccountTxBaseVolumeAmountSince,
   })
-  if (volumesAndLimits instanceof Error) return volumesAndLimits
-  const { walletVolumes, accountLimits } = volumesAndLimits
+  if (walletVolumes instanceof Error) return walletVolumes
+
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof Error) return account
 
   return AccountLimitsChecker({
-    accountLimits,
+    level: account.level,
     priceRatio,
   }).checkTradeIntraAccount({
     amount,
@@ -248,15 +230,18 @@ export const newCheckWithdrawalLimits = async ({
   accountId: AccountId
   priceRatio: PriceRatio
 }) => {
-  const volumesAndLimits = await volumesAndLimitsForAccountId({
+  const walletVolumes = await volumesForAccountId({
     accountId,
+    period: ONE_DAY,
     volumeAmountSinceFn: ledger.externalPaymentVolumeAmountSince,
   })
-  if (volumesAndLimits instanceof Error) return volumesAndLimits
-  const { walletVolumes, accountLimits } = volumesAndLimits
+  if (walletVolumes instanceof Error) return walletVolumes
+
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof Error) return account
 
   return AccountLimitsChecker({
-    accountLimits,
+    level: account.level,
     priceRatio,
   }).checkWithdrawal({
     amount,

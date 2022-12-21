@@ -1,5 +1,6 @@
 import {
   IntraledgerLimitsExceededError,
+  InvalidAccountLimitTypeError,
   TradeIntraAccountLimitsExceededError,
   TwoFALimitsExceededError,
   WithdrawalLimitsExceededError,
@@ -12,26 +13,19 @@ import {
 } from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
-import { calculateLimitsInUsd } from "./limits-volume"
+import { calculateLimitsInUsd, getAccountLimitsFromConfig } from "./limits-volume"
+import { AccountLimitsType } from "./primitives"
 
 const calc = AmountCalculator()
 
 const checkLimitBase =
   ({
-    limitName,
-    limitAmount: limit,
-    limitError,
-    limitErrMsg,
+    level,
+    limitType,
     priceRatio,
   }: {
-    limitName:
-      | "checkIntraledger"
-      | "checkWithdrawal"
-      | "checkTradeIntraAccount"
-      | "checkTwoFA"
-    limitAmount: UsdCents
-    limitError: LimitsExceededErrorConstructor
-    limitErrMsg: string | undefined
+    level: AccountLevel
+    limitType: AccountLimitsType
     priceRatio: PriceRatio
   }) =>
   async ({
@@ -50,6 +44,9 @@ const checkLimitBase =
       volumeInUsdAmount = calc.add(volumeInUsdAmount, outgoingUsdAmount)
     }
 
+    const limit = await getAccountLimitsFromConfig({ level, limitType })
+    if (limit instanceof Error) return limit
+
     const limitAmount = paymentAmountFromNumber({
       amount: limit,
       currency: WalletCurrency.Usd,
@@ -61,57 +58,69 @@ const checkLimitBase =
     })
 
     const { volumeRemaining } = await calculateLimitsInUsd({
-      limitName,
       limitAmount,
       priceRatio,
 
       walletVolumes,
     })
+
+    let limitError: LimitsExceededErrorConstructor
+    switch (limitType) {
+      case AccountLimitsType.IntraLedger:
+        limitError = IntraledgerLimitsExceededError
+        break
+      case AccountLimitsType.Withdrawal:
+        limitError = WithdrawalLimitsExceededError
+        break
+      case AccountLimitsType.SelfTrade:
+        limitError = TradeIntraAccountLimitsExceededError
+        break
+      case AccountLimitsType.TwoFA:
+        limitError = TwoFALimitsExceededError
+        break
+      default:
+        return new InvalidAccountLimitTypeError(limitType)
+    }
+
+    const limitErrMsg = `Cannot transfer more than ${limit} cents in 24 hours`
+
     return volumeRemaining.amount < amount.amount ? new limitError(limitErrMsg) : true
   }
 
 export const AccountLimitsChecker = ({
-  accountLimits,
+  level,
   priceRatio,
 }: {
-  accountLimits: IAccountLimits
+  level: AccountLevel
   priceRatio: PriceRatio
 }): AccountLimitsChecker => ({
   checkIntraledger: checkLimitBase({
-    limitName: "checkIntraledger",
-    limitAmount: accountLimits.intraLedgerLimit,
-    limitError: IntraledgerLimitsExceededError,
-    limitErrMsg: `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`,
+    level,
+    limitType: AccountLimitsType.IntraLedger,
     priceRatio,
   }),
   checkWithdrawal: checkLimitBase({
-    limitName: "checkWithdrawal",
-    limitAmount: accountLimits.withdrawalLimit,
-    limitError: WithdrawalLimitsExceededError,
-    limitErrMsg: `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`,
+    level,
+    limitType: AccountLimitsType.Withdrawal,
     priceRatio,
   }),
   checkTradeIntraAccount: checkLimitBase({
-    limitName: "checkTradeIntraAccount",
-    limitAmount: accountLimits.tradeIntraAccountLimit,
-    limitError: TradeIntraAccountLimitsExceededError,
-    limitErrMsg: `Cannot transfer more than ${accountLimits.tradeIntraAccountLimit} cents in 24 hours`,
+    level,
+    limitType: AccountLimitsType.SelfTrade,
     priceRatio,
   }),
 })
 
 export const TwoFALimitsChecker = ({
-  twoFALimits,
+  level,
   priceRatio,
 }: {
-  twoFALimits: TwoFALimits
+  level: AccountLevel
   priceRatio: PriceRatio
 }): TwoFALimitsChecker => ({
   checkTwoFA: checkLimitBase({
-    limitName: "checkTwoFA",
-    limitAmount: twoFALimits.threshold,
-    limitError: TwoFALimitsExceededError,
-    limitErrMsg: undefined,
+    level,
+    limitType: AccountLimitsType.TwoFA,
     priceRatio,
   }),
 })

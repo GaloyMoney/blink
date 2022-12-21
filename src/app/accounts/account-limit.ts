@@ -1,8 +1,7 @@
 import { volumesForAccountId } from "@app/payments/helpers"
 import { getMidPriceRatio } from "@app/shared"
-import { getAccountLimits, getDealerConfig, ONE_DAY } from "@config"
-import { AccountLimitsType } from "@domain/accounts"
-import { AccountLimitsVolumes } from "@domain/accounts/limits-volume"
+import { getDealerConfig, ONE_DAY } from "@config"
+import { AccountLimitsType, AccountLimitsVolumes } from "@domain/accounts"
 import { InvalidAccountLimitTypeError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 
@@ -25,9 +24,7 @@ export const accountLimit = async ({
   const priceRatio = await getMidPriceRatio(usdHedgeEnabled)
   if (priceRatio instanceof Error) return priceRatio
 
-  const accountLimits = getAccountLimits({ level: account.level })
-
-  const accountVolumes = AccountLimitsVolumes({ accountLimits, priceRatio })
+  const accountVolumes = AccountLimitsVolumes({ level: account.level, priceRatio })
   if (accountVolumes instanceof Error) return accountVolumes
 
   const ledger = LedgerService()
@@ -59,24 +56,4 @@ export const accountLimit = async ({
   if (walletVolumes instanceof Error) return walletVolumes
 
   return limitsVolumeFn(walletVolumes)
-}
-
-export const getAccountLimitsFromConfig = async ({
-  level,
-  limitType,
-}: {
-  level: AccountLevel
-  limitType: AccountLimitsType
-}) => {
-  const config = getAccountLimits({ level })
-  switch (limitType) {
-    case AccountLimitsType.IntraLedger:
-      return config.intraLedgerLimit
-    case AccountLimitsType.Withdrawal:
-      return config.withdrawalLimit
-    case AccountLimitsType.SelfTrade:
-      return config.tradeIntraAccountLimit
-    default:
-      return new InvalidAccountLimitTypeError(limitType)
-  }
 }

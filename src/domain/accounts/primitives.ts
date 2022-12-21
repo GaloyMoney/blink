@@ -18,4 +18,5 @@ export const AccountLimitsType = {
   Withdrawal: "Withdrawal",
   IntraLedger: "IntraLedger",
   SelfTrade: "TradeIntraAccount",
+  TwoFA: "TwoFA",
 } as const

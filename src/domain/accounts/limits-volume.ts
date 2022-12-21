@@ -1,3 +1,5 @@
+import { getAccountLimits } from "@config"
+import { InvalidAccountLimitTypeError } from "@domain/errors"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
@@ -6,24 +8,36 @@ import {
 } from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
+import { AccountLimitsType } from "./primitives"
+
 const calc = AmountCalculator()
 
+export const getAccountLimitsFromConfig = async ({
+  level,
+  limitType,
+}: {
+  level: AccountLevel
+  limitType: AccountLimitsType
+}) => {
+  const config = getAccountLimits({ level })
+  switch (limitType) {
+    case AccountLimitsType.IntraLedger:
+      return config.intraLedgerLimit
+    case AccountLimitsType.Withdrawal:
+      return config.withdrawalLimit
+    case AccountLimitsType.SelfTrade:
+      return config.tradeIntraAccountLimit
+    default:
+      return new InvalidAccountLimitTypeError(limitType)
+  }
+}
+
 export const calculateLimitsInUsd = async ({
-  limitName,
   limitAmount,
   priceRatio,
 
   walletVolumes,
 }: {
-  limitName:
-    | "checkIntraledger"
-    | "checkWithdrawal"
-    | "checkTradeIntraAccount"
-    | "checkTwoFA"
-    | "volumesIntraledger"
-    | "volumesWithdrawal"
-    | "volumesTradeIntraAccount"
-    | "volumesTwoFA"
   limitAmount: UsdPaymentAmount
   priceRatio: PriceRatio
   walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
@@ -47,7 +61,6 @@ export const calculateLimitsInUsd = async ({
   addAttributesToCurrentSpan({
     "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
     "txVolume.threshold": `${limitAmount.amount}`,
-    "txVolume.limitCheck": limitName,
   })
 
   return {
@@ -59,87 +72,70 @@ export const calculateLimitsInUsd = async ({
 
 const volumesForLimit =
   ({
-    limitName,
-    limitAmount,
+    level,
+    limitType,
     priceRatio,
   }: {
-    limitName:
-      | "volumesIntraledger"
-      | "volumesWithdrawal"
-      | "volumesTradeIntraAccount"
-      | "volumesTwoFA"
-    limitAmount: UsdPaymentAmount
+    level: AccountLevel
+    limitType: AccountLimitsType
     priceRatio: PriceRatio
   }) =>
-  async (walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]) =>
-    calculateLimitsInUsd({
-      limitName,
+  async (walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]) => {
+    addAttributesToCurrentSpan({
+      "txVolume.limitCheck": limitType,
+    })
+
+    const limit = await getAccountLimitsFromConfig({ level, limitType })
+    if (limit instanceof Error) return limit
+
+    const limitAmount = paymentAmountFromNumber({
+      amount: limit,
+      currency: WalletCurrency.Usd,
+    })
+    if (limitAmount instanceof Error) return limitAmount
+
+    return calculateLimitsInUsd({
       limitAmount,
       priceRatio,
 
       walletVolumes,
     })
+  }
 
 export const AccountLimitsVolumes = ({
-  accountLimits,
+  level,
   priceRatio,
 }: {
-  accountLimits: IAccountLimits
+  level: AccountLevel
   priceRatio: PriceRatio
-}): AccountLimitsVolumes => {
-  const accountLimitAmounts = {} as IAccountLimitAmounts
-  for (const rawKey of Object.keys(accountLimits)) {
-    const key = rawKey as keyof IAccountLimits
-    const limitAmount = paymentAmountFromNumber({
-      amount: accountLimits[key],
-      currency: WalletCurrency.Usd,
-    })
-    if (limitAmount instanceof Error) return limitAmount
-    accountLimitAmounts[key] = limitAmount
-  }
-
-  return {
-    volumesIntraledger: volumesForLimit({
-      limitName: "volumesIntraledger",
-      limitAmount: accountLimitAmounts.intraLedgerLimit,
-      priceRatio,
-    }),
-    volumesWithdrawal: volumesForLimit({
-      limitName: "volumesWithdrawal",
-      limitAmount: accountLimitAmounts.withdrawalLimit,
-      priceRatio,
-    }),
-    volumesTradeIntraAccount: volumesForLimit({
-      limitName: "volumesTradeIntraAccount",
-      limitAmount: accountLimitAmounts.tradeIntraAccountLimit,
-      priceRatio,
-    }),
-  }
-}
+}): AccountLimitsVolumes => ({
+  volumesIntraledger: volumesForLimit({
+    level,
+    limitType: AccountLimitsType.IntraLedger,
+    priceRatio,
+  }),
+  volumesWithdrawal: volumesForLimit({
+    level,
+    limitType: AccountLimitsType.Withdrawal,
+    priceRatio,
+  }),
+  volumesTradeIntraAccount: volumesForLimit({
+    level,
+    limitType: AccountLimitsType.SelfTrade,
+    priceRatio,
+  }),
+})
 
 export const TwoFALimitsVolumes = ({
-  twoFALimits,
+  level,
   priceRatio,
 }: {
-  twoFALimits: TwoFALimits
+  level: AccountLevel
   priceRatio: PriceRatio
-}): TwoFALimitsVolumes => {
-  const twoFALimitAmounts = {} as TwoFALimitAmounts
-  for (const rawKey of Object.keys(twoFALimits)) {
-    const key = rawKey as keyof TwoFALimits
-    const limitAmount = paymentAmountFromNumber({
-      amount: twoFALimits[key],
-      currency: WalletCurrency.Usd,
-    })
-    if (limitAmount instanceof Error) return limitAmount
-    twoFALimitAmounts[key] = limitAmount
-  }
-
-  return {
-    volumesTwoFA: volumesForLimit({
-      limitName: "volumesTwoFA",
-      limitAmount: twoFALimitAmounts.threshold,
-      priceRatio,
-    }),
-  }
-}
+}): TwoFALimitsVolumes => ({
+  volumesTwoFA: volumesForLimit({
+    level,
+    limitType: AccountLimitsType.TwoFA,
+    priceRatio,
+  }),
+})

@@ -6,7 +6,7 @@ import Seconds from "@graphql/types/scalar/seconds"
 import { normalizePaymentAmount } from "@graphql/root/mutation"
 
 import { Accounts } from "@app"
-import { AccountLimitsRange } from "@domain/accounts"
+import { AccountLimitsRange, getAccountLimitsFromConfig } from "@domain/accounts"
 import { SECS_PER_DAY } from "@config"
 
 const OneDayAccountLimit = GT.Object<{
@@ -24,7 +24,7 @@ const OneDayAccountLimit = GT.Object<{
       description: `The current maximum limit for a given 24 hour period.`,
       resolve: async (source) => {
         const { account, limitType } = source
-        const limit = await Accounts.getAccountLimitsFromConfig({
+        const limit = await getAccountLimitsFromConfig({
           level: account.level,
           limitType,
         })

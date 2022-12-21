@@ -16,6 +16,7 @@ import { AccountLevel, AccountStatus } from "./primitives"
 
 export * from "./errors"
 export * from "./limits-checker"
+export * from "./limits-volume"
 export * from "./account-validator"
 export * from "./primitives"
 
