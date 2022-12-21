@@ -6,12 +6,7 @@ import {
   TwoFALimitsExceededError,
   WithdrawalLimitsExceededError,
 } from "@domain/errors"
-import {
-  AmountCalculator,
-  paymentAmountFromNumber,
-  WalletCurrency,
-  ZERO_CENTS,
-} from "@domain/shared"
+import { AmountCalculator, WalletCurrency, ZERO_CENTS } from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
 import { calculateLimitsInUsd, getAccountLimitsFromConfig } from "./limits-volume"
@@ -49,13 +44,7 @@ const checkLimit =
       volumeInUsdAmount = calc.add(volumeInUsdAmount, outgoingUsdAmount)
     }
 
-    const limit = await getAccountLimitsFromConfig({ level, limitType })
-    if (limit instanceof Error) return limit
-
-    const limitAmount = paymentAmountFromNumber({
-      amount: limit,
-      currency: WalletCurrency.Usd,
-    })
+    const limitAmount = await getAccountLimitsFromConfig({ level, limitType })
     if (limitAmount instanceof Error) return limitAmount
 
     addAttributesToCurrentSpan({
@@ -87,7 +76,7 @@ const checkLimit =
         return new InvalidAccountLimitTypeError(limitType)
     }
 
-    const limitErrMsg = `Cannot transfer more than ${limit} cents in 24 hours`
+    const limitErrMsg = `Cannot transfer more than ${limitAmount.amount} cents in 24 hours`
 
     return volumeRemaining.amount < amount.amount ? new limitError(limitErrMsg) : true
   }

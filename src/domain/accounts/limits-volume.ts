@@ -15,24 +15,31 @@ import { AccountLimitsType } from "./primitives"
 
 const calc = AmountCalculator()
 
-export const getAccountLimitsFromConfig = async ({
+export const getAccountLimitsFromConfig = ({
   level,
   limitType,
 }: {
   level: AccountLevel
   limitType: AccountLimitsType
-}) => {
+}): UsdPaymentAmount | ValidationError => {
   const config = getAccountLimits({ level })
+
+  let amount: UsdCents
   switch (limitType) {
     case AccountLimitsType.IntraLedger:
-      return config.intraLedgerLimit
+      amount = config.intraLedgerLimit
+      break
     case AccountLimitsType.Withdrawal:
-      return config.withdrawalLimit
+      amount = config.withdrawalLimit
+      break
     case AccountLimitsType.SelfTrade:
-      return config.tradeIntraAccountLimit
+      amount = config.tradeIntraAccountLimit
+      break
     default:
       return new InvalidAccountLimitTypeError(limitType)
   }
+
+  return paymentAmountFromNumber({ amount, currency: WalletCurrency.Usd })
 }
 
 export const calculateLimitsInUsd = async ({
@@ -94,13 +101,7 @@ const volumesForLimit =
       "txVolume.limitCheck": limitType,
     })
 
-    const limit = await getAccountLimitsFromConfig({ level, limitType })
-    if (limit instanceof Error) return limit
-
-    const limitAmount = paymentAmountFromNumber({
-      amount: limit,
-      currency: WalletCurrency.Usd,
-    })
+    const limitAmount = await getAccountLimitsFromConfig({ level, limitType })
     if (limitAmount instanceof Error) return limitAmount
 
     return calculateLimitsInUsd({
