@@ -7,12 +7,16 @@ serve:
     base_url: http://127.0.0.1:4433/
     cors:
       enabled: true
+      allowed_origins:
+        - http://localhost:3000
+        - http://127.0.0.1:4002
   admin:
     base_url: http://0.0.0.0:4434/
 
 selfservice:
-  default_browser_return_url: http://127.0.0.1:4002/
+  default_browser_return_url: http://localhost:3000/
   allowed_return_urls:
+    - http://localhost:3000
     - http://127.0.0.1:4002
 
   methods:
@@ -29,10 +33,10 @@ selfservice:
 
   flows:
     error:
-      ui_url: http://127.0.0.1:4002/error
+      ui_url: http://localhost:3000/error
 
     settings:
-      ui_url: http://127.0.0.1:4002/settings
+      ui_url: http://localhost:3000/settings
       privileged_session_max_age: 15m
 
       required_aal: aal1
@@ -55,25 +59,25 @@ selfservice:
 
     recovery:
       enabled: true
-      ui_url: http://127.0.0.1:4002/recovery
+      ui_url: http://localhost:3000/recovery
 
     verification:
       enabled: true
-      ui_url: http://127.0.0.1:4002/verification
+      ui_url: http://localhost:3000/verification
       after:
-        default_browser_return_url: http://127.0.0.1:4002/
+        default_browser_return_url: http://localhost:3000/
 
     logout:
       after:
-        default_browser_return_url: http://127.0.0.1:4002/login
+        default_browser_return_url: http://localhost:3000/login
 
     login:
-      ui_url: http://127.0.0.1:4002/login
-      lifespan: 10m
+      ui_url: http://localhost:4002/cookieLogin
+      lifespan: 300m
 
     registration:
       lifespan: 10m
-      ui_url: http://127.0.0.1:4002/registration
+      ui_url: http://localhost:3000/register
       after:
         password:
           hooks:
@@ -99,7 +103,7 @@ hashers:
     cost: 8
 
 identity:
-  default_schema_id: phone_no_password_v0
+  default_schema_id: email_and_phone_with_password_v0
   schemas:
     - id: phone_no_password_v0
       url: file:///home/ory/phone_v0.identity.schema.json
@@ -113,8 +117,8 @@ courier:
     connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true
 
 session:
-  # TODO: check lifespan per schema
-  # or look how to extend
+  cookie:
+    domain: localhost:4002
   lifespan: "720h" # 1 month
   earliest_possible_extend: "720h" # needed for test. should be shorter in prod
 

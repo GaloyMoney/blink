@@ -6,6 +6,7 @@ import {
   getDefaultAccountsConfig,
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
+  getKratosMasterPhonePassword,
   getTestAccounts,
   MAX_AGE_TIME_CODE,
 } from "@config"
@@ -19,6 +20,8 @@ import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToEmailAddress } from "@domain/users"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import { KratosError } from "@services/kratos/errors"
+import { kratosPublic } from "@services/kratos/private"
 
 import { AccountsRepository } from "@services/mongoose"
 import { PhoneCodesRepository } from "@services/mongoose/phone-code"
@@ -89,6 +92,45 @@ export const loginWithPhone = async ({
   }
 
   return kratosToken
+}
+
+export async function loginWithPhoneReturnCookie(
+  phone,
+  code,
+): Promise<Array<string> | KratosError> {
+  const age = MAX_AGE_TIME_CODE
+  const validCode = await isCodeValid({ phone, code, age })
+  if (validCode instanceof Error) return validCode
+
+  const flow = await kratosPublic.createBrowserLoginFlow({
+    aal: "aal1",
+  })
+
+  const headers = flow.headers
+  const cookie = headers["set-cookie"][0]
+  const csrf = cookie.split("=")[1] + "="
+
+  const identifier = phone
+  const method = "password"
+  const password = getKratosMasterPhonePassword()
+
+  try {
+    const result = await kratosPublic.updateLoginFlow({
+      flow: flow.data.id,
+      cookie,
+      updateLoginFlowBody: {
+        identifier,
+        method,
+        password,
+        csrf_token: csrf,
+      },
+    })
+    const cookieToSendBackToClient = result.headers["set-cookie"]
+    return cookieToSendBackToClient
+  } catch (err) {
+    // TODO - user account might not be created need to use code above LikelyNoUserWithThisPhoneExistError
+    return new KratosError(err)
+  }
 }
 
 export const loginWithEmail = async ({

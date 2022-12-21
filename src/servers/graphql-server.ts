@@ -48,6 +48,14 @@ import { ValidationError } from "@domain/shared"
 
 import { UsersRepository } from "@services/mongoose"
 
+import { validateKratosCookie } from "@services/kratos"
+
+import { loginWithPhoneReturnCookie } from "@app/auth/login"
+
+import cookieParser from "cookie-parser"
+
+import cookie from "cookie"
+
 import { playgroundTabs } from "../graphql/playground"
 
 import healthzHandler from "./middlewares/healthz"
@@ -86,16 +94,23 @@ const setGqlContext = async (
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
-  const tokenPayload = req.token
-
-  const body = req.body ?? null
-
   const ipString = isDev
     ? req.ip
     : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
-
   const ip = parseIps(ipString)
-
+  const body = req.body ?? null
+  let tokenPayload
+  const kratosCookie = req.cookies.ory_kratos_session
+  if (kratosCookie) {
+    // TODO move this somewhere better
+    const kratosRes = await validateKratosCookie(`ory_kratos_session=${kratosCookie}`)
+    if (kratosRes instanceof Error) return
+    tokenPayload = {
+      sub: kratosRes.kratosUserId,
+    }
+  } else {
+    tokenPayload = req.token
+  }
   const gqlContext = await sessionContext({
     tokenPayload,
     ip,
@@ -184,6 +199,9 @@ export const startApolloServer = async ({
 }): Promise<Record<string, unknown>> => {
   const app = express()
   const httpServer = createServer(app)
+  app.use(cookieParser())
+  // TODO just using this for testing, remove
+  app.use(express.urlencoded({ extended: true }))
 
   const apolloPlugins = [
     createComplexityPlugin({
@@ -287,6 +305,89 @@ export const startApolloServer = async ({
   app.use(updateToken)
 
   app.use("/graphql", setGqlContext)
+
+  // Todo temp test for cookie login via same domain post i.e http://localhost:4002/cookieLoginform
+  // need to see if this works from other domains i.e http://localhost:3000 for web wallet
+  app.use("/cookieLoginForm", async (req, res) => {
+    res.set("Content-Type", "text/html")
+    res.send(
+      Buffer.from(`
+      <form action="/cookieLogin" method="post">
+        <label for="phone"><b>Phone</b></label>
+        <input type="text" placeholder="Phone" name="phone" required>
+        <label for="code"><b>Code</b></label>
+        <input type="code" placeholder="Code" name="code" required>
+        <button type="submit">Login</button>
+      </form>
+    `),
+    )
+  })
+
+  // TODO test login endpoint that returns a ory_kratos_session cookie
+  app.use("/cookieLogin", async (req, res) => {
+    const phone = req.body.phone
+    const code = req.body.code
+    const cookies = await loginWithPhoneReturnCookie(phone, code)
+    if (cookies instanceof Error) return res.status(500).send(JSON.stringify(cookies))
+
+    const clientCsrfCookie = cookie.parse(cookies[0])
+    const clientOrySessionCookie = cookie.parse(cookies[1])
+
+    res.cookie("ory_kratos_session", clientOrySessionCookie.ory_kratos_session, {
+      expires: new Date(Date.now() + 900000), // TODO parse this date - clientOrySessionCookie.Expires,
+      sameSite: "none", // TODO try to use Lax or Strict for security
+      secure: true,
+      path: clientOrySessionCookie.Path,
+    })
+
+    const csrfKey = Object.keys(clientCsrfCookie)[0]
+    const csrfValue = Object.values(clientCsrfCookie)[0]
+
+    res.cookie(csrfKey, csrfValue, {
+      maxAge: clientOrySessionCookie["Max-Age"], // TODO look this up from downstream
+      sameSite: "none", // // TODO try to use Lax or Strict for security
+      secure: true,
+      path: clientOrySessionCookie.Path,
+    })
+
+    // TODO testing demo
+    res.set("Content-Type", "text/html")
+    res.send(
+      Buffer.from(`
+<div>
+  <h2>Success!</h2>
+  <b>ory_kratos_session cookie: ${clientOrySessionCookie.ory_kratos_session}</b>
+  <p>
+    run this code in the dev tools console to demo cookie auth with the graphql api.
+    Notice the <b>credentials: 'include'</b> to pass the sesion cookies
+  </p>
+  <fieldset style="background-color: #EBECE4; display: inline; margin: 0;">
+  <pre>
+var myHeaders = new Headers();
+myHeaders.append("Content-Type", "application/json");
+
+var graphql = JSON.stringify({
+  query: "{me {    phone    id    createdAt  }}",
+  variables: {}
+})
+var requestOptions = {
+  method: 'POST',
+  headers: myHeaders,
+  body: graphql,
+  redirect: 'follow',
+  credentials: 'include'
+};
+
+fetch("http://localhost:4002/graphql", requestOptions)
+  .then(response => response.text())
+  .then(result => console.log(result))
+  .catch(error => console.log('error', error));
+  </pre>
+  </fieldset>
+</div>
+    `),
+    )
+  })
 
   await apolloServer.start()
 
