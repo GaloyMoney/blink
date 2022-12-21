@@ -15,7 +15,7 @@ import { calculateLimitsInUsd } from "./limits-volume"
 
 const calc = AmountCalculator()
 
-const checkLimitBase =
+const checkLimit =
   ({
     limitName,
     limitAmount: limit,
@@ -72,21 +72,21 @@ export const AccountLimitsChecker = ({
   accountLimits: IAccountLimits
   priceRatio: PriceRatio
 }): AccountLimitsChecker => ({
-  checkIntraledger: checkLimitBase({
+  checkIntraledger: checkLimit({
     limitName: "checkIntraledger",
     limitAmount: accountLimits.intraLedgerLimit,
     limitError: IntraledgerLimitsExceededError,
     limitErrMsg: `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`,
     priceRatio,
   }),
-  checkWithdrawal: checkLimitBase({
+  checkWithdrawal: checkLimit({
     limitName: "checkWithdrawal",
     limitAmount: accountLimits.withdrawalLimit,
     limitError: WithdrawalLimitsExceededError,
     limitErrMsg: `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`,
     priceRatio,
   }),
-  checkTradeIntraAccount: checkLimitBase({
+  checkTradeIntraAccount: checkLimit({
     limitName: "checkTradeIntraAccount",
     limitAmount: accountLimits.tradeIntraAccountLimit,
     limitError: TradeIntraAccountLimitsExceededError,
