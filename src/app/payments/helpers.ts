@@ -4,8 +4,8 @@ import {
   MIN_SATS_FOR_PRICE_RATIO_PRECISION,
   ONE_DAY,
 } from "@config"
-import { AccountLimitsChecker } from "@domain/accounts"
-import { AlreadyPaidError } from "@domain/errors"
+import { AccountLimitsChecker, AccountLimitsType } from "@domain/accounts"
+import { AlreadyPaidError, InvalidAccountLimitTypeError } from "@domain/errors"
 import {
   InvalidZeroAmountPriceRatioInputError,
   LightningPaymentFlowBuilder,
@@ -134,35 +134,50 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
 export const volumesForAccountId = async ({
   accountId,
   period,
-  volumeAmountSinceFn,
+  limitType,
 }: {
   accountId: AccountId
   period: Days
-  volumeAmountSinceFn: GetVolumeAmountSinceFn
-}): Promise<TxBaseVolumeAmount<WalletCurrency>[] | ApplicationError> => {
-  const timestamp1Day = timestampDaysAgo(period)
-  if (timestamp1Day instanceof Error) return timestamp1Day
+  limitType: AccountLimitsType
+}): Promise<TxLimitVolumeAmount<WalletCurrency>[] | ApplicationError> => {
+  const timestamp = timestampDaysAgo(period)
+  if (timestamp instanceof Error) return timestamp
 
   const wallets = await WalletsRepository().listByAccountId(accountId)
   if (wallets instanceof Error) return wallets
+
+  let volumeAmountSinceFn: GetVolumeAmountSinceFn
+  switch (limitType) {
+    case AccountLimitsType.IntraLedger:
+      volumeAmountSinceFn = ledger.intraledgerTxBaseVolumeAmountSince
+      break
+    case AccountLimitsType.Withdrawal:
+      volumeAmountSinceFn = ledger.externalPaymentVolumeAmountSince
+      break
+    case AccountLimitsType.SelfTrade:
+      volumeAmountSinceFn = ledger.tradeIntraAccountTxBaseVolumeAmountSince
+      break
+    default:
+      return new InvalidAccountLimitTypeError(limitType)
+  }
 
   const walletVolumesWithErrors = await Promise.all(
     wallets.map((wallet) =>
       volumeAmountSinceFn({
         walletDescriptor: wallet,
-        timestamp: timestamp1Day,
+        timestamp,
       }),
     ),
   )
   const walletVolError = walletVolumesWithErrors.find((vol) => vol instanceof Error)
   if (walletVolError instanceof Error) return walletVolError
 
-  // To satisfy type-checker
-  const walletVolumes = walletVolumesWithErrors.filter(
-    (vol): vol is TxBaseVolumeAmount<WalletCurrency> => true,
-  )
-
-  return walletVolumes
+  return walletVolumesWithErrors
+    .filter((vol): vol is TxBaseVolumeAmount<WalletCurrency> => true)
+    .map((walletVolume) => ({
+      ...walletVolume,
+      limitType,
+    }))
 }
 
 export const newCheckIntraledgerLimits = async ({
@@ -174,10 +189,12 @@ export const newCheckIntraledgerLimits = async ({
   accountId: AccountId
   priceRatio: PriceRatio
 }) => {
+  const limitType = AccountLimitsType.IntraLedger
+
   const walletVolumes = await volumesForAccountId({
+    limitType,
     accountId,
     period: ONE_DAY,
-    volumeAmountSinceFn: ledger.intraledgerTxBaseVolumeAmountSince,
   })
   if (walletVolumes instanceof Error) return walletVolumes
 
@@ -202,10 +219,12 @@ export const newCheckTradeIntraAccountLimits = async ({
   accountId: AccountId
   priceRatio: PriceRatio
 }) => {
+  const limitType = AccountLimitsType.SelfTrade
+
   const walletVolumes = await volumesForAccountId({
+    limitType,
     accountId,
     period: ONE_DAY,
-    volumeAmountSinceFn: ledger.tradeIntraAccountTxBaseVolumeAmountSince,
   })
   if (walletVolumes instanceof Error) return walletVolumes
 
@@ -230,10 +249,12 @@ export const newCheckWithdrawalLimits = async ({
   accountId: AccountId
   priceRatio: PriceRatio
 }) => {
+  const limitType = AccountLimitsType.Withdrawal
+
   const walletVolumes = await volumesForAccountId({
+    limitType,
     accountId,
     period: ONE_DAY,
-    volumeAmountSinceFn: ledger.externalPaymentVolumeAmountSince,
   })
   if (walletVolumes instanceof Error) return walletVolumes
 

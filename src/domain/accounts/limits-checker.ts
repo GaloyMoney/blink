@@ -1,6 +1,7 @@
 import {
   IntraledgerLimitsExceededError,
   InvalidAccountLimitTypeError,
+  MismatchedLimitTypeForLimitCheckError,
   TradeIntraAccountLimitsExceededError,
   TwoFALimitsExceededError,
   WithdrawalLimitsExceededError,
@@ -34,6 +35,10 @@ const checkLimitBase =
   }: LimiterCheckInputs): Promise<true | LimitsExceededError> => {
     let volumeInUsdAmount = ZERO_CENTS
     for (const walletVolume of walletVolumes) {
+      if (limitType !== walletVolume.limitType) {
+        return new MismatchedLimitTypeForLimitCheckError()
+      }
+
       const outgoingUsdAmount =
         walletVolume.outgoingBaseAmount.currency === WalletCurrency.Btc
           ? await priceRatio.convertFromBtc(

@@ -1,5 +1,5 @@
 import { getAccountLimits } from "@config"
-import { AccountLimitsChecker } from "@domain/accounts"
+import { AccountLimitsChecker, AccountLimitsType } from "@domain/accounts"
 import { LimitsExceededError } from "@domain/errors"
 import { PriceRatio } from "@domain/payments"
 import {
@@ -65,13 +65,17 @@ describe("LimitsChecker", () => {
   it("passes for exact limit amount", async () => {
     const intraledgerLimitCheck = await limitsChecker.checkIntraledger({
       amount: usdPaymentAmount,
-      walletVolumes: [walletVolumeIntraledger],
+      walletVolumes: [
+        { ...walletVolumeIntraledger, limitType: AccountLimitsType.IntraLedger },
+      ],
     })
     expect(intraledgerLimitCheck).not.toBeInstanceOf(Error)
 
     const withdrawalLimitCheck = await limitsChecker.checkWithdrawal({
       amount: usdPaymentAmount,
-      walletVolumes: [walletVolumeWithdrawal],
+      walletVolumes: [
+        { ...walletVolumeWithdrawal, limitType: AccountLimitsType.Withdrawal },
+      ],
     })
     expect(withdrawalLimitCheck).not.toBeInstanceOf(Error)
   })
@@ -79,13 +83,17 @@ describe("LimitsChecker", () => {
   it("passes for amount below limit", async () => {
     const intraledgerLimitCheck = await limitsChecker.checkIntraledger({
       amount: calc.sub(usdPaymentAmount, ONE_CENT),
-      walletVolumes: [walletVolumeIntraledger],
+      walletVolumes: [
+        { ...walletVolumeIntraledger, limitType: AccountLimitsType.IntraLedger },
+      ],
     })
     expect(intraledgerLimitCheck).not.toBeInstanceOf(Error)
 
     const withdrawalLimitCheck = await limitsChecker.checkWithdrawal({
       amount: calc.sub(usdPaymentAmount, ONE_CENT),
-      walletVolumes: [walletVolumeWithdrawal],
+      walletVolumes: [
+        { ...walletVolumeWithdrawal, limitType: AccountLimitsType.Withdrawal },
+      ],
     })
     expect(withdrawalLimitCheck).not.toBeInstanceOf(Error)
   })
@@ -93,7 +101,9 @@ describe("LimitsChecker", () => {
   it("returns an error for exceeded intraledger amount", async () => {
     const intraledgerLimitCheck = await limitsChecker.checkIntraledger({
       amount: calc.add(usdPaymentAmount, ONE_CENT),
-      walletVolumes: [walletVolumeIntraledger],
+      walletVolumes: [
+        { ...walletVolumeIntraledger, limitType: AccountLimitsType.IntraLedger },
+      ],
     })
     expect(intraledgerLimitCheck).toBeInstanceOf(LimitsExceededError)
   })
@@ -101,7 +111,9 @@ describe("LimitsChecker", () => {
   it("returns an error for exceeded withdrawal amount", async () => {
     const withdrawalLimitCheck = await limitsChecker.checkWithdrawal({
       amount: calc.add(usdPaymentAmount, ONE_CENT),
-      walletVolumes: [walletVolumeWithdrawal],
+      walletVolumes: [
+        { ...walletVolumeWithdrawal, limitType: AccountLimitsType.Withdrawal },
+      ],
     })
     expect(withdrawalLimitCheck).toBeInstanceOf(LimitsExceededError)
   })

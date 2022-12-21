@@ -210,6 +210,10 @@ type TxBaseVolumeAmount<S extends WalletCurrency> = {
   incomingBaseAmount: PaymentAmount<S>
 }
 
+type TxLimitVolumeAmount<S extends WalletCurrency> = TxBaseVolumeAmount<S> & {
+  limitType: AccountLimitsType
+}
+
 type TxCentsVolume = {
   outgoingCents: UsdCents
   incomingCents: UsdCents

@@ -112,12 +112,12 @@ type BusinessMapMarker = {
 
 type LimiterCheckInputs = {
   amount: UsdPaymentAmount
-  walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]
+  walletVolumes: TxLimitVolumeAmount<WalletCurrency>[]
 }
 
 type LimitsCheckerFn = (args: LimiterCheckInputs) => Promise<true | LimitsExceededError>
 
-type LimitsVolumesFn = (walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]) => Promise<
+type LimitsVolumesFn = (walletVolumes: TxLimitVolumeAmount<WalletCurrency>[]) => Promise<
   | {
       volumeTotalLimit: UsdPaymentAmount
       volumeUsed: UsdPaymentAmount

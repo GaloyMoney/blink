@@ -1,5 +1,8 @@
 import { getAccountLimits } from "@config"
-import { InvalidAccountLimitTypeError } from "@domain/errors"
+import {
+  InvalidAccountLimitTypeError,
+  MismatchedLimitTypeForLimitCheckError,
+} from "@domain/errors"
 import {
   AmountCalculator,
   paymentAmountFromNumber,
@@ -80,7 +83,13 @@ const volumesForLimit =
     limitType: AccountLimitsType
     priceRatio: PriceRatio
   }) =>
-  async (walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]) => {
+  async (walletVolumes: TxLimitVolumeAmount<WalletCurrency>[]) => {
+    for (const walletVolume of walletVolumes) {
+      if (limitType !== walletVolume.limitType) {
+        return new MismatchedLimitTypeForLimitCheckError()
+      }
+    }
+
     addAttributesToCurrentSpan({
       "txVolume.limitCheck": limitType,
     })
