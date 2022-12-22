@@ -433,7 +433,7 @@ describe("UserWallet - Lightning", () => {
   it("receives payment from outside USD wallet with amountless invoices", async () => {
     const initBalanceUsdB = toCents(await getBalanceHelper(walletIdUsdB))
 
-    const sats = toSats(120)
+    const sats = toSats(120000)
     const memo = "myMemo"
 
     const lnInvoice = await Wallets.addInvoiceNoAmountForSelf({
