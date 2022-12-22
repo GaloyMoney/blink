@@ -1,9 +1,12 @@
+import crypto from "crypto"
+
 import { getKratosPasswords } from "@config"
+
 import {
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
 } from "@domain/authentication/errors"
-import { CreateIdentityBody } from "@ory/client"
+import { CreateIdentityBody, Identity } from "@ory/client"
 import {
   AuthWithPhonePasswordlessService,
   IdentityRepository,
@@ -51,6 +54,61 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await killServer(serverPid)
+})
+
+describe.only("bearer_username", () => {
+  let identity: Identity
+  let kratosUserId: UserId
+  const password = getKratosPasswords().masterUserPassword
+
+  it("create a user", async () => {
+    const flow = await kratosPublic.createNativeRegistrationFlow()
+
+    const username = crypto.randomUUID()
+
+    const traits = { username }
+    const method = "password"
+
+    const { data } = await kratosPublic.updateRegistrationFlow({
+      flow: flow.data.id,
+      updateRegistrationFlowBody: {
+        traits,
+        method,
+        password,
+      },
+    })
+
+    identity = data.session?.identity as Identity
+    kratosUserId = identity.id as UserId
+    console.log({ session_token: data.session_token, identity })
+  })
+
+  it("upgrade user", async () => {
+    const { data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId })
+
+    if (identity.schema_id !== "bearer_username") {
+      console.log("wrong schema")
+      return
+    }
+
+    if (identity.state === undefined) return //probably impossible state)
+
+    identity.traits = { phone: randomPhone() }
+
+    const adminIdentity = {
+      ...identity,
+      credentials: { password: { config: { password } } },
+      state: identity.state,
+      schema_id: "phone_no_password_v0",
+    }
+
+    const { data: newIdentity } = await kratosAdmin.updateIdentity({
+      id: kratosUserId,
+      updateIdentityBody: adminIdentity,
+    })
+
+    console.log({ newIdentity })
+  })
 })
 
 describe("phoneNoPassword", () => {

@@ -1,0 +1,31 @@
+{
+  "$id": "https://schemas.ory.sh/presets/kratos/quickstart/phone-no-password/identity.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BearerUsername",
+  "type": "object",
+  "properties": {
+    "traits": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "format": "string",
+          "title": "username",
+          "minLength": 36,
+          "maxLength": 36,
+          "ory.sh/kratos": {
+            "credentials": {
+              "password": {
+                "identifier": true
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "username"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
