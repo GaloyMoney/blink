@@ -1,4 +1,5 @@
 import { getIpConfig } from "@config"
+import { isPrivateIp } from "@domain/accounts-ips"
 import { RepositoryError } from "@domain/errors"
 import { IpFetcherServiceError } from "@domain/ipfetcher"
 import { ErrorLevel } from "@domain/shared"
@@ -22,12 +23,21 @@ export const updateAccountIPsInfo = async ({
 }): Promise<void | RepositoryError> => {
   const ipConfig = getIpConfig()
 
+  if (!ip) {
+    logger.warn(`no ip address`)
+    return
+  }
+
+  if (isPrivateIp(ip)) {
+    return
+  }
+
   const lastConnection = new Date()
 
   const accountIP = await accountsIp.findById(accountId)
   if (accountIP instanceof RepositoryError) return accountIP
 
-  if (!ip || !ipConfig.ipRecordingEnabled) {
+  if (!ipConfig.ipRecordingEnabled) {
     const result = await accountsIp.update(accountIP)
 
     if (result instanceof Error) {
