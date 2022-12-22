@@ -54,3 +54,19 @@ export const validateKratosCookie = async (
     session,
   }
 }
+
+export const revokeKratosToken = async (token: string): Promise<void | KratosError> => {
+  try {
+    const res = await kratosPublic.performNativeLogout({
+      performNativeLogoutBody: {
+        session_token: token,
+      },
+    })
+    if (res.status !== 204) {
+      // TODO
+      return new UnknownKratosError("unsuccessful token revocation")
+    }
+  } catch (err) {
+    return new UnknownKratosError(err)
+  }
+}

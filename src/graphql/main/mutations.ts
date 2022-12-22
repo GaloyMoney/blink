@@ -20,6 +20,7 @@ import OnChainAddressCreateMutation from "@graphql/root/mutation/on-chain-addres
 import OnChainAddressCurrentMutation from "@graphql/root/mutation/on-chain-address-current"
 import UserLoginMutation from "@graphql/root/mutation/user-login"
 import UserLogoutMutation from "@graphql/root/mutation/user-logout"
+import UserDeviceAccountCreate from "@graphql/root/mutation/user-create-device-account"
 import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-auth-code"
 import UserUpdateLanguageMutation from "@graphql/root/mutation/user-update-language"
 import UserUpdateUsernameMutation from "@graphql/root/mutation/user-update-username"
@@ -34,6 +35,7 @@ import OnChainPaymentSendAllMutation from "@graphql/root/mutation/onchain-paymen
 import CaptchaRequestAuthCodeMutation from "@graphql/root/mutation/captcha-request-auth-code"
 import CaptchaCreateChallengeMutation from "@graphql/root/mutation/captcha-create-challenge"
 import QuizCompletedMutation from "@graphql/root/mutation/quiz-completed"
+import UserLoginUpgradeMutation from "@graphql/root/mutation/user-login-upgrade"
 
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLContext> }
 export const mutationFields = {
@@ -41,6 +43,7 @@ export const mutationFields = {
     userRequestAuthCode: UserRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
     userLogout: UserLogoutMutation,
+    userDeviceAccountCreate: UserDeviceAccountCreate,
 
     captchaCreateChallenge: CaptchaCreateChallengeMutation,
     captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
@@ -53,6 +56,8 @@ export const mutationFields = {
 
   authed: {
     atAccountLevel: {
+      userLoginUpgrade: UserLoginUpgradeMutation,
+
       userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
       quizCompleted: QuizCompletedMutation,
       deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
