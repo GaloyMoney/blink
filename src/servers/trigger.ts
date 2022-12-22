@@ -27,13 +27,18 @@ import * as Wallets from "@app/wallets"
 
 import { toSats } from "@domain/bitcoin"
 import { CacheKeys } from "@domain/cache"
-import { ErrorLevel, WalletCurrency } from "@domain/shared"
-import { CouldNotFindWalletInvoiceError } from "@domain/errors"
+import { ErrorLevel, paymentAmountFromNumber, WalletCurrency } from "@domain/shared"
+import {
+  CouldNotFindWalletInvoiceError,
+  InvalidLedgerTransactionStateError,
+} from "@domain/errors"
 import { DisplayCurrency, DisplayCurrencyConverter } from "@domain/fiat"
 import { DepositFeeCalculator } from "@domain/wallets/deposit-fee-calculator"
 
 import { lnd1LoopConfig, lnd2LoopConfig } from "@app/swap/get-active-loopd"
 import { SwapTriggerError } from "@domain/swap/errors"
+import { CouldNotFindTransactionError } from "@domain/ledger"
+
 import { RedisCacheService } from "@services/cache"
 import { LedgerService } from "@services/ledger"
 import { LndService } from "@services/lnd"
@@ -121,11 +126,34 @@ export const onchainTransactionEventHandler = async (
     const senderUser = await UsersRepository().findById(senderAccount.kratosUserId)
     if (senderUser instanceof Error) return senderUser
 
+    const ledgerTxns = await LedgerService().getTransactionsByHash(txHash)
+    if (ledgerTxns instanceof Error) return ledgerTxns
+    const ledgerTxnsForWalletId = ledgerTxns.filter(
+      (tx) => tx.walletId === senderWallet.id,
+    )
+    if (ledgerTxnsForWalletId && ledgerTxnsForWalletId.length === 0) {
+      return new CouldNotFindTransactionError()
+    }
+
+    const ledgerTx = ledgerTxnsForWalletId[0]
+    const amountForPaymentAmount =
+      senderWallet.currency === WalletCurrency.Btc
+        ? ledgerTx.satsAmount
+        : ledgerTx.centsAmount
+    if (amountForPaymentAmount === undefined) {
+      return new InvalidLedgerTransactionStateError()
+    }
+    const paymentAmount = paymentAmountFromNumber({
+      amount: amountForPaymentAmount,
+      currency: senderWallet.currency,
+    })
+    if (paymentAmount instanceof Error) return paymentAmount
+
     await NotificationsService().onChainTxSent({
       senderAccountId: senderWallet.accountId,
       senderWalletId: senderWallet.id,
       // TODO: tx.tokens represent the total sum, need to segregate amount by address
-      paymentAmount: { amount: BigInt(tx.tokens - fee), currency: senderWallet.currency },
+      paymentAmount,
       displayPaymentAmount,
       txHash,
       senderDeviceTokens: senderUser.deviceTokens,
