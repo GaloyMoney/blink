@@ -119,6 +119,12 @@ const amount = toSats(10040)
 const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
 const targetConfirmations = toTargetConfs(1)
 
+const payOnChainForPromiseAll = async (args: PayOnChainByWalletIdArgs) => {
+  const res = await Wallets.payOnChainByWalletId(args)
+  if (res instanceof Error) throw res
+  return res
+}
+
 describe("UserWallet - onChainPay", () => {
   it("sends a successful payment", async () => {
     const sendNotification = jest.fn()
@@ -132,7 +138,7 @@ describe("UserWallet - onChainPay", () => {
 
     const results = await Promise.all([
       once(sub, "chain_transaction"),
-      Wallets.payOnChainByWalletId({
+      payOnChainForPromiseAll({
         senderAccount: accountA,
         senderWalletId: walletIdA,
         address,
@@ -250,7 +256,7 @@ describe("UserWallet - onChainPay", () => {
 
     const results = await Promise.all([
       once(sub, "chain_transaction"),
-      Wallets.payOnChainByWalletId({
+      payOnChainForPromiseAll({
         senderAccount,
         senderWalletId: walletIdE,
         address,
