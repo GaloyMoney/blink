@@ -11,10 +11,10 @@ type Tick = {
 }
 
 type PriceCurrency = {
-  readonly code: string
-  readonly symbol: string
-  readonly name: string
-  readonly flag: string
+  readonly code: string // currency iso code. E.g. USD
+  readonly symbol: string // currency symbol. E.g. $
+  readonly name: string // currency name. E.g. US Dollar
+  readonly flag: string // currency country flag (emoji). E.g. 🇺🇸
 }
 
 type ListHistoryArgs = {
