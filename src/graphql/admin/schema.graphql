@@ -24,6 +24,7 @@ type AccountDetailPayload {
 enum AccountLevel {
   ONE
   TWO
+  ZERO
 }
 
 enum AccountStatus {

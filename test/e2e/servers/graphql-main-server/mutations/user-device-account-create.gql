@@ -1,0 +1,8 @@
+mutation UserDeviceAccountCreate($input: UserDeviceAccountCreateInput!) {
+  userDeviceAccountCreate(input: $input) {
+    errors {
+      message
+    }
+    authToken
+  }
+}

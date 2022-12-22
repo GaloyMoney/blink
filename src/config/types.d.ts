@@ -29,4 +29,5 @@ type AccountsConfig = {
   initialStatus: AccountStatus
   initialWallets: WalletCurrency[]
   randomizeDefaultWallet?: boolean
+  initialLevel: AccountLevel
 }
