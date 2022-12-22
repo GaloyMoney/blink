@@ -19,10 +19,12 @@ authenticators:
     config:
       # TODO cluster-internal mTLS
       # check_session_url: http://kratos:4433/sessions/whoami
-      check_session_url: http://localhost:4002/auth/browser
+      check_session_url: http://e2e-tests:4012/auth/validatecookie
       preserve_path: true
       subject_from: identity.id
       extra_from: identity.traits
+      only:
+        - ory_kratos_session
 
   unauthorized:
     enabled: true

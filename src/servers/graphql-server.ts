@@ -99,18 +99,7 @@ const setGqlContext = async (
     : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
   const ip = parseIps(ipString)
   const body = req.body ?? null
-  let tokenPayload
-  const kratosCookie = req.cookies.ory_kratos_session
-  if (kratosCookie) {
-    // TODO move this somewhere better
-    const kratosRes = await validateKratosCookie(`ory_kratos_session=${kratosCookie}`)
-    if (kratosRes instanceof Error) return
-    tokenPayload = {
-      sub: kratosRes.kratosUserId,
-    }
-  } else {
-    tokenPayload = req.token
-  }
+  const tokenPayload = req.token
   const gqlContext = await sessionContext({
     tokenPayload,
     ip,
@@ -335,8 +324,9 @@ export const startApolloServer = async ({
 
     res.cookie("ory_kratos_session", clientOrySessionCookie.ory_kratos_session, {
       expires: new Date(Date.now() + 900000), // TODO parse this date - clientOrySessionCookie.Expires,
-      sameSite: "none", // TODO try to use Lax or Strict for security
+      sameSite: "strict", // TODO Lax or none
       secure: true,
+      httpOnly: true,
       path: clientOrySessionCookie.Path,
     })
 
@@ -345,8 +335,9 @@ export const startApolloServer = async ({
 
     res.cookie(csrfKey, csrfValue, {
       maxAge: clientOrySessionCookie["Max-Age"], // TODO look this up from downstream
-      sameSite: "none", // // TODO try to use Lax or Strict for security
+      sameSite: "strict", // TODO Lax or none
       secure: true,
+      httpOnly: true,
       path: clientOrySessionCookie.Path,
     })
 

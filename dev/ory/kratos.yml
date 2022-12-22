@@ -10,6 +10,11 @@ serve:
       allowed_origins:
         - http://localhost:3000
         - http://127.0.0.1:4002
+        - http://localhost:4002
+        - http://localhost:4012
+        - http://e2e-tests:4012
+      allow_credentials: true
+      debug: true
   admin:
     base_url: http://0.0.0.0:4434/
 
