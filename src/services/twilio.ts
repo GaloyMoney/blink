@@ -22,11 +22,15 @@ export const TwilioClient = (): IPhoneProviderService => {
   const client = twilio(accountSid, authToken)
   const verify = client.verify.v2.services(verifyService)
 
-  const initiateVerify = async (
-    to: PhoneNumber,
-  ): Promise<true | PhoneProviderServiceError> => {
+  const initiateVerify = async ({
+    to,
+    channel,
+  }: {
+    to: PhoneNumber
+    channel: ChannelType
+  }): Promise<true | PhoneProviderServiceError> => {
     try {
-      await verify.verifications.create({ to, channel: "sms" })
+      await verify.verifications.create({ to, channel })
     } catch (err) {
       baseLogger.error({ err }, "impossible to send text")
 

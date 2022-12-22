@@ -4,6 +4,9 @@ import Phone from "@graphql/types/scalar/phone"
 import SuccessPayload from "@graphql/types/payload/success-payload"
 import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { ChannelType } from "@domain/phone-provider"
+import PhoneCodeChannelType from "@graphql/types/scalar/phone-code-channel-type"
+import { InputValidationError } from "@graphql/error"
 
 const CaptchaRequestAuthCodeInput = GT.Input({
   name: "CaptchaRequestAuthCodeInput",
@@ -12,10 +15,19 @@ const CaptchaRequestAuthCodeInput = GT.Input({
     challengeCode: { type: GT.NonNull(GT.String) },
     validationCode: { type: GT.NonNull(GT.String) },
     secCode: { type: GT.NonNull(GT.String) },
+    channel: { type: PhoneCodeChannelType },
   }),
 })
 
-const CaptchaRequestAuthCodeMutation = GT.Field({
+const CaptchaRequestAuthCodeMutation = GT.Field<{
+  input: {
+    phone: PhoneNumber | InputValidationError
+    challengeCode: string | InputValidationError
+    validationCode: string | InputValidationError
+    secCode: string | InputValidationError
+    channel: string | InputValidationError
+  }
+}>({
   extensions: {
     complexity: 120,
   },
@@ -29,17 +41,25 @@ const CaptchaRequestAuthCodeMutation = GT.Field({
       challengeCode: geetestChallenge,
       validationCode: geetestValidate,
       secCode: geetestSeccode,
+      channel: channelInput,
     } = args.input
 
-    for (const input of [phone, geetestChallenge, geetestValidate, geetestSeccode]) {
-      if (input instanceof Error) {
-        return { errors: [{ message: input.message }] }
-      }
-    }
+    if (phone instanceof Error) return { errors: [{ message: phone.message }] }
+    if (geetestChallenge instanceof Error)
+      return { errors: [{ message: geetestChallenge.message }] }
+    if (geetestValidate instanceof Error)
+      return { errors: [{ message: geetestValidate.message }] }
+    if (geetestSeccode instanceof Error)
+      return { errors: [{ message: geetestSeccode.message }] }
+    if (channelInput instanceof Error)
+      return { errors: [{ message: channelInput.message }] }
 
     if (ip === undefined) {
       return { errors: [{ message: "ip is undefined" }] }
     }
+
+    let channel: ChannelType = ChannelType.Sms
+    if (channelInput === "WHATSAPP") channel = ChannelType.Whatsapp
 
     const result = await Auth.requestPhoneCodeWithCaptcha({
       phone,
@@ -49,6 +69,7 @@ const CaptchaRequestAuthCodeMutation = GT.Field({
       geetestSeccode,
       logger,
       ip,
+      channel,
     })
 
     if (result instanceof Error) {

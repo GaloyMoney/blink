@@ -149,6 +149,7 @@ type CaptchaCreateChallengeResult {
 
 input CaptchaRequestAuthCodeInput {
   challengeCode: String!
+  channel: PhoneCodeChannelType
   phone: Phone!
   secCode: String!
   validationCode: String!
@@ -300,6 +301,11 @@ scalar PaymentHash
 Phone number which includes country code
 """
 scalar Phone
+
+enum PhoneCodeChannelType {
+  SMS
+  WHATSAPP
+}
 
 """
 Price amount expressed in base/offset. To calculate, use: `base / 10^offset`
@@ -543,6 +549,7 @@ input UserLoginInput {
 }
 
 input UserRequestAuthCodeInput {
+  channel: PhoneCodeChannelType
   phone: Phone!
 }
 
