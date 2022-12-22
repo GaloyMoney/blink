@@ -8,8 +8,6 @@ serve:
     cors:
       enabled: true
       allowed_origins:
-        - http://localhost:3000
-        - http://127.0.0.1:4002
         - http://localhost:4002
         - http://localhost:4012
         - http://e2e-tests:4012
@@ -19,9 +17,9 @@ serve:
     base_url: http://0.0.0.0:4434/
 
 selfservice:
-  default_browser_return_url: http://localhost:3000/
+  default_browser_return_url: http://localhost:4002/
   allowed_return_urls:
-    - http://localhost:3000
+    - http://localhost:4002
     - http://127.0.0.1:4002
 
   methods:
@@ -38,10 +36,10 @@ selfservice:
 
   flows:
     error:
-      ui_url: http://localhost:3000/error
+      ui_url: http://localhost:4002/error
 
     settings:
-      ui_url: http://localhost:3000/settings
+      ui_url: http://localhost:4002/settings
       privileged_session_max_age: 15m
 
       required_aal: aal1
@@ -64,17 +62,17 @@ selfservice:
 
     recovery:
       enabled: true
-      ui_url: http://localhost:3000/recovery
+      ui_url: http://localhost:4002/recovery
 
     verification:
       enabled: true
-      ui_url: http://localhost:3000/verification
+      ui_url: http://localhost:4002/verification
       after:
-        default_browser_return_url: http://localhost:3000/
+        default_browser_return_url: http://localhost:4002/
 
     logout:
       after:
-        default_browser_return_url: http://localhost:3000/login
+        default_browser_return_url: http://localhost:4002/login
 
     login:
       ui_url: http://localhost:4002/cookieLogin
@@ -82,7 +80,7 @@ selfservice:
 
     registration:
       lifespan: 10m
-      ui_url: http://localhost:3000/register
+      ui_url: http://localhost:4002/register
       after:
         password:
           hooks:

@@ -283,7 +283,7 @@ services:
       - ./:/repo
 
   oathkeeper:
-    image: oryd/oathkeeper:v0.40
+    image: oryd/oathkeeper:v0.40.0
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
     volumes:
       - type: bind
@@ -291,7 +291,7 @@ services:
         target: /home/ory
 
   kratos:
-    image: oryd/kratos:v0.10.1
+    image: oryd/kratos:v0.11.0
     entrypoint: sh -c
     command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --sqa-opt-out"'
     environment:

@@ -113,24 +113,4 @@ authRouter.post(
   }),
 )
 
-authRouter.post("/validatecookie", async (req, res) => {
-  const ipString = isDev ? req?.ip : req?.headers["x-real-ip"]
-  const ip = parseIps(ipString)
-
-  if (ip === undefined) {
-    throw new Error("IP is not defined")
-  }
-
-  try {
-    const kratosCookie = req.cookies.ory_kratos_session
-    const kratosRes = await validateKratosCookie(`ory_kratos_session=${kratosCookie}`)
-    if (kratosRes instanceof Error) return
-    addAttributesToCurrentSpan({ token: "kratos cookie" })
-    res.json({ sub: kratosRes.kratosUserId })
-    return
-  } catch (error) {
-    res.send({ error: "Cookie auth error" })
-  }
-})
-
 export default authRouter
