@@ -1,4 +1,5 @@
 import { createAccountForEmailIdentifier } from "@app/accounts/create-account"
+import { updateAccountStatus } from "@app/accounts"
 import {
   getDefaultAccountsConfig,
   getFailedLoginAttemptPerIpLimits,
@@ -8,20 +9,32 @@ import {
 } from "@config"
 import { TwilioClient } from "@services/twilio"
 
-import { checkedToUserId } from "@domain/accounts"
+import { AccountStatus, checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 
-import { CouldNotFindAccountFromKratosIdError, NotImplementedError } from "@domain/errors"
+import {
+  CouldNotFindAccountFromKratosIdError,
+  NotImplementedError,
+  CouldNotListWalletsFromWalletCurrencyError,
+} from "@domain/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToEmailAddress } from "@domain/users"
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import { AuthWithPhonePasswordlessService, revokeKratosToken } from "@services/kratos"
 
-import { AccountsRepository } from "@services/mongoose"
+import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
-import { addAttributesToCurrentSpan } from "@services/tracing"
+import {
+  addAttributesToCurrentSpan,
+  recordExceptionInCurrentSpan,
+} from "@services/tracing"
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
+import { AuthWithDeviceAccountService } from "@services/kratos/auth-device-account"
+import { LedgerService } from "@services/ledger"
+
+import { Payments } from "@app"
+import { ErrorLevel, WalletCurrency } from "@domain/shared"
 
 export const loginWithPhoneToken = async ({
   phone,
@@ -111,6 +124,181 @@ export const loginWithPhoneCookie = async ({
     addAttributesToCurrentSpan({ "login.cookie.newAccount": true })
   }
   return kratosResult
+}
+
+export const loginUpgradeWithPhone = async ({
+  phone,
+  code,
+  ip,
+  account,
+  authToken,
+}: {
+  authToken: SessionToken
+  phone: PhoneNumber
+  code: PhoneCode
+  ip: IpAddress
+  account: Account
+}): Promise<SessionToken | ApplicationError> => {
+  {
+    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  {
+    const limitOk = await checkFailedLoginAttemptPerPhoneLimits(phone)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  // TODO:
+  // add fibonachi on failed login
+  // https://github.com/animir/node-rate-limiter-flexible/wiki/Overall-example#dynamic-block-duration
+
+  const validCode = await isCodeValid({ phone, code })
+  if (validCode instanceof Error) return validCode
+
+  await rewardFailedLoginAttemptPerIpLimits(ip)
+  await rewardFailedLoginAttemptPerPhoneLimits(phone)
+
+  // scenario 1 and 4 most common
+
+  // scenario 1.
+  // deviceAccount / zeroConfAccount
+  // DeviceAccount has no tx. phone identity doesn't exist, domainAccount has no tx.
+  //
+  // --> migrate schema for the identity
+  // can use the same token
+  // don't deactivate orgDomainAccount
+  // balance transfer not needed
+
+  // scenario 2.
+  // DeviceAccount has no tx. phone identity exist, domainAccount has no tx.
+  //
+  // --> no schema migration is needed
+  // need to send a new token because the current Token would be for a different identity
+  // deactivate currentToken/orgDomainAccount
+  // balance transfer not needed
+
+  // scenario 3.
+  // DeviceAccount has no tx. phone identity exist, domainAccount has tx.
+  //
+  // --> no schema migration is needed
+  // need to send a new token because the current Token would be for a different identity
+  // deactivate currentToken/orgDomainAccount
+  // balance transfer not needed
+
+  // scenario 4.
+  // DeviceAccount has tx, phone identity doesn't exist, domainAccount has no tx.
+  // --> migrate schema for the identity
+  // can use the same token
+  // don't deactivate orgDomainAccount
+  // balance transfer not needed
+
+  // scenario 5.
+  // DeviceAccount has tx, phone identity exist, domainAccount has no tx.
+  // --> no schema migration is needed
+  // need to send a new token because the current Token would be for a different identity
+  // deactivate currentToken/orgDomainAccount
+  // balance transfer needed
+
+  // scenario 6.
+  // DeviceAccount has tx, phone identity exist, domainAccount has tx.
+  // --> no schema migration is needed
+  // need to send a new token because the current Token would be for a different identity
+  // deactivate currentToken/orgDomainAccount
+  // balance transfer needed
+
+  const authPhone = AuthWithPhonePasswordlessService()
+  let kratosResult = await authPhone.loginToken(phone)
+
+  // FIXME: this is a fuzzy error.
+  // it exists because we currently make no difference between a registration and login
+  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
+    // user is a new user. "happy path"
+
+    // scenario 1 or 4
+    // upgrading current session
+
+    const authBearer = AuthWithDeviceAccountService()
+    const res = await authBearer.upgradeToPhoneSchema({
+      kratosUserId: account.kratosUserId,
+      phone,
+    })
+
+    if (res instanceof Error) return res
+
+    kratosResult = await authPhone.loginToken(phone)
+    if (kratosResult instanceof Error) return kratosResult
+
+    addAttributesToCurrentSpan({
+      "login.migrateFromBearerToPhoneWithNoExistingAccount": true,
+    })
+  } else if (kratosResult instanceof Error) {
+    return kratosResult
+  } else {
+    const ledger = LedgerService()
+
+    const newAccount = await AccountsRepository().findByUserId(kratosResult.kratosUserId)
+    if (newAccount instanceof Error) return newAccount
+
+    const newWallets = await WalletsRepository().listByAccountId(newAccount.id)
+    if (newWallets instanceof Error) return newWallets
+
+    const wallets = await WalletsRepository().listByAccountId(account.id)
+    if (wallets instanceof Error) return wallets
+    for (const wallet of wallets) {
+      const balance = await ledger.getWalletBalance(wallet.id)
+      if (balance instanceof Error) return balance
+
+      if (balance > 0) {
+        const recipientWallet = newWallets.find((w) => w.currency === wallet.currency)
+        if (recipientWallet === undefined)
+          return new CouldNotListWalletsFromWalletCurrencyError()
+        const memo = "migration"
+
+        if (wallet.currency === WalletCurrency.Btc) {
+          const payment = await Payments.intraledgerPaymentSendWalletIdForBtcWallet({
+            senderWalletId: wallet.id,
+            recipientWalletId: recipientWallet.id,
+            amount: balance,
+            memo,
+            senderAccount: account,
+          })
+          if (payment instanceof Error) return payment
+        } else {
+          const payment = await Payments.intraledgerPaymentSendWalletIdForUsdWallet({
+            senderWalletId: wallet.id,
+            recipientWalletId: recipientWallet.id,
+            amount: balance,
+            memo,
+            senderAccount: account,
+          })
+          if (payment instanceof Error) return payment
+        }
+      }
+    }
+
+    const res = await updateAccountStatus({
+      id: account.id,
+      status: AccountStatus.Locked,
+      comment: "migration",
+      updatedByUserId: account.kratosUserId,
+    })
+    if (res instanceof Error) return res
+  }
+
+  // deactivating current session token
+  // FIXME: doesn't seem to work
+  const res = await revokeKratosToken(authToken)
+  if (res instanceof Error) {
+    recordExceptionInCurrentSpan({
+      error: "error revokating session token on upgrade",
+      level: ErrorLevel.Critical,
+      attributes: { ...res },
+    })
+  }
+
+  // returning a new session token
+  return kratosResult.sessionToken
 }
 
 // deprecated

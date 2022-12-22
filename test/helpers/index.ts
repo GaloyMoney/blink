@@ -90,7 +90,7 @@ export const amountByPriceAsMajor = <
 export const chunk = (a, n) =>
   [...Array(Math.ceil(a.length / n))].map((_, i) => a.slice(n * i, n + n * i))
 
-export const graphqlAdmin = <
+export const graphqlAdmin = async <
   T = Promise<ExecutionResult<ObjMap<unknown>, ObjMap<unknown>>>,
 >({
   source,
