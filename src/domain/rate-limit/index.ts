@@ -1,4 +1,6 @@
 import {
+  getCreateDeviceAccountGlobal,
+  getCreateDeviceAccountPerIp,
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
   getInvoiceCreateAttemptLimits,
@@ -10,6 +12,8 @@ import {
 } from "@config"
 
 import {
+  CreateDeviceAccountGlobalRateLimiterExceededError,
+  CreateDeviceAccountIpRateLimiterExceededError,
   InvoiceCreateForRecipientRateLimiterExceededError,
   InvoiceCreateRateLimiterExceededError,
   OnChainAddressCreateRateLimiterExceededError,
@@ -25,6 +29,8 @@ export const RateLimitPrefix = {
   requestPhoneCodeAttemptPerPhoneMinInterval:
     "phone_code_attempt_phone_code_min_interval",
   requestPhoneCodeAttemptPerIp: "phone_code_attempt_ip",
+  createDeviceAccountPerIp: "create_device_account_ip",
+  createDeviceAccountGlobal: "create_device_account_global",
   failedLoginAttemptPerPhone: "login_attempt_phone",
   failedLoginAttemptPerEmailAddress: "login_attempt_email",
   failedLoginAttemptPerIp: "login_attempt_ip",
@@ -48,6 +54,16 @@ export const RateLimitConfig: { [key: string]: RateLimitConfig } = {
     key: RateLimitPrefix.requestPhoneCodeAttemptPerIp,
     limits: getRequestPhoneCodePerIpLimits(),
     error: UserPhoneCodeAttemptIpRateLimiterExceededError,
+  },
+  createDeviceAccountPerIp: {
+    key: RateLimitPrefix.createDeviceAccountPerIp,
+    limits: getCreateDeviceAccountPerIp(),
+    error: CreateDeviceAccountIpRateLimiterExceededError,
+  },
+  createDeviceAccountGlobal: {
+    key: RateLimitPrefix.createDeviceAccountGlobal,
+    limits: getCreateDeviceAccountGlobal(),
+    error: CreateDeviceAccountGlobalRateLimiterExceededError,
   },
   failedLoginAttemptPerPhone: {
     key: RateLimitPrefix.failedLoginAttemptPerPhone,

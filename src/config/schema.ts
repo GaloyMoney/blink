@@ -51,10 +51,11 @@ const accountLimitConfigSchema = {
     level: {
       type: "object",
       properties: {
+        0: { type: "integer" },
         1: { type: "integer" },
         2: { type: "integer" },
       },
-      required: ["1", "2"],
+      required: ["0", "1", "2"],
       additionalProperties: false,
     },
   },
@@ -320,6 +321,16 @@ export const configSchema = {
           code: "321321",
           username: "tester4",
         },
+        {
+          ref: "M",
+          phone: "+198765432114",
+          code: "321321",
+        },
+        {
+          ref: "N",
+          phone: "+198765432115",
+          code: "321321",
+        },
       ],
       uniqueItems: true,
     },
@@ -329,6 +340,8 @@ export const configSchema = {
         requestPhoneCodePerPhone: rateLimitConfigSchema,
         requestPhoneCodePerPhoneMinInterval: rateLimitConfigSchema,
         requestPhoneCodePerIp: rateLimitConfigSchema,
+        createDeviceAccountPerIp: rateLimitConfigSchema,
+        createDeviceAccountGlobal: rateLimitConfigSchema,
         failedLoginAttemptPerPhone: rateLimitConfigSchema,
         failedLoginAttemptPerEmailAddress: rateLimitConfigSchema,
         failedLoginAttemptPerIp: rateLimitConfigSchema,
@@ -340,6 +353,8 @@ export const configSchema = {
         "requestPhoneCodePerPhone",
         "requestPhoneCodePerPhoneMinInterval",
         "requestPhoneCodePerIp",
+        "createDeviceAccountPerIp",
+        "createDeviceAccountGlobal",
         "failedLoginAttemptPerPhone",
         "failedLoginAttemptPerEmailAddress",
         "failedLoginAttemptPerIp",
@@ -363,6 +378,16 @@ export const configSchema = {
           points: 8,
           duration: 3600,
           blockDuration: 86400,
+        },
+        createDeviceAccountPerIp: {
+          points: 4,
+          duration: 86400,
+          blockDuration: 86400 * 10,
+        },
+        createDeviceAccountGlobal: {
+          points: 180,
+          duration: 3600,
+          blockDuration: 3600,
         },
         failedLoginAttemptPerPhone: {
           points: 8,
@@ -429,18 +454,21 @@ export const configSchema = {
       default: {
         withdrawal: {
           level: {
+            "0": 5000,
             "1": 100000,
             "2": 5000000,
           },
         },
         intraLedger: {
           level: {
+            "0": 5000,
             "1": 200000,
             "2": 5000000,
           },
         },
         tradeIntraAccount: {
           level: {
+            "0": 100000,
             "1": 5000000,
             "2": 20000000,
           },

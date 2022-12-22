@@ -111,6 +111,7 @@ export const activateUser = async (kratosUserId: UserId): Promise<void | KratosE
   }
 }
 
+// this function from kratos is not implemented
 export const deactivateUser = async (
   kratosUserId: UserId,
 ): Promise<void | KratosError> => {

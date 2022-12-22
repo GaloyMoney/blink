@@ -6,9 +6,9 @@ import {
 import { CreateIdentityBody } from "@ory/client"
 import {
   AuthWithPhonePasswordlessService,
-  IdentityRepository,
   extendSession,
   getNextPage,
+  IdentityRepository,
   listSessions,
   validateKratosToken,
 } from "@services/kratos"

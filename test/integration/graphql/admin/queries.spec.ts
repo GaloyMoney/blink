@@ -50,7 +50,7 @@ describe("GraphQLQueryRoot", () => {
     `
     const result = await graphqlAdmin<AllLevelsQuery>({ source: query })
     const { data } = result
-    expect(data?.allLevels).toEqual(["ONE", "TWO"])
+    expect(data.allLevels).toEqual(["ZERO", "ONE", "TWO"])
   })
 
   it("exposes accountDetails by phone", async () => {

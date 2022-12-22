@@ -17,6 +17,8 @@ import { toDays, toSeconds } from "@domain/primitives"
 import { checkedToPubkey } from "@domain/bitcoin/lightning"
 import { WalletCurrency } from "@domain/shared"
 
+import { AccountLevel } from "@domain/accounts"
+
 import { configSchema } from "./schema"
 import { ConfigError } from "./error"
 
@@ -219,6 +221,12 @@ export const getRequestPhoneCodePerPhoneMinIntervalLimits = () =>
 export const getRequestPhoneCodePerIpLimits = () =>
   getRateLimits(yamlConfig.rateLimits.requestPhoneCodePerIp)
 
+export const getCreateDeviceAccountPerIp = () =>
+  getRateLimits(yamlConfig.rateLimits.createDeviceAccountPerIp)
+
+export const getCreateDeviceAccountGlobal = () =>
+  getRateLimits(yamlConfig.rateLimits.createDeviceAccountGlobal)
+
 export const getFailedLoginAttemptPerPhoneLimits = () =>
   getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerPhone)
 
@@ -331,6 +339,7 @@ export const getDefaultAccountsConfig = (config = yamlConfig): AccountsConfig =>
   initialStatus: config.accounts.initialStatus as AccountStatus,
   initialWallets: config.accounts.initialWallets,
   randomizeDefaultWallet: config.accounts.randomizeDefaultWallet,
+  initialLevel: AccountLevel.One,
 })
 
 export const getSwapConfig = (): SwapConfig => {
