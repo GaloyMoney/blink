@@ -58,8 +58,8 @@ const CaptchaRequestAuthCodeMutation = GT.Field<{
       return { errors: [{ message: "ip is undefined" }] }
     }
 
-    let channel: ChannelType = ChannelType.sms
-    if (channelInput === "WHATSAPP") channel = ChannelType.whatsapp
+    let channel: ChannelType = ChannelType.Sms
+    if (channelInput === "WHATSAPP") channel = ChannelType.Whatsapp
 
     const result = await Auth.requestPhoneCodeWithCaptcha({
       phone,

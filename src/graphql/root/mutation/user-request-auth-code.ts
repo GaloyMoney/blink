@@ -36,12 +36,15 @@ const UserRequestAuthCodeMutation = GT.Field({
       return { errors: [{ message: phone.message }] }
     }
 
+    if (channelInput instanceof Error)
+      return { errors: [{ message: channelInput.message }] }
+
     if (ip === undefined) {
       return { errors: [{ message: "ip is undefined" }] }
     }
 
-    let channel: ChannelType = ChannelType.sms
-    if (channelInput === "WHATSAPP") channel = ChannelType.whatsapp
+    let channel: ChannelType = ChannelType.Sms
+    if (channelInput === "WHATSAPP") channel = ChannelType.Whatsapp
 
     const status = await Auth.requestPhoneCode({
       phone,

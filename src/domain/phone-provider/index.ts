@@ -7,6 +7,6 @@ export const CarrierType = {
 } as const
 
 export const ChannelType = {
-  sms: "sms",
-  whatsapp: "whatsapp",
+  Sms: "sms",
+  Whatsapp: "whatsapp",
 } as const
