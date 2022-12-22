@@ -5,6 +5,7 @@ import {
   PriceServiceError,
   UnknownPriceServiceError,
   PriceNotAvailableError,
+  PriceCurrenciesNotAvailableError,
 } from "@domain/price"
 
 import { SATS_PER_BTC } from "@domain/bitcoin"
@@ -21,6 +22,7 @@ const priceClient = new PriceProtoDescriptor.PriceFeed(
   credentials.createInsecure(),
 )
 const getPrice = util.promisify(priceClient.getPrice).bind(priceClient)
+const listPriceCurrencies = util.promisify(priceClient.listCurrencies).bind(priceClient)
 
 const priceHistoryUrl = process.env.PRICE_HISTORY_HOST ?? "price-history"
 const priceHistoryPort = process.env.PRICE_HISTORY_PORT ?? "50052"
@@ -60,8 +62,29 @@ export const PriceService = (): IPriceService => {
     }
   }
 
+  const listCurrencies = async (): Promise<PriceCurrency[] | PriceServiceError> => {
+    try {
+      const { currencies } = await listPriceCurrencies({})
+      if (!currencies || currencies.length === 0)
+        return new PriceCurrenciesNotAvailableError()
+
+      return currencies.map(
+        (c: { code: string; symbol: string; name: string; flag: string }) =>
+          ({
+            code: c.code,
+            symbol: c.symbol,
+            name: c.name,
+            flag: c.flag,
+          } as PriceCurrency),
+      )
+    } catch (err) {
+      return new UnknownPriceServiceError(err.message || err)
+    }
+  }
+
   return {
     getRealTimePrice,
     listHistory,
+    listCurrencies,
   }
 }

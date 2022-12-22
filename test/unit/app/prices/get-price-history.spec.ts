@@ -42,6 +42,7 @@ describe("Prices", () => {
               .slice(-24),
           ),
         getRealTimePrice: jest.fn(),
+        listCurrencies: jest.fn(),
       }))
 
       const prices = await Prices.getPriceHistory({ range, interval })
@@ -69,6 +70,7 @@ describe("Prices", () => {
       jest.spyOn(PriceServiceImpl, "PriceService").mockImplementationOnce(() => ({
         listHistory: () => Promise.resolve(new UnknownPriceServiceError()),
         getRealTimePrice: jest.fn(),
+        listCurrencies: jest.fn(),
       }))
 
       const prices = await Prices.getPriceHistory({ range, interval })
@@ -82,6 +84,7 @@ describe("Prices", () => {
       jest.spyOn(PriceServiceImpl, "PriceService").mockImplementationOnce(() => ({
         listHistory: () => Promise.resolve([]),
         getRealTimePrice: jest.fn(),
+        listCurrencies: jest.fn(),
       }))
 
       const prices = await Prices.getPriceHistory({ range, interval })

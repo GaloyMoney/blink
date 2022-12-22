@@ -2,6 +2,7 @@ syntax = "proto3";
 
 service PriceFeed {
   rpc GetPrice(PriceQuery) returns (PriceResponse) {}
+  rpc ListCurrencies(ListCurrenciesQuery) returns (ListCurrenciesResponse) {}
 }
 
 message PriceResponse {
@@ -10,4 +11,17 @@ message PriceResponse {
 
 message PriceQuery {
   string currency = 1;
+}
+
+message ListCurrenciesQuery { }
+
+message ListCurrenciesResponse {
+  repeated Currency currencies = 1;
+}
+
+message Currency {
+  string code = 1;
+  string symbol = 2;
+  string name = 3;
+  string flag = 4;
 }

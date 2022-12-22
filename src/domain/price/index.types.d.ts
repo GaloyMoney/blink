@@ -10,12 +10,20 @@ type Tick = {
   readonly price: DisplayCurrencyPerSat
 }
 
+type PriceCurrency = {
+  readonly code: string
+  readonly symbol: string
+  readonly name: string
+  readonly flag: string
+}
+
 type ListHistoryArgs = {
   range: PriceRange
   interval: PriceInterval
 }
 
 interface IPriceService {
+  listCurrencies(): Promise<PriceCurrency[] | PriceServiceError>
   getRealTimePrice(): Promise<DisplayCurrencyPerSat | PriceServiceError>
   listHistory(args: ListHistoryArgs): Promise<Tick[] | PriceServiceError>
 }

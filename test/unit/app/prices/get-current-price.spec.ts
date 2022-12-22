@@ -24,10 +24,12 @@ describe("Prices", () => {
         .mockImplementationOnce(() => ({
           listHistory: jest.fn(),
           getRealTimePrice: () => Promise.resolve(0.05 as DisplayCurrencyPerSat),
+          listCurrencies: jest.fn(),
         }))
         .mockImplementationOnce(() => ({
           listHistory: jest.fn(),
           getRealTimePrice: () => Promise.resolve(new PriceNotAvailableError()),
+          listCurrencies: jest.fn(),
         }))
 
       let price = await Prices.getCurrentPrice()
@@ -41,6 +43,7 @@ describe("Prices", () => {
       jest.spyOn(PriceServiceImpl, "PriceService").mockImplementationOnce(() => ({
         listHistory: jest.fn(),
         getRealTimePrice: () => Promise.resolve(new PriceNotAvailableError()),
+        listCurrencies: jest.fn(),
       }))
 
       const price = await Prices.getCurrentPrice()

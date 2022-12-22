@@ -369,6 +369,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "PriceNotAvailableError":
     case "DealerPriceNotAvailableError":
     case "PriceHistoryNotAvailableError":
+    case "PriceCurrenciesNotAvailableError":
     case "OnChainError":
     case "TransactionDecodeError":
     case "OnChainServiceError":
