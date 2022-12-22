@@ -10,7 +10,7 @@ import {
   newCheckWithdrawalLimits,
 } from "@app/payments/helpers"
 
-import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
+import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   PriceRatio,
@@ -59,14 +59,14 @@ export const payOnChainByWalletId = async <R extends WalletCurrency>({
   memo,
   sendAll,
 }: PayOnChainByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
-  const checkedAmount = sendAll
+  const amountToSendRaw = sendAll
     ? await LedgerService().getWalletBalance(senderWalletId)
-    : checkedToSats(amountRaw)
-  if (checkedAmount instanceof Error) return checkedAmount
+    : amountRaw
+  if (amountToSendRaw instanceof Error) return amountToSendRaw
 
   const validator = PaymentInputValidator(WalletsRepository().findById)
   const validationResult = await validator.validatePaymentInput({
-    amount: checkedAmount,
+    amount: amountToSendRaw,
     senderAccount,
     senderWalletId,
   })
@@ -352,11 +352,6 @@ const executePaymentViaOnChain = async <
 }): Promise<PaymentSendStatus | ApplicationError> => {
   const senderWalletDescriptor = await builder.senderWalletDescriptor()
   if (senderWalletDescriptor instanceof Error) return senderWalletDescriptor
-
-  // TODO Usd use case
-  if (senderWalletDescriptor.currency !== WalletCurrency.Btc) {
-    return new NotImplementedError("USD Intraledger")
-  }
 
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService
