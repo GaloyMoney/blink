@@ -18,15 +18,17 @@ export const parseIps = (ips: undefined | string | string[]): IpAddress | undefi
 const toIpAddress = (ip: string | undefined): IpAddress | undefined => {
   if (!ip) return undefined
 
-  if (!ipaddr.isValid(ip)) {
+  const ipTrimmed = ip.trim()
+
+  if (!ipaddr.isValid(ipTrimmed)) {
     return undefined
   }
 
-  return ip as IpAddress
+  return ipTrimmed as IpAddress
 }
 
 export const isPrivateIp = (ip: string): boolean => {
-  const convertedToV4 = ipaddr.process(ip).toString()
+  const convertedToV4 = ipaddr.process(ip.trim()).toString()
   const range = ipaddr.IPv4.parse(convertedToV4).range()
   return range === "private" || range === "loopback"
 }
