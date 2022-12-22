@@ -119,14 +119,14 @@ hashers:
     cost: 8
 
 identity:
-  default_schema_id: bearer_username
+  default_schema_id: phone_no_password_v0
   schemas:
     - id: phone_no_password_v0
       url: file:///home/ory/phone_v0.identity.schema.json
     - id: phone_email_no_password_v0
       url: file:///home/ory/phone_email_no_password_v0.identity.schema.json
-    - id: bearer_username
-      url: file:///home/ory/bearer_username_v0.identity.schema.json
+    - id: bearer_token
+      url: file:///home/ory/bearer_token_v0.identity.schema.json
 
 courier:
   smtp:

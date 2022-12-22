@@ -23,6 +23,7 @@ type WithSessionResponse = {
   kratosUserId: UserId
 }
 
+type CreateBearerTokenSchemaResponse = WithSessionResponse
 type LoginWithPhoneNoPasswordSchemaResponse = WithSessionResponse
 type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse
 
