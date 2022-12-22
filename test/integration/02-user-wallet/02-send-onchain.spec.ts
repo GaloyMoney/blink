@@ -14,7 +14,7 @@ import { toSats, toTargetConfs } from "@domain/bitcoin"
 import { PaymentSendStatus } from "@domain/bitcoin/lightning"
 import {
   InsufficientBalanceError,
-  InvalidSatoshiAmountError,
+  InvalidCurrencyBaseAmountError,
   LessThanDustThresholdError,
   LimitsExceededError,
   RebalanceNeededError,
@@ -30,7 +30,7 @@ import { getCurrentPrice } from "@app/prices"
 
 import { DisplayCurrencyConverter } from "@domain/fiat/display-currency"
 
-import { add, sub } from "@domain/fiat"
+import { add, sub, toCents } from "@domain/fiat"
 
 import { createPushNotificationContent } from "@services/notifications/create-push-notification-content"
 import * as PushNotificationsServiceImpl from "@services/notifications/push-notifications"
@@ -43,8 +43,9 @@ import {
   OnChainServiceUnavailableError,
   UnknownOnChainServiceError,
 } from "@domain/bitcoin/onchain/errors"
-import * as OnChainServiceImpl from "@services/lnd/onchain-service"
 import { TxDecoder } from "@domain/bitcoin/onchain"
+import * as OnChainServiceImpl from "@services/lnd/onchain-service"
+import { DealerPriceService } from "@services/dealer-price"
 
 import { getBalanceHelper } from "test/helpers/wallet"
 import {
@@ -62,16 +63,19 @@ import {
   mineBlockAndSync,
   mineBlockAndSyncAll,
   subscribeToTransactions,
+  getUsdWalletIdByTestUserRef,
 } from "test/helpers"
 
 let initialBalanceUserA: Satoshis
 let accountRecordA: AccountRecord
 
 let accountA: Account
+let accountB: Account
 let accountE: Account
 let accountG: Account
 
 let walletIdA: WalletId
+let walletIdUsdB: WalletId
 let walletIdD: WalletId
 let walletIdG: WalletId
 
@@ -93,6 +97,9 @@ beforeAll(async () => {
   accountRecordA = await getAccountRecordByTestUserRef("A")
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   accountA = await getAccountByTestUserRef("A")
+
+  walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
+  accountB = await getAccountByTestUserRef("B")
 
   walletIdD = await getDefaultWalletIdByTestUserRef("D")
   walletIdE = await getDefaultWalletIdByTestUserRef("E")
@@ -118,6 +125,7 @@ afterAll(async () => {
 })
 
 const amount = toSats(10040)
+const usdAmount = toCents(105)
 const amountBelowDustThreshold = getOnChainWalletConfig().dustThreshold - 1
 const targetConfirmations = toTargetConfs(1)
 
@@ -767,7 +775,7 @@ describe("UserWallet - onChainPay", () => {
       memo: null,
       sendAll: false,
     })
-    expect(status).toBeInstanceOf(InvalidSatoshiAmountError)
+    expect(status).toBeInstanceOf(InvalidCurrencyBaseAmountError)
   })
 
   it("fails if withdrawal limit hit", async () => {
@@ -872,4 +880,134 @@ describe("UserWallet - onChainPay", () => {
     })
     expect(status).toBeInstanceOf(LessThanDustThresholdError)
   })
+})
+
+describe("UsdWallet - onChainPay", () => {
+  it("send to external address from usd wallet", async () => {
+    const initialUsdBalanceUserB = await getBalanceHelper(walletIdUsdB)
+    const sendNotification = jest.fn()
+    jest
+      .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+      .mockImplementation(() => ({ sendNotification }))
+    const { address } = await createChainAddress({
+      format: "p2wpkh",
+      lnd: lndOutside1,
+    })
+
+    const sub = subscribeToTransactions({ lnd: lndonchain })
+    sub.on("chain_transaction", onchainTransactionEventHandler)
+
+    const results = await Promise.all([
+      once(sub, "chain_transaction"),
+      payOnChainForPromiseAll({
+        senderAccount: accountB,
+        senderWalletId: walletIdUsdB,
+        address,
+        amount: usdAmount,
+        targetConfirmations,
+        memo: null,
+        sendAll: false,
+      }),
+    ])
+
+    expect(results[1]).toBe(PaymentSendStatus.Success)
+    await onchainTransactionEventHandler(results[0][0])
+
+    let pendingTxHash: OnChainTxHash
+
+    {
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: walletIdUsdB,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        throw txResult.error
+      }
+      const pendingTxs = txResult.result.filter(
+        ({ status }) => status === TxStatus.Pending,
+      )
+
+      expect(pendingTxs.length).toBe(1)
+
+      const pendingTx = pendingTxs[0]
+
+      expect(pendingTx.settlementAmount).toBe(-usdAmount - pendingTx.settlementFee)
+      pendingTxHash = pendingTx.id as OnChainTxHash
+
+      const interimBalance = await getBalanceHelper(walletIdUsdB)
+      expect(interimBalance).toBe(
+        initialUsdBalanceUserB - usdAmount - pendingTx.settlementFee,
+      )
+      await checkIsBalanced()
+    }
+
+    await Promise.all([once(sub, "chain_transaction"), mineBlockAndSyncAll()])
+
+    await sleep(3000)
+
+    const satsPrice = await Prices.getCurrentPrice()
+    if (satsPrice instanceof Error) throw satsPrice
+
+    const paymentAmount = { amount: BigInt(usdAmount), currency: WalletCurrency.Usd }
+    const displayPaymentAmount = {
+      amount: usdAmount,
+      currency: DefaultDisplayCurrency,
+    }
+
+    const { title, body } = createPushNotificationContent({
+      type: NotificationType.OnchainPayment,
+      userLanguage: locale as UserLanguage,
+      amount: paymentAmount,
+      displayAmount: displayPaymentAmount,
+    })
+
+    expect(sendNotification.mock.calls.length).toBe(1)
+    expect(sendNotification.mock.calls[0][0].title).toBe(title)
+    expect(sendNotification.mock.calls[0][0].body).toBe(body)
+
+    {
+      const txResult = await Wallets.getTransactionsForWalletId({
+        walletId: walletIdUsdB,
+      })
+      if (txResult.error instanceof Error || txResult.result === null) {
+        throw txResult.error
+      }
+      const pendingTxs = txResult.result.filter(
+        ({ status }) => status === TxStatus.Pending,
+      )
+      expect(pendingTxs.length).toBe(0)
+
+      const settledTxs = txResult.result.filter(
+        ({ status, initiationVia, id }) =>
+          status === TxStatus.Success &&
+          initiationVia.type === PaymentInitiationMethod.OnChain &&
+          id === pendingTxHash,
+      )
+      expect(settledTxs.length).toBe(1)
+      const settledTx = settledTxs[0] as WalletTransaction
+
+      const feeRates = getFeesConfig()
+      const feeSats = toSats(feeRates.withdrawDefaultMin + 7050)
+      const dealerFns = DealerPriceService()
+      const fee = await dealerFns.getCentsFromSatsForImmediateSell(feeSats)
+      if (fee instanceof Error) throw fee
+
+      expect(settledTx.settlementFee).toBe(fee)
+      expect(settledTx.settlementAmount).toBe(-usdAmount - fee)
+
+      expect(settledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
+
+      const finalBalance = await getBalanceHelper(walletIdUsdB)
+      expect(finalBalance).toBe(initialUsdBalanceUserB - usdAmount - fee)
+    }
+
+    sub.removeAllListeners()
+  })
+
+  // it("sends to internal address from usd wallet to usd wallet", async () => {})
+
+  // it("sends to internal address from usd wallet to btc wallet", async () => {})
+
+  // it("sends to internal address from btc wallet to usd wallet", async () => {})
+
+  // it("fails to send to internal address with less-than-1-cent amount from btc wallet to usd wallet", async () => {})
 })
