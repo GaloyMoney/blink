@@ -29,6 +29,7 @@ type WithCookieResponse = {
   kratosUserId: UserId
 }
 
+type CreateDeviceAccountSchemaResponse = WithSessionResponse
 type LoginWithPhoneNoPasswordSchemaResponse = WithSessionResponse
 type LoginWithPhoneCookieSchemaResponse = WithCookieResponse
 type CreateKratosUserForPhoneNoPasswordSchemaResponse = WithSessionResponse

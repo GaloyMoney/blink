@@ -1,0 +1,8 @@
+mutation UserLoginUpgrade($input: UserLoginUpgrade!) {
+  userLoginUpgrade(input: $input) {
+    errors {
+      message
+    }
+    authToken
+  }
+}

@@ -37,6 +37,7 @@ type AccountDeletePayload {
 }
 
 enum AccountLevel {
+  ZERO
   ONE
   TWO
 }
@@ -772,7 +773,9 @@ type Mutation {
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
+  userDeviceAccountCreate(input: UserDeviceAccountCreateInput!): AuthTokenPayload!
   userLogin(input: UserLoginInput!): AuthTokenPayload!
+  userLoginUpgrade(input: UserLoginUpgrade!): AuthTokenPayload!
   userLogout(input: UserLogoutInput!): AuthTokenPayload!
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
@@ -1441,7 +1444,17 @@ type UserContactUpdateAliasPayload {
   errors: [Error!]!
 }
 
+input UserDeviceAccountCreateInput {
+  deviceId: String!
+}
+
 input UserLoginInput {
+  code: OneTimeAuthCode!
+  phone: Phone!
+}
+
+input UserLoginUpgrade {
+  authToken: AuthToken!
   code: OneTimeAuthCode!
   phone: Phone!
 }

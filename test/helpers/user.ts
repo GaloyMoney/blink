@@ -23,7 +23,7 @@ import { Accounts, Wallets } from "@app"
 
 import { sleep } from "@utils"
 
-import { AccountStatus } from "@domain/accounts"
+import { AccountLevel, AccountStatus } from "@domain/accounts"
 
 import { lndOutside1, safePay } from "./lightning"
 
@@ -129,6 +129,7 @@ export const createAccount = async ({
     config: {
       initialStatus: AccountStatus.Active,
       initialWallets,
+      initialLevel: AccountLevel.One,
     },
   })
   if (account instanceof Error) throw account

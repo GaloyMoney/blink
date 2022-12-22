@@ -1,5 +1,5 @@
 import { Accounts } from "@app"
-import { AccountStatus } from "@domain/accounts"
+import { AccountLevel, AccountStatus } from "@domain/accounts"
 import { WalletCurrency } from "@domain/shared"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 
@@ -98,7 +98,11 @@ describe("Users - wallets", () => {
 
       let account = await Accounts.createAccountForEmailIdentifier({
         kratosUserId: randomUserId(),
-        config: { initialStatus: AccountStatus.Active, initialWallets },
+        config: {
+          initialStatus: AccountStatus.Active,
+          initialWallets,
+          initialLevel: AccountLevel.One,
+        },
       })
       if (account instanceof Error) throw account
 
@@ -128,7 +132,11 @@ describe("Users - wallets", () => {
 
       let account = await Accounts.createAccountForEmailIdentifier({
         kratosUserId: randomUserId(),
-        config: { initialStatus: AccountStatus.Active, initialWallets },
+        config: {
+          initialStatus: AccountStatus.Active,
+          initialWallets,
+          initialLevel: AccountLevel.One,
+        },
       })
       if (account instanceof Error) throw account
 
@@ -158,7 +166,11 @@ describe("Users - wallets", () => {
 
       let account = await Accounts.createAccountForEmailIdentifier({
         kratosUserId: randomUserId(),
-        config: { initialStatus: AccountStatus.Active, initialWallets },
+        config: {
+          initialStatus: AccountStatus.Active,
+          initialWallets,
+          initialLevel: AccountLevel.One,
+        },
       })
       if (account instanceof Error) throw account
 

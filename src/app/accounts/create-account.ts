@@ -48,10 +48,36 @@ const initializeCreatedAccount = async ({
   account.role = role || "user"
   account.contactEnabled = account.role === "user" || account.role === "editor"
 
+  account.statusHistory = [{ status: config.initialStatus, comment: "Initial Status" }]
+  account.level = config.initialLevel
+
   const updatedAccount = await AccountsRepository().update(account)
   if (updatedAccount instanceof Error) return updatedAccount
 
   return updatedAccount
+}
+
+export const createAccountForDeviceAccount = async ({
+  userId,
+  config,
+}: {
+  userId: UserId
+  config: AccountsConfig
+}): Promise<Account | RepositoryError> => {
+  // TODO: look at what to do for the UserRepo
+  // const user = await UsersRepository().update({ id: kratosUserId, phone, phoneMetadata })
+  // if (user instanceof Error) return user
+
+  const accountNew = await AccountsRepository().persistNew(userId)
+  if (accountNew instanceof Error) return accountNew
+
+  const account = await initializeCreatedAccount({
+    account: accountNew,
+    config,
+  })
+  if (account instanceof Error) return account
+
+  return account
 }
 
 export const createAccountWithPhoneIdentifier = async ({
