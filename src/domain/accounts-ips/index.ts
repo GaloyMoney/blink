@@ -1,3 +1,5 @@
+import ipaddr from "ipaddr.js"
+
 export const parseIps = (ips: undefined | string | string[]): IpAddress | undefined => {
   if (!ips) return undefined
 
@@ -13,11 +15,20 @@ export const parseIps = (ips: undefined | string | string[]): IpAddress | undefi
   return undefined
 }
 
-const toIpAddress = (ip: string): IpAddress | undefined => {
+const toIpAddress = (ip: string | undefined): IpAddress | undefined => {
   if (!ip) return undefined
 
-  const trimmedIp = ip.trim()
-  if (!trimmedIp) return undefined
+  const ipTrimmed = ip.trim()
 
-  return trimmedIp as IpAddress
+  if (!ipaddr.isValid(ipTrimmed)) {
+    return undefined
+  }
+
+  return ipTrimmed as IpAddress
+}
+
+export const isPrivateIp = (ip: string): boolean => {
+  const convertedToV4 = ipaddr.process(ip.trim()).toString()
+  const range = ipaddr.IPv4.parse(convertedToV4).range()
+  return range === "private" || range === "loopback"
 }

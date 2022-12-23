@@ -79,6 +79,7 @@
     "invoices": "^2.2.0",
     "ioredis": "^5.2.4",
     "ioredis-cache": "^1.4.1",
+    "ipaddr.js": "^2.0.1",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^3.0.0",
