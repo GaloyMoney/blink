@@ -24,7 +24,7 @@ const OneDayAccountLimit = GT.Object<{
       description: `The current maximum limit for a given 24 hour period.`,
       resolve: async (source) => {
         const { account, limitType } = source
-        const limit = await Accounts.getAccountLimitsFromConfig({
+        const limit = await Accounts.totalLimit({
           level: account.level,
           limitType,
         })
@@ -38,13 +38,13 @@ const OneDayAccountLimit = GT.Object<{
       description: `The amount of cents remaining below the limit for the current 24 hour period.`,
       resolve: async (source) => {
         const { account, limitType } = source
-        const volumes = await Accounts.accountLimit({
+        const volumeRemaining = await Accounts.remainingLimit({
           account,
           limitType,
         })
-        if (volumes instanceof Error) throw mapError(volumes)
+        if (volumeRemaining instanceof Error) throw mapError(volumeRemaining)
 
-        return normalizePaymentAmount(volumes.volumeRemaining).amount
+        return normalizePaymentAmount(volumeRemaining).amount
       },
     },
     interval: {

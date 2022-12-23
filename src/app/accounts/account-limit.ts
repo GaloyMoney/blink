@@ -6,20 +6,13 @@ import { AccountLimitsVolumes } from "@domain/accounts/limits-volume"
 import { InvalidAccountLimitTypeError } from "@domain/errors"
 import { LedgerService } from "@services/ledger"
 
-export const accountLimit = async ({
+export const remainingLimit = async ({
   account,
   limitType,
 }: {
   account: Account
   limitType: AccountLimitsType
-}): Promise<
-  | {
-      volumeTotalLimit: UsdPaymentAmount
-      volumeUsed: UsdPaymentAmount
-      volumeRemaining: UsdPaymentAmount
-    }
-  | ApplicationError
-> => {
+}): Promise<UsdPaymentAmount | ApplicationError> => {
   const usdHedgeEnabled = getDealerConfig().usd.hedgingEnabled
 
   const priceRatio = await getMidPriceRatio(usdHedgeEnabled)
@@ -58,16 +51,19 @@ export const accountLimit = async ({
   })
   if (walletVolumes instanceof Error) return walletVolumes
 
-  return limitsVolumeFn(walletVolumes)
+  const limitVolumes = await limitsVolumeFn(walletVolumes)
+  if (limitVolumes instanceof Error) return limitVolumes
+
+  return limitVolumes.volumeRemaining
 }
 
-export const getAccountLimitsFromConfig = async ({
+export const totalLimit = async ({
   level,
   limitType,
 }: {
   level: AccountLevel
   limitType: AccountLimitsType
-}) => {
+}): Promise<UsdCents | ApplicationError> => {
   const config = getAccountLimits({ level })
   switch (limitType) {
     case AccountLimitsType.IntraLedger:
