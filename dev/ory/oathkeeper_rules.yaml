@@ -2,7 +2,7 @@
   upstream:
     url: "http://e2e-tests:4012"
   match:
-    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/<(validatetoken|validatecookie)>"
+    url: "<(http|https)>://<[a-zA-Z0-9-.:]+>/auth/validatetoken"
     methods: ["GET", "POST"]
   authenticators:
     - handler: unauthorized

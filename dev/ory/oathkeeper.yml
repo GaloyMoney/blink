@@ -55,6 +55,18 @@ errors:
       config:
         verbose: true
 
+serve:
+  proxy:
+    cors:
+      enabled: true
+      allowed_origins:
+        - http://localhost:3000
+      allowed_methods:
+        - GET
+        - POST
+      allow_credentials: true
+      max_age: 3600
+
 access_rules:
   repositories:
     - file:///home/ory/oathkeeper_rules.yaml

@@ -48,8 +48,6 @@ import { ValidationError } from "@domain/shared"
 
 import { UsersRepository } from "@services/mongoose"
 
-import { validateKratosCookie } from "@services/kratos"
-
 import { loginWithPhoneReturnCookie } from "@app/auth/login"
 
 import cookieParser from "cookie-parser"
@@ -94,12 +92,15 @@ const setGqlContext = async (
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
+  const tokenPayload = req.token
+
+  const body = req.body ?? null
+
   const ipString = isDev
     ? req.ip
     : req.headers["x-real-ip"] || req.headers["x-forwarded-for"]
   const ip = parseIps(ipString)
-  const body = req.body ?? null
-  const tokenPayload = req.token
+
   const gqlContext = await sessionContext({
     tokenPayload,
     ip,

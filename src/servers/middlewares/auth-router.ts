@@ -9,7 +9,7 @@ import { getKratosConfig, isDev, JWT_SECRET } from "@config"
 import { mapError } from "@graphql/error-map"
 import { addAttributesToCurrentSpan, wrapAsyncToRunInSpan } from "@services/tracing"
 
-import { validateKratosToken, validateKratosCookie } from "@services/kratos"
+import { validateKratosToken } from "@services/kratos"
 import { kratosPublic } from "@services/kratos/private"
 import { AccountsRepository } from "@services/mongoose"
 import { parseIps } from "@domain/accounts-ips"
