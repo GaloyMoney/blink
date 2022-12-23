@@ -6110,16 +6110,16 @@ fined@^1.2.0:
     object.pick "^1.2.0"
     parse-filepath "^1.0.1"
 
-firebase-admin@^11.4.0:
-  version "11.4.0"
-  resolved "https://registry.yarnpkg.com/firebase-admin/-/firebase-admin-11.4.0.tgz#8ad3f848f1814b6e271bafa3b4dae62a8befc53c"
-  integrity sha512-Nuw7j3mr0qSQqq0lx7yh8F+vVDDojd8FBDibmoiIjFDUu/YQ18fye8CNzS5tdi9YYGN4A/tkVz5bCqxYrf5bvA==
+firebase-admin@^11.4.1:
+  version "11.4.1"
+  resolved "https://registry.yarnpkg.com/firebase-admin/-/firebase-admin-11.4.1.tgz#46ab2fa9ca99f7025b4d349eadfbd5e6ab1ee334"
+  integrity sha512-t5+Pf8rC01TW1KPD5U8Q45AEn7eK+FJaHlpzYStFb62J+MQmN/kB/PWUEsNn+7MNAQ0DZxFUCgJoi+bRmf83oQ==
   dependencies:
     "@fastify/busboy" "^1.1.0"
     "@firebase/database-compat" "^0.2.6"
     "@firebase/database-types" "^0.9.13"
     "@types/node" ">=12.12.47"
-    jsonwebtoken "^8.5.1"
+    jsonwebtoken "^9.0.0"
     jwks-rsa "^2.1.4"
     node-forge "^1.3.1"
     uuid "^9.0.0"
