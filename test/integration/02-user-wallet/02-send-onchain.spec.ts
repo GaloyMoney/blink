@@ -68,6 +68,7 @@ let initialBalanceUserA: Satoshis
 let accountRecordA: AccountRecord
 
 let accountA: Account
+let accountE: Account
 let accountG: Account
 
 let walletIdA: WalletId
@@ -97,6 +98,7 @@ beforeAll(async () => {
   walletIdE = await getDefaultWalletIdByTestUserRef("E")
   walletIdF = await getDefaultWalletIdByTestUserRef("F")
   walletIdG = await getDefaultWalletIdByTestUserRef("G")
+  accountE = await getAccountByTestUserRef("E")
   accountG = await getAccountByTestUserRef("G")
 
   await bitcoindClient.loadWallet({ filename: "outside" })
@@ -127,6 +129,8 @@ const payOnChainForPromiseAll = async (args: PayOnChainByWalletIdArgs) => {
 
 describe("UserWallet - onChainPay", () => {
   it("sends a successful payment", async () => {
+    const sendAll = false
+
     const sendNotification = jest.fn()
     jest
       .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
@@ -145,7 +149,7 @@ describe("UserWallet - onChainPay", () => {
         amount,
         targetConfirmations,
         memo: null,
-        sendAll: false,
+        sendAll,
       }),
     ])
 
@@ -171,39 +175,54 @@ describe("UserWallet - onChainPay", () => {
       )
       expect(pendingTxs.length).toBe(1)
       const pendingTx = pendingTxs[0]
-      expect(pendingTx.settlementAmount).toBe(-amount - pendingTx.settlementFee)
+      const interimBalance = await getBalanceHelper(walletIdA)
+
+      if (sendAll) {
+        expect(pendingTx.settlementAmount).toBe(-initialBalanceUserA)
+        expect(interimBalance).toBe(0)
+      } else {
+        expect(pendingTx.settlementAmount).toBe(-amount - pendingTx.settlementFee)
+        expect(interimBalance).toBe(
+          initialBalanceUserA - amount - pendingTx.settlementFee,
+        )
+      }
+
       pendingTxHash = pendingTx.id as OnChainTxHash
 
-      const interimBalance = await getBalanceHelper(walletIdA)
-      expect(interimBalance).toBe(initialBalanceUserA - amount - pendingTx.settlementFee)
       await checkIsBalanced()
     }
 
     // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
 
-    await Promise.all([once(sub, "chain_transaction"), mineBlockAndSyncAll()])
+    await Promise.all([
+      once(sub, "chain_transaction"),
+      mineBlockAndSync({ lnds: [lndonchain] }),
+    ])
 
-    await sleep(3000)
-
-    const satsPrice = await Prices.getCurrentPrice()
-    if (satsPrice instanceof Error) throw satsPrice
-
-    const paymentAmount = { amount: BigInt(amount), currency: WalletCurrency.Btc }
-    const displayPaymentAmount = {
-      amount: amount * satsPrice,
-      currency: DefaultDisplayCurrency,
-    }
-
-    const { title, body } = createPushNotificationContent({
-      type: NotificationType.OnchainPayment,
-      userLanguage: locale as UserLanguage,
-      amount: paymentAmount,
-      displayAmount: displayPaymentAmount,
-    })
+    await sleep(1000)
 
     expect(sendNotification.mock.calls.length).toBe(1)
-    expect(sendNotification.mock.calls[0][0].title).toBe(title)
-    expect(sendNotification.mock.calls[0][0].body).toBe(body)
+
+    if (!sendAll) {
+      const satsPrice = await Prices.getCurrentPrice()
+      if (satsPrice instanceof Error) throw satsPrice
+
+      const paymentAmount = { amount: BigInt(amount), currency: WalletCurrency.Btc }
+      const displayPaymentAmount = {
+        amount: amount * satsPrice,
+        currency: DefaultDisplayCurrency,
+      }
+
+      const { title, body } = createPushNotificationContent({
+        type: NotificationType.OnchainPayment,
+        userLanguage: locale as UserLanguage,
+        amount: paymentAmount,
+        displayAmount: displayPaymentAmount,
+      })
+
+      expect(sendNotification.mock.calls[0][0].title).toBe(title)
+      expect(sendNotification.mock.calls[0][0].body).toBe(body)
+    }
 
     {
       const txResult = await Wallets.getTransactionsForWalletId({
@@ -230,18 +249,27 @@ describe("UserWallet - onChainPay", () => {
       const fee = feeRates.withdrawDefaultMin + 7050
 
       expect(settledTx.settlementFee).toBe(fee)
-      expect(settledTx.settlementAmount).toBe(-amount - fee)
-
       expect(settledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
 
       const finalBalance = await getBalanceHelper(walletIdA)
-      expect(finalBalance).toBe(initialBalanceUserA - amount - fee)
+
+      if (sendAll) {
+        expect(settledTx.settlementAmount).toBe(-initialBalanceUserA)
+        expect(finalBalance).toBe(0)
+      } else {
+        expect(settledTx.settlementAmount).toBe(-amount - fee)
+        expect(finalBalance).toBe(initialBalanceUserA - amount - fee)
+      }
     }
 
     sub.removeAllListeners()
   })
 
   it("sends all in a successful payment", async () => {
+    const initialBalanceUserE = await getBalanceHelper(walletIdE)
+
+    const sendAll = true
+
     const sendNotification = jest.fn()
     jest
       .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
@@ -251,19 +279,16 @@ describe("UserWallet - onChainPay", () => {
     const sub = subscribeToTransactions({ lnd: lndonchain })
     sub.on("chain_transaction", onchainTransactionEventHandler)
 
-    const initialBalanceUserE = await getBalanceHelper(walletIdE)
-    const senderAccount = await getAccountByTestUserRef("E")
-
     const results = await Promise.all([
       once(sub, "chain_transaction"),
       payOnChainForPromiseAll({
-        senderAccount,
+        senderAccount: accountE,
         senderWalletId: walletIdE,
         address,
         amount: 0,
         targetConfirmations,
         memo: null,
-        sendAll: true,
+        sendAll,
       }),
     ])
 
@@ -275,7 +300,7 @@ describe("UserWallet - onChainPay", () => {
     // expect(sendNotification.mock.calls[0][0].data.type).toBe(NotificationType.OnchainPayment)
     // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
 
-    let pendingTxHash
+    let pendingTxHash: OnChainTxHash
 
     {
       const txResult = await Wallets.getTransactionsForWalletId({
@@ -289,12 +314,20 @@ describe("UserWallet - onChainPay", () => {
       )
       expect(pendingTxs.length).toBe(1)
       const pendingTx = pendingTxs[0]
-      expect(pendingTx.settlementAmount).toBe(-initialBalanceUserE)
+      const interimBalance = await getBalanceHelper(walletIdE)
+
+      if (sendAll) {
+        expect(pendingTx.settlementAmount).toBe(-initialBalanceUserE)
+        expect(interimBalance).toBe(0)
+      } else {
+        expect(pendingTx.settlementAmount).toBe(-amount - pendingTx.settlementFee)
+        expect(interimBalance).toBe(
+          initialBalanceUserE - amount - pendingTx.settlementFee,
+        )
+      }
 
       pendingTxHash = pendingTx.id as OnChainTxHash
 
-      const interimBalance = await getBalanceHelper(walletIdE)
-      expect(interimBalance).toBe(0)
       await checkIsBalanced()
     }
 
@@ -308,6 +341,27 @@ describe("UserWallet - onChainPay", () => {
     await sleep(1000)
 
     expect(sendNotification.mock.calls.length).toBe(1)
+
+    if (!sendAll) {
+      const satsPrice = await Prices.getCurrentPrice()
+      if (satsPrice instanceof Error) throw satsPrice
+
+      const paymentAmount = { amount: BigInt(amount), currency: WalletCurrency.Btc }
+      const displayPaymentAmount = {
+        amount: amount * satsPrice,
+        currency: DefaultDisplayCurrency,
+      }
+
+      const { title, body } = createPushNotificationContent({
+        type: NotificationType.OnchainPayment,
+        userLanguage: locale as UserLanguage,
+        amount: paymentAmount,
+        displayAmount: displayPaymentAmount,
+      })
+
+      expect(sendNotification.mock.calls[0][0].title).toBe(title)
+      expect(sendNotification.mock.calls[0][0].body).toBe(body)
+    }
 
     {
       const txResult = await Wallets.getTransactionsForWalletId({
@@ -333,12 +387,18 @@ describe("UserWallet - onChainPay", () => {
       const feeRates = getFeesConfig()
       const fee = feeRates.withdrawDefaultMin + 7050
 
-      const finalBalance = await getBalanceHelper(walletIdE)
-      expect(finalBalance).toBe(0)
-
       expect(settledTx.settlementFee).toBe(fee)
-      expect(settledTx.settlementAmount).toBe(-initialBalanceUserE)
       expect(settledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
+
+      const finalBalance = await getBalanceHelper(walletIdE)
+
+      if (sendAll) {
+        expect(settledTx.settlementAmount).toBe(-initialBalanceUserE)
+        expect(finalBalance).toBe(0)
+      } else {
+        expect(settledTx.settlementAmount).toBe(-amount - fee)
+        expect(finalBalance).toBe(initialBalanceUserE - amount - fee)
+      }
     }
 
     sub.removeAllListeners()
