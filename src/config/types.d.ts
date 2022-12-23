@@ -14,6 +14,7 @@ type KratosConfig = {
   adminApi: string
   publicApi: string
   corsAllowedOrigins: string[]
+  callbackKey: string
 }
 
 type CaptchaConfig = {

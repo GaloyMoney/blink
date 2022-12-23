@@ -288,10 +288,13 @@ export const getKratosConfig = (config = yamlConfig): KratosConfig => {
   const publicApi = process.env.KRATOS_PUBLIC_API ?? kratosConfig.publicApi
   const adminApi = process.env.KRATOS_ADMIN_API ?? kratosConfig.adminApi
 
+  const callbackKey = kratosConfig.callbackKey
+
   return {
     ...kratosConfig,
     publicApi,
     adminApi,
+    callbackKey,
   }
 }
 

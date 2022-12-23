@@ -11,7 +11,7 @@ import { checkedToUserId } from "@domain/accounts"
 
 const kratosRouter = express.Router({ caseSensitive: true })
 
-const { corsAllowedOrigins } = getKratosConfig()
+const { corsAllowedOrigins, callbackKey } = getKratosConfig()
 
 kratosRouter.use(cors({ origin: corsAllowedOrigins, credentials: true }))
 kratosRouter.use(express.json())
@@ -21,6 +21,20 @@ kratosRouter.post(
   wrapAsyncToRunInSpan({
     namespace: "registration",
     fn: async (req: express.Request, res: express.Response) => {
+      const key = req.headers.authorization
+
+      if (!key) {
+        console.log("missing authorization header")
+        res.status(401).send("missing authorization header")
+        return
+      }
+
+      if (key !== callbackKey) {
+        console.log("incorrect authorization header")
+        res.status(401).send("incorrect authorization header")
+        return
+      }
+
       const body = req.body
       const { identity_id: userId, phone: phoneRaw, schema_id } = body
 
