@@ -73,7 +73,7 @@ selfservice:
 
     registration:
       lifespan: 10m
-      ui_url: http://e2e-tests:4012/kratos/registration
+      ui_url: http://127.0.0.1:4002/registration
       after:
         password:
           hooks:
