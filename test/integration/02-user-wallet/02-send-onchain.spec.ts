@@ -127,282 +127,163 @@ const payOnChainForPromiseAll = async (args: PayOnChainByWalletIdArgs) => {
   return res
 }
 
+const testExternalSend = async ({
+  senderAccount,
+  senderWalletId,
+  sendAll,
+}: {
+  senderAccount: Account
+  senderWalletId: WalletId
+  sendAll: boolean
+}) => {
+  const initialWalletBalance = await getBalanceHelper(senderWalletId)
+
+  const sendNotification = jest.fn()
+  jest
+    .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
+    .mockImplementation(() => ({ sendNotification }))
+  const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
+
+  const sub = subscribeToTransactions({ lnd: lndonchain })
+  sub.on("chain_transaction", onchainTransactionEventHandler)
+
+  const results = await Promise.all([
+    once(sub, "chain_transaction"),
+    payOnChainForPromiseAll({
+      senderAccount,
+      senderWalletId,
+      address,
+      amount,
+      targetConfirmations,
+      memo: null,
+      sendAll,
+    }),
+  ])
+
+  expect(results[1]).toBe(PaymentSendStatus.Success)
+  await onchainTransactionEventHandler(results[0][0])
+
+  // we don't send a notification for send transaction for now
+  // expect(sendNotification.mock.calls.length).toBe(1)
+  // expect(sendNotification.mock.calls[0][0].data.type).toBe(NotificationType.OnchainPayment)
+  // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
+
+  let pendingTxHash: OnChainTxHash
+
+  {
+    const txResult = await Wallets.getTransactionsForWalletId({
+      walletId: senderWalletId,
+    })
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult.error
+    }
+    const pendingTxs = txResult.result.slice.filter(
+      ({ status }) => status === TxStatus.Pending,
+    )
+    expect(pendingTxs.length).toBe(1)
+    const pendingTx = pendingTxs[0]
+    const interimBalance = await getBalanceHelper(senderWalletId)
+
+    if (sendAll) {
+      expect(pendingTx.settlementAmount).toBe(-initialWalletBalance)
+      expect(interimBalance).toBe(0)
+    } else {
+      expect(pendingTx.settlementAmount).toBe(-amount - pendingTx.settlementFee)
+      expect(interimBalance).toBe(initialWalletBalance - amount - pendingTx.settlementFee)
+    }
+
+    pendingTxHash = pendingTx.id as OnChainTxHash
+
+    await checkIsBalanced()
+  }
+
+  // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
+
+  await Promise.all([
+    once(sub, "chain_transaction"),
+    mineBlockAndSync({ lnds: [lndonchain] }),
+  ])
+
+  await sleep(1000)
+
+  expect(sendNotification.mock.calls.length).toBe(1)
+
+  if (!sendAll) {
+    const satsPrice = await Prices.getCurrentPrice()
+    if (satsPrice instanceof Error) throw satsPrice
+
+    const paymentAmount = { amount: BigInt(amount), currency: WalletCurrency.Btc }
+    const displayPaymentAmount = {
+      amount: amount * satsPrice,
+      currency: DefaultDisplayCurrency,
+    }
+
+    const { title, body } = createPushNotificationContent({
+      type: NotificationType.OnchainPayment,
+      userLanguage: locale as UserLanguage,
+      amount: paymentAmount,
+      displayAmount: displayPaymentAmount,
+    })
+
+    expect(sendNotification.mock.calls[0][0].title).toBe(title)
+    expect(sendNotification.mock.calls[0][0].body).toBe(body)
+  }
+
+  {
+    const txResult = await Wallets.getTransactionsForWalletId({
+      walletId: senderWalletId,
+    })
+    if (txResult.error instanceof Error || txResult.result === null) {
+      throw txResult.error
+    }
+    const pendingTxs = txResult.result.slice.filter(
+      ({ status }) => status === TxStatus.Pending,
+    )
+    expect(pendingTxs.length).toBe(0)
+
+    const settledTxs = txResult.result.slice.filter(
+      ({ status, initiationVia, id }) =>
+        status === TxStatus.Success &&
+        initiationVia.type === PaymentInitiationMethod.OnChain &&
+        id === pendingTxHash,
+    )
+    expect(settledTxs.length).toBe(1)
+    const settledTx = settledTxs[0] as WalletTransaction
+
+    const feeRates = getFeesConfig()
+    const fee = feeRates.withdrawDefaultMin + 7050
+
+    expect(settledTx.settlementFee).toBe(fee)
+    expect(settledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
+
+    const finalBalance = await getBalanceHelper(senderWalletId)
+
+    if (sendAll) {
+      expect(settledTx.settlementAmount).toBe(-initialWalletBalance)
+      expect(finalBalance).toBe(0)
+    } else {
+      expect(settledTx.settlementAmount).toBe(-amount - fee)
+      expect(finalBalance).toBe(initialWalletBalance - amount - fee)
+    }
+  }
+
+  sub.removeAllListeners()
+}
+
 describe("UserWallet - onChainPay", () => {
-  it("sends a successful payment", async () => {
-    const sendAll = false
+  it("sends a successful payment", async () =>
+    testExternalSend({
+      senderAccount: accountA,
+      senderWalletId: walletIdA,
+      sendAll: false,
+    }))
 
-    const sendNotification = jest.fn()
-    jest
-      .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-      .mockImplementation(() => ({ sendNotification }))
-    const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-
-    const sub = subscribeToTransactions({ lnd: lndonchain })
-    sub.on("chain_transaction", onchainTransactionEventHandler)
-
-    const results = await Promise.all([
-      once(sub, "chain_transaction"),
-      payOnChainForPromiseAll({
-        senderAccount: accountA,
-        senderWalletId: walletIdA,
-        address,
-        amount,
-        targetConfirmations,
-        memo: null,
-        sendAll,
-      }),
-    ])
-
-    expect(results[1]).toBe(PaymentSendStatus.Success)
-    await onchainTransactionEventHandler(results[0][0])
-
-    // we don't send a notification for send transaction for now
-    // expect(sendNotification.mock.calls.length).toBe(1)
-    // expect(sendNotification.mock.calls[0][0].data.type).toBe(NotificationType.OnchainPayment)
-    // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
-
-    let pendingTxHash: OnChainTxHash
-
-    {
-      const txResult = await Wallets.getTransactionsForWalletId({
-        walletId: walletIdA,
-      })
-      if (txResult.error instanceof Error || txResult.result === null) {
-        throw txResult.error
-      }
-      const pendingTxs = txResult.result.slice.filter(
-        ({ status }) => status === TxStatus.Pending,
-      )
-      expect(pendingTxs.length).toBe(1)
-      const pendingTx = pendingTxs[0]
-      const interimBalance = await getBalanceHelper(walletIdA)
-
-      if (sendAll) {
-        expect(pendingTx.settlementAmount).toBe(-initialBalanceUserA)
-        expect(interimBalance).toBe(0)
-      } else {
-        expect(pendingTx.settlementAmount).toBe(-amount - pendingTx.settlementFee)
-        expect(interimBalance).toBe(
-          initialBalanceUserA - amount - pendingTx.settlementFee,
-        )
-      }
-
-      pendingTxHash = pendingTx.id as OnChainTxHash
-
-      await checkIsBalanced()
-    }
-
-    // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
-
-    await Promise.all([
-      once(sub, "chain_transaction"),
-      mineBlockAndSync({ lnds: [lndonchain] }),
-    ])
-
-    await sleep(1000)
-
-    expect(sendNotification.mock.calls.length).toBe(1)
-
-    if (!sendAll) {
-      const satsPrice = await Prices.getCurrentPrice()
-      if (satsPrice instanceof Error) throw satsPrice
-
-      const paymentAmount = { amount: BigInt(amount), currency: WalletCurrency.Btc }
-      const displayPaymentAmount = {
-        amount: amount * satsPrice,
-        currency: DefaultDisplayCurrency,
-      }
-
-      const { title, body } = createPushNotificationContent({
-        type: NotificationType.OnchainPayment,
-        userLanguage: locale as UserLanguage,
-        amount: paymentAmount,
-        displayAmount: displayPaymentAmount,
-      })
-
-      expect(sendNotification.mock.calls[0][0].title).toBe(title)
-      expect(sendNotification.mock.calls[0][0].body).toBe(body)
-    }
-
-    {
-      const txResult = await Wallets.getTransactionsForWalletId({
-        walletId: walletIdA,
-      })
-      if (txResult.error instanceof Error || txResult.result === null) {
-        throw txResult.error
-      }
-      const pendingTxs = txResult.result.slice.filter(
-        ({ status }) => status === TxStatus.Pending,
-      )
-      expect(pendingTxs.length).toBe(0)
-
-      const settledTxs = txResult.result.slice.filter(
-        ({ status, initiationVia, id }) =>
-          status === TxStatus.Success &&
-          initiationVia.type === PaymentInitiationMethod.OnChain &&
-          id === pendingTxHash,
-      )
-      expect(settledTxs.length).toBe(1)
-      const settledTx = settledTxs[0] as WalletTransaction
-
-      const feeRates = getFeesConfig()
-      const fee = feeRates.withdrawDefaultMin + 7050
-
-      expect(settledTx.settlementFee).toBe(fee)
-      expect(settledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
-
-      const finalBalance = await getBalanceHelper(walletIdA)
-
-      if (sendAll) {
-        expect(settledTx.settlementAmount).toBe(-initialBalanceUserA)
-        expect(finalBalance).toBe(0)
-      } else {
-        expect(settledTx.settlementAmount).toBe(-amount - fee)
-        expect(finalBalance).toBe(initialBalanceUserA - amount - fee)
-      }
-    }
-
-    sub.removeAllListeners()
-  })
-
-  it("sends all in a successful payment", async () => {
-    const initialBalanceUserE = await getBalanceHelper(walletIdE)
-
-    const sendAll = true
-
-    const sendNotification = jest.fn()
-    jest
-      .spyOn(PushNotificationsServiceImpl, "PushNotificationsService")
-      .mockImplementation(() => ({ sendNotification }))
-    const { address } = await createChainAddress({ format: "p2wpkh", lnd: lndOutside1 })
-
-    const sub = subscribeToTransactions({ lnd: lndonchain })
-    sub.on("chain_transaction", onchainTransactionEventHandler)
-
-    const results = await Promise.all([
-      once(sub, "chain_transaction"),
-      payOnChainForPromiseAll({
-        senderAccount: accountE,
-        senderWalletId: walletIdE,
-        address,
-        amount: 0,
-        targetConfirmations,
-        memo: null,
-        sendAll,
-      }),
-    ])
-
-    expect(results[1]).toBe(PaymentSendStatus.Success)
-    await onchainTransactionEventHandler(results[0][0])
-
-    // we don't send a notification for send transaction for now
-    // expect(sendNotification.mock.calls.length).toBe(1)
-    // expect(sendNotification.mock.calls[0][0].data.type).toBe(NotificationType.OnchainPayment)
-    // expect(sendNotification.mock.calls[0][0].data.title).toBe(`Your transaction has been sent. It may takes some time before it is confirmed`)
-
-    let pendingTxHash: OnChainTxHash
-
-    {
-      const txResult = await Wallets.getTransactionsForWalletId({
-        walletId: walletIdE,
-      })
-      if (txResult.error instanceof Error || txResult.result === null) {
-        throw txResult.error
-      }
-      const pendingTxs = txResult.result.slice.filter(
-        ({ status }) => status === TxStatus.Pending,
-      )
-      expect(pendingTxs.length).toBe(1)
-      const pendingTx = pendingTxs[0]
-      const interimBalance = await getBalanceHelper(walletIdE)
-
-      if (sendAll) {
-        expect(pendingTx.settlementAmount).toBe(-initialBalanceUserE)
-        expect(interimBalance).toBe(0)
-      } else {
-        expect(pendingTx.settlementAmount).toBe(-amount - pendingTx.settlementFee)
-        expect(interimBalance).toBe(
-          initialBalanceUserE - amount - pendingTx.settlementFee,
-        )
-      }
-
-      pendingTxHash = pendingTx.id as OnChainTxHash
-
-      await checkIsBalanced()
-    }
-
-    // const subSpend = subscribeToChainSpend({ lnd: lndonchain, bech32_address: address, min_height: 1 })
-
-    await Promise.all([
-      once(sub, "chain_transaction"),
-      mineBlockAndSync({ lnds: [lndonchain] }),
-    ])
-
-    await sleep(1000)
-
-    expect(sendNotification.mock.calls.length).toBe(1)
-
-    if (!sendAll) {
-      const satsPrice = await Prices.getCurrentPrice()
-      if (satsPrice instanceof Error) throw satsPrice
-
-      const paymentAmount = { amount: BigInt(amount), currency: WalletCurrency.Btc }
-      const displayPaymentAmount = {
-        amount: amount * satsPrice,
-        currency: DefaultDisplayCurrency,
-      }
-
-      const { title, body } = createPushNotificationContent({
-        type: NotificationType.OnchainPayment,
-        userLanguage: locale as UserLanguage,
-        amount: paymentAmount,
-        displayAmount: displayPaymentAmount,
-      })
-
-      expect(sendNotification.mock.calls[0][0].title).toBe(title)
-      expect(sendNotification.mock.calls[0][0].body).toBe(body)
-    }
-
-    {
-      const txResult = await Wallets.getTransactionsForWalletId({
-        walletId: walletIdE,
-      })
-      if (txResult.error instanceof Error || txResult.result === null) {
-        throw txResult.error
-      }
-      const pendingTxs = txResult.result.slice.filter(
-        ({ status }) => status === TxStatus.Pending,
-      )
-      expect(pendingTxs.length).toBe(0)
-
-      const settledTxs = txResult.result.slice.filter(
-        ({ status, initiationVia, id }) =>
-          status === TxStatus.Success &&
-          initiationVia.type === PaymentInitiationMethod.OnChain &&
-          id === pendingTxHash,
-      )
-      expect(settledTxs.length).toBe(1)
-      const settledTx = settledTxs[0] as WalletTransaction
-
-      const feeRates = getFeesConfig()
-      const fee = feeRates.withdrawDefaultMin + 7050
-
-      expect(settledTx.settlementFee).toBe(fee)
-      expect(settledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
-
-      const finalBalance = await getBalanceHelper(walletIdE)
-
-      if (sendAll) {
-        expect(settledTx.settlementAmount).toBe(-initialBalanceUserE)
-        expect(finalBalance).toBe(0)
-      } else {
-        expect(settledTx.settlementAmount).toBe(-amount - fee)
-        expect(finalBalance).toBe(initialBalanceUserE - amount - fee)
-      }
-    }
-
-    sub.removeAllListeners()
-  })
+  it("sends all in a successful payment", async () =>
+    testExternalSend({
+      senderAccount: accountE,
+      senderWalletId: walletIdE,
+      sendAll: true,
+    }))
 
   it("sends a successful payment with memo", async () => {
     const memo = "this is my onchain memo"
