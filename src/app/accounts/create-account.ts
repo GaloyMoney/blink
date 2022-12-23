@@ -1,4 +1,4 @@
-import { ConfigError, getTestAccounts, getTwilioConfig, isRunningJest } from "@config"
+import { ConfigError, getTestAccounts, getTwilioConfig } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"

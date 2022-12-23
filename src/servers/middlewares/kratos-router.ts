@@ -22,18 +22,18 @@ kratosRouter.post(
     namespace: "registration",
     fn: async (req: express.Request, res: express.Response) => {
       const body = req.body
-      const { identity_id: userId, phone, schema_id } = body
+      const { identity_id: userId, phone: phoneRaw, schema_id } = body
 
       assert(schema_id === "phone_no_password_v0", "unsupported schema")
 
-      if (!phone || !userId) {
+      if (!phoneRaw || !userId) {
         console.log("missing inputs")
         res.status(400).send("missing inputs")
         return
       }
 
-      const phoneValid = checkedToPhoneNumber(phone)
-      if (phoneValid instanceof Error) {
+      const phone = checkedToPhoneNumber(phoneRaw)
+      if (phone instanceof Error) {
         console.log("invalid phone")
         res.status(400).send("invalid phone")
         return
