@@ -900,12 +900,20 @@ describe("UserWallet - onChainPay", () => {
 })
 
 describe("UsdWallet - onChainPay", () => {
-  it("send to external address from usd wallet", async () =>
+  it("send to an external address from usd wallet", async () =>
     testExternalSend({
       senderAccount: accountB,
       senderWalletId: walletIdUsdB,
       amount: usdAmount,
       sendAll: false,
+    }))
+
+  it("send all to an external address from usd wallet", async () =>
+    testExternalSend({
+      senderAccount: accountB,
+      senderWalletId: walletIdUsdB,
+      amount: usdAmount,
+      sendAll: true,
     }))
 
   // it("sends to internal address from usd wallet to usd wallet", async () => {})
