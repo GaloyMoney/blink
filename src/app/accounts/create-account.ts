@@ -68,10 +68,9 @@ export const createAccountWithPhoneIdentifier = async ({
   // we can't mock this function properly because in the end to end test,
   // the server is been launched as a sub process,
   // so it's not been mocked by jest
-  if (
-    isRunningJest /* TwilioClient will be mocked */ ||
-    getTwilioConfig().accountSid !== "AC_twilio_id" /* true in prod, false in e2e */
-  ) {
+  if (getTwilioConfig().accountSid === "AC_twilio_id") {
+    baseLogger.info("no twilio credential. skipping getCarrier call")
+  } else {
     phoneMetadata = await TwilioClient().getCarrier(phone)
   }
 
