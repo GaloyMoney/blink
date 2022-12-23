@@ -104,12 +104,12 @@ export class InvalidDeviceTokenError extends ValidationError {}
 
 export class InvalidLanguageError extends ValidationError {}
 export class InvalidAccountLevelError extends ValidationError {}
+export class InvalidAccountLimitTypeError extends ValidationError {}
 
 export class LimitsExceededError extends ValidationError {}
 export class WithdrawalLimitsExceededError extends LimitsExceededError {}
 export class IntraledgerLimitsExceededError extends LimitsExceededError {}
 export class TradeIntraAccountLimitsExceededError extends LimitsExceededError {}
-export class TwoFALimitsExceededError extends LimitsExceededError {}
 
 export class LnRouteValidationError extends ValidationError {}
 export class BadAmountForRouteError extends LnRouteValidationError {}

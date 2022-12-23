@@ -199,17 +199,6 @@ export class OnChainFeeEstimationError extends CustomApolloError {
   }
 }
 
-export class TwoFAError extends CustomApolloError {
-  constructor(errData: CustomApolloErrorData) {
-    super({
-      message: "Incorrect code",
-      forwardToClient: true,
-      code: "2FA_ERROR",
-      ...errData,
-    })
-  }
-}
-
 export class InvoiceDecodeError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({

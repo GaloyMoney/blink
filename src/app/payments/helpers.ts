@@ -132,18 +132,17 @@ const recipientDetailsFromInvoice = async <R extends WalletCurrency>(
   }
 }
 
-const checkLimitsBase = async ({
+export const volumesForAccountId = async ({
   accountId,
+  period,
   volumeAmountSinceFn,
 }: {
   accountId: AccountId
+  period: Days
   volumeAmountSinceFn: GetVolumeAmountSinceFn
-}) => {
-  const timestamp1Day = timestampDaysAgo(ONE_DAY)
+}): Promise<TxBaseVolumeAmount<WalletCurrency>[] | ApplicationError> => {
+  const timestamp1Day = timestampDaysAgo(period)
   if (timestamp1Day instanceof Error) return timestamp1Day
-
-  const account = await AccountsRepository().findById(accountId)
-  if (account instanceof Error) return account
 
   const wallets = await WalletsRepository().listByAccountId(accountId)
   if (wallets instanceof Error) return wallets
@@ -164,6 +163,26 @@ const checkLimitsBase = async ({
     (vol): vol is TxBaseVolumeAmount<WalletCurrency> => true,
   )
 
+  return walletVolumes
+}
+
+const volumesAndLimitsForAccountId = async ({
+  accountId,
+  volumeAmountSinceFn,
+}: {
+  accountId: AccountId
+  volumeAmountSinceFn: GetVolumeAmountSinceFn
+}) => {
+  const account = await AccountsRepository().findById(accountId)
+  if (account instanceof Error) return account
+
+  const walletVolumes = await volumesForAccountId({
+    accountId,
+    period: ONE_DAY,
+    volumeAmountSinceFn,
+  })
+  if (walletVolumes instanceof Error) return walletVolumes
+
   return {
     accountLimits: getAccountLimits({ level: account.level }),
     walletVolumes,
@@ -179,7 +198,7 @@ export const newCheckIntraledgerLimits = async ({
   accountId: AccountId
   priceRatio: PriceRatio
 }) => {
-  const volumesAndLimits = await checkLimitsBase({
+  const volumesAndLimits = await volumesAndLimitsForAccountId({
     accountId,
     volumeAmountSinceFn: ledger.intraledgerTxBaseVolumeAmountSince,
   })
@@ -204,7 +223,7 @@ export const newCheckTradeIntraAccountLimits = async ({
   accountId: AccountId
   priceRatio: PriceRatio
 }) => {
-  const volumesAndLimits = await checkLimitsBase({
+  const volumesAndLimits = await volumesAndLimitsForAccountId({
     accountId,
     volumeAmountSinceFn: ledger.tradeIntraAccountTxBaseVolumeAmountSince,
   })
@@ -229,7 +248,7 @@ export const newCheckWithdrawalLimits = async ({
   accountId: AccountId
   priceRatio: PriceRatio
 }) => {
-  const volumesAndLimits = await checkLimitsBase({
+  const volumesAndLimits = await volumesAndLimitsForAccountId({
     accountId,
     volumeAmountSinceFn: ledger.externalPaymentVolumeAmountSince,
   })

@@ -17,6 +17,7 @@ export * from "./get-transactions-for-account"
 export * from "./add-wallet"
 export * from "./create-account"
 export * from "./update-account-ip"
+export * from "./account-limit"
 
 const accounts = AccountsRepository()
 

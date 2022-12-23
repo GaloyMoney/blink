@@ -7,6 +7,12 @@ type AccountLevel =
 type AccountStatus =
   typeof import("./index").AccountStatus[keyof typeof import("./index").AccountStatus]
 
+type AccountLimitsRange =
+  typeof import("./index").AccountLimitsRange[keyof typeof import("./index").AccountLimitsRange]
+
+type AccountLimitsType =
+  typeof import("./index").AccountLimitsType[keyof typeof import("./index").AccountLimitsType]
+
 type DepositFeeRatio = number & { readonly brand: unique symbol }
 
 type ContactAlias = string & { readonly brand: unique symbol }
@@ -37,6 +43,8 @@ interface IAccountLimits {
   withdrawalLimit: UsdCents
   tradeIntraAccountLimit: UsdCents
 }
+
+type IAccountLimitAmounts = { [key in keyof IAccountLimits]: UsdPaymentAmount }
 
 type AccountContact = {
   readonly id: Username
@@ -109,15 +117,28 @@ type LimiterCheckInputs = {
 
 type LimitsCheckerFn = (args: LimiterCheckInputs) => Promise<true | LimitsExceededError>
 
+type LimitsVolumesFn = (walletVolumes: TxBaseVolumeAmount<WalletCurrency>[]) => Promise<
+  | {
+      volumeTotalLimit: UsdPaymentAmount
+      volumeUsed: UsdPaymentAmount
+      volumeRemaining: UsdPaymentAmount
+    }
+  | ValidationError
+>
+
 type AccountLimitsChecker = {
   checkIntraledger: LimitsCheckerFn
   checkWithdrawal: LimitsCheckerFn
   checkTradeIntraAccount: LimitsCheckerFn
 }
 
-type TwoFALimitsChecker = {
-  checkTwoFA: LimitsCheckerFn
-}
+type AccountLimitsVolumes =
+  | {
+      volumesIntraledger: LimitsVolumesFn
+      volumesWithdrawal: LimitsVolumesFn
+      volumesTradeIntraAccount: LimitsVolumesFn
+    }
+  | ValidationError
 
 type AccountValidator = {
   validateWalletForAccount(wallet: Wallet): true | ValidationError
@@ -151,10 +172,6 @@ type TestAccountsChecker = (testAccounts: TestAccount[]) => {
     code: PhoneCode
     phone: PhoneNumber
   }) => boolean
-}
-
-type TwoFALimits = {
-  threshold: UsdCents
 }
 
 type FeesConfig = {

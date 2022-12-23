@@ -9,3 +9,13 @@ export const AccountStatus = {
   Active: "active",
   Locked: "locked",
 } as const
+
+export const AccountLimitsRange = {
+  ONE_DAY: "ONE_DAY",
+} as const
+
+export const AccountLimitsType = {
+  Withdrawal: "Withdrawal",
+  IntraLedger: "IntraLedger",
+  SelfTrade: "TradeIntraAccount",
+} as const

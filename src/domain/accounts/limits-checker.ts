@@ -1,7 +1,6 @@
 import {
   IntraledgerLimitsExceededError,
   TradeIntraAccountLimitsExceededError,
-  TwoFALimitsExceededError,
   WithdrawalLimitsExceededError,
 } from "@domain/errors"
 import {
@@ -12,21 +11,20 @@ import {
 } from "@domain/shared"
 import { addAttributesToCurrentSpan } from "@services/tracing"
 
+import { calculateLimitsInUsd } from "./limits-volume"
+import { AccountLimitsType } from "./primitives"
+
 const calc = AmountCalculator()
 
-const checkLimitBase =
+const checkLimit =
   ({
     limitName,
-    limitAmount,
+    limitAmount: limit,
     limitError,
     limitErrMsg,
     priceRatio,
   }: {
-    limitName:
-      | "checkIntraledger"
-      | "checkWithdrawal"
-      | "checkTradeIntraAccount"
-      | "checkTwoFA"
+    limitName: AccountLimitsType
     limitAmount: UsdCents
     limitError: LimitsExceededErrorConstructor
     limitErrMsg: string | undefined
@@ -48,23 +46,24 @@ const checkLimitBase =
       volumeInUsdAmount = calc.add(volumeInUsdAmount, outgoingUsdAmount)
     }
 
-    const limit = paymentAmountFromNumber({
-      amount: limitAmount,
+    const limitAmount = paymentAmountFromNumber({
+      amount: limit,
       currency: WalletCurrency.Usd,
     })
-    if (limit instanceof Error) return limit
+    if (limitAmount instanceof Error) return limitAmount
+
     addAttributesToCurrentSpan({
-      "txVolume.outgoingInBase": `${volumeInUsdAmount.amount}`,
-      "txVolume.threshold": `${limit.amount}`,
       "txVolume.amountInBase": `${amount.amount}`,
-      "txVolume.limitCheck": limitName,
     })
 
-    const remainingLimit = limit.amount - volumeInUsdAmount.amount
-    if (remainingLimit < amount.amount) {
-      return new limitError(limitErrMsg)
-    }
-    return true
+    const { volumeRemaining } = await calculateLimitsInUsd({
+      limitName,
+      limitAmount,
+      priceRatio,
+
+      walletVolumes,
+    })
+    return volumeRemaining.amount < amount.amount ? new limitError(limitErrMsg) : true
   }
 
 export const AccountLimitsChecker = ({
@@ -74,41 +73,25 @@ export const AccountLimitsChecker = ({
   accountLimits: IAccountLimits
   priceRatio: PriceRatio
 }): AccountLimitsChecker => ({
-  checkIntraledger: checkLimitBase({
-    limitName: "checkIntraledger",
+  checkIntraledger: checkLimit({
+    limitName: AccountLimitsType.IntraLedger,
     limitAmount: accountLimits.intraLedgerLimit,
     limitError: IntraledgerLimitsExceededError,
     limitErrMsg: `Cannot transfer more than ${accountLimits.intraLedgerLimit} cents in 24 hours`,
     priceRatio,
   }),
-  checkWithdrawal: checkLimitBase({
-    limitName: "checkWithdrawal",
+  checkWithdrawal: checkLimit({
+    limitName: AccountLimitsType.Withdrawal,
     limitAmount: accountLimits.withdrawalLimit,
     limitError: WithdrawalLimitsExceededError,
     limitErrMsg: `Cannot transfer more than ${accountLimits.withdrawalLimit} cents in 24 hours`,
     priceRatio,
   }),
-  checkTradeIntraAccount: checkLimitBase({
-    limitName: "checkTradeIntraAccount",
+  checkTradeIntraAccount: checkLimit({
+    limitName: AccountLimitsType.SelfTrade,
     limitAmount: accountLimits.tradeIntraAccountLimit,
     limitError: TradeIntraAccountLimitsExceededError,
     limitErrMsg: `Cannot transfer more than ${accountLimits.tradeIntraAccountLimit} cents in 24 hours`,
-    priceRatio,
-  }),
-})
-
-export const TwoFALimitsChecker = ({
-  twoFALimits,
-  priceRatio,
-}: {
-  twoFALimits: TwoFALimits
-  priceRatio: PriceRatio
-}): TwoFALimitsChecker => ({
-  checkTwoFA: checkLimitBase({
-    limitName: "checkTwoFA",
-    limitAmount: twoFALimits.threshold,
-    limitError: TwoFALimitsExceededError,
-    limitErrMsg: undefined,
     priceRatio,
   }),
 })

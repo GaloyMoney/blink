@@ -2,6 +2,7 @@ interface Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+  limits: AccountLimits!
   transactions(
     """
     Returns the items in the list that come after the specified cursor.
@@ -25,6 +26,40 @@ interface Account {
     walletIds: [WalletId]
   ): TransactionConnection
   wallets: [Wallet!]!
+}
+
+interface AccountLimit {
+  """
+  The rolling time interval in seconds that the limits would apply for.
+  """
+  interval: Seconds
+
+  """
+  The amount of cents remaining below the limit for the current 24 hour period.
+  """
+  remainingLimit: CentAmount
+
+  """
+  The current maximum limit for a given 24 hour period.
+  """
+  totalLimit: CentAmount!
+}
+
+type AccountLimits {
+  """
+  Limits for converting between currencies among a account's own wallets.
+  """
+  convert: [AccountLimit!]!
+
+  """
+  Limits for sending to other internal accounts.
+  """
+  internalSend: [AccountLimit!]!
+
+  """
+  Limits for withdrawing to external onchain or lightning destinations.
+  """
+  withdrawal: [AccountLimit!]!
 }
 
 input AccountUpdateDefaultWalletIdInput {
@@ -159,6 +194,7 @@ type ConsumerAccount implements Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
   id: ID!
+  limits: AccountLimits!
 
   """
   A list of all transactions associated with walletIds optionally passed.
@@ -742,6 +778,23 @@ type OnChainUpdate {
   walletId: WalletId!
 }
 
+type OneDayAccountLimit implements AccountLimit {
+  """
+  The rolling time interval value in seconds for the current 24 hour period.
+  """
+  interval: Seconds
+
+  """
+  The amount of cents remaining below the limit for the current 24 hour period.
+  """
+  remainingLimit: CentAmount
+
+  """
+  The current maximum limit for a given 24 hour period.
+  """
+  totalLimit: CentAmount!
+}
+
 """
 An authentication code valid for a single use
 """
@@ -890,6 +943,11 @@ type SatAmountPayload {
   amount: SatAmount
   errors: [Error!]!
 }
+
+"""
+(Positive) amount of seconds
+"""
+scalar Seconds
 
 union SettlementVia = SettlementViaIntraLedger | SettlementViaLn | SettlementViaOnChain
 

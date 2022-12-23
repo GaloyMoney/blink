@@ -25,10 +25,6 @@ type ApolloConfig = {
   playgroundUrl: string
 }
 
-type TwoFAConfig = {
-  threshold: number
-}
-
 type AccountsConfig = {
   initialStatus: AccountStatus
   initialWallets: WalletCurrency[]

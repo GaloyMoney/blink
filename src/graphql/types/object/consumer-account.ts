@@ -1,4 +1,5 @@
 import { CouldNotFindTransactionsForAccountError } from "@domain/errors"
+
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
 import {
@@ -7,18 +8,18 @@ import {
   checkedConnectionArgs,
 } from "@graphql/connections"
 
+import IAccount from "@graphql/types/abstract/account"
+import Wallet from "@graphql/types/abstract/wallet"
+import WalletId from "@graphql/types/scalar/wallet-id"
+
 import { WalletsRepository } from "@services/mongoose"
 
 import { Accounts, Wallets } from "@app"
 
 import getUuidByString from "uuid-by-string"
 
-import IAccount from "../abstract/account"
-import Wallet from "../abstract/wallet"
-
-import WalletId from "../scalar/wallet-id"
-
 import { TransactionConnection } from "./transaction"
+import AccountLimits from "./account-limits"
 
 const ConsumerAccount = GT.Object({
   name: "ConsumerAccount",
@@ -56,6 +57,12 @@ const ConsumerAccount = GT.Object({
         return Accounts.getCSVForAccount(source.id)
       },
     },
+
+    limits: {
+      type: GT.NonNull(AccountLimits),
+      resolve: (source: Account) => source,
+    },
+
     transactions: {
       description:
         "A list of all transactions associated with walletIds optionally passed.",

@@ -1,7 +1,6 @@
 import {
   TransactionRestrictedError,
   LightningPaymentError,
-  TwoFAError,
   NotFoundError,
   SelfPaymentError,
   InsufficientBalanceError,
@@ -44,10 +43,6 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "TradeIntraAccountLimitsExceededError":
       message = error.message
       return new TransactionRestrictedError({ message, logger: baseLogger })
-
-    case "TwoFALimitsExceededError":
-      message = "Need a 2FA code to proceed with the payment"
-      return new TwoFAError({ message, logger: baseLogger })
 
     case "AlreadyPaidError":
       message = "Invoice is already paid"
@@ -402,6 +397,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "InsufficientBalanceForLnPaymentError":
     case "InvalidLanguageError":
     case "InvalidAccountLevelError":
+    case "InvalidAccountLimitTypeError":
     case "InvalidWithdrawFeeError":
     case "InvalidUsdCents":
     case "NonIntegerError":
