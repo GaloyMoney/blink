@@ -1,7 +1,4 @@
-import {
-  createAccountForEmailIdentifier,
-  createAccountWithPhoneIdentifier,
-} from "@app/accounts/create-account"
+import { createAccountForEmailIdentifier } from "@app/accounts/create-account"
 import {
   getDefaultAccountsConfig,
   getFailedLoginAttemptPerIpLimits,
@@ -13,7 +10,6 @@ import { TwilioClient } from "@services/twilio"
 
 import { checkedToUserId } from "@domain/accounts"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
-import { LikelyNoUserWithThisPhoneExistError } from "@domain/authentication/errors"
 
 import { CouldNotFindAccountFromKratosIdError, NotImplementedError } from "@domain/errors"
 import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
@@ -21,10 +17,10 @@ import { RateLimiterExceededError } from "@domain/rate-limit/errors"
 import { checkedToEmailAddress } from "@domain/users"
 import { AuthWithPhonePasswordlessService } from "@services/kratos"
 
-import { AccountsRepository } from "@services/mongoose"
-import { consumeLimiter, RedisRateLimitService } from "@services/rate-limit"
-import { addAttributesToCurrentSpan } from "@services/tracing"
 import { PhoneCodeInvalidError } from "@domain/phone-provider"
+import { AccountsRepository } from "@services/mongoose"
+import { RedisRateLimitService, consumeLimiter } from "@services/rate-limit"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 export const loginWithPhone = async ({
   phone,
@@ -56,36 +52,15 @@ export const loginWithPhone = async ({
   await rewardFailedLoginAttemptPerPhoneLimits(phone)
 
   let kratosToken: SessionToken
-  let kratosUserId: UserId
 
   const authService = AuthWithPhonePasswordlessService()
 
-  let kratosResult = await authService.login(phone)
+  const kratosResult = await authService.login(phone)
 
-  // FIXME: this is a fuzzy error. we can't create a new user on this pattern
-  // need to use hook
-  if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
-    // user has not migrated to kratos or it's a new user
-
-    kratosResult = await authService.createIdentityWithSession(phone)
-    if (kratosResult instanceof Error) return kratosResult
-    addAttributesToCurrentSpan({ "login.newAccount": true })
-
-    kratosToken = kratosResult.sessionToken
-    kratosUserId = kratosResult.kratosUserId
-
-    const accountRaw: NewAccountWithPhoneIdentifier = { kratosUserId, phone }
-    const account = await createAccountWithPhoneIdentifier({
-      newAccountInfo: accountRaw,
-      config: getDefaultAccountsConfig(),
-    })
-
-    if (account instanceof Error) return account
-  } else if (kratosResult instanceof Error) {
+  if (kratosResult instanceof Error) {
     return kratosResult
   } else {
     kratosToken = kratosResult.sessionToken
-    kratosUserId = kratosResult.kratosUserId
   }
 
   return kratosToken
