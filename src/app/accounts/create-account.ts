@@ -1,4 +1,4 @@
-import { ConfigError, getTestAccounts, getTwilioConfig } from "@config"
+import { ConfigError, getTestAccounts, getTwilioConfig, isRunningJest } from "@config"
 import { WalletCurrency } from "@domain/shared"
 import { WalletType } from "@domain/wallets"
 import { baseLogger } from "@services/logger"
@@ -65,12 +65,13 @@ export const createAccountWithPhoneIdentifier = async ({
 }): Promise<Account | RepositoryError> => {
   let phoneMetadata: PhoneMetadata | PhoneProviderServiceError | undefined
 
-  // we can't mock this function properly because in the end to end test,
+  // we can't mock getCarrier properly because in the end to end test,
   // the server is been launched as a sub process,
   // so it's not been mocked by jest
-  if (getTwilioConfig().accountSid === "AC_twilio_id") {
-    baseLogger.info("no twilio credential. skipping getCarrier call")
-  } else {
+  if (
+    getTwilioConfig().accountSid !== "AC_twilio_id" ||
+    isRunningJest /* TwilioClient will be mocked */
+  ) {
     phoneMetadata = await TwilioClient().getCarrier(phone)
   }
 
