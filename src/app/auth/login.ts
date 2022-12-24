@@ -1,7 +1,4 @@
-import {
-  createAccountForEmailIdentifier,
-  createAccountWithPhoneIdentifier,
-} from "@app/accounts/create-account"
+import { createAccountForEmailIdentifier } from "@app/accounts/create-account"
 import {
   getDefaultAccountsConfig,
   getFailedLoginAttemptPerIpLimits,
@@ -55,42 +52,26 @@ export const loginWithPhone = async ({
   await rewardFailedLoginAttemptPerIpLimits(ip)
   await rewardFailedLoginAttemptPerPhoneLimits(phone)
 
-  let kratosToken: SessionToken
-  let kratosUserId: UserId
-
   const authService = AuthWithPhonePasswordlessService()
 
   let kratosResult = await authService.login(phone)
 
-  // FIXME: this is a fuzzy error. we can't create a new user on this pattern
-  // need to use hook
+  // FIXME: this is a fuzzy error.
+  // it exists because we currently make no difference between a registration and login
   if (kratosResult instanceof LikelyNoUserWithThisPhoneExistError) {
-    // user has not migrated to kratos or it's a new user
+    // user is a new user
 
     kratosResult = await authService.createIdentityWithSession(phone)
     if (kratosResult instanceof Error) return kratosResult
     addAttributesToCurrentSpan({ "login.newAccount": true })
-
-    kratosToken = kratosResult.sessionToken
-    kratosUserId = kratosResult.kratosUserId
-
-    const accountRaw: NewAccountWithPhoneIdentifier = { kratosUserId, phone }
-    const account = await createAccountWithPhoneIdentifier({
-      newAccountInfo: accountRaw,
-      config: getDefaultAccountsConfig(),
-    })
-
-    if (account instanceof Error) return account
   } else if (kratosResult instanceof Error) {
     return kratosResult
-  } else {
-    kratosToken = kratosResult.sessionToken
-    kratosUserId = kratosResult.kratosUserId
   }
 
-  return kratosToken
+  return kratosResult.sessionToken
 }
 
+// deprecated
 export const loginWithEmail = async ({
   kratosUserId,
   emailAddress,

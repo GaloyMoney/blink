@@ -66,7 +66,7 @@ export const IdentityRepository = (): IIdentityRepository => {
       )
       assert(
         totalCount == uniqueIdentities.length,
-        "count doesn't match uniqueIdentities.length",
+        `totalCount ${totalCount} doesn't match uniqueIdentities.length ${uniqueIdentities.length}`,
       )
 
       return uniqueIdentities.map(toDomainIdentityPhone)

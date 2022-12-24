@@ -50,7 +50,6 @@ import {
   lndOutside2,
   pay,
   publishOkexPrice,
-  PID,
   startServer,
 } from "test/helpers"
 import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"
@@ -74,33 +73,9 @@ const centsAmount = toCents(4_000)
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
   serverPid = await startServer("start-main-ci")
-  await loginFromPhoneAndCode({ phone, code })
-  await loginFromPhoneAndCode({ phone: phoneOther, code: codeOther })
-
   triggerPid = await startServer("start-trigger-ci")
+
   await publishOkexPrice()
-
-  const account = await getAccountByTestUserRef(userRef)
-  const usdWallet = await Accounts.addWalletIfNonexistent({
-    accountId: account.id,
-    type: WalletType.Checking,
-    currency: WalletCurrency.Usd,
-  })
-  if (usdWallet instanceof Error) throw usdWallet
-  usdWalletId = usdWallet.id
-  walletId = await getDefaultWalletIdByTestUserRef(userRef)
-
-  await fundWalletIdFromLightning({ walletId, amount: satsAmount })
-  ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
-  const input = { phone, code }
-  const result = await apolloClient.mutate({ mutation: USER_LOGIN, variables: { input } })
-  // Create a new authenticated client
-  disposeClient()
-  ;({ apolloClient, disposeClient } = createApolloClient(
-    defaultTestClientConfig(result.data.userLogin.authToken),
-  ))
-  const meResult = await apolloClient.query({ query: ME })
-  expect(meResult.data.me.defaultAccount.defaultWalletId).toBe(walletId)
 })
 
 beforeEach(async () => {
@@ -114,6 +89,43 @@ afterAll(async () => {
   cancelOkexPricePublish()
   await killServer(serverPid)
   await killServer(triggerPid)
+})
+
+describe("setup", () => {
+  it("create main user", async () => {
+    await loginFromPhoneAndCode({ phone, code })
+  })
+
+  it("create other", async () => {
+    await loginFromPhoneAndCode({ phone: phoneOther, code: codeOther })
+  })
+
+  it("fund user", async () => {
+    const account = await getAccountByTestUserRef(userRef)
+    const usdWallet = await Accounts.addWalletIfNonexistent({
+      accountId: account.id,
+      type: WalletType.Checking,
+      currency: WalletCurrency.Usd,
+    })
+    if (usdWallet instanceof Error) throw usdWallet
+    usdWalletId = usdWallet.id
+    walletId = await getDefaultWalletIdByTestUserRef(userRef)
+
+    await fundWalletIdFromLightning({ walletId, amount: satsAmount })
+    ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
+    const input = { phone, code }
+    const result = await apolloClient.mutate({
+      mutation: USER_LOGIN,
+      variables: { input },
+    })
+    // Create a new authenticated client
+    disposeClient()
+    ;({ apolloClient, disposeClient } = createApolloClient(
+      defaultTestClientConfig(result.data.userLogin.authToken),
+    ))
+    const meResult = await apolloClient.query({ query: ME })
+    expect(meResult.data.me.defaultAccount.defaultWalletId).toBe(walletId)
+  })
 })
 
 describe("header", () => {

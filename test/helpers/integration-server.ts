@@ -3,8 +3,6 @@ import { promisify } from "util"
 
 import kill from "tree-kill"
 
-export type PID = number & { readonly brand: unique symbol }
-
 export const startServer = async (command: string): Promise<PID> => {
   const serverStartMessage = "server ready"
   return new Promise<PID>((resolve) => {

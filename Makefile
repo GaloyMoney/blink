@@ -122,7 +122,7 @@ execute-e2e-from-within-container:
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
 
 execute-e2e-from-within-container-cached:
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest oathkeeper --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit 
+	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-e2e.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit 
 
 integration:
 	yarn build && \
@@ -136,11 +136,6 @@ e2e:
 
 reset-e2e: reset-deps e2e
 
-integration-in-ci-cached:
-	yarn build && \
-	make create-tmp-env-ci && \
-	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests-cached
-
 integration-in-ci:
 	make create-tmp-env-ci && \
 	TMP_ENV_CI=tmp.env.ci docker compose -f docker-compose.yml up integration-tests
@@ -151,10 +146,6 @@ execute-integration-from-within-container:
 	yarn install && \
 	NODE_OPTIONS="--max-old-space-size=4096" \
 	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit
-
-execute-integration-from-within-container-cached:
-	NODE_OPTIONS="--max-old-space-size=3072" \
-	NODE_ENV=test LOGLEVEL=error $(BIN_DIR)/jest --config ./test/jest-integration.config.js --bail --runInBand --ci --reporters=default --reporters=jest-junit 
 
 unit-in-ci:
 	. ./.envrc && \

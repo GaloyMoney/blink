@@ -287,6 +287,8 @@ const successLimitsPaymentTests = ({
 describe("UserWallet Limits - Lightning Pay", () => {
   describe("single payment above limit fails limit check", () => {
     it("fails to pay when withdrawalLimit exceeded", async () => {
+      accountId = (await randomAccount()).id
+
       // Create new wallet
       const newWallet = await createAndFundNewWallet({
         accountId,

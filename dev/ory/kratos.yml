@@ -1,4 +1,4 @@
-version: v0.10.1
+version: v0.11.0
 
 dsn: "overrided-by-env"
 
@@ -77,11 +77,23 @@ selfservice:
       after:
         password:
           hooks:
+            - hook: web_hook
+              config:
+                url: http://e2e-tests:4012/kratos/registration
+                method: POST
+                can_interrupt: true
+                body: file:///home/ory/body.jsonnet # TODO: use a base64 encoding instead
+                auth:
+                  type: api_key
+                  config:
+                    name: Authorization
+                    value: The-Value-of-My-Key
+                    in: header
             - hook: session
 
 log:
   level: debug
-  format: text
+  format: json
   leak_sensitive_values: true
 
 secrets:

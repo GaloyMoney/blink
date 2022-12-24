@@ -25,7 +25,6 @@ import {
   getPhoneAndCodeFromRef,
   initializeTestingState,
   killServer,
-  PID,
   startServer,
 } from "test/helpers"
 import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"

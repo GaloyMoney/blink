@@ -17,7 +17,6 @@ import {
   defaultTestClientConfig,
   getPhoneAndCodeFromRef,
   killServer,
-  PID,
   startServer,
 } from "test/helpers"
 let serverPid: PID

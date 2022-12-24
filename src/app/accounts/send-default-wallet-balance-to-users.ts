@@ -10,7 +10,7 @@ import { wrapAsyncToRunInSpan } from "@services/tracing"
 
 import { getRecentlyActiveAccounts } from "./active-accounts"
 
-export const sendDefaultWalletBalanceToUsers = async () => {
+export const sendDefaultWalletBalanceToAccounts = async () => {
   const accounts = getRecentlyActiveAccounts()
   if (accounts instanceof Error) throw accounts
 

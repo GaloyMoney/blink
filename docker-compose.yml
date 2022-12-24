@@ -1,4 +1,4 @@
-version: "2"
+version: "3"
 services:
   e2e-deps:
     image: busybox
@@ -281,7 +281,6 @@ services:
     restart: on-failure:10
     volumes:
       - ./:/repo
-
   oathkeeper:
     image: oryd/oathkeeper:v0.40
     command: serve -c /home/ory/oathkeeper.yml --sqa-opt-out
@@ -289,9 +288,8 @@ services:
       - type: bind
         source: dev/ory
         target: /home/ory
-
   kratos:
-    image: oryd/kratos:v0.10.1
+    image: oryd/kratos:v0.11.0
     entrypoint: sh -c
     command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --sqa-opt-out"'
     environment:

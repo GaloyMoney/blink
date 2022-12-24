@@ -27,7 +27,6 @@ import {
   promisifiedSubscription,
   initializeTestingState,
   killServer,
-  PID,
   startServer,
 } from "test/helpers"
 import { loginFromPhoneAndCode, updateUsername } from "test/helpers/account-creation-e2e"
@@ -46,7 +45,6 @@ const { phone: phoneRecipient, code: codeRecipient } =
 
 beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
-
   serverPid = await startServer("start-main-ci")
 
   await loginFromPhoneAndCode({ phone, code })
