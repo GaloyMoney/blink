@@ -11,7 +11,7 @@ price_server:
     delayed_fee_rate: 0.0007
 
 okex_price_feed:
-  enabled: false
+  dev_mock_price_btc_in_usd: 20000
 
 tracing:
   host: "otel-agent"
