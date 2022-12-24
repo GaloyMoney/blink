@@ -38,20 +38,20 @@ export const TwilioClient = (): IPhoneProviderService => {
       switch (true) {
         case match(KnownTwilioErrorMessages.InvalidPhoneNumber):
         case match(KnownTwilioErrorMessages.InvalidMobileNumber):
-          return new InvalidPhoneNumberPhoneProviderError(err)
+          return new InvalidPhoneNumberPhoneProviderError(err.message || err)
 
         case match(KnownTwilioErrorMessages.RestrictedRegion):
         case match(KnownTwilioErrorMessages.BlockedRegion):
-          return new RestrictedRegionPhoneProviderError(err)
+          return new RestrictedRegionPhoneProviderError(err.message || err)
 
         case match(KnownTwilioErrorMessages.UnsubscribedRecipient):
-          return new UnsubscribedRecipientPhoneProviderError(err)
+          return new UnsubscribedRecipientPhoneProviderError(err.message || err)
 
         case match(KnownTwilioErrorMessages.BadPhoneProviderConnection):
-          return new PhoneProviderConnectionError(err)
+          return new PhoneProviderConnectionError(err.message || err)
 
         default:
-          return new UnknownPhoneProviderServiceError(err)
+          return new UnknownPhoneProviderServiceError(err.message || err)
       }
     }
 
@@ -77,7 +77,7 @@ export const TwilioClient = (): IPhoneProviderService => {
       }
 
       if (err.message.includes("timeout of") && err.message.includes("exceeded")) {
-        return new PhoneProviderConnectionError(err)
+        return new PhoneProviderConnectionError(err.message || err)
       }
 
       if (err.status === 404) {
@@ -125,7 +125,7 @@ export const TwilioClient = (): IPhoneProviderService => {
 
       return phoneMetadata
     } catch (err) {
-      return new UnknownPhoneProviderServiceError(err)
+      return new UnknownPhoneProviderServiceError(err.message || err)
     }
   }
 
