@@ -39,11 +39,17 @@ describe("config.ts", () => {
       const valid = validate(yamlConfig)
       expect(valid).toBeTruthy()
 
+      const contentOrg = fs.readFileSync("./galoy.yaml", "utf8")
+
       fs.writeFileSync(
         "./galoy.yaml",
         yaml.dump(yamlConfig, { quotingType: '"' }),
         "utf8",
       )
+
+      const contentNew = fs.readFileSync("./galoy.yaml", "utf8")
+
+      expect(contentOrg).toEqual(contentNew)
     })
 
     it("passes validation with conditional not required", () => {
