@@ -8,7 +8,7 @@ import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 const UserLogoutInput = GT.Input({
   name: "UserLogoutInput",
   fields: () => ({
-    token: {
+    authToken: {
       type: GT.NonNull(AuthToken),
     },
   }),
@@ -16,7 +16,7 @@ const UserLogoutInput = GT.Input({
 
 const UserLogoutMutation = GT.Field<{
   input: {
-    token: string | InputValidationError
+    authToken: string | InputValidationError
   }
 }>({
   extensions: {
@@ -27,10 +27,10 @@ const UserLogoutMutation = GT.Field<{
     input: { type: GT.NonNull(UserLogoutInput) },
   },
   resolve: async (_, args) => {
-    const { token } = args.input
-    if (token instanceof Error) return
+    const { authToken } = args.input
+    if (authToken instanceof Error) return
     const authService = AuthWithPhonePasswordlessService()
-    const logoutResp = await authService.logout(token)
+    const logoutResp = await authService.logout(authToken)
     if (logoutResp instanceof Error)
       return { errors: [mapAndParseErrorForGqlResponse(logoutResp)] }
     return { errors: [] }
