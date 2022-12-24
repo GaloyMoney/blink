@@ -140,7 +140,6 @@ type YamlSchema = {
     publicApi: string
     adminApi: string
     corsAllowedOrigins: string[]
-    callbackKey: string
   }
   oathkeeperConfig: {
     urlJkws: string

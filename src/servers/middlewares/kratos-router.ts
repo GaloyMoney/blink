@@ -3,7 +3,7 @@ import { assert } from "console"
 import cors from "cors"
 import express from "express"
 
-import { getDefaultAccountsConfig, getKratosConfig } from "@config"
+import { getDefaultAccountsConfig, getKratosConfig, getKratosPasswords } from "@config"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
 import { createAccountWithPhoneIdentifier } from "@app/accounts"
 import { checkedToPhoneNumber } from "@domain/users"
@@ -11,7 +11,8 @@ import { checkedToUserId } from "@domain/accounts"
 
 const kratosRouter = express.Router({ caseSensitive: true })
 
-const { corsAllowedOrigins, callbackKey } = getKratosConfig()
+const { corsAllowedOrigins } = getKratosConfig()
+const { callbackApiKey } = getKratosPasswords()
 
 kratosRouter.use(cors({ origin: corsAllowedOrigins, credentials: true }))
 kratosRouter.use(express.json())
@@ -29,7 +30,7 @@ kratosRouter.post(
         return
       }
 
-      if (key !== callbackKey) {
+      if (key !== callbackApiKey) {
         console.log("incorrect authorization header")
         res.status(401).send("incorrect authorization header")
         return

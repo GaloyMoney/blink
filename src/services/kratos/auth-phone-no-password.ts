@@ -1,4 +1,4 @@
-import { getKratosMasterPhonePassword } from "@config"
+import { getKratosPasswords } from "@config"
 
 import {
   LikelyNoUserWithThisPhoneExistError,
@@ -26,7 +26,7 @@ import { kratosAdmin, kratosPublic, toDomainIdentityPhone } from "./private"
 // login with phone
 
 export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessService => {
-  const password = getKratosMasterPhonePassword()
+  const password = getKratosPasswords().masterUserPassword
 
   const login = async (
     phone: PhoneNumber,

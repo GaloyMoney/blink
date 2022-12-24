@@ -122,11 +122,17 @@ export const getLoopConfig = () => {
   throw new ConfigError("getLoopConfig() was called though swapEnabled is false")
 }
 
-export const getKratosMasterPhonePassword = () => {
+export const getKratosPasswords = () => {
   if (!process.env.KRATOS_MASTER_PHONE_PASSWORD) {
     throw new ConfigError("KRATOS_MASTER_PHONE_PASSWORD env not found")
   }
-  return process.env.KRATOS_MASTER_PHONE_PASSWORD
+  if (!process.env.KRATOS_CALLBACK_API_KEY) {
+    throw new ConfigError("KRATOS_CALLBACK_API_KEY env not found")
+  }
+  return {
+    masterUserPassword: process.env.KRATOS_MASTER_PHONE_PASSWORD,
+    callbackApiKey: process.env.KRATOS_CALLBACK_API_KEY,
+  }
 }
 
 // The value GOOGLE_APPLICATION_CREDENTIALS should be set in production
