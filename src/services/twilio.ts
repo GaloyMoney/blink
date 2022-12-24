@@ -41,6 +41,7 @@ export const TwilioClient = (): IPhoneProviderService => {
           return new InvalidPhoneNumberPhoneProviderError(err)
 
         case match(KnownTwilioErrorMessages.RestrictedRegion):
+        case match(KnownTwilioErrorMessages.BlockedRegion):
           return new RestrictedRegionPhoneProviderError(err)
 
         case match(KnownTwilioErrorMessages.UnsubscribedRecipient):
@@ -136,4 +137,6 @@ export const KnownTwilioErrorMessages: { [key: string]: RegExp } = {
   RestrictedRegion: /has not been enabled for the region/,
   UnsubscribedRecipient: /unsubscribed recipient/,
   BadPhoneProviderConnection: /timeout of.*exceeded/,
+  BlockedRegion:
+    /The destination phone number has been blocked by Verify Geo-Permissions. .* is blocked for sms channel for all services/,
 } as const
