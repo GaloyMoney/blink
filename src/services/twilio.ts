@@ -76,6 +76,10 @@ export const TwilioClient = (): IPhoneProviderService => {
         return new InvalidPhoneNumberPhoneProviderError(err.message || err)
       }
 
+      if (err.message.includes("timeout of") && err.message.includes("exceeded")) {
+        return new PhoneProviderConnectionError(err)
+      }
+
       if (err.status === 404) {
         return new ExpiredOrNonExistentPhoneNumberError(err.message || err)
       }
