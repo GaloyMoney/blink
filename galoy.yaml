@@ -188,6 +188,7 @@ cronConfig:
   rebalanceEnabled: true
   swapEnabled: true
 kratosConfig:
+  callbackKey: The-Value-of-My-Key
   publicApi: http://localhost:4433
   adminApi: http://localhost:4434
   corsAllowedOrigins:
