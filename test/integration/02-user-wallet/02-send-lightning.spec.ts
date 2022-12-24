@@ -61,7 +61,6 @@ import * as PushNotificationsServiceImpl from "@services/notifications/push-noti
 
 import {
   cancelHodlInvoice,
-  cancelOkexPricePublish,
   checkIsBalanced,
   createHodlInvoice,
   createInvoice,
@@ -77,7 +76,6 @@ import {
   getUsdWalletIdByTestUserRef,
   lndOutside1,
   lndOutside2,
-  publishOkexPrice,
   settleHodlInvoice,
   waitFor,
   waitUntilChannelBalanceSyncAll,
@@ -158,7 +156,6 @@ const locale = getLocale()
 const { code: DefaultDisplayCurrency } = getDisplayCurrencyConfig()
 
 beforeAll(async () => {
-  await publishOkexPrice()
   await createUserAndWalletFromUserRef("A")
   await createUserAndWalletFromUserRef("B")
   await createUserAndWalletFromUserRef("C")
@@ -203,7 +200,6 @@ afterEach(async () => {
 })
 
 afterAll(() => {
-  cancelOkexPricePublish()
   jest.restoreAllMocks()
 })
 

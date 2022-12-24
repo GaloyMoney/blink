@@ -32,7 +32,6 @@ import TRANSACTIONS_BY_WALLET_IDS from "./queries/transactions-by-wallet-ids.gql
 
 import {
   bitcoindClient,
-  cancelOkexPricePublish,
   clearAccountLocks,
   clearLimiters,
   createApolloClient,
@@ -49,7 +48,6 @@ import {
   lndOutside1,
   lndOutside2,
   pay,
-  publishOkexPrice,
   startServer,
 } from "test/helpers"
 import { loginFromPhoneAndCode } from "test/helpers/account-creation-e2e"
@@ -74,8 +72,6 @@ beforeAll(async () => {
   await initializeTestingState(defaultStateConfig())
   serverPid = await startServer("start-main-ci")
   triggerPid = await startServer("start-trigger-ci")
-
-  await publishOkexPrice()
 })
 
 beforeEach(async () => {
@@ -86,7 +82,6 @@ beforeEach(async () => {
 afterAll(async () => {
   await bitcoindClient.unloadWallet({ walletName: "outside" })
   disposeClient()
-  cancelOkexPricePublish()
   await killServer(serverPid)
   await killServer(triggerPid)
 })

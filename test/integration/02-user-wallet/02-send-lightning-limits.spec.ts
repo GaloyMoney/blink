@@ -12,13 +12,11 @@ import { AccountsRepository } from "@services/mongoose"
 
 import {
   addNewWallet,
-  cancelOkexPricePublish,
   checkIsBalanced,
   createAndFundNewWallet,
   createInvoice,
   randomAccount,
   lndOutside1,
-  publishOkexPrice,
 } from "test/helpers"
 
 const MOCKED_LIMIT = 100 as UsdCents
@@ -60,7 +58,6 @@ let otherBtcWallet: Wallet
 let otherUsdWallet: Wallet // eslint-disable-line @typescript-eslint/no-unused-vars
 
 beforeAll(async () => {
-  await publishOkexPrice()
   otherAccountId = (await randomAccount()).id
 
   const btcWallet = await addNewWallet({
@@ -87,7 +84,6 @@ afterEach(async () => {
 })
 
 afterAll(() => {
-  cancelOkexPricePublish()
   jest.restoreAllMocks()
 })
 

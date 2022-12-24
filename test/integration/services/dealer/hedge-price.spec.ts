@@ -9,13 +9,7 @@ import { AmountCalculator, paymentAmountFromNumber, WalletCurrency } from "@doma
 import { baseLogger } from "@services/logger"
 import { AccountsRepository } from "@services/mongoose"
 
-import {
-  cancelOkexPricePublish,
-  createAndFundNewWallet,
-  getBalanceHelper,
-  publishOkexPrice,
-  randomAccount,
-} from "test/helpers"
+import { createAndFundNewWallet, getBalanceHelper, randomAccount } from "test/helpers"
 
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")
@@ -348,14 +342,6 @@ const getMinBtcAmountToSpend = async ({
 
   return minBtcAmountToSpend
 }
-
-beforeAll(async () => {
-  await publishOkexPrice()
-})
-
-afterAll(async () => {
-  cancelOkexPricePublish()
-})
 
 describe("arbitrage strategies", () => {
   describe("can pay high sats invoice with $0.01", () => {

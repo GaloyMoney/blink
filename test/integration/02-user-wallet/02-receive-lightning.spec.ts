@@ -27,7 +27,6 @@ import { ImbalanceCalculator } from "@domain/ledger/imbalance-calculator"
 import { sleep } from "@utils"
 
 import {
-  cancelOkexPricePublish,
   checkIsBalanced,
   createUserAndWalletFromUserRef,
   getAccountByTestUserRef,
@@ -41,7 +40,6 @@ import {
   lnd1,
   lndOutside1,
   pay,
-  publishOkexPrice,
   safePay,
   safePayNoExpect,
   subscribeToInvoices,
@@ -57,7 +55,6 @@ let initBalanceB: Satoshis
 let initBalanceUsdB: UsdCents
 
 beforeAll(async () => {
-  await publishOkexPrice()
   await createUserAndWalletFromUserRef("B")
   await createUserAndWalletFromUserRef("F")
   walletIdB = await getDefaultWalletIdByTestUserRef("B")
@@ -70,10 +67,6 @@ beforeAll(async () => {
   walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
   walletIdF = await getDefaultWalletIdByTestUserRef("F")
   walletIdUsdF = await getUsdWalletIdByTestUserRef("F")
-})
-
-afterAll(async () => {
-  cancelOkexPricePublish()
 })
 
 beforeEach(async () => {
