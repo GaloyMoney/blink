@@ -1,4 +1,4 @@
-import { getKratosMasterPhonePassword } from "@config"
+import { getKratosPasswords } from "@config"
 import {
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
@@ -109,9 +109,9 @@ describe("phoneNoPassword", () => {
 
       {
         // FIXME: tmp for test.
-        // NB: I don't think it make sense to have 2fa for paasswordless schema
+        // NB: I don't think it make sense to have 2fa for passwordless schema
         // but the test is still useful to know how to use kratos for 2fa
-        const password = getKratosMasterPhonePassword()
+        const password = getKratosPasswords().masterUserPassword
 
         const res = await authService.login(phone)
         if (res instanceof Error) throw res

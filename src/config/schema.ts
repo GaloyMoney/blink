@@ -607,7 +607,6 @@ export const configSchema = {
     kratosConfig: {
       type: "object",
       properties: {
-        callbackKey: { type: "string" },
         publicApi: { type: "string" },
         adminApi: { type: "string" },
         corsAllowedOrigins: {
@@ -619,7 +618,6 @@ export const configSchema = {
       required: ["publicApi", "adminApi", "corsAllowedOrigins"],
       additionalProperties: false,
       default: {
-        callbackKey: "The-Value-of-My-Key",
         publicApi: "http://localhost:4433",
         adminApi: "http://localhost:4434",
         corsAllowedOrigins: ["http://localhost:3000"],
