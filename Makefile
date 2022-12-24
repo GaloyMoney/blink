@@ -9,26 +9,16 @@ start-deps-integration:
 update-price-history:
 	docker compose run price-history node servers/history/cron.js
 
-start-okex:
-	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register \
-		test/mocks/okex-server.ts | yarn pino-pretty -c -l
-
-start-main-only:
+start-main:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/graphql-main-server.ts | yarn pino-pretty -c -l
-
-start-main:
-	make start-okex & make start-main-only
 
 start-main-fast:
 	yarn run watch-main | yarn pino-pretty -c -l
 
-start-admin-only:
+start-admin:
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
 		src/servers/graphql-admin-server.ts | yarn pino-pretty -c -l
-
-start-admin:
-	make start-okex & make start-admin-only
 
 start-trigger: start-deps
 	. ./.envrc && yarn tsnd --respawn --files -r tsconfig-paths/register -r src/services/tracing.ts \
@@ -42,7 +32,7 @@ start-loopd:
 	./dev/bin/start-loopd.sh
 
 start: start-deps
-	make start-okex & make start-main-only & make start-admin-only & make start-trigger
+	make start-main & make start-admin & make start-trigger
 
 start-main-ci:
 	node lib/servers/graphql-main-server.js
