@@ -123,14 +123,14 @@ export const getLoopConfig = () => {
 }
 
 export const getKratosPasswords = () => {
-  if (!process.env.KRATOS_MASTER_PHONE_PASSWORD) {
-    throw new ConfigError("KRATOS_MASTER_PHONE_PASSWORD env not found")
+  if (!process.env.KRATOS_MASTER_USER_PASSWORD) {
+    throw new ConfigError("KRATOS_MASTER_USER_PASSWORD env not found")
   }
   if (!process.env.KRATOS_CALLBACK_API_KEY) {
     throw new ConfigError("KRATOS_CALLBACK_API_KEY env not found")
   }
   return {
-    masterUserPassword: process.env.KRATOS_MASTER_PHONE_PASSWORD,
+    masterUserPassword: process.env.KRATOS_MASTER_USER_PASSWORD,
     callbackApiKey: process.env.KRATOS_CALLBACK_API_KEY,
   }
 }
