@@ -8,6 +8,8 @@ export class UnknownRateLimitServiceError extends RateLimitServiceError {
 }
 
 export class RateLimiterExceededError extends RateLimitServiceError {}
+export class RateLimiterConfigError extends RateLimitServiceError {}
+export class UserPhoneCodeAttemptPhonePrefixRateLimiterExceededError extends RateLimiterExceededError {}
 export class UserPhoneCodeAttemptPhoneRateLimiterExceededError extends RateLimiterExceededError {}
 export class UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError extends RateLimiterExceededError {}
 export class UserPhoneCodeAttemptIpRateLimiterExceededError extends RateLimiterExceededError {}

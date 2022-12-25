@@ -7,6 +7,7 @@ import {
   getRequestPhoneCodePerIpLimits,
   getRequestPhoneCodePerPhoneLimits,
   getRequestPhoneCodePerPhoneMinIntervalLimits,
+  getRequestPhoneCodePerPhonePrefixLimits,
 } from "@config"
 
 import {
@@ -17,11 +18,13 @@ import {
   UserLoginPhoneRateLimiterExceededError,
   UserPhoneCodeAttemptIpRateLimiterExceededError,
   UserPhoneCodeAttemptPhoneMinIntervalRateLimiterExceededError,
+  UserPhoneCodeAttemptPhonePrefixRateLimiterExceededError,
   UserPhoneCodeAttemptPhoneRateLimiterExceededError,
 } from "./errors"
 
 export const RateLimitPrefix = {
   requestPhoneCodeAttemptPerPhone: "phone_code_attempt_phone_code",
+  requestPhoneCodeAttemptPerPhonePrefix: "phone_code_attempt_phone_code_prefix",
   requestPhoneCodeAttemptPerPhoneMinInterval:
     "phone_code_attempt_phone_code_min_interval",
   requestPhoneCodeAttemptPerIp: "phone_code_attempt_ip",
@@ -38,6 +41,11 @@ export const RateLimitConfig: { [key: string]: RateLimitConfig } = {
     key: RateLimitPrefix.requestPhoneCodeAttemptPerPhone,
     limits: getRequestPhoneCodePerPhoneLimits(),
     error: UserPhoneCodeAttemptPhoneRateLimiterExceededError,
+  },
+  requestPhoneCodeAttemptPerPhonePrefix: {
+    key: RateLimitPrefix.requestPhoneCodeAttemptPerPhonePrefix,
+    limits: getRequestPhoneCodePerPhonePrefixLimits(),
+    error: UserPhoneCodeAttemptPhonePrefixRateLimiterExceededError,
   },
   requestPhoneCodeAttemptPerPhoneMinInterval: {
     key: RateLimitPrefix.requestPhoneCodeAttemptPerPhoneMinInterval,

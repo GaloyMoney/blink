@@ -170,6 +170,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Too many phone code attempts, please wait for a while and try again."
       return new TooManyRequestError({ message, logger: baseLogger })
 
+    case "UserPhoneCodeAttemptPhonePrefixRateLimiterExceededError":
+      message = "Too many phone code attempts, please wait for a while and try again."
+      return new TooManyRequestError({ message, logger: baseLogger })
+
     case "UserPhoneCodeAttemptIpRateLimiterExceededError":
       message =
         "Too many phone code attempts on same network, please wait for a while and try again."
@@ -451,6 +455,7 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "LikelyUserAlreadyExistError":
     case "PhoneIdentityDoesNotExistError":
     case "InvalidDeviceTokenError":
+    case "RateLimiterConfigError":
       message = `Unexpected error occurred, please try again or contact support if it persists (code: ${
         error.name
       }${error.message ? ": " + error.message : ""})`

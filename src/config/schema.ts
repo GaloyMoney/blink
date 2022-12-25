@@ -305,6 +305,7 @@ export const configSchema = {
       type: "object",
       properties: {
         requestPhoneCodePerPhone: rateLimitConfigSchema,
+        requestPhoneCodePerPhonePrefix: rateLimitConfigSchema,
         requestPhoneCodePerPhoneMinInterval: rateLimitConfigSchema,
         requestPhoneCodePerIp: rateLimitConfigSchema,
         failedLoginAttemptPerPhone: rateLimitConfigSchema,
@@ -316,6 +317,7 @@ export const configSchema = {
       },
       required: [
         "requestPhoneCodePerPhone",
+        "requestPhoneCodePerPhonePrefix",
         "requestPhoneCodePerPhoneMinInterval",
         "requestPhoneCodePerIp",
         "failedLoginAttemptPerPhone",
@@ -330,6 +332,11 @@ export const configSchema = {
         requestPhoneCodePerPhone: {
           points: 4,
           duration: 3600,
+          blockDuration: 10800,
+        },
+        requestPhoneCodePerPhonePrefix: {
+          points: 8,
+          duration: 7200,
           blockDuration: 10800,
         },
         requestPhoneCodePerPhoneMinInterval: {

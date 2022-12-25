@@ -1,4 +1,5 @@
 import {
+  RateLimiterConfigError,
   RateLimiterExceededError,
   UnknownRateLimitServiceError,
 } from "@domain/rate-limit/errors"
@@ -10,11 +11,15 @@ export const RedisRateLimitService = ({
   limitOptions,
 }: {
   keyPrefix: RateLimitPrefix
-  limitOptions: RateLimitOptions
+  limitOptions?: RateLimitOptions
 }): IRateLimitService => {
   const limiter = new RateLimiterRedis({ storeClient: redis, keyPrefix, ...limitOptions })
 
   const consume = async (key: string) => {
+    if (!limitOptions) {
+      return new RateLimiterConfigError()
+    }
+
     try {
       await limiter.consume(key)
       return true
@@ -24,6 +29,10 @@ export const RedisRateLimitService = ({
   }
 
   const reset = async (key: string) => {
+    if (!limitOptions) {
+      return new RateLimiterConfigError()
+    }
+
     try {
       await limiter.delete(key)
       return true
@@ -33,6 +42,10 @@ export const RedisRateLimitService = ({
   }
 
   const reward = async (key: string) => {
+    if (!limitOptions) {
+      return new RateLimiterConfigError()
+    }
+
     try {
       await limiter.reward(key)
       return true
@@ -41,7 +54,16 @@ export const RedisRateLimitService = ({
     }
   }
 
-  return { consume, reset, reward }
+  const exist = async (key: string) => {
+    try {
+      const value = await limiter.get(key)
+      return value !== null
+    } catch (err) {
+      return new UnknownRateLimitServiceError(err)
+    }
+  }
+
+  return { consume, reset, reward, exist }
 }
 
 export const consumeLimiter = async ({

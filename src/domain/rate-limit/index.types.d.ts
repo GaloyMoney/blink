@@ -19,4 +19,5 @@ interface IRateLimitService {
   consume(key: string): Promise<true | RateLimitServiceError>
   reset(key: string): Promise<true | RateLimitServiceError>
   reward(key: string): Promise<true | RateLimitServiceError>
+  exist(key: string): Promise<boolean | RateLimitServiceError>
 }

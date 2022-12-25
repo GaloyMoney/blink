@@ -1,9 +1,9 @@
 import { getTestAccounts, getTwilioConfig } from "@config"
 import { TestAccountsChecker } from "@domain/accounts/test-accounts-checker"
 import { NotImplementedError } from "@domain/errors"
-import { RateLimitConfig } from "@domain/rate-limit"
+import { RateLimitConfig, RateLimitPrefix } from "@domain/rate-limit"
 import { RateLimiterExceededError } from "@domain/rate-limit/errors"
-import { consumeLimiter } from "@services/rate-limit"
+import { RedisRateLimitService, consumeLimiter } from "@services/rate-limit"
 import { TwilioClient } from "@services/twilio"
 
 export const requestPhoneCodeWithCaptcha = async ({
@@ -61,6 +61,19 @@ export const requestPhoneCode = async ({
   }
 
   {
+    // we only account for phone prefix limit if the phone has not been already tried out
+    // other we would double count multiple attempt for the same phone,
+    // and this is already cover by the checkPhoneCodeAttemptPerPhoneLimits rate limiter
+    const service = RedisRateLimitService({
+      keyPrefix: RateLimitPrefix.requestPhoneCodeAttemptPerPhone,
+    })
+    if (!service.exist(phone)) {
+      const limitOk = await checkPhoneCodeAttemptPerPhonePrefixLimits(phone)
+      if (limitOk instanceof Error) return limitOk
+    }
+  }
+
+  {
     const limitOk = await checkPhoneCodeAttemptPerPhoneLimits(phone)
     if (limitOk instanceof Error) return limitOk
   }
@@ -97,6 +110,18 @@ const checkPhoneCodeAttemptPerPhoneLimits = async (
     rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerPhone,
     keyToConsume: phone,
   })
+
+const checkPhoneCodeAttemptPerPhonePrefixLimits = async (
+  phone: PhoneNumber,
+): Promise<true | RateLimiterExceededError> => {
+  const PREFIX_LENGTH = 7
+  const prefixPhone = phone.substring(0, PREFIX_LENGTH) as PhoneNumber
+
+  return consumeLimiter({
+    rateLimitConfig: RateLimitConfig.requestPhoneCodeAttemptPerPhone,
+    keyToConsume: prefixPhone,
+  })
+}
 
 const checkPhoneCodeAttemptPerPhoneMinIntervalLimits = async (
   phone: PhoneNumber,
