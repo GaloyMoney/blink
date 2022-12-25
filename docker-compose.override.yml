@@ -66,3 +66,10 @@ services:
   e2e-tests:
     ports:
       - "4012:4012"
+  mailslurper:
+    ports:
+      - "4436:4436"
+      - "4437:4437"
+  kratos-pg:
+    ports:
+      - "5433:5432"
