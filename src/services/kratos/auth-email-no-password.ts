@@ -1,146 +1,36 @@
-import { getKratosPasswords } from "@config"
-import {
-  LikelyNoUserWithThisPhoneExistError,
-  LikelyUserAlreadyExistError,
-} from "@domain/authentication/errors"
-import { CreateIdentityBody, SuccessfulNativeRegistration } from "@ory/client"
+import { PhoneCodeInvalidError } from "@domain/phone-provider"
+
 import { AxiosResponse } from "node_modules/@ory/client/node_modules/axios/index"
 
-import { baseLogger } from "@services/logger"
+import { getKratosPasswords } from "@config"
 
-import { AuthenticationKratosError, UnknownKratosError } from "./errors"
+import { SuccessfulNativeLogin } from "@ory/client"
 
-import { kratosAdmin, kratosPublic } from "./private"
+import { UnknownKratosError } from "./errors"
+
+import { kratosPublic } from "./private"
 
 // login with email
 
 export const AuthWithEmailPasswordlessService = () => {
-  const password = getKratosPasswords().masterUserPassword
-
-  const register = async (email: EmailAddress): Promise<UserId | KratosError> => {
-    const flow = await kratosPublic.createNativeRegistrationFlow()
-
-    const traits = { email }
-    const method = "password"
-
-    let result: AxiosResponse<SuccessfulNativeRegistration>
-
-    try {
-      result = await kratosPublic.updateRegistrationFlow({
-        flow: flow.data.id,
-        updateRegistrationFlowBody: {
-          traits,
-          method,
-          password,
-        },
-      })
-
-      // would only return a valid session if `session` hook is activated
-      // baseLogger.warn(result.data, flow.data.id)
-    } catch (err) {
-      if (err.message === "Request failed with status code 400") {
-        return new LikelyNoUserWithThisPhoneExistError(err)
-      }
-
-      if (err.message === "Request failed with status code 401") {
-        return new AuthenticationKratosError(err)
-      }
-
-      return new UnknownKratosError(err)
-    }
-
-    // const sessionToken = result.data.session_token as SessionToken
-
-    // note: this only works when whoami: required_aal = aal1
-    const kratosUserId = result.data.identity.id as UserId
-    return kratosUserId
-  }
-
-  // TODO: type EmailCode
-  const validateEmail = async ({
-    email,
-    code,
-  }: {
-    email: EmailAddress
-    code: string
-  }) => {
-    const { data } = await kratosPublic.createNativeVerificationFlow()
-
-    const flow = data.id
-
-    console.log({ data, email })
-    // const identifier = email
-    const method = "code"
-
-    try {
-      const result = await kratosPublic.updateVerificationFlow({
-        flow,
-        updateVerificationFlowBody: {
-          email,
-          method,
-          /* eslint @typescript-eslint/ban-ts-comment: "off" */
-          // @ts-ignore-next-line no-implicit-any error
-          code,
-          flow,
-        },
-      })
-      console.log({ result })
-    } catch (err) {
-      console.log({ err }, "err12")
-      // if (err.message === "Request failed with status code 400") {
-      //   return new LikelyNoUserWithThisPhoneExistError(err)
-      // }
-
-      // if (err.message === "Request failed with status code 401") {
-      //   return new AuthenticationKratosError(err)
-      // }
-
-      // return new UnknownKratosError(err)
-    }
-
-    // const sessionToken = result.data.session_token as SessionToken
-
-    // // note: this only works when whoami: required_aal = aal1
-    // const kratosUserId = result.data.session.identity.id as UserId
-
-    // return { sessionToken, kratosUserId }
-  }
-
   const initiateEmailVerification = async (email: EmailAddress) => {
     const { data } = await kratosPublic.createNativeRecoveryFlow()
 
     const method = "code"
 
     try {
-      const result = await kratosPublic.updateRecoveryFlow({
+      await kratosPublic.updateRecoveryFlow({
         flow: data.id,
         updateRecoveryFlowBody: {
           email,
           method,
         },
       })
-      baseLogger.info({ result })
 
       return data.id
     } catch (err) {
-      console.log({ err }, "err12")
-      // if (err.message === "Request failed with status code 400") {
-      //   return new LikelyNoUserWithThisPhoneExistError(err)
-      // }
-
-      // if (err.message === "Request failed with status code 401") {
-      //   return new AuthenticationKratosError(err)
-      // }
-
-      // return new UnknownKratosError(err)
+      return new UnknownKratosError(err)
     }
-
-    // const sessionToken = result.data.session_token as SessionToken
-
-    // // note: this only works when whoami: required_aal = aal1
-    // const kratosUserId = result.data.session.identity.id as UserId
-
-    // return { sessionToken, kratosUserId }
   }
 
   const validateEmailVerification = async ({
@@ -153,118 +43,69 @@ export const AuthWithEmailPasswordlessService = () => {
     const method = "code"
 
     try {
-      const result = await kratosPublic.updateRecoveryFlow({
+      const res = await kratosPublic.updateRecoveryFlow({
         flow,
         updateRecoveryFlowBody: {
           method,
           code,
         },
       })
-      baseLogger.warn("success")
-      result
+
+      const wrongCodeMessage =
+        "The recovery code is invalid or has already been used. Please try again."
+      if (!!res.data.ui.messages && res.data.ui.messages[0].text === wrongCodeMessage) {
+        return new PhoneCodeInvalidError()
+      }
+
+      // baseLogger.warn({ state: res.data.state }, "state")
+      return new UnknownKratosError("happy case should error :/")
     } catch (err) {
-      console.log({ err }, "err12")
-      // if (err.message === "Request failed with status code 400") {
-      //   return new LikelyNoUserWithThisPhoneExistError(err)
-      // }
-
-      // if (err.message === "Request failed with status code 401") {
-      //   return new AuthenticationKratosError(err)
-      // }
-
-      // return new UnknownKratosError(err)
-    }
-
-    // const sessionToken = result.data.session_token as SessionToken
-
-    // // note: this only works when whoami: required_aal = aal1
-    // const kratosUserId = result.data.session.identity.id as UserId
-
-    // return { sessionToken, kratosUserId }
-  }
-
-  const createIdentityNoSession = async (
-    email: EmailAddress,
-  ): Promise<UserId | KratosError> => {
-    const adminIdentity: CreateIdentityBody = {
-      credentials: { password: { config: { password } } },
-      state: "active",
-      schema_id: "phone_email_no_password_v0",
-      traits: { email },
-    }
-
-    let kratosUserId: UserId
-
-    try {
-      const { data: identity } = await kratosAdmin.createIdentity({
-        createIdentityBody: adminIdentity,
-      })
-
-      kratosUserId = identity.id as UserId
-    } catch (err) {
-      if (err.message === "Request failed with status code 400") {
-        return new LikelyUserAlreadyExistError(err)
+      if (err.response.status === 422) {
+        // FIXME bug in kratos? https://github.com/ory/kratos/discussions/2923
+        // console.log("422 response, success?")
+        return true
       }
 
       return new UnknownKratosError(err)
     }
-
-    return kratosUserId
   }
 
-  // doesn't work:
-  // work only on default schema
-  // const create = async (
-  //   email: EmailAddress,
-  // ): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError> => {
-  //   const flow = await kratosPublic.createNativeRegistrationFlow()
+  const password = getKratosPasswords().masterUserPassword
 
-  //   const traits = { email }
-  //   const method = "password"
+  const login = async (
+    email: EmailAddress,
+  ): Promise<LoginWithPhoneNoPasswordSchemaResponse | KratosError> => {
+    const flow = await kratosPublic.createNativeLoginFlow()
 
-  //   let result: AxiosResponse<SuccessfulNativeRegistration>
+    const identifier = email
+    const method = "password"
 
-  //   try {
-  //     result = await kratosPublic.updateRegistrationFlow({
-  //       flow: flow.data.id,
-  //       updateRegistrationFlowBody: {
-  //         traits,
-  //         method,
-  //         password,
-  //       },
-  //     })
+    let result: AxiosResponse<SuccessfulNativeLogin>
 
-  //     console.log({ data: result.data })
-  //   } catch (err) {
-  //     console.log({ err })
-  //     if (err.message === "Request failed with status code 400") {
-  //       return new LikelyNoUserWithThisPhoneExistError(err)
-  //     }
+    try {
+      result = await kratosPublic.updateLoginFlow({
+        flow: flow.data.id,
+        updateLoginFlowBody: {
+          identifier,
+          method,
+          password,
+        },
+      })
+    } catch (err) {
+      return new UnknownKratosError(err)
+    }
 
-  //     if (err.message === "Request failed with status code 401") {
-  //       return new AuthenticationKratosError(err)
-  //     }
+    const sessionToken = result.data.session_token as SessionToken
 
-  //     return new UnknownKratosError(err)
-  //   }
+    // note: this only works when whoami: required_aal = aal1
+    const kratosUserId = result.data.session.identity.id as UserId
 
-  //   const sessionToken = result.data.session_token as SessionToken
-
-  //   if (result.data.session === undefined) {
-  //     throw new ConfigError("session shouldn't be undefined")
-  //   }
-
-  //   // note: this only works when whoami: required_aal = aal1
-  //   const kratosUserId = result.data.session.identity.id as UserId
-
-  //   return { sessionToken, kratosUserId }
-  // }
+    return { sessionToken, kratosUserId }
+  }
 
   return {
-    register,
-    validateEmail,
     initiateEmailVerification,
     validateEmailVerification,
-    createIdentityNoSession,
+    login,
   }
 }

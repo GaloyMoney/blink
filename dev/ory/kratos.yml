@@ -24,13 +24,8 @@ selfservice:
       enabled: true
     password:
       enabled: true
-    # link:
-    #   enabled: true
-    #   config:
-    #     # Defines how long the verification or the recovery code is valid for (default 1h)
-    #     lifespan: 15m
 
-    code: # or link
+    code:
       enabled: true
       config:
         # Defines how long the verification or the recovery code is valid for (default 1h)
