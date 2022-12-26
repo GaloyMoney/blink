@@ -3,8 +3,8 @@ import knex from "knex"
 export const kratos_knex_db = knex({
   client: "pg", // specify the database client
   connection: {
-    host: "localhost",
-    port: 5433,
+    host: process.env.KRATOS_PG_HOST ?? "kratos-pg",
+    port: Number(process.env.KRATOS_PG_PORT) ?? 5432,
     user: "dbuser",
     password: "secret",
     database: "default",

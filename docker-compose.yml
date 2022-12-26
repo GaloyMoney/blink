@@ -305,8 +305,6 @@ services:
     image: postgres:14.1
     expose:
       - "5432"
-    ports:
-      - "5433:5432"
     environment:
       - POSTGRES_USER=dbuser
       - POSTGRES_PASSWORD=secret
