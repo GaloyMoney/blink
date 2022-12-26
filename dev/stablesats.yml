@@ -9,9 +9,11 @@ price_server:
     base_fee_rate: 0.0005
     immediate_fee_rate: 0.0005
     delayed_fee_rate: 0.0007
+  price_cache:
+    dev_mock_price_btc_in_usd: 20000
 
 okex_price_feed:
-  dev_mock_price_btc_in_usd: 20000
+  enabled: false
 
 tracing:
   host: "otel-agent"
