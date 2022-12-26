@@ -22,7 +22,7 @@ import {
   InsufficientOnChainFundsError,
   TxDecoder,
 } from "@domain/bitcoin/onchain"
-import { CouldNotFindError, NotImplementedError } from "@domain/errors"
+import { CouldNotFindError } from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
 import { NewDisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
@@ -211,16 +211,6 @@ const executePaymentViaIntraledger = async <
 
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
-
-  // TODO Usd use case
-  if (
-    !(
-      recipientWallet.currency === WalletCurrency.Btc &&
-      senderWallet.currency === WalletCurrency.Btc
-    )
-  ) {
-    return new NotImplementedError("USD intraledger")
-  }
 
   // Limit check
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())

@@ -20,6 +20,7 @@ import {
   RebalanceNeededError,
   SelfPaymentError,
 } from "@domain/errors"
+import { InvalidZeroAmountPriceRatioInputError } from "@domain/payments"
 import { NotificationType } from "@domain/notifications"
 import { PaymentInitiationMethod, SettlementMethod, TxStatus } from "@domain/wallets"
 import { onchainTransactionEventHandler } from "@servers/trigger"
@@ -78,6 +79,7 @@ let accountE: Account
 let accountG: Account
 
 let walletIdA: WalletId
+let walletIdUsdA: WalletId
 let walletIdUsdB: WalletId
 let walletIdD: WalletId
 let walletIdG: WalletId
@@ -100,6 +102,7 @@ beforeAll(async () => {
 
   accountRecordA = await getAccountRecordByTestUserRef("A")
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
+  walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
   accountA = await getAccountByTestUserRef("A")
 
   walletIdUsdB = await getUsdWalletIdByTestUserRef("B")
@@ -291,6 +294,154 @@ const testExternalSend = async ({
   }
 
   sub.removeAllListeners()
+}
+
+const testInternalSend = async ({
+  senderAccount,
+  senderWalletId,
+  recipientWalletId,
+  senderAmount,
+}: {
+  senderAccount: Account
+  senderWalletId: WalletId
+  recipientWalletId: WalletId
+  senderAmount: Satoshis | UsdCents
+}) => {
+  const memo = "this is my onchain usd memo #" + (Math.random() * 1_000_000).toFixed()
+
+  const senderWallet = await WalletsRepository().findById(senderWalletId)
+  if (senderWallet instanceof Error) return senderWallet
+  const { currency: senderCurrency } = senderWallet
+
+  const recipientWallet = await WalletsRepository().findById(recipientWalletId)
+  if (recipientWallet instanceof Error) return recipientWallet
+  const { currency: recipientCurrency } = recipientWallet
+
+  const dealerFns = DealerPriceService()
+
+  let amountResult: UsdCents | Satoshis | DealerPriceServiceError
+  let recipientAmount: UsdCents | Satoshis
+  switch (true) {
+    case senderCurrency === recipientCurrency:
+      recipientAmount = senderAmount
+      break
+
+    case senderCurrency === WalletCurrency.Usd &&
+      recipientCurrency === WalletCurrency.Btc:
+      amountResult = await dealerFns.getSatsFromCentsForImmediateSell(
+        senderAmount as unknown as UsdCents,
+      )
+      if (amountResult instanceof Error) return amountResult
+
+      recipientAmount = amountResult
+      break
+
+    case senderCurrency === WalletCurrency.Btc &&
+      recipientCurrency === WalletCurrency.Usd:
+      amountResult = await dealerFns.getCentsFromSatsForImmediateBuy(
+        senderAmount as unknown as Satoshis,
+      )
+      if (amountResult instanceof Error) return amountResult
+
+      recipientAmount = amountResult
+      break
+
+    default:
+      return new Error("Not possible")
+  }
+
+  const initialSenderBalance = await getBalanceHelper(senderWalletId)
+  const initialRecipientBalance = await getBalanceHelper(recipientWalletId)
+
+  const address = await Wallets.createOnChainAddress(recipientWalletId)
+  if (address instanceof Error) return address
+
+  const paid = await Wallets.payOnChainByWalletId({
+    senderAccount: senderAccount,
+    senderWalletId: senderWalletId,
+    address,
+    amount: senderAmount,
+    targetConfirmations,
+    memo,
+    sendAll: false,
+  })
+  if (paid instanceof Error) return paid
+
+  // Check balances for both wallets
+  // ===
+  const finalSenderBalance = await getBalanceHelper(senderWalletId)
+  const finalRecipient = await getBalanceHelper(recipientWalletId)
+
+  expect(paid).toBe(PaymentSendStatus.Success)
+  expect(finalSenderBalance).toBe(initialSenderBalance - senderAmount)
+  expect(finalRecipient).toBe(initialRecipientBalance + recipientAmount)
+
+  // Check txn details for sent wallet
+  // ===
+  const { result: txsSender, error } = await Wallets.getTransactionsForWalletId({
+    walletId: senderWalletId,
+  })
+  if (error instanceof Error || txsSender === null) {
+    return error
+  }
+  const pendingTxsSender = txsSender.filter(({ status }) => status === TxStatus.Pending)
+  expect(pendingTxsSender.length).toBe(0)
+
+  const settledTxsSender = txsSender.filter(
+    ({ status, initiationVia, settlementVia, memo: txMemo }) =>
+      status === TxStatus.Success &&
+      initiationVia.type === PaymentInitiationMethod.OnChain &&
+      settlementVia.type === SettlementMethod.IntraLedger &&
+      txMemo === memo,
+  )
+  expect(settledTxsSender.length).toBe(1)
+  const senderSettledTx = settledTxsSender[0] as WalletTransaction
+
+  expect(senderSettledTx.settlementFee).toBe(0)
+  expect(senderSettledTx.settlementAmount).toBe(-senderAmount)
+  expect(senderSettledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
+
+  // Check txn details for received wallet
+  // ===
+  const { result: txsRecipient, error: errorUserA } =
+    await Wallets.getTransactionsForWalletId({
+      walletId: recipientWalletId,
+    })
+  if (errorUserA instanceof Error || txsRecipient === null) {
+    return errorUserA
+  }
+  const pendingTxsRecipient = txsRecipient.filter(
+    ({ status }) => status === TxStatus.Pending,
+  )
+  expect(pendingTxsRecipient.length).toBe(0)
+
+  const settledTxsRecipient = txsRecipient.filter(
+    ({ status, initiationVia, settlementVia }) =>
+      status === TxStatus.Success &&
+      initiationVia.type === PaymentInitiationMethod.OnChain &&
+      settlementVia.type === SettlementMethod.IntraLedger,
+  )
+  const recipientSettledTx = settledTxsRecipient[0] as WalletTransaction
+
+  expect(recipientSettledTx.settlementFee).toBe(0)
+  expect(recipientSettledTx.settlementAmount).toBe(recipientAmount)
+  expect(recipientSettledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
+
+  // Check memos
+  // ===
+  const matchTx = (tx: WalletTransaction) =>
+    tx.initiationVia.type === PaymentInitiationMethod.OnChain &&
+    tx.initiationVia.address === address
+
+  // sender should know memo
+  const filteredTxs = txsSender.filter(matchTx)
+  expect(filteredTxs.length).toBe(1)
+  expect(filteredTxs[0].memo).toBe(memo)
+
+  // receiver should not know memo from sender
+  const filteredTxsUserD = txsRecipient.filter(matchTx)
+  expect(filteredTxsUserD.length).toBe(1)
+  expect(filteredTxsUserD[0].memo).not.toBe(memo)
 }
 
 describe("UserWallet - onChainPay", () => {
@@ -899,27 +1050,63 @@ describe("UserWallet - onChainPay", () => {
 })
 
 describe("UsdWallet - onChainPay", () => {
-  it("send to an external address from usd wallet", async () =>
-    testExternalSend({
-      senderAccount: accountB,
-      senderWalletId: walletIdUsdB,
-      amount: usdAmount,
-      sendAll: false,
-    }))
+  describe("to an internal address", () => {
+    it("sends from usd wallet to usd wallet", async () => {
+      const res = await testInternalSend({
+        senderAccount: accountB,
+        senderWalletId: walletIdUsdB,
+        recipientWalletId: walletIdUsdA,
+        senderAmount: usdAmount,
+      })
+      if (res instanceof Error) throw res
+    })
 
-  it("send all to an external address from usd wallet", async () =>
-    testExternalSend({
-      senderAccount: accountB,
-      senderWalletId: walletIdUsdB,
-      amount: usdAmount,
-      sendAll: true,
-    }))
+    it("sends from usd wallet to btc wallet", async () => {
+      const res = await testInternalSend({
+        senderAccount: accountB,
+        senderWalletId: walletIdUsdB,
+        recipientWalletId: walletIdA,
+        senderAmount: usdAmount,
+      })
+      if (res instanceof Error) throw res
+    })
 
-  // it("sends to internal address from usd wallet to usd wallet", async () => {})
+    it("sends from btc wallet to usd wallet", async () => {
+      const res = await testInternalSend({
+        senderAccount: accountA,
+        senderWalletId: walletIdA,
+        recipientWalletId: walletIdUsdB,
+        senderAmount: amount,
+      })
+      if (res instanceof Error) throw res
+    })
 
-  // it("sends to internal address from usd wallet to btc wallet", async () => {})
+    it("fails to send with less-than-1-cent amount from btc wallet to usd wallet", async () => {
+      const res = await testInternalSend({
+        senderAccount: accountA,
+        senderWalletId: walletIdA,
+        recipientWalletId: walletIdUsdB,
+        senderAmount: toSats(1),
+      })
+      expect(res).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
+    })
+  })
 
-  // it("sends to internal address from btc wallet to usd wallet", async () => {})
+  describe("to an external address", () => {
+    it("send from usd wallet", async () =>
+      testExternalSend({
+        senderAccount: accountB,
+        senderWalletId: walletIdUsdB,
+        amount: usdAmount,
+        sendAll: false,
+      }))
 
-  // it("fails to send to internal address with less-than-1-cent amount from btc wallet to usd wallet", async () => {})
+    it("send all from usd wallet", async () =>
+      testExternalSend({
+        senderAccount: accountB,
+        senderWalletId: walletIdUsdB,
+        amount: usdAmount,
+        sendAll: true,
+      }))
+  })
 })
