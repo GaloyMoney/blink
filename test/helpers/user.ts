@@ -23,7 +23,7 @@ import { Accounts, Wallets } from "@app"
 
 import { sleep } from "@utils"
 
-import { AccountStatus } from "@domain/accounts"
+import { AccountLevel, AccountStatus } from "@domain/accounts"
 
 import { lndOutside1, safePay } from "./lightning"
 
@@ -115,7 +115,11 @@ export const createAccount = async (initialWallets: WalletCurrency[]) => {
 
   const account = await Accounts.createAccountWithPhoneIdentifier({
     newAccountInfo: { phone, kratosUserId },
-    config: { initialStatus: AccountStatus.Active, initialWallets },
+    config: {
+      initialStatus: AccountStatus.Active,
+      initialWallets,
+      initialLevel: AccountLevel.One,
+    },
   })
   if (account instanceof Error) throw account
 

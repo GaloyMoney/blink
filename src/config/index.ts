@@ -24,7 +24,7 @@ export const BTC_PRICE_PRECISION_OFFSET = 4
 
 export const MIN_SATS_FOR_PRICE_RATIO_PRECISION = 5000n
 
-export const levels: Levels = [1, 2]
+export const levels: Levels = [0, 1, 2]
 
 // onboarding
 export const onboardingEarn: Record<string, Satoshis> = {

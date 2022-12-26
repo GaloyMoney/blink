@@ -28,4 +28,5 @@ type ApolloConfig = {
 type AccountsConfig = {
   initialStatus: AccountStatus
   initialWallets: WalletCurrency[]
+  initialLevel: AccountLevel
 }

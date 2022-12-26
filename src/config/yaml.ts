@@ -17,6 +17,8 @@ import { toDays, toSeconds } from "@domain/primitives"
 import { checkedToPubkey } from "@domain/bitcoin/lightning"
 import { WalletCurrency } from "@domain/shared"
 
+import { AccountLevel } from "@domain/accounts"
+
 import { configSchema } from "./schema"
 import { ConfigError } from "./error"
 
@@ -318,6 +320,7 @@ export const getRewardsConfig = () => {
 export const getDefaultAccountsConfig = (config = yamlConfig): AccountsConfig => ({
   initialStatus: config.accounts.initialStatus as AccountStatus,
   initialWallets: config.accounts.initialWallets,
+  initialLevel: AccountLevel.One,
 })
 
 export const getSwapConfig = (): SwapConfig => {

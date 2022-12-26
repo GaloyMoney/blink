@@ -51,10 +51,11 @@ const accountLimitConfigSchema = {
     level: {
       type: "object",
       properties: {
+        0: { type: "integer" },
         1: { type: "integer" },
         2: { type: "integer" },
       },
-      required: ["1", "2"],
+      required: ["0", "1", "2"],
       additionalProperties: false,
     },
   },
@@ -405,18 +406,21 @@ export const configSchema = {
       default: {
         withdrawal: {
           level: {
+            "0": 5000,
             "1": 100000,
             "2": 5000000,
           },
         },
         intraLedger: {
           level: {
+            "0": 5000,
             "1": 200000,
             "2": 5000000,
           },
         },
         tradeIntraAccount: {
           level: {
+            "0": 100000,
             "1": 5000000,
             "2": 20000000,
           },

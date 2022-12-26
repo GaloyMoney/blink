@@ -1,8 +1,44 @@
+import { randomUUID } from "crypto"
+
 import { kratosAdmin } from "@services/kratos/private"
 
 import { AuthWithBearerTokenService } from "@services/kratos/auth-bearer-token"
 
-import { randomPhone } from "test/helpers"
+import { ApolloClient, NormalizedCacheObject } from "@apollo/client/core"
+
+import USER_CREATE_BEARER from "../servers/graphql-main-server/mutations/user-create-bearer.gql"
+import ME from "../servers/graphql-main-server/queries/me.gql"
+
+import {
+  bitcoindClient,
+  clearAccountLocks,
+  clearLimiters,
+  createApolloClient,
+  defaultStateConfig,
+  defaultTestClientConfig,
+  initializeTestingState,
+  killServer,
+  randomPhone,
+  startServer,
+} from "test/helpers"
+
+let apolloClient: ApolloClient<NormalizedCacheObject>, serverPid: PID
+let disposeClient: () => void = () => null
+
+beforeAll(async () => {
+  await initializeTestingState(defaultStateConfig())
+  serverPid = await startServer("start-main-ci")
+})
+
+beforeEach(async () => {
+  await clearLimiters()
+  await clearAccountLocks()
+})
+
+afterAll(async () => {
+  await bitcoindClient.unloadWallet({ walletName: "outside" })
+  await killServer(serverPid)
+})
 
 /*
     FLOW:
@@ -33,7 +69,7 @@ import { randomPhone } from "test/helpers"
 
 // look at approov.io?
 
-describe("bearer_token", () => {
+describe("bearerTokenService", () => {
   const authService = AuthWithBearerTokenService()
   let kratosUserId: UserId
 
@@ -55,5 +91,25 @@ describe("bearer_token", () => {
 
     const { data: identity } = await kratosAdmin.getIdentity({ id: kratosUserId })
     expect(identity.schema_id).toBe("phone_no_password_v0")
+  })
+})
+
+describe("bearerTokenGraphQL", () => {
+  it("createAccount", async () => {
+    ;({ apolloClient, disposeClient } = createApolloClient(defaultTestClientConfig()))
+
+    const result = await apolloClient.mutate({
+      mutation: USER_CREATE_BEARER,
+      variables: { input: { deviceId: randomUUID() } },
+    })
+
+    // Create a new authenticated client
+    disposeClient()
+    ;({ apolloClient, disposeClient } = createApolloClient(
+      defaultTestClientConfig(result.data.userCreateBearer.authToken),
+    ))
+
+    const meResult = await apolloClient.query({ query: ME })
+    expect(meResult.data.me.defaultAccount.defaultWalletId).toBeDefined()
   })
 })

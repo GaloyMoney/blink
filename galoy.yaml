@@ -129,14 +129,17 @@ accounts:
 accountLimits:
   withdrawal:
     level:
+      "0": 5000
       "1": 100000
       "2": 5000000
   intraLedger:
     level:
+      "0": 5000
       "1": 200000
       "2": 5000000
   tradeIntraAccount:
     level:
+      "0": 100000
       "1": 5000000
       "2": 20000000
 spamLimits:

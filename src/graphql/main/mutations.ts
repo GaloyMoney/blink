@@ -19,6 +19,7 @@ import LnNoAmountUsdInvoicePaymentSendMutation from "@graphql/root/mutation/ln-n
 import OnChainAddressCreateMutation from "@graphql/root/mutation/on-chain-address-create"
 import OnChainAddressCurrentMutation from "@graphql/root/mutation/on-chain-address-current"
 import UserLoginMutation from "@graphql/root/mutation/user-login"
+import UserCreateBearer from "@graphql/root/mutation/user-create-bearer"
 import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-auth-code"
 import UserUpdateLanguageMutation from "@graphql/root/mutation/user-update-language"
 import UserUpdateUsernameMutation from "@graphql/root/mutation/user-update-username"
@@ -35,6 +36,7 @@ const fields = {
   // unauthed
   userRequestAuthCode: UserRequestAuthCodeMutation,
   userLogin: UserLoginMutation,
+  userCreateBearer: UserCreateBearer,
 
   captchaCreateChallenge: CaptchaCreateChallengeMutation,
   captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
