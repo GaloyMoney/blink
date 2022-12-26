@@ -44,6 +44,7 @@ const initializeCreatedAccount = async ({
     return new ConfigError("NoWalletsEnabledInConfigError")
   }
   account.defaultWalletId = defaultWalletId
+  account.statusHistory = [{ status: config.initialStatus, comment: "Initial Status" }]
 
   // FIXME: to remove when Casbin is been introduced
   const role = getTestAccounts().find(({ phone: phoneTest }) => phoneTest === phone)?.role

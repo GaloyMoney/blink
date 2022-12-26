@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { getDefaultAccountsConfig, getFeesConfig, levels } from "@config"
+import { getFeesConfig, levels } from "@config"
 import { AccountStatus, UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
@@ -275,9 +275,6 @@ const AccountSchema = new Schema<AccountRecord>(
             required: false,
           },
         },
-      ],
-      default: [
-        { status: getDefaultAccountsConfig().initialStatus, comment: "Initial Status" },
       ],
     },
 
