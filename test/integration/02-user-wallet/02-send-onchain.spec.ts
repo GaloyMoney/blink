@@ -70,7 +70,6 @@ import {
   cancelOkexPricePublish,
 } from "test/helpers"
 
-let initialBalanceUserA: Satoshis
 let accountRecordA: AccountRecord
 
 let accountA: Account
@@ -116,10 +115,6 @@ beforeAll(async () => {
   accountG = await getAccountByTestUserRef("G")
 
   await bitcoindClient.loadWallet({ filename: "outside" })
-})
-
-beforeEach(async () => {
-  initialBalanceUserA = toSats(await getBalanceHelper(walletIdA))
 })
 
 afterEach(async () => {
@@ -528,155 +523,23 @@ describe("UserWallet - onChainPay", () => {
   })
 
   it("sends an on us transaction", async () => {
-    const address = await Wallets.createOnChainAddress(walletIdD)
-    if (address instanceof Error) throw address
-
-    const initialBalanceUserD = await getBalanceHelper(walletIdD)
-
-    const paid = await Wallets.payOnChainByWalletId({
+    const res = await testInternalSend({
       senderAccount: accountA,
       senderWalletId: walletIdA,
-      address,
-      amount,
-      targetConfirmations,
-      memo: null,
-      sendAll: false,
+      recipientWalletId: walletIdD,
+      senderAmount: amount,
     })
-
-    const finalBalanceUserA = await getBalanceHelper(walletIdA)
-    const finalBalanceUserD = await getBalanceHelper(walletIdD)
-
-    expect(paid).toBe(PaymentSendStatus.Success)
-    expect(finalBalanceUserA).toBe(initialBalanceUserA - amount)
-    expect(finalBalanceUserD).toBe(initialBalanceUserD + amount)
-
-    {
-      const txResult = await Wallets.getTransactionsForWalletId({
-        walletId: walletIdA,
-      })
-      if (txResult.error instanceof Error || txResult.result === null) {
-        throw txResult.error
-      }
-      const pendingTxs = txResult.result.filter(
-        ({ status }) => status === TxStatus.Pending,
-      )
-      expect(pendingTxs.length).toBe(0)
-
-      const settledTxs = txResult.result.filter(
-        ({ status, initiationVia, settlementVia }) =>
-          status === TxStatus.Success &&
-          initiationVia.type === PaymentInitiationMethod.OnChain &&
-          settlementVia.type === SettlementMethod.IntraLedger,
-      )
-      expect(settledTxs.length).toBe(1)
-      const settledTx = settledTxs[0] as WalletTransaction
-
-      expect(settledTx.settlementFee).toBe(0)
-      expect(settledTx.settlementAmount).toBe(-amount)
-      expect(settledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
-
-      const finalBalance = await getBalanceHelper(walletIdA)
-      expect(finalBalance).toBe(initialBalanceUserA - amount)
-    }
-  })
-
-  it("sends an on us transaction with memo", async () => {
-    const memo = "this is my onchain memo"
-
-    const address = await Wallets.createOnChainAddress(walletIdD)
-    if (address instanceof Error) throw address
-
-    const paid = await Wallets.payOnChainByWalletId({
-      senderAccount: accountA,
-      senderWalletId: walletIdA,
-      address,
-      amount,
-      targetConfirmations,
-      memo,
-      sendAll: false,
-    })
-
-    expect(paid).toBe(PaymentSendStatus.Success)
-
-    const matchTx = (tx: WalletTransaction) =>
-      tx.initiationVia.type === PaymentInitiationMethod.OnChain &&
-      tx.initiationVia.address === address
-
-    const { result: txs, error } = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdA,
-    })
-    if (error instanceof Error || txs === null) {
-      throw error
-    }
-    const filteredTxs = txs.filter(matchTx)
-    expect(filteredTxs.length).toBe(1)
-    expect(filteredTxs[0].memo).toBe(memo)
-
-    // receiver should not know memo from sender
-    const { result: txsUserD, error: error2 } = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdD,
-    })
-    if (error2 instanceof Error || txsUserD === null) {
-      throw error2
-    }
-    const filteredTxsUserD = txsUserD.filter(matchTx)
-    expect(filteredTxsUserD.length).toBe(1)
-    expect(filteredTxsUserD[0].memo).not.toBe(memo)
+    if (res instanceof Error) throw res
   })
 
   it("sends an on us transaction below dust limit", async () => {
-    const address = await Wallets.createOnChainAddress(walletIdD)
-    if (address instanceof Error) throw address
-
-    const amount = amountBelowDustThreshold
-
-    const initialBalanceUserD = await getBalanceHelper(walletIdD)
-
-    const paid = await Wallets.payOnChainByWalletId({
+    const res = await testInternalSend({
       senderAccount: accountA,
       senderWalletId: walletIdA,
-      address,
-      amount,
-      targetConfirmations,
-      memo: null,
-      sendAll: false,
+      recipientWalletId: walletIdD,
+      senderAmount: toSats(amountBelowDustThreshold),
     })
-
-    const finalBalanceUserA = await getBalanceHelper(walletIdA)
-    const finalBalanceUserD = await getBalanceHelper(walletIdD)
-
-    expect(paid).toBe(PaymentSendStatus.Success)
-    expect(finalBalanceUserA).toBe(initialBalanceUserA - amount)
-    expect(finalBalanceUserD).toBe(initialBalanceUserD + amount)
-
-    {
-      const txResult = await Wallets.getTransactionsForWalletId({
-        walletId: walletIdA,
-      })
-      if (txResult.error instanceof Error || txResult.result === null) {
-        throw txResult.error
-      }
-      const pendingTxs = txResult.result.filter(
-        ({ status }) => status === TxStatus.Pending,
-      )
-      expect(pendingTxs.length).toBe(0)
-
-      const settledTxs = txResult.result.filter(
-        ({ status, initiationVia, settlementVia }) =>
-          status === TxStatus.Success &&
-          initiationVia.type === PaymentInitiationMethod.OnChain &&
-          settlementVia.type === SettlementMethod.IntraLedger,
-      )
-
-      const settledTx = settledTxs[0] as WalletTransaction
-
-      expect(settledTx.settlementFee).toBe(0)
-      expect(settledTx.settlementAmount).toBe(-amount)
-      expect(settledTx.displayCurrencyPerSettlementCurrencyUnit).toBeGreaterThan(0)
-
-      const finalBalance = await getBalanceHelper(walletIdA)
-      expect(finalBalance).toBe(initialBalanceUserA - amount)
-    }
+    if (res instanceof Error) throw res
   })
 
   it("sends all with an on us transaction", async () => {
@@ -841,38 +704,23 @@ describe("UserWallet - onChainPay", () => {
   )
 
   it("fails if try to send a transaction to self", async () => {
-    const address = await Wallets.createOnChainAddress(walletIdA)
-    if (address instanceof Error) throw address
-
-    const status = await Wallets.payOnChainByWalletId({
+    const res = await testInternalSend({
       senderAccount: accountA,
       senderWalletId: walletIdA,
-      address,
-      amount,
-      targetConfirmations,
-      memo: null,
-      sendAll: false,
+      recipientWalletId: walletIdA,
+      senderAmount: amount,
     })
-    expect(status).toBeInstanceOf(SelfPaymentError)
+    expect(res).toBeInstanceOf(SelfPaymentError)
   })
 
   it("fails if an on us payment has insufficient balance", async () => {
-    const address = await Wallets.createOnChainAddress(walletIdD)
-    if (address instanceof Error) throw address
-
-    const initialBalanceUserE = await getBalanceHelper(walletIdE)
-    const senderAccount = await getAccountByTestUserRef("E")
-
-    const status = await Wallets.payOnChainByWalletId({
-      senderAccount,
+    const res = await testInternalSend({
+      senderAccount: accountE,
       senderWalletId: walletIdE,
-      address,
-      amount: initialBalanceUserE + 1,
-      targetConfirmations,
-      memo: null,
-      sendAll: false,
+      recipientWalletId: walletIdD,
+      senderAmount: amount,
     })
-    expect(status).toBeInstanceOf(InsufficientBalanceError)
+    expect(res).toBeInstanceOf(InsufficientBalanceError)
   })
 
   it("fails if has insufficient balance", async () => {
@@ -1082,11 +930,19 @@ describe("UsdWallet - onChainPay", () => {
     })
 
     it("fails to send with less-than-1-cent amount from btc wallet to usd wallet", async () => {
+      const dealerFns = DealerPriceService()
+
+      const btcSendAmount = toSats(10)
+      const btcSendAmountInUsd = await dealerFns.getCentsFromSatsForImmediateBuy(
+        toSats(btcSendAmount),
+      )
+      expect(btcSendAmountInUsd).toBe(0)
+
       const res = await testInternalSend({
         senderAccount: accountA,
         senderWalletId: walletIdA,
         recipientWalletId: walletIdUsdB,
-        senderAmount: toSats(1),
+        senderAmount: btcSendAmount,
       })
       expect(res).toBeInstanceOf(InvalidZeroAmountPriceRatioInputError)
     })
