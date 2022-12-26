@@ -2,16 +2,6 @@ import { getCurrentPriceInCentsPerSat, getMidPriceRatio } from "@app/shared"
 
 import { NewDealerPriceService } from "@services/dealer-price"
 
-import { cancelOkexPricePublish, publishOkexPrice } from "test/helpers"
-
-beforeAll(async () => {
-  await publishOkexPrice()
-})
-
-afterAll(() => {
-  cancelOkexPricePublish()
-})
-
 describe("getMidPriceRatio", () => {
   const fetchPrices = async () => {
     const dealerMidPriceRatio =

@@ -12,16 +12,7 @@
 import { WalletCurrency } from "@domain/shared"
 import { NewDealerPriceService } from "@services/dealer-price"
 
-import { cancelOkexPricePublish, publishOkexPrice } from "test/helpers"
-
 const newDealerFns = NewDealerPriceService()
-beforeAll(async () => {
-  await publishOkexPrice()
-})
-
-afterAll(() => {
-  cancelOkexPricePublish()
-})
 
 const centsFromSats = async (btc: BtcPaymentAmount) => {
   // Conversions with spreads
