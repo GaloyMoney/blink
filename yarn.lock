@@ -2011,10 +2011,10 @@
     teeny-request "^8.0.0"
     uuid "^8.0.0"
 
-"@grammyjs/types@^2.10.0":
-  version "2.10.2"
-  resolved "https://registry.yarnpkg.com/@grammyjs/types/-/types-2.10.2.tgz#c72d9379518aa191ce030e14756954949bef771f"
-  integrity sha512-YhOQEkl4KwZvHH2BSvSkN27R5s5MGVLnK8W3bh8h3OMwA1ZlrqNPsnTyvenrmv6sKk62CZlDlFJpPb3MFUWXUA==
+"@grammyjs/types@^2.10.3":
+  version "2.10.3"
+  resolved "https://registry.yarnpkg.com/@grammyjs/types/-/types-2.10.3.tgz#4f944003ba87ac54dfd3ee36daf68bd44ccb685e"
+  integrity sha512-8TG9uiJlPcwFb5fxJ2LdQw0eWKDmHoVYY0vS63vwHb7wJIOmZHPpPfEWKRNtEcc7/e7HHZ5qoxixZ24dPjU3Fg==
 
 "@graphql-tools/batch-execute@8.5.1":
   version "8.5.1"
@@ -3286,11 +3286,6 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.17.tgz#5c009e1d9c38f4a2a9d45c0b0c493fe6cdb4bcb5"
   integrity sha512-HJSUJmni4BeDHhfzn6nF0sVmd1SMezP7/4F0Lq+aXzmp2xm9O7WXrUtHW/CHlYVtZUbByEvWidHqRtcJXGF2Ng==
 
-"@types/node@18.11.15":
-  version "18.11.15"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.15.tgz#de0e1fbd2b22b962d45971431e2ae696643d3f5d"
-  integrity sha512-VkhBbVo2+2oozlkdHXLrb3zjsRkpdnaU2bXmX8Wgle3PUi569eLRaHGlgETQHR7lLL1w7GiG3h9SnePhxNDecw==
-
 "@types/node@18.11.16":
   version "18.11.16"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.16.tgz#966cae211e970199559cfbd295888fca189e49af"
@@ -4084,10 +4079,10 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-balanceofsatoshis@^13.10.7:
-  version "13.10.7"
-  resolved "https://registry.yarnpkg.com/balanceofsatoshis/-/balanceofsatoshis-13.10.7.tgz#7c6fd8dfbce3708b60e8b9ce19d86fae0a431c8e"
-  integrity sha512-pmdso9LB//jfUtTHjegJ81rNyMJPNp3gKCvIoff9W4MBB677iiT/XmkgOmtUXuFID2wMSC3QZ82HzQVIsndPxg==
+balanceofsatoshis@^13.12.0:
+  version "13.12.0"
+  resolved "https://registry.yarnpkg.com/balanceofsatoshis/-/balanceofsatoshis-13.12.0.tgz#bf98037b7d1bf6b815428dab4875a4bdbe90f38e"
+  integrity sha512-JvpgrvkPY0s/XMVXpb2gxcDHmavkwwFeX4v6TlGXAqEziaEEDwM5L+kt1YVqQC4Y/bNog5/GncwVty7J+C0ydw==
   dependencies:
     "@alexbosworth/caporal" "1.4.4"
     "@alexbosworth/fiat" "1.0.3"
@@ -4108,18 +4103,18 @@ balanceofsatoshis@^13.10.7:
     crypto-js "4.1.1"
     csv-parse "5.3.3"
     ecpair "2.1.0"
-    goldengate "11.4.0"
-    grammy "1.12.0"
+    goldengate "12.0.0"
+    grammy "1.12.1"
     hot-formula-parser "4.0.0"
     import-lazy "4.0.0"
     ini "3.0.1"
     inquirer "9.1.4"
     ln-accounting "6.1.1"
-    ln-service "54.6.0"
-    ln-sync "4.0.5"
-    ln-telegram "4.3.1"
+    ln-service "54.8.0"
+    ln-sync "4.1.0"
+    ln-telegram "4.4.0"
     moment "2.29.4"
-    paid-services "4.1.0"
+    paid-services "4.2.0"
     probing "3.0.0"
     psbt "2.7.1"
     qrcode-terminal "0.12.0"
@@ -6548,6 +6543,36 @@ goldengate@11.4.0:
     tiny-secp256k1 "2.2.1"
     varuint-bitcoin "1.1.2"
 
+goldengate@12.0.0:
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/goldengate/-/goldengate-12.0.0.tgz#1877d07d9ccd10fbc22723d52b56f7bce741d66d"
+  integrity sha512-YVGbu8Qw1/mJu0Yz6tz9dHCiSRxcRbkpL5LVg9xLsjhzyNWxG3GvUpqXkL5mN178jlIG50Ei4tzkX+CZ6pr4Og==
+  dependencies:
+    "@alexbosworth/node-fetch" "2.6.2"
+    "@grpc/grpc-js" "1.8.0"
+    "@grpc/proto-loader" "0.7.4"
+    "@mitmaro/http-authorization-header" "1.0.0"
+    async "3.2.4"
+    asyncjs-util "1.2.10"
+    bech32 "2.0.0"
+    bip65 "1.0.3"
+    bip68 "1.0.4"
+    bitcoin-ops "1.4.1"
+    bitcoinjs-lib "6.1.0"
+    bn.js "5.2.1"
+    body-parser "1.20.1"
+    bolt01 "1.2.5"
+    cbor "8.1.0"
+    ecpair "2.1.0"
+    ln-service "54.8.0"
+    ln-sync "4.1.0"
+    macaroon "3.0.4"
+    p2tr "1.3.2"
+    psbt "2.7.1"
+    pushdata-bitcoin "1.0.1"
+    tiny-secp256k1 "2.2.1"
+    varuint-bitcoin "1.1.2"
+
 google-auth-library@^8.0.1, google-auth-library@^8.0.2:
   version "8.7.0"
   resolved "https://registry.yarnpkg.com/google-auth-library/-/google-auth-library-8.7.0.tgz#e36e255baba4755ce38dded4c50f896cf8515e51"
@@ -6605,12 +6630,12 @@ graceful-fs@^4.1.6, graceful-fs@^4.1.9, graceful-fs@^4.2.0, graceful-fs@^4.2.9, 
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.10.tgz#147d3a006da4ca3ce14728c7aefc287c367d7a6c"
   integrity sha512-9ByhssR2fPVsNZj478qUUbKfmL0+t5BDVyjShtyZZLiK7ZDAArFFfopyOTj0M05wE2tJPisA4iTnnXl2YoPvOA==
 
-grammy@1.12.0:
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/grammy/-/grammy-1.12.0.tgz#fffb80109731cbd56ccd592cec5aff9dd5e682b6"
-  integrity sha512-/2Mi4MyVPeFXjTd4v3pRK8gb/YdWFbZrj/8HTp5daQyTOx4/U95XFL0Ao+e9hf4XbL7RCOpanXaTL8+UXXcNqw==
+grammy@1.12.1:
+  version "1.12.1"
+  resolved "https://registry.yarnpkg.com/grammy/-/grammy-1.12.1.tgz#196bc103869221b82920b035161f2210644a678c"
+  integrity sha512-pnAVs5ZqA4Dfby+JUDIzcq5xgRZm1qDKveU/kQyt31Ln19NF0PgUooczQ1AiTUTC8Yv/et9Ok8R2BiQcskoJew==
   dependencies:
-    "@grammyjs/types" "^2.10.0"
+    "@grammyjs/types" "^2.10.3"
     abort-controller "^3.0.0"
     debug "^4.3.4"
     node-fetch "^2.6.7"
@@ -8588,58 +8613,6 @@ lightning@6.3.0:
     tiny-secp256k1 "2.2.1"
     type-fest "3.2.0"
 
-lightning@6.3.1:
-  version "6.3.1"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.3.1.tgz#78f06e94c1e6474a95fba6db4d23bbd56363c19e"
-  integrity sha512-ItcPt/FbMXZcCY65P0alYwMQCmhX4HEDlNaM54qjYsVmrDRGML5PN+zBlBvosvIoo47/0rQsdKpFnBSbo4oPEQ==
-  dependencies:
-    "@grpc/grpc-js" "1.7.3"
-    "@grpc/proto-loader" "0.7.3"
-    "@types/express" "4.17.14"
-    "@types/node" "18.11.9"
-    "@types/request" "2.48.8"
-    "@types/ws" "8.5.3"
-    async "3.2.4"
-    asyncjs-util "1.2.10"
-    bitcoinjs-lib "6.0.2"
-    bn.js "5.2.1"
-    body-parser "1.20.1"
-    bolt07 "1.8.2"
-    bolt09 "0.2.4"
-    cbor "8.1.0"
-    ecpair "2.1.0"
-    express "4.18.2"
-    invoices "2.2.2"
-    psbt "2.7.1"
-    tiny-secp256k1 "2.2.1"
-    type-fest "3.2.0"
-
-lightning@6.6.0:
-  version "6.6.0"
-  resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.6.0.tgz#30b6862fa09d3122b224a943fc886f13dcf7fab4"
-  integrity sha512-S+lUitqP/fbQWNYffor/74jKoyjbT/hZuzgHlCH/WH5bmoognl6BpcK7qAJ6Qw9hDQPnDXUB5CyfjJmmOCtOlw==
-  dependencies:
-    "@grpc/grpc-js" "1.8.0"
-    "@grpc/proto-loader" "0.7.4"
-    "@types/express" "4.17.15"
-    "@types/node" "18.11.15"
-    "@types/request" "2.48.8"
-    "@types/ws" "8.5.3"
-    async "3.2.4"
-    asyncjs-util "1.2.10"
-    bitcoinjs-lib "6.1.0"
-    bn.js "5.2.1"
-    body-parser "1.20.1"
-    bolt07 "1.8.2"
-    bolt09 "0.2.4"
-    cbor "8.1.0"
-    ecpair "2.1.0"
-    express "4.18.2"
-    invoices "2.2.2"
-    psbt "2.7.1"
-    tiny-secp256k1 "2.2.1"
-    type-fest "3.4.0"
-
 lightning@6.8.0, lightning@^6.8.0:
   version "6.8.0"
   resolved "https://registry.yarnpkg.com/lightning/-/lightning-6.8.0.tgz#4c8a58e4ee89899f0ae5ba2ed873b55069dda976"
@@ -8771,35 +8744,7 @@ ln-service@54.3.1:
     morgan "1.10.0"
     ws "8.11.0"
 
-ln-service@54.3.2:
-  version "54.3.2"
-  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-54.3.2.tgz#751bf2cca577de257405de290bde14291e810545"
-  integrity sha512-3wIZfpHKOo2L+MgqH4PtLdYQerRQTpd4Rdjhs9U7PMi9ar3PSZ/20URv0bPgA05DSc9Q7NGYmmj4vUY504iNaw==
-  dependencies:
-    bolt07 "1.8.2"
-    cors "2.8.5"
-    express "4.18.2"
-    invoices "2.2.2"
-    lightning "6.3.1"
-    macaroon "3.0.4"
-    morgan "1.10.0"
-    ws "8.11.0"
-
-ln-service@54.6.0:
-  version "54.6.0"
-  resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-54.6.0.tgz#6c51eb8d08e88bc58ddeaa5d06a283e34cd001bd"
-  integrity sha512-kDbClE4eTNCaaipDkj2o0TsqZWv8TKyxgUXah4Bs3mM92lL1tqLHPAfSMdE/EFzA82tBLkvByXwNUL4xTqSGrA==
-  dependencies:
-    bolt07 "1.8.2"
-    cors "2.8.5"
-    express "4.18.2"
-    invoices "2.2.2"
-    lightning "6.6.0"
-    macaroon "3.0.4"
-    morgan "1.10.0"
-    ws "8.11.0"
-
-ln-service@^54.8.0:
+ln-service@54.8.0, ln-service@^54.8.0:
   version "54.8.0"
   resolved "https://registry.yarnpkg.com/ln-service/-/ln-service-54.8.0.tgz#09669872f7fde570a2fa9e8f897cb3d1a81af13d"
   integrity sha512-QNOek7A5BFKGiHlCYHQfIwhehtRyO/oFndeaSn/11x2cvo461pgJXyu/zQETCb4yhGZUa1v3LU1Lmk4bPqsvyw==
@@ -8845,21 +8790,37 @@ ln-sync@4.0.5:
     psbt "2.7.1"
     tiny-secp256k1 "2.2.1"
 
-ln-telegram@4.3.1:
-  version "4.3.1"
-  resolved "https://registry.yarnpkg.com/ln-telegram/-/ln-telegram-4.3.1.tgz#f02a8de0a7062e3c4a5b3a1b5eb7073e6daa1a48"
-  integrity sha512-lAR12uidLQhvAIZGWFMi9rFtOAuy+sfw0YzlqRiTiiUuxcRL22v224vx0ffPY4YOwfqPdiQC61JKEdVYGwLmuA==
+ln-sync@4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/ln-sync/-/ln-sync-4.1.0.tgz#655e8a318b2779f2caf20cd8b27427eab540b12d"
+  integrity sha512-N02s3tCvlyiTSmhJYoawDLqVmZ63Yk/7k27F+244J8kOorwLNrtAjcy8WHn+YnR44yreAph9xHwacU4Nr+VQuQ==
+  dependencies:
+    async "3.2.4"
+    asyncjs-util "1.2.10"
+    bech32 "2.0.0"
+    bitcoinjs-lib "6.1.0"
+    bolt07 "1.8.2"
+    colorette "2.0.19"
+    ecpair "2.1.0"
+    ln-service "54.8.0"
+    psbt "2.7.1"
+    tiny-secp256k1 "2.2.1"
+
+ln-telegram@4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/ln-telegram/-/ln-telegram-4.4.0.tgz#9a6f44c724e32742df82ed91a29410a387481323"
+  integrity sha512-8uOztCmxGHMFuy7I1G83eA9Htafrw1xxfl20ThQheFxvBWnDGQiIxudqIKA/JB1BbtbQy9l1SMdg9RDW1hJDaA==
   dependencies:
     "@alexbosworth/fiat" "^1.0.3"
     async "3.2.4"
     asyncjs-util "1.2.10"
     bolt07 "1.8.2"
     goldengate "11.4.0"
-    grammy "1.12.0"
+    grammy "1.12.1"
     ln-accounting "6.1.1"
-    ln-service "54.3.2"
-    ln-sync "4.0.5"
-    luxon "3.1.0"
+    ln-service "54.8.0"
+    ln-sync "4.1.0"
+    luxon "3.1.1"
     paid-services "4.1.0"
     table "6.8.1"
 
@@ -9136,10 +9097,10 @@ lru-memoizer@^2.1.4:
     lodash.clonedeep "^4.5.0"
     lru-cache "~4.0.0"
 
-luxon@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.1.0.tgz#9ac33d7142b7ea18d4ec8583cdeb0b079abef60d"
-  integrity sha512-7w6hmKC0/aoWnEsmPCu5Br54BmbmUp5GfcqBxQngRcXJ+q5fdfjEzn7dxmJh2YdDhgW8PccYtlWKSv4tQkrTQg==
+luxon@3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.1.1.tgz#b492c645b2474fb86f3bd3283213846b99c32c1e"
+  integrity sha512-Ah6DloGmvseB/pX1cAmjbFvyU/pKuwQMQqz7d0yvuDlVYLTs2WeDHQMpC8tGjm1da+BriHROW/OEIT/KfYg6xw==
 
 macaroon@3.0.4:
   version "3.0.4"
@@ -9977,6 +9938,26 @@ paid-services@4.1.0:
     invoices "2.2.2"
     ln-service "54.3.1"
     ln-sync "4.0.5"
+    p2tr "1.3.2"
+    psbt "2.7.1"
+    tiny-secp256k1 "2.2.1"
+
+paid-services@4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/paid-services/-/paid-services-4.2.0.tgz#3279d9a2fe3104cf41a7fd021803e6236458e748"
+  integrity sha512-hDZiINb1jLV/yIpASA62VBeX3NCvrTYkpnfjMP8G4iyTBhkYgRCw/vRIzXGnWypeh3M/DapTBlyxtU2Fykoiag==
+  dependencies:
+    "@alexbosworth/fiat" "1.0.3"
+    async "3.2.4"
+    asyncjs-util "1.2.10"
+    bech32 "2.0.0"
+    bolt01 "1.2.5"
+    bolt07 "1.8.2"
+    ecpair "2.1.0"
+    goldengate "12.0.0"
+    invoices "2.2.2"
+    ln-service "54.8.0"
+    ln-sync "4.1.0"
     p2tr "1.3.2"
     psbt "2.7.1"
     tiny-secp256k1 "2.2.1"
