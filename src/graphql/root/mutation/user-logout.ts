@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import AuthToken from "@graphql/types/scalar/auth-token"
 import AuthTokenPayload from "@graphql/types/payload/auth-token"
-import { AuthWithPhonePasswordlessService } from "@services/kratos"
+import { logout } from "@app/auth"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 
 const UserLogoutInput = GT.Input({
@@ -16,7 +16,7 @@ const UserLogoutInput = GT.Input({
 
 const UserLogoutMutation = GT.Field<{
   input: {
-    authToken: string | InputValidationError
+    authToken: SessionToken | InputValidationError
   }
 }>({
   extensions: {
@@ -29,8 +29,7 @@ const UserLogoutMutation = GT.Field<{
   resolve: async (_, args) => {
     const { authToken } = args.input
     if (authToken instanceof Error) return
-    const authService = AuthWithPhonePasswordlessService()
-    const logoutResp = await authService.logout(authToken)
+    const logoutResp = await logout(authToken)
     if (logoutResp instanceof Error)
       return { errors: [mapAndParseErrorForGqlResponse(logoutResp)] }
     return { errors: [] }

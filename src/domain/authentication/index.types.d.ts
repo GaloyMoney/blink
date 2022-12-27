@@ -30,7 +30,7 @@ interface IAuthWithPhonePasswordlessService {
   login(
     phone: PhoneNumber,
   ): Promise<LoginWithPhoneNoPasswordSchemaResponse | AuthenticationError>
-  logout(token: string): Promise<void | AuthenticationError>
+  logout(token: SessionToken): Promise<void | AuthenticationError>
   createIdentityWithSession(
     phone: PhoneNumber,
   ): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>

@@ -1,4 +1,5 @@
 export * from "./login"
+export * from "./logout"
 export * from "./request-phone-code"
 
 import { ErrorLevel } from "@domain/shared"
