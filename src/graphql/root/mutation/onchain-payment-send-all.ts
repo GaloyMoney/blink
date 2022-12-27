@@ -5,7 +5,6 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
-import { validateIsBtcWalletForMutation } from "@graphql/helpers"
 import { Wallets } from "@app"
 
 const OnChainPaymentSendAllInput = GT.Input({
@@ -55,9 +54,6 @@ const OnChainPaymentSendAllMutation = GT.Field<
     if (targetConfirmations instanceof Error) {
       return { errors: [{ message: targetConfirmations.message }] }
     }
-
-    const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
-    if (btcWalletValidated != true) return btcWalletValidated
 
     const status = await Wallets.payOnChainByWalletId({
       senderAccount: domainAccount,
