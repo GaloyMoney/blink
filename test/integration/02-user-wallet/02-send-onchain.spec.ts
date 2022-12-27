@@ -262,7 +262,7 @@ const testExternalSend = async ({
         id === pendingTxHash,
     )
     expect(settledTxs.length).toBe(1)
-    const settledTx = settledTxs[0] as WalletTransaction
+    const settledTx = settledTxs[0]
 
     const feeRates = getFeesConfig()
     let fee: number
@@ -394,7 +394,7 @@ const testInternalSend = async ({
       txMemo === memo,
   )
   expect(settledTxsSender.length).toBe(1)
-  const senderSettledTx = settledTxsSender[0] as WalletTransaction
+  const senderSettledTx = settledTxsSender[0]
 
   expect(senderSettledTx.settlementFee).toBe(0)
   expect(senderSettledTx.settlementAmount).toBe(-senderAmount)
@@ -420,7 +420,7 @@ const testInternalSend = async ({
       initiationVia.type === PaymentInitiationMethod.OnChain &&
       settlementVia.type === SettlementMethod.IntraLedger,
   )
-  const recipientSettledTx = settledTxsRecipient[0] as WalletTransaction
+  const recipientSettledTx = settledTxsRecipient[0]
 
   expect(recipientSettledTx.settlementFee).toBe(0)
   expect(recipientSettledTx.settlementAmount).toBe(recipientAmount)
