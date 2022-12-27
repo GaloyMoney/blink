@@ -26,7 +26,7 @@ import { LocalCacheService } from "@services/cache"
 import { toSeconds } from "@domain/primitives"
 import { timeout } from "@utils"
 
-import { getPendingPaymentCount } from "@services/lnd/utils-ln-service"
+import { getTotalPendingHtlcCount } from "@services/lnd/utils-ln-service"
 
 import healthzHandler from "./middlewares/healthz"
 
@@ -315,12 +315,12 @@ export const getBookingVersusRealWorldAssets = async () => {
 }
 
 createGauge({
-  name: "pendingPaymentsCount",
+  name: "totalPendingHtlcCount",
   description: "How many pending HTLCs there are in the channels of the active nodes",
   collect: async () => {
-    const pendingPaymentsCount = await getPendingPaymentCount()
-    if (getPendingPaymentCount instanceof Error) return 0
-    return pendingPaymentsCount
+    const totalPendingHtlcCount = await getTotalPendingHtlcCount()
+    if (getTotalPendingHtlcCount instanceof Error) return NaN
+    return totalPendingHtlcCount
   },
 })
 
@@ -329,7 +329,7 @@ createGauge({
   description: "How much inbound balance there is on the active nodes",
   collect: async () => {
     const balance = await Lightning.getInboundBalance()
-    if (balance instanceof Error) return 0
+    if (balance instanceof Error) return NaN
     return balance
   },
 })
