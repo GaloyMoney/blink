@@ -858,32 +858,6 @@ describe("UserWallet - onChainPay", () => {
     expect(status).toBeInstanceOf(LimitsExceededError)
   })
 
-  it("fee probe fails if the amount is less than on chain dust amount", async () => {
-    const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-
-    const status = await Wallets.getOnChainFee({
-      account: accountA,
-      walletId: walletIdA,
-      address,
-      amount: amountBelowDustThreshold,
-      targetConfirmations,
-    })
-    expect(status).toBeInstanceOf(LessThanDustThresholdError)
-  })
-
-  it("fee probe fails if the amount is less than lnd on-chain dust amount", async () => {
-    const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-
-    const status = await Wallets.getOnChainFee({
-      account: accountA,
-      walletId: walletIdA,
-      address,
-      amount: 1,
-      targetConfirmations,
-    })
-    expect(status).toBeInstanceOf(LessThanDustThresholdError)
-  })
-
   it("fails if the amount is less than on chain dust amount", async () => {
     const address = await bitcoindOutside.getNewAddress()
 
@@ -967,36 +941,6 @@ describe("UsdWallet - onChainPay", () => {
   })
 
   describe("to an external address", () => {
-    it("fee probe from usd wallet", async () => {
-      const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-
-      const onChainFee = await Wallets.getOnChainFee({
-        account: accountB,
-        walletId: walletIdUsdB,
-        address,
-        amount: usdAmount,
-        targetConfirmations,
-      })
-      if (onChainFee instanceof Error) throw onChainFee
-
-      const feeRates = getFeesConfig()
-      const fee = feeRates.withdrawDefaultMin + 7050
-      expect(fee).toEqual(onChainFee)
-    })
-
-    it("fee probe fails if the amount is less than on chain dust amount", async () => {
-      const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
-
-      const onChainFee = await Wallets.getOnChainFee({
-        account: accountB,
-        walletId: walletIdUsdB,
-        address,
-        amount: toCents(1),
-        targetConfirmations,
-      })
-      expect(onChainFee).toBeInstanceOf(LessThanDustThresholdError)
-    })
-
     it("send from usd wallet", async () => {
       const res = await testExternalSend({
         senderAccount: accountB,

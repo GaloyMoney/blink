@@ -9,10 +9,12 @@ import CentAmount from "@graphql/types/scalar/cent-amount"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 
-import OnChainTxFee from "@graphql/types/object/onchain-tx-fee"
+import OnChainUsdTxFee from "@graphql/types/object/onchain-usd-tx-fee"
+
+import { normalizePaymentAmount } from "../mutation"
 
 const OnChainUsdTxFeeQuery = GT.Field({
-  type: GT.NonNull(OnChainTxFee),
+  type: GT.NonNull(OnChainUsdTxFee),
   args: {
     walletId: { type: GT.NonNull(WalletId) },
     address: { type: GT.NonNull(OnChainAddress) },
@@ -39,7 +41,7 @@ const OnChainUsdTxFeeQuery = GT.Field({
     if (fee instanceof Error) throw mapError(fee)
 
     return {
-      amount: fee,
+      amount: normalizePaymentAmount(fee).amount,
       targetConfirmations,
     }
   },
