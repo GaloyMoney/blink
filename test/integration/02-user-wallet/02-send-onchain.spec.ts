@@ -156,18 +156,23 @@ const testExternalSend = async ({
   const sub = subscribeToTransactions({ lnd: lndonchain })
   sub.on("chain_transaction", onchainTransactionEventHandler)
 
-  const results = await Promise.all([
-    once(sub, "chain_transaction"),
-    payOnChainForPromiseAll({
-      senderAccount,
-      senderWalletId,
-      address,
-      amount,
-      targetConfirmations,
-      memo: null,
-      sendAll,
-    }),
-  ])
+  let results
+  try {
+    results = await Promise.all([
+      once(sub, "chain_transaction"),
+      payOnChainForPromiseAll({
+        senderAccount,
+        senderWalletId,
+        address,
+        amount,
+        targetConfirmations,
+        memo: null,
+        sendAll,
+      }),
+    ])
+  } catch (err) {
+    return err
+  }
 
   expect(results[1]).toBe(PaymentSendStatus.Success)
   await onchainTransactionEventHandler(results[0][0])
@@ -184,7 +189,7 @@ const testExternalSend = async ({
       walletId: senderWalletId,
     })
     if (txResult.error instanceof Error || txResult.result === null) {
-      throw txResult.error
+      return txResult.error
     }
     const pendingTxs = txResult.result.slice.filter(
       ({ status }) => status === TxStatus.Pending,
@@ -218,11 +223,11 @@ const testExternalSend = async ({
   expect(sendNotification.mock.calls.length).toBe(1)
 
   const senderWallet = await WalletsRepository().findById(senderWalletId)
-  if (senderWallet instanceof Error) throw senderWallet
+  if (senderWallet instanceof Error) return senderWallet
 
   if (!sendAll) {
     const satsPrice = await Prices.getCurrentPrice()
-    if (satsPrice instanceof Error) throw satsPrice
+    if (satsPrice instanceof Error) return satsPrice
 
     const paymentAmount = { amount: BigInt(amount), currency: senderWallet.currency }
     const displayPaymentAmount = {
@@ -246,7 +251,7 @@ const testExternalSend = async ({
       walletId: senderWalletId,
     })
     if (txResult.error instanceof Error || txResult.result === null) {
-      throw txResult.error
+      return txResult.error
     }
     const pendingTxs = txResult.result.slice.filter(
       ({ status }) => status === TxStatus.Pending,
@@ -270,7 +275,7 @@ const testExternalSend = async ({
       const feeSats = toSats(feeRates.withdrawDefaultMin + 7050)
       const dealerFns = DealerPriceService()
       const feeResult = await dealerFns.getCentsFromSatsForImmediateSell(feeSats)
-      if (feeResult instanceof Error) throw feeResult
+      if (feeResult instanceof Error) return feeResult
       fee = feeResult
     }
 
@@ -442,21 +447,25 @@ const testInternalSend = async ({
 }
 
 describe("UserWallet - onChainPay", () => {
-  it("sends a successful payment", async () =>
-    testExternalSend({
+  it("sends a successful payment", async () => {
+    const res = await testExternalSend({
       senderAccount: accountA,
       senderWalletId: walletIdA,
       amount,
       sendAll: false,
-    }))
+    })
+    if (res instanceof Error) throw res
+  })
 
-  it("sends all in a successful payment", async () =>
-    testExternalSend({
+  it("sends all in a successful payment", async () => {
+    const res = await testExternalSend({
       senderAccount: accountE,
       senderWalletId: walletIdE,
       amount,
       sendAll: true,
-    }))
+    })
+    if (res instanceof Error) throw res
+  })
 
   it("sends a successful payment with memo", async () => {
     const memo = "this is my onchain memo"
@@ -982,20 +991,24 @@ describe("UsdWallet - onChainPay", () => {
       expect(onChainFee).toBeInstanceOf(LessThanDustThresholdError)
     })
 
-    it("send from usd wallet", async () =>
-      testExternalSend({
+    it("send from usd wallet", async () => {
+      const res = await testExternalSend({
         senderAccount: accountB,
         senderWalletId: walletIdUsdB,
         amount: usdAmount,
         sendAll: false,
-      }))
+      })
+      if (res instanceof Error) throw res
+    })
 
-    it("send all from usd wallet", async () =>
-      testExternalSend({
+    it("send all from usd wallet", async () => {
+      const res = await testExternalSend({
         senderAccount: accountB,
         senderWalletId: walletIdUsdB,
         amount: usdAmount,
         sendAll: true,
-      }))
+      })
+      if (res instanceof Error) throw res
+    })
   })
 })
