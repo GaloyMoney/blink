@@ -3178,10 +3178,17 @@
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==
 
-"@types/jsonwebtoken@^8.5.8", "@types/jsonwebtoken@^8.5.9":
+"@types/jsonwebtoken@^8.5.9":
   version "8.5.9"
   resolved "https://registry.yarnpkg.com/@types/jsonwebtoken/-/jsonwebtoken-8.5.9.tgz#2c064ecb0b3128d837d2764aa0b117b0ff6e4586"
   integrity sha512-272FMnFGzAVMGtu9tkr29hRL6bZj4Zs1KZNeHLnKqAvp06tAIcarTMwOh8/8bz4FmKRcMxZhZNeUAQsNLoiPhg==
+  dependencies:
+    "@types/node" "*"
+
+"@types/jsonwebtoken@^9":
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/@types/jsonwebtoken/-/jsonwebtoken-9.0.0.tgz#4db9bfaf276ef4fdc3608194fab8b8f2fd1c44f9"
+  integrity sha512-mM4TkDpA9oixqg1Fv2vVpOFyIVLJjm5x4k0V+K/rEsizfjD7Tk7LKk3GTtbB7KCfP0FEHQtsZqFxYA0+sijNVg==
   dependencies:
     "@types/node" "*"
 
@@ -5767,12 +5774,12 @@ expect@^28.0.0, expect@^28.1.3:
     jest-message-util "^28.1.3"
     jest-util "^28.1.3"
 
-express-jwt@^8.2.0:
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-8.2.0.tgz#b9673fda1d4e71baa1727774eb27e59ad770316d"
-  integrity sha512-BI3PbUA+xJtABfEmreIi9Iubtq5Gru6szIyNLU8St7Yx4i95y4xUupjSzC7IfmOSJWUJIv/DinMYSMcHAyvXpQ==
+express-jwt@^8.2.1:
+  version "8.2.1"
+  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-8.2.1.tgz#722b9ceb7ecd238a606e7cddc52756031ea077f3"
+  integrity sha512-h4tbjjQ4LlgQ4ODF9ZBAzUSbclBhu0buEx3+3T0CT4KulO3pj0CxO+/GGqtINqnM8uZqU04RvDdMOkV5/UfXnA==
   dependencies:
-    "@types/jsonwebtoken" "^8.5.8"
+    "@types/jsonwebtoken" "^9"
     express-unless "^2.1.3"
     jsonwebtoken "^9.0.0"
 
