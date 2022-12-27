@@ -3,6 +3,7 @@ import { GT } from "@graphql/index"
 import MeQuery from "@graphql/root/query/me"
 import GlobalsQuery from "@graphql/root/query/globals"
 import BtcPriceQuery from "@graphql/root/query/btc-price"
+import CurrencyListQuery from "@graphql/root/query/currency-list"
 import BtcPriceListQuery from "@graphql/root/query/btc-price-list"
 import QuizQuestionsQuery from "@graphql/root/query/quiz-questions"
 import MobileVersionsQuery from "@graphql/root/query/mobile-versions"
@@ -20,6 +21,7 @@ const fields = {
   userDefaultWalletId: AccountDefaultWalletIdQuery, // FIXME: migrate to AccountDefaultWalletId
   accountDefaultWallet: AccountDefaultWalletQuery,
   businessMapMarkers: BusinessMapMarkersQuery,
+  currencyList: CurrencyListQuery,
   mobileVersions: MobileVersionsQuery,
   quizQuestions: QuizQuestionsQuery,
   btcPrice: BtcPriceQuery,
