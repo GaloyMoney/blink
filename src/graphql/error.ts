@@ -153,7 +153,7 @@ export class DustAmountError extends CustomApolloError {
   constructor(errData: CustomApolloErrorData) {
     super({
       code: "ENTERED_DUST_AMOUNT",
-      message: `Use lightning to send amounts less than ${onChainWalletConfig.dustThreshold}`,
+      message: `Use lightning to send amounts less than ${onChainWalletConfig.dustThreshold} sats`,
       forwardToClient: true,
       ...errData,
     })

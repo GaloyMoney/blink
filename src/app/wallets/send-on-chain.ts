@@ -22,7 +22,7 @@ import {
   InsufficientOnChainFundsError,
   TxDecoder,
 } from "@domain/bitcoin/onchain"
-import { CouldNotFindError } from "@domain/errors"
+import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
 import { NewDisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
@@ -63,6 +63,10 @@ export const payOnChainByWalletId = async <R extends WalletCurrency>({
     ? await LedgerService().getWalletBalance(senderWalletId)
     : amountRaw
   if (amountToSendRaw instanceof Error) return amountToSendRaw
+
+  if (sendAll && amountToSendRaw === 0) {
+    return new InsufficientBalanceError(`No balance left to send.`)
+  }
 
   const validator = PaymentInputValidator(WalletsRepository().findById)
   const validationResult = await validator.validatePaymentInput({

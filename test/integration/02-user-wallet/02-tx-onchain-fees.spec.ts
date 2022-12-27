@@ -81,7 +81,7 @@ describe("UserWallet - getOnchainFee", () => {
     expect(fee).toBeInstanceOf(LessThanDustThresholdError)
     expect(fee).toHaveProperty(
       "message",
-      `Use lightning to send amounts less than ${dustThreshold}`,
+      `Use lightning to send amounts less than ${dustThreshold} sats`,
     )
   })
 

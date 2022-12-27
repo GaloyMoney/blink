@@ -320,7 +320,7 @@ const OPFBWithConversion = <S extends WalletCurrency, R extends WalletCurrency>(
       btcPaymentAmount.amount < state.dustThreshold
     ) {
       return new LessThanDustThresholdError(
-        `Use lightning to send amounts less than ${state.dustThreshold}`,
+        `Use lightning to send amounts less than ${state.dustThreshold} sats`,
       )
     }
 
