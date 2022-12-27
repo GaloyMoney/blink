@@ -234,6 +234,13 @@ type Coordinates {
   longitude: Float!
 }
 
+type Currency {
+  code: String!
+  flag: String!
+  name: String!
+  symbol: String!
+}
+
 input DeviceNotificationTokenCreateInput {
   deviceToken: String!
 }
@@ -903,6 +910,7 @@ type Query {
   btcPrice: Price
   btcPriceList(range: PriceGraphRange!): [PricePoint]
   businessMapMarkers: [MapMarker]
+  currencyList: [Currency]
   globals: Globals
   lnInvoicePaymentStatus(
     input: LnInvoicePaymentStatusInput!
