@@ -11,6 +11,8 @@ import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 
 import OnChainTxFee from "@graphql/types/object/onchain-tx-fee"
 
+import { normalizePaymentAmount } from "../mutation"
+
 const OnChainTxFeeQuery = GT.Field({
   type: GT.NonNull(OnChainTxFee),
   args: {
@@ -39,7 +41,7 @@ const OnChainTxFeeQuery = GT.Field({
     if (fee instanceof Error) throw mapError(fee)
 
     return {
-      amount: fee,
+      amount: normalizePaymentAmount(fee).amount,
       targetConfirmations,
     }
   },
