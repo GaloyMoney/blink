@@ -59,7 +59,6 @@ import {
   createUserAndWalletFromUserRef,
   getAccountByTestUserRef,
   getDefaultWalletIdByTestUserRef,
-  getAccountRecordByTestUserRef,
   lndonchain,
   lndOutside1,
   mineBlockAndSync,
@@ -67,8 +66,6 @@ import {
   subscribeToTransactions,
   getUsdWalletIdByTestUserRef,
 } from "test/helpers"
-
-let accountRecordA: AccountRecord
 
 let accountA: Account
 let accountB: Account
@@ -96,7 +93,6 @@ beforeAll(async () => {
   await createUserAndWalletFromUserRef("E")
   await createUserAndWalletFromUserRef("F")
 
-  accountRecordA = await getAccountRecordByTestUserRef("A")
   walletIdA = await getDefaultWalletIdByTestUserRef("A")
   walletIdUsdA = await getUsdWalletIdByTestUserRef("A")
   accountA = await getAccountByTestUserRef("A")
@@ -308,7 +304,7 @@ const testInternalSend = async ({
   recipientWalletId: WalletId
   senderAmount: Satoshis | UsdCents
 }) => {
-  const memo = "this is my onchain usd memo #" + (Math.random() * 1_000_000).toFixed()
+  const memo = "this is my onchain memo #" + (Math.random() * 1_000_000).toFixed()
 
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
@@ -447,7 +443,7 @@ const testInternalSend = async ({
   expect(filteredTxsUserD[0].memo).not.toBe(memo)
 }
 
-describe("UserWallet - onChainPay", () => {
+describe("BtcWallet - onChainPay", () => {
   it("sends a successful payment", async () => {
     const res = await testExternalSend({
       senderAccount: accountA,
@@ -835,8 +831,6 @@ describe("UserWallet - onChainPay", () => {
     if (walletVolume instanceof Error) return walletVolume
 
     const { outgoingBaseAmount } = walletVolume
-
-    if (!accountRecordA.level) throw new Error("Invalid or non existent user level")
 
     const withdrawalLimit = getAccountLimits({ level: accountA.level }).withdrawalLimit
 
