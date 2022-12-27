@@ -71,6 +71,15 @@ type AccountUpdateDefaultWalletIdPayload {
   errors: [Error!]!
 }
 
+type AccountUpdateDisplayCUrrencyPayload {
+  account: ConsumerAccount
+  errors: [Error!]!
+}
+
+input AccountUpdateDisplayCurrencyInput {
+  currency: DisplayCurrency!
+}
+
 """
 An Opaque Bearer token
 """
@@ -244,6 +253,11 @@ type Currency {
 input DeviceNotificationTokenCreateInput {
   deviceToken: String!
 }
+
+"""
+Display currency of an account
+"""
+scalar DisplayCurrency
 
 interface Error {
   code: String
@@ -606,6 +620,9 @@ type Mutation {
   accountUpdateDefaultWalletId(
     input: AccountUpdateDefaultWalletIdInput!
   ): AccountUpdateDefaultWalletIdPayload!
+  accountUpdateDisplayCurrency(
+    input: AccountUpdateDisplayCurrencyInput!
+  ): AccountUpdateDisplayCUrrencyPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
   deviceNotificationTokenCreate(

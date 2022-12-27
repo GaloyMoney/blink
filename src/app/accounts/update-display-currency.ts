@@ -14,7 +14,7 @@ export const updateDisplayCurrency = async ({
   const currencies = await listCurrencies()
   if (currencies instanceof Error) return currencies
 
-  const exists = currencies.find(c => c.code.toUpperCase() === currency.toUpperCase())
+  const exists = currencies.find((c) => c.code.toUpperCase() === currency.toUpperCase())
   if (!exists) return new InvalidPriceCurrencyError()
 
   const account = await AccountsRepository().findById(accountId)
