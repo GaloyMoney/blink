@@ -1,13 +1,11 @@
-import {
-  MEMO_SHARING_CENTS_THRESHOLD,
-  MEMO_SHARING_SATS_THRESHOLD,
-  onboardingEarn,
-} from "@config"
+import { MEMO_SHARING_CENTS_THRESHOLD, MEMO_SHARING_SATS_THRESHOLD } from "@config"
 
 import { toCents } from "@domain/fiat"
 import { toSats } from "@domain/bitcoin"
 import { WalletCurrency } from "@domain/shared"
 import { LedgerTransactionType } from "@domain/ledger"
+
+import { QuizQuestionIds } from "@domain/earn"
 
 import { TxStatus } from "./tx-status"
 import { DepositFeeCalculator } from "./deposit-fee-calculator"
@@ -283,7 +281,7 @@ const shouldDisplayMemo = ({
 }
 
 const isAuthorizedMemo = (memo: string | undefined): boolean =>
-  !!memo && Object.keys(onboardingEarn).includes(memo)
+  !!memo && Object.keys(QuizQuestionIds).includes(memo)
 
 export const translateMemo = ({
   memoFromPayer,

@@ -25,31 +25,3 @@ export const BTC_PRICE_PRECISION_OFFSET = 4
 export const MIN_SATS_FOR_PRICE_RATIO_PRECISION = 5000n
 
 export const levels: Levels = [1, 2]
-
-// onboarding
-export const onboardingEarn: Record<string, Satoshis> = {
-  walletDownloaded: 1 as Satoshis,
-  walletActivated: 1 as Satoshis,
-  whatIsBitcoin: 1 as Satoshis,
-  sat: 2 as Satoshis,
-  whereBitcoinExist: 5 as Satoshis,
-  whoControlsBitcoin: 5 as Satoshis,
-  copyBitcoin: 5 as Satoshis,
-  moneyImportantGovernement: 10 as Satoshis,
-  moneyIsImportant: 10 as Satoshis,
-  whyStonesShellGold: 10 as Satoshis,
-  moneyEvolution: 10 as Satoshis,
-  coincidenceOfWants: 10 as Satoshis,
-  moneySocialAggrement: 10 as Satoshis,
-  WhatIsFiat: 10 as Satoshis,
-  whyCareAboutFiatMoney: 10 as Satoshis,
-  GovernementCanPrintMoney: 10 as Satoshis,
-  FiatLosesValueOverTime: 10 as Satoshis,
-  OtherIssues: 10 as Satoshis,
-  LimitedSupply: 20 as Satoshis,
-  Decentralized: 20 as Satoshis,
-  NoCounterfeitMoney: 20 as Satoshis,
-  HighlyDivisible: 20 as Satoshis,
-  securePartOne: 20 as Satoshis,
-  securePartTwo: 20 as Satoshis,
-}

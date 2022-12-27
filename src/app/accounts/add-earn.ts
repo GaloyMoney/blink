@@ -1,10 +1,10 @@
 import { Payments } from "@app"
-import { getRewardsConfig, onboardingEarn } from "@config"
+import { getRewardsConfig } from "@config"
 import { IPMetadataValidator } from "@domain/accounts-ips/ip-metadata-validator"
+import { checkedForQuizQuestionId, onboardingEarn } from "@domain/earn"
 import {
   InvalidIPMetadataForRewardError,
   InvalidPhoneMetadataForRewardError,
-  InvalidQuizQuestionIdError,
   NoBtcWalletExistsForAccountError,
 } from "@domain/errors"
 import { WalletCurrency } from "@domain/shared"
@@ -13,8 +13,8 @@ import { getFunderWalletId } from "@services/ledger/caching"
 import {
   AccountsRepository,
   RewardsRepository,
-  WalletsRepository,
   UsersRepository,
+  WalletsRepository,
 } from "@services/mongoose"
 import { AccountsIpRepository } from "@services/mongoose/accounts-ips"
 
@@ -29,18 +29,18 @@ export const addEarn = async ({
 }): Promise<QuizQuestion | ApplicationError> => {
   const rewardsConfig = getRewardsConfig()
 
-  // TODO: quizQuestionId checkedFor
-  const quizQuestionId = quizQuestionIdString as QuizQuestionId
+  // ip check
+  const accountIP = await AccountsIpRepository().findById(accountId)
+  if (accountIP instanceof Error) return accountIP
 
-  const amount = onboardingEarn[quizQuestionId]
-  if (!amount) return new InvalidQuizQuestionIdError()
+  const ipFromDb = accountIP.lastIPs.find((ipObject) => ipObject.ip === ip)
+  const validatedIPMetadata =
+    IPMetadataValidator(rewardsConfig).validateForReward(ipFromDb)
+  if (validatedIPMetadata instanceof Error) {
+    return new InvalidIPMetadataForRewardError(validatedIPMetadata.name)
+  }
 
-  const funderWalletId = await getFunderWalletId()
-  const funderWallet = await WalletsRepository().findById(funderWalletId)
-  if (funderWallet instanceof Error) return funderWallet
-  const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
-  if (funderAccount instanceof Error) return funderAccount
-
+  // phone metadata check
   const recipientAccount = await AccountsRepository().findById(accountId)
   if (recipientAccount instanceof Error) return recipientAccount
 
@@ -54,15 +54,16 @@ export const addEarn = async ({
   if (validatedPhoneMetadata instanceof Error)
     return new InvalidPhoneMetadataForRewardError(validatedPhoneMetadata.name)
 
-  const accountIP = await AccountsIpRepository().findById(recipientAccount.id)
-  if (accountIP instanceof Error) return accountIP
+  const quizQuestionId = checkedForQuizQuestionId(quizQuestionIdString)
+  if (quizQuestionId instanceof Error) return quizQuestionId
 
-  const ipFromDb = accountIP.lastIPs.find((ipObject) => ipObject.ip === ip)
-  const validatedIPMetadata =
-    IPMetadataValidator(rewardsConfig).validateForReward(ipFromDb)
-  if (validatedIPMetadata instanceof Error) {
-    return new InvalidIPMetadataForRewardError(validatedIPMetadata.name)
-  }
+  const { amount } = onboardingEarn[quizQuestionId]
+
+  const funderWalletId = await getFunderWalletId()
+  const funderWallet = await WalletsRepository().findById(funderWalletId)
+  if (funderWallet instanceof Error) return funderWallet
+  const funderAccount = await AccountsRepository().findById(funderWallet.accountId)
+  if (funderAccount instanceof Error) return funderAccount
 
   const recipientWallets = await WalletsRepository().listByAccountId(accountId)
   if (recipientWallets instanceof Error) return recipientWallets

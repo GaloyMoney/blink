@@ -1,6 +1,4 @@
-import { onboardingEarn } from "@config"
 import { AccountLevel, AccountStatus } from "@domain/accounts"
-import { toSats } from "@domain/bitcoin"
 import {
   CouldNotFindAccountFromKratosIdError,
   CouldNotFindAccountFromUsernameError,
@@ -9,6 +7,8 @@ import {
 } from "@domain/errors"
 
 import { Account } from "@services/mongoose/schema"
+
+import { onboardingEarn } from "@domain/earn"
 
 import { fromObjectId, parseRepositoryError, toObjectId } from "./utils"
 
@@ -220,7 +220,7 @@ const translateToAccount = (result: AccountRecord): Account => ({
       (questionId: string): UserQuizQuestion => ({
         question: {
           id: questionId as QuizQuestionId,
-          earnAmount: toSats(onboardingEarn[questionId]),
+          earnAmount: onboardingEarn[questionId as QuizQuestionId].amount,
         },
         completed: true,
       }),

@@ -174,7 +174,15 @@ const AccountSchema = new Schema<AccountRecord>(
       default: Date.now,
     },
     earn: {
-      type: [String],
+      type: [
+        {
+          id: String,
+          createdAt: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      ],
       default: [],
     },
     role: {

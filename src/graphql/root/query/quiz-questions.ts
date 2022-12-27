@@ -1,14 +1,14 @@
+import { onboardingEarn } from "@domain/earn"
 import { GT } from "@graphql/index"
 
 import QuizQuestion from "@graphql/types/object/quiz-question"
-import { onboardingEarn } from "@config"
 
 const QuizQuestionsQuery = GT.Field({
   type: GT.List(QuizQuestion),
   resolve: async () => {
-    return Object.entries(onboardingEarn).map(([id, earnAmount]) => ({
+    return Object.entries(onboardingEarn).map(([id, { amount }]) => ({
       id,
-      earnAmount,
+      earnAmount: amount,
     }))
   },
 })

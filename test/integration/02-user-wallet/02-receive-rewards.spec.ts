@@ -1,5 +1,6 @@
 import { Accounts, Payments, Wallets } from "@app"
-import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
+import { MEMO_SHARING_SATS_THRESHOLD } from "@config"
+import { onboardingEarn } from "@domain/earn"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
 import difference from "lodash.difference"
@@ -24,9 +25,10 @@ const onBoardingEarnIds = [
   "whyStonesShellGold" as QuizQuestionId,
   "NoCounterfeitMoney" as QuizQuestionId,
 ]
+
 const onBoardingEarnAmt: number = Object.keys(onboardingEarn)
   .filter((k) => find(onBoardingEarnIds, (o) => o === k))
-  .reduce((p, k) => p + onboardingEarn[k], 0)
+  .reduce((p, k) => p + onboardingEarn[k].amount, 0)
 
 jest.mock("@config", () => {
   const config = jest.requireActual("@config")
