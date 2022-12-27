@@ -73,6 +73,7 @@ import {
   getHash,
   getInvoice,
   getInvoiceAttempt,
+  getTransactionsForWalletId,
   getUsdWalletIdByTestUserRef,
   lndOutside1,
   lndOutside2,
@@ -237,9 +238,7 @@ describe("UserWallet - Lightning Pay", () => {
       tx.settlementVia.type === PaymentInitiationMethod.IntraLedger &&
       tx.initiationVia.paymentHash === getHash(invoice)
 
-    const txResultB = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdB,
-    })
+    const txResultB = await getTransactionsForWalletId(walletIdB)
     if (txResultB.error instanceof Error || txResultB.result === null) {
       throw txResultB.error
     }
@@ -249,9 +248,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(userBTxn.settlementVia.type).toBe("intraledger")
     // expect(userBTxn.recipientUsername).toBe("lily")
 
-    const txResultC = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdB,
-    })
+    const txResultC = await getTransactionsForWalletId(walletIdB)
     if (txResultC.error instanceof Error || txResultC.result === null) {
       throw txResultC.error
     }
@@ -305,9 +302,7 @@ describe("UserWallet - Lightning Pay", () => {
       tx.settlementVia.type === PaymentInitiationMethod.IntraLedger &&
       tx.initiationVia.paymentHash === getHash(request)
 
-    let txResult = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdC,
-    })
+    let txResult = await getTransactionsForWalletId(walletIdC)
     if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
@@ -315,9 +310,7 @@ describe("UserWallet - Lightning Pay", () => {
     expect(walletTxs.slice.filter(matchTx)[0].memo).toBe(memo)
     expect(walletTxs.slice.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
 
-    txResult = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdB,
-    })
+    txResult = await getTransactionsForWalletId(walletIdB)
     if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
@@ -342,17 +335,13 @@ describe("UserWallet - Lightning Pay", () => {
     if (res instanceof Error) throw res
 
     const finalBalanceA = await getBalanceHelper(walletIdA)
-    const { result: txWalletA, error } = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdA,
-    })
+    const { result: txWalletA, error } = await getTransactionsForWalletId(walletIdA)
     if (error instanceof Error || txWalletA === null) {
       throw error
     }
 
     const finalBalanceB = await getBalanceHelper(walletIdB)
-    const txResult = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdB,
-    })
+    const txResult = await getTransactionsForWalletId(walletIdB)
     if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
@@ -624,9 +613,7 @@ describe("UserWallet - Lightning Pay", () => {
     })
     if (resAboveThreshold instanceof Error) throw resAboveThreshold
 
-    let txResult = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdA,
-    })
+    let txResult = await getTransactionsForWalletId(walletIdA)
     if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
@@ -634,9 +621,7 @@ describe("UserWallet - Lightning Pay", () => {
     const transaction0Above = userTransaction0[0]
     const transaction0Below = userTransaction0[1]
 
-    txResult = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdB,
-    })
+    txResult = await getTransactionsForWalletId(walletIdB)
     if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
@@ -1035,9 +1020,7 @@ describe("UserWallet - Lightning Pay", () => {
             tx.settlementVia.type === PaymentInitiationMethod.IntraLedger &&
             tx.initiationVia.paymentHash === hash
 
-          let txResult = await Wallets.getTransactionsForWalletId({
-            walletId: walletIdPayee,
-          })
+          let txResult = await getTransactionsForWalletId(walletIdPayee)
           if (txResult.error instanceof Error || txResult.result === null) {
             throw txResult.error
           }
@@ -1046,9 +1029,7 @@ describe("UserWallet - Lightning Pay", () => {
           expect(userCOnUsTxn[0].settlementVia.type).toBe("intraledger")
           await checkIsBalanced()
 
-          txResult = await Wallets.getTransactionsForWalletId({
-            walletId: walletIdPayer as WalletId,
-          })
+          txResult = await getTransactionsForWalletId(walletIdPayer as WalletId)
           if (txResult.error instanceof Error || txResult.result === null) {
             throw txResult.error
           }
@@ -1930,9 +1911,9 @@ describe("USD Wallets - Lightning Pay", () => {
       if (res instanceof Error) return res
       expect(res).toBe(PaymentSendStatus.Success)
 
-      const { result: txWalletA, error } = await Wallets.getTransactionsForWalletId({
-        walletId: recipientWalletId,
-      })
+      const { result: txWalletA, error } = await getTransactionsForWalletId(
+        recipientWalletId,
+      )
       if (error instanceof Error || txWalletA === null) {
         return error
       }
@@ -1945,9 +1926,7 @@ describe("USD Wallets - Lightning Pay", () => {
       const recipientFinalBalance = await getBalanceHelper(recipientWalletId)
       expect(recipientFinalBalance).toBe(recipientInitBalance + recipientAmountInvoice)
 
-      const txResult = await Wallets.getTransactionsForWalletId({
-        walletId: senderWalletId,
-      })
+      const txResult = await getTransactionsForWalletId(senderWalletId)
       if (txResult.error instanceof Error || txResult.result === null) {
         return txResult.error
       }

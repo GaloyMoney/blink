@@ -36,6 +36,7 @@ import {
   getHash,
   getInvoice,
   getPubKey,
+  getTransactionsForWalletId,
   getUsdWalletIdByTestUserRef,
   lnd1,
   lndOutside1,
@@ -154,9 +155,7 @@ describe("UserWallet - Lightning", () => {
     expect(isPaidAfterPay).toBe(true)
 
     // check that memo is not filtered by spam filter
-    const { result: txns, error } = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdB,
-    })
+    const { result: txns, error } = await getTransactionsForWalletId(walletIdB)
     if (error instanceof Error || txns === null) {
       throw error
     }
@@ -412,9 +411,7 @@ describe("UserWallet - Lightning", () => {
     expect(dealerBalance).toBe(cents * -1)
 
     // check that memo is not filtered by spam filter
-    const { result: txns } = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdUsdB,
-    })
+    const { result: txns } = await getTransactionsForWalletId(walletIdUsdB)
     expect(txns?.slice.length).toBe(1)
 
     // FIXME(nicolas) need to have spam memo working USD wallet
@@ -482,9 +479,7 @@ describe("UserWallet - Lightning", () => {
     expect(ledgerTx.pendingConfirmation).toBe(false)
 
     // check that memo is not filtered by spam filter
-    const { result: txns } = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdUsdB,
-    })
+    const { result: txns } = await getTransactionsForWalletId(walletIdUsdB)
     expect(txns?.slice.length).toBe(2)
 
     // FIXME(nicolas) need to have spam memo working USD wallet
@@ -644,9 +639,7 @@ describe("UserWallet - Lightning", () => {
     expect(ledgerTx.lnMemo).toBe(memo)
 
     // check that spam memo is filtered from transaction description
-    const { result: txns, error } = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdB,
-    })
+    const { result: txns, error } = await getTransactionsForWalletId(walletIdB)
     if (error instanceof Error || txns === null) throw error
     expect(ledgerTx.type).toBe("invoice")
 

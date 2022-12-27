@@ -1,4 +1,4 @@
-import { Accounts, Payments, Wallets } from "@app"
+import { Accounts, Payments } from "@app"
 import { MEMO_SHARING_SATS_THRESHOLD, onboardingEarn } from "@config"
 import { getFunderWalletId } from "@services/ledger/caching"
 import { AccountsRepository, WalletsRepository } from "@services/mongoose"
@@ -14,7 +14,7 @@ import {
   getAccountRecordByTestUserRef,
 } from "test/helpers"
 import { resetSelfAccountIdLimits } from "test/helpers/rate-limit"
-import { getBalanceHelper } from "test/helpers/wallet"
+import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
 
 let accountIdB: AccountId
 let walletIdB: WalletId
@@ -100,9 +100,7 @@ describe("UserWallet - addEarn", () => {
     const onboardingEarnIds = Object.keys(onboardingEarn)
     expect(onboardingEarnIds.length).toBeGreaterThanOrEqual(1)
 
-    const { result: transactionsBefore } = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdB,
-    })
+    const { result: transactionsBefore } = await getTransactionsForWalletId(walletIdB)
 
     let onboardingEarnId = ""
     let txCheck: WalletTransaction | undefined
@@ -129,9 +127,7 @@ describe("UserWallet - addEarn", () => {
     })
     if (payment instanceof Error) return payment
 
-    const { result: transactionsAfter } = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdB,
-    })
+    const { result: transactionsAfter } = await getTransactionsForWalletId(walletIdB)
     const rewardTx = transactionsAfter?.slice.find((tx) => tx.memo === onboardingEarnId)
     expect(rewardTx).not.toBeUndefined()
   })
