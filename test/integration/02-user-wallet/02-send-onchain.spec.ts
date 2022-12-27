@@ -949,6 +949,36 @@ describe("UsdWallet - onChainPay", () => {
   })
 
   describe("to an external address", () => {
+    it("fee probe from usd wallet", async () => {
+      const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
+
+      const onChainFee = await Wallets.getOnChainFee({
+        account: accountB,
+        walletId: walletIdUsdB,
+        address,
+        amount: usdAmount,
+        targetConfirmations,
+      })
+      if (onChainFee instanceof Error) throw onChainFee
+
+      const feeRates = getFeesConfig()
+      const fee = feeRates.withdrawDefaultMin + 7050
+      expect(fee).toEqual(onChainFee)
+    })
+
+    it("fee probe fails if the amount is less than on chain dust amount", async () => {
+      const address = (await bitcoindOutside.getNewAddress()) as OnChainAddress
+
+      const onChainFee = await Wallets.getOnChainFee({
+        account: accountB,
+        walletId: walletIdUsdB,
+        address,
+        amount: toCents(1),
+        targetConfirmations,
+      })
+      expect(onChainFee).toBeInstanceOf(LessThanDustThresholdError)
+    })
+
     it("send from usd wallet", async () =>
       testExternalSend({
         senderAccount: accountB,
