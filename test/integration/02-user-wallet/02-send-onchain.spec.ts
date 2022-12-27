@@ -171,7 +171,8 @@ const testExternalSend = async ({
       }),
     ])
   } catch (err) {
-    return err
+    sub.removeAllListeners()
+    return err as ApplicationError
   }
 
   expect(results[1]).toBe(PaymentSendStatus.Success)
@@ -465,6 +466,18 @@ describe("UserWallet - onChainPay", () => {
       sendAll: true,
     })
     if (res instanceof Error) throw res
+  })
+
+  it("fails to send all from empty wallet", async () => {
+    const res = await testExternalSend({
+      senderAccount: accountE,
+      senderWalletId: walletIdE,
+      amount,
+      sendAll: true,
+    })
+
+    expect(res).toBeInstanceOf(InsufficientBalanceError)
+    expect(res && res.message).toEqual(`No balance left to send.`)
   })
 
   it("sends a successful payment with memo", async () => {
@@ -1011,16 +1024,16 @@ describe("UsdWallet - onChainPay", () => {
       if (res instanceof Error) throw res
     })
 
-    it.skip("fails to send all from empty usd wallet", async () => {
-      // TODO: Fix "openHandles" issue before unskipping
+    it("fails to send all from empty usd wallet", async () => {
       const res = await testExternalSend({
         senderAccount: accountB,
         senderWalletId: walletIdUsdB,
         amount: usdAmount,
         sendAll: true,
       })
+
       expect(res).toBeInstanceOf(InsufficientBalanceError)
-      expect(res.message).toEqual(`No balance left to send.`)
+      expect(res && res.message).toEqual(`No balance left to send.`)
     })
   })
 })
