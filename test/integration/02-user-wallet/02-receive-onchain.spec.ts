@@ -46,7 +46,7 @@ import {
   waitUntilBlockHeight,
 } from "test/helpers"
 import { resetOnChainAddressAccountIdLimits } from "test/helpers/rate-limit"
-import { getBalanceHelper } from "test/helpers/wallet"
+import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
 
 let walletIdA: WalletId
 let walletIdB: WalletId
@@ -318,9 +318,7 @@ describe("UserWallet - On chain", () => {
     await sleep(1000)
 
     // Check pendingTx from chain
-    const { result: txs, error } = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdA,
-    })
+    const { result: txs, error } = await getTransactionsForWalletId(walletIdA)
     if (error instanceof Error || txs === null) {
       throw error
     }
@@ -336,9 +334,7 @@ describe("UserWallet - On chain", () => {
 
     // Check pendingTx from cache
     const { result: txsFromCache, error: errorFromCache } =
-      await Wallets.getTransactionsForWalletId({
-        walletId: walletIdA,
-      })
+      await getTransactionsForWalletId(walletIdA)
     if (errorFromCache instanceof Error || txsFromCache === null) {
       throw errorFromCache
     }
@@ -412,9 +408,7 @@ async function sendToWalletTestWrapper({
   const lnd = lndonchain
 
   const initialBalance = await getBalanceHelper(walletId)
-  const { result: initTransactions, error } = await Wallets.getTransactionsForWalletId({
-    walletId,
-  })
+  const { result: initTransactions, error } = await getTransactionsForWalletId(walletId)
   if (error instanceof Error || initTransactions === null) {
     throw error
   }
@@ -450,9 +444,7 @@ async function sendToWalletTestWrapper({
         }),
     )
 
-    const { result: transactions, error } = await Wallets.getTransactionsForWalletId({
-      walletId,
-    })
+    const { result: transactions, error } = await getTransactionsForWalletId(walletId)
     if (error instanceof Error || transactions === null) {
       throw error
     }
@@ -495,9 +487,7 @@ async function testTxnsByAddressWrapper({
   const lnd = lndonchain
 
   const currentBalance = await getBalanceHelper(walletId)
-  const { result: initTransactions, error } = await Wallets.getTransactionsForWalletId({
-    walletId,
-  })
+  const { result: initTransactions, error } = await getTransactionsForWalletId(walletId)
   if (error instanceof Error || initTransactions === null) {
     throw error
   }
@@ -530,9 +520,7 @@ async function testTxnsByAddressWrapper({
           addresses.length,
     )
 
-    const { result: transactions, error } = await Wallets.getTransactionsForWalletId({
-      walletId,
-    })
+    const { result: transactions, error } = await getTransactionsForWalletId(walletId)
     if (error instanceof Error || transactions === null) {
       throw error
     }

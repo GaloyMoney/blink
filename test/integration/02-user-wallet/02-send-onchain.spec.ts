@@ -49,7 +49,7 @@ import { TxDecoder } from "@domain/bitcoin/onchain"
 import * as OnChainServiceImpl from "@services/lnd/onchain-service"
 import { DealerPriceService } from "@services/dealer-price"
 
-import { getBalanceHelper } from "test/helpers/wallet"
+import { getBalanceHelper, getTransactionsForWalletId } from "test/helpers/wallet"
 import {
   bitcoindClient,
   bitcoindOutside,
@@ -182,9 +182,7 @@ const testExternalSend = async ({
   let pendingTxHash: OnChainTxHash
 
   {
-    const txResult = await Wallets.getTransactionsForWalletId({
-      walletId: senderWalletId,
-    })
+    const txResult = await getTransactionsForWalletId(senderWalletId)
     if (txResult.error instanceof Error || txResult.result === null) {
       return txResult.error
     }
@@ -242,9 +240,7 @@ const testExternalSend = async ({
   }
 
   {
-    const txResult = await Wallets.getTransactionsForWalletId({
-      walletId: senderWalletId,
-    })
+    const txResult = await getTransactionsForWalletId(senderWalletId)
     if (txResult.error instanceof Error || txResult.result === null) {
       return txResult.error
     }
@@ -371,9 +367,7 @@ const testInternalSend = async ({
 
   // Check txn details for sent wallet
   // ===
-  const { result: txsSender, error } = await Wallets.getTransactionsForWalletId({
-    walletId: senderWalletId,
-  })
+  const { result: txsSender, error } = await getTransactionsForWalletId(senderWalletId)
   if (error instanceof Error || txsSender === null) {
     return error
   }
@@ -396,10 +390,9 @@ const testInternalSend = async ({
 
   // Check txn details for received wallet
   // ===
-  const { result: txsRecipient, error: errorUserA } =
-    await Wallets.getTransactionsForWalletId({
-      walletId: recipientWalletId,
-    })
+  const { result: txsRecipient, error: errorUserA } = await getTransactionsForWalletId(
+    recipientWalletId,
+  )
   if (errorUserA instanceof Error || txsRecipient === null) {
     return errorUserA
   }
@@ -483,9 +476,7 @@ describe("BtcWallet - onChainPay", () => {
       sendAll: false,
     })
     expect(paymentResult).toBe(PaymentSendStatus.Success)
-    const { result: txs, error } = await Wallets.getTransactionsForWalletId({
-      walletId: walletIdA,
-    })
+    const { result: txs, error } = await getTransactionsForWalletId(walletIdA)
     if (error instanceof Error || txs === null) {
       throw error
     }
@@ -508,9 +499,7 @@ describe("BtcWallet - onChainPay", () => {
     await onchainTransactionEventHandler(results[0][0])
 
     {
-      const txResult = await Wallets.getTransactionsForWalletId({
-        walletId: walletIdA,
-      })
+      const txResult = await getTransactionsForWalletId(walletIdA)
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
@@ -583,9 +572,7 @@ describe("BtcWallet - onChainPay", () => {
     expect(finalBalanceUserD).toBe(initialBalanceUserD + initialBalanceUserF)
 
     {
-      const txResult = await Wallets.getTransactionsForWalletId({
-        walletId: walletIdF,
-      })
+      const txResult = await getTransactionsForWalletId(walletIdF)
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
@@ -644,9 +631,7 @@ describe("BtcWallet - onChainPay", () => {
       const finalBalanceUserA = await getBalanceHelper(walletIdA)
       expect(finalBalanceUserA).toBe(initialBalanceUserA)
 
-      const txResult = await Wallets.getTransactionsForWalletId({
-        walletId: walletIdA,
-      })
+      const txResult = await getTransactionsForWalletId(walletIdA)
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
@@ -687,9 +672,7 @@ describe("BtcWallet - onChainPay", () => {
 
       expect(result).toBeInstanceOf(error)
 
-      const txResult = await Wallets.getTransactionsForWalletId({
-        walletId: walletIdA,
-      })
+      const txResult = await getTransactionsForWalletId(walletIdA)
       if (txResult.error instanceof Error || txResult.result === null) {
         throw txResult.error
       }
