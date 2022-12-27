@@ -1007,5 +1007,17 @@ describe("UsdWallet - onChainPay", () => {
       })
       if (res instanceof Error) throw res
     })
+
+    it.skip("fails to send all from empty usd wallet", async () => {
+      // TODO: Fix "openHandles" issue before unskipping
+      const res = await testExternalSend({
+        senderAccount: accountB,
+        senderWalletId: walletIdUsdB,
+        amount: usdAmount,
+        sendAll: true,
+      })
+      expect(res).toBeInstanceOf(InsufficientBalanceError)
+      expect(res.message).toEqual(`No balance left to send.`)
+    })
   })
 })
