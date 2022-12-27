@@ -915,6 +915,12 @@ type Query {
     targetConfirmations: TargetConfirmations = 1
     walletId: WalletId!
   ): OnChainTxFee!
+  onChainUsdTxFee(
+    address: OnChainAddress!
+    amount: CentAmount!
+    targetConfirmations: TargetConfirmations = 1
+    walletId: WalletId!
+  ): OnChainTxFee!
   quizQuestions: [QuizQuestion]
   userDefaultWalletId(username: Username!): WalletId!
     @deprecated(reason: "will be migrated to AccountDefaultWalletId")
