@@ -292,6 +292,10 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
       message = "Account is inactive."
       return new ValidationInternalError({ message, logger: baseLogger })
 
+    case "InvalidPriceCurrencyError":
+      message = "Invalid currency."
+      return new ValidationInternalError({ message, logger: baseLogger })
+
     case "InvalidCoordinatesError":
       return new InvalidCoordinatesError({ logger: baseLogger })
 
