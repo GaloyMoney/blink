@@ -7,6 +7,7 @@ import {
   CouldNotFindError,
   RepositoryError,
 } from "@domain/errors"
+import { DisplayCurrency } from "@domain/fiat"
 
 import { Account } from "@services/mongoose/schema"
 
@@ -110,6 +111,7 @@ export const AccountsRepository = (): IAccountsRepository => {
     defaultWalletId,
     withdrawFee,
     kratosUserId,
+    displayCurrency,
 
     role,
   }: Account): Promise<Account | RepositoryError> => {
@@ -133,6 +135,7 @@ export const AccountsRepository = (): IAccountsRepository => {
           defaultWalletId,
           withdrawFee,
           kratosUserId,
+          displayCurrency,
 
           role,
         },
@@ -226,4 +229,5 @@ const translateToAccount = (result: AccountRecord): Account => ({
       }),
     ) || [],
   kratosUserId: result.kratosUserId as UserId,
+  displayCurrency: result.displayCurrency || DisplayCurrency.Usd,
 })

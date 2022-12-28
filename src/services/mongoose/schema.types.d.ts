@@ -87,6 +87,7 @@ interface AccountRecord {
   lastConnection: Date
   onchain: OnChainObjectForUser[]
   defaultWalletId: WalletId
+  displayCurrency?: string
 
   lastIPs: {
     ip: string
