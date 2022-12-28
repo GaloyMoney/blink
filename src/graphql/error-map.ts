@@ -450,7 +450,9 @@ export const mapError = (error: ApplicationError): CustomApolloError => {
     case "SecretDoesNotMatchAnyExistingHodlInvoiceError":
     case "CaptchaError":
     case "InvalidNonHodlInvoiceError":
+    case "InvalidAccountError":
     case "InvalidAccountIdError":
+    case "InvalidWalletForAccountError":
     case "AuthenticationError":
     case "LikelyNoUserWithThisPhoneExistError":
     case "LikelyUserAlreadyExistError":
