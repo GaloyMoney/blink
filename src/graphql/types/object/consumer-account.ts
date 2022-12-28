@@ -8,9 +8,10 @@ import {
   checkedConnectionArgs,
 } from "@graphql/connections"
 
-import IAccount from "@graphql/types/abstract/account"
 import Wallet from "@graphql/types/abstract/wallet"
+import IAccount from "@graphql/types/abstract/account"
 import WalletId from "@graphql/types/scalar/wallet-id"
+import DisplayCurrency from "@graphql/types/scalar/display-currency"
 
 import { WalletsRepository } from "@services/mongoose"
 
@@ -18,8 +19,8 @@ import { Accounts, Wallets } from "@app"
 
 import getUuidByString from "uuid-by-string"
 
-import { TransactionConnection } from "./transaction"
 import AccountLimits from "./account-limits"
+import { TransactionConnection } from "./transaction"
 
 const ConsumerAccount = GT.Object({
   name: "ConsumerAccount",
@@ -42,6 +43,11 @@ const ConsumerAccount = GT.Object({
     defaultWalletId: {
       type: GT.NonNull(WalletId),
       resolve: (source) => source.defaultWalletId,
+    },
+
+    displayCurrency: {
+      type: GT.NonNull(DisplayCurrency),
+      resolve: (source) => source.displayCurrency,
     },
 
     csvTransactions: {

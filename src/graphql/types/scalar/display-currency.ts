@@ -19,10 +19,10 @@ const DisplayCurrency = GT.Scalar<string | InputValidationError>({
 })
 
 function validDisplayCurrencyValue(value: string): string | InputValidationError {
-  if (!value || value.length < 3) {
+  if (!value || value.length < 3 || value.length > 4) {
     return new InputValidationError({ message: "Invalid value for DisplayCurrency" })
   }
-  return value
+  return value.toUpperCase()
 }
 
 export default DisplayCurrency

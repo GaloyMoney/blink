@@ -1,6 +1,7 @@
 interface Account {
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
+  displayCurrency: DisplayCurrency!
   id: ID!
   limits: AccountLimits!
   transactions(
@@ -71,13 +72,13 @@ type AccountUpdateDefaultWalletIdPayload {
   errors: [Error!]!
 }
 
-type AccountUpdateDisplayCUrrencyPayload {
-  account: ConsumerAccount
-  errors: [Error!]!
-}
-
 input AccountUpdateDisplayCurrencyInput {
   currency: DisplayCurrency!
+}
+
+type AccountUpdateDisplayCurrencyPayload {
+  account: ConsumerAccount
+  errors: [Error!]!
 }
 
 """
@@ -202,6 +203,7 @@ type ConsumerAccount implements Account {
   """
   csvTransactions(walletIds: [WalletId!]!): String!
   defaultWalletId: WalletId!
+  displayCurrency: DisplayCurrency!
   id: ID!
   limits: AccountLimits!
 
@@ -622,7 +624,7 @@ type Mutation {
   ): AccountUpdateDefaultWalletIdPayload!
   accountUpdateDisplayCurrency(
     input: AccountUpdateDisplayCurrencyInput!
-  ): AccountUpdateDisplayCUrrencyPayload!
+  ): AccountUpdateDisplayCurrencyPayload!
   captchaCreateChallenge: CaptchaCreateChallengePayload!
   captchaRequestAuthCode(input: CaptchaRequestAuthCodeInput!): SuccessPayload!
   deviceNotificationTokenCreate(

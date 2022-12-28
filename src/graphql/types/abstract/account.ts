@@ -1,9 +1,10 @@
 import { GT } from "@graphql/index"
 import { connectionArgs } from "@graphql/connections"
 
-import AccountLimits from "@graphql/types/object/account-limits"
-import { TransactionConnection } from "@graphql/types/object/transaction"
 import WalletId from "@graphql/types/scalar/wallet-id"
+import AccountLimits from "@graphql/types/object/account-limits"
+import DisplayCurrency from "@graphql/types/scalar/display-currency"
+import { TransactionConnection } from "@graphql/types/object/transaction"
 
 import Wallet from "./wallet"
 
@@ -18,6 +19,9 @@ const IAccount = GT.Interface({
     },
     defaultWalletId: {
       type: GT.NonNull(WalletId),
+    },
+    displayCurrency: {
+      type: GT.NonNull(DisplayCurrency),
     },
     csvTransactions: {
       type: GT.NonNull(GT.String),
