@@ -10,7 +10,12 @@ export const createBearer = async (
   ip: IpAddress,
 ): Promise<SessionToken | ApplicationError> => {
   {
-    const limitOk = await checkFailedLoginAttemptPerIpLimits(ip)
+    const limitOk = await checkCreateBearerTokenPerIpLimits(ip)
+    if (limitOk instanceof Error) return limitOk
+  }
+
+  {
+    const limitOk = await checkCreateBearerTokenGlobalLimits()
     if (limitOk instanceof Error) return limitOk
   }
 
@@ -32,11 +37,18 @@ export const createBearer = async (
   return kratosResult.sessionToken
 }
 
-// FIXME dedupe
-const checkFailedLoginAttemptPerIpLimits = async (
+const checkCreateBearerTokenPerIpLimits = async (
   ip: IpAddress,
 ): Promise<true | RateLimiterExceededError> =>
   consumeLimiter({
-    rateLimitConfig: RateLimitConfig.failedLoginAttemptPerIp,
+    rateLimitConfig: RateLimitConfig.createBearerTokenPerIp,
     keyToConsume: ip,
+  })
+
+const checkCreateBearerTokenGlobalLimits = async (): Promise<
+  true | RateLimiterExceededError
+> =>
+  consumeLimiter({
+    rateLimitConfig: RateLimitConfig.createBearerTokenPerIp,
+    keyToConsume: "",
   })

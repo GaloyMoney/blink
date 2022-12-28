@@ -69,6 +69,8 @@ type YamlSchema = {
     requestPhoneCodePerPhone: RateLimitInput
     requestPhoneCodePerPhoneMinInterval: RateLimitInput
     requestPhoneCodePerIp: RateLimitInput
+    createBearerTokenPerIp: RateLimitInput
+    createBearerTokenGlobal: RateLimitInput
     failedLoginAttemptPerPhone: RateLimitInput
     failedLoginAttemptPerEmailAddress: RateLimitInput
     failedLoginAttemptPerIp: RateLimitInput

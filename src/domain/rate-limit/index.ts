@@ -1,4 +1,6 @@
 import {
+  getCreateBearerTokenGlobal,
+  getCreateBearerTokenPerIp,
   getFailedLoginAttemptPerIpLimits,
   getFailedLoginAttemptPerPhoneLimits,
   getInvoiceCreateAttemptLimits,
@@ -10,6 +12,8 @@ import {
 } from "@config"
 
 import {
+  CreateBearerTokenGlobalRateLimiterExceededError,
+  CreateBearerTokenIpRateLimiterExceededError,
   InvoiceCreateForRecipientRateLimiterExceededError,
   InvoiceCreateRateLimiterExceededError,
   OnChainAddressCreateRateLimiterExceededError,
@@ -25,6 +29,8 @@ export const RateLimitPrefix = {
   requestPhoneCodeAttemptPerPhoneMinInterval:
     "phone_code_attempt_phone_code_min_interval",
   requestPhoneCodeAttemptPerIp: "phone_code_attempt_ip",
+  createBearerTokenPerIp: "create_bearer_token_ip",
+  createBearerTokenGlobal: "create_bearer_token_global",
   failedLoginAttemptPerPhone: "login_attempt_phone",
   failedLoginAttemptPerEmailAddress: "login_attempt_email",
   failedLoginAttemptPerIp: "login_attempt_ip",
@@ -48,6 +54,16 @@ export const RateLimitConfig: { [key: string]: RateLimitConfig } = {
     key: RateLimitPrefix.requestPhoneCodeAttemptPerIp,
     limits: getRequestPhoneCodePerIpLimits(),
     error: UserPhoneCodeAttemptIpRateLimiterExceededError,
+  },
+  createBearerTokenPerIp: {
+    key: RateLimitPrefix.createBearerTokenPerIp,
+    limits: getCreateBearerTokenPerIp(),
+    error: CreateBearerTokenIpRateLimiterExceededError,
+  },
+  createBearerTokenGlobal: {
+    key: RateLimitPrefix.createBearerTokenGlobal,
+    limits: getCreateBearerTokenGlobal(),
+    error: CreateBearerTokenGlobalRateLimiterExceededError,
   },
   failedLoginAttemptPerPhone: {
     key: RateLimitPrefix.failedLoginAttemptPerPhone,

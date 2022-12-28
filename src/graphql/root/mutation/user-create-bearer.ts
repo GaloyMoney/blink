@@ -4,6 +4,7 @@ import AuthTokenPayload from "@graphql/types/payload/auth-token"
 import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import { BTC_NETWORK } from "@config"
+import { addAttributesToCurrentSpan } from "@services/tracing"
 
 const UserCreateBearerInput = GT.Input({
   name: "UserCreateBearerInput",
@@ -41,7 +42,8 @@ const UserCreateBearerMutation = GT.Field<{
       return { errors: [{ message: "currently not available on mainnet" }] }
     }
 
-    // TODO: log deviceId
+    addAttributesToCurrentSpan({ deviceId })
+
     const authToken = await Auth.createBearer(ip)
 
     if (authToken instanceof Error) {

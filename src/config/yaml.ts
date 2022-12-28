@@ -209,6 +209,12 @@ export const getRequestPhoneCodePerPhoneMinIntervalLimits = () =>
 export const getRequestPhoneCodePerIpLimits = () =>
   getRateLimits(yamlConfig.rateLimits.requestPhoneCodePerIp)
 
+export const getCreateBearerTokenPerIp = () =>
+  getRateLimits(yamlConfig.rateLimits.createBearerTokenPerIp)
+
+export const getCreateBearerTokenGlobal = () =>
+  getRateLimits(yamlConfig.rateLimits.createBearerTokenGlobal)
+
 export const getFailedLoginAttemptPerPhoneLimits = () =>
   getRateLimits(yamlConfig.rateLimits.failedLoginAttemptPerPhone)
 
