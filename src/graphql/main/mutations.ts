@@ -48,40 +48,48 @@ export const mutationFields = {
   },
 
   authed: {
-    userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
-    deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
+    noWalletId: {
+      userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
+      deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
 
-    userUpdateLanguage: UserUpdateLanguageMutation,
-    userUpdateUsername: UserUpdateUsernameMutation,
-    accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdMutation,
-    accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyMutation,
-    userContactUpdateAlias: UserContactUpdateAliasMutation,
+      userUpdateLanguage: UserUpdateLanguageMutation,
+      userUpdateUsername: UserUpdateUsernameMutation,
+      accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdMutation,
+      accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyMutation,
+      userContactUpdateAlias: UserContactUpdateAliasMutation,
+    },
 
-    lnInvoiceFeeProbe: LnInvoiceFeeProbeMutation,
-    lnUsdInvoiceFeeProbe: LnUsdInvoiceFeeProbeMutation,
-    lnNoAmountInvoiceFeeProbe: LnNoAmountInvoiceFeeProbeMutation,
-    lnNoAmountUsdInvoiceFeeProbe: LnNoAmountUsdInvoiceFeeProbeMutation,
+    withWalletId: {
+      intraLedgerPaymentSend: IntraLedgerPaymentSendMutation,
+      intraLedgerUsdPaymentSend: IntraLedgerUsdPaymentSendMutation,
 
-    lnInvoiceCreate: LnInvoiceCreateMutation,
-    lnUsdInvoiceCreate: LnUsdInvoiceCreateMutation,
-    lnNoAmountInvoiceCreate: LnNoAmountInvoiceCreateMutation,
+      lnInvoiceFeeProbe: LnInvoiceFeeProbeMutation,
+      lnUsdInvoiceFeeProbe: LnUsdInvoiceFeeProbeMutation,
+      lnNoAmountInvoiceFeeProbe: LnNoAmountInvoiceFeeProbeMutation,
+      lnNoAmountUsdInvoiceFeeProbe: LnNoAmountUsdInvoiceFeeProbeMutation,
 
-    lnInvoicePaymentSend: LnInvoicePaymentSendMutation,
-    lnNoAmountInvoicePaymentSend: LnNoAmountInvoicePaymentSendMutation,
-    lnNoAmountUsdInvoicePaymentSend: LnNoAmountUsdInvoicePaymentSendMutation,
+      lnInvoiceCreate: LnInvoiceCreateMutation,
+      lnUsdInvoiceCreate: LnUsdInvoiceCreateMutation,
+      lnNoAmountInvoiceCreate: LnNoAmountInvoiceCreateMutation,
 
-    intraLedgerPaymentSend: IntraLedgerPaymentSendMutation,
-    intraLedgerUsdPaymentSend: IntraLedgerUsdPaymentSendMutation,
+      lnInvoicePaymentSend: LnInvoicePaymentSendMutation,
+      lnNoAmountInvoicePaymentSend: LnNoAmountInvoicePaymentSendMutation,
+      lnNoAmountUsdInvoicePaymentSend: LnNoAmountUsdInvoicePaymentSendMutation,
 
-    onChainAddressCreate: OnChainAddressCreateMutation,
-    onChainAddressCurrent: OnChainAddressCurrentMutation,
-    onChainPaymentSend: OnChainPaymentSendMutation,
-    onChainUsdPaymentSend: OnChainUsdPaymentSendMutation,
-    onChainPaymentSendAll: OnChainPaymentSendAllMutation,
+      onChainAddressCreate: OnChainAddressCreateMutation,
+      onChainAddressCurrent: OnChainAddressCurrentMutation,
+      onChainPaymentSend: OnChainPaymentSendMutation,
+      onChainUsdPaymentSend: OnChainUsdPaymentSendMutation,
+      onChainPaymentSendAll: OnChainPaymentSendAllMutation,
+    },
   },
 }
 
 export const MutationType = GT.Object({
   name: "Mutation",
-  fields: { ...mutationFields.unauthed, ...mutationFields.authed },
+  fields: {
+    ...mutationFields.unauthed,
+    ...mutationFields.authed.noWalletId,
+    ...mutationFields.authed.withWalletId,
+  },
 })

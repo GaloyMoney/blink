@@ -2,6 +2,7 @@ import { GraphQLResolveInfo, GraphQLFieldResolver } from "graphql"
 
 import { Accounts } from "@app"
 import { mapError } from "@graphql/error-map"
+import { mutationFields, queryFields } from "@graphql/main"
 
 type InputArgs = Record<"input", Record<string, unknown>>
 
@@ -54,26 +55,17 @@ const validateWalletIdMutation = async (
   return result
 }
 
+const walletIdQueryFields = {}
+for (const key of Object.keys(queryFields.authed.withWalletId)) {
+  walletIdQueryFields[key] = validateWalletIdQuery
+}
+
+const walletIdMutationFields = {}
+for (const key of Object.keys(mutationFields.authed.withWalletId)) {
+  walletIdMutationFields[key] = validateWalletIdMutation
+}
+
 export const walletIdMiddleware = {
-  Query: {
-    onChainTxFee: validateWalletIdQuery,
-    onChainUsdTxFee: validateWalletIdQuery,
-  },
-  Mutation: {
-    intraLedgerPaymentSend: validateWalletIdMutation,
-    intraLedgerUsdPaymentSend: validateWalletIdMutation,
-    lnInvoiceFeeProbe: validateWalletIdMutation,
-    lnNoAmountInvoiceFeeProbe: validateWalletIdMutation,
-    lnInvoiceCreate: validateWalletIdMutation,
-    lnUsdInvoiceCreate: validateWalletIdMutation,
-    lnNoAmountInvoiceCreate: validateWalletIdMutation,
-    lnInvoicePaymentSend: validateWalletIdMutation,
-    lnNoAmountInvoicePaymentSend: validateWalletIdMutation,
-    lnNoAmountUsdInvoicePaymentSend: validateWalletIdMutation,
-    onChainAddressCreate: validateWalletIdMutation,
-    onChainAddressCurrent: validateWalletIdMutation,
-    onChainPaymentSend: validateWalletIdMutation,
-    onChainUsdPaymentSend: validateWalletIdMutation,
-    onChainPaymentSendAll: validateWalletIdMutation,
-  },
+  Query: walletIdQueryFields,
+  Mutation: walletIdMutationFields,
 }

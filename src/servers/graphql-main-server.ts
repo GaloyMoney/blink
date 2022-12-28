@@ -19,12 +19,18 @@ dotenv.config()
 
 export async function startApolloServerForCoreSchema() {
   const authedQueryFields = {}
-  for (const key of Object.keys(queryFields.authed)) {
+  for (const key of Object.keys({
+    ...queryFields.authed.noWalletId,
+    ...queryFields.authed.withWalletId,
+  })) {
     authedQueryFields[key] = isAuthenticated
   }
 
   const authedMutationFields = {}
-  for (const key of Object.keys(mutationFields.authed)) {
+  for (const key of Object.keys({
+    ...mutationFields.authed.noWalletId,
+    ...mutationFields.authed.withWalletId,
+  })) {
     authedMutationFields[key] = isAuthenticated
   }
 
