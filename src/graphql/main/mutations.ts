@@ -33,55 +33,55 @@ import CaptchaRequestAuthCodeMutation from "@graphql/root/mutation/captcha-reque
 import CaptchaCreateChallengeMutation from "@graphql/root/mutation/captcha-create-challenge"
 
 // TODO: // const fields: { [key: string]: GraphQLFieldConfig<any, GraphQLContext> }
-const fields = {
-  // unauthed
-  userRequestAuthCode: UserRequestAuthCodeMutation,
-  userLogin: UserLoginMutation,
+export const mutationFields = {
+  unauthed: {
+    userRequestAuthCode: UserRequestAuthCodeMutation,
+    userLogin: UserLoginMutation,
 
-  captchaCreateChallenge: CaptchaCreateChallengeMutation,
-  captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
+    captchaCreateChallenge: CaptchaCreateChallengeMutation,
+    captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
 
-  lnInvoiceCreateOnBehalfOfRecipient: LnInvoiceCreateOnBehalfOfRecipientMutation,
-  lnUsdInvoiceCreateOnBehalfOfRecipient: LnUsdInvoiceCreateOnBehalfOfRecipientMutation,
-  lnNoAmountInvoiceCreateOnBehalfOfRecipient:
-    LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation,
+    lnInvoiceCreateOnBehalfOfRecipient: LnInvoiceCreateOnBehalfOfRecipientMutation,
+    lnUsdInvoiceCreateOnBehalfOfRecipient: LnUsdInvoiceCreateOnBehalfOfRecipientMutation,
+    lnNoAmountInvoiceCreateOnBehalfOfRecipient:
+      LnNoAmountInvoiceCreateOnBehalfOfRecipientMutation,
+  },
 
-  // authed
-  userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
-  deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
+  authed: {
+    userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
+    deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
 
-  userUpdateLanguage: UserUpdateLanguageMutation,
-  userUpdateUsername: UserUpdateUsernameMutation,
-  accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdMutation,
-  accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyMutation,
-  userContactUpdateAlias: UserContactUpdateAliasMutation,
+    userUpdateLanguage: UserUpdateLanguageMutation,
+    userUpdateUsername: UserUpdateUsernameMutation,
+    accountUpdateDefaultWalletId: AccountUpdateDefaultWalletIdMutation,
+    accountUpdateDisplayCurrency: AccountUpdateDisplayCurrencyMutation,
+    userContactUpdateAlias: UserContactUpdateAliasMutation,
 
-  lnInvoiceFeeProbe: LnInvoiceFeeProbeMutation,
-  lnUsdInvoiceFeeProbe: LnUsdInvoiceFeeProbeMutation,
-  lnNoAmountInvoiceFeeProbe: LnNoAmountInvoiceFeeProbeMutation,
-  lnNoAmountUsdInvoiceFeeProbe: LnNoAmountUsdInvoiceFeeProbeMutation,
+    lnInvoiceFeeProbe: LnInvoiceFeeProbeMutation,
+    lnUsdInvoiceFeeProbe: LnUsdInvoiceFeeProbeMutation,
+    lnNoAmountInvoiceFeeProbe: LnNoAmountInvoiceFeeProbeMutation,
+    lnNoAmountUsdInvoiceFeeProbe: LnNoAmountUsdInvoiceFeeProbeMutation,
 
-  lnInvoiceCreate: LnInvoiceCreateMutation,
-  lnUsdInvoiceCreate: LnUsdInvoiceCreateMutation,
-  lnNoAmountInvoiceCreate: LnNoAmountInvoiceCreateMutation,
+    lnInvoiceCreate: LnInvoiceCreateMutation,
+    lnUsdInvoiceCreate: LnUsdInvoiceCreateMutation,
+    lnNoAmountInvoiceCreate: LnNoAmountInvoiceCreateMutation,
 
-  lnInvoicePaymentSend: LnInvoicePaymentSendMutation,
-  lnNoAmountInvoicePaymentSend: LnNoAmountInvoicePaymentSendMutation,
-  lnNoAmountUsdInvoicePaymentSend: LnNoAmountUsdInvoicePaymentSendMutation,
+    lnInvoicePaymentSend: LnInvoicePaymentSendMutation,
+    lnNoAmountInvoicePaymentSend: LnNoAmountInvoicePaymentSendMutation,
+    lnNoAmountUsdInvoicePaymentSend: LnNoAmountUsdInvoicePaymentSendMutation,
 
-  intraLedgerPaymentSend: IntraLedgerPaymentSendMutation,
-  intraLedgerUsdPaymentSend: IntraLedgerUsdPaymentSendMutation,
+    intraLedgerPaymentSend: IntraLedgerPaymentSendMutation,
+    intraLedgerUsdPaymentSend: IntraLedgerUsdPaymentSendMutation,
 
-  onChainAddressCreate: OnChainAddressCreateMutation,
-  onChainAddressCurrent: OnChainAddressCurrentMutation,
-  onChainPaymentSend: OnChainPaymentSendMutation,
-  onChainUsdPaymentSend: OnChainUsdPaymentSendMutation,
-  onChainPaymentSendAll: OnChainPaymentSendAllMutation,
+    onChainAddressCreate: OnChainAddressCreateMutation,
+    onChainAddressCurrent: OnChainAddressCurrentMutation,
+    onChainPaymentSend: OnChainPaymentSendMutation,
+    onChainUsdPaymentSend: OnChainUsdPaymentSendMutation,
+    onChainPaymentSendAll: OnChainPaymentSendAllMutation,
+  },
 }
 
-const MutationType = GT.Object({
+export const MutationType = GT.Object({
   name: "Mutation",
-  fields,
+  fields: { ...mutationFields.unauthed, ...mutationFields.authed },
 })
-
-export default MutationType

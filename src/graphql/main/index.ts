@@ -4,9 +4,12 @@ import { ALL_INTERFACE_TYPES } from "@graphql/types"
 
 import { isDev, isRunningJest } from "@config"
 
-import QueryType from "./queries"
-import MutationType from "./mutations"
-import SubscriptionType from "./subscriptions"
+import { QueryType } from "./queries"
+import { MutationType } from "./mutations"
+import { SubscriptionType } from "./subscriptions"
+
+export { queryFields } from "./queries"
+export { mutationFields } from "./mutations"
 
 if (isDev && !isRunningJest) {
   import("@services/fs").then(({ writeSDLFile }) => {
