@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { getFeesConfig, levels } from "@config"
+import { getFeesConfig, Levels } from "@config"
 import { AccountStatus, UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
@@ -191,7 +191,7 @@ const AccountSchema = new Schema<AccountRecord>(
 
     level: {
       type: Number,
-      enum: levels,
+      enum: Levels,
     },
 
     kratosUserId: {
