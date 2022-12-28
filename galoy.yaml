@@ -98,6 +98,14 @@ rateLimits:
     points: 8
     duration: 3600
     blockDuration: 86400
+  createBearerTokenPerIp:
+    points: 3
+    duration: 3600
+    blockDuration: 7200
+  createBearerTokenGlobal:
+    points: 180
+    duration: 3600
+    blockDuration: 3600
   failedLoginAttemptPerPhone:
     points: 8
     duration: 1200
