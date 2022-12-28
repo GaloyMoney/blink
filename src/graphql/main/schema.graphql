@@ -732,6 +732,7 @@ type Mutation {
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
   userLogin(input: UserLoginInput!): AuthTokenPayload!
+  userLogout(input: UserLogoutInput!): AuthTokenPayload!
   userQuizQuestionUpdateCompleted(
     input: UserQuizQuestionUpdateCompletedInput!
   ): UserQuizQuestionUpdateCompletedPayload!
@@ -1291,6 +1292,10 @@ type UserContactUpdateAliasPayload {
 input UserLoginInput {
   code: OneTimeAuthCode!
   phone: Phone!
+}
+
+input UserLogoutInput {
+  authToken: AuthToken!
 }
 
 type UserQuizQuestion {
