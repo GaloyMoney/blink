@@ -3,7 +3,7 @@ import {
   LikelyNoUserWithThisPhoneExistError,
   LikelyUserAlreadyExistError,
 } from "@domain/authentication/errors"
-import { CreateIdentityBody } from "@ory/client"
+import { Configuration, CreateIdentityBody, FrontendApi } from "@ory/client"
 import {
   AuthWithPhonePasswordlessService,
   extendSession,
@@ -51,6 +51,25 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await killServer(serverPid)
+})
+
+it.only("test Inc", async () => {
+  const url = "https://auth.inc.galoy.io/.kratos/"
+  const kratosPublic = new FrontendApi(new Configuration({ basePath: url }))
+
+  const flow = await kratosPublic.createNativeLoginFlow()
+
+  const identifier = "nb@galoy.io"
+
+  const password = process.env.PASSWORD1
+
+  const result = await kratosPublic.updateLoginFlow({
+    flow: flow.data.id,
+    updateLoginFlowBody: { method: "password", password, identifier },
+  })
+
+  console.log(result)
+  // this works
 })
 
 describe("phoneNoPassword", () => {
