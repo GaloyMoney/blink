@@ -1,6 +1,6 @@
 import crypto from "crypto"
 
-import { getFeesConfig, Levels } from "@config"
+import { getDefaultAccountsConfig, getFeesConfig, Levels } from "@config"
 import { AccountStatus, UsernameRegex } from "@domain/accounts"
 import { WalletIdRegex, WalletType } from "@domain/wallets"
 import { WalletCurrency } from "@domain/shared"
@@ -276,7 +276,10 @@ const AccountSchema = new Schema<AccountRecord>(
         },
       ],
       default: [
-        { status: AccountStatus.New, comment: "to be overriden by createAccount" },
+        {
+          status: getDefaultAccountsConfig().initialStatus,
+          comment: "to be overriden by createAccount",
+        },
       ],
     },
 
