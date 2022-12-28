@@ -48,7 +48,19 @@ export const validateIsBtcWalletForQuery = async (
   const wallet = await WalletsRepository().findById(walletId)
   if (wallet instanceof Error) return mapError(wallet)
 
-  if (wallet.currency === WalletCurrency.Usd) {
+  if (wallet.currency !== WalletCurrency.Btc) {
+    return QueryDoesNotMatchWalletCurrencyError
+  }
+  return true
+}
+
+export const validateIsUsdWalletForQuery = async (
+  walletId: WalletId,
+): Promise<true | CustomApolloError> => {
+  const wallet = await WalletsRepository().findById(walletId)
+  if (wallet instanceof Error) return mapError(wallet)
+
+  if (wallet.currency !== WalletCurrency.Usd) {
     return QueryDoesNotMatchWalletCurrencyError
   }
   return true

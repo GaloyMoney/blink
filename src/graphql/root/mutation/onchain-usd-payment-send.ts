@@ -2,26 +2,30 @@ import { GT } from "@graphql/index"
 import Memo from "@graphql/types/scalar/memo"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import WalletId from "@graphql/types/scalar/wallet-id"
+import CentAmount from "@graphql/types/scalar/cent-amount"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
+import { validateIsUsdWalletForMutation } from "@graphql/helpers"
 import { Wallets } from "@app"
 
-const OnChainPaymentSendAllInput = GT.Input({
-  name: "OnChainPaymentSendAllInput",
+const OnChainUsdPaymentSendInput = GT.Input({
+  name: "OnChainUsdPaymentSendInput",
   fields: () => ({
     walletId: { type: GT.NonNull(WalletId) },
     address: { type: GT.NonNull(OnChainAddress) },
+    amount: { type: GT.NonNull(CentAmount) },
     memo: { type: Memo },
     targetConfirmations: { type: TargetConfirmations, defaultValue: 1 },
   }),
 })
 
-const OnChainPaymentSendAllMutation = GT.Field<
+const OnChainUsdPaymentSendMutation = GT.Field<
   {
     input: {
       walletId: WalletId | InputValidationError
       address: OnChainAddress | InputValidationError
+      amount: number
       memo: Memo | InputValidationError | null
       targetConfirmations: TargetConfirmations | InputValidationError
     }
@@ -34,10 +38,10 @@ const OnChainPaymentSendAllMutation = GT.Field<
   },
   type: GT.NonNull(PaymentSendPayload),
   args: {
-    input: { type: GT.NonNull(OnChainPaymentSendAllInput) },
+    input: { type: GT.NonNull(OnChainUsdPaymentSendInput) },
   },
   resolve: async (_, args, { domainAccount }) => {
-    const { walletId, address, memo, targetConfirmations } = args.input
+    const { walletId, address, amount, memo, targetConfirmations } = args.input
 
     if (walletId instanceof Error) {
       return { errors: [{ message: walletId.message }] }
@@ -55,14 +59,17 @@ const OnChainPaymentSendAllMutation = GT.Field<
       return { errors: [{ message: targetConfirmations.message }] }
     }
 
+    const usdWalletValidated = await validateIsUsdWalletForMutation(walletId)
+    if (usdWalletValidated != true) return usdWalletValidated
+
     const status = await Wallets.payOnChainByWalletId({
       senderAccount: domainAccount,
       senderWalletId: walletId,
-      amount: 0,
+      amount,
       address,
       targetConfirmations,
       memo,
-      sendAll: true,
+      sendAll: false,
     })
 
     if (status instanceof Error) {
@@ -76,4 +83,4 @@ const OnChainPaymentSendAllMutation = GT.Field<
   },
 })
 
-export default OnChainPaymentSendAllMutation
+export default OnChainUsdPaymentSendMutation

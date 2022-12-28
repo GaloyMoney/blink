@@ -727,6 +727,7 @@ type Mutation {
   onChainAddressCurrent(input: OnChainAddressCurrentInput!): OnChainAddressPayload!
   onChainPaymentSend(input: OnChainPaymentSendInput!): PaymentSendPayload!
   onChainPaymentSendAll(input: OnChainPaymentSendAllInput!): PaymentSendPayload!
+  onChainUsdPaymentSend(input: OnChainUsdPaymentSendInput!): PaymentSendPayload!
   userContactUpdateAlias(
     input: UserContactUpdateAliasInput!
   ): UserContactUpdateAliasPayload! @deprecated(reason: "will be moved to AccountContact")
@@ -801,6 +802,14 @@ type OnChainUpdate {
   txHash: OnChainTxHash!
   txNotificationType: TxNotificationType!
   usdPerSat: Float! @deprecated(reason: "updated over displayCurrencyPerSat")
+  walletId: WalletId!
+}
+
+input OnChainUsdPaymentSendInput {
+  address: OnChainAddress!
+  amount: CentAmount!
+  memo: Memo
+  targetConfirmations: TargetConfirmations = 1
   walletId: WalletId!
 }
 
@@ -939,6 +948,12 @@ type Query {
   onChainTxFee(
     address: OnChainAddress!
     amount: SatAmount!
+    targetConfirmations: TargetConfirmations = 1
+    walletId: WalletId!
+  ): OnChainTxFee!
+  onChainUsdTxFee(
+    address: OnChainAddress!
+    amount: CentAmount!
     targetConfirmations: TargetConfirmations = 1
     walletId: WalletId!
   ): OnChainTxFee!

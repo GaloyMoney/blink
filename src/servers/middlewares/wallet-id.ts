@@ -57,6 +57,7 @@ const validateWalletIdMutation = async (
 export const walletIdMiddleware = {
   Query: {
     onChainTxFee: validateWalletIdQuery,
+    onChainUsdTxFee: validateWalletIdQuery,
   },
   Mutation: {
     intraLedgerPaymentSend: validateWalletIdMutation,
@@ -71,6 +72,7 @@ export const walletIdMiddleware = {
     onChainAddressCreate: validateWalletIdMutation,
     onChainAddressCurrent: validateWalletIdMutation,
     onChainPaymentSend: validateWalletIdMutation,
+    onChainUsdPaymentSend: validateWalletIdMutation,
     onChainPaymentSendAll: validateWalletIdMutation,
   },
 }

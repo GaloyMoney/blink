@@ -2,23 +2,23 @@ import { Wallets } from "@app"
 
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
-import { validateIsBtcWalletForQuery } from "@graphql/helpers"
+import { validateIsUsdWalletForQuery } from "@graphql/helpers"
 
 import WalletId from "@graphql/types/scalar/wallet-id"
-import SatAmount from "@graphql/types/scalar/sat-amount"
+import CentAmount from "@graphql/types/scalar/cent-amount"
 import OnChainAddress from "@graphql/types/scalar/on-chain-address"
 import TargetConfirmations from "@graphql/types/scalar/target-confirmations"
 
-import OnChainTxFee from "@graphql/types/object/onchain-tx-fee"
+import OnChainUsdTxFee from "@graphql/types/object/onchain-usd-tx-fee"
 
 import { normalizePaymentAmount } from "../mutation"
 
-const OnChainTxFeeQuery = GT.Field({
-  type: GT.NonNull(OnChainTxFee),
+const OnChainUsdTxFeeQuery = GT.Field({
+  type: GT.NonNull(OnChainUsdTxFee),
   args: {
     walletId: { type: GT.NonNull(WalletId) },
     address: { type: GT.NonNull(OnChainAddress) },
-    amount: { type: GT.NonNull(SatAmount) },
+    amount: { type: GT.NonNull(CentAmount) },
     targetConfirmations: { type: TargetConfirmations, defaultValue: 1 },
   },
   resolve: async (_, args, { domainAccount }) => {
@@ -28,8 +28,8 @@ const OnChainTxFeeQuery = GT.Field({
       if (input instanceof Error) throw input
     }
 
-    const btcWalletValidated = await validateIsBtcWalletForQuery(walletId)
-    if (btcWalletValidated instanceof Error) throw btcWalletValidated
+    const usdWalletValidated = await validateIsUsdWalletForQuery(walletId)
+    if (usdWalletValidated instanceof Error) throw usdWalletValidated
 
     const fee = await Wallets.getOnChainFee({
       walletId,
@@ -47,4 +47,4 @@ const OnChainTxFeeQuery = GT.Field({
   },
 })
 
-export default OnChainTxFeeQuery
+export default OnChainUsdTxFeeQuery

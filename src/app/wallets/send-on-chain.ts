@@ -10,7 +10,7 @@ import {
   newCheckWithdrawalLimits,
 } from "@app/payments/helpers"
 
-import { checkedToSats, checkedToTargetConfs, toSats } from "@domain/bitcoin"
+import { checkedToTargetConfs, toSats } from "@domain/bitcoin"
 import {
   InvalidLightningPaymentFlowBuilderStateError,
   PriceRatio,
@@ -22,7 +22,7 @@ import {
   InsufficientOnChainFundsError,
   TxDecoder,
 } from "@domain/bitcoin/onchain"
-import { CouldNotFindError, NotImplementedError } from "@domain/errors"
+import { CouldNotFindError, InsufficientBalanceError } from "@domain/errors"
 import { DisplayCurrency } from "@domain/fiat"
 import { NewDisplayCurrencyConverter } from "@domain/fiat/display-currency"
 import { ResourceExpiredLockServiceError } from "@domain/lock"
@@ -59,14 +59,18 @@ export const payOnChainByWalletId = async <R extends WalletCurrency>({
   memo,
   sendAll,
 }: PayOnChainByWalletIdArgs): Promise<PaymentSendStatus | ApplicationError> => {
-  const checkedAmount = sendAll
+  const amountToSendRaw = sendAll
     ? await LedgerService().getWalletBalance(senderWalletId)
-    : checkedToSats(amountRaw)
-  if (checkedAmount instanceof Error) return checkedAmount
+    : amountRaw
+  if (amountToSendRaw instanceof Error) return amountToSendRaw
+
+  if (sendAll && amountToSendRaw === 0) {
+    return new InsufficientBalanceError(`No balance left to send.`)
+  }
 
   const validator = PaymentInputValidator(WalletsRepository().findById)
   const validationResult = await validator.validatePaymentInput({
-    amount: checkedAmount,
+    amount: amountToSendRaw,
     senderAccount,
     senderWalletId,
   })
@@ -212,16 +216,6 @@ const executePaymentViaIntraledger = async <
   const recipientWallet = await WalletsRepository().findById(recipientWalletId)
   if (recipientWallet instanceof Error) return recipientWallet
 
-  // TODO Usd use case
-  if (
-    !(
-      recipientWallet.currency === WalletCurrency.Btc &&
-      senderWallet.currency === WalletCurrency.Btc
-    )
-  ) {
-    return new NotImplementedError("USD intraledger")
-  }
-
   // Limit check
   const priceRatioForLimits = await getPriceRatioForLimits(paymentFlow.paymentAmounts())
   if (priceRatioForLimits instanceof Error) return priceRatioForLimits
@@ -352,11 +346,6 @@ const executePaymentViaOnChain = async <
 }): Promise<PaymentSendStatus | ApplicationError> => {
   const senderWalletDescriptor = await builder.senderWalletDescriptor()
   if (senderWalletDescriptor instanceof Error) return senderWalletDescriptor
-
-  // TODO Usd use case
-  if (senderWalletDescriptor.currency !== WalletCurrency.Btc) {
-    return new NotImplementedError("USD Intraledger")
-  }
 
   const onChainService = OnChainService(TxDecoder(BTC_NETWORK))
   if (onChainService instanceof Error) return onChainService

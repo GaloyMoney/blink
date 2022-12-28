@@ -15,13 +15,13 @@ import { addAttributesToCurrentSpan } from "@services/tracing"
 const { dustThreshold } = getOnChainWalletConfig()
 const dealer = NewDealerPriceService()
 
-export const getOnChainFee = async <R extends WalletCurrency>({
+export const getOnChainFee = async <S extends WalletCurrency, R extends WalletCurrency>({
   walletId,
   account: senderAccount,
   amount,
   address,
   targetConfirmations,
-}: GetOnChainFeeArgs): Promise<Satoshis | ApplicationError> => {
+}: GetOnChainFeeArgs): Promise<PaymentAmount<S> | ApplicationError> => {
   const amountChecked = checkedToSats(amount)
   if (amountChecked instanceof Error) return amountChecked
 
@@ -54,7 +54,7 @@ export const getOnChainFee = async <R extends WalletCurrency>({
 
   const isExternalAddress = async () => recipientWallet instanceof CouldNotFindError
 
-  const withSenderBuilder = OnChainPaymentFlowBuilder({
+  const withSenderBuilder = OnChainPaymentFlowBuilder<S>({
     volumeLightningFn: LedgerService().lightningTxBaseVolumeSince,
     volumeOnChainFn: LedgerService().onChainTxBaseVolumeSince,
     isExternalAddress,
@@ -63,7 +63,11 @@ export const getOnChainFee = async <R extends WalletCurrency>({
   })
     .withAddress(checkedAddress)
     .withSenderWalletAndAccount({
-      wallet: senderWallet,
+      wallet: {
+        id: senderWallet.id,
+        currency: senderWallet.currency as S,
+        accountId: senderWallet.accountId,
+      },
       account: senderAccount,
     })
 
@@ -104,7 +108,7 @@ export const getOnChainFee = async <R extends WalletCurrency>({
       .withoutMinerFee()
     if (paymentFlow instanceof Error) return paymentFlow
 
-    return toSats(paymentFlow.btcProtocolFee.amount)
+    return paymentFlow.protocolFeeInSenderWalletCurrency()
   }
 
   const builder = withSenderBuilder
@@ -115,7 +119,11 @@ export const getOnChainFee = async <R extends WalletCurrency>({
   const btcPaymentAmount = await builder.btcProposedAmount()
   if (btcPaymentAmount instanceof Error) return btcPaymentAmount
 
-  const balance = await LedgerService().getWalletBalanceAmount(wallet)
+  const balance = await LedgerService().getWalletBalanceAmount<S>({
+    id: wallet.id,
+    currency: wallet.currency as S,
+    accountId: wallet.accountId,
+  })
   if (balance instanceof Error) return balance
 
   const paymentFlow = await getMinerFeeAndPaymentFlow({
@@ -131,7 +139,7 @@ export const getOnChainFee = async <R extends WalletCurrency>({
   const balanceCheck = paymentFlow.checkBalanceForSend(balance)
   if (balanceCheck instanceof Error) return balanceCheck
 
-  return toSats(paymentFlow.btcProtocolFee.amount)
+  return paymentFlow.protocolFeeInSenderWalletCurrency()
 }
 
 export const getMinerFeeAndPaymentFlow = async <
