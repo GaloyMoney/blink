@@ -152,6 +152,12 @@ const testExternalSend = async ({
   const sub = subscribeToTransactions({ lnd: lndonchain })
   sub.on("chain_transaction", onchainTransactionEventHandler)
 
+  // For notification check at the end
+  const amountToSend = sendAll
+    ? await LedgerService().getWalletBalance(senderWalletId)
+    : amount
+  if (amountToSend instanceof Error) return amountToSend
+
   let results
   try {
     results = await Promise.all([
@@ -217,31 +223,8 @@ const testExternalSend = async ({
 
   await sleep(1000)
 
-  expect(sendNotification.mock.calls.length).toBe(1)
-
   const senderWallet = await WalletsRepository().findById(senderWalletId)
   if (senderWallet instanceof Error) return senderWallet
-
-  if (!sendAll) {
-    const satsPrice = await Prices.getCurrentPrice()
-    if (satsPrice instanceof Error) return satsPrice
-
-    const paymentAmount = { amount: BigInt(amount), currency: senderWallet.currency }
-    const displayPaymentAmount = {
-      amount: senderWallet.currency === WalletCurrency.Btc ? amount * satsPrice : amount,
-      currency: DefaultDisplayCurrency,
-    }
-
-    const { title, body } = createPushNotificationContent({
-      type: NotificationType.OnchainPayment,
-      userLanguage: locale as UserLanguage,
-      amount: paymentAmount,
-      displayAmount: displayPaymentAmount,
-    })
-
-    expect(sendNotification.mock.calls[0][0].title).toBe(title)
-    expect(sendNotification.mock.calls[0][0].body).toBe(body)
-  }
 
   {
     const txResult = await Wallets.getTransactionsForWalletId({
@@ -288,6 +271,35 @@ const testExternalSend = async ({
       expect(settledTx.settlementAmount).toBe(-amount - fee)
       expect(finalBalance).toBe(initialWalletBalance - amount - fee)
     }
+
+    // Check notification sent
+    // ===
+    const amountForNotification = sendAll ? amountToSend - fee : amountToSend
+    const satsPrice = await Prices.getCurrentPrice()
+    if (satsPrice instanceof Error) return satsPrice
+
+    const paymentAmount = {
+      amount: BigInt(amountForNotification),
+      currency: senderWallet.currency,
+    }
+    const displayPaymentAmount = {
+      amount:
+        senderWallet.currency === WalletCurrency.Btc
+          ? amountForNotification * satsPrice
+          : amountForNotification,
+      currency: DefaultDisplayCurrency,
+    }
+
+    const { title, body } = createPushNotificationContent({
+      type: NotificationType.OnchainPayment,
+      userLanguage: locale as UserLanguage,
+      amount: paymentAmount,
+      displayAmount: displayPaymentAmount,
+    })
+
+    expect(sendNotification.mock.calls.length).toBe(1)
+    expect(sendNotification.mock.calls[0][0].title).toBe(title)
+    expect(sendNotification.mock.calls[0][0].body).toBe(body)
   }
 
   sub.removeAllListeners()
