@@ -5,7 +5,7 @@ import {
   checkedConnectionArgs,
 } from "@graphql/connections"
 import { notBtcWalletForQueryError } from "@graphql/helpers"
-import { mapAndParseErrorForGqlResponse, mapError } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 
 import { Wallets } from "@app"
 
@@ -44,7 +44,7 @@ const UsdWallet = GT.Object<Wallet>({
           logger,
         })
         if (balanceCents instanceof Error) {
-          return { errors: [mapAndParseErrorForGqlResponse(balanceCents)] }
+          throw mapError(balanceCents)
         }
         return Math.floor(balanceCents)
       },

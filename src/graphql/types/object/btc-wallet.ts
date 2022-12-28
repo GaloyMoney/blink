@@ -5,7 +5,7 @@ import {
   connectionFromPaginatedArray,
   checkedConnectionArgs,
 } from "@graphql/connections"
-import { mapAndParseErrorForGqlResponse, mapError } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 
 import { Wallets } from "@app"
 
@@ -45,7 +45,7 @@ const BtcWallet = GT.Object<Wallet>({
           logger,
         })
         if (balanceSats instanceof Error) {
-          return { errors: [mapAndParseErrorForGqlResponse(balanceSats)] }
+          throw mapError(balanceSats)
         }
         return balanceSats
       },
@@ -56,7 +56,7 @@ const BtcWallet = GT.Object<Wallet>({
       resolve: async (source) => {
         const balanceSats = await Wallets.getPendingOnChainBalanceForWallets([source])
         if (balanceSats instanceof Error) {
-          return { errors: [mapAndParseErrorForGqlResponse(balanceSats)] }
+          throw mapError(balanceSats)
         }
         return normalizePaymentAmount(balanceSats[source.id]).amount
       },

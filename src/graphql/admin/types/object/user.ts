@@ -1,5 +1,5 @@
 import { Accounts } from "@app"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 import Language from "@graphql/types/scalar/language"
 import Phone from "@graphql/types/scalar/phone"
@@ -19,7 +19,7 @@ const User = GT.Object<IdentityPhone>({
       resolve: async (source) => {
         const account = await Accounts.getAccountFromUserId(source.id)
         if (account instanceof Error) {
-          return { errors: [mapAndParseErrorForGqlResponse(account)] }
+          throw mapError(account)
         }
         return account
       },

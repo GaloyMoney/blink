@@ -3,7 +3,7 @@ import { GT } from "@graphql/index"
 import { Wallets } from "@app"
 import Transaction from "@graphql/types/object/transaction"
 import PaymentHash from "@graphql/types/scalar/payment-hash"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 
 const TransactionsByHashQuery = GT.Field({
   type: GT.List(Transaction),
@@ -15,7 +15,7 @@ const TransactionsByHashQuery = GT.Field({
 
     const ledgerTxs = await Wallets.getTransactionsByHash(hash)
     if (ledgerTxs instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(ledgerTxs)] }
+      throw mapError(ledgerTxs)
     }
 
     return ledgerTxs

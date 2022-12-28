@@ -8,7 +8,7 @@ import { PriceInterval, PriceRange } from "@domain/price"
 import { BTC_PRICE_PRECISION_OFFSET } from "@config"
 import { Prices } from "@app"
 import { SATS_PER_BTC } from "@domain/bitcoin"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 
 const parseRange: (
   string: typeof priceRangeValues[number],
@@ -64,7 +64,7 @@ const BtcPriceListQuery = GT.Field({
 
     const hourlyPrices = await Prices.getPriceHistory({ range, interval })
     if (hourlyPrices instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(hourlyPrices)] }
+      throw mapError(hourlyPrices)
     }
 
     const prices: PricePointType[] = hourlyPrices.map(({ date, price }) => {

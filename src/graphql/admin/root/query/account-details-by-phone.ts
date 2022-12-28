@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import GraphQLAccount from "@graphql/admin/types/object/account"
 import Phone from "@graphql/types/scalar/phone"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 
 import { Admin } from "@app"
 
@@ -21,7 +21,7 @@ const AccountDetailsByUserPhoneQuery = GT.Field<{
 
     const account = await Admin.getAccountByUserPhone(phone)
     if (account instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(account)] }
+      throw mapError(account)
     }
 
     return account

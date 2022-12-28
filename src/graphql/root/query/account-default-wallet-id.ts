@@ -1,4 +1,4 @@
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import { GT } from "@graphql/index"
 import Username from "@graphql/types/scalar/username"
 import WalletId from "@graphql/types/scalar/wallet-id"
@@ -21,7 +21,7 @@ const AccountDefaultWalletIdQuery = GT.Field({
 
     const account = await AccountsRepository().findByUsername(username)
     if (account instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(account)] }
+      throw mapError(account)
     }
 
     const walletId = account.defaultWalletId

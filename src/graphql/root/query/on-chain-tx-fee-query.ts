@@ -1,7 +1,7 @@
 import { Wallets } from "@app"
 
 import { GT } from "@graphql/index"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import { validateIsBtcWalletForQuery } from "@graphql/helpers"
 
 import WalletId from "@graphql/types/scalar/wallet-id"
@@ -38,7 +38,7 @@ const OnChainTxFeeQuery = GT.Field({
       address,
       targetConfirmations,
     })
-    if (fee instanceof Error) return { errors: [mapAndParseErrorForGqlResponse(fee)] }
+    if (fee instanceof Error) throw mapError(fee)
 
     return {
       amount: normalizePaymentAmount(fee).amount,

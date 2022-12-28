@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 
 import { Wallets } from "@app"
 import Transaction from "@graphql/types/object/transaction"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 
 const TransactionByIdQuery = GT.Field({
   type: Transaction,
@@ -14,7 +14,7 @@ const TransactionByIdQuery = GT.Field({
 
     const ledgerTx = await Wallets.getTransactionById(id)
     if (ledgerTx instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(ledgerTx)] }
+      throw mapError(ledgerTx)
     }
 
     return ledgerTx

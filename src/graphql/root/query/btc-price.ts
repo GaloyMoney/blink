@@ -1,7 +1,7 @@
 import { Prices } from "@app"
 import { GT } from "@graphql/index"
 import Price from "@graphql/types/object/price"
-import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { mapError } from "@graphql/error-map"
 import { SAT_PRICE_PRECISION_OFFSET } from "@config"
 
 const BtcPriceQuery = GT.Field({
@@ -10,7 +10,7 @@ const BtcPriceQuery = GT.Field({
     const satUsdPrice = await Prices.getCurrentPrice()
 
     if (satUsdPrice instanceof Error) {
-      return { errors: [mapAndParseErrorForGqlResponse(satUsdPrice)] }
+      throw mapError(satUsdPrice)
     }
 
     const price = 100 * satUsdPrice
