@@ -3,6 +3,7 @@ import { GT } from "@graphql/index"
 import AuthTokenPayload from "@graphql/types/payload/auth-token"
 import { Auth } from "@app"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
+import { BTC_NETWORK } from "@config"
 
 const UserCreateBearerInput = GT.Input({
   name: "UserCreateBearerInput",
@@ -36,6 +37,11 @@ const UserCreateBearerMutation = GT.Field<{
       return { errors: [{ message: "ip is undefined" }] }
     }
 
+    if (BTC_NETWORK === "mainnet") {
+      return { errors: [{ message: "currently not available on mainnet" }] }
+    }
+
+    // TODO: log deviceId
     const authToken = await Auth.createBearer(ip)
 
     if (authToken instanceof Error) {
