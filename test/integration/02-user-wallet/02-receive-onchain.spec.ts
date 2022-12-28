@@ -177,7 +177,7 @@ describe("UserWallet - On chain", () => {
     const { result: txnsA } = txnsForARequestedFromA
     expect(txnsA).not.toBeNull()
     if (!txnsA) throw new Error()
-    expect(txnsA.length).toBeGreaterThan(0)
+    expect(txnsA.slice.length).toBeGreaterThan(0)
 
     const txnsForARequestedFromB = await Wallets.getTransactionsForWalletsByAddresses({
       wallets: [walletB],
@@ -186,7 +186,7 @@ describe("UserWallet - On chain", () => {
     const { result: txnsB } = txnsForARequestedFromB
     expect(txnsB).not.toBeNull()
     if (!txnsB) throw new Error()
-    expect(txnsB.length).toEqual(0)
+    expect(txnsB.slice.length).toEqual(0)
   })
 
   it("receives on-chain transaction with max limit for withdrawal level1", async () => {
@@ -324,7 +324,7 @@ describe("UserWallet - On chain", () => {
     if (error instanceof Error || txs === null) {
       throw error
     }
-    const pendingTxs = txs.filter(({ status }) => status === TxStatus.Pending)
+    const pendingTxs = txs.slice.filter(({ status }) => status === TxStatus.Pending)
     expect(pendingTxs.length).toBe(1)
 
     const pendingTx = pendingTxs[0] as WalletOnChainTransaction
@@ -342,7 +342,7 @@ describe("UserWallet - On chain", () => {
     if (errorFromCache instanceof Error || txsFromCache === null) {
       throw errorFromCache
     }
-    const pendingTxsFromCache = txsFromCache.filter(
+    const pendingTxsFromCache = txsFromCache.slice.filter(
       ({ status }) => status === TxStatus.Pending,
     )
     expect(pendingTxsFromCache[0]?.createdAt).toBeInstanceOf(Date)
@@ -457,9 +457,9 @@ async function sendToWalletTestWrapper({
       throw error
     }
 
-    expect(transactions.length).toBe(initTransactions.length + 1)
+    expect(transactions.slice.length).toBe(initTransactions.slice.length + 1)
 
-    const txn = transactions[0] as WalletOnChainTransaction
+    const txn = transactions.slice[0] as WalletOnChainTransaction
     expect(txn.settlementVia.type).toBe("onchain")
     expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
     expect(txn.settlementAmount).toBe(
@@ -537,9 +537,11 @@ async function testTxnsByAddressWrapper({
       throw error
     }
 
-    expect(transactions.length).toBe(initTransactions.length + addresses.length)
+    expect(transactions.slice.length).toBe(
+      initTransactions.slice.length + addresses.length,
+    )
 
-    const txn = transactions[0] as WalletOnChainTransaction
+    const txn = transactions.slice[0] as WalletOnChainTransaction
     expect(txn.settlementVia.type).toBe("onchain")
     expect(txn.settlementFee).toBe(Math.round(txn.settlementFee))
     expect(txn.settlementAmount).toBe(
@@ -598,9 +600,9 @@ async function testTxnsByAddressWrapper({
     wallets: [wallet],
     addresses: addresses,
   })
-  const txnsWithPending = txnsWithPendingResult.result
+  const txnsWithPending = txnsWithPendingResult?.result?.slice
   expect(txnsWithPending).not.toBeNull()
-  if (txnsWithPending === null) throw new Error()
+  if (txnsWithPending === undefined) throw new Error()
   const pendingTxn = txnsWithPending[0]
   expect(pendingTxn.initiationVia.type).toEqual("onchain")
   if (
@@ -651,7 +653,7 @@ async function testTxnsByAddressWrapper({
   if (txnsWithConfirmed === null) throw new Error()
 
   // Test confirmed txn
-  const confirmedTxn = txnsWithConfirmed.find(
+  const confirmedTxn = txnsWithConfirmed.slice.find(
     (txn) =>
       (txn.settlementVia as SettlementViaOnChain).transactionHash ===
       (pendingTxn.settlementVia as SettlementViaOnChain).transactionHash,
@@ -662,7 +664,7 @@ async function testTxnsByAddressWrapper({
 
   // Test all txns
   const txnAddressesWithConfirmedSet = new ModifiedSet(
-    txnsWithConfirmed.map((txn) => {
+    txnsWithConfirmed.slice.map((txn) => {
       if (txn.initiationVia.type !== "onchain" || !txn.initiationVia.address) {
         return new Error()
       }

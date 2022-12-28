@@ -243,7 +243,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (txResultB.error instanceof Error || txResultB.result === null) {
       throw txResultB.error
     }
-    const userBTxn = txResultB.result.filter(matchTx)[0]
+    const userBTxn = txResultB.result.slice.filter(matchTx)[0]
     expect(userBTxn.memo).toBe(memo)
     expect(userBTxn.displayCurrencyPerSettlementCurrencyUnit).toBe(0.0005)
     expect(userBTxn.settlementVia.type).toBe("intraledger")
@@ -255,7 +255,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (txResultC.error instanceof Error || txResultC.result === null) {
       throw txResultC.error
     }
-    const userCTxn = txResultC.result.filter(matchTx)[0]
+    const userCTxn = txResultC.result.slice.filter(matchTx)[0]
     expect(userCTxn.memo).toBe(memo)
     expect(userCTxn.displayCurrencyPerSettlementCurrencyUnit).toBe(0.0005)
     expect(userCTxn.settlementVia.type).toBe("intraledger")
@@ -312,8 +312,8 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const walletTxs = txResult.result
-    expect(walletTxs.filter(matchTx)[0].memo).toBe(memo)
-    expect(walletTxs.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
+    expect(walletTxs.slice.filter(matchTx)[0].memo).toBe(memo)
+    expect(walletTxs.slice.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
 
     txResult = await Wallets.getTransactionsForWalletId({
       walletId: walletIdB,
@@ -322,8 +322,8 @@ describe("UserWallet - Lightning Pay", () => {
       throw txResult.error
     }
     const userBTxn = txResult.result
-    expect(userBTxn.filter(matchTx)[0].memo).toBe(memoPayer)
-    expect(userBTxn.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
+    expect(userBTxn.slice.filter(matchTx)[0].memo).toBe(memoPayer)
+    expect(userBTxn.slice.filter(matchTx)[0].settlementVia.type).toBe("intraledger")
   })
 
   it("sends to another Galoy user a push payment", async () => {
@@ -356,16 +356,19 @@ describe("UserWallet - Lightning Pay", () => {
     if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
-    const userBTransaction = txResult.result
+    const userBTransaction = txResult.result.slice
     expect(res).toBe(PaymentSendStatus.Success)
     expect(finalBalanceA).toBe(initBalanceA + amountInvoice)
     expect(finalBalanceB).toBe(initBalanceB - amountInvoice)
 
-    expect(txWalletA[0].initiationVia).toHaveProperty(
+    expect(txWalletA.slice[0].initiationVia).toHaveProperty(
       "type",
       PaymentInitiationMethod.IntraLedger,
     )
-    expect(txWalletA[0].initiationVia).toHaveProperty("counterPartyUsername", usernameB)
+    expect(txWalletA.slice[0].initiationVia).toHaveProperty(
+      "counterPartyUsername",
+      usernameB,
+    )
     expect(userBTransaction[0].initiationVia).toHaveProperty(
       "counterPartyUsername",
       usernameA,
@@ -627,7 +630,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
-    const userTransaction0 = txResult.result
+    const userTransaction0 = txResult.result.slice
     const transaction0Above = userTransaction0[0]
     const transaction0Below = userTransaction0[1]
 
@@ -637,7 +640,7 @@ describe("UserWallet - Lightning Pay", () => {
     if (txResult.error instanceof Error || txResult.result === null) {
       throw txResult.error
     }
-    const userBTransaction = txResult.result
+    const userBTransaction = txResult.result.slice
     const transaction1Above = userBTransaction[0]
     const transaction1Below = userBTransaction[1]
 
@@ -1039,7 +1042,7 @@ describe("UserWallet - Lightning Pay", () => {
             throw txResult.error
           }
           const userCTxn = txResult.result
-          const userCOnUsTxn = userCTxn.filter(matchTx)
+          const userCOnUsTxn = userCTxn.slice.filter(matchTx)
           expect(userCOnUsTxn[0].settlementVia.type).toBe("intraledger")
           await checkIsBalanced()
 
@@ -1050,7 +1053,7 @@ describe("UserWallet - Lightning Pay", () => {
             throw txResult.error
           }
           const userBTxn = txResult.result
-          const userBOnUsTxn = userBTxn.filter(matchTx)
+          const userBOnUsTxn = userBTxn.slice.filter(matchTx)
           expect(userBOnUsTxn[0].settlementVia.type).toBe("intraledger")
 
           // making request twice because there is a cancel state, and this should be re-entrant

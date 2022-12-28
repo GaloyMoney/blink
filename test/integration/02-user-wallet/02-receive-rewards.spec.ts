@@ -107,7 +107,7 @@ describe("UserWallet - addEarn", () => {
     let onboardingEarnId = ""
     let txCheck: WalletTransaction | undefined
     for (onboardingEarnId of onboardingEarnIds) {
-      txCheck = transactionsBefore?.find((tx) => tx.memo === onboardingEarnId)
+      txCheck = transactionsBefore?.slice.find((tx) => tx.memo === onboardingEarnId)
       if (!txCheck) break
     }
     expect(txCheck).toBeUndefined()
@@ -132,7 +132,7 @@ describe("UserWallet - addEarn", () => {
     const { result: transactionsAfter } = await Wallets.getTransactionsForWalletId({
       walletId: walletIdB,
     })
-    const rewardTx = transactionsAfter?.find((tx) => tx.memo === onboardingEarnId)
+    const rewardTx = transactionsAfter?.slice.find((tx) => tx.memo === onboardingEarnId)
     expect(rewardTx).not.toBeUndefined()
   })
 })

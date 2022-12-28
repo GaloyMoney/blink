@@ -203,7 +203,7 @@ type IntraledgerLedgerMetadata =
 
 type SendLedgerMetadata = AddOnchainSendLedgerMetadata | AddLnSendLedgerMetadata
 
-type PaginationArgs = { after?: LedgerTransactionId; before?: LedgerTransactionId }
+type PaginatedArray<T> = { slice: T[]; total: number }
 
 // The following is needed for src/services/ledger/paginated-ledger.ts
 declare module "medici/build/helper/parse/parseFilterQuery"

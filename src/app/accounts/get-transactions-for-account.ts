@@ -13,7 +13,7 @@ export const getTransactionsForAccountByWalletIds = async ({
   account: Account
   walletIds: WalletId[]
   paginationArgs?: PaginationArgs
-}): Promise<PartialResult<WalletTransaction[]>> => {
+}): Promise<PartialResult<PaginatedArray<WalletTransaction>>> => {
   const walletsRepo = WalletsRepository()
 
   const wallets: Wallet[] = []

@@ -74,15 +74,15 @@ type WalletState = {
 
 const getWalletState = async (walletId: WalletId): Promise<WalletState> => {
   const balance = await getBalanceHelper(walletId)
-  const { result: transactions, error } = await Wallets.getTransactionsForWalletId({
+  const { result, error } = await Wallets.getTransactionsForWalletId({
     walletId,
   })
-  if (error instanceof Error || transactions === null) {
+  if (error instanceof Error || !result?.slice) {
     throw error
   }
   return {
     balance,
-    transactions,
+    transactions: result.slice,
   }
 }
 

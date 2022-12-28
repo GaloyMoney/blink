@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 import { normalizePaymentAmount } from "@graphql/root/mutation"
 import {
   connectionArgs,
-  connectionFromArray,
+  connectionFromPaginatedArray,
   checkedConnectionArgs,
 } from "@graphql/connections"
 import { mapError } from "@graphql/error-map"
@@ -66,15 +66,20 @@ const BtcWallet = GT.Object<Wallet>({
           throw paginationArgs
         }
 
-        const { result: transactions, error } = await Wallets.getTransactionsForWallets({
+        const { result, error } = await Wallets.getTransactionsForWallets({
           wallets: [source],
           paginationArgs,
         })
         if (error instanceof Error) throw mapError(error)
 
         // Non-null signal to type checker; consider fixing in PartialResult type
-        if (transactions === null) throw error
-        return connectionFromArray<WalletTransaction>(transactions, args)
+        if (!result?.slice) throw error
+
+        return connectionFromPaginatedArray<WalletTransaction>(
+          result.slice,
+          result.total,
+          paginationArgs,
+        )
       },
       description: "A list of BTC transactions associated with this wallet.",
     },
@@ -96,17 +101,21 @@ const BtcWallet = GT.Object<Wallet>({
         const { address } = args
         if (address instanceof Error) throw address
 
-        const { result: transactions, error } =
-          await Wallets.getTransactionsForWalletsByAddresses({
-            wallets: [source],
-            addresses: [address],
-            paginationArgs,
-          })
+        const { result, error } = await Wallets.getTransactionsForWalletsByAddresses({
+          wallets: [source],
+          addresses: [address],
+          paginationArgs,
+        })
         if (error instanceof Error) throw mapError(error)
 
         // Non-null signal to type checker; consider fixing in PartialResult type
-        if (transactions === null) throw error
-        return connectionFromArray<WalletTransaction>(transactions, args)
+        if (!result?.slice) throw error
+
+        return connectionFromPaginatedArray<WalletTransaction>(
+          result.slice,
+          result.total,
+          paginationArgs,
+        )
       },
     },
   }),

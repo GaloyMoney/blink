@@ -4,7 +4,7 @@ import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
 import {
   connectionArgs,
-  connectionFromArray,
+  connectionFromPaginatedArray,
   checkedConnectionArgs,
 } from "@graphql/connections"
 
@@ -92,21 +92,26 @@ const ConsumerAccount = GT.Object({
           walletIds = wallets.map((wallet) => wallet.id)
         }
 
-        const { result: transactions, error } =
-          await Accounts.getTransactionsForAccountByWalletIds({
-            account: source,
-            walletIds,
-            paginationArgs,
-          })
+        const { result, error } = await Accounts.getTransactionsForAccountByWalletIds({
+          account: source,
+          walletIds,
+          paginationArgs,
+        })
+
         if (error instanceof Error) {
           throw mapError(error)
         }
-        if (transactions === null) {
+
+        if (!result?.slice) {
           const nullError = new CouldNotFindTransactionsForAccountError()
           throw mapError(nullError)
         }
 
-        return connectionFromArray<WalletTransaction>(transactions, args)
+        return connectionFromPaginatedArray<WalletTransaction>(
+          result.slice,
+          result.total,
+          paginationArgs,
+        )
       },
     },
   }),

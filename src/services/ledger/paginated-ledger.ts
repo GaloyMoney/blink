@@ -4,7 +4,7 @@
 
 // This should be used for any list of transactions that's exposed in the API
 
-import { ClientSession, Types } from "mongoose"
+import { Types } from "mongoose"
 
 import { parseFilterQuery } from "medici/build/helper/parse/parseFilterQuery"
 
@@ -19,38 +19,39 @@ type IFilterQuery = {
   _journal?: Types.ObjectId | string
   start_date?: Date | string | number
   end_date?: Date | string | number
-} & Partial<ILedgerTransaction> & {
-    [key: string]: string[] | number | string | Date | boolean | Types.ObjectId
+} & Partial<ILedgerTransaction>
+
+export const paginatedLedger = async ({
+  query,
+  paginationArgs,
+}: {
+  query: IFilterQuery
+  paginationArgs?: PaginationArgs
+}): Promise<PaginatedArray<ILedgerTransaction>> => {
+  const filterQuery = parseFilterQuery(query, MainBook)
+
+  if (paginationArgs?.after) {
+    filterQuery["_id"] = { $lt: new Types.ObjectId(paginationArgs.after) }
   }
 
-type IOptions = {
-  session?: ClientSession
-}
-
-export const paginatedLedger = async (
-  query: IFilterQuery & PaginationArgs,
-  options = {} as IOptions,
-) => {
-  const { after, before, ...restOfQuery } = query
-
-  const filterQuery = parseFilterQuery(restOfQuery, MainBook)
-
-  if (after) {
-    filterQuery["_id"] = { $lt: new Types.ObjectId(after) }
+  if (paginationArgs?.before) {
+    filterQuery["_id"] = { $gt: new Types.ObjectId(paginationArgs.before) }
   }
 
-  if (before) {
-    filterQuery["_id"] = { $gt: new Types.ObjectId(before) }
-  }
-
-  return Transaction.collection
-    .find(filterQuery, {
+  const findPromise = Transaction.collection
+    .find<ILedgerTransaction>(filterQuery, {
       limit: DEFAULT_MAX_CONNECTION_LIMIT,
       sort: {
         datetime: -1,
         timestamp: -1,
       },
-      session: options.session,
     })
     .toArray()
+
+  const countPromise = Transaction.countDocuments(filterQuery)
+
+  return {
+    slice: await findPromise,
+    total: await countPromise,
+  }
 }
