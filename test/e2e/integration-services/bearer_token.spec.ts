@@ -45,7 +45,7 @@ afterAll(async () => {
 
     const mapping: { [key: string]: string } = {}
 
-    // initiate graphql call with DevideId
+    // initiate graphql call with DeviceId
     // on mobile
     const deviceId = randomUUID()
     graphql.initiateTokenBearer(deviceId, notificationToken)

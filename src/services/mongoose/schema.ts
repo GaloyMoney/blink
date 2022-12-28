@@ -278,7 +278,7 @@ const AccountSchema = new Schema<AccountRecord>(
       default: [
         {
           status: getDefaultAccountsConfig().initialStatus,
-          comment: "to be overriden by createAccount",
+          comment: "to be overridden by createAccount",
         },
       ],
     },
