@@ -3,6 +3,8 @@ import { WalletCurrency } from "@domain/shared"
 import { WalletsRepository } from "@services/mongoose"
 import { baseLogger } from "@services/logger"
 
+import { AccountLevel } from "@domain/accounts"
+
 import { mapAndParseErrorForGqlResponse, mapError } from "./error-map"
 import { ValidationInternalError } from "./error"
 
@@ -13,6 +15,7 @@ const QueryDoesNotMatchWalletCurrencyError = new ValidationInternalError({
 })
 
 const MutationDoesNotMatchWalletCurrencyError = "MutationDoesNotMatchWalletCurrencyError"
+const AccountLevelNotEnoughMutationError = "AccountLevelNotEnoughMutationError"
 
 export const validateIsBtcWalletForMutation = async (
   walletId: WalletId,
@@ -34,6 +37,15 @@ export const validateIsUsdWalletForMutation = async (
 
   if (wallet.currency === WalletCurrency.Btc) {
     return { errors: [{ message: MutationDoesNotMatchWalletCurrencyError }] }
+  }
+  return true
+}
+
+export const validateLevelForGatedFeatureMutation = (
+  account: Account,
+): true | { errors: [{ message: string }] } => {
+  if (account.level === AccountLevel.Zero) {
+    return { errors: [{ message: AccountLevelNotEnoughMutationError }] }
   }
   return true
 }
