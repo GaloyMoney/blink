@@ -813,6 +813,11 @@ input OnChainUsdPaymentSendInput {
   walletId: WalletId!
 }
 
+type OnChainUsdTxFee {
+  amount: CentAmount!
+  targetConfirmations: TargetConfirmations!
+}
+
 type OneDayAccountLimit implements AccountLimit {
   """
   The rolling time interval value in seconds for the current 24 hour period.
@@ -956,7 +961,7 @@ type Query {
     amount: CentAmount!
     targetConfirmations: TargetConfirmations = 1
     walletId: WalletId!
-  ): OnChainTxFee!
+  ): OnChainUsdTxFee!
   quizQuestions: [QuizQuestion]
   userDefaultWalletId(username: Username!): WalletId!
     @deprecated(reason: "will be migrated to AccountDefaultWalletId")
