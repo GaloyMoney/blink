@@ -34,9 +34,9 @@ interface IAuthWithPhonePasswordlessService {
     phone: PhoneNumber,
   ): Promise<CreateKratosUserForPhoneNoPasswordSchemaResponse | AuthenticationError>
   createIdentityNoSession(phone: PhoneNumber): Promise<UserId | AuthenticationError>
-  upgradeToPhoneWithPasswordSchema(input: {
+  upgradeToPhoneAndEmailSchema(input: {
     kratosUserId: UserId
-    password: IdentityPassword
+    email: EmailAddress
   }): Promise<IdentityPhone | AuthenticationError> // TODO: should be IdentityPhoneWithPassword
 }
 

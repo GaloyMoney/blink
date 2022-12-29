@@ -6,9 +6,9 @@ import {
 import { CreateIdentityBody } from "@ory/client"
 import {
   AuthWithPhonePasswordlessService,
+  IdentityRepository,
   extendSession,
   getNextPage,
-  IdentityRepository,
   listSessions,
   validateKratosToken,
 } from "@services/kratos"
@@ -25,6 +25,10 @@ import {
 import { baseLogger } from "@services/logger"
 import { authenticator } from "otplib"
 
+import { AuthWithEmailPasswordlessService } from "@services/kratos/auth-email-no-password"
+
+import { PhoneCodeInvalidError } from "@domain/phone-provider"
+
 import {
   killServer,
   randomEmail,
@@ -32,12 +36,15 @@ import {
   randomPhone,
   startServer,
 } from "test/helpers"
+import { getEmailCode } from "test/helpers/kratos"
 
 const identityRepo = IdentityRepository()
 
 let serverPid: PID
 
 beforeAll(async () => {
+  // await removeIdentities()
+
   // needed for the kratos callback to registration
   serverPid = await startServer("start-main-ci")
 })
@@ -54,7 +61,6 @@ describe("phoneNoPassword", () => {
     let kratosUserId: UserId
 
     it("create a user", async () => {
-      // const res = await retry(() => authService.createIdentityWithSession(phone))
       const res = await authService.createIdentityWithSession(phone)
       if (res instanceof Error) throw res
 
@@ -132,24 +138,6 @@ describe("phoneNoPassword", () => {
       expect(res).toBeInstanceOf(LikelyNoUserWithThisPhoneExistError)
     })
 
-    it("change user from passwordless to password", async () => {
-      const phone = randomPhone()
-      const password = randomPassword()
-
-      const res0 = await authService.createIdentityWithSession(phone)
-      if (res0 instanceof Error) throw res0
-      const { kratosUserId } = res0
-
-      const res = await authService.upgradeToPhoneWithPasswordSchema({
-        kratosUserId,
-        password,
-      })
-      if (res instanceof Error) throw res
-
-      const newIdentity = await kratosAdmin.getIdentity({ id: kratosUserId })
-      expect(newIdentity.data.schema_id).toBe("phone_with_password_v0")
-    })
-
     it("can get the user with slowFindByPhone", async () => {
       const identity = await identityRepo.slowFindByPhone(phone)
       if (identity instanceof Error) throw identity
@@ -219,9 +207,9 @@ it("list users", async () => {
   if (res instanceof Error) throw res
 })
 
-const authService = AuthWithPhonePasswordlessService()
-
 describe("token validation", () => {
+  const authService = AuthWithPhonePasswordlessService()
+
   it("validate bearer token", async () => {
     const phone = randomPhone()
     const res = await authService.createIdentityWithSession(phone)
@@ -240,6 +228,8 @@ describe("token validation", () => {
 })
 
 describe("session revokation", () => {
+  const authService = AuthWithPhonePasswordlessService()
+
   const phone = randomPhone()
   it("revoke user session", async () => {
     const res = await authService.createIdentityWithSession(phone)
@@ -274,7 +264,10 @@ describe("session revokation", () => {
   })
 })
 
-describe("update status", () => {
+describe.skip("update status", () => {
+  // Status on kratos is not implemented
+  const authService = AuthWithPhonePasswordlessService()
+
   let kratosUserId: UserId
   const phone = randomPhone()
 
@@ -287,9 +280,8 @@ describe("update status", () => {
     await deactivateUser(kratosUserId)
     await authService.login(phone)
 
-    // FIXME: failing with Ory v0.11
-    // const res = await authService.login(phone)
-    // expect(res).toBeInstanceOf(AuthenticationKratosError)
+    const res = await authService.login(phone)
+    expect(res).toBeInstanceOf(AuthenticationKratosError)
   })
 
   it("activate user", async () => {
@@ -308,14 +300,12 @@ it.skip("list schemas", async () => {
   const schemasIds = res.map((item) => item.id)
 
   // what is listed in kratos.yaml#identity.schemas
-  expect(schemasIds).toStrictEqual([
-    "phone_no_password_v0",
-    "phone_with_password_v0",
-    "email_and_phone_with_password_v0",
-  ])
+  expect(schemasIds).toStrictEqual(["phone_no_password_v0", "phone_email_no_password_v0"])
 })
 
 it("extend session", async () => {
+  const authService = AuthWithPhonePasswordlessService()
+
   const phone = randomPhone()
   const res = await authService.createIdentityWithSession(phone)
   if (res instanceof Error) throw res
@@ -345,7 +335,7 @@ describe("upgrade", () => {
     const adminIdentity: CreateIdentityBody = {
       credentials: { password: { config: { password } } },
       state: "active",
-      schema_id: "email_and_phone_with_password_v0",
+      schema_id: "phone_email_no_password_v0",
       traits: {
         email,
       },
@@ -358,7 +348,7 @@ describe("upgrade", () => {
     const { data: identity2 } = await kratosAdmin.updateIdentity({
       id: identity.id,
       updateIdentityBody: {
-        schema_id: "email_and_phone_with_password_v0",
+        schema_id: "phone_email_no_password_v0",
         state: "active",
         traits: {
           phone,
@@ -372,6 +362,100 @@ describe("upgrade", () => {
       phone,
       email,
     })
+  })
+})
+
+describe("phone+email schema", () => {
+  const authServiceEmail = AuthWithEmailPasswordlessService()
+  const authServicePhone = AuthWithPhonePasswordlessService()
+
+  let kratosUserId: UserId
+  const email = randomEmail()
+  const phone = randomPhone()
+
+  it("create a user", async () => {
+    const res0 = await authServicePhone.createIdentityWithSession(phone)
+    if (res0 instanceof Error) throw res0
+    kratosUserId = res0.kratosUserId
+
+    const res = await authServicePhone.upgradeToPhoneAndEmailSchema({
+      kratosUserId,
+      email,
+    })
+    if (res instanceof Error) throw res
+
+    const newIdentity = await kratosAdmin.getIdentity({ id: kratosUserId })
+    expect(newIdentity.data.schema_id).toBe("phone_email_no_password_v0")
+    expect(newIdentity.data.traits.email).toBe(email)
+    expect(newIdentity.data.verifiable_addresses?.[0].verified).toBe(false)
+  })
+
+  it("verification for phone + email schema", async () => {
+    const flow = await authServiceEmail.initiateEmailVerification(email)
+    if (flow instanceof Error) throw flow
+
+    {
+      const identity = await kratosAdmin.getIdentity({ id: kratosUserId })
+      expect(identity.data.verifiable_addresses?.[0].verified).toBe(false)
+    }
+
+    {
+      const wrongCode = "000000"
+      const res = await authServiceEmail.validateEmailVerification({
+        code: wrongCode,
+        flow,
+      })
+      expect(res).toBeInstanceOf(PhoneCodeInvalidError)
+    }
+
+    {
+      const code = await getEmailCode({ email })
+
+      // TODO: verification code expired
+      const res = await authServiceEmail.validateEmailVerification({ code, flow })
+      expect(res).toBe(true)
+
+      const identity = await kratosAdmin.getIdentity({ id: kratosUserId })
+      expect(identity.data.verifiable_addresses?.[0].verified).toBe(true)
+    }
+  })
+
+  it("login back to an phone+email account by email", async () => {
+    const flow = await authServiceEmail.initiateEmailVerification(email)
+    if (flow instanceof Error) throw flow
+
+    const code = await getEmailCode({ email })
+
+    {
+      const wrongCode = "000000"
+      const res = await authServiceEmail.validateEmailVerification({
+        code: wrongCode,
+        flow,
+      })
+      expect(res).toBeInstanceOf(PhoneCodeInvalidError)
+    }
+
+    {
+      const res = await authServiceEmail.validateEmailVerification({ code, flow })
+      expect(res).toBe(true)
+    }
+
+    {
+      const res = await authServiceEmail.login(email)
+      if (res instanceof Error) throw res
+      expect(res.kratosUserId).toBe(kratosUserId)
+    }
+
+    // TODO: verification code expired
+  })
+
+  it("login back to an phone+email account by phone", async () => {
+    const res = await authServicePhone.login(phone)
+    if (res instanceof Error) throw res
+
+    expect(res.kratosUserId).toBe(kratosUserId)
+    const identity = await kratosAdmin.getIdentity({ id: kratosUserId })
+    expect(identity.data.schema_id).toBe("phone_email_no_password_v0")
   })
 })
 

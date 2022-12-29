@@ -18,6 +18,7 @@ services:
       - lnd-outside-2
       - otel-agent
       - oathkeeper
+      - mailslurper
     restart: on-failure:10
   integration-deps:
     image: busybox
@@ -291,7 +292,7 @@ services:
   kratos:
     image: oryd/kratos:v0.11.0
     entrypoint: sh -c
-    command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --sqa-opt-out"'
+    command: '"kratos migrate sql up -y -e && kratos serve -c /home/ory/kratos.yml --watch-courier --sqa-opt-out"'
     environment:
       DSN: postgres://dbuser:secret@kratos-pg:5432/default?sslmode=disable
     links:
@@ -308,3 +309,5 @@ services:
       - POSTGRES_USER=dbuser
       - POSTGRES_PASSWORD=secret
       - POSTGRES_DB=default
+  mailslurper:
+    image: oryd/mailslurper:latest-smtps

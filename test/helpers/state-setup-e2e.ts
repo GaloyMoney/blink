@@ -109,8 +109,9 @@ export const initializeTestingState = async (stateConfig: TestingStateConfig) =>
       clearLimiters(),
       clearAccountLocks(),
 
-      // TODO:
-      // reset kratos + run migrations
+      // removeIdentities(),
+      // TODO: reset kratos
+      // deleting all identities would probably be the best way to reset kratos
     ])
     baseLogger.info("Reset state.")
   }

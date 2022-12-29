@@ -129,12 +129,12 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     return kratosUserId
   }
 
-  const upgradeToPhoneWithPasswordSchema = async ({
+  const upgradeToPhoneAndEmailSchema = async ({
     kratosUserId,
-    password,
+    email,
   }: {
     kratosUserId: UserId
-    password: IdentityPassword
+    email: EmailAddress
   }) => {
     let identity: Identity
 
@@ -155,11 +155,13 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     if (identity.state === undefined)
       throw new KratosError("state undefined, probably impossible state") // type issue
 
+    identity.traits = { ...identity.traits, email }
+
     const adminIdentity: UpdateIdentityBody = {
       ...identity,
       credentials: { password: { config: { password } } },
       state: identity.state,
-      schema_id: "phone_with_password_v0",
+      schema_id: "phone_email_no_password_v0",
     }
 
     const { data: newIdentity } = await kratosAdmin.updateIdentity({
@@ -174,6 +176,6 @@ export const AuthWithPhonePasswordlessService = (): IAuthWithPhonePasswordlessSe
     login,
     createIdentityWithSession,
     createIdentityNoSession,
-    upgradeToPhoneWithPasswordSchema,
+    upgradeToPhoneAndEmailSchema,
   }
 }
