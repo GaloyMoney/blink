@@ -5,9 +5,13 @@ import express from "express"
 
 import { getDefaultAccountsConfig, getKratosConfig, getKratosPasswords } from "@config"
 import { wrapAsyncToRunInSpan } from "@services/tracing"
-import { createAccountWithPhoneIdentifier } from "@app/accounts"
+import {
+  createAccountForEmailIdentifier,
+  createAccountWithPhoneIdentifier,
+} from "@app/accounts"
 import { checkedToPhoneNumber } from "@domain/users"
-import { checkedToUserId } from "@domain/accounts"
+import { AccountStatus, checkedToUserId } from "@domain/accounts"
+import { WalletCurrency } from "@domain/shared"
 
 const kratosRouter = express.Router({ caseSensitive: true })
 
@@ -41,18 +45,18 @@ kratosRouter.post(
 
       assert(schema_id === "phone_no_password_v0", "unsupported schema")
 
-      if (!phoneRaw || !userId) {
-        console.log("missing inputs")
-        res.status(400).send("missing inputs")
-        return
-      }
+      // if (!phoneRaw || !userId) {
+      //   console.log("missing inputs")
+      //   res.status(400).send("missing inputs")
+      //   return
+      // }
 
-      const phone = checkedToPhoneNumber(phoneRaw)
-      if (phone instanceof Error) {
-        console.log("invalid phone")
-        res.status(400).send("invalid phone")
-        return
-      }
+      // const phone = checkedToPhoneNumber(phoneRaw)
+      // if (phone instanceof Error) {
+      //   console.log("invalid phone")
+      //   res.status(400).send("invalid phone")
+      //   return
+      // }
 
       const userIdChecked = checkedToUserId(userId)
       if (userIdChecked instanceof Error) {
@@ -61,10 +65,20 @@ kratosRouter.post(
         return
       }
 
-      const account = await createAccountWithPhoneIdentifier({
-        newAccountInfo: { phone, kratosUserId: userIdChecked },
-        config: getDefaultAccountsConfig(),
+      const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
+
+      const account = await createAccountForEmailIdentifier({
+        kratosUserId: userIdChecked,
+        config: { initialStatus: AccountStatus.Active, initialWallets },
       })
+
+      // const account = await createAccountWithPhoneIdentifier({
+      //   newAccountInfo: {
+      //     phone: "+19898675309" as PhoneNumber,
+      //     kratosUserId: userIdChecked,
+      //   },
+      //   config: getDefaultAccountsConfig(),
+      // })
       if (account instanceof Error) {
         console.log(`error createAccountWithPhoneIdentifier: ${account}`)
         res.status(500).send(`error createAccountWithPhoneIdentifier: ${account}`)
