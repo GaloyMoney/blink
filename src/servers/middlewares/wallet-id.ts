@@ -2,6 +2,7 @@ import { GraphQLResolveInfo, GraphQLFieldResolver } from "graphql"
 
 import { Accounts } from "@app"
 import { mapError } from "@graphql/error-map"
+import { mutationFields, queryFields } from "@graphql/main"
 
 type InputArgs = Record<"input", Record<string, unknown>>
 
@@ -54,25 +55,26 @@ const validateWalletIdMutation = async (
   return result
 }
 
+// Placed here because 'GraphQLFieldResolver' not working from .d.ts file
+type ValidateWalletIdFn = (
+  resolve: GraphQLFieldResolver<unknown, GraphQLContext | GraphQLContextAuth>,
+  parent: unknown,
+  args: unknown,
+  context: GraphQLContext | GraphQLContextAuth,
+  info: GraphQLResolveInfo,
+) => Promise<unknown>
+
+const walletIdQueryFields: { [key: string]: ValidateWalletIdFn } = {}
+for (const key of Object.keys(queryFields.authed.atWalletLevel)) {
+  walletIdQueryFields[key] = validateWalletIdQuery
+}
+
+const walletIdMutationFields: { [key: string]: ValidateWalletIdFn } = {}
+for (const key of Object.keys(mutationFields.authed.atWalletLevel)) {
+  walletIdMutationFields[key] = validateWalletIdMutation
+}
+
 export const walletIdMiddleware = {
-  Query: {
-    onChainTxFee: validateWalletIdQuery,
-    onChainUsdTxFee: validateWalletIdQuery,
-  },
-  Mutation: {
-    intraLedgerPaymentSend: validateWalletIdMutation,
-    lnInvoiceFeeProbe: validateWalletIdMutation,
-    lnNoAmountInvoiceFeeProbe: validateWalletIdMutation,
-    lnInvoiceCreate: validateWalletIdMutation,
-    lnUsdInvoiceCreate: validateWalletIdMutation,
-    lnNoAmountInvoiceCreate: validateWalletIdMutation,
-    lnInvoicePaymentSend: validateWalletIdMutation,
-    lnNoAmountInvoicePaymentSend: validateWalletIdMutation,
-    lnNoAmountUsdInvoicePaymentSend: validateWalletIdMutation,
-    onChainAddressCreate: validateWalletIdMutation,
-    onChainAddressCurrent: validateWalletIdMutation,
-    onChainPaymentSend: validateWalletIdMutation,
-    onChainUsdPaymentSend: validateWalletIdMutation,
-    onChainPaymentSendAll: validateWalletIdMutation,
-  },
+  Query: walletIdQueryFields,
+  Mutation: walletIdMutationFields,
 }

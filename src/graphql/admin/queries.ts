@@ -10,9 +10,9 @@ import AccountDetailsByUsernameQuery from "./root/query/account-details-by-usern
 import ListWalletIdsQuery from "./root/query/all-walletids"
 import WalletQuery from "./root/query/wallet"
 
-const QueryType = GT.Object({
-  name: "Query",
-  fields: () => ({
+export const queryFields = {
+  unauthed: {},
+  authed: {
     allLevels: AllLevelsQuery,
     accountDetailsByUserPhone: AccountDetailsByUserPhoneQuery,
     accountDetailsByUsername: AccountDetailsByUsernameQuery,
@@ -22,7 +22,10 @@ const QueryType = GT.Object({
     lightningPayment: LightningPaymentQuery,
     listWalletIds: ListWalletIdsQuery,
     wallet: WalletQuery,
-  }),
-})
+  },
+}
 
-export default QueryType
+export const QueryType = GT.Object({
+  name: "Query",
+  fields: () => ({ ...queryFields.unauthed, ...queryFields.authed }),
+})

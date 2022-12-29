@@ -34,9 +34,7 @@ const addTracing = () => {
   return fields
 }
 
-const SubscriptionType = GT.Object({
+export const SubscriptionType = GT.Object({
   name: "Subscription",
   fields: addTracing(),
 })
-
-export default SubscriptionType

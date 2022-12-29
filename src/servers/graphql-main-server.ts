@@ -1,6 +1,7 @@
 import dotenv from "dotenv"
 import { applyMiddleware } from "graphql-middleware"
 import { shield } from "graphql-shield"
+import { Rule } from "graphql-shield/typings/rules"
 
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
@@ -8,7 +9,7 @@ import { baseLogger } from "@services/logger"
 
 import { GALOY_API_PORT } from "@config"
 
-import { gqlMainSchema } from "../graphql"
+import { gqlMainSchema, mutationFields, queryFields } from "@graphql/main"
 
 import { isAuthenticated, startApolloServer } from "./graphql-server"
 import { walletIdMiddleware } from "./middlewares/wallet-id"
@@ -18,43 +19,26 @@ const graphqlLogger = baseLogger.child({ module: "graphql" })
 dotenv.config()
 
 export async function startApolloServerForCoreSchema() {
+  const authedQueryFields: { [key: string]: Rule } = {}
+  for (const key of Object.keys({
+    ...queryFields.authed.atAccountLevel,
+    ...queryFields.authed.atWalletLevel,
+  })) {
+    authedQueryFields[key] = isAuthenticated
+  }
+
+  const authedMutationFields: { [key: string]: Rule } = {}
+  for (const key of Object.keys({
+    ...mutationFields.authed.atAccountLevel,
+    ...mutationFields.authed.atWalletLevel,
+  })) {
+    authedMutationFields[key] = isAuthenticated
+  }
+
   const permissions = shield(
     {
-      Query: {
-        me: isAuthenticated,
-        onChainTxFee: isAuthenticated,
-        onChainUsdTxFee: isAuthenticated,
-      },
-      Mutation: {
-        userQuizQuestionUpdateCompleted: isAuthenticated,
-        deviceNotificationTokenCreate: isAuthenticated,
-
-        userUpdateUsername: isAuthenticated,
-        userUpdateLanguage: isAuthenticated,
-        accountUpdateDefaultWalletId: isAuthenticated,
-        accountUpdateDisplayCurrency: isAuthenticated,
-        userContactUpdateAlias: isAuthenticated,
-
-        lnInvoiceFeeProbe: isAuthenticated,
-        lnNoAmountInvoiceFeeProbe: isAuthenticated,
-
-        lnInvoiceCreate: isAuthenticated,
-        lnUsdInvoiceCreate: isAuthenticated,
-        lnNoAmountInvoiceCreate: isAuthenticated,
-
-        lnInvoicePaymentSend: isAuthenticated,
-        lnNoAmountInvoicePaymentSend: isAuthenticated,
-        lnNoAmountUsdInvoicePaymentSend: isAuthenticated,
-
-        intraLedgerPaymentSend: isAuthenticated,
-        intraLedgerUsdPaymentSend: isAuthenticated,
-
-        onChainAddressCreate: isAuthenticated,
-        onChainAddressCurrent: isAuthenticated,
-        onChainPaymentSend: isAuthenticated,
-        onChainUsdPaymentSend: isAuthenticated,
-        onChainPaymentSendAll: isAuthenticated,
-      },
+      Query: authedQueryFields,
+      Mutation: authedMutationFields,
     },
     { allowExternalErrors: true },
   )

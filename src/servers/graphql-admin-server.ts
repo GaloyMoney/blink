@@ -1,6 +1,7 @@
 import dotenv from "dotenv"
 import { applyMiddleware } from "graphql-middleware"
 import { and, shield } from "graphql-shield"
+import { RuleAnd } from "graphql-shield/typings/rules"
 
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
@@ -8,8 +9,7 @@ import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 
 import { GALOY_ADMIN_PORT } from "@config"
-
-import { gqlAdminSchema } from "../graphql"
+import { gqlAdminSchema, adminMutationFields, adminQueryFields } from "@graphql/admin"
 
 import { startApolloServer, isAuthenticated, isEditor } from "./graphql-server"
 
@@ -18,25 +18,20 @@ dotenv.config()
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
 export async function startApolloServerForAdminSchema() {
+  const authedQueryFields: { [key: string]: RuleAnd } = {}
+  for (const key of Object.keys(adminQueryFields.authed)) {
+    authedQueryFields[key] = and(isAuthenticated, isEditor)
+  }
+
+  const authedMutationFields: { [key: string]: RuleAnd } = {}
+  for (const key of Object.keys(adminMutationFields.authed)) {
+    authedMutationFields[key] = and(isAuthenticated, isEditor)
+  }
+
   const permissions = shield(
     {
-      Query: {
-        allLevels: and(isAuthenticated, isEditor),
-        accountDetailsByUserPhone: and(isAuthenticated, isEditor),
-        accountDetailsByUsername: and(isAuthenticated, isEditor),
-        transactionById: and(isAuthenticated, isEditor),
-        transactionsByHash: and(isAuthenticated, isEditor),
-        lightningInvoice: and(isAuthenticated, isEditor),
-        lightningPayment: and(isAuthenticated, isEditor),
-        wallet: and(isAuthenticated, isEditor),
-        listWalletIds: and(isAuthenticated, isEditor),
-      },
-      Mutation: {
-        accountUpdateStatus: and(isAuthenticated, isEditor),
-        accountUpdateLevel: and(isAuthenticated, isEditor),
-        businessUpdateMapInfo: and(isAuthenticated, isEditor),
-        coldStorageRebalanceToHotWallet: and(isAuthenticated, isEditor),
-      },
+      Query: authedQueryFields,
+      Mutation: authedMutationFields,
     },
     { allowExternalErrors: true },
   )

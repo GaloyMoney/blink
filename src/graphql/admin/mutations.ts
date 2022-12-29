@@ -12,23 +12,24 @@ import ColdStorageRebalanceToHotWalletMutation from "@graphql/admin/root/mutatio
 
 import AccountsAddUsdWalletMutation from "./root/mutation/account-add-usd-wallet"
 
-const MutationType = GT.Object({
-  name: "Mutation",
-  fields: () => ({
+export const mutationFields = {
+  unauthed: {
     userRequestAuthCode: UserRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
 
     captchaCreateChallenge: CaptchaCreateChallengeMutation,
     captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
-
+  },
+  authed: {
     accountUpdateLevel: AccountUpdateLevelMutation,
     accountUpdateStatus: AccountUpdateStatusMutation,
     accountsAddUsdWallet: AccountsAddUsdWalletMutation,
-
     businessUpdateMapInfo: BusinessUpdateMapInfoMutation,
-
     coldStorageRebalanceToHotWallet: ColdStorageRebalanceToHotWalletMutation,
-  }),
-})
+  },
+}
 
-export default MutationType
+export const MutationType = GT.Object({
+  name: "Mutation",
+  fields: () => ({ ...mutationFields.unauthed, ...mutationFields.authed }),
+})

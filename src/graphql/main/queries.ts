@@ -15,26 +15,36 @@ import AccountDefaultWalletQuery from "@graphql/root/query/account-default-walle
 import AccountDefaultWalletIdQuery from "@graphql/root/query/account-default-wallet-id"
 import LnInvoicePaymentStatusQuery from "@graphql/root/query/ln-invoice-payment-status"
 
-const fields = {
-  globals: GlobalsQuery,
-  me: MeQuery,
-  usernameAvailable: UsernameAvailableQuery,
-  userDefaultWalletId: AccountDefaultWalletIdQuery, // FIXME: migrate to AccountDefaultWalletId
-  accountDefaultWallet: AccountDefaultWalletQuery,
-  businessMapMarkers: BusinessMapMarkersQuery,
-  currencyList: CurrencyListQuery,
-  mobileVersions: MobileVersionsQuery,
-  quizQuestions: QuizQuestionsQuery,
-  btcPrice: BtcPriceQuery,
-  btcPriceList: BtcPriceListQuery,
-  onChainTxFee: OnChainTxFeeQuery,
-  onChainUsdTxFee: OnChainUsdTxFeeQuery,
-  lnInvoicePaymentStatus: LnInvoicePaymentStatusQuery,
+export const queryFields = {
+  unauthed: {
+    globals: GlobalsQuery,
+    usernameAvailable: UsernameAvailableQuery,
+    userDefaultWalletId: AccountDefaultWalletIdQuery, // FIXME: migrate to AccountDefaultWalletId
+    accountDefaultWallet: AccountDefaultWalletQuery,
+    businessMapMarkers: BusinessMapMarkersQuery,
+    currencyList: CurrencyListQuery,
+    mobileVersions: MobileVersionsQuery,
+    quizQuestions: QuizQuestionsQuery,
+    btcPrice: BtcPriceQuery,
+    btcPriceList: BtcPriceListQuery,
+    lnInvoicePaymentStatus: LnInvoicePaymentStatusQuery,
+  },
+  authed: {
+    atAccountLevel: {
+      me: MeQuery,
+    },
+    atWalletLevel: {
+      onChainTxFee: OnChainTxFeeQuery,
+      onChainUsdTxFee: OnChainUsdTxFeeQuery,
+    },
+  },
 } as const
 
-const QueryType = GT.Object({
+export const QueryType = GT.Object({
   name: "Query",
-  fields,
+  fields: {
+    ...queryFields.unauthed,
+    ...queryFields.authed.atAccountLevel,
+    ...queryFields.authed.atWalletLevel,
+  },
 })
-
-export default QueryType

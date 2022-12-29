@@ -88,6 +88,3 @@ export const GT: GTType = {
 
   Kind,
 }
-
-export * from "./main/index"
-export * from "./admin/index"
