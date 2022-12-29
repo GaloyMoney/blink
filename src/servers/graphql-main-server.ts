@@ -1,6 +1,7 @@
 import dotenv from "dotenv"
 import { applyMiddleware } from "graphql-middleware"
 import { shield } from "graphql-shield"
+import { Rule } from "graphql-shield/typings/rules"
 
 import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
@@ -18,7 +19,7 @@ const graphqlLogger = baseLogger.child({ module: "graphql" })
 dotenv.config()
 
 export async function startApolloServerForCoreSchema() {
-  const authedQueryFields = {}
+  const authedQueryFields: { [key: string]: Rule } = {}
   for (const key of Object.keys({
     ...queryFields.authed.noWalletId,
     ...queryFields.authed.withWalletId,
@@ -26,7 +27,7 @@ export async function startApolloServerForCoreSchema() {
     authedQueryFields[key] = isAuthenticated
   }
 
-  const authedMutationFields = {}
+  const authedMutationFields: { [key: string]: Rule } = {}
   for (const key of Object.keys({
     ...mutationFields.authed.noWalletId,
     ...mutationFields.authed.withWalletId,

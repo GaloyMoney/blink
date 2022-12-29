@@ -1,6 +1,7 @@
 import dotenv from "dotenv"
 import { applyMiddleware } from "graphql-middleware"
 import { and, shield } from "graphql-shield"
+import { RuleAnd } from "graphql-shield/typings/rules"
 
 import { baseLogger } from "@services/logger"
 import { setupMongoConnection } from "@services/mongodb"
@@ -17,12 +18,12 @@ dotenv.config()
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
 export async function startApolloServerForAdminSchema() {
-  const authedQueryFields = {}
+  const authedQueryFields: { [key: string]: RuleAnd } = {}
   for (const key of Object.keys(adminQueryFields.authed)) {
     authedQueryFields[key] = and(isAuthenticated, isEditor)
   }
 
-  const authedMutationFields = {}
+  const authedMutationFields: { [key: string]: RuleAnd } = {}
   for (const key of Object.keys(adminMutationFields.authed)) {
     authedMutationFields[key] = and(isAuthenticated, isEditor)
   }

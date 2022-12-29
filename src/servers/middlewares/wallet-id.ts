@@ -55,12 +55,21 @@ const validateWalletIdMutation = async (
   return result
 }
 
-const walletIdQueryFields = {}
+// Placed here because 'GraphQLFieldResolver' not working from .d.ts file
+type ValidateWalletIdFn = (
+  resolve: GraphQLFieldResolver<unknown, GraphQLContext | GraphQLContextAuth>,
+  parent: unknown,
+  args: unknown,
+  context: GraphQLContext | GraphQLContextAuth,
+  info: GraphQLResolveInfo,
+) => Promise<unknown>
+
+const walletIdQueryFields: { [key: string]: ValidateWalletIdFn } = {}
 for (const key of Object.keys(queryFields.authed.withWalletId)) {
   walletIdQueryFields[key] = validateWalletIdQuery
 }
 
-const walletIdMutationFields = {}
+const walletIdMutationFields: { [key: string]: ValidateWalletIdFn } = {}
 for (const key of Object.keys(mutationFields.authed.withWalletId)) {
   walletIdMutationFields[key] = validateWalletIdMutation
 }
