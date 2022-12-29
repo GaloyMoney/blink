@@ -8,6 +8,7 @@ import { setupMongoConnection } from "@services/mongodb"
 import { activateLndHealthCheck } from "@services/lnd/health"
 
 import { GALOY_ADMIN_PORT } from "@config"
+import { adminMutationFields, adminQueryFields } from "@graphql/admin"
 
 import { gqlAdminSchema } from "../graphql"
 
@@ -18,25 +19,20 @@ dotenv.config()
 const graphqlLogger = baseLogger.child({ module: "graphql" })
 
 export async function startApolloServerForAdminSchema() {
+  const authedQueryFields = {}
+  for (const key of Object.keys(adminQueryFields.authed)) {
+    authedQueryFields[key] = and(isAuthenticated, isEditor)
+  }
+
+  const authedMutationFields = {}
+  for (const key of Object.keys(adminMutationFields.authed)) {
+    authedMutationFields[key] = and(isAuthenticated, isEditor)
+  }
+
   const permissions = shield(
     {
-      Query: {
-        allLevels: and(isAuthenticated, isEditor),
-        accountDetailsByUserPhone: and(isAuthenticated, isEditor),
-        accountDetailsByUsername: and(isAuthenticated, isEditor),
-        transactionById: and(isAuthenticated, isEditor),
-        transactionsByHash: and(isAuthenticated, isEditor),
-        lightningInvoice: and(isAuthenticated, isEditor),
-        lightningPayment: and(isAuthenticated, isEditor),
-        wallet: and(isAuthenticated, isEditor),
-        listWalletIds: and(isAuthenticated, isEditor),
-      },
-      Mutation: {
-        accountUpdateStatus: and(isAuthenticated, isEditor),
-        accountUpdateLevel: and(isAuthenticated, isEditor),
-        businessUpdateMapInfo: and(isAuthenticated, isEditor),
-        coldStorageRebalanceToHotWallet: and(isAuthenticated, isEditor),
-      },
+      Query: authedQueryFields,
+      Mutation: authedMutationFields,
     },
     { allowExternalErrors: true },
   )
