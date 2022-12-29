@@ -41,22 +41,15 @@ kratosRouter.post(
       }
 
       const body = req.body
-      const { identity_id: userId, phone: phoneRaw, schema_id } = body
+      const { identity_id: userId, phone: phoneRaw, schema_id, email } = body
 
-      assert(schema_id === "phone_no_password_v0", "unsupported schema")
+      assert(schema_id === "phone_or_email_password_v0", "unsupported schema")
 
-      // if (!phoneRaw || !userId) {
-      //   console.log("missing inputs")
-      //   res.status(400).send("missing inputs")
-      //   return
-      // }
-
-      // const phone = checkedToPhoneNumber(phoneRaw)
-      // if (phone instanceof Error) {
-      //   console.log("invalid phone")
-      //   res.status(400).send("invalid phone")
-      //   return
-      // }
+      if ((!phoneRaw && !email) || !userId) {
+        console.log("missing inputs")
+        res.status(400).send("missing inputs")
+        return
+      }
 
       const userIdChecked = checkedToUserId(userId)
       if (userIdChecked instanceof Error) {
@@ -65,20 +58,30 @@ kratosRouter.post(
         return
       }
 
-      const initialWallets = [WalletCurrency.Btc, WalletCurrency.Usd]
+      let account
+      // phone+code flow
+      if (phoneRaw) {
+        const phone = checkedToPhoneNumber(phoneRaw)
+        if (phone instanceof Error) {
+          console.log("invalid phone")
+          res.status(400).send("invalid phone")
+          return
+        }
+        account = await createAccountWithPhoneIdentifier({
+          newAccountInfo: { phone, kratosUserId: userIdChecked },
+          config: getDefaultAccountsConfig(),
+        })
+      } else if (email) {
+        // email+password flow
+        // kratos user likely exists from self registration flow
+        account = await createAccountForEmailIdentifier({
+          kratosUserId: userIdChecked,
+          config: getDefaultAccountsConfig(),
+        })
+      } else {
+        // insert new flow, such as email with code
+      }
 
-      const account = await createAccountForEmailIdentifier({
-        kratosUserId: userIdChecked,
-        config: { initialStatus: AccountStatus.Active, initialWallets },
-      })
-
-      // const account = await createAccountWithPhoneIdentifier({
-      //   newAccountInfo: {
-      //     phone: "+19898675309" as PhoneNumber,
-      //     kratosUserId: userIdChecked,
-      //   },
-      //   config: getDefaultAccountsConfig(),
-      // })
       if (account instanceof Error) {
         console.log(`error createAccountWithPhoneIdentifier: ${account}`)
         res.status(500).send(`error createAccountWithPhoneIdentifier: ${account}`)
