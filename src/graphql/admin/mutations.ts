@@ -19,12 +19,11 @@ export const mutationFields = {
 
     captchaCreateChallenge: CaptchaCreateChallengeMutation,
     captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
-
-    accountsAddUsdWallet: AccountsAddUsdWalletMutation,
   },
   authed: {
     accountUpdateLevel: AccountUpdateLevelMutation,
     accountUpdateStatus: AccountUpdateStatusMutation,
+    accountsAddUsdWallet: AccountsAddUsdWalletMutation,
     businessUpdateMapInfo: BusinessUpdateMapInfoMutation,
     coldStorageRebalanceToHotWallet: ColdStorageRebalanceToHotWalletMutation,
   },
