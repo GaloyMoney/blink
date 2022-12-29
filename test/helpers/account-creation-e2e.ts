@@ -25,7 +25,8 @@ export const loginFromPhoneAndCode = async ({
     })
 
     authToken = result.data.userLogin.authToken
-    expect(authToken).toBeDefined()
+    expect(authToken).not.toBeNull()
+    expect(authToken.length).toBe(32)
     disposeClient()
   }
 
