@@ -30,10 +30,10 @@ export const queryFields = {
     lnInvoicePaymentStatus: LnInvoicePaymentStatusQuery,
   },
   authed: {
-    noWalletId: {
+    atAccountLevel: {
       me: MeQuery,
     },
-    withWalletId: {
+    atWalletLevel: {
       onChainTxFee: OnChainTxFeeQuery,
       onChainUsdTxFee: OnChainUsdTxFeeQuery,
     },
@@ -44,7 +44,7 @@ export const QueryType = GT.Object({
   name: "Query",
   fields: {
     ...queryFields.unauthed,
-    ...queryFields.authed.noWalletId,
-    ...queryFields.authed.withWalletId,
+    ...queryFields.authed.atAccountLevel,
+    ...queryFields.authed.atWalletLevel,
   },
 })

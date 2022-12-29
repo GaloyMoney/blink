@@ -65,12 +65,12 @@ type ValidateWalletIdFn = (
 ) => Promise<unknown>
 
 const walletIdQueryFields: { [key: string]: ValidateWalletIdFn } = {}
-for (const key of Object.keys(queryFields.authed.withWalletId)) {
+for (const key of Object.keys(queryFields.authed.atWalletLevel)) {
   walletIdQueryFields[key] = validateWalletIdQuery
 }
 
 const walletIdMutationFields: { [key: string]: ValidateWalletIdFn } = {}
-for (const key of Object.keys(mutationFields.authed.withWalletId)) {
+for (const key of Object.keys(mutationFields.authed.atWalletLevel)) {
   walletIdMutationFields[key] = validateWalletIdMutation
 }
 

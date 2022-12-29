@@ -48,7 +48,7 @@ export const mutationFields = {
   },
 
   authed: {
-    noWalletId: {
+    atAccountLevel: {
       userQuizQuestionUpdateCompleted: UserQuizQuestionUpdateCompletedMutation,
       deviceNotificationTokenCreate: DeviceNotificationTokenCreateMutation,
 
@@ -59,7 +59,7 @@ export const mutationFields = {
       userContactUpdateAlias: UserContactUpdateAliasMutation,
     },
 
-    withWalletId: {
+    atWalletLevel: {
       intraLedgerPaymentSend: IntraLedgerPaymentSendMutation,
       intraLedgerUsdPaymentSend: IntraLedgerUsdPaymentSendMutation,
 
@@ -89,7 +89,7 @@ export const MutationType = GT.Object({
   name: "Mutation",
   fields: {
     ...mutationFields.unauthed,
-    ...mutationFields.authed.noWalletId,
-    ...mutationFields.authed.withWalletId,
+    ...mutationFields.authed.atAccountLevel,
+    ...mutationFields.authed.atWalletLevel,
   },
 })
