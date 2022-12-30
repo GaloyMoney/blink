@@ -10,8 +10,7 @@ import {
   createAccountWithPhoneIdentifier,
 } from "@app/accounts"
 import { checkedToPhoneNumber } from "@domain/users"
-import { AccountStatus, checkedToUserId } from "@domain/accounts"
-import { WalletCurrency } from "@domain/shared"
+import { checkedToUserId } from "@domain/accounts"
 
 const kratosRouter = express.Router({ caseSensitive: true })
 
@@ -73,13 +72,15 @@ kratosRouter.post(
         })
       } else if (email) {
         // email+password flow
-        // kratos user likely exists from self registration flow
+        // kratos user exists from self registration flow
         account = await createAccountForEmailIdentifier({
           kratosUserId: userIdChecked,
           config: getDefaultAccountsConfig(),
         })
       } else {
         // insert new flow, such as email with code
+        res.status(500).send("Invalid login flow")
+        return
       }
 
       if (account instanceof Error) {

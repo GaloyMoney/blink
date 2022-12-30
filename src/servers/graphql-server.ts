@@ -232,7 +232,7 @@ export const startApolloServer = async ({
     context: (context) => {
       if (isDev) {
         // To make CORS work for cookies "credentials": "include" in dev
-        // This needs to be manually added becuase localhost:3000 is seen
+        // This needs to be manually added because localhost:3000 is seen
         // as a different origin from localhost:4002 and the CORS wildcard
         // "access-control-allow-origin": "*" setting cannot be used via W3C rules
         // This should work in prod if sites are on the same top level domain
@@ -242,7 +242,6 @@ export const startApolloServer = async ({
           "access-control-allow-origin": context.req.headers.origin,
         })
       }
-
       return (context.req as RequestWithGqlContext).gqlContext
     },
     formatError: (err) => {
