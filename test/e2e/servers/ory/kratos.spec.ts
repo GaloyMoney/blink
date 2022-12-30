@@ -12,7 +12,7 @@ import {
   listSessions,
   validateKratosToken,
 } from "@services/kratos"
-import { AuthenticationKratosError } from "@services/kratos/errors"
+import { AuthenticationKratosError, KratosError } from "@services/kratos/errors"
 import { kratosAdmin, kratosPublic } from "@services/kratos/private"
 import {
   activateUser,
@@ -261,6 +261,45 @@ describe("session revokation", () => {
       const res = await validateKratosToken(token)
       expect(res).toBeInstanceOf(AuthenticationKratosError)
     }
+  })
+
+  it("revoke a user's second session only", async () => {
+    // Session 1
+    const session1 = await authService.login(phone)
+    if (session1 instanceof Error) throw session1
+    const session1Token = session1.sessionToken
+
+    // Session 2
+    const session2 = await authService.login(phone)
+    if (session2 instanceof Error) throw session2
+    const session2Token = session2.sessionToken
+
+    // Session Details
+    //  *caveat, you need to have at least 2 active sessions
+    //  for 'listMySessions' to work properly if you only
+    //  have 1 active session the data will come back null
+    const session1Details = await kratosPublic.listMySessions({
+      xSessionToken: session1Token,
+    })
+    const session1Id = session1Details.data[0].id
+    const session2Details = await kratosPublic.listMySessions({
+      xSessionToken: session2Token,
+    })
+    const session2Id = session2Details.data[0].id
+    expect(session1Id).toBeDefined()
+    expect(session2Id).toBeDefined()
+
+    // Revoke Session 2
+    await kratosPublic.performNativeLogout({
+      performNativeLogoutBody: {
+        session_token: session2Token,
+      },
+    })
+
+    const isSession1Valid = await validateKratosToken(session1Token)
+    const isSession2Valid = await validateKratosToken(session2Token)
+    expect(isSession1Valid).toBeDefined()
+    expect(isSession2Valid).toBeInstanceOf(KratosError)
   })
 })
 

@@ -19,6 +19,7 @@ import LnNoAmountUsdInvoicePaymentSendMutation from "@graphql/root/mutation/ln-n
 import OnChainAddressCreateMutation from "@graphql/root/mutation/on-chain-address-create"
 import OnChainAddressCurrentMutation from "@graphql/root/mutation/on-chain-address-current"
 import UserLoginMutation from "@graphql/root/mutation/user-login"
+import UserLogoutMutation from "@graphql/root/mutation/user-logout"
 import UserRequestAuthCodeMutation from "@graphql/root/mutation/user-request-auth-code"
 import UserUpdateLanguageMutation from "@graphql/root/mutation/user-update-language"
 import UserUpdateUsernameMutation from "@graphql/root/mutation/user-update-username"
@@ -37,6 +38,7 @@ export const mutationFields = {
   unauthed: {
     userRequestAuthCode: UserRequestAuthCodeMutation,
     userLogin: UserLoginMutation,
+    userLogout: UserLogoutMutation,
 
     captchaCreateChallenge: CaptchaCreateChallengeMutation,
     captchaRequestAuthCode: CaptchaRequestAuthCodeMutation,
