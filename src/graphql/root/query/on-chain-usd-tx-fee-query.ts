@@ -2,7 +2,7 @@ import { Wallets } from "@app"
 
 import { GT } from "@graphql/index"
 import { mapError } from "@graphql/error-map"
-import { validateIsUsdWalletForMutation } from "@app/wallets"
+import { validateIsUsdWallet } from "@app/wallets"
 
 import WalletId from "@graphql/types/scalar/wallet-id"
 import CentAmount from "@graphql/types/scalar/cent-amount"
@@ -28,7 +28,7 @@ const OnChainUsdTxFeeQuery = GT.Field({
       if (input instanceof Error) throw input
     }
 
-    const usdWalletValidated = await validateIsUsdWalletForMutation(walletId)
+    const usdWalletValidated = await validateIsUsdWallet(walletId)
     if (usdWalletValidated instanceof Error) throw mapError(usdWalletValidated)
 
     const fee = await Wallets.getOnChainFee({

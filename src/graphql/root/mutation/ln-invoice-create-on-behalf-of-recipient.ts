@@ -7,7 +7,7 @@ import Memo from "@graphql/types/scalar/memo"
 import Hex32Bytes from "@graphql/types/scalar/hex32bytes"
 import SatAmount from "@graphql/types/scalar/sat-amount"
 import WalletId from "@graphql/types/scalar/wallet-id"
-import { validateIsBtcWalletForMutation } from "@app/wallets"
+import { validateIsBtcWallet } from "@app/wallets"
 import dedent from "dedent"
 
 const LnInvoiceCreateOnBehalfOfRecipientInput = GT.Input({
@@ -42,7 +42,7 @@ const LnInvoiceCreateOnBehalfOfRecipientMutation = GT.Field({
       }
     }
 
-    const btcWalletValidated = await validateIsBtcWalletForMutation(recipientWalletId)
+    const btcWalletValidated = await validateIsBtcWallet(recipientWalletId)
     if (btcWalletValidated instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(btcWalletValidated)] }
     }

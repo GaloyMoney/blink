@@ -7,7 +7,7 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import SatAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { validateIsBtcWalletForMutation } from "@app/wallets"
+import { validateIsBtcWallet } from "@app/wallets"
 
 import { normalizePaymentAmount } from "."
 
@@ -40,7 +40,7 @@ const LnInvoiceFeeProbeMutation = GT.Field<{
     if (paymentRequest instanceof Error)
       return { errors: [{ message: paymentRequest.message }] }
 
-    const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
+    const btcWalletValidated = await validateIsBtcWallet(walletId)
     if (btcWalletValidated instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(btcWalletValidated)] }
     }

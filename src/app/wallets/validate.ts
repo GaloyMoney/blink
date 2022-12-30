@@ -3,7 +3,7 @@ import { MismatchedCurrencyForWalletError } from "@domain/errors"
 
 import { WalletsRepository } from "@services/mongoose"
 
-export const validateIsBtcWalletForMutation = async (
+export const validateIsBtcWallet = async (
   walletId: WalletId,
 ): Promise<true | ApplicationError> => {
   const wallet = await WalletsRepository().findById(walletId)
@@ -15,7 +15,7 @@ export const validateIsBtcWalletForMutation = async (
   return true
 }
 
-export const validateIsUsdWalletForMutation = async (
+export const validateIsUsdWallet = async (
   walletId: WalletId,
 ): Promise<true | ApplicationError> => {
   const wallet = await WalletsRepository().findById(walletId)

@@ -1,7 +1,7 @@
 import { Accounts, Payments } from "@app"
 import { checkedToWalletId } from "@domain/wallets"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { validateIsUsdWalletForMutation } from "@app/wallets"
+import { validateIsUsdWallet } from "@app/wallets"
 import { GT } from "@graphql/index"
 import PaymentSendPayload from "@graphql/types/payload/payment-send"
 import CentAmount from "@graphql/types/scalar/cent-amount"
@@ -43,7 +43,7 @@ const IntraLedgerUsdPaymentSendMutation = GT.Field({
       return { errors: [mapAndParseErrorForGqlResponse(senderWalletId)] }
     }
 
-    const usdWalletValidated = await validateIsUsdWalletForMutation(walletId)
+    const usdWalletValidated = await validateIsUsdWallet(walletId)
     if (usdWalletValidated instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(usdWalletValidated)] }
     }

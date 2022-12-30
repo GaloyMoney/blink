@@ -7,7 +7,7 @@ import WalletId from "@graphql/types/scalar/wallet-id"
 import CentAmountPayload from "@graphql/types/payload/sat-amount"
 import LnPaymentRequest from "@graphql/types/scalar/ln-payment-request"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
-import { validateIsUsdWalletForMutation } from "@app/wallets"
+import { validateIsUsdWallet } from "@app/wallets"
 
 import { checkedToWalletId } from "@domain/wallets"
 
@@ -49,7 +49,7 @@ const LnUsdInvoiceFeeProbeMutation = GT.Field<{
     if (walletIdChecked instanceof Error)
       return { errors: [{ message: walletIdChecked.message }] }
 
-    const usdWalletValidated = await validateIsUsdWalletForMutation(walletIdChecked)
+    const usdWalletValidated = await validateIsUsdWallet(walletIdChecked)
     if (usdWalletValidated instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(usdWalletValidated)] }
     }

@@ -2,7 +2,7 @@ import { GT } from "@graphql/index"
 import { mapAndParseErrorForGqlResponse } from "@graphql/error-map"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import OnChainAddressPayload from "@graphql/types/payload/on-chain-address"
-import { validateIsBtcWalletForMutation } from "@app/wallets"
+import { validateIsBtcWallet } from "@app/wallets"
 import { Wallets } from "@app"
 
 const OnChainAddressCurrentInput = GT.Input({
@@ -26,7 +26,7 @@ const OnChainAddressCurrentMutation = GT.Field({
       return { errors: [{ message: walletId.message }] }
     }
 
-    const btcWalletValidated = await validateIsBtcWalletForMutation(walletId)
+    const btcWalletValidated = await validateIsBtcWallet(walletId)
     if (btcWalletValidated instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(btcWalletValidated)] }
     }

@@ -4,7 +4,7 @@ import Memo from "@graphql/types/scalar/memo"
 import WalletId from "@graphql/types/scalar/wallet-id"
 import CentAmount from "@graphql/types/scalar/cent-amount"
 import LnInvoicePayload from "@graphql/types/payload/ln-invoice"
-import { validateIsUsdWalletForMutation } from "@app/wallets"
+import { validateIsUsdWallet } from "@app/wallets"
 import { Wallets } from "@app"
 import dedent from "dedent"
 
@@ -41,7 +41,7 @@ const LnUsdInvoiceCreateMutation = GT.Field({
       }
     }
 
-    const usdWalletValidated = await validateIsUsdWalletForMutation(walletId)
+    const usdWalletValidated = await validateIsUsdWallet(walletId)
     if (usdWalletValidated instanceof Error) {
       return { errors: [mapAndParseErrorForGqlResponse(usdWalletValidated)] }
     }
